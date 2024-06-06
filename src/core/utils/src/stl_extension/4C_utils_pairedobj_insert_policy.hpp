@@ -33,7 +33,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::GEN
+namespace Core::Gen
 {
   /// binary function
   template <typename T>
@@ -1031,10 +1031,10 @@ namespace CORE::GEN
     bool isfilled_;
     double max_value_;
   };
-}  // namespace CORE::GEN
+}  // namespace Core::Gen
 
 template <typename Key, typename T>
-size_t CORE::GEN::InsertAndSortPolicy<Key, T>::_max_capacity = 0;
+size_t Core::Gen::InsertAndSortPolicy<Key, T>::_max_capacity = 0;
 
 
 

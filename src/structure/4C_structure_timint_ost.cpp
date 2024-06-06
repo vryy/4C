@@ -33,9 +33,9 @@ void STR::TimIntOneStepTheta::VerifyCoeff()
 /* constructor */
 STR::TimIntOneStepTheta::TimIntOneStepTheta(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioparams, const Teuchos::ParameterList& sdynparams,
-    const Teuchos::ParameterList& xparams, Teuchos::RCP<DRT::Discretization> actdis,
-    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<CORE::LINALG::Solver> contactsolver,
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
+    const Teuchos::ParameterList& xparams, Teuchos::RCP<Discret::Discretization> actdis,
+    Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Core::LinAlg::Solver> contactsolver,
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : TimIntImpl(timeparams, ioparams, sdynparams, xparams, actdis, solver, contactsolver, output),
       theta_(sdynparams.sublist("ONESTEPTHETA").get<double>("THETA")),
       dist_(Teuchos::null),
@@ -63,7 +63,7 @@ STR::TimIntOneStepTheta::TimIntOneStepTheta(const Teuchos::ParameterList& timepa
  *----------------------------------------------------------------------------------------------*/
 void STR::TimIntOneStepTheta::Init(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver)
+    Teuchos::RCP<Discret::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver)
 {
   // call Init() in base class
   STR::TimIntImpl::Init(timeparams, sdynparams, xparams, actdis, solver);
@@ -73,9 +73,9 @@ void STR::TimIntOneStepTheta::Init(const Teuchos::ParameterList& timeparams,
   if (myrank_ == 0)
   {
     VerifyCoeff();
-    CORE::IO::cout << "with one-step-theta" << CORE::IO::endl
-                   << "   theta = " << theta_ << CORE::IO::endl
-                   << CORE::IO::endl;
+    Core::IO::cout << "with one-step-theta" << Core::IO::endl
+                   << "   theta = " << theta_ << Core::IO::endl
+                   << Core::IO::endl;
   }
 
   // have a nice day
@@ -106,34 +106,34 @@ void STR::TimIntOneStepTheta::Setup()
   // create state vectors
 
   // mid-displacements
-  dist_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  dist_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
   // mid-velocities
-  velt_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  velt_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
   // mid-accelerations
-  acct_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  acct_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
 
   // create force vectors
 
   // internal force vector F_{int;n} at last time
-  fint_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  fint_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
   // internal force vector F_{int;n+1} at new time
-  fintn_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  fintn_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
 
   // external force vector F_ext at last times
-  fext_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  fext_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
   // external force vector F_{n+1} at new time
-  fextn_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  fextn_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
   // set initial external force vector
   apply_force_external((*time_)[0], (*dis_)(0), disn_, (*vel_)(0), fext_);
 
   // inertial force vector F_{int;n} at last time
-  finert_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  finert_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
   // inertial mid-force vector F_{int;n+1-alpha_f}
-  finertt_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  finertt_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
   // inertial force vector F_{int;n+1} at new time
-  finertn_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  finertn_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
   // viscous mid-point force vector F_visc
-  fvisct_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  fvisct_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
 
   // create parameter list
   Teuchos::ParameterList params;
@@ -264,7 +264,7 @@ void STR::TimIntOneStepTheta::evaluate_force_stiff_residual(Teuchos::ParameterLi
 
   // initialise stiffness matrix to zero
   stiff_->Zero();
-  if (damping_ == INPAR::STR::damp_material) damp_->Zero();
+  if (damping_ == Inpar::STR::damp_material) damp_->Zero();
 
   // theta-interpolate state vectors
   EvaluateMidState();
@@ -356,7 +356,7 @@ void STR::TimIntOneStepTheta::evaluate_force_stiff_residual(Teuchos::ParameterLi
   // ************************** (4) DAMPING FORCES ****************************
 
   // viscous forces due Rayleigh damping
-  if (damping_ == INPAR::STR::damp_rayleigh)
+  if (damping_ == Inpar::STR::damp_rayleigh)
   {
     damp_->Multiply(false, *velt_, *fvisct_);
   }
@@ -369,7 +369,7 @@ void STR::TimIntOneStepTheta::evaluate_force_stiff_residual(Teuchos::ParameterLi
   //                     - F_{ext;n+theta}
   fres_->Update(-theta_, *fextn_, -(1.0 - theta_), *fext_, 0.0);
   fres_->Update(theta_, *fintn_, (1.0 - theta_), *fint_, 1.0);
-  if (damping_ == INPAR::STR::damp_rayleigh)
+  if (damping_ == Inpar::STR::damp_rayleigh)
   {
     fres_->Update(1.0, *fvisct_, 1.0);
   }
@@ -382,9 +382,9 @@ void STR::TimIntOneStepTheta::evaluate_force_stiff_residual(Teuchos::ParameterLi
   //                + 1/dt C
   //                + theta K_{T}
   stiff_->Add(*mass_, false, 1.0 / (theta_ * (*dt_)[0] * (*dt_)[0]), theta_);
-  if (damping_ != INPAR::STR::damp_none)
+  if (damping_ != Inpar::STR::damp_none)
   {
-    if (damping_ == INPAR::STR::damp_material) damp_->Complete();
+    if (damping_ == Inpar::STR::damp_material) damp_->Complete();
     stiff_->Add(*damp_, false, 1.0 / (*dt_)[0], 1.0);
   }
 
@@ -465,7 +465,7 @@ void STR::TimIntOneStepTheta::evaluate_force_residual()
   // ************************** (4) DAMPING FORCES ****************************
 
   // viscous forces due Rayleigh damping
-  if (damping_ == INPAR::STR::damp_rayleigh)
+  if (damping_ == Inpar::STR::damp_rayleigh)
   {
     damp_->Multiply(false, *velt_, *fvisct_);
   }
@@ -478,7 +478,7 @@ void STR::TimIntOneStepTheta::evaluate_force_residual()
   //                     - F_{ext;n+theta}
   fres_->Update(-theta_, *fextn_, -(1.0 - theta_), *fext_, 0.0);
   fres_->Update(theta_, *fintn_, (1.0 - theta_), *fint_, 1.0);
-  if (damping_ == INPAR::STR::damp_rayleigh)
+  if (damping_ == Inpar::STR::damp_rayleigh)
   {
     fres_->Update(1.0, *fvisct_, 1.0);
   }
@@ -542,7 +542,7 @@ double STR::TimIntOneStepTheta::CalcRefNormForce()
 
   // norm of viscous forces
   double fviscnorm = 0.0;
-  if (damping_ == INPAR::STR::damp_rayleigh)
+  if (damping_ == Inpar::STR::damp_rayleigh)
   {
     fviscnorm = STR::calculate_vector_norm(iternorm_, fvisct_);
   }
@@ -676,13 +676,13 @@ void STR::TimIntOneStepTheta::UpdateStepElement()
     discret_->set_state("acceleration", (*acc_)(0));
 
     Teuchos::RCP<Epetra_Vector> update_disp;
-    update_disp = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+    update_disp = Core::LinAlg::CreateVector(*DofRowMapView(), true);
 
     Teuchos::RCP<Epetra_Vector> update_vel;
-    update_vel = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+    update_vel = Core::LinAlg::CreateVector(*DofRowMapView(), true);
 
     Teuchos::RCP<Epetra_Vector> update_acc;
-    update_acc = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+    update_acc = Core::LinAlg::CreateVector(*DofRowMapView(), true);
 
 
     discret_->Evaluate(p, Teuchos::null, Teuchos::null, update_disp, update_vel, update_acc);
@@ -702,8 +702,8 @@ void STR::TimIntOneStepTheta::UpdateStepElement()
 /* read restart forces */
 void STR::TimIntOneStepTheta::ReadRestartForce()
 {
-  CORE::IO::DiscretizationReader reader(
-      discret_, GLOBAL::Problem::Instance()->InputControlFile(), step_);
+  Core::IO::DiscretizationReader reader(
+      discret_, Global::Problem::Instance()->InputControlFile(), step_);
   reader.ReadVector(fext_, "fexternal");
   reader.ReadVector(fint_, "fint");
   reader.ReadVector(finert_, "finert");
@@ -715,7 +715,7 @@ void STR::TimIntOneStepTheta::ReadRestartForce()
 
 /*----------------------------------------------------------------------*/
 /* write internal and external forces for restart */
-void STR::TimIntOneStepTheta::WriteRestartForce(Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
+void STR::TimIntOneStepTheta::WriteRestartForce(Teuchos::RCP<Core::IO::DiscretizationWriter> output)
 {
   output->WriteVector("fexternal", fext_);
   output->WriteVector("fint", fint_);

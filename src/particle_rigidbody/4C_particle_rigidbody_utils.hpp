@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | declarations                                                              |
  *---------------------------------------------------------------------------*/
-namespace PARTICLERIGIDBODY
+namespace ParticleRigidBody
 {
   namespace UTILS
   {
@@ -139,7 +139,7 @@ namespace PARTICLERIGIDBODY
     //@}
 
   }  // namespace UTILS
-}  // namespace PARTICLERIGIDBODY
+}  // namespace ParticleRigidBody
 
 /*---------------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

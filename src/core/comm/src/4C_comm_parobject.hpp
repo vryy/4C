@@ -30,7 +30,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::COMM
+namespace Core::Communication
 {
   /*!
   * \brief A virtual class with functionality to pack, unpack and communicate
@@ -48,7 +48,7 @@ namespace CORE::COMM
    double                   b;
    double*                  vec = new double[50];
    vector<char>             bla;
-   CORE::LINALG::SerialDenseMatrix matrix;
+   Core::LinAlg::SerialDenseMatrix matrix;
    \endcode
    This is how it is packed into a vector<char>& data:<br>
    \code
@@ -119,11 +119,11 @@ namespace CORE::COMM
    own base class
    std::map<T,U>   // especially useful to pack other packs into a pack, e.g. a class
    std::unordered_map<T,U>
-   packing its own base class std::pair<T,U> std::set<T> CORE::LINALG::Matrix<T,U>
-   std::vector<CORE::LINALG::Matrix<T,U> >
-   CORE::LINALG::SerialDenseMatrix
-   CORE::LINALG::SerialDenseVector
-   CORE::LINALG::SerialDenseMatrix
+   packing its own base class std::pair<T,U> std::set<T> Core::LinAlg::Matrix<T,U>
+   std::vector<Core::LinAlg::Matrix<T,U> >
+   Core::LinAlg::SerialDenseMatrix
+   Core::LinAlg::SerialDenseVector
+   Core::LinAlg::SerialDenseMatrix
 
    \endcode
 
@@ -317,7 +317,7 @@ namespace CORE::COMM
      * \param[in] stuff Pairedvector<Ts...> that get's added to stuff
      */
     template <typename... Ts>
-    static void AddtoPack(PackBuffer& data, const CORE::GEN::Pairedvector<Ts...>& stuff)
+    static void AddtoPack(PackBuffer& data, const Core::Gen::Pairedvector<Ts...>& stuff)
     {
       int numentries = (int)stuff.size();
       AddtoPack(data, numentries);
@@ -342,7 +342,7 @@ namespace CORE::COMM
      */
     template <typename... Ts>
     static void AddtoPack(
-        PackBuffer& data, const std::vector<CORE::GEN::Pairedvector<Ts...>>& stuff)
+        PackBuffer& data, const std::vector<Core::Gen::Pairedvector<Ts...>>& stuff)
     {
       int numentries = (int)stuff.size();
       AddtoPack(data, numentries);
@@ -366,13 +366,13 @@ namespace CORE::COMM
      */
     template <typename... Ts>
     static void AddtoPack(
-        PackBuffer& data, const std::vector<CORE::GEN::Pairedmatrix<Ts...>>& stuff)
+        PackBuffer& data, const std::vector<Core::Gen::Pairedmatrix<Ts...>>& stuff)
     {
       int numentries = (int)stuff.size();
       AddtoPack(data, numentries);
 
       int i = 0;
-      for (const typename CORE::GEN::PairedmatrixBase<Ts...>::type& paired_mat : stuff)
+      for (const typename Core::Gen::PairedmatrixBase<Ts...>::type& paired_mat : stuff)
       {
         AddtoPack(data, paired_mat);
         ++i;
@@ -410,20 +410,20 @@ namespace CORE::COMM
     /*!
      * \brief Add stuff to the end of a char vector data
      *
-     * This method is an overload of the above template for CORE::LINALG::SerialDenseMatrix
+     * This method is an overload of the above template for Core::LinAlg::SerialDenseMatrix
      * \param[in,out] data char string stuff shall be added to
-     * \param[in] stuff CORE::LINALG::SerialDenseMatrix that get's added to stuff
+     * \param[in] stuff Core::LinAlg::SerialDenseMatrix that get's added to stuff
      */
-    static void AddtoPack(PackBuffer& data, const CORE::LINALG::SerialDenseMatrix& stuff);
+    static void AddtoPack(PackBuffer& data, const Core::LinAlg::SerialDenseMatrix& stuff);
 
     /*!
      * \brief Add stuff to the end of a char vector data
      *
-     * This method is an overload of the above template for CORE::LINALG::SerialDenseMatrix
+     * This method is an overload of the above template for Core::LinAlg::SerialDenseMatrix
      * \param[in,out] data char string stuff shall be added to
-     * \param[in] stuff CORE::LINALG::SerialDenseVector that get's added to stuff
+     * \param[in] stuff Core::LinAlg::SerialDenseVector that get's added to stuff
      */
-    static void AddtoPack(PackBuffer& data, const CORE::LINALG::SerialDenseVector& stuff);
+    static void AddtoPack(PackBuffer& data, const Core::LinAlg::SerialDenseVector& stuff);
 
     /*!
      * \brief Add stuff to the end of a char vector data
@@ -433,7 +433,7 @@ namespace CORE::COMM
      * \param[in] stuff Matrix that get's added to data
      */
     template <unsigned i, unsigned j>
-    static void AddtoPack(PackBuffer& data, const CORE::LINALG::Matrix<i, j>& stuff)
+    static void AddtoPack(PackBuffer& data, const Core::LinAlg::Matrix<i, j>& stuff)
     {
       AddtoPack(data, i);
       AddtoPack(data, j);
@@ -448,7 +448,7 @@ namespace CORE::COMM
      * \param[in] stuff vector of matrices that get's added to data
      */
     template <unsigned i, unsigned j>
-    static void AddtoPack(PackBuffer& data, const std::vector<CORE::LINALG::Matrix<i, j>>& stuff)
+    static void AddtoPack(PackBuffer& data, const std::vector<Core::LinAlg::Matrix<i, j>>& stuff)
     {
       // add length of vector to be packed so that later the vector can be restored with correct
       // length when unpacked
@@ -716,7 +716,7 @@ namespace CORE::COMM
      */
     template <typename Key, typename T0, typename... Ts>
     static void ExtractfromPack(std::vector<char>::size_type& position,
-        const std::vector<char>& data, CORE::GEN::Pairedvector<Key, T0, Ts...>& stuff)
+        const std::vector<char>& data, Core::Gen::Pairedvector<Key, T0, Ts...>& stuff)
     {
       int numentries = 0;
       ExtractfromPack(position, data, numentries);
@@ -748,7 +748,7 @@ namespace CORE::COMM
      */
     template <typename... Ts>
     static void ExtractfromPack(std::vector<char>::size_type& position,
-        const std::vector<char>& data, std::vector<CORE::GEN::Pairedvector<Ts...>>& stuff)
+        const std::vector<char>& data, std::vector<Core::Gen::Pairedvector<Ts...>>& stuff)
     {
       int numentries = 0;
       ExtractfromPack(position, data, numentries);
@@ -756,7 +756,7 @@ namespace CORE::COMM
       stuff.clear();
       stuff.resize(numentries);
 
-      CORE::GEN::Pairedvector<Ts...> paired_vec;
+      Core::Gen::Pairedvector<Ts...> paired_vec;
       for (int i = 0; i < numentries; i++)
       {
         ExtractfromPack(position, data, paired_vec);
@@ -779,7 +779,7 @@ namespace CORE::COMM
      */
     template <typename... Ts>
     static void ExtractfromPack(std::vector<char>::size_type& position,
-        const std::vector<char>& data, std::vector<CORE::GEN::Pairedmatrix<Ts...>>& stuff)
+        const std::vector<char>& data, std::vector<Core::Gen::Pairedmatrix<Ts...>>& stuff)
     {
       int numentries = 0;
       ExtractfromPack(position, data, numentries);
@@ -787,7 +787,7 @@ namespace CORE::COMM
       stuff.clear();
       stuff.resize(numentries);
 
-      typename CORE::GEN::PairedmatrixBase<Ts...>::type paired_mat;
+      typename Core::Gen::PairedmatrixBase<Ts...>::type paired_mat;
       for (int i = 0; i < numentries; i++)
       {
         ExtractfromPack(position, data, paired_mat);
@@ -830,29 +830,29 @@ namespace CORE::COMM
      * \brief Extract stuff from a char vector data and increment position
      *
      * This method is an overload of the above template for stuff of type
-     * CORE::LINALG::SerialDenseMatrix
+     * Core::LinAlg::SerialDenseMatrix
      *
      * \param[in,out] position place in data where to extract stuff. Position will be incremented
      * by this method
      * \param[in] data char vector where stuff is extracted from
-     * \param[out] stuff CORE::LINALG::SerialDenseMatrix to extract from data
+     * \param[out] stuff Core::LinAlg::SerialDenseMatrix to extract from data
      */
     static void ExtractfromPack(std::vector<char>::size_type& position,
-        const std::vector<char>& data, CORE::LINALG::SerialDenseMatrix& stuff);
+        const std::vector<char>& data, Core::LinAlg::SerialDenseMatrix& stuff);
 
     /*!
      * \brief Extract stuff from a char vector data and increment position
      *
      * This method is an overload of the above template for stuff of type
-     * CORE::LINALG::SerialDenseVector
+     * Core::LinAlg::SerialDenseVector
      *
      * \param[in,out] position place in data where to extract stuff. Position will be incremented
      * by this method
      * \param[in] data char vector where stuff is extracted from
-     * \param[out] stuff CORE::LINALG::SerialDenseVector to extract from data
+     * \param[out] stuff Core::LinAlg::SerialDenseVector to extract from data
      */
     static void ExtractfromPack(std::vector<char>::size_type& position,
-        const std::vector<char>& data, CORE::LINALG::SerialDenseVector& stuff);
+        const std::vector<char>& data, Core::LinAlg::SerialDenseVector& stuff);
 
     /*!
      * \brief Extract stuff from a char vector data and increment position
@@ -866,7 +866,7 @@ namespace CORE::COMM
      */
     template <unsigned int i, unsigned int j>
     static void ExtractfromPack(std::vector<char>::size_type& position,
-        const std::vector<char>& data, CORE::LINALG::Matrix<i, j>& stuff)
+        const std::vector<char>& data, Core::LinAlg::Matrix<i, j>& stuff)
     {
       int m = 0;
       ExtractfromPack(position, data, m);
@@ -889,7 +889,7 @@ namespace CORE::COMM
      */
     template <unsigned int i, unsigned int j>
     static void ExtractfromPack(std::vector<char>::size_type& position,
-        const std::vector<char>& data, std::vector<CORE::LINALG::Matrix<i, j>>& stuff)
+        const std::vector<char>& data, std::vector<Core::LinAlg::Matrix<i, j>>& stuff)
     {
       // get length of vector to be extracted and allocate according amount of memory for all
       // extracted data
@@ -943,10 +943,10 @@ namespace CORE::COMM
     //@}
   };
   // class ParObject
-}  // namespace CORE::COMM
+}  // namespace Core::Communication
 
 
-namespace CORE::COMM
+namespace Core::Communication
 {
   /*!
    *  \brief Extract the type id at a given @p position from a @p data vector, assert if the
@@ -960,7 +960,7 @@ namespace CORE::COMM
    */
   int ExtractAndAssertId(std::vector<char>::size_type& position, const std::vector<char>& data,
       const int desired_type_id);
-}  // namespace CORE::COMM
+}  // namespace Core::Communication
 
 FOUR_C_NAMESPACE_CLOSE
 

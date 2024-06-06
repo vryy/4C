@@ -25,12 +25,12 @@ FOUR_C_NAMESPACE_OPEN
 
 
 // forward declaration
-namespace DRT
+namespace Discret
 {
   class ParObject;
 }
 
-namespace MAT
+namespace Mat
 {
   // forward declaration
   namespace PAR
@@ -40,7 +40,7 @@ namespace MAT
 
   /*---------------------------------------------------------------------------------------------*/
   /// constitutive relations for beam cross-section resultants (hyperelastic stored energy function)
-  class BeamMaterial : public CORE::MAT::Material
+  class BeamMaterial : public Core::Mat::Material
   {
    public:
     /**
@@ -65,13 +65,13 @@ namespace MAT
      *
      */
     virtual void get_mass_moment_of_inertia_tensor_material_frame(
-        CORE::LINALG::Matrix<3, 3>& J) const = 0;
+        Core::LinAlg::Matrix<3, 3>& J) const = 0;
 
     /** \brief get mass moment of inertia tensor, expressed w.r.t. material frame
      *
      */
     virtual void get_mass_moment_of_inertia_tensor_material_frame(
-        CORE::LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>& J) const = 0;
+        Core::LinAlg::Matrix<3, 3, Sacado::Fad::DFad<double>>& J) const = 0;
 
     /** \brief Update all material related variables at the end of a time step
      *
@@ -83,7 +83,7 @@ namespace MAT
      */
     virtual void Reset() = 0;
   };
-}  // namespace MAT
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

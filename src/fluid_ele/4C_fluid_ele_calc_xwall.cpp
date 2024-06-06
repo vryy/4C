@@ -28,9 +28,9 @@ FOUR_C_NAMESPACE_OPEN
 /*-----------------------------------------------------------------------------*
  | Constructor                                                      bk 06/2014 |
  *-----------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::FluidEleCalcXWall()
-    : DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::FluidEleCalc(),
+template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
+Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::FluidEleCalcXWall()
+    : Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::FluidEleCalc(),
       ewdist_(true),
       etauw_(true),
       einctauw_(true),
@@ -57,16 +57,17 @@ DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::FluidEleCalcXWall()
 {
 }
 
-template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>*
-DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::Instance(CORE::UTILS::SingletonAction action)
+template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
+Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>*
+Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::Instance(
+    Core::UTILS::SingletonAction action)
 {
-  static CORE::UTILS::SingletonOwner<DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>>
+  static Core::UTILS::SingletonOwner<Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>>
       singleton_owner(
           []()
           {
-            return std::unique_ptr<DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>>(
-                new DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>());
+            return std::unique_ptr<Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>>(
+                new Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>());
           });
 
   return singleton_owner.Instance(action);
@@ -75,21 +76,22 @@ DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::Instance(CORE::UTILS::Single
 /*-----------------------------------------------------------------------------*
  | Entry supporting methods of the element                          bk 06/2014 |
  *-----------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::EvaluateService(DRT::ELEMENTS::Fluid* ele,
-    Teuchos::ParameterList& params, Teuchos::RCP<CORE::MAT::Material>& mat,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
-    CORE::LINALG::SerialDenseVector& elevec3)
+template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
+int Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::EvaluateService(
+    Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+    Teuchos::RCP<Core::Mat::Material>& mat, Discret::Discretization& discretization,
+    std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
+    Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
+    Core::LinAlg::SerialDenseVector& elevec2, Core::LinAlg::SerialDenseVector& elevec3)
 {
   calcoldandnewpsi_ = false;
-  const FLD::Action act = CORE::UTILS::GetAsEnum<FLD::Action>(params, "action");
+  const FLD::Action act = Core::UTILS::GetAsEnum<FLD::Action>(params, "action");
   if (act == FLD::xwall_l2_projection) calcoldandnewpsi_ = true;
   get_ele_properties(ele, discretization, lm, params, mat);
 
   // non-enriched case, solve problem as usual
-  if (enrtype == DRT::ELEMENTS::Fluid::xwall)  // this element has the same no of dofs on each node
+  if (enrtype ==
+      Discret::ELEMENTS::Fluid::xwall)  // this element has the same no of dofs on each node
   {
     std::vector<int> assembletoggle;
     int nodecount = 0;
@@ -142,16 +144,16 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::EvaluateService(DRT::ELE
 /*----------------------------------------------------------------------*
  * Evaluate supporting methods of the element
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::evaluate_service_x_wall(
-    DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-    Teuchos::RCP<CORE::MAT::Material>& mat, DRT::Discretization& discretization,
-    std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
-    CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-    CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3)
+template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
+int Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::evaluate_service_x_wall(
+    Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+    Teuchos::RCP<Core::Mat::Material>& mat, Discret::Discretization& discretization,
+    std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
+    Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
+    Core::LinAlg::SerialDenseVector& elevec2, Core::LinAlg::SerialDenseVector& elevec3)
 {
   // get the action required
-  const FLD::Action act = CORE::UTILS::GetAsEnum<FLD::Action>(params, "action");
+  const FLD::Action act = Core::UTILS::GetAsEnum<FLD::Action>(params, "action");
 
   switch (act)
   {
@@ -194,20 +196,22 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::evaluate_service_x_wall(
 /*-----------------------------------------------------------------------------*
  | Action type: Evaluate                                            bk 06/2014 |
  *-----------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
-    DRT::Discretization& discretization, const std::vector<int>& lm, Teuchos::ParameterList& params,
-    Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec1_epetra,
-    CORE::LINALG::SerialDenseVector& elevec2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec3_epetra, bool offdiag)
+template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
+int Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::Evaluate(Discret::ELEMENTS::Fluid* ele,
+    Discret::Discretization& discretization, const std::vector<int>& lm,
+    Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
+    Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+    Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec1_epetra,
+    Core::LinAlg::SerialDenseVector& elevec2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec3_epetra, bool offdiag)
 {
   calcoldandnewpsi_ = false;
 
   get_ele_properties(ele, discretization, lm, params, mat);
 
-  if (enrtype == DRT::ELEMENTS::Fluid::xwall)  // this element has the same no of dofs on each node
+  if (enrtype ==
+      Discret::ELEMENTS::Fluid::xwall)  // this element has the same no of dofs on each node
   {
     std::vector<int> assembletoggle;
     int nodecount = 0;
@@ -274,15 +278,16 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::Evaluate(DRT::ELEMENTS::
 /*-----------------------------------------------------------------------------*
  | Get properties for this element                                  bk 06/2014 |
  *-----------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::get_ele_properties(
-    DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization, const std::vector<int>& lm,
-    Teuchos::ParameterList& params, Teuchos::RCP<CORE::MAT::Material>& mat)
+template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
+void Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::get_ele_properties(
+    Discret::ELEMENTS::Fluid* ele, Discret::Discretization& discretization,
+    const std::vector<int>& lm, Teuchos::ParameterList& params,
+    Teuchos::RCP<Core::Mat::Material>& mat)
 {
   is_blending_ele_ = false;
   visc_ = 0.0;
 
-  if (!(enrtype == DRT::ELEMENTS::Fluid::xwall))
+  if (!(enrtype == Discret::ELEMENTS::Fluid::xwall))
     FOUR_C_THROW("This class is exclusively for the xwall enrichment type up to now");
 
   // rotate the vector field in the case of rotationally symmetric boundary conditions
@@ -294,7 +299,7 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::get_ele_properties(
         params.get<Teuchos::RCP<Epetra_Vector>>("xwalltoggle");
 
     std::vector<double> mylocal(ele->num_node());
-    CORE::FE::ExtractMyNodeBasedValues(ele, mylocal, *xwalltoggle);
+    Core::FE::ExtractMyNodeBasedValues(ele, mylocal, *xwalltoggle);
 
     for (unsigned inode = 0; inode < (unsigned)enren_; ++inode)  // number of nodes
     {
@@ -323,7 +328,7 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::get_ele_properties(
         params.get<Teuchos::RCP<Epetra_Vector>>("walldist");
     //      std::cout << *walldist << std::endl;
     std::vector<double> mylocal(ele->num_node());
-    CORE::FE::ExtractMyNodeBasedValues(ele, mylocal, *walldist);
+    Core::FE::ExtractMyNodeBasedValues(ele, mylocal, *walldist);
 
     for (unsigned inode = 0; inode < (unsigned)enren_; ++inode)  // number of nodes
     {
@@ -336,7 +341,7 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::get_ele_properties(
     const Teuchos::RCP<Epetra_Vector> tauw = params.get<Teuchos::RCP<Epetra_Vector>>("tauw");
 
     std::vector<double> mylocal(ele->num_node());
-    CORE::FE::ExtractMyNodeBasedValues(ele, mylocal, *tauw);
+    Core::FE::ExtractMyNodeBasedValues(ele, mylocal, *tauw);
 
     for (unsigned inode = 0; inode < (unsigned)enren_; ++inode)  // number of nodes
     {
@@ -349,7 +354,7 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::get_ele_properties(
     const Teuchos::RCP<Epetra_Vector> inctauw = params.get<Teuchos::RCP<Epetra_Vector>>("inctauw");
 
     std::vector<double> mylocal(ele->num_node());
-    CORE::FE::ExtractMyNodeBasedValues(ele, mylocal, *inctauw);
+    Core::FE::ExtractMyNodeBasedValues(ele, mylocal, *inctauw);
 
     for (unsigned inode = 0; inode < (unsigned)enren_; ++inode)  // number of nodes
     {
@@ -359,7 +364,7 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::get_ele_properties(
 
   // get viscosity and density
   {
-    const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
+    const Mat::NewtonianFluid* actmat = static_cast<const Mat::NewtonianFluid*>(mat.get());
     if (!actmat) FOUR_C_THROW("not a newtonian fluid");
     // get constant dynamic viscosity
     dens_ = actmat->Density();
@@ -386,7 +391,7 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::get_ele_properties(
           params.get<Teuchos::RCP<Epetra_Vector>>("incwalldist");
 
       std::vector<double> mylocal(ele->num_node());
-      CORE::FE::ExtractMyNodeBasedValues(ele, mylocal, *incwdist);
+      Core::FE::ExtractMyNodeBasedValues(ele, mylocal, *incwdist);
 
       for (unsigned inode = 0; inode < (unsigned)enren_; ++inode)  // number of nodes
       {
@@ -413,9 +418,9 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::get_ele_properties(
   numgpnormow_ = params.get<int>("gpnormow");
   numgpplane_ = params.get<int>("gppar");
   // get node coordinates and number of elements per node
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(
+  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
       ele, my::xyze_);
-  CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
+  Core::LinAlg::Matrix<nsd_, nen_> edispnp(true);
   if (ele->IsAle()) get_grid_disp_ale(discretization, lm, edispnp);
   prepare_gauss_rule();
 
@@ -425,8 +430,8 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::get_ele_properties(
 /*-----------------------------------------------------------------------------*
  | Go wall shear stress increment backwards                         bk 06/2014 |
  *-----------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::x_wall_tau_w_inc_back()
+template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
+void Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::x_wall_tau_w_inc_back()
 {
   for (unsigned inode = 0; inode < (unsigned)enren_; ++inode)  // number of nodes
   {
@@ -441,8 +446,8 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::x_wall_tau_w_inc_back()
 /*-----------------------------------------------------------------------------*
  | Go wall shear stress increment forward                           bk 06/2014 |
  *-----------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::x_wall_tau_w_inc_forward()
+template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
+void Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::x_wall_tau_w_inc_forward()
 {
   for (unsigned inode = 0; inode < (unsigned)enren_; ++inode)  // number of nodes
   {
@@ -457,11 +462,12 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::x_wall_tau_w_inc_forwar
 /*-----------------------------------------------------------------------------*
  | Calculate shape functions at integration point                   bk 06/2014 |
  *-----------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::eval_shape_func_and_derivs_at_int_point(
-    const double* gpcoord,  // actual integration point (coords)
-    double gpweight         // actual integration point (weight)
-)
+template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
+void Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::
+    eval_shape_func_and_derivs_at_int_point(
+        const double* gpcoord,  // actual integration point (coords)
+        double gpweight         // actual integration point (weight)
+    )
 {
   eval_std_shape_func_and_derivs_at_int_point(gpcoord, gpweight);
 
@@ -472,8 +478,8 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::eval_shape_func_and_der
 /*-----------------------------------------------------------------------------*
  | Calculate shape functions at integration point                   bk 06/2014 |
  *-----------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::
+template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
+void Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::
     eval_std_shape_func_and_derivs_at_int_point(
         const double* gpcoord,  // actual integration point (coords)
         double gpweight         // actual integration point (weight)
@@ -496,12 +502,12 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::
   }
 
   // shape functions and their first derivatives
-  CORE::FE::shape_function<distype>(my::xsi_, funct_);
-  CORE::FE::shape_function_deriv1<distype>(my::xsi_, deriv_);
-  if (my::is_higher_order_ele_ && distype == CORE::FE::CellType::hex8)
+  Core::FE::shape_function<distype>(my::xsi_, funct_);
+  Core::FE::shape_function_deriv1<distype>(my::xsi_, deriv_);
+  if (my::is_higher_order_ele_ && distype == Core::FE::CellType::hex8)
   {
     // get the second derivatives of standard element at current GP
-    CORE::FE::shape_function_deriv2<distype>(my::xsi_, deriv2_);
+    Core::FE::shape_function_deriv2<distype>(my::xsi_, deriv2_);
   }
   else
     deriv2_.Clear();
@@ -540,9 +546,9 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::
   //--------------------------------------------------------------
   //             compute global second derivatives
   //--------------------------------------------------------------
-  if (my::is_higher_order_ele_ && distype == CORE::FE::CellType::hex8)
+  if (my::is_higher_order_ele_ && distype == Core::FE::CellType::hex8)
   {
-    CORE::FE::gder2<distype, enren_>(my::xjm_, derxy_, deriv2_, xyze_, derxy2_);
+    Core::FE::gder2<distype, enren_>(my::xjm_, derxy_, deriv2_, xyze_, derxy2_);
   }
   else
     derxy2_.Clear();
@@ -553,16 +559,16 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::
 /*-----------------------------------------------------------------------------*
  | Calculate enrichment shape functions                             bk 06/2014 |
  *-----------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::eval_enrichment()
+template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
+void Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::eval_enrichment()
 {
   // first clear everything
   functenr_.Clear();
   derxyenr_.Clear();
   derxyenr2_.Clear();
 
-  CORE::LINALG::Matrix<nsd_, 1> derpsigp(true);
-  CORE::LINALG::Matrix<numderiv2_, 1> der2psigp(true);
+  Core::LinAlg::Matrix<nsd_, 1> derpsigp(true);
+  Core::LinAlg::Matrix<numderiv2_, 1> der2psigp(true);
 
   double psigp = enrichment_shape_der(derpsigp, der2psigp);
 
@@ -599,9 +605,9 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::eval_enrichment()
   // treat blending elements with ramp functions
   if (is_blending_ele_)
   {
-    CORE::LINALG::Matrix<nsd_, 1> derramp(true);
+    Core::LinAlg::Matrix<nsd_, 1> derramp(true);
     derramp.Multiply(derxy_, eramp_);
-    CORE::LINALG::Matrix<numderiv2_, 1> der2ramp(true);
+    Core::LinAlg::Matrix<numderiv2_, 1> der2ramp(true);
     der2ramp.Multiply(derxy2_, eramp_);
     double ramp = eramp_.Dot(funct_);
 
@@ -658,24 +664,24 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::eval_enrichment()
  | Calculate enrichment shape functions and derivatives                        |
  | including transformation from y+ to (x,y,z)                      bk 06/2014 |
  *-----------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-double DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::enrichment_shape_der(
-    CORE::LINALG::Matrix<nsd_, 1>& derpsigp, CORE::LINALG::Matrix<numderiv2_, 1>& der2psigp)
+template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
+double Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::enrichment_shape_der(
+    Core::LinAlg::Matrix<nsd_, 1>& derpsigp, Core::LinAlg::Matrix<numderiv2_, 1>& der2psigp)
 {
   // calculate transformation ---------------------------------------
   double wdist = ewdist_.Dot(funct_);
   double tauw = etauw_.Dot(funct_);
-  CORE::LINALG::Matrix<nsd_, 1> derwdist(true);
+  Core::LinAlg::Matrix<nsd_, 1> derwdist(true);
   derwdist.Multiply(derxy_, ewdist_);
-  CORE::LINALG::Matrix<nsd_, 1> dertauw(true);
+  Core::LinAlg::Matrix<nsd_, 1> dertauw(true);
   dertauw.Multiply(derxy_, etauw_);
-  CORE::LINALG::Matrix<numderiv2_, 1> der2wdist(true);
+  Core::LinAlg::Matrix<numderiv2_, 1> der2wdist(true);
   if (my::is_higher_order_ele_) der2wdist.Multiply(derxy2_, ewdist_);
-  CORE::LINALG::Matrix<numderiv2_, 1> der2tauw(true);
+  Core::LinAlg::Matrix<numderiv2_, 1> der2tauw(true);
   if (my::is_higher_order_ele_) der2tauw.Multiply(derxy2_, etauw_);
-  CORE::LINALG::Matrix<nsd_, 1> dertrans(true);
-  CORE::LINALG::Matrix<numderiv2_, 1> der2trans_1(true);
-  CORE::LINALG::Matrix<numderiv2_, 1> der2trans_2(true);
+  Core::LinAlg::Matrix<nsd_, 1> dertrans(true);
+  Core::LinAlg::Matrix<numderiv2_, 1> der2trans_1(true);
+  Core::LinAlg::Matrix<numderiv2_, 1> der2trans_2(true);
 
   if (tauw < 1.0e-10) FOUR_C_THROW("tauw is almost zero");
   if (dens_ < 1.0e-10) FOUR_C_THROW("density is almost zero");
@@ -732,8 +738,9 @@ double DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::enrichment_shape_der(
 /*-----------------------------------------------------------------------------*
  | Enrichment function (modification of Spalding's law)             bk 06/2014 |
  *-----------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-double DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::spaldings_law(double dist, double utau)
+template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
+double Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::spaldings_law(
+    double dist, double utau)
 {
   // watch out, this is not exactly Spalding's law but psi=u_+*k, which saves quite some
   // multiplications
@@ -775,8 +782,8 @@ double DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::spaldings_law(double 
 /*-----------------------------------------------------------------------------*
  | Derivative of enrichment function w.r.t. y+                         bk 06/2014 |
  *-----------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-double DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::der_spaldings_law(
+template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
+double Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::der_spaldings_law(
     double dist, double utau, double psi)
 {
   // derivative with respect to y+!
@@ -793,8 +800,8 @@ double DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::der_spaldings_law(
 /*-----------------------------------------------------------------------------*
  | Second derivative of enrichment function w.r.t. y+               bk 06/2014 |
  *-----------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-double DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::der2_spaldings_law(
+template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
+double Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::der2_spaldings_law(
     double dist, double utau, double psi, double derpsi)
 {
   // derivative with respect to y+!
@@ -810,17 +817,18 @@ double DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::der2_spaldings_law(
 /*-----------------------------------------------------------------------------*
  | Calculate matrix for l2 projection                               bk 07/2014 |
  *-----------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::tau_w_via_gradient(
-    DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    const std::vector<int>& lm, Teuchos::RCP<CORE::MAT::Material>& mat,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2)
+template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
+int Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::tau_w_via_gradient(
+    Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, const std::vector<int>& lm,
+    Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseVector& elevec1,
+    Core::LinAlg::SerialDenseVector& elevec2)
 {
   //----------------------------------------------------------------------------
   //   Extract velocity/pressure from global vectors
   //----------------------------------------------------------------------------
 
-  CORE::LINALG::Matrix<nsd_, nen_> evel(true);
+  Core::LinAlg::Matrix<nsd_, nen_> evel(true);
   my::extract_values_from_global_vector(
       discretization, lm, *my::rotsymmpbc_, &evel, nullptr, "vel");
 
@@ -828,13 +836,13 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::tau_w_via_gradient(
   //                         ELEMENT GEOMETRY
   //----------------------------------------------------------------------------
 
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(
+  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
       ele, my::xyze_);
 
   if (ele->IsAle())
   {
-    CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
-    CORE::LINALG::Matrix<nsd_, nen_> egridv(true);
+    Core::LinAlg::Matrix<nsd_, nen_> edispnp(true);
+    Core::LinAlg::Matrix<nsd_, nen_> egridv(true);
     my::get_grid_disp_vel_ale(discretization, lm, edispnp, egridv);
     evel -= egridv;
   }
@@ -851,14 +859,14 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::tau_w_via_gradient(
     // calculate only for the wall nodes
     if (ewdist_(inode) < 1e-4)
     {
-      CORE::LINALG::Matrix<3, 1> test = CORE::FE::GetNodeCoordinates(inode, distype);
+      Core::LinAlg::Matrix<3, 1> test = Core::FE::GetNodeCoordinates(inode, distype);
       const std::array<double, 3> gp = {test(0, 0), test(1, 0), test(2, 0)};
       const double* gpc = gp.data();
       // evaluate shape functions and derivatives at integration point
       eval_shape_func_and_derivs_at_int_point(gpc, 1.0);
 
       // calculate wall-normal vector
-      CORE::LINALG::Matrix<nsd_, 1> normwall(true);
+      Core::LinAlg::Matrix<nsd_, 1> normwall(true);
       normwall.Multiply(derxy_, ewdist_);
 
       // at certain corner elements, it can happen, that the normal vector calculated at the
@@ -880,19 +888,19 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::tau_w_via_gradient(
       // unit vector
       normwall.Scale(1.0 / normwall.Norm2());
 
-      CORE::LINALG::Matrix<nsd_, nsd_> velderxy(true);
+      Core::LinAlg::Matrix<nsd_, nsd_> velderxy(true);
       velderxy.MultiplyNT(evel, my::derxy_);
 
       // remove normal part
 
       //      normwall.Scale(1.0/normwall.Norm2());
-      CORE::LINALG::Matrix<nsd_, nsd_> velderxywoun(true);
+      Core::LinAlg::Matrix<nsd_, nsd_> velderxywoun(true);
       for (int idim = 0; idim < nsd_; idim++)
         for (int jdim = 0; jdim < nsd_; jdim++)
           velderxywoun(idim, jdim) = velderxy(idim, jdim) * (1.0 - abs(normwall(idim)));
 
       // now transform to derivative w.r.t. n
-      CORE::LINALG::Matrix<nsd_, 1> veldern(true);
+      Core::LinAlg::Matrix<nsd_, 1> veldern(true);
       for (int idim = 0; idim < nsd_; idim++)
         for (int jdim = 0; jdim < nsd_; jdim++)
           veldern(idim) += velderxywoun(idim, jdim) * normwall(jdim);
@@ -911,8 +919,8 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::tau_w_via_gradient(
 /*-----------------------------------------------------------------------------*
  | Calculate stabilization parameter mk                             bk 07/2014 |
  *-----------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-double DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::get_mk()
+template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
+double Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::get_mk()
 {
   if (mk_ < 0.0)
     return calc_mk();
@@ -926,36 +934,36 @@ double DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::get_mk()
 /*-----------------------------------------------------------------------------*
  | Calculate stabilization parameter mk                             bk 07/2014 |
  *-----------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-double DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::calc_mk()
+template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
+double Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::calc_mk()
 {
   if (my::is_higher_order_ele_ == false)
     FOUR_C_THROW("It is essential that the second derivatives exist!");
 
-  CORE::FE::GaussIntegration intpoints(CORE::FE::CellType::hex8, 1);
-  if (distype == CORE::FE::CellType::hex8)
+  Core::FE::GaussIntegration intpoints(Core::FE::CellType::hex8, 1);
+  if (distype == Core::FE::CellType::hex8)
   {
-    CORE::FE::GaussIntegration intpointstmp(cgp_);
+    Core::FE::GaussIntegration intpointstmp(cgp_);
     intpoints = intpointstmp;
   }
-  else if (distype == CORE::FE::CellType::tet4)
+  else if (distype == Core::FE::CellType::tet4)
   {
-    CORE::FE::GaussIntegration intpointsplane(CORE::FE::CellType::tet4, 2 * numgpnorm_ - 1);
+    Core::FE::GaussIntegration intpointsplane(Core::FE::CellType::tet4, 2 * numgpnorm_ - 1);
     intpoints = intpointsplane;
   }
 
-  CORE::LINALG::SerialDenseMatrix elemat_epetra1;
-  CORE::LINALG::SerialDenseMatrix elemat_epetra2;
+  Core::LinAlg::SerialDenseMatrix elemat_epetra1;
+  Core::LinAlg::SerialDenseMatrix elemat_epetra2;
   elemat_epetra1.shape(nen_, nen_);
   elemat_epetra2.shape(nen_, nen_);
-  CORE::LINALG::Matrix<nen_, nen_> Amat(elemat_epetra1.values(), true);
-  CORE::LINALG::Matrix<nen_, nen_> Bmat(elemat_epetra2.values(), true);
+  Core::LinAlg::Matrix<nen_, nen_> Amat(elemat_epetra1.values(), true);
+  Core::LinAlg::Matrix<nen_, nen_> Bmat(elemat_epetra2.values(), true);
 
   double vol = 0.0;
   //------------------------------------------------------------------
   //                       INTEGRATION LOOP
   //------------------------------------------------------------------
-  for (CORE::FE::GaussIntegration::iterator iquad = intpoints.begin(); iquad != intpoints.end();
+  for (Core::FE::GaussIntegration::iterator iquad = intpoints.begin(); iquad != intpoints.end();
        ++iquad)
   {
     // evaluate shape functions and derivatives at integration point
@@ -1001,14 +1009,14 @@ double DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::calc_mk()
     vol += my::fac_;
   }  // gauss loop
 
-  const double maxeigenvalue = CORE::LINALG::GeneralizedEigen(elemat_epetra1, elemat_epetra2);
+  const double maxeigenvalue = Core::LinAlg::GeneralizedEigen(elemat_epetra1, elemat_epetra2);
 
   double h_u = 0.0;
-  if (my::fldpara_->WhichTau() == INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall ||
-      my::fldpara_->WhichTau() == INPAR::FLUID::tau_codina ||
-      my::fldpara_->WhichTau() == INPAR::FLUID::tau_codina_convscaled)
+  if (my::fldpara_->WhichTau() == Inpar::FLUID::tau_franca_barrenechea_valentin_frey_wall ||
+      my::fldpara_->WhichTau() == Inpar::FLUID::tau_codina ||
+      my::fldpara_->WhichTau() == Inpar::FLUID::tau_codina_convscaled)
   {
-    if (!(my::fldpara_->CharEleLengthU() == INPAR::FLUID::volume_equivalent_diameter_u))
+    if (!(my::fldpara_->CharEleLengthU() == Inpar::FLUID::volume_equivalent_diameter_u))
       FOUR_C_THROW("only volume equivalent diameter defined up to now");
 
     // volume equivalent diameter
@@ -1041,20 +1049,20 @@ double DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::calc_mk()
  | Calculate stabilization parameter mk                             bk 07/2014 |
  | (call for action type)                                                      |
  *-----------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::calc_mk(DRT::ELEMENTS::Fluid* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization, const std::vector<int>& lm,
-    Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseVector& elevec1,
-    CORE::LINALG::SerialDenseVector& elevec2)
+template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
+int Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::calc_mk(Discret::ELEMENTS::Fluid* ele,
+    Teuchos::ParameterList& params, Discret::Discretization& discretization,
+    const std::vector<int>& lm, Teuchos::RCP<Core::Mat::Material>& mat,
+    Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2)
 {
   //----------------------------------------------------------------------------
   //                         ELEMENT GEOMETRY
   //----------------------------------------------------------------------------
 
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(
+  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
       ele, my::xyze_);
 
-  CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
+  Core::LinAlg::Matrix<nsd_, nen_> edispnp(true);
   if (ele->IsAle()) get_grid_disp_ale(discretization, lm, edispnp);
 
   elevec1[0] = calc_mk();
@@ -1064,11 +1072,12 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::calc_mk(DRT::ELEMENTS::F
 /*-----------------------------------------------------------------------------*
  | Calculate matrix for l2 projection                               bk 06/2014 |
  *-----------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::x_wall_projection(DRT::ELEMENTS::Fluid* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization, const std::vector<int>& lm,
-    Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1,
-    CORE::LINALG::SerialDenseMatrix& elemat2)
+template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
+int Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::x_wall_projection(
+    Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, const std::vector<int>& lm,
+    Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1,
+    Core::LinAlg::SerialDenseMatrix& elemat2)
 {
   const int numdof = 3;
 
@@ -1076,17 +1085,17 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::x_wall_projection(DRT::E
   //   Extract velocity/pressure from global vectors
   //----------------------------------------------------------------------------
 
-  CORE::LINALG::Matrix<nsd_, nen_> eveln(true);
+  Core::LinAlg::Matrix<nsd_, nen_> eveln(true);
   my::extract_values_from_global_vector(
       discretization, lm, *my::rotsymmpbc_, &eveln, nullptr, "veln");
 
-  CORE::LINALG::Matrix<nsd_, nen_> eaccn(true);
+  Core::LinAlg::Matrix<nsd_, nen_> eaccn(true);
   bool switchonaccn = discretization.HasState("accn");
   if (switchonaccn)
     my::extract_values_from_global_vector(
         discretization, lm, *my::rotsymmpbc_, &eaccn, nullptr, "accn");
 
-  CORE::LINALG::Matrix<nsd_, nen_> evelnp(true);
+  Core::LinAlg::Matrix<nsd_, nen_> evelnp(true);
   bool switchonvelnp = discretization.HasState("velnp");
   if (switchonvelnp)
     my::extract_values_from_global_vector(
@@ -1096,31 +1105,31 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::x_wall_projection(DRT::E
   //                         ELEMENT GEOMETRY
   //----------------------------------------------------------------------------
 
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(
+  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
       ele, my::xyze_);
 
-  CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
+  Core::LinAlg::Matrix<nsd_, nen_> edispnp(true);
   if (ele->IsAle()) get_grid_disp_ale(discretization, lm, edispnp);
 
-  //  CORE::FE::GaussIntegration intpoints(CORE::FE::CellType::line6);
+  //  Core::FE::GaussIntegration intpoints(Core::FE::CellType::line6);
 
   //------------------------------------------------------------------
   //                       INTEGRATION LOOP
   //------------------------------------------------------------------
-  for (CORE::FE::GaussIntegration::iterator iquad = my::intpoints_.begin();
+  for (Core::FE::GaussIntegration::iterator iquad = my::intpoints_.begin();
        iquad != my::intpoints_.end(); ++iquad)
   {
     // evaluate shape functions and derivatives at integration point
     eval_shape_func_and_derivs_at_int_point(iquad.Point(), iquad.Weight());
 
-    CORE::LINALG::Matrix<nen_, 1> newfunct(my::funct_);
+    Core::LinAlg::Matrix<nen_, 1> newfunct(my::funct_);
 
     x_wall_tau_w_inc_back();
 
     // evaluate shape functions and derivatives at integration point
     eval_shape_func_and_derivs_at_int_point(iquad.Point(), iquad.Weight());
 
-    CORE::LINALG::Matrix<nen_, 1> oldfunct(my::funct_);
+    Core::LinAlg::Matrix<nen_, 1> oldfunct(my::funct_);
 
     x_wall_tau_w_inc_forward();
 
@@ -1128,8 +1137,8 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::x_wall_projection(DRT::E
     //                         MASS MATRIX
     //----------------------------------------------------------------------------
     std::array<int, nsd_> idim_nsd_p_idim;
-    CORE::LINALG::Matrix<nsd_ * nsd_, enren_> lin_resM_Du(true);
-    CORE::LINALG::Matrix<enren_ * nsd_, enren_ * nsd_> estif_u(true);
+    Core::LinAlg::Matrix<nsd_ * nsd_, enren_> lin_resM_Du(true);
+    Core::LinAlg::Matrix<enren_ * nsd_, enren_ * nsd_> estif_u(true);
 
     for (int idim = 0; idim < nsd_; ++idim)
     {
@@ -1311,10 +1320,10 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::x_wall_projection(DRT::E
 /*---------------------------------------------------------------------------*
  | get ALE grid displacements only for element                      bk 02/15 |
  *---------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::get_grid_disp_ale(
-    DRT::Discretization& discretization, const std::vector<int>& lm,
-    CORE::LINALG::Matrix<nsd_, nen_>& edispnp)
+template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
+void Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::get_grid_disp_ale(
+    Discret::Discretization& discretization, const std::vector<int>& lm,
+    Core::LinAlg::Matrix<nsd_, nen_>& edispnp)
 {
   my::extract_values_from_global_vector(
       discretization, lm, *my::rotsymmpbc_, &edispnp, nullptr, "dispnp");
@@ -1326,10 +1335,10 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::get_grid_disp_ale(
     for (int sdm = 0; sdm < nsd_; ++sdm) my::xyze_(sdm, inode) += edispnp(sdm, inode * 2);
 }
 
-template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::lin_mesh_motion_3_d(
-    CORE::LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& emesh,
-    const CORE::LINALG::Matrix<nsd_, nen_>& evelaf, const double& press, const double& timefac,
+template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
+void Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::lin_mesh_motion_3_d(
+    Core::LinAlg::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& emesh,
+    const Core::LinAlg::Matrix<nsd_, nen_>& evelaf, const double& press, const double& timefac,
     const double& timefacfac)
 {
   // xGderiv_ = sum(gridx(k,i) * deriv_(j,k), k);
@@ -1343,8 +1352,8 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::lin_mesh_motion_3_d(
 /*-----------------------------------------------------------------------------*
  | Prepare custom (direction-dependent) Gauss rule                  bk 06/2014 |
  *-----------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::prepare_gauss_rule()
+template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
+void Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::prepare_gauss_rule()
 {
   // which is the wall-normal element direction?
   // calculate jacobian at element center
@@ -1354,7 +1363,7 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::prepare_gauss_rule()
 
   // the derivative of the wall distance with respect to the local coordinates
   // shows how the local axes are oriented with respect to the wall-normal vector
-  CORE::LINALG::Matrix<nsd_, 1> normwallrst(true);
+  Core::LinAlg::Matrix<nsd_, 1> normwallrst(true);
   normwallrst.Multiply(deriv_, ewdist_);
   double normwallrstnorm2 = normwallrst.Norm2();
   const double dot1 = abs(normwallrst(0) / normwallrstnorm2);
@@ -1371,18 +1380,18 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::prepare_gauss_rule()
 
   if (minyp > 15.0) numgpnorm_ = numgpnormow_;
 
-  if (distype == CORE::FE::CellType::tet4)
+  if (distype == Core::FE::CellType::tet4)
   {
-    CORE::FE::GaussIntegration intpointsplane(CORE::FE::CellType::tet4, 2 * numgpnorm_ - 1);
+    Core::FE::GaussIntegration intpointsplane(Core::FE::CellType::tet4, 2 * numgpnorm_ - 1);
     my::intpoints_ = intpointsplane;
   }
   else  // hex8
   {
-    cgp_ = Teuchos::rcp(new CORE::FE::CollectedGaussPoints(numgpnorm_ * numgpplane_ * numgpplane_));
+    cgp_ = Teuchos::rcp(new Core::FE::CollectedGaussPoints(numgpnorm_ * numgpplane_ * numgpplane_));
     // get the quad9 gaussrule for the in plane integration
-    CORE::FE::GaussIntegration intpointsplane(CORE::FE::CellType::quad8, 2 * numgpplane_ - 1);
+    Core::FE::GaussIntegration intpointsplane(Core::FE::CellType::quad8, 2 * numgpplane_ - 1);
     // get the quad9 gaussrule for the in normal integration
-    CORE::FE::GaussIntegration intpointsnormal(CORE::FE::CellType::line3, 2 * numgpnorm_ - 1);
+    Core::FE::GaussIntegration intpointsnormal(Core::FE::CellType::line3, 2 * numgpnorm_ - 1);
 
     // 0.9 corresponds to an angle of 25.8 deg
     if (dot1 < 0.90 && dot2 < 0.90 && dot3 < 0.90)
@@ -1390,13 +1399,13 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::prepare_gauss_rule()
        // e.g. in corners
       cgp_->IncreaseReserved(
           (numgpnorm_ * numgpnorm_ * numgpnorm_) - (numgpnorm_ * numgpplane_ * numgpplane_));
-      CORE::FE::GaussIntegration intpointsplane(CORE::FE::CellType::quad8, 2 * numgpnorm_ - 1);
+      Core::FE::GaussIntegration intpointsplane(Core::FE::CellType::quad8, 2 * numgpnorm_ - 1);
       // start loop over integration points in layer
-      for (CORE::FE::GaussIntegration::iterator iquadplane = intpointsplane.begin();
+      for (Core::FE::GaussIntegration::iterator iquadplane = intpointsplane.begin();
            iquadplane != intpointsplane.end(); ++iquadplane)
       {
         // start loop over integration points in layer
-        for (CORE::FE::GaussIntegration::iterator iquadnorm = intpointsnormal.begin();
+        for (Core::FE::GaussIntegration::iterator iquadnorm = intpointsnormal.begin();
              iquadnorm != intpointsnormal.end(); ++iquadnorm)
         {
           cgp_->Append(iquadnorm.Point()[0], iquadplane.Point()[0], iquadplane.Point()[1],
@@ -1407,11 +1416,11 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::prepare_gauss_rule()
     else if (dot1 > dot2 && dot1 > dot3)
     {
       // start loop over integration points in layer
-      for (CORE::FE::GaussIntegration::iterator iquadplane = intpointsplane.begin();
+      for (Core::FE::GaussIntegration::iterator iquadplane = intpointsplane.begin();
            iquadplane != intpointsplane.end(); ++iquadplane)
       {
         // start loop over integration points in layer
-        for (CORE::FE::GaussIntegration::iterator iquadnorm = intpointsnormal.begin();
+        for (Core::FE::GaussIntegration::iterator iquadnorm = intpointsnormal.begin();
              iquadnorm != intpointsnormal.end(); ++iquadnorm)
         {
           cgp_->Append(iquadnorm.Point()[0], iquadplane.Point()[0], iquadplane.Point()[1],
@@ -1422,11 +1431,11 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::prepare_gauss_rule()
     else if (dot2 > dot3)
     {
       // start loop over integration points in layer
-      for (CORE::FE::GaussIntegration::iterator iquadplane = intpointsplane.begin();
+      for (Core::FE::GaussIntegration::iterator iquadplane = intpointsplane.begin();
            iquadplane != intpointsplane.end(); ++iquadplane)
       {
         // start loop over integration points in layer
-        for (CORE::FE::GaussIntegration::iterator iquadnorm = intpointsnormal.begin();
+        for (Core::FE::GaussIntegration::iterator iquadnorm = intpointsnormal.begin();
              iquadnorm != intpointsnormal.end(); ++iquadnorm)
         {
           cgp_->Append(iquadplane.Point()[0], iquadnorm.Point()[0], iquadplane.Point()[1],
@@ -1437,11 +1446,11 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::prepare_gauss_rule()
     else
     {
       // start loop over integration points in layer
-      for (CORE::FE::GaussIntegration::iterator iquadplane = intpointsplane.begin();
+      for (Core::FE::GaussIntegration::iterator iquadplane = intpointsplane.begin();
            iquadplane != intpointsplane.end(); ++iquadplane)
       {
         // start loop over integration points in layer
-        for (CORE::FE::GaussIntegration::iterator iquadnorm = intpointsnormal.begin();
+        for (Core::FE::GaussIntegration::iterator iquadnorm = intpointsnormal.begin();
              iquadnorm != intpointsnormal.end(); ++iquadnorm)
         {
           cgp_->Append(iquadplane.Point()[0], iquadplane.Point()[1], iquadnorm.Point()[0],
@@ -1449,41 +1458,41 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::prepare_gauss_rule()
         }
       }
     }
-    CORE::FE::GaussIntegration grule(cgp_);
+    Core::FE::GaussIntegration grule(cgp_);
     my::intpoints_ = grule;
   }
 
   return;
 }
 
-template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::sysmat(
-    const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf,
-    const CORE::LINALG::Matrix<nsd_, nen_>& eprescpgaf,
-    const CORE::LINALG::Matrix<nsd_, nen_>& ebofon,
-    const CORE::LINALG::Matrix<nsd_, nen_>& eprescpgn,
-    const CORE::LINALG::Matrix<nsd_, nen_>& evelaf, const CORE::LINALG::Matrix<nsd_, nen_>& evelam,
-    const CORE::LINALG::Matrix<nsd_, nen_>& eveln, const CORE::LINALG::Matrix<nsd_, nen_>& evelnp,
-    const CORE::LINALG::Matrix<nsd_, nen_>& fsevelaf, const CORE::LINALG::Matrix<nen_, 1>& fsescaaf,
-    const CORE::LINALG::Matrix<nsd_, nen_>& evel_hat,
-    const CORE::LINALG::Matrix<nsd_ * nsd_, nen_>& ereynoldsstress_hat,
-    const CORE::LINALG::Matrix<nen_, 1>& epreaf, const CORE::LINALG::Matrix<nen_, 1>& epream,
-    const CORE::LINALG::Matrix<nen_, 1>& epren, const CORE::LINALG::Matrix<nen_, 1>& eprenp,
-    const CORE::LINALG::Matrix<nsd_, nen_>& eaccam, const CORE::LINALG::Matrix<nen_, 1>& escaaf,
-    const CORE::LINALG::Matrix<nen_, 1>& escaam, const CORE::LINALG::Matrix<nen_, 1>& escadtam,
-    const CORE::LINALG::Matrix<nsd_, nen_>& eveldtam, const CORE::LINALG::Matrix<nen_, 1>& epredtam,
-    const CORE::LINALG::Matrix<nen_, 1>& escabofoaf, const CORE::LINALG::Matrix<nen_, 1>& escabofon,
-    const CORE::LINALG::Matrix<nsd_, nen_>& emhist, const CORE::LINALG::Matrix<nsd_, nen_>& edispnp,
-    const CORE::LINALG::Matrix<nsd_, nen_>& egridv,
-    CORE::LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& estif,
-    CORE::LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& emesh,
-    CORE::LINALG::Matrix<(nsd_ + 1) * nen_, 1>& eforce, const CORE::LINALG::Matrix<nen_, 1>& eporo,
-    const CORE::LINALG::Matrix<nsd_, 2 * nen_>& egradphi,
-    const CORE::LINALG::Matrix<nen_, 2 * 1>& ecurvature, const double thermpressaf,
+template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
+void Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::sysmat(
+    const Core::LinAlg::Matrix<nsd_, nen_>& ebofoaf,
+    const Core::LinAlg::Matrix<nsd_, nen_>& eprescpgaf,
+    const Core::LinAlg::Matrix<nsd_, nen_>& ebofon,
+    const Core::LinAlg::Matrix<nsd_, nen_>& eprescpgn,
+    const Core::LinAlg::Matrix<nsd_, nen_>& evelaf, const Core::LinAlg::Matrix<nsd_, nen_>& evelam,
+    const Core::LinAlg::Matrix<nsd_, nen_>& eveln, const Core::LinAlg::Matrix<nsd_, nen_>& evelnp,
+    const Core::LinAlg::Matrix<nsd_, nen_>& fsevelaf, const Core::LinAlg::Matrix<nen_, 1>& fsescaaf,
+    const Core::LinAlg::Matrix<nsd_, nen_>& evel_hat,
+    const Core::LinAlg::Matrix<nsd_ * nsd_, nen_>& ereynoldsstress_hat,
+    const Core::LinAlg::Matrix<nen_, 1>& epreaf, const Core::LinAlg::Matrix<nen_, 1>& epream,
+    const Core::LinAlg::Matrix<nen_, 1>& epren, const Core::LinAlg::Matrix<nen_, 1>& eprenp,
+    const Core::LinAlg::Matrix<nsd_, nen_>& eaccam, const Core::LinAlg::Matrix<nen_, 1>& escaaf,
+    const Core::LinAlg::Matrix<nen_, 1>& escaam, const Core::LinAlg::Matrix<nen_, 1>& escadtam,
+    const Core::LinAlg::Matrix<nsd_, nen_>& eveldtam, const Core::LinAlg::Matrix<nen_, 1>& epredtam,
+    const Core::LinAlg::Matrix<nen_, 1>& escabofoaf, const Core::LinAlg::Matrix<nen_, 1>& escabofon,
+    const Core::LinAlg::Matrix<nsd_, nen_>& emhist, const Core::LinAlg::Matrix<nsd_, nen_>& edispnp,
+    const Core::LinAlg::Matrix<nsd_, nen_>& egridv,
+    Core::LinAlg::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& estif,
+    Core::LinAlg::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& emesh,
+    Core::LinAlg::Matrix<(nsd_ + 1) * nen_, 1>& eforce, const Core::LinAlg::Matrix<nen_, 1>& eporo,
+    const Core::LinAlg::Matrix<nsd_, 2 * nen_>& egradphi,
+    const Core::LinAlg::Matrix<nen_, 2 * 1>& ecurvature, const double thermpressaf,
     const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
-    Teuchos::RCP<const CORE::MAT::Material> material, double& Cs_delta_sq, double& Ci_delta_sq,
+    Teuchos::RCP<const Core::Mat::Material> material, double& Cs_delta_sq, double& Ci_delta_sq,
     double& Cv, bool isale, double* saccn, double* sveln, double* svelnp,
-    const CORE::FE::GaussIntegration& intpoints)
+    const Core::FE::GaussIntegration& intpoints)
 {
   my::sysmat(ebofoaf, eprescpgaf, ebofon, eprescpgn, evelaf, evelam, eveln, evelnp, fsevelaf,
       fsescaaf, evel_hat, ereynoldsstress_hat, epreaf, epream, epren, eprenp, eaccam, escaaf,
@@ -1495,9 +1504,9 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::sysmat(
   return;
 }
 
-template class DRT::ELEMENTS::FluidEleCalcXWall<CORE::FE::CellType::tet4,
-    DRT::ELEMENTS::Fluid::xwall>;
-template class DRT::ELEMENTS::FluidEleCalcXWall<CORE::FE::CellType::hex8,
-    DRT::ELEMENTS::Fluid::xwall>;
+template class Discret::ELEMENTS::FluidEleCalcXWall<Core::FE::CellType::tet4,
+    Discret::ELEMENTS::Fluid::xwall>;
+template class Discret::ELEMENTS::FluidEleCalcXWall<Core::FE::CellType::hex8,
+    Discret::ELEMENTS::Fluid::xwall>;
 
 FOUR_C_NAMESPACE_CLOSE

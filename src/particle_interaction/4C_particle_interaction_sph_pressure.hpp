@@ -30,16 +30,16 @@ namespace PARTICLEENGINE
   class ParticleContainerBundle;
 }  // namespace PARTICLEENGINE
 
-namespace PARTICLEINTERACTION
+namespace ParticleInteraction
 {
   class MaterialHandler;
   class SPHEquationOfStateBundle;
-}  // namespace PARTICLEINTERACTION
+}  // namespace ParticleInteraction
 
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
  *---------------------------------------------------------------------------*/
-namespace PARTICLEINTERACTION
+namespace ParticleInteraction
 {
   class SPHPressure final
   {
@@ -53,8 +53,8 @@ namespace PARTICLEINTERACTION
     //! setup pressure handler
     void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-        const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
-        const std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle);
+        const std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial,
+        const std::shared_ptr<ParticleInteraction::SPHEquationOfStateBundle> equationofstatebundle);
 
     //! compute pressure using equation of state and density
     void ComputePressure() const;
@@ -67,10 +67,10 @@ namespace PARTICLEINTERACTION
     PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle_;
 
     //! particle material handler
-    std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial_;
+    std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial_;
 
     //! equation of state bundle
-    std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle_;
+    std::shared_ptr<ParticleInteraction::SPHEquationOfStateBundle> equationofstatebundle_;
 
     //! pressure of ghosted particles to refresh
     PARTICLEENGINE::StatesOfTypesToRefresh pressuretorefresh_;
@@ -79,7 +79,7 @@ namespace PARTICLEINTERACTION
     std::set<PARTICLEENGINE::TypeEnum> fluidtypes_;
   };
 
-}  // namespace PARTICLEINTERACTION
+}  // namespace ParticleInteraction
 
 /*---------------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

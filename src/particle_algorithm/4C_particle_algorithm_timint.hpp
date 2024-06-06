@@ -36,7 +36,7 @@ namespace PARTICLEENGINE
   class ParticleEngineInterface;
 }
 
-namespace PARTICLERIGIDBODY
+namespace ParticleRigidBody
 {
   class RigidBodyHandlerInterface;
 }
@@ -87,7 +87,7 @@ namespace PARTICLEALGORITHM
      */
     virtual void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-        const std::shared_ptr<PARTICLERIGIDBODY::RigidBodyHandlerInterface>
+        const std::shared_ptr<ParticleRigidBody::RigidBodyHandlerInterface>
             particlerigidbodyinterface);
 
     /*!
@@ -161,7 +161,7 @@ namespace PARTICLEALGORITHM
     std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface_;
 
     //! interface to rigid body handler
-    std::shared_ptr<PARTICLERIGIDBODY::RigidBodyHandlerInterface> particlerigidbodyinterface_;
+    std::shared_ptr<ParticleRigidBody::RigidBodyHandlerInterface> particlerigidbodyinterface_;
 
     //! dirichlet boundary condition handler
     std::unique_ptr<PARTICLEALGORITHM::DirichletBoundaryConditionHandler>
@@ -211,7 +211,7 @@ namespace PARTICLEALGORITHM
      */
     void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-        const std::shared_ptr<PARTICLERIGIDBODY::RigidBodyHandlerInterface>
+        const std::shared_ptr<ParticleRigidBody::RigidBodyHandlerInterface>
             particlerigidbodyinterface) override;
 
     /*!

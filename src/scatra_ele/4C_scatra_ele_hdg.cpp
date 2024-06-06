@@ -29,19 +29,19 @@ FOUR_C_NAMESPACE_OPEN
 
 
 // initialize static variable
-DRT::ELEMENTS::ScaTraHDGType DRT::ELEMENTS::ScaTraHDGType::instance_;
-DRT::ELEMENTS::ScaTraHDGBoundaryType DRT::ELEMENTS::ScaTraHDGBoundaryType::instance_;
-DRT::ELEMENTS::ScaTraHDGIntFaceType DRT::ELEMENTS::ScaTraHDGIntFaceType::instance_;
+Discret::ELEMENTS::ScaTraHDGType Discret::ELEMENTS::ScaTraHDGType::instance_;
+Discret::ELEMENTS::ScaTraHDGBoundaryType Discret::ELEMENTS::ScaTraHDGBoundaryType::instance_;
+Discret::ELEMENTS::ScaTraHDGIntFaceType Discret::ELEMENTS::ScaTraHDGIntFaceType::instance_;
 
 
-DRT::ELEMENTS::ScaTraHDGType& DRT::ELEMENTS::ScaTraHDGType::Instance() { return instance_; }
+Discret::ELEMENTS::ScaTraHDGType& Discret::ELEMENTS::ScaTraHDGType::Instance() { return instance_; }
 
-DRT::ELEMENTS::ScaTraHDGBoundaryType& DRT::ELEMENTS::ScaTraHDGBoundaryType::Instance()
+Discret::ELEMENTS::ScaTraHDGBoundaryType& Discret::ELEMENTS::ScaTraHDGBoundaryType::Instance()
 {
   return instance_;
 }
 
-DRT::ELEMENTS::ScaTraHDGIntFaceType& DRT::ELEMENTS::ScaTraHDGIntFaceType::Instance()
+Discret::ELEMENTS::ScaTraHDGIntFaceType& Discret::ELEMENTS::ScaTraHDGIntFaceType::Instance()
 {
   return instance_;
 }
@@ -50,9 +50,10 @@ DRT::ELEMENTS::ScaTraHDGIntFaceType& DRT::ELEMENTS::ScaTraHDGIntFaceType::Instan
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::COMM::ParObject* DRT::ELEMENTS::ScaTraHDGType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Discret::ELEMENTS::ScaTraHDGType::Create(
+    const std::vector<char>& data)
 {
-  DRT::ELEMENTS::ScaTraHDG* object = new DRT::ELEMENTS::ScaTraHDG(-1, -1);
+  Discret::ELEMENTS::ScaTraHDG* object = new Discret::ELEMENTS::ScaTraHDG(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -61,12 +62,12 @@ CORE::COMM::ParObject* DRT::ELEMENTS::ScaTraHDGType::Create(const std::vector<ch
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::ScaTraHDGType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ScaTraHDGType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "TRANSPHDG")
   {
-    return Teuchos::rcp(new DRT::ELEMENTS::ScaTraHDG(id, owner));
+    return Teuchos::rcp(new Discret::ELEMENTS::ScaTraHDG(id, owner));
   }
   return Teuchos::null;
 }
@@ -75,24 +76,24 @@ Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::ScaTraHDGType::Create(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::ScaTraHDGType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ScaTraHDGType::Create(
     const int id, const int owner)
 {
-  return Teuchos::rcp(new DRT::ELEMENTS::ScaTraHDG(id, owner));
+  return Teuchos::rcp(new Discret::ELEMENTS::ScaTraHDG(id, owner));
 }
 
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraHDGType::nodal_block_information(
-    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+void Discret::ELEMENTS::ScaTraHDGType::nodal_block_information(
+    Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 1;  // Only one scalar (so far) is the unknown that is solved for
   dimns = numdf;
   nv = numdf;
 
-  if (GLOBAL::Problem::Instance(0)->GetProblemType() == CORE::ProblemType::elch)
+  if (Global::Problem::Instance(0)->GetProblemType() == Core::ProblemType::elch)
   {
     if (nv > 1)  // only when we have more than 1 dof per node!
     {
@@ -106,10 +107,10 @@ void DRT::ELEMENTS::ScaTraHDGType::nodal_block_information(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::ScaTraHDGType::ComputeNullSpace(
-    CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
+Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::ScaTraHDGType::ComputeNullSpace(
+    Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  CORE::LINALG::SerialDenseMatrix nullspace;
+  Core::LinAlg::SerialDenseMatrix nullspace;
   FOUR_C_THROW("method ComputeNullSpace not implemented right now!");
   return nullspace;
 }
@@ -118,19 +119,19 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::ScaTraHDGType::ComputeNullSpace(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraHDGType ::setup_element_definition(
-    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+void Discret::ELEMENTS::ScaTraHDGType ::setup_element_definition(
+    std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
-  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_scatra;
+  std::map<std::string, std::map<std::string, Input::LineDefinition>> definitions_scatra;
   TransportType::setup_element_definition(definitions_scatra);
 
-  std::map<std::string, INPUT::LineDefinition>& defs_scatra = definitions_scatra["TRANSP"];
+  std::map<std::string, Input::LineDefinition>& defs_scatra = definitions_scatra["TRANSP"];
 
-  std::map<std::string, INPUT::LineDefinition>& defs = definitions["TRANSPHDG"];
+  std::map<std::string, Input::LineDefinition>& defs = definitions["TRANSPHDG"];
 
   for (const auto& [key, scatra_line_def] : defs_scatra)
   {
-    defs[key] = INPUT::LineDefinition::Builder(scatra_line_def)
+    defs[key] = Input::LineDefinition::Builder(scatra_line_def)
                     .AddNamedInt("DEG")
                     .AddOptionalNamedInt("SPC")
                     .Build();
@@ -143,7 +144,7 @@ void DRT::ELEMENTS::ScaTraHDGType ::setup_element_definition(
  |  ctor (public)                                         hoermann 09/15|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ScaTraHDG::ScaTraHDG(int id, int owner)
+Discret::ELEMENTS::ScaTraHDG::ScaTraHDG(int id, int owner)
     : Transport(id, owner),
       diff1_(0.0),
       ndofs_(0),
@@ -162,7 +163,7 @@ DRT::ELEMENTS::ScaTraHDG::ScaTraHDG(int id, int owner)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                    hoermann 09/15|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ScaTraHDG::ScaTraHDG(const DRT::ELEMENTS::ScaTraHDG& old)
+Discret::ELEMENTS::ScaTraHDG::ScaTraHDG(const Discret::ELEMENTS::ScaTraHDG& old)
     : Transport(old),
       diff1_(0.0),
       ndofs_(0),
@@ -182,9 +183,9 @@ DRT::ELEMENTS::ScaTraHDG::ScaTraHDG(const DRT::ELEMENTS::ScaTraHDG& old)
  |  Deep copy this instance of ScaTra and return pointer to it (public) |
  |                                                       hoermann 09/15 |
  *----------------------------------------------------------------------*/
-CORE::Elements::Element* DRT::ELEMENTS::ScaTraHDG::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::ScaTraHDG::Clone() const
 {
-  DRT::ELEMENTS::ScaTraHDG* newelement = new DRT::ELEMENTS::ScaTraHDG(*this);
+  Discret::ELEMENTS::ScaTraHDG* newelement = new Discret::ELEMENTS::ScaTraHDG(*this);
   return newelement;
 }
 
@@ -193,9 +194,9 @@ CORE::Elements::Element* DRT::ELEMENTS::ScaTraHDG::Clone() const
 /*----------------------------------------------------------------------*
  |  Pack data (public)                                   hoermann 09/15 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraHDG::Pack(CORE::COMM::PackBuffer& data) const
+void Discret::ELEMENTS::ScaTraHDG::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -218,11 +219,11 @@ void DRT::ELEMENTS::ScaTraHDG::Pack(CORE::COMM::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  Unpack data (public)                                 hoermann 09/15 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraHDG::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::ScaTraHDG::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -245,7 +246,7 @@ void DRT::ELEMENTS::ScaTraHDG::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  pack_material data (public)                           hoermann 12/16 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraHDG::pack_material(CORE::COMM::PackBuffer& data) const
+void Discret::ELEMENTS::ScaTraHDG::pack_material(Core::Communication::PackBuffer& data) const
 {
   // add material
   if (Material() != Teuchos::null)
@@ -260,13 +261,13 @@ void DRT::ELEMENTS::ScaTraHDG::pack_material(CORE::COMM::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  UnPackMaterial data (public)                         hoermann 12/16 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraHDG::unpack_material(const std::vector<char>& data) const
+void Discret::ELEMENTS::ScaTraHDG::unpack_material(const std::vector<char>& data) const
 {
-  Teuchos::RCP<CORE::MAT::Material> mat = Material();
-  if (mat->MaterialType() == CORE::Materials::m_myocard)
+  Teuchos::RCP<Core::Mat::Material> mat = Material();
+  if (mat->MaterialType() == Core::Materials::m_myocard)
   {
     // Note: We need to do a dynamic_cast here
-    Teuchos::RCP<MAT::Myocard> actmat = Teuchos::rcp_dynamic_cast<MAT::Myocard>(mat);
+    Teuchos::RCP<Mat::Myocard> actmat = Teuchos::rcp_dynamic_cast<Mat::Myocard>(mat);
     actmat->unpack_material(data);
   }
   else
@@ -276,22 +277,22 @@ void DRT::ELEMENTS::ScaTraHDG::unpack_material(const std::vector<char>& data) co
 /*----------------------------------------------------------------------*
  |  init the element                                     hoermann 12/16 |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::ScaTraHDG::initialize()
+int Discret::ELEMENTS::ScaTraHDG::initialize()
 {
-  Teuchos::RCP<CORE::MAT::Material> mat = Material();
+  Teuchos::RCP<Core::Mat::Material> mat = Material();
   // for now, we only need to do something in case of reactions (for the initialization of functions
   // in case of reactions by function)
-  if (mat->MaterialType() == CORE::Materials::m_myocard)
+  if (mat->MaterialType() == Core::Materials::m_myocard)
   {
     int gp;
     // Note: We need to do a dynamic_cast here
-    Teuchos::RCP<MAT::Myocard> actmat = Teuchos::rcp_dynamic_cast<MAT::Myocard>(mat);
+    Teuchos::RCP<Mat::Myocard> actmat = Teuchos::rcp_dynamic_cast<Mat::Myocard>(mat);
     int deg = 0;
     if (degree_old_ == 1)
       deg = 4 * degree_old_;
     else
       deg = 3 * degree_old_;
-    if (this->Shape() == CORE::FE::CellType::tet4 or this->Shape() == CORE::FE::CellType::tet10)
+    if (this->Shape() == Core::FE::CellType::tet4 or this->Shape() == Core::FE::CellType::tet10)
     {
       switch (deg)
       {
@@ -327,8 +328,8 @@ int DRT::ELEMENTS::ScaTraHDG::initialize()
     }
     else
     {
-      Teuchos::RCP<CORE::FE::GaussPoints> quadrature_(
-          CORE::FE::GaussPointCache::Instance().Create(this->Shape(), deg));
+      Teuchos::RCP<Core::FE::GaussPoints> quadrature_(
+          Core::FE::GaussPointCache::Instance().Create(this->Shape(), deg));
       gp = quadrature_->NumPoints();
     }
     if (actmat->Parameter() != nullptr and
@@ -345,8 +346,8 @@ int DRT::ELEMENTS::ScaTraHDG::initialize()
 /*----------------------------------------------------------------------*
  |  Read element from input (public)                     hoermann 09/15 |
  *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::ScaTraHDG::ReadElement(
-    const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
+bool Discret::ELEMENTS::ScaTraHDG::ReadElement(
+    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
   bool success = Transport::ReadElement(eletype, distype, linedef);
   int degree;
@@ -369,40 +370,41 @@ bool DRT::ELEMENTS::ScaTraHDG::ReadElement(
 /*----------------------------------------------------------------------*
  |  get vector of lines              (public)             hoermann 09/15|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::ScaTraHDG::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::ScaTraHDG::Lines()
 {
-  return CORE::COMM::GetElementLines<ScaTraHDGBoundary, ScaTraHDG>(*this);
+  return Core::Communication::GetElementLines<ScaTraHDGBoundary, ScaTraHDG>(*this);
 }
 
 
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                       hoermann 09/15|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::ScaTraHDG::Surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::ScaTraHDG::Surfaces()
 {
-  return CORE::COMM::GetElementSurfaces<ScaTraHDGBoundary>(*this);
+  return Core::Communication::GetElementSurfaces<ScaTraHDGBoundary>(*this);
 }
 
 
 /*----------------------------------------------------------------------*
  |  get face element (public)                             hoermann 09/15|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::ScaTraHDG::CreateFaceElement(
-    CORE::Elements::Element* parent_slave,  //!< parent slave fluid3 element
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ScaTraHDG::CreateFaceElement(
+    Core::Elements::Element* parent_slave,  //!< parent slave fluid3 element
     int nnode,                              //!< number of surface nodes
     const int* nodeids,                     //!< node ids of surface element
-    CORE::Nodes::Node** nodes,              //!< nodes of surface element
+    Core::Nodes::Node** nodes,              //!< nodes of surface element
     const int lsurface_master,              //!< local surface number w.r.t master parent element
     const int lsurface_slave,               //!< local surface number w.r.t slave parent element
     const std::vector<int>& localtrafomap   //! local trafo map
 )
 {
   // dynamic cast for slave parent element
-  DRT::ELEMENTS::ScaTraHDG* slave_pele = dynamic_cast<DRT::ELEMENTS::ScaTraHDG*>(parent_slave);
+  Discret::ELEMENTS::ScaTraHDG* slave_pele =
+      dynamic_cast<Discret::ELEMENTS::ScaTraHDG*>(parent_slave);
 
 
   // insert both parent elements
-  return CORE::COMM::ElementIntFaceFactory<ScaTraHDGIntFace, ScaTraHDG>(
+  return Core::Communication::ElementIntFaceFactory<ScaTraHDGIntFace, ScaTraHDG>(
       -1,               //!< internal face element id
       -1,               //!< owner of internal face element
       nnode,            //!< number of surface nodes
@@ -420,11 +422,11 @@ Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::ScaTraHDG::CreateFaceElemen
 /*---------------------------------------------------------------------*
 |  evaluate the element (public)                         hoermann 09/15|
 *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::ScaTraHDG::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, LocationArray& la,
-    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
-    CORE::LINALG::SerialDenseVector& elevec3)
+int Discret::ELEMENTS::ScaTraHDG::Evaluate(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, LocationArray& la,
+    Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
+    Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
+    Core::LinAlg::SerialDenseVector& elevec3)
 {
   // we assume here, that numdofpernode is equal for every node within
   // the discretization and does not change during the computations
@@ -432,13 +434,13 @@ int DRT::ELEMENTS::ScaTraHDG::Evaluate(Teuchos::ParameterList& params,
   int numscal = numdofpernode;
 
   // get the action required
-  SCATRA::Action act;
+  ScaTra::Action act;
   if (params.get<bool>("hdg_action", false))
   {
-    switch (Teuchos::getIntegralValue<DRT::HDGAction>(params, "action"))
+    switch (Teuchos::getIntegralValue<Discret::HDGAction>(params, "action"))
     {
-      case DRT::HDGAction::project_dirich_field:
-        act = SCATRA::Action::project_dirich_field;
+      case Discret::HDGAction::project_dirich_field:
+        act = ScaTra::Action::project_dirich_field;
         break;
       default:
         FOUR_C_THROW("HDG Action type not supported");
@@ -446,11 +448,11 @@ int DRT::ELEMENTS::ScaTraHDG::Evaluate(Teuchos::ParameterList& params,
   }
   else
   {
-    act = Teuchos::getIntegralValue<SCATRA::Action>(params, "action");
+    act = Teuchos::getIntegralValue<ScaTra::Action>(params, "action");
   }
 
   // get material
-  Teuchos::RCP<CORE::MAT::Material> mat = Material();
+  Teuchos::RCP<Core::Mat::Material> mat = Material();
 
   // switch between different physical types as used below
   switch (act)
@@ -459,41 +461,41 @@ int DRT::ELEMENTS::ScaTraHDG::Evaluate(Teuchos::ParameterList& params,
     // standard implementation enabling time-integration schemes such as
     // one-step-theta, BDF2, and generalized-alpha (n+alpha_F and n+1)
     //-----------------------------------------------------------------------
-    case SCATRA::Action::calc_mat_and_rhs:
+    case ScaTra::Action::calc_mat_and_rhs:
     {
-      return DRT::ELEMENTS::ScaTraFactory::ProvideImplHDG(
+      return Discret::ELEMENTS::ScaTraFactory::ProvideImplHDG(
           Shape(), ImplType(), numdofpernode, numscal, discretization.Name())
           ->Evaluate(this, params, discretization, la, elemat1, elemat2, elevec1, elevec2, elevec3);
     }
     break;
 
-    case SCATRA::Action::interpolate_hdg_to_node:
-    case SCATRA::Action::update_interior_variables:
-    case SCATRA::Action::project_dirich_field:
-    case SCATRA::Action::project_material_field:
-    case SCATRA::Action::project_neumann_field:
-    case SCATRA::Action::set_initial_field:
-    case SCATRA::Action::time_update_material:
-    case SCATRA::Action::get_material_internal_state:
-    case SCATRA::Action::set_material_internal_state:
-    case SCATRA::Action::calc_mat_initial:
-    case SCATRA::Action::project_field:
-    case SCATRA::Action::calc_padaptivity:
-    case SCATRA::Action::calc_error:
+    case ScaTra::Action::interpolate_hdg_to_node:
+    case ScaTra::Action::update_interior_variables:
+    case ScaTra::Action::project_dirich_field:
+    case ScaTra::Action::project_material_field:
+    case ScaTra::Action::project_neumann_field:
+    case ScaTra::Action::set_initial_field:
+    case ScaTra::Action::time_update_material:
+    case ScaTra::Action::get_material_internal_state:
+    case ScaTra::Action::set_material_internal_state:
+    case ScaTra::Action::calc_mat_initial:
+    case ScaTra::Action::project_field:
+    case ScaTra::Action::calc_padaptivity:
+    case ScaTra::Action::calc_error:
 
     {
-      return DRT::ELEMENTS::ScaTraFactory::ProvideImplHDG(
+      return Discret::ELEMENTS::ScaTraFactory::ProvideImplHDG(
           Shape(), ImplType(), numdofpernode, numscal, discretization.Name())
           ->EvaluateService(
               this, params, discretization, la, elemat1, elemat2, elevec1, elevec2, elevec3);
       break;
     }
 
-    case SCATRA::Action::calc_initial_time_deriv:
-    case SCATRA::Action::set_general_scatra_parameter:
-    case SCATRA::Action::set_nodeset_parameter:
-    case SCATRA::Action::set_time_parameter:
-    case SCATRA::Action::set_turbulence_scatra_parameter:
+    case ScaTra::Action::calc_initial_time_deriv:
+    case ScaTra::Action::set_general_scatra_parameter:
+    case ScaTra::Action::set_nodeset_parameter:
+    case ScaTra::Action::set_time_parameter:
+    case ScaTra::Action::set_turbulence_scatra_parameter:
       break;
 
     default:
@@ -502,13 +504,13 @@ int DRT::ELEMENTS::ScaTraHDG::Evaluate(Teuchos::ParameterList& params,
   }  // switch(action)
 
   return 0;
-}  // DRT::ELEMENTS::ScaTra::Evaluate
+}  // Discret::ELEMENTS::ScaTra::Evaluate
 
 
 /*----------------------------------------------------------------------*
  |  print this element (public)                           hoermann 09/15|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraHDG::Print(std::ostream& os) const
+void Discret::ELEMENTS::ScaTraHDG::Print(std::ostream& os) const
 {
   os << "ScaTraHDG ";
   Element::Print(os);
@@ -520,7 +522,7 @@ void DRT::ELEMENTS::ScaTraHDG::Print(std::ostream& os) const
 
 
 
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::ScaTraHDGBoundaryType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ScaTraHDGBoundaryType::Create(
     const int id, const int owner)
 {
   return Teuchos::null;
@@ -531,10 +533,10 @@ Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::ScaTraHDGBoundaryType::Crea
  |  ctor (public)                                        hoermann 09/15 |
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ScaTraHDGBoundary::ScaTraHDGBoundary(int id, int owner, int nnode,
-    const int* nodeids, CORE::Nodes::Node** nodes, CORE::Elements::Element* parent,
+Discret::ELEMENTS::ScaTraHDGBoundary::ScaTraHDGBoundary(int id, int owner, int nnode,
+    const int* nodeids, Core::Nodes::Node** nodes, Core::Elements::Element* parent,
     const int lsurface)
-    : CORE::Elements::FaceElement(id, owner)
+    : Core::Elements::FaceElement(id, owner)
 {
   set_parent_master_element(parent, lsurface);
   SetNodeIds(nnode, nodeids);
@@ -546,8 +548,9 @@ DRT::ELEMENTS::ScaTraHDGBoundary::ScaTraHDGBoundary(int id, int owner, int nnode
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                   hoermann 09/15 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ScaTraHDGBoundary::ScaTraHDGBoundary(const DRT::ELEMENTS::ScaTraHDGBoundary& old)
-    : CORE::Elements::FaceElement(old)
+Discret::ELEMENTS::ScaTraHDGBoundary::ScaTraHDGBoundary(
+    const Discret::ELEMENTS::ScaTraHDGBoundary& old)
+    : Core::Elements::FaceElement(old)
 {
   return;
 }
@@ -557,9 +560,10 @@ DRT::ELEMENTS::ScaTraHDGBoundary::ScaTraHDGBoundary(const DRT::ELEMENTS::ScaTraH
  |  Deep copy this instance return pointer to it               (public) |
  |                                                       hoermann 09/15 |
  *----------------------------------------------------------------------*/
-CORE::Elements::Element* DRT::ELEMENTS::ScaTraHDGBoundary::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::ScaTraHDGBoundary::Clone() const
 {
-  DRT::ELEMENTS::ScaTraHDGBoundary* newelement = new DRT::ELEMENTS::ScaTraHDGBoundary(*this);
+  Discret::ELEMENTS::ScaTraHDGBoundary* newelement =
+      new Discret::ELEMENTS::ScaTraHDGBoundary(*this);
   return newelement;
 }
 
@@ -568,9 +572,9 @@ CORE::Elements::Element* DRT::ELEMENTS::ScaTraHDGBoundary::Clone() const
  |                                                             (public) |
  |                                                        hoermann 09/15|
  *----------------------------------------------------------------------*/
-CORE::FE::CellType DRT::ELEMENTS::ScaTraHDGBoundary::Shape() const
+Core::FE::CellType Discret::ELEMENTS::ScaTraHDGBoundary::Shape() const
 {
-  return CORE::FE::getShapeOfBoundaryElement(num_node(), ParentMasterElement()->Shape());
+  return Core::FE::getShapeOfBoundaryElement(num_node(), ParentMasterElement()->Shape());
 }
 
 
@@ -578,9 +582,9 @@ CORE::FE::CellType DRT::ELEMENTS::ScaTraHDGBoundary::Shape() const
  |  Pack data                                                  (public) |
  |                                                        hoermann 09/15|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraHDGBoundary::Pack(CORE::COMM::PackBuffer& data) const
+void Discret::ELEMENTS::ScaTraHDGBoundary::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -600,11 +604,11 @@ void DRT::ELEMENTS::ScaTraHDGBoundary::Pack(CORE::COMM::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                        hoermann 09/15|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraHDGBoundary::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::ScaTraHDGBoundary::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -612,7 +616,7 @@ void DRT::ELEMENTS::ScaTraHDGBoundary::Unpack(const std::vector<char>& data)
   Element::Unpack(basedata);
 
   // distype
-  // distype_ = static_cast<CORE::FE::CellType>( ExtractInt(position,data) );
+  // distype_ = static_cast<Core::FE::CellType>( ExtractInt(position,data) );
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
@@ -625,7 +629,7 @@ void DRT::ELEMENTS::ScaTraHDGBoundary::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                          hoermann 09/15 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraHDGBoundary::Print(std::ostream& os) const
+void Discret::ELEMENTS::ScaTraHDGBoundary::Print(std::ostream& os) const
 {
   os << "ScaTraHDGBoundary ";
   Element::Print(os);
@@ -636,7 +640,7 @@ void DRT::ELEMENTS::ScaTraHDGBoundary::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                         hoermann 09/15 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::ScaTraHDGBoundary::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::ScaTraHDGBoundary::Lines()
 {
   FOUR_C_THROW("Lines of ScaTraHDGBoundary not implemented");
 }
@@ -645,7 +649,7 @@ std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::ScaTraHDGBound
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                         hoermann 09/15 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::ScaTraHDGBoundary::Surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::ScaTraHDGBoundary::Surfaces()
 {
   FOUR_C_THROW("Surfaces of ScaTraHDGBoundary not implemented");
 }
@@ -654,11 +658,11 @@ std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::ScaTraHDGBound
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                        hoermann 09/15 |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::ScaTraHDGBoundary::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
-    CORE::LINALG::SerialDenseVector& elevec3)
+int Discret::ELEMENTS::ScaTraHDGBoundary::Evaluate(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
+    Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
+    Core::LinAlg::SerialDenseVector& elevec3)
 {
   return 0;
 }
@@ -667,22 +671,22 @@ int DRT::ELEMENTS::ScaTraHDGBoundary::Evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  Integrate a surface/line Neumann boundary condition  hoermann 09/15 |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::ScaTraHDGBoundary::evaluate_neumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
-    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
-    CORE::LINALG::SerialDenseMatrix* elemat1)
+int Discret::ELEMENTS::ScaTraHDGBoundary::evaluate_neumann(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
+    Core::LinAlg::SerialDenseMatrix* elemat1)
 
 {
   // add Neumann boundary condition to parameter list
-  params.set<CORE::Conditions::Condition*>("condition", &condition);
+  params.set<Core::Conditions::Condition*>("condition", &condition);
 
   // build location array from location vector
   //(this a little ugly. one could fix this by introducing a evaluate_neumann() method
-  // with LocationArray as input in the CORE::Elements::Element ...)
+  // with LocationArray as input in the Core::Elements::Element ...)
   LocationArray la(1);
   la[0].lm_ = lm;
 
-  DRT::ELEMENTS::ScaTraHDGBoundaryImplInterface::Impl(this)->evaluate_neumann(
+  Discret::ELEMENTS::ScaTraHDGBoundaryImplInterface::Impl(this)->evaluate_neumann(
       this, params, discretization, la, *elemat1, elevec1);
 
   return 0;
@@ -691,8 +695,9 @@ int DRT::ELEMENTS::ScaTraHDGBoundary::evaluate_neumann(Teuchos::ParameterList& p
 /*----------------------------------------------------------------------*
  |  Get degrees of freedom used by this element (public) hoermann 09/15 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraHDGBoundary::LocationVector(const Discretization& dis, LocationArray& la,
-    bool doDirichlet, const std::string& condstring, Teuchos::ParameterList& params) const
+void Discret::ELEMENTS::ScaTraHDGBoundary::LocationVector(const Discretization& dis,
+    LocationArray& la, bool doDirichlet, const std::string& condstring,
+    Teuchos::ParameterList& params) const
 {
   // we have to do it this way
   ParentMasterElement()->LocationVector(dis, la, false);
@@ -703,7 +708,7 @@ void DRT::ELEMENTS::ScaTraHDGBoundary::LocationVector(const Discretization& dis,
 /*----------------------------------------------------------------------*
  |  Get degrees of freedom used by this element (public) hoermann 09/15 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraHDGBoundary::LocationVector(const Discretization& dis,
+void Discret::ELEMENTS::ScaTraHDGBoundary::LocationVector(const Discretization& dis,
     std::vector<int>& lm, std::vector<int>& lmowner, std::vector<int>& lmstride) const
 {
   // we have to do it this way
@@ -712,7 +717,7 @@ void DRT::ELEMENTS::ScaTraHDGBoundary::LocationVector(const Discretization& dis,
 }
 
 
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::ScaTraHDGIntFaceType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ScaTraHDGIntFaceType::Create(
     const int id, const int owner)
 {
   return Teuchos::null;
@@ -722,13 +727,13 @@ Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::ScaTraHDGIntFaceType::Creat
 /*----------------------------------------------------------------------*
  |  ctor (public)                                         hoermann 09/15|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ScaTraHDGIntFace::ScaTraHDGIntFace(int id,  ///< element id
+Discret::ELEMENTS::ScaTraHDGIntFace::ScaTraHDGIntFace(int id,  ///< element id
     int owner,                  ///< owner (= owner of parent element with smallest gid)
     int nnode,                  ///< number of nodes
     const int* nodeids,         ///< node ids
-    CORE::Nodes::Node** nodes,  ///< nodes of surface
-    DRT::ELEMENTS::ScaTraHDG* parent_master,  ///< master parent element
-    DRT::ELEMENTS::ScaTraHDG* parent_slave,   ///< slave parent element
+    Core::Nodes::Node** nodes,  ///< nodes of surface
+    Discret::ELEMENTS::ScaTraHDG* parent_master,  ///< master parent element
+    Discret::ELEMENTS::ScaTraHDG* parent_slave,   ///< slave parent element
     const int lsurface_master,  ///< local surface index with respect to master parent element
     const int lsurface_slave,   ///< local surface index with respect to slave parent element
     const std::vector<int>
@@ -736,7 +741,7 @@ DRT::ELEMENTS::ScaTraHDGIntFace::ScaTraHDGIntFace(int id,  ///< element id
                        ///< face w.r.t the master parent element's face's coordinate system and the
                        ///< slave element's face's coordinate system
     )
-    : CORE::Elements::FaceElement(id, owner), degree_(0), degree_old_(0)
+    : Core::Elements::FaceElement(id, owner), degree_(0), degree_old_(0)
 {
   set_parent_master_element(parent_master, lsurface_master);
   set_parent_slave_element(parent_slave, lsurface_slave);
@@ -762,8 +767,9 @@ DRT::ELEMENTS::ScaTraHDGIntFace::ScaTraHDGIntFace(int id,  ///< element id
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                    hoermann 09/15|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ScaTraHDGIntFace::ScaTraHDGIntFace(const DRT::ELEMENTS::ScaTraHDGIntFace& old)
-    : CORE::Elements::FaceElement(old), degree_(old.degree_), degree_old_(old.degree_old_)
+Discret::ELEMENTS::ScaTraHDGIntFace::ScaTraHDGIntFace(
+    const Discret::ELEMENTS::ScaTraHDGIntFace& old)
+    : Core::Elements::FaceElement(old), degree_(old.degree_), degree_old_(old.degree_old_)
 {
   return;
 }
@@ -772,9 +778,9 @@ DRT::ELEMENTS::ScaTraHDGIntFace::ScaTraHDGIntFace(const DRT::ELEMENTS::ScaTraHDG
  |  Deep copy this instance return pointer to it               (public) |
  |                                                        hoermann 09/15|
  *----------------------------------------------------------------------*/
-CORE::Elements::Element* DRT::ELEMENTS::ScaTraHDGIntFace::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::ScaTraHDGIntFace::Clone() const
 {
-  DRT::ELEMENTS::ScaTraHDGIntFace* newelement = new DRT::ELEMENTS::ScaTraHDGIntFace(*this);
+  Discret::ELEMENTS::ScaTraHDGIntFace* newelement = new Discret::ELEMENTS::ScaTraHDGIntFace(*this);
   return newelement;
 }
 
@@ -782,17 +788,17 @@ CORE::Elements::Element* DRT::ELEMENTS::ScaTraHDGIntFace::Clone() const
  |                                                             (public) |
  |                                                       hoermann 09/15 |
  *----------------------------------------------------------------------*/
-CORE::FE::CellType DRT::ELEMENTS::ScaTraHDGIntFace::Shape() const
+Core::FE::CellType Discret::ELEMENTS::ScaTraHDGIntFace::Shape() const
 {
   // could be called for master parent or slave parent element, doesn't matter
-  return CORE::FE::getShapeOfBoundaryElement(num_node(), ParentMasterElement()->Shape());
+  return Core::FE::getShapeOfBoundaryElement(num_node(), ParentMasterElement()->Shape());
 }
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  |                                                       hoermann 09/15 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraHDGIntFace::Pack(CORE::COMM::PackBuffer& data) const
+void Discret::ELEMENTS::ScaTraHDGIntFace::Pack(Core::Communication::PackBuffer& data) const
 {
   FOUR_C_THROW("this ScaTraHDGIntFace element does not support communication");
   return;
@@ -802,7 +808,7 @@ void DRT::ELEMENTS::ScaTraHDGIntFace::Pack(CORE::COMM::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                       hoermann 09/15 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraHDGIntFace::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::ScaTraHDGIntFace::Unpack(const std::vector<char>& data)
 {
   FOUR_C_THROW("this ScaTraHDGIntFace element does not support communication");
   return;
@@ -813,19 +819,19 @@ void DRT::ELEMENTS::ScaTraHDGIntFace::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  create the patch location vector (public)            hoermann 09/15 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraHDGIntFace::PatchLocationVector(
-    DRT::Discretization& discretization,     ///< discretization
-    std::vector<int>& nds_master,            ///< nodal dofset w.r.t master parent element
-    std::vector<int>& nds_slave,             ///< nodal dofset w.r.t slave parent element
-    std::vector<int>& patchlm,               ///< local map for gdof ids for patch of elements
-    std::vector<int>& master_lm,             ///< local map for gdof ids for master element
-    std::vector<int>& slave_lm,              ///< local map for gdof ids for slave element
-    std::vector<int>& face_lm,               ///< local map for gdof ids for face element
-    std::vector<int>& lm_masterToPatch,      ///< local map between lm_master and lm_patch
-    std::vector<int>& lm_slaveToPatch,       ///< local map between lm_slave and lm_patch
-    std::vector<int>& lm_faceToPatch,        ///< local map between lm_face and lm_patch
-    std::vector<int>& lm_masterNodeToPatch,  ///< local map between master nodes and nodes in patch
-    std::vector<int>& lm_slaveNodeToPatch    ///< local map between slave nodes and nodes in patch
+void Discret::ELEMENTS::ScaTraHDGIntFace::PatchLocationVector(
+    Discret::Discretization& discretization,  ///< discretization
+    std::vector<int>& nds_master,             ///< nodal dofset w.r.t master parent element
+    std::vector<int>& nds_slave,              ///< nodal dofset w.r.t slave parent element
+    std::vector<int>& patchlm,                ///< local map for gdof ids for patch of elements
+    std::vector<int>& master_lm,              ///< local map for gdof ids for master element
+    std::vector<int>& slave_lm,               ///< local map for gdof ids for slave element
+    std::vector<int>& face_lm,                ///< local map for gdof ids for face element
+    std::vector<int>& lm_masterToPatch,       ///< local map between lm_master and lm_patch
+    std::vector<int>& lm_slaveToPatch,        ///< local map between lm_slave and lm_patch
+    std::vector<int>& lm_faceToPatch,         ///< local map between lm_face and lm_patch
+    std::vector<int>& lm_masterNodeToPatch,   ///< local map between master nodes and nodes in patch
+    std::vector<int>& lm_slaveNodeToPatch     ///< local map between slave nodes and nodes in patch
 )
 {
   // create one patch location vector containing all dofs of master, slave and
@@ -833,7 +839,7 @@ void DRT::ELEMENTS::ScaTraHDGIntFace::PatchLocationVector(
 
   //-----------------------------------------------------------------------
   const int m_numnode = ParentMasterElement()->num_node();
-  CORE::Nodes::Node** m_nodes = ParentMasterElement()->Nodes();
+  Core::Nodes::Node** m_nodes = ParentMasterElement()->Nodes();
 
   if (m_numnode != static_cast<int>(nds_master.size()))
   {
@@ -842,7 +848,7 @@ void DRT::ELEMENTS::ScaTraHDGIntFace::PatchLocationVector(
 
   //-----------------------------------------------------------------------
   const int s_numnode = ParentSlaveElement()->num_node();
-  CORE::Nodes::Node** s_nodes = ParentSlaveElement()->Nodes();
+  Core::Nodes::Node** s_nodes = ParentSlaveElement()->Nodes();
 
   if (s_numnode != static_cast<int>(nds_slave.size()))
   {
@@ -851,7 +857,7 @@ void DRT::ELEMENTS::ScaTraHDGIntFace::PatchLocationVector(
 
   //-----------------------------------------------------------------------
   const int f_numnode = num_node();
-  CORE::Nodes::Node** f_nodes = Nodes();
+  Core::Nodes::Node** f_nodes = Nodes();
 
   //-----------------------------------------------------------------------
   // create the patch local map and additional local maps between elements lm and patch lm
@@ -882,7 +888,7 @@ void DRT::ELEMENTS::ScaTraHDGIntFace::PatchLocationVector(
   // fill patch lm with master's nodes
   for (int k = 0; k < m_numnode; ++k)
   {
-    CORE::Nodes::Node* node = m_nodes[k];
+    Core::Nodes::Node* node = m_nodes[k];
     std::vector<int> dof = discretization.Dof(dofset, node);
 
     // get maximum of numdof per node with the help of master and/or slave element (returns 4 in 3D
@@ -918,7 +924,7 @@ void DRT::ELEMENTS::ScaTraHDGIntFace::PatchLocationVector(
 
   for (int k = 0; k < s_numnode; ++k)
   {
-    CORE::Nodes::Node* node = s_nodes[k];
+    Core::Nodes::Node* node = s_nodes[k];
 
     // slave node already contained?
     std::map<int, int>::iterator m_offset;
@@ -978,7 +984,7 @@ void DRT::ELEMENTS::ScaTraHDGIntFace::PatchLocationVector(
   // extract face's lm from patch_lm
   for (int k = 0; k < f_numnode; ++k)
   {
-    CORE::Nodes::Node* node = f_nodes[k];
+    Core::Nodes::Node* node = f_nodes[k];
 
     // face node must be contained
     std::map<int, int>::iterator m_offset;
@@ -1012,7 +1018,7 @@ void DRT::ELEMENTS::ScaTraHDGIntFace::PatchLocationVector(
 /*----------------------------------------------------------------------*
  |  print this element (public)                          hoermann 09/15 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraHDGIntFace::Print(std::ostream& os) const
+void Discret::ELEMENTS::ScaTraHDGIntFace::Print(std::ostream& os) const
 {
   os << "ScaTraHDGIntFace ";
   Element::Print(os);
@@ -1022,7 +1028,7 @@ void DRT::ELEMENTS::ScaTraHDGIntFace::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                         hoermann 09/15 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::ScaTraHDGIntFace::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::ScaTraHDGIntFace::Lines()
 {
   FOUR_C_THROW("Lines of ScaTraHDGIntFace not implemented");
 }
@@ -1030,7 +1036,7 @@ std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::ScaTraHDGIntFa
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                         hoermann 09/15 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::ScaTraHDGIntFace::Surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::ScaTraHDGIntFace::Surfaces()
 {
   FOUR_C_THROW("Surfaces of ScaTraHDGIntFace not implemented");
 }
@@ -1038,16 +1044,16 @@ std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::ScaTraHDGIntFa
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                        hoermann 09/15 |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::ScaTraHDGIntFace::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
-    CORE::LINALG::SerialDenseVector& elevec3)
+int Discret::ELEMENTS::ScaTraHDGIntFace::Evaluate(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
+    Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
+    Core::LinAlg::SerialDenseVector& elevec3)
 {
-  // REMARK: this line ensures that the static DRT::ELEMENTS::ScaTraHDGIntFaceImplInterface::Impl is
-  // created
+  // REMARK: this line ensures that the static
+  // Discret::ELEMENTS::ScaTraHDGIntFaceImplInterface::Impl is created
   //         this line avoids linker errors
-  DRT::ELEMENTS::ScaTraHDGIntFaceImplInterface::Impl(this);
+  Discret::ELEMENTS::ScaTraHDGIntFaceImplInterface::Impl(this);
 
   FOUR_C_THROW("not available");
 
@@ -1058,10 +1064,10 @@ int DRT::ELEMENTS::ScaTraHDGIntFace::Evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  Integrate a surface/line Neumann boundary condition  hoermann 09/15 |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::ScaTraHDGIntFace::evaluate_neumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
-    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
-    CORE::LINALG::SerialDenseMatrix* elemat1)
+int Discret::ELEMENTS::ScaTraHDGIntFace::evaluate_neumann(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
+    Core::LinAlg::SerialDenseMatrix* elemat1)
 {
   FOUR_C_THROW("not available");
 

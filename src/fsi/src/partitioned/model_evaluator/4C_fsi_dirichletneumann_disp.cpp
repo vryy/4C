@@ -34,10 +34,10 @@ void FSI::DirichletNeumannDisp::Setup()
 {
   // call setup of base class
   FSI::DirichletNeumann::Setup();
-  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
   set_kinematic_coupling(
-      CORE::UTILS::IntegralValue<int>(fsipart, "COUPVARIABLE") == INPAR::FSI::CoupVarPart::disp);
+      Core::UTILS::IntegralValue<int>(fsipart, "COUPVARIABLE") == Inpar::FSI::CoupVarPart::disp);
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -105,9 +105,9 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannDisp::initial_guess()
   }
   else
   {
-    const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
+    const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
     const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
-    if (CORE::UTILS::IntegralValue<int>(fsipart, "PREDICTOR") != 1)
+    if (Core::UTILS::IntegralValue<int>(fsipart, "PREDICTOR") != 1)
     {
       FOUR_C_THROW(
           "unknown interface force predictor '%s'", fsipart.get<std::string>("PREDICTOR").c_str());

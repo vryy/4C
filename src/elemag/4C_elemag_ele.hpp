@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
 
 const bool trac_with_pml_elemag = false;
 
-namespace DRT
+namespace Discret
 {
   // forward declarations
   class Discretization;
@@ -39,34 +39,34 @@ namespace DRT
   {
     class ElemagIntFace;
 
-    class ElemagType : public CORE::Elements::ElementType
+    class ElemagType : public Core::Elements::ElementType
     {
      public:
       std::string Name() const override { return "ElemagType"; }
 
       static ElemagType& Instance();
 
-      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+          Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
+      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+          Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       void setup_element_definition(
-          std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+          std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
           override;
 
       /// pre-evaluation
-      void pre_evaluate(DRT::Discretization& dis, Teuchos::ParameterList& p,
-          Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
-          Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
+      void pre_evaluate(Discret::Discretization& dis, Teuchos::ParameterList& p,
+          Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
+          Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
           Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
           Teuchos::RCP<Epetra_Vector> systemvector3) override;
 
@@ -77,7 +77,7 @@ namespace DRT
     /*!
     \brief A C++ wrapper for the electromagnetic element
     */
-    class Elemag : public CORE::Elements::Element
+    class Elemag : public Core::Elements::Element
     {
      public:
       //@}
@@ -105,19 +105,19 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      CORE::Elements::Element* Clone() const override;
+      Core::Elements::Element* Clone() const override;
 
 
 
       /*!
       \brief Get shape type of element
       */
-      CORE::FE::CellType Shape() const override { return distype_; };
+      Core::FE::CellType Shape() const override { return distype_; };
 
       /*!
       \brief set discretization type of element
       */
-      virtual void SetDisType(CORE::FE::CellType shape)
+      virtual void SetDisType(Core::FE::CellType shape)
       {
         distype_ = shape;
         return;
@@ -126,37 +126,37 @@ namespace DRT
       /*!
       \brief Return number of lines of this element
       */
-      int NumLine() const override { return CORE::FE::getNumberOfElementLines(distype_); }
+      int NumLine() const override { return Core::FE::getNumberOfElementLines(distype_); }
 
       /*!
       \brief Return number of surfaces of this element
       */
-      int NumSurface() const override { return CORE::FE::getNumberOfElementSurfaces(distype_); }
+      int NumSurface() const override { return Core::FE::getNumberOfElementSurfaces(distype_); }
 
       /*!
       \brief Return number of volumes of this element (always 1)
       */
-      int NumVolume() const override { return CORE::FE::getNumberOfElementVolumes(distype_); }
+      int NumVolume() const override { return Core::FE::getNumberOfElementVolumes(distype_); }
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
       */
-      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
       */
-      std::vector<Teuchos::RCP<CORE::Elements::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> Surfaces() override;
 
       /*!
       \brief Get Teuchos::RCP to the internal face adjacent to this element as master element and
       the parent_slave element
       */
-      Teuchos::RCP<CORE::Elements::Element> CreateFaceElement(
-          CORE::Elements::Element* parent_slave,  //!< parent slave fluid3 element
+      Teuchos::RCP<Core::Elements::Element> CreateFaceElement(
+          Core::Elements::Element* parent_slave,  //!< parent slave fluid3 element
           int nnode,                              //!< number of surface nodes
           const int* nodeids,                     //!< node ids of surface element
-          CORE::Nodes::Node** nodes,              //!< nodes of surface element
+          Core::Nodes::Node** nodes,              //!< nodes of surface element
           const int lsurface_master,  //!< local surface number w.r.t master parent element
           const int lsurface_slave,   //!< local surface number w.r.t slave parent element
           const std::vector<int>& localtrafomap  //! local trafo map
@@ -175,7 +175,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(CORE::COMM::PackBuffer& data) const override;
+      void Pack(Core::Communication::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -197,7 +197,7 @@ namespace DRT
 
       HDG element: No dofs are associated with nodes
       */
-      int NumDofPerNode(const CORE::Nodes::Node&) const override { return 0; }
+      int NumDofPerNode(const Core::Nodes::Node&) const override { return 0; }
 
       /*!
       \brief Get number of degrees of freedom per face
@@ -209,7 +209,7 @@ namespace DRT
       */
       int num_dof_per_face(const unsigned face) const override
       {
-        return (CORE::FE::getDimension(distype_) - 1) *
+        return (Core::FE::getDimension(distype_) - 1) *
                NumDofPerComponent(face);  // seems redundant, but this is different for
                                           // fluid_ele_hdg and Elemag_ele!
       }
@@ -222,8 +222,8 @@ namespace DRT
       */
       int NumDofPerComponent(const unsigned face) const override
       {
-        return CORE::FE::getBasisSize(
-            CORE::FE::getEleFaceShapeType(distype_), (this->Faces()[face])->Degree(), completepol_);
+        return Core::FE::getBasisSize(
+            Core::FE::getEleFaceShapeType(distype_), (this->Faces()[face])->Degree(), completepol_);
       }
 
       /*!
@@ -233,8 +233,8 @@ namespace DRT
       */
       virtual int num_dof_per_element_auxiliary() const
       {
-        return (CORE::FE::getDimension(distype_) * 2) *
-               CORE::FE::getBasisSize(distype_, degree_, completepol_);
+        return (Core::FE::getDimension(distype_) * 2) *
+               Core::FE::getBasisSize(distype_, degree_, completepol_);
       }
 
       /// Number of degrees of freedom per element
@@ -264,7 +264,7 @@ namespace DRT
       */
       void Print(std::ostream& os) const override;
 
-      CORE::Elements::ElementType& ElementType() const override { return ElemagType::Instance(); }
+      Core::Elements::ElementType& ElementType() const override { return ElemagType::Instance(); }
 
       //@}
 
@@ -274,7 +274,7 @@ namespace DRT
       \brief Read input for this element
       */
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          INPUT::LineDefinition* linedef) override;
+          Input::LineDefinition* linedef) override;
 
       //@}
 
@@ -303,11 +303,11 @@ namespace DRT
                               to fill this vector
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
-          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2,
-          CORE::LINALG::SerialDenseVector& elevec3) override;
+      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
+          Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseVector& elevec2,
+          Core::LinAlg::SerialDenseVector& elevec3) override;
 
 
       /*!
@@ -322,53 +322,53 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          CORE::Conditions::Condition& condition, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
+      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Core::Conditions::Condition& condition, std::vector<int>& lm,
+          Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;
 
       //@}
 
       /// Trace values per element
-      CORE::LINALG::SerialDenseVector elenodeTrace2d_;
+      Core::LinAlg::SerialDenseVector elenodeTrace2d_;
 
       // state vectors which do not have to be stored as global distributed vector, since
       // we are in a discontinuous setting here
       //! @name interior stored states
 
       /// Electric field current step
-      CORE::LINALG::SerialDenseVector eleinteriorElectric_;
+      Core::LinAlg::SerialDenseVector eleinteriorElectric_;
 
       /// Electric field step n-1 for higher orders BDF
-      CORE::LINALG::SerialDenseVector eleinteriorElectricnm1_;
+      Core::LinAlg::SerialDenseVector eleinteriorElectricnm1_;
 
       /// Electric field step n-2 for higher orders BDF
-      CORE::LINALG::SerialDenseVector eleinteriorElectricnm2_;
+      Core::LinAlg::SerialDenseVector eleinteriorElectricnm2_;
 
       /// Electric field step n-3 for higher orders BDF
-      CORE::LINALG::SerialDenseVector eleinteriorElectricnm3_;
+      Core::LinAlg::SerialDenseVector eleinteriorElectricnm3_;
 
       /// Post-processed solution
-      CORE::LINALG::SerialDenseVector eleinteriorElectricPost_;
+      Core::LinAlg::SerialDenseVector eleinteriorElectricPost_;
 
       /// Magnetic field current step
-      CORE::LINALG::SerialDenseVector eleinteriorMagnetic_;
+      Core::LinAlg::SerialDenseVector eleinteriorMagnetic_;
 
       /// Magnetic field step n-1 for higher orders BDF
-      CORE::LINALG::SerialDenseVector eleinteriorMagneticnm1_;
+      Core::LinAlg::SerialDenseVector eleinteriorMagneticnm1_;
 
       /// Magnetic field step n-2 for higher orders BDF
-      CORE::LINALG::SerialDenseVector eleinteriorMagneticnm2_;
+      Core::LinAlg::SerialDenseVector eleinteriorMagneticnm2_;
 
       /// Magnetic field step n-3 for higher orders BDF
-      CORE::LINALG::SerialDenseVector eleinteriorMagneticnm3_;
+      Core::LinAlg::SerialDenseVector eleinteriorMagneticnm3_;
 
       //@}
 
      protected:
       //! discretization type
-      CORE::FE::CellType distype_;
-      CORE::FE::CellType facedis_;
+      Core::FE::CellType distype_;
+      Core::FE::CellType facedis_;
 
       /// stores the degree of the element
       unsigned char degree_;
@@ -409,29 +409,29 @@ namespace DRT
     \note This is a pure Neumann boundary condition element. It's only
           purpose is to evaluate surface Neumann boundary conditions that might be
           adjacent to a parent Elemag element. It therefore does not implement
-          the CORE::Elements::Element::Evaluate method and does not have its own ElementRegister
+          the Core::Elements::Element::Evaluate method and does not have its own ElementRegister
     class.
 
     */
 
-    class ElemagBoundaryType : public CORE::Elements::ElementType
+    class ElemagBoundaryType : public Core::Elements::ElementType
     {
      public:
       std::string Name() const override { return "ElemagBoundaryType"; }
 
       static ElemagBoundaryType& Instance();
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
+          Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
-      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
+      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+          Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
-        CORE::LINALG::SerialDenseMatrix nullspace;
+        Core::LinAlg::SerialDenseMatrix nullspace;
         FOUR_C_THROW("method ComputeNullSpace not implemented");
         return nullspace;
       }
@@ -442,7 +442,7 @@ namespace DRT
 
     /// class ElemagBoundary
 
-    class ElemagBoundary : public CORE::Elements::FaceElement
+    class ElemagBoundary : public Core::Elements::FaceElement
     {
      public:
       //! @name Constructors and destructors and related methods
@@ -459,8 +459,8 @@ namespace DRT
       \param parent: The parent Elemag element of this surface
       \param lsurface: the local surface number of this surface w.r.t. the parent element
       */
-      ElemagBoundary(int id, int owner, int nnode, const int* nodeids, CORE::Nodes::Node** nodes,
-          DRT::ELEMENTS::Elemag* parent, const int lsurface);
+      ElemagBoundary(int id, int owner, int nnode, const int* nodeids, Core::Nodes::Node** nodes,
+          Discret::ELEMENTS::Elemag* parent, const int lsurface);
 
       /*!
       \brief Copy Constructor
@@ -477,34 +477,34 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      CORE::Elements::Element* Clone() const override;
+      Core::Elements::Element* Clone() const override;
 
       /*!
       \brief Get shape type of element
       */
-      CORE::FE::CellType Shape() const override;
+      Core::FE::CellType Shape() const override;
 
       /*!
       \brief Return number of lines of this element
       */
-      int NumLine() const override { return CORE::FE::getNumberOfElementLines(Shape()); }
+      int NumLine() const override { return Core::FE::getNumberOfElementLines(Shape()); }
 
       /*!
       \brief Return number of surfaces of this element
       */
-      int NumSurface() const override { return CORE::FE::getNumberOfElementSurfaces(Shape()); }
+      int NumSurface() const override { return Core::FE::getNumberOfElementSurfaces(Shape()); }
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
 
       */
-      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
       */
 
-      std::vector<Teuchos::RCP<CORE::Elements::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> Surfaces() override;
 
       /*!
       \brief Return unique ParObject id
@@ -523,7 +523,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(CORE::COMM::PackBuffer& data) const override;
+      void Pack(Core::Communication::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -541,14 +541,14 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom of a certain node
-             (implements pure virtual CORE::Elements::Element)
+             (implements pure virtual Core::Elements::Element)
 
       The element decides how many degrees of freedom its nodes must have.
       As this may vary along a simulation, the element can redecide the
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const CORE::Nodes::Node& node) const override
+      int NumDofPerNode(const Core::Nodes::Node& node) const override
       {
         return parent_element()->NumDofPerNode(node);
       }
@@ -561,7 +561,7 @@ namespace DRT
       */
       void Print(std::ostream& os) const override;
 
-      CORE::Elements::ElementType& ElementType() const override
+      Core::Elements::ElementType& ElementType() const override
       {
         return ElemagBoundaryType::Instance();
       }
@@ -592,11 +592,11 @@ namespace DRT
                               to fill this vector
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
-          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2,
-          CORE::LINALG::SerialDenseVector& elevec3) override;
+      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
+          Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseVector& elevec2,
+          Core::LinAlg::SerialDenseVector& elevec3) override;
 
       //@}
 
@@ -614,10 +614,10 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          CORE::Conditions::Condition& condition, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
+      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Core::Conditions::Condition& condition, std::vector<int>& lm,
+          Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;
 
       //@}
 
@@ -689,24 +689,24 @@ namespace DRT
     /*!
     \brief An element representing an internal face element between two Elemag elements
     */
-    class ElemagIntFaceType : public CORE::Elements::ElementType
+    class ElemagIntFaceType : public Core::Elements::ElementType
     {
      public:
       std::string Name() const override { return "ElemagIntFaceType"; }
 
       static ElemagIntFaceType& Instance();
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
+          Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
-      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
+      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+          Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
-        CORE::LINALG::SerialDenseMatrix nullspace;
+        Core::LinAlg::SerialDenseMatrix nullspace;
         FOUR_C_THROW("method ComputeNullSpace not implemented");
         return nullspace;
       }
@@ -718,7 +718,7 @@ namespace DRT
 
     // class ElemagIntFace
 
-    class ElemagIntFace : public CORE::Elements::FaceElement
+    class ElemagIntFace : public Core::Elements::FaceElement
     {
      public:
       //! @name Constructors and destructors and related methods
@@ -740,8 +740,8 @@ namespace DRT
       of the face w.r.t the master parent element's face's coordinate system and the slave element's
       face's coordinate system
       */
-      ElemagIntFace(int id, int owner, int nnode, const int* nodeids, CORE::Nodes::Node** nodes,
-          DRT::ELEMENTS::Elemag* parent_master, DRT::ELEMENTS::Elemag* parent_slave,
+      ElemagIntFace(int id, int owner, int nnode, const int* nodeids, Core::Nodes::Node** nodes,
+          Discret::ELEMENTS::Elemag* parent_master, Discret::ELEMENTS::Elemag* parent_slave,
           const int lsurface_master, const int lsurface_slave,
           const std::vector<int> localtrafomap);
 
@@ -759,27 +759,27 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      CORE::Elements::Element* Clone() const override;
+      Core::Elements::Element* Clone() const override;
 
       /*!
       \brief Get shape type of element
       */
-      CORE::FE::CellType Shape() const override;
+      Core::FE::CellType Shape() const override;
 
       /*!
       \brief Return number of lines of this element
       */
-      int NumLine() const override { return CORE::FE::getNumberOfElementLines(Shape()); }
+      int NumLine() const override { return Core::FE::getNumberOfElementLines(Shape()); }
 
       /*!
       \brief Return number of surfaces of this element
       */
-      int NumSurface() const override { return CORE::FE::getNumberOfElementSurfaces(Shape()); }
+      int NumSurface() const override { return Core::FE::getNumberOfElementSurfaces(Shape()); }
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
       */
-      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
 
       /*!
       \brief Return unique ParObject id
@@ -787,7 +787,7 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of the parobject.H file.
       */
-      std::vector<Teuchos::RCP<CORE::Elements::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> Surfaces() override;
 
       /*!
       \brief Return unique ParObject id
@@ -805,7 +805,7 @@ namespace DRT
 
       \ref Pack and \ref Unpack are used to communicate this element
       */
-      void Pack(CORE::COMM::PackBuffer& data) const override;
+      void Pack(Core::Communication::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -822,14 +822,14 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom of a certain node
-             (implements pure virtual CORE::Elements::Element)
+             (implements pure virtual Core::Elements::Element)
 
       The element decides how many degrees of freedom its nodes must have.
       As this may vary along a simulation, the element can redecide the
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const CORE::Nodes::Node& node) const override
+      int NumDofPerNode(const Core::Nodes::Node& node) const override
       {
         return std::max(
             ParentMasterElement()->NumDofPerNode(node), ParentSlaveElement()->NumDofPerNode(node));
@@ -837,7 +837,7 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom per element
-             (implements pure virtual CORE::Elements::Element)
+             (implements pure virtual Core::Elements::Element)
 
       The element decides how many element degrees of freedom it has.
       It can redecide along the way of a simulation.
@@ -868,7 +868,7 @@ namespace DRT
       \note All dofs shared by master and slave element are contained only once. Dofs from interface
       nodes are also included.
       */
-      void PatchLocationVector(DRT::Discretization& discretization,  ///< discretization
+      void PatchLocationVector(Discret::Discretization& discretization,  ///< discretization
           std::vector<int>& nds_master,        ///< nodal dofset w.r.t master parent element
           std::vector<int>& nds_slave,         ///< nodal dofset w.r.t slave parent element
           std::vector<int>& patchlm,           ///< local map for gdof ids for patch of elements
@@ -889,7 +889,7 @@ namespace DRT
       */
       void Print(std::ostream& os) const override;
 
-      CORE::Elements::ElementType& ElementType() const override
+      Core::Elements::ElementType& ElementType() const override
       {
         return ElemagIntFaceType::Instance();
       }
@@ -920,11 +920,11 @@ namespace DRT
                               to fill this vector
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
-          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2,
-          CORE::LINALG::SerialDenseVector& elevec3) override;
+      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
+          Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseVector& elevec2,
+          Core::LinAlg::SerialDenseVector& elevec3) override;
 
       //@}
 
@@ -942,33 +942,33 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          CORE::Conditions::Condition& condition, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
+      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Core::Conditions::Condition& condition, std::vector<int>& lm,
+          Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;
 
       /*!
       \brief return the master parent Elemag element
       */
-      DRT::ELEMENTS::Elemag* ParentMasterElement() const
+      Discret::ELEMENTS::Elemag* ParentMasterElement() const
       {
-        CORE::Elements::Element* parent = this->CORE::Elements::FaceElement::ParentMasterElement();
+        Core::Elements::Element* parent = this->Core::Elements::FaceElement::ParentMasterElement();
         // make sure the static cast below is really valid
-        FOUR_C_ASSERT(dynamic_cast<DRT::ELEMENTS::Elemag*>(parent) != nullptr,
+        FOUR_C_ASSERT(dynamic_cast<Discret::ELEMENTS::Elemag*>(parent) != nullptr,
             "Master element is no Elemag element");
-        return static_cast<DRT::ELEMENTS::Elemag*>(parent);
+        return static_cast<Discret::ELEMENTS::Elemag*>(parent);
       }
 
       /*!
       \brief return the slave parent Elemag element
       */
-      DRT::ELEMENTS::Elemag* ParentSlaveElement() const
+      Discret::ELEMENTS::Elemag* ParentSlaveElement() const
       {
-        CORE::Elements::Element* parent = this->CORE::Elements::FaceElement::ParentSlaveElement();
+        Core::Elements::Element* parent = this->Core::Elements::FaceElement::ParentSlaveElement();
         // make sure the static cast below is really valid
-        FOUR_C_ASSERT(dynamic_cast<DRT::ELEMENTS::Elemag*>(parent) != nullptr,
+        FOUR_C_ASSERT(dynamic_cast<Discret::ELEMENTS::Elemag*>(parent) != nullptr,
             "Slave element is no Elemag element");
-        return static_cast<DRT::ELEMENTS::Elemag*>(parent);
+        return static_cast<Discret::ELEMENTS::Elemag*>(parent);
       }
 
       //@}
@@ -985,7 +985,7 @@ namespace DRT
 
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 
 FOUR_C_NAMESPACE_CLOSE

@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
  *---------------------------------------------------------------------------*/
-namespace PARTICLEINTERACTION
+namespace ParticleInteraction
 {
   class SPHDensityCorrectionBase
   {
@@ -93,7 +93,7 @@ namespace PARTICLEINTERACTION
         const double* dens_bc, double* dens) const override;
   };
 
-}  // namespace PARTICLEINTERACTION
+}  // namespace ParticleInteraction
 
 /*---------------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

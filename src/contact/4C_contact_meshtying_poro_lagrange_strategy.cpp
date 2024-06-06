@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 CONTACT::PoroMtLagrangeStrategy::PoroMtLagrangeStrategy(const Epetra_Map* dof_row_map,
     const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
-    std::vector<Teuchos::RCP<MORTAR::Interface>> interface, int dim, Teuchos::RCP<Epetra_Comm> comm,
+    std::vector<Teuchos::RCP<Mortar::Interface>> interface, int dim, Teuchos::RCP<Epetra_Comm> comm,
     double alphaf, int maxdof)
     : MtLagrangeStrategy(dof_row_map, NodeRowMap, params, interface, dim, comm, alphaf, maxdof)
 {
@@ -37,11 +37,11 @@ CONTACT::PoroMtLagrangeStrategy::PoroMtLagrangeStrategy(const Epetra_Map* dof_ro
  | Poro Meshtying initialization calculations         h.Willmann    2015|
  *----------------------------------------------------------------------*/
 void CONTACT::PoroMtLagrangeStrategy::InitializePoroMt(
-    Teuchos::RCP<CORE::LINALG::SparseMatrix>& kteffoffdiag)
+    Teuchos::RCP<Core::LinAlg::SparseMatrix>& kteffoffdiag)
 
 {
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> kteffmatrix =
-      Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(kteffoffdiag);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> kteffmatrix =
+      Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(kteffoffdiag);
 
   fvelrow_ = Teuchos::rcp(new Epetra_Map(kteffmatrix->OperatorDomainMap()));
 
@@ -53,26 +53,26 @@ void CONTACT::PoroMtLagrangeStrategy::InitializePoroMt(
  | Poro Meshtying method regarding coupling terms      h.Willmann   2015|
  *----------------------------------------------------------------------*/
 void CONTACT::PoroMtLagrangeStrategy::evaluate_meshtying_poro_off_diag(
-    Teuchos::RCP<CORE::LINALG::SparseMatrix>& kteffoffdiag)
+    Teuchos::RCP<Core::LinAlg::SparseMatrix>& kteffoffdiag)
 {
   // system type
-  INPAR::CONTACT::SystemType systype =
-      CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(Params(), "SYSTEM");
+  Inpar::CONTACT::SystemType systype =
+      Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(Params(), "SYSTEM");
 
   // shape function
-  INPAR::MORTAR::ShapeFcn shapefcn =
-      CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
+  Inpar::Mortar::ShapeFcn shapefcn =
+      Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(Params(), "LM_SHAPEFCN");
 
   //**********************************************************************
   //**********************************************************************
   // CASE A: CONDENSED SYSTEM (DUAL)
   //**********************************************************************
   //**********************************************************************
-  if (systype == INPAR::CONTACT::system_condensed ||
-      systype == INPAR::CONTACT::system_condensed_lagmult)
+  if (systype == Inpar::CONTACT::system_condensed ||
+      systype == Inpar::CONTACT::system_condensed_lagmult)
   {
     // double-check if this is a dual LM system
-    if (shapefcn != INPAR::MORTAR::shape_dual && shapefcn != INPAR::MORTAR::shape_petrovgalerkin)
+    if (shapefcn != Inpar::Mortar::shape_dual && shapefcn != Inpar::Mortar::shape_petrovgalerkin)
       FOUR_C_THROW("Condensation only for dual LM");
 
     // h.Willmann actual method
@@ -85,23 +85,23 @@ void CONTACT::PoroMtLagrangeStrategy::evaluate_meshtying_poro_off_diag(
     /* Split kteffoffdiag into 3 block matrix rows                        */
     /**********************************************************************/
     // we want to split k into 3 rows n, m and s
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> cn, cm, cs;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> cn, cm, cs;
 
     // temporarily we need the block row csm
     // (FIXME: because a direct SplitMatrix3x1 is missing here!)
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> csm;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> csm;
 
 
     // some temporary Teuchos::RCPs
     Teuchos::RCP<Epetra_Map> tempmap1;
     Teuchos::RCP<Epetra_Map> tempmap2;
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> tempmtx1;
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> tempmtx2;
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> tempmtx3;
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> tempmtx4;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> tempmtx1;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> tempmtx2;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> tempmtx3;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> tempmtx4;
 
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> kteffmatrix =
-        Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(kteffoffdiag);
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> kteffmatrix =
+        Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(kteffoffdiag);
 
     //    std::cout<< " kteffmatrix " << std::endl;
     //    kteffmatrix->DomainMap().Print(std::cout);
@@ -113,14 +113,14 @@ void CONTACT::PoroMtLagrangeStrategy::evaluate_meshtying_poro_off_diag(
     }
 
     // first split into slave/master block row + remaining part
-    CORE::LINALG::SplitMatrix2x2(
+    Core::LinAlg::SplitMatrix2x2(
         kteffmatrix, gsmdofrowmap_, gndofrowmap_, fvelrow_, tempmap1, csm, tempmtx1, cn, tempmtx2);
 
     //    std::cout<< " tempmap1 " << std::endl;
     //    tempmap1->Print(std::cout);
 
     // second split slave/master block row
-    CORE::LINALG::SplitMatrix2x2(
+    Core::LinAlg::SplitMatrix2x2(
         csm, gsdofrowmap_, gmdofrowmap_, fvelrow_, tempmap2, cs, tempmtx3, cm, tempmtx4);
 
     // store some stuff for the recovery of the lagrange multiplier
@@ -133,11 +133,11 @@ void CONTACT::PoroMtLagrangeStrategy::evaluate_meshtying_poro_off_diag(
     // cn: nothing to do
 
     // cm: add T(mbar)*cs
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> cmmod =
-        Teuchos::rcp(new CORE::LINALG::SparseMatrix(*gmdofrowmap_, 100));
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> cmmod =
+        Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
     cmmod->Add(*cm, false, 1.0, 1.0);
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> cmadd =
-        CORE::LINALG::MLMultiply(*get_m_hat(), true, *cs, false, false, false, true);
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> cmadd =
+        Core::LinAlg::MLMultiply(*get_m_hat(), true, *cs, false, false, false, true);
     cmmod->Add(*cmadd, false, 1.0, 1.0);
     cmmod->Complete(cm->DomainMap(), cm->RowMap());
 
@@ -146,8 +146,8 @@ void CONTACT::PoroMtLagrangeStrategy::evaluate_meshtying_poro_off_diag(
     /**********************************************************************/
     /* Global setup of kteffoffdiagnew,  (including meshtying)            */
     /**********************************************************************/
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> kteffoffdiagnew =
-        Teuchos::rcp(new CORE::LINALG::SparseMatrix(
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> kteffoffdiagnew =
+        Teuchos::rcp(new Core::LinAlg::SparseMatrix(
             *ProblemDofs(), 81, true, false, kteffmatrix->GetMatrixtype()));
 
     // add n matrix row

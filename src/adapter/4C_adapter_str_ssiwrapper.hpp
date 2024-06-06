@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 // forward declarations
 namespace STR
 {
-  namespace AUX
+  namespace Aux
   {
     class MapExtractor;
   }
@@ -35,7 +35,7 @@ namespace STR
 }  // namespace STR
 
 
-namespace ADAPTER
+namespace Adapter
 {
   class SSIStructureWrapper : public StructureWrapper
   {
@@ -65,7 +65,7 @@ namespace ADAPTER
     };
 
   };  // class SSIStructureWrapper
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 FOUR_C_NAMESPACE_CLOSE
 

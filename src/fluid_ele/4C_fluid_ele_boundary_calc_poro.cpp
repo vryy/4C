@@ -27,39 +27,39 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>*
-DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::Instance(CORE::UTILS::SingletonAction action)
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>*
+Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::Instance(Core::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = CORE::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
       []()
       {
-        return std::unique_ptr<DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>>(
-            new DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>());
+        return std::unique_ptr<Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>>(
+            new Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>());
       });
 
   return singleton_owner.Instance(action);
 }
 
 
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FluidEleBoundaryCalcPoro()
-    : DRT::ELEMENTS::FluidBoundaryImpl<distype>::FluidBoundaryImpl()
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FluidEleBoundaryCalcPoro()
+    : Discret::ELEMENTS::FluidBoundaryImpl<distype>::FluidBoundaryImpl()
 {
   // pointer to class FluidImplParameterTimInt
-  Base::fldpara_ = DRT::ELEMENTS::FluidEleParameterPoro::Instance();
+  Base::fldpara_ = Discret::ELEMENTS::FluidEleParameterPoro::Instance();
 }
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::evaluate_action(
-    DRT::ELEMENTS::FluidBoundary* ele1, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
-    CORE::LINALG::SerialDenseVector& elevec3)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::evaluate_action(
+    Discret::ELEMENTS::FluidBoundary* ele1, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
+    Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
+    Core::LinAlg::SerialDenseVector& elevec3)
 {
   // get the action required
-  const auto act = CORE::UTILS::GetAsEnum<FLD::BoundaryAction>(params, "action");
+  const auto act = Core::UTILS::GetAsEnum<FLD::BoundaryAction>(params, "action");
 
   switch (act)
   {
@@ -119,7 +119,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::evaluate_action(
     }
     default:
     {
-      DRT::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_action(
+      Discret::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_action(
           ele1, params, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3);
       break;
     }
@@ -127,20 +127,20 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::evaluate_action(
   }
 }
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
-    DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& plm,
-    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseVector& elevec1)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
+    Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& plm,
+    Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseVector& elevec1)
 {
   switch (distype)
   {
     // 2D:
-    case CORE::FE::CellType::line2:
+    case Core::FE::CellType::line2:
     {
-      if (ele->parent_element()->Shape() == CORE::FE::CellType::quad4)
+      if (ele->parent_element()->Shape() == Core::FE::CellType::quad4)
       {
-        this->fpsi_coupling<CORE::FE::CellType::quad4>(
+        this->fpsi_coupling<Core::FE::CellType::quad4>(
             ele, params, discretization, plm, elemat1, elevec1);
       }
       else
@@ -150,11 +150,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
       break;
     }
     // 3D:
-    case CORE::FE::CellType::quad4:
+    case Core::FE::CellType::quad4:
     {
-      if (ele->parent_element()->Shape() == CORE::FE::CellType::hex8)
+      if (ele->parent_element()->Shape() == Core::FE::CellType::hex8)
       {
-        this->fpsi_coupling<CORE::FE::CellType::hex8>(
+        this->fpsi_coupling<Core::FE::CellType::hex8>(
             ele, params, discretization, plm, elemat1, elevec1);
       }
       else
@@ -163,11 +163,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
       }
       break;
     }
-    case CORE::FE::CellType::tri3:
+    case Core::FE::CellType::tri3:
     {
-      if (ele->parent_element()->Shape() == CORE::FE::CellType::tet4)
+      if (ele->parent_element()->Shape() == Core::FE::CellType::tet4)
       {
-        this->fpsi_coupling<CORE::FE::CellType::tet4>(
+        this->fpsi_coupling<Core::FE::CellType::tet4>(
             ele, params, discretization, plm, elemat1, elevec1);
       }
       else
@@ -184,12 +184,12 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
   }
 }
 
-template <CORE::FE::CellType distype>
-template <CORE::FE::CellType pdistype>
-void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
-    DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& plm,
-    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseVector& elevec1)
+template <Core::FE::CellType distype>
+template <Core::FE::CellType pdistype>
+void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
+    Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& plm,
+    Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseVector& elevec1)
 {
   /*
    * Evaluate all Terms for the FPSI Boundary & Neumann Integration. The both conditions should be
@@ -244,10 +244,10 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
   }
 
   // number of parentnodes
-  static const int nenparent = CORE::FE::num_nodes<pdistype>;
+  static const int nenparent = Core::FE::num_nodes<pdistype>;
 
   // get the parent element
-  DRT::ELEMENTS::Fluid* pele = ele->parent_element();
+  Discret::ELEMENTS::Fluid* pele = ele->parent_element();
   int currparenteleid = pele->Id();
 
   // get submatrix to fill
@@ -271,7 +271,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
   double scalarintegraltransformfac = 0.0;
   double tangentialfac = 0.0;
 
-  CORE::LINALG::Matrix<nsd_, 1> neumannoverinflow(true);
+  Core::LinAlg::Matrix<nsd_, 1> neumannoverinflow(true);
 
   std::vector<int> lm;
   std::vector<int> lmowner;
@@ -283,32 +283,32 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
   std::vector<double> my_parentdisp_n;
   std::vector<double> porosity;
 
-  CORE::LINALG::Matrix<nsd_, Base::bdrynen_> evelnp(true);
-  CORE::LINALG::Matrix<nsd_, Base::bdrynen_> eveln(true);
-  CORE::LINALG::Matrix<nsd_, nenparent> pevelnp(true);
-  CORE::LINALG::Matrix<nsd_, nenparent> peveln(true);  // at previous time step n
-  CORE::LINALG::Matrix<nsd_, Base::bdrynen_> edispnp(true);
-  CORE::LINALG::Matrix<nsd_, Base::bdrynen_> egridvel(true);
-  CORE::LINALG::Matrix<nsd_, Base::bdrynen_> egridvel_n(true);
-  CORE::LINALG::Matrix<1, Base::bdrynen_> epressnp(true);
-  CORE::LINALG::Matrix<1, Base::bdrynen_> epressn(true);
-  CORE::LINALG::Matrix<nsd_, 1> gridvelint(true);
-  CORE::LINALG::Matrix<nsd_, 1> pxsi(true);
-  CORE::LINALG::Matrix<1, 1> pressint(true);
-  CORE::LINALG::Matrix<1, 1> pressint_n(true);  // at previous time step n
-  CORE::LINALG::Matrix<nsd_, nsd_> dudxi(true);
-  CORE::LINALG::Matrix<nsd_, nsd_> dudxi_n(true);  // at previous time step n
-  CORE::LINALG::Matrix<nsd_, nsd_> dudxioJinv(true);
-  CORE::LINALG::Matrix<nsd_, nsd_> dudxioJinv_n(true);  // at previous time step n
-  CORE::LINALG::Matrix<1, 1> tangentialvelocity1(true);
-  CORE::LINALG::Matrix<1, 1> tangentialvelocity2(true);
-  CORE::LINALG::Matrix<1, 1> tangentialgridvelocity1(true);
-  CORE::LINALG::Matrix<1, 1> tangentialgridvelocity2(true);
-  CORE::LINALG::Matrix<1, 1> normalvelocity(true);
+  Core::LinAlg::Matrix<nsd_, Base::bdrynen_> evelnp(true);
+  Core::LinAlg::Matrix<nsd_, Base::bdrynen_> eveln(true);
+  Core::LinAlg::Matrix<nsd_, nenparent> pevelnp(true);
+  Core::LinAlg::Matrix<nsd_, nenparent> peveln(true);  // at previous time step n
+  Core::LinAlg::Matrix<nsd_, Base::bdrynen_> edispnp(true);
+  Core::LinAlg::Matrix<nsd_, Base::bdrynen_> egridvel(true);
+  Core::LinAlg::Matrix<nsd_, Base::bdrynen_> egridvel_n(true);
+  Core::LinAlg::Matrix<1, Base::bdrynen_> epressnp(true);
+  Core::LinAlg::Matrix<1, Base::bdrynen_> epressn(true);
+  Core::LinAlg::Matrix<nsd_, 1> gridvelint(true);
+  Core::LinAlg::Matrix<nsd_, 1> pxsi(true);
+  Core::LinAlg::Matrix<1, 1> pressint(true);
+  Core::LinAlg::Matrix<1, 1> pressint_n(true);  // at previous time step n
+  Core::LinAlg::Matrix<nsd_, nsd_> dudxi(true);
+  Core::LinAlg::Matrix<nsd_, nsd_> dudxi_n(true);  // at previous time step n
+  Core::LinAlg::Matrix<nsd_, nsd_> dudxioJinv(true);
+  Core::LinAlg::Matrix<nsd_, nsd_> dudxioJinv_n(true);  // at previous time step n
+  Core::LinAlg::Matrix<1, 1> tangentialvelocity1(true);
+  Core::LinAlg::Matrix<1, 1> tangentialvelocity2(true);
+  Core::LinAlg::Matrix<1, 1> tangentialgridvelocity1(true);
+  Core::LinAlg::Matrix<1, 1> tangentialgridvelocity2(true);
+  Core::LinAlg::Matrix<1, 1> normalvelocity(true);
 
-  CORE::LINALG::Matrix<nsd_, nenparent> xrefe;  // material coord. of parent element
-  CORE::LINALG::Matrix<nsd_, nenparent> xcurr;  // current  coord. of parent element
-  CORE::LINALG::Matrix<nsd_, nenparent>
+  Core::LinAlg::Matrix<nsd_, nenparent> xrefe;  // material coord. of parent element
+  Core::LinAlg::Matrix<nsd_, nenparent> xcurr;  // current  coord. of parent element
+  Core::LinAlg::Matrix<nsd_, nenparent>
       xcurr_n;  // current  coord. of parent element at previous time step n
 
   Teuchos::RCP<const Epetra_Vector> displacements_np = discretization.GetState("dispnp");
@@ -324,28 +324,28 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
   if (displacements_n == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacements_n'");
 
   // get integration rule
-  const CORE::FE::IntPointsAndWeights<Base::bdrynsd_> intpoints(
-      DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+  const Core::FE::IntPointsAndWeights<Base::bdrynsd_> intpoints(
+      Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of
   // FluidBoundary element!)
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, Base::bdrynen_>>(
+  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, Base::bdrynen_>>(
       ele, Base::xyze_);
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, Base::bdrynen_>>(
+  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, Base::bdrynen_>>(
       ele, Base::xyze_n_);
 
   // get element location vector and ownerships
-  ele->CORE::Elements::Element::LocationVector(discretization, lm, lmowner, lmstride);
+  ele->Core::Elements::Element::LocationVector(discretization, lm, lmowner, lmstride);
 
   // get material parameters and constants needed to calculate matrix terms
-  const Teuchos::ParameterList& fpsidynparams = GLOBAL::Problem::Instance()->FPSIDynamicParams();
+  const Teuchos::ParameterList& fpsidynparams = Global::Problem::Instance()->FPSIDynamicParams();
 
-  Teuchos::RCP<CORE::MAT::Material> fluidmaterial;
-  Teuchos::RCP<CORE::MAT::Material> generalmaterial;
-  Teuchos::RCP<CORE::MAT::Material> currentmaterial;
-  Teuchos::RCP<MAT::FluidPoro> porofluidmaterial;
-  Teuchos::RCP<MAT::NewtonianFluid> newtonianfluidmaterial;
+  Teuchos::RCP<Core::Mat::Material> fluidmaterial;
+  Teuchos::RCP<Core::Mat::Material> generalmaterial;
+  Teuchos::RCP<Core::Mat::Material> currentmaterial;
+  Teuchos::RCP<Mat::FluidPoro> porofluidmaterial;
+  Teuchos::RCP<Mat::NewtonianFluid> newtonianfluidmaterial;
 
   currentmaterial = ele->parent_element()->Material();
 
@@ -355,20 +355,20 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
     // InterfaceFacingElementMap in general does not have elements on NeumannIntegration
     //(just on the FPSI interface)
     {
-      Teuchos::RCP<DRT::Discretization> porofluiddis =
-          GLOBAL::Problem::Instance()->GetDis("porofluid");
+      Teuchos::RCP<Discret::Discretization> porofluiddis =
+          Global::Problem::Instance()->GetDis("porofluid");
       it = InterfaceFacingElementMap->find(ele->Id());
       if (it == InterfaceFacingElementMap->end())
         FOUR_C_THROW("Couldn't find ele %d in InterfaceFacingElementMap", ele->Id());
 
-      CORE::Elements::Element* porofluidelement = porofluiddis->gElement(it->second);
+      Core::Elements::Element* porofluidelement = porofluiddis->gElement(it->second);
 
       generalmaterial = porofluidelement->Material();
-      porofluidmaterial = Teuchos::rcp_dynamic_cast<MAT::FluidPoro>(generalmaterial);
+      porofluidmaterial = Teuchos::rcp_dynamic_cast<Mat::FluidPoro>(generalmaterial);
       reaction_coefficient = porofluidmaterial->compute_reaction_coeff();
     }
 
-    newtonianfluidmaterial = Teuchos::rcp_dynamic_cast<MAT::NewtonianFluid>(currentmaterial);
+    newtonianfluidmaterial = Teuchos::rcp_dynamic_cast<Mat::NewtonianFluid>(currentmaterial);
 
     fluiddynamicviscosity = newtonianfluidmaterial->Viscosity();
 
@@ -380,16 +380,16 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
   }
   else if (discretization.Name() == "porofluid")
   {
-    Teuchos::RCP<DRT::Discretization> fluiddis = GLOBAL::Problem::Instance()->GetDis("fluid");
+    Teuchos::RCP<Discret::Discretization> fluiddis = Global::Problem::Instance()->GetDis("fluid");
     it = InterfaceFacingElementMap->find(ele->Id());
     if (it == InterfaceFacingElementMap->end())
       FOUR_C_THROW("Couldn't find ele %d in InterfaceFacingElementMap", ele->Id());
 
-    CORE::Elements::Element* fluidelement = fluiddis->gElement(it->second);
+    Core::Elements::Element* fluidelement = fluiddis->gElement(it->second);
 
     fluidmaterial = fluidelement->Material();
-    newtonianfluidmaterial = Teuchos::rcp_dynamic_cast<MAT::NewtonianFluid>(fluidmaterial);
-    porofluidmaterial = Teuchos::rcp_dynamic_cast<MAT::FluidPoro>(currentmaterial);
+    newtonianfluidmaterial = Teuchos::rcp_dynamic_cast<Mat::NewtonianFluid>(fluidmaterial);
+    porofluidmaterial = Teuchos::rcp_dynamic_cast<Mat::FluidPoro>(currentmaterial);
 
     reaction_coefficient = porofluidmaterial->compute_reaction_coeff();
     fluiddynamicviscosity = newtonianfluidmaterial->Viscosity();
@@ -415,8 +415,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
   if (displacements_np != Teuchos::null)
   {
     my_displacements_np.resize(lm.size());
-    CORE::FE::ExtractMyValues(*displacements_np, my_displacements_np, lm);
-    CORE::FE::ExtractMyValues(*displacements_np, my_parentdisp_np, plm);
+    Core::FE::ExtractMyValues(*displacements_np, my_displacements_np, lm);
+    Core::FE::ExtractMyValues(*displacements_np, my_parentdisp_np, plm);
   }
   FOUR_C_ASSERT(my_displacements_np.size() != 0, "no displacement values for boundary element");
   FOUR_C_ASSERT(my_parentdisp_np.size() != 0, "no displacement values for parent element");
@@ -424,8 +424,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
   if (displacements_n != Teuchos::null)
   {
     my_displacements_n.resize(lm.size());
-    CORE::FE::ExtractMyValues(*displacements_n, my_displacements_n, lm);
-    CORE::FE::ExtractMyValues(*displacements_n, my_parentdisp_n, plm);
+    Core::FE::ExtractMyValues(*displacements_n, my_displacements_n, lm);
+    Core::FE::ExtractMyValues(*displacements_n, my_parentdisp_n, plm);
   }
   FOUR_C_ASSERT(
       my_displacements_n.size() != 0, "no displacement values for boundary element at time step n");
@@ -444,7 +444,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
 
   // update element geometry of parent element
   {
-    CORE::Nodes::Node** nodes = pele->Nodes();
+    Core::Nodes::Node** nodes = pele->Nodes();
     for (int inode = 0; inode < nenparent; ++inode)
     {
       for (int idof = 0; idof < nsd_; ++idof)
@@ -461,15 +461,15 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
 
   // extract local values from the global vectors
   std::vector<double> my_fluidvelocity_np(lm.size());
-  CORE::FE::ExtractMyValues(*fluidvelocity_np, my_fluidvelocity_np, lm);
+  Core::FE::ExtractMyValues(*fluidvelocity_np, my_fluidvelocity_np, lm);
   std::vector<double> my_fluidvelocity_n(lm.size());  // at previous time step n
-  CORE::FE::ExtractMyValues(*fluidvelocity_n, my_fluidvelocity_n, lm);
+  Core::FE::ExtractMyValues(*fluidvelocity_n, my_fluidvelocity_n, lm);
   std::vector<double> my_gridvelocity(lm.size());
-  CORE::FE::ExtractMyValues(*gridvelocity, my_gridvelocity, lm);
+  Core::FE::ExtractMyValues(*gridvelocity, my_gridvelocity, lm);
   std::vector<double> my_parentfluidvelocity_np(plm.size());
-  CORE::FE::ExtractMyValues(*fluidvelocity_np, my_parentfluidvelocity_np, plm);
+  Core::FE::ExtractMyValues(*fluidvelocity_np, my_parentfluidvelocity_np, plm);
   std::vector<double> my_parentfluidvelocity_n(plm.size());  // at previous time step n
-  CORE::FE::ExtractMyValues(*fluidvelocity_n, my_parentfluidvelocity_n, plm);
+  Core::FE::ExtractMyValues(*fluidvelocity_n, my_parentfluidvelocity_n, plm);
 
   // split velocity and pressure, insert into element arrays
   for (int inode = 0; inode < Base::bdrynen_; inode++)
@@ -495,12 +495,12 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
   }
 
   // get porosity values from parent element
-  Teuchos::RCP<DRT::Discretization> structdis = Teuchos::null;
+  Teuchos::RCP<Discret::Discretization> structdis = Teuchos::null;
 
   // access structure discretization
-  structdis = GLOBAL::Problem::Instance()->GetDis("structure");
+  structdis = Global::Problem::Instance()->GetDis("structure");
 
-  CORE::Elements::Element* structele = nullptr;
+  Core::Elements::Element* structele = nullptr;
   // get corresponding structure element (it has the same global ID as the porofluid element)
   if (discretization.Name() == "structure" or discretization.Name() == "porofluid")
   {
@@ -519,30 +519,30 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
   }
 
   // get porous material
-  Teuchos::RCP<MAT::StructPoro> structmat;
+  Teuchos::RCP<Mat::StructPoro> structmat;
   if (block != "NeumannIntegration" && block != "NeumannIntegration_Ale")
   {
-    structmat = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(structele->Material());
-    if (structmat->MaterialType() != CORE::Materials::m_structporo)
+    structmat = Teuchos::rcp_dynamic_cast<Mat::StructPoro>(structele->Material());
+    if (structmat->MaterialType() != Core::Materials::m_structporo)
     {
       FOUR_C_THROW("invalid structure material for poroelasticity");
     }
   }
 
   // what's the current problem type?
-  CORE::ProblemType probtype = GLOBAL::Problem::Instance()->GetProblemType();
+  Core::ProblemType probtype = Global::Problem::Instance()->GetProblemType();
   double Lp = 0.0;
-  if (probtype == CORE::ProblemType::fps3i)
+  if (probtype == Core::ProblemType::fps3i)
   {
     // get the conductivity of membrane at the interface
     Lp = params.get<double>("membrane conductivity");
   }
 
   // get coordinates of gauss points w.r.t. local parent coordinate system
-  CORE::LINALG::SerialDenseMatrix pqxg(intpoints.IP().nquad, nsd_);
-  CORE::LINALG::Matrix<nsd_, nsd_> derivtrafo(true);
+  Core::LinAlg::SerialDenseMatrix pqxg(intpoints.IP().nquad, nsd_);
+  Core::LinAlg::Matrix<nsd_, nsd_> derivtrafo(true);
 
-  CORE::FE::BoundaryGPToParentGP<nsd_>(
+  Core::FE::BoundaryGPToParentGP<nsd_>(
       pqxg, derivtrafo, intpoints, pdistype, distype, ele->SurfaceNumber());
 
   // //////////////////////////////////////////////////////////////////////////
@@ -551,10 +551,10 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
   for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
   {
     // get shape functions and derivatives in the plane of the element
-    CORE::LINALG::Matrix<nenparent, 1> pfunct(true);  // parent element shape function
-    CORE::LINALG::Matrix<nsd_, nenparent> pderiv(
+    Core::LinAlg::Matrix<nenparent, 1> pfunct(true);  // parent element shape function
+    Core::LinAlg::Matrix<nsd_, nenparent> pderiv(
         true);  // derivatives of parent element shape functions in interface coordinate system
-    CORE::LINALG::Matrix<nsd_, nenparent> pderiv_loc(
+    Core::LinAlg::Matrix<nsd_, nenparent> pderiv_loc(
         true);  // derivatives of parent element shape functions in parent element coordinate system
 
     // coordinates of the current integration point in parent coordinate system
@@ -565,10 +565,10 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
 
     // evalute parent element shape function at current integration point in parent coordinate
     // system
-    CORE::FE::shape_function<pdistype>(pxsi, pfunct);
+    Core::FE::shape_function<pdistype>(pxsi, pfunct);
     // evaluate derivatives of parent element shape functions at current integration point in parent
     // coordinate system
-    CORE::FE::shape_function_deriv1<pdistype>(pxsi, pderiv_loc);
+    Core::FE::shape_function_deriv1<pdistype>(pxsi, pderiv_loc);
     // transformation from parent element coordinate system to interface element coordinate system
     pderiv.MultiplyTN(derivtrafo, pderiv_loc);
 
@@ -592,9 +592,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
     //   |  X_1,2  X_2,2  X_3,2  | = Jmat = --------
     //   |_ X_1,3  X_2,3  X_3,3 _|           d s_j
     //
-    CORE::LINALG::Matrix<nsd_, nsd_> xjm;
-    CORE::LINALG::Matrix<nsd_, nsd_> xjm_n;  // at previous time step n
-    CORE::LINALG::Matrix<nsd_, nsd_> Jmat;
+    Core::LinAlg::Matrix<nsd_, nsd_> xjm;
+    Core::LinAlg::Matrix<nsd_, nsd_> xjm_n;  // at previous time step n
+    Core::LinAlg::Matrix<nsd_, nsd_> Jmat;
     xjm.MultiplyNT(pderiv_loc, xcurr);
     xjm_n.MultiplyNT(pderiv_loc, xcurr_n);
     Jmat.MultiplyNT(pderiv_loc, xrefe);
@@ -603,8 +603,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
     const double J = det / detJ;
 
     // inverse of transposed jacobian "ds/dx" (xjm)
-    CORE::LINALG::Matrix<nsd_, nsd_> xji;
-    CORE::LINALG::Matrix<nsd_, nsd_> xji_n;  // at previous time step n
+    Core::LinAlg::Matrix<nsd_, nsd_> xji;
+    Core::LinAlg::Matrix<nsd_, nsd_> xji_n;  // at previous time step n
     //    _                     _
     //   |  s_1,1  s_2,1  s_3,1  |           d s_i
     //   |  s_1,2  s_2,2  s_3,2  | = xji  = -------- ;  [xji] o [xjm] = I
@@ -615,7 +615,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
     // check unitiy of  [xji] o [xjm]
-    CORE::LINALG::Matrix<nsd_, nsd_> eye;
+    Core::LinAlg::Matrix<nsd_, nsd_> eye;
     eye.Multiply(xji, xjm);
     if (nsd_ == 3)
     {
@@ -648,12 +648,12 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
 #endif
 
     // evaluate Base::unitnormal_ , Base::deriv_, ...
-    CORE::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
+    Core::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
         Base::unitnormal_n_, Base::drs_, Base::xsi_, Base::xyze_n_, intpoints, gpid, nullptr,
         nullptr, IsNurbs<distype>::isnurbs);
 
     // evaluate Base::unitnormal_ , Base::deriv_, ...
-    CORE::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
+    Core::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
         Base::unitnormal_, Base::drs_, Base::xsi_, Base::xyze_, intpoints, gpid, nullptr, nullptr,
         IsNurbs<distype>::isnurbs);
 
@@ -690,8 +690,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
     dudxioJinv.MultiplyNT(dudxi, xji);
     dudxioJinv_n.MultiplyNT(dudxi_n, xji_n);  // at previus time step n
 
-    CORE::LINALG::Matrix<1, nsd_> graduon(true);
-    CORE::LINALG::Matrix<1, nsd_> graduon_n(true);  // from previous time step
+    Core::LinAlg::Matrix<1, nsd_> graduon(true);
+    Core::LinAlg::Matrix<1, nsd_> graduon_n(true);  // from previous time step
     //
     // l=  1     2     3
     // [  ...   ...   ...  ]
@@ -705,8 +705,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
         graduon_n(0, idof) += dudxioJinv_n(idof, idof2) * Base::unitnormal_n_(idof2);
       }
     }
-    CORE::LINALG::Matrix<1, nsd_> graduTon(true);
-    CORE::LINALG::Matrix<1, nsd_> graduTon_n(true);  // at previous time step n
+    Core::LinAlg::Matrix<1, nsd_> graduTon(true);
+    Core::LinAlg::Matrix<1, nsd_> graduTon_n(true);  // at previous time step n
     //
     // l=  1     2     3
     // [  ...   ...   ...  ]
@@ -743,16 +743,16 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
 
     // dxyzdrs vector -> normal which is not normalized built from cross product of columns
     // of Jacobian matrix d(x,y,z)/d(r,s)
-    CORE::LINALG::Matrix<Base::bdrynsd_, nsd_> dxyzdrs(0.0);
-    CORE::LINALG::Matrix<Base::bdrynsd_, nsd_> dxyzdrs_n(0.0);
+    Core::LinAlg::Matrix<Base::bdrynsd_, nsd_> dxyzdrs(0.0);
+    Core::LinAlg::Matrix<Base::bdrynsd_, nsd_> dxyzdrs_n(0.0);
     dxyzdrs.MultiplyNT(Base::deriv_, Base::xyze_);
     dxyzdrs_n.MultiplyNT(Base::deriv_, Base::xyze_n_);
 
     // tangential surface vectors are columns of dxyzdrs
-    CORE::LINALG::Matrix<nsd_, 1> tangential1(true);
-    CORE::LINALG::Matrix<nsd_, 1> tangential2(true);
-    CORE::LINALG::Matrix<nsd_, 1> tangential1_n(true);
-    CORE::LINALG::Matrix<nsd_, 1> tangential2_n(true);
+    Core::LinAlg::Matrix<nsd_, 1> tangential1(true);
+    Core::LinAlg::Matrix<nsd_, 1> tangential2(true);
+    Core::LinAlg::Matrix<nsd_, 1> tangential1_n(true);
+    Core::LinAlg::Matrix<nsd_, 1> tangential2_n(true);
 
     for (int idof = 0; idof < nsd_; idof++)
     {
@@ -821,8 +821,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
     //  t3 |  -(...)     -(...)    N_1,(r,s)-() |    ...       ...     N_2,(r,s) |  ...     |
     //     |_                                                                              _|
     //
-    CORE::LINALG::Matrix<nsd_, nenparent * nsd_> tangentialderiv1(true);
-    CORE::LINALG::Matrix<nsd_, nenparent * nsd_> tangentialderiv2(true);
+    Core::LinAlg::Matrix<nsd_, nenparent * nsd_> tangentialderiv1(true);
+    Core::LinAlg::Matrix<nsd_, nenparent * nsd_> tangentialderiv2(true);
 
     for (int node = 0; node < nenparent; ++node)
     {
@@ -864,8 +864,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
     // vs_j --------- = [  x x x      x x x            ]
     //       d d^L_l
     //
-    CORE::LINALG::Matrix<nenparent * nsd_, 1> vsotangentialderiv1(true);
-    CORE::LINALG::Matrix<nenparent * nsd_, 1> vsotangentialderiv2(true);
+    Core::LinAlg::Matrix<nenparent * nsd_, 1> vsotangentialderiv1(true);
+    Core::LinAlg::Matrix<nenparent * nsd_, 1> vsotangentialderiv2(true);
     for (int inode = 0; inode < nenparent; inode++)
     {
       for (int idof = 0; idof < nsd_; idof++)
@@ -879,8 +879,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
         }
       }
     }
-    CORE::LINALG::Matrix<nenparent * nsd_, 1> vfotangentialderiv1(true);
-    CORE::LINALG::Matrix<nenparent * nsd_, 1> vfotangentialderiv2(true);
+    Core::LinAlg::Matrix<nenparent * nsd_, 1> vfotangentialderiv1(true);
+    Core::LinAlg::Matrix<nenparent * nsd_, 1> vfotangentialderiv2(true);
     for (int inode = 0; inode < nenparent; inode++)
     {
       for (int idof = 0; idof < nsd_; idof++)
@@ -912,7 +912,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
     //  interface and its corresponding basic functions become zero. this makes perfect
     //  sense for the normal and its linearization are well determined solely by the
     //  surface of the element.
-    CORE::LINALG::Matrix<nsd_, nenparent * nsd_> normalderiv(true);
+    Core::LinAlg::Matrix<nsd_, nenparent * nsd_> normalderiv(true);
 
     if (nsd_ == 3)
     {
@@ -960,7 +960,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
     //          | x_3,r |     | x_3,s |
     //          |_     _|     |_     _|
     //
-    CORE::LINALG::Matrix<nsd_, 1> normal(true);
+    Core::LinAlg::Matrix<nsd_, 1> normal(true);
 
     if (nsd_ == 3)
     {
@@ -988,7 +988,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
     //                 |_ |          |        |            _|
     //
     //
-    CORE::LINALG::Matrix<nsd_, nenparent> linearizationofscalarintegraltransformfac(true);
+    Core::LinAlg::Matrix<nsd_, nenparent> linearizationofscalarintegraltransformfac(true);
 
     for (int node = 0; node < nenparent; ++node)
     {
@@ -1007,9 +1007,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
     //------------------------------------- d|J|/dd = d|J|/dF : dF/dd = |J| * F^-T . N_X = |J| * N_x
     //
     // linearization of jacobian determinant w.r.t. structural displacements
-    CORE::LINALG::Matrix<1, nsd_ * nenparent> dJ_dds;
+    Core::LinAlg::Matrix<1, nsd_ * nenparent> dJ_dds;
     // global derivatives of shape functions w.r.t x,y,z (material configuration)
-    CORE::LINALG::Matrix<nsd_, nenparent> derxy;
+    Core::LinAlg::Matrix<nsd_, nenparent> derxy;
 
     //                                        _                          _
     //            d  N_A      d xi_alpha     |  N1,1 N2,1 N3,1 N4,1 ...   |
@@ -1027,7 +1027,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
     //  N_L,beta  ---------- n^j = derxy o n
     //            d   x_j
     //
-    CORE::LINALG::Matrix<1, nenparent> dNdxon(true);
+    Core::LinAlg::Matrix<1, nenparent> dNdxon(true);
     for (int inode = 0; inode < nenparent; inode++)
     {
       for (int idof = 0; idof < nsd_; idof++)
@@ -1036,8 +1036,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
       }
     }
 
-    CORE::LINALG::Matrix<1, nenparent> gradNon(true);
-    CORE::LINALG::Matrix<1, nsd_ * nenparent> gradN(true);
+    Core::LinAlg::Matrix<1, nenparent> gradNon(true);
+    Core::LinAlg::Matrix<1, nsd_ * nenparent> gradN(true);
     //              d xi_alpha
     //  N_L,alpha  ------------ [g_L x g_j]
     //              d  x_j
@@ -1068,7 +1068,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
     //   N_A,j u^A_i -------- =  2 |     ...                |
     //               d d^L_l     3 |_    ...               _|
     //
-    CORE::LINALG::Matrix<nsd_, nsd_ * nenparent> graduonormalderiv;
+    Core::LinAlg::Matrix<nsd_, nsd_ * nenparent> graduonormalderiv;
     graduonormalderiv.Multiply(dudxioJinv, normalderiv);
 
     // transposed gradient of u once contracted with linearization of normal
@@ -1079,11 +1079,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
     //   N_A,i u^A_j -------- =  2 |     ...                |
     //               d d^L_l     3 |_    ...               _|
     //
-    CORE::LINALG::Matrix<nsd_, nsd_ * nenparent> graduTonormalderiv;
+    Core::LinAlg::Matrix<nsd_, nsd_ * nenparent> graduTonormalderiv;
     graduTonormalderiv.MultiplyTN(dudxioJinv, normalderiv);
 
     // Isn't that cool?
-    CORE::LINALG::Matrix<1, nenparent> survivor;
+    Core::LinAlg::Matrix<1, nenparent> survivor;
     for (int inode = 0; inode < nenparent; inode++)
     {
       if (pfunct(inode) != 0)
@@ -1113,7 +1113,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
     for (int inode = 0; inode < nenparent; inode++)
     {
       double normal_u_minus_vs = 0.0;
-      CORE::LINALG::Matrix<1, nsd_> u_minus_vs(true);
+      Core::LinAlg::Matrix<1, nsd_> u_minus_vs(true);
 
       for (int idof = 0; idof < nsd_; idof++)
       {
@@ -1121,7 +1121,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
         u_minus_vs(idof) = Base::velint_(idof) - gridvelint(idof);
       }
 
-      CORE::LINALG::Matrix<1, nenparent * nsd_> u_minus_vs_normalderiv(true);
+      Core::LinAlg::Matrix<1, nenparent * nsd_> u_minus_vs_normalderiv(true);
       u_minus_vs_normalderiv.Multiply(u_minus_vs, normalderiv);
 
 
@@ -1318,7 +1318,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
                             ) *
                     pfunct(inode) * tangentialfac * Base::fac_ * timefac;
 
-                if (probtype == CORE::ProblemType::fps3i)
+                if (probtype == Core::ProblemType::fps3i)
                 {
                   /*
                             d(w o n,(u-vs) o n) / d(ds)
@@ -1375,7 +1375,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
                   (tangential1(idof2) * tangential1(idof3) +
                       tangential2(idof2) * tangential2(idof3)) *
                   pfunct(nnod) * pfunct(inode) * tangentialfac * Base::fac_ * timefac;
-              if (probtype == CORE::ProblemType::fps3i)
+              if (probtype == Core::ProblemType::fps3i)
               {
                 /*
                      d(w o n,(u-vs) o n) / d(u)
@@ -1572,7 +1572,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
     for (int inode = 0; inode < nenparent; inode++)
     {
       double normal_u_minus_vs = 0.0;
-      CORE::LINALG::Matrix<1, nsd_> u_minus_vs(true);
+      Core::LinAlg::Matrix<1, nsd_> u_minus_vs(true);
 
       for (int idof = 0; idof < nsd_; idof++)
       {
@@ -1580,7 +1580,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
         u_minus_vs(idof) = Base::velint_(idof) - gridvelint(idof);
       }
 
-      CORE::LINALG::Matrix<1, nenparent * nsd_> u_minus_vs_normalderiv(true);
+      Core::LinAlg::Matrix<1, nenparent * nsd_> u_minus_vs_normalderiv(true);
       u_minus_vs_normalderiv.Multiply(u_minus_vs, normalderiv);
 
       // //////////////////////////////////////////////////////////////////////////
@@ -1594,7 +1594,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
            sign because of opposite normal -> (+)
          */
         // double rhsfacpre =
-        // DRT::ELEMENTS::FluidEleParameter::Instance(INPAR::FPSI::porofluid)->TimeFacRhsPre();
+        // Discret::ELEMENTS::FluidEleParameter::Instance(Inpar::FPSI::porofluid)->TimeFacRhsPre();
         elevec1(inode * Base::numdofpernode_ + nsd_) += rhsfac * pfunct(inode) * normal_u_minus_vs;
 
       }  // block conti
@@ -1660,7 +1660,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
           // permeability of biological membranes to non-electrolytes." Biochimica et biophysica
           // Acta 27 (1958): 229-246.
           // One could think of not using this equation, i.e. having L_p -> inf (Thon)
-          if (probtype == CORE::ProblemType::fps3i)
+          if (probtype == Core::ProblemType::fps3i)
           {
             // evaluated on fluid field --> no sign flip
             elevec1(inode * Base::numdofpernode_ + idof2) -=
@@ -1689,20 +1689,20 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
   }
 }
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_flow_rate(
-    DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& plm,
-    CORE::LINALG::SerialDenseVector& elevec1)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_flow_rate(
+    Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& plm,
+    Core::LinAlg::SerialDenseVector& elevec1)
 {
   switch (distype)
   {
     // 2D:
-    case CORE::FE::CellType::line2:
+    case Core::FE::CellType::line2:
     {
-      if (ele->parent_element()->Shape() == CORE::FE::CellType::quad4)
+      if (ele->parent_element()->Shape() == Core::FE::CellType::quad4)
       {
-        this->compute_flow_rate<CORE::FE::CellType::quad4>(
+        this->compute_flow_rate<Core::FE::CellType::quad4>(
             ele, params, discretization, plm, elevec1);
       }
       else
@@ -1711,11 +1711,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_flow_rate(
       }
       break;
     }
-    case CORE::FE::CellType::line3:
+    case Core::FE::CellType::line3:
     {
-      if (ele->parent_element()->Shape() == CORE::FE::CellType::quad9)
+      if (ele->parent_element()->Shape() == Core::FE::CellType::quad9)
       {
-        this->compute_flow_rate<CORE::FE::CellType::quad9>(
+        this->compute_flow_rate<Core::FE::CellType::quad9>(
             ele, params, discretization, plm, elevec1);
       }
       else
@@ -1724,11 +1724,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_flow_rate(
       }
       break;
     }
-    case CORE::FE::CellType::nurbs3:
+    case Core::FE::CellType::nurbs3:
     {
-      if (ele->parent_element()->Shape() == CORE::FE::CellType::nurbs9)
+      if (ele->parent_element()->Shape() == Core::FE::CellType::nurbs9)
       {
-        this->compute_flow_rate<CORE::FE::CellType::nurbs9>(
+        this->compute_flow_rate<Core::FE::CellType::nurbs9>(
             ele, params, discretization, plm, elevec1);
       }
       else
@@ -1738,11 +1738,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_flow_rate(
       break;
     }
     // 3D:
-    case CORE::FE::CellType::quad4:
+    case Core::FE::CellType::quad4:
     {
-      if (ele->parent_element()->Shape() == CORE::FE::CellType::hex8)
+      if (ele->parent_element()->Shape() == Core::FE::CellType::hex8)
       {
-        this->compute_flow_rate<CORE::FE::CellType::hex8>(
+        this->compute_flow_rate<Core::FE::CellType::hex8>(
             ele, params, discretization, plm, elevec1);
       }
       else
@@ -1751,11 +1751,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_flow_rate(
       }
       break;
     }
-    case CORE::FE::CellType::tri3:
+    case Core::FE::CellType::tri3:
     {
-      if (ele->parent_element()->Shape() == CORE::FE::CellType::tet4)
+      if (ele->parent_element()->Shape() == Core::FE::CellType::tet4)
       {
-        this->compute_flow_rate<CORE::FE::CellType::tet4>(
+        this->compute_flow_rate<Core::FE::CellType::tet4>(
             ele, params, discretization, plm, elevec1);
       }
       else
@@ -1764,11 +1764,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_flow_rate(
       }
       break;
     }
-    case CORE::FE::CellType::tri6:
+    case Core::FE::CellType::tri6:
     {
-      if (ele->parent_element()->Shape() == CORE::FE::CellType::tet10)
+      if (ele->parent_element()->Shape() == Core::FE::CellType::tet10)
       {
-        this->compute_flow_rate<CORE::FE::CellType::tet10>(
+        this->compute_flow_rate<Core::FE::CellType::tet10>(
             ele, params, discretization, plm, elevec1);
       }
       else
@@ -1777,11 +1777,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_flow_rate(
       }
       break;
     }
-    case CORE::FE::CellType::quad9:
+    case Core::FE::CellType::quad9:
     {
-      if (ele->parent_element()->Shape() == CORE::FE::CellType::hex27)
+      if (ele->parent_element()->Shape() == Core::FE::CellType::hex27)
       {
-        this->compute_flow_rate<CORE::FE::CellType::hex27>(
+        this->compute_flow_rate<Core::FE::CellType::hex27>(
             ele, params, discretization, plm, elevec1);
       }
       else
@@ -1798,12 +1798,12 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_flow_rate(
   }
 }
 
-template <CORE::FE::CellType distype>
-template <CORE::FE::CellType pdistype>
-void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_flow_rate(
-    DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& plm,
-    CORE::LINALG::SerialDenseVector& elevec1)
+template <Core::FE::CellType distype>
+template <Core::FE::CellType pdistype>
+void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_flow_rate(
+    Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& plm,
+    Core::LinAlg::SerialDenseVector& elevec1)
 {
   // This function is only implemented for 3D and 2D
   if (Base::bdrynsd_ != 2 and Base::bdrynsd_ != 1)
@@ -1813,22 +1813,22 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_flow_rate(
   std::vector<int> lm;
   std::vector<int> lmowner;
   std::vector<int> lmstride;
-  ele->CORE::Elements::Element::LocationVector(discretization, lm, lmowner, lmstride);
+  ele->Core::Elements::Element::LocationVector(discretization, lm, lmowner, lmstride);
 
   // number of parentnodes
-  static const int nenparent = CORE::FE::num_nodes<pdistype>;
+  static const int nenparent = Core::FE::num_nodes<pdistype>;
 
   // get the parent element
-  DRT::ELEMENTS::Fluid* pele = ele->parent_element();
+  Discret::ELEMENTS::Fluid* pele = ele->parent_element();
 
   // get integration rule
-  const CORE::FE::IntPointsAndWeights<Base::bdrynsd_> intpoints(
-      DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+  const Core::FE::IntPointsAndWeights<Base::bdrynsd_> intpoints(
+      Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of
   // FluidBoundary element!)
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, Base::bdrynen_>>(
+  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, Base::bdrynen_>>(
       ele, Base::xyze_);
 
   // displacements
@@ -1840,8 +1840,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_flow_rate(
   if (dispnp != Teuchos::null)
   {
     mydispnp.resize(lm.size());
-    CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
-    CORE::FE::ExtractMyValues(*dispnp, parentdispnp, plm);
+    Core::FE::ExtractMyValues(*dispnp, mydispnp, lm);
+    Core::FE::ExtractMyValues(*dispnp, parentdispnp, plm);
   }
   FOUR_C_ASSERT(mydispnp.size() != 0, "no displacement values for boundary element");
   FOUR_C_ASSERT(parentdispnp.size() != 0, "no displacement values for parent element");
@@ -1852,10 +1852,10 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_flow_rate(
       Base::xyze_(idim, inode) += mydispnp[Base::numdofpernode_ * inode + idim];
 
   // update element geometry of parent element
-  CORE::LINALG::Matrix<nsd_, nenparent> xrefe;  // material coord. of parent element
-  CORE::LINALG::Matrix<nsd_, nenparent> xcurr;  // current  coord. of parent element
+  Core::LinAlg::Matrix<nsd_, nenparent> xrefe;  // material coord. of parent element
+  Core::LinAlg::Matrix<nsd_, nenparent> xcurr;  // current  coord. of parent element
   {
-    CORE::Nodes::Node** nodes = pele->Nodes();
+    Core::Nodes::Node** nodes = pele->Nodes();
     for (int i = 0; i < nenparent; ++i)
     {
       const auto& x = nodes[i]->X();
@@ -1876,17 +1876,17 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_flow_rate(
   if (gridvel == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'gridv'");
 
   std::vector<double> myvelnp(lm.size());
-  CORE::FE::ExtractMyValues(*velnp, myvelnp, lm);
+  Core::FE::ExtractMyValues(*velnp, myvelnp, lm);
   std::vector<double> mygridvel(lm.size());
-  CORE::FE::ExtractMyValues(*gridvel, mygridvel, lm);
+  Core::FE::ExtractMyValues(*gridvel, mygridvel, lm);
 
   // allocate velocity vectors
-  CORE::LINALG::Matrix<nsd_, Base::bdrynen_> evelnp(true);
-  CORE::LINALG::Matrix<Base::bdrynen_, 1> epressnp(true);
-  CORE::LINALG::Matrix<nsd_, Base::bdrynen_> edispnp(true);
-  CORE::LINALG::Matrix<nsd_, Base::bdrynen_> egridvel(true);
-  CORE::LINALG::Matrix<Base::bdrynen_, 1> escaaf(true);
-  CORE::LINALG::Matrix<Base::bdrynen_, 1> eporosity(true);
+  Core::LinAlg::Matrix<nsd_, Base::bdrynen_> evelnp(true);
+  Core::LinAlg::Matrix<Base::bdrynen_, 1> epressnp(true);
+  Core::LinAlg::Matrix<nsd_, Base::bdrynen_> edispnp(true);
+  Core::LinAlg::Matrix<nsd_, Base::bdrynen_> egridvel(true);
+  Core::LinAlg::Matrix<Base::bdrynen_, 1> escaaf(true);
+  Core::LinAlg::Matrix<Base::bdrynen_, 1> eporosity(true);
 
   // split velocity and pressure, insert into element arrays
   for (int inode = 0; inode < Base::bdrynen_; inode++)
@@ -1903,10 +1903,10 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_flow_rate(
   compute_nodal_porosity(ele, mydispnp, eporosity);
 
   // get coordinates of gauss points w.r.t. local parent coordinate system
-  CORE::LINALG::SerialDenseMatrix pqxg(intpoints.IP().nquad, nsd_);
-  CORE::LINALG::Matrix<nsd_, nsd_> derivtrafo(true);
+  Core::LinAlg::SerialDenseMatrix pqxg(intpoints.IP().nquad, nsd_);
+  Core::LinAlg::Matrix<nsd_, nsd_> derivtrafo(true);
 
-  CORE::FE::BoundaryGPToParentGP<nsd_>(
+  Core::FE::BoundaryGPToParentGP<nsd_>(
       pqxg, derivtrafo, intpoints, pdistype, distype, ele->SurfaceNumber());
 
 
@@ -1916,16 +1916,16 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_flow_rate(
 
   // In the case of nurbs the normal vector is multiplied with normalfac
   double normalfac = 0.0;
-  std::vector<CORE::LINALG::SerialDenseVector> mypknots(nsd_);
-  std::vector<CORE::LINALG::SerialDenseVector> myknots(Base::bdrynsd_);
-  CORE::LINALG::SerialDenseVector weights(Base::bdrynen_);
-  CORE::LINALG::SerialDenseVector pweights(pele->num_node());
+  std::vector<Core::LinAlg::SerialDenseVector> mypknots(nsd_);
+  std::vector<Core::LinAlg::SerialDenseVector> myknots(Base::bdrynsd_);
+  Core::LinAlg::SerialDenseVector weights(Base::bdrynen_);
+  Core::LinAlg::SerialDenseVector pweights(pele->num_node());
 
   // for isogeometric elements --- get knotvectors for parent
   // element and surface element, get weights
   if (IsNurbs<distype>::isnurbs)
   {
-    bool zero_size = DRT::NURBS::GetKnotVectorAndWeightsForNurbsBoundaryAndParent(pele, ele,
+    bool zero_size = Discret::Nurbs::GetKnotVectorAndWeightsForNurbsBoundaryAndParent(pele, ele,
         ele->SurfaceNumber(), discretization, mypknots, myknots, pweights, weights, normalfac);
 
     if (zero_size)
@@ -1936,16 +1936,16 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_flow_rate(
   // --------------------------------------------------
 
   // structure velocity at gausspoint
-  CORE::LINALG::Matrix<nsd_, 1> gridvelint;
+  Core::LinAlg::Matrix<nsd_, 1> gridvelint;
 
   // coordinates of gauss points of parent element
-  CORE::LINALG::Matrix<nsd_, 1> pxsi(true);
+  Core::LinAlg::Matrix<nsd_, 1> pxsi(true);
 
   for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
   {
     // get shape functions and derivatives in the plane of the element
-    CORE::LINALG::Matrix<nenparent, 1> pfunct(true);
-    CORE::LINALG::Matrix<nsd_, nenparent> pderiv_loc;
+    Core::LinAlg::Matrix<nenparent, 1> pfunct(true);
+    Core::LinAlg::Matrix<nsd_, nenparent> pderiv_loc;
 
     // coordinates of the current integration point
     for (int idim = 0; idim < nsd_; idim++) pxsi(idim) = pqxg(gpid, idim);
@@ -1954,20 +1954,20 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_flow_rate(
     if (not IsNurbs<distype>::isnurbs)
     {
       // shape functions and their first derivatives of parent element
-      CORE::FE::shape_function<pdistype>(pxsi, pfunct);
-      CORE::FE::shape_function_deriv1<pdistype>(pxsi, pderiv_loc);
+      Core::FE::shape_function<pdistype>(pxsi, pfunct);
+      Core::FE::shape_function_deriv1<pdistype>(pxsi, pderiv_loc);
     }
     // only for NURBS!!!
     else
     {
-      CORE::FE::NURBS::nurbs_get_funct_deriv(
+      Core::FE::Nurbs::nurbs_get_funct_deriv(
           pfunct, pderiv_loc, pxsi, mypknots, pweights, pdistype);
     }
 
     // get Jacobian matrix and determinant w.r.t. spatial configuration
     // transposed jacobian "dx/ds"
-    CORE::LINALG::Matrix<nsd_, nsd_> xjm;
-    CORE::LINALG::Matrix<nsd_, nsd_> Jmat;
+    Core::LinAlg::Matrix<nsd_, nsd_> xjm;
+    Core::LinAlg::Matrix<nsd_, nsd_> Jmat;
     xjm.MultiplyNT(pderiv_loc, xcurr);
     Jmat.MultiplyNT(pderiv_loc, xrefe);
     // jacobian determinant "det(dx/ds)"
@@ -1980,7 +1980,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_flow_rate(
     // Computation of the integration factor & shape function at the Gauss point & derivative of the
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
-    CORE::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
+    Core::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
         Base::unitnormal_, Base::drs_, Base::xsi_, Base::xyze_, intpoints, gpid, &myknots, &weights,
         IsNurbs<distype>::isnurbs);
 
@@ -2048,25 +2048,25 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_flow_rate(
   }
 }
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration(
-    DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
-    CORE::LINALG::SerialDenseVector& elevec1)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration(
+    Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
+    Core::LinAlg::SerialDenseVector& elevec1)
 {
   // This function is only implemented for 3D
   if (Base::bdrynsd_ != 2 and Base::bdrynsd_ != 1)
     FOUR_C_THROW("no_penetration is only implemented for 3D and 2D!");
 
   // get integration rule
-  const CORE::FE::IntPointsAndWeights<Base::bdrynsd_> intpoints(
-      DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+  const Core::FE::IntPointsAndWeights<Base::bdrynsd_> intpoints(
+      Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of
   // FluidBoundary element!)
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, Base::bdrynen_>>(
+  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, Base::bdrynen_>>(
       ele, Base::xyze_);
 
   // displacements
@@ -2077,7 +2077,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration(
   if (dispnp != Teuchos::null)
   {
     mydispnp.resize(lm.size());
-    CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
+    Core::FE::ExtractMyValues(*dispnp, mydispnp, lm);
   }
   FOUR_C_ASSERT(mydispnp.size() != 0, "no displacement values for boundary element");
 
@@ -2095,12 +2095,12 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration(
   else
   {
     mycondVector.resize(lm.size());
-    CORE::FE::ExtractMyValues(*condVector, mycondVector, lm);
+    Core::FE::ExtractMyValues(*condVector, mycondVector, lm);
   }
   FOUR_C_ASSERT(mycondVector.size() != 0, "no condition IDs values for boundary element");
 
   // calculate normal
-  CORE::LINALG::SerialDenseVector normal;
+  Core::LinAlg::SerialDenseVector normal;
   normal.size(lm.size());
 
   // gauss point loop
@@ -2109,7 +2109,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration(
     // Computation of the integration factor & shape function at the Gauss point & derivative of the
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
-    CORE::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
+    Core::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
         Base::unitnormal_, Base::drs_, Base::xsi_, Base::xyze_, intpoints, gpid, nullptr, nullptr,
         IsNurbs<distype>::isnurbs);
 
@@ -2123,13 +2123,13 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration(
     }
   }
 
-  CORE::LINALG::Matrix<Base::numdofpernode_, 1> nodenormal(true);
+  Core::LinAlg::Matrix<Base::numdofpernode_, 1> nodenormal(true);
 
   // check which matrix is to be filled
-  POROELAST::Coupltype coupling =
-      params.get<POROELAST::Coupltype>("coupling", POROELAST::undefined);
+  PoroElast::Coupltype coupling =
+      params.get<PoroElast::Coupltype>("coupling", PoroElast::undefined);
 
-  if (coupling == POROELAST::fluidfluid)
+  if (coupling == PoroElast::fluidfluid)
   {
     // fill element matrix
     for (int inode = 0; inode < Base::bdrynen_; inode++)
@@ -2150,7 +2150,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration(
       }
     }
   }
-  else if (coupling == POROELAST::fluidstructure)
+  else if (coupling == PoroElast::fluidstructure)
   {
     // extract local values from the global vectors
     Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
@@ -2160,13 +2160,13 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration(
     if (gridvel == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'gridv'");
 
     std::vector<double> myvelnp(lm.size());
-    CORE::FE::ExtractMyValues(*velnp, myvelnp, lm);
+    Core::FE::ExtractMyValues(*velnp, myvelnp, lm);
     std::vector<double> mygridvel(lm.size());
-    CORE::FE::ExtractMyValues(*gridvel, mygridvel, lm);
+    Core::FE::ExtractMyValues(*gridvel, mygridvel, lm);
 
     // allocate velocity vectors
-    CORE::LINALG::Matrix<nsd_, Base::bdrynen_> evelnp(true);
-    CORE::LINALG::Matrix<nsd_, Base::bdrynen_> egridvel(true);
+    Core::LinAlg::Matrix<nsd_, Base::bdrynen_> evelnp(true);
+    Core::LinAlg::Matrix<nsd_, Base::bdrynen_> egridvel(true);
 
     // split velocity and pressure, insert into element arrays
     for (int inode = 0; inode < Base::bdrynen_; inode++)
@@ -2179,19 +2179,19 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration(
     }
 
     //  derivatives of surface normals wrt mesh displacements
-    CORE::LINALG::Matrix<nsd_, Base::bdrynen_ * nsd_> normalderiv(true);
+    Core::LinAlg::Matrix<nsd_, Base::bdrynen_ * nsd_> normalderiv(true);
 
     for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
     {
       // Computation of the integration factor & shape function at the Gauss point & derivative of
       // the shape function at the Gauss point Computation of the unit normal vector at the Gauss
       // points is not activated here Computation of nurb specific stuff is not activated here
-      CORE::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
+      Core::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
           Base::unitnormal_, Base::drs_, Base::xsi_, Base::xyze_, intpoints, gpid, nullptr, nullptr,
           IsNurbs<distype>::isnurbs);
 
       // dxyzdrs vector -> normal which is not normalized
-      CORE::LINALG::Matrix<Base::bdrynsd_, nsd_> dxyzdrs(0.0);
+      Core::LinAlg::Matrix<Base::bdrynsd_, nsd_> dxyzdrs(0.0);
       dxyzdrs.MultiplyNT(Base::deriv_, Base::xyze_);
 
       // The integration factor is not multiplied with drs
@@ -2242,9 +2242,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration(
     }
 
     // allocate auxiliary variable (= normalderiv^T * velocity)
-    CORE::LINALG::Matrix<1, nsd_ * Base::bdrynen_> temp(true);
+    Core::LinAlg::Matrix<1, nsd_ * Base::bdrynen_> temp(true);
     // allocate convective velocity at node
-    CORE::LINALG::Matrix<1, nsd_> convvel(true);
+    Core::LinAlg::Matrix<1, nsd_> convvel(true);
 
     // fill element matrix
     for (int inode = 0; inode < Base::bdrynen_; inode++)
@@ -2281,10 +2281,10 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration(
     FOUR_C_THROW("unknown coupling type for no penetration boundary condition");
 }
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_i_ds(
-    DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& elevec1,
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_i_ds(
+    Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::LinAlg::SerialDenseVector& elevec1,
     std::vector<int>& lm)
 {
   // This function is only implemented for 3D
@@ -2292,13 +2292,13 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_i_ds(
     FOUR_C_THROW("no_penetration is only implemented for 3D and 2D!");
 
   // get integration rule
-  const CORE::FE::IntPointsAndWeights<Base::bdrynsd_> intpoints(
-      DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+  const Core::FE::IntPointsAndWeights<Base::bdrynsd_> intpoints(
+      Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of
   // FluidBoundary element!)
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, Base::bdrynen_>>(
+  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, Base::bdrynen_>>(
       ele, Base::xyze_);
 
   // displacements
@@ -2311,7 +2311,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_i_ds(
     if (dispnp != Teuchos::null)
     {
       mydispnp.resize(lm.size());
-      CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
+      Core::FE::ExtractMyValues(*dispnp, mydispnp, lm);
     }
     FOUR_C_ASSERT(mydispnp.size() != 0, "no displacement values for boundary element");
 
@@ -2324,7 +2324,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_i_ds(
     FOUR_C_THROW("fluid poro element not an ALE element!");
 
   // calculate normal
-  CORE::LINALG::SerialDenseVector normal;
+  Core::LinAlg::SerialDenseVector normal;
   normal.size(lm.size());
 
   for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
@@ -2332,7 +2332,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_i_ds(
     // Computation of the integration factor & shape function at the Gauss point & derivative of the
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
-    CORE::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
+    Core::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
         Base::unitnormal_, Base::drs_, Base::xsi_, Base::xyze_, intpoints, gpid, nullptr, nullptr,
         IsNurbs<distype>::isnurbs);
 
@@ -2346,7 +2346,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_i_ds(
     }
   }
 
-  CORE::LINALG::Matrix<Base::numdofpernode_, 1> nodenormal(true);
+  Core::LinAlg::Matrix<Base::numdofpernode_, 1> nodenormal(true);
 
   // fill element matrix
   for (int inode = 0; inode < Base::bdrynen_; inode++)
@@ -2370,25 +2370,25 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_i_ds(
   }
 }
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
-    DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& plm,
-    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseVector& elevec1)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
+    Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& plm,
+    Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseVector& elevec1)
 {
   switch (distype)
   {
     // 2D:
-    case CORE::FE::CellType::line2:
+    case Core::FE::CellType::line2:
     {
-      if (ele->parent_element()->Shape() == CORE::FE::CellType::quad4)
+      if (ele->parent_element()->Shape() == Core::FE::CellType::quad4)
       {
-        poro_boundary<CORE::FE::CellType::quad4>(
+        poro_boundary<Core::FE::CellType::quad4>(
             ele, params, discretization, plm, elemat1, elevec1);
       }
-      else if (ele->parent_element()->Shape() == CORE::FE::CellType::tri3)
+      else if (ele->parent_element()->Shape() == Core::FE::CellType::tri3)
       {
-        poro_boundary<CORE::FE::CellType::tri3>(ele, params, discretization, plm, elemat1, elevec1);
+        poro_boundary<Core::FE::CellType::tri3>(ele, params, discretization, plm, elemat1, elevec1);
       }
       else
       {
@@ -2396,11 +2396,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
       }
       break;
     }
-    case CORE::FE::CellType::line3:
+    case Core::FE::CellType::line3:
     {
-      if (ele->parent_element()->Shape() == CORE::FE::CellType::quad9)
+      if (ele->parent_element()->Shape() == Core::FE::CellType::quad9)
       {
-        poro_boundary<CORE::FE::CellType::quad9>(
+        poro_boundary<Core::FE::CellType::quad9>(
             ele, params, discretization, plm, elemat1, elevec1);
       }
       else
@@ -2409,11 +2409,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
       }
       break;
     }
-    case CORE::FE::CellType::nurbs3:
+    case Core::FE::CellType::nurbs3:
     {
-      if (ele->parent_element()->Shape() == CORE::FE::CellType::nurbs9)
+      if (ele->parent_element()->Shape() == Core::FE::CellType::nurbs9)
       {
-        poro_boundary<CORE::FE::CellType::nurbs9>(
+        poro_boundary<Core::FE::CellType::nurbs9>(
             ele, params, discretization, plm, elemat1, elevec1);
       }
       else
@@ -2423,11 +2423,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
       break;
     }
     // 3D:
-    case CORE::FE::CellType::quad4:
+    case Core::FE::CellType::quad4:
     {
-      if (ele->parent_element()->Shape() == CORE::FE::CellType::hex8)
+      if (ele->parent_element()->Shape() == Core::FE::CellType::hex8)
       {
-        poro_boundary<CORE::FE::CellType::hex8>(ele, params, discretization, plm, elemat1, elevec1);
+        poro_boundary<Core::FE::CellType::hex8>(ele, params, discretization, plm, elemat1, elevec1);
       }
       else
       {
@@ -2435,11 +2435,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
       }
       break;
     }
-    case CORE::FE::CellType::tri3:
+    case Core::FE::CellType::tri3:
     {
-      if (ele->parent_element()->Shape() == CORE::FE::CellType::tet4)
+      if (ele->parent_element()->Shape() == Core::FE::CellType::tet4)
       {
-        poro_boundary<CORE::FE::CellType::tet4>(ele, params, discretization, plm, elemat1, elevec1);
+        poro_boundary<Core::FE::CellType::tet4>(ele, params, discretization, plm, elemat1, elevec1);
       }
       else
       {
@@ -2447,11 +2447,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
       }
       break;
     }
-    case CORE::FE::CellType::tri6:
+    case Core::FE::CellType::tri6:
     {
-      if (ele->parent_element()->Shape() == CORE::FE::CellType::tet10)
+      if (ele->parent_element()->Shape() == Core::FE::CellType::tet10)
       {
-        poro_boundary<CORE::FE::CellType::tet10>(
+        poro_boundary<Core::FE::CellType::tet10>(
             ele, params, discretization, plm, elemat1, elevec1);
       }
       else
@@ -2460,11 +2460,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
       }
       break;
     }
-    case CORE::FE::CellType::quad9:
+    case Core::FE::CellType::quad9:
     {
-      if (ele->parent_element()->Shape() == CORE::FE::CellType::hex27)
+      if (ele->parent_element()->Shape() == Core::FE::CellType::hex27)
       {
-        poro_boundary<CORE::FE::CellType::hex27>(
+        poro_boundary<Core::FE::CellType::hex27>(
             ele, params, discretization, plm, elemat1, elevec1);
       }
       else
@@ -2473,11 +2473,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
       }
       break;
     }
-    case CORE::FE::CellType::nurbs9:
+    case Core::FE::CellType::nurbs9:
     {
-      if (ele->parent_element()->Shape() == CORE::FE::CellType::nurbs27)
+      if (ele->parent_element()->Shape() == Core::FE::CellType::nurbs27)
       {
-        poro_boundary<CORE::FE::CellType::nurbs27>(
+        poro_boundary<Core::FE::CellType::nurbs27>(
             ele, params, discretization, plm, elemat1, elevec1);
       }
       else
@@ -2494,22 +2494,22 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
   }
 }
 
-template <CORE::FE::CellType distype>
-template <CORE::FE::CellType pdistype>
-void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
-    DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& plm,
-    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseVector& elevec1)
+template <Core::FE::CellType distype>
+template <Core::FE::CellType pdistype>
+void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
+    Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& plm,
+    Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseVector& elevec1)
 {
   // This function is only implemented for 3D and 2D
   if (Base::bdrynsd_ != 2 and Base::bdrynsd_ != 1)
     FOUR_C_THROW("poro_boundary is only implemented for 3D and 2D!");
 
-  POROELAST::Coupltype coupling =
-      params.get<POROELAST::Coupltype>("coupling", POROELAST::undefined);
-  if (coupling == POROELAST::undefined)
+  PoroElast::Coupltype coupling =
+      params.get<PoroElast::Coupltype>("coupling", PoroElast::undefined);
+  if (coupling == PoroElast::undefined)
     FOUR_C_THROW("no coupling defined for poro-boundary condition");
-  const bool offdiag(coupling == POROELAST::fluidstructure);
+  const bool offdiag(coupling == PoroElast::fluidstructure);
 
   // get timescale parameter from parameter list (depends on time integration scheme)
   double timescale = params.get<double>("timescale", -1.0);
@@ -2522,22 +2522,22 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
   std::vector<int> lm;
   std::vector<int> lmowner;
   std::vector<int> lmstride;
-  ele->CORE::Elements::Element::LocationVector(discretization, lm, lmowner, lmstride);
+  ele->Core::Elements::Element::LocationVector(discretization, lm, lmowner, lmstride);
 
   // number of parentnodes
-  static const int nenparent = CORE::FE::num_nodes<pdistype>;
+  static const int nenparent = Core::FE::num_nodes<pdistype>;
 
   // get the parent element
-  DRT::ELEMENTS::Fluid* pele = ele->parent_element();
+  Discret::ELEMENTS::Fluid* pele = ele->parent_element();
 
   // get integration rule
-  const CORE::FE::IntPointsAndWeights<Base::bdrynsd_> intpoints(
-      DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+  const Core::FE::IntPointsAndWeights<Base::bdrynsd_> intpoints(
+      Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of
   // FluidBoundary element!)
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, Base::bdrynen_>>(
+  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, Base::bdrynen_>>(
       ele, Base::xyze_);
 
   // displacements
@@ -2549,8 +2549,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
   if (dispnp != Teuchos::null)
   {
     mydispnp.resize(lm.size());
-    CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
-    CORE::FE::ExtractMyValues(*dispnp, parentdispnp, plm);
+    Core::FE::ExtractMyValues(*dispnp, mydispnp, lm);
+    Core::FE::ExtractMyValues(*dispnp, parentdispnp, plm);
   }
   FOUR_C_ASSERT(mydispnp.size() != 0, "no displacement values for boundary element");
   FOUR_C_ASSERT(parentdispnp.size() != 0, "no displacement values for parent element");
@@ -2561,10 +2561,10 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
       Base::xyze_(idim, inode) += mydispnp[Base::numdofpernode_ * inode + idim];
 
   // update element geometry of parent element
-  CORE::LINALG::Matrix<nsd_, nenparent> xrefe;  // material coord. of parent element
-  CORE::LINALG::Matrix<nsd_, nenparent> xcurr;  // current  coord. of parent element
+  Core::LinAlg::Matrix<nsd_, nenparent> xrefe;  // material coord. of parent element
+  Core::LinAlg::Matrix<nsd_, nenparent> xcurr;  // current  coord. of parent element
   {
-    CORE::Nodes::Node** nodes = pele->Nodes();
+    Core::Nodes::Node** nodes = pele->Nodes();
     for (int i = 0; i < nenparent; ++i)
     {
       for (int j = 0; j < nsd_; ++j)
@@ -2585,19 +2585,19 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
   if (gridvel == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'gridv'");
 
   std::vector<double> myvelnp(lm.size());
-  CORE::FE::ExtractMyValues(*velnp, myvelnp, lm);
+  Core::FE::ExtractMyValues(*velnp, myvelnp, lm);
   std::vector<double> mygridvel(lm.size());
-  CORE::FE::ExtractMyValues(*gridvel, mygridvel, lm);
+  Core::FE::ExtractMyValues(*gridvel, mygridvel, lm);
   std::vector<double> myscaaf(lm.size());
-  CORE::FE::ExtractMyValues(*scaaf, myscaaf, lm);
+  Core::FE::ExtractMyValues(*scaaf, myscaaf, lm);
 
   // allocate velocity vectors
-  CORE::LINALG::Matrix<nsd_, Base::bdrynen_> evelnp(true);
-  CORE::LINALG::Matrix<Base::bdrynen_, 1> epressnp(true);
-  CORE::LINALG::Matrix<nsd_, Base::bdrynen_> edispnp(true);
-  CORE::LINALG::Matrix<nsd_, Base::bdrynen_> egridvel(true);
-  CORE::LINALG::Matrix<Base::bdrynen_, 1> escaaf(true);
-  CORE::LINALG::Matrix<Base::bdrynen_, 1> eporosity(true);
+  Core::LinAlg::Matrix<nsd_, Base::bdrynen_> evelnp(true);
+  Core::LinAlg::Matrix<Base::bdrynen_, 1> epressnp(true);
+  Core::LinAlg::Matrix<nsd_, Base::bdrynen_> edispnp(true);
+  Core::LinAlg::Matrix<nsd_, Base::bdrynen_> egridvel(true);
+  Core::LinAlg::Matrix<Base::bdrynen_, 1> escaaf(true);
+  Core::LinAlg::Matrix<Base::bdrynen_, 1> eporosity(true);
 
   // split velocity and pressure, insert into element arrays
   for (int inode = 0; inode < Base::bdrynen_; inode++)
@@ -2615,10 +2615,10 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
   const bool porositydof = compute_nodal_porosity(ele, mydispnp, eporosity);
 
   // get coordinates of gauss points w.r.t. local parent coordinate system
-  CORE::LINALG::SerialDenseMatrix pqxg(intpoints.IP().nquad, nsd_);
-  CORE::LINALG::Matrix<nsd_, nsd_> derivtrafo(true);
+  Core::LinAlg::SerialDenseMatrix pqxg(intpoints.IP().nquad, nsd_);
+  Core::LinAlg::Matrix<nsd_, nsd_> derivtrafo(true);
 
-  CORE::FE::BoundaryGPToParentGP<nsd_>(
+  Core::FE::BoundaryGPToParentGP<nsd_>(
       pqxg, derivtrafo, intpoints, pdistype, distype, ele->SurfaceNumber());
 
   // --------------------------------------------------
@@ -2627,16 +2627,16 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
 
   // In the case of nurbs the normal vector is multiplied with normalfac
   double normalfac = 0.0;
-  std::vector<CORE::LINALG::SerialDenseVector> mypknots(nsd_);
-  std::vector<CORE::LINALG::SerialDenseVector> myknots(Base::bdrynsd_);
-  CORE::LINALG::SerialDenseVector weights(Base::bdrynen_);
-  CORE::LINALG::SerialDenseVector pweights(pele->num_node());
+  std::vector<Core::LinAlg::SerialDenseVector> mypknots(nsd_);
+  std::vector<Core::LinAlg::SerialDenseVector> myknots(Base::bdrynsd_);
+  Core::LinAlg::SerialDenseVector weights(Base::bdrynen_);
+  Core::LinAlg::SerialDenseVector pweights(pele->num_node());
 
   // for isogeometric elements --- get knotvectors for parent
   // element and surface element, get weights
   if (IsNurbs<distype>::isnurbs)
   {
-    bool zero_size = DRT::NURBS::GetKnotVectorAndWeightsForNurbsBoundaryAndParent(pele, ele,
+    bool zero_size = Discret::Nurbs::GetKnotVectorAndWeightsForNurbsBoundaryAndParent(pele, ele,
         ele->SurfaceNumber(), discretization, mypknots, myknots, pweights, weights, normalfac);
 
     if (zero_size)
@@ -2646,17 +2646,17 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
   }
   // --------------------------------------------------
   // structure velocity at gausspoint
-  CORE::LINALG::Matrix<nsd_, 1> gridvelint;
+  Core::LinAlg::Matrix<nsd_, 1> gridvelint;
 
   // coordinates of gauss points of parent element
-  CORE::LINALG::Matrix<nsd_, 1> pxsi(true);
+  Core::LinAlg::Matrix<nsd_, 1> pxsi(true);
 
   for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
   {
     // get shape functions and derivatives in the plane of the element
-    CORE::LINALG::Matrix<nenparent, 1> pfunct(true);
-    CORE::LINALG::Matrix<nsd_, nenparent> pderiv;
-    CORE::LINALG::Matrix<nsd_, nenparent> pderiv_loc;
+    Core::LinAlg::Matrix<nenparent, 1> pfunct(true);
+    Core::LinAlg::Matrix<nsd_, nenparent> pderiv;
+    Core::LinAlg::Matrix<nsd_, nenparent> pderiv_loc;
 
     // coordinates of the current integration point
     for (int idim = 0; idim < nsd_; idim++) pxsi(idim) = pqxg(gpid, idim);
@@ -2665,21 +2665,21 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
     if (not IsNurbs<distype>::isnurbs)
     {
       // shape functions and their first derivatives of parent element
-      CORE::FE::shape_function<pdistype>(pxsi, pfunct);
-      CORE::FE::shape_function_deriv1<pdistype>(pxsi, pderiv_loc);
+      Core::FE::shape_function<pdistype>(pxsi, pfunct);
+      Core::FE::shape_function_deriv1<pdistype>(pxsi, pderiv_loc);
     }
     // only for NURBS!!!
     else
     {
-      CORE::FE::NURBS::nurbs_get_funct_deriv(
+      Core::FE::Nurbs::nurbs_get_funct_deriv(
           pfunct, pderiv_loc, pxsi, mypknots, pweights, pdistype);
     }
     pderiv.MultiplyTN(derivtrafo, pderiv_loc);
 
     // get Jacobian matrix and determinant w.r.t. spatial configuration
     // transposed jacobian "dx/ds"
-    CORE::LINALG::Matrix<nsd_, nsd_> xjm;
-    CORE::LINALG::Matrix<nsd_, nsd_> Jmat;
+    Core::LinAlg::Matrix<nsd_, nsd_> xjm;
+    Core::LinAlg::Matrix<nsd_, nsd_> Jmat;
     xjm.MultiplyNT(pderiv_loc, xcurr);
     Jmat.MultiplyNT(pderiv_loc, xrefe);
     // jacobian determinant "det(dx/ds)"
@@ -2692,7 +2692,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
     // Computation of the integration factor & shape function at the Gauss point & derivative of the
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
-    CORE::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
+    Core::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
         Base::unitnormal_, Base::drs_, Base::xsi_, Base::xyze_, intpoints, gpid, &myknots, &weights,
         IsNurbs<distype>::isnurbs);
 
@@ -2724,10 +2724,10 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
     const double fac = intpoints.IP().qwgt[gpid];
 
     //  derivatives of surface normals wrt mesh displacements
-    CORE::LINALG::Matrix<nsd_, nenparent * nsd_> normalderiv(true);
+    Core::LinAlg::Matrix<nsd_, nenparent * nsd_> normalderiv(true);
 
     // dxyzdrs vector -> normal which is not normalized
-    CORE::LINALG::Matrix<Base::bdrynsd_, nsd_> dxyzdrs(0.0);
+    Core::LinAlg::Matrix<Base::bdrynsd_, nsd_> dxyzdrs(0.0);
     dxyzdrs.MultiplyNT(Base::deriv_, Base::xyze_);
 
     if (nsd_ == 3)
@@ -2769,11 +2769,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
     if (IsNurbs<distype>::isnurbs) normalderiv.Scale(normalfac);
 
     //-------------------------------------------dJ/dus = dJ/dF : dF/dus = J * F^-T . N_X = J * N_x
-    CORE::LINALG::Matrix<1, nsd_ * nenparent> dJ_dus;
+    Core::LinAlg::Matrix<1, nsd_ * nenparent> dJ_dus;
     // global derivatives of shape functions w.r.t x,y,z
-    CORE::LINALG::Matrix<nsd_, nenparent> derxy;
+    Core::LinAlg::Matrix<nsd_, nenparent> derxy;
     // inverse of transposed jacobian "ds/dx"
-    CORE::LINALG::Matrix<nsd_, nsd_> xji;
+    Core::LinAlg::Matrix<nsd_, nsd_> xji;
 
     xji.Invert(xjm);
     derxy.Multiply(xji, pderiv_loc);
@@ -2782,7 +2782,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
       for (int j = 0; j < nsd_; j++) dJ_dus(j + i * nsd_) = J * derxy(j, i);
 
     double normal_convel = 0.0;
-    CORE::LINALG::Matrix<1, nsd_> convel;
+    Core::LinAlg::Matrix<1, nsd_> convel;
 
     for (int idof = 0; idof < nsd_; idof++)
     {
@@ -2799,7 +2799,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
       }
     }
 
-    CORE::LINALG::Matrix<1, nenparent * nsd_> tmp;
+    Core::LinAlg::Matrix<1, nenparent * nsd_> tmp;
     tmp.Multiply(convel, normalderiv);
 
     // fill element matrix
@@ -2867,30 +2867,30 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
   }
 }
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::pressure_coupling(
-    DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseVector& elevec1)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::pressure_coupling(
+    Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseVector& elevec1)
 {
   // This function is only implemented for 3D
   if (Base::bdrynsd_ != 2 and Base::bdrynsd_ != 1)
     FOUR_C_THROW("pressure_coupling is only implemented for 2D and 3D!");
 
-  POROELAST::Coupltype coupling =
-      params.get<POROELAST::Coupltype>("coupling", POROELAST::undefined);
-  if (coupling == POROELAST::undefined)
+  PoroElast::Coupltype coupling =
+      params.get<PoroElast::Coupltype>("coupling", PoroElast::undefined);
+  if (coupling == PoroElast::undefined)
     FOUR_C_THROW("no coupling defined for poro-boundary condition");
-  const bool offdiag(coupling == POROELAST::fluidstructure);
+  const bool offdiag(coupling == PoroElast::fluidstructure);
 
   // get integration rule
-  const CORE::FE::IntPointsAndWeights<Base::bdrynsd_> intpoints(
-      DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+  const Core::FE::IntPointsAndWeights<Base::bdrynsd_> intpoints(
+      Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of
   // FluidBoundary element!)
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, Base::bdrynen_>>(
+  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, Base::bdrynen_>>(
       ele, Base::xyze_);
 
   // displacements
@@ -2903,7 +2903,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::pressure_coupling(
     if (dispnp != Teuchos::null)
     {
       mydispnp.resize(lm.size());
-      CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
+      Core::FE::ExtractMyValues(*dispnp, mydispnp, lm);
     }
     FOUR_C_ASSERT(mydispnp.size() != 0, "no displacement values for boundary element");
 
@@ -2923,10 +2923,10 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::pressure_coupling(
   if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velnp'");
 
   std::vector<double> myvelnp(lm.size());
-  CORE::FE::ExtractMyValues(*velnp, myvelnp, lm);
+  Core::FE::ExtractMyValues(*velnp, myvelnp, lm);
 
   // allocate velocity vectors
-  CORE::LINALG::Matrix<Base::bdrynen_, 1> epressnp(true);
+  Core::LinAlg::Matrix<Base::bdrynen_, 1> epressnp(true);
 
   // split velocity and pressure, insert into element arrays
   for (int inode = 0; inode < Base::bdrynen_; inode++)
@@ -2940,16 +2940,17 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::pressure_coupling(
 
   // In the case of nurbs the normal vector is multiplied with normalfac
   double normalfac = 0.0;
-  std::vector<CORE::LINALG::SerialDenseVector> mypknots(nsd_);
-  std::vector<CORE::LINALG::SerialDenseVector> myknots(Base::bdrynsd_);
-  CORE::LINALG::SerialDenseVector weights(Base::bdrynen_);
+  std::vector<Core::LinAlg::SerialDenseVector> mypknots(nsd_);
+  std::vector<Core::LinAlg::SerialDenseVector> myknots(Base::bdrynsd_);
+  Core::LinAlg::SerialDenseVector weights(Base::bdrynen_);
 
   // for isogeometric elements --- get knotvectors for parent
   // element and surface element, get weights
   if (IsNurbs<distype>::isnurbs)
   {
-    bool zero_size = DRT::NURBS::GetKnotVectorAndWeightsForNurbsBoundary(ele, ele->SurfaceNumber(),
-        ele->parent_element()->Id(), discretization, mypknots, myknots, weights, normalfac);
+    bool zero_size =
+        Discret::Nurbs::GetKnotVectorAndWeightsForNurbsBoundary(ele, ele->SurfaceNumber(),
+            ele->parent_element()->Id(), discretization, mypknots, myknots, weights, normalfac);
     if (zero_size)
     {
       return;
@@ -2962,7 +2963,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::pressure_coupling(
     // Computation of the integration factor & shape function at the Gauss point & derivative of the
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
-    CORE::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
+    Core::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
         Base::unitnormal_, Base::drs_, Base::xsi_, Base::xyze_, intpoints, gpid, &myknots, &weights,
         IsNurbs<distype>::isnurbs);
 
@@ -2974,14 +2975,14 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::pressure_coupling(
     double press = Base::funct_.Dot(epressnp);
 
     // dxyzdrs vector -> normal which is not normalized
-    CORE::LINALG::Matrix<Base::bdrynsd_, nsd_> dxyzdrs(0.0);
+    Core::LinAlg::Matrix<Base::bdrynsd_, nsd_> dxyzdrs(0.0);
     dxyzdrs.MultiplyNT(Base::deriv_, Base::xyze_);
 
     // in the case of nurbs the normal vector must be scaled with a special factor
     if (IsNurbs<distype>::isnurbs) Base::unitnormal_.Scale(normalfac);
 
     //  derivatives of surface normals wrt mesh displacements
-    CORE::LINALG::Matrix<nsd_, Base::bdrynen_ * nsd_> normalderiv(true);
+    Core::LinAlg::Matrix<nsd_, Base::bdrynen_ * nsd_> normalderiv(true);
 
     // The integration factor is not multiplied with drs
     // since it is the same as the scaling factor for the unit normal derivatives
@@ -3056,15 +3057,15 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::pressure_coupling(
   }
 }
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_porosity_at_gp(
-    Teuchos::ParameterList& params, DRT::ELEMENTS::FluidBoundary* ele,
-    const CORE::LINALG::Matrix<Base::bdrynen_, 1>& funct,
-    const CORE::LINALG::Matrix<Base::bdrynen_, 1>& eporosity, double press, double J, int gp,
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_porosity_at_gp(
+    Teuchos::ParameterList& params, Discret::ELEMENTS::FluidBoundary* ele,
+    const Core::LinAlg::Matrix<Base::bdrynen_, 1>& funct,
+    const Core::LinAlg::Matrix<Base::bdrynen_, 1>& eporosity, double press, double J, int gp,
     double& porosity, double& dphi_dp, double& dphi_dJ, bool save)
 {
-  Teuchos::RCP<MAT::StructPoro> structmat =
-      Teuchos::rcp_dynamic_cast<MAT::StructPoro>(ele->parent_element()->Material(1));
+  Teuchos::RCP<Mat::StructPoro> structmat =
+      Teuchos::rcp_dynamic_cast<Mat::StructPoro>(ele->parent_element()->Material(1));
   structmat->ComputeSurfPorosity(params, press, J, ele->SurfaceNumber(), gp, porosity, &dphi_dp,
       &dphi_dJ,
       nullptr,  // dphi_dJdp not needed
@@ -3073,25 +3074,25 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_porosity_at_gp(
       save);
 }
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_and_rhs(
-    DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix& k_fluid, CORE::LINALG::SerialDenseVector& rhs)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_and_rhs(
+    Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix& k_fluid, Core::LinAlg::SerialDenseVector& rhs)
 {
   switch (distype)
   {
     // 2D:
-    case CORE::FE::CellType::line2:
+    case Core::FE::CellType::line2:
     {
-      if (ele->parent_element()->Shape() == CORE::FE::CellType::quad4)
+      if (ele->parent_element()->Shape() == Core::FE::CellType::quad4)
       {
-        no_penetration_mat_and_rhs<CORE::FE::CellType::quad4>(
+        no_penetration_mat_and_rhs<Core::FE::CellType::quad4>(
             ele, params, discretization, lm, k_fluid, rhs);
       }
-      else if (ele->parent_element()->Shape() == CORE::FE::CellType::tri3)
+      else if (ele->parent_element()->Shape() == Core::FE::CellType::tri3)
       {
-        no_penetration_mat_and_rhs<CORE::FE::CellType::tri3>(
+        no_penetration_mat_and_rhs<Core::FE::CellType::tri3>(
             ele, params, discretization, lm, k_fluid, rhs);
       }
       else
@@ -3100,11 +3101,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_and_rh
       }
       break;
     }
-    case CORE::FE::CellType::line3:
+    case Core::FE::CellType::line3:
     {
-      if (ele->parent_element()->Shape() == CORE::FE::CellType::quad9)
+      if (ele->parent_element()->Shape() == Core::FE::CellType::quad9)
       {
-        no_penetration_mat_and_rhs<CORE::FE::CellType::quad9>(
+        no_penetration_mat_and_rhs<Core::FE::CellType::quad9>(
             ele, params, discretization, lm, k_fluid, rhs);
       }
       else
@@ -3113,11 +3114,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_and_rh
       }
       break;
     }
-    case CORE::FE::CellType::nurbs3:
+    case Core::FE::CellType::nurbs3:
     {
-      if (ele->parent_element()->Shape() == CORE::FE::CellType::nurbs9)
+      if (ele->parent_element()->Shape() == Core::FE::CellType::nurbs9)
       {
-        no_penetration_mat_and_rhs<CORE::FE::CellType::nurbs9>(
+        no_penetration_mat_and_rhs<Core::FE::CellType::nurbs9>(
             ele, params, discretization, lm, k_fluid, rhs);
       }
       else
@@ -3127,11 +3128,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_and_rh
       break;
     }
     // 3D:
-    case CORE::FE::CellType::quad4:
+    case Core::FE::CellType::quad4:
     {
-      if (ele->parent_element()->Shape() == CORE::FE::CellType::hex8)
+      if (ele->parent_element()->Shape() == Core::FE::CellType::hex8)
       {
-        no_penetration_mat_and_rhs<CORE::FE::CellType::hex8>(
+        no_penetration_mat_and_rhs<Core::FE::CellType::hex8>(
             ele, params, discretization, lm, k_fluid, rhs);
       }
       else
@@ -3140,11 +3141,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_and_rh
       }
       break;
     }
-    case CORE::FE::CellType::tri3:
+    case Core::FE::CellType::tri3:
     {
-      if (ele->parent_element()->Shape() == CORE::FE::CellType::tet4)
+      if (ele->parent_element()->Shape() == Core::FE::CellType::tet4)
       {
-        no_penetration_mat_and_rhs<CORE::FE::CellType::tet4>(
+        no_penetration_mat_and_rhs<Core::FE::CellType::tet4>(
             ele, params, discretization, lm, k_fluid, rhs);
       }
       else
@@ -3153,11 +3154,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_and_rh
       }
       break;
     }
-    case CORE::FE::CellType::tri6:
+    case Core::FE::CellType::tri6:
     {
-      if (ele->parent_element()->Shape() == CORE::FE::CellType::tet10)
+      if (ele->parent_element()->Shape() == Core::FE::CellType::tet10)
       {
-        no_penetration_mat_and_rhs<CORE::FE::CellType::tet10>(
+        no_penetration_mat_and_rhs<Core::FE::CellType::tet10>(
             ele, params, discretization, lm, k_fluid, rhs);
       }
       else
@@ -3166,11 +3167,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_and_rh
       }
       break;
     }
-    case CORE::FE::CellType::quad9:
+    case Core::FE::CellType::quad9:
     {
-      if (ele->parent_element()->Shape() == CORE::FE::CellType::hex27)
+      if (ele->parent_element()->Shape() == Core::FE::CellType::hex27)
       {
-        no_penetration_mat_and_rhs<CORE::FE::CellType::hex27>(
+        no_penetration_mat_and_rhs<Core::FE::CellType::hex27>(
             ele, params, discretization, lm, k_fluid, rhs);
       }
       else
@@ -3187,25 +3188,25 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_and_rh
   }
 }
 
-template <CORE::FE::CellType distype>
-template <CORE::FE::CellType pdistype>
-void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_and_rhs(
-    DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix& k_fluid, CORE::LINALG::SerialDenseVector& rhs)
+template <Core::FE::CellType distype>
+template <Core::FE::CellType pdistype>
+void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_and_rhs(
+    Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix& k_fluid, Core::LinAlg::SerialDenseVector& rhs)
 {
   // This function is only implemented for 3D
   if (Base::bdrynsd_ != 2 and Base::bdrynsd_ != 1)
     FOUR_C_THROW("pressure_coupling is only implemented for 2D and 3D!");
 
   // get integration rule
-  const CORE::FE::IntPointsAndWeights<Base::bdrynsd_> intpoints(
-      DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+  const Core::FE::IntPointsAndWeights<Base::bdrynsd_> intpoints(
+      Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of
   // FluidBoundary element!)
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, Base::bdrynen_>>(
+  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, Base::bdrynen_>>(
       ele, Base::xyze_);
 
   // displacements
@@ -3218,7 +3219,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_and_rh
     if (dispnp != Teuchos::null)
     {
       mydispnp.resize(lm.size());
-      CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
+      Core::FE::ExtractMyValues(*dispnp, mydispnp, lm);
     }
     FOUR_C_ASSERT(mydispnp.size() != 0, "no displacement values for boundary element");
 
@@ -3239,14 +3240,14 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_and_rh
   if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velnp'");
 
   std::vector<double> myvelnp(lm.size());
-  CORE::FE::ExtractMyValues(*velnp, myvelnp, lm);
+  Core::FE::ExtractMyValues(*velnp, myvelnp, lm);
 
   std::vector<double> mygridvel(lm.size());
-  CORE::FE::ExtractMyValues(*gridvel, mygridvel, lm);
+  Core::FE::ExtractMyValues(*gridvel, mygridvel, lm);
 
   // allocate velocity vectors
-  CORE::LINALG::Matrix<nsd_, Base::bdrynen_> evelnp(true);
-  CORE::LINALG::Matrix<nsd_, Base::bdrynen_> egridvel(true);
+  Core::LinAlg::Matrix<nsd_, Base::bdrynen_> evelnp(true);
+  Core::LinAlg::Matrix<nsd_, Base::bdrynen_> egridvel(true);
 
   // split velocity and pressure, insert into element arrays
   for (int inode = 0; inode < Base::bdrynen_; inode++)
@@ -3259,7 +3260,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_and_rh
   }
 
   // allocate convective velocity at node
-  CORE::LINALG::Matrix<nsd_, Base::bdrynen_> econvvel(true);
+  Core::LinAlg::Matrix<nsd_, Base::bdrynen_> econvvel(true);
   econvvel += evelnp;
   if (not Base::fldparatimint_->IsStationary()) econvvel -= egridvel;
 
@@ -3268,25 +3269,25 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_and_rh
   // --------------------------------------------------
 
   // get the parent element
-  DRT::ELEMENTS::Fluid* pele = ele->parent_element();
+  Discret::ELEMENTS::Fluid* pele = ele->parent_element();
 
   // number of parentnodes
-  static const int nenparent = CORE::FE::num_nodes<pdistype>;
+  static const int nenparent = Core::FE::num_nodes<pdistype>;
 
   // get element location vector and ownerships
   std::vector<int> plm;
   std::vector<int> plmowner;
   std::vector<int> plmstride;
-  pele->CORE::Elements::Element::LocationVector(discretization, plm, plmowner, plmstride);
+  pele->Core::Elements::Element::LocationVector(discretization, plm, plmowner, plmstride);
 
   std::vector<double> parentdispnp;
-  CORE::FE::ExtractMyValues(*dispnp, parentdispnp, plm);
+  Core::FE::ExtractMyValues(*dispnp, parentdispnp, plm);
 
   // update element geometry of parent element
-  CORE::LINALG::Matrix<nsd_, nenparent> xrefe;  // material coord. of parent element
-  CORE::LINALG::Matrix<nsd_, nenparent> xcurr;  // current  coord. of parent element
+  Core::LinAlg::Matrix<nsd_, nenparent> xrefe;  // material coord. of parent element
+  Core::LinAlg::Matrix<nsd_, nenparent> xcurr;  // current  coord. of parent element
   {
-    CORE::Nodes::Node** nodes = pele->Nodes();
+    Core::Nodes::Node** nodes = pele->Nodes();
     for (int i = 0; i < nenparent; ++i)
     {
       for (int j = 0; j < nsd_; ++j)
@@ -3299,10 +3300,10 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_and_rh
   }
 
   std::vector<double> pvelnp(plm.size());
-  CORE::FE::ExtractMyValues(*velnp, pvelnp, plm);
+  Core::FE::ExtractMyValues(*velnp, pvelnp, plm);
 
   // allocate vectors
-  CORE::LINALG::Matrix<nenparent, 1> pepressnp(true);
+  Core::LinAlg::Matrix<nenparent, 1> pepressnp(true);
 
   // split velocity and pressure, insert into element arrays
   for (int inode = 0; inode < nenparent; inode++)
@@ -3311,16 +3312,16 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_and_rh
   }
 
   // get coordinates of gauss points w.r.t. local parent coordinate system
-  CORE::LINALG::SerialDenseMatrix pqxg(intpoints.IP().nquad, nsd_);
-  CORE::LINALG::Matrix<nsd_, nsd_> derivtrafo(true);
+  Core::LinAlg::SerialDenseMatrix pqxg(intpoints.IP().nquad, nsd_);
+  Core::LinAlg::Matrix<nsd_, nsd_> derivtrafo(true);
 
-  CORE::FE::BoundaryGPToParentGP<nsd_>(
+  Core::FE::BoundaryGPToParentGP<nsd_>(
       pqxg, derivtrafo, intpoints, pdistype, distype, ele->SurfaceNumber());
 
   // coordinates of gauss points of parent element
-  CORE::LINALG::Matrix<nsd_, 1> pxsi(true);
+  Core::LinAlg::Matrix<nsd_, 1> pxsi(true);
 
-  CORE::LINALG::Matrix<Base::bdrynen_, 1> eporosity(true);
+  Core::LinAlg::Matrix<Base::bdrynen_, 1> eporosity(true);
 
   // --------------------------------------------------
   // Now do the nurbs specific stuff
@@ -3328,16 +3329,16 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_and_rh
 
   // In the case of nurbs the normal vector is multiplied with normalfac
   double normalfac = 0.0;
-  std::vector<CORE::LINALG::SerialDenseVector> mypknots(nsd_);
-  std::vector<CORE::LINALG::SerialDenseVector> myknots(Base::bdrynsd_);
-  CORE::LINALG::SerialDenseVector weights(Base::bdrynen_);
-  CORE::LINALG::SerialDenseVector pweights(pele->num_node());
+  std::vector<Core::LinAlg::SerialDenseVector> mypknots(nsd_);
+  std::vector<Core::LinAlg::SerialDenseVector> myknots(Base::bdrynsd_);
+  Core::LinAlg::SerialDenseVector weights(Base::bdrynen_);
+  Core::LinAlg::SerialDenseVector pweights(pele->num_node());
 
   // for isogeometric elements --- get knotvectors for parent
   // element and surface element, get weights
   if (IsNurbs<distype>::isnurbs)
   {
-    bool zero_size = DRT::NURBS::GetKnotVectorAndWeightsForNurbsBoundaryAndParent(pele, ele,
+    bool zero_size = Discret::Nurbs::GetKnotVectorAndWeightsForNurbsBoundaryAndParent(pele, ele,
         ele->SurfaceNumber(), discretization, mypknots, myknots, pweights, weights, normalfac);
 
     if (zero_size)
@@ -3349,14 +3350,14 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_and_rh
   // --------------------------------------------------
 
   // allocate convective velocity at gauss point
-  CORE::LINALG::Matrix<nsd_, 1> convvel(true);
+  Core::LinAlg::Matrix<nsd_, 1> convvel(true);
 
   for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
   {
     // Computation of the integration factor & shape function at the Gauss point & derivative of the
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
-    CORE::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
+    Core::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
         Base::unitnormal_, Base::drs_, Base::xsi_, Base::xyze_, intpoints, gpid, &myknots, &weights,
         IsNurbs<distype>::isnurbs);
 
@@ -3364,8 +3365,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_and_rh
     // parent element
     // --------------------------------------------------
     // get shape functions and derivatives in the plane of the element
-    CORE::LINALG::Matrix<nenparent, 1> pfunct(true);
-    CORE::LINALG::Matrix<nsd_, nenparent> pderiv_loc;
+    Core::LinAlg::Matrix<nenparent, 1> pfunct(true);
+    Core::LinAlg::Matrix<nsd_, nenparent> pderiv_loc;
 
     // coordinates of the current integration point
     for (int idim = 0; idim < nsd_; idim++) pxsi(idim) = pqxg(gpid, idim);
@@ -3374,20 +3375,20 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_and_rh
     if (not IsNurbs<distype>::isnurbs)
     {
       // shape functions and their first derivatives of parent element
-      CORE::FE::shape_function<pdistype>(pxsi, pfunct);
-      CORE::FE::shape_function_deriv1<pdistype>(pxsi, pderiv_loc);
+      Core::FE::shape_function<pdistype>(pxsi, pfunct);
+      Core::FE::shape_function_deriv1<pdistype>(pxsi, pderiv_loc);
     }
     // only for NURBS!!!
     else
     {
-      CORE::FE::NURBS::nurbs_get_funct_deriv(
+      Core::FE::Nurbs::nurbs_get_funct_deriv(
           pfunct, pderiv_loc, pxsi, mypknots, pweights, pdistype);
     }
 
     // get Jacobian matrix and determinant w.r.t. spatial configuration
     // transposed jacobian "dx/ds"
-    CORE::LINALG::Matrix<nsd_, nsd_> xjm;
-    CORE::LINALG::Matrix<nsd_, nsd_> Jmat;
+    Core::LinAlg::Matrix<nsd_, nsd_> xjm;
+    Core::LinAlg::Matrix<nsd_, nsd_> Jmat;
     xjm.MultiplyNT(pderiv_loc, xcurr);
     Jmat.MultiplyNT(pderiv_loc, xrefe);
     // jacobian determinant "det(dx/ds)"
@@ -3409,7 +3410,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_and_rh
     // --------------------------------------------------
 
     // dxyzdrs vector -> normal which is not normalized
-    CORE::LINALG::Matrix<Base::bdrynsd_, nsd_> dxyzdrs(0.0);
+    Core::LinAlg::Matrix<Base::bdrynsd_, nsd_> dxyzdrs(0.0);
     dxyzdrs.MultiplyNT(Base::deriv_, Base::xyze_);
 
     // in the case of nurbs the normal vector must be scaled with a special factor
@@ -3440,25 +3441,25 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_and_rh
   }
 }
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od(
-    DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix& k_struct, CORE::LINALG::SerialDenseMatrix& k_lambda)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od(
+    Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix& k_struct, Core::LinAlg::SerialDenseMatrix& k_lambda)
 {
   switch (distype)
   {
     // 2D:
-    case CORE::FE::CellType::line2:
+    case Core::FE::CellType::line2:
     {
-      if (ele->parent_element()->Shape() == CORE::FE::CellType::quad4)
+      if (ele->parent_element()->Shape() == Core::FE::CellType::quad4)
       {
-        no_penetration_mat_od<CORE::FE::CellType::quad4>(
+        no_penetration_mat_od<Core::FE::CellType::quad4>(
             ele, params, discretization, lm, k_struct, k_lambda);
       }
-      else if (ele->parent_element()->Shape() == CORE::FE::CellType::tri3)
+      else if (ele->parent_element()->Shape() == Core::FE::CellType::tri3)
       {
-        no_penetration_mat_od<CORE::FE::CellType::tri3>(
+        no_penetration_mat_od<Core::FE::CellType::tri3>(
             ele, params, discretization, lm, k_struct, k_lambda);
       }
       else
@@ -3467,11 +3468,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od(
       }
       break;
     }
-    case CORE::FE::CellType::line3:
+    case Core::FE::CellType::line3:
     {
-      if (ele->parent_element()->Shape() == CORE::FE::CellType::quad9)
+      if (ele->parent_element()->Shape() == Core::FE::CellType::quad9)
       {
-        no_penetration_mat_od<CORE::FE::CellType::quad9>(
+        no_penetration_mat_od<Core::FE::CellType::quad9>(
             ele, params, discretization, lm, k_struct, k_lambda);
       }
       else
@@ -3480,11 +3481,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od(
       }
       break;
     }
-    case CORE::FE::CellType::nurbs3:
+    case Core::FE::CellType::nurbs3:
     {
-      if (ele->parent_element()->Shape() == CORE::FE::CellType::nurbs9)
+      if (ele->parent_element()->Shape() == Core::FE::CellType::nurbs9)
       {
-        no_penetration_mat_od<CORE::FE::CellType::nurbs9>(
+        no_penetration_mat_od<Core::FE::CellType::nurbs9>(
             ele, params, discretization, lm, k_struct, k_lambda);
       }
       else
@@ -3494,11 +3495,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od(
       break;
     }
     // 3D:
-    case CORE::FE::CellType::quad4:
+    case Core::FE::CellType::quad4:
     {
-      if (ele->parent_element()->Shape() == CORE::FE::CellType::hex8)
+      if (ele->parent_element()->Shape() == Core::FE::CellType::hex8)
       {
-        no_penetration_mat_od<CORE::FE::CellType::hex8>(
+        no_penetration_mat_od<Core::FE::CellType::hex8>(
             ele, params, discretization, lm, k_struct, k_lambda);
       }
       else
@@ -3507,11 +3508,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od(
       }
       break;
     }
-    case CORE::FE::CellType::tri3:
+    case Core::FE::CellType::tri3:
     {
-      if (ele->parent_element()->Shape() == CORE::FE::CellType::tet4)
+      if (ele->parent_element()->Shape() == Core::FE::CellType::tet4)
       {
-        no_penetration_mat_od<CORE::FE::CellType::tet4>(
+        no_penetration_mat_od<Core::FE::CellType::tet4>(
             ele, params, discretization, lm, k_struct, k_lambda);
       }
       else
@@ -3520,11 +3521,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od(
       }
       break;
     }
-    case CORE::FE::CellType::tri6:
+    case Core::FE::CellType::tri6:
     {
-      if (ele->parent_element()->Shape() == CORE::FE::CellType::tet10)
+      if (ele->parent_element()->Shape() == Core::FE::CellType::tet10)
       {
-        no_penetration_mat_od<CORE::FE::CellType::tet10>(
+        no_penetration_mat_od<Core::FE::CellType::tet10>(
             ele, params, discretization, lm, k_struct, k_lambda);
       }
       else
@@ -3533,11 +3534,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od(
       }
       break;
     }
-    case CORE::FE::CellType::quad9:
+    case Core::FE::CellType::quad9:
     {
-      if (ele->parent_element()->Shape() == CORE::FE::CellType::hex27)
+      if (ele->parent_element()->Shape() == Core::FE::CellType::hex27)
       {
-        no_penetration_mat_od<CORE::FE::CellType::hex27>(
+        no_penetration_mat_od<Core::FE::CellType::hex27>(
             ele, params, discretization, lm, k_struct, k_lambda);
       }
       else
@@ -3554,25 +3555,25 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od(
   }
 }
 
-template <CORE::FE::CellType distype>
-template <CORE::FE::CellType pdistype>
-void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od(
-    DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix& k_struct, CORE::LINALG::SerialDenseMatrix& k_lambda)
+template <Core::FE::CellType distype>
+template <Core::FE::CellType pdistype>
+void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od(
+    Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix& k_struct, Core::LinAlg::SerialDenseMatrix& k_lambda)
 {
   // This function is only implemented for 3D
   if (Base::bdrynsd_ != 2 and Base::bdrynsd_ != 1)
     FOUR_C_THROW("pressure_coupling is only implemented for 2D and 3D!");
 
   // get integration rule
-  const CORE::FE::IntPointsAndWeights<Base::bdrynsd_> intpoints(
-      DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+  const Core::FE::IntPointsAndWeights<Base::bdrynsd_> intpoints(
+      Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of
   // FluidBoundary element!)
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, Base::bdrynen_>>(
+  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, Base::bdrynen_>>(
       ele, Base::xyze_);
 
   // get timescale parameter from parameter list (depends on time integration scheme)
@@ -3592,7 +3593,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od(
     if (dispnp != Teuchos::null)
     {
       mydispnp.resize(lm.size());
-      CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
+      Core::FE::ExtractMyValues(*dispnp, mydispnp, lm);
     }
     FOUR_C_ASSERT(mydispnp.size() != 0, "no displacement values for boundary element");
 
@@ -3613,14 +3614,14 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od(
   if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velnp'");
 
   std::vector<double> myvelnp(lm.size());
-  CORE::FE::ExtractMyValues(*velnp, myvelnp, lm);
+  Core::FE::ExtractMyValues(*velnp, myvelnp, lm);
 
   std::vector<double> mygridvel(lm.size());
-  CORE::FE::ExtractMyValues(*gridvel, mygridvel, lm);
+  Core::FE::ExtractMyValues(*gridvel, mygridvel, lm);
 
   // allocate velocity vectors
-  CORE::LINALG::Matrix<nsd_, Base::bdrynen_> evelnp(true);
-  CORE::LINALG::Matrix<nsd_, Base::bdrynen_> egridvel(true);
+  Core::LinAlg::Matrix<nsd_, Base::bdrynen_> evelnp(true);
+  Core::LinAlg::Matrix<nsd_, Base::bdrynen_> egridvel(true);
 
   // split velocity and pressure, insert into element arrays
   for (int inode = 0; inode < Base::bdrynen_; inode++)
@@ -3637,9 +3638,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od(
   if (glambda == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'lambda'");
 
   std::vector<double> mylambda(lm.size());
-  CORE::FE::ExtractMyValues(*glambda, mylambda, lm);
+  Core::FE::ExtractMyValues(*glambda, mylambda, lm);
 
-  CORE::LINALG::Matrix<nsd_, Base::bdrynen_> elambda(true);
+  Core::LinAlg::Matrix<nsd_, Base::bdrynen_> elambda(true);
 
   // copy lagrange multiplier values into matrix
   for (int inode = 0; inode < Base::bdrynen_; inode++)
@@ -3651,7 +3652,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od(
   }
 
   // allocate convective velocity at node
-  CORE::LINALG::Matrix<nsd_, Base::bdrynen_> econvvel(true);
+  Core::LinAlg::Matrix<nsd_, Base::bdrynen_> econvvel(true);
 
   econvvel += evelnp;
   if (not Base::fldparatimint_->IsStationary()) econvvel -= egridvel;
@@ -3661,25 +3662,25 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od(
   // --------------------------------------------------
 
   // get the parent element
-  DRT::ELEMENTS::Fluid* pele = ele->parent_element();
+  Discret::ELEMENTS::Fluid* pele = ele->parent_element();
 
   // number of parentnodes
-  static const int nenparent = CORE::FE::num_nodes<pdistype>;
+  static const int nenparent = Core::FE::num_nodes<pdistype>;
 
   // get element location vector and ownerships
   std::vector<int> plm;
   std::vector<int> plmowner;
   std::vector<int> plmstride;
-  pele->CORE::Elements::Element::LocationVector(discretization, plm, plmowner, plmstride);
+  pele->Core::Elements::Element::LocationVector(discretization, plm, plmowner, plmstride);
 
   std::vector<double> parentdispnp;
-  CORE::FE::ExtractMyValues(*dispnp, parentdispnp, plm);
+  Core::FE::ExtractMyValues(*dispnp, parentdispnp, plm);
 
   // update element geometry of parent element
-  CORE::LINALG::Matrix<nsd_, nenparent> xrefe;  // material coord. of parent element
-  CORE::LINALG::Matrix<nsd_, nenparent> xcurr;  // current  coord. of parent element
+  Core::LinAlg::Matrix<nsd_, nenparent> xrefe;  // material coord. of parent element
+  Core::LinAlg::Matrix<nsd_, nenparent> xcurr;  // current  coord. of parent element
   {
-    CORE::Nodes::Node** nodes = pele->Nodes();
+    Core::Nodes::Node** nodes = pele->Nodes();
     for (int i = 0; i < nenparent; ++i)
     {
       for (int j = 0; j < nsd_; ++j)
@@ -3692,10 +3693,10 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od(
   }
 
   std::vector<double> pvelnp(plm.size());
-  CORE::FE::ExtractMyValues(*velnp, pvelnp, plm);
+  Core::FE::ExtractMyValues(*velnp, pvelnp, plm);
 
   // allocate vectors
-  CORE::LINALG::Matrix<nenparent, 1> pepressnp(true);
+  Core::LinAlg::Matrix<nenparent, 1> pepressnp(true);
 
   // split velocity and pressure, insert into element arrays
   for (int inode = 0; inode < nenparent; inode++)
@@ -3704,16 +3705,16 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od(
   }
 
   // get coordinates of gauss points w.r.t. local parent coordinate system
-  CORE::LINALG::SerialDenseMatrix pqxg(intpoints.IP().nquad, nsd_);
-  CORE::LINALG::Matrix<nsd_, nsd_> derivtrafo(true);
+  Core::LinAlg::SerialDenseMatrix pqxg(intpoints.IP().nquad, nsd_);
+  Core::LinAlg::Matrix<nsd_, nsd_> derivtrafo(true);
 
-  CORE::FE::BoundaryGPToParentGP<nsd_>(
+  Core::FE::BoundaryGPToParentGP<nsd_>(
       pqxg, derivtrafo, intpoints, pdistype, distype, ele->SurfaceNumber());
 
   // coordinates of gauss points of parent element
-  CORE::LINALG::Matrix<nsd_, 1> pxsi(true);
+  Core::LinAlg::Matrix<nsd_, 1> pxsi(true);
 
-  CORE::LINALG::Matrix<Base::bdrynen_, 1> eporosity(true);
+  Core::LinAlg::Matrix<Base::bdrynen_, 1> eporosity(true);
 
   // --------------------------------------------------
   // Now do the nurbs specific stuff
@@ -3721,16 +3722,16 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od(
 
   // In the case of nurbs the normal vector is multiplied with normalfac
   double normalfac = 0.0;
-  std::vector<CORE::LINALG::SerialDenseVector> mypknots(nsd_);
-  std::vector<CORE::LINALG::SerialDenseVector> myknots(Base::bdrynsd_);
-  CORE::LINALG::SerialDenseVector weights(Base::bdrynen_);
-  CORE::LINALG::SerialDenseVector pweights(pele->num_node());
+  std::vector<Core::LinAlg::SerialDenseVector> mypknots(nsd_);
+  std::vector<Core::LinAlg::SerialDenseVector> myknots(Base::bdrynsd_);
+  Core::LinAlg::SerialDenseVector weights(Base::bdrynen_);
+  Core::LinAlg::SerialDenseVector pweights(pele->num_node());
 
   // for isogeometric elements --- get knotvectors for parent
   // element and surface element, get weights
   if (IsNurbs<distype>::isnurbs)
   {
-    bool zero_size = DRT::NURBS::GetKnotVectorAndWeightsForNurbsBoundaryAndParent(pele, ele,
+    bool zero_size = Discret::Nurbs::GetKnotVectorAndWeightsForNurbsBoundaryAndParent(pele, ele,
         ele->SurfaceNumber(), discretization, mypknots, myknots, pweights, weights, normalfac);
 
     if (zero_size)
@@ -3740,22 +3741,22 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od(
   }
   // --------------------------------------------------
   // tangent vectors
-  CORE::LINALG::Matrix<nsd_, 1> tangent1(true);
-  CORE::LINALG::Matrix<nsd_, 1> tangent2(true);
+  Core::LinAlg::Matrix<nsd_, 1> tangent1(true);
+  Core::LinAlg::Matrix<nsd_, 1> tangent2(true);
 
   // allocate convective velocity at gauss point
-  CORE::LINALG::Matrix<nsd_, 1> convvel(true);
-  CORE::LINALG::Matrix<nsd_, 1> lambda(true);
+  Core::LinAlg::Matrix<nsd_, 1> convvel(true);
+  Core::LinAlg::Matrix<nsd_, 1> lambda(true);
 
   // array for dual shape functions for boundary element
-  CORE::LINALG::Matrix<Base::bdrynen_, 1> dualfunct(true);
+  Core::LinAlg::Matrix<Base::bdrynen_, 1> dualfunct(true);
 
   for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
   {
     // Computation of the integration factor & shape function at the Gauss point & derivative of the
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
-    CORE::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
+    Core::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
         Base::unitnormal_, Base::drs_, Base::xsi_, Base::xyze_, intpoints, gpid, &myknots, &weights,
         IsNurbs<distype>::isnurbs);
 
@@ -3764,8 +3765,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od(
     // --------------------------------------------------
 
     // get shape functions and derivatives in the plane of the element
-    CORE::LINALG::Matrix<nenparent, 1> pfunct(true);
-    CORE::LINALG::Matrix<nsd_, nenparent> pderiv_loc;
+    Core::LinAlg::Matrix<nenparent, 1> pfunct(true);
+    Core::LinAlg::Matrix<nsd_, nenparent> pderiv_loc;
 
     // coordinates of the current integration point
     for (int idim = 0; idim < nsd_; idim++) pxsi(idim) = pqxg(gpid, idim);
@@ -3774,20 +3775,20 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od(
     if (not IsNurbs<distype>::isnurbs)
     {
       // shape functions and their first derivatives of parent element
-      CORE::FE::shape_function<pdistype>(pxsi, pfunct);
-      CORE::FE::shape_function_deriv1<pdistype>(pxsi, pderiv_loc);
+      Core::FE::shape_function<pdistype>(pxsi, pfunct);
+      Core::FE::shape_function_deriv1<pdistype>(pxsi, pderiv_loc);
     }
     // only for NURBS!!!
     else
     {
-      CORE::FE::NURBS::nurbs_get_funct_deriv(
+      Core::FE::Nurbs::nurbs_get_funct_deriv(
           pfunct, pderiv_loc, pxsi, mypknots, pweights, pdistype);
     }
 
     // get Jacobian matrix and determinant w.r.t. spatial configuration
     // transposed jacobian "dx/ds"
-    CORE::LINALG::Matrix<nsd_, nsd_> xjm;
-    CORE::LINALG::Matrix<nsd_, nsd_> Jmat;
+    Core::LinAlg::Matrix<nsd_, nsd_> xjm;
+    Core::LinAlg::Matrix<nsd_, nsd_> Jmat;
     xjm.MultiplyNT(pderiv_loc, xcurr);
     Jmat.MultiplyNT(pderiv_loc, xrefe);
     // jacobian determinant "det(dx/ds)"
@@ -3811,10 +3812,10 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od(
     std::array<double, 3> Axi = {0.0, 0.0, 0.0};
     for (int i = 0; i < Base::bdrynsd_; i++) Axi[i] = Base::xsi_(i);
     for (int i = Base::bdrynsd_; i < 3; i++) Axi[i] = 0.0;
-    CORE::VOLMORTAR::UTILS::dual_shape_function<distype>(dualfunct, Axi.data(), *ele);
+    Core::VolMortar::UTILS::dual_shape_function<distype>(dualfunct, Axi.data(), *ele);
 
     // dxyzdrs vector -> normal which is not normalized
-    CORE::LINALG::Matrix<Base::bdrynsd_, nsd_> dxyzdrs(0.0);
+    Core::LinAlg::Matrix<Base::bdrynsd_, nsd_> dxyzdrs(0.0);
     dxyzdrs.MultiplyNT(Base::deriv_, Base::xyze_);
 
     // in the case of nurbs the normal vector must be scaled with a special factor
@@ -3824,9 +3825,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od(
     lambda.Multiply(elambda, dualfunct);
 
     //  derivatives of surface normals wrt mesh displacements
-    CORE::LINALG::Matrix<nsd_, Base::bdrynen_ * nsd_> normalderiv(true);
-    CORE::LINALG::Matrix<nsd_, Base::bdrynen_ * nsd_> tangent1deriv(true);
-    CORE::LINALG::Matrix<nsd_, Base::bdrynen_ * nsd_> tangent2deriv(true);
+    Core::LinAlg::Matrix<nsd_, Base::bdrynen_ * nsd_> normalderiv(true);
+    Core::LinAlg::Matrix<nsd_, Base::bdrynen_ * nsd_> tangent1deriv(true);
+    Core::LinAlg::Matrix<nsd_, Base::bdrynen_ * nsd_> tangent2deriv(true);
 
     // The integration factor is not multiplied with drs
     // since it is the same as the scaling factor for the unit normal derivatives
@@ -3959,7 +3960,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od(
       }
     }
 
-    static CORE::LINALG::Matrix<1, Base::bdrynen_ * nsd_> convvel_normalderiv(true);
+    static Core::LinAlg::Matrix<1, Base::bdrynen_ * nsd_> convvel_normalderiv(true);
     convvel_normalderiv.MultiplyTN(convvel, normalderiv);
 
     // fill element matrix
@@ -3980,9 +3981,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od(
 
     if (nsd_ == 3)
     {
-      static CORE::LINALG::Matrix<1, Base::bdrynen_ * nsd_> lambda_tangent1deriv(true);
+      static Core::LinAlg::Matrix<1, Base::bdrynen_ * nsd_> lambda_tangent1deriv(true);
       lambda_tangent1deriv.MultiplyTN(lambda, tangent1deriv);
-      static CORE::LINALG::Matrix<1, Base::bdrynen_ * nsd_> lambda_tangent2deriv(true);
+      static Core::LinAlg::Matrix<1, Base::bdrynen_ * nsd_> lambda_tangent2deriv(true);
       lambda_tangent2deriv.MultiplyTN(lambda, tangent2deriv);
 
       for (int inode = 0; inode < Base::bdrynen_; inode++)
@@ -4002,7 +4003,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od(
     }
     else if (nsd_ == 2)
     {
-      CORE::LINALG::Matrix<1, Base::bdrynen_ * nsd_> lambda_tangent1deriv(true);
+      Core::LinAlg::Matrix<1, Base::bdrynen_ * nsd_> lambda_tangent1deriv(true);
       lambda_tangent1deriv.MultiplyTN(lambda, tangent1deriv);
 
       for (int inode = 0; inode < Base::bdrynen_; inode++)
@@ -4054,25 +4055,25 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od(
   }
 }
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_poro_pres(
-    DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix& k_pres)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_poro_pres(
+    Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix& k_pres)
 {
   switch (distype)
   {
     // 2D:
-    case CORE::FE::CellType::line2:
+    case Core::FE::CellType::line2:
     {
-      if (ele->parent_element()->Shape() == CORE::FE::CellType::quad4)
+      if (ele->parent_element()->Shape() == Core::FE::CellType::quad4)
       {
-        no_penetration_mat_od_poro_pres<CORE::FE::CellType::quad4>(
+        no_penetration_mat_od_poro_pres<Core::FE::CellType::quad4>(
             ele, params, discretization, lm, k_pres);
       }
-      else if (ele->parent_element()->Shape() == CORE::FE::CellType::tri3)
+      else if (ele->parent_element()->Shape() == Core::FE::CellType::tri3)
       {
-        no_penetration_mat_od_poro_pres<CORE::FE::CellType::tri3>(
+        no_penetration_mat_od_poro_pres<Core::FE::CellType::tri3>(
             ele, params, discretization, lm, k_pres);
       }
       else
@@ -4081,11 +4082,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_por
       }
       break;
     }
-    case CORE::FE::CellType::line3:
+    case Core::FE::CellType::line3:
     {
-      if (ele->parent_element()->Shape() == CORE::FE::CellType::quad9)
+      if (ele->parent_element()->Shape() == Core::FE::CellType::quad9)
       {
-        no_penetration_mat_od_poro_pres<CORE::FE::CellType::quad9>(
+        no_penetration_mat_od_poro_pres<Core::FE::CellType::quad9>(
             ele, params, discretization, lm, k_pres);
       }
       else
@@ -4094,11 +4095,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_por
       }
       break;
     }
-    case CORE::FE::CellType::nurbs3:
+    case Core::FE::CellType::nurbs3:
     {
-      if (ele->parent_element()->Shape() == CORE::FE::CellType::nurbs9)
+      if (ele->parent_element()->Shape() == Core::FE::CellType::nurbs9)
       {
-        no_penetration_mat_od_poro_pres<CORE::FE::CellType::nurbs9>(
+        no_penetration_mat_od_poro_pres<Core::FE::CellType::nurbs9>(
             ele, params, discretization, lm, k_pres);
       }
       else
@@ -4108,11 +4109,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_por
       break;
     }
     // 3D:
-    case CORE::FE::CellType::quad4:
+    case Core::FE::CellType::quad4:
     {
-      if (ele->parent_element()->Shape() == CORE::FE::CellType::hex8)
+      if (ele->parent_element()->Shape() == Core::FE::CellType::hex8)
       {
-        no_penetration_mat_od_poro_pres<CORE::FE::CellType::hex8>(
+        no_penetration_mat_od_poro_pres<Core::FE::CellType::hex8>(
             ele, params, discretization, lm, k_pres);
       }
       else
@@ -4121,11 +4122,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_por
       }
       break;
     }
-    case CORE::FE::CellType::tri3:
+    case Core::FE::CellType::tri3:
     {
-      if (ele->parent_element()->Shape() == CORE::FE::CellType::tet4)
+      if (ele->parent_element()->Shape() == Core::FE::CellType::tet4)
       {
-        no_penetration_mat_od_poro_pres<CORE::FE::CellType::tet4>(
+        no_penetration_mat_od_poro_pres<Core::FE::CellType::tet4>(
             ele, params, discretization, lm, k_pres);
       }
       else
@@ -4134,11 +4135,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_por
       }
       break;
     }
-    case CORE::FE::CellType::tri6:
+    case Core::FE::CellType::tri6:
     {
-      if (ele->parent_element()->Shape() == CORE::FE::CellType::tet10)
+      if (ele->parent_element()->Shape() == Core::FE::CellType::tet10)
       {
-        no_penetration_mat_od_poro_pres<CORE::FE::CellType::tet10>(
+        no_penetration_mat_od_poro_pres<Core::FE::CellType::tet10>(
             ele, params, discretization, lm, k_pres);
       }
       else
@@ -4147,11 +4148,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_por
       }
       break;
     }
-    case CORE::FE::CellType::quad9:
+    case Core::FE::CellType::quad9:
     {
-      if (ele->parent_element()->Shape() == CORE::FE::CellType::hex27)
+      if (ele->parent_element()->Shape() == Core::FE::CellType::hex27)
       {
-        no_penetration_mat_od_poro_pres<CORE::FE::CellType::hex27>(
+        no_penetration_mat_od_poro_pres<Core::FE::CellType::hex27>(
             ele, params, discretization, lm, k_pres);
       }
       else
@@ -4168,25 +4169,25 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_por
   }
 }
 
-template <CORE::FE::CellType distype>
-template <CORE::FE::CellType pdistype>
-void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_poro_pres(
-    DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix& k_pres)
+template <Core::FE::CellType distype>
+template <Core::FE::CellType pdistype>
+void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_poro_pres(
+    Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix& k_pres)
 {
   // This function is only implemented for 3D
   if (Base::bdrynsd_ != 2 and Base::bdrynsd_ != 1)
     FOUR_C_THROW("pressure_coupling is only implemented for 2D and 3D!");
 
   // get integration rule
-  const CORE::FE::IntPointsAndWeights<Base::bdrynsd_> intpoints(
-      DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+  const Core::FE::IntPointsAndWeights<Base::bdrynsd_> intpoints(
+      Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of
   // FluidBoundary element!)
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, Base::bdrynen_>>(
+  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, Base::bdrynen_>>(
       ele, Base::xyze_);
 
   // displacements
@@ -4199,7 +4200,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_por
     if (dispnp != Teuchos::null)
     {
       mydispnp.resize(lm.size());
-      CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
+      Core::FE::ExtractMyValues(*dispnp, mydispnp, lm);
     }
     FOUR_C_ASSERT(mydispnp.size() != 0, "no displacement values for boundary element");
 
@@ -4220,14 +4221,14 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_por
   if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velnp'");
 
   std::vector<double> myvelnp(lm.size());
-  CORE::FE::ExtractMyValues(*velnp, myvelnp, lm);
+  Core::FE::ExtractMyValues(*velnp, myvelnp, lm);
 
   std::vector<double> mygridvel(lm.size());
-  CORE::FE::ExtractMyValues(*gridvel, mygridvel, lm);
+  Core::FE::ExtractMyValues(*gridvel, mygridvel, lm);
 
   // allocate velocity vectors
-  CORE::LINALG::Matrix<nsd_, Base::bdrynen_> evelnp(true);
-  CORE::LINALG::Matrix<nsd_, Base::bdrynen_> egridvel(true);
+  Core::LinAlg::Matrix<nsd_, Base::bdrynen_> evelnp(true);
+  Core::LinAlg::Matrix<nsd_, Base::bdrynen_> egridvel(true);
 
   // split velocity and pressure, insert into element arrays
   for (int inode = 0; inode < Base::bdrynen_; inode++)
@@ -4240,7 +4241,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_por
   }
 
   // allocate convective velocity at node
-  CORE::LINALG::Matrix<nsd_, Base::bdrynen_> econvvel(true);
+  Core::LinAlg::Matrix<nsd_, Base::bdrynen_> econvvel(true);
 
   econvvel += evelnp;
   if (not Base::fldparatimint_->IsStationary()) econvvel -= egridvel;
@@ -4250,25 +4251,25 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_por
   // --------------------------------------------------
 
   // get the parent element
-  DRT::ELEMENTS::Fluid* pele = ele->parent_element();
+  Discret::ELEMENTS::Fluid* pele = ele->parent_element();
 
   // number of parentnodes
-  static const int nenparent = CORE::FE::num_nodes<pdistype>;
+  static const int nenparent = Core::FE::num_nodes<pdistype>;
 
   // get element location vector and ownerships
   std::vector<int> plm;
   std::vector<int> plmowner;
   std::vector<int> plmstride;
-  pele->CORE::Elements::Element::LocationVector(discretization, plm, plmowner, plmstride);
+  pele->Core::Elements::Element::LocationVector(discretization, plm, plmowner, plmstride);
 
   std::vector<double> parentdispnp;
-  CORE::FE::ExtractMyValues(*dispnp, parentdispnp, plm);
+  Core::FE::ExtractMyValues(*dispnp, parentdispnp, plm);
 
   // update element geometry of parent element
-  CORE::LINALG::Matrix<nsd_, nenparent> xrefe;  // material coord. of parent element
-  CORE::LINALG::Matrix<nsd_, nenparent> xcurr;  // current  coord. of parent element
+  Core::LinAlg::Matrix<nsd_, nenparent> xrefe;  // material coord. of parent element
+  Core::LinAlg::Matrix<nsd_, nenparent> xcurr;  // current  coord. of parent element
   {
-    CORE::Nodes::Node** nodes = pele->Nodes();
+    Core::Nodes::Node** nodes = pele->Nodes();
     for (int i = 0; i < nenparent; ++i)
     {
       for (int j = 0; j < nsd_; ++j)
@@ -4281,10 +4282,10 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_por
   }
 
   std::vector<double> pvelnp(plm.size());
-  CORE::FE::ExtractMyValues(*velnp, pvelnp, plm);
+  Core::FE::ExtractMyValues(*velnp, pvelnp, plm);
 
   // allocate vectors
-  CORE::LINALG::Matrix<nenparent, 1> pepressnp(true);
+  Core::LinAlg::Matrix<nenparent, 1> pepressnp(true);
 
   // split velocity and pressure, insert into element arrays
   for (int inode = 0; inode < nenparent; inode++)
@@ -4293,16 +4294,16 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_por
   }
 
   // get coordinates of gauss points w.r.t. local parent coordinate system
-  CORE::LINALG::SerialDenseMatrix pqxg(intpoints.IP().nquad, nsd_);
-  CORE::LINALG::Matrix<nsd_, nsd_> derivtrafo(true);
+  Core::LinAlg::SerialDenseMatrix pqxg(intpoints.IP().nquad, nsd_);
+  Core::LinAlg::Matrix<nsd_, nsd_> derivtrafo(true);
 
-  CORE::FE::BoundaryGPToParentGP<nsd_>(
+  Core::FE::BoundaryGPToParentGP<nsd_>(
       pqxg, derivtrafo, intpoints, pdistype, distype, ele->SurfaceNumber());
 
   // coordinates of gauss points of parent element
-  CORE::LINALG::Matrix<nsd_, 1> pxsi(true);
+  Core::LinAlg::Matrix<nsd_, 1> pxsi(true);
 
-  CORE::LINALG::Matrix<Base::bdrynen_, 1> eporosity(true);
+  Core::LinAlg::Matrix<Base::bdrynen_, 1> eporosity(true);
 
   // --------------------------------------------------
   // Now do the nurbs specific stuff
@@ -4310,16 +4311,16 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_por
 
   // In the case of nurbs the normal vector is multiplied with normalfac
   double normalfac = 0.0;
-  std::vector<CORE::LINALG::SerialDenseVector> mypknots(nsd_);
-  std::vector<CORE::LINALG::SerialDenseVector> myknots(Base::bdrynsd_);
-  CORE::LINALG::SerialDenseVector weights(Base::bdrynen_);
-  CORE::LINALG::SerialDenseVector pweights(pele->num_node());
+  std::vector<Core::LinAlg::SerialDenseVector> mypknots(nsd_);
+  std::vector<Core::LinAlg::SerialDenseVector> myknots(Base::bdrynsd_);
+  Core::LinAlg::SerialDenseVector weights(Base::bdrynen_);
+  Core::LinAlg::SerialDenseVector pweights(pele->num_node());
 
   // for isogeometric elements --- get knotvectors for parent
   // element and surface element, get weights
   if (IsNurbs<distype>::isnurbs)
   {
-    bool zero_size = DRT::NURBS::GetKnotVectorAndWeightsForNurbsBoundaryAndParent(pele, ele,
+    bool zero_size = Discret::Nurbs::GetKnotVectorAndWeightsForNurbsBoundaryAndParent(pele, ele,
         ele->SurfaceNumber(), discretization, mypknots, myknots, pweights, weights, normalfac);
 
     if (zero_size)
@@ -4329,14 +4330,14 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_por
   }
 
   // --------------------------------------------------
-  CORE::LINALG::Matrix<nsd_, 1> convvel(true);
+  Core::LinAlg::Matrix<nsd_, 1> convvel(true);
 
   for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
   {
     // Computation of the integration factor & shape function at the Gauss point & derivative of the
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
-    CORE::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
+    Core::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
         Base::unitnormal_, Base::drs_, Base::xsi_, Base::xyze_, intpoints, gpid, &myknots, &weights,
         IsNurbs<distype>::isnurbs);
 
@@ -4345,8 +4346,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_por
     // --------------------------------------------------
 
     // get shape functions and derivatives in the plane of the element
-    CORE::LINALG::Matrix<nenparent, 1> pfunct(true);
-    CORE::LINALG::Matrix<nsd_, nenparent> pderiv_loc;
+    Core::LinAlg::Matrix<nenparent, 1> pfunct(true);
+    Core::LinAlg::Matrix<nsd_, nenparent> pderiv_loc;
 
     // coordinates of the current integration point
     for (int idim = 0; idim < nsd_; idim++) pxsi(idim) = pqxg(gpid, idim);
@@ -4355,20 +4356,20 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_por
     if (not IsNurbs<distype>::isnurbs)
     {
       // shape functions and their first derivatives of parent element
-      CORE::FE::shape_function<pdistype>(pxsi, pfunct);
-      CORE::FE::shape_function_deriv1<pdistype>(pxsi, pderiv_loc);
+      Core::FE::shape_function<pdistype>(pxsi, pfunct);
+      Core::FE::shape_function_deriv1<pdistype>(pxsi, pderiv_loc);
     }
     // only for NURBS!!!
     else
     {
-      CORE::FE::NURBS::nurbs_get_funct_deriv(
+      Core::FE::Nurbs::nurbs_get_funct_deriv(
           pfunct, pderiv_loc, pxsi, mypknots, pweights, pdistype);
     }
 
     // get Jacobian matrix and determinant w.r.t. spatial configuration
     // transposed jacobian "dx/ds"
-    CORE::LINALG::Matrix<nsd_, nsd_> xjm;
-    CORE::LINALG::Matrix<nsd_, nsd_> Jmat;
+    Core::LinAlg::Matrix<nsd_, nsd_> xjm;
+    Core::LinAlg::Matrix<nsd_, nsd_> Jmat;
     xjm.MultiplyNT(pderiv_loc, xcurr);
     Jmat.MultiplyNT(pderiv_loc, xrefe);
     // jacobian determinant "det(dx/ds)"
@@ -4390,7 +4391,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_por
         params, ele, Base::funct_, eporosity, press, J, gpid, porosity_gp, dphi_dp, dphi_dJ, false);
 
     // dxyzdrs vector -> normal which is not normalized
-    CORE::LINALG::Matrix<Base::bdrynsd_, nsd_> dxyzdrs(0.0);
+    Core::LinAlg::Matrix<Base::bdrynsd_, nsd_> dxyzdrs(0.0);
     dxyzdrs.MultiplyNT(Base::deriv_, Base::xyze_);
 
     // in the case of nurbs the normal vector must be scaled with a special factor
@@ -4415,25 +4416,25 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_por
   }
 }
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_poro_disp(
-    DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& plm,
-    CORE::LINALG::SerialDenseMatrix& k_disp)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_poro_disp(
+    Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& plm,
+    Core::LinAlg::SerialDenseMatrix& k_disp)
 {
   switch (distype)
   {
     // 2D:
-    case CORE::FE::CellType::line2:
+    case Core::FE::CellType::line2:
     {
-      if (ele->parent_element()->Shape() == CORE::FE::CellType::quad4)
+      if (ele->parent_element()->Shape() == Core::FE::CellType::quad4)
       {
-        no_penetration_mat_od_poro_disp<CORE::FE::CellType::quad4>(
+        no_penetration_mat_od_poro_disp<Core::FE::CellType::quad4>(
             ele, params, discretization, plm, k_disp);
       }
-      else if (ele->parent_element()->Shape() == CORE::FE::CellType::tri3)
+      else if (ele->parent_element()->Shape() == Core::FE::CellType::tri3)
       {
-        no_penetration_mat_od_poro_disp<CORE::FE::CellType::tri3>(
+        no_penetration_mat_od_poro_disp<Core::FE::CellType::tri3>(
             ele, params, discretization, plm, k_disp);
       }
       else
@@ -4442,11 +4443,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_por
       }
       break;
     }
-    case CORE::FE::CellType::line3:
+    case Core::FE::CellType::line3:
     {
-      if (ele->parent_element()->Shape() == CORE::FE::CellType::quad9)
+      if (ele->parent_element()->Shape() == Core::FE::CellType::quad9)
       {
-        no_penetration_mat_od_poro_disp<CORE::FE::CellType::quad9>(
+        no_penetration_mat_od_poro_disp<Core::FE::CellType::quad9>(
             ele, params, discretization, plm, k_disp);
       }
       else
@@ -4455,11 +4456,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_por
       }
       break;
     }
-    case CORE::FE::CellType::nurbs3:
+    case Core::FE::CellType::nurbs3:
     {
-      if (ele->parent_element()->Shape() == CORE::FE::CellType::nurbs9)
+      if (ele->parent_element()->Shape() == Core::FE::CellType::nurbs9)
       {
-        no_penetration_mat_od_poro_disp<CORE::FE::CellType::nurbs9>(
+        no_penetration_mat_od_poro_disp<Core::FE::CellType::nurbs9>(
             ele, params, discretization, plm, k_disp);
       }
       else
@@ -4469,11 +4470,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_por
       break;
     }
     // 3D:
-    case CORE::FE::CellType::quad4:
+    case Core::FE::CellType::quad4:
     {
-      if (ele->parent_element()->Shape() == CORE::FE::CellType::hex8)
+      if (ele->parent_element()->Shape() == Core::FE::CellType::hex8)
       {
-        no_penetration_mat_od_poro_disp<CORE::FE::CellType::hex8>(
+        no_penetration_mat_od_poro_disp<Core::FE::CellType::hex8>(
             ele, params, discretization, plm, k_disp);
       }
       else
@@ -4482,11 +4483,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_por
       }
       break;
     }
-    case CORE::FE::CellType::tri3:
+    case Core::FE::CellType::tri3:
     {
-      if (ele->parent_element()->Shape() == CORE::FE::CellType::tet4)
+      if (ele->parent_element()->Shape() == Core::FE::CellType::tet4)
       {
-        no_penetration_mat_od_poro_disp<CORE::FE::CellType::tet4>(
+        no_penetration_mat_od_poro_disp<Core::FE::CellType::tet4>(
             ele, params, discretization, plm, k_disp);
       }
       else
@@ -4495,11 +4496,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_por
       }
       break;
     }
-    case CORE::FE::CellType::tri6:
+    case Core::FE::CellType::tri6:
     {
-      if (ele->parent_element()->Shape() == CORE::FE::CellType::tet10)
+      if (ele->parent_element()->Shape() == Core::FE::CellType::tet10)
       {
-        no_penetration_mat_od_poro_disp<CORE::FE::CellType::tet10>(
+        no_penetration_mat_od_poro_disp<Core::FE::CellType::tet10>(
             ele, params, discretization, plm, k_disp);
       }
       else
@@ -4508,11 +4509,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_por
       }
       break;
     }
-    case CORE::FE::CellType::quad9:
+    case Core::FE::CellType::quad9:
     {
-      if (ele->parent_element()->Shape() == CORE::FE::CellType::hex27)
+      if (ele->parent_element()->Shape() == Core::FE::CellType::hex27)
       {
-        no_penetration_mat_od_poro_disp<CORE::FE::CellType::hex27>(
+        no_penetration_mat_od_poro_disp<Core::FE::CellType::hex27>(
             ele, params, discretization, plm, k_disp);
       }
       else
@@ -4529,12 +4530,12 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_por
   }
 }
 
-template <CORE::FE::CellType distype>
-template <CORE::FE::CellType pdistype>
-void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_poro_disp(
-    DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& plm,
-    CORE::LINALG::SerialDenseMatrix& k_disp)
+template <Core::FE::CellType distype>
+template <Core::FE::CellType pdistype>
+void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_poro_disp(
+    Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& plm,
+    Core::LinAlg::SerialDenseMatrix& k_disp)
 {
   // This function is only implemented for 3D
   if (Base::bdrynsd_ != 2 and Base::bdrynsd_ != 1)
@@ -4544,16 +4545,16 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_por
   std::vector<int> lm;
   std::vector<int> lmowner;
   std::vector<int> lmstride;
-  ele->CORE::Elements::Element::LocationVector(discretization, lm, lmowner, lmstride);
+  ele->Core::Elements::Element::LocationVector(discretization, lm, lmowner, lmstride);
 
   // get integration rule
-  const CORE::FE::IntPointsAndWeights<Base::bdrynsd_> intpoints(
-      DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+  const Core::FE::IntPointsAndWeights<Base::bdrynsd_> intpoints(
+      Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of
   // FluidBoundary element!)
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, Base::bdrynen_>>(
+  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, Base::bdrynen_>>(
       ele, Base::xyze_);
 
   // displacements
@@ -4566,7 +4567,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_por
     if (dispnp != Teuchos::null)
     {
       mydispnp.resize(lm.size());
-      CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
+      Core::FE::ExtractMyValues(*dispnp, mydispnp, lm);
     }
     FOUR_C_ASSERT(mydispnp.size() != 0, "no displacement values for boundary element");
 
@@ -4587,14 +4588,14 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_por
   if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velnp'");
 
   std::vector<double> myvelnp(lm.size());
-  CORE::FE::ExtractMyValues(*velnp, myvelnp, lm);
+  Core::FE::ExtractMyValues(*velnp, myvelnp, lm);
 
   std::vector<double> mygridvel(lm.size());
-  CORE::FE::ExtractMyValues(*gridvel, mygridvel, lm);
+  Core::FE::ExtractMyValues(*gridvel, mygridvel, lm);
 
   // allocate velocity vectors
-  CORE::LINALG::Matrix<nsd_, Base::bdrynen_> evelnp(true);
-  CORE::LINALG::Matrix<nsd_, Base::bdrynen_> egridvel(true);
+  Core::LinAlg::Matrix<nsd_, Base::bdrynen_> evelnp(true);
+  Core::LinAlg::Matrix<nsd_, Base::bdrynen_> egridvel(true);
 
   // split velocity and pressure, insert into element arrays
   for (int inode = 0; inode < Base::bdrynen_; inode++)
@@ -4607,7 +4608,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_por
   }
 
   // allocate convective velocity at node
-  CORE::LINALG::Matrix<nsd_, Base::bdrynen_> econvvel(true);
+  Core::LinAlg::Matrix<nsd_, Base::bdrynen_> econvvel(true);
 
   econvvel += evelnp;
   if (not Base::fldparatimint_->IsStationary()) econvvel -= egridvel;
@@ -4617,19 +4618,19 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_por
   // --------------------------------------------------
 
   // get the parent element
-  DRT::ELEMENTS::Fluid* pele = ele->parent_element();
+  Discret::ELEMENTS::Fluid* pele = ele->parent_element();
 
   // number of parentnodes
-  static const int nenparent = CORE::FE::num_nodes<pdistype>;
+  static const int nenparent = Core::FE::num_nodes<pdistype>;
 
   std::vector<double> parentdispnp;
-  CORE::FE::ExtractMyValues(*dispnp, parentdispnp, plm);
+  Core::FE::ExtractMyValues(*dispnp, parentdispnp, plm);
 
   // update element geometry of parent element
-  CORE::LINALG::Matrix<nsd_, nenparent> xrefe;  // material coord. of parent element
-  CORE::LINALG::Matrix<nsd_, nenparent> xcurr;  // current  coord. of parent element
+  Core::LinAlg::Matrix<nsd_, nenparent> xrefe;  // material coord. of parent element
+  Core::LinAlg::Matrix<nsd_, nenparent> xcurr;  // current  coord. of parent element
   {
-    CORE::Nodes::Node** nodes = pele->Nodes();
+    Core::Nodes::Node** nodes = pele->Nodes();
     for (int i = 0; i < nenparent; ++i)
     {
       for (int j = 0; j < nsd_; ++j)
@@ -4642,10 +4643,10 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_por
   }
 
   std::vector<double> pvelnp(plm.size());
-  CORE::FE::ExtractMyValues(*velnp, pvelnp, plm);
+  Core::FE::ExtractMyValues(*velnp, pvelnp, plm);
 
   // allocate vectors
-  CORE::LINALG::Matrix<nenparent, 1> pepressnp(true);
+  Core::LinAlg::Matrix<nenparent, 1> pepressnp(true);
 
   // split velocity and pressure, insert into element arrays
   for (int inode = 0; inode < nenparent; inode++)
@@ -4654,17 +4655,17 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_por
   }
 
   // get coordinates of gauss points w.r.t. local parent coordinate system
-  CORE::LINALG::SerialDenseMatrix pqxg(intpoints.IP().nquad, nsd_);
-  CORE::LINALG::Matrix<nsd_, nsd_> derivtrafo(true);
+  Core::LinAlg::SerialDenseMatrix pqxg(intpoints.IP().nquad, nsd_);
+  Core::LinAlg::Matrix<nsd_, nsd_> derivtrafo(true);
 
-  CORE::FE::BoundaryGPToParentGP<nsd_>(
+  Core::FE::BoundaryGPToParentGP<nsd_>(
       pqxg, derivtrafo, intpoints, pdistype, distype, ele->SurfaceNumber());
 
   // coordinates of gauss points of parent element
-  CORE::LINALG::Matrix<nsd_, 1> pxsi(true);
+  Core::LinAlg::Matrix<nsd_, 1> pxsi(true);
 
-  CORE::LINALG::Matrix<Base::bdrynen_, 1> eporosity(true);
-  CORE::LINALG::Matrix<nsd_, 1> convvel(true);
+  Core::LinAlg::Matrix<Base::bdrynen_, 1> eporosity(true);
+  Core::LinAlg::Matrix<nsd_, 1> convvel(true);
 
   // --------------------------------------------------
   // Now do the nurbs specific stuff
@@ -4672,16 +4673,16 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_por
 
   // In the case of nurbs the normal vector is multiplied with normalfac
   double normalfac = 0.0;
-  std::vector<CORE::LINALG::SerialDenseVector> mypknots(nsd_);
-  std::vector<CORE::LINALG::SerialDenseVector> myknots(Base::bdrynsd_);
-  CORE::LINALG::SerialDenseVector weights(Base::bdrynen_);
-  CORE::LINALG::SerialDenseVector pweights(pele->num_node());
+  std::vector<Core::LinAlg::SerialDenseVector> mypknots(nsd_);
+  std::vector<Core::LinAlg::SerialDenseVector> myknots(Base::bdrynsd_);
+  Core::LinAlg::SerialDenseVector weights(Base::bdrynen_);
+  Core::LinAlg::SerialDenseVector pweights(pele->num_node());
 
   // for isogeometric elements --- get knotvectors for parent
   // element and surface element, get weights
   if (IsNurbs<distype>::isnurbs)
   {
-    bool zero_size = DRT::NURBS::GetKnotVectorAndWeightsForNurbsBoundaryAndParent(pele, ele,
+    bool zero_size = Discret::Nurbs::GetKnotVectorAndWeightsForNurbsBoundaryAndParent(pele, ele,
         ele->SurfaceNumber(), discretization, mypknots, myknots, pweights, weights, normalfac);
 
     if (zero_size)
@@ -4695,7 +4696,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_por
     // Computation of the integration factor & shape function at the Gauss point & derivative of the
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
-    CORE::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
+    Core::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
         Base::unitnormal_, Base::drs_, Base::xsi_, Base::xyze_, intpoints, gpid, &myknots, &weights,
         IsNurbs<distype>::isnurbs);
 
@@ -4704,8 +4705,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_por
     // --------------------------------------------------
 
     // get shape functions and derivatives in the plane of the element
-    CORE::LINALG::Matrix<nenparent, 1> pfunct(true);
-    CORE::LINALG::Matrix<nsd_, nenparent> pderiv_loc;
+    Core::LinAlg::Matrix<nenparent, 1> pfunct(true);
+    Core::LinAlg::Matrix<nsd_, nenparent> pderiv_loc;
 
     // coordinates of the current integration point
     for (int idim = 0; idim < nsd_; idim++) pxsi(idim) = pqxg(gpid, idim);
@@ -4714,20 +4715,20 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_por
     if (not IsNurbs<distype>::isnurbs)
     {
       // shape functions and their first derivatives of parent element
-      CORE::FE::shape_function<pdistype>(pxsi, pfunct);
-      CORE::FE::shape_function_deriv1<pdistype>(pxsi, pderiv_loc);
+      Core::FE::shape_function<pdistype>(pxsi, pfunct);
+      Core::FE::shape_function_deriv1<pdistype>(pxsi, pderiv_loc);
     }
     // only for NURBS!!!
     else
     {
-      CORE::FE::NURBS::nurbs_get_funct_deriv(
+      Core::FE::Nurbs::nurbs_get_funct_deriv(
           pfunct, pderiv_loc, pxsi, mypknots, pweights, pdistype);
     }
 
     // get Jacobian matrix and determinant w.r.t. spatial configuration
     // transposed jacobian "dx/ds"
-    CORE::LINALG::Matrix<nsd_, nsd_> xjm;
-    CORE::LINALG::Matrix<nsd_, nsd_> Jmat;
+    Core::LinAlg::Matrix<nsd_, nsd_> xjm;
+    Core::LinAlg::Matrix<nsd_, nsd_> Jmat;
     xjm.MultiplyNT(pderiv_loc, xcurr);
     Jmat.MultiplyNT(pderiv_loc, xrefe);
     // jacobian determinant "det(dx/ds)"
@@ -4740,11 +4741,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_por
     double press = pepressnp.Dot(pfunct);
 
     //--------------------------------------------dJ/dus = dJ/dF : dF/dus = J * F^-T . N_X = J * N_x
-    CORE::LINALG::Matrix<1, nsd_ * nenparent> dJ_dus;
+    Core::LinAlg::Matrix<1, nsd_ * nenparent> dJ_dus;
     // global derivatives of shape functions w.r.t x,y,z
-    CORE::LINALG::Matrix<nsd_, nenparent> derxy;
+    Core::LinAlg::Matrix<nsd_, nenparent> derxy;
     // inverse of transposed jacobian "ds/dx"
-    CORE::LINALG::Matrix<nsd_, nsd_> xji;
+    Core::LinAlg::Matrix<nsd_, nsd_> xji;
 
     xji.Invert(xjm);
     derxy.Multiply(xji, pderiv_loc);
@@ -4762,7 +4763,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_por
         params, ele, Base::funct_, eporosity, press, J, gpid, porosity_gp, dphi_dp, dphi_dJ, false);
 
     // dxyzdrs vector -> normal which is not normalized
-    CORE::LINALG::Matrix<Base::bdrynsd_, nsd_> dxyzdrs(0.0);
+    Core::LinAlg::Matrix<Base::bdrynsd_, nsd_> dxyzdrs(0.0);
     dxyzdrs.MultiplyNT(Base::deriv_, Base::xyze_);
 
     // in the case of nurbs the normal vector must be scaled with a special factor
@@ -4790,26 +4791,27 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_por
   }
 }
 
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>*
-DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>::Instance(CORE::UTILS::SingletonAction action)
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>*
+Discret::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>::Instance(
+    Core::UTILS::SingletonAction action)
 {
-  static CORE::UTILS::SingletonOwner<DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>>
+  static Core::UTILS::SingletonOwner<Discret::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>>
       singleton_owner(
           []()
           {
-            return std::unique_ptr<DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>>(
-                new DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>());
+            return std::unique_ptr<Discret::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>>(
+                new Discret::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>());
           });
 
   return singleton_owner.Instance(action);
 }
 
 
-template <CORE::FE::CellType distype>
-bool DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>::compute_nodal_porosity(
-    DRT::ELEMENTS::FluidBoundary* ele, const std::vector<double>& mydispnp,
-    CORE::LINALG::Matrix<Base::bdrynen_, 1>& eporosity)
+template <Core::FE::CellType distype>
+bool Discret::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>::compute_nodal_porosity(
+    Discret::ELEMENTS::FluidBoundary* ele, const std::vector<double>& mydispnp,
+    Core::LinAlg::Matrix<Base::bdrynen_, 1>& eporosity)
 {
   for (int inode = 0; inode < Base::bdrynen_; inode++)
     eporosity(inode) = mydispnp[nsd_ + (inode * Base::numdofpernode_)];
@@ -4817,11 +4819,11 @@ bool DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>::compute_nodal_porosity(
   return true;
 }
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>::compute_porosity_at_gp(
-    Teuchos::ParameterList& params, DRT::ELEMENTS::FluidBoundary* ele,
-    const CORE::LINALG::Matrix<Base::bdrynen_, 1>& funct,
-    const CORE::LINALG::Matrix<Base::bdrynen_, 1>& eporosity, double press, double J, int gp,
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>::compute_porosity_at_gp(
+    Teuchos::ParameterList& params, Discret::ELEMENTS::FluidBoundary* ele,
+    const Core::LinAlg::Matrix<Base::bdrynen_, 1>& funct,
+    const Core::LinAlg::Matrix<Base::bdrynen_, 1>& eporosity, double press, double J, int gp,
     double& porosity, double& dphi_dp, double& dphi_dJ, bool save)
 {
   porosity = eporosity.Dot(Base::funct_);
@@ -4829,28 +4831,28 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>::compute_porosity_at_gp(
   dphi_dJ = 0.0;
 }
 
-template class DRT::ELEMENTS::FluidEleBoundaryCalcPoro<CORE::FE::CellType::quad4>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcPoro<CORE::FE::CellType::quad8>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcPoro<CORE::FE::CellType::quad9>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcPoro<CORE::FE::CellType::tri3>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcPoro<CORE::FE::CellType::tri6>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcPoro<CORE::FE::CellType::line2>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcPoro<CORE::FE::CellType::line3>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcPoro<CORE::FE::CellType::nurbs2>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcPoro<CORE::FE::CellType::nurbs3>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcPoro<CORE::FE::CellType::nurbs4>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcPoro<CORE::FE::CellType::nurbs9>;
+template class Discret::ELEMENTS::FluidEleBoundaryCalcPoro<Core::FE::CellType::quad4>;
+template class Discret::ELEMENTS::FluidEleBoundaryCalcPoro<Core::FE::CellType::quad8>;
+template class Discret::ELEMENTS::FluidEleBoundaryCalcPoro<Core::FE::CellType::quad9>;
+template class Discret::ELEMENTS::FluidEleBoundaryCalcPoro<Core::FE::CellType::tri3>;
+template class Discret::ELEMENTS::FluidEleBoundaryCalcPoro<Core::FE::CellType::tri6>;
+template class Discret::ELEMENTS::FluidEleBoundaryCalcPoro<Core::FE::CellType::line2>;
+template class Discret::ELEMENTS::FluidEleBoundaryCalcPoro<Core::FE::CellType::line3>;
+template class Discret::ELEMENTS::FluidEleBoundaryCalcPoro<Core::FE::CellType::nurbs2>;
+template class Discret::ELEMENTS::FluidEleBoundaryCalcPoro<Core::FE::CellType::nurbs3>;
+template class Discret::ELEMENTS::FluidEleBoundaryCalcPoro<Core::FE::CellType::nurbs4>;
+template class Discret::ELEMENTS::FluidEleBoundaryCalcPoro<Core::FE::CellType::nurbs9>;
 
-template class DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<CORE::FE::CellType::quad4>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<CORE::FE::CellType::quad8>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<CORE::FE::CellType::quad9>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<CORE::FE::CellType::tri3>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<CORE::FE::CellType::tri6>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<CORE::FE::CellType::line2>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<CORE::FE::CellType::line3>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<CORE::FE::CellType::nurbs2>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<CORE::FE::CellType::nurbs3>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<CORE::FE::CellType::nurbs4>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<CORE::FE::CellType::nurbs9>;
+template class Discret::ELEMENTS::FluidEleBoundaryCalcPoroP1<Core::FE::CellType::quad4>;
+template class Discret::ELEMENTS::FluidEleBoundaryCalcPoroP1<Core::FE::CellType::quad8>;
+template class Discret::ELEMENTS::FluidEleBoundaryCalcPoroP1<Core::FE::CellType::quad9>;
+template class Discret::ELEMENTS::FluidEleBoundaryCalcPoroP1<Core::FE::CellType::tri3>;
+template class Discret::ELEMENTS::FluidEleBoundaryCalcPoroP1<Core::FE::CellType::tri6>;
+template class Discret::ELEMENTS::FluidEleBoundaryCalcPoroP1<Core::FE::CellType::line2>;
+template class Discret::ELEMENTS::FluidEleBoundaryCalcPoroP1<Core::FE::CellType::line3>;
+template class Discret::ELEMENTS::FluidEleBoundaryCalcPoroP1<Core::FE::CellType::nurbs2>;
+template class Discret::ELEMENTS::FluidEleBoundaryCalcPoroP1<Core::FE::CellType::nurbs3>;
+template class Discret::ELEMENTS::FluidEleBoundaryCalcPoroP1<Core::FE::CellType::nurbs4>;
+template class Discret::ELEMENTS::FluidEleBoundaryCalcPoroP1<Core::FE::CellType::nurbs9>;
 
 FOUR_C_NAMESPACE_CLOSE

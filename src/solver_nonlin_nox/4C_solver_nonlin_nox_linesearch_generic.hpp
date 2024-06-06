@@ -23,21 +23,21 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
     namespace LineSearch
     {
       class PrePostOperator;
 
       class Generic : public ::NOX::LineSearch::Generic,
-                      public NOX::NLN::INNER::StatusTest::Interface::Required
+                      public NOX::Nln::Inner::StatusTest::Interface::Required
       {
        public:
         //! constructor
         Generic() = default;
 
 
-        //! @name NOX::NLN::LineSearch::Generic
+        //! @name NOX::Nln::LineSearch::Generic
         //! @{
         //! returns the slope in the current search direction
         virtual const ::NOX::Abstract::Vector& GetSearchDirection() const = 0;
@@ -55,7 +55,7 @@ namespace NOX
             const ::NOX::Solver::Generic& s) override = 0;
         //! @}
 
-        //! @name NOX::NLN::INNER::StatusTest::Interface::Required
+        //! @name NOX::Nln::Inner::StatusTest::Interface::Required
         //! @{
         //! get the number of line search iterations
         int GetNumIterations() const override = 0;
@@ -68,7 +68,7 @@ namespace NOX
         Teuchos::RCP<PrePostOperator> prePostOperatorPtr_ = Teuchos::null;
       };
     }  // namespace LineSearch
-  }    // namespace NLN
+  }    // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

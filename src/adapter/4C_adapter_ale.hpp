@@ -25,18 +25,18 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
   class ResultTest;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationWriter;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class Solver;
   class SparseMatrix;
@@ -44,21 +44,21 @@ namespace CORE::LINALG
   class MapExtractor;
   class MultiMapExtractor;
   class Preconditioner;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace CORE::Conditions
+namespace Core::Conditions
 {
   class LocsysManager;
 }
 
-namespace TIMINT
+namespace TimeInt
 {
   template <typename>
   class TimIntMStep;
 }
 
 
-namespace ADAPTER
+namespace Adapter
 {
   /*! \brief General ALE field interface
    *
@@ -68,7 +68,7 @@ namespace ADAPTER
    *  functionalities.
    *
    *  \sa ALE::Ale
-   *  \sa ADAPTER::Structure, ADAPTER::Fluid
+   *  \sa Adapter::Structure, Adapter::Fluid
    *
    *  \author mayr.mt \date 10/2014
    */
@@ -100,22 +100,22 @@ namespace ADAPTER
     virtual Teuchos::RCP<const Epetra_Map> dof_row_map() const = 0;
 
     //! direct access to system matrix
-    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() = 0;
+    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() = 0;
 
     //! direct access to system matrix
-    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() = 0;
+    virtual Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> BlockSystemMatrix() = 0;
 
     // access to locsys manager
-    virtual Teuchos::RCP<CORE::Conditions::LocsysManager> LocsysManager() = 0;
+    virtual Teuchos::RCP<Core::Conditions::LocsysManager> LocsysManager() = 0;
 
     //! direct access to discretization
-    virtual Teuchos::RCP<const DRT::Discretization> discretization() const = 0;
+    virtual Teuchos::RCP<const Discret::Discretization> discretization() const = 0;
 
     /// writing access to discretization
-    virtual Teuchos::RCP<DRT::Discretization> write_access_discretization() = 0;
+    virtual Teuchos::RCP<Discret::Discretization> write_access_discretization() = 0;
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    virtual Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor(
+    virtual Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor(
         ALE::UTILS::MapExtractor::AleDBCSetType dbc_type  ///< type of dbc set
         ) = 0;
 
@@ -216,7 +216,7 @@ namespace ADAPTER
     virtual int Solve() = 0;
 
     //! Access to linear solver
-    virtual Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() = 0;
+    virtual Teuchos::RCP<Core::LinAlg::Solver> LinearSolver() = 0;
 
     //@}
 
@@ -229,14 +229,14 @@ namespace ADAPTER
     //@}
 
     //! create result test for encapsulated structure algorithm
-    virtual Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() = 0;
+    virtual Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() = 0;
 
     //! reset state vectors to zero
     virtual void Reset() = 0;
 
     /*! \brief Create System matrix
      *
-     * We allocate the CORE::LINALG object just once, the result is an empty CORE::LINALG
+     * We allocate the Core::LINALG object just once, the result is an empty Core::LINALG
      * object. Evaluate has to be called separately.
      */
     virtual void create_system_matrix(
@@ -253,8 +253,8 @@ namespace ADAPTER
    public:
     //! constructor
     explicit AleBaseAlgorithm(
-        const Teuchos::ParameterList& prbdyn,     ///< the problem's parameter list
-        Teuchos::RCP<DRT::Discretization> actdis  ///< pointer to discretization
+        const Teuchos::ParameterList& prbdyn,         ///< the problem's parameter list
+        Teuchos::RCP<Discret::Discretization> actdis  ///< pointer to discretization
     );
 
     //! virtual destructor to support polymorph destruction
@@ -270,7 +270,7 @@ namespace ADAPTER
      *  values specified in given problem-dependent ParameterList.
      */
     void setup_ale(const Teuchos::ParameterList& prbdyn,  ///< the problem's parameter list
-        Teuchos::RCP<DRT::Discretization> actdis          ///< pointer to discretization
+        Teuchos::RCP<Discret::Discretization> actdis      ///< pointer to discretization
     );
 
     //! ALE field solver
@@ -278,7 +278,7 @@ namespace ADAPTER
 
   };  // class AleBaseAlgorithm
 
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 FOUR_C_NAMESPACE_CLOSE
 

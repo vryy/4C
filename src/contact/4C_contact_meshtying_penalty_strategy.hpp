@@ -44,7 +44,7 @@ namespace CONTACT
     \param[in] maxdof Highest DOF number in global problem
     */
     MtPenaltyStrategy(const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
-        Teuchos::ParameterList params, std::vector<Teuchos::RCP<MORTAR::Interface>> interface,
+        Teuchos::ParameterList params, std::vector<Teuchos::RCP<Mortar::Interface>> interface,
         const int spatialDim, const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf,
         const int maxdof);
 
@@ -106,7 +106,7 @@ namespace CONTACT
     \param dis (in): current displacement state
 
     */
-    void EvaluateMeshtying(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
+    void EvaluateMeshtying(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis) override;
 
     /*!
@@ -117,7 +117,7 @@ namespace CONTACT
     create an out-of-balance force again.
 
     */
-    void InitializeUzawa(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
+    void InitializeUzawa(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff) override;
 
     /*!
@@ -170,9 +170,9 @@ namespace CONTACT
     // thus they are defined empty here in the case of Penalty meshtying.
 
     void Recover(Teuchos::RCP<Epetra_Vector> disi) override { return; };
-    void build_saddle_point_system(Teuchos::RCP<CORE::LINALG::SparseOperator> kdd,
+    void build_saddle_point_system(Teuchos::RCP<Core::LinAlg::SparseOperator> kdd,
         Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
-        Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
+        Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
         Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) override
     {
       FOUR_C_THROW(
@@ -223,7 +223,7 @@ namespace CONTACT
         const enum CONTACT::VecBlockType& bt) const override;
 
     //! Return the desired matrix block pointer (read-only) [derived]
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrixBlockPtr(
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> GetMatrixBlockPtr(
         const enum CONTACT::MatBlockType& bt) const override;
 
     //@}
@@ -240,20 +240,20 @@ namespace CONTACT
     double initialpenalty_;
 
     //! Mortar matrix product \f$M^T M\f$
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> mtm_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> mtm_;
 
     //! Mortar matrix product \f$M^T D\f$
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> mtd_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> mtd_;
 
     //! Mortar matrix product \f$D^T M\f$
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> dtm_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> dtm_;
 
     //! Mortar matrix product \f$D^T D\f$
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> dtd_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> dtd_;
 
 
     //! Global stiffness matrix
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_;
 
     /*! \brief Global residual vector
      *

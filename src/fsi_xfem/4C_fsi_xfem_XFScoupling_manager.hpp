@@ -22,7 +22,7 @@ namespace FLD
   class XFluid;
 }
 
-namespace ADAPTER
+namespace Adapter
 {
   class Structure;
 }
@@ -39,7 +39,7 @@ namespace XFEM
     // in idx ... idx[0] structureal discretization index , idx[1] fluid discretization index in the
     // blockmatrix
     explicit XfsCouplingManager(Teuchos::RCP<ConditionManager> condmanager,
-        Teuchos::RCP<ADAPTER::Structure> structure, Teuchos::RCP<FLD::XFluid> xfluid,
+        Teuchos::RCP<Adapter::Structure> structure, Teuchos::RCP<FLD::XFluid> xfluid,
         std::vector<int> idx);
 
     //! @name Destruction
@@ -57,23 +57,23 @@ namespace XFEM
     //! Add the coupling matrixes to the global systemmatrix
     // in ... scaling between xfluid evaluated coupling matrixes and coupled systemmatrix
     void AddCouplingMatrix(
-        CORE::LINALG::BlockSparseMatrixBase& systemmatrix, double scaling) override;
+        Core::LinAlg::BlockSparseMatrixBase& systemmatrix, double scaling) override;
 
     //! Add the coupling rhs
 
     // in scaling ... scaling between xfluid evaluated coupling rhs and coupled rhs
     // in me ... global map extractor of coupled problem (same index used as for idx)
-    void AddCouplingRHS(Teuchos::RCP<Epetra_Vector> rhs, const CORE::LINALG::MultiMapExtractor& me,
+    void AddCouplingRHS(Teuchos::RCP<Epetra_Vector> rhs, const Core::LinAlg::MultiMapExtractor& me,
         double scaling) override;
 
     //! Update (Perform after Each Timestep)
     void Update(double scaling) override;
 
     //! Write Output (For restart or write results on the interface)
-    void Output(CORE::IO::DiscretizationWriter& writer) override;
+    void Output(Core::IO::DiscretizationWriter& writer) override;
 
     //! Read Restart (For lambda_)
-    void read_restart(CORE::IO::DiscretizationReader& reader) override;
+    void read_restart(Core::IO::DiscretizationReader& reader) override;
 
    private:
     //! Get Timeface on the interface (for OST this is 1/(theta dt))
@@ -83,7 +83,7 @@ namespace XFEM
     Teuchos::RCP<MeshCouplingFSI> mcfsi_;
 
     //! Structural Object
-    Teuchos::RCP<ADAPTER::Structure> struct_;
+    Teuchos::RCP<Adapter::Structure> struct_;
     //! eXtendedFluid
     Teuchos::RCP<FLD::XFluid> xfluid_;
 

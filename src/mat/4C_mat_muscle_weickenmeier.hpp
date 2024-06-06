@@ -26,17 +26,17 @@ approach)
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
-    class MuscleWeickenmeier : public CORE::MAT::PAR::Parameter
+    class MuscleWeickenmeier : public Core::Mat::PAR::Parameter
     {
      public:
       /// constructor
-      MuscleWeickenmeier(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      MuscleWeickenmeier(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       /// @name material parameters
       //@{
@@ -101,14 +101,14 @@ namespace MAT
   }     // end namespace PAR
 
 
-  class MuscleWeickenmeierType : public CORE::COMM::ParObjectType
+  class MuscleWeickenmeierType : public Core::Communication::ParObjectType
   {
    public:
     [[nodiscard]] std::string Name() const override { return "Muscle_WeickenmeierType"; }
 
     static MuscleWeickenmeierType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static MuscleWeickenmeierType instance_;
@@ -146,23 +146,23 @@ namespace MAT
     MuscleWeickenmeier();
 
     // Constructor for the material given the material parameters
-    explicit MuscleWeickenmeier(MAT::PAR::MuscleWeickenmeier* params);
+    explicit MuscleWeickenmeier(Mat::PAR::MuscleWeickenmeier* params);
 
-    [[nodiscard]] Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    [[nodiscard]] Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new MuscleWeickenmeier(*this));
     }
 
-    [[nodiscard]] CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
+    [[nodiscard]] Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
-    [[nodiscard]] CORE::Materials::MaterialType MaterialType() const override
+    [[nodiscard]] Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_muscle_weickenmeier;
+      return Core::Materials::m_muscle_weickenmeier;
     };
 
-    void ValidKinematics(INPAR::STR::KinemType kinem) override
+    void ValidKinematics(Inpar::STR::KinemType kinem) override
     {
-      if (kinem != INPAR::STR::KinemType::linear && kinem != INPAR::STR::KinemType::nonlinearTotLag)
+      if (kinem != Inpar::STR::KinemType::linear && kinem != Inpar::STR::KinemType::nonlinearTotLag)
         FOUR_C_THROW("element and material kinematics are not compatible");
     }
 
@@ -173,20 +173,20 @@ namespace MAT
       return MuscleWeickenmeierType::Instance().UniqueParObjectId();
     }
 
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     void Unpack(const std::vector<char>& data) override;
 
-    void Setup(int numgp, INPUT::LineDefinition* linedef) override;
+    void Setup(int numgp, Input::LineDefinition* linedef) override;
 
     bool UsesExtendedUpdate() override { return true; };
 
-    void Update(CORE::LINALG::Matrix<3, 3> const& defgrd, int const gp,
+    void Update(Core::LinAlg::Matrix<3, 3> const& defgrd, int const gp,
         Teuchos::ParameterList& params, int const eleGID) override;
 
-    void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
-        const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-        CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, int gp,
+    void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+        const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+        Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, int gp,
         int eleGID) override;
 
    private:
@@ -215,19 +215,19 @@ namespace MAT
         double& omegaa, double& derivOmegaa);
 
     /// Weickenmeier material parameters
-    MAT::PAR::MuscleWeickenmeier* params_{};
+    Mat::PAR::MuscleWeickenmeier* params_{};
 
     /// Fibre stretch of the previous timestep
     double lambda_m_old_;
 
     /// Holder for anisotropic behavior
-    MAT::Anisotropy anisotropy_;
+    Mat::Anisotropy anisotropy_;
 
     /// Anisotropy extension holder
-    MAT::DefaultAnisotropyExtension<1> anisotropy_extension_;
+    Mat::DefaultAnisotropyExtension<1> anisotropy_extension_;
   };  // end class Muscle_Weickenmeier
 
-}  // end namespace MAT
+}  // end namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

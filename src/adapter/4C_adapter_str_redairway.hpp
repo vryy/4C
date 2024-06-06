@@ -26,7 +26,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace ADAPTER
+namespace Adapter
 {
   class StructureRedAirway : public StructureWrapper
   {
@@ -52,7 +52,7 @@ namespace ADAPTER
 
    private:
     /// map between coupling ID and conditions on structure
-    std::map<int, CORE::Conditions::Condition*> coupcond_;
+    std::map<int, Core::Conditions::Condition*> coupcond_;
 
     /// map of coupling IDs
     Teuchos::RCP<Epetra_Map> coupmap_;
@@ -61,7 +61,7 @@ namespace ADAPTER
     std::map<int, double> vnp_;
   };
 
-}  // namespace ADAPTER
+}  // namespace Adapter
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

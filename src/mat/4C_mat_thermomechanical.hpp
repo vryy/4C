@@ -16,7 +16,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace MAT
+namespace Mat
 {
   /*!
    * Interface for all thermo-mechanical materials
@@ -24,11 +24,11 @@ namespace MAT
    * @note this interface  is inspired by the way materials are supposed to work in 4C, not all
    * materials are moved to this new interface
    */
-  class ThermoMechanicalMaterial : public So3Material, public TRAIT::ThermoSolid
+  class ThermoMechanicalMaterial : public So3Material, public Trait::ThermoSolid
   {
   };
 
-}  // namespace MAT
+}  // namespace Mat
 
 
 FOUR_C_NAMESPACE_CLOSE

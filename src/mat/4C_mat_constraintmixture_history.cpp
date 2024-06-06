@@ -14,11 +14,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-MAT::ConstraintMixtureHistoryType MAT::ConstraintMixtureHistoryType::instance_;
+Mat::ConstraintMixtureHistoryType Mat::ConstraintMixtureHistoryType::instance_;
 
-CORE::COMM::ParObject* MAT::ConstraintMixtureHistoryType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::ConstraintMixtureHistoryType::Create(
+    const std::vector<char>& data)
 {
-  MAT::ConstraintMixtureHistory* cmhis = new MAT::ConstraintMixtureHistory();
+  Mat::ConstraintMixtureHistory* cmhis = new Mat::ConstraintMixtureHistory();
   cmhis->Unpack(data);
   return cmhis;
 }
@@ -26,9 +27,9 @@ CORE::COMM::ParObject* MAT::ConstraintMixtureHistoryType::Create(const std::vect
 /*----------------------------------------------------------------------*
  |  History: Pack                                 (public)         03/11|
  *----------------------------------------------------------------------*/
-void MAT::ConstraintMixtureHistory::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::ConstraintMixtureHistory::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -65,11 +66,11 @@ void MAT::ConstraintMixtureHistory::Pack(CORE::COMM::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  History: Unpack                               (public)         03/11|
  *----------------------------------------------------------------------*/
-void MAT::ConstraintMixtureHistory::Unpack(const std::vector<char>& data)
+void Mat::ConstraintMixtureHistory::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // unpack internal variables
   double a;
@@ -139,7 +140,7 @@ void MAT::ConstraintMixtureHistory::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  History: Setup                                (public)         03/11|
  *----------------------------------------------------------------------*/
-void MAT::ConstraintMixtureHistory::Setup(const int ngp, const double massprodbasal, bool expvar)
+void Mat::ConstraintMixtureHistory::Setup(const int ngp, const double massprodbasal, bool expvar)
 {
   dt_ = 0.0;
   depositiontime_ = 0.0;
@@ -186,7 +187,7 @@ void MAT::ConstraintMixtureHistory::Setup(const int ngp, const double massprodba
 /*----------------------------------------------------------------------*
  |  History: set_stretches                         (private)        03/11|
  *----------------------------------------------------------------------*/
-void MAT::ConstraintMixtureHistory::set_stretches(int gp, CORE::LINALG::Matrix<4, 1> stretches)
+void Mat::ConstraintMixtureHistory::set_stretches(int gp, Core::LinAlg::Matrix<4, 1> stretches)
 {
   if (gp < numgp_)
   {
@@ -202,7 +203,7 @@ void MAT::ConstraintMixtureHistory::set_stretches(int gp, CORE::LINALG::Matrix<4
 /*----------------------------------------------------------------------*
  |  History: get_stretches                         (private)        03/11|
  *----------------------------------------------------------------------*/
-void MAT::ConstraintMixtureHistory::get_stretches(int gp, CORE::LINALG::Matrix<4, 1>* stretches)
+void Mat::ConstraintMixtureHistory::get_stretches(int gp, Core::LinAlg::Matrix<4, 1>* stretches)
 {
   if (gp < numgp_)
   {
@@ -218,7 +219,7 @@ void MAT::ConstraintMixtureHistory::get_stretches(int gp, CORE::LINALG::Matrix<4
 /*----------------------------------------------------------------------*
  |  History: set_mass                              (private)        03/11|
  *----------------------------------------------------------------------*/
-void MAT::ConstraintMixtureHistory::set_mass(int gp, CORE::LINALG::Matrix<4, 1> massprod)
+void Mat::ConstraintMixtureHistory::set_mass(int gp, Core::LinAlg::Matrix<4, 1> massprod)
 {
   if (gp < numgp_)
   {
@@ -234,7 +235,7 @@ void MAT::ConstraintMixtureHistory::set_mass(int gp, CORE::LINALG::Matrix<4, 1> 
 /*----------------------------------------------------------------------*
  |  History: set_mass                              (private)        04/13|
  *----------------------------------------------------------------------*/
-void MAT::ConstraintMixtureHistory::set_mass(int gp, double massprod, int idfiber)
+void Mat::ConstraintMixtureHistory::set_mass(int gp, double massprod, int idfiber)
 {
   if (gp < numgp_)
   {
@@ -264,7 +265,7 @@ void MAT::ConstraintMixtureHistory::set_mass(int gp, double massprod, int idfibe
 /*----------------------------------------------------------------------*
  |  History: get_mass                              (private)        03/11|
  *----------------------------------------------------------------------*/
-void MAT::ConstraintMixtureHistory::get_mass(int gp, CORE::LINALG::Matrix<4, 1>* massprod)
+void Mat::ConstraintMixtureHistory::get_mass(int gp, Core::LinAlg::Matrix<4, 1>* massprod)
 {
   if (gp < numgp_)
   {
@@ -280,7 +281,7 @@ void MAT::ConstraintMixtureHistory::get_mass(int gp, CORE::LINALG::Matrix<4, 1>*
 /*----------------------------------------------------------------------*
  |  History: set_var_degrad                         (private)        07/13|
  *----------------------------------------------------------------------*/
-void MAT::ConstraintMixtureHistory::set_var_degrad(int gp, int idfiber, double vardegrad)
+void Mat::ConstraintMixtureHistory::set_var_degrad(int gp, int idfiber, double vardegrad)
 {
   if (gp < numgp_)
   {
@@ -310,7 +311,7 @@ void MAT::ConstraintMixtureHistory::set_var_degrad(int gp, int idfiber, double v
 /*----------------------------------------------------------------------*
  |  History: get_var_degrad                         (private)        07/13|
  *----------------------------------------------------------------------*/
-void MAT::ConstraintMixtureHistory::get_var_degrad(int gp, int idfiber, double* vardegrad)
+void Mat::ConstraintMixtureHistory::get_var_degrad(int gp, int idfiber, double* vardegrad)
 {
   if (gp < numgp_)
   {

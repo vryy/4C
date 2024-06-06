@@ -20,7 +20,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   /*!
      \brief Minimal implementation of the parameter interface for the element <--> time integrator
@@ -38,7 +38,7 @@ namespace CORE::Elements
 
     double GetDeltaTime() const override { return delta_time_; };
 
-    const CORE::UTILS::FunctionManager* get_function_manager() const override
+    const Core::UTILS::FunctionManager* get_function_manager() const override
     {
       return function_manager_;
     }
@@ -48,7 +48,7 @@ namespace CORE::Elements
      *  These functions are not allowed to be called by the elements! */
     //! @{
     //! set the action type
-    inline void SetActionType(const enum CORE::Elements::ActionType& actiontype)
+    inline void SetActionType(const enum Core::Elements::ActionType& actiontype)
     {
       ele_action_ = actiontype;
     }
@@ -60,7 +60,7 @@ namespace CORE::Elements
     inline void SetDeltaTime(const double& dt) { delta_time_ = dt; }
 
     //! store function manager
-    void set_function_manager(const CORE::UTILS::FunctionManager& function_manager)
+    void set_function_manager(const Core::UTILS::FunctionManager& function_manager)
     {
       function_manager_ = &function_manager;
     }
@@ -80,11 +80,11 @@ namespace CORE::Elements
     double delta_time_;
 
     //! function manager
-    const CORE::UTILS::FunctionManager* function_manager_;
+    const Core::UTILS::FunctionManager* function_manager_;
     //! @}
   };  // class ParamsMinimal
 
-}  // namespace CORE::Elements
+}  // namespace Core::Elements
 
 
 FOUR_C_NAMESPACE_CLOSE

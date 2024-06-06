@@ -24,7 +24,7 @@ namespace MIXTURE
     class AnisotropicGrowthStrategy : public MIXTURE::PAR::MixtureGrowthStrategy
     {
      public:
-      explicit AnisotropicGrowthStrategy(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
+      explicit AnisotropicGrowthStrategy(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
 
       std::unique_ptr<MIXTURE::MixtureGrowthStrategy> create_growth_strategy() override;
 
@@ -32,7 +32,7 @@ namespace MIXTURE
       const int fiber_id_;
 
       /// structural tensor strategy
-      Teuchos::RCP<MAT::ELASTIC::StructuralTensorStrategyBase> structural_tensor_strategy_;
+      Teuchos::RCP<Mat::Elastic::StructuralTensorStrategyBase> structural_tensor_strategy_;
     };
   }  // namespace PAR
 
@@ -48,32 +48,32 @@ namespace MIXTURE
    public:
     explicit AnisotropicGrowthStrategy(MIXTURE::PAR::AnisotropicGrowthStrategy* params);
 
-    void pack_mixture_growth_strategy(CORE::COMM::PackBuffer& data) const override;
+    void pack_mixture_growth_strategy(Core::Communication::PackBuffer& data) const override;
 
     void unpack_mixture_growth_strategy(
         std::vector<char>::size_type& position, const std::vector<char>& data) override;
 
-    void register_anisotropy_extensions(MAT::Anisotropy& anisotropy) override;
+    void register_anisotropy_extensions(Mat::Anisotropy& anisotropy) override;
 
     [[nodiscard]] bool has_inelastic_growth_deformation_gradient() const override { return true; };
 
-    void evaluate_inverse_growth_deformation_gradient(CORE::LINALG::Matrix<3, 3>& iFgM,
+    void evaluate_inverse_growth_deformation_gradient(Core::LinAlg::Matrix<3, 3>& iFgM,
         const MIXTURE::MixtureRule& mixtureRule, double currentReferenceGrowthScalar,
         int gp) const override;
 
     void evaluate_growth_stress_cmat(const MIXTURE::MixtureRule& mixtureRule,
         double currentReferenceGrowthScalar,
-        const CORE::LINALG::Matrix<1, 6>& dCurrentReferenceGrowthScalarDC,
-        const CORE::LINALG::Matrix<3, 3>& F, const CORE::LINALG::Matrix<6, 1>& E_strain,
-        Teuchos::ParameterList& params, CORE::LINALG::Matrix<6, 1>& S_stress,
-        CORE::LINALG::Matrix<6, 6>& cmat, const int gp, const int eleGID) const override;
+        const Core::LinAlg::Matrix<1, 6>& dCurrentReferenceGrowthScalarDC,
+        const Core::LinAlg::Matrix<3, 3>& F, const Core::LinAlg::Matrix<6, 1>& E_strain,
+        Teuchos::ParameterList& params, Core::LinAlg::Matrix<6, 1>& S_stress,
+        Core::LinAlg::Matrix<6, 6>& cmat, const int gp, const int eleGID) const override;
 
    private:
     ///! growth parameters as defined in the input file
     const PAR::AnisotropicGrowthStrategy* params_{};
 
     /// Anisotropy extension that manages fibers and structural tensors
-    MAT::DefaultAnisotropyExtension<1> anisotropy_extension_;
+    Mat::DefaultAnisotropyExtension<1> anisotropy_extension_;
   };
 }  // namespace MIXTURE
 

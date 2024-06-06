@@ -23,15 +23,15 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class Solver;
   class SparseOperator;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
     class GlobalData;
     namespace LinSystem
@@ -44,28 +44,28 @@ namespace NOX
 
 
         Teuchos::RCP<::NOX::Epetra::LinearSystem> BuildLinearSystem(
-            const NOX::NLN::LinSystem::LinearSystemType& linsystype,
-            NOX::NLN::GlobalData& noxNlnGlobalData,
-            const Teuchos::RCP<CORE::LINALG::SparseOperator>& jac,
+            const NOX::Nln::LinSystem::LinearSystemType& linsystype,
+            NOX::Nln::GlobalData& noxNlnGlobalData,
+            const Teuchos::RCP<Core::LinAlg::SparseOperator>& jac,
             const Teuchos::RCP<::NOX::Epetra::Vector>& cloneVector,
-            const Teuchos::RCP<CORE::LINALG::SparseOperator>& precMat,
+            const Teuchos::RCP<Core::LinAlg::SparseOperator>& precMat,
             const Teuchos::RCP<::NOX::Epetra::Scaling>& scalingObject) const;
       };
 
-      /*! \brief Nonmember helper function for the NOX::NLN::LinearSystem::Factory.
+      /*! \brief Nonmember helper function for the NOX::Nln::LinearSystem::Factory.
 
-      \relates NOX::NLN::LinearSystem::Factory
+      \relates NOX::Nln::LinearSystem::Factory
 
       */
       Teuchos::RCP<::NOX::Epetra::LinearSystem> BuildLinearSystem(
-          const NOX::NLN::LinSystem::LinearSystemType& linsystype,
-          NOX::NLN::GlobalData& noxNlnGlobalData,
-          const Teuchos::RCP<CORE::LINALG::SparseOperator>& jac,
+          const NOX::Nln::LinSystem::LinearSystemType& linsystype,
+          NOX::Nln::GlobalData& noxNlnGlobalData,
+          const Teuchos::RCP<Core::LinAlg::SparseOperator>& jac,
           const Teuchos::RCP<::NOX::Epetra::Vector>& cloneVector,
-          const Teuchos::RCP<CORE::LINALG::SparseOperator>& precMat,
+          const Teuchos::RCP<Core::LinAlg::SparseOperator>& precMat,
           const Teuchos::RCP<::NOX::Epetra::Scaling>& scalingObject);
     }  // namespace LinSystem
-  }    // namespace NLN
+  }    // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

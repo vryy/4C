@@ -30,16 +30,16 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationReader;
   class RuntimeCsvWriter;
-}  // namespace CORE::IO
+}  // namespace Core::IO
 
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
  *---------------------------------------------------------------------------*/
-namespace PARTICLEINTERACTION
+namespace ParticleInteraction
 {
   class InteractionWriter final
   {
@@ -54,7 +54,7 @@ namespace PARTICLEINTERACTION
     void Setup();
 
     //! read restart of interaction writer
-    void read_restart(const std::shared_ptr<CORE::IO::DiscretizationReader> reader);
+    void read_restart(const std::shared_ptr<Core::IO::DiscretizationReader> reader);
 
     //! register specific runtime output writer
     void register_specific_runtime_output_writer(const std::string& fieldname);
@@ -72,7 +72,7 @@ namespace PARTICLEINTERACTION
     inline bool get_current_write_result_flag() const { return writeresultsthisstep_; }
 
     //! get specific runtime output writer
-    inline CORE::IO::VisualizationManager* get_specific_runtime_output_writer(
+    inline Core::IO::VisualizationManager* get_specific_runtime_output_writer(
         const std::string& fieldname)
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -84,7 +84,7 @@ namespace PARTICLEINTERACTION
     }
 
     //! get specific runtime csv writer
-    inline CORE::IO::RuntimeCsvWriter* get_specific_runtime_csv_writer(const std::string& fieldname)
+    inline Core::IO::RuntimeCsvWriter* get_specific_runtime_csv_writer(const std::string& fieldname)
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
       if (not runtime_csvwriters_.count(fieldname))
@@ -108,15 +108,15 @@ namespace PARTICLEINTERACTION
     bool writeresultsthisstep_;
 
     //! holds all visualization output writer objects
-    std::unordered_map<std::string, std::shared_ptr<CORE::IO::VisualizationManager>>
+    std::unordered_map<std::string, std::shared_ptr<Core::IO::VisualizationManager>>
         runtime_visualization_managers_;
 
     //! holds all csv writer objects
-    std::unordered_map<std::string, std::shared_ptr<CORE::IO::RuntimeCsvWriter>>
+    std::unordered_map<std::string, std::shared_ptr<Core::IO::RuntimeCsvWriter>>
         runtime_csvwriters_;
   };
 
-}  // namespace PARTICLEINTERACTION
+}  // namespace ParticleInteraction
 
 /*---------------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

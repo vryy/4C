@@ -56,7 +56,7 @@ namespace FLD
     \brief Standard Constructor (public)
 
     */
-    Boxfilter(Teuchos::RCP<DRT::Discretization> actdis, Teuchos::ParameterList& params);
+    Boxfilter(Teuchos::RCP<Discret::Discretization> actdis, Teuchos::ParameterList& params);
 
     /*!
     \brief Destructor
@@ -64,9 +64,9 @@ namespace FLD
     */
     virtual ~Boxfilter() = default;
 
-    void AddScatra(Teuchos::RCP<DRT::Discretization> scatradis);
+    void AddScatra(Teuchos::RCP<Discret::Discretization> scatradis);
 
-    void initialize_vreman_scatra(Teuchos::RCP<DRT::Discretization> scatradis);
+    void initialize_vreman_scatra(Teuchos::RCP<Discret::Discretization> scatradis);
 
     /*!
     \brief Perform box filter operation, compare filtered quantities
@@ -112,7 +112,7 @@ namespace FLD
         for (int n=0;n<discret_->NumMyRowNodes();++n)
         {
           // get the node
-          CORE::Nodes::Node* node = discret_->lRowNode(n);
+          Core::Nodes::Node* node = discret_->lRowNode(n);
 
           std::vector<int> dofs= discret_->Dof(node);
 
@@ -137,7 +137,7 @@ namespace FLD
         for (int n=0;n<discret_->NumMyRowNodes();++n)
         {
           // get the node
-          CORE::Nodes::Node* node = discret_->lRowNode(n);
+          Core::Nodes::Node* node = discret_->lRowNode(n);
 
           std::vector<int> dofs= discret_->Dof(node);
 
@@ -164,7 +164,7 @@ namespace FLD
         for (int nid=0;nid<discret_->NumMyRowNodes();++nid)
         {
           // get the node
-          CORE::Nodes::Node* node = discret_->lRowNode(nid);
+          Core::Nodes::Node* node = discret_->lRowNode(nid);
           int id = node->Id();
 
           double vali=(*((*filtered_vel_)(i-1)))[nid];
@@ -198,7 +198,7 @@ namespace FLD
         for (int nid=0;nid<discret_->NumMyRowNodes();++nid)
         {
           // get the node
-          CORE::Nodes::Node* node = discret_->lRowNode(nid);
+          Core::Nodes::Node* node = discret_->lRowNode(nid);
           int id = node->Id();
 
           double val = (*((*filtered_reynoldsstress_) (ij)))[nid];
@@ -485,7 +485,7 @@ namespace FLD
       for (int nid = 0; nid < discret_->NumMyRowNodes(); ++nid)
       {
         // get the node
-        CORE::Nodes::Node* node = discret_->lRowNode(nid);
+        Core::Nodes::Node* node = discret_->lRowNode(nid);
         int id = node->Id();
 
         double val = (*((*filtered_reynoldsstress_)(ij)))[nid];
@@ -501,7 +501,7 @@ namespace FLD
       for (int nid = 0; nid < discret_->NumMyRowNodes(); ++nid)
       {
         // get the node
-        CORE::Nodes::Node* node = discret_->lRowNode(nid);
+        Core::Nodes::Node* node = discret_->lRowNode(nid);
         int id = node->Id();
 
         double vali = (*((*filtered_vel_)(i - 1)))[nid];
@@ -519,7 +519,7 @@ namespace FLD
       for (int n = 0; n < discret_->NumMyRowNodes(); ++n)
       {
         // get the node
-        CORE::Nodes::Node* node = discret_->lRowNode(n);
+        Core::Nodes::Node* node = discret_->lRowNode(n);
 
         std::vector<int> dofs = discret_->Dof(node);
 
@@ -541,7 +541,7 @@ namespace FLD
       for (int n = 0; n < discret_->NumMyRowNodes(); ++n)
       {
         // get the node
-        CORE::Nodes::Node* node = discret_->lRowNode(n);
+        Core::Nodes::Node* node = discret_->lRowNode(n);
 
         std::vector<int> dofs = discret_->Dof(node);
 
@@ -640,11 +640,11 @@ namespace FLD
     //! @name input arguments of the constructor
     //
     //! the discretization
-    Teuchos::RCP<DRT::Discretization> discret_;
+    Teuchos::RCP<Discret::Discretization> discret_;
     //! parameterlist including time params, stabilization params and turbulence sublist
     Teuchos::ParameterList& params_;
     //! flag for physical type of fluid flow
-    INPAR::FLUID::PhysicalType physicaltype_;
+    Inpar::FLUID::PhysicalType physicaltype_;
     //@}
 
     //! @name control parameters
@@ -675,7 +675,7 @@ namespace FLD
 
     //! @name special scatra variables
     //! the discretization
-    Teuchos::RCP<DRT::Discretization> scatradiscret_;
+    Teuchos::RCP<Discret::Discretization> scatradiscret_;
     //@}
 
     //! @name vectors used for filtering (for dynamic Smagorinsky model)

@@ -17,7 +17,7 @@ multi-scale framework
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
@@ -25,7 +25,7 @@ namespace DRT
     class ScaTraEleDiffManagerElchDiffCondMultiScale;
 
     // implementation of class ScaTraEleCalcElchDiffCondMultiScale
-    template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype>>
+    template <Core::FE::CellType distype, int probdim = Core::FE::dim<distype>>
     class ScaTraEleCalcElchDiffCondMultiScale : public ScaTraEleCalcElchDiffCond<distype, probdim>
     {
      public:
@@ -49,9 +49,9 @@ namespace DRT
 
       //! macro-scale matrix and vector contributions arising from macro-micro coupling in
       //! multi-scale simulations
-      void calc_mat_and_rhs_multi_scale(const CORE::Elements::Element* const ele,  //!< element
-          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
-          CORE::LINALG::SerialDenseVector& erhs,  //!< element right-hand side vector
+      void calc_mat_and_rhs_multi_scale(const Core::Elements::Element* const ele,  //!< element
+          Core::LinAlg::SerialDenseMatrix& emat,  //!< element matrix
+          Core::LinAlg::SerialDenseVector& erhs,  //!< element right-hand side vector
           const int k,                            //!< species index
           const int iquad,                        //!< Gauss point index
           const double timefacfac,  //!< domain integration factor times time integration factor
@@ -61,19 +61,19 @@ namespace DRT
 
       //! calculate electrode state of charge and C rate
       void calculate_electrode_soc_and_c_rate(
-          const CORE::Elements::Element* const& ele,   //!< the element we are dealing with
-          const DRT::Discretization& discretization,   //!< discretization
-          CORE::Elements::Element::LocationArray& la,  //!< location array
-          CORE::LINALG::SerialDenseVector&
+          const Core::Elements::Element* const& ele,      //!< the element we are dealing with
+          const Discret::Discretization& discretization,  //!< discretization
+          Core::Elements::Element::LocationArray& la,     //!< location array
+          Core::LinAlg::SerialDenseVector&
               scalars  //!< result vector for scalar integrals to be computed
           ) final;
 
-      void calculate_mean_electrode_concentration(const CORE::Elements::Element* const& ele,
-          const DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
-          CORE::LINALG::SerialDenseVector& conc) override;
+      void calculate_mean_electrode_concentration(const Core::Elements::Element* const& ele,
+          const Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+          Core::LinAlg::SerialDenseVector& conc) override;
 
-      void calculate_scalars(const CORE::Elements::Element* ele,
-          CORE::LINALG::SerialDenseVector& scalars, bool inverting, bool calc_grad_phi) override;
+      void calculate_scalars(const Core::Elements::Element* ele,
+          Core::LinAlg::SerialDenseVector& scalars, bool inverting, bool calc_grad_phi) override;
 
       //! get diffusion manager
       Teuchos::RCP<ScaTraEleDiffManagerElchDiffCondMultiScale> diff_manager() const
@@ -83,20 +83,20 @@ namespace DRT
       };
 
       //! evaluate action
-      int evaluate_action(CORE::Elements::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, const SCATRA::Action& action,
-          CORE::Elements::Element::LocationArray& la,
-          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra,
-          CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
+      int evaluate_action(Core::Elements::Element* ele, Teuchos::ParameterList& params,
+          Discret::Discretization& discretization, const ScaTra::Action& action,
+          Core::Elements::Element::LocationArray& la,
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec1_epetra,
+          Core::LinAlg::SerialDenseVector& elevec2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec3_epetra) override;
 
       //! compute element matrix and element right-hand side vector
-      void sysmat(CORE::Elements::Element* ele,       //!< element
-          CORE::LINALG::SerialDenseMatrix& emat,      //!< element matrix
-          CORE::LINALG::SerialDenseVector& erhs,      //!< element right-hand side vector
-          CORE::LINALG::SerialDenseVector& subgrdiff  //!< subgrid diffusivity vector
+      void sysmat(Core::Elements::Element* ele,       //!< element
+          Core::LinAlg::SerialDenseMatrix& emat,      //!< element matrix
+          Core::LinAlg::SerialDenseVector& erhs,      //!< element right-hand side vector
+          Core::LinAlg::SerialDenseVector& subgrdiff  //!< subgrid diffusivity vector
           ) override;
     };  // class implementation
 
@@ -117,7 +117,7 @@ namespace DRT
       };
     };
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

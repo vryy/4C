@@ -19,9 +19,9 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::GEO::CUT::BoundingBox* CORE::GEO::CUT::BoundingBox::Create()
+Core::Geo::Cut::BoundingBox* Core::Geo::Cut::BoundingBox::Create()
 {
-  static const int probdim = GLOBAL::Problem::Instance()->NDim();
+  static const int probdim = Global::Problem::Instance()->NDim();
   switch (probdim)
   {
     case 2:
@@ -34,7 +34,7 @@ CORE::GEO::CUT::BoundingBox* CORE::GEO::CUT::BoundingBox::Create()
 }
 
 
-CORE::GEO::CUT::BoundingBox* CORE::GEO::CUT::BoundingBox::Create(Node& node)
+Core::Geo::Cut::BoundingBox* Core::Geo::Cut::BoundingBox::Create(Node& node)
 {
   BoundingBox* box = Create();
   box->init(node);
@@ -43,7 +43,7 @@ CORE::GEO::CUT::BoundingBox* CORE::GEO::CUT::BoundingBox::Create(Node& node)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::GEO::CUT::BoundingBox* CORE::GEO::CUT::BoundingBox::Create(Edge& edge)
+Core::Geo::Cut::BoundingBox* Core::Geo::Cut::BoundingBox::Create(Edge& edge)
 {
   BoundingBox* box = Create();
   box->init(edge);
@@ -52,7 +52,7 @@ CORE::GEO::CUT::BoundingBox* CORE::GEO::CUT::BoundingBox::Create(Edge& edge)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::GEO::CUT::BoundingBox* CORE::GEO::CUT::BoundingBox::Create(Side& side)
+Core::Geo::Cut::BoundingBox* Core::Geo::Cut::BoundingBox::Create(Side& side)
 {
   BoundingBox* box = Create();
   box->init(side);
@@ -61,7 +61,7 @@ CORE::GEO::CUT::BoundingBox* CORE::GEO::CUT::BoundingBox::Create(Side& side)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::GEO::CUT::BoundingBox* CORE::GEO::CUT::BoundingBox::Create(VolumeCell& volcell)
+Core::Geo::Cut::BoundingBox* Core::Geo::Cut::BoundingBox::Create(VolumeCell& volcell)
 {
   BoundingBox* box = Create();
   box->init(volcell);
@@ -69,7 +69,7 @@ CORE::GEO::CUT::BoundingBox* CORE::GEO::CUT::BoundingBox::Create(VolumeCell& vol
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::GEO::CUT::BoundingBox* CORE::GEO::CUT::BoundingBox::Create(
+Core::Geo::Cut::BoundingBox* Core::Geo::Cut::BoundingBox::Create(
     VolumeCell& volcell, Element* elem1)
 {
   BoundingBox* box = Create();
@@ -79,7 +79,7 @@ CORE::GEO::CUT::BoundingBox* CORE::GEO::CUT::BoundingBox::Create(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::GEO::CUT::BoundingBox* CORE::GEO::CUT::BoundingBox::Create(Element& element)
+Core::Geo::Cut::BoundingBox* Core::Geo::Cut::BoundingBox::Create(Element& element)
 {
   BoundingBox* box = Create();
   box->init(element);
@@ -88,7 +88,7 @@ CORE::GEO::CUT::BoundingBox* CORE::GEO::CUT::BoundingBox::Create(Element& elemen
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::BoundingBox::init(Node& node)
+void Core::Geo::Cut::BoundingBox::init(Node& node)
 {
   double x[3];
   node.Coordinates(x);
@@ -97,7 +97,7 @@ void CORE::GEO::CUT::BoundingBox::init(Node& node)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::BoundingBox::init(Edge& edge)
+void Core::Geo::Cut::BoundingBox::init(Edge& edge)
 {
   const std::vector<Node*>& nodes = edge.Nodes();
   AddPoints(nodes);
@@ -105,7 +105,7 @@ void CORE::GEO::CUT::BoundingBox::init(Edge& edge)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::BoundingBox::init(Side& side)
+void Core::Geo::Cut::BoundingBox::init(Side& side)
 {
   const std::vector<Node*>& nodes = side.Nodes();
   AddPoints(nodes);
@@ -113,7 +113,7 @@ void CORE::GEO::CUT::BoundingBox::init(Side& side)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::BoundingBox::init(VolumeCell& volcell)
+void Core::Geo::Cut::BoundingBox::init(VolumeCell& volcell)
 {
   const plain_facet_set& facete = volcell.Facets();
   for (plain_facet_set::const_iterator i = facete.begin(); i != facete.end(); i++)
@@ -131,7 +131,7 @@ void CORE::GEO::CUT::BoundingBox::init(VolumeCell& volcell)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::BoundingBox::init(VolumeCell& volcell, Element* elem1)
+void Core::Geo::Cut::BoundingBox::init(VolumeCell& volcell, Element* elem1)
 {
   const plain_facet_set& facete = volcell.Facets();
   double x[3];
@@ -152,7 +152,7 @@ void CORE::GEO::CUT::BoundingBox::init(VolumeCell& volcell, Element* elem1)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::BoundingBox::init(Element& element)
+void Core::Geo::Cut::BoundingBox::init(Element& element)
 {
   const std::vector<Node*>& nodes = element.Nodes();
   AddPoints(nodes);
@@ -160,7 +160,7 @@ void CORE::GEO::CUT::BoundingBox::init(Element& element)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::BoundingBox::Assign(Side& side)
+void Core::Geo::Cut::BoundingBox::Assign(Side& side)
 {
   empty_ = true;
   const std::vector<Node*>& nodes = side.Nodes();
@@ -169,7 +169,7 @@ void CORE::GEO::CUT::BoundingBox::Assign(Side& side)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::BoundingBox::Assign(Edge& edge)
+void Core::Geo::Cut::BoundingBox::Assign(Edge& edge)
 {
   empty_ = true;
   const std::vector<Node*>& nodes = edge.Nodes();
@@ -178,7 +178,7 @@ void CORE::GEO::CUT::BoundingBox::Assign(Edge& edge)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::BoundingBox::Assign(Element& element)
+void Core::Geo::Cut::BoundingBox::Assign(Element& element)
 {
   empty_ = true;
   const std::vector<Node*>& nodes = element.Nodes();
@@ -187,7 +187,7 @@ void CORE::GEO::CUT::BoundingBox::Assign(Element& element)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::BoundingBox::AddPoints(const std::vector<Node*>& nodes)
+void Core::Geo::Cut::BoundingBox::AddPoints(const std::vector<Node*>& nodes)
 {
   for (std::vector<Node*>::const_iterator i = nodes.begin(); i != nodes.end(); ++i)
   {
@@ -200,7 +200,7 @@ void CORE::GEO::CUT::BoundingBox::AddPoints(const std::vector<Node*>& nodes)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::BoundingBox::Within(double norm, const BoundingBox& b) const
+bool Core::Geo::Cut::BoundingBox::Within(double norm, const BoundingBox& b) const
 {
   if (empty_) return true;
   return (in_between(norm, minx(), maxx(), b.minx(), b.maxx()) and
@@ -210,7 +210,7 @@ bool CORE::GEO::CUT::BoundingBox::Within(double norm, const BoundingBox& b) cons
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::BoundingBox::Within(double norm, const double* x) const
+bool Core::Geo::Cut::BoundingBox::Within(double norm, const double* x) const
 {
   if (empty_) return true;
   return (in_between(norm, minx(), maxx(), x[0], x[0]) and
@@ -220,8 +220,8 @@ bool CORE::GEO::CUT::BoundingBox::Within(double norm, const double* x) const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::BoundingBox::Within(
-    double norm, const CORE::LINALG::SerialDenseMatrix& xyz) const
+bool Core::Geo::Cut::BoundingBox::Within(
+    double norm, const Core::LinAlg::SerialDenseMatrix& xyz) const
 {
   Teuchos::RCP<BoundingBox> bb = Teuchos::rcp(Create());
   int numnode = xyz.numCols();
@@ -234,7 +234,7 @@ bool CORE::GEO::CUT::BoundingBox::Within(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::BoundingBox::Within(double norm, Element& element) const
+bool Core::Geo::Cut::BoundingBox::Within(double norm, Element& element) const
 {
   Teuchos::RCP<BoundingBox> bb = Teuchos::rcp(Create(element));
   return Within(norm, *bb);
@@ -242,7 +242,7 @@ bool CORE::GEO::CUT::BoundingBox::Within(double norm, Element& element) const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::BoundingBox::in_between(const double& norm, const double& smin,
+bool Core::Geo::Cut::BoundingBox::in_between(const double& norm, const double& smin,
     const double& smax, const double& omin, const double& omax) const
 {
   double tol = BOXOVERLAP * norm;
@@ -251,7 +251,7 @@ bool CORE::GEO::CUT::BoundingBox::in_between(const double& norm, const double& s
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::BoundingBox::Print()
+void Core::Geo::Cut::BoundingBox::Print()
 {
   if (empty_)
   {
@@ -266,7 +266,7 @@ void CORE::GEO::CUT::BoundingBox::Print()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::BoundingBox::CornerPoint(int i, double* x)
+void Core::Geo::Cut::BoundingBox::CornerPoint(int i, double* x)
 {
   x[0] = ((i & 1) == 1) ? maxx() : minx();
   x[1] = ((i & 2) == 2) ? maxy() : miny();
@@ -276,7 +276,7 @@ void CORE::GEO::CUT::BoundingBox::CornerPoint(int i, double* x)
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned probdim>
-void CORE::GEO::CUT::ConcreteBoundingBox<probdim>::AddPoint(const double* x)
+void Core::Geo::Cut::ConcreteBoundingBox<probdim>::AddPoint(const double* x)
 {
   if (empty_)
   {
@@ -302,7 +302,7 @@ void CORE::GEO::CUT::ConcreteBoundingBox<probdim>::AddPoint(const double* x)
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned probdim>
-bool CORE::GEO::CUT::ConcreteBoundingBox<probdim>::Within(double norm, const double* x) const
+bool Core::Geo::Cut::ConcreteBoundingBox<probdim>::Within(double norm, const double* x) const
 {
   if (probdim > 2) return BoundingBox::Within(norm, x);
 
@@ -312,7 +312,7 @@ bool CORE::GEO::CUT::ConcreteBoundingBox<probdim>::Within(double norm, const dou
 }
 
 
-template class CORE::GEO::CUT::ConcreteBoundingBox<2>;
-template class CORE::GEO::CUT::ConcreteBoundingBox<3>;
+template class Core::Geo::Cut::ConcreteBoundingBox<2>;
+template class Core::Geo::Cut::ConcreteBoundingBox<3>;
 
 FOUR_C_NAMESPACE_CLOSE

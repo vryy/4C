@@ -24,21 +24,21 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::GEOMETRICSEARCH
+namespace Core::GeometricSearch
 {
   std::vector<std::tuple<int, int, int, int, int>> GlobalCollisionSearch(
       const std::vector<std::pair<int, BoundingVolume>>& primitives,
       const std::vector<std::pair<int, BoundingVolume>>& predicates, const Epetra_Comm& comm,
-      const CORE::IO::Verbositylevel verbosity)
+      const Core::IO::Verbositylevel verbosity)
   {
 #ifndef FOUR_C_WITH_ARBORX
     FOUR_C_THROW(
-        "GEOMETRICSEARCH::GlobalCollisionSearch can only be used with ArborX."
+        "GeometricSearch::GlobalCollisionSearch can only be used with ArborX."
         "To use it, enable ArborX during the configure process.");
     return {};
 #else
 
-    TEUCHOS_FUNC_TIME_MONITOR("CORE::GEOMETRICSEARCH::GlobalCollisionSearch");
+    TEUCHOS_FUNC_TIME_MONITOR("Core::GeometricSearch::GlobalCollisionSearch");
 
     int myrank = comm.MyPID();
 
@@ -86,16 +86,16 @@ namespace CORE::GEOMETRICSEARCH
       }
     }
 
-    if (verbosity == CORE::IO::verbose)
+    if (verbosity == Core::IO::verbose)
     {
-      CORE::GEOMETRICSEARCH::GeometricSearchInfo info = {static_cast<int>(primitives.size()),
+      Core::GeometricSearch::GeometricSearchInfo info = {static_cast<int>(primitives.size()),
           static_cast<int>(predicates.size()), static_cast<int>(indices_ranks_full.size())};
-      CORE::GEOMETRICSEARCH::PrintGeometricSearchDetails(comm, info);
+      Core::GeometricSearch::PrintGeometricSearchDetails(comm, info);
     }
 
     return pairs;
 #endif
   }
-}  // namespace CORE::GEOMETRICSEARCH
+}  // namespace Core::GeometricSearch
 
 FOUR_C_NAMESPACE_CLOSE

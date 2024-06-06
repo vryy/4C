@@ -19,7 +19,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::GEOMETRICSEARCH
+namespace Core::GeometricSearch
 {
   //! Data container for geometric search parameters
   class GeometricSearchParams
@@ -48,14 +48,14 @@ namespace CORE::GEOMETRICSEARCH
 
     /*! \brief verbosity level of the geometric search algorithm
      */
-    CORE::IO::Verbositylevel verbosity_;
+    Core::IO::Verbositylevel verbosity_;
 
    private:
     double beam_radius_extension_factor_;
     double sphere_radius_extension_factor_;
     bool write_visualization_;
   };
-}  // namespace CORE::GEOMETRICSEARCH
+}  // namespace Core::GeometricSearch
 
 FOUR_C_NAMESPACE_CLOSE
 

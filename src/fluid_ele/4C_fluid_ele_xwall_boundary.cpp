@@ -17,16 +17,16 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-DRT::ELEMENTS::FluidXWallBoundaryType DRT::ELEMENTS::FluidXWallBoundaryType::instance_;
+Discret::ELEMENTS::FluidXWallBoundaryType Discret::ELEMENTS::FluidXWallBoundaryType::instance_;
 
-DRT::ELEMENTS::FluidXWallBoundaryType& DRT::ELEMENTS::FluidXWallBoundaryType::Instance()
+Discret::ELEMENTS::FluidXWallBoundaryType& Discret::ELEMENTS::FluidXWallBoundaryType::Instance()
 {
   return instance_;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::FluidXWallBoundaryType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidXWallBoundaryType::Create(
     const int id, const int owner)
 {
   return Teuchos::null;
@@ -36,8 +36,9 @@ Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::FluidXWallBoundaryType::Cre
  |  ctor (public)                                            mwgee 01/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::FluidXWallBoundary::FluidXWallBoundary(int id, int owner, int nnode,
-    const int* nodeids, CORE::Nodes::Node** nodes, DRT::ELEMENTS::Fluid* parent, const int lsurface)
+Discret::ELEMENTS::FluidXWallBoundary::FluidXWallBoundary(int id, int owner, int nnode,
+    const int* nodeids, Core::Nodes::Node** nodes, Discret::ELEMENTS::Fluid* parent,
+    const int lsurface)
     : FluidBoundary(id, owner, nnode, nodeids, nodes, parent, lsurface)
 {
   return;
@@ -46,7 +47,8 @@ DRT::ELEMENTS::FluidXWallBoundary::FluidXWallBoundary(int id, int owner, int nno
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 01/07|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::FluidXWallBoundary::FluidXWallBoundary(const DRT::ELEMENTS::FluidXWallBoundary& old)
+Discret::ELEMENTS::FluidXWallBoundary::FluidXWallBoundary(
+    const Discret::ELEMENTS::FluidXWallBoundary& old)
     : FluidBoundary(old)
 {
   return;
@@ -56,16 +58,17 @@ DRT::ELEMENTS::FluidXWallBoundary::FluidXWallBoundary(const DRT::ELEMENTS::Fluid
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            gee 01/07 |
  *----------------------------------------------------------------------*/
-CORE::Elements::Element* DRT::ELEMENTS::FluidXWallBoundary::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::FluidXWallBoundary::Clone() const
 {
-  DRT::ELEMENTS::FluidXWallBoundary* newelement = new DRT::ELEMENTS::FluidXWallBoundary(*this);
+  Discret::ELEMENTS::FluidXWallBoundary* newelement =
+      new Discret::ELEMENTS::FluidXWallBoundary(*this);
   return newelement;
 }
 
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mwgee 01/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidXWallBoundary::Print(std::ostream& os) const
+void Discret::ELEMENTS::FluidXWallBoundary::Print(std::ostream& os) const
 {
   os << "FluidXWallBoundary ";
   Element::Print(os);
@@ -76,11 +79,12 @@ void DRT::ELEMENTS::FluidXWallBoundary::Print(std::ostream& os) const
  |  Get degrees of freedom used by this element                (public) |
  |                                                            gee 12/06 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidXWallBoundary::LocationVector(const Discretization& dis, LocationArray& la,
-    bool doDirichlet, const std::string& condstring, Teuchos::ParameterList& params) const
+void Discret::ELEMENTS::FluidXWallBoundary::LocationVector(const Discretization& dis,
+    LocationArray& la, bool doDirichlet, const std::string& condstring,
+    Teuchos::ParameterList& params) const
 {
   // get the action required
-  const FLD::BoundaryAction act = CORE::UTILS::GetAsEnum<FLD::BoundaryAction>(params, "action");
+  const FLD::BoundaryAction act = Core::UTILS::GetAsEnum<FLD::BoundaryAction>(params, "action");
 
   switch (act)
   {
@@ -102,7 +106,7 @@ void DRT::ELEMENTS::FluidXWallBoundary::LocationVector(const Discretization& dis
     default:
       // standard case: element assembles into its own dofs only
       const int numnode = num_node();
-      const CORE::Nodes::Node* const* nodes = Nodes();
+      const Core::Nodes::Node* const* nodes = Nodes();
 
       la.Clear();
 
@@ -119,7 +123,7 @@ void DRT::ELEMENTS::FluidXWallBoundary::LocationVector(const Discretization& dis
         {
           for (int i = 0; i < numnode; ++i)
           {
-            const CORE::Nodes::Node* node = nodes[i];
+            const Core::Nodes::Node* node = nodes[i];
 
             const int owner = node->Owner();
             std::vector<int> dofx;
@@ -141,13 +145,13 @@ void DRT::ELEMENTS::FluidXWallBoundary::LocationVector(const Discretization& dis
             if (doDirichlet)
             {
               const std::vector<int>* flag = nullptr;
-              CORE::Conditions::Condition* dirich = node->GetCondition("Dirichlet");
+              Core::Conditions::Condition* dirich = node->GetCondition("Dirichlet");
               if (dirich)
               {
-                if (dirich->Type() != CORE::Conditions::PointDirichlet &&
-                    dirich->Type() != CORE::Conditions::LineDirichlet &&
-                    dirich->Type() != CORE::Conditions::SurfaceDirichlet &&
-                    dirich->Type() != CORE::Conditions::VolumeDirichlet)
+                if (dirich->Type() != Core::Conditions::PointDirichlet &&
+                    dirich->Type() != Core::Conditions::LineDirichlet &&
+                    dirich->Type() != Core::Conditions::SurfaceDirichlet &&
+                    dirich->Type() != Core::Conditions::VolumeDirichlet)
                   FOUR_C_THROW("condition with name Dirichlet is not of type Dirichlet");
                 flag = &dirich->parameters().Get<std::vector<int>>("onoff");
               }
@@ -204,13 +208,13 @@ void DRT::ELEMENTS::FluidXWallBoundary::LocationVector(const Discretization& dis
         //      if (doDirichlet)
         //      {
         //        const std::vector<int>* flag = nullptr;
-        //        CORE::Conditions::Condition* dirich = GetCondition("Dirichlet");
+        //        Core::Conditions::Condition* dirich = GetCondition("Dirichlet");
         //        if (dirich)
         //        {
-        //          if (dirich->Type()!=CORE::Conditions::geometry_type_pointDirichlet &&
-        //              dirich->Type()!=CORE::Conditions::geometry_type_lineDirichlet &&
-        //              dirich->Type()!=CORE::Conditions::geometry_type_surfaceDirichlet &&
-        //              dirich->Type()!=CORE::Conditions::geometry_type_volumeDirichlet)
+        //          if (dirich->Type()!=Core::Conditions::geometry_type_pointDirichlet &&
+        //              dirich->Type()!=Core::Conditions::geometry_type_lineDirichlet &&
+        //              dirich->Type()!=Core::Conditions::geometry_type_surfaceDirichlet &&
+        //              dirich->Type()!=Core::Conditions::geometry_type_volumeDirichlet)
         //            FOUR_C_THROW("condition with name Dirichlet is not of type Dirichlet");
         //          flag = dirich->Get<std::vector<int> >("onoff");
         //        }

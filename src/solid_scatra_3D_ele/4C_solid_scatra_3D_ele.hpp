@@ -23,33 +23,33 @@ Pack, Unpack, NumDofPerNode etc.
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   class So3Material;
 }
-namespace DRT::ELEMENTS
+namespace Discret::ELEMENTS
 {
   // forward declaration
-  class SolidScatraType : public CORE::Elements::ElementType
+  class SolidScatraType : public Core::Elements::ElementType
   {
    public:
     void setup_element_definition(
-        std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions) override;
+        std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions) override;
 
-    Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+    Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
         const std::string elecelltype, const int id, const int owner) override;
 
-    Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+    Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
     [[nodiscard]] std::string Name() const override { return "SolidScatraType"; }
 
     void nodal_block_information(
-        CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+        Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-    CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-        CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
+    Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+        Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
     static SolidScatraType& Instance();
 
@@ -58,32 +58,32 @@ namespace DRT::ELEMENTS
 
   };  // class SolidType
 
-  class SolidScatra : public CORE::Elements::Element
+  class SolidScatra : public Core::Elements::Element
   {
     friend class SolidScatraType;
 
    public:
     SolidScatra(int id, int owner);
 
-    [[nodiscard]] CORE::Elements::Element* Clone() const override;
+    [[nodiscard]] Core::Elements::Element* Clone() const override;
 
     [[nodiscard]] int UniqueParObjectId() const override
     {
       return SolidScatraType::Instance().UniqueParObjectId();
     }
 
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     void Unpack(const std::vector<char>& data) override;
 
-    [[nodiscard]] CORE::Elements::ElementType& ElementType() const override
+    [[nodiscard]] Core::Elements::ElementType& ElementType() const override
     {
       return SolidScatraType::Instance();
     }
 
-    [[nodiscard]] CORE::FE::CellType Shape() const override { return celltype_; }
+    [[nodiscard]] Core::FE::CellType Shape() const override { return celltype_; }
 
-    [[nodiscard]] virtual MAT::So3Material& SolidMaterial(int nummat = 0) const;
+    [[nodiscard]] virtual Mat::So3Material& SolidMaterial(int nummat = 0) const;
 
     [[nodiscard]] int NumLine() const override;
 
@@ -91,29 +91,29 @@ namespace DRT::ELEMENTS
 
     [[nodiscard]] int NumVolume() const override;
 
-    std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
+    std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
 
-    std::vector<Teuchos::RCP<CORE::Elements::Element>> Surfaces() override;
+    std::vector<Teuchos::RCP<Core::Elements::Element>> Surfaces() override;
 
-    [[nodiscard]] int NumDofPerNode(const CORE::Nodes::Node& node) const override { return 3; }
+    [[nodiscard]] int NumDofPerNode(const Core::Nodes::Node& node) const override { return 3; }
 
     [[nodiscard]] int num_dof_per_element() const override { return 0; }
 
     bool ReadElement(const std::string& eletype, const std::string& celltype,
-        INPUT::LineDefinition* linedef) override;
+        Input::LineDefinition* linedef) override;
 
-    int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-        CORE::Elements::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1,
-        CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-        CORE::LINALG::SerialDenseVector& elevec2,
-        CORE::LINALG::SerialDenseVector& elevec3) override;
+    int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+        Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1,
+        Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
+        Core::LinAlg::SerialDenseVector& elevec2,
+        Core::LinAlg::SerialDenseVector& elevec3) override;
 
-    int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-        CORE::Conditions::Condition& condition, std::vector<int>& lm,
-        CORE::LINALG::SerialDenseVector& elevec1,
-        CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
+    int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+        Core::Conditions::Condition& condition, std::vector<int>& lm,
+        Core::LinAlg::SerialDenseVector& elevec1,
+        Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;
 
-    Teuchos::RCP<CORE::Elements::ParamsInterface> ParamsInterfacePtr() override
+    Teuchos::RCP<Core::Elements::ParamsInterface> ParamsInterfacePtr() override
     {
       return interface_ptr_;
     }
@@ -135,8 +135,8 @@ namespace DRT::ELEMENTS
 
     bool VisData(const std::string& name, std::vector<double>& data) override;
 
-    /// return SCATRA::ImplType
-    [[nodiscard]] INPAR::SCATRA::ImplType ImplType() const { return properties_.impltype; }
+    /// return ScaTra::ImplType
+    [[nodiscard]] Inpar::ScaTra::ImplType ImplType() const { return properties_.impltype; }
 
     /*!
      * @brief Returns the Cauchy stress in the direction @p dir at @p xi with normal @p n
@@ -155,13 +155,13 @@ namespace DRT::ELEMENTS
      * can be made mandatory.
      */
     double GetCauchyNDirAtXi(const std::vector<double>& disp,
-        const std::optional<std::vector<double>>& scalars, const CORE::LINALG::Matrix<3, 1>& xi,
-        const CORE::LINALG::Matrix<3, 1>& n, const CORE::LINALG::Matrix<3, 1>& dir,
+        const std::optional<std::vector<double>>& scalars, const Core::LinAlg::Matrix<3, 1>& xi,
+        const Core::LinAlg::Matrix<3, 1>& n, const Core::LinAlg::Matrix<3, 1>& dir,
         SolidScatraCauchyNDirLinearizations<3>& linearizations);
 
    private:
     //! cell type
-    CORE::FE::CellType celltype_ = CORE::FE::CellType::dis_none;
+    Core::FE::CellType celltype_ = Core::FE::CellType::dis_none;
 
     //! solid-scatra properties
     SolidScatraElementProperties properties_{};
@@ -177,7 +177,7 @@ namespace DRT::ELEMENTS
 
   };  // class SolidScatra
 
-}  // namespace DRT::ELEMENTS
+}  // namespace Discret::ELEMENTS
 
 
 FOUR_C_NAMESPACE_CLOSE

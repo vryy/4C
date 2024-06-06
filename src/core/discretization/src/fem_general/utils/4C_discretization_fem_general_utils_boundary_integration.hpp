@@ -29,7 +29,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::FE
+namespace Core::FE
 {
   struct IntegrationPoints1D;
   struct IntegrationPoints2D;
@@ -56,10 +56,10 @@ namespace CORE::FE
     -----------------------------------------------------------------*/
   template <class V, class W, typename IntegrationPoints>
   void SurfaceGPToParentGP(V& pqxg, W& derivtrafo, const IntegrationPoints& intpoints,
-      const CORE::FE::CellType pdistype, const CORE::FE::CellType distype, const int surfaceid)
+      const Core::FE::CellType pdistype, const Core::FE::CellType distype, const int surfaceid)
   {
-    if ((distype == CORE::FE::CellType::quad4 && pdistype == CORE::FE::CellType::hex8) or
-        (distype == CORE::FE::CellType::quad9 && pdistype == CORE::FE::CellType::hex27))
+    if ((distype == Core::FE::CellType::quad4 && pdistype == Core::FE::CellType::hex8) or
+        (distype == Core::FE::CellType::quad9 && pdistype == Core::FE::CellType::hex27))
     {
       switch (surfaceid)
       {
@@ -230,7 +230,7 @@ namespace CORE::FE
           FOUR_C_THROW("invalid number of surfaces, unable to determine intpoint in parent");
       }
     }
-    else if (distype == CORE::FE::CellType::nurbs9 && pdistype == CORE::FE::CellType::nurbs27)
+    else if (distype == Core::FE::CellType::nurbs9 && pdistype == Core::FE::CellType::nurbs27)
     {
       switch (surfaceid)
       {
@@ -395,8 +395,8 @@ namespace CORE::FE
           FOUR_C_THROW("invalid number of surfaces, unable to determine intpoint in parent");
       }
     }
-    else if ((distype == CORE::FE::CellType::tri3 && pdistype == CORE::FE::CellType::tet4) or
-             (distype == CORE::FE::CellType::tri6 && pdistype == CORE::FE::CellType::tet10))
+    else if ((distype == Core::FE::CellType::tri3 && pdistype == Core::FE::CellType::tet4) or
+             (distype == Core::FE::CellType::tri6 && pdistype == Core::FE::CellType::tet10))
     {
       switch (surfaceid)
       {
@@ -495,7 +495,7 @@ namespace CORE::FE
     -----------------------------------------------------------------*/
   template <class V, class W, typename IntegrationPoints>
   void LineGPToParentGP(V& pqxg, W& derivtrafo, const IntegrationPoints& intpoints,
-      const CORE::FE::CellType pdistype, const CORE::FE::CellType distype, const int lineid);
+      const Core::FE::CellType pdistype, const Core::FE::CellType distype, const int lineid);
 
   /*-----------------------------------------------------------------
 
@@ -515,80 +515,80 @@ namespace CORE::FE
 
     ----------------------------------------------------------------------------------*/
   template <const int NSD>
-  void BoundaryGPToParentGP(CORE::LINALG::SerialDenseMatrix& pqxg,
-      CORE::LINALG::SerialDenseMatrix& derivtrafo,
-      const CORE::FE::IntPointsAndWeights<NSD - 1>& intpoints, const CORE::FE::CellType pdistype,
-      const CORE::FE::CellType distype, const int surfaceid);
+  void BoundaryGPToParentGP(Core::LinAlg::SerialDenseMatrix& pqxg,
+      Core::LinAlg::SerialDenseMatrix& derivtrafo,
+      const Core::FE::IntPointsAndWeights<NSD - 1>& intpoints, const Core::FE::CellType pdistype,
+      const Core::FE::CellType distype, const int surfaceid);
 
   //! specialization for 3D
   template <>
-  void BoundaryGPToParentGP<3>(CORE::LINALG::SerialDenseMatrix& pqxg,
-      CORE::LINALG::SerialDenseMatrix& derivtrafo,
-      const CORE::FE::IntPointsAndWeights<2>& intpoints, const CORE::FE::CellType pdistype,
-      const CORE::FE::CellType distype, const int surfaceid);
+  void BoundaryGPToParentGP<3>(Core::LinAlg::SerialDenseMatrix& pqxg,
+      Core::LinAlg::SerialDenseMatrix& derivtrafo,
+      const Core::FE::IntPointsAndWeights<2>& intpoints, const Core::FE::CellType pdistype,
+      const Core::FE::CellType distype, const int surfaceid);
 
   //! specialization for 2D
   template <>
-  void BoundaryGPToParentGP<2>(CORE::LINALG::SerialDenseMatrix& pqxg,
-      CORE::LINALG::SerialDenseMatrix& derivtrafo,
-      const CORE::FE::IntPointsAndWeights<1>& intpoints, const CORE::FE::CellType pdistype,
-      const CORE::FE::CellType distype, const int surfaceid);
+  void BoundaryGPToParentGP<2>(Core::LinAlg::SerialDenseMatrix& pqxg,
+      Core::LinAlg::SerialDenseMatrix& derivtrafo,
+      const Core::FE::IntPointsAndWeights<1>& intpoints, const Core::FE::CellType pdistype,
+      const Core::FE::CellType distype, const int surfaceid);
 
 
 
   template <const int NSD>
-  void BoundaryGPToParentGP(CORE::LINALG::SerialDenseMatrix& pqxg,
-      CORE::LINALG::Matrix<NSD, NSD>& derivtrafo,
-      const CORE::FE::IntPointsAndWeights<NSD - 1>& intpoints, const CORE::FE::CellType pdistype,
-      const CORE::FE::CellType distype, const int surfaceid);
+  void BoundaryGPToParentGP(Core::LinAlg::SerialDenseMatrix& pqxg,
+      Core::LinAlg::Matrix<NSD, NSD>& derivtrafo,
+      const Core::FE::IntPointsAndWeights<NSD - 1>& intpoints, const Core::FE::CellType pdistype,
+      const Core::FE::CellType distype, const int surfaceid);
 
   //! specialization for 3D
   template <>
-  void BoundaryGPToParentGP<3>(CORE::LINALG::SerialDenseMatrix& pqxg,
-      CORE::LINALG::Matrix<3, 3>& derivtrafo, const CORE::FE::IntPointsAndWeights<2>& intpoints,
-      const CORE::FE::CellType pdistype, const CORE::FE::CellType distype, const int surfaceid);
+  void BoundaryGPToParentGP<3>(Core::LinAlg::SerialDenseMatrix& pqxg,
+      Core::LinAlg::Matrix<3, 3>& derivtrafo, const Core::FE::IntPointsAndWeights<2>& intpoints,
+      const Core::FE::CellType pdistype, const Core::FE::CellType distype, const int surfaceid);
 
   //! specialization for 2D
   template <>
-  void BoundaryGPToParentGP<2>(CORE::LINALG::SerialDenseMatrix& pqxg,
-      CORE::LINALG::Matrix<2, 2>& derivtrafo, const CORE::FE::IntPointsAndWeights<1>& intpoints,
-      const CORE::FE::CellType pdistype, const CORE::FE::CellType distype, const int surfaceid);
+  void BoundaryGPToParentGP<2>(Core::LinAlg::SerialDenseMatrix& pqxg,
+      Core::LinAlg::Matrix<2, 2>& derivtrafo, const Core::FE::IntPointsAndWeights<1>& intpoints,
+      const Core::FE::CellType pdistype, const Core::FE::CellType distype, const int surfaceid);
 
 
 
   template <const int NSD>
-  void BoundaryGPToParentGP(CORE::LINALG::SerialDenseMatrix& pqxg,
-      CORE::LINALG::SerialDenseMatrix& derivtrafo, const GaussPoints& intpoints,
-      const CORE::FE::CellType pdistype, const CORE::FE::CellType distype, const int surfaceid);
+  void BoundaryGPToParentGP(Core::LinAlg::SerialDenseMatrix& pqxg,
+      Core::LinAlg::SerialDenseMatrix& derivtrafo, const GaussPoints& intpoints,
+      const Core::FE::CellType pdistype, const Core::FE::CellType distype, const int surfaceid);
 
   //! specialization for 3D
   template <>
-  void BoundaryGPToParentGP<3>(CORE::LINALG::SerialDenseMatrix& pqxg,
-      CORE::LINALG::SerialDenseMatrix& derivtrafo, const GaussPoints& intpoints,
-      const CORE::FE::CellType pdistype, const CORE::FE::CellType distype, const int surfaceid);
+  void BoundaryGPToParentGP<3>(Core::LinAlg::SerialDenseMatrix& pqxg,
+      Core::LinAlg::SerialDenseMatrix& derivtrafo, const GaussPoints& intpoints,
+      const Core::FE::CellType pdistype, const Core::FE::CellType distype, const int surfaceid);
 
   //! specialization for 2D
   template <>
-  void BoundaryGPToParentGP<2>(CORE::LINALG::SerialDenseMatrix& pqxg,
-      CORE::LINALG::SerialDenseMatrix& derivtrafo, const GaussPoints& intpoints,
-      const CORE::FE::CellType pdistype, const CORE::FE::CellType distype, const int surfaceid);
+  void BoundaryGPToParentGP<2>(Core::LinAlg::SerialDenseMatrix& pqxg,
+      Core::LinAlg::SerialDenseMatrix& derivtrafo, const GaussPoints& intpoints,
+      const Core::FE::CellType pdistype, const Core::FE::CellType distype, const int surfaceid);
 
   template <const int NSD>
-  void BoundaryGPToParentGP(CORE::LINALG::SerialDenseMatrix& pqxg,
-      CORE::LINALG::Matrix<NSD, NSD>& derivtrafo, const GaussPoints& intpoints,
-      const CORE::FE::CellType pdistype, const CORE::FE::CellType distype, const int surfaceid);
+  void BoundaryGPToParentGP(Core::LinAlg::SerialDenseMatrix& pqxg,
+      Core::LinAlg::Matrix<NSD, NSD>& derivtrafo, const GaussPoints& intpoints,
+      const Core::FE::CellType pdistype, const Core::FE::CellType distype, const int surfaceid);
 
   //! specialization for 3D
   template <>
-  void BoundaryGPToParentGP<3>(CORE::LINALG::SerialDenseMatrix& pqxg,
-      CORE::LINALG::Matrix<3, 3>& derivtrafo, const GaussPoints& intpoints,
-      const CORE::FE::CellType pdistype, const CORE::FE::CellType distype, const int surfaceid);
+  void BoundaryGPToParentGP<3>(Core::LinAlg::SerialDenseMatrix& pqxg,
+      Core::LinAlg::Matrix<3, 3>& derivtrafo, const GaussPoints& intpoints,
+      const Core::FE::CellType pdistype, const Core::FE::CellType distype, const int surfaceid);
 
   //! specialization for 2D
   template <>
-  void BoundaryGPToParentGP<2>(CORE::LINALG::SerialDenseMatrix& pqxg,
-      CORE::LINALG::Matrix<2, 2>& derivtrafo, const GaussPoints& intpoints,
-      const CORE::FE::CellType pdistype, const CORE::FE::CellType distype, const int surfaceid);
+  void BoundaryGPToParentGP<2>(Core::LinAlg::SerialDenseMatrix& pqxg,
+      Core::LinAlg::Matrix<2, 2>& derivtrafo, const GaussPoints& intpoints,
+      const Core::FE::CellType pdistype, const Core::FE::CellType distype, const int surfaceid);
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -603,24 +603,24 @@ namespace CORE::FE
    * point in parameter space
    */
   template <int parent_ele_dim>
-  CORE::LINALG::Matrix<parent_ele_dim, 1> CalculateParentGPFromFaceElementData(
-      const double* faceele_xi, const CORE::Elements::FaceElement* faceele);
+  Core::LinAlg::Matrix<parent_ele_dim, 1> CalculateParentGPFromFaceElementData(
+      const double* faceele_xi, const Core::Elements::FaceElement* faceele);
 
   //! compute covariant metric tensor for surface element
-  void ComputeMetricTensorForSurface(const CORE::LINALG::SerialDenseMatrix& xyze,
-      const CORE::LINALG::SerialDenseMatrix& deriv, CORE::LINALG::SerialDenseMatrix& metrictensor,
+  void ComputeMetricTensorForSurface(const Core::LinAlg::SerialDenseMatrix& xyze,
+      const Core::LinAlg::SerialDenseMatrix& deriv, Core::LinAlg::SerialDenseMatrix& metrictensor,
       double* sqrtdetg);
 
   //! compute covariant metric tensor for surface/line element and optionally, the normalized
   //! normal vector at the Gauss-point (template)
-  template <CORE::FE::CellType DISTYPE, int probdim, typename valueType>
+  template <Core::FE::CellType DISTYPE, int probdim, typename valueType>
   void ComputeMetricTensorForBoundaryEle(
-      const CORE::LINALG::Matrix<probdim, CORE::FE::num_nodes<DISTYPE>, valueType>& xyze,
-      const CORE::LINALG::Matrix<CORE::FE::dim<DISTYPE>, CORE::FE::num_nodes<DISTYPE>, valueType>&
+      const Core::LinAlg::Matrix<probdim, Core::FE::num_nodes<DISTYPE>, valueType>& xyze,
+      const Core::LinAlg::Matrix<Core::FE::dim<DISTYPE>, Core::FE::num_nodes<DISTYPE>, valueType>&
           deriv,
-      CORE::LINALG::Matrix<CORE::FE::dim<DISTYPE>, CORE::FE::dim<DISTYPE>, valueType>& metrictensor,
+      Core::LinAlg::Matrix<Core::FE::dim<DISTYPE>, Core::FE::dim<DISTYPE>, valueType>& metrictensor,
       valueType& sqrtdetg, const bool throw_error,
-      CORE::LINALG::Matrix<probdim, 1, valueType>* normalvec = nullptr,
+      Core::LinAlg::Matrix<probdim, 1, valueType>* normalvec = nullptr,
       const bool unit_normal = true)
   {
     /* 2D boundary Element
@@ -654,7 +654,7 @@ namespace CORE::FE
     |
     |   dxyzdrs(1,2) = deriv(1,iel) * xyze(2, iel)^T
      */
-    CORE::LINALG::Matrix<CORE::FE::dim<DISTYPE>, probdim, valueType> dxyzdrs;
+    Core::LinAlg::Matrix<Core::FE::dim<DISTYPE>, probdim, valueType> dxyzdrs;
     dxyzdrs.MultiplyNT(deriv, xyze);
 
     /* 2D boundary Element
@@ -688,7 +688,7 @@ namespace CORE::FE
     */
     sqrtdetg = metrictensor.Determinant();
     if (sqrtdetg > 0.0)
-      sqrtdetg = CORE::MathOperations<valueType>::sqrt(sqrtdetg);
+      sqrtdetg = Core::MathOperations<valueType>::sqrt(sqrtdetg);
     else if (throw_error)
     {
       FOUR_C_THROW(
@@ -698,23 +698,23 @@ namespace CORE::FE
     // Calculate outward pointing normal vector
     if (normalvec)
     {
-      if (probdim == 3 and CORE::FE::dim<DISTYPE> == 2)
+      if (probdim == 3 and Core::FE::dim<DISTYPE> == 2)
       {
         (*normalvec)(0) = dxyzdrs(0, 1) * dxyzdrs(1, 2) - dxyzdrs(1, 1) * dxyzdrs(0, 2);
         (*normalvec)(1) = dxyzdrs(0, 2) * dxyzdrs(1, 0) - dxyzdrs(1, 2) * dxyzdrs(0, 0);
         (*normalvec)(2) = dxyzdrs(0, 0) * dxyzdrs(1, 1) - dxyzdrs(1, 0) * dxyzdrs(0, 1);
       }
-      else if (probdim == 2 and CORE::FE::dim<DISTYPE> == 1)
+      else if (probdim == 2 and Core::FE::dim<DISTYPE> == 1)
       {
         (*normalvec)(0) = dxyzdrs(0, 1);
         (*normalvec)(1) = -dxyzdrs(0, 0);
       }
-      else if (probdim == 3 and CORE::FE::dim<DISTYPE> == 1)
+      else if (probdim == 3 and Core::FE::dim<DISTYPE> == 1)
       {
         // handle small normal vectors with dxyzdrs(0,0), dxyzdrs(0,1) < 1e-6
         // and other components = 0.0
-        if (CORE::MathOperations<valueType>::abs(dxyzdrs(0, 0)) < 1.0e-6 and
-            CORE::MathOperations<valueType>::abs(dxyzdrs(0, 1)) < 1.0e-6 and
+        if (Core::MathOperations<valueType>::abs(dxyzdrs(0, 0)) < 1.0e-6 and
+            Core::MathOperations<valueType>::abs(dxyzdrs(0, 1)) < 1.0e-6 and
             (dxyzdrs(0, 2) != 0.0 or dxyzdrs(0, 1) != 0.0))
         {
           (*normalvec)(0) = 0.0;
@@ -746,15 +746,15 @@ namespace CORE::FE
 
   //! compute kovariant metric tensor for surface/line element and optionally, the normalized
   //! normal vector at the Gausspoint (template)
-  template <CORE::FE::CellType DISTYPE>
+  template <Core::FE::CellType DISTYPE>
   void ComputeMetricTensorForBoundaryEle(
-      const CORE::LINALG::Matrix<(1 + CORE::FE::dim<DISTYPE>), CORE::FE::num_nodes<DISTYPE>>& xyze,
-      const CORE::LINALG::Matrix<CORE::FE::dim<DISTYPE>, CORE::FE::num_nodes<DISTYPE>>& deriv,
-      CORE::LINALG::Matrix<CORE::FE::dim<DISTYPE>, CORE::FE::dim<DISTYPE>>& metrictensor,
-      double& sqrtdetg, CORE::LINALG::Matrix<(1 + CORE::FE::dim<DISTYPE>), 1>* normalvec = nullptr)
+      const Core::LinAlg::Matrix<(1 + Core::FE::dim<DISTYPE>), Core::FE::num_nodes<DISTYPE>>& xyze,
+      const Core::LinAlg::Matrix<Core::FE::dim<DISTYPE>, Core::FE::num_nodes<DISTYPE>>& deriv,
+      Core::LinAlg::Matrix<Core::FE::dim<DISTYPE>, Core::FE::dim<DISTYPE>>& metrictensor,
+      double& sqrtdetg, Core::LinAlg::Matrix<(1 + Core::FE::dim<DISTYPE>), 1>* normalvec = nullptr)
   {
     const bool throw_error_if_negative_determinant(true);
-    ComputeMetricTensorForBoundaryEle<DISTYPE, (1 + CORE::FE::dim<DISTYPE>)>(
+    ComputeMetricTensorForBoundaryEle<DISTYPE, (1 + Core::FE::dim<DISTYPE>)>(
         xyze, deriv, metrictensor, sqrtdetg, throw_error_if_negative_determinant, normalvec);
   }
 
@@ -766,16 +766,16 @@ namespace CORE::FE
          in weak dirichlet boundary conditions).
          2D-version
     -----------------------------------------------------------------*/
-  inline void BoundaryGPToParentGP2(CORE::LINALG::SerialDenseMatrix& pqxg,
-      const CORE::LINALG::SerialDenseMatrix& intpoints, const CORE::FE::CellType pdistype,
-      const CORE::FE::CellType distype, const int beleid)
+  inline void BoundaryGPToParentGP2(Core::LinAlg::SerialDenseMatrix& pqxg,
+      const Core::LinAlg::SerialDenseMatrix& intpoints, const Core::FE::CellType pdistype,
+      const Core::FE::CellType distype, const int beleid)
   {
     // resize output array
     pqxg.shape(intpoints.numRows(), 2);
 
-    if ((distype == CORE::FE::CellType::line2 && pdistype == CORE::FE::CellType::quad4) or
-        (distype == CORE::FE::CellType::line3 && pdistype == CORE::FE::CellType::quad8) or
-        (distype == CORE::FE::CellType::line3 && pdistype == CORE::FE::CellType::quad9))
+    if ((distype == Core::FE::CellType::line2 && pdistype == Core::FE::CellType::quad4) or
+        (distype == Core::FE::CellType::line3 && pdistype == Core::FE::CellType::quad8) or
+        (distype == Core::FE::CellType::line3 && pdistype == Core::FE::CellType::quad9))
     {
       switch (beleid)
       {
@@ -939,8 +939,8 @@ namespace CORE::FE
           FOUR_C_THROW("invalid number of lines, unable to determine intpoint in parent");
       }
     }
-    else if ((distype == CORE::FE::CellType::line2 && pdistype == CORE::FE::CellType::tri3) or
-             (distype == CORE::FE::CellType::line3 && pdistype == CORE::FE::CellType::tri6))
+    else if ((distype == Core::FE::CellType::line2 && pdistype == Core::FE::CellType::tri3) or
+             (distype == Core::FE::CellType::line3 && pdistype == Core::FE::CellType::tri6))
     {
       switch (beleid)
       {
@@ -975,7 +975,7 @@ namespace CORE::FE
           FOUR_C_THROW("invalid number of lines, unable to determine intpoint in parent");
       }
     }
-    else if (distype == CORE::FE::CellType::nurbs3 && pdistype == CORE::FE::CellType::nurbs9)
+    else if (distype == Core::FE::CellType::nurbs3 && pdistype == Core::FE::CellType::nurbs9)
     {
       switch (beleid)
       {
@@ -1080,16 +1080,16 @@ namespace CORE::FE
          in weak dirichlet boundary conditions).
          3D-version
     -----------------------------------------------------------------*/
-  inline void BoundaryGPToParentGP3(CORE::LINALG::SerialDenseMatrix& pqxg,
-      const CORE::LINALG::SerialDenseMatrix& intpoints, const CORE::FE::CellType pdistype,
-      const CORE::FE::CellType distype, const int beleid)
+  inline void BoundaryGPToParentGP3(Core::LinAlg::SerialDenseMatrix& pqxg,
+      const Core::LinAlg::SerialDenseMatrix& intpoints, const Core::FE::CellType pdistype,
+      const Core::FE::CellType distype, const int beleid)
   {
     // resize output array
     pqxg.shape(intpoints.numRows(), 3);
 
-    if ((distype == CORE::FE::CellType::quad4 && pdistype == CORE::FE::CellType::hex8) or
-        (distype == CORE::FE::CellType::quad8 && pdistype == CORE::FE::CellType::hex20) or
-        (distype == CORE::FE::CellType::quad9 && pdistype == CORE::FE::CellType::hex27))
+    if ((distype == Core::FE::CellType::quad4 && pdistype == Core::FE::CellType::hex8) or
+        (distype == Core::FE::CellType::quad8 && pdistype == Core::FE::CellType::hex20) or
+        (distype == Core::FE::CellType::quad9 && pdistype == Core::FE::CellType::hex27))
     {
       switch (beleid)
       {
@@ -1241,8 +1241,8 @@ namespace CORE::FE
           FOUR_C_THROW("invalid number of surfaces, unable to determine intpoint in parent");
       }
     }
-    else if ((distype == CORE::FE::CellType::tri3 && pdistype == CORE::FE::CellType::tet4) or
-             (distype == CORE::FE::CellType::tri6 && pdistype == CORE::FE::CellType::tet10))
+    else if ((distype == Core::FE::CellType::tri3 && pdistype == Core::FE::CellType::tet4) or
+             (distype == Core::FE::CellType::tri6 && pdistype == Core::FE::CellType::tet10))
     {
       switch (beleid)
       {
@@ -1290,8 +1290,8 @@ namespace CORE::FE
           FOUR_C_THROW("invalid number of surfaces, unable to determine intpoint in parent");
       }
     }
-    else if ((distype == CORE::FE::CellType::quad4 && pdistype == CORE::FE::CellType::wedge6) or
-             (distype == CORE::FE::CellType::quad8 && pdistype == CORE::FE::CellType::wedge15))
+    else if ((distype == Core::FE::CellType::quad4 && pdistype == Core::FE::CellType::wedge6) or
+             (distype == Core::FE::CellType::quad8 && pdistype == Core::FE::CellType::wedge15))
     {
       switch (beleid)
       {
@@ -1373,8 +1373,8 @@ namespace CORE::FE
               "in parent");
       }
     }
-    else if ((distype == CORE::FE::CellType::tri3 && pdistype == CORE::FE::CellType::wedge6) or
-             (distype == CORE::FE::CellType::tri6 && pdistype == CORE::FE::CellType::wedge15))
+    else if ((distype == Core::FE::CellType::tri3 && pdistype == Core::FE::CellType::wedge6) or
+             (distype == Core::FE::CellType::tri6 && pdistype == Core::FE::CellType::wedge15))
     {
       switch (beleid)
       {
@@ -1406,7 +1406,7 @@ namespace CORE::FE
               "parent");
       }
     }
-    else if (distype == CORE::FE::CellType::nurbs9 && pdistype == CORE::FE::CellType::nurbs27)
+    else if (distype == Core::FE::CellType::nurbs9 && pdistype == Core::FE::CellType::nurbs27)
     {
       switch (beleid)
       {
@@ -1575,18 +1575,18 @@ namespace CORE::FE
   // - isnurbs: if true, some NURBS specific stuff is done
   /*----------------------------------------------------------------------*
    *----------------------------------------------------------------------*/
-  template <CORE::FE::CellType distype>
-  void EvalShapeFuncAtBouIntPoint(CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, 1>& funct,
-      CORE::LINALG::Matrix<CORE::FE::dim<distype>, CORE::FE::num_nodes<distype>>& deriv,
-      double& fac, CORE::LINALG::Matrix<CORE::FE::dim<distype> + 1, 1>& unitnormal, double& drs,
-      CORE::LINALG::Matrix<CORE::FE::dim<distype>, 1>& xsi,
-      CORE::LINALG::Matrix<CORE::FE::dim<distype> + 1, CORE::FE::num_nodes<distype>>& xyze,
-      const CORE::FE::IntPointsAndWeights<CORE::FE::dim<distype>>& intpoints, const int gpid,
-      const std::vector<CORE::LINALG::SerialDenseVector>* myknots,
-      const CORE::LINALG::SerialDenseVector* weights, const bool isnurbs)
+  template <Core::FE::CellType distype>
+  void EvalShapeFuncAtBouIntPoint(Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, 1>& funct,
+      Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::num_nodes<distype>>& deriv,
+      double& fac, Core::LinAlg::Matrix<Core::FE::dim<distype> + 1, 1>& unitnormal, double& drs,
+      Core::LinAlg::Matrix<Core::FE::dim<distype>, 1>& xsi,
+      Core::LinAlg::Matrix<Core::FE::dim<distype> + 1, Core::FE::num_nodes<distype>>& xyze,
+      const Core::FE::IntPointsAndWeights<Core::FE::dim<distype>>& intpoints, const int gpid,
+      const std::vector<Core::LinAlg::SerialDenseVector>* myknots,
+      const Core::LinAlg::SerialDenseVector* weights, const bool isnurbs)
   {
     // Obtain number of spatial dimensions of boundary element
-    const int bdrynsd = CORE::FE::dim<distype>;
+    const int bdrynsd = Core::FE::dim<distype>;
 
     // local coordinates of the current integration point
     const double* gpcoord = (intpoints.IP().qxg)[gpid];
@@ -1599,19 +1599,19 @@ namespace CORE::FE
     if (not isnurbs)
     {
       // shape functions and their first derivatives of boundary element
-      CORE::FE::shape_function<distype>(xsi, funct);
-      CORE::FE::shape_function_deriv1<distype>(xsi, deriv);
+      Core::FE::shape_function<distype>(xsi, funct);
+      Core::FE::shape_function_deriv1<distype>(xsi, deriv);
     }
     // only for NURBS!!!
     else
     {
-      CORE::FE::NURBS::nurbs_get_funct_deriv(funct, deriv, xsi, *myknots, *weights, distype);
+      Core::FE::Nurbs::nurbs_get_funct_deriv(funct, deriv, xsi, *myknots, *weights, distype);
     }
 
     // compute measure tensor for surface element, infinitesimal area element drs
     // and (outward-pointing) unit normal vector
-    CORE::LINALG::Matrix<bdrynsd, bdrynsd> metrictensor(true);
-    CORE::FE::ComputeMetricTensorForBoundaryEle<distype>(
+    Core::LinAlg::Matrix<bdrynsd, bdrynsd> metrictensor(true);
+    Core::FE::ComputeMetricTensorForBoundaryEle<distype>(
         xyze, deriv, metrictensor, drs, &unitnormal);
 
     // compute integration factor
@@ -1622,27 +1622,27 @@ namespace CORE::FE
   // according to dissertation of Prof. Wall, equation (7.13)
   /*----------------------------------------------------------------------*
    *----------------------------------------------------------------------*/
-  template <CORE::FE::CellType distype>
-  void ElementNodeNormal(CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, 1>& funct,
-      CORE::LINALG::Matrix<CORE::FE::dim<distype>, CORE::FE::num_nodes<distype>>& deriv,
-      double& fac, CORE::LINALG::Matrix<CORE::FE::dim<distype> + 1, 1>& unitnormal, double& drs,
-      CORE::LINALG::Matrix<CORE::FE::dim<distype>, 1>& xsi,
-      CORE::LINALG::Matrix<CORE::FE::dim<distype> + 1, CORE::FE::num_nodes<distype>>& xyze,
-      CORE::Elements::Element* ele, DRT::Discretization& discretization,
-      CORE::LINALG::SerialDenseVector& elevec1, const std::vector<double>& edispnp,
+  template <Core::FE::CellType distype>
+  void ElementNodeNormal(Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, 1>& funct,
+      Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::num_nodes<distype>>& deriv,
+      double& fac, Core::LinAlg::Matrix<Core::FE::dim<distype> + 1, 1>& unitnormal, double& drs,
+      Core::LinAlg::Matrix<Core::FE::dim<distype>, 1>& xsi,
+      Core::LinAlg::Matrix<Core::FE::dim<distype> + 1, Core::FE::num_nodes<distype>>& xyze,
+      Core::Elements::Element* ele, Discret::Discretization& discretization,
+      Core::LinAlg::SerialDenseVector& elevec1, const std::vector<double>& edispnp,
       const bool isnurbs, const bool isale)
   {
     /*----------------------------------------------------------------------*
      |                          Initialization                              |
      *----------------------------------------------------------------------*/
     // Number of spatial dimensions of boundary element
-    const int bdrynsd = CORE::FE::dim<distype>;
+    const int bdrynsd = Core::FE::dim<distype>;
 
     // Number of spatial dimensions of parent element
     static constexpr int nsd = bdrynsd + 1;
 
     // Number of nodes of boundary element
-    static constexpr int bdrynen = CORE::FE::num_nodes<distype>;
+    static constexpr int bdrynen = Core::FE::num_nodes<distype>;
 
     // Number of degrees of freedom per node
     int numdofpernode = nsd + 1;  // standard case is 'fluid'
@@ -1659,11 +1659,11 @@ namespace CORE::FE
     }
 
     // Get gaussrule
-    const CORE::FE::IntPointsAndWeights<bdrynsd> intpoints(
-        DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+    const Core::FE::IntPointsAndWeights<bdrynsd> intpoints(
+        Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
     // Get node coordinates
-    CORE::GEO::fillInitialPositionArray<distype, nsd, CORE::LINALG::Matrix<nsd, bdrynen>>(
+    Core::Geo::fillInitialPositionArray<distype, nsd, Core::LinAlg::Matrix<nsd, bdrynen>>(
         ele, xyze);
 
     // Add displacements to reference coordinates, if an ALE description is used
@@ -1688,7 +1688,7 @@ namespace CORE::FE
       // Computation of the integration factor & shape function at the Gauss point & derivative of
       // the shape function at the Gauss point Computation of the unit normal vector at the Gauss
       // points Computation of nurb specific stuff is not activated here
-      CORE::FE::EvalShapeFuncAtBouIntPoint<distype>(funct, deriv, fac, unitnormal, drs, xsi, xyze,
+      Core::FE::EvalShapeFuncAtBouIntPoint<distype>(funct, deriv, fac, unitnormal, drs, xsi, xyze,
           intpoints, gpid, nullptr, nullptr, isnurbs);
 
       for (int inode = 0; inode < bdrynen; ++inode)
@@ -1706,7 +1706,7 @@ namespace CORE::FE
     } /* end of loop over integration points gpid */
   }   // ElementNodeNormal
 
-}  // namespace CORE::FE
+}  // namespace Core::FE
 
 FOUR_C_NAMESPACE_CLOSE
 

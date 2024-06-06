@@ -201,7 +201,7 @@ void PostVtkWriter::write_solution_vector(const std::vector<double> &solution,
   if (write_binary_output_)
   {
     file << " format=\"binary\">\n";
-    LIBB64::writeCompressedBlock(solution, file);
+    LibB64::writeCompressedBlock(solution, file);
   }
   else
   {
@@ -263,9 +263,9 @@ void PostVtkWriter::WriteResult(const std::string groupname, const std::string n
     result->next_result(groupname);
   }
   if (not(field_->problem()->spatial_approximation_type() ==
-              CORE::FE::ShapeFunctionType::polynomial or
-          field_->problem()->spatial_approximation_type() == CORE::FE::ShapeFunctionType::hdg or
-          field_->problem()->spatial_approximation_type() == CORE::FE::ShapeFunctionType::nurbs))
+              Core::FE::ShapeFunctionType::polynomial or
+          field_->problem()->spatial_approximation_type() == Core::FE::ShapeFunctionType::hdg or
+          field_->problem()->spatial_approximation_type() == Core::FE::ShapeFunctionType::nurbs))
     FOUR_C_THROW(
         "Undefined spatial approximation type or the VTK filter is not yet implemented for the "
         "given type.");
@@ -312,8 +312,8 @@ void PostVtkWriter::WriteFiles(PostFilterBase &filter)
 
   // timesteps when the solution is written
   const std::vector<double> soltime = result.get_result_times(field_->name());
-  ntdigits_ = LIBB64::ndigits(soltime.size());
-  npdigits_ = LIBB64::ndigits(field_->discretization()->Comm().NumProc());
+  ntdigits_ = LibB64::ndigits(soltime.size());
+  npdigits_ = LibB64::ndigits(field_->discretization()->Comm().NumProc());
   std::vector<std::pair<double, std::string>> filenames;
 
   const std::string dirname = filename_ + "-files";

@@ -82,10 +82,10 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   // setup variables
   // -------------------------------------------------------------------------
   // discretization pointer
-  discret_ptr_ = Teuchos::rcp_dynamic_cast<DRT::Discretization>(discret_ptr(), true);
+  discret_ptr_ = Teuchos::rcp_dynamic_cast<Discret::Discretization>(discret_ptr(), true);
   // stiff
   stiff_beaminteraction_ =
-      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*g_state().DofRowMapView(), 81, true, true));
+      Teuchos::rcp(new Core::LinAlg::SparseMatrix(*g_state().DofRowMapView(), 81, true, true));
   // force and displacement at last redistribution
   force_beaminteraction_ = Teuchos::rcp(new Epetra_Vector(*g_state().dof_row_map(), true));
   dis_at_last_redistr_ = Teuchos::rcp(new Epetra_Vector(*g_state().dof_row_map(), true));
@@ -110,14 +110,14 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   // solving is done. Therefore the maps of our initial discretization don't
   // change, i.e. there is no need to rebuild the global state.
   // -------------------------------------------------------------------------
-  Teuchos::RCP<CORE::FE::DiscretizationCreatorBase> discloner =
-      Teuchos::rcp(new CORE::FE::DiscretizationCreatorBase());
+  Teuchos::RCP<Core::FE::DiscretizationCreatorBase> discloner =
+      Teuchos::rcp(new Core::FE::DiscretizationCreatorBase());
   ia_discret_ = discloner->create_matching_discretization(
       discret_ptr_, "ia_structure", true, true, false, true);
   // create discretization writer
-  ia_discret_->SetWriter(Teuchos::rcp(new CORE::IO::DiscretizationWriter(ia_discret_,
-      GLOBAL::Problem::Instance()->OutputControlFile(),
-      GLOBAL::Problem::Instance()->spatial_approximation_type())));
+  ia_discret_->SetWriter(Teuchos::rcp(new Core::IO::DiscretizationWriter(ia_discret_,
+      Global::Problem::Instance()->OutputControlFile(),
+      Global::Problem::Instance()->spatial_approximation_type())));
 
   // init data container
   ia_state_ptr_ = Teuchos::rcp(new STR::MODELEVALUATOR::BeamInteractionDataState());
@@ -132,18 +132,18 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   // initialize coupling adapter to transform matrices between the two discrets
   // (with distinct parallel distribution)
   // -------------------------------------------------------------------------
-  coupsia_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
-  siatransform_ = Teuchos::rcp(new CORE::LINALG::MatrixRowTransform);
+  coupsia_ = Teuchos::rcp(new Core::Adapter::Coupling());
+  siatransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowTransform);
 
   // -------------------------------------------------------------------------
   // initialize and setup binning strategy and beam crosslinker handler
   // -------------------------------------------------------------------------
   // construct, init and setup binning strategy
-  std::vector<Teuchos::RCP<DRT::Discretization>> discret_vec(1, ia_discret_);
+  std::vector<Teuchos::RCP<Discret::Discretization>> discret_vec(1, ia_discret_);
 
   // We have to pass the displacement column vector to the initialization of the binning strategy.
   ia_state_ptr_->GetDisColNp() = Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
-  CORE::LINALG::Export(*ia_state_ptr_->GetDisNp(), *ia_state_ptr_->GetDisColNp());
+  Core::LinAlg::Export(*ia_state_ptr_->GetDisNp(), *ia_state_ptr_->GetDisColNp());
 
   std::vector<Teuchos::RCP<const Epetra_Vector>> disp_vec(1, ia_state_ptr_->GetDisColNp());
   binstrategy_ = Teuchos::rcp(new BINSTRATEGY::BinningStrategy());
@@ -155,7 +155,7 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
 
   // construct, init and setup beam crosslinker handler and binning strategy
   // todo: move this and its single call during partition to crosslinker submodel
-  if (HaveSubModelType(INPAR::BEAMINTERACTION::submodel_crosslinking))
+  if (HaveSubModelType(Inpar::BEAMINTERACTION::submodel_crosslinking))
   {
     beam_crosslinker_handler_ = Teuchos::rcp(new BEAMINTERACTION::BeamCrosslinkerHandler());
     beam_crosslinker_handler_->Init(g_state().GetMyRank(), binstrategy_);
@@ -174,16 +174,16 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
 
   // distribute problem according to bin distribution to procs ( in case of restart
   // partitioning is done during read_restart() )
-  if (not GLOBAL::Problem::Instance()->Restart()) partition_problem();
+  if (not Global::Problem::Instance()->Restart()) partition_problem();
 
   // some actions need a partitioned system followed by a renewal of the partition
-  if (not GLOBAL::Problem::Instance()->Restart() and post_partition_problem()) partition_problem();
+  if (not Global::Problem::Instance()->Restart() and post_partition_problem()) partition_problem();
 
   post_setup();
 
   // some screen output
-  CORE::REBALANCE::UTILS::print_parallel_distribution(*ia_discret_);
-  CORE::REBALANCE::UTILS::print_parallel_distribution(*bindis_);
+  Core::Rebalance::UTILS::print_parallel_distribution(*ia_discret_);
+  Core::Rebalance::UTILS::print_parallel_distribution(*bindis_);
 
   issetup_ = true;
 }
@@ -200,7 +200,7 @@ void STR::MODELEVALUATOR::BeamInteraction::post_setup()
     (*sme_iter)->post_setup();
 
   if (beaminteraction_params_ptr_->get_repartition_strategy() ==
-      INPAR::BEAMINTERACTION::repstr_adaptive)
+      Inpar::BEAMINTERACTION::repstr_adaptive)
   {
     // submodel loop to determine half interaction radius
     for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
@@ -227,69 +227,69 @@ void STR::MODELEVALUATOR::BeamInteraction::set_sub_model_types()
 {
   check_init();
 
-  submodeltypes_ = Teuchos::rcp(new std::set<enum INPAR::BEAMINTERACTION::SubModelType>());
+  submodeltypes_ = Teuchos::rcp(new std::set<enum Inpar::BEAMINTERACTION::SubModelType>());
 
   // ---------------------------------------------------------------------------
   // check for crosslinking in biopolymer networks
   // ---------------------------------------------------------------------------
-  if (CORE::UTILS::IntegralValue<int>(
-          GLOBAL::Problem::Instance()->beam_interaction_params().sublist("SPHERE BEAM LINK"),
+  if (Core::UTILS::IntegralValue<int>(
+          Global::Problem::Instance()->beam_interaction_params().sublist("SPHERE BEAM LINK"),
           "SPHEREBEAMLINKING"))
-    submodeltypes_->insert(INPAR::BEAMINTERACTION::submodel_spherebeamlink);
+    submodeltypes_->insert(Inpar::BEAMINTERACTION::submodel_spherebeamlink);
 
   // ---------------------------------------------------------------------------
   // check for crosslinking in biopolymer networks
   // ---------------------------------------------------------------------------
-  if (CORE::UTILS::IntegralValue<int>(
-          GLOBAL::Problem::Instance()->beam_interaction_params().sublist("CROSSLINKING"),
+  if (Core::UTILS::IntegralValue<int>(
+          Global::Problem::Instance()->beam_interaction_params().sublist("CROSSLINKING"),
           "CROSSLINKER"))
-    submodeltypes_->insert(INPAR::BEAMINTERACTION::submodel_crosslinking);
+    submodeltypes_->insert(Inpar::BEAMINTERACTION::submodel_crosslinking);
 
   // ---------------------------------------------------------------------------
   // check for point to point penalty coupling conditions
   // ---------------------------------------------------------------------------
 
   // conditions for beam penalty point coupling
-  std::vector<CORE::Conditions::Condition*> beampenaltycouplingconditions(0);
+  std::vector<Core::Conditions::Condition*> beampenaltycouplingconditions(0);
   discret_ptr_->GetCondition("PenaltyPointCouplingCondition", beampenaltycouplingconditions);
   if (beampenaltycouplingconditions.size() > 0)
-    submodeltypes_->insert(INPAR::BEAMINTERACTION::submodel_beamcontact);
+    submodeltypes_->insert(Inpar::BEAMINTERACTION::submodel_beamcontact);
 
   // ---------------------------------------------------------------------------
   // check for beam contact
   // ---------------------------------------------------------------------------
-  if (CORE::UTILS::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
-          GLOBAL::Problem::Instance()->beam_interaction_params().sublist("BEAM TO BEAM CONTACT"),
-          "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none or
-      CORE::UTILS::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
-          GLOBAL::Problem::Instance()->beam_interaction_params().sublist("BEAM TO SPHERE CONTACT"),
-          "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none or
-      Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization>(
-          GLOBAL::Problem::Instance()->beam_interaction_params().sublist(
+  if (Core::UTILS::IntegralValue<Inpar::BEAMINTERACTION::Strategy>(
+          Global::Problem::Instance()->beam_interaction_params().sublist("BEAM TO BEAM CONTACT"),
+          "STRATEGY") != Inpar::BEAMINTERACTION::bstr_none or
+      Core::UTILS::IntegralValue<Inpar::BEAMINTERACTION::Strategy>(
+          Global::Problem::Instance()->beam_interaction_params().sublist("BEAM TO SPHERE CONTACT"),
+          "STRATEGY") != Inpar::BEAMINTERACTION::bstr_none or
+      Teuchos::getIntegralValue<Inpar::BeamToSolid::BeamToSolidContactDiscretization>(
+          Global::Problem::Instance()->beam_interaction_params().sublist(
               "BEAM TO SOLID VOLUME MESHTYING"),
-          "CONTACT_DISCRETIZATION") != INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::none or
-      Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization>(
-          GLOBAL::Problem::Instance()->beam_interaction_params().sublist(
+          "CONTACT_DISCRETIZATION") != Inpar::BeamToSolid::BeamToSolidContactDiscretization::none or
+      Teuchos::getIntegralValue<Inpar::BeamToSolid::BeamToSolidContactDiscretization>(
+          Global::Problem::Instance()->beam_interaction_params().sublist(
               "BEAM TO SOLID SURFACE MESHTYING"),
-          "CONTACT_DISCRETIZATION") != INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::none or
-      Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization>(
-          GLOBAL::Problem::Instance()->beam_interaction_params().sublist(
+          "CONTACT_DISCRETIZATION") != Inpar::BeamToSolid::BeamToSolidContactDiscretization::none or
+      Teuchos::getIntegralValue<Inpar::BeamToSolid::BeamToSolidContactDiscretization>(
+          Global::Problem::Instance()->beam_interaction_params().sublist(
               "BEAM TO SOLID SURFACE CONTACT"),
-          "CONTACT_DISCRETIZATION") != INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::none)
-    submodeltypes_->insert(INPAR::BEAMINTERACTION::submodel_beamcontact);
+          "CONTACT_DISCRETIZATION") != Inpar::BeamToSolid::BeamToSolidContactDiscretization::none)
+    submodeltypes_->insert(Inpar::BEAMINTERACTION::submodel_beamcontact);
 
   // ---------------------------------------------------------------------------
   // check for beam potential-based interactions
   // ---------------------------------------------------------------------------
-  std::vector<CORE::Conditions::Condition*> beampotconditions(0);
+  std::vector<Core::Conditions::Condition*> beampotconditions(0);
   discret().GetCondition("BeamPotentialLineCharge", beampotconditions);
   if (beampotconditions.size() > 0)
-    submodeltypes_->insert(INPAR::BEAMINTERACTION::submodel_potential);
+    submodeltypes_->insert(Inpar::BEAMINTERACTION::submodel_potential);
 
   // Check if all all combinations of submodel evaluators work
-  if (CORE::UTILS::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
-          GLOBAL::Problem::Instance()->beam_interaction_params().sublist("BEAM TO BEAM CONTACT"),
-          "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none and
+  if (Core::UTILS::IntegralValue<Inpar::BEAMINTERACTION::Strategy>(
+          Global::Problem::Instance()->beam_interaction_params().sublist("BEAM TO BEAM CONTACT"),
+          "STRATEGY") != Inpar::BEAMINTERACTION::bstr_none and
       beampenaltycouplingconditions.size() > 0)
     FOUR_C_THROW(
         "It is not yet possible to use beam-to-beam contact in combination with beam-to-beam point "
@@ -305,7 +305,7 @@ void STR::MODELEVALUATOR::BeamInteraction::init_and_setup_sub_model_evaluators()
 
   // model map
   me_map_ptr_ = BEAMINTERACTION::SUBMODELEVALUATOR::build_model_evaluators(*submodeltypes_);
-  std::vector<enum INPAR::BEAMINTERACTION::SubModelType> sorted_submodeltypes(0);
+  std::vector<enum Inpar::BEAMINTERACTION::SubModelType> sorted_submodeltypes(0);
 
   // build and sort submodel vector
   me_vec_ptr_ = transform_to_vector(*me_map_ptr_, sorted_submodeltypes);
@@ -332,7 +332,7 @@ void STR::MODELEVALUATOR::BeamInteraction::init_and_setup_sub_model_evaluators()
 Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Vector>
 STR::MODELEVALUATOR::BeamInteraction::transform_to_vector(
     STR::MODELEVALUATOR::BeamInteraction::Map submodel_map,
-    std::vector<INPAR::BEAMINTERACTION::SubModelType>& sorted_submodel_types) const
+    std::vector<Inpar::BEAMINTERACTION::SubModelType>& sorted_submodel_types) const
 {
   Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Vector> me_vec_ptr =
       Teuchos::rcp(new STR::MODELEVALUATOR::BeamInteraction::Vector(0));
@@ -340,7 +340,7 @@ STR::MODELEVALUATOR::BeamInteraction::transform_to_vector(
   STR::MODELEVALUATOR::BeamInteraction::Map::iterator miter;
 
   // if there is a contractile cell submodel, put in first place
-  miter = submodel_map.find(INPAR::BEAMINTERACTION::submodel_spherebeamlink);
+  miter = submodel_map.find(Inpar::BEAMINTERACTION::submodel_spherebeamlink);
   if (miter != submodel_map.end())
   {
     // put it in first place
@@ -362,7 +362,7 @@ STR::MODELEVALUATOR::BeamInteraction::transform_to_vector(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::BeamInteraction::HaveSubModelType(
-    INPAR::BEAMINTERACTION::SubModelType const& submodeltype) const
+    Inpar::BEAMINTERACTION::SubModelType const& submodeltype) const
 {
   check_init();
   return (submodeltypes_->find(submodeltype) != submodeltypes_->end());
@@ -375,12 +375,12 @@ void STR::MODELEVALUATOR::BeamInteraction::partition_problem()
   check_init();
 
   // store structure discretization in vector
-  std::vector<Teuchos::RCP<DRT::Discretization>> discret_vec(1, ia_discret_);
+  std::vector<Teuchos::RCP<Discret::Discretization>> discret_vec(1, ia_discret_);
 
   // displacement vector according to periodic boundary conditions
   std::vector<Teuchos::RCP<Epetra_Vector>> mutabledisnp(
       1, Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap())));
-  CORE::LINALG::Export(*ia_state_ptr_->GetDisNp(), *mutabledisnp[0]);
+  Core::LinAlg::Export(*ia_state_ptr_->GetDisNp(), *mutabledisnp[0]);
 
   std::vector<Teuchos::RCP<const Epetra_Vector>> disnp(
       1, Teuchos::rcp(new const Epetra_Vector(*mutabledisnp[0])));
@@ -404,7 +404,7 @@ void STR::MODELEVALUATOR::BeamInteraction::partition_problem()
   // now node (=crosslinker) to bin (=element) relation needs to be
   // established in binning discretization. Therefore some nodes need to
   // change their owner according to the bins owner they reside in
-  if (HaveSubModelType(INPAR::BEAMINTERACTION::submodel_crosslinking))
+  if (HaveSubModelType(Inpar::BEAMINTERACTION::submodel_crosslinking))
     beam_crosslinker_handler_->distribute_linker_to_bins(noderowmap);
 
   // determine boundary bins (physical boundary as well as boundary to other procs)
@@ -423,7 +423,7 @@ void STR::MODELEVALUATOR::BeamInteraction::partition_problem()
   // distribute elements that can be cut by the periodic boundary to bins
   Teuchos::RCP<Epetra_Vector> iadiscolnp =
       Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
-  CORE::LINALG::Export(*ia_state_ptr_->GetDisNp(), *iadiscolnp);
+  Core::LinAlg::Export(*ia_state_ptr_->GetDisNp(), *iadiscolnp);
 
   binstrategy_->distribute_row_elements_to_bins_using_ele_aabb(
       ia_discret_, ia_state_ptr_->GetBinToRowEleMap(), iadiscolnp);
@@ -538,13 +538,13 @@ void STR::MODELEVALUATOR::BeamInteraction::Reset(const Epetra_Vector& x)
 
   // update column vector
   ia_state_ptr_->GetDisColNp() = Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
-  CORE::LINALG::Export(*ia_state_ptr_->GetDisNp(), *ia_state_ptr_->GetDisColNp());
+  Core::LinAlg::Export(*ia_state_ptr_->GetDisNp(), *ia_state_ptr_->GetDisColNp());
 
   // update restart displacement vector
   if (ia_state_ptr_->get_restart_coupling_flag())
   {
     ia_state_ptr_->GetDisRestartCol() = Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
-    CORE::LINALG::Export(*ia_state_ptr_->GetDisRestart(), *ia_state_ptr_->GetDisRestartCol());
+    Core::LinAlg::Export(*ia_state_ptr_->GetDisRestart(), *ia_state_ptr_->GetDisRestartCol());
   }
 
   // submodel loop
@@ -568,8 +568,8 @@ void STR::MODELEVALUATOR::BeamInteraction::Reset(const Epetra_Vector& x)
   // note: this is only necessary if active sets change in consecutive iteration steps
   // ( as crosslinker for example are only updated each time step, we only need to do this
   // every time step)
-  if (HaveSubModelType(INPAR::BEAMINTERACTION::submodel_potential) ||
-      HaveSubModelType(INPAR::BEAMINTERACTION::submodel_beamcontact))
+  if (HaveSubModelType(Inpar::BEAMINTERACTION::submodel_potential) ||
+      HaveSubModelType(Inpar::BEAMINTERACTION::submodel_beamcontact))
     update_coupling_adapter_and_matrix_transformation();
 }
 
@@ -652,7 +652,7 @@ bool STR::MODELEVALUATOR::BeamInteraction::assemble_force(
 {
   check_init_setup();
 
-  CORE::LINALG::AssembleMyVector(1.0, f, timefac_np, *force_beaminteraction_);
+  Core::LinAlg::AssembleMyVector(1.0, f, timefac_np, *force_beaminteraction_);
 
   return true;
 }
@@ -660,11 +660,11 @@ bool STR::MODELEVALUATOR::BeamInteraction::assemble_force(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::BeamInteraction::assemble_jacobian(
-    CORE::LINALG::SparseOperator& jac, const double& timefac_np) const
+    Core::LinAlg::SparseOperator& jac, const double& timefac_np) const
 {
   check_init_setup();
 
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> jac_dd_ptr = GState().ExtractDisplBlock(jac);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> jac_dd_ptr = GState().ExtractDisplBlock(jac);
   jac_dd_ptr->Add(*stiff_beaminteraction_, false, timefac_np, 1.0);
 
   // no need to keep it
@@ -677,14 +677,14 @@ bool STR::MODELEVALUATOR::BeamInteraction::assemble_jacobian(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::BeamInteraction::write_restart(
-    CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
+    Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   check_init_setup();
 
   int const stepn = GState().GetStepN();
   double const timen = GState().GetTimeN();
-  Teuchos::RCP<CORE::IO::DiscretizationWriter> ia_writer = ia_discret_->Writer();
-  Teuchos::RCP<CORE::IO::DiscretizationWriter> bin_writer = bindis_->Writer();
+  Teuchos::RCP<Core::IO::DiscretizationWriter> ia_writer = ia_discret_->Writer();
+  Teuchos::RCP<Core::IO::DiscretizationWriter> bin_writer = bindis_->Writer();
 
   // write restart of ia_discret
   ia_writer->WriteMesh(stepn, timen);
@@ -708,12 +708,12 @@ void STR::MODELEVALUATOR::BeamInteraction::write_restart(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::read_restart(CORE::IO::DiscretizationReader& ioreader)
+void STR::MODELEVALUATOR::BeamInteraction::read_restart(Core::IO::DiscretizationReader& ioreader)
 {
   check_init_setup();
 
   int const stepn = g_state().GetStepN();
-  auto input_control_file = GLOBAL::Problem::Instance()->InputControlFile();
+  auto input_control_file = Global::Problem::Instance()->InputControlFile();
 
   // pre sub model loop
   Vector::iterator sme_iter;
@@ -721,14 +721,14 @@ void STR::MODELEVALUATOR::BeamInteraction::read_restart(CORE::IO::Discretization
     (*sme_iter)->PreReadRestart();
 
   // read interaction discretization
-  CORE::IO::DiscretizationReader ia_reader(ia_discret_, input_control_file, stepn);
+  Core::IO::DiscretizationReader ia_reader(ia_discret_, input_control_file, stepn);
   // includes fill_complete()
   ia_reader.ReadHistoryData(stepn);
 
   // rebuild bin discret correctly in case crosslinker were present
   // Fixme: do just read history data like with ia discret
   // read correct nodes
-  CORE::IO::DiscretizationReader bin_reader(bindis_, input_control_file, stepn);
+  Core::IO::DiscretizationReader bin_reader(bindis_, input_control_file, stepn);
   bin_reader.ReadNodesOnly(stepn);
   bindis_->fill_complete(false, false, false);
 
@@ -749,9 +749,9 @@ void STR::MODELEVALUATOR::BeamInteraction::read_restart(CORE::IO::Discretization
 
   // Check if we need to store the restart displacement in the data state container.
   const Teuchos::ParameterList& beam_interaction_params =
-      GLOBAL::Problem::Instance()->beam_interaction_params();
-  if (HaveSubModelType(INPAR::BEAMINTERACTION::submodel_beamcontact) &&
-      (bool)CORE::UTILS::IntegralValue<int>(
+      Global::Problem::Instance()->beam_interaction_params();
+  if (HaveSubModelType(Inpar::BEAMINTERACTION::submodel_beamcontact) &&
+      (bool)Core::UTILS::IntegralValue<int>(
           beam_interaction_params.sublist("BEAM TO SOLID VOLUME MESHTYING"),
           "COUPLE_RESTART_STATE"))
   {
@@ -841,11 +841,11 @@ void STR::MODELEVALUATOR::BeamInteraction::UpdateStepElement()
 
     if (g_state().GetMyRank() == 0)
     {
-      CORE::IO::cout(CORE::IO::verbose) << "\n************************************************\n"
-                                        << CORE::IO::endl;
-      CORE::IO::cout(CORE::IO::verbose) << "Complete redistribution was done " << CORE::IO::endl;
-      CORE::IO::cout(CORE::IO::verbose) << "\n************************************************\n"
-                                        << CORE::IO::endl;
+      Core::IO::cout(Core::IO::verbose) << "\n************************************************\n"
+                                        << Core::IO::endl;
+      Core::IO::cout(Core::IO::verbose) << "Complete redistribution was done " << Core::IO::endl;
+      Core::IO::cout(Core::IO::verbose) << "\n************************************************\n"
+                                        << Core::IO::endl;
     }
   }
   else if (binning_redist)
@@ -856,11 +856,11 @@ void STR::MODELEVALUATOR::BeamInteraction::UpdateStepElement()
 
     if (g_state().GetMyRank() == 0)
     {
-      CORE::IO::cout(CORE::IO::verbose) << "\n************************************************\n"
-                                        << CORE::IO::endl;
-      CORE::IO::cout(CORE::IO::verbose) << " binning redistribution was done " << CORE::IO::endl;
-      CORE::IO::cout(CORE::IO::verbose) << "\n************************************************\n"
-                                        << CORE::IO::endl;
+      Core::IO::cout(Core::IO::verbose) << "\n************************************************\n"
+                                        << Core::IO::endl;
+      Core::IO::cout(Core::IO::verbose) << " binning redistribution was done " << Core::IO::endl;
+      Core::IO::cout(Core::IO::verbose) << "\n************************************************\n"
+                                        << Core::IO::endl;
     }
   }
 
@@ -885,7 +885,7 @@ void STR::MODELEVALUATOR::BeamInteraction::UpdateStepElement()
 bool STR::MODELEVALUATOR::BeamInteraction::check_if_beam_discret_redistribution_needs_to_be_done()
 {
   if (beaminteraction_params_ptr_->get_repartition_strategy() !=
-      INPAR::BEAMINTERACTION::repstr_adaptive)
+      Inpar::BEAMINTERACTION::repstr_adaptive)
     return true;
 
   Teuchos::RCP<Epetra_Vector> dis_increment =
@@ -894,7 +894,7 @@ bool STR::MODELEVALUATOR::BeamInteraction::check_if_beam_discret_redistribution_
   for (int i = 0; i < discret_ptr_->NumMyRowNodes(); ++i)
   {
     // get a pointer at i-th row node
-    CORE::Nodes::Node* node = discret_ptr_->lRowNode(i);
+    Core::Nodes::Node* node = discret_ptr_->lRowNode(i);
 
     /* Hermite Interpolation: Check whether node is a beam node which is NOT
      * used for centerline interpolation if so, we simply skip it because
@@ -927,11 +927,11 @@ bool STR::MODELEVALUATOR::BeamInteraction::check_if_beam_discret_redistribution_
   // some verbose screen output
   if (g_state().GetMyRank() == 0)
   {
-    CORE::IO::cout(CORE::IO::debug)
-        << " half interaction distance " << half_interaction_distance_ << CORE::IO::endl;
-    CORE::IO::cout(CORE::IO::debug) << " gmaxdisincr " << gmaxdisincr << CORE::IO::endl;
-    CORE::IO::cout(CORE::IO::debug)
-        << " half min bin size " << 0.5 * binstrategy_->GetMinBinSize() << CORE::IO::endl;
+    Core::IO::cout(Core::IO::debug)
+        << " half interaction distance " << half_interaction_distance_ << Core::IO::endl;
+    Core::IO::cout(Core::IO::debug) << " gmaxdisincr " << gmaxdisincr << Core::IO::endl;
+    Core::IO::cout(Core::IO::debug)
+        << " half min bin size " << 0.5 * binstrategy_->GetMinBinSize() << Core::IO::endl;
   }
 
   return ((half_interaction_distance_ + gmaxdisincr) > (0.5 * binstrategy_->GetMinBinSize()));
@@ -971,7 +971,7 @@ void STR::MODELEVALUATOR::BeamInteraction::determine_optional_quantity()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::BeamInteraction::OutputStepState(
-    CORE::IO::DiscretizationWriter& iowriter) const
+    Core::IO::DiscretizationWriter& iowriter) const
 {
   check_init_setup();
 
@@ -1051,7 +1051,7 @@ void STR::MODELEVALUATOR::BeamInteraction::update_coupling_adapter_and_matrix_tr
 
   // reset transformation member variables (eg. exporter) by rebuilding
   // and provide new maps for coupling adapter
-  siatransform_ = Teuchos::rcp(new CORE::LINALG::MatrixRowTransform);
+  siatransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowTransform);
   coupsia_->setup_coupling(*ia_discret_, *discret_ptr_);
 }
 
@@ -1101,13 +1101,13 @@ void STR::MODELEVALUATOR::BeamInteraction::update_maps()
 
   // update column vector
   ia_state_ptr_->GetDisColNp() = Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
-  CORE::LINALG::Export(*ia_state_ptr_->GetDisNp(), *ia_state_ptr_->GetDisColNp());
+  Core::LinAlg::Export(*ia_state_ptr_->GetDisNp(), *ia_state_ptr_->GetDisColNp());
 
   // update restart displacement vector
   if (ia_state_ptr_->get_restart_coupling_flag())
   {
     ia_state_ptr_->GetDisRestartCol() = Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
-    CORE::LINALG::Export(*ia_state_ptr_->GetDisRestart(), *ia_state_ptr_->GetDisRestartCol());
+    Core::LinAlg::Export(*ia_state_ptr_->GetDisRestart(), *ia_state_ptr_->GetDisRestartCol());
   }
 
   // force
@@ -1116,8 +1116,8 @@ void STR::MODELEVALUATOR::BeamInteraction::update_maps()
       Teuchos::rcp(new Epetra_FEVector(*ia_discret_->dof_row_map(), true));
 
   // stiff
-  ia_state_ptr_->GetStiff() = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
-      *ia_discret_->dof_row_map(), 81, true, true, CORE::LINALG::SparseMatrix::FE_MATRIX));
+  ia_state_ptr_->GetStiff() = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+      *ia_discret_->dof_row_map(), 81, true, true, Core::LinAlg::SparseMatrix::FE_MATRIX));
 
   BEAMINTERACTION::UTILS::SetupEleTypeMapExtractor(ia_discret_, eletypeextractor_);
 }
@@ -1145,7 +1145,7 @@ void STR::MODELEVALUATOR::BeamInteraction::transform_stiff()
   stiff_beaminteraction_->UnComplete();
   // transform stiffness matrix to problem discret layout/distribution
   (*siatransform_)(*ia_state_ptr_->GetStiff(), 1.0,
-      CORE::ADAPTER::CouplingMasterConverter(*coupsia_), *stiff_beaminteraction_, false);
+      Core::Adapter::CouplingMasterConverter(*coupsia_), *stiff_beaminteraction_, false);
 }
 
 /*-----------------------------------------------------------------------------*
@@ -1162,31 +1162,31 @@ void STR::MODELEVALUATOR::BeamInteraction::transform_force_stiff()
  *-----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::BeamInteraction::print_binning_info_to_screen() const
 {
-  std::vector<Teuchos::RCP<DRT::Discretization>> discret_vec(1, ia_discret_);
+  std::vector<Teuchos::RCP<Discret::Discretization>> discret_vec(1, ia_discret_);
   std::vector<Teuchos::RCP<const Epetra_Vector>> disnp_vec(1, Teuchos::null);
 
   double bin_size_lower_bound =
       binstrategy_->compute_lower_bound_for_bin_size_as_max_edge_length_of_aabb_of_largest_ele(
           discret_vec, disnp_vec);
-  CORE::LINALG::Matrix<3, 2> XAABB(true);
+  Core::LinAlg::Matrix<3, 2> XAABB(true);
   binstrategy_->compute_min_binning_domain_containing_all_elements_of_multiple_discrets(
       discret_vec, disnp_vec, XAABB, false);
   if (GState().GetMyRank() == 0)
   {
-    CORE::IO::cout(CORE::IO::verbose)
-        << " \n---------------------------------------------------------- " << CORE::IO::endl;
-    CORE::IO::cout(CORE::IO::verbose)
+    Core::IO::cout(Core::IO::verbose)
+        << " \n---------------------------------------------------------- " << Core::IO::endl;
+    Core::IO::cout(Core::IO::verbose)
         << " chosen/computed cutoff radius                      : " << binstrategy_->GetMinBinSize()
-        << CORE::IO::endl;
-    CORE::IO::cout(CORE::IO::verbose)
+        << Core::IO::endl;
+    Core::IO::cout(Core::IO::verbose)
         << " largest edge length of largest element xaabb       : " << bin_size_lower_bound
-        << CORE::IO::endl;
-    CORE::IO::cout(CORE::IO::verbose)
+        << Core::IO::endl;
+    Core::IO::cout(Core::IO::verbose)
         << "DOMAINBOUNDINGBOX containing all elements of input discretization:\n " << XAABB(0, 0)
         << " " << XAABB(1, 0) << " " << XAABB(2, 0) << " " << XAABB(0, 1) << " " << XAABB(1, 1)
-        << " " << XAABB(2, 1) << CORE::IO::endl;
-    CORE::IO::cout(CORE::IO::verbose)
-        << " ----------------------------------------------------------\n " << CORE::IO::endl;
+        << " " << XAABB(2, 1) << Core::IO::endl;
+    Core::IO::cout(Core::IO::verbose)
+        << " ----------------------------------------------------------\n " << Core::IO::endl;
   }
 }
 
@@ -1198,66 +1198,66 @@ void STR::MODELEVALUATOR::BeamInteraction::Logo() const
 
   if (myrank_ == 0)
   {
-    CORE::IO::cout << "\n****************************************************************"
-                   << CORE::IO::endl;
-    CORE::IO::cout << "*                                                              *"
-                   << CORE::IO::endl;
-    CORE::IO::cout << "*          Welcome to the Beam Interaction Model Evaluator     *"
-                   << CORE::IO::endl;
-    CORE::IO::cout << "*                                                              *"
-                   << CORE::IO::endl;
-    CORE::IO::cout << "****************************************************************"
-                   << CORE::IO::endl;
-    CORE::IO::cout << "                                                                  "
-                   << CORE::IO::endl;
-    CORE::IO::cout << "                                                                  "
-                   << CORE::IO::endl;
-    CORE::IO::cout << "                      0=========================0                 "
-                   << CORE::IO::endl;
-    CORE::IO::cout << "                    //|   \\            /       /||                "
-                   << CORE::IO::endl;
-    CORE::IO::cout << "                   // |    \\ |       |/       //||                "
-                   << CORE::IO::endl;
-    CORE::IO::cout << "                  //  |  /  \\|       /       // ||                "
-                   << CORE::IO::endl;
-    CORE::IO::cout << "                 //   |  \\   \\   /  /|\\     //  ||                "
-                   << CORE::IO::endl;
-    CORE::IO::cout << "                //    |  /   |\\ /  / | \\   //   ||                "
-                   << CORE::IO::endl;
-    CORE::IO::cout << "               //     |  \\   | \\     |  \\ //  / ||                "
-                   << CORE::IO::endl;
-    CORE::IO::cout << "              //  \\  /|  /   |/      |   //  /  ||                "
-                   << CORE::IO::endl;
-    CORE::IO::cout << "              0=========================0 \\ /   ||                "
-                   << CORE::IO::endl;
-    CORE::IO::cout << "             ||    /\\ |____          |  || \\    ||                "
-                   << CORE::IO::endl;
-    CORE::IO::cout << "             ||   /  \\|    \\   ------   ||/ \\   ||                "
-                   << CORE::IO::endl;
-    CORE::IO::cout << "             ||  /    |                 ||      ||                "
-                   << CORE::IO::endl;
-    CORE::IO::cout << "             || /     0----------/------||------0-                "
-                   << CORE::IO::endl;
-    CORE::IO::cout << "             ||      /   /       \\      ||     //                 "
-                   << CORE::IO::endl;
-    CORE::IO::cout << "             ||     /___/  \\     /    / ||    //                  "
-                   << CORE::IO::endl;
-    CORE::IO::cout << "             ||    /        \\    \\   /  ||   //                   "
-                   << CORE::IO::endl;
-    CORE::IO::cout << "             ||   /  \\/\\/\\/  \\   /  /   ||  //                    "
-                   << CORE::IO::endl;
-    CORE::IO::cout << "             ||  /      /     \\  \\ /    || //                     "
-                   << CORE::IO::endl;
-    CORE::IO::cout << "             || /      /         /      ||//                      "
-                   << CORE::IO::endl;
-    CORE::IO::cout << "             ||/                       /||/                       "
-                   << CORE::IO::endl;
-    CORE::IO::cout << "              0=========================0                         "
-                   << CORE::IO::endl;
-    CORE::IO::cout << "                                                                     "
-                   << CORE::IO::endl;
-    CORE::IO::cout << "                                                                     "
-                   << CORE::IO::endl;
+    Core::IO::cout << "\n****************************************************************"
+                   << Core::IO::endl;
+    Core::IO::cout << "*                                                              *"
+                   << Core::IO::endl;
+    Core::IO::cout << "*          Welcome to the Beam Interaction Model Evaluator     *"
+                   << Core::IO::endl;
+    Core::IO::cout << "*                                                              *"
+                   << Core::IO::endl;
+    Core::IO::cout << "****************************************************************"
+                   << Core::IO::endl;
+    Core::IO::cout << "                                                                  "
+                   << Core::IO::endl;
+    Core::IO::cout << "                                                                  "
+                   << Core::IO::endl;
+    Core::IO::cout << "                      0=========================0                 "
+                   << Core::IO::endl;
+    Core::IO::cout << "                    //|   \\            /       /||                "
+                   << Core::IO::endl;
+    Core::IO::cout << "                   // |    \\ |       |/       //||                "
+                   << Core::IO::endl;
+    Core::IO::cout << "                  //  |  /  \\|       /       // ||                "
+                   << Core::IO::endl;
+    Core::IO::cout << "                 //   |  \\   \\   /  /|\\     //  ||                "
+                   << Core::IO::endl;
+    Core::IO::cout << "                //    |  /   |\\ /  / | \\   //   ||                "
+                   << Core::IO::endl;
+    Core::IO::cout << "               //     |  \\   | \\     |  \\ //  / ||                "
+                   << Core::IO::endl;
+    Core::IO::cout << "              //  \\  /|  /   |/      |   //  /  ||                "
+                   << Core::IO::endl;
+    Core::IO::cout << "              0=========================0 \\ /   ||                "
+                   << Core::IO::endl;
+    Core::IO::cout << "             ||    /\\ |____          |  || \\    ||                "
+                   << Core::IO::endl;
+    Core::IO::cout << "             ||   /  \\|    \\   ------   ||/ \\   ||                "
+                   << Core::IO::endl;
+    Core::IO::cout << "             ||  /    |                 ||      ||                "
+                   << Core::IO::endl;
+    Core::IO::cout << "             || /     0----------/------||------0-                "
+                   << Core::IO::endl;
+    Core::IO::cout << "             ||      /   /       \\      ||     //                 "
+                   << Core::IO::endl;
+    Core::IO::cout << "             ||     /___/  \\     /    / ||    //                  "
+                   << Core::IO::endl;
+    Core::IO::cout << "             ||    /        \\    \\   /  ||   //                   "
+                   << Core::IO::endl;
+    Core::IO::cout << "             ||   /  \\/\\/\\/  \\   /  /   ||  //                    "
+                   << Core::IO::endl;
+    Core::IO::cout << "             ||  /      /     \\  \\ /    || //                     "
+                   << Core::IO::endl;
+    Core::IO::cout << "             || /      /         /      ||//                      "
+                   << Core::IO::endl;
+    Core::IO::cout << "             ||/                       /||/                       "
+                   << Core::IO::endl;
+    Core::IO::cout << "              0=========================0                         "
+                   << Core::IO::endl;
+    Core::IO::cout << "                                                                     "
+                   << Core::IO::endl;
+    Core::IO::cout << "                                                                     "
+                   << Core::IO::endl;
   }
 }
 

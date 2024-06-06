@@ -19,9 +19,9 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-namespace INPAR
+namespace Inpar
 {
-  namespace PORO_SCATRA
+  namespace PoroScaTra
   {
     /// Type of coupling strategy for poro scatra problems
     enum SolutionSchemeOverFields
@@ -36,9 +36,9 @@ namespace INPAR
     /// set the poroscatra parameters
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
-  }  // namespace PORO_SCATRA
+  }  // namespace PoroScaTra
 
-}  // namespace INPAR
+}  // namespace Inpar
 
 /*----------------------------------------------------------------------*/
 

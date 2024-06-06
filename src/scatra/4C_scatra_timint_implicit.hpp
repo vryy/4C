@@ -57,26 +57,26 @@ FOUR_C_NAMESPACE_OPEN
 /*==========================================================================*/
 // forward declarations
 /*==========================================================================*/
-namespace DRT
+namespace Discret
 {
   class Discretization;
   class ResultTest;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace GLOBAL
+namespace Global
 {
   class Problem;
 }
 
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationReader;
   class DiscretizationWriter;
   class InputControl;
   class RuntimeCsvWriter;
-}  // namespace CORE::IO
+}  // namespace Core::IO
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class Solver;
   class SparseMatrix;
@@ -87,12 +87,12 @@ namespace CORE::LINALG
   class KrylovProjector;
   enum class EquilibrationMethod;
   enum class MatrixType;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace CORE::Dofsets
+namespace Core::DOFSets
 {
   class DofSet;
-}  // namespace CORE::Dofsets
+}  // namespace Core::DOFSets
 
 
 namespace FLD
@@ -107,7 +107,7 @@ namespace CONTACT
   class NitscheStrategySsi;
 }  // namespace CONTACT
 
-namespace SCATRA
+namespace ScaTra
 {
   class HomIsoTurbScalarForcing;
   class MeshtyingStrategyBase;
@@ -121,7 +121,7 @@ namespace SCATRA
    * \brief implicit time integration for scalar transport problems
    */
 
-  class ScaTraTimIntImpl : public ADAPTER::ScatraInterface
+  class ScaTraTimIntImpl : public Adapter::ScatraInterface
   {
     friend class HomIsoTurbInitialScalarField;
     friend class HomIsoTurbScalarForcing;
@@ -135,12 +135,12 @@ namespace SCATRA
     /*========================================================================*/
 
     //! Standard Constructor
-    ScaTraTimIntImpl(Teuchos::RCP<DRT::Discretization> actdis,  //!< discretization
-        Teuchos::RCP<CORE::LINALG::Solver> solver,              //!< linear solver
-        Teuchos::RCP<Teuchos::ParameterList> params,            //!< parameter list
-        Teuchos::RCP<Teuchos::ParameterList> extraparams,       //!< supplementary parameter list
-        Teuchos::RCP<CORE::IO::DiscretizationWriter> output,    //!< output writer
-        const int probnum = 0                                   //!< global problem number
+    ScaTraTimIntImpl(Teuchos::RCP<Discret::Discretization> actdis,  //!< discretization
+        Teuchos::RCP<Core::LinAlg::Solver> solver,                  //!< linear solver
+        Teuchos::RCP<Teuchos::ParameterList> params,                //!< parameter list
+        Teuchos::RCP<Teuchos::ParameterList> extraparams,     //!< supplementary parameter list
+        Teuchos::RCP<Core::IO::DiscretizationWriter> output,  //!< output writer
+        const int probnum = 0                                 //!< global problem number
     );
 
     //! don't want copy constructor
@@ -202,7 +202,7 @@ namespace SCATRA
     void add_time_integration_specific_vectors(bool forcedincrementalsolver = false) override;
 
     //! initialize system matrix
-    Teuchos::RCP<CORE::LINALG::SparseOperator> init_system_matrix() const;
+    Teuchos::RCP<Core::LinAlg::SparseOperator> init_system_matrix() const;
 
     //! prepare time loop
     virtual void prepare_time_loop();
@@ -284,7 +284,7 @@ namespace SCATRA
 
     //! read restart data
     virtual void read_restart(
-        const int step, Teuchos::RCP<CORE::IO::InputControl> input = Teuchos::null);
+        const int step, Teuchos::RCP<Core::IO::InputControl> input = Teuchos::null);
 
     //! setup natural convection
     virtual void SetupNatConv();
@@ -369,7 +369,7 @@ namespace SCATRA
     }
 
     //! create result test for scalar transport field
-    virtual Teuchos::RCP<CORE::UTILS::ResultTest> create_sca_tra_field_test();
+    virtual Teuchos::RCP<Core::UTILS::ResultTest> create_sca_tra_field_test();
 
     //! Add tests to global problem and start tests
     virtual void TestResults();
@@ -443,7 +443,7 @@ namespace SCATRA
     void ApplyBCToSystem();
 
     void evaluate_initial_time_derivative(
-        Teuchos::RCP<CORE::LINALG::SparseOperator> matrix, Teuchos::RCP<Epetra_Vector> rhs);
+        Teuchos::RCP<Core::LinAlg::SparseOperator> matrix, Teuchos::RCP<Epetra_Vector> rhs);
 
     //! prepare time integrator specific things before calculation of initial time derivative
     virtual void pre_calc_initial_time_derivative(){};
@@ -464,13 +464,13 @@ namespace SCATRA
     bool MacroScale() const { return macro_scale_; };
 
     //! return type of equilibration of global system of scalar transport equations
-    CORE::LINALG::EquilibrationMethod EquilibrationMethod() const { return equilibrationmethod_; }
+    Core::LinAlg::EquilibrationMethod EquilibrationMethod() const { return equilibrationmethod_; }
 
     //! return type of global system matrix in global system of equations
-    CORE::LINALG::MatrixType MatrixType() const { return matrixtype_; }
+    Core::LinAlg::MatrixType MatrixType() const { return matrixtype_; }
 
     //! Provide enum of time integration scheme
-    INPAR::SCATRA::TimeIntegrationScheme MethodName() const { return timealgo_; }
+    Inpar::ScaTra::TimeIntegrationScheme MethodName() const { return timealgo_; }
 
     //! Provide title of time integration scheme
     std::string MethodTitle() { return map_tim_int_enum_to_string(MethodName()); }
@@ -491,16 +491,16 @@ namespace SCATRA
     ) const;
 
     //! return system matrix as sparse operator
-    Teuchos::RCP<CORE::LINALG::SparseOperator> system_matrix_operator() { return sysmat_; };
+    Teuchos::RCP<Core::LinAlg::SparseOperator> system_matrix_operator() { return sysmat_; };
 
     //! return system matrix downcasted as sparse matrix
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix();
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix();
 
     //! return system matrix downcasted as block sparse matrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> BlockSystemMatrix();
 
     //! return map extractor associated with blocks of global system matrix
-    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> BlockMaps() const { return blockmaps_; }
+    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> BlockMaps() const { return blockmaps_; }
 
     //! return residual vector
     Teuchos::RCP<Epetra_Vector> Residual() const { return residual_; };
@@ -515,7 +515,7 @@ namespace SCATRA
     bool IsIncremental() { return incremental_; }
 
     //! return Krylov projector
-    Teuchos::RCP<CORE::LINALG::KrylovProjector> Projector() { return projector_; }
+    Teuchos::RCP<Core::LinAlg::KrylovProjector> Projector() { return projector_; }
 
     //! return number of dofset associated with displacement dofs
     int NdsDisp() const override { return nds_disp_; }
@@ -551,7 +551,7 @@ namespace SCATRA
     Teuchos::RCP<const Epetra_MultiVector> FluxBoundary() const { return flux_boundary_; };
 
     //! return Dirichlet map
-    Teuchos::RCP<const CORE::LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
+    Teuchos::RCP<const Core::LinAlg::MapExtractor> DirichMaps() { return dbcmaps_; }
 
     //! add dirichlet dofs to dbcmaps_
     void add_dirich_cond(const Teuchos::RCP<const Epetra_Map> maptoadd);
@@ -566,7 +566,7 @@ namespace SCATRA
     Teuchos::RCP<const Epetra_Map> dof_row_map(int nds);
 
     //! return discretization
-    Teuchos::RCP<DRT::Discretization> discretization() const override { return discret_; }
+    Teuchos::RCP<Discret::Discretization> discretization() const override { return discret_; }
 
     //! return the parameter lists
     Teuchos::RCP<Teuchos::ParameterList> ScatraParameterList() const { return params_; }
@@ -574,10 +574,10 @@ namespace SCATRA
     virtual Teuchos::RCP<Teuchos::ParameterList> scatra_time_parameter_list() = 0;
 
     //! Access output object: CD-Rom and DVD only - no BlueRay support!!! ;)
-    const Teuchos::RCP<CORE::IO::DiscretizationWriter>& DiscWriter() const { return output_; }
+    const Teuchos::RCP<Core::IO::DiscretizationWriter>& DiscWriter() const { return output_; }
 
     //! returns map extractor used for convergence check either in ELCH or LOMA case
-    Teuchos::RCP<CORE::LINALG::MapExtractor> Splitter() const { return splitter_; }
+    Teuchos::RCP<Core::LinAlg::MapExtractor> Splitter() const { return splitter_; }
 
     //! Checks if output of results or restart information is required and writes data to disk
     virtual void check_and_write_output_and_restart();
@@ -592,15 +592,15 @@ namespace SCATRA
     bool convergence_check(int itnum, int itmax, const double ittol);
 
     //! return solver
-    const Teuchos::RCP<CORE::LINALG::Solver>& Solver() const { return solver_; }
+    const Teuchos::RCP<Core::LinAlg::Solver>& Solver() const { return solver_; }
 
     //! return parameters for finite difference check
-    INPAR::SCATRA::FdCheck FDCheckType() const { return fdcheck_; };
+    Inpar::ScaTra::FdCheck FDCheckType() const { return fdcheck_; };
     double FDCheckEps() const { return fdcheckeps_; };
     double FDCheckTol() const { return fdchecktol_; };
 
     //! return meshtying strategy (includes standard case without meshtying)
-    const Teuchos::RCP<SCATRA::MeshtyingStrategyBase>& Strategy() const override
+    const Teuchos::RCP<ScaTra::MeshtyingStrategyBase>& Strategy() const override
     {
       return strategy_;
     };
@@ -615,7 +615,7 @@ namespace SCATRA
     const Teuchos::RCP<std::vector<double>>& RelErrors() const { return relerrors_; };
 
     //! output performance statistics associated with linear solver into *.csv file
-    static void output_lin_solver_stats(const CORE::LINALG::Solver& solver,  //!< linear solver
+    static void output_lin_solver_stats(const Core::LinAlg::Solver& solver,  //!< linear solver
         const double& time,    //!< solver time maximized over all processors
         const int& step,       //!< time step
         const int& iteration,  //!< Newton-Raphson iteration number
@@ -672,7 +672,7 @@ namespace SCATRA
     /*--- set, prepare, and predict ------------------------------------------*/
 
     //! set the initial scalar field phi
-    virtual void SetInitialField(const INPAR::SCATRA::InitialField init,  //!< type of initial field
+    virtual void SetInitialField(const Inpar::ScaTra::InitialField init,  //!< type of initial field
         const int startfuncno  //!< number of spatial function
     );
 
@@ -699,13 +699,13 @@ namespace SCATRA
      * @param[out] blockmaps               empty vector for maps to be built
      */
     virtual void BuildBlockMaps(
-        const std::vector<Teuchos::RCP<CORE::Conditions::Condition>>& partitioningconditions,
+        const std::vector<Teuchos::RCP<Core::Conditions::Condition>>& partitioningconditions,
         std::vector<Teuchos::RCP<const Epetra_Map>>& blockmaps) const;
 
     //! build null spaces associated with blocks of global system matrix. Hand in solver to access
     //! parameter list and initial number of block (e.g. for coupled problems)
     virtual void build_block_null_spaces(
-        Teuchos::RCP<CORE::LINALG::Solver> solver, int init_block_number) const;
+        Teuchos::RCP<Core::LinAlg::Solver> solver, int init_block_number) const;
 
     /*--- calculate and update -----------------------------------------------*/
 
@@ -743,10 +743,10 @@ namespace SCATRA
     int NumDofPerNode() const;
 
     //! return number of dofs per node in condition
-    int num_dof_per_node_in_condition(const CORE::Conditions::Condition& condition) const;
+    int num_dof_per_node_in_condition(const Core::Conditions::Condition& condition) const;
 
     //! return number of transported scalars per node in condition
-    virtual int NumScalInCondition(const CORE::Conditions::Condition& condition) const
+    virtual int NumScalInCondition(const Core::Conditions::Condition& condition) const
     {
       return num_dof_per_node_in_condition(condition);
     };
@@ -817,7 +817,7 @@ namespace SCATRA
 
     //! problem-specific restart
     virtual void read_restart_problem_specific(
-        const int step, CORE::IO::DiscretizationReader& reader){};
+        const int step, Core::IO::DiscretizationReader& reader){};
 
     //! return time for evaluation of elements
     const double& DtEle() const { return dtele_; };
@@ -879,12 +879,12 @@ namespace SCATRA
     /*========================================================================*/
 
     //! compute contribution of permeable surface/interface
-    void SurfacePermeability(Teuchos::RCP<CORE::LINALG::SparseOperator> matrix,  //!< system matrix
+    void SurfacePermeability(Teuchos::RCP<Core::LinAlg::SparseOperator> matrix,  //!< system matrix
         Teuchos::RCP<Epetra_Vector> rhs                                          //!< rhs vector
     );
 
     //! interface for fps3i problem
-    void KedemKatchalsky(Teuchos::RCP<CORE::LINALG::SparseOperator> matrix,  //!< system matrix
+    void KedemKatchalsky(Teuchos::RCP<Core::LinAlg::SparseOperator> matrix,  //!< system matrix
         Teuchos::RCP<Epetra_Vector> rhs                                      //!< rhs vector
     );
 
@@ -905,7 +905,7 @@ namespace SCATRA
     void SetScStrGrDisp(Teuchos::RCP<Epetra_MultiVector> scatra_struct_growth_disp);
 
     //! set ptr to wrapper of this time integrator
-    void set_model_evaluatro_ptr(ADAPTER::AdapterScatraWrapper* adapter_scatra_wrapper)
+    void set_model_evaluatro_ptr(Adapter::AdapterScatraWrapper* adapter_scatra_wrapper)
     {
       additional_model_evaluator_ = adapter_scatra_wrapper;
     };
@@ -951,7 +951,7 @@ namespace SCATRA
     virtual void set_old_part_of_righthandside();
 
     //! create Krylov space projector
-    void setup_krylov_space_projection(CORE::Conditions::Condition* kspcond);
+    void setup_krylov_space_projection(Core::Conditions::Condition* kspcond);
     //! update Krylov space projector
     void update_krylov_space_projection();
 
@@ -982,13 +982,13 @@ namespace SCATRA
     );
 
     //! evaluate Neumann inflow boundary condition
-    void compute_neumann_inflow(Teuchos::RCP<CORE::LINALG::SparseOperator> matrix,  //!< ?
+    void compute_neumann_inflow(Teuchos::RCP<Core::LinAlg::SparseOperator> matrix,  //!< ?
         Teuchos::RCP<Epetra_Vector> rhs                                             //!< ?
     );
 
     //! evaluate boundary condition due to convective heat transfer
     void evaluate_convective_heat_transfer(
-        Teuchos::RCP<CORE::LINALG::SparseOperator> matrix,  //!< ?
+        Teuchos::RCP<Core::LinAlg::SparseOperator> matrix,  //!< ?
         Teuchos::RCP<Epetra_Vector> rhs                     //!< ?
     );
 
@@ -1036,19 +1036,19 @@ namespace SCATRA
     //! compute contributions of solution-depending boundary and interface conditions to global
     //! system of equations
     virtual void evaluate_solution_depending_conditions(
-        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,  //!< system matrix
+        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,  //!< system matrix
         Teuchos::RCP<Epetra_Vector> rhs                           //!< rhs vector
     );
 
     //! compute contribution of Robin boundary condition to eq. system
     void evaluate_robin_boundary_conditions(
-        Teuchos::RCP<CORE::LINALG::SparseOperator> matrix,  //!< system matrix
+        Teuchos::RCP<Core::LinAlg::SparseOperator> matrix,  //!< system matrix
         Teuchos::RCP<Epetra_Vector> rhs                     //!< rhs vector
     );
 
     //! compute contributions of additional solution-depending models to global system of equations
     virtual void evaluate_additional_solution_depending_models(
-        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,  //!< system matrix
+        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,  //!< system matrix
         Teuchos::RCP<Epetra_Vector> rhs                           //!< rhs vector
     );
 
@@ -1074,16 +1074,16 @@ namespace SCATRA
 
     //! helper function to get algorithm title
     std::string map_tim_int_enum_to_string(
-        const enum INPAR::SCATRA::TimeIntegrationScheme term  //!< the enum
+        const enum Inpar::ScaTra::TimeIntegrationScheme term  //!< the enum
     );
 
     //! do we need a statistical sampling for boundary flux at the current time step?
     bool do_boundary_flux_statistics()
     {
       return ((step_ >= samstart_) and (step_ <= samstop_) and
-              ((calcflux_boundary_ == INPAR::SCATRA::flux_total) or
-                  (calcflux_boundary_ == INPAR::SCATRA::flux_diffusive) or
-                  (calcflux_boundary_ == INPAR::SCATRA::flux_convective)));
+              ((calcflux_boundary_ == Inpar::ScaTra::flux_total) or
+                  (calcflux_boundary_ == Inpar::ScaTra::flux_diffusive) or
+                  (calcflux_boundary_ == Inpar::ScaTra::flux_convective)));
     };
 
     //! write state vectors (phinp and convective velocity) to BINIO
@@ -1187,13 +1187,13 @@ namespace SCATRA
     /*========================================================================*/
 
     //! problem
-    GLOBAL::Problem* const problem_;
+    Global::Problem* const problem_;
 
     //! problem number
     const int probnum_;
 
     //! solver
-    Teuchos::RCP<CORE::LINALG::Solver> solver_;
+    Teuchos::RCP<Core::LinAlg::Solver> solver_;
 
     //! parameter list
     const Teuchos::RCP<Teuchos::ParameterList> params_;
@@ -1205,17 +1205,17 @@ namespace SCATRA
     int myrank_;
 
     //! Extractor used for convergence check either in ELCH or LOMA case
-    Teuchos::RCP<CORE::LINALG::MapExtractor> splitter_;
+    Teuchos::RCP<Core::LinAlg::MapExtractor> splitter_;
 
     //! meshtying strategy (includes standard case without meshtying)
-    Teuchos::RCP<SCATRA::MeshtyingStrategyBase> strategy_;
+    Teuchos::RCP<ScaTra::MeshtyingStrategyBase> strategy_;
 
     //! Ptr to time integration wrapper.
     //! That wrapper holds a ptr to this time integrator in turn.
     //! This Ptr is uneqal nullptr only if a scatra adapter was constructed.
     //! Class AdapterScatraWrapper sets this pointer during construction
     //! by calling \ref set_model_evaluatro_ptr .
-    ADAPTER::AdapterScatraWrapper* additional_model_evaluator_;
+    Adapter::AdapterScatraWrapper* additional_model_evaluator_;
 
     /*========================================================================*/
     //! @name flags and enums
@@ -1225,22 +1225,22 @@ namespace SCATRA
     bool isale_;
 
     //! solvertype and flags for nonlinear (always incremental) and (linear) incremental solver
-    INPAR::SCATRA::SolverType solvtype_;
+    Inpar::ScaTra::SolverType solvtype_;
 
     //! type of equilibration of global system of scalar transport equations
-    const CORE::LINALG::EquilibrationMethod equilibrationmethod_;
+    const Core::LinAlg::EquilibrationMethod equilibrationmethod_;
 
     //! type of global system matrix in global system of equations
-    const CORE::LINALG::MatrixType matrixtype_;
+    const Core::LinAlg::MatrixType matrixtype_;
 
     //! incremental or linear full solving? rename -> is_incremental_
     bool incremental_;
 
     //! flag for fine-scale subgrid-viscosity
-    INPAR::SCATRA::FSSUGRDIFF fssgd_;
+    Inpar::ScaTra::FSSUGRDIFF fssgd_;
 
     //! LOMA-specific parameter: turbulence model
-    INPAR::FLUID::TurbModelAction turbmodel_;
+    Inpar::FLUID::TurbModelAction turbmodel_;
 
     //! flag indicating availability of scatra-scatra interface kinetics condition(s)
     bool s2ikinetics_;
@@ -1272,13 +1272,13 @@ namespace SCATRA
     /*--- query and output ---------------------------------------------------*/
 
     //! flag for calculating flux vector field inside domain
-    INPAR::SCATRA::FluxType calcflux_domain_;
+    Inpar::ScaTra::FluxType calcflux_domain_;
 
     //! flag for approximate domain flux calculation involving matrix lumping
     const bool calcflux_domain_lumped_;
 
     //! flag for calculating flux vector field on boundary
-    INPAR::SCATRA::FluxType calcflux_boundary_;
+    Inpar::ScaTra::FluxType calcflux_boundary_;
 
     //! flag for approximate boundary flux calculation involving matrix lumping
     const bool calcflux_boundary_lumped_;
@@ -1293,16 +1293,16 @@ namespace SCATRA
     Teuchos::RCP<Epetra_MultiVector> flux_boundary_;
 
     //! map extractor associated with boundary segments for flux calculation
-    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> flux_boundary_maps_;
+    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> flux_boundary_maps_;
 
     //! vector for statistical evaluation of normal fluxes
-    Teuchos::RCP<CORE::LINALG::SerialDenseVector> sumnormfluxintegral_;
+    Teuchos::RCP<Core::LinAlg::SerialDenseVector> sumnormfluxintegral_;
 
     //! the last step number when fluxes have been computed
     int lastfluxoutputstep_;
 
     //! flag for printing out total and mean values of transported scalars
-    const INPAR::SCATRA::OutputScalarType outputscalars_;
+    const Inpar::ScaTra::OutputScalarType outputscalars_;
 
     //! boolean to write Gmsh postprocessing files (input parameter)
     const bool outputgmsh_;
@@ -1311,7 +1311,7 @@ namespace SCATRA
     const bool output_state_matlab_;
 
     //! flag for finite difference check
-    const INPAR::SCATRA::FdCheck fdcheck_;
+    const Inpar::ScaTra::FdCheck fdcheck_;
 
     //! perturbation magnitude for finite difference check
     const double fdcheckeps_;
@@ -1321,10 +1321,10 @@ namespace SCATRA
 
     //! flag for computation of domain and boundary integrals, i.e., of surface areas and volumes
     //! associated with specified nodesets
-    const INPAR::SCATRA::ComputeIntegrals computeintegrals_;
+    const Inpar::ScaTra::ComputeIntegrals computeintegrals_;
 
     //! flag for calculation of relative error with reference to analytical solution
-    const INPAR::SCATRA::CalcError calcerror_;
+    const Inpar::ScaTra::CalcError calcerror_;
 
     /*========================================================================*/
     //! @name Time, time-step, and iteration variables
@@ -1358,7 +1358,7 @@ namespace SCATRA
     unsigned iternum_outer_;
 
     //! used time integration scheme
-    INPAR::SCATRA::TimeIntegrationScheme timealgo_;
+    Inpar::ScaTra::TimeIntegrationScheme timealgo_;
 
     /*========================================================================*/
     //! @name scalar degrees of freedom variables
@@ -1410,7 +1410,7 @@ namespace SCATRA
     Teuchos::RCP<Epetra_MultiVector> fsvel_;
 
     //! type of velocity field
-    const INPAR::SCATRA::VelocityField velocity_field_type_;
+    const Inpar::ScaTra::VelocityField velocity_field_type_;
 
     //! mean in time at the interface concentration
     Teuchos::RCP<const Epetra_Vector> mean_conc_;
@@ -1471,19 +1471,19 @@ namespace SCATRA
     /*========================================================================*/
 
     //! the scalar transport discretization
-    Teuchos::RCP<DRT::Discretization> discret_;
+    Teuchos::RCP<Discret::Discretization> discret_;
 
     //! the discretization writer
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output_;
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output_;
 
     //! form of convective term
-    INPAR::SCATRA::ConvForm convform_;
+    Inpar::ScaTra::ConvForm convform_;
 
     //! system matrix (either sparse matrix or block sparse matrix)
-    Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat_;
+    Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat_;
 
     //! map extractor associated with blocks of global system matrix
-    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> blockmaps_;
+    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> blockmaps_;
 
     //! a vector of zeros to be used to enforce zero dirichlet boundary conditions
     Teuchos::RCP<Epetra_Vector> zeros_;
@@ -1492,7 +1492,7 @@ namespace SCATRA
     std::function<void()> set_external_force;
 
     //! maps for extracting Dirichlet and free DOF sets
-    Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps_;
+    Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps_;
 
     //! the vector containing body and surface forces
     Teuchos::RCP<Epetra_Vector> neumann_loads_;
@@ -1510,20 +1510,20 @@ namespace SCATRA
     Teuchos::RCP<Epetra_Vector> increment_;
 
     //! options for meshtying
-    INPAR::FLUID::MeshTying msht_;
+    Inpar::FLUID::MeshTying msht_;
 
     /*========================================================================*/
     //! @name AVM3 variables
     /*========================================================================*/
 
     //! only necessary for AVM3: fine-scale subgrid-diffusivity matrix
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat_sd_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_sd_;
 
     //! only necessary for AVM3: scale-separation matrix ? rename small caps
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> Sep_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> Sep_;
 
     //! only necessary for AVM3: normalized fine-scale subgrid-viscosity matrix ? rename small caps
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> Mnsv_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> Mnsv_;
 
     /*========================================================================*/
     //! @name turbulent flow variables
@@ -1552,14 +1552,14 @@ namespace SCATRA
     Teuchos::RCP<Epetra_Vector> forcing_;
 
     //! forcing for homogeneous isotropic turbulence
-    Teuchos::RCP<SCATRA::HomIsoTurbScalarForcing> homisoturb_forcing_;
+    Teuchos::RCP<ScaTra::HomIsoTurbScalarForcing> homisoturb_forcing_;
 
     /*========================================================================*/
     //! @name variables for orthogonal space projection aka Krylov projection
     /*========================================================================*/
 
     bool updateprojection_;  //!< bool triggering update of Krylov projection
-    Teuchos::RCP<CORE::LINALG::KrylovProjector> projector_;  //!< Krylov projector himself
+    Teuchos::RCP<Core::LinAlg::KrylovProjector> projector_;  //!< Krylov projector himself
 
     /*========================================================================*/
     //! @name not classified variables - to be kept clean!!!
@@ -1668,12 +1668,12 @@ namespace SCATRA
     /*========================================================================*/
 
     //! return maximum number of dofs per node
-    int num_dof_per_node_in_condition(const CORE::Conditions::Condition& condition,
-        const Teuchos::RCP<const DRT::Discretization>& discret) const;
+    int num_dof_per_node_in_condition(const Core::Conditions::Condition& condition,
+        const Teuchos::RCP<const Discret::Discretization>& discret) const;
 
     //! return maximum number of transported scalars per node
-    virtual int NumScalInCondition(const CORE::Conditions::Condition& condition,
-        const Teuchos::RCP<const DRT::Discretization>& discret) const
+    virtual int NumScalInCondition(const Core::Conditions::Condition& condition,
+        const Teuchos::RCP<const Discret::Discretization>& discret) const
     {
       return num_dof_per_node_in_condition(condition, discret);
     };
@@ -1792,7 +1792,7 @@ namespace SCATRA
     bool output_micro_dis_;
 
     //! writes evaluated data to output
-    std::optional<CORE::IO::RuntimeCsvWriter> runtime_csvwriter_;
+    std::optional<Core::IO::RuntimeCsvWriter> runtime_csvwriter_;
 
     //! total values of transported scalars
     std::map<const int, std::vector<double>> totalscalars_;
@@ -1845,7 +1845,7 @@ namespace SCATRA
 
    private:
     //! vector of 'TotalAndMeanScalar'-conditions
-    std::vector<CORE::Conditions::Condition*> conditions_;
+    std::vector<Core::Conditions::Condition*> conditions_;
 
     //! number of degrees of freedom per node per 'TotalAndMeanScalar'-conditions
     std::map<int, int> numdofpernodepercondition_;
@@ -1906,16 +1906,16 @@ namespace SCATRA
 
    private:
     //! vector of 'DomainIntegral'-conditions
-    std::vector<CORE::Conditions::Condition*> conditionsdomain_;
+    std::vector<Core::Conditions::Condition*> conditionsdomain_;
     //! vector of 'BoundaryIntegral'-conditions
-    std::vector<CORE::Conditions::Condition*> conditionsboundary_;
+    std::vector<Core::Conditions::Condition*> conditionsboundary_;
     //! vector of 'DomainIntegral'-values
     std::vector<double> domainintegralvalues_;
     //! vector of 'BoundaryIntegral'-values
     std::vector<double> boundaryintegralvalues_;
   };
 
-}  // namespace SCATRA
+}  // namespace ScaTra
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

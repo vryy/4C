@@ -16,7 +16,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   /*!
  \brief A class that wraps Teuchos::SerialDenseVector
@@ -58,7 +58,7 @@ namespace CORE::LINALG
     vec.print(out);
     return out;
   }
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 
 FOUR_C_NAMESPACE_CLOSE

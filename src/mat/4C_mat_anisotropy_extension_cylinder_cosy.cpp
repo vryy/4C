@@ -2,7 +2,7 @@
 /*! \file
 
 \brief Declaration of a cylinder coordinate system anisotropy extension to be used by anisotropic
-materials with @MAT::Anisotropy
+materials with @Mat::Anisotropy
 
 \level 3
 
@@ -18,24 +18,25 @@ materials with @MAT::Anisotropy
 
 FOUR_C_NAMESPACE_OPEN
 
-MAT::CylinderCoordinateSystemAnisotropyExtension::CylinderCoordinateSystemAnisotropyExtension()
+Mat::CylinderCoordinateSystemAnisotropyExtension::CylinderCoordinateSystemAnisotropyExtension()
     : cosy_location_(CosyLocation::None)
 {
 }
 
-void MAT::CylinderCoordinateSystemAnisotropyExtension::PackAnisotropy(
-    CORE::COMM::PackBuffer& data) const
+void Mat::CylinderCoordinateSystemAnisotropyExtension::PackAnisotropy(
+    Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::ParObject::AddtoPack(data, static_cast<int>(cosy_location_));
+  Core::Communication::ParObject::AddtoPack(data, static_cast<int>(cosy_location_));
 }
 
-void MAT::CylinderCoordinateSystemAnisotropyExtension::UnpackAnisotropy(
+void Mat::CylinderCoordinateSystemAnisotropyExtension::UnpackAnisotropy(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
-  cosy_location_ = static_cast<CosyLocation>(CORE::COMM::ParObject::ExtractInt(position, data));
+  cosy_location_ =
+      static_cast<CosyLocation>(Core::Communication::ParObject::ExtractInt(position, data));
 }
 
-void MAT::CylinderCoordinateSystemAnisotropyExtension::on_global_data_initialized()
+void Mat::CylinderCoordinateSystemAnisotropyExtension::on_global_data_initialized()
 {
   if (get_anisotropy()->has_gp_cylinder_coordinate_system())
   {
@@ -51,18 +52,18 @@ void MAT::CylinderCoordinateSystemAnisotropyExtension::on_global_data_initialize
   }
 }
 
-void MAT::CylinderCoordinateSystemAnisotropyExtension::on_global_element_data_initialized()
+void Mat::CylinderCoordinateSystemAnisotropyExtension::on_global_element_data_initialized()
 {
   // do nothing
 }
 
-void MAT::CylinderCoordinateSystemAnisotropyExtension::on_global_gp_data_initialized()
+void Mat::CylinderCoordinateSystemAnisotropyExtension::on_global_gp_data_initialized()
 {
   // do nothing
 }
 
-const MAT::CylinderCoordinateSystemProvider&
-MAT::CylinderCoordinateSystemAnisotropyExtension::get_cylinder_coordinate_system(int gp) const
+const Mat::CylinderCoordinateSystemProvider&
+Mat::CylinderCoordinateSystemAnisotropyExtension::get_cylinder_coordinate_system(int gp) const
 {
   if (cosy_location_ == CosyLocation::None)
   {
@@ -77,8 +78,8 @@ MAT::CylinderCoordinateSystemAnisotropyExtension::get_cylinder_coordinate_system
   return get_anisotropy()->get_gp_cylinder_coordinate_system(gp);
 }
 
-Teuchos::RCP<MAT::CoordinateSystemProvider>
-MAT::CylinderCoordinateSystemAnisotropyExtension::get_coordinate_system_provider(int gp) const
+Teuchos::RCP<Mat::CoordinateSystemProvider>
+Mat::CylinderCoordinateSystemAnisotropyExtension::get_coordinate_system_provider(int gp) const
 {
   auto cosy = Teuchos::rcp(new CoordinateSystemHolder());
 

@@ -15,9 +15,9 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
-namespace INPAR
+namespace Inpar
 {
-  namespace GEO
+  namespace Geo
   {
     /// specify tree type
     enum TreeType
@@ -31,9 +31,9 @@ namespace INPAR
     /// set the searchtree parameters
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
-  }  // namespace GEO
+  }  // namespace Geo
 
-}  // namespace INPAR
+}  // namespace Inpar
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

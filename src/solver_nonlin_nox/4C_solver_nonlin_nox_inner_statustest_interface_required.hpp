@@ -22,9 +22,9 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
-    namespace INNER
+    namespace Inner
     {
       namespace StatusTest
       {
@@ -47,14 +47,14 @@ namespace NOX
             virtual const ::NOX::MeritFunction::Generic& GetMeritFunction() const = 0;
 
             //! Execute the inner status test
-            virtual NOX::NLN::INNER::StatusTest::StatusType CheckInnerStatus(
+            virtual NOX::Nln::Inner::StatusTest::StatusType CheckInnerStatus(
                 const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp,
                 ::NOX::StatusTest::CheckType checkType) const = 0;
           };  // class Required
         }     // namespace Interface
       }       // namespace StatusTest
-    }         // namespace INNER
-  }           // namespace NLN
+    }         // namespace Inner
+  }           // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

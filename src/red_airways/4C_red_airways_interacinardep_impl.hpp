@@ -23,7 +23,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
@@ -42,35 +42,35 @@ namespace DRT
       /// Empty destructor
       virtual ~RedInterAcinarDepImplInterface() = default;  /// Evaluate the element
       virtual int Evaluate(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra,
-          CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra,
-          Teuchos::RCP<CORE::MAT::Material> mat) = 0;
+          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec1_epetra,
+          Core::LinAlg::SerialDenseVector& elevec2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec3_epetra,
+          Teuchos::RCP<Core::Mat::Material> mat) = 0;
 
       virtual void Initial(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra,
-          Teuchos::RCP<const CORE::MAT::Material> material) = 0;
+          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::LinAlg::SerialDenseVector& elevec3_epetra,
+          Teuchos::RCP<const Core::Mat::Material> material) = 0;
 
       virtual void EvaluateTerminalBC(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra,
-          Teuchos::RCP<CORE::MAT::Material> mat) = 0;
+          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::LinAlg::SerialDenseVector& elevec1_epetra,
+          Teuchos::RCP<Core::Mat::Material> mat) = 0;
 
       virtual void CalcFlowRates(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& a_volumen,
-          CORE::LINALG::SerialDenseVector& a_volumenp, std::vector<int>& lm,
-          Teuchos::RCP<CORE::MAT::Material> mat) = 0;
+          Discret::Discretization& discretization, Core::LinAlg::SerialDenseVector& a_volumen,
+          Core::LinAlg::SerialDenseVector& a_volumenp, std::vector<int>& lm,
+          Teuchos::RCP<Core::Mat::Material> mat) = 0;
 
       virtual void GetCoupledValues(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<CORE::MAT::Material> material) = 0;
+          Discret::Discretization& discretization, std::vector<int>& lm,
+          Teuchos::RCP<Core::Mat::Material> material) = 0;
 
       /// Internal implementation class for inter-acinar linker element
-      static RedInterAcinarDepImplInterface* Impl(DRT::ELEMENTS::RedInterAcinarDep* acinus);
+      static RedInterAcinarDepImplInterface* Impl(Discret::ELEMENTS::RedInterAcinarDep* acinus);
     };
 
 
@@ -86,7 +86,7 @@ namespace DRT
       \date 01/09
     */
 
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     class InterAcinarDepImpl : public RedInterAcinarDepImplInterface
     {
      public:
@@ -94,7 +94,7 @@ namespace DRT
       explicit InterAcinarDepImpl();
 
       //! number of nodes
-      static constexpr int iel = CORE::FE::num_nodes<distype>;
+      static constexpr int iel = Core::FE::num_nodes<distype>;
 
 
       /// Evaluate
@@ -102,13 +102,13 @@ namespace DRT
         The evaluate function for the general inter-acinar linker case.
        */
       int Evaluate(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra,
-          CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra,
-          Teuchos::RCP<CORE::MAT::Material> mat) override;
+          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec1_epetra,
+          Core::LinAlg::SerialDenseVector& elevec2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec3_epetra,
+          Teuchos::RCP<Core::Mat::Material> mat) override;
 
       /*!
         \brief calculate element matrix and rhs
@@ -124,14 +124,14 @@ namespace DRT
         \param time             (i) current simulation time
         \param dt               (i) timestep
         */
-      void sysmat(std::vector<double>& ial, CORE::LINALG::SerialDenseMatrix& sysmat,
-          CORE::LINALG::SerialDenseVector& rhs);
+      void sysmat(std::vector<double>& ial, Core::LinAlg::SerialDenseMatrix& sysmat,
+          Core::LinAlg::SerialDenseVector& rhs);
 
 
       void EvaluateTerminalBC(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& rhs,
-          Teuchos::RCP<CORE::MAT::Material> material) override;
+          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::LinAlg::SerialDenseVector& rhs,
+          Teuchos::RCP<Core::Mat::Material> material) override;
 
       /*!
         \brief get the initial values of the degrees of freedom at the node
@@ -148,30 +148,31 @@ namespace DRT
         \param dt               (i) timestep
         */
       void Initial(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& n_intr_acn_l,
-          Teuchos::RCP<const CORE::MAT::Material> material) override;
+          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::LinAlg::SerialDenseVector& n_intr_acn_l,
+          Teuchos::RCP<const Core::Mat::Material> material) override;
 
       /*!
        \Essential functions to compute the results of essential matrices
       */
       void CalcFlowRates(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& a_volumen_strain_np,
-          CORE::LINALG::SerialDenseVector& a_volumenp, std::vector<int>& lm,
-          Teuchos::RCP<CORE::MAT::Material> mat) override{};
+          Discret::Discretization& discretization,
+          Core::LinAlg::SerialDenseVector& a_volumen_strain_np,
+          Core::LinAlg::SerialDenseVector& a_volumenp, std::vector<int>& lm,
+          Teuchos::RCP<Core::Mat::Material> mat) override{};
 
       /*!
        \Essential functions to evaluate the coupled results
       */
       void GetCoupledValues(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<CORE::MAT::Material> material) override{};
+          Discret::Discretization& discretization, std::vector<int>& lm,
+          Teuchos::RCP<Core::Mat::Material> material) override{};
 
      private:
     };
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

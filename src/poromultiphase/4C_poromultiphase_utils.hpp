@@ -20,12 +20,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace ADAPTER
+namespace Adapter
 {
   class PoroMultiPhase;
 }
@@ -44,8 +44,8 @@ namespace POROMULTIPHASE
         const std::string& struct_disname, const std::string& fluid_disname);
 
     /// create solution algorithm depending on input file
-    Teuchos::RCP<ADAPTER::PoroMultiPhase> CreatePoroMultiPhaseAlgorithm(
-        INPAR::POROMULTIPHASE::SolutionSchemeOverFields
+    Teuchos::RCP<Adapter::PoroMultiPhase> CreatePoroMultiPhaseAlgorithm(
+        Inpar::POROMULTIPHASE::SolutionSchemeOverFields
             solscheme,                             //!< solution scheme to build (i)
         const Teuchos::ParameterList& timeparams,  //!< problem parameters (i)
         const Epetra_Comm& comm                    //!< communicator(i)
@@ -53,7 +53,7 @@ namespace POROMULTIPHASE
 
     //! Determine norm of vector
     double calculate_vector_norm(
-        const enum INPAR::POROMULTIPHASE::VectorNorm norm,  //!< norm to use
+        const enum Inpar::POROMULTIPHASE::VectorNorm norm,  //!< norm to use
         const Teuchos::RCP<const Epetra_Vector> vect        //!< the vector of interest
     );
 

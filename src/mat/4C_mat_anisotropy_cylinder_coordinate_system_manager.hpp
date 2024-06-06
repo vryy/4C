@@ -19,16 +19,16 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace CORE::COMM
+namespace Core::Communication
 {
   class PackBuffer;
 }
-namespace INPUT
+namespace Input
 {
   class LineDefinition;
 }
 
-namespace MAT
+namespace Mat
 {
   /*!
    * \brief A manager that handles reading of a cylinder coordinate manager, distribution to
@@ -49,7 +49,7 @@ namespace MAT
      *
      * @param data (in/out) : data object
      */
-    void Pack(CORE::COMM::PackBuffer& data) const;
+    void Pack(Core::Communication::PackBuffer& data) const;
 
     /*!
      * Unpack all data from another processor
@@ -67,7 +67,7 @@ namespace MAT
      *
      * @param linedef (in) : Input line of the corresponding element
      */
-    void read_from_element_line_definition(INPUT::LineDefinition* linedef);
+    void read_from_element_line_definition(Input::LineDefinition* linedef);
 
     /*!
      * \brief Flag
@@ -77,7 +77,7 @@ namespace MAT
      */
     bool IsDefined() const { return is_defined_; }
 
-    const CORE::LINALG::Matrix<3, 1>& GetRad() const override
+    const Core::LinAlg::Matrix<3, 1>& GetRad() const override
     {
       if (!is_defined_)
       {
@@ -86,7 +86,7 @@ namespace MAT
       return radial_;
     };
 
-    const CORE::LINALG::Matrix<3, 1>& GetAxi() const override
+    const Core::LinAlg::Matrix<3, 1>& GetAxi() const override
     {
       if (!is_defined_)
       {
@@ -95,7 +95,7 @@ namespace MAT
       return axial_;
     }
 
-    const CORE::LINALG::Matrix<3, 1>& GetCir() const override
+    const Core::LinAlg::Matrix<3, 1>& GetCir() const override
     {
       if (!is_defined_)
       {
@@ -109,7 +109,7 @@ namespace MAT
      *
      * \param cosy
      */
-    void evaluate_local_coordinate_system(CORE::LINALG::Matrix<3, 3>& cosy) const;
+    void evaluate_local_coordinate_system(Core::LinAlg::Matrix<3, 3>& cosy) const;
 
    private:
     /// Flag whether coordinate system is already set
@@ -118,20 +118,20 @@ namespace MAT
     /*!
      * \brief Unit vector in radial direction
      */
-    CORE::LINALG::Matrix<3, 1> radial_;
+    Core::LinAlg::Matrix<3, 1> radial_;
 
     /*!
      * \brief unit vector in axial direction
      */
-    CORE::LINALG::Matrix<3, 1> axial_;
+    Core::LinAlg::Matrix<3, 1> axial_;
 
 
     /*!
      * \brief unit vector in circumferential direction
      */
-    CORE::LINALG::Matrix<3, 1> circumferential_;
+    Core::LinAlg::Matrix<3, 1> circumferential_;
   };
-}  // namespace MAT
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

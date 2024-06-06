@@ -20,9 +20,9 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::GEO
+namespace Core::Geo
 {
-  namespace CUT
+  namespace Cut
   {
     class VolumeCell;
     class IntegrationCell;
@@ -46,12 +46,12 @@ namespace CORE::GEO
     {
      public:
       /// \brief create an element with the given type
-      static Teuchos::RCP<CORE::GEO::CUT::Element> Create(const CORE::FE::CellType& elementtype,
+      static Teuchos::RCP<Core::Geo::Cut::Element> Create(const Core::FE::CellType& elementtype,
           const int& eid, const std::vector<Side*>& sides, const std::vector<Node*>& nodes,
           const bool& active);
 
       /// create an element with the given shards-key (coming from trilinos library)
-      static Teuchos::RCP<CORE::GEO::CUT::Element> Create(const unsigned& shardskey, const int& eid,
+      static Teuchos::RCP<Core::Geo::Cut::Element> Create(const unsigned& shardskey, const int& eid,
           const std::vector<Side*>& sides, const std::vector<Node*>& nodes, const bool& active);
 
       //! constructor
@@ -64,7 +64,7 @@ namespace CORE::GEO
       int Id() const { return eid_; }
 
       /*! \brief Returns the shape of the element */
-      virtual CORE::FE::CellType Shape() const = 0;
+      virtual Core::FE::CellType Shape() const = 0;
 
       //! element dimension
       virtual unsigned Dim() const = 0;
@@ -81,7 +81,7 @@ namespace CORE::GEO
       /*! \brief Returns element local coordinates "rst" of a point from its global coordinates
        * "xyz"
        *
-       *  \remark This variant uses the CORE::LINALG::Matrices as input and does a dimension check.
+       *  \remark This variant uses the Core::LinAlg::Matrices as input and does a dimension check.
        *  Call this function, to be on the safe side.
        *
        *  \param xyz (in) : Global spatial coordinate
@@ -103,7 +103,7 @@ namespace CORE::GEO
 
       /*! Returns element global coordinates "xyz" of a point from its local coordinates "rst"
        *
-       *  \remark This variant uses the CORE::LINALG::Matrices as input and does a dimensional
+       *  \remark This variant uses the Core::LinAlg::Matrices as input and does a dimensional
        * check. Call this function to be on the safe side.
        *
        *  \param rst (in)  : Local parameter space coordinate
@@ -123,7 +123,7 @@ namespace CORE::GEO
 
       /*! \brief Returns the element center global coordinates
        *
-       *  \remark This variant uses the CORE::LINALG::Matrix as input and does a dimensional check.
+       *  \remark This variant uses the Core::LinAlg::Matrix as input and does a dimensional check.
        *  Call this function to be on the safe side.
        *
        *  \param midpoint (out): The midpoint of the element in global spatial coordinates */
@@ -139,7 +139,7 @@ namespace CORE::GEO
       /*! \brief Find the scalar value at a particular point inside the element
        *  specified by its local coordinates rst.
        *
-       *  \remark This variant uses the CORE::LINALG::Matrix as input and does a dimensional check.
+       *  \remark This variant uses the Core::LinAlg::Matrix as input and does a dimensional check.
        *  Call this function to be on the safe side.
        *
        *  \param ns (in)   : contains the value of the scalar at the corner nodes of the element
@@ -180,12 +180,12 @@ namespace CORE::GEO
       /*! \brief Construct quadrature rules for the volumecells by solving the moment
        *  fitting equations */
       void moment_fit_gauss_weights(
-          Mesh& mesh, bool include_inner, INPAR::CUT::BCellGaussPts Bcellgausstype);
+          Mesh& mesh, bool include_inner, Inpar::Cut::BCellGaussPts Bcellgausstype);
 
       /*! \brief Construct quadrature rules for the volumecells by triangulating the
        *  facets and applying divergence theorem */
       void direct_divergence_gauss_rule(
-          Mesh& mesh, bool include_inner, INPAR::CUT::BCellGaussPts Bcellgausstype);
+          Mesh& mesh, bool include_inner, Inpar::Cut::BCellGaussPts Bcellgausstype);
 
       /*! \brief Return the level set value at the given global coordinate
        *  which has to be INSIDE the element. */
@@ -311,7 +311,7 @@ namespace CORE::GEO
       bool OnSide(const std::vector<Point*>& facet_points);
 
       /*! \brief Get the integrationcells created from this element */
-      INPAR::CUT::ElementIntegrationType get_element_integration_type() { return eleinttype_; }
+      Inpar::Cut::ElementIntegrationType get_element_integration_type() { return eleinttype_; }
 
       /*! \brief Get the integrationcells created from this element */
       void GetIntegrationCells(plain_integrationcell_set& cells);
@@ -380,7 +380,7 @@ namespace CORE::GEO
       /*!
       \brief Get total number of Gaussinan points generated over all the volumecells of this element
        */
-      int NumGaussPoints(CORE::FE::CellType shape);
+      int NumGaussPoints(Core::FE::CellType shape);
 
       void DebugDump();
 
@@ -410,14 +410,14 @@ namespace CORE::GEO
       If set shadow = true, then the mapping is done w.r to the parent Quad element from which this
       shadow element is derived
        */
-      template <int probdim, CORE::FE::CellType distype>
+      template <int probdim, Core::FE::CellType distype>
       double scalar_from_local_to_global(
           double scalar, std::string transformType, bool shadow = false)
       {
-        const int nen = CORE::FE::num_nodes<distype>;
-        const int dim = CORE::FE::dim<distype>;
-        CORE::LINALG::Matrix<probdim, nen> xyze;
-        CORE::LINALG::Matrix<probdim, 1> xei;
+        const int nen = Core::FE::num_nodes<distype>;
+        const int dim = Core::FE::dim<distype>;
+        Core::LinAlg::Matrix<probdim, nen> xyze;
+        Core::LinAlg::Matrix<probdim, 1> xei;
         xei = 0.1;  // the determinant of the Jacobian is independent of the considered point (true
                     // only for linear elements???)
 
@@ -427,9 +427,9 @@ namespace CORE::GEO
         else
           Coordinates(xyze.A());
 
-        CORE::LINALG::Matrix<dim, nen> deriv;
-        CORE::LINALG::Matrix<probdim, probdim> xjm;
-        CORE::FE::shape_function_deriv1<distype>(xei, deriv);
+        Core::LinAlg::Matrix<dim, nen> deriv;
+        Core::LinAlg::Matrix<probdim, probdim> xjm;
+        Core::FE::shape_function_deriv1<distype>(xei, deriv);
 
         double det = 0;
         if (dim == probdim)
@@ -440,9 +440,9 @@ namespace CORE::GEO
         // element dimension is smaller than the problem dimension (manifold)
         else if (dim < probdim)
         {
-          CORE::LINALG::Matrix<dim, dim> metrictensor;
+          Core::LinAlg::Matrix<dim, dim> metrictensor;
           const double throw_error_if_negative_determinant(true);
-          CORE::FE::ComputeMetricTensorForBoundaryEle<distype, probdim, double>(
+          Core::FE::ComputeMetricTensorForBoundaryEle<distype, probdim, double>(
               xyze, deriv, metrictensor, det, throw_error_if_negative_determinant);
         }
         else
@@ -493,19 +493,19 @@ namespace CORE::GEO
       /*!
       \brief Set the discretization type of parent quad element
        */
-      void setQuadShape(CORE::FE::CellType dis) { quadshape_ = dis; }
+      void setQuadShape(Core::FE::CellType dis) { quadshape_ = dis; }
 
       /*!
       \brief Get shape of parent Quad element from which this shadow element is derived
        */
-      CORE::FE::CellType getQuadShape() { return quadshape_; }
+      Core::FE::CellType getQuadShape() { return quadshape_; }
 
       /*!
       \brief calculate the local coordinates of "xyz" with respect to the parent Quad element from
       which this shadow element is derived
        */
       void local_coordinates_quad(
-          const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<3, 1>& rst);
+          const Core::LinAlg::Matrix<3, 1>& xyz, Core::LinAlg::Matrix<3, 1>& rst);
 
       /*!
       \brief Add cut face
@@ -626,13 +626,13 @@ namespace CORE::GEO
       bool is_shadow_;
 
       /// discretization shape of the parent quad element
-      CORE::FE::CellType quadshape_;
+      Core::FE::CellType quadshape_;
 
       /// the bounding volume of the element
       Teuchos::RCP<BoundingBox> boundingvolume_;
 
       /// type of integration-rule for this element
-      INPAR::CUT::ElementIntegrationType eleinttype_;
+      Inpar::Cut::ElementIntegrationType eleinttype_;
 
     };  // class Element
 
@@ -640,9 +640,9 @@ namespace CORE::GEO
     /*! \brief Implementation of the concrete cut element
      *
      *  \author hiermeier */
-    template <unsigned probdim, CORE::FE::CellType elementtype,
-        unsigned numNodesElement = CORE::FE::num_nodes<elementtype>,
-        unsigned dim = CORE::FE::dim<elementtype>>
+    template <unsigned probdim, Core::FE::CellType elementtype,
+        unsigned numNodesElement = Core::FE::num_nodes<elementtype>,
+        unsigned dim = Core::FE::dim<elementtype>>
     class ConcreteElement : public Element
     {
      public:
@@ -654,7 +654,7 @@ namespace CORE::GEO
       }
 
       //! return element shape
-      CORE::FE::CellType Shape() const override { return elementtype; }
+      Core::FE::CellType Shape() const override { return elementtype; }
 
       //! get problem dimension
       unsigned ProbDim() const override { return probdim; }
@@ -667,7 +667,7 @@ namespace CORE::GEO
 
       bool PointInside(Point* p) override;
 
-      void Coordinates(CORE::LINALG::Matrix<probdim, numNodesElement>& xyze) const
+      void Coordinates(Core::LinAlg::Matrix<probdim, numNodesElement>& xyze) const
       {
         Coordinates(xyze.A());
       }
@@ -700,33 +700,33 @@ namespace CORE::GEO
       /*! \brief Returns element local coordinates "rst" of a point from its global coordinates
        * "xyz"
        *
-       *  This variant uses the CORE::LINALG::Matrices as input and does a dimension check.
+       *  This variant uses the Core::LinAlg::Matrices as input and does a dimension check.
        *  Call this function, to be on the safe side.
        *
        *  \param xyz (in)        : Global spatial coordinate
        *  \param rst (out)       : Local parameter space coordinate */
       bool local_coordinates(
-          const CORE::LINALG::Matrix<probdim, 1>& xyz, CORE::LINALG::Matrix<dim, 1>& rst);
+          const Core::LinAlg::Matrix<probdim, 1>& xyz, Core::LinAlg::Matrix<dim, 1>& rst);
 
       /*! Returns element global coordinates "xyz" of a point from its local coordinates "rst"
        *
-       *  This variant uses the CORE::LINALG::Matrices as input and does a dimensional check.
+       *  This variant uses the Core::LinAlg::Matrices as input and does a dimensional check.
        *  Call this function to be on the safe side.
        *
        *  \param rst (in)  : Local parameter space coordinate
        *  \param xyz (out) : Global spatial coordinate */
       void global_coordinates(
-          const CORE::LINALG::Matrix<dim, 1>& rst, CORE::LINALG::Matrix<probdim, 1>& xyz)
+          const Core::LinAlg::Matrix<dim, 1>& rst, Core::LinAlg::Matrix<probdim, 1>& xyz)
       {
-        CORE::LINALG::Matrix<numNodesElement, 1> funct;
-        CORE::FE::shape_function<elementtype>(rst, funct);
+        Core::LinAlg::Matrix<numNodesElement, 1> funct;
+        Core::FE::shape_function<elementtype>(rst, funct);
 
         xyz = 0;
 
         const std::vector<Node*>& nodes = Nodes();
         for (unsigned i = 0; i < numNodesElement; ++i)
         {
-          CORE::LINALG::Matrix<probdim, 1> x(nodes[i]->point()->X());
+          Core::LinAlg::Matrix<probdim, 1> x(nodes[i]->point()->X());
           xyz.Update(funct(i), x, 1);
         }
       }
@@ -738,44 +738,44 @@ namespace CORE::GEO
        *
        *  \author hiermeier
        *  \date 08/16 */
-      void PointAt(const CORE::LINALG::Matrix<dim, 1>& rst, CORE::LINALG::Matrix<probdim, 1>& xyz)
+      void PointAt(const Core::LinAlg::Matrix<dim, 1>& rst, Core::LinAlg::Matrix<probdim, 1>& xyz)
       {
-        CORE::LINALG::Matrix<numNodesElement, 1> funct(true);
-        CORE::LINALG::Matrix<probdim, numNodesElement> xyze(true);
+        Core::LinAlg::Matrix<numNodesElement, 1> funct(true);
+        Core::LinAlg::Matrix<probdim, numNodesElement> xyze(true);
         this->Coordinates(xyze);
 
-        CORE::FE::shape_function<elementtype>(rst, funct);
+        Core::FE::shape_function<elementtype>(rst, funct);
         xyz.Multiply(xyze, funct);
       }
 
       /*! \brief Returns the element center global coordinates
        *
-       *  This variant uses the CORE::LINALG::Matrix as input and does a dimensional check.
+       *  This variant uses the Core::LinAlg::Matrix as input and does a dimensional check.
        *  Call this function to be on the safe side.
        *
        *  \param midpoint (out): The midpoint of the element in global spatial coordinates */
-      void element_center(CORE::LINALG::Matrix<probdim, 1>& midpoint)
+      void element_center(Core::LinAlg::Matrix<probdim, 1>& midpoint)
       {
         // get the element center in the parameter coordinates (dim)
-        CORE::LINALG::Matrix<dim, 1> center_rst(CORE::FE::getLocalCenterPosition<dim>(elementtype));
+        Core::LinAlg::Matrix<dim, 1> center_rst(Core::FE::getLocalCenterPosition<dim>(elementtype));
         PointAt(center_rst, midpoint);
       }
 
       /*! \brief Find the scalar value at a particular point inside the element
        *  specified by its local coordinates rst.
        *
-       *  This variant uses the CORE::LINALG::Matrix as input and does a dimensional check.
+       *  This variant uses the Core::LinAlg::Matrix as input and does a dimensional check.
        *  Call this function to be on the safe side.
        *
        *  \param ns (in)   : contains the value of the scalar at the corner nodes of the element
        *  \param rst (in)  : local parameter space coordinate inside the element */
-      double Scalar(const std::vector<double>& ns, const CORE::LINALG::Matrix<dim, 1>& rst)
+      double Scalar(const std::vector<double>& ns, const Core::LinAlg::Matrix<dim, 1>& rst)
       {
-        CORE::LINALG::Matrix<numNodesElement, 1> funct;
-        CORE::FE::shape_function<elementtype>(rst, funct);
+        Core::LinAlg::Matrix<numNodesElement, 1> funct;
+        Core::FE::shape_function<elementtype>(rst, funct);
 
-        CORE::LINALG::Matrix<numNodesElement, 1> scalar(ns.data());
-        CORE::LINALG::Matrix<1, 1> res;
+        Core::LinAlg::Matrix<numNodesElement, 1> scalar(ns.data());
+        Core::LinAlg::Matrix<1, 1> res;
         res.MultiplyTN(funct, scalar);
         return res(0);
       }
@@ -784,9 +784,9 @@ namespace CORE::GEO
        *   has to be INSIDE the element.
        *
        *  \param xyz (in) : Global spatial coordinates */
-      double get_level_set_value(const CORE::LINALG::Matrix<probdim, 1>& xyz)
+      double get_level_set_value(const Core::LinAlg::Matrix<probdim, 1>& xyz)
       {
-        CORE::LINALG::Matrix<dim, 1> rst;
+        Core::LinAlg::Matrix<dim, 1> rst;
         local_coordinates(xyz, rst);
         return get_level_set_value_at_local_coords(rst);
       }
@@ -795,16 +795,16 @@ namespace CORE::GEO
        *   has to be INSIDE the element.
        *
        *  \param rst (in) : local parameter space coordinates */
-      double get_level_set_value_at_local_coords(const CORE::LINALG::Matrix<dim, 1>& rst)
+      double get_level_set_value_at_local_coords(const Core::LinAlg::Matrix<dim, 1>& rst)
       {
-        CORE::LINALG::Matrix<numNodesElement, 1> funct;
+        Core::LinAlg::Matrix<numNodesElement, 1> funct;
 
-        CORE::FE::shape_function<elementtype>(rst, funct);
+        Core::FE::shape_function<elementtype>(rst, funct);
 
         const std::vector<Node*> ele_node = this->Nodes();
 
         // Extract Level Set values from element.
-        CORE::LINALG::Matrix<numNodesElement, 1> escaa;
+        Core::LinAlg::Matrix<numNodesElement, 1> escaa;
         int mm = 0;
         for (std::vector<Node*>::const_iterator i = ele_node.begin(); i != ele_node.end(); i++)
         {
@@ -819,9 +819,9 @@ namespace CORE::GEO
       /*! \brief Return the level set gradient in global coordinates
        *
        *  \param xyz (in) : global spatial coordinates */
-      std::vector<double> get_level_set_gradient(const CORE::LINALG::Matrix<probdim, 1>& xyz)
+      std::vector<double> get_level_set_gradient(const Core::LinAlg::Matrix<probdim, 1>& xyz)
       {
-        CORE::LINALG::Matrix<dim, 1> rst;
+        Core::LinAlg::Matrix<dim, 1> rst;
         local_coordinates(xyz, rst);
         return get_level_set_gradient_at_local_coords(rst);
       }
@@ -830,23 +830,23 @@ namespace CORE::GEO
        *
        *  \param rst (in) : local parameter space coordinates */
       std::vector<double> get_level_set_gradient_at_local_coords(
-          const CORE::LINALG::Matrix<dim, 1>& rst)
+          const Core::LinAlg::Matrix<dim, 1>& rst)
       {
         // Calculate global derivatives
         //----------------------------------
-        CORE::LINALG::Matrix<probdim, numNodesElement> deriv1;
-        CORE::LINALG::Matrix<probdim, numNodesElement> xyze;
+        Core::LinAlg::Matrix<probdim, numNodesElement> deriv1;
+        Core::LinAlg::Matrix<probdim, numNodesElement> xyze;
         Coordinates(xyze);
         // transposed jacobian dxyz/drst
-        CORE::LINALG::Matrix<probdim, probdim> xjm;
+        Core::LinAlg::Matrix<probdim, probdim> xjm;
         // inverse of transposed jacobian drst/dxyz
-        CORE::LINALG::Matrix<probdim, probdim> xij;
+        Core::LinAlg::Matrix<probdim, probdim> xij;
         // nodal spatial derivatives dN_i/dr * dr/dx + dN_i/ds * ds/dx + ...
-        CORE::LINALG::Matrix<probdim, numNodesElement> derxy;
+        Core::LinAlg::Matrix<probdim, numNodesElement> derxy;
         // only filled for manifolds
-        CORE::LINALG::Matrix<dim, dim> metrictensor;
-        CORE::LINALG::Matrix<probdim, 1> normalvec1;
-        CORE::LINALG::Matrix<probdim, 1> normalvec2;
+        Core::LinAlg::Matrix<dim, dim> metrictensor;
+        Core::LinAlg::Matrix<probdim, 1> normalvec1;
+        Core::LinAlg::Matrix<probdim, 1> normalvec2;
 
         EvalDerivsInParameterSpace<probdim, elementtype>(
             xyze, rst, deriv1, metrictensor, xjm, &xij, &normalvec1, &normalvec2, true);
@@ -858,7 +858,7 @@ namespace CORE::GEO
         const std::vector<Node*> ele_node = this->Nodes();
 
         // Extract Level Set values from element.
-        CORE::LINALG::Matrix<1, numNodesElement> escaa;
+        Core::LinAlg::Matrix<1, numNodesElement> escaa;
         int mm = 0;
         for (std::vector<Node*>::const_iterator i = ele_node.begin(); i != ele_node.end(); i++)
         {
@@ -866,7 +866,7 @@ namespace CORE::GEO
           escaa(0, mm) = nod->LSV();
           mm++;
         }
-        CORE::LINALG::Matrix<probdim, 1> phi_deriv1;
+        Core::LinAlg::Matrix<probdim, 1> phi_deriv1;
         phi_deriv1.MultiplyNT(derxy, escaa);
 
         std::vector<double> normal_facet(phi_deriv1.A(), phi_deriv1.A() + probdim);
@@ -879,9 +879,9 @@ namespace CORE::GEO
        *
        *  \param xyz (in) : global spatial coordinates */
       std::vector<double> get_level_set_gradient_in_local_coords(
-          const CORE::LINALG::Matrix<probdim, 1>& xyz)
+          const Core::LinAlg::Matrix<probdim, 1>& xyz)
       {
-        CORE::LINALG::Matrix<dim, 1> rst;
+        Core::LinAlg::Matrix<dim, 1> rst;
         local_coordinates(xyz, rst);
         return get_level_set_gradient_at_local_coords_in_local_coords(rst);
       }
@@ -890,16 +890,16 @@ namespace CORE::GEO
        *
        *  \param rst (in) : local parameter space coordinates */
       std::vector<double> get_level_set_gradient_at_local_coords_in_local_coords(
-          const CORE::LINALG::Matrix<dim, 1>& rst)
+          const Core::LinAlg::Matrix<dim, 1>& rst)
       {
-        CORE::LINALG::Matrix<dim, numNodesElement> deriv1;
+        Core::LinAlg::Matrix<dim, numNodesElement> deriv1;
 
-        CORE::FE::shape_function_deriv1<elementtype>(rst, deriv1);
+        Core::FE::shape_function_deriv1<elementtype>(rst, deriv1);
 
         const std::vector<Node*> ele_node = this->Nodes();
 
         // Extract Level Set values from element.
-        CORE::LINALG::Matrix<1, numNodesElement> escaa;
+        Core::LinAlg::Matrix<1, numNodesElement> escaa;
         int mm = 0;
         for (std::vector<Node*>::const_iterator i = ele_node.begin(); i != ele_node.end(); i++)
         {
@@ -907,7 +907,7 @@ namespace CORE::GEO
           escaa(0, mm) = nod->LSV();
           mm++;
         }
-        CORE::LINALG::Matrix<dim, 1> phi_deriv1;
+        Core::LinAlg::Matrix<dim, 1> phi_deriv1;
         phi_deriv1.MultiplyNT(deriv1, escaa);
 
         std::vector<double> normal_facet(phi_deriv1.A(), phi_deriv1.A() + dim);
@@ -920,64 +920,64 @@ namespace CORE::GEO
       //! derived
       bool local_coordinates(const double* xyz, double* rst) override
       {
-        const CORE::LINALG::Matrix<probdim, 1> xyz_mat(xyz, true);  // create view
-        CORE::LINALG::Matrix<dim, 1> rst_mat(rst, true);            // create view
+        const Core::LinAlg::Matrix<probdim, 1> xyz_mat(xyz, true);  // create view
+        Core::LinAlg::Matrix<dim, 1> rst_mat(rst, true);            // create view
         return local_coordinates(xyz_mat, rst_mat);
       }
 
       //! derived
       void global_coordinates(const double* rst, double* xyz) override
       {
-        const CORE::LINALG::Matrix<dim, 1> rst_mat(rst, true);  // create view
-        CORE::LINALG::Matrix<probdim, 1> xyz_mat(xyz, true);    // create view
+        const Core::LinAlg::Matrix<dim, 1> rst_mat(rst, true);  // create view
+        Core::LinAlg::Matrix<probdim, 1> xyz_mat(xyz, true);    // create view
         global_coordinates(rst_mat, xyz_mat);
       }
 
       //! derived
       void element_center(double* midpoint) override
       {
-        CORE::LINALG::Matrix<probdim, 1> midpoint_mat(midpoint, true);  // create view
+        Core::LinAlg::Matrix<probdim, 1> midpoint_mat(midpoint, true);  // create view
         element_center(midpoint_mat);
       }
 
       //! derived
       double scalar(const std::vector<double>& ns, const double* rst) override
       {
-        const CORE::LINALG::Matrix<dim, 1> rst_mat(rst, true);  // create view
+        const Core::LinAlg::Matrix<dim, 1> rst_mat(rst, true);  // create view
         return Scalar(ns, rst_mat);
       }
 
       //! derived
       double get_level_set_value(const double* xyz) override
       {
-        const CORE::LINALG::Matrix<probdim, 1> xyz_mat(xyz, true);  // create view
+        const Core::LinAlg::Matrix<probdim, 1> xyz_mat(xyz, true);  // create view
         return get_level_set_value(xyz_mat);
       }
 
       double get_level_set_value_at_local_coords(const double* rst) override
       {
-        const CORE::LINALG::Matrix<dim, 1> rst_mat(rst, true);  // create view
+        const Core::LinAlg::Matrix<dim, 1> rst_mat(rst, true);  // create view
         return get_level_set_value_at_local_coords(rst_mat);
       }
 
       //! derived
       std::vector<double> get_level_set_gradient(const double* xyz) override
       {
-        const CORE::LINALG::Matrix<probdim, 1> xyz_mat(xyz, true);  // create view
+        const Core::LinAlg::Matrix<probdim, 1> xyz_mat(xyz, true);  // create view
         return get_level_set_gradient(xyz_mat);
       }
 
       //! derived
       std::vector<double> get_level_set_gradient_at_local_coords(const double* rst) override
       {
-        const CORE::LINALG::Matrix<dim, 1> rst_mat(rst, true);  // create view
+        const Core::LinAlg::Matrix<dim, 1> rst_mat(rst, true);  // create view
         return get_level_set_gradient_at_local_coords(rst_mat);
       }
 
       //! derived
       std::vector<double> get_level_set_gradient_in_local_coords(const double* xyz) override
       {
-        const CORE::LINALG::Matrix<probdim, 1> xyz_mat(xyz, true);  // create view
+        const Core::LinAlg::Matrix<probdim, 1> xyz_mat(xyz, true);  // create view
         return get_level_set_gradient_in_local_coords(xyz_mat);
       }
 
@@ -985,7 +985,7 @@ namespace CORE::GEO
       std::vector<double> get_level_set_gradient_at_local_coords_in_local_coords(
           const double* rst) override
       {
-        const CORE::LINALG::Matrix<dim, 1> rst_mat(rst, true);  // create view
+        const Core::LinAlg::Matrix<dim, 1> rst_mat(rst, true);  // create view
         return get_level_set_gradient_at_local_coords_in_local_coords(rst_mat);
       }
     };  // class ConcreteElement
@@ -997,17 +997,17 @@ namespace CORE::GEO
       /// constructor
       ElementFactory(){};
 
-      Teuchos::RCP<Element> create_element(CORE::FE::CellType elementtype, int eid,
+      Teuchos::RCP<Element> create_element(Core::FE::CellType elementtype, int eid,
           const std::vector<Side*>& sides, const std::vector<Node*>& nodes, bool active) const;
 
      private:
-      template <CORE::FE::CellType elementtype>
+      template <Core::FE::CellType elementtype>
       Element* create_concrete_element(int eid, const std::vector<Side*>& sides,
           const std::vector<Node*>& nodes, bool active, int probdim) const
       {
         Element* e = nullptr;
         // sanity check
-        if (probdim < CORE::FE::dim<elementtype>)
+        if (probdim < Core::FE::dim<elementtype>)
           FOUR_C_THROW("Problem dimension is smaller than the element dimension!");
 
         switch (probdim)
@@ -1030,8 +1030,8 @@ namespace CORE::GEO
     //
     // inline int EntityId( const Element & e ) { return e.Id(); }
 
-  }  // namespace CUT
-}  // namespace CORE::GEO
+  }  // namespace Cut
+}  // namespace Core::Geo
 
 FOUR_C_NAMESPACE_CLOSE
 

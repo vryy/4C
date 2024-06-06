@@ -20,7 +20,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::FE
+namespace Core::FE
 {
   /*!
   \brief helper data type to evaluate only nonzero element shape functions on face
@@ -45,7 +45,7 @@ namespace CORE::FE
 
     bool NonzeroOnFace(const int index) const { return isNonzero_[index]; }
 
-    CORE::LINALG::SerialDenseMatrix matrix_;
+    Core::LinAlg::SerialDenseMatrix matrix_;
     std::vector<bool> isNonzero_;
   };
 
@@ -89,21 +89,21 @@ namespace CORE::FE
     \author kronbichler
     \date 05/14
   */
-  template <CORE::FE::CellType distype>
+  template <Core::FE::CellType distype>
   class ShapeValues
   {
    public:
     //! nen_: number of element nodes (T. Hughes: The Finite Element Method)
-    static constexpr unsigned int nen_ = CORE::FE::num_nodes<distype>;
+    static constexpr unsigned int nen_ = Core::FE::num_nodes<distype>;
 
     //! number of space dimensions
-    static constexpr unsigned int nsd_ = CORE::FE::dim<distype>;
+    static constexpr unsigned int nsd_ = Core::FE::dim<distype>;
 
     ///! number of faces on element
-    static constexpr unsigned int nfaces_ = CORE::FE::num_faces<distype>;
+    static constexpr unsigned int nfaces_ = Core::FE::num_faces<distype>;
 
     ///! number of nodes on faces
-    static constexpr unsigned int nfn_ = CORE::FE::DisTypeToNumNodePerFace<distype>::numNodePerFace;
+    static constexpr unsigned int nfn_ = Core::FE::DisTypeToNumNodePerFace<distype>::numNodePerFace;
 
     /*!
     \brief Initialize the data structure for shape functions, set element-independent data
@@ -121,19 +121,19 @@ namespace CORE::FE
     \brief Compute element-dependent data, like gradients in real cell, integration weights, for
     element dofs
     */
-    void Evaluate(const CORE::Elements::Element &ele, const std::vector<double> &aleDis = {});
+    void Evaluate(const Core::Elements::Element &ele, const std::vector<double> &aleDis = {});
 
     /// polynomial degree
     unsigned int degree_;
 
     /// underlying polynomial space for element interior, created in constructor
-    Teuchos::RCP<CORE::FE::PolynomialSpace<nsd_>> polySpace_;
+    Teuchos::RCP<Core::FE::PolynomialSpace<nsd_>> polySpace_;
 
     /// scalar dofs per element
     unsigned int ndofs_;
 
     /// quadrature rule
-    Teuchos::RCP<CORE::FE::GaussPoints> quadrature_;
+    Teuchos::RCP<Core::FE::GaussPoints> quadrature_;
 
     /// complete poly
     bool usescompletepoly_;
@@ -141,34 +141,34 @@ namespace CORE::FE
     /// number of integration points
     unsigned int nqpoints_;
 
-    CORE::LINALG::SerialDenseMatrix
+    Core::LinAlg::SerialDenseMatrix
         funct;  /// values of mapping shape functions on all quadrature points
-    CORE::LINALG::Matrix<nsd_, nen_>
+    Core::LinAlg::Matrix<nsd_, nen_>
         deriv;  /// gradients of mapping shape functions in unit coordinates
-    CORE::LINALG::SerialDenseMatrix derxy;    /// gradients of mapping shape functions in real
+    Core::LinAlg::SerialDenseMatrix derxy;    /// gradients of mapping shape functions in real
                                               /// coordinates on all quadrature points
-    CORE::LINALG::SerialDenseMatrix xyzreal;  /// coordinates of all quadrature points in real space
-    CORE::LINALG::SerialDenseMatrix
+    Core::LinAlg::SerialDenseMatrix xyzreal;  /// coordinates of all quadrature points in real space
+    Core::LinAlg::SerialDenseMatrix
         nodexyzunit;  /// coordinates of all node (support) points of Lagrange
                       /// basis functions in unit coordinates (all points at
                       /// cell center for Legendre-type polynomials)
-    CORE::LINALG::SerialDenseMatrix
+    Core::LinAlg::SerialDenseMatrix
         nodexyzreal;  /// coordinates of all node (support) points of Lagrange basis functions in
                       /// real space (all points at cell center for Legendre-type polynomials)
 
-    CORE::LINALG::SerialDenseMatrix
+    Core::LinAlg::SerialDenseMatrix
         shfunct;  /// evaluated HDG shape functions on all quadrature points
-    CORE::LINALG::SerialDenseVector shfunctAvg;  /// average of shfunctF on cell
-    CORE::LINALG::SerialDenseMatrix
+    Core::LinAlg::SerialDenseVector shfunctAvg;  /// average of shfunctF on cell
+    Core::LinAlg::SerialDenseMatrix
         shderiv;  /// evaluated HDG shape function gradients in unit coordinates
-    CORE::LINALG::SerialDenseMatrix
+    Core::LinAlg::SerialDenseMatrix
         shderxy;  /// evaluated HDG shape function gradients in real coordinates
 
-    CORE::LINALG::Matrix<nsd_, 1> xsi;      /// quadrature points
-    CORE::LINALG::Matrix<nsd_, nsd_> xjm;   /// Jacobi matrix of transformation
-    CORE::LINALG::Matrix<nsd_, nsd_> xji;   /// inverse of Jacobi matrix of transformation
-    CORE::LINALG::Matrix<nsd_, nen_> xyze;  /// element nodes
-    CORE::LINALG::SerialDenseVector jfac;   /// Jacobian determinant times quadrature weight
+    Core::LinAlg::Matrix<nsd_, 1> xsi;      /// quadrature points
+    Core::LinAlg::Matrix<nsd_, nsd_> xjm;   /// Jacobi matrix of transformation
+    Core::LinAlg::Matrix<nsd_, nsd_> xji;   /// inverse of Jacobi matrix of transformation
+    Core::LinAlg::Matrix<nsd_, nen_> xyze;  /// element nodes
+    Core::LinAlg::SerialDenseVector jfac;   /// Jacobian determinant times quadrature weight
   };
 
   /// Helper class for evaluating HDG polynomials, geometry, etc.
@@ -177,21 +177,21 @@ namespace CORE::FE
     \author schoeder
     \date 06/14
   */
-  template <CORE::FE::CellType distype>
+  template <Core::FE::CellType distype>
   class ShapeValuesFace
   {
    public:
     //! nen_: number of element nodes (T. Hughes: The Finite Element Method)
-    static constexpr unsigned int nen_ = CORE::FE::num_nodes<distype>;
+    static constexpr unsigned int nen_ = Core::FE::num_nodes<distype>;
 
     ///! number of nodes on faces
-    static constexpr unsigned int nfn_ = CORE::FE::DisTypeToNumNodePerFace<distype>::numNodePerFace;
+    static constexpr unsigned int nfn_ = Core::FE::DisTypeToNumNodePerFace<distype>::numNodePerFace;
 
     //! number of space dimensions
-    static constexpr unsigned int nsd_ = CORE::FE::dim<distype>;
+    static constexpr unsigned int nsd_ = Core::FE::dim<distype>;
 
     ///! number of faces on element
-    static constexpr unsigned int nfaces_ = CORE::FE::num_faces<distype>;
+    static constexpr unsigned int nfaces_ = Core::FE::num_faces<distype>;
 
     /*!
     \brief Constructor which does the things which do not need to be redone for the same
@@ -203,13 +203,13 @@ namespace CORE::FE
     \brief Compute element-dependent data on faces, like integration weights, normal vectors,
     correctly oriented trace variables
     */
-    void EvaluateFace(const CORE::Elements::Element &ele, const unsigned int face,
+    void EvaluateFace(const Core::Elements::Element &ele, const unsigned int face,
         const std::vector<double> &aleDis = {});
 
     /*!
     \brief Consider the orientation of faces for face degrees of freedom
      */
-    void adjust_face_orientation(const CORE::Elements::Element &ele, const unsigned int face);
+    void adjust_face_orientation(const Core::Elements::Element &ele, const unsigned int face);
 
     /// Parameters underlying this structure, necessary for evaluating element basis functions on
     /// faces
@@ -219,52 +219,52 @@ namespace CORE::FE
     unsigned int degree_;
 
     /// underlying polynomial space for faces
-    Teuchos::RCP<CORE::FE::PolynomialSpace<nsd_ - 1>> polySpace_;
+    Teuchos::RCP<Core::FE::PolynomialSpace<nsd_ - 1>> polySpace_;
 
     /// scalar dofs per face
     unsigned int nfdofs_;
 
     /// quadrature rule
-    Teuchos::RCP<CORE::FE::GaussPoints> quadrature_;
+    Teuchos::RCP<Core::FE::GaussPoints> quadrature_;
 
     /// number of integration points on face
     unsigned int nqpoints_;
 
-    CORE::LINALG::SerialDenseMatrix
+    Core::LinAlg::SerialDenseMatrix
         funct;  /// values of mapping shape functions on all face quadrature points
-    CORE::LINALG::Matrix<nsd_ - 1, nfn_> deriv;  /// gradients of mapping shape functions on face
-    CORE::LINALG::Matrix<nsd_ - 1, nsd_ - 1> metricTensor;  /// metric tensor on face
-    CORE::LINALG::Matrix<nsd_, 1> normal;                   /// normal vector
-    CORE::LINALG::Matrix<nsd_, nsd_ - 1>
+    Core::LinAlg::Matrix<nsd_ - 1, nfn_> deriv;  /// gradients of mapping shape functions on face
+    Core::LinAlg::Matrix<nsd_ - 1, nsd_ - 1> metricTensor;  /// metric tensor on face
+    Core::LinAlg::Matrix<nsd_, 1> normal;                   /// normal vector
+    Core::LinAlg::Matrix<nsd_, nsd_ - 1>
         tangent;  /// Face reference frame wrt real one (face -> real)
 
-    CORE::LINALG::SerialDenseMatrix
+    Core::LinAlg::SerialDenseMatrix
         xyzreal;  /// coordinates of face quadrature points in real space
-    CORE::LINALG::SerialDenseMatrix
+    Core::LinAlg::SerialDenseMatrix
         nodexyzunit;  /// coordinates of all node (support) points of face Lagrange basis
                       /// functions in unit coordinates (invalid for Legendre-type polynomials)
-    CORE::LINALG::SerialDenseMatrix
+    Core::LinAlg::SerialDenseMatrix
         nodexyzreal;  /// coordinates of all node (support) points of face Lagrange basis
                       /// functions in real space (invalid for Legendre-type polynomials)
 
-    CORE::LINALG::SerialDenseMatrix
+    Core::LinAlg::SerialDenseMatrix
         shfunct;  /// evaluated shape functions for HDG face polynomials,
                   /// permuted to account for face orientation
-    CORE::LINALG::SerialDenseMatrix shfunctNoPermute;  /// evaluated shape functions for HDG face
+    Core::LinAlg::SerialDenseMatrix shfunctNoPermute;  /// evaluated shape functions for HDG face
                                                        /// polynomials in natural ordering
     ShapeValuesInteriorOnFace
         shfunctI;  /// evaluated shape functions on face for interior HDG polynomials
-    CORE::LINALG::SerialDenseMatrix
+    Core::LinAlg::SerialDenseMatrix
         normals;  /// normal vectors on a single face for all quadrature points
 
-    CORE::LINALG::Matrix<nsd_ - 1, 1> xsi;  /// face quadrature points
-    CORE::LINALG::Matrix<nsd_, nfn_> xyze;  /// face nodes
-    CORE::LINALG::SerialDenseVector jfac;   /// face Jacobian determinant times quadrature weight
+    Core::LinAlg::Matrix<nsd_ - 1, 1> xsi;  /// face quadrature points
+    Core::LinAlg::Matrix<nsd_, nfn_> xyze;  /// face nodes
+    Core::LinAlg::SerialDenseVector jfac;   /// face Jacobian determinant times quadrature weight
 
     std::vector<std::vector<int>> faceNodeOrder;  /// numbering of nodes belonging to faces
 
    private:
-    CORE::LINALG::SerialDenseVector face_values_;  /// Evaluated basis functions on face
+    Core::LinAlg::SerialDenseVector face_values_;  /// Evaluated basis functions on face
 
     /*!
     \brief Computes the face reference system considering the ordering of the master element
@@ -277,7 +277,7 @@ namespace CORE::FE
 
     \Author: Berardocco
      */
-    void compute_face_reference_system(const CORE::Elements::Element &ele, const unsigned int face);
+    void compute_face_reference_system(const Core::Elements::Element &ele, const unsigned int face);
   };
 
   /*!
@@ -285,7 +285,7 @@ namespace CORE::FE
 
    Author: schoeder 08/14
   */
-  template <CORE::FE::CellType distype>
+  template <Core::FE::CellType distype>
   class ShapeValuesFaceCache
   {
    public:
@@ -307,7 +307,7 @@ namespace CORE::FE
 
    Author: kronbichler 09/14
   */
-  template <CORE::FE::CellType distype>
+  template <Core::FE::CellType distype>
   class ShapeValuesInteriorOnFaceCache
   {
    public:
@@ -324,7 +324,7 @@ namespace CORE::FE
     std::map<std::size_t, Teuchos::RCP<ShapeValuesInteriorOnFace>> cache_;
   };
 
-}  // namespace CORE::FE
+}  // namespace Core::FE
 
 FOUR_C_NAMESPACE_CLOSE
 

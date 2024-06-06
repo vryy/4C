@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace ELCH
+namespace ElCh
 {
   /// ELCH algorithm base
   /*!
@@ -28,7 +28,7 @@ namespace ELCH
     \author gjb
     \date 03/08
    */
-  class Algorithm : public SCATRA::ScaTraAlgorithm
+  class Algorithm : public ScaTra::ScaTraAlgorithm
   {
    public:
     /// constructor
@@ -50,7 +50,7 @@ namespace ELCH
     /// convergence check for natural convection solver
     bool convergence_check(int natconvitnum, int natconvitmax, double natconvittol) override;
   };
-}  // namespace ELCH
+}  // namespace ElCh
 
 FOUR_C_NAMESPACE_CLOSE
 

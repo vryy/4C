@@ -26,14 +26,14 @@ to disk
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace CORE::IO
+namespace Core::IO
 {
   /*-----------------------------------------------------------------------------------------------*
    *-----------------------------------------------------------------------------------------------*/
   DiscretizationVisualizationWriterMesh::DiscretizationVisualizationWriterMesh(
-      const Teuchos::RCP<const DRT::Discretization>& discretization,
+      const Teuchos::RCP<const Discret::Discretization>& discretization,
       VisualizationParameters parameters,
-      std::function<bool(const CORE::Elements::Element* element)> element_filter)
+      std::function<bool(const Core::Elements::Element* element)> element_filter)
       : discretization_(discretization),
         visualization_manager_(Teuchos::rcp(new VisualizationManager(
             std::move(parameters), discretization->Comm(), discretization->Name()))),
@@ -52,7 +52,7 @@ namespace CORE::IO
     // count number of nodes; output is completely independent of the number of processors involved
     unsigned int num_row_elements = discretization_->NumMyRowElements();
     unsigned int num_nodes = 0;
-    for (const CORE::Elements::Element* ele : discretization_->MyRowElementRange())
+    for (const Core::Elements::Element* ele : discretization_->MyRowElementRange())
     {
       num_nodes += ele->num_node();
     }
@@ -79,7 +79,7 @@ namespace CORE::IO
     unsigned int pointcounter = 0;
     unsigned int num_skipped_eles = 0;
 
-    for (const CORE::Elements::Element* ele : discretization_->MyRowElementRange())
+    for (const Core::Elements::Element* ele : discretization_->MyRowElementRange())
     {
       if (element_filter_(ele))
       {
@@ -153,7 +153,7 @@ namespace CORE::IO
 
     // count number of nodes for this visualization
     unsigned int num_nodes = 0;
-    for (const CORE::Elements::Element* ele : discretization_->MyRowElementRange())
+    for (const Core::Elements::Element* ele : discretization_->MyRowElementRange())
     {
       num_nodes += ele->num_node();
     }
@@ -163,7 +163,7 @@ namespace CORE::IO
 
     unsigned int pointcounter = 0;
 
-    for (const CORE::Elements::Element* ele : discretization_->MyRowElementRange())
+    for (const Core::Elements::Element* ele : discretization_->MyRowElementRange())
     {
       if (element_filter_(ele))
       {
@@ -210,7 +210,7 @@ namespace CORE::IO
 
     // count number of nodes
     unsigned int num_nodes = 0;
-    for (const CORE::Elements::Element* ele : discretization_->MyRowElementRange())
+    for (const Core::Elements::Element* ele : discretization_->MyRowElementRange())
     {
       num_nodes += ele->num_node();
     }
@@ -220,16 +220,16 @@ namespace CORE::IO
 
     unsigned int pointcounter = 0;
 
-    for (const CORE::Elements::Element* ele : discretization_->MyRowElementRange())
+    for (const Core::Elements::Element* ele : discretization_->MyRowElementRange())
     {
       if (!element_filter_(ele)) continue;
 
       const std::vector<int>& numbering =
-          CORE::IO::GetVtkCellTypeFromFourCElementShapeType(ele->Shape()).second;
+          Core::IO::GetVtkCellTypeFromFourCElementShapeType(ele->Shape()).second;
 
       for (unsigned int inode = 0; inode < (unsigned int)ele->num_node(); ++inode)
       {
-        const CORE::Nodes::Node* node = ele->Nodes()[numbering[inode]];
+        const Core::Nodes::Node* node = ele->Nodes()[numbering[inode]];
 
         const int lid = node->LID();
 
@@ -292,7 +292,7 @@ namespace CORE::IO
 
     for (unsigned int iele = 0; iele < num_row_elements; ++iele)
     {
-      const CORE::Elements::Element* ele = discretization_->lRowElement(iele);
+      const Core::Elements::Element* ele = discretization_->lRowElement(iele);
 
       if (!element_filter_(ele)) continue;
 
@@ -326,7 +326,7 @@ namespace CORE::IO
     owner_of_row_elements.reserve(discretization_->NumMyRowElements());
 
     const int my_pid = discretization_->Comm().MyPID();
-    for (const CORE::Elements::Element* ele : discretization_->MyRowElementRange())
+    for (const Core::Elements::Element* ele : discretization_->MyRowElementRange())
     {
       if (element_filter_(ele)) owner_of_row_elements.push_back(my_pid);
     }
@@ -344,7 +344,7 @@ namespace CORE::IO
     std::vector<double> gid_of_row_elements;
     gid_of_row_elements.reserve(discretization_->NumMyRowElements());
 
-    for (const CORE::Elements::Element* ele : discretization_->MyRowElementRange())
+    for (const Core::Elements::Element* ele : discretization_->MyRowElementRange())
     {
       if (element_filter_(ele)) gid_of_row_elements.push_back(ele->Id());
     }
@@ -359,7 +359,7 @@ namespace CORE::IO
    *-----------------------------------------------------------------------------------------------*/
   void DiscretizationVisualizationWriterMesh::append_element_ghosting_information()
   {
-    CORE::IO::append_element_ghosting_information(
+    Core::IO::append_element_ghosting_information(
         *discretization_, *visualization_manager_, element_filter_);
   }
 
@@ -369,7 +369,7 @@ namespace CORE::IO
   {
     // count number of nodes; output is completely independent of the number of processors involved
     int num_nodes = 0;
-    for (const CORE::Elements::Element* ele : discretization_->MyRowElementRange())
+    for (const Core::Elements::Element* ele : discretization_->MyRowElementRange())
     {
       num_nodes += ele->num_node();
     }
@@ -379,14 +379,14 @@ namespace CORE::IO
     gid_of_nodes.reserve(num_nodes);
 
     // Loop over each element and add the node GIDs.
-    for (const CORE::Elements::Element* ele : discretization_->MyRowElementRange())
+    for (const Core::Elements::Element* ele : discretization_->MyRowElementRange())
     {
       if (!element_filter_(ele)) continue;
 
       // Add the node GIDs.
       const std::vector<int>& numbering =
-          CORE::IO::GetVtkCellTypeFromFourCElementShapeType(ele->Shape()).second;
-      const CORE::Nodes::Node* const* nodes = ele->Nodes();
+          Core::IO::GetVtkCellTypeFromFourCElementShapeType(ele->Shape()).second;
+      const Core::Nodes::Node* const* nodes = ele->Nodes();
       for (int inode = 0; inode < ele->num_node(); ++inode)
         gid_of_nodes.push_back(nodes[numbering[inode]]->Id());
     }
@@ -405,9 +405,9 @@ namespace CORE::IO
 
   /*-----------------------------------------------------------------------------------------------*
    *-----------------------------------------------------------------------------------------------*/
-  void append_element_ghosting_information(const DRT::Discretization& discretization,
+  void append_element_ghosting_information(const Discret::Discretization& discretization,
       VisualizationManager& visualization_manager,
-      const std::function<bool(const CORE::Elements::Element* ele)>& element_predicate)
+      const std::function<bool(const Core::Elements::Element* ele)>& element_predicate)
   {
     // Set up a multivector which will be populated with all ghosting informations.
     const Epetra_Comm& comm = discretization.ElementColMap()->Comm();
@@ -421,7 +421,7 @@ namespace CORE::IO
     std::vector<int> my_ghost_elements;
     my_ghost_elements.clear();
     int count = 0;
-    for (const CORE::Elements::Element* ele : discretization.MyColElementRange())
+    for (const Core::Elements::Element* ele : discretization.MyColElementRange())
     {
       if (element_predicate(ele))
       {
@@ -441,7 +441,7 @@ namespace CORE::IO
     // Output the ghosting data of the elements owned by this proc.
     std::vector<double> ghosted_elements;
     ghosted_elements.reserve(count * n_proc);
-    for (const CORE::Elements::Element* ele : discretization.MyRowElementRange())
+    for (const Core::Elements::Element* ele : discretization.MyRowElementRange())
     {
       if (element_predicate(ele))
       {
@@ -455,5 +455,5 @@ namespace CORE::IO
     visualization_manager.get_visualization_data().SetCellDataVector(
         "element_ghosting", ghosted_elements, n_proc);
   }
-}  // namespace CORE::IO
+}  // namespace Core::IO
 FOUR_C_NAMESPACE_CLOSE

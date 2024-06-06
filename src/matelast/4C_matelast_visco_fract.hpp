@@ -17,9 +17,9 @@ FSLS-model
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
-  namespace ELASTIC
+  namespace Elastic
   {
     namespace PAR
     {
@@ -29,11 +29,11 @@ namespace MAT
        * <h3>Input line</h3>
        * MAT 1 VISCO_Fract TAU 0.1 ALPHA 0.5 BETA 1
        */
-      class Fract : public CORE::MAT::PAR::Parameter
+      class Fract : public Core::Mat::PAR::Parameter
       {
        public:
         /// standard constructor
-        Fract(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
+        Fract(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
 
         /// @name material parameters
         //@{
@@ -47,11 +47,11 @@ namespace MAT
 
         /// Override this method and throw error, as the material should be created in within the
         /// Factory method of the elastic summand
-        Teuchos::RCP<CORE::MAT::Material> create_material() override
+        Teuchos::RCP<Core::Mat::Material> create_material() override
         {
           FOUR_C_THROW(
               "Cannot create a material from this method, as it should be created in "
-              "MAT::ELASTIC::Summand::Factory.");
+              "Mat::Elastic::Summand::Factory.");
           return Teuchos::null;
         };
       };  // class Fract
@@ -79,15 +79,15 @@ namespace MAT
     {
      public:
       /// constructor with given material parameters
-      Fract(MAT::ELASTIC::PAR::Fract* params);
+      Fract(Mat::Elastic::PAR::Fract* params);
 
       /// @name Access material constants
       //@{
 
       /// material type
-      CORE::Materials::MaterialType MaterialType() const override
+      Core::Materials::MaterialType MaterialType() const override
       {
-        return CORE::Materials::mes_fract;
+        return Core::Materials::mes_fract;
       }
 
       //@}
@@ -128,11 +128,11 @@ namespace MAT
 
      private:
       /// my material parameters
-      MAT::ELASTIC::PAR::Fract* params_;
+      Mat::Elastic::PAR::Fract* params_;
     };
 
-  }  // namespace ELASTIC
-}  // namespace MAT
+  }  // namespace Elastic
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

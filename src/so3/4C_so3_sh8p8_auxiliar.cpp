@@ -21,14 +21,14 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-using VoigtMapping = CORE::LINALG::VOIGT::IndexMappings;
+using VoigtMapping = Core::LinAlg::Voigt::IndexMappings;
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8p8::axial_metrics_at_origin(
-    const CORE::LINALG::Matrix<NUMNOD_, NUMDIM_>& xrefe,
-    CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& jac0, CORE::LINALG::Matrix<NUMDIM_, 1>& metr0)
+void Discret::ELEMENTS::SoSh8p8::axial_metrics_at_origin(
+    const Core::LinAlg::Matrix<NUMNOD_, NUMDIM_>& xrefe,
+    Core::LinAlg::Matrix<NUMDIM_, NUMDIM_>& jac0, Core::LinAlg::Matrix<NUMDIM_, 1>& metr0)
 {
   // vector of df(origin)
   static double df0_vector[NUMDIM_ * NUMNOD_] = {-0.125, -0.125, -0.125, +0.125, -0.125, -0.125,
@@ -36,7 +36,7 @@ void DRT::ELEMENTS::SoSh8p8::axial_metrics_at_origin(
       +0.125, +0.125, +0.125, +0.125, -0.125, +0.125, +0.125};
 
   // shape function derivatives, evaluated at origin (r=s=t=0.0)
-  CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> df0(df0_vector, true);  // view
+  Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> df0(df0_vector, true);  // view
 
   // compute Jacobian, evaluated at element origin (r=s=t=0.0)
   jac0.Multiply(df0, xrefe);
@@ -58,8 +58,8 @@ void DRT::ELEMENTS::SoSh8p8::axial_metrics_at_origin(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8p8::local_metrics(
-    const CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& jac, CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& metr)
+void Discret::ELEMENTS::SoSh8p8::local_metrics(
+    const Core::LinAlg::Matrix<NUMDIM_, NUMDIM_>& jac, Core::LinAlg::Matrix<NUMDIM_, NUMDIM_>& metr)
 {
   // metrics of r-, s- and t-axis in reference space
   for (int i = 0; i < NUMDIM_; ++i)
@@ -82,21 +82,21 @@ void DRT::ELEMENTS::SoSh8p8::local_metrics(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8p8::ans_setup2(
-    const CORE::LINALG::Matrix<NUMNOD_, NUMDIM_>& xrefe,  // material element coords
-    const CORE::LINALG::Matrix<NUMNOD_, NUMDIM_>& xcurr,  // current element coords
-    std::vector<CORE::LINALG::Matrix<NUMDIM_, NUMNOD_>>**
+void Discret::ELEMENTS::SoSh8p8::ans_setup2(
+    const Core::LinAlg::Matrix<NUMNOD_, NUMDIM_>& xrefe,  // material element coords
+    const Core::LinAlg::Matrix<NUMNOD_, NUMDIM_>& xcurr,  // current element coords
+    std::vector<Core::LinAlg::Matrix<NUMDIM_, NUMNOD_>>**
         deriv_sp,  // derivs eval. at all sampling points
-    std::vector<CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>>& jac_sps,  // jac at all sampling points
-    std::vector<CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>>&
+    std::vector<Core::LinAlg::Matrix<NUMDIM_, NUMDIM_>>& jac_sps,  // jac at all sampling points
+    std::vector<Core::LinAlg::Matrix<NUMDIM_, NUMDIM_>>&
         jac_cur_sps,  // current jac at all sampling points
-    CORE::LINALG::Matrix<NUMANS_ * NUMSP2ND_, NUMDISP_>& B_ans_loc  // modified B
+    Core::LinAlg::Matrix<NUMANS_ * NUMSP2ND_, NUMDISP_>& B_ans_loc  // modified B
 )
 {
   const int num_sp = NUMSP2ND_;
 
   // static matrix object of derivs at sampling points, kept in memory
-  static std::vector<CORE::LINALG::Matrix<NUMDIM_, NUMNOD_>> df_sp(num_sp);
+  static std::vector<Core::LinAlg::Matrix<NUMDIM_, NUMNOD_>> df_sp(num_sp);
   static bool dfsp_eval;  // flag for re-evaluate everything
 
   if (dfsp_eval != 0)
@@ -188,7 +188,7 @@ void DRT::ELEMENTS::SoSh8p8::ans_setup2(
   ** evaluated at all sampling points
   */
   // loop over each sampling point
-  CORE::LINALG::Matrix<NUMDIM_, NUMDIM_> jac_cur;
+  Core::LinAlg::Matrix<NUMDIM_, NUMDIM_> jac_cur;
   for (int sp = 0; sp < num_sp; ++sp)
   {
     /* compute the CURRENT Jacobian matrix at the sampling point:
@@ -221,21 +221,21 @@ void DRT::ELEMENTS::SoSh8p8::ans_setup2(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8p8::ans_setup3(
-    const CORE::LINALG::Matrix<NUMNOD_, NUMDIM_>& xrefe,  // material element coords
-    const CORE::LINALG::Matrix<NUMNOD_, NUMDIM_>& xcurr,  // current element coords
-    std::vector<CORE::LINALG::Matrix<NUMDIM_, NUMNOD_>>**
+void Discret::ELEMENTS::SoSh8p8::ans_setup3(
+    const Core::LinAlg::Matrix<NUMNOD_, NUMDIM_>& xrefe,  // material element coords
+    const Core::LinAlg::Matrix<NUMNOD_, NUMDIM_>& xcurr,  // current element coords
+    std::vector<Core::LinAlg::Matrix<NUMDIM_, NUMNOD_>>**
         deriv_sp,  // derivs eval. at all sampling points
-    std::vector<CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>>& jac_sps,  // jac at all sampling points
-    std::vector<CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>>&
+    std::vector<Core::LinAlg::Matrix<NUMDIM_, NUMDIM_>>& jac_sps,  // jac at all sampling points
+    std::vector<Core::LinAlg::Matrix<NUMDIM_, NUMDIM_>>&
         jac_cur_sps,  // current jac at all sampling points
-    CORE::LINALG::Matrix<NUMANS_ * NUMSP3RD_, NUMDISP_>& B_ans_loc  // modified B
+    Core::LinAlg::Matrix<NUMANS_ * NUMSP3RD_, NUMDISP_>& B_ans_loc  // modified B
 )
 {
   const int num_sp = NUMSP3RD_;
 
   // static matrix object of derivs at sampling points, kept in memory
-  static std::vector<CORE::LINALG::Matrix<NUMDIM_, NUMNOD_>> df_sp(num_sp);
+  static std::vector<Core::LinAlg::Matrix<NUMDIM_, NUMNOD_>> df_sp(num_sp);
   static bool dfsp_eval;  // flag for re-evaluate everything
 
   if (dfsp_eval != 0)
@@ -327,7 +327,7 @@ void DRT::ELEMENTS::SoSh8p8::ans_setup3(
   ** evaluated at all sampling points
   */
   // loop over each sampling point
-  CORE::LINALG::Matrix<NUMDIM_, NUMDIM_> jac_cur;
+  Core::LinAlg::Matrix<NUMDIM_, NUMDIM_> jac_cur;
   for (int sp = 0; sp < num_sp; ++sp)
   {
     /* compute the CURRENT Jacobian matrix at the sampling point:
@@ -359,8 +359,8 @@ void DRT::ELEMENTS::SoSh8p8::ans_setup3(
 }
 
 
-void DRT::ELEMENTS::SoSh8p8::matrix2_tensor_to_vector9_voigt_inconsistent(
-    CORE::LINALG::Matrix<NUMDFGR_, 1>& fvct, const CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& fmat,
+void Discret::ELEMENTS::SoSh8p8::matrix2_tensor_to_vector9_voigt_inconsistent(
+    Core::LinAlg::Matrix<NUMDFGR_, 1>& fvct, const Core::LinAlg::Matrix<NUMDIM_, NUMDIM_>& fmat,
     const bool transpose)
 {
   const int* voigt9row = nullptr;
@@ -396,9 +396,9 @@ void DRT::ELEMENTS::SoSh8p8::matrix2_tensor_to_vector9_voigt_inconsistent(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8p8::inv_vector9_voigt_diff_by_itself(
-    CORE::LINALG::Matrix<NUMDFGR_, NUMDFGR_>& invfderf,
-    const CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& invfmat, const bool transpose)
+void Discret::ELEMENTS::SoSh8p8::inv_vector9_voigt_diff_by_itself(
+    Core::LinAlg::Matrix<NUMDFGR_, NUMDFGR_>& invfderf,
+    const Core::LinAlg::Matrix<NUMDIM_, NUMDIM_>& invfmat, const bool transpose)
 {
   // VERIFIED
 
@@ -432,9 +432,9 @@ void DRT::ELEMENTS::SoSh8p8::inv_vector9_voigt_diff_by_itself(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8p8::inv_vector6_voigt_diff_by_itself(
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& invfderf,
-    const CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& invfmat)
+void Discret::ELEMENTS::SoSh8p8::inv_vector6_voigt_diff_by_itself(
+    Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D>& invfderf,
+    const Core::LinAlg::Matrix<NUMDIM_, NUMDIM_>& invfmat)
 {
   invfderf(0, 0) = -0.5 * (invfmat(0, 0) * invfmat(0, 0) + invfmat(0, 0) * invfmat(0, 0));
   invfderf(1, 0) = -0.5 * (invfmat(1, 0) * invfmat(0, 1) + invfmat(1, 0) * invfmat(0, 1));
@@ -483,21 +483,21 @@ void DRT::ELEMENTS::SoSh8p8::inv_vector6_voigt_diff_by_itself(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8p8::inv_vector6_voigt_twice_diff_by_itself(
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D * MAT::NUM_STRESS_3D>& invbvdderb,
-    const CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& ibt)
+void Discret::ELEMENTS::SoSh8p8::inv_vector6_voigt_twice_diff_by_itself(
+    Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D * Mat::NUM_STRESS_3D>& invbvdderb,
+    const Core::LinAlg::Matrix<NUMDIM_, NUMDIM_>& ibt)
 {
-  for (int kl = 0; kl < MAT::NUM_STRESS_3D; ++kl)
+  for (int kl = 0; kl < Mat::NUM_STRESS_3D; ++kl)
   {
     const int k = VoigtMapping::Voigt6ToRow(kl);
     const int l = VoigtMapping::Voigt6ToCol(kl);
-    for (int mn = kl; mn < MAT::NUM_STRESS_3D; ++mn)
+    for (int mn = kl; mn < Mat::NUM_STRESS_3D; ++mn)
     {
       const int m = VoigtMapping::Voigt6ToRow(mn);
       const int n = VoigtMapping::Voigt6ToCol(mn);
-      const int klmn = MAT::NUM_STRESS_3D * kl + mn;
-      const int mnkl = MAT::NUM_STRESS_3D * mn + kl;
-      for (int ij = 0; ij < MAT::NUM_STRESS_3D; ++ij)
+      const int klmn = Mat::NUM_STRESS_3D * kl + mn;
+      const int mnkl = Mat::NUM_STRESS_3D * mn + kl;
+      for (int ij = 0; ij < Mat::NUM_STRESS_3D; ++ij)
       {
         //    std::cout << "[\n";
         const int i = VoigtMapping::Voigt6ToRow(ij);
@@ -523,11 +523,11 @@ void DRT::ELEMENTS::SoSh8p8::inv_vector6_voigt_twice_diff_by_itself(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8p8::sq_vector6_voigt_diff_by_itself(
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& sqfderf,
-    const CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& fmat, CORE::LINALG::VOIGT::NotationType outvoigt6)
+void Discret::ELEMENTS::SoSh8p8::sq_vector6_voigt_diff_by_itself(
+    Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D>& sqfderf,
+    const Core::LinAlg::Matrix<NUMDIM_, NUMDIM_>& fmat, Core::LinAlg::Voigt::NotationType outvoigt6)
 {
-  if (outvoigt6 != CORE::LINALG::VOIGT::NotationType::strain)
+  if (outvoigt6 != Core::LinAlg::Voigt::NotationType::strain)
     FOUR_C_THROW("Can only produce row of strain-like type");
 
   sqfderf(0, 0) = 2.0 * fmat(0, 0);
@@ -578,14 +578,14 @@ void DRT::ELEMENTS::SoSh8p8::sq_vector6_voigt_diff_by_itself(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*
-void DRT::ELEMENTS::So_sh8p8::sq_vector9_voigt_diff_by_itself(
-  CORE::LINALG::Matrix<NUMDFGR_,NUMDFGR_>& sqfderf,
-  const CORE::LINALG::Matrix<NUMDIM_,NUMDIM_>& fmat,
+void Discret::ELEMENTS::So_sh8p8::sq_vector9_voigt_diff_by_itself(
+  Core::LinAlg::Matrix<NUMDFGR_,NUMDFGR_>& sqfderf,
+  const Core::LinAlg::Matrix<NUMDIM_,NUMDIM_>& fmat,
   const bool transpose
   )
 {
   // identity 2-tensor
-  CORE::LINALG::Matrix<NUMDIM_,NUMDIM_> id(true);
+  Core::LinAlg::Matrix<NUMDIM_,NUMDIM_> id(true);
   for (int i=0; i<NUMDIM_; ++i) id(i,i) = 1.0;
 
   // (F^T.F)_{,F}
@@ -617,9 +617,9 @@ void DRT::ELEMENTS::So_sh8p8::sq_vector9_voigt_diff_by_itself(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8p8::sq_vector6_voigt_twice_diff_by_itself(
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D * MAT::NUM_STRESS_3D>& sqfdderf,
-    const CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& fmat)
+void Discret::ELEMENTS::SoSh8p8::sq_vector6_voigt_twice_diff_by_itself(
+    Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D * Mat::NUM_STRESS_3D>& sqfdderf,
+    const Core::LinAlg::Matrix<NUMDIM_, NUMDIM_>& fmat)
 {
   sqfdderf.Clear();
 
@@ -661,86 +661,86 @@ void DRT::ELEMENTS::SoSh8p8::sq_vector6_voigt_twice_diff_by_itself(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8p8::sq_vector6_voigt_twice_diff_by_itself(
-    int* isqfdderf,  //[MAT::NUM_STRESS_3D*6];
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 6>& sqfdderf)
+void Discret::ELEMENTS::SoSh8p8::sq_vector6_voigt_twice_diff_by_itself(
+    int* isqfdderf,  //[Mat::NUM_STRESS_3D*6];
+    Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 6>& sqfdderf)
 {
-  isqfdderf[MAT::NUM_STRESS_3D * 0 + 0] = 0;
+  isqfdderf[Mat::NUM_STRESS_3D * 0 + 0] = 0;
   sqfdderf(0, 0) = 2.0;
-  isqfdderf[MAT::NUM_STRESS_3D * 0 + 1] = 21;
+  isqfdderf[Mat::NUM_STRESS_3D * 0 + 1] = 21;
   sqfdderf(0, 1) = 0.5;
-  isqfdderf[MAT::NUM_STRESS_3D * 0 + 2] = 35;
+  isqfdderf[Mat::NUM_STRESS_3D * 0 + 2] = 35;
   sqfdderf(0, 2) = 0.5;
-  isqfdderf[MAT::NUM_STRESS_3D * 0 + 3] = -1;
+  isqfdderf[Mat::NUM_STRESS_3D * 0 + 3] = -1;
   sqfdderf(0, 3) = 0.0;  // dummy
-  isqfdderf[MAT::NUM_STRESS_3D * 0 + 4] = -1;
+  isqfdderf[Mat::NUM_STRESS_3D * 0 + 4] = -1;
   sqfdderf(0, 4) = 0.0;  // dummy
-  isqfdderf[MAT::NUM_STRESS_3D * 0 + 5] = -1;
+  isqfdderf[Mat::NUM_STRESS_3D * 0 + 5] = -1;
   sqfdderf(0, 5) = 0.0;  // dummy
 
-  isqfdderf[MAT::NUM_STRESS_3D * 1 + 0] = 7;
+  isqfdderf[Mat::NUM_STRESS_3D * 1 + 0] = 7;
   sqfdderf(1, 0) = 2.0;
-  isqfdderf[MAT::NUM_STRESS_3D * 1 + 1] = 21;
+  isqfdderf[Mat::NUM_STRESS_3D * 1 + 1] = 21;
   sqfdderf(1, 1) = 0.5;
-  isqfdderf[MAT::NUM_STRESS_3D * 1 + 2] = 28;
+  isqfdderf[Mat::NUM_STRESS_3D * 1 + 2] = 28;
   sqfdderf(1, 2) = 0.5;
-  isqfdderf[MAT::NUM_STRESS_3D * 1 + 3] = -1;
+  isqfdderf[Mat::NUM_STRESS_3D * 1 + 3] = -1;
   sqfdderf(1, 3) = 0.0;  // dummy
-  isqfdderf[MAT::NUM_STRESS_3D * 1 + 4] = -1;
+  isqfdderf[Mat::NUM_STRESS_3D * 1 + 4] = -1;
   sqfdderf(1, 4) = 0.0;  // dummy
-  isqfdderf[MAT::NUM_STRESS_3D * 1 + 5] = -1;
+  isqfdderf[Mat::NUM_STRESS_3D * 1 + 5] = -1;
   sqfdderf(1, 5) = 0.0;  // dummy
 
-  isqfdderf[MAT::NUM_STRESS_3D * 2 + 0] = 14;
+  isqfdderf[Mat::NUM_STRESS_3D * 2 + 0] = 14;
   sqfdderf(2, 0) = 2.0;
-  isqfdderf[MAT::NUM_STRESS_3D * 2 + 1] = 28;
+  isqfdderf[Mat::NUM_STRESS_3D * 2 + 1] = 28;
   sqfdderf(2, 1) = 0.5;
-  isqfdderf[MAT::NUM_STRESS_3D * 2 + 2] = 35;
+  isqfdderf[Mat::NUM_STRESS_3D * 2 + 2] = 35;
   sqfdderf(2, 2) = 0.5;
-  isqfdderf[MAT::NUM_STRESS_3D * 2 + 3] = -1;
+  isqfdderf[Mat::NUM_STRESS_3D * 2 + 3] = -1;
   sqfdderf(2, 3) = 0.0;  // dummy
-  isqfdderf[MAT::NUM_STRESS_3D * 2 + 4] = -1;
+  isqfdderf[Mat::NUM_STRESS_3D * 2 + 4] = -1;
   sqfdderf(2, 4) = 0.0;  // dummy
-  isqfdderf[MAT::NUM_STRESS_3D * 2 + 5] = -1;
+  isqfdderf[Mat::NUM_STRESS_3D * 2 + 5] = -1;
   sqfdderf(2, 5) = 0.0;  // dummy
 
-  isqfdderf[MAT::NUM_STRESS_3D * 3 + 0] = 3;
+  isqfdderf[Mat::NUM_STRESS_3D * 3 + 0] = 3;
   sqfdderf(3, 0) = 1.0;
-  isqfdderf[MAT::NUM_STRESS_3D * 3 + 1] = 9;
+  isqfdderf[Mat::NUM_STRESS_3D * 3 + 1] = 9;
   sqfdderf(3, 1) = 1.0;
-  isqfdderf[MAT::NUM_STRESS_3D * 3 + 2] = 18;
+  isqfdderf[Mat::NUM_STRESS_3D * 3 + 2] = 18;
   sqfdderf(3, 2) = 1.0;
-  isqfdderf[MAT::NUM_STRESS_3D * 3 + 3] = 19;
+  isqfdderf[Mat::NUM_STRESS_3D * 3 + 3] = 19;
   sqfdderf(3, 3) = 1.0;
-  isqfdderf[MAT::NUM_STRESS_3D * 3 + 4] = 29;
+  isqfdderf[Mat::NUM_STRESS_3D * 3 + 4] = 29;
   sqfdderf(3, 4) = 0.5;
-  isqfdderf[MAT::NUM_STRESS_3D * 3 + 5] = 34;
+  isqfdderf[Mat::NUM_STRESS_3D * 3 + 5] = 34;
   sqfdderf(3, 5) = 0.5;
 
-  isqfdderf[MAT::NUM_STRESS_3D * 4 + 0] = 9;
+  isqfdderf[Mat::NUM_STRESS_3D * 4 + 0] = 9;
   sqfdderf(4, 0) = 1.0;
-  isqfdderf[MAT::NUM_STRESS_3D * 4 + 1] = 16;
+  isqfdderf[Mat::NUM_STRESS_3D * 4 + 1] = 16;
   sqfdderf(4, 1) = 1.0;
-  isqfdderf[MAT::NUM_STRESS_3D * 4 + 2] = 23;
+  isqfdderf[Mat::NUM_STRESS_3D * 4 + 2] = 23;
   sqfdderf(4, 2) = 0.5;
-  isqfdderf[MAT::NUM_STRESS_3D * 4 + 3] = 25;
+  isqfdderf[Mat::NUM_STRESS_3D * 4 + 3] = 25;
   sqfdderf(4, 3) = 1.0;
-  isqfdderf[MAT::NUM_STRESS_3D * 4 + 4] = 26;
+  isqfdderf[Mat::NUM_STRESS_3D * 4 + 4] = 26;
   sqfdderf(4, 4) = 1.0;
-  isqfdderf[MAT::NUM_STRESS_3D * 4 + 5] = 33;
+  isqfdderf[Mat::NUM_STRESS_3D * 4 + 5] = 33;
   sqfdderf(4, 5) = 0.5;
 
-  isqfdderf[MAT::NUM_STRESS_3D * 5 + 0] = 5;
+  isqfdderf[Mat::NUM_STRESS_3D * 5 + 0] = 5;
   sqfdderf(5, 0) = 1.0;
-  isqfdderf[MAT::NUM_STRESS_3D * 5 + 1] = 17;
+  isqfdderf[Mat::NUM_STRESS_3D * 5 + 1] = 17;
   sqfdderf(5, 1) = 1.0;
-  isqfdderf[MAT::NUM_STRESS_3D * 5 + 2] = 22;
+  isqfdderf[Mat::NUM_STRESS_3D * 5 + 2] = 22;
   sqfdderf(5, 2) = 0.5;
-  isqfdderf[MAT::NUM_STRESS_3D * 5 + 3] = 27;
+  isqfdderf[Mat::NUM_STRESS_3D * 5 + 3] = 27;
   sqfdderf(5, 3) = 0.5;
-  isqfdderf[MAT::NUM_STRESS_3D * 5 + 4] = 30;
+  isqfdderf[Mat::NUM_STRESS_3D * 5 + 4] = 30;
   sqfdderf(5, 4) = 1.0;
-  isqfdderf[MAT::NUM_STRESS_3D * 5 + 5] = 32;
+  isqfdderf[Mat::NUM_STRESS_3D * 5 + 5] = 32;
   sqfdderf(5, 5) = 1.0;
 
   return;
@@ -749,9 +749,9 @@ void DRT::ELEMENTS::SoSh8p8::sq_vector6_voigt_twice_diff_by_itself(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8p8::matrix2_tensor_to_matrix6x9_voigt(
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDFGR_>& bm,
-    const CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& bt, const bool transpose)
+void Discret::ELEMENTS::SoSh8p8::matrix2_tensor_to_matrix6x9_voigt(
+    Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, NUMDFGR_>& bm,
+    const Core::LinAlg::Matrix<NUMDIM_, NUMDIM_>& bt, const bool transpose)
 {
   // VERIFIED
 
@@ -760,7 +760,7 @@ void DRT::ELEMENTS::SoSh8p8::matrix2_tensor_to_matrix6x9_voigt(
   {
     const int k = VOIGT9ROW_INCONSISTENT_[kl];
     const int l = VOIGT9COL_INCONSISTENT_[kl];
-    for (int ij = 0; ij < MAT::NUM_STRESS_3D; ++ij)
+    for (int ij = 0; ij < Mat::NUM_STRESS_3D; ++ij)
     {
       const int i = VoigtMapping::Voigt6ToRow(ij);
       const int j = VoigtMapping::Voigt6ToCol(ij);
@@ -790,19 +790,19 @@ void DRT::ELEMENTS::SoSh8p8::matrix2_tensor_to_matrix6x9_voigt(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8p8::matrix2_tensor_to_left_right_product_matrix6x6_voigt(
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& bm,  ///< (out) 6x6 Voigt matrix
-    const CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& bt,  ///< (in) 3x3 matrix of 2-tensor
+void Discret::ELEMENTS::SoSh8p8::matrix2_tensor_to_left_right_product_matrix6x6_voigt(
+    Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D>& bm,  ///< (out) 6x6 Voigt matrix
+    const Core::LinAlg::Matrix<NUMDIM_, NUMDIM_>& bt,  ///< (in) 3x3 matrix of 2-tensor
     const bool transpose,                              ///< 3x3 input matrix is transposed
-    CORE::LINALG::VOIGT::NotationType rowvoigt6,  ///< 6-Voigt vector layout on rows of 6x6 matrix
-    CORE::LINALG::VOIGT::NotationType colvoigt6  ///< 6-Voigt vector layout on columns of 6x6 matrix
+    Core::LinAlg::Voigt::NotationType rowvoigt6,  ///< 6-Voigt vector layout on rows of 6x6 matrix
+    Core::LinAlg::Voigt::NotationType colvoigt6  ///< 6-Voigt vector layout on columns of 6x6 matrix
 )
 {
-  for (int ab = 0; ab < MAT::NUM_STRESS_3D; ++ab)
+  for (int ab = 0; ab < Mat::NUM_STRESS_3D; ++ab)
   {
     const int a = VoigtMapping::Voigt6ToRow(ab);
     const int b = VoigtMapping::Voigt6ToCol(ab);
-    for (int AB = 0; AB < MAT::NUM_STRESS_3D; ++AB)
+    for (int AB = 0; AB < Mat::NUM_STRESS_3D; ++AB)
     {
       const int A = VoigtMapping::Voigt6ToRow(AB);
       const int B = VoigtMapping::Voigt6ToCol(AB);
@@ -816,9 +816,9 @@ void DRT::ELEMENTS::SoSh8p8::matrix2_tensor_to_left_right_product_matrix6x6_voig
         bm(AB, ab) = bt(a, A) * bt(b, B);
         if (ab >= NUMDIM_) bm(AB, ab) += bt(b, A) * bt(a, B);
       }
-      if ((colvoigt6 == CORE::LINALG::VOIGT::NotationType::stress) and (ab >= NUMDIM_))
+      if ((colvoigt6 == Core::LinAlg::Voigt::NotationType::stress) and (ab >= NUMDIM_))
         bm(AB, ab) *= 0.5;
-      if ((rowvoigt6 == CORE::LINALG::VOIGT::NotationType::strain) and (AB >= NUMDIM_))
+      if ((rowvoigt6 == Core::LinAlg::Voigt::NotationType::strain) and (AB >= NUMDIM_))
         bm(AB, ab) *= 2.0;
     }
   }
@@ -828,23 +828,23 @@ void DRT::ELEMENTS::SoSh8p8::matrix2_tensor_to_left_right_product_matrix6x6_voig
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8p8::stretch_tensor(
+void Discret::ELEMENTS::SoSh8p8::stretch_tensor(
     double* detut,                                    // determinant of material stretch tensor
-    CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>* ut,       // material stretch tensor
-    CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>* invut,    // inverse material stretch tensor
-    const CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& ct  // right Cauchy-Green tensor
+    Core::LinAlg::Matrix<NUMDIM_, NUMDIM_>* ut,       // material stretch tensor
+    Core::LinAlg::Matrix<NUMDIM_, NUMDIM_>* invut,    // inverse material stretch tensor
+    const Core::LinAlg::Matrix<NUMDIM_, NUMDIM_>& ct  // right Cauchy-Green tensor
 )
 {
   if ((ut == nullptr) and (invut == nullptr))
     FOUR_C_THROW("Senseless call: You do not want to compute anything");
 
   // set identity tensor
-  CORE::LINALG::Matrix<NUMDIM_, NUMDIM_> it(true);
+  Core::LinAlg::Matrix<NUMDIM_, NUMDIM_> it(true);
   for (int i = 0; i < NUMDIM_; ++i) it(i, i) = 1.0;
 
   // squared right Cauchy-Green deformation tensor
   // C^2 = C . C
-  CORE::LINALG::Matrix<NUMDIM_, NUMDIM_> c2t;
+  Core::LinAlg::Matrix<NUMDIM_, NUMDIM_> c2t;
   c2t.MultiplyTN(ct, ct);
 
   // invariants of right Cauchy-Green tensor
@@ -970,9 +970,9 @@ void DRT::ELEMENTS::SoSh8p8::stretch_tensor(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int DRT::ELEMENTS::SoSh8p8::sym_spectral_decomp_jac_iter(CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& ew,
-    CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& ev, const CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& at,
-    const double itertol, const int itermax)
+int Discret::ELEMENTS::SoSh8p8::sym_spectral_decomp_jac_iter(
+    Core::LinAlg::Matrix<NUMDIM_, NUMDIM_>& ew, Core::LinAlg::Matrix<NUMDIM_, NUMDIM_>& ev,
+    const Core::LinAlg::Matrix<NUMDIM_, NUMDIM_>& at, const double itertol, const int itermax)
 {
   // sum of all entries (moduli) in #at
   double asum = 0.0;
@@ -1092,8 +1092,8 @@ int DRT::ELEMENTS::SoSh8p8::sym_spectral_decomp_jac_iter(CORE::LINALG::Matrix<NU
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8p8::extract_disp_and_pres(std::vector<double>& mystat,
-    CORE::LINALG::Matrix<NUMDISP_, 1>& mydisp, CORE::LINALG::Matrix<NUMPRES_, 1>& mypres)
+void Discret::ELEMENTS::SoSh8p8::extract_disp_and_pres(std::vector<double>& mystat,
+    Core::LinAlg::Matrix<NUMDISP_, 1>& mydisp, Core::LinAlg::Matrix<NUMPRES_, 1>& mypres)
 {
   for (int inod = 0; inod < NUMNOD_; ++inod)
   {
@@ -1106,11 +1106,11 @@ void DRT::ELEMENTS::SoSh8p8::extract_disp_and_pres(std::vector<double>& mystat,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8p8::build_element_matrix(CORE::LINALG::Matrix<NUMDOF_, NUMDOF_>* mat,
-    const CORE::LINALG::Matrix<NUMDISP_, NUMDISP_>* matdd,
-    const CORE::LINALG::Matrix<NUMDISP_, NUMPRES_>* matdp,
-    const CORE::LINALG::Matrix<NUMPRES_, NUMDISP_>* matpd,
-    const CORE::LINALG::Matrix<NUMPRES_, NUMPRES_>* matpp)
+void Discret::ELEMENTS::SoSh8p8::build_element_matrix(Core::LinAlg::Matrix<NUMDOF_, NUMDOF_>* mat,
+    const Core::LinAlg::Matrix<NUMDISP_, NUMDISP_>* matdd,
+    const Core::LinAlg::Matrix<NUMDISP_, NUMPRES_>* matdp,
+    const Core::LinAlg::Matrix<NUMPRES_, NUMDISP_>* matpd,
+    const Core::LinAlg::Matrix<NUMPRES_, NUMPRES_>* matpp)
 {
   const int* d2dp = &(DISPTODISPPRES_[0]);
   const int* p2dp = &(PRESTODISPPRES_[0]);
@@ -1225,8 +1225,8 @@ void DRT::ELEMENTS::SoSh8p8::build_element_matrix(CORE::LINALG::Matrix<NUMDOF_, 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8p8::build_element_vector(CORE::LINALG::Matrix<NUMDOF_, 1>* vct,
-    const CORE::LINALG::Matrix<NUMDISP_, 1>* vctd, const CORE::LINALG::Matrix<NUMPRES_, 1>* vctp)
+void Discret::ELEMENTS::SoSh8p8::build_element_vector(Core::LinAlg::Matrix<NUMDOF_, 1>* vct,
+    const Core::LinAlg::Matrix<NUMDISP_, 1>* vctd, const Core::LinAlg::Matrix<NUMPRES_, 1>* vctp)
 {
   const int* d2dp = &(DISPTODISPPRES_[0]);
   const int* p2dp = &(PRESTODISPPRES_[0]);
@@ -1260,7 +1260,7 @@ void DRT::ELEMENTS::SoSh8p8::build_element_vector(CORE::LINALG::Matrix<NUMDOF_, 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8p8::assemble_volume(
+void Discret::ELEMENTS::SoSh8p8::assemble_volume(
     Teuchos::ParameterList& params,  ///< parameter list for in 'n' out
     const double& elevol             ///< current element volume
 )
@@ -1273,12 +1273,12 @@ void DRT::ELEMENTS::SoSh8p8::assemble_volume(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /* DEBUG ONLY */
-void DRT::ELEMENTS::SoSh8p8::gnuplot_out(
+void Discret::ELEMENTS::SoSh8p8::gnuplot_out(
     Teuchos::ParameterList& params,  ///< parameter list for in 'n' out
     std::vector<double>& state,      ///< current state vector, i.e. displacements and pressure DOFs
-    CORE::LINALG::Matrix<NUMDOF_, 1>&
+    Core::LinAlg::Matrix<NUMDOF_, 1>&
         resid,  ///< current internal force / incompressibility residual
-    CORE::LINALG::Matrix<NUMDOF_, NUMDOF_>& tangent  ///< current tangent of inter force WRT state
+    Core::LinAlg::Matrix<NUMDOF_, NUMDOF_>& tangent  ///< current tangent of inter force WRT state
 )
 {
   // last call time: we iterate to find solution, but we only want to write final state
@@ -1290,10 +1290,10 @@ void DRT::ELEMENTS::SoSh8p8::gnuplot_out(
   // store
   static std::vector<double> laststate(NUMDOF_, 0);
   static std::vector<double> oldstate(NUMDOF_, 0);
-  static CORE::LINALG::Matrix<NUMDOF_, NUMDOF_> lasttangent;
+  static Core::LinAlg::Matrix<NUMDOF_, NUMDOF_> lasttangent;
 
   const double time = params.get<double>("total time");
-  const std::string filebase = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
+  const std::string filebase = Global::Problem::Instance()->OutputControlFile()->FileName();
   const std::string txtname = filebase + ".sosh8p8.txt";
 
   // store last converged state
@@ -1388,12 +1388,12 @@ void DRT::ELEMENTS::SoSh8p8::gnuplot_out(
 
   // linearised residual
   {
-    CORE::LINALG::Matrix<NUMDOF_, 1> os = CORE::LINALG::Matrix<NUMDOF_, 1>(oldstate.data());
-    CORE::LINALG::Matrix<NUMDOF_, 1> ls = CORE::LINALG::Matrix<NUMDOF_, 1>(laststate.data());
-    CORE::LINALG::Matrix<NUMDOF_, 1> is;
+    Core::LinAlg::Matrix<NUMDOF_, 1> os = Core::LinAlg::Matrix<NUMDOF_, 1>(oldstate.data());
+    Core::LinAlg::Matrix<NUMDOF_, 1> ls = Core::LinAlg::Matrix<NUMDOF_, 1>(laststate.data());
+    Core::LinAlg::Matrix<NUMDOF_, 1> is;
     is = ls;
     is -= os;
-    CORE::LINALG::Matrix<NUMDOF_, 1> incresid;
+    Core::LinAlg::Matrix<NUMDOF_, 1> incresid;
     incresid.MultiplyNN(lasttangent, is);
 
     for (int ir = 0; ir < NUMDOF_; ++ir) txtline << std::scientific << " " << incresid(ir);

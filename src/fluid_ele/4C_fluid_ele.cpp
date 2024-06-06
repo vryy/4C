@@ -20,24 +20,24 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-DRT::ELEMENTS::FluidType DRT::ELEMENTS::FluidType::instance_;
+Discret::ELEMENTS::FluidType Discret::ELEMENTS::FluidType::instance_;
 
-DRT::ELEMENTS::FluidType& DRT::ELEMENTS::FluidType::Instance() { return instance_; }
+Discret::ELEMENTS::FluidType& Discret::ELEMENTS::FluidType::Instance() { return instance_; }
 
-CORE::COMM::ParObject* DRT::ELEMENTS::FluidType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Discret::ELEMENTS::FluidType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::Fluid* object = new DRT::ELEMENTS::Fluid(-1, -1);
+  Discret::ELEMENTS::Fluid* object = new Discret::ELEMENTS::Fluid(-1, -1);
   object->Unpack(data);
   return object;
 }
 
 
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::FluidType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "FLUID")
   {
-    return Teuchos::rcp(new DRT::ELEMENTS::Fluid(id, owner));
+    return Teuchos::rcp(new Discret::ELEMENTS::Fluid(id, owner));
   }
   else if (eletype == "FLUID2" || eletype == "FLUID3")
   {
@@ -47,15 +47,15 @@ Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::FluidType::Create(
 }
 
 
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::FluidType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidType::Create(
     const int id, const int owner)
 {
-  return Teuchos::rcp(new DRT::ELEMENTS::Fluid(id, owner));
+  return Teuchos::rcp(new Discret::ELEMENTS::Fluid(id, owner));
 }
 
 
-void DRT::ELEMENTS::FluidType::nodal_block_information(
-    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+void Discret::ELEMENTS::FluidType::nodal_block_information(
+    Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = dwele->NumDofPerNode(*(dwele->Nodes()[0]));
   dimns = numdf;
@@ -64,115 +64,115 @@ void DRT::ELEMENTS::FluidType::nodal_block_information(
 }
 
 
-CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::FluidType::ComputeNullSpace(
-    CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
+Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::FluidType::ComputeNullSpace(
+    Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
 }
 
-void DRT::ELEMENTS::FluidType::setup_element_definition(
-    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+void Discret::ELEMENTS::FluidType::setup_element_definition(
+    std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
-  std::map<std::string, INPUT::LineDefinition>& defsgeneral = definitions["FLUID"];
+  std::map<std::string, Input::LineDefinition>& defsgeneral = definitions["FLUID"];
 
-  defsgeneral["HEX8"] = INPUT::LineDefinition::Builder()
+  defsgeneral["HEX8"] = Input::LineDefinition::Builder()
                             .AddIntVector("HEX8", 8)
                             .AddNamedInt("MAT")
                             .AddNamedString("NA")
                             .Build();
 
-  defsgeneral["HEX20"] = INPUT::LineDefinition::Builder()
+  defsgeneral["HEX20"] = Input::LineDefinition::Builder()
                              .AddIntVector("HEX20", 20)
                              .AddNamedInt("MAT")
                              .AddNamedString("NA")
                              .Build();
 
-  defsgeneral["HEX27"] = INPUT::LineDefinition::Builder()
+  defsgeneral["HEX27"] = Input::LineDefinition::Builder()
                              .AddIntVector("HEX27", 27)
                              .AddNamedInt("MAT")
                              .AddNamedString("NA")
                              .Build();
 
-  defsgeneral["TET4"] = INPUT::LineDefinition::Builder()
+  defsgeneral["TET4"] = Input::LineDefinition::Builder()
                             .AddIntVector("TET4", 4)
                             .AddNamedInt("MAT")
                             .AddNamedString("NA")
                             .Build();
 
-  defsgeneral["TET10"] = INPUT::LineDefinition::Builder()
+  defsgeneral["TET10"] = Input::LineDefinition::Builder()
                              .AddIntVector("TET10", 10)
                              .AddNamedInt("MAT")
                              .AddNamedString("NA")
                              .Build();
 
-  defsgeneral["WEDGE6"] = INPUT::LineDefinition::Builder()
+  defsgeneral["WEDGE6"] = Input::LineDefinition::Builder()
                               .AddIntVector("WEDGE6", 6)
                               .AddNamedInt("MAT")
                               .AddNamedString("NA")
                               .Build();
 
-  defsgeneral["WEDGE15"] = INPUT::LineDefinition::Builder()
+  defsgeneral["WEDGE15"] = Input::LineDefinition::Builder()
                                .AddIntVector("WEDGE15", 15)
                                .AddNamedInt("MAT")
                                .AddNamedString("NA")
                                .Build();
 
-  defsgeneral["PYRAMID5"] = INPUT::LineDefinition::Builder()
+  defsgeneral["PYRAMID5"] = Input::LineDefinition::Builder()
                                 .AddIntVector("PYRAMID5", 5)
                                 .AddNamedInt("MAT")
                                 .AddNamedString("NA")
                                 .Build();
 
-  defsgeneral["NURBS8"] = INPUT::LineDefinition::Builder()
+  defsgeneral["NURBS8"] = Input::LineDefinition::Builder()
                               .AddIntVector("NURBS8", 8)
                               .AddNamedInt("MAT")
                               .AddNamedString("NA")
                               .Build();
 
-  defsgeneral["NURBS27"] = INPUT::LineDefinition::Builder()
+  defsgeneral["NURBS27"] = Input::LineDefinition::Builder()
                                .AddIntVector("NURBS27", 27)
                                .AddNamedInt("MAT")
                                .AddNamedString("NA")
                                .Build();
 
   // 2D elements
-  defsgeneral["QUAD4"] = INPUT::LineDefinition::Builder()
+  defsgeneral["QUAD4"] = Input::LineDefinition::Builder()
                              .AddIntVector("QUAD4", 4)
                              .AddNamedInt("MAT")
                              .AddNamedString("NA")
                              .Build();
 
-  defsgeneral["QUAD8"] = INPUT::LineDefinition::Builder()
+  defsgeneral["QUAD8"] = Input::LineDefinition::Builder()
                              .AddIntVector("QUAD8", 8)
                              .AddNamedInt("MAT")
                              .AddNamedString("NA")
                              .Build();
 
-  defsgeneral["QUAD9"] = INPUT::LineDefinition::Builder()
+  defsgeneral["QUAD9"] = Input::LineDefinition::Builder()
                              .AddIntVector("QUAD9", 9)
                              .AddNamedInt("MAT")
                              .AddNamedString("NA")
                              .Build();
 
-  defsgeneral["TRI3"] = INPUT::LineDefinition::Builder()
+  defsgeneral["TRI3"] = Input::LineDefinition::Builder()
                             .AddIntVector("TRI3", 3)
                             .AddNamedInt("MAT")
                             .AddNamedString("NA")
                             .Build();
 
-  defsgeneral["TRI6"] = INPUT::LineDefinition::Builder()
+  defsgeneral["TRI6"] = Input::LineDefinition::Builder()
                             .AddIntVector("TRI6", 6)
                             .AddNamedInt("MAT")
                             .AddNamedString("NA")
                             .Build();
 
-  defsgeneral["NURBS4"] = INPUT::LineDefinition::Builder()
+  defsgeneral["NURBS4"] = Input::LineDefinition::Builder()
                               .AddIntVector("NURBS4", 4)
                               .AddNamedInt("MAT")
                               .AddNamedString("NA")
                               .Build();
 
-  defsgeneral["NURBS9"] = INPUT::LineDefinition::Builder()
+  defsgeneral["NURBS9"] = Input::LineDefinition::Builder()
                               .AddIntVector("NURBS9", 9)
                               .AddNamedInt("MAT")
                               .AddNamedString("NA")
@@ -185,9 +185,10 @@ void DRT::ELEMENTS::FluidType::setup_element_definition(
  |  ctor (public)                                            gammi 02/08|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Fluid::Fluid(int id, int owner) : CORE::Elements::Element(id, owner), is_ale_(false)
+Discret::ELEMENTS::Fluid::Fluid(int id, int owner)
+    : Core::Elements::Element(id, owner), is_ale_(false)
 {
-  distype_ = CORE::FE::CellType::dis_none;
+  distype_ = Core::FE::CellType::dis_none;
   tds_ = Teuchos::null;
   return;
 }
@@ -195,8 +196,8 @@ DRT::ELEMENTS::Fluid::Fluid(int id, int owner) : CORE::Elements::Element(id, own
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       gammi 02/08|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Fluid::Fluid(const DRT::ELEMENTS::Fluid& old)
-    : CORE::Elements::Element(old), distype_(old.distype_), is_ale_(old.is_ale_)
+Discret::ELEMENTS::Fluid::Fluid(const Discret::ELEMENTS::Fluid& old)
+    : Core::Elements::Element(old), distype_(old.distype_), is_ale_(old.is_ale_)
 {
   tds_ = Teuchos::null;
   if (old.tds_ != Teuchos::null)
@@ -208,9 +209,9 @@ DRT::ELEMENTS::Fluid::Fluid(const DRT::ELEMENTS::Fluid& old)
  |  Deep copy this instance of Fluid and return pointer to it (public) |
  |                                                          gammi 02/08 |
  *----------------------------------------------------------------------*/
-CORE::Elements::Element* DRT::ELEMENTS::Fluid::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::Fluid::Clone() const
 {
-  DRT::ELEMENTS::Fluid* newelement = new DRT::ELEMENTS::Fluid(*this);
+  Discret::ELEMENTS::Fluid* newelement = new Discret::ELEMENTS::Fluid(*this);
   return newelement;
 }
 
@@ -218,9 +219,9 @@ CORE::Elements::Element* DRT::ELEMENTS::Fluid::Clone() const
  |  Pack data                                                  (public) |
  |                                                          gammi 02/08 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Fluid::Pack(CORE::COMM::PackBuffer& data) const
+void Discret::ELEMENTS::Fluid::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -254,11 +255,11 @@ void DRT::ELEMENTS::Fluid::Pack(CORE::COMM::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                          gammi 02/08 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Fluid::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Fluid::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -267,7 +268,7 @@ void DRT::ELEMENTS::Fluid::Unpack(const std::vector<char>& data)
   // is_ale_
   is_ale_ = ExtractInt(position, data);
   // distype
-  distype_ = static_cast<CORE::FE::CellType>(ExtractInt(position, data));
+  distype_ = static_cast<Core::FE::CellType>(ExtractInt(position, data));
 
   // time-dependent subgrid scales
   bool is_tds = ExtractInt(position, data);
@@ -292,7 +293,7 @@ void DRT::ELEMENTS::Fluid::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                              gammi 02/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Fluid::Print(std::ostream& os) const
+void Discret::ELEMENTS::Fluid::Print(std::ostream& os) const
 {
   os << "Fluid ";
   Element::Print(os);
@@ -304,40 +305,41 @@ void DRT::ELEMENTS::Fluid::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines              (public)                 ae  02/010|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Fluid::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Fluid::Lines()
 {
-  return CORE::COMM::GetElementLines<FluidBoundary, Fluid>(*this);
+  return Core::Communication::GetElementLines<FluidBoundary, Fluid>(*this);
 }
 
 
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                          ehrl  02/10|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Fluid::Surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Fluid::Surfaces()
 {
-  return CORE::COMM::GetElementSurfaces<FluidBoundary, Fluid>(*this);
+  return Core::Communication::GetElementSurfaces<FluidBoundary, Fluid>(*this);
 }
 
 
 /*----------------------------------------------------------------------*
  |  get face element (public)                               schott 03/12|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Fluid::CreateFaceElement(
-    CORE::Elements::Element* parent_slave,  //!< parent slave fluid3 element
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Fluid::CreateFaceElement(
+    Core::Elements::Element* parent_slave,  //!< parent slave fluid3 element
     int nnode,                              //!< number of surface nodes
     const int* nodeids,                     //!< node ids of surface element
-    CORE::Nodes::Node** nodes,              //!< nodes of surface element
+    Core::Nodes::Node** nodes,              //!< nodes of surface element
     const int lsurface_master,              //!< local surface number w.r.t master parent element
     const int lsurface_slave,               //!< local surface number w.r.t slave parent element
     const std::vector<int>& localtrafomap   //! local trafo map
 )
 {
   // dynamic cast for slave parent element
-  DRT::ELEMENTS::Fluid* slave_pele = dynamic_cast<DRT::ELEMENTS::Fluid*>(parent_slave);
+  Discret::ELEMENTS::Fluid* slave_pele = dynamic_cast<Discret::ELEMENTS::Fluid*>(parent_slave);
 
 
   // insert both parent elements
-  return CORE::COMM::ElementIntFaceFactory<FluidIntFace, Fluid>(-1,  //!< internal face element id
+  return Core::Communication::ElementIntFaceFactory<FluidIntFace, Fluid>(
+      -1,               //!< internal face element id
       -1,               //!< owner of internal face element
       nnode,            //!< number of surface nodes
       nodeids,          //!< node ids of surface element
@@ -354,7 +356,7 @@ Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Fluid::CreateFaceElement(
 /*----------------------------------------------------------------------*
  |  activate time dependent subgrid scales (public)      gamnitzer 05/10|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Fluid::ActivateTDS(
+void Discret::ELEMENTS::Fluid::ActivateTDS(
     int nquad, int nsd, double** saccn, double** sveln, double** svelnp)
 {
   if (tds_ == Teuchos::null) tds_ = Teuchos::rcp(new FLD::TDSEleData());

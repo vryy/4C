@@ -25,24 +25,24 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::TIMINT::Factory::Factory()
+STR::TimeInt::Factory::Factory()
 {
   // empty
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::TIMINT::Base> STR::TIMINT::Factory::BuildStrategy(
+Teuchos::RCP<STR::TimeInt::Base> STR::TimeInt::Factory::BuildStrategy(
     const Teuchos::ParameterList& sdyn) const
 {
-  Teuchos::RCP<STR::TIMINT::Base> ti_strategy = Teuchos::null;
+  Teuchos::RCP<STR::TimeInt::Base> ti_strategy = Teuchos::null;
 
-  const enum INPAR::STR::IntegrationStrategy intstrat =
-      CORE::UTILS::IntegralValue<INPAR::STR::IntegrationStrategy>(sdyn, "INT_STRATEGY");
+  const enum Inpar::STR::IntegrationStrategy intstrat =
+      Core::UTILS::IntegralValue<Inpar::STR::IntegrationStrategy>(sdyn, "INT_STRATEGY");
 
   switch (intstrat)
   {
-    case INPAR::STR::int_standard:
+    case Inpar::STR::int_standard:
     {
       // Check first if a implicit integration strategy is desired
       ti_strategy = build_implicit_strategy(sdyn);
@@ -61,76 +61,76 @@ Teuchos::RCP<STR::TIMINT::Base> STR::TIMINT::Factory::BuildStrategy(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::TIMINT::Base> STR::TIMINT::Factory::build_implicit_strategy(
+Teuchos::RCP<STR::TimeInt::Base> STR::TimeInt::Factory::build_implicit_strategy(
     const Teuchos::ParameterList& sdyn) const
 {
-  Teuchos::RCP<STR::TIMINT::Base> ti_strategy = Teuchos::null;
+  Teuchos::RCP<STR::TimeInt::Base> ti_strategy = Teuchos::null;
 
   // get the dynamic type
-  const enum INPAR::STR::DynamicType dyntype =
-      CORE::UTILS::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP");
+  const enum Inpar::STR::DynamicType dyntype =
+      Core::UTILS::IntegralValue<Inpar::STR::DynamicType>(sdyn, "DYNAMICTYP");
 
-  const bool is_prestress = Teuchos::getIntegralValue<INPAR::STR::PreStress>(
-                                GLOBAL::Problem::Instance()->structural_dynamic_params(),
-                                "PRESTRESS") != INPAR::STR::PreStress::none;
-  if (is_prestress or dyntype == INPAR::STR::dyna_statics or  // dynamic type
-      dyntype == INPAR::STR::dyna_genalpha or dyntype == INPAR::STR::dyna_genalpha_liegroup or
-      dyntype == INPAR::STR::dyna_onesteptheta)
-    ti_strategy = Teuchos::rcp(new STR::TIMINT::Implicit());
+  const bool is_prestress = Teuchos::getIntegralValue<Inpar::STR::PreStress>(
+                                Global::Problem::Instance()->structural_dynamic_params(),
+                                "PRESTRESS") != Inpar::STR::PreStress::none;
+  if (is_prestress or dyntype == Inpar::STR::dyna_statics or  // dynamic type
+      dyntype == Inpar::STR::dyna_genalpha or dyntype == Inpar::STR::dyna_genalpha_liegroup or
+      dyntype == Inpar::STR::dyna_onesteptheta)
+    ti_strategy = Teuchos::rcp(new STR::TimeInt::Implicit());
 
   return ti_strategy;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::TIMINT::Base> STR::TIMINT::Factory::build_explicit_strategy(
+Teuchos::RCP<STR::TimeInt::Base> STR::TimeInt::Factory::build_explicit_strategy(
     const Teuchos::ParameterList& sdyn) const
 {
-  Teuchos::RCP<STR::TIMINT::Base> ti_strategy = Teuchos::null;
+  Teuchos::RCP<STR::TimeInt::Base> ti_strategy = Teuchos::null;
 
   // what's the current problem type?
-  CORE::ProblemType probtype = GLOBAL::Problem::Instance()->GetProblemType();
+  Core::ProblemType probtype = Global::Problem::Instance()->GetProblemType();
 
-  if (probtype == CORE::ProblemType::fsi or probtype == CORE::ProblemType::fsi_redmodels or
-      probtype == CORE::ProblemType::fsi_lung or probtype == CORE::ProblemType::gas_fsi or
-      probtype == CORE::ProblemType::ac_fsi or probtype == CORE::ProblemType::biofilm_fsi or
-      probtype == CORE::ProblemType::thermo_fsi)
+  if (probtype == Core::ProblemType::fsi or probtype == Core::ProblemType::fsi_redmodels or
+      probtype == Core::ProblemType::fsi_lung or probtype == Core::ProblemType::gas_fsi or
+      probtype == Core::ProblemType::ac_fsi or probtype == Core::ProblemType::biofilm_fsi or
+      probtype == Core::ProblemType::thermo_fsi)
     FOUR_C_THROW("No explicit time integration with fsi");
 
-  const enum INPAR::STR::DynamicType dyntype =
-      CORE::UTILS::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP");
+  const enum Inpar::STR::DynamicType dyntype =
+      Core::UTILS::IntegralValue<Inpar::STR::DynamicType>(sdyn, "DYNAMICTYP");
 
-  if (dyntype == INPAR::STR::dyna_expleuler or dyntype == INPAR::STR::dyna_centrdiff or
-      dyntype == INPAR::STR::dyna_ab2 or dyntype == INPAR::STR::dyna_ab4)
-    ti_strategy = Teuchos::rcp(new STR::TIMINT::Explicit());
+  if (dyntype == Inpar::STR::dyna_expleuler or dyntype == Inpar::STR::dyna_centrdiff or
+      dyntype == Inpar::STR::dyna_ab2 or dyntype == Inpar::STR::dyna_ab4)
+    ti_strategy = Teuchos::rcp(new STR::TimeInt::Explicit());
 
   return ti_strategy;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::TIMINT::BaseDataSDyn> STR::TIMINT::Factory::BuildDataSDyn(
+Teuchos::RCP<STR::TimeInt::BaseDataSDyn> STR::TimeInt::Factory::BuildDataSDyn(
     const Teuchos::ParameterList& sdyn) const
 {
-  Teuchos::RCP<STR::TIMINT::BaseDataSDyn> sdyndata_ptr = Teuchos::null;
+  Teuchos::RCP<STR::TimeInt::BaseDataSDyn> sdyndata_ptr = Teuchos::null;
 
-  const enum INPAR::STR::DynamicType dyntype =
-      CORE::UTILS::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP");
+  const enum Inpar::STR::DynamicType dyntype =
+      Core::UTILS::IntegralValue<Inpar::STR::DynamicType>(sdyn, "DYNAMICTYP");
 
   switch (dyntype)
   {
-    case INPAR::STR::dyna_genalpha:
-    case INPAR::STR::dyna_genalpha_liegroup:
-      sdyndata_ptr = Teuchos::rcp(new STR::TIMINT::GenAlphaDataSDyn());
+    case Inpar::STR::dyna_genalpha:
+    case Inpar::STR::dyna_genalpha_liegroup:
+      sdyndata_ptr = Teuchos::rcp(new STR::TimeInt::GenAlphaDataSDyn());
       break;
-    case INPAR::STR::dyna_onesteptheta:
-      sdyndata_ptr = Teuchos::rcp(new STR::TIMINT::OneStepThetaDataSDyn());
+    case Inpar::STR::dyna_onesteptheta:
+      sdyndata_ptr = Teuchos::rcp(new STR::TimeInt::OneStepThetaDataSDyn());
       break;
-    case INPAR::STR::dyna_expleuler:
-      sdyndata_ptr = Teuchos::rcp(new STR::TIMINT::ExplEulerDataSDyn());
+    case Inpar::STR::dyna_expleuler:
+      sdyndata_ptr = Teuchos::rcp(new STR::TimeInt::ExplEulerDataSDyn());
       break;
     default:
-      sdyndata_ptr = Teuchos::rcp(new STR::TIMINT::BaseDataSDyn());
+      sdyndata_ptr = Teuchos::rcp(new STR::TimeInt::BaseDataSDyn());
       break;
   }
 
@@ -139,15 +139,16 @@ Teuchos::RCP<STR::TIMINT::BaseDataSDyn> STR::TIMINT::Factory::BuildDataSDyn(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> STR::TIMINT::Factory::build_data_global_state() const
+Teuchos::RCP<STR::TimeInt::BaseDataGlobalState> STR::TimeInt::Factory::build_data_global_state()
+    const
 {
-  return Teuchos::rcp(new STR::TIMINT::BaseDataGlobalState());
+  return Teuchos::rcp(new STR::TimeInt::BaseDataGlobalState());
 }
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::TIMINT::Base> STR::TIMINT::BuildStrategy(const Teuchos::ParameterList& sdyn)
+Teuchos::RCP<STR::TimeInt::Base> STR::TimeInt::BuildStrategy(const Teuchos::ParameterList& sdyn)
 {
   Factory factory;
   return factory.BuildStrategy(sdyn);
@@ -155,7 +156,7 @@ Teuchos::RCP<STR::TIMINT::Base> STR::TIMINT::BuildStrategy(const Teuchos::Parame
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::TIMINT::BaseDataSDyn> STR::TIMINT::BuildDataSDyn(
+Teuchos::RCP<STR::TimeInt::BaseDataSDyn> STR::TimeInt::BuildDataSDyn(
     const Teuchos::ParameterList& sdyn)
 {
   Factory factory;
@@ -164,7 +165,7 @@ Teuchos::RCP<STR::TIMINT::BaseDataSDyn> STR::TIMINT::BuildDataSDyn(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> STR::TIMINT::build_data_global_state()
+Teuchos::RCP<STR::TimeInt::BaseDataGlobalState> STR::TimeInt::build_data_global_state()
 {
   Factory factory;
   return factory.build_data_global_state();

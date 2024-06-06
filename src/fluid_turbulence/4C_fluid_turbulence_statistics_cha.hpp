@@ -93,7 +93,7 @@ namespace FLD
 
 
     */
-    TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discretization> actdis, bool alefluid,
+    TurbulenceStatisticsCha(Teuchos::RCP<Discret::Discretization> actdis, bool alefluid,
         Teuchos::RCP<Epetra_Vector> dispnp, Teuchos::ParameterList& params,
         const std::string& statistics_outfilename, bool subgrid_dissipation,
         Teuchos::RCP<FLD::XWall> xwallobj);
@@ -112,7 +112,7 @@ namespace FLD
     to caculate mean values of multifractal subgrid-scales modeling
     parameters
     */
-    void store_scatra_discret_and_params(Teuchos::RCP<DRT::Discretization> scatradis,
+    void store_scatra_discret_and_params(Teuchos::RCP<Discret::Discretization> scatradis,
         Teuchos::RCP<Teuchos::ParameterList> scatraparams,
         Teuchos::RCP<Teuchos::ParameterList> scatraextraparams,
         Teuchos::RCP<Teuchos::ParameterList> scatratimeparams);
@@ -319,14 +319,14 @@ namespace FLD
     int countrecord_;
 
     //! flag for physical type of fluid flow (standard: incompressible)
-    INPAR::FLUID::PhysicalType physicaltype_;
+    Inpar::FLUID::PhysicalType physicaltype_;
 
     //! The discretization (required for nodes, dofs etc;)
-    Teuchos::RCP<DRT::Discretization> discret_;
+    Teuchos::RCP<Discret::Discretization> discret_;
 
     //! scatra discretization (required for additional multifractal subgrid-scale output in case on
     //! passive scalar transport)
-    Teuchos::RCP<DRT::Discretization> scatradiscret_;
+    Teuchos::RCP<Discret::Discretization> scatradiscret_;
 
     //! flag for ale discretization
     bool alefluid_;
@@ -396,7 +396,7 @@ namespace FLD
     Teuchos::RCP<std::vector<double>> planecoordinates_;
 
     //! a bounding box for the channel
-    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> boundingbox_;
+    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> boundingbox_;
 
     //! viscosity to calculate l_tau, y+ etc.
     double dens_;

@@ -44,7 +44,7 @@ namespace CONTACT
     \param[in] maxdof Highest DOF number in global problem
     */
     MtLagrangeStrategy(const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
-        Teuchos::ParameterList params, std::vector<Teuchos::RCP<MORTAR::Interface>> interface,
+        Teuchos::ParameterList params, std::vector<Teuchos::RCP<Mortar::Interface>> interface,
         const int spatialDim, const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf,
         const int maxdof);
 
@@ -89,7 +89,7 @@ namespace CONTACT
     \param dis (in): current displacement state
 
     */
-    void EvaluateMeshtying(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
+    void EvaluateMeshtying(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis) override;
 
     /*!
@@ -103,9 +103,9 @@ namespace CONTACT
     \param mergedsol (out): Epetra_Vector for merged solution vector
     \param mergedrhs (out): Epetra_Vector for merged right hand side vector
     */
-    void build_saddle_point_system(Teuchos::RCP<CORE::LINALG::SparseOperator> kdd,
+    void build_saddle_point_system(Teuchos::RCP<Core::LinAlg::SparseOperator> kdd,
         Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
-        Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
+        Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
         Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) override;
 
     /*!
@@ -144,7 +144,7 @@ namespace CONTACT
      */
 
     double ConstraintNorm() const override { return 0.0; }
-    void InitializeUzawa(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
+    void InitializeUzawa(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff) override
     {
     }
@@ -187,7 +187,7 @@ namespace CONTACT
         const enum CONTACT::VecBlockType& bt) const override;
 
     //! Return the desired matrix block pointer (read-only) [derived]
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrixBlockPtr(
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> GetMatrixBlockPtr(
         const enum CONTACT::MatBlockType& bt) const override;
 
     /*! \brief Modify system before linear solve
@@ -205,7 +205,7 @@ namespace CONTACT
      * \todo Is this really the right-hand side vector or the residual?
      */
     void run_pre_apply_jacobian_inverse(
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> kteff, Epetra_Vector& rhs) override;
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff, Epetra_Vector& rhs) override;
 
     void run_post_apply_jacobian_inverse(Epetra_Vector& result) override;
 
@@ -221,10 +221,10 @@ namespace CONTACT
     //!@{
 
     //! Access to #mhatmatrix_
-    virtual Teuchos::RCP<const CORE::LINALG::SparseMatrix> get_m_hat() { return mhatmatrix_; };
+    virtual Teuchos::RCP<const Core::LinAlg::SparseMatrix> get_m_hat() { return mhatmatrix_; };
 
     //! Access to #invd_
-    virtual Teuchos::RCP<const CORE::LINALG::SparseMatrix> get_d_inverse() { return invd_; };
+    virtual Teuchos::RCP<const Core::LinAlg::SparseMatrix> get_d_inverse() { return invd_; };
 
     //!@}
 
@@ -236,16 +236,16 @@ namespace CONTACT
     MtLagrangeStrategy(const MtLagrangeStrategy& old);
 
     //! Constraint matrix for saddle point system
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> conmatrix_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> conmatrix_;
 
     //! Mortar projection matrix \f$P = D^{-1} M\f$
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> mhatmatrix_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> mhatmatrix_;
 
     //! Slave side effective forces (needed for Lagrange multipliers)
     Teuchos::RCP<Epetra_Vector> fs_;
 
     //! Inverse \f$D^{-1}\f$ of Mortar matrix \f$D\f$ (needed for Lagrange multipliers)
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> invd_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> invd_;
 
     /*! @name Blocks for Jacobian matrix
      *
@@ -257,13 +257,13 @@ namespace CONTACT
     //!@{
 
     //! Stiffness block \f$K_{sn}\f$ (needed for Lagrange multipliers)
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> ksn_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> ksn_;
 
     //! Stiffness block \f$K_{sm}\f$ (needed for Lagrange multipliers)
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> ksm_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> ksm_;
 
     //! Stiffness block \f$K_{ss}\f$ (needed for Lagrange multipliers)
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> kss_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> kss_;
 
     //!@}
 

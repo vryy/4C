@@ -19,7 +19,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 
@@ -27,15 +27,15 @@ namespace DRT
   {
     class FluidBoundary;
 
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     class FluidEleBoundaryCalcStd : public FluidBoundaryImpl<distype>
     {
-      typedef DRT::ELEMENTS::FluidBoundaryImpl<distype> my;
+      typedef Discret::ELEMENTS::FluidBoundaryImpl<distype> my;
 
      public:
       /// Singleton access method
       static FluidEleBoundaryCalcStd<distype>* Instance(
-          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
+          Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
      private:
       /// private constructor since we are singleton
@@ -44,7 +44,7 @@ namespace DRT
     };  // class FluidEleBoundaryCalcStd
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

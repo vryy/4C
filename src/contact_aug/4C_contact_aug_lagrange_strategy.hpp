@@ -19,16 +19,16 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace CONTACT
 {
-  namespace AUG
+  namespace Aug
   {
-    namespace LAGRANGE
+    namespace Lagrange
     {
       /*--------------------------------------------------------------------------*/
       /** \brief Standard Lagrange strategy based on the augmented Lagrangian
        *  strategy.
        *
        *  \author hiermeier \date 03/17 */
-      class Strategy : public CONTACT::AUG::Strategy
+      class Strategy : public CONTACT::Aug::Strategy
       {
        public:
         /// constructor
@@ -38,9 +38,9 @@ namespace CONTACT
             const Teuchos::RCP<const Epetra_Comm>& comm, int maxdof);
 
         /// return the current solving strategy type
-        INPAR::CONTACT::SolvingStrategy Type() const override
+        Inpar::CONTACT::SolvingStrategy Type() const override
         {
-          return INPAR::CONTACT::solution_std_lagrange;
+          return Inpar::CONTACT::solution_std_lagrange;
         }
 
        protected:
@@ -55,8 +55,8 @@ namespace CONTACT
         void eval_str_contact_rhs() override;
 
       };  // class Strategy
-    }     // namespace LAGRANGE
-  }       // namespace AUG
+    }     // namespace Lagrange
+  }       // namespace Aug
 }  // namespace CONTACT
 
 

@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-ADAPTER::AleFluidWrapper::AleFluidWrapper(Teuchos::RCP<Ale> ale) : AleWrapper(ale)
+Adapter::AleFluidWrapper::AleFluidWrapper(Teuchos::RCP<Ale> ale) : AleWrapper(ale)
 {
   // create the FSI interface
   interface_ = Teuchos::rcp(new ALE::UTILS::MapExtractor);
@@ -32,14 +32,14 @@ ADAPTER::AleFluidWrapper::AleFluidWrapper(Teuchos::RCP<Ale> ale) : AleWrapper(al
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<const ALE::UTILS::MapExtractor> ADAPTER::AleFluidWrapper::Interface() const
+Teuchos::RCP<const ALE::UTILS::MapExtractor> Adapter::AleFluidWrapper::Interface() const
 {
   return interface_;
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-int ADAPTER::AleFluidWrapper::Solve()
+int Adapter::AleFluidWrapper::Solve()
 {
   if (interface_->FSICondRelevant())
     Evaluate(Teuchos::null, ALE::UTILS::MapExtractor::dbc_set_part_fsi);
@@ -54,7 +54,7 @@ int ADAPTER::AleFluidWrapper::Solve()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ADAPTER::AleFluidWrapper::apply_free_surface_displacements(
+void Adapter::AleFluidWrapper::apply_free_surface_displacements(
     Teuchos::RCP<const Epetra_Vector> fsdisp)
 {
   interface_->InsertFSCondVector(fsdisp, WriteAccessDispnp());
@@ -62,7 +62,7 @@ void ADAPTER::AleFluidWrapper::apply_free_surface_displacements(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ADAPTER::AleFluidWrapper::apply_ale_update_displacements(
+void Adapter::AleFluidWrapper::apply_ale_update_displacements(
     Teuchos::RCP<const Epetra_Vector> audisp)
 {
   interface_->InsertAUCondVector(audisp, WriteAccessDispnp());
@@ -70,7 +70,7 @@ void ADAPTER::AleFluidWrapper::apply_ale_update_displacements(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ADAPTER::AleFluidWrapper::apply_interface_displacements(
+void Adapter::AleFluidWrapper::apply_interface_displacements(
     Teuchos::RCP<const Epetra_Vector> idisp)
 {
   interface_->InsertFSICondVector(idisp, WriteAccessDispnp());

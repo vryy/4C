@@ -22,17 +22,17 @@ surface meshes
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SerialDenseMatrix;
 }
@@ -42,15 +42,15 @@ namespace XFEM
   class ConditionManager;
 }
 
-namespace CORE::GEO
+namespace Core::Geo
 {
-  namespace CUT
+  namespace Cut
   {
     class CombIntersection;
     class ElementHandle;
     class Node;
     class SideHandle;
-  }  // namespace CUT
+  }  // namespace Cut
 
   /// contains the cut, and shared functionality between the level set and mesh cut.
   class CutWizard
@@ -65,7 +65,7 @@ namespace CORE::GEO
      public:
       /// constructor
       explicit BackMesh(
-          const Teuchos::RCP<DRT::Discretization>& backdis, CORE::GEO::CutWizard* wizard)
+          const Teuchos::RCP<Discret::Discretization>& backdis, Core::Geo::CutWizard* wizard)
           : wizard_(wizard),
             back_discret_(backdis),
             back_disp_col_(Teuchos::null),
@@ -79,15 +79,15 @@ namespace CORE::GEO
       void Init(const Teuchos::RCP<const Epetra_Vector>& back_disp_col,
           const Teuchos::RCP<const Epetra_Vector>& back_levelset_col);
 
-      const Teuchos::RCP<DRT::Discretization>& GetPtr() { return back_discret_; }
+      const Teuchos::RCP<Discret::Discretization>& GetPtr() { return back_discret_; }
 
-      DRT::Discretization& Get() { return *back_discret_; }
+      Discret::Discretization& Get() { return *back_discret_; }
 
-      const DRT::Discretization& Get() const { return *back_discret_; }
+      const Discret::Discretization& Get() const { return *back_discret_; }
 
       virtual int NumMyColElements() const;
 
-      virtual const CORE::Elements::Element* lColElement(int lid) const;
+      virtual const Core::Elements::Element* lColElement(int lid) const;
 
       inline bool IsBackDisp() const { return (not back_disp_col_.is_null()); }
 
@@ -111,11 +111,11 @@ namespace CORE::GEO
 
 
      protected:
-      CORE::GEO::CutWizard* wizard_;
+      Core::Geo::CutWizard* wizard_;
 
      private:
       /// background discretization
-      Teuchos::RCP<DRT::Discretization> back_discret_;
+      Teuchos::RCP<Discret::Discretization> back_discret_;
 
       /// col vector holding background ALE displacements for backdis
       Teuchos::RCP<const Epetra_Vector> back_disp_col_;
@@ -132,7 +132,7 @@ namespace CORE::GEO
     {
      public:
       //! ctor
-      CutterMesh(Teuchos::RCP<DRT::Discretization> cutterdis,
+      CutterMesh(Teuchos::RCP<Discret::Discretization> cutterdis,
           Teuchos::RCP<const Epetra_Vector> cutter_disp_col, const int start_ele_gid)
           : cutterdis_(cutterdis), cutter_disp_col_(cutter_disp_col), start_ele_gid_(start_ele_gid)
       {
@@ -141,7 +141,7 @@ namespace CORE::GEO
       //---------------------------------discretization-----------------------------
 
       //! @name cutter discretization
-      Teuchos::RCP<DRT::Discretization> cutterdis_;  ///< cutter discretization
+      Teuchos::RCP<Discret::Discretization> cutterdis_;  ///< cutter discretization
       //@}
 
       //---------------------------------state vectors ----------------------------
@@ -162,7 +162,7 @@ namespace CORE::GEO
     /*!
     \brief Constructor
     */
-    CutWizard(const Teuchos::RCP<DRT::Discretization>& backdis);
+    CutWizard(const Teuchos::RCP<Discret::Discretization>& backdis);
 
 
     /*!
@@ -177,10 +177,10 @@ namespace CORE::GEO
     /*========================================================================*/
 
     //! set options and flags used during the cut
-    void SetOptions(INPAR::CUT::NodalDofSetStrategy
+    void SetOptions(Inpar::Cut::NodalDofSetStrategy
                         nodal_dofset_strategy,     //!< strategy for nodal dofset management
-        INPAR::CUT::VCellGaussPts VCellgausstype,  //!< Gauss point generation method for Volumecell
-        INPAR::CUT::BCellGaussPts
+        Inpar::Cut::VCellGaussPts VCellgausstype,  //!< Gauss point generation method for Volumecell
+        Inpar::Cut::BCellGaussPts
             BCellgausstype,  //!< Gauss point generation method for Boundarycell
         bool gmsh_output,    //!< print write gmsh output for cut
         bool positions,      //!< set inside and outside point, facet and volumecell positions
@@ -196,17 +196,17 @@ namespace CORE::GEO
         int level_set_sid       //!< global id for level-set side
     );
 
-    void AddCutterState(const int mc_idx, Teuchos::RCP<DRT::Discretization> cutter_dis,
+    void AddCutterState(const int mc_idx, Teuchos::RCP<Discret::Discretization> cutter_dis,
         Teuchos::RCP<const Epetra_Vector> cutter_disp_col);
 
-    void AddCutterState(const int mc_idx, Teuchos::RCP<DRT::Discretization> cutter_dis,
+    void AddCutterState(const int mc_idx, Teuchos::RCP<Discret::Discretization> cutter_dis,
         Teuchos::RCP<const Epetra_Vector> cutter_disp_col, const int start_ele_gid);
 
     // Find marked background-boundary sides.
     //  Extract these sides and create boundary cell for these!
     void set_marked_condition_sides(
         // const int mc_idx,
-        Teuchos::RCP<DRT::Discretization> cutter_dis,
+        Teuchos::RCP<Discret::Discretization> cutter_dis,
         // Teuchos::RCP<const Epetra_Vector> cutter_disp_col,
         const int start_ele_gid);
 
@@ -227,31 +227,31 @@ namespace CORE::GEO
     /*========================================================================*/
 
     //! Get this side (not from cut meshes) (faces of background elements) from the cut libraries
-    CORE::GEO::CUT::SideHandle* get_side(std::vector<int>& nodeids);
+    Core::Geo::Cut::SideHandle* get_side(std::vector<int>& nodeids);
 
     //! Get this side (not from cut meshes) from the cut libraries
-    CORE::GEO::CUT::SideHandle* get_side(int sid);
+    Core::Geo::Cut::SideHandle* get_side(int sid);
 
     //! Get this side from cut meshes from the cut libraries
-    CORE::GEO::CUT::SideHandle* GetCutSide(int sid);
+    Core::Geo::Cut::SideHandle* GetCutSide(int sid);
 
     //! Get this element from the cut libraries by element id
-    CORE::GEO::CUT::ElementHandle* GetElement(const int eleid) const;
+    Core::Geo::Cut::ElementHandle* GetElement(const int eleid) const;
 
     //! Get this element from the cut libraries by element pointer
-    CORE::GEO::CUT::ElementHandle* GetElement(const CORE::Elements::Element* ele) const;
+    Core::Geo::Cut::ElementHandle* GetElement(const Core::Elements::Element* ele) const;
 
     //! Get this node from the cut libraries
-    CORE::GEO::CUT::Node* GetNode(int nid);
+    Core::Geo::Cut::Node* GetNode(int nid);
 
     //! Get the sidehandle for cutting sides
-    CORE::GEO::CUT::SideHandle* GetMeshCuttingSide(int sid, int mi);
+    Core::Geo::Cut::SideHandle* GetMeshCuttingSide(int sid, int mi);
 
     //! is there a level-set side with the given sid?
     bool HasLSCuttingSide(int sid);
 
     //! update the coordinates of the cut boundary cells
-    void update_boundary_cell_coords(Teuchos::RCP<DRT::Discretization> cutterdis,
+    void update_boundary_cell_coords(Teuchos::RCP<Discret::Discretization> cutterdis,
         Teuchos::RCP<const Epetra_Vector> cutter_disp_col, const int start_ele_gid);
 
     //! Cubaturedegree for creating of integrationpoints on boundarycells
@@ -268,9 +268,9 @@ namespace CORE::GEO
     Teuchos::RCP<const BackMesh> back_mesh_ptr() const { return back_mesh_.getConst(); }
 
     virtual void get_physical_nodal_coordinates(
-        const CORE::Elements::Element* element, CORE::LINALG::SerialDenseMatrix& xyze) const;
+        const Core::Elements::Element* element, Core::LinAlg::SerialDenseMatrix& xyze) const;
 
-    CORE::GEO::CUT::CombIntersection& intersection()
+    Core::Geo::Cut::CombIntersection& intersection()
     {
       if (intersection_.is_null()) FOUR_C_THROW("nullptr pointer!");
 
@@ -296,18 +296,18 @@ namespace CORE::GEO
 
     //! Add all cutting side elements of given cutter discretization with given displacement field
     //! to the intersection class
-    void add_mesh_cutting_side(Teuchos::RCP<DRT::Discretization> cutterdis,
+    void add_mesh_cutting_side(Teuchos::RCP<Discret::Discretization> cutterdis,
         Teuchos::RCP<const Epetra_Vector> cutter_disp_col,
         const int start_ele_gid = 0  ///< global start index for element id numbering
     );
 
     //! Add this cutting side element with given global coordinates to the intersection class
-    void add_mesh_cutting_side(int mi, CORE::Elements::Element* ele,
-        const CORE::LINALG::SerialDenseMatrix& xyze, const int start_ele_gid);
+    void add_mesh_cutting_side(int mi, Core::Elements::Element* ele,
+        const Core::LinAlg::SerialDenseMatrix& xyze, const int start_ele_gid);
 
     //! Add this background mesh element to the intersection class
-    void add_element(const CORE::Elements::Element* ele,
-        const CORE::LINALG::SerialDenseMatrix& xyze, double* myphinp = nullptr,
+    void add_element(const Core::Elements::Element* ele,
+        const Core::LinAlg::SerialDenseMatrix& xyze, double* myphinp = nullptr,
         bool lsv_only_plus_domain = false);
 
     //@}
@@ -362,7 +362,7 @@ namespace CORE::GEO
 
     //---------------------------------main intersection class----------------------------
     //! @name main intersection class and flags
-    Teuchos::RCP<CORE::GEO::CUT::CombIntersection>
+    Teuchos::RCP<Core::Geo::Cut::CombIntersection>
         intersection_;  ///< combined intersection object which handles cutting mesh sides and a
                         ///< level-set side
 
@@ -379,8 +379,8 @@ namespace CORE::GEO
     //---------------------------------Options ----------------------------
 
     //! @name Options
-    INPAR::CUT::VCellGaussPts v_cellgausstype_;  ///< integration type for volume-cells
-    INPAR::CUT::BCellGaussPts b_cellgausstype_;  ///< integration type for boundary-cells
+    Inpar::Cut::VCellGaussPts v_cellgausstype_;  ///< integration type for volume-cells
+    Inpar::Cut::BCellGaussPts b_cellgausstype_;  ///< integration type for boundary-cells
     bool gmsh_output_;                           ///< write gmsh output?
     bool tetcellsonly_;          ///< enforce to create tetrahedral integration cells exclusively
     bool screenoutput_;          ///< write output to screen
@@ -395,7 +395,7 @@ namespace CORE::GEO
     //@}
 
   };  // class CutWizard
-}  // namespace CORE::GEO
+}  // namespace Core::Geo
 
 FOUR_C_NAMESPACE_CLOSE
 

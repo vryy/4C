@@ -19,9 +19,9 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace MAT
+namespace Mat
 {
-  namespace ELASTIC
+  namespace Elastic
   {
     /*!
      * \brief Pure abstract class to define the interface to the implementation of specific
@@ -44,17 +44,17 @@ namespace MAT
        * \brief Returns the structural tensor that should be used
        *
        * \param gp Gauss point
-       * \return const CORE::LINALG::Matrix<3, 3>&
+       * \return const Core::LinAlg::Matrix<3, 3>&
        */
-      virtual const CORE::LINALG::Matrix<3, 3>& GetStructuralTensor(int gp) const = 0;
+      virtual const Core::LinAlg::Matrix<3, 3>& GetStructuralTensor(int gp) const = 0;
 
       /*!
        * \brief Returns the structural tensor in stress like Voigt notation that should be used
        *
        * \param gp Gauss point
-       * \return const CORE::LINALG::Matrix<6, 1>&
+       * \return const Core::LinAlg::Matrix<6, 1>&
        */
-      virtual const CORE::LINALG::Matrix<6, 1>& get_structural_tensor_stress(int gp) const = 0;
+      virtual const Core::LinAlg::Matrix<6, 1>& get_structural_tensor_stress(int gp) const = 0;
     };
 
     namespace PAR
@@ -71,7 +71,7 @@ namespace MAT
       {
        public:
         /// standard constructor
-        explicit CoupAnisoExpoBase(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
+        explicit CoupAnisoExpoBase(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
 
         /// Constructor only used for unit testing
         CoupAnisoExpoBase();
@@ -114,7 +114,7 @@ namespace MAT
     {
      public:
       /// constructor with given material parameters
-      explicit CoupAnisoExpoBase(MAT::ELASTIC::PAR::CoupAnisoExpoBase* params);
+      explicit CoupAnisoExpoBase(Mat::Elastic::PAR::CoupAnisoExpoBase* params);
 
       /*!
        * \brief Evaluate first derivative of the strain energy function with respect to the
@@ -126,8 +126,8 @@ namespace MAT
        * \param gp (in) : Gauss point
        * \param eleGID (in) : global element id
        */
-      void evaluate_first_derivatives_aniso(CORE::LINALG::Matrix<2, 1>& dPI_aniso,
-          const CORE::LINALG::Matrix<3, 3>& rcg, int gp, int eleGID) override;
+      void evaluate_first_derivatives_aniso(Core::LinAlg::Matrix<2, 1>& dPI_aniso,
+          const Core::LinAlg::Matrix<3, 3>& rcg, int gp, int eleGID) override;
 
       /*!
        * \brief Evaluate second derivative of the strain energy function with respect to the
@@ -139,8 +139,8 @@ namespace MAT
        * \param gp (in) : Gauss point
        * \param eleGID (in) : global element id
        */
-      void evaluate_second_derivatives_aniso(CORE::LINALG::Matrix<3, 1>& ddPII_aniso,
-          const CORE::LINALG::Matrix<3, 3>& rcg, int gp, int eleGID) override;
+      void evaluate_second_derivatives_aniso(Core::LinAlg::Matrix<3, 1>& ddPII_aniso,
+          const Core::LinAlg::Matrix<3, 3>& rcg, int gp, int eleGID) override;
 
 
       /*!
@@ -189,21 +189,21 @@ namespace MAT
        * \f]
        */
       template <typename T>
-      void GetDerivativesAniso(CORE::LINALG::Matrix<2, 1, T>&
+      void GetDerivativesAniso(Core::LinAlg::Matrix<2, 1, T>&
                                    dPI_aniso,  ///< first derivative with respect to invariants
-          CORE::LINALG::Matrix<3, 1, T>&
+          Core::LinAlg::Matrix<3, 1, T>&
               ddPII_aniso,  ///< second derivative with respect to invariants
-          CORE::LINALG::Matrix<4, 1, T>&
+          Core::LinAlg::Matrix<4, 1, T>&
               dddPIII_aniso,  ///< third derivative with respect to invariants
-          CORE::LINALG::Matrix<3, 3, T> const& rcg,  ///< right Cauchy-Green tensor
+          Core::LinAlg::Matrix<3, 3, T> const& rcg,  ///< right Cauchy-Green tensor
           int gp,                                    ///< Gauss point
           int eleGID) const;                         ///< element GID
 
       /// Add anisotropic principal stresses
       void add_stress_aniso_principal(
-          const CORE::LINALG::Matrix<6, 1>& rcg,  ///< right Cauchy Green Tensor
-          CORE::LINALG::Matrix<6, 6>& cmat,       ///< material stiffness matrix
-          CORE::LINALG::Matrix<6, 1>& stress,     ///< 2nd PK-stress
+          const Core::LinAlg::Matrix<6, 1>& rcg,  ///< right Cauchy Green Tensor
+          Core::LinAlg::Matrix<6, 6>& cmat,       ///< material stiffness matrix
+          Core::LinAlg::Matrix<6, 1>& stress,     ///< 2nd PK-stress
           Teuchos::ParameterList&
               params,  ///< additional parameters for computation of material properties
           int gp,      ///< Gauss point
@@ -212,11 +212,11 @@ namespace MAT
 
       /// add strain energy
       void AddStrainEnergy(double& psi,  ///< strain energy functions
-          const CORE::LINALG::Matrix<3, 1>&
+          const Core::LinAlg::Matrix<3, 1>&
               prinv,  ///< principal invariants of right Cauchy-Green tensor
-          const CORE::LINALG::Matrix<3, 1>&
+          const Core::LinAlg::Matrix<3, 1>&
               modinv,  ///< modified invariants of right Cauchy-Green tensor
-          const CORE::LINALG::Matrix<6, 1>&
+          const Core::LinAlg::Matrix<6, 1>&
               glstrain,  ///< Green-Lagrange strain in strain like Voigt notation
           int gp,        //< Gauss point
           int eleGID     ///< element GID
@@ -225,23 +225,23 @@ namespace MAT
       /// Evaluates strain energy for automatic differentiation with FAD
       template <typename T>
       void EvaluateFunc(T& psi,                    ///< strain energy functions
-          CORE::LINALG::Matrix<3, 3, T> const& C,  ///< Right Cauchy-Green tensor
+          Core::LinAlg::Matrix<3, 3, T> const& C,  ///< Right Cauchy-Green tensor
           int gp,                                  ///< Gauss point
           int eleGID) const;                       ///< element GID
 
       /// Set fiber directions
       void SetFiberVecs(double newgamma,             ///< new angle
-          const CORE::LINALG::Matrix<3, 3>& locsys,  ///< local coordinate system
-          const CORE::LINALG::Matrix<3, 3>& defgrd   ///< deformation gradient
+          const Core::LinAlg::Matrix<3, 3>& locsys,  ///< local coordinate system
+          const Core::LinAlg::Matrix<3, 3>& defgrd   ///< deformation gradient
           ) override;
 
       /// Set fiber directions
-      void SetFiberVecs(const CORE::LINALG::Matrix<3, 1>& fibervec  ///< new fiber vector
+      void SetFiberVecs(const Core::LinAlg::Matrix<3, 1>& fibervec  ///< new fiber vector
           ) override;
 
       /// Get fiber directions
       void GetFiberVecs(
-          std::vector<CORE::LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
+          std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
           ) override;
 
       /// Indicator for formulation
@@ -267,11 +267,11 @@ namespace MAT
 
      private:
       /// my material parameters
-      MAT::ELASTIC::PAR::CoupAnisoExpoBase* params_;
-    };  // namespace ELASTIC
+      Mat::Elastic::PAR::CoupAnisoExpoBase* params_;
+    };  // namespace Elastic
 
-  }  // namespace ELASTIC
-}  // namespace MAT
+  }  // namespace Elastic
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

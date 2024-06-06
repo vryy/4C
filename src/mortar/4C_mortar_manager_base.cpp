@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 01/10|
  *----------------------------------------------------------------------*/
-MORTAR::ManagerBase::ManagerBase()
+Mortar::ManagerBase::ManagerBase()
 {
   //**********************************************************************
   // empty constructor (this is an abstract base class)

@@ -95,10 +95,10 @@ const std::string& VtuWriter::writer_p_suffix() const
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void VtuWriter::write_geometry_unstructured_grid(const std::vector<double>& point_coordinates,
-    const std::vector<CORE::IO::index_type>& point_cell_connectivity,
-    const std::vector<CORE::IO::index_type>& cell_offset, const std::vector<uint8_t>& cell_types,
-    const std::vector<CORE::IO::index_type>& face_connectivity,
-    const std::vector<CORE::IO::index_type>& face_offset)
+    const std::vector<Core::IO::index_type>& point_cell_connectivity,
+    const std::vector<Core::IO::index_type>& cell_offset, const std::vector<uint8_t>& cell_types,
+    const std::vector<Core::IO::index_type>& face_connectivity,
+    const std::vector<Core::IO::index_type>& face_offset)
 {
   // always assume 3D for now Todo maybe use this as template to allow for 2D case
   const unsigned int num_spatial_dimensions = 3;
@@ -143,7 +143,7 @@ void VtuWriter::write_geometry_unstructured_grid(const std::vector<double>& poin
   if (write_binary_output_)
   {
     currentout_ << " format=\"binary\">\n";
-    LIBB64::writeCompressedBlock(point_coordinates, currentout_);
+    LibB64::writeCompressedBlock(point_coordinates, currentout_);
   }
   else
   {
@@ -181,7 +181,7 @@ void VtuWriter::write_geometry_unstructured_grid(const std::vector<double>& poin
   if (write_binary_output_)
   {
     currentout_ << " format=\"binary\">\n";
-    LIBB64::writeCompressedBlock(point_cell_connectivity, currentout_);
+    LibB64::writeCompressedBlock(point_cell_connectivity, currentout_);
   }
   else
   {
@@ -203,7 +203,7 @@ void VtuWriter::write_geometry_unstructured_grid(const std::vector<double>& poin
   if (write_binary_output_)
   {
     currentout_ << " format=\"binary\">\n";
-    LIBB64::writeCompressedBlock(cell_offset, currentout_);
+    LibB64::writeCompressedBlock(cell_offset, currentout_);
   }
   else
   {
@@ -223,7 +223,7 @@ void VtuWriter::write_geometry_unstructured_grid(const std::vector<double>& poin
   if (write_binary_output_)
   {
     currentout_ << " format=\"binary\">\n";
-    LIBB64::writeCompressedBlock(cell_types, currentout_);
+    LibB64::writeCompressedBlock(cell_types, currentout_);
   }
   else
   {
@@ -241,7 +241,7 @@ void VtuWriter::write_geometry_unstructured_grid(const std::vector<double>& poin
     if (write_binary_output_)
     {
       currentout_ << " format=\"binary\">\n";
-      LIBB64::writeCompressedBlock(face_connectivity, currentout_);
+      LibB64::writeCompressedBlock(face_connectivity, currentout_);
     }
     else
     {
@@ -255,7 +255,7 @@ void VtuWriter::write_geometry_unstructured_grid(const std::vector<double>& poin
     if (write_binary_output_)
     {
       currentout_ << " format=\"binary\">\n";
-      LIBB64::writeCompressedBlock(face_offset, currentout_);
+      LibB64::writeCompressedBlock(face_offset, currentout_);
     }
     else
     {
@@ -270,7 +270,7 @@ void VtuWriter::write_geometry_unstructured_grid(const std::vector<double>& poin
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void VtuWriter::write_point_data_vector(const CORE::IO::visualization_vector_type_variant& data,
+void VtuWriter::write_point_data_vector(const Core::IO::visualization_vector_type_variant& data,
     unsigned int num_components_per_point, const std::string& name)
 {
   // start the point data section that will be written subsequently
@@ -297,13 +297,13 @@ void VtuWriter::write_point_data_vector(const CORE::IO::visualization_vector_typ
   this->write_data_array(data, num_components_per_point, name);
 
   if (myrank_ == 0)
-    CORE::IO::cout(CORE::IO::debug)
-        << "\nVtuWriter: point data " << name << " written." << CORE::IO::endl;
+    Core::IO::cout(Core::IO::debug)
+        << "\nVtuWriter: point data " << name << " written." << Core::IO::endl;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void VtuWriter::WriteCellDataVector(const CORE::IO::visualization_vector_type_variant& data,
+void VtuWriter::WriteCellDataVector(const Core::IO::visualization_vector_type_variant& data,
     unsigned int num_components_per_cell, const std::string& name)
 {
   // if required, end the point data section
@@ -343,8 +343,8 @@ void VtuWriter::WriteCellDataVector(const CORE::IO::visualization_vector_type_va
   this->write_data_array(data, num_components_per_cell, name);
 
   if (myrank_ == 0)
-    CORE::IO::cout(CORE::IO::debug)
-        << "\nVtuWriter: cell data " << name << " written." << CORE::IO::endl;
+    Core::IO::cout(Core::IO::debug)
+        << "\nVtuWriter: cell data " << name << " written." << Core::IO::endl;
 }
 
 FOUR_C_NAMESPACE_CLOSE

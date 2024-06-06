@@ -31,24 +31,24 @@ namespace PARTICLEENGINE
   class ParticleContainerBundle;
 }  // namespace PARTICLEENGINE
 
-namespace PARTICLEINTERACTION
+namespace ParticleInteraction
 {
   class MaterialHandler;
   class SPHNeighborPairs;
-}  // namespace PARTICLEINTERACTION
+}  // namespace ParticleInteraction
 
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
     class ParticleMaterialThermo;
   }
-}  // namespace MAT
+}  // namespace Mat
 
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
  *---------------------------------------------------------------------------*/
-namespace PARTICLEINTERACTION
+namespace ParticleInteraction
 {
   class SPHHeatSourceBase
   {
@@ -65,8 +65,8 @@ namespace PARTICLEINTERACTION
     //! setup heat source handler
     virtual void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-        const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
-        const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs);
+        const std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial,
+        const std::shared_ptr<ParticleInteraction::SPHNeighborPairs> neighborpairs);
 
     //! evaluate heat source
     virtual void EvaluateHeatSource(const double& evaltime) const = 0;
@@ -82,13 +82,13 @@ namespace PARTICLEINTERACTION
     PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle_;
 
     //! particle material handler
-    std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial_;
+    std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial_;
 
     //! neighbor pair handler
-    std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs_;
+    std::shared_ptr<ParticleInteraction::SPHNeighborPairs> neighborpairs_;
 
     //! pointer to thermo material of particle types
-    std::vector<const MAT::PAR::ParticleMaterialThermo*> thermomaterial_;
+    std::vector<const Mat::PAR::ParticleMaterialThermo*> thermomaterial_;
 
     //! heat source function number
     const int heatsourcefctnumber_;
@@ -130,7 +130,7 @@ namespace PARTICLEINTERACTION
     bool eval_direction_;
   };
 
-}  // namespace PARTICLEINTERACTION
+}  // namespace ParticleInteraction
 
 /*---------------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

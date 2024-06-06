@@ -19,7 +19,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::GEO
+namespace Core::Geo
 {
   /*!
    * a common task is to get an array of the positions of all nodes of this element
@@ -32,11 +32,11 @@ namespace CORE::GEO
    * nodes
    */
   template <class M>
-  void fillInitialPositionArray(const CORE::Elements::Element* const ele, M& xyze)
+  void fillInitialPositionArray(const Core::Elements::Element* const ele, M& xyze)
   {
     const int numnode = ele->num_node();
 
-    const CORE::Nodes::Node* const* nodes = ele->Nodes();
+    const Core::Nodes::Node* const* nodes = ele->Nodes();
     FOUR_C_ASSERT(nodes != nullptr,
         "element has no nodal pointers, so getting a position array doesn't make sense!");
 
@@ -60,13 +60,13 @@ namespace CORE::GEO
    * \return Array with 3 dimensional position of all element nodes in the coordinate system of the
    * nodes
    */
-  template <CORE::FE::CellType distype, class M>
-  void fillInitialPositionArray(const CORE::Elements::Element* const ele, M& xyze)
+  template <Core::FE::CellType distype, class M>
+  void fillInitialPositionArray(const Core::Elements::Element* const ele, M& xyze)
   {
     FOUR_C_ASSERT(distype == ele->Shape(), "mismatch in distype");
-    const int numnode = CORE::FE::num_nodes<distype>;
+    const int numnode = Core::FE::num_nodes<distype>;
 
-    const CORE::Nodes::Node* const* nodes = ele->Nodes();
+    const Core::Nodes::Node* const* nodes = ele->Nodes();
     FOUR_C_ASSERT(nodes != nullptr,
         "element has no nodal pointers, so getting a position array doesn't make sense!");
 
@@ -91,13 +91,13 @@ namespace CORE::GEO
    * \return Array with 1, 2 or 3 dimensional position of all element nodes in the coordinate system
    * of the nodes
    */
-  template <CORE::FE::CellType distype, int dim, class M>
-  void fillInitialPositionArray(const CORE::Elements::Element* const ele, M& xyze)
+  template <Core::FE::CellType distype, int dim, class M>
+  void fillInitialPositionArray(const Core::Elements::Element* const ele, M& xyze)
   {
     FOUR_C_ASSERT(distype == ele->Shape(), "mismatch in distype");
-    const int numnode = CORE::FE::num_nodes<distype>;
+    const int numnode = Core::FE::num_nodes<distype>;
 
-    const CORE::Nodes::Node* const* nodes = ele->Nodes();
+    const Core::Nodes::Node* const* nodes = ele->Nodes();
     FOUR_C_ASSERT(nodes != nullptr,
         "element has no nodal pointers, so getting a position array doesn't make sense!");
 
@@ -124,7 +124,7 @@ namespace CORE::GEO
    * nodes
    */
   void InitialPositionArray(
-      CORE::LINALG::SerialDenseMatrix& xyze, const CORE::Elements::Element* const ele);
+      Core::LinAlg::SerialDenseMatrix& xyze, const Core::Elements::Element* const ele);
 
 
   /*!
@@ -135,7 +135,7 @@ namespace CORE::GEO
    * \return Array with 3 dimensional position of all element nodes in the coordinate system of the
    * nodes
    */
-  CORE::LINALG::SerialDenseMatrix InitialPositionArray(const CORE::Elements::Element* const
+  Core::LinAlg::SerialDenseMatrix InitialPositionArray(const Core::Elements::Element* const
           ele  ///< pointer to element, whose nodes we evaluate for their position
   );
 
@@ -148,9 +148,9 @@ namespace CORE::GEO
    * \return Array with 3 dimensional position of all element nodes in the coordinate system of the
    * nodes
    */
-  CORE::LINALG::SerialDenseMatrix getCurrentNodalPositions(
-      const CORE::Elements::Element* const ele,  ///< element with nodal pointers
-      const std::map<int, CORE::LINALG::Matrix<3, 1>>&
+  Core::LinAlg::SerialDenseMatrix getCurrentNodalPositions(
+      const Core::Elements::Element* const ele,  ///< element with nodal pointers
+      const std::map<int, Core::LinAlg::Matrix<3, 1>>&
           currentcutterpositions  ///< current positions of all cutter nodes
   );
 
@@ -163,13 +163,13 @@ namespace CORE::GEO
    * \return Array with 3 dimensional position of all element nodes in the coordinate system of the
    * nodes
    */
-  CORE::LINALG::SerialDenseMatrix getCurrentNodalPositions(
-      const Teuchos::RCP<const CORE::Elements::Element> ele,  ///< pointer on element
-      const std::map<int, CORE::LINALG::Matrix<3, 1>>&
+  Core::LinAlg::SerialDenseMatrix getCurrentNodalPositions(
+      const Teuchos::RCP<const Core::Elements::Element> ele,  ///< pointer on element
+      const std::map<int, Core::LinAlg::Matrix<3, 1>>&
           currentpositions  ///< current positions of all cutter nodes
   );
 
-}  // namespace CORE::GEO
+}  // namespace Core::Geo
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -19,8 +19,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CONTACT::AUG::Potential::Potential(
-    const CONTACT::AUG::Strategy& strategy, const CONTACT::AUG::DataContainer& data)
+CONTACT::Aug::Potential::Potential(
+    const CONTACT::Aug::Strategy& strategy, const CONTACT::Aug::DataContainer& data)
     : isvalid_(),
       issetup_(false),
       strategy_(strategy),
@@ -36,7 +36,7 @@ CONTACT::AUG::Potential::Potential(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Potential::reset_is_valid()
+void CONTACT::Aug::Potential::reset_is_valid()
 {
   isvalid_.potential_ = false;
   isvalid_.linearization_ = false;
@@ -45,7 +45,7 @@ void CONTACT::AUG::Potential::reset_is_valid()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CONTACT::AUG::Potential::IsValid::isSameDirection(const Epetra_Vector& dir)
+bool CONTACT::Aug::Potential::IsValid::isSameDirection(const Epetra_Vector& dir)
 {
   double dir_nrm2 = 0.0;
   dir.Norm2(&dir_nrm2);
@@ -61,11 +61,11 @@ bool CONTACT::AUG::Potential::IsValid::isSameDirection(const Epetra_Vector& dir)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Potential::Setup()
+void CONTACT::Aug::Potential::Setup()
 {
   zn_active_ = Teuchos::rcp(new Epetra_Vector(*data_.g_active_n_dof_row_map_ptr()));
 
-  Teuchos::RCP<Epetra_Map> ginactivendofs = CORE::LINALG::SplitMap(
+  Teuchos::RCP<Epetra_Map> ginactivendofs = Core::LinAlg::SplitMap(
       *data_.g_sl_normal_dof_row_map_ptr(), *data_.g_active_n_dof_row_map_ptr());
   zn_inactive_ = Teuchos::rcp(new Epetra_Vector(*ginactivendofs));
 
@@ -75,19 +75,19 @@ void CONTACT::AUG::Potential::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Potential::set_active_inactive_state()
+void CONTACT::Aug::Potential::set_active_inactive_state()
 {
   reset_is_valid();
 
-  CORE::LINALG::ExtractMyVector(*data_.LmPtr(), *zn_active_);
-  CORE::LINALG::ExtractMyVector(*data_.LmPtr(), *zn_inactive_);
+  Core::LinAlg::ExtractMyVector(*data_.LmPtr(), *zn_active_);
+  Core::LinAlg::ExtractMyVector(*data_.LmPtr(), *zn_inactive_);
 
   isvalid_.state_ = true;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Potential::set_direction(const Epetra_Vector& direction,
+void CONTACT::Aug::Potential::set_direction(const Epetra_Vector& direction,
     Epetra_Vector& dincrSlMa, Epetra_Vector& znincr_active, Epetra_Vector& znincr_inactive)
 {
   strategy_.SplitStateVector(direction, dincrSlMa, znincr_active, znincr_inactive);
@@ -95,7 +95,7 @@ void CONTACT::AUG::Potential::set_direction(const Epetra_Vector& direction,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Potential::Compute()
+void CONTACT::Aug::Potential::Compute()
 {
   if (isvalid_.potential_) return;
 
@@ -110,7 +110,7 @@ void CONTACT::AUG::Potential::Compute()
 
   for (const Teuchos::RCP<CONTACT::Interface>& cit : co_interfaces)
   {
-    const CONTACT::AUG::Interface& interface = static_cast<const CONTACT::AUG::Interface&>(*cit);
+    const CONTACT::Aug::Interface& interface = static_cast<const CONTACT::Aug::Interface&>(*cit);
 
     interface.assemble_contact_potential_terms(cn, lterms[0], lterms[1], lterms[2], lterms[3]);
   }
@@ -131,14 +131,14 @@ void CONTACT::AUG::Potential::Compute()
 
   isvalid_.potential_ = true;
 
-  CORE::IO::cout(CORE::IO::debug) << "\n*****************************************************\n";
-  CORE::IO::cout(CORE::IO::debug) << __LINE__ << " - " << __PRETTY_FUNCTION__ << CORE::IO::endl;
-  potdata_.print(CORE::IO::cout.os(CORE::IO::debug), *this);
+  Core::IO::cout(Core::IO::debug) << "\n*****************************************************\n";
+  Core::IO::cout(Core::IO::debug) << __LINE__ << " - " << __PRETTY_FUNCTION__ << Core::IO::endl;
+  potdata_.print(Core::IO::cout.os(Core::IO::debug), *this);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Potential::ComputeLin(const Epetra_Vector& dir)
+void CONTACT::Aug::Potential::ComputeLin(const Epetra_Vector& dir)
 {
   if (isvalid_.isSameDirection(dir)) return;
 
@@ -161,15 +161,15 @@ void CONTACT::AUG::Potential::ComputeLin(const Epetra_Vector& dir)
 
   isvalid_.linearization_ = true;
 
-  CORE::IO::cout(CORE::IO::debug) << "\n*****************************************************\n";
-  CORE::IO::cout(CORE::IO::debug) << __LINE__ << " - " << __PRETTY_FUNCTION__ << CORE::IO::endl;
-  lindata_.print(CORE::IO::cout.os(CORE::IO::debug), *this);
-  CORE::IO::cout(CORE::IO::debug) << "\n\n";
+  Core::IO::cout(Core::IO::debug) << "\n*****************************************************\n";
+  Core::IO::cout(Core::IO::debug) << __LINE__ << " - " << __PRETTY_FUNCTION__ << Core::IO::endl;
+  lindata_.print(Core::IO::cout.os(Core::IO::debug), *this);
+  Core::IO::cout(Core::IO::debug) << "\n\n";
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Potential::compute_lin_active(
+void CONTACT::Aug::Potential::compute_lin_active(
     const Epetra_Vector& dincrSlMa, const Epetra_Vector& znincr_active)
 {
   // if there are no global active nodes, we do a direct return
@@ -211,13 +211,13 @@ void CONTACT::AUG::Potential::compute_lin_active(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Potential::compute_lin_inactive(const Epetra_Vector& znincr_inactive)
+void CONTACT::Aug::Potential::compute_lin_inactive(const Epetra_Vector& znincr_inactive)
 {
   // --------------------------------------------------------------------------
   // Potential: Inactive contributions
   // --------------------------------------------------------------------------
   Teuchos::RCP<Epetra_Map> ginactiveslnodes =
-      CORE::LINALG::SplitMap(*data_.GSlNodeRowMapPtr(), *data_.g_active_node_row_map_ptr());
+      Core::LinAlg::SplitMap(*data_.GSlNodeRowMapPtr(), *data_.g_active_node_row_map_ptr());
   Epetra_Vector scZnincr_inactive(znincr_inactive);
 
   {
@@ -243,14 +243,14 @@ void CONTACT::AUG::Potential::compute_lin_inactive(const Epetra_Vector& znincr_i
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::AUG::Potential::get_time_integration_factor() const
+double CONTACT::Aug::Potential::get_time_integration_factor() const
 {
   return data_.GetDynParameterN();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::AUG::Potential::Get(
+double CONTACT::Aug::Potential::Get(
     enum POTENTIAL::Type pot_type, enum POTENTIAL::SetType pot_set) const
 {
   if (not isvalid_.potential_) FOUR_C_THROW("Call Compute() first!");
@@ -273,7 +273,7 @@ double CONTACT::AUG::Potential::Get(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::AUG::Potential::GetLin(enum POTENTIAL::Type pot_type,
+double CONTACT::Aug::Potential::GetLin(enum POTENTIAL::Type pot_type,
     enum POTENTIAL::SetType pot_set, enum POTENTIAL::LinTerm lin_term) const
 {
   if (not isvalid_.linearization_) FOUR_C_THROW("Call ComputeLin() first!");
@@ -296,7 +296,7 @@ double CONTACT::AUG::Potential::GetLin(enum POTENTIAL::Type pot_type,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::AUG::Potential::get_lagrangian(enum POTENTIAL::SetType pot_set) const
+double CONTACT::Aug::Potential::get_lagrangian(enum POTENTIAL::SetType pot_set) const
 {
   double val = 0.0;
 
@@ -330,7 +330,7 @@ double CONTACT::AUG::Potential::get_lagrangian(enum POTENTIAL::SetType pot_set) 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::AUG::Potential::time_int_scale_np(const double static_part) const
+double CONTACT::Aug::Potential::time_int_scale_np(const double static_part) const
 {
   const double tf_np = 1.0 - get_time_integration_factor();
   return static_part * tf_np;
@@ -338,7 +338,7 @@ double CONTACT::AUG::Potential::time_int_scale_np(const double static_part) cons
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::AUG::Potential::get_lagrangian_lin(
+double CONTACT::Aug::Potential::get_lagrangian_lin(
     enum POTENTIAL::LinTerm lin_term, enum POTENTIAL::SetType pot_set) const
 {
   double val = 0.0;
@@ -365,7 +365,7 @@ double CONTACT::AUG::Potential::get_lagrangian_lin(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::AUG::Potential::get_active_lagrangian_lin(
+double CONTACT::Aug::Potential::get_active_lagrangian_lin(
     const enum POTENTIAL::LinTerm lin_term) const
 {
   double val = 0.0;
@@ -392,7 +392,7 @@ double CONTACT::AUG::Potential::get_active_lagrangian_lin(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::AUG::Potential::get_inactive_lagrangian_lin(
+double CONTACT::Aug::Potential::get_inactive_lagrangian_lin(
     const enum POTENTIAL::LinTerm lin_term) const
 {
   switch (lin_term)
@@ -412,7 +412,7 @@ double CONTACT::AUG::Potential::get_inactive_lagrangian_lin(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::AUG::Potential::get_augmented_lagrangian(enum POTENTIAL::SetType pot_set) const
+double CONTACT::Aug::Potential::get_augmented_lagrangian(enum POTENTIAL::SetType pot_set) const
 {
   double val = 0.0;
 
@@ -447,7 +447,7 @@ double CONTACT::AUG::Potential::get_augmented_lagrangian(enum POTENTIAL::SetType
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::AUG::Potential::get_augmented_lagrangian_lin(
+double CONTACT::Aug::Potential::get_augmented_lagrangian_lin(
     enum POTENTIAL::LinTerm lin_term, enum POTENTIAL::SetType pot_set) const
 {
   double val = 0.0;
@@ -474,7 +474,7 @@ double CONTACT::AUG::Potential::get_augmented_lagrangian_lin(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::AUG::Potential::get_active_augmented_lagrangian_lin(
+double CONTACT::Aug::Potential::get_active_augmented_lagrangian_lin(
     const enum POTENTIAL::LinTerm lin_term) const
 {
   double val = 0;
@@ -502,7 +502,7 @@ double CONTACT::AUG::Potential::get_active_augmented_lagrangian_lin(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::AUG::Potential::get_inactive_augmented_lagrangian_lin(
+double CONTACT::Aug::Potential::get_inactive_augmented_lagrangian_lin(
     const enum POTENTIAL::LinTerm lin_term) const
 {
   switch (lin_term)
@@ -522,7 +522,7 @@ double CONTACT::AUG::Potential::get_inactive_augmented_lagrangian_lin(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::AUG::Potential::get_infeasibility_measure(enum POTENTIAL::SetType pot_set) const
+double CONTACT::Aug::Potential::get_infeasibility_measure(enum POTENTIAL::SetType pot_set) const
 {
   double val = 0.0;
 
@@ -556,7 +556,7 @@ double CONTACT::AUG::Potential::get_infeasibility_measure(enum POTENTIAL::SetTyp
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::AUG::Potential::get_infeasibility_measure_lin(
+double CONTACT::Aug::Potential::get_infeasibility_measure_lin(
     enum POTENTIAL::LinTerm lin_term, enum POTENTIAL::SetType pot_set) const
 {
   double val = 0.0;
@@ -583,7 +583,7 @@ double CONTACT::AUG::Potential::get_infeasibility_measure_lin(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::AUG::Potential::get_active_infeasibility_measure_lin(
+double CONTACT::Aug::Potential::get_active_infeasibility_measure_lin(
     const enum POTENTIAL::LinTerm lin_term) const
 {
   switch (lin_term)
@@ -602,7 +602,7 @@ double CONTACT::AUG::Potential::get_active_infeasibility_measure_lin(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::AUG::Potential::get_inactive_infeasibility_measure_lin(
+double CONTACT::Aug::Potential::get_inactive_infeasibility_measure_lin(
     const enum POTENTIAL::LinTerm lin_term) const
 {
   switch (lin_term)
@@ -621,7 +621,7 @@ double CONTACT::AUG::Potential::get_inactive_infeasibility_measure_lin(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Potential::PotData::print(std::ostream& os, const Potential& pot) const
+void CONTACT::Aug::Potential::PotData::print(std::ostream& os, const Potential& pot) const
 {
   const double tf_n = pot.get_time_integration_factor();
   const double tf_np = 1.0 - tf_n;
@@ -639,7 +639,7 @@ void CONTACT::AUG::Potential::PotData::print(std::ostream& os, const Potential& 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Potential::LinData::print(std::ostream& os, const Potential& pot) const
+void CONTACT::Aug::Potential::LinData::print(std::ostream& os, const Potential& pot) const
 {
   const double tf_n = pot.get_time_integration_factor();
   const double tf_np = 1.0 - tf_n;

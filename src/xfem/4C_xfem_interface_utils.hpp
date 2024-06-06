@@ -23,21 +23,21 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   namespace UTILS
   {
     class GaussIntegration;
   }
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::GEO
+namespace Core::Geo
 {
-  namespace CUT
+  namespace Cut
   {
     class BoundaryCell;
   }
-}  // namespace CORE::GEO
+}  // namespace Core::Geo
 
 namespace XFEM
 {
@@ -49,7 +49,7 @@ namespace XFEM
     \brief Get the std - average weights kappa_m and kappa_s for the Nitsche calculations
      */
     void GetStdAverageWeights(
-        const INPAR::XFEM::AveragingStrategy averaging_strategy, double& kappa_m);
+        const Inpar::XFEM::AveragingStrategy averaging_strategy, double& kappa_m);
 
     //! @name nit_get_trace_estimate_constant
     /*!
@@ -57,7 +57,7 @@ namespace XFEM
     and polynomial order of the element
      */
     double nit_get_trace_estimate_constant(
-        const CORE::FE::CellType ele_distype, const bool is_pseudo_2D);
+        const Core::FE::CellType ele_distype, const bool is_pseudo_2D);
 
 
     //! @name nit_compute_visc_penalty_stabfac
@@ -65,13 +65,13 @@ namespace XFEM
     \brief compute viscous part of Nitsche's penalty term scaling for Nitsche's method
      */
     void nit_compute_visc_penalty_stabfac(
-        const CORE::FE::CellType ele_distype,  ///< the discretization type of the element w.r.t
+        const Core::FE::CellType ele_distype,  ///< the discretization type of the element w.r.t
                                                ///< which the stabilization factor is computed
         const double&
             penscaling,  ///< material dependent penalty scaling (e.g. visceff) divided by h
         const double& NIT_stabscaling,  ///< basic nit penalty stab scaling
         const bool& is_pseudo_2D,       ///< is pseudo 2d
-        const INPAR::XFEM::ViscStabTraceEstimate&
+        const Inpar::XFEM::ViscStabTraceEstimate&
             visc_stab_trace_estimate,  ///< how to estimate the scaling from the trace inequality
         double& NIT_visc_stab_fac      ///< viscous part of Nitsche's penalty term
     );
@@ -91,23 +91,23 @@ namespace XFEM
     //! compute transformation factor for surface integration, normal, local and global gp
     //! coordinates
     void ComputeSurfaceTransformation(double& drs,  ///< surface transformation factor
-        CORE::LINALG::Matrix<3, 1>& x_gp_lin,       ///< global coordiantes of gaussian point
-        CORE::LINALG::Matrix<3, 1>& normal,         ///< normal vector on boundary cell
-        CORE::GEO::CUT::BoundaryCell* bc,           ///< boundary cell
-        const CORE::LINALG::Matrix<2, 1>&
+        Core::LinAlg::Matrix<3, 1>& x_gp_lin,       ///< global coordiantes of gaussian point
+        Core::LinAlg::Matrix<3, 1>& normal,         ///< normal vector on boundary cell
+        Core::Geo::Cut::BoundaryCell* bc,           ///< boundary cell
+        const Core::LinAlg::Matrix<2, 1>&
             eta,                   ///< local coordinates of gaussian point w.r.t boundarycell
         bool referencepos = false  ///< use the bc reference position for transformation
     );
 
     //! pre-compute the measure of the element's intersecting surface
-    double ComputeMeasCutSurf(const std::map<int, std::vector<CORE::FE::GaussIntegration>>&
+    double ComputeMeasCutSurf(const std::map<int, std::vector<Core::FE::GaussIntegration>>&
                                   bintpoints,  ///< boundary cell integration points
-        const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>& bcells  ///< boundary cells
+        const std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>& bcells  ///< boundary cells
     );
 
     //! compute the measure of the elements surface with given local id
-    double ComputeMeasFace(CORE::Elements::Element* ele,  ///< fluid element
-        CORE::LINALG::SerialDenseMatrix& ele_xyze,        ///< element coordinates
+    double ComputeMeasFace(Core::Elements::Element* ele,  ///< fluid element
+        Core::LinAlg::SerialDenseMatrix& ele_xyze,        ///< element coordinates
         const int local_face_id,  ///< the local id of the face w.r.t the fluid element
         const int nsd             ///< number of space dimensions
     );
@@ -122,74 +122,74 @@ namespace XFEM
     }
 
     //! evaluate element volume
-    template <CORE::FE::CellType distype>
-    double EvalElementVolume(CORE::LINALG::Matrix<3, CORE::FE::num_nodes<distype>> xyze,
-        CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, 1>* nurbs_weights = nullptr,
-        std::vector<CORE::LINALG::SerialDenseVector>* nurbs_knots = nullptr);
+    template <Core::FE::CellType distype>
+    double EvalElementVolume(Core::LinAlg::Matrix<3, Core::FE::num_nodes<distype>> xyze,
+        Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, 1>* nurbs_weights = nullptr,
+        std::vector<Core::LinAlg::SerialDenseVector>* nurbs_knots = nullptr);
 
     //! compute characteristic element length h_k
-    template <CORE::FE::CellType distype>
-    double ComputeCharEleLength(CORE::Elements::Element* ele,      ///< fluid element
-        CORE::LINALG::SerialDenseMatrix& ele_xyze,                 ///< element coordinates
+    template <Core::FE::CellType distype>
+    double ComputeCharEleLength(Core::Elements::Element* ele,      ///< fluid element
+        Core::LinAlg::SerialDenseMatrix& ele_xyze,                 ///< element coordinates
         const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
-        const CORE::GEO::CUT::plain_volumecell_set&
+        const Core::Geo::Cut::plain_volumecell_set&
             vcSet,  ///< volumecell sets for volume integration
-        const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>&
+        const std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>&
             bcells,  ///< bcells for boundary cell integration
-        const std::map<int, std::vector<CORE::FE::GaussIntegration>>&
+        const std::map<int, std::vector<Core::FE::GaussIntegration>>&
             bintpoints,  ///< integration points for boundary cell integration
-        const INPAR::XFEM::ViscStabHk visc_stab_hk,  ///< h definition
-        Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype>> emb =
+        const Inpar::XFEM::ViscStabHk visc_stab_hk,  ///< h definition
+        Teuchos::RCP<Discret::ELEMENTS::XFLUID::SlaveElementInterface<distype>> emb =
             Teuchos::null,  ///< pointer to the embedded coupling implementation
-        CORE::Elements::Element* face = nullptr  ///< side element in 3D
+        Core::Elements::Element* face = nullptr  ///< side element in 3D
     );
 
     //! compute full scaling of Nitsche's penalty term (xfluid-fluid)
     void NIT_Compute_FullPenalty_Stabfac(
         double& NIT_full_stab_fac,  ///< to be filled: full Nitsche's penalty term scaling
                                     ///< (viscous+convective part)
-        const CORE::LINALG::Matrix<3, 1>& normal,    ///< interface-normal vector
+        const Core::LinAlg::Matrix<3, 1>& normal,    ///< interface-normal vector
         const double h_k,                            ///< characteristic element length
         const double kappa_m,                        ///< Weight parameter (parameter +/master side)
         const double kappa_s,                        ///< Weight parameter (parameter -/slave  side)
-        const CORE::LINALG::Matrix<3, 1>& velint_m,  ///< Master side velocity at gauss-point
-        const CORE::LINALG::Matrix<3, 1>& velint_s,  ///< Slave side velocity at gauss-point
+        const Core::LinAlg::Matrix<3, 1>& velint_m,  ///< Master side velocity at gauss-point
+        const Core::LinAlg::Matrix<3, 1>& velint_s,  ///< Slave side velocity at gauss-point
         const double NIT_visc_stab_fac,  ///< Nitsche's viscous scaling part of penalty term
         const double timefac,            ///< timefac
         const bool isstationary,         ///< isstationary
         const double densaf_master,      ///< master density
         const double densaf_slave,       ///< slave density
-        INPAR::XFEM::MassConservationScaling
+        Inpar::XFEM::MassConservationScaling
             mass_conservation_scaling,  ///< kind of mass conservation scaling
-        INPAR::XFEM::MassConservationCombination
+        Inpar::XFEM::MassConservationCombination
             mass_conservation_combination,  ///< kind of mass conservation combination
         const double NITStabScaling,        ///< scaling of nit stab fac
-        INPAR::XFEM::ConvStabScaling
+        Inpar::XFEM::ConvStabScaling
             ConvStabScaling,  ///< which convective stab. scaling of inflow stab
-        INPAR::XFEM::XffConvStabScaling
+        Inpar::XFEM::XffConvStabScaling
             XFF_ConvStabScaling,            ///< which convective stab. scaling on XFF interface
         const bool IsConservative = false,  ///< conservative formulation of navier stokes
         bool error_calc = false  ///< when called in error calculation, don't add the inflow terms
     );
 
-    double Evaluate_Full_Traction(const double& pres_m, const CORE::LINALG::Matrix<3, 3>& vderxy_m,
-        const double& visc_m, const double& penalty_fac, const CORE::LINALG::Matrix<3, 1>& vel_m,
-        const CORE::LINALG::Matrix<3, 1>& vel_s, const CORE::LINALG::Matrix<3, 1>& elenormal,
-        const CORE::LINALG::Matrix<3, 1>& normal, const CORE::LINALG::Matrix<3, 1>& velpf_s,
+    double Evaluate_Full_Traction(const double& pres_m, const Core::LinAlg::Matrix<3, 3>& vderxy_m,
+        const double& visc_m, const double& penalty_fac, const Core::LinAlg::Matrix<3, 1>& vel_m,
+        const Core::LinAlg::Matrix<3, 1>& vel_s, const Core::LinAlg::Matrix<3, 1>& elenormal,
+        const Core::LinAlg::Matrix<3, 1>& normal, const Core::LinAlg::Matrix<3, 1>& velpf_s,
         double porosity = -1);
 
-    double Evaluate_Full_Traction(const CORE::LINALG::Matrix<3, 1>& intraction,
-        const double& penalty_fac, const CORE::LINALG::Matrix<3, 1>& vel_m,
-        const CORE::LINALG::Matrix<3, 1>& vel_s, const CORE::LINALG::Matrix<3, 1>& elenormal,
-        const CORE::LINALG::Matrix<3, 1>& normal);
+    double Evaluate_Full_Traction(const Core::LinAlg::Matrix<3, 1>& intraction,
+        const double& penalty_fac, const Core::LinAlg::Matrix<3, 1>& vel_m,
+        const Core::LinAlg::Matrix<3, 1>& vel_s, const Core::LinAlg::Matrix<3, 1>& elenormal,
+        const Core::LinAlg::Matrix<3, 1>& normal);
 
     double Evaluate_Full_Traction(const double& intraction, const double& penalty_fac,
-        const CORE::LINALG::Matrix<3, 1>& vel_m, const CORE::LINALG::Matrix<3, 1>& vel_s,
-        const CORE::LINALG::Matrix<3, 1>& elenormal, const CORE::LINALG::Matrix<3, 1>& normal);
+        const Core::LinAlg::Matrix<3, 1>& vel_m, const Core::LinAlg::Matrix<3, 1>& vel_s,
+        const Core::LinAlg::Matrix<3, 1>& elenormal, const Core::LinAlg::Matrix<3, 1>& normal);
 
-    void EvaluteStateatGP(const CORE::Elements::Element* sele,
-        const CORE::LINALG::Matrix<3, 1>& selexsi, const DRT::Discretization& discret,
-        const std::string& state, CORE::LINALG::Matrix<3, 1>& vel_s);
+    void EvaluteStateatGP(const Core::Elements::Element* sele,
+        const Core::LinAlg::Matrix<3, 1>& selexsi, const Discret::Discretization& discret,
+        const std::string& state, Core::LinAlg::Matrix<3, 1>& vel_s);
 
   }  // namespace UTILS
 }  // namespace XFEM

@@ -37,77 +37,79 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams,
-    Teuchos::RCP<CORE::LINALG::MapExtractor> porosity_splitter)
+PoroElast::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams,
+    Teuchos::RCP<Core::LinAlg::MapExtractor> porosity_splitter)
     : AlgorithmBase(comm, timeparams),
       is_part_of_multifield_problem_(false),
       porosity_splitter_(porosity_splitter),
-      matchinggrid_(CORE::UTILS::IntegralValue<bool>(
-          GLOBAL::Problem::Instance()->poroelast_dynamic_params(), "MATCHINGGRID")),
-      oldstructimint_(CORE::UTILS::IntegralValue<INPAR::STR::IntegrationStrategy>(
-                          GLOBAL::Problem::Instance()->structural_dynamic_params(),
-                          "INT_STRATEGY") == INPAR::STR::int_old)
+      matchinggrid_(Core::UTILS::IntegralValue<bool>(
+          Global::Problem::Instance()->poroelast_dynamic_params(), "MATCHINGGRID")),
+      oldstructimint_(Core::UTILS::IntegralValue<Inpar::STR::IntegrationStrategy>(
+                          Global::Problem::Instance()->structural_dynamic_params(),
+                          "INT_STRATEGY") == Inpar::STR::int_old)
 {
-  if (GLOBAL::Problem::Instance()->GetProblemType() != CORE::ProblemType::poroelast)
+  if (Global::Problem::Instance()->GetProblemType() != Core::ProblemType::poroelast)
     is_part_of_multifield_problem_ = true;
 
   // access the structural discretization
-  Teuchos::RCP<DRT::Discretization> structdis = GLOBAL::Problem::Instance()->GetDis("structure");
+  Teuchos::RCP<Discret::Discretization> structdis =
+      Global::Problem::Instance()->GetDis("structure");
 
   if (!matchinggrid_)
   {
-    Teuchos::RCP<DRT::Discretization> fluiddis = GLOBAL::Problem::Instance()->GetDis("porofluid");
+    Teuchos::RCP<Discret::Discretization> fluiddis =
+        Global::Problem::Instance()->GetDis("porofluid");
     // Scheme: non matching meshes --> volumetric mortar coupling...
-    volcoupl_ = Teuchos::rcp(new CORE::ADAPTER::MortarVolCoupl());
+    volcoupl_ = Teuchos::rcp(new Core::Adapter::MortarVolCoupl());
 
     // build material strategy
     Teuchos::RCP<UTILS::PoroMaterialStrategy> materialstrategy =
         Teuchos::rcp(new UTILS::PoroMaterialStrategy());
 
     // setup projection matrices
-    volcoupl_->Init(GLOBAL::Problem::Instance()->NDim(), structdis, fluiddis, nullptr, nullptr,
+    volcoupl_->Init(Global::Problem::Instance()->NDim(), structdis, fluiddis, nullptr, nullptr,
         nullptr, nullptr, materialstrategy);
     volcoupl_->Redistribute();
-    volcoupl_->Setup(GLOBAL::Problem::Instance()->VolmortarParams());
+    volcoupl_->Setup(Global::Problem::Instance()->VolmortarParams());
   }
 
   // access structural dynamic params list which will be possibly modified while creating the time
   // integrator
-  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->structural_dynamic_params();
+  const Teuchos::ParameterList& sdyn = Global::Problem::Instance()->structural_dynamic_params();
 
   // create the structural time integrator (Init() called inside)
   // clean up as soon as old time integration is unused!
   if (oldstructimint_)
   {
-    Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure =
-        Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(
+    Teuchos::RCP<Adapter::StructureBaseAlgorithm> structure =
+        Teuchos::rcp(new Adapter::StructureBaseAlgorithm(
             timeparams, const_cast<Teuchos::ParameterList&>(sdyn), structdis));
     structure_ =
-        Teuchos::rcp_dynamic_cast<ADAPTER::FPSIStructureWrapper>(structure->structure_field());
+        Teuchos::rcp_dynamic_cast<Adapter::FPSIStructureWrapper>(structure->structure_field());
     structure_->Setup();
   }
   else
   {
-    Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> adapterbase_ptr =
-        ADAPTER::build_structure_algorithm(sdyn);
+    Teuchos::RCP<Adapter::StructureBaseAlgorithmNew> adapterbase_ptr =
+        Adapter::build_structure_algorithm(sdyn);
     adapterbase_ptr->Init(timeparams, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
     adapterbase_ptr->Setup();
-    structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::FPSIStructureWrapper>(
+    structure_ = Teuchos::rcp_dynamic_cast<Adapter::FPSIStructureWrapper>(
         adapterbase_ptr->structure_field());
   }
 
   if (structure_ == Teuchos::null)
-    FOUR_C_THROW("cast from ADAPTER::Structure to ADAPTER::FPSIStructureWrapper failed");
+    FOUR_C_THROW("cast from Adapter::Structure to Adapter::FPSIStructureWrapper failed");
 
   // ask base algorithm for the fluid time integrator
-  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
+  Global::Problem* problem = Global::Problem::Instance();
   const Teuchos::ParameterList& fluiddynparams = problem->FluidDynamicParams();
-  Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid =
-      Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(timeparams, fluiddynparams, "porofluid", true));
-  fluid_ = Teuchos::rcp_dynamic_cast<ADAPTER::FluidPoro>(fluid->fluid_field());
+  Teuchos::RCP<Adapter::FluidBaseAlgorithm> fluid =
+      Teuchos::rcp(new Adapter::FluidBaseAlgorithm(timeparams, fluiddynparams, "porofluid", true));
+  fluid_ = Teuchos::rcp_dynamic_cast<Adapter::FluidPoro>(fluid->fluid_field());
 
   if (fluid_ == Teuchos::null)
-    FOUR_C_THROW("cast from ADAPTER::FluidBaseAlgorithm to ADAPTER::FluidPoro failed");
+    FOUR_C_THROW("cast from Adapter::FluidBaseAlgorithm to Adapter::FluidPoro failed");
 
   // as this is a two way coupled problem, every discretization needs to know the other one.
   // For this we use DofSetProxies and coupling objects which are setup here
@@ -123,7 +125,7 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
   // known to the discretization (without lagrange multipliers)
   // while structure_field()->dof_row_map() returns the dof_row_map known to
   // the constraint manager (with lagrange multipliers)
-  cond_splitter_ = Teuchos::rcp(new CORE::LINALG::MapExtractor(
+  cond_splitter_ = Teuchos::rcp(new Core::LinAlg::MapExtractor(
       *structure_field()->dof_row_map(), structure_field()->dof_row_map(0)));
 
   // look for special poro conditions and set flags
@@ -132,41 +134,41 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
   // do some checks
   {
     // access the problem-specific parameter lists
-    const Teuchos::ParameterList& fdyn = GLOBAL::Problem::Instance()->FluidDynamicParams();
+    const Teuchos::ParameterList& fdyn = Global::Problem::Instance()->FluidDynamicParams();
 
-    std::vector<CORE::Conditions::Condition*> porocoupl;
+    std::vector<Core::Conditions::Condition*> porocoupl;
     fluid_field()->discretization()->GetCondition("PoroCoupling", porocoupl);
     if (porocoupl.size() == 0)
       FOUR_C_THROW(
           "no Poro Coupling Condition defined for porous media problem. Fix your input file!");
 
     // check time integration algo -> currently only one-step-theta scheme supported
-    auto structtimealgo = CORE::UTILS::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP");
+    auto structtimealgo = Core::UTILS::IntegralValue<Inpar::STR::DynamicType>(sdyn, "DYNAMICTYP");
     auto fluidtimealgo =
-        CORE::UTILS::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(fdyn, "TIMEINTEGR");
+        Core::UTILS::IntegralValue<Inpar::FLUID::TimeIntegrationScheme>(fdyn, "TIMEINTEGR");
 
-    if (not((structtimealgo == INPAR::STR::dyna_onesteptheta and
-                fluidtimealgo == INPAR::FLUID::timeint_one_step_theta) or
-            (structtimealgo == INPAR::STR::dyna_statics and
-                fluidtimealgo == INPAR::FLUID::timeint_stationary) or
-            (structtimealgo == INPAR::STR::dyna_genalpha and
-                (fluidtimealgo == INPAR::FLUID::timeint_afgenalpha or
-                    fluidtimealgo == INPAR::FLUID::timeint_npgenalpha))))
+    if (not((structtimealgo == Inpar::STR::dyna_onesteptheta and
+                fluidtimealgo == Inpar::FLUID::timeint_one_step_theta) or
+            (structtimealgo == Inpar::STR::dyna_statics and
+                fluidtimealgo == Inpar::FLUID::timeint_stationary) or
+            (structtimealgo == Inpar::STR::dyna_genalpha and
+                (fluidtimealgo == Inpar::FLUID::timeint_afgenalpha or
+                    fluidtimealgo == Inpar::FLUID::timeint_npgenalpha))))
     {
       FOUR_C_THROW(
           "porous media problem is limited in functionality (only one-step-theta scheme, "
           "stationary and (af)genalpha case possible)");
     }
 
-    if (fluidtimealgo == INPAR::FLUID::timeint_npgenalpha)
+    if (fluidtimealgo == Inpar::FLUID::timeint_npgenalpha)
     {
       FOUR_C_THROW(
           "npgenalpha time integration for porous fluid is possibly not valid. Either check the "
           "theory or use afgenalpha instead!");
     }
 
-    if (structtimealgo == INPAR::STR::dyna_onesteptheta and
-        fluidtimealgo == INPAR::FLUID::timeint_one_step_theta)
+    if (structtimealgo == Inpar::STR::dyna_onesteptheta and
+        fluidtimealgo == Inpar::FLUID::timeint_one_step_theta)
     {
       double theta_struct = sdyn.sublist("ONESTEPTHETA").get<double>("THETA");
       double theta_fluid = fdyn.get<double>("THETA");
@@ -180,7 +182,7 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
     }
 
     std::string damping = sdyn.get<std::string>("DAMPING");
-    if (damping != "Material" && structtimealgo != INPAR::STR::dyna_statics)
+    if (damping != "Material" && structtimealgo != Inpar::STR::dyna_statics)
     {
       FOUR_C_THROW(
           "Material damping has to be used for dynamic porous media simulations! Set DAMPING to "
@@ -188,10 +190,10 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
     }
 
     // access the problem-specific parameter lists
-    const Teuchos::ParameterList& pedyn = GLOBAL::Problem::Instance()->poroelast_dynamic_params();
+    const Teuchos::ParameterList& pedyn = Global::Problem::Instance()->poroelast_dynamic_params();
     auto physicaltype =
-        CORE::UTILS::IntegralValue<INPAR::FLUID::PhysicalType>(pedyn, "PHYSICAL_TYPE");
-    if (porosity_dof_ and physicaltype != INPAR::FLUID::poro_p1)
+        Core::UTILS::IntegralValue<Inpar::FLUID::PhysicalType>(pedyn, "PHYSICAL_TYPE");
+    if (porosity_dof_ and physicaltype != Inpar::FLUID::poro_p1)
     {
       FOUR_C_THROW(
           "Poro P1 elements need a special fluid. Set 'PHYSICAL_TYPE' to 'Poro_P1' in the "
@@ -199,12 +201,12 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
     }
 
     auto transientfluid =
-        CORE::UTILS::IntegralValue<INPAR::POROELAST::TransientEquationsOfPoroFluid>(
+        Core::UTILS::IntegralValue<Inpar::PoroElast::TransientEquationsOfPoroFluid>(
             pedyn, "TRANSIENT_TERMS");
 
-    if (fluidtimealgo == INPAR::FLUID::timeint_stationary)
+    if (fluidtimealgo == Inpar::FLUID::timeint_stationary)
     {
-      if (transientfluid != INPAR::POROELAST::transient_none)
+      if (transientfluid != Inpar::PoroElast::transient_none)
       {
         FOUR_C_THROW(
             "Invalid option for stationary fluid! Set 'TRANSIENT_TERMS' in section POROELASTICITY "
@@ -213,7 +215,7 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
     }
     else
     {
-      if (transientfluid == INPAR::POROELAST::transient_none)
+      if (transientfluid == Inpar::PoroElast::transient_none)
       {
         FOUR_C_THROW(
             "Invalid option for stationary fluid! Set 'TRANSIENT_TERMS' in section POROELASTICITY "
@@ -221,7 +223,7 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
       }
     }
 
-    if (transientfluid == INPAR::POROELAST::transient_momentum_only)
+    if (transientfluid == Inpar::PoroElast::transient_momentum_only)
     {
       FOUR_C_THROW(
           "Option 'momentum' for parameter 'TRANSIENT_TERMS' in section POROELASTICITY DYNAMIC is "
@@ -230,7 +232,7 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
   }
 }
 
-void POROELAST::PoroBase::read_restart(const int step)
+void PoroElast::PoroBase::read_restart(const int step)
 {
   if (step)
   {
@@ -266,7 +268,7 @@ void POROELAST::PoroBase::read_restart(const int step)
     // They need to be reset.
     if (matchinggrid_)
     {
-      POROELAST::UTILS::SetMaterialPointersMatchingGrid(
+      PoroElast::UTILS::SetMaterialPointersMatchingGrid(
           structure_field()->discretization(), fluid_field()->discretization());
     }
     else
@@ -276,13 +278,13 @@ void POROELAST::PoroBase::read_restart(const int step)
           Teuchos::rcp(new UTILS::PoroMaterialStrategy());
 
       volcoupl_->AssignMaterials(structure_field()->discretization(),
-          fluid_field()->discretization(), GLOBAL::Problem::Instance()->VolmortarParams(),
+          fluid_field()->discretization(), Global::Problem::Instance()->VolmortarParams(),
           materialstrategy);
     }
   }
 }
 
-void POROELAST::PoroBase::prepare_time_step()
+void PoroElast::PoroBase::prepare_time_step()
 {
   // counter and print header
   increment_time_and_step();
@@ -301,7 +303,7 @@ void POROELAST::PoroBase::prepare_time_step()
   fluid_field()->prepare_time_step();
 }
 
-void POROELAST::PoroBase::Update()
+void PoroElast::PoroBase::Update()
 {
   structure_field()->Update();
   fluid_field()->Update();
@@ -320,19 +322,19 @@ void POROELAST::PoroBase::Update()
   }
 }
 
-void POROELAST::PoroBase::prepare_output(bool force_prepare_timestep)
+void PoroElast::PoroBase::prepare_output(bool force_prepare_timestep)
 {
   structure_field()->prepare_output(force_prepare_timestep);
 }
 
-void POROELAST::PoroBase::TestResults(const Epetra_Comm& comm)
+void PoroElast::PoroBase::TestResults(const Epetra_Comm& comm)
 {
-  GLOBAL::Problem::Instance()->AddFieldTest(structure_field()->CreateFieldTest());
-  GLOBAL::Problem::Instance()->AddFieldTest(fluid_field()->CreateFieldTest());
-  GLOBAL::Problem::Instance()->TestAll(comm);
+  Global::Problem::Instance()->AddFieldTest(structure_field()->CreateFieldTest());
+  Global::Problem::Instance()->AddFieldTest(fluid_field()->CreateFieldTest());
+  Global::Problem::Instance()->TestAll(comm);
 }
 
-Teuchos::RCP<Epetra_Vector> POROELAST::PoroBase::structure_to_fluid_field(
+Teuchos::RCP<Epetra_Vector> PoroElast::PoroBase::structure_to_fluid_field(
     Teuchos::RCP<const Epetra_Vector> iv)
 {
   if (matchinggrid_)
@@ -347,7 +349,7 @@ Teuchos::RCP<Epetra_Vector> POROELAST::PoroBase::structure_to_fluid_field(
     Teuchos::RCP<const Epetra_Vector> mv = volcoupl_->apply_vector_mapping21(iv);
 
     Teuchos::RCP<Epetra_Vector> sv =
-        CORE::LINALG::CreateVector(*(fluid_field()->VelPresSplitter()->OtherMap()));
+        Core::LinAlg::CreateVector(*(fluid_field()->VelPresSplitter()->OtherMap()));
 
     std::copy(mv->Values(),
         mv->Values() + (static_cast<ptrdiff_t>(mv->MyLength() * mv->NumVectors())), sv->Values());
@@ -355,7 +357,7 @@ Teuchos::RCP<Epetra_Vector> POROELAST::PoroBase::structure_to_fluid_field(
   }
 }
 
-void POROELAST::PoroBase::set_struct_solution()
+void PoroElast::PoroBase::set_struct_solution()
 {
   Teuchos::RCP<const Epetra_Vector> dispnp;
   // apply current displacements and velocities to the fluid field
@@ -378,7 +380,7 @@ void POROELAST::PoroBase::set_struct_solution()
   fluid_field()->ApplyMeshVelocity(structvel);
 }
 
-void POROELAST::PoroBase::set_fluid_solution()
+void PoroElast::PoroBase::set_fluid_solution()
 {
   if (matchinggrid_)
   {
@@ -391,7 +393,7 @@ void POROELAST::PoroBase::set_fluid_solution()
   }
 }
 
-void POROELAST::PoroBase::TimeLoop()
+void PoroElast::PoroBase::TimeLoop()
 {
   while (NotFinished())
   {
@@ -400,7 +402,7 @@ void POROELAST::PoroBase::TimeLoop()
   }
 }
 
-void POROELAST::PoroBase::Output(bool forced_writerestart)
+void PoroElast::PoroBase::Output(bool forced_writerestart)
 {
   // Note: The order is important here! In here control file entries are
   // written. And these entries define the order in which the filters handle
@@ -410,11 +412,11 @@ void POROELAST::PoroBase::Output(bool forced_writerestart)
   structure_field()->Output(forced_writerestart);
 }
 
-void POROELAST::PoroBase::setup_coupling()
+void PoroElast::PoroBase::setup_coupling()
 {
   // get discretizations
-  Teuchos::RCP<DRT::Discretization> structdis = structure_field()->discretization();
-  Teuchos::RCP<DRT::Discretization> fluiddis = fluid_field()->discretization();
+  Teuchos::RCP<Discret::Discretization> structdis = structure_field()->discretization();
+  Teuchos::RCP<Discret::Discretization> fluiddis = fluid_field()->discretization();
 
   // if one discretization is a subset of the other, they will differ in node number (and element
   // number) we assume matching grids for the overlapping part here
@@ -432,7 +434,7 @@ void POROELAST::PoroBase::setup_coupling()
   else
     submeshes_ = false;
 
-  const int ndim = GLOBAL::Problem::Instance()->NDim();
+  const int ndim = Global::Problem::Instance()->NDim();
   const int numglobalstructdofs = structdis->dof_row_map()->NumGlobalElements();
   if (numglobalstructdofs == numglobalstructnodes * ndim)
     porosity_dof_ = false;
@@ -441,11 +443,11 @@ void POROELAST::PoroBase::setup_coupling()
     porosity_dof_ = true;
     if (porosity_splitter_.is_null())
     {
-      porosity_splitter_ = POROELAST::UTILS::BuildPoroSplitter(structure_field()->discretization());
+      porosity_splitter_ = PoroElast::UTILS::BuildPoroSplitter(structure_field()->discretization());
     }
   }
 
-  coupling_fluid_structure_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
+  coupling_fluid_structure_ = Teuchos::rcp(new Core::Adapter::Coupling());
   int ndof = ndim;
 
   // if the porosity is a primary variable, we get one more dof
@@ -475,7 +477,7 @@ void POROELAST::PoroBase::setup_coupling()
     fluid_field()->SetMeshMap(coupling_fluid_structure_->SlaveDofMap());
 
     if (submeshes_)
-      psi_extractor_ = Teuchos::rcp(new CORE::LINALG::MapExtractor(
+      psi_extractor_ = Teuchos::rcp(new Core::LinAlg::MapExtractor(
           *structure_field()->dof_row_map(), coupling_fluid_structure_->MasterDofMap()));
   }
   else
@@ -484,23 +486,23 @@ void POROELAST::PoroBase::setup_coupling()
   }
 }
 
-void POROELAST::PoroBase::replace_dof_sets()
+void PoroElast::PoroBase::replace_dof_sets()
 {
   // the problem is two way coupled, thus each discretization must know the other discretization
 
   // get discretizations
-  Teuchos::RCP<DRT::Discretization> structdis = structure_field()->discretization();
-  Teuchos::RCP<DRT::Discretization> fluiddis = fluid_field()->discretization();
+  Teuchos::RCP<Discret::Discretization> structdis = structure_field()->discretization();
+  Teuchos::RCP<Discret::Discretization> fluiddis = fluid_field()->discretization();
 
   /* When coupling porous media with a pure structure we will have two discretizations
    * of different size. In this case we need a special proxy, which can handle submeshes.
    */
   if (submeshes_)
   {
-    Teuchos::RCP<CORE::Dofsets::DofSetGIDBasedWrapper> structsubdofset = Teuchos::rcp(
-        new CORE::Dofsets::DofSetGIDBasedWrapper(structdis, structdis->GetDofSetProxy()));
-    Teuchos::RCP<CORE::Dofsets::DofSetGIDBasedWrapper> fluidsubdofset = Teuchos::rcp(
-        new CORE::Dofsets::DofSetGIDBasedWrapper(fluiddis, fluiddis->GetDofSetProxy()));
+    Teuchos::RCP<Core::DOFSets::DofSetGIDBasedWrapper> structsubdofset = Teuchos::rcp(
+        new Core::DOFSets::DofSetGIDBasedWrapper(structdis, structdis->GetDofSetProxy()));
+    Teuchos::RCP<Core::DOFSets::DofSetGIDBasedWrapper> fluidsubdofset = Teuchos::rcp(
+        new Core::DOFSets::DofSetGIDBasedWrapper(fluiddis, fluiddis->GetDofSetProxy()));
 
     fluiddis->ReplaceDofSet(1, structsubdofset);
     structdis->ReplaceDofSet(1, fluidsubdofset);
@@ -508,9 +510,9 @@ void POROELAST::PoroBase::replace_dof_sets()
   else
   {
     // build a proxy of the structure discretization for the fluid field
-    Teuchos::RCP<CORE::Dofsets::DofSetInterface> structdofsetproxy = structdis->GetDofSetProxy();
+    Teuchos::RCP<Core::DOFSets::DofSetInterface> structdofsetproxy = structdis->GetDofSetProxy();
     // build a proxy of the fluid discretization for the structure field
-    Teuchos::RCP<CORE::Dofsets::DofSetInterface> fluiddofsetproxy = fluiddis->GetDofSetProxy();
+    Teuchos::RCP<Core::DOFSets::DofSetInterface> fluiddofsetproxy = fluiddis->GetDofSetProxy();
 
     fluiddis->ReplaceDofSet(1, structdofsetproxy);
     structdis->ReplaceDofSet(1, fluiddofsetproxy);
@@ -520,24 +522,24 @@ void POROELAST::PoroBase::replace_dof_sets()
   structdis->fill_complete(true, true, true);
 }
 
-void POROELAST::PoroBase::check_for_poro_conditions()
+void PoroElast::PoroBase::check_for_poro_conditions()
 {
-  std::vector<CORE::Conditions::Condition*> nopencond;
+  std::vector<Core::Conditions::Condition*> nopencond;
   fluid_field()->discretization()->GetCondition("no_penetration", nopencond);
-  nopen_handle_ = Teuchos::rcp(new POROELAST::NoPenetrationConditionHandle(nopencond));
+  nopen_handle_ = Teuchos::rcp(new PoroElast::NoPenetrationConditionHandle(nopencond));
 
   part_int_cond_ = false;
-  std::vector<CORE::Conditions::Condition*> poroPartInt;
+  std::vector<Core::Conditions::Condition*> poroPartInt;
   fluid_field()->discretization()->GetCondition("PoroPartInt", poroPartInt);
   if (poroPartInt.size()) part_int_cond_ = true;
 
   pres_int_cond_ = false;
-  std::vector<CORE::Conditions::Condition*> poroPresInt;
+  std::vector<Core::Conditions::Condition*> poroPresInt;
   fluid_field()->discretization()->GetCondition("PoroPresInt", poroPresInt);
   if (poroPresInt.size()) pres_int_cond_ = true;
 }
 
-void POROELAST::NoPenetrationConditionHandle::buid_no_penetration_map(
+void PoroElast::NoPenetrationConditionHandle::buid_no_penetration_map(
     const Epetra_Comm& comm, Teuchos::RCP<const Epetra_Map> dofRowMap)
 {
   std::vector<int> condIDs;
@@ -549,20 +551,20 @@ void POROELAST::NoPenetrationConditionHandle::buid_no_penetration_map(
   Teuchos::RCP<Epetra_Map> nopendofmap =
       Teuchos::rcp(new Epetra_Map(-1, int(condIDs.size()), condIDs.data(), 0, comm));
 
-  nopenetration_ = Teuchos::rcp(new CORE::LINALG::MapExtractor(*dofRowMap, nopendofmap));
+  nopenetration_ = Teuchos::rcp(new Core::LinAlg::MapExtractor(*dofRowMap, nopendofmap));
 }
 
-void POROELAST::NoPenetrationConditionHandle::ApplyCondRHS(
+void PoroElast::NoPenetrationConditionHandle::ApplyCondRHS(
     Teuchos::RCP<Epetra_Vector> iterinc, Teuchos::RCP<Epetra_Vector> rhs)
 {
   if (has_cond_)
   {
     const Teuchos::RCP<const Epetra_Map>& nopenetrationmap = nopenetration_->Map(1);
-    CORE::LINALG::apply_dirichlet_to_system(*iterinc, *rhs, *cond_rhs_, *nopenetrationmap);
+    Core::LinAlg::apply_dirichlet_to_system(*iterinc, *rhs, *cond_rhs_, *nopenetrationmap);
   }
 }
 
-void POROELAST::NoPenetrationConditionHandle::Clear(POROELAST::Coupltype coupltype)
+void PoroElast::NoPenetrationConditionHandle::Clear(PoroElast::Coupltype coupltype)
 {
   if (has_cond_)
   {
@@ -570,11 +572,11 @@ void POROELAST::NoPenetrationConditionHandle::Clear(POROELAST::Coupltype couplty
     cond_ids_->clear();
     switch (coupltype)
     {
-      case POROELAST::fluidfluid:
+      case PoroElast::fluidfluid:
         fluid_fluid_constraint_matrix_->Zero();
         cond_dofs_->PutScalar(0.0);
         break;
-      case POROELAST::fluidstructure:
+      case PoroElast::fluidstructure:
         fluid_structure_constraint_matrix_->Zero();
         structure_vel_constraint_matrix_->Zero();
         break;
@@ -588,7 +590,7 @@ void POROELAST::NoPenetrationConditionHandle::Clear(POROELAST::Coupltype couplty
   }
 }
 
-void POROELAST::NoPenetrationConditionHandle::Setup(
+void PoroElast::NoPenetrationConditionHandle::Setup(
     Teuchos::RCP<const Epetra_Map> dofRowMap, const Epetra_Map* dofRowMapFluid)
 {
   if (has_cond_)
@@ -598,38 +600,38 @@ void POROELAST::NoPenetrationConditionHandle::Setup(
     cond_dofs_ = Teuchos::rcp(new Epetra_Vector(*dofRowMapFluid, true));
 
     fluid_fluid_constraint_matrix_ =
-        Teuchos::rcp(new CORE::LINALG::SparseMatrix(*dofRowMapFluid, 81, true, true));
+        Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dofRowMapFluid, 81, true, true));
 
     fluid_structure_constraint_matrix_ =
-        Teuchos::rcp(new CORE::LINALG::SparseMatrix(*dofRowMapFluid, 81, true, true));
+        Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dofRowMapFluid, 81, true, true));
 
     structure_vel_constraint_matrix_ =
-        Teuchos::rcp(new CORE::LINALG::SparseMatrix(*dofRowMapFluid, 81, true, true));
+        Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dofRowMapFluid, 81, true, true));
   }
 }
 
-Teuchos::RCP<CORE::LINALG::SparseMatrix> POROELAST::NoPenetrationConditionHandle::ConstraintMatrix(
-    POROELAST::Coupltype coupltype)
+Teuchos::RCP<Core::LinAlg::SparseMatrix> PoroElast::NoPenetrationConditionHandle::ConstraintMatrix(
+    PoroElast::Coupltype coupltype)
 {
   if (has_cond_)
   {
-    if (coupltype == POROELAST::fluidfluid)
+    if (coupltype == PoroElast::fluidfluid)
       return fluid_fluid_constraint_matrix_;
-    else if (coupltype == POROELAST::fluidstructure)
+    else if (coupltype == PoroElast::fluidstructure)
       return fluid_structure_constraint_matrix_;
   }
   return Teuchos::null;
 }
 
-Teuchos::RCP<CORE::LINALG::SparseMatrix>
-POROELAST::NoPenetrationConditionHandle::struct_vel_constraint_matrix(
-    POROELAST::Coupltype coupltype)
+Teuchos::RCP<Core::LinAlg::SparseMatrix>
+PoroElast::NoPenetrationConditionHandle::struct_vel_constraint_matrix(
+    PoroElast::Coupltype coupltype)
 {
   if (has_cond_)
   {
-    if (coupltype == POROELAST::fluidfluid)
+    if (coupltype == PoroElast::fluidfluid)
       return Teuchos::null;
-    else if (coupltype == POROELAST::fluidstructure)
+    else if (coupltype == PoroElast::fluidstructure)
       return structure_vel_constraint_matrix_;
   }
   return Teuchos::null;

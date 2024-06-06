@@ -24,7 +24,7 @@ namespace Teuchos
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace ADAPTER
+namespace Adapter
 {
   class StructureBaseAlgorithmNew;
   class StructureFactory
@@ -37,14 +37,14 @@ namespace ADAPTER
     virtual ~StructureFactory() = default;
 
     //! Build the structural adapter object
-    Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> build_structure_algorithm(
+    Teuchos::RCP<Adapter::StructureBaseAlgorithmNew> build_structure_algorithm(
         const Teuchos::ParameterList& sdyn) const;
   };  // class Factory
 
   // non-member function
-  Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> build_structure_algorithm(
+  Teuchos::RCP<Adapter::StructureBaseAlgorithmNew> build_structure_algorithm(
       const Teuchos::ParameterList& sdyn);
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 
 FOUR_C_NAMESPACE_CLOSE

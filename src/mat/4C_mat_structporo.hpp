@@ -17,7 +17,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   class StructPoro;
 
@@ -25,16 +25,16 @@ namespace MAT
   {
     class PoroLaw;
 
-    class StructPoro : public CORE::MAT::PAR::Parameter
+    class StructPoro : public Core::Mat::PAR::Parameter
     {
-      friend class MAT::StructPoro;
+      friend class Mat::StructPoro;
 
      public:
       //! standard constructor
-      StructPoro(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      StructPoro(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       //! create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       //! @name material parameters
       //!@{
@@ -56,14 +56,14 @@ namespace MAT
 
   }  // namespace PAR
 
-  class StructPoroType : public CORE::COMM::ParObjectType
+  class StructPoroType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "StructPoroType"; }
 
     static StructPoroType& Instance() { return instance_; }
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static StructPoroType instance_;
@@ -103,7 +103,7 @@ namespace MAT
     StructPoro();
 
     //! construct the material object given material parameters
-    explicit StructPoro(MAT::PAR::StructPoro* params);
+    explicit StructPoro(Mat::PAR::StructPoro* params);
 
     //! @name Packing and Unpacking
 
@@ -128,7 +128,7 @@ namespace MAT
 
      \param data (in/out): char vector to store class information
      */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class
@@ -147,22 +147,22 @@ namespace MAT
     //!@}
 
     //! material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_structporo;
+      return Core::Materials::m_structporo;
     }
 
     //! poro law type
-    virtual CORE::Materials::MaterialType PoroLawType() const;
+    virtual Core::Materials::MaterialType PoroLawType() const;
 
     //! return inverse bulk modulus (=compressibility)
     double InvBulkModulus() const;
 
     //! check if element kinematics and material kinematics are compatible
-    void ValidKinematics(INPAR::STR::KinemType kinem) override { mat_->ValidKinematics(kinem); }
+    void ValidKinematics(Inpar::STR::KinemType kinem) override { mat_->ValidKinematics(kinem); }
 
     //! return material
-    Teuchos::RCP<CORE::MAT::Material> GetMaterial() const { return mat_; }
+    Teuchos::RCP<Core::Mat::Material> GetMaterial() const { return mat_; }
 
     //! return material ID
     int MatID() const { return params_->matid_; }
@@ -223,14 +223,14 @@ namespace MAT
         bool save = true);
 
     //! return copy of this material object
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new StructPoro(*this));
     }
 
     //! Initialize internal variables
     virtual void PoroSetup(int numgp,  //!< number of Gauss points
-        INPUT::LineDefinition* linedef);
+        Input::LineDefinition* linedef);
 
     /*!
      * @brief Calculate coupling part of homogenized 2 Piola-Kirchhoff stress (3D)
@@ -239,8 +239,8 @@ namespace MAT
      * @param[in] press         pressure at gauss point
      * @param[out] couplstress  coupling stress at gauss point
      */
-    void CouplStress(const CORE::LINALG::Matrix<3, 3>& defgrd, const double& press,
-        CORE::LINALG::Matrix<6, 1>& couplstress) const;
+    void CouplStress(const Core::LinAlg::Matrix<3, 3>& defgrd, const double& press,
+        Core::LinAlg::Matrix<6, 1>& couplstress) const;
 
     /*!
      * @brief Calculate coupling part of homogenized 2 Piola-Kirchhoff stress (2D)
@@ -249,8 +249,8 @@ namespace MAT
      * @param[in] press         pressure at gauss point
      * @param[out] couplstress  coupling stress at gauss point
      */
-    void CouplStress(const CORE::LINALG::Matrix<2, 2>& defgrd, const double& press,
-        CORE::LINALG::Matrix<4, 1>& couplstress) const;
+    void CouplStress(const Core::LinAlg::Matrix<2, 2>& defgrd, const double& press,
+        Core::LinAlg::Matrix<4, 1>& couplstress) const;
 
     //! evaluate constitutive relation for porosity and compute derivatives
     virtual void constitutive_derivatives(Teuchos::ParameterList& params,  //!< (i) parameter list
@@ -278,33 +278,33 @@ namespace MAT
     );
 
     //! Return quick accessible material parameter data
-    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
     //! @name Evaluation methods
 
-    void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
-        const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-        CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, int gp,
+    void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+        const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+        Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, int gp,
         int EleID) override
     {
       mat_->Evaluate(defgrd, glstrain, params, stress, cmat, gp, EleID);
     }
 
-    void StrainEnergy(const CORE::LINALG::Matrix<6, 1>& glstrain, double& psi, const int gp,
+    void StrainEnergy(const Core::LinAlg::Matrix<6, 1>& glstrain, double& psi, const int gp,
         const int EleID) override
     {
       mat_->StrainEnergy(glstrain, psi, gp, EleID);
     }
 
-    void evaluate_cauchy_n_dir_and_derivatives(const CORE::LINALG::Matrix<3, 3>& defgrd,
-        const CORE::LINALG::Matrix<3, 1>& n, const CORE::LINALG::Matrix<3, 1>& dir,
-        double& cauchy_n_dir, CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dn,
-        CORE::LINALG::Matrix<3, 1>* d_cauchyndir_ddir, CORE::LINALG::Matrix<9, 1>* d_cauchyndir_dF,
-        CORE::LINALG::Matrix<9, 9>* d2_cauchyndir_dF2,
-        CORE::LINALG::Matrix<9, 3>* d2_cauchyndir_dF_dn,
-        CORE::LINALG::Matrix<9, 3>* d2_cauchyndir_dF_ddir, int gp, int eleGID,
+    void evaluate_cauchy_n_dir_and_derivatives(const Core::LinAlg::Matrix<3, 3>& defgrd,
+        const Core::LinAlg::Matrix<3, 1>& n, const Core::LinAlg::Matrix<3, 1>& dir,
+        double& cauchy_n_dir, Core::LinAlg::Matrix<3, 1>* d_cauchyndir_dn,
+        Core::LinAlg::Matrix<3, 1>* d_cauchyndir_ddir, Core::LinAlg::Matrix<9, 1>* d_cauchyndir_dF,
+        Core::LinAlg::Matrix<9, 9>* d2_cauchyndir_dF2,
+        Core::LinAlg::Matrix<9, 3>* d2_cauchyndir_dF_dn,
+        Core::LinAlg::Matrix<9, 3>* d2_cauchyndir_dF_ddir, int gp, int eleGID,
         const double* concentration, const double* temp, double* d_cauchyndir_dT,
-        CORE::LINALG::Matrix<9, 1>* d2_cauchyndir_dF_dT) override
+        Core::LinAlg::Matrix<9, 1>* d2_cauchyndir_dF_dT) override
     {
       mat_->evaluate_cauchy_n_dir_and_derivatives(defgrd, n, dir, cauchy_n_dir, d_cauchyndir_dn,
           d_cauchyndir_ddir, d_cauchyndir_dF, d2_cauchyndir_dF2, d2_cauchyndir_dF_dn,
@@ -321,7 +321,7 @@ namespace MAT
     //! @name Handling of Gauss point data. Here, the poro material just calls the underlying
     //! material
 
-    void Setup(int numgp, INPUT::LineDefinition* linedef) override
+    void Setup(int numgp, Input::LineDefinition* linedef) override
     {
       // setup the underlying material
       // Note: poro material itself is setup when calling PoroSetup()
@@ -361,10 +361,10 @@ namespace MAT
         bool save = true);
 
     //! my material parameters
-    MAT::PAR::StructPoro* params_;
+    Mat::PAR::StructPoro* params_;
 
     //! actual material
-    Teuchos::RCP<MAT::So3Material> mat_;
+    Teuchos::RCP<Mat::So3Material> mat_;
 
     //! porosity at gauss points
     Teuchos::RCP<std::vector<double>> porosity_;
@@ -376,7 +376,7 @@ namespace MAT
     bool is_initialized_;
   };
 
-}  // namespace MAT
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

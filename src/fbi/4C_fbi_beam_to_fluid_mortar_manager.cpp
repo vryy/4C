@@ -31,8 +31,8 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 BEAMINTERACTION::BeamToFluidMortarManager::BeamToFluidMortarManager(
-    Teuchos::RCP<const DRT::Discretization> discretization1,
-    Teuchos::RCP<const DRT::Discretization> discretization2,
+    Teuchos::RCP<const Discret::Discretization> discretization1,
+    Teuchos::RCP<const Discret::Discretization> discretization2,
     Teuchos::RCP<const FBI::BeamToFluidMeshtyingParams> params, int start_value_lambda_gid)
     : is_setup_(false),
       is_local_maps_build_(false),
@@ -55,19 +55,19 @@ BEAMINTERACTION::BeamToFluidMortarManager::BeamToFluidMortarManager(
   // Get the number of Lagrange multiplier DOF on a beam node and on a beam element.
   switch (params->get_mortar_shape_function_type())
   {
-    case INPAR::FBI::BeamToFluidMeshtingMortarShapefunctions::line2:
+    case Inpar::FBI::BeamToFluidMeshtingMortarShapefunctions::line2:
     {
       n_lambda_node_ = 1 * 3;
       n_lambda_element_ = 0 * 3;
       break;
     }
-    case INPAR::FBI::BeamToFluidMeshtingMortarShapefunctions::line3:
+    case Inpar::FBI::BeamToFluidMeshtingMortarShapefunctions::line3:
     {
       n_lambda_node_ = 1 * 3;
       n_lambda_element_ = 1 * 3;
       break;
     }
-    case INPAR::FBI::BeamToFluidMeshtingMortarShapefunctions::line4:
+    case Inpar::FBI::BeamToFluidMeshtingMortarShapefunctions::line4:
     {
       n_lambda_node_ = 1 * 3;
       n_lambda_element_ = 2 * 3;
@@ -87,7 +87,7 @@ void BEAMINTERACTION::BeamToFluidMortarManager::Setup()
   std::vector<int> my_nodes_gid;
   for (int i_node = 0; i_node < discretization_structure_->NodeRowMap()->NumMyElements(); i_node++)
   {
-    CORE::Nodes::Node const& node = *(discretization_structure_->lRowNode(i_node));
+    Core::Nodes::Node const& node = *(discretization_structure_->lRowNode(i_node));
     if (BEAMINTERACTION::UTILS::IsBeamCenterlineNode(node)) my_nodes_gid.push_back(node.Id());
   }
 
@@ -96,7 +96,7 @@ void BEAMINTERACTION::BeamToFluidMortarManager::Setup()
   for (int i_element = 0; i_element < discretization_structure_->ElementRowMap()->NumMyElements();
        i_element++)
   {
-    CORE::Elements::Element const& element = *(discretization_structure_->lRowElement(i_element));
+    Core::Elements::Element const& element = *(discretization_structure_->lRowElement(i_element));
     if (BEAMINTERACTION::UTILS::IsBeamElement(element)) my_elements_gid.push_back(element.Id());
   }
 
@@ -178,10 +178,10 @@ void BEAMINTERACTION::BeamToFluidMortarManager::Setup()
   }
 
   // Create the global mortar matrices.
-  global_d_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
-      *lambda_dof_rowmap_, 30, true, true, CORE::LINALG::SparseMatrix::FE_MATRIX));
-  global_m_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
-      *lambda_dof_rowmap_, 100, true, true, CORE::LINALG::SparseMatrix::FE_MATRIX));
+  global_d_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+      *lambda_dof_rowmap_, 30, true, true, Core::LinAlg::SparseMatrix::FE_MATRIX));
+  global_m_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+      *lambda_dof_rowmap_, 100, true, true, Core::LinAlg::SparseMatrix::FE_MATRIX));
   global_kappa_ = Teuchos::rcp(new Epetra_FEVector(*lambda_dof_rowmap_));
   global_active_lambda_ = Teuchos::rcp(new Epetra_FEVector(*lambda_dof_rowmap_));
 
@@ -203,7 +203,7 @@ void BEAMINTERACTION::BeamToFluidMortarManager::SetGlobalMaps()
 
   for (int i_node = 0; i_node < discretization_structure_->NodeRowMap()->NumMyElements(); i_node++)
   {
-    const CORE::Nodes::Node* node = discretization_structure_->lRowNode(i_node);
+    const Core::Nodes::Node* node = discretization_structure_->lRowNode(i_node);
     if (BEAMINTERACTION::UTILS::IsBeamNode(*node))
       discretization_structure_->Dof(node, field_dofs[0]);
     else
@@ -211,7 +211,7 @@ void BEAMINTERACTION::BeamToFluidMortarManager::SetGlobalMaps()
   }
   for (int i_node = 0; i_node < discretization_fluid_->NodeRowMap()->NumMyElements(); i_node++)
   {
-    const CORE::Nodes::Node* node = discretization_fluid_->lRowNode(i_node);
+    const Core::Nodes::Node* node = discretization_fluid_->lRowNode(i_node);
     discretization_fluid_->Dof(node, field_dofs[1]);
   }
 
@@ -296,9 +296,9 @@ void BEAMINTERACTION::BeamToFluidMortarManager::SetLocalMaps(
 
   // Export values from the global multi vector to the ones needed on this rank.
   if (node_gid_to_lambda_gid_ != Teuchos::null)
-    CORE::LINALG::Export(*node_gid_to_lambda_gid_, *node_gid_to_lambda_gid_copy);
+    Core::LinAlg::Export(*node_gid_to_lambda_gid_, *node_gid_to_lambda_gid_copy);
   if (element_gid_to_lambda_gid_ != Teuchos::null)
-    CORE::LINALG::Export(*element_gid_to_lambda_gid_, *element_gid_to_lambda_gid_copy);
+    Core::LinAlg::Export(*element_gid_to_lambda_gid_, *element_gid_to_lambda_gid_copy);
 
   // Fill in the local maps.
   std::vector<int> lambda_gid_for_col_map;
@@ -356,7 +356,7 @@ void BEAMINTERACTION::BeamToFluidMortarManager::LocationVector(
   {
     for (int i_node = 0; i_node < contact_pair->Element1()->num_node(); i_node++)
     {
-      const CORE::Nodes::Node& node = *(contact_pair->Element1()->Nodes()[i_node]);
+      const Core::Nodes::Node& node = *(contact_pair->Element1()->Nodes()[i_node]);
       if (BEAMINTERACTION::UTILS::IsBeamCenterlineNode(node))
       {
         // Get the global id of the node.
@@ -407,14 +407,14 @@ void BEAMINTERACTION::BeamToFluidMortarManager::EvaluateGlobalDM(
   if (linalg_error != 0) FOUR_C_THROW("Error in PutScalar!");
 
   // Local mortar matrices that will be filled up by EvaluateDM.
-  CORE::LINALG::SerialDenseMatrix local_D_centerlineDOFs;
-  CORE::LINALG::SerialDenseMatrix local_M;
-  CORE::LINALG::SerialDenseVector dummy_constraint_offset;
-  CORE::LINALG::SerialDenseVector local_kappa;
+  Core::LinAlg::SerialDenseMatrix local_D_centerlineDOFs;
+  Core::LinAlg::SerialDenseMatrix local_M;
+  Core::LinAlg::SerialDenseVector dummy_constraint_offset;
+  Core::LinAlg::SerialDenseVector local_kappa;
 
   // For the D matrix we need to assemble the centerline DOF to the element dof. This is done
   // into this matrix.
-  CORE::LINALG::SerialDenseMatrix local_D_elementDOFs;
+  Core::LinAlg::SerialDenseMatrix local_D_elementDOFs;
 
   // Flag if pair has a active contribution.
   bool mortar_is_active = false;
@@ -491,8 +491,8 @@ void BEAMINTERACTION::BeamToFluidMortarManager::EvaluateGlobalDM(
  */
 void BEAMINTERACTION::BeamToFluidMortarManager::add_global_force_stiffness_contributions(
     Teuchos::RCP<Epetra_FEVector> fluid_force, Teuchos::RCP<Epetra_FEVector> beam_force,
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> kbb, Teuchos::RCP<CORE::LINALG::SparseMatrix> kbf,
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> kff, Teuchos::RCP<CORE::LINALG::SparseMatrix> kfb,
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> kbb, Teuchos::RCP<Core::LinAlg::SparseMatrix> kbf,
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> kff, Teuchos::RCP<Core::LinAlg::SparseMatrix> kfb,
     Teuchos::RCP<const Epetra_Vector> beam_vel, Teuchos::RCP<const Epetra_Vector> fluid_vel) const
 {
   check_setup();
@@ -502,21 +502,21 @@ void BEAMINTERACTION::BeamToFluidMortarManager::add_global_force_stiffness_contr
 
   // Scale D and M with kappa^-1.
   Teuchos::RCP<Epetra_Vector> global_kappa_inv = invert_kappa();
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> kappa_inv_mat =
-      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*global_kappa_inv));
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> kappa_inv_mat =
+      Teuchos::rcp(new Core::LinAlg::SparseMatrix(*global_kappa_inv));
   kappa_inv_mat->Complete();
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> global_D_scaled =
-      CORE::LINALG::MLMultiply(*kappa_inv_mat, false, *global_d_, false, false, false, true);
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> global_M_scaled =
-      CORE::LINALG::MLMultiply(*kappa_inv_mat, false, *global_m_, false, false, false, true);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> global_D_scaled =
+      Core::LinAlg::MLMultiply(*kappa_inv_mat, false, *global_d_, false, false, false, true);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> global_M_scaled =
+      Core::LinAlg::MLMultiply(*kappa_inv_mat, false, *global_m_, false, false, false, true);
 
   // Calculate the needed submatrices.
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> Dt_kappa_D =
-      CORE::LINALG::MLMultiply(*global_d_, true, *global_D_scaled, false, false, false, true);
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> Dt_kappa_M =
-      CORE::LINALG::MLMultiply(*global_d_, true, *global_M_scaled, false, false, false, true);
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> Mt_kappa_M =
-      CORE::LINALG::MLMultiply(*global_m_, true, *global_M_scaled, false, false, false, true);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> Dt_kappa_D =
+      Core::LinAlg::MLMultiply(*global_d_, true, *global_D_scaled, false, false, false, true);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> Dt_kappa_M =
+      Core::LinAlg::MLMultiply(*global_d_, true, *global_M_scaled, false, false, false, true);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> Mt_kappa_M =
+      Core::LinAlg::MLMultiply(*global_m_, true, *global_M_scaled, false, false, false, true);
 
   if (kff != Teuchos::null) kff->Add(*Mt_kappa_M, false, 1.0, 1.0);
 
@@ -572,8 +572,8 @@ Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToFluidMortarManager::GetGlobal
   // Get the velocity of the beams and the fluid.
   Teuchos::RCP<Epetra_Vector> beam_vel = Teuchos::rcp(new Epetra_Vector(*beam_dof_rowmap_));
   Teuchos::RCP<Epetra_Vector> fluid_vel = Teuchos::rcp(new Epetra_Vector(*fluid_dof_rowmap_));
-  CORE::LINALG::Export(*vel, *beam_vel);
-  CORE::LINALG::Export(*vel, *fluid_vel);
+  Core::LinAlg::Export(*vel, *beam_vel);
+  Core::LinAlg::Export(*vel, *fluid_vel);
 
   // Set up lambda vector;
   Teuchos::RCP<Epetra_Vector> lambda = Teuchos::rcp(new Epetra_Vector(*lambda_dof_rowmap_));
@@ -592,8 +592,8 @@ Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToFluidMortarManager::GetGlobal
 
   // Scale Lambda with kappa^-1.
   Teuchos::RCP<Epetra_Vector> global_kappa_inv = invert_kappa();
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> kappa_inv_mat =
-      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*global_kappa_inv));
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> kappa_inv_mat =
+      Teuchos::rcp(new Core::LinAlg::SparseMatrix(*global_kappa_inv));
   kappa_inv_mat->Complete();
   linalg_error = kappa_inv_mat->Multiply(false, *lambda_temp_1, *lambda);
   if (linalg_error != 0) FOUR_C_THROW("Error in Multiply!");
@@ -608,7 +608,7 @@ Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToFluidMortarManager::GetGlobal
     Teuchos::RCP<const Epetra_Vector> vel) const
 {
   Teuchos::RCP<Epetra_Vector> lambda_col = Teuchos::rcp(new Epetra_Vector(*lambda_dof_colmap_));
-  CORE::LINALG::Export(*GetGlobalLambda(vel), *lambda_col);
+  Core::LinAlg::Export(*GetGlobalLambda(vel), *lambda_col);
   return lambda_col;
 }
 

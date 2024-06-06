@@ -114,7 +114,7 @@ namespace
           << "elementname=\"\""
           << std::endl
           //<<"elementshape=\""
-          //<< CORE::FE::CellTypeToString(PreShapeToDrt(it->second.GetShape()))<<"\""<<std::endl
+          //<< Core::FE::CellTypeToString(PreShapeToDrt(it->second.GetShape()))<<"\""<<std::endl
           << std::endl;
     }
 
@@ -144,13 +144,13 @@ namespace
 
     // print validconditions as proposal
     defaultbc << "-----------------------------------------VALIDCONDITIONS" << std::endl;
-    Teuchos::RCP<std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>> condlist =
-        INPUT::ValidConditions();
-    INPUT::PrintEmptyConditionDefinitions(defaultbc, *condlist);
+    Teuchos::RCP<std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>> condlist =
+        Input::ValidConditions();
+    Input::PrintEmptyConditionDefinitions(defaultbc, *condlist);
 
     // print valid element lines as proposal (parobjects have to be registered for doing this!)
     defaultbc << std::endl << std::endl;
-    CORE::Elements::ElementDefinition ed;
+    Core::Elements::ElementDefinition ed;
     ed.print_element_dat_header_to_stream(defaultbc);
 
     // close default bc specification file
@@ -179,10 +179,11 @@ int main(int argc, char** argv)
   GlobalLegacyModuleCallbacks().RegisterParObjectTypes();
 
   // create a problem instance
-  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
+  Global::Problem* problem = Global::Problem::Instance();
   // create default communicators
-  Teuchos::RCP<CORE::COMM::Communicators> communicators = CORE::COMM::CreateComm({});
-  GLOBAL::Problem::Instance()->SetCommunicators(communicators);
+  Teuchos::RCP<Core::Communication::Communicators> communicators =
+      Core::Communication::CreateComm({});
+  Global::Problem::Instance()->SetCommunicators(communicators);
   Teuchos::RCP<Epetra_Comm> comm = communicators->GlobalComm();
 
   try
@@ -232,13 +233,13 @@ int main(int argc, char** argv)
     if (datfile != "")
     {
       const std::string basename = datfile.substr(0, datfile.find_last_of(".")) + "_pre";
-      CORE::IO::cout.setup(true, false, false, CORE::IO::standard, comm, 0, 0,
-          basename);  // necessary setup of CORE::IO::cout
+      Core::IO::cout.setup(true, false, false, Core::IO::standard, comm, 0, 0,
+          basename);  // necessary setup of Core::IO::cout
     }
     else
     {
-      CORE::IO::cout.setup(true, false, false, CORE::IO::standard, comm, 0, 0,
-          "xxx_pre");  // necessary setup of CORE::IO::cout
+      Core::IO::cout.setup(true, false, false, Core::IO::standard, comm, 0, 0,
+          "xxx_pre");  // necessary setup of Core::IO::cout
     }
 
 
@@ -320,11 +321,11 @@ int main(int argc, char** argv)
       if (!defaulthead) FOUR_C_THROW("failed to open file: %s", defaultheadfilename.c_str());
 
       // get valid input parameters
-      Teuchos::RCP<const Teuchos::ParameterList> list = INPUT::ValidParameters();
+      Teuchos::RCP<const Teuchos::ParameterList> list = Input::ValidParameters();
 
       // write default .dat header into file
       std::stringstream prelimhead;
-      INPUT::PrintDatHeader(prelimhead, *list);
+      Input::PrintDatHeader(prelimhead, *list);
       std::string headstring = prelimhead.str();
       size_t size_section =
           headstring.find("-------------------------------------------------------PROBLEM SIZE");
@@ -338,14 +339,14 @@ int main(int argc, char** argv)
 
       // get valid input materials
       {
-        Teuchos::RCP<std::vector<Teuchos::RCP<MAT::MaterialDefinition>>> mlist =
-            INPUT::ValidMaterials();
-        INPUT::PrintEmptyMaterialDefinitions(defaulthead, *mlist);
+        Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> mlist =
+            Input::ValidMaterials();
+        Input::PrintEmptyMaterialDefinitions(defaulthead, *mlist);
       }
 
       // print cloning material map default lines (right after the materials)
-      const auto lines = CORE::FE::valid_cloning_material_map_lines();
-      CORE::IO::DatFileUtils::print_section(defaulthead, "CLONING MATERIAL MAP", lines);
+      const auto lines = Core::FE::valid_cloning_material_map_lines();
+      Core::IO::DatFileUtils::print_section(defaulthead, "CLONING MATERIAL MAP", lines);
 
       // print spatial functions
       defaulthead << "-------------------------------------------------------------FUNCT1"
@@ -358,10 +359,10 @@ int main(int argc, char** argv)
                   << std::endl;
       {
         std::stringstream tmp;
-        CORE::UTILS::FunctionManager functionmanager;
+        Core::UTILS::FunctionManager functionmanager;
         GlobalLegacyModuleCallbacks().AttachFunctionDefinitions(functionmanager);
-        const std::vector<INPUT::LineDefinition> flines = functionmanager.valid_function_lines();
-        CORE::IO::DatFileUtils::print_section(tmp, "FUNCT", flines);
+        const std::vector<Input::LineDefinition> flines = functionmanager.valid_function_lines();
+        Core::IO::DatFileUtils::print_section(tmp, "FUNCT", flines);
         std::string tmpstring = tmp.str();
         std::string removeit =
             "--------------------------------------------------------------FUNCT\n";
@@ -376,7 +377,7 @@ int main(int argc, char** argv)
       // default result-test lines
       {
         const auto lines = GlobalLegacyModuleCallbacks().valid_result_description_lines();
-        CORE::IO::DatFileUtils::print_section(defaulthead, "RESULT DESCRIPTION", lines);
+        Core::IO::DatFileUtils::print_section(defaulthead, "RESULT DESCRIPTION", lines);
       }
 
       // close default header file
@@ -443,7 +444,7 @@ int main(int argc, char** argv)
       EXODUS::ValidateInputFile(comm, datfile);
     }
   }
-  catch (CORE::Exception& err)
+  catch (Core::Exception& err)
   {
     char line[] = "=========================================================================\n";
     std::cout << "\n\n" << line << err.what_with_stacktrace() << "\n" << line << "\n" << std::endl;

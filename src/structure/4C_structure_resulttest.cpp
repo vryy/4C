@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 StruResultTest::StruResultTest(STR::TimInt& tintegrator)
-    : CORE::UTILS::ResultTest("STRUCTURE"), timeintegrator_(Teuchos::rcpFromRef(tintegrator))
+    : Core::UTILS::ResultTest("STRUCTURE"), timeintegrator_(Teuchos::rcpFromRef(tintegrator))
 {
   dis_ = tintegrator.Dis();
   vel_ = tintegrator.Vel();
@@ -38,7 +38,7 @@ StruResultTest::StruResultTest(STR::TimInt& tintegrator)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void StruResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int& test_count)
+void StruResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test_count)
 {
   // this implementation does not allow testing of stresses !
 
@@ -64,7 +64,7 @@ void StruResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int& test_
   {
     if (strudisc_->HaveGlobalNode(node))
     {
-      const CORE::Nodes::Node* actnode = strudisc_->gNode(node);
+      const Core::Nodes::Node* actnode = strudisc_->gNode(node);
 
       // Here we are just interested in the nodes that we own (i.e. a row node)!
       if (actnode->Owner() != strudisc_->Comm().MyPID()) return;
@@ -182,7 +182,7 @@ void StruResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int& test_
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void StruResultTest::TestSpecial(INPUT::LineDefinition& res, int& nerr, int& test_count)
+void StruResultTest::TestSpecial(Input::LineDefinition& res, int& nerr, int& test_count)
 {
   // extract name of quantity to be tested
   std::string quantity;

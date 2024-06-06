@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::StatusTest::NormF::NormF(const std::vector<NOX::NLN::StatusTest::QuantityType>& checkList,
+NOX::Nln::StatusTest::NormF::NormF(const std::vector<NOX::Nln::StatusTest::QuantityType>& checkList,
     const std::vector<::NOX::StatusTest::NormF::ToleranceType>& toltype,
     const std::vector<double>& tolerance,
     const std::vector<::NOX::Abstract::Vector::NormType>& ntype,
@@ -45,14 +45,14 @@ NOX::NLN::StatusTest::NormF::NormF(const std::vector<NOX::NLN::StatusTest::Quant
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::StatusTest::NormF::relative_setup(
+void NOX::Nln::StatusTest::NormF::relative_setup(
     Teuchos::RCP<const ::NOX::Abstract::Group>& initialGuess)
 {
   initialTolerance_ = compute_norm(initialGuess);
 
   if (initialTolerance_.is_null())
   {
-    utils_.err() << "NOX::NLN::StatusTest::NormF::NormF - F was not computed for the"
+    utils_.err() << "NOX::Nln::StatusTest::NormF::NormF - F was not computed for the"
                     " given nox_abstract_group!"
                  << std::endl;
     throw "NOX Error";
@@ -71,17 +71,17 @@ void NOX::NLN::StatusTest::NormF::relative_setup(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const std::vector<double>> NOX::NLN::StatusTest::NormF::compute_norm(
+Teuchos::RCP<const std::vector<double>> NOX::Nln::StatusTest::NormF::compute_norm(
     Teuchos::RCP<const ::NOX::Abstract::Group>& grp)
 {
   if (!grp->isF()) return Teuchos::null;
 
   // cast the given group
-  Teuchos::RCP<const NOX::NLN::Group> nlnGrp =
-      Teuchos::rcp_dynamic_cast<const NOX::NLN::Group>(grp);
+  Teuchos::RCP<const NOX::Nln::Group> nlnGrp =
+      Teuchos::rcp_dynamic_cast<const NOX::Nln::Group>(grp);
   if (nlnGrp.is_null())
   {
-    utils_.err() << "::NOX::StatusTest::NormF::ComputeNorm - NOX::NLN::Group cast failed!"
+    utils_.err() << "::NOX::StatusTest::NormF::ComputeNorm - NOX::Nln::Group cast failed!"
                  << std::endl;
     throw "NOX Error";
   }
@@ -94,7 +94,7 @@ Teuchos::RCP<const std::vector<double>> NOX::NLN::StatusTest::NormF::compute_nor
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-::NOX::StatusTest::StatusType NOX::NLN::StatusTest::NormF::checkStatus(
+::NOX::StatusTest::StatusType NOX::Nln::StatusTest::NormF::checkStatus(
     const ::NOX::Solver::Generic& problem, ::NOX::StatusTest::CheckType checkType)
 {
   if (problem.getNumIterations() == 0)
@@ -131,7 +131,7 @@ Teuchos::RCP<const std::vector<double>> NOX::NLN::StatusTest::NormF::compute_nor
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::NLN::StatusTest::NormF::GetNormF(const NOX::NLN::StatusTest::QuantityType& qType) const
+double NOX::Nln::StatusTest::NormF::GetNormF(const NOX::Nln::StatusTest::QuantityType& qType) const
 {
   for (std::size_t i = 0; i < nChecks_; ++i)
     if (checkList_[i] == qType) return (*normF_)[i];
@@ -142,8 +142,8 @@ double NOX::NLN::StatusTest::NormF::GetNormF(const NOX::NLN::StatusTest::Quantit
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::NLN::StatusTest::NormF::GetTrueTolerance(
-    const NOX::NLN::StatusTest::QuantityType& qType) const
+double NOX::Nln::StatusTest::NormF::GetTrueTolerance(
+    const NOX::Nln::StatusTest::QuantityType& qType) const
 {
   for (std::size_t i = 0; i < nChecks_; ++i)
     if (checkList_[i] == qType) return trueTolerance_[i];
@@ -154,8 +154,8 @@ double NOX::NLN::StatusTest::NormF::GetTrueTolerance(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::NLN::StatusTest::NormF::get_specified_tolerance(
-    const NOX::NLN::StatusTest::QuantityType& qType) const
+double NOX::Nln::StatusTest::NormF::get_specified_tolerance(
+    const NOX::Nln::StatusTest::QuantityType& qType) const
 {
   for (std::size_t i = 0; i < nChecks_; ++i)
     if (checkList_[i] == qType) return specifiedTolerance_[i];
@@ -166,8 +166,8 @@ double NOX::NLN::StatusTest::NormF::get_specified_tolerance(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::NLN::StatusTest::NormF::GetInitialTolerance(
-    const NOX::NLN::StatusTest::QuantityType& qType) const
+double NOX::Nln::StatusTest::NormF::GetInitialTolerance(
+    const NOX::Nln::StatusTest::QuantityType& qType) const
 {
   for (std::size_t i = 0; i < nChecks_; ++i)
     if (checkList_[i] == qType) return (*initialTolerance_)[i];
@@ -178,7 +178,7 @@ double NOX::NLN::StatusTest::NormF::GetInitialTolerance(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int NOX::NLN::StatusTest::NormF::GetNormType(const NOX::NLN::StatusTest::QuantityType& qType) const
+int NOX::Nln::StatusTest::NormF::GetNormType(const NOX::Nln::StatusTest::QuantityType& qType) const
 {
   for (std::size_t i = 0; i < nChecks_; ++i)
     if (checkList_[i] == qType) return normType_[i];
@@ -189,7 +189,7 @@ int NOX::NLN::StatusTest::NormF::GetNormType(const NOX::NLN::StatusTest::Quantit
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::NLN::StatusTest::NormF::IsQuantity(const NOX::NLN::StatusTest::QuantityType& qType) const
+bool NOX::Nln::StatusTest::NormF::IsQuantity(const NOX::Nln::StatusTest::QuantityType& qType) const
 {
   for (std::size_t i = 0; i < nChecks_; ++i)
     if (checkList_[i] == qType) return true;
@@ -199,11 +199,11 @@ bool NOX::NLN::StatusTest::NormF::IsQuantity(const NOX::NLN::StatusTest::Quantit
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-::NOX::StatusTest::StatusType NOX::NLN::StatusTest::NormF::getStatus() const { return gStatus_; }
+::NOX::StatusTest::StatusType NOX::Nln::StatusTest::NormF::getStatus() const { return gStatus_; }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::ostream& NOX::NLN::StatusTest::NormF::print(std::ostream& stream, int indent) const
+std::ostream& NOX::Nln::StatusTest::NormF::print(std::ostream& stream, int indent) const
 {
   std::string indent_string;
   indent_string.assign(indent, ' ');

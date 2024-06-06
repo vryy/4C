@@ -24,22 +24,22 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace INPUT
+namespace Input
 {
   class MaterialDefinition;
-}  // namespace INPUT
+}  // namespace Input
 
-namespace CORE::IO
+namespace Core::IO
 {
   class DatFileReader;
 }
 
-namespace MAT
+namespace Mat
 {
   /// Definition of a valid material in 4C input
   ///
@@ -52,15 +52,15 @@ namespace MAT
   /// like, how to read it and how to write it. In particular given a
   /// MaterialDefinition object it is possible to (a) write an empty DAT file
   /// section that describes digestible materials, (b) read a DAT file and create
-  /// MAT::PAR::Material objects for each line in this section and (c) write the DAT
+  /// Mat::PAR::Material objects for each line in this section and (c) write the DAT
   /// file section filled with all corresponding materials from a given
-  /// DRT::Discretization.
+  /// Discret::Discretization.
   ///
   /// So this is quite sophisticated internal stuff here. If you want to
   /// introduce a new material to 4C, all you have to do is add an
   /// appropriate definition in ValidMaterials(). This will take care of the
-  /// reading part and you will get your DRT::Discretization filled with proper
-  /// DRT::Material objects.
+  /// reading part and you will get your Discret::Discretization filled with proper
+  /// Discret::Material objects.
   ///
   /// \author bborn
   /// \date 02/09
@@ -68,36 +68,36 @@ namespace MAT
   {
    public:
     /// construction of a material definition
-    MaterialDefinition(std::string materialname,  ///< name of materials in DRT::Discretization
+    MaterialDefinition(std::string materialname,  ///< name of materials in Discret::Discretization
         std::string description,                  ///< description of material type
-        CORE::Materials::MaterialType mattype     ///< type of materials to be build
+        Core::Materials::MaterialType mattype     ///< type of materials to be build
     );
 
     /// add a concrete component to the material line definition
     ///
     /// Add new components to the input line. One at a time.
-    void AddComponent(const Teuchos::RCP<INPUT::LineComponent>& c);
+    void AddComponent(const Teuchos::RCP<Input::LineComponent>& c);
 
     /// Try to read all lines that fit the current material definition.
-    std::vector<std::pair<int, CORE::IO::InputParameterContainer>> Read(CORE::IO::DatFileReader&
+    std::vector<std::pair<int, Core::IO::InputParameterContainer>> Read(Core::IO::DatFileReader&
             reader  ///< the actual dat file reader that has access to the dat file
     );
 
     /// print my DAT file section and possible materials from the discretization
     std::ostream& Print(std::ostream& stream,  ///< the output stream
-        const DRT::Discretization* dis = nullptr);
+        const Discret::Discretization* dis = nullptr);
 
     /// my material name
     std::string Name() const { return materialname_; }
 
     // my material type
-    CORE::Materials::MaterialType Type() const { return mattype_; }
+    Core::Materials::MaterialType Type() const { return mattype_; }
 
     /// my material description
     std::string Description() const { return description_; }
 
     /// my material inputline
-    std::vector<Teuchos::RCP<INPUT::LineComponent>> Inputline() const { return inputline_; }
+    std::vector<Teuchos::RCP<Input::LineComponent>> Inputline() const { return inputline_; }
 
    private:
     /// name of material
@@ -105,10 +105,10 @@ namespace MAT
     /// description of material type
     std::string description_;
     /// type of materials to be build
-    CORE::Materials::MaterialType mattype_;
+    Core::Materials::MaterialType mattype_;
 
     /// the list of valid components
-    std::vector<Teuchos::RCP<INPUT::LineComponent>> inputline_;
+    std::vector<Teuchos::RCP<Input::LineComponent>> inputline_;
   };
 
 
@@ -120,7 +120,7 @@ namespace MAT
       const Teuchos::RCP<MaterialDefinition>& mat              ///< material to add
   );
 
-}  // namespace MAT
+}  // namespace Mat
 
 
 FOUR_C_NAMESPACE_CLOSE

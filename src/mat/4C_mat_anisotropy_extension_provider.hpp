@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief Declaration of an provider of an MAT::FiberAnisotropyExtension
+\brief Declaration of an provider of an Mat::FiberAnisotropyExtension
 
 \level 3
 
@@ -16,7 +16,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   // forward declaration
   template <unsigned int numfib>
@@ -43,7 +43,7 @@ namespace MAT
      */
     virtual FiberAnisotropyExtension<numfib>& get_fiber_anisotropy_extension() = 0;
   };
-}  // namespace MAT
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

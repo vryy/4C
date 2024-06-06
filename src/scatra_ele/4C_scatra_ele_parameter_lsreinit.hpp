@@ -25,7 +25,7 @@ general static parameters required for scalar transport element evaluation.
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
@@ -56,16 +56,16 @@ namespace DRT
       //! @name access-routines
       /*========================================================================*/
 
-      INPAR::SCATRA::ReInitialAction ReinitType() const { return reinittype_; };
-      INPAR::SCATRA::SmoothedSignType SignType() const { return signtype_; };
-      INPAR::SCATRA::CharEleLengthReinit CharEleLengthReinit() const
+      Inpar::ScaTra::ReInitialAction ReinitType() const { return reinittype_; };
+      Inpar::ScaTra::SmoothedSignType SignType() const { return signtype_; };
+      Inpar::ScaTra::CharEleLengthReinit CharEleLengthReinit() const
       {
         return charelelengthreinit_;
       };
       double interface_thickness_fac() const { return interfacethicknessfac_; };
       bool UseProjectedVel() const { return useprojectedreinitvel_; };
-      INPAR::SCATRA::LinReinit LinForm() const { return linform_; };
-      INPAR::SCATRA::ArtDiff ArtDiff() const { return artdiff_; };
+      Inpar::ScaTra::LinReinit LinForm() const { return linform_; };
+      Inpar::ScaTra::ArtDiff ArtDiff() const { return artdiff_; };
 
       /// access the penalty parameter for the elliptical reinitialization
       double PenaltyPara() const
@@ -77,23 +77,23 @@ namespace DRT
       bool Project() const { return project_; };
       bool Lumping() const { return lumping_; };
       double ProjectDiff() const { return projectdiff_; };
-      INPAR::SCATRA::DiffFunc DiffFct() const { return difffct_; };
+      Inpar::ScaTra::DiffFunc DiffFct() const { return difffct_; };
 
      private:
       // reinit type
-      INPAR::SCATRA::ReInitialAction reinittype_;
+      Inpar::ScaTra::ReInitialAction reinittype_;
       // sign function for phi
-      INPAR::SCATRA::SmoothedSignType signtype_;
+      Inpar::ScaTra::SmoothedSignType signtype_;
       // element length for smoothing of sign function
-      INPAR::SCATRA::CharEleLengthReinit charelelengthreinit_;
+      Inpar::ScaTra::CharEleLengthReinit charelelengthreinit_;
       // interface thickness factor (multiple of characteristic element length)
       double interfacethicknessfac_;
       // from of velocity evaluation
       bool useprojectedreinitvel_;
       // form of linearization of nonlinear terms
-      INPAR::SCATRA::LinReinit linform_;
+      Inpar::ScaTra::LinReinit linform_;
       // form of artificial diffusion
-      INPAR::SCATRA::ArtDiff artdiff_;
+      Inpar::ScaTra::ArtDiff artdiff_;
       // penalty parameter of elliptic reinitialization
       double alphapen_;
       // use L2 projection
@@ -103,10 +103,10 @@ namespace DRT
       // mass lumping for L2 projection
       bool lumping_;
       // function for diffusivity
-      INPAR::SCATRA::DiffFunc difffct_;
+      Inpar::ScaTra::DiffFunc difffct_;
     };
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

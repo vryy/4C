@@ -14,7 +14,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::FE
+namespace Core::FE
 {
   namespace
   {
@@ -52,5 +52,5 @@ namespace CORE::FE
   {
     return string2shapefuntype;
   }
-}  // namespace CORE::FE
+}  // namespace Core::FE
 FOUR_C_NAMESPACE_CLOSE

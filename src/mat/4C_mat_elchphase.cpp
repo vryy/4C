@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::ElchPhase::ElchPhase(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::ElchPhase::ElchPhase(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : Parameter(matdata),
       epsilon_(matdata->Get<double>("EPSILON")),
       tortuosity_(matdata->Get<double>("TORTUOSITY")),
@@ -40,36 +40,36 @@ MAT::PAR::ElchPhase::ElchPhase(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     for (n = matids_.begin(); n != matids_.end(); ++n)
     {
       const int matid = *n;
-      Teuchos::RCP<CORE::MAT::Material> mat = MAT::Factory(matid);
-      mat_.insert(std::pair<int, Teuchos::RCP<CORE::MAT::Material>>(matid, mat));
+      Teuchos::RCP<Core::Mat::Material> mat = Mat::Factory(matid);
+      mat_.insert(std::pair<int, Teuchos::RCP<Core::Mat::Material>>(matid, mat));
     }
   }
 }
 
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ElchPhase::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::ElchPhase::create_material()
 {
-  return Teuchos::rcp(new MAT::ElchPhase(this));
+  return Teuchos::rcp(new Mat::ElchPhase(this));
 }
 
-MAT::ElchPhaseType MAT::ElchPhaseType::instance_;
+Mat::ElchPhaseType Mat::ElchPhaseType::instance_;
 
 
-CORE::COMM::ParObject* MAT::ElchPhaseType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::ElchPhaseType::Create(const std::vector<char>& data)
 {
-  MAT::ElchPhase* elchphase = new MAT::ElchPhase();
+  Mat::ElchPhase* elchphase = new Mat::ElchPhase();
   elchphase->Unpack(data);
   return elchphase;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::ElchPhase::ElchPhase() : params_(nullptr) {}
+Mat::ElchPhase::ElchPhase() : params_(nullptr) {}
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::ElchPhase::ElchPhase(MAT::PAR::ElchPhase* params) : params_(params)
+Mat::ElchPhase::ElchPhase(Mat::PAR::ElchPhase* params) : params_(params)
 {
   // setup of material map
   if (params_->local_)
@@ -81,7 +81,7 @@ MAT::ElchPhase::ElchPhase(MAT::PAR::ElchPhase* params) : params_(params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElchPhase::setup_mat_map()
+void Mat::ElchPhase::setup_mat_map()
 {
   // safety first
   mat_.clear();
@@ -94,9 +94,9 @@ void MAT::ElchPhase::setup_mat_map()
   for (n = params_->MatIds().begin(); n != params_->MatIds().end(); ++n)
   {
     const int matid = *n;
-    Teuchos::RCP<CORE::MAT::Material> mat = MAT::Factory(matid);
+    Teuchos::RCP<Core::Mat::Material> mat = Mat::Factory(matid);
     if (mat == Teuchos::null) FOUR_C_THROW("Failed to allocate this material");
-    mat_.insert(std::pair<int, Teuchos::RCP<CORE::MAT::Material>>(matid, mat));
+    mat_.insert(std::pair<int, Teuchos::RCP<Core::Mat::Material>>(matid, mat));
   }
   return;
 }
@@ -104,7 +104,7 @@ void MAT::ElchPhase::setup_mat_map()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElchPhase::clear()
+void Mat::ElchPhase::clear()
 {
   params_ = nullptr;
   mat_.clear();
@@ -114,9 +114,9 @@ void MAT::ElchPhase::clear()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElchPhase::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::ElchPhase::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -133,7 +133,7 @@ void MAT::ElchPhase::Pack(CORE::COMM::PackBuffer& data) const
     // loop map of associated local materials
     if (params_ != nullptr)
     {
-      // std::map<int, Teuchos::RCP<CORE::MAT::Material> >::const_iterator m;
+      // std::map<int, Teuchos::RCP<Core::Mat::Material> >::const_iterator m;
       std::vector<int>::const_iterator n;
       for (n = params_->MatIds().begin(); n != params_->MatIds().end(); n++)
       {
@@ -146,24 +146,24 @@ void MAT::ElchPhase::Pack(CORE::COMM::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElchPhase::Unpack(const std::vector<char>& data)
+void Mat::ElchPhase::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::ElchPhase*>(mat);
+        params_ = static_cast<Mat::PAR::ElchPhase*>(mat);
       else
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
@@ -175,9 +175,9 @@ void MAT::ElchPhase::Unpack(const std::vector<char>& data)
     for (n = params_->MatIds().begin(); n != params_->MatIds().end(); n++)
     {
       const int actmatid = *n;
-      Teuchos::RCP<CORE::MAT::Material> mat = MAT::Factory(actmatid);
+      Teuchos::RCP<Core::Mat::Material> mat = Mat::Factory(actmatid);
       if (mat == Teuchos::null) FOUR_C_THROW("Failed to allocate this material");
-      mat_.insert(std::pair<int, Teuchos::RCP<CORE::MAT::Material>>(actmatid, mat));
+      mat_.insert(std::pair<int, Teuchos::RCP<Core::Mat::Material>>(actmatid, mat));
     }
 
     if (params_->local_)

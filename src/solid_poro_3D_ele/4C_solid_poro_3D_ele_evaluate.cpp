@@ -16,11 +16,11 @@ Evaluate(...), evaluate_neumann(...), etc.
 FOUR_C_NAMESPACE_OPEN
 
 
-int DRT::ELEMENTS::SolidPoro::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
-    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
-    CORE::LINALG::SerialDenseVector& elevec3)
+int Discret::ELEMENTS::SolidPoro::Evaluate(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
+    Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
+    Core::LinAlg::SerialDenseVector& elevec3)
 {
   if (!material_post_setup_)
   {
@@ -33,18 +33,18 @@ int DRT::ELEMENTS::SolidPoro::Evaluate(Teuchos::ParameterList& params,
   // get ptr to interface to time integration
   set_params_interface_ptr(params);
 
-  const CORE::Elements::ActionType action = std::invoke(
+  const Core::Elements::ActionType action = std::invoke(
       [&]()
       {
         if (IsParamsInterface())
           return params_interface().GetActionType();
         else
-          return CORE::Elements::String2ActionType(params.get<std::string>("action", "none"));
+          return Core::Elements::String2ActionType(params.get<std::string>("action", "none"));
       });
 
   switch (action)
   {
-    case CORE::Elements::struct_calc_nlnstiff:
+    case Core::Elements::struct_calc_nlnstiff:
     {
       std::visit(
           [&](auto& interface)
@@ -70,7 +70,7 @@ int DRT::ELEMENTS::SolidPoro::Evaluate(Teuchos::ParameterList& params,
       }
       return 0;
     }
-    case CORE::Elements::struct_calc_internalforce:
+    case Core::Elements::struct_calc_internalforce:
     {
       std::visit(
           [&](auto& interface)
@@ -96,7 +96,7 @@ int DRT::ELEMENTS::SolidPoro::Evaluate(Teuchos::ParameterList& params,
       }
       return 0;
     }
-    case CORE::Elements::struct_calc_nlnstiffmass:
+    case Core::Elements::struct_calc_nlnstiffmass:
     {
       std::visit(
           [&](auto& interface)
@@ -127,7 +127,7 @@ int DRT::ELEMENTS::SolidPoro::Evaluate(Teuchos::ParameterList& params,
       }
       return 0;
     }
-    case CORE::Elements::struct_calc_nlnstifflmass:
+    case Core::Elements::struct_calc_nlnstifflmass:
     {
       std::visit(
           [&](auto& interface)
@@ -136,15 +136,15 @@ int DRT::ELEMENTS::SolidPoro::Evaluate(Teuchos::ParameterList& params,
                 discretization, la[0].lm_, params, &elevec1, &elemat1, &elemat2);
           },
           solid_calc_variant_);
-      DRT::ELEMENTS::LumpMatrix(elemat2);
+      Discret::ELEMENTS::LumpMatrix(elemat2);
       return 0;
     }
-    case CORE::Elements::struct_poro_calc_scatracoupling:
+    case Core::Elements::struct_poro_calc_scatracoupling:
     {
       // no coupling -> return
       return 0;
     }
-    case CORE::Elements::struct_poro_calc_fluidcoupling:
+    case Core::Elements::struct_poro_calc_fluidcoupling:
     {
       if (la.Size() > 2)
       {
@@ -162,21 +162,21 @@ int DRT::ELEMENTS::SolidPoro::Evaluate(Teuchos::ParameterList& params,
       }
       return 0;
     }
-    case CORE::Elements::struct_calc_update_istep:
+    case Core::Elements::struct_calc_update_istep:
     {
       std::visit([&](auto& interface)
           { interface->Update(*this, SolidPoroMaterial(), discretization, la[0].lm_, params); },
           solid_calc_variant_);
       return 0;
     }
-    case CORE::Elements::struct_calc_recover:
+    case Core::Elements::struct_calc_recover:
     {
       std::visit([&](auto& interface)
           { interface->Recover(*this, discretization, la[0].lm_, params); },
           solid_calc_variant_);
       return 0;
     }
-    case CORE::Elements::struct_calc_stress:
+    case Core::Elements::struct_calc_stress:
     {
       std::visit(
           [&](auto& interface)
@@ -199,7 +199,7 @@ int DRT::ELEMENTS::SolidPoro::Evaluate(Teuchos::ParameterList& params,
       }
       return 0;
     }
-    case CORE::Elements::struct_init_gauss_point_data_output:
+    case Core::Elements::struct_init_gauss_point_data_output:
     {
       std::visit(
           [&](auto& interface)
@@ -210,7 +210,7 @@ int DRT::ELEMENTS::SolidPoro::Evaluate(Teuchos::ParameterList& params,
           solid_calc_variant_);
       return 0;
     }
-    case CORE::Elements::struct_gauss_point_data_output:
+    case Core::Elements::struct_gauss_point_data_output:
     {
       std::visit(
           [&](auto& interface)
@@ -221,7 +221,7 @@ int DRT::ELEMENTS::SolidPoro::Evaluate(Teuchos::ParameterList& params,
           solid_calc_variant_);
       return 0;
     }
-    case CORE::Elements::struct_calc_predict:
+    case Core::Elements::struct_calc_predict:
     {
       // do nothing for now
       return 0;
@@ -233,10 +233,10 @@ int DRT::ELEMENTS::SolidPoro::Evaluate(Teuchos::ParameterList& params,
   }
 }
 
-int DRT::ELEMENTS::SolidPoro::evaluate_neumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
-    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
-    CORE::LINALG::SerialDenseMatrix* elemat1)
+int Discret::ELEMENTS::SolidPoro::evaluate_neumann(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
+    Core::LinAlg::SerialDenseMatrix* elemat1)
 {
   FOUR_C_THROW("not implemented");
   return 1;

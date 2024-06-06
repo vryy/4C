@@ -25,11 +25,11 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     krank 09/13|
  *----------------------------------------------------------------------*/
-FLD::Vreman::Vreman(Teuchos::RCP<DRT::Discretization> actdis, Teuchos::ParameterList& params)
+FLD::Vreman::Vreman(Teuchos::RCP<Discret::Discretization> actdis, Teuchos::ParameterList& params)
     :  // call constructor for "nontrivial" objects
       discret_(actdis),
       params_(params),
-      physicaltype_(CORE::UTILS::GetAsEnum<INPAR::FLUID::PhysicalType>(params_, "Physical Type"))
+      physicaltype_(Core::UTILS::GetAsEnum<Inpar::FLUID::PhysicalType>(params_, "Physical Type"))
 {
   boxf_ = Teuchos::rcp(new FLD::Boxfilter(discret_, params_));
   // Initialize Boxfilter
@@ -42,7 +42,7 @@ FLD::Vreman::Vreman(Teuchos::RCP<DRT::Discretization> actdis, Teuchos::Parameter
 /*----------------------------------------------------------------------*
  | add some scatra specific parameters                  rasthofer 08/12 |
  * ---------------------------------------------------------------------*/
-void FLD::Vreman::AddScatra(Teuchos::RCP<DRT::Discretization> scatradis)
+void FLD::Vreman::AddScatra(Teuchos::RCP<Discret::Discretization> scatradis)
 {
   scatradiscret_ = scatradis;
 
@@ -123,10 +123,10 @@ double FLD::Vreman::dyn_vreman_compute_cv()
   double Cv = 0.0;
   double cv_numerator_volumeav = 0.0;
   double cv_denominator_volumeav = 0.0;
-  int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(CORE::Materials::m_fluid);
-  const CORE::MAT::PAR::Parameter* mat =
-      GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
-  const MAT::PAR::NewtonianFluid* actmat = static_cast<const MAT::PAR::NewtonianFluid*>(mat);
+  int id = Global::Problem::Instance()->Materials()->FirstIdByType(Core::Materials::m_fluid);
+  const Core::Mat::PAR::Parameter* mat =
+      Global::Problem::Instance()->Materials()->ParameterById(id);
+  const Mat::PAR::NewtonianFluid* actmat = static_cast<const Mat::PAR::NewtonianFluid*>(mat);
   double dens = actmat->density_;
   double visc = actmat->viscosity_ / dens;
   // action for elements
@@ -142,8 +142,8 @@ double FLD::Vreman::dyn_vreman_compute_cv()
 
 
   // loop all elements on this proc (excluding ghosted ones)
-  Teuchos::RCP<CORE::LINALG::SerialDenseVector> Cv_num_denom =
-      Teuchos::rcp(new CORE::LINALG::SerialDenseVector(2));
+  Teuchos::RCP<Core::LinAlg::SerialDenseVector> Cv_num_denom =
+      Teuchos::rcp(new Core::LinAlg::SerialDenseVector(2));
 
 
   // call loop over elements (assemble nothing)
@@ -180,24 +180,24 @@ void FLD::Vreman::dyn_vreman_compute_dt(Teuchos::ParameterList& extraparams)
   double Dt = 0.0;
   double dt_numerator_volumeav = 0.0;
   double dt_denominator_volumeav = 0.0;
-  int idscatra = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(CORE::Materials::m_scatra);
-  const CORE::MAT::PAR::Parameter* matscatra =
-      GLOBAL::Problem::Instance()->Materials()->ParameterById(idscatra);
-  const MAT::PAR::ScatraMat* actmatscatra = static_cast<const MAT::PAR::ScatraMat*>(matscatra);
-  double diffus = MAT::PAR::ScatraMat(*actmatscatra)
+  int idscatra = Global::Problem::Instance()->Materials()->FirstIdByType(Core::Materials::m_scatra);
+  const Core::Mat::PAR::Parameter* matscatra =
+      Global::Problem::Instance()->Materials()->ParameterById(idscatra);
+  const Mat::PAR::ScatraMat* actmatscatra = static_cast<const Mat::PAR::ScatraMat*>(matscatra);
+  double diffus = Mat::PAR::ScatraMat(*actmatscatra)
                       .GetParameter(actmatscatra->diff, -1);  // actmatscatra->diffusivity_;
 
   // generate a parameterlist for communication and control
   Teuchos::ParameterList calc_vreman_params_scatra;
-  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
-      "action", SCATRA::Action::calc_vreman_scatra, calc_vreman_params_scatra);
+  Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+      "action", ScaTra::Action::calc_vreman_scatra, calc_vreman_params_scatra);
   calc_vreman_params_scatra.set("col_filtered_phi", col_filtered_phi_);
   calc_vreman_params_scatra.set("col_filtered_phi2", col_filtered_phi2_);
   calc_vreman_params_scatra.set("col_filtered_phiexpression", col_filtered_phiexpression_);
   calc_vreman_params_scatra.set("col_filtered_alphaijsc", col_filtered_alphaijsc_);
   // loop all elements on this proc (excluding ghosted ones)
-  Teuchos::RCP<CORE::LINALG::SerialDenseVector> Dt_num_denom =
-      Teuchos::rcp(new CORE::LINALG::SerialDenseVector(2));
+  Teuchos::RCP<Core::LinAlg::SerialDenseVector> Dt_num_denom =
+      Teuchos::rcp(new Core::LinAlg::SerialDenseVector(2));
   // call loop over elements (assemble nothing)
   scatradiscret_->EvaluateScalars(calc_vreman_params_scatra, Dt_num_denom);
   scatradiscret_->ClearState();

@@ -19,7 +19,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::GEOMETRICSEARCH
+namespace Core::GeometricSearch
 {
   /*! \brief Storing information on the geometric search
    */
@@ -59,10 +59,10 @@ namespace CORE::GEOMETRICSEARCH
    * @param boundingVolume Bounding volume enclosing the respective element (as k-DOP)
    * @return Points of the polyhedron and connecting polygons
    */
-  std::pair<std::vector<LINALG::Matrix<3, 1>>, std::vector<std::vector<int>>>
+  std::pair<std::vector<LinAlg::Matrix<3, 1>>, std::vector<std::vector<int>>>
   GetKDopPolyhedronRepresentation(const BoundingVolume boundingVolume);
 
-}  // namespace CORE::GEOMETRICSEARCH
+}  // namespace Core::GeometricSearch
 
 FOUR_C_NAMESPACE_CLOSE
 

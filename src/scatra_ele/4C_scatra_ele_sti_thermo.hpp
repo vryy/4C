@@ -17,7 +17,7 @@ transport
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
@@ -25,7 +25,7 @@ namespace DRT
     class ScaTraEleDiffManagerSTIThermo;
 
     // class implementation
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     class ScaTraEleSTIThermo
     {
      public:
@@ -46,49 +46,49 @@ namespace DRT
 
       //! extract quantities for element evaluation
       virtual void extract_element_and_node_values(
-          CORE::Elements::Element* ele,               //!< current element
+          Core::Elements::Element* ele,               //!< current element
           Teuchos::ParameterList& params,             //!< parameter list
-          DRT::Discretization& discretization,        //!< discretization
-          CORE::Elements::Element::LocationArray& la  //!< location array
+          Discret::Discretization& discretization,    //!< discretization
+          Core::Elements::Element::LocationArray& la  //!< location array
       );
 
       //! provide element matrix with linearizations of Soret effect term in discrete scatra
       //! residuals w.r.t. scatra dofs
-      void calc_mat_soret(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
+      void calc_mat_soret(Core::LinAlg::SerialDenseMatrix& emat,  //!< element matrix
           const double& timefacfac,  //!< domain integration factor times time integration factor
           const double& conc,        //!< concentration
           const double& diffcoeff,   //!< diffusion coefficient
           const double&
               diffcoeffderiv,  //!< derivative of diffusion coefficient w.r.t. concentration
           const double& temp,  //!< temperature
-          const CORE::LINALG::Matrix<nsd_, 1>& gradtemp,  //!< gradient of temperature
-          const CORE::LINALG::Matrix<nen_, 1>& funct,     //!< shape functions
-          const CORE::LINALG::Matrix<nsd_, nen_>& derxy  //!< spatial derivatives of shape functions
+          const Core::LinAlg::Matrix<nsd_, 1>& gradtemp,  //!< gradient of temperature
+          const Core::LinAlg::Matrix<nen_, 1>& funct,     //!< shape functions
+          const Core::LinAlg::Matrix<nsd_, nen_>& derxy  //!< spatial derivatives of shape functions
       );
 
       //! provide element matrix with linearizations of Soret effect term in discrete scatra
       //! residuals w.r.t. thermo dofs
-      void calc_mat_soret_od(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
+      void calc_mat_soret_od(Core::LinAlg::SerialDenseMatrix& emat,  //!< element matrix
           const double& timefacfac,     //!< time integration factor times domain integration factor
           const double& concentration,  //!< concentration
           const double& diffcoeff,      //!< diffusion coefficient
           const double& temperature,    //!< temperature
-          const CORE::LINALG::Matrix<nsd_, 1>& gradtemp,  //!< gradient of temperature
-          const CORE::LINALG::Matrix<nen_, 1>& funct,     //!< shape functions
-          const CORE::LINALG::Matrix<nsd_, nen_>& derxy  //!< spatial derivatives of shape functions
+          const Core::LinAlg::Matrix<nsd_, 1>& gradtemp,  //!< gradient of temperature
+          const Core::LinAlg::Matrix<nen_, 1>& funct,     //!< shape functions
+          const Core::LinAlg::Matrix<nsd_, nen_>& derxy  //!< spatial derivatives of shape functions
       );
 
       //! provide element right-hand side vector with contributions of Soret effect term to discrete
       //! scatra residuals
       void calc_rhs_soret(
-          CORE::LINALG::SerialDenseVector& erhs,  //!< element right-hand side vector
+          Core::LinAlg::SerialDenseVector& erhs,  //!< element right-hand side vector
           const double& rhsfac,     //!< domain integration factor times time integration factor for
                                     //!< right-hand side vector
           const double& conc,       //!< concentration
           const double& diffcoeff,  //!< diffusion coefficient
           const double& temp,       //!< temperature
-          const CORE::LINALG::Matrix<nsd_, 1>& gradtemp,  //!< gradient of temperature
-          const CORE::LINALG::Matrix<nsd_, nen_>& derxy  //!< spatial derivatives of shape functions
+          const Core::LinAlg::Matrix<nsd_, 1>& gradtemp,  //!< gradient of temperature
+          const Core::LinAlg::Matrix<nsd_, nen_>& derxy  //!< spatial derivatives of shape functions
       );
 
       //! provide element matrix with linearization of diffusion coefficient with respect to
@@ -105,22 +105,22 @@ namespace DRT
       //! \param funct     shape functions
       //! \param derxy     spatial derivatives of shape functions
       //! \param scalefac  scaling factor for pot. contributions
-      void calc_mat_diff_thermo_od(CORE::LINALG::SerialDenseMatrix& emat, const int& numdofpernode,
+      void calc_mat_diff_thermo_od(Core::LinAlg::SerialDenseMatrix& emat, const int& numdofpernode,
           const double& timefacfac, const double& invF,
-          const CORE::LINALG::Matrix<nsd_, 1>& gradconc,
-          const CORE::LINALG::Matrix<nsd_, 1>& gradpot, const double& tempderivisodiffcoef,
-          const double& tempderivcond, const CORE::LINALG::Matrix<nen_, 1>& funct,
-          const CORE::LINALG::Matrix<nsd_, nen_>& derxy, const double& scalefac);
+          const Core::LinAlg::Matrix<nsd_, 1>& gradconc,
+          const Core::LinAlg::Matrix<nsd_, 1>& gradpot, const double& tempderivisodiffcoef,
+          const double& tempderivcond, const Core::LinAlg::Matrix<nen_, 1>& funct,
+          const Core::LinAlg::Matrix<nsd_, nen_>& derxy, const double& scalefac);
 
       //! evaluate Soret material
-      void mat_soret(const Teuchos::RCP<const CORE::MAT::Material> material  //!< Soret material
+      void mat_soret(const Teuchos::RCP<const Core::Mat::Material> material  //!< Soret material
       );
 
       //! compute gradient of test function times gradient of shape function
       void get_laplacian_weak_form(double& result,       //!< result variable
           const int& vi,                                 //!< index of test function
           const int& ui,                                 //!< index of shape function
-          const CORE::LINALG::Matrix<nsd_, nen_>& derxy  //!< spatial derivatives of shape functions
+          const Core::LinAlg::Matrix<nsd_, nen_>& derxy  //!< spatial derivatives of shape functions
       )
       {
         // initialize result variable
@@ -133,8 +133,8 @@ namespace DRT
       //! compute gradient of test function times given gradient
       void get_laplacian_weak_form_rhs(double& result,    //!< result variable
           const int& vi,                                  //!< index of test function
-          const CORE::LINALG::Matrix<nsd_, 1>& gradient,  //!< given gradient
-          const CORE::LINALG::Matrix<nsd_, nen_>& derxy  //!< spatial derivatives of shape functions
+          const Core::LinAlg::Matrix<nsd_, 1>& gradient,  //!< given gradient
+          const Core::LinAlg::Matrix<nsd_, nen_>& derxy  //!< spatial derivatives of shape functions
       )
       {
         // initialize result variable
@@ -145,7 +145,7 @@ namespace DRT
       };
 
       //! local nodal values of temperature
-      CORE::LINALG::Matrix<nen_, 1> etempnp_;
+      Core::LinAlg::Matrix<nen_, 1> etempnp_;
 
       //! thermo diffusion manager
       const Teuchos::RCP<ScaTraEleDiffManagerSTIThermo> diffmanagerstithermo_;
@@ -190,9 +190,9 @@ namespace DRT
 
       //! set internal variables for element evaluation
       void set_internal_variables_sti_thermo(
-          const CORE::LINALG::Matrix<NEN, 1>& funct,    //!< shape functions
-          const CORE::LINALG::Matrix<NSD, NEN>& derxy,  //!< spatial derivatives of shape functions
-          const CORE::LINALG::Matrix<NEN, 1>&
+          const Core::LinAlg::Matrix<NEN, 1>& funct,    //!< shape functions
+          const Core::LinAlg::Matrix<NSD, NEN>& derxy,  //!< spatial derivatives of shape functions
+          const Core::LinAlg::Matrix<NEN, 1>&
               etempnp  //!< nodal temperature values at time t_(n+1) or t_(n+alpha_F)
       )
       {
@@ -205,17 +205,17 @@ namespace DRT
       const double& Temp() const { return temp_; };
 
       //! return gradient of temperature
-      const CORE::LINALG::Matrix<NSD, 1>& GradTemp() const { return gradtemp_; };
+      const Core::LinAlg::Matrix<NSD, 1>& GradTemp() const { return gradtemp_; };
 
      protected:
       //! temperature
       double temp_;
 
       //! gradient of temperature
-      CORE::LINALG::Matrix<NSD, 1> gradtemp_;
+      Core::LinAlg::Matrix<NSD, 1> gradtemp_;
     };
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

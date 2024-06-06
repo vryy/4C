@@ -21,11 +21,11 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | constructor                                          rasthofer 12/13 |
  *----------------------------------------------------------------------*/
-SCATRA::ScaTraTimIntLoma::ScaTraTimIntLoma(Teuchos::RCP<DRT::Discretization> dis,
-    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+ScaTra::ScaTraTimIntLoma::ScaTraTimIntLoma(Teuchos::RCP<Discret::Discretization> dis,
+    Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
     Teuchos::RCP<Teuchos::ParameterList> extraparams,
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(dis, solver, sctratimintparams, extraparams, output),
       lomaparams_(params),
       initialmass_(0.0),
@@ -44,10 +44,10 @@ SCATRA::ScaTraTimIntLoma::ScaTraTimIntLoma(Teuchos::RCP<DRT::Discretization> dis
 /*----------------------------------------------------------------------*
  | initialize algorithm                                     rauch 09/16 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntLoma::Init()
+void ScaTra::ScaTraTimIntLoma::Init()
 {
   // safety check
-  if (CORE::UTILS::IntegralValue<int>(*lomaparams_, "SGS_MATERIAL_UPDATE"))
+  if (Core::UTILS::IntegralValue<int>(*lomaparams_, "SGS_MATERIAL_UPDATE"))
     FOUR_C_THROW(
         "Material update using subgrid-scale temperature currently not supported for loMa "
         "problems. Read remark in file 'scatra_ele_calc_loma.H'!");
@@ -59,7 +59,7 @@ void SCATRA::ScaTraTimIntLoma::Init()
 /*----------------------------------------------------------------------*
  | setup algorithm                                          rauch 09/16 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntLoma::Setup()
+void ScaTra::ScaTraTimIntLoma::Setup()
 {
   SetupSplitter();
   return;
@@ -68,13 +68,13 @@ void SCATRA::ScaTraTimIntLoma::Setup()
 /*----------------------------------------------------------------------*
  | setup splitter                                          deanda 11/17 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntLoma::SetupSplitter()
+void ScaTra::ScaTraTimIntLoma::SetupSplitter()
 {
   // set up a species-temperature splitter (if more than one scalar)
   if (NumScal() > 1)
   {
-    splitter_ = Teuchos::rcp(new CORE::LINALG::MapExtractor);
-    CORE::LINALG::CreateMapExtractorFromDiscretization(*discret_, NumScal() - 1, *splitter_);
+    splitter_ = Teuchos::rcp(new Core::LinAlg::MapExtractor);
+    Core::LinAlg::CreateMapExtractorFromDiscretization(*discret_, NumScal() - 1, *splitter_);
   }
 
   return;
@@ -84,14 +84,14 @@ void SCATRA::ScaTraTimIntLoma::SetupSplitter()
 /*----------------------------------------------------------------------*
  | set initial thermodynamic pressure                          vg 07/09 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntLoma::set_initial_therm_pressure()
+void ScaTra::ScaTraTimIntLoma::set_initial_therm_pressure()
 {
   // get thermodynamic pressure from material parameters
-  int id = problem_->Materials()->FirstIdByType(CORE::Materials::m_sutherland);
+  int id = problem_->Materials()->FirstIdByType(Core::Materials::m_sutherland);
   if (id != -1)  // i.e., Sutherland material found
   {
-    const CORE::MAT::PAR::Parameter* mat = problem_->Materials()->ParameterById(id);
-    const MAT::PAR::Sutherland* actmat = static_cast<const MAT::PAR::Sutherland*>(mat);
+    const Core::Mat::PAR::Parameter* mat = problem_->Materials()->ParameterById(id);
+    const Mat::PAR::Sutherland* actmat = static_cast<const Mat::PAR::Sutherland*>(mat);
 
     thermpressn_ = actmat->thermpress_;
   }
@@ -118,28 +118,28 @@ void SCATRA::ScaTraTimIntLoma::set_initial_therm_pressure()
   compute_therm_pressure_intermediate_values();
 
   return;
-}  // SCATRA::ScaTraTimIntLoma::set_initial_therm_pressure
+}  // ScaTra::ScaTraTimIntLoma::set_initial_therm_pressure
 
 
 /*----------------------------------------------------------------------*
  | compute initial total mass in domain                        vg 01/09 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntLoma::ComputeInitialMass()
+void ScaTra::ScaTraTimIntLoma::ComputeInitialMass()
 {
   // set scalar values needed by elements
   discret_->ClearState();
   discret_->set_state("phinp", phin_);
   // set action for elements
   Teuchos::ParameterList eleparams;
-  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
-      "action", SCATRA::Action::calc_total_and_mean_scalars, eleparams);
+  Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+      "action", ScaTra::Action::calc_total_and_mean_scalars, eleparams);
   // inverted scalar values are required here
   eleparams.set("inverting", true);
   eleparams.set("calc_grad_phi", false);
 
   // evaluate integral of inverse temperature
-  Teuchos::RCP<CORE::LINALG::SerialDenseVector> scalars =
-      Teuchos::rcp(new CORE::LINALG::SerialDenseVector(NumScal() + 1));
+  Teuchos::RCP<Core::LinAlg::SerialDenseVector> scalars =
+      Teuchos::rcp(new Core::LinAlg::SerialDenseVector(NumScal() + 1));
   discret_->EvaluateScalars(eleparams, scalars);
   discret_->ClearState();  // clean up
 
@@ -160,28 +160,28 @@ void SCATRA::ScaTraTimIntLoma::ComputeInitialMass()
   }
 
   return;
-}  // SCATRA::ScaTraTimIntLoma::ComputeInitialMass
+}  // ScaTra::ScaTraTimIntLoma::ComputeInitialMass
 
 
 /*----------------------------------------------------------------------*
  | compute thermodynamic pressure from mass conservation       vg 01/09 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntLoma::compute_therm_pressure_from_mass_cons()
+void ScaTra::ScaTraTimIntLoma::compute_therm_pressure_from_mass_cons()
 {
   // set scalar values needed by elements
   discret_->ClearState();
   discret_->set_state("phinp", phinp_);
   // set action for elements
   Teuchos::ParameterList eleparams;
-  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
-      "action", SCATRA::Action::calc_total_and_mean_scalars, eleparams);
+  Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+      "action", ScaTra::Action::calc_total_and_mean_scalars, eleparams);
   // inverted scalar values are required here
   eleparams.set("inverting", true);
   eleparams.set("calc_grad_phi", false);
 
   // evaluate integral of inverse temperature
-  Teuchos::RCP<CORE::LINALG::SerialDenseVector> scalars =
-      Teuchos::rcp(new CORE::LINALG::SerialDenseVector(NumScal() + 1));
+  Teuchos::RCP<Core::LinAlg::SerialDenseVector> scalars =
+      Teuchos::rcp(new Core::LinAlg::SerialDenseVector(NumScal() + 1));
   discret_->EvaluateScalars(eleparams, scalars);
   discret_->ClearState();  // clean up
 
@@ -209,13 +209,13 @@ void SCATRA::ScaTraTimIntLoma::compute_therm_pressure_from_mass_cons()
   compute_therm_pressure_intermediate_values();
 
   return;
-}  // SCATRA::ScaTraTimIntLoma::compute_therm_pressure_from_mass_cons
+}  // ScaTra::ScaTraTimIntLoma::compute_therm_pressure_from_mass_cons
 
 
 /*----------------------------------------------------------------------*
  | add parameters depending on the problem              rasthofer 12/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntLoma::add_problem_specific_parameters_and_vectors(
+void ScaTra::ScaTraTimIntLoma::add_problem_specific_parameters_and_vectors(
     Teuchos::ParameterList& params  //!< parameter list
 )
 {

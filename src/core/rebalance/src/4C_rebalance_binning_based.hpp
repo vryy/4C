@@ -19,18 +19,18 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace CORE::REBALANCE
+namespace Core::Rebalance
 {
   /*! \brief Rebalance discretizations in input vector using BinningStrategy
      *
     \param vector_of_discretizations (in) : vector containing RCPs to discretizations */
   void RebalanceDiscretizationsByBinning(
-      const std::vector<Teuchos::RCP<DRT::Discretization>>& vector_of_discretizations,
+      const std::vector<Teuchos::RCP<Discret::Discretization>>& vector_of_discretizations,
       bool revertextendedghosting = false);
 
   /*!
@@ -40,7 +40,7 @@ namespace CORE::REBALANCE
     this method
 
     \return void */
-  void GhostDiscretizationOnAllProcs(const Teuchos::RCP<DRT::Discretization> distobeghosted);
+  void GhostDiscretizationOnAllProcs(const Teuchos::RCP<Discret::Discretization> distobeghosted);
 
   /*! \brief Rebalance nodes matching to another discretization.
    *
@@ -52,7 +52,7 @@ namespace CORE::REBALANCE
   \param dis_to_rebalance    (in) : discretization which is rebalanced matching to dis_template
 */
   void MatchNodalDistributionOfMatchingDiscretizations(
-      DRT::Discretization& dis_template, DRT::Discretization& dis_to_rebalance);
+      Discret::Discretization& dis_template, Discret::Discretization& dis_to_rebalance);
 
   /*! \brief Rebalance elements matching to another discretization.
    *
@@ -70,7 +70,7 @@ namespace CORE::REBALANCE
   \param dis_to_rebalance    (in) : discretization which is rebalanced matching to dis_template
 */
   void MatchElementDistributionOfMatchingDiscretizations(
-      DRT::Discretization& dis_template, DRT::Discretization& dis_to_rebalance);
+      Discret::Discretization& dis_template, Discret::Discretization& dis_to_rebalance);
 
   /*! \brief Rebalance conditioned elements matching other conditioned elements.
    *
@@ -86,8 +86,8 @@ namespace CORE::REBALANCE
   \param condname_template   (i) : condition on template dis with template distribution
   \param condname_rebalance  (i) : condition on elements to be rebalanced
    \param print  (i) : print elemental and nodal redistribution */
-  void MatchElementDistributionOfMatchingConditionedElements(DRT::Discretization& dis_template,
-      DRT::Discretization& dis_to_rebalance, const std::string& condname_template,
+  void MatchElementDistributionOfMatchingConditionedElements(Discret::Discretization& dis_template,
+      Discret::Discretization& dis_to_rebalance, const std::string& condname_template,
       const std::string& condname_rebalance, bool print = false);
 
   /*! \brief Get a column vector made of a row vector.
@@ -103,15 +103,16 @@ namespace CORE::REBALANCE
   \param name (in): discretization
   \param state (in): vector of some data  */
   Teuchos::RCP<const Epetra_Vector> GetColVersionOfRowVector(
-      const Teuchos::RCP<const DRT::Discretization> dis,
+      const Teuchos::RCP<const Discret::Discretization> dis,
       const Teuchos::RCP<const Epetra_Vector> state, const int nds = 0);
 
 
   /// recompute nodecolmap of standard discretization to include all nodes as of subdicretization
   Teuchos::RCP<Epetra_Map> ComputeNodeColMap(
-      const Teuchos::RCP<DRT::Discretization>
+      const Teuchos::RCP<Discret::Discretization>
           sourcedis,  ///< standard discretization we want to rebalance
-      const Teuchos::RCP<DRT::Discretization> subdis  ///< subdiscretization prescribing ghosting
+      const Teuchos::RCP<Discret::Discretization>
+          subdis  ///< subdiscretization prescribing ghosting
   );
 
   /*! \brief Fill processor local row and col vectors with element ids fitting the desired
@@ -121,8 +122,8 @@ namespace CORE::REBALANCE
   \param dis_to_rebalance    (i): discretization supposed to be distributed matching template
   \param row_id_vec_to_fill  (o): on exit this vector contains the matched element row gids
   \param col_id_vec_to_fill  (o): on exit this vector contains the matched element col gids  */
-  void MatchElementRowColDistribution(const DRT::Discretization& dis_template,
-      const DRT::Discretization& dis_to_rebalance, std::vector<int>& row_id_vec_to_fill,
+  void MatchElementRowColDistribution(const Discret::Discretization& dis_template,
+      const Discret::Discretization& dis_to_rebalance, std::vector<int>& row_id_vec_to_fill,
       std::vector<int>& col_id_vec_to_fill);
 
   /*! \brief Fill processor local row and col vectors with node ids fitting the desired parallel
@@ -132,8 +133,8 @@ namespace CORE::REBALANCE
   \param dis_to_rebalance    (i): discretization supposed to be distributed matching template
   \param row_id_vec_to_fill  (o): on exit this vector contains the matched node row gids
   \param col_id_vec_to_fill  (o): on exit this vector contains the matched node col gids  */
-  void MatchNodalRowColDistribution(const DRT::Discretization& dis_template,
-      const DRT::Discretization& dis_to_rebalance, std::vector<int>& row_id_vec_to_fill,
+  void MatchNodalRowColDistribution(const Discret::Discretization& dis_template,
+      const Discret::Discretization& dis_to_rebalance, std::vector<int>& row_id_vec_to_fill,
       std::vector<int>& col_id_vec_to_fill);
 
   /// \brief rebalance a map in accordance with a already rebalanced reference map
@@ -159,7 +160,7 @@ namespace CORE::REBALANCE
    */
   Teuchos::RCP<Epetra_Map> RebalanceInAccordanceWithReference(
       const Epetra_Map& ref_red_map, const Epetra_Map& unred_map);
-}  // namespace CORE::REBALANCE
+}  // namespace Core::Rebalance
 
 
 FOUR_C_NAMESPACE_CLOSE

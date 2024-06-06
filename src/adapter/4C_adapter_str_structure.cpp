@@ -49,8 +49,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ADAPTER::StructureBaseAlgorithm::StructureBaseAlgorithm(const Teuchos::ParameterList& prbdyn,
-    const Teuchos::ParameterList& sdyn, Teuchos::RCP<DRT::Discretization> actdis)
+Adapter::StructureBaseAlgorithm::StructureBaseAlgorithm(const Teuchos::ParameterList& prbdyn,
+    const Teuchos::ParameterList& sdyn, Teuchos::RCP<Discret::Discretization> actdis)
 {
   create_structure(prbdyn, sdyn, actdis);
 }
@@ -58,20 +58,20 @@ ADAPTER::StructureBaseAlgorithm::StructureBaseAlgorithm(const Teuchos::Parameter
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::StructureBaseAlgorithm::create_structure(const Teuchos::ParameterList& prbdyn,
-    const Teuchos::ParameterList& sdyn, Teuchos::RCP<DRT::Discretization> actdis)
+void Adapter::StructureBaseAlgorithm::create_structure(const Teuchos::ParameterList& prbdyn,
+    const Teuchos::ParameterList& sdyn, Teuchos::RCP<Discret::Discretization> actdis)
 {
   // major switch to different time integrators
-  switch (CORE::UTILS::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP"))
+  switch (Core::UTILS::IntegralValue<Inpar::STR::DynamicType>(sdyn, "DYNAMICTYP"))
   {
-    case INPAR::STR::dyna_statics:
-    case INPAR::STR::dyna_genalpha:
-    case INPAR::STR::dyna_onesteptheta:
-    case INPAR::STR::dyna_expleuler:
-    case INPAR::STR::dyna_centrdiff:
-    case INPAR::STR::dyna_ab2:
-    case INPAR::STR::dyna_euma:
-    case INPAR::STR::dyna_euimsto:
+    case Inpar::STR::dyna_statics:
+    case Inpar::STR::dyna_genalpha:
+    case Inpar::STR::dyna_onesteptheta:
+    case Inpar::STR::dyna_expleuler:
+    case Inpar::STR::dyna_centrdiff:
+    case Inpar::STR::dyna_ab2:
+    case Inpar::STR::dyna_euma:
+    case Inpar::STR::dyna_euimsto:
       create_tim_int(prbdyn, sdyn, actdis);  // <-- here is the show
       break;
     default:
@@ -84,22 +84,22 @@ void ADAPTER::StructureBaseAlgorithm::create_structure(const Teuchos::ParameterL
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterList& prbdyn,
-    const Teuchos::ParameterList& sdyn, Teuchos::RCP<DRT::Discretization> actdis)
+void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterList& prbdyn,
+    const Teuchos::ParameterList& sdyn, Teuchos::RCP<Discret::Discretization> actdis)
 {
   // this is not exactly a one hundred meter race, but we need timing
   Teuchos::RCP<Teuchos::Time> t =
-      Teuchos::TimeMonitor::getNewTimer("ADAPTER::StructureTimIntBaseAlgorithm::SetupStructure");
+      Teuchos::TimeMonitor::getNewTimer("Adapter::StructureTimIntBaseAlgorithm::SetupStructure");
   Teuchos::TimeMonitor monitor(*t);
 
   // get the problem instance
-  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
+  Global::Problem* problem = Global::Problem::Instance();
   // what's the current problem type?
-  CORE::ProblemType probtype = problem->GetProblemType();
+  Core::ProblemType probtype = problem->GetProblemType();
 
   // get mortar information
-  std::vector<CORE::Conditions::Condition*> mtcond(0);
-  std::vector<CORE::Conditions::Condition*> ccond(0);
+  std::vector<Core::Conditions::Condition*> mtcond(0);
+  std::vector<Core::Conditions::Condition*> ccond(0);
   actdis->GetCondition("Mortar", mtcond);
   actdis->GetCondition("Contact", ccond);
   bool onlymeshtying = false;
@@ -127,7 +127,7 @@ void ADAPTER::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
       Teuchos::rcp(new Teuchos::ParameterList(problem->StructuralNoxParams()));
 
   // show default parameters
-  if ((actdis->Comm()).MyPID() == 0) INPUT::PrintDefaultParameters(CORE::IO::cout, sdyn);
+  if ((actdis->Comm()).MyPID() == 0) Input::PrintDefaultParameters(Core::IO::cout, sdyn);
 
   // add extra parameters (a kind of work-around)
   Teuchos::RCP<Teuchos::ParameterList> xparams = Teuchos::rcp(new Teuchos::ParameterList());
@@ -136,8 +136,8 @@ void ADAPTER::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
 
   // Check if for chosen Rayleigh damping the regarding parameters are given explicitly in the .dat
   // file
-  if (CORE::UTILS::IntegralValue<INPAR::STR::DampKind>(sdyn, "DAMPING") ==
-      INPAR::STR::damp_rayleigh)
+  if (Core::UTILS::IntegralValue<Inpar::STR::DampKind>(sdyn, "DAMPING") ==
+      Inpar::STR::damp_rayleigh)
   {
     if (sdyn.get<double>("K_DAMP") < 0.0)
     {
@@ -150,10 +150,10 @@ void ADAPTER::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
   }
 
   // create a solver
-  Teuchos::RCP<CORE::LINALG::Solver> solver = create_linear_solver(actdis, sdyn);
+  Teuchos::RCP<Core::LinAlg::Solver> solver = create_linear_solver(actdis, sdyn);
 
   // create contact/meshtying solver only if contact/meshtying problem.
-  Teuchos::RCP<CORE::LINALG::Solver> contactsolver = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::Solver> contactsolver = Teuchos::null;
 
   if (onlymeshtying or onlycontact or meshtyingandcontact)
     contactsolver = create_contact_meshtying_solver(actdis, sdyn);
@@ -161,7 +161,7 @@ void ADAPTER::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
   if (solver != Teuchos::null && (solver->Params().isSublist("Belos Parameters")) &&
       solver->Params().isSublist("ML Parameters")  // TODO what about MueLu?
       &&
-      CORE::UTILS::IntegralValue<INPAR::STR::StcScale>(sdyn, "STC_SCALING") != INPAR::STR::stc_none)
+      Core::UTILS::IntegralValue<Inpar::STR::StcScale>(sdyn, "STC_SCALING") != Inpar::STR::stc_none)
   {
     Teuchos::ParameterList& mllist = solver->Params().sublist("ML Parameters");
     Teuchos::RCP<std::vector<double>> ns =
@@ -188,8 +188,8 @@ void ADAPTER::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
 
 
     // prepare matrix for scaled thickness business of thin shell structures
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> stcinv =
-        Teuchos::rcp(new CORE::LINALG::SparseMatrix(*actdis->dof_row_map(), 81, true, true));
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> stcinv =
+        Teuchos::rcp(new Core::LinAlg::SparseMatrix(*actdis->dof_row_map(), 81, true, true));
 
     stcinv->Zero();
     // create the parameters for the discretization
@@ -198,7 +198,7 @@ void ADAPTER::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
     const std::string action = "calc_stc_matrix_inverse";
     p.set("action", action);
     p.set<int>(
-        "stc_scaling", CORE::UTILS::IntegralValue<INPAR::STR::StcScale>(sdyn, "STC_SCALING"));
+        "stc_scaling", Core::UTILS::IntegralValue<Inpar::STR::StcScale>(sdyn, "STC_SCALING"));
     p.set("stc_layer", 1);
 
     actdis->Evaluate(p, stcinv, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
@@ -211,8 +211,8 @@ void ADAPTER::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
 
       p.set("stc_layer", lay);
 
-      Teuchos::RCP<CORE::LINALG::SparseMatrix> tmpstcmat =
-          Teuchos::rcp(new CORE::LINALG::SparseMatrix(*actdis->dof_row_map(), 81, true, true));
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> tmpstcmat =
+          Teuchos::rcp(new Core::LinAlg::SparseMatrix(*actdis->dof_row_map(), 81, true, true));
       tmpstcmat->Zero();
 
       actdis->Evaluate(p, tmpstcmat, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
@@ -221,7 +221,7 @@ void ADAPTER::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
       stcinv = MLMultiply(*stcinv, *tmpstcmat, false, false, true);
     }
 
-    Teuchos::RCP<Epetra_Vector> temp = CORE::LINALG::CreateVector(*(actdis->dof_row_map()), false);
+    Teuchos::RCP<Epetra_Vector> temp = Core::LinAlg::CreateVector(*(actdis->dof_row_map()), false);
 
     stcinv->Multiply(false, *nsv1, *temp);
     nsv1->Update(1.0, *temp, 0.0);
@@ -241,16 +241,16 @@ void ADAPTER::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
   {
     // make sure we IMR-like generalised-alpha requested for multi-scale
     // simulations
-    Teuchos::RCP<MAT::PAR::Bundle> materials = problem->Materials();
+    Teuchos::RCP<Mat::PAR::Bundle> materials = problem->Materials();
     for (const auto& [_, par] : materials->Map())
     {
-      if (par->Type() == CORE::Materials::m_struct_multiscale)
+      if (par->Type() == Core::Materials::m_struct_multiscale)
       {
-        if (CORE::UTILS::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP") !=
-            INPAR::STR::dyna_genalpha)
+        if (Core::UTILS::IntegralValue<Inpar::STR::DynamicType>(sdyn, "DYNAMICTYP") !=
+            Inpar::STR::dyna_genalpha)
           FOUR_C_THROW("In multi-scale simulations, you have to use DYNAMICTYP=GenAlpha");
-        else if (CORE::UTILS::IntegralValue<INPAR::STR::MidAverageEnum>(
-                     sdyn.sublist("GENALPHA"), "GENAVG") != INPAR::STR::midavg_trlike)
+        else if (Core::UTILS::IntegralValue<Inpar::STR::MidAverageEnum>(
+                     sdyn.sublist("GENALPHA"), "GENAVG") != Inpar::STR::midavg_trlike)
           FOUR_C_THROW(
               "In multi-scale simulations, you have to use DYNAMICTYP=GenAlpha with GENAVG=TrLike");
         break;
@@ -259,8 +259,8 @@ void ADAPTER::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
   }
 
   // context for output and restart
-  Teuchos::RCP<CORE::IO::DiscretizationWriter> output = actdis->Writer();
-  if (CORE::UTILS::IntegralValue<int>(*ioflags, "OUTPUT_BIN"))
+  Teuchos::RCP<Core::IO::DiscretizationWriter> output = actdis->Writer();
+  if (Core::UTILS::IntegralValue<int>(*ioflags, "OUTPUT_BIN"))
   {
     output->WriteMesh(0, 0.0);
   }
@@ -300,11 +300,11 @@ void ADAPTER::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
    * \author mayr.mt \date 12/2013
    */
   // ---------------------------------------------------------------------------
-  if (probtype == CORE::ProblemType::fsi or probtype == CORE::ProblemType::fsi_redmodels)
+  if (probtype == Core::ProblemType::fsi or probtype == Core::ProblemType::fsi_redmodels)
   {
     const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
     const Teuchos::ParameterList& fsiada = fsidyn.sublist("TIMEADAPTIVITY");
-    if (CORE::UTILS::IntegralValue<bool>(fsiada, "TIMEADAPTON"))
+    if (Core::UTILS::IntegralValue<bool>(fsiada, "TIMEADAPTON"))
     {
       // overrule time step size adaptivity control parameters
       if (tap->get<std::string>("KIND") != "NONE")
@@ -318,12 +318,12 @@ void ADAPTER::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
 
         if (actdis->Comm().MyPID() == 0)
         {
-          CORE::IO::cout
+          Core::IO::cout
               << "*** Due to FSI time step size adaptivity with structure based error estimation,\n"
                  "algorithmic control parameters in STRUCTURAL DYNAMIC/TIMEADAPTIVITY have been\n"
                  "overwritten by those from FSI DYNAMIC/TIMEADAPTIVITY."
-              << CORE::IO::endl
-              << CORE::IO::endl;
+              << Core::IO::endl
+              << Core::IO::endl;
         }
       }
     }
@@ -338,16 +338,16 @@ void ADAPTER::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
   {
     switch (probtype)
     {
-      case CORE::ProblemType::structure:  // pure structural time adaptivity
+      case Core::ProblemType::structure:  // pure structural time adaptivity
       {
         structure_ = Teuchos::rcp(new StructureTimIntAda(sta, tmpstr));
         break;
       }
-      case CORE::ProblemType::fsi:  // structure based time adaptivity within an FSI simulation
-      case CORE::ProblemType::fsi_redmodels:
+      case Core::ProblemType::fsi:  // structure based time adaptivity within an FSI simulation
+      case Core::ProblemType::fsi_redmodels:
       {
         if ((actdis->Comm()).MyPID() == 0)
-          CORE::IO::cout << "Using StructureNOXCorrectionWrapper()..." << CORE::IO::endl;
+          Core::IO::cout << "Using StructureNOXCorrectionWrapper()..." << Core::IO::endl;
 
         Teuchos::RCP<FSIStructureWrapper> fsiwrapperwithadaptivity =
             Teuchos::rcp(new StructureFSITimIntAda(
@@ -370,19 +370,19 @@ void ADAPTER::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
   {
     switch (probtype)
     {
-      case CORE::ProblemType::fsi:
-      case CORE::ProblemType::fsi_redmodels:
-      case CORE::ProblemType::fsi_lung:
-      case CORE::ProblemType::gas_fsi:
-      case CORE::ProblemType::ac_fsi:
-      case CORE::ProblemType::biofilm_fsi:
-      case CORE::ProblemType::thermo_fsi:
+      case Core::ProblemType::fsi:
+      case Core::ProblemType::fsi_redmodels:
+      case Core::ProblemType::fsi_lung:
+      case Core::ProblemType::gas_fsi:
+      case Core::ProblemType::ac_fsi:
+      case Core::ProblemType::biofilm_fsi:
+      case Core::ProblemType::thermo_fsi:
       {
         const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
-        const int coupling = CORE::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
+        const int coupling = Core::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
 
         if ((actdis->Comm()).MyPID() == 0)
-          CORE::IO::cout << "Using StructureNOXCorrectionWrapper()..." << CORE::IO::endl;
+          Core::IO::cout << "Using StructureNOXCorrectionWrapper()..." << Core::IO::endl;
 
         if (tmpstr->HaveConstraint())
         {
@@ -406,38 +406,38 @@ void ADAPTER::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
         }
       }
       break;
-      case CORE::ProblemType::immersed_fsi:
+      case Core::ProblemType::immersed_fsi:
       {
         structure_ = Teuchos::rcp(new FSIStructureWrapperImmersed(tmpstr));
       }
       break;
-      case CORE::ProblemType::ssi:
-      case CORE::ProblemType::ssti:
+      case Core::ProblemType::ssi:
+      case Core::ProblemType::ssti:
       {
         structure_ = Teuchos::rcp(new SSIStructureWrapper(tmpstr));
       }
       break;
-      case CORE::ProblemType::redairways_tissue:
+      case Core::ProblemType::redairways_tissue:
       {
         structure_ = Teuchos::rcp(new StructureRedAirway(tmpstr));
       }
       break;
-      case CORE::ProblemType::poroelast:
-      case CORE::ProblemType::poroscatra:
-      case CORE::ProblemType::fpsi:
-      case CORE::ProblemType::fps3i:
-      case CORE::ProblemType::fpsi_xfem:
-      case CORE::ProblemType::fsi_xfem:
+      case Core::ProblemType::poroelast:
+      case Core::ProblemType::poroscatra:
+      case Core::ProblemType::fpsi:
+      case Core::ProblemType::fps3i:
+      case Core::ProblemType::fpsi_xfem:
+      case Core::ProblemType::fsi_xfem:
       {
         const Teuchos::ParameterList& porodyn = problem->poroelast_dynamic_params();
-        const INPAR::POROELAST::SolutionSchemeOverFields coupling =
-            CORE::UTILS::IntegralValue<INPAR::POROELAST::SolutionSchemeOverFields>(
+        const Inpar::PoroElast::SolutionSchemeOverFields coupling =
+            Core::UTILS::IntegralValue<Inpar::PoroElast::SolutionSchemeOverFields>(
                 porodyn, "COUPALGO");
         if (tmpstr->HaveConstraint())
         {
-          if (coupling == INPAR::POROELAST::Monolithic_structuresplit or
-              coupling == INPAR::POROELAST::Monolithic_fluidsplit or
-              coupling == INPAR::POROELAST::Monolithic_nopenetrationsplit)
+          if (coupling == Inpar::PoroElast::Monolithic_structuresplit or
+              coupling == Inpar::PoroElast::Monolithic_fluidsplit or
+              coupling == Inpar::PoroElast::Monolithic_nopenetrationsplit)
             structure_ = Teuchos::rcp(new FPSIStructureWrapper(tmpstr));
           else
             structure_ = Teuchos::rcp(new StructureConstrMerged(tmpstr));
@@ -448,7 +448,7 @@ void ADAPTER::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
         }
       }
       break;
-      case CORE::ProblemType::struct_ale:
+      case Core::ProblemType::struct_ale:
       {
         structure_ = Teuchos::rcp(new FSIStructureWrapper(tmpstr));
       }
@@ -472,10 +472,10 @@ void ADAPTER::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::Solver> ADAPTER::StructureBaseAlgorithm::create_linear_solver(
-    Teuchos::RCP<DRT::Discretization>& actdis, const Teuchos::ParameterList& sdyn)
+Teuchos::RCP<Core::LinAlg::Solver> Adapter::StructureBaseAlgorithm::create_linear_solver(
+    Teuchos::RCP<Discret::Discretization>& actdis, const Teuchos::ParameterList& sdyn)
 {
-  Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::null;
 
   // get the solver number used for structural problems
   const int linsolvernumber = sdyn.get<int>("LINEAR_SOLVER");
@@ -485,8 +485,8 @@ Teuchos::RCP<CORE::LINALG::Solver> ADAPTER::StructureBaseAlgorithm::create_linea
         "no linear solver defined for structural field. Please set LINEAR_SOLVER in STRUCTURAL "
         "DYNAMIC to a valid number!");
 
-  solver = Teuchos::rcp(new CORE::LINALG::Solver(
-      GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm()));
+  solver = Teuchos::rcp(new Core::LinAlg::Solver(
+      Global::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm()));
 
   actdis->compute_null_space_if_necessary(solver->Params());
 
@@ -495,25 +495,25 @@ Teuchos::RCP<CORE::LINALG::Solver> ADAPTER::StructureBaseAlgorithm::create_linea
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::Solver> ADAPTER::StructureBaseAlgorithm::create_contact_meshtying_solver(
-    Teuchos::RCP<DRT::Discretization>& actdis, const Teuchos::ParameterList& sdyn)
+Teuchos::RCP<Core::LinAlg::Solver> Adapter::StructureBaseAlgorithm::create_contact_meshtying_solver(
+    Teuchos::RCP<Discret::Discretization>& actdis, const Teuchos::ParameterList& sdyn)
 {
-  Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::null;
 
   // Get mortar information: contact or meshtying or both?
   bool onlymeshtying = false;
   bool onlycontact = false;
   bool meshtyingandcontact = false;
   {
-    std::vector<CORE::Conditions::Condition*> mtcond(0);
-    std::vector<CORE::Conditions::Condition*> ccond(0);
+    std::vector<Core::Conditions::Condition*> mtcond(0);
+    std::vector<Core::Conditions::Condition*> ccond(0);
     actdis->GetCondition("Mortar", mtcond);
     actdis->GetCondition("Contact", ccond);
     if (mtcond.size() != 0 and ccond.size() != 0) meshtyingandcontact = true;
     if (mtcond.size() != 0 and ccond.size() == 0) onlymeshtying = true;
     if (mtcond.size() == 0 and ccond.size() != 0) onlycontact = true;
   }
-  const Teuchos::ParameterList& mcparams = GLOBAL::Problem::Instance()->contact_dynamic_params();
+  const Teuchos::ParameterList& mcparams = Global::Problem::Instance()->contact_dynamic_params();
 
   // Get the solver number used for meshtying/contact problems
   const int linsolvernumber = mcparams.get<int>("LINEAR_SOLVER");
@@ -524,24 +524,24 @@ Teuchos::RCP<CORE::LINALG::Solver> ADAPTER::StructureBaseAlgorithm::create_conta
         "CONTACT DYNAMIC to a valid number!");
 
   // Distinguish the system type, i.e. condensed vs. saddle-point
-  switch (CORE::UTILS::IntegralValue<int>(mcparams, "SYSTEM"))
+  switch (Core::UTILS::IntegralValue<int>(mcparams, "SYSTEM"))
   {
-    case INPAR::CONTACT::system_saddlepoint:
+    case Inpar::CONTACT::system_saddlepoint:
     {
       /* Plausibility check
        *
        * Solver can be either a direct solver (UMFPACK, Superlu) or an iterative solver (Belos).
        */
-      const auto sol = Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::SolverType>(
-          GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), "SOLVER");
-      const auto prec = Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::PreconditionerType>(
-          GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), "AZPREC");
-      if (sol != CORE::LINEAR_SOLVER::SolverType::umfpack &&
-          sol != CORE::LINEAR_SOLVER::SolverType::superlu)
+      const auto sol = Teuchos::getIntegralValue<Core::LinearSolver::SolverType>(
+          Global::Problem::Instance()->SolverParams(linsolvernumber), "SOLVER");
+      const auto prec = Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(
+          Global::Problem::Instance()->SolverParams(linsolvernumber), "AZPREC");
+      if (sol != Core::LinearSolver::SolverType::umfpack &&
+          sol != Core::LinearSolver::SolverType::superlu)
       {
         // if an iterative solver is chosen we need a block preconditioner
-        if (prec != CORE::LINEAR_SOLVER::PreconditionerType::cheap_simple &&
-            prec != CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu_contactsp)
+        if (prec != Core::LinearSolver::PreconditionerType::cheap_simple &&
+            prec != Core::LinearSolver::PreconditionerType::multigrid_muelu_contactsp)
           FOUR_C_THROW(
               "You have chosen an iterative linear solver. For mortar meshtying/contact problems "
               "in saddle-point formulation, a block preconditioner is required. Choose an "
@@ -551,8 +551,8 @@ Teuchos::RCP<CORE::LINALG::Solver> ADAPTER::StructureBaseAlgorithm::create_conta
       }
 
       // build meshtying/contact solver
-      solver = Teuchos::rcp(new CORE::LINALG::Solver(
-          GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm()));
+      solver = Teuchos::rcp(new Core::LinAlg::Solver(
+          Global::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm()));
 
       actdis->compute_null_space_if_necessary(solver->Params());
 
@@ -567,9 +567,9 @@ Teuchos::RCP<CORE::LINALG::Solver> ADAPTER::StructureBaseAlgorithm::create_conta
             "Problems like beamcontact or pure structure problem w/o contact do not support a "
             "saddle-point formulation.");
 
-      INPAR::CONTACT::SolvingStrategy soltype =
-          CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(mcparams, "STRATEGY");
-      if (soltype == INPAR::CONTACT::solution_lagmult)
+      Inpar::CONTACT::SolvingStrategy soltype =
+          Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(mcparams, "STRATEGY");
+      if (soltype == Inpar::CONTACT::solution_lagmult)
       {
         // get the solver number used for structural problems
         const int linsolvernumber = sdyn.get<int>("LINEAR_SOLVER");
@@ -580,14 +580,14 @@ Teuchos::RCP<CORE::LINALG::Solver> ADAPTER::StructureBaseAlgorithm::create_conta
               "STRUCTURAL DYNAMIC to a valid number!");
 
         // provide null space information
-        if (prec == CORE::LINEAR_SOLVER::PreconditionerType::cheap_simple)
+        if (prec == Core::LinearSolver::PreconditionerType::cheap_simple)
         {
           actdis->compute_null_space_if_necessary(
               solver->Params()
                   .sublist("CheapSIMPLE Parameters")
                   .sublist("Inverse1"));  // Inverse2 is created within blockpreconditioners.cpp
         }
-        else if (prec == CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu_contactsp)
+        else if (prec == Core::LinearSolver::PreconditionerType::multigrid_muelu_contactsp)
         { /* do nothing here */
         }
       }
@@ -596,8 +596,8 @@ Teuchos::RCP<CORE::LINALG::Solver> ADAPTER::StructureBaseAlgorithm::create_conta
     default:
     {
       // build meshtying solver
-      solver = Teuchos::rcp(new CORE::LINALG::Solver(
-          GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm()));
+      solver = Teuchos::rcp(new Core::LinAlg::Solver(
+          Global::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm()));
       actdis->compute_null_space_if_necessary(solver->Params());
     }
     break;

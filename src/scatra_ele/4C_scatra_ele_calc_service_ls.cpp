@@ -21,15 +21,15 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | evaluate action                                           fang 02/15 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::ScaTraEleCalcLS<distype>::evaluate_action(CORE::Elements::Element* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    const SCATRA::Action& action, CORE::Elements::Element::LocationArray& la,
-    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec1_epetra,
-    CORE::LINALG::SerialDenseVector& elevec2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec3_epetra)
+template <Core::FE::CellType distype>
+int Discret::ELEMENTS::ScaTraEleCalcLS<distype>::evaluate_action(Core::Elements::Element* ele,
+    Teuchos::ParameterList& params, Discret::Discretization& discretization,
+    const ScaTra::Action& action, Core::Elements::Element::LocationArray& la,
+    Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+    Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec1_epetra,
+    Core::LinAlg::SerialDenseVector& elevec2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec3_epetra)
 {
   //(for now) only first dof set considered
   const std::vector<int>& lm = la[0].lm_;
@@ -37,7 +37,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLS<distype>::evaluate_action(CORE::Elements::Ele
   // determine and evaluate action
   switch (action)
   {
-    case SCATRA::Action::calc_error:
+    case ScaTra::Action::calc_error:
     {
       // extract local values from the global vectors
       Teuchos::RCP<const Epetra_Vector> phizero = discretization.GetState("phiref");
@@ -45,10 +45,10 @@ int DRT::ELEMENTS::ScaTraEleCalcLS<distype>::evaluate_action(CORE::Elements::Ele
       if (phizero == Teuchos::null or phinp == Teuchos::null)
         FOUR_C_THROW("Cannot get state vector 'phizero' and/ or 'phinp'!");
 
-      std::vector<CORE::LINALG::Matrix<nen_, 1>> ephizero(my::numscal_);
+      std::vector<Core::LinAlg::Matrix<nen_, 1>> ephizero(my::numscal_);
 
-      CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
-      CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phizero, ephizero, lm);
+      Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
+      Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phizero, ephizero, lm);
 
       // check if length suffices
       if (elevec1_epetra.length() < 1) FOUR_C_THROW("Result vector too short");
@@ -72,10 +72,10 @@ int DRT::ELEMENTS::ScaTraEleCalcLS<distype>::evaluate_action(CORE::Elements::Ele
 /*---------------------------------------------------------------------*
  |  calculate error compared to analytical solution    rasthofer 04/14 |
  *---------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcLS<distype>::cal_error_compared_to_analyt_solution(
-    const CORE::Elements::Element* ele, const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephizero,
-    Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector& errors)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::ScaTraEleCalcLS<distype>::cal_error_compared_to_analyt_solution(
+    const Core::Elements::Element* ele, const std::vector<Core::LinAlg::Matrix<nen_, 1>>& ephizero,
+    Teuchos::ParameterList& params, Core::LinAlg::SerialDenseVector& errors)
 {
   // get element volume
   const double vol = my::eval_shape_func_and_derivs_at_ele_center();
@@ -87,14 +87,14 @@ void DRT::ELEMENTS::ScaTraEleCalcLS<distype>::cal_error_compared_to_analyt_solut
 
   // integration points and weights
   // more GP than usual due to (possible) cos/exp fcts in analytical solutions
-  CORE::FE::IntPointsAndWeights<nsd_> intpoints(
-      SCATRA::DisTypeToGaussRuleForExactSol<distype>::rule);
+  Core::FE::IntPointsAndWeights<nsd_> intpoints(
+      ScaTra::DisTypeToGaussRuleForExactSol<distype>::rule);
 
-  const INPAR::SCATRA::CalcErrorLevelSet errortype =
-      CORE::UTILS::GetAsEnum<INPAR::SCATRA::CalcErrorLevelSet>(params, "calcerrorflag");
+  const Inpar::ScaTra::CalcErrorLevelSet errortype =
+      Core::UTILS::GetAsEnum<Inpar::ScaTra::CalcErrorLevelSet>(params, "calcerrorflag");
   switch (errortype)
   {
-    case INPAR::SCATRA::calcerror_initial_field:
+    case Inpar::ScaTra::calcerror_initial_field:
     {
       // start loop over integration points
       for (int iquad = 0; iquad < intpoints.IP().nquad; iquad++)
@@ -130,8 +130,8 @@ void DRT::ELEMENTS::ScaTraEleCalcLS<distype>::cal_error_compared_to_analyt_solut
 /*----------------------------------------------------------------------*
  | smoothed heaviside function                          rasthofer 04/12 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcLS<distype>::smooth_heaviside_function(
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::ScaTraEleCalcLS<distype>::smooth_heaviside_function(
     const double charelelength, const double phi, double& smoothH)
 {
   // assume interface thickness
@@ -151,25 +151,25 @@ void DRT::ELEMENTS::ScaTraEleCalcLS<distype>::smooth_heaviside_function(
 // template classes
 
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalcLS<CORE::FE::CellType::line2>;
-template class DRT::ELEMENTS::ScaTraEleCalcLS<CORE::FE::CellType::line3>;
+template class Discret::ELEMENTS::ScaTraEleCalcLS<Core::FE::CellType::line2>;
+template class Discret::ELEMENTS::ScaTraEleCalcLS<Core::FE::CellType::line3>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleCalcLS<CORE::FE::CellType::tri3>;
-template class DRT::ELEMENTS::ScaTraEleCalcLS<CORE::FE::CellType::tri6>;
-template class DRT::ELEMENTS::ScaTraEleCalcLS<CORE::FE::CellType::quad4>;
-// template class DRT::ELEMENTS::ScaTraEleCalcLS<CORE::FE::CellType::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalcLS<CORE::FE::CellType::quad9>;
-template class DRT::ELEMENTS::ScaTraEleCalcLS<CORE::FE::CellType::nurbs9>;
+template class Discret::ELEMENTS::ScaTraEleCalcLS<Core::FE::CellType::tri3>;
+template class Discret::ELEMENTS::ScaTraEleCalcLS<Core::FE::CellType::tri6>;
+template class Discret::ELEMENTS::ScaTraEleCalcLS<Core::FE::CellType::quad4>;
+// template class Discret::ELEMENTS::ScaTraEleCalcLS<Core::FE::CellType::quad8>;
+template class Discret::ELEMENTS::ScaTraEleCalcLS<Core::FE::CellType::quad9>;
+template class Discret::ELEMENTS::ScaTraEleCalcLS<Core::FE::CellType::nurbs9>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcLS<CORE::FE::CellType::hex8>;
-// template class DRT::ELEMENTS::ScaTraEleCalcLS<CORE::FE::CellType::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalcLS<CORE::FE::CellType::hex27>;
-template class DRT::ELEMENTS::ScaTraEleCalcLS<CORE::FE::CellType::tet4>;
-template class DRT::ELEMENTS::ScaTraEleCalcLS<CORE::FE::CellType::tet10>;
-// template class DRT::ELEMENTS::ScaTraEleCalcLS<CORE::FE::CellType::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalcLS<CORE::FE::CellType::pyramid5>;
-// template class DRT::ELEMENTS::ScaTraEleCalcLS<CORE::FE::CellType::nurbs27>;
+template class Discret::ELEMENTS::ScaTraEleCalcLS<Core::FE::CellType::hex8>;
+// template class Discret::ELEMENTS::ScaTraEleCalcLS<Core::FE::CellType::hex20>;
+template class Discret::ELEMENTS::ScaTraEleCalcLS<Core::FE::CellType::hex27>;
+template class Discret::ELEMENTS::ScaTraEleCalcLS<Core::FE::CellType::tet4>;
+template class Discret::ELEMENTS::ScaTraEleCalcLS<Core::FE::CellType::tet10>;
+// template class Discret::ELEMENTS::ScaTraEleCalcLS<Core::FE::CellType::wedge6>;
+template class Discret::ELEMENTS::ScaTraEleCalcLS<Core::FE::CellType::pyramid5>;
+// template class Discret::ELEMENTS::ScaTraEleCalcLS<Core::FE::CellType::nurbs27>;
 
 FOUR_C_NAMESPACE_CLOSE

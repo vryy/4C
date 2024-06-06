@@ -22,9 +22,9 @@ BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams::BeamToBeamPotentialRunt
     const double restart_time)
     : isinit_(false),
       issetup_(false),
-      visualization_parameters_(CORE::IO::VisualizationParametersFactory(
-          GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
-          *GLOBAL::Problem::Instance()->OutputControlFile(), restart_time)),
+      visualization_parameters_(Core::IO::VisualizationParametersFactory(
+          Global::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
+          *Global::Problem::Instance()->OutputControlFile(), restart_time)),
       output_interval_steps_(-1),
       output_every_iteration_(false),
       output_forces_(false),
@@ -47,20 +47,20 @@ void BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams::Init(
   /****************************************************************************/
   output_interval_steps_ = beam_contact_visualization_output_paramslist.get<int>("INTERVAL_STEPS");
 
-  output_every_iteration_ = (bool)CORE::UTILS::IntegralValue<int>(
+  output_every_iteration_ = (bool)Core::UTILS::IntegralValue<int>(
       beam_contact_visualization_output_paramslist, "EVERY_ITERATION");
   visualization_parameters_.every_iteration_ = output_every_iteration_;
 
   /****************************************************************************/
   output_forces_ =
-      (bool)CORE::UTILS::IntegralValue<int>(beam_contact_visualization_output_paramslist, "FORCES");
+      (bool)Core::UTILS::IntegralValue<int>(beam_contact_visualization_output_paramslist, "FORCES");
 
   /****************************************************************************/
-  output_moments_ = (bool)CORE::UTILS::IntegralValue<int>(
+  output_moments_ = (bool)Core::UTILS::IntegralValue<int>(
       beam_contact_visualization_output_paramslist, "MOMENTS");
 
   /****************************************************************************/
-  write_force_moment_per_elepair_ = (bool)CORE::UTILS::IntegralValue<int>(
+  write_force_moment_per_elepair_ = (bool)Core::UTILS::IntegralValue<int>(
       beam_contact_visualization_output_paramslist, "WRITE_FORCE_MOMENT_PER_ELEMENTPAIR");
 
   isinit_ = true;

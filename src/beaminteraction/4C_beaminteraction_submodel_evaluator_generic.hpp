@@ -33,29 +33,29 @@ namespace BINSTRATEGY
 {
   class BinningStrategy;
 }
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationWriter;
   class DiscretizationReader;
-}  // namespace CORE::IO
-namespace DRT
+}  // namespace Core::IO
+namespace Discret
 {
   class Discretization;
 }
-namespace CORE::GEO
+namespace Core::Geo
 {
-  namespace MESHFREE
+  namespace MeshFree
   {
     class BoundingBox;
   }
-}  // namespace CORE::GEO
+}  // namespace Core::Geo
 namespace STR
 {
-  namespace TIMINT
+  namespace TimeInt
   {
     class BaseDataGlobalState;
     class BaseDataIO;
-  }  // namespace TIMINT
+  }  // namespace TimeInt
   namespace MODELEVALUATOR
   {
     class BeamInteractionDataState;
@@ -90,14 +90,14 @@ namespace BEAMINTERACTION
       virtual ~Generic() = default;
 
       //! initialize the class variables
-      virtual void Init(Teuchos::RCP<DRT::Discretization> const& ia_discret,
-          Teuchos::RCP<DRT::Discretization> const& bindis,
-          Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> const& gstate,
-          Teuchos::RCP<STR::TIMINT::BaseDataIO> const& gio_ptr,
+      virtual void Init(Teuchos::RCP<Discret::Discretization> const& ia_discret,
+          Teuchos::RCP<Discret::Discretization> const& bindis,
+          Teuchos::RCP<STR::TimeInt::BaseDataGlobalState> const& gstate,
+          Teuchos::RCP<STR::TimeInt::BaseDataIO> const& gio_ptr,
           Teuchos::RCP<STR::MODELEVALUATOR::BeamInteractionDataState> const& ia_gstate_ptr,
           Teuchos::RCP<BEAMINTERACTION::BeamCrosslinkerHandler> const& beamcrosslinkerhandler,
           Teuchos::RCP<BINSTRATEGY::BinningStrategy> binstrategy,
-          Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> const& periodic_boundingbox,
+          Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> const& periodic_boundingbox,
           Teuchos::RCP<BEAMINTERACTION::UTILS::MapExtractor> const& eletypeextractor);
 
       //! setup class variables
@@ -117,7 +117,7 @@ namespace BEAMINTERACTION
 
      public:
       //! Returns the type of the current model evaluator
-      virtual INPAR::BEAMINTERACTION::SubModelType Type() const = 0;
+      virtual Inpar::BEAMINTERACTION::SubModelType Type() const = 0;
 
       //! \brief reset model specific variables (without jacobian)
       virtual void Reset() = 0;
@@ -148,7 +148,7 @@ namespace BEAMINTERACTION
       virtual std::map<STR::EnergyType, double> get_energy() const = 0;
 
       //! write submodel specific output
-      virtual void OutputStepState(CORE::IO::DiscretizationWriter& iowriter) const = 0;
+      virtual void OutputStepState(Core::IO::DiscretizationWriter& iowriter) const = 0;
 
       //! write submodel specific output during runtime
       virtual void runtime_output_step_state() const = 0;
@@ -157,14 +157,14 @@ namespace BEAMINTERACTION
       virtual void ResetStepState() = 0;
 
       //! \brief write model specific restart
-      virtual void write_restart(CORE::IO::DiscretizationWriter& ia_writer,
-          CORE::IO::DiscretizationWriter& bin_writer) const = 0;
+      virtual void write_restart(Core::IO::DiscretizationWriter& ia_writer,
+          Core::IO::DiscretizationWriter& bin_writer) const = 0;
 
       /*! \brief read model specific restart information
        *
        *  \param ioreader (in) : input reader*/
-      virtual void read_restart(CORE::IO::DiscretizationReader& ia_writer,
-          CORE::IO::DiscretizationReader& bin_writer) = 0;
+      virtual void read_restart(Core::IO::DiscretizationReader& ia_writer,
+          Core::IO::DiscretizationReader& bin_writer) = 0;
 
       //! \brief do stuff pre reading of model specific restart information
       virtual void PreReadRestart() = 0;
@@ -202,24 +202,24 @@ namespace BEAMINTERACTION
       //! @name internal accessors
       //! @{
       //! Returns the (structural) discretization
-      DRT::Discretization& Discret();
-      Teuchos::RCP<DRT::Discretization>& DiscretPtr();
-      Teuchos::RCP<const DRT::Discretization> DiscretPtr() const;
-      DRT::Discretization const& Discret() const;
+      Discret::Discretization& Discret();
+      Teuchos::RCP<Discret::Discretization>& DiscretPtr();
+      Teuchos::RCP<const Discret::Discretization> DiscretPtr() const;
+      Discret::Discretization const& Discret() const;
 
-      DRT::Discretization& BinDiscret();
-      Teuchos::RCP<DRT::Discretization>& BinDiscretPtr();
-      Teuchos::RCP<const DRT::Discretization> BinDiscretPtr() const;
-      DRT::Discretization const& BinDiscret() const;
+      Discret::Discretization& BinDiscret();
+      Teuchos::RCP<Discret::Discretization>& BinDiscretPtr();
+      Teuchos::RCP<const Discret::Discretization> BinDiscretPtr() const;
+      Discret::Discretization const& BinDiscret() const;
 
       //! Returns the global state data container
-      STR::TIMINT::BaseDataGlobalState& GState();
-      Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& GStatePtr();
-      STR::TIMINT::BaseDataGlobalState const& GState() const;
+      STR::TimeInt::BaseDataGlobalState& GState();
+      Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& GStatePtr();
+      STR::TimeInt::BaseDataGlobalState const& GState() const;
 
       //! Returns the global input/output data container
-      STR::TIMINT::BaseDataIO& GInOutput();
-      STR::TIMINT::BaseDataIO const& GInOutput() const;
+      STR::TimeInt::BaseDataIO& GInOutput();
+      STR::TimeInt::BaseDataIO const& GInOutput() const;
 
       //! Returns the global state data container
       STR::MODELEVALUATOR::BeamInteractionDataState& beam_interaction_data_state();
@@ -235,9 +235,9 @@ namespace BEAMINTERACTION
       Teuchos::RCP<BINSTRATEGY::BinningStrategy>& BinStrategyPtr();
       BINSTRATEGY::BinningStrategy const& BinStrategy() const;
 
-      CORE::GEO::MESHFREE::BoundingBox& PeriodicBoundingBox();
-      Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox>& periodic_bounding_box_ptr();
-      CORE::GEO::MESHFREE::BoundingBox const& PeriodicBoundingBox() const;
+      Core::Geo::MeshFree::BoundingBox& PeriodicBoundingBox();
+      Teuchos::RCP<Core::Geo::MeshFree::BoundingBox>& periodic_bounding_box_ptr();
+      Core::Geo::MeshFree::BoundingBox const& PeriodicBoundingBox() const;
 
       BEAMINTERACTION::UTILS::MapExtractor& EleTypeMapExtractor();
       Teuchos::RCP<BEAMINTERACTION::UTILS::MapExtractor>& ele_type_map_extractor_ptr();
@@ -253,16 +253,16 @@ namespace BEAMINTERACTION
 
      private:
       //! pointer to the interaction discretization
-      Teuchos::RCP<DRT::Discretization> discret_ptr_;
+      Teuchos::RCP<Discret::Discretization> discret_ptr_;
 
       //! pointer to the interaction discretization
-      Teuchos::RCP<DRT::Discretization> bindis_ptr_;
+      Teuchos::RCP<Discret::Discretization> bindis_ptr_;
 
       //! pointer to the global state data container
-      Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> gstate_ptr_;
+      Teuchos::RCP<STR::TimeInt::BaseDataGlobalState> gstate_ptr_;
 
       //! pointer to input/ouput data container
-      Teuchos::RCP<STR::TIMINT::BaseDataIO> gio_ptr_;
+      Teuchos::RCP<STR::TimeInt::BaseDataIO> gio_ptr_;
 
       //! pointer to the global state data container
       Teuchos::RCP<STR::MODELEVALUATOR::BeamInteractionDataState> beaminteractiondatastate_;
@@ -274,7 +274,7 @@ namespace BEAMINTERACTION
       Teuchos::RCP<BINSTRATEGY::BinningStrategy> binstrategy_;
 
       //! periodic bounding box
-      Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> periodic_boundingbox_;
+      Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> periodic_boundingbox_;
 
       /// map extractor for split of different element types
       Teuchos::RCP<BEAMINTERACTION::UTILS::MapExtractor> eletypeextractor_;

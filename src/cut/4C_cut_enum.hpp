@@ -17,9 +17,9 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
-namespace CORE::GEO
+namespace Core::Geo
 {
-  namespace CUT
+  namespace Cut
   {
     enum FacetShape
     {
@@ -35,9 +35,9 @@ namespace CORE::GEO
       proj_z
     };
 
-  }  // namespace CUT
+  }  // namespace Cut
 
-}  // namespace CORE::GEO
+}  // namespace Core::Geo
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

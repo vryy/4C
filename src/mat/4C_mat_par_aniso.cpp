@@ -22,16 +22,16 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-MAT::PAR::ParameterAniso::ParameterAniso(Teuchos::RCP<const CORE::MAT::PAR::Material> matdata)
+Mat::PAR::ParameterAniso::ParameterAniso(Teuchos::RCP<const Core::Mat::PAR::Material> matdata)
     : Parameter(matdata)
 {
   // get MAT ID for definiton of structural tensor
   int mat_id_structural_tensor = matdata->Get<int>("STR_TENS_ID");
   // get pointer to material
   auto* mat_str_tens =
-      GLOBAL::Problem::Instance()->Materials()->ParameterById(mat_id_structural_tensor);
+      Global::Problem::Instance()->Materials()->ParameterById(mat_id_structural_tensor);
   // construct parameter class
-  auto* params = static_cast<MAT::ELASTIC::PAR::StructuralTensorParameter*>(mat_str_tens);
+  auto* params = static_cast<Mat::Elastic::PAR::StructuralTensorParameter*>(mat_str_tens);
   // get type of strategy
   std::string strategy = mat_str_tens->raw_parameters().Get<std::string>("STRATEGY");
 
@@ -39,17 +39,17 @@ MAT::PAR::ParameterAniso::ParameterAniso(Teuchos::RCP<const CORE::MAT::PAR::Mate
   if (strategy == "Standard")
   {
     structural_tensor_strategy_ =
-        Teuchos::rcp(new MAT::ELASTIC::StructuralTensorStrategyStandard(params));
+        Teuchos::rcp(new Mat::Elastic::StructuralTensorStrategyStandard(params));
   }
   else if (strategy == "ByDistributionFunction")
   {
     structural_tensor_strategy_ =
-        Teuchos::rcp(new MAT::ELASTIC::StructuralTensorStrategyByDistributionFunction(params));
+        Teuchos::rcp(new Mat::Elastic::StructuralTensorStrategyByDistributionFunction(params));
   }
   else if (strategy == "DispersedTransverselyIsotropic")
   {
     structural_tensor_strategy_ = Teuchos::rcp(
-        new MAT::ELASTIC::StructuralTensorStrategyDispersedTransverselyIsotropic(params));
+        new Mat::Elastic::StructuralTensorStrategyDispersedTransverselyIsotropic(params));
   }
   else
     FOUR_C_THROW("Unknown type of structural tensor strategy for anisotropic material chosen.");

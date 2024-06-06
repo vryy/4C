@@ -43,12 +43,12 @@ FOUR_C_NAMESPACE_OPEN
 // forward declarations
 /*==========================================================================*/
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
   class IndependentDofSet;
-}  // namespace DRT
-namespace CORE::LINALG
+}  // namespace Discret
+namespace Core::LinAlg
 {
   class Solver;
   class SparseMatrix;
@@ -56,20 +56,20 @@ namespace CORE::LINALG
   class MapExtractor;
   class BlockSparseMatrixBase;
   class SparseOperator;
-}  // namespace CORE::LINALG
-namespace CORE::GEO
+}  // namespace Core::LinAlg
+namespace Core::Geo
 {
   class CutWizard;
 
-  namespace CUT
+  namespace Cut
   {
     class ElementHandle;
     class VolumeCell;
 
-  }  // namespace CUT
-}  // namespace CORE::GEO
+  }  // namespace Cut
+}  // namespace Core::Geo
 
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationWriter;
 }
@@ -108,12 +108,13 @@ namespace FLD
 
    public:
     /// Constructor
-    XFluid(const Teuchos::RCP<DRT::Discretization>& actdis,  ///< background fluid discretization
-        const Teuchos::RCP<DRT::Discretization>& mesh_coupdis,
-        const Teuchos::RCP<DRT::Discretization>& levelset_coupdis,
-        const Teuchos::RCP<CORE::LINALG::Solver>& solver,    ///< fluid solver
+    XFluid(
+        const Teuchos::RCP<Discret::Discretization>& actdis,  ///< background fluid discretization
+        const Teuchos::RCP<Discret::Discretization>& mesh_coupdis,
+        const Teuchos::RCP<Discret::Discretization>& levelset_coupdis,
+        const Teuchos::RCP<Core::LinAlg::Solver>& solver,    ///< fluid solver
         const Teuchos::RCP<Teuchos::ParameterList>& params,  ///< xfluid params
-        const Teuchos::RCP<CORE::IO::DiscretizationWriter>&
+        const Teuchos::RCP<Core::IO::DiscretizationWriter>&
             output,            ///< discretization writer for paraview output
         bool alefluid = false  ///< flag for alefluid
     );
@@ -145,7 +146,7 @@ namespace FLD
     /// do explicit predictor step
     void DoPredictor();
 
-    /// Implement ADAPTER::Fluid
+    /// Implement Adapter::Fluid
     virtual void PrepareXFEMSolve();
 
     /// do nonlinear iteration, e.g. full Newton, Newton like or Fixpoint iteration
@@ -159,12 +160,12 @@ namespace FLD
 
     /// create vectors for KrylovSpaceProjection
     void init_krylov_space_projection() override;
-    void setup_krylov_space_projection(CORE::Conditions::Condition* kspcond) override;
+    void setup_krylov_space_projection(Core::Conditions::Condition* kspcond) override;
     void update_krylov_space_projection() override;
     void check_matrix_nullspace() override;
 
     /// return Teuchos::rcp to linear solver
-    Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() override { return solver_; };
+    Teuchos::RCP<Core::LinAlg::Solver> LinearSolver() override { return solver_; };
 
     /// evaluate errors compared to implemented analytical solutions
     Teuchos::RCP<std::vector<double>> evaluate_error_compared_to_analytical_sol() override;
@@ -183,7 +184,7 @@ namespace FLD
     /// iteration. Current solution becomes old solution of next timestep.
     void TimeUpdate() override;
 
-    /// Implement ADAPTER::Fluid
+    /// Implement Adapter::Fluid
     void Update() override { TimeUpdate(); }
 
     /// CUT at new interface position, transform vectors,
@@ -201,7 +202,7 @@ namespace FLD
 
     /// set an initial flow field
     void SetInitialFlowField(
-        const INPAR::FLUID::InitialField initfield, const int startfuncno) override;
+        const Inpar::FLUID::InitialField initfield, const int startfuncno) override;
 
     //    /// compute interface velocities from function
     //    void ComputeInterfaceVelocities();
@@ -258,7 +259,7 @@ namespace FLD
       return state_->xfluiddofrowmap_.create_weak();  // return a weak rcp
     }
 
-    Teuchos::RCP<CORE::LINALG::MapExtractor> VelPresSplitter() override
+    Teuchos::RCP<Core::LinAlg::MapExtractor> VelPresSplitter() override
     {
       return state_->velpressplitter_;
     }
@@ -271,23 +272,23 @@ namespace FLD
       return state_->velpressplitter_->CondMap();
     }
 
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() override
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() override
     {
-      return Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(state_->sysmat_);
+      return Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(state_->sysmat_);
     }
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() override
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> BlockSystemMatrix() override
     {
-      return Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(state_->sysmat_, false);
+      return Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(state_->sysmat_, false);
     }
 
     /// return coupling matrix between fluid and structure as sparse matrices
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> C_sx_Matrix(const std::string& cond_name);
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> C_xs_Matrix(const std::string& cond_name);
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> C_ss_Matrix(const std::string& cond_name);
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> C_sx_Matrix(const std::string& cond_name);
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> C_xs_Matrix(const std::string& cond_name);
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> C_ss_Matrix(const std::string& cond_name);
     Teuchos::RCP<Epetra_Vector> RHS_s_Vec(const std::string& cond_name);
 
     /// Return MapExtractor for Dirichlet boundary conditions
-    Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() override
+    Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor() override
     {
       return state_->dbcmaps_;
     }
@@ -298,9 +299,9 @@ namespace FLD
     /// scale the residual (inverse of the weighting of the quantities w.r.t the new timestep)
     double residual_scaling() const override
     {
-      if (TimIntScheme() == INPAR::FLUID::timeint_stationary)
+      if (TimIntScheme() == Inpar::FLUID::timeint_stationary)
         return 1.0;
-      else if (TimIntScheme() == INPAR::FLUID::timeint_afgenalpha)
+      else if (TimIntScheme() == Inpar::FLUID::timeint_afgenalpha)
         return alphaM_ / (gamma_ * dta_);
       else
         return 1.0 / (theta_ * dta_);
@@ -316,7 +317,7 @@ namespace FLD
     }
 
     /// create field test
-    Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() override;
+    Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() override;
 
     /// read restart data for fluid discretization
     void read_restart(int step) override;
@@ -353,7 +354,7 @@ namespace FLD
     void Set_EvaluateCut(bool evaluate_cut) { evaluate_cut_ = evaluate_cut; }
 
     /// Get Cut Wizard
-    Teuchos::RCP<CORE::GEO::CutWizard> GetCutWizard()
+    Teuchos::RCP<Core::Geo::CutWizard> GetCutWizard()
     {
       if (state_ != Teuchos::null)
         return state_->Wizard();
@@ -381,7 +382,7 @@ namespace FLD
     virtual Teuchos::RCP<FLD::XFluidState> get_new_state();
 
     void extract_node_vectors(Teuchos::RCP<XFEM::DiscretizationXFEM> dis,
-        std::map<int, CORE::LINALG::Matrix<3, 1>>& nodevecmap,
+        std::map<int, Core::LinAlg::Matrix<3, 1>>& nodevecmap,
         Teuchos::RCP<Epetra_Vector> dispnp_col);
 
     /// call the loop over elements to assemble volume and interface integrals
@@ -392,21 +393,21 @@ namespace FLD
     void assemble_mat_and_rhs_vol_terms();
 
     /// evaluate and assemble face-oriented fluid and ghost penalty stabilizations
-    void assemble_mat_and_rhs_face_terms(const Teuchos::RCP<CORE::LINALG::SparseMatrix>& sysmat,
+    void assemble_mat_and_rhs_face_terms(const Teuchos::RCP<Core::LinAlg::SparseMatrix>& sysmat,
         const Teuchos::RCP<Epetra_Vector>& residual_col,
-        const Teuchos::RCP<CORE::GEO::CutWizard>& wizard,
+        const Teuchos::RCP<Core::Geo::CutWizard>& wizard,
         bool is_ghost_penalty_reconstruct = false);
 
     /// evaluate gradient penalty terms to reconstruct ghost values
     void assemble_mat_and_rhs_gradient_penalty(
-        Teuchos::RCP<CORE::LINALG::MapExtractor> ghost_penaly_dbcmaps,
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat_gp, Teuchos::RCP<Epetra_Vector> residual_gp,
+        Teuchos::RCP<Core::LinAlg::MapExtractor> ghost_penaly_dbcmaps,
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_gp, Teuchos::RCP<Epetra_Vector> residual_gp,
         Teuchos::RCP<Epetra_Vector> vec);
 
     /// integrate the shape function and assemble into a vector for KrylovSpaceProjection
     void integrate_shape_function(Teuchos::ParameterList& eleparams,  ///< element parameters
-        DRT::Discretization& discret,    ///< background fluid discretization
-        Teuchos::RCP<Epetra_Vector> vec  ///< vector into which we assemble
+        Discret::Discretization& discret,  ///< background fluid discretization
+        Teuchos::RCP<Epetra_Vector> vec    ///< vector into which we assemble
     );
 
     /*!
@@ -423,7 +424,7 @@ namespace FLD
 
     void set_old_part_of_righthandside(const Teuchos::RCP<Epetra_Vector>& veln,
         const Teuchos::RCP<Epetra_Vector>& velnm, const Teuchos::RCP<Epetra_Vector>& accn,
-        const INPAR::FLUID::TimeIntegrationScheme timealgo, const double dta, const double theta,
+        const Inpar::FLUID::TimeIntegrationScheme timealgo, const double dta, const double theta,
         Teuchos::RCP<Epetra_Vector>& hist);
 
     void SetGamma(Teuchos::ParameterList& eleparams) override;
@@ -465,10 +466,10 @@ namespace FLD
                                             ///< reconstruction techniques
         const bool timint_semi_lagrangean,  ///< dofs have to be reconstructed via semi-Lagrangean
                                             ///< reconstruction techniques
-        Teuchos::RCP<DRT::Discretization> dis,     ///< discretization
-        Teuchos::RCP<XFEM::XFEMDofSet> dofset_i,   ///< dofset last iteration
-        Teuchos::RCP<XFEM::XFEMDofSet> dofset_ip,  ///< dofset current iteration
-        const bool screen_out                      ///< screen output?
+        Teuchos::RCP<Discret::Discretization> dis,  ///< discretization
+        Teuchos::RCP<XFEM::XFEMDofSet> dofset_i,    ///< dofset last iteration
+        Teuchos::RCP<XFEM::XFEMDofSet> dofset_ip,   ///< dofset current iteration
+        const bool screen_out                       ///< screen output?
     );
 
     /// Transfer vectors from old time-step t^n w.r.t dofset and interface position
@@ -483,9 +484,9 @@ namespace FLD
         const bool screen_out, const bool firstcall_in_timestep);
 
     /// did the dofsets change?
-    bool x_timint_changed_dofsets(Teuchos::RCP<DRT::Discretization> dis,  ///< discretization
-        Teuchos::RCP<XFEM::XFEMDofSet> dofset,                            ///< first dofset
-        Teuchos::RCP<XFEM::XFEMDofSet> dofset_other                       ///< other dofset
+    bool x_timint_changed_dofsets(Teuchos::RCP<Discret::Discretization> dis,  ///< discretization
+        Teuchos::RCP<XFEM::XFEMDofSet> dofset,                                ///< first dofset
+        Teuchos::RCP<XFEM::XFEMDofSet> dofset_other                           ///< other dofset
     );
 
     /// transfer vectors between two time-steps or Newton steps
@@ -503,7 +504,7 @@ namespace FLD
 
     void x_timint_corrective_transfer_vectors_between_steps(
         const Teuchos::RCP<XFEM::XFluidTimeInt>& xfluid_timeint,  ///< xfluid time integration class
-        const INPAR::XFEM::XFluidTimeIntScheme xfluid_timintapproach,  /// xfluid_timintapproch
+        const Inpar::XFEM::XFluidTimeIntScheme xfluid_timintapproach,  /// xfluid_timintapproch
         std::vector<Teuchos::RCP<const Epetra_Vector>>&
             oldRowStateVectors,  ///< row map based vectors w.r.t old interface position
         std::vector<Teuchos::RCP<Epetra_Vector>>&
@@ -524,7 +525,7 @@ namespace FLD
     );
 
     /// create DBC and free map and return their common extractor
-    Teuchos::RCP<CORE::LINALG::MapExtractor> create_dbc_map_extractor(
+    Teuchos::RCP<Core::LinAlg::MapExtractor> create_dbc_map_extractor(
         const Teuchos::RCP<const std::set<int>> dbcgids,  ///< dbc global dof ids
         const Epetra_Map* dofrowmap                       ///< dofrowmap
     );
@@ -541,7 +542,7 @@ namespace FLD
     /// reconstruct ghost values using ghost penalty approach
     void x_timint_reconstruct_ghost_values(
         Teuchos::RCP<Epetra_Vector> vec,  ///< vector to be reconstructed
-        Teuchos::RCP<CORE::LINALG::MapExtractor>
+        Teuchos::RCP<Core::LinAlg::MapExtractor>
             ghost_penaly_dbcmaps,  ///< which dofs are fixed during the ghost-penalty
                                    ///< reconstruction?
         const bool screen_out      ///< screen output?
@@ -557,7 +558,7 @@ namespace FLD
         Teuchos::RCP<Epetra_Vector> dispn,   ///< displacement col - vector timestep n
         Teuchos::RCP<Epetra_Vector> dispnp,  ///< displacement col - vector timestep n+1
         const Epetra_Map* olddofcolmap,      ///< dofcolmap at time and interface position t^n
-        std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt>>&
+        std::map<int, std::vector<Inpar::XFEM::XFluidTimeInt>>&
             node_to_reconstr_method,  ///< reconstruction map for nodes and its dofsets
         const bool screen_out         ///< screen output?
     );
@@ -626,9 +627,9 @@ namespace FLD
 
     void update_iter_incrementally(Teuchos::RCP<const Epetra_Vector> vel) override;
 
-    void compute_error_norms(Teuchos::RCP<CORE::LINALG::SerialDenseVector> glob_dom_norms,
-        Teuchos::RCP<CORE::LINALG::SerialDenseVector> glob_interf_norms,
-        Teuchos::RCP<CORE::LINALG::SerialDenseVector> glob_stab_norms);
+    void compute_error_norms(Teuchos::RCP<Core::LinAlg::SerialDenseVector> glob_dom_norms,
+        Teuchos::RCP<Core::LinAlg::SerialDenseVector> glob_interf_norms,
+        Teuchos::RCP<Core::LinAlg::SerialDenseVector> glob_stab_norms);
 
     /*!
       \brief compute values at intermediate time steps for gen.-alpha
@@ -649,7 +650,7 @@ namespace FLD
     void gen_alpha_update_acceleration() override;
 
     /// return type of enforcing interface conditions
-    INPAR::XFEM::CouplingMethod coupling_method() const { return coupling_method_; }
+    Inpar::XFEM::CouplingMethod coupling_method() const { return coupling_method_; }
 
     //@}
 
@@ -662,10 +663,10 @@ namespace FLD
     //           is depending on the point position.
     //
     //    */
-    //    void get_volume_cell_material(CORE::Elements::Element* actele,
-    //                               Teuchos::RCP<CORE::MAT::Material> & mat,
-    //                               const CORE::GEO::CUT::Point::PointPosition position =
-    //                               CORE::GEO::CUT::Point::outside);
+    //    void get_volume_cell_material(Core::Elements::Element* actele,
+    //                               Teuchos::RCP<Core::Mat::Material> & mat,
+    //                               const Core::Geo::Cut::Point::PointPosition position =
+    //                               Core::Geo::Cut::Point::outside);
 
 
     //-------------------------------------------------------------------------------
@@ -680,11 +681,11 @@ namespace FLD
     Teuchos::RCP<XFEM::DiscretizationXFEM> xdiscret_;
 
     //! vector of all coupling discretizations, the fluid is coupled with
-    std::vector<Teuchos::RCP<DRT::Discretization>> meshcoupl_dis_;
+    std::vector<Teuchos::RCP<Discret::Discretization>> meshcoupl_dis_;
 
     //! vector of all coupling discretizations, which carry levelset fields, the fluid is coupled
     //! with
-    std::vector<Teuchos::RCP<DRT::Discretization>> levelsetcoupl_dis_;
+    std::vector<Teuchos::RCP<Discret::Discretization>> levelsetcoupl_dis_;
 
     //@}
 
@@ -692,10 +693,10 @@ namespace FLD
     //---------------------------------input parameters------------------
 
     /// type of enforcing interface conditions in XFEM
-    enum INPAR::XFEM::CouplingMethod coupling_method_;
+    enum Inpar::XFEM::CouplingMethod coupling_method_;
 
     //! @name xfluid time integration
-    enum INPAR::XFEM::XFluidTimeIntScheme xfluid_timintapproach_;
+    enum Inpar::XFEM::XFluidTimeIntScheme xfluid_timintapproach_;
 
     //! @name check interfacetips in timeintegration
     bool xfluid_timint_check_interfacetips_;
@@ -705,7 +706,7 @@ namespace FLD
     //@}
 
     /// initial flow field
-    enum INPAR::FLUID::InitialField initfield_;
+    enum Inpar::FLUID::InitialField initfield_;
 
     /// start function number for an initial field
     int startfuncno_;
@@ -728,14 +729,14 @@ namespace FLD
     int itnum_out_;
 
     /// vel-pres splitter for output purpose (and outer iteration convergence)
-    Teuchos::RCP<CORE::LINALG::MapExtractor> velpressplitter_std_;
+    Teuchos::RCP<Core::LinAlg::MapExtractor> velpressplitter_std_;
 
     /// output service class
     Teuchos::RCP<XFluidOutputService> output_service_;
     //--------------------------------------------------------------------
 
     //! do we have a turblence model?
-    enum INPAR::FLUID::TurbModelAction turbmodel_;
+    enum Inpar::FLUID::TurbModelAction turbmodel_;
     //@}
 
 
@@ -831,7 +832,7 @@ namespace FLD
     Teuchos::RCP<Epetra_Vector> veln_Intn_;           //!< velocity solution from last time-step t^n
     Teuchos::RCP<Epetra_Vector> accn_Intn_;           //!< acceleration from last time-step t^n
     Teuchos::RCP<Epetra_Vector> velnm_Intn_;          //!< velocity at t^{n-1} for BDF2 scheme
-    Teuchos::RCP<CORE::GEO::CutWizard> wizard_Intn_;  //!< cut wizard from last time-step t^n
+    Teuchos::RCP<Core::Geo::CutWizard> wizard_Intn_;  //!< cut wizard from last time-step t^n
     Teuchos::RCP<XFEM::XFEMDofSet> dofset_Intn_;      //!< dofset from last time-step t^n
 
     Teuchos::RCP<Epetra_Map> dofcolmap_Intn_;
@@ -842,7 +843,7 @@ namespace FLD
     //! during monolithic Newton or partitioned schemes
     Teuchos::RCP<Epetra_Vector> velnp_Intnpi_;  //!< velocity solution from last iteration w.r.t
                                                 //!< last dofset and interface position
-    Teuchos::RCP<CORE::GEO::CutWizard>
+    Teuchos::RCP<Core::Geo::CutWizard>
         wizard_Intnpi_;                             //!< cut wizard from last iteration-step t^(n+1)
     Teuchos::RCP<XFEM::XFEMDofSet> dofset_Intnpi_;  //!< dofset from last iteration-step t^(n+1)
 

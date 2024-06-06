@@ -32,24 +32,24 @@ namespace Teuchos
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   class Material;
 }
-namespace CORE::COMM
+namespace Core::Communication
 {
   class PackBuffer;
 }
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
     class Material;
   }
-}  // namespace MAT
+}  // namespace Mat
 
 // forward declarations
-namespace MAT
+namespace Mat
 {
   class CoordinateSystemProvider;
 }
@@ -63,19 +63,19 @@ namespace MIXTURE
 
   namespace PAR
   {
-    class PrestressStrategy : public CORE::MAT::PAR::Parameter
+    class PrestressStrategy : public Core::Mat::PAR::Parameter
     {
       friend class MIXTURE::PrestressStrategy;
 
      public:
       /// constructor
-      explicit PrestressStrategy(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
+      explicit PrestressStrategy(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
           : Parameter(matdata)
       {
       }
 
       /// Override this method and throw error, as only the CreateRule() should be used.
-      Teuchos::RCP<CORE::MAT::Material> create_material() final
+      Teuchos::RCP<Core::Mat::Material> create_material() final
       {
         FOUR_C_THROW(
             "Cannot create prestress strategy from this method. Use CreateRule() instead.");
@@ -123,7 +123,7 @@ namespace MIXTURE
      *
      * @param data (in/put) : vector storing all data to be packed into this instance.
      */
-    virtual void Pack(CORE::COMM::PackBuffer& data) const {};
+    virtual void Pack(Core::Communication::PackBuffer& data) const {};
 
     /*!
      * \brief Unpack data from a char vector into this class to be called from a derived class
@@ -158,8 +158,8 @@ namespace MIXTURE
      * @param eleGID (in) : Global element id
      */
     virtual void EvaluatePrestress(const MixtureRule& mixtureRule,
-        const Teuchos::RCP<const MAT::CoordinateSystemProvider> anisotropy,
-        MIXTURE::MixtureConstituent& constituent, CORE::LINALG::Matrix<3, 3>& G,
+        const Teuchos::RCP<const Mat::CoordinateSystemProvider> anisotropy,
+        MIXTURE::MixtureConstituent& constituent, Core::LinAlg::Matrix<3, 3>& G,
         Teuchos::ParameterList& params, int gp, int eleGID) = 0;
 
     /*!
@@ -173,9 +173,9 @@ namespace MIXTURE
      * \param gp (in) : Gauss point
      * \param eleGID (in) : Global element id
      */
-    virtual void Update(const Teuchos::RCP<const MAT::CoordinateSystemProvider> anisotropy,
-        MIXTURE::MixtureConstituent& constituent, const CORE::LINALG::Matrix<3, 3>& F,
-        CORE::LINALG::Matrix<3, 3>& G, Teuchos::ParameterList& params, int gp, int eleGID) = 0;
+    virtual void Update(const Teuchos::RCP<const Mat::CoordinateSystemProvider> anisotropy,
+        MIXTURE::MixtureConstituent& constituent, const Core::LinAlg::Matrix<3, 3>& F,
+        Core::LinAlg::Matrix<3, 3>& G, Teuchos::ParameterList& params, int gp, int eleGID) = 0;
   };
 }  // namespace MIXTURE
 

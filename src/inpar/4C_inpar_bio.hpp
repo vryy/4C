@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 // forward declaration
 /*----------------------------------------------------------------------*/
 
-// ToDo: move these enums to namespace INPAR::ARTNET etc.
+// ToDo: move these enums to namespace Inpar::ArteryNetwork etc.
 //       is the typedef really needed?
 
 /*!----------------------------------------------------------------------
@@ -48,9 +48,9 @@ typedef enum RedAirwaysDyntype
 
 
 
-namespace INPAR
+namespace Inpar
 {
-  namespace ARTDYN
+  namespace ArtDyn
   {
     enum TimeIntegrationScheme
     {
@@ -76,9 +76,9 @@ namespace INPAR
 
     /// set the arterial dynamic parameters
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
-  }  // namespace ARTDYN
+  }  // namespace ArtDyn
 
-  namespace ARTNET
+  namespace ArteryNetwork
   {
     /*!----------------------------------------------------------------------
     \brief enum of reduced dimensional relaxation type
@@ -110,30 +110,30 @@ namespace INPAR
 
     /// set specific artnet conditions
     void SetValidConditions(
-        std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist);
+        std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist);
 
-  }  // namespace ARTNET
+  }  // namespace ArteryNetwork
 
-  namespace BIOFILM
+  namespace BioFilm
   {
     /// set the biofilm parameters
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
     /// set specific biofilm conditions
     void SetValidConditions(
-        std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist);
-  }  // namespace BIOFILM
+        std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist);
+  }  // namespace BioFilm
 
-  namespace REDAIRWAYS
+  namespace ReducedLung
   {
     /// set the reduced airways parameters
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
     /// set specific reduced airways conditions
     void SetValidConditions(
-        std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist);
-  }  // namespace REDAIRWAYS
-}  // namespace INPAR
+        std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist);
+  }  // namespace ReducedLung
+}  // namespace Inpar
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

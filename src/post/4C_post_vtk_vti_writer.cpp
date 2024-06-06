@@ -140,7 +140,7 @@ void PostVtiWriter::write_dof_result_step(std::ofstream& file,
 
   if (myrank_ == 0 && timestep_ == 0) std::cout << "writing dof-based field " << name << std::endl;
 
-  const Teuchos::RCP<DRT::Discretization> dis = field_->discretization();
+  const Teuchos::RCP<Discret::Discretization> dis = field_->discretization();
 
   // Here is the only thing we need to do for parallel computations: We need read access to all dofs
   // on the row elements, so need to get the DofColMap to have this access
@@ -155,8 +155,8 @@ void PostVtiWriter::write_dof_result_step(std::ofstream& file,
     ghostedData = data;
   else
   {
-    ghostedData = CORE::LINALG::CreateVector(*colmap, false);
-    CORE::LINALG::Export(*data, *ghostedData);
+    ghostedData = Core::LinAlg::CreateVector(*colmap, false);
+    Core::LinAlg::Export(*data, *ghostedData);
   }
 
   const int ncomponents = (numdf > 1 && numdf == field_->problem()->num_dim()) ? 3 : numdf;
@@ -175,7 +175,7 @@ void PostVtiWriter::write_dof_result_step(std::ofstream& file,
   std::vector<int> nodedofs;
   for (int e = 0; e < dis->NumMyColElements(); ++e)
   {
-    const CORE::Elements::Element* ele = dis->lColElement(e);
+    const Core::Elements::Element* ele = dis->lColElement(e);
 
     for (int n = 0; n < ele->num_node(); ++n)
     {
@@ -235,7 +235,7 @@ void PostVtiWriter::write_nodal_result_step(std::ofstream& file,
 
   if (myrank_ == 0 && timestep_ == 0) std::cout << "writing node-based field " << name << std::endl;
 
-  const Teuchos::RCP<DRT::Discretization> dis = field_->discretization();
+  const Teuchos::RCP<Discret::Discretization> dis = field_->discretization();
 
   // Here is the only thing we need to do for parallel computations: We need read access to all dofs
   // on the row elements, so need to get the NodeColMap to have this access
@@ -252,7 +252,7 @@ void PostVtiWriter::write_nodal_result_step(std::ofstream& file,
   else
   {
     ghostedData = Teuchos::rcp(new Epetra_MultiVector(*colmap, data->NumVectors(), false));
-    CORE::LINALG::Export(*data, *ghostedData);
+    Core::LinAlg::Export(*data, *ghostedData);
   }
 
   const int ncomponents = (numdf > 1 && numdf == field_->problem()->num_dim()) ? 3 : numdf;
@@ -263,7 +263,7 @@ void PostVtiWriter::write_nodal_result_step(std::ofstream& file,
 
   for (int e = 0; e < dis->NumMyColElements(); ++e)
   {
-    const CORE::Elements::Element* ele = dis->lColElement(e);
+    const Core::Elements::Element* ele = dis->lColElement(e);
 
     for (int n = 0; n < ele->num_node(); ++n)
     {
@@ -321,7 +321,7 @@ void PostVtiWriter::write_element_result_step(std::ofstream& file,
   if (myrank_ == 0 && timestep_ == 0)
     std::cout << "writing element-based field " << name << std::endl;
 
-  const Teuchos::RCP<DRT::Discretization> dis = field_->discretization();
+  const Teuchos::RCP<Discret::Discretization> dis = field_->discretization();
 
   const int ncomponents = (numdf > 1 && numdf == field_->problem()->num_dim()) ? 3 : numdf;
 
@@ -341,12 +341,12 @@ void PostVtiWriter::write_element_result_step(std::ofstream& file,
   {
     importedData =
         Teuchos::rcp(new Epetra_MultiVector(*dis->ElementColMap(), data->NumVectors(), false));
-    CORE::LINALG::Export(*data, *importedData);
+    Core::LinAlg::Export(*data, *importedData);
   }
 
   for (int e = 0; e < dis->NumMyColElements(); ++e)
   {
-    const CORE::Elements::Element* ele = dis->lColElement(e);
+    const Core::Elements::Element* ele = dis->lColElement(e);
     const int egid = ele->Id();
     const int inpos = ncomponents * (eidmapping_.find(egid)->second);
     for (int d = 0; d < numdf; ++d)
@@ -392,7 +392,7 @@ void PostVtiWriter::writer_prep_timestep()
 {
   using namespace FourC;
 
-  const Teuchos::RCP<DRT::Discretization> dis = field_->discretization();
+  const Teuchos::RCP<Discret::Discretization> dis = field_->discretization();
   // collect all possible values of the x-, y- and z-coordinate
   typedef std::set<double, LessTol<double>> set_tol;
   set_tol collected_coords[3];
@@ -456,7 +456,7 @@ void PostVtiWriter::writer_prep_timestep()
   eidmapping_.clear();
   for (int e = 0; e < dis->NumMyColElements(); ++e)
   {
-    const CORE::Elements::Element* ele = dis->lColElement(e);
+    const Core::Elements::Element* ele = dis->lColElement(e);
     double mincoord[] = {std::numeric_limits<double>::max(), std::numeric_limits<double>::max(),
         std::numeric_limits<double>::max()};
     for (int n = 0; n < ele->num_node(); ++n)

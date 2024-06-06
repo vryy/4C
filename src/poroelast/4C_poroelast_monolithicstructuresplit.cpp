@@ -23,24 +23,24 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-POROELAST::MonolithicStructureSplit::MonolithicStructureSplit(const Epetra_Comm& comm,
+PoroElast::MonolithicStructureSplit::MonolithicStructureSplit(const Epetra_Comm& comm,
     const Teuchos::ParameterList& timeparams,
-    Teuchos::RCP<CORE::LINALG::MapExtractor> porosity_splitter)
+    Teuchos::RCP<Core::LinAlg::MapExtractor> porosity_splitter)
     : MonolithicSplit(comm, timeparams, porosity_splitter)
 {
-  sggtransform_ = Teuchos::rcp(new CORE::LINALG::MatrixRowColTransform);
-  sgitransform_ = Teuchos::rcp(new CORE::LINALG::MatrixRowTransform);
-  sigtransform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);
-  csggtransform_ = Teuchos::rcp(new CORE::LINALG::MatrixRowTransform);
-  cfggtransform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);
-  csgitransform_ = Teuchos::rcp(new CORE::LINALG::MatrixRowTransform);
-  cfigtransform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);
+  sggtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowColTransform);
+  sgitransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowTransform);
+  sigtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
+  csggtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowTransform);
+  cfggtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
+  csgitransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowTransform);
+  cfigtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
 
   // Recovering of Lagrange multiplier happens on structure field
   lambda_ = Teuchos::rcp(new Epetra_Vector(*structure_field()->Interface()->FSICondMap()));
 }
 
-void POROELAST::MonolithicStructureSplit::SetupSystem()
+void PoroElast::MonolithicStructureSplit::SetupSystem()
 {
   {
     // create combined map
@@ -53,7 +53,7 @@ void POROELAST::MonolithicStructureSplit::SetupSystem()
     if (vecSpaces[1]->NumGlobalElements() == 0) FOUR_C_THROW("No fluid equation. Panic.");
 
     // full Poroelasticity-map
-    fullmap_ = CORE::LINALG::MultiMapExtractor::MergeMaps(vecSpaces);
+    fullmap_ = Core::LinAlg::MultiMapExtractor::MergeMaps(vecSpaces);
     // full Poroelasticity-blockmap
     blockrowdofmap_->Setup(*fullmap_, vecSpaces);
   }
@@ -68,9 +68,9 @@ void POROELAST::MonolithicStructureSplit::SetupSystem()
   SetupEquilibration();
 }
 
-void POROELAST::MonolithicStructureSplit::setup_rhs(bool firstcall)
+void PoroElast::MonolithicStructureSplit::setup_rhs(bool firstcall)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("POROELAST::MonolithicStructureSplit::setup_rhs");
+  TEUCHOS_FUNC_TIME_MONITOR("PoroElast::MonolithicStructureSplit::setup_rhs");
 
   // create full monolithic rhs vector
   rhs_ = Teuchos::rcp(new Epetra_Vector(*dof_row_map(), true));
@@ -84,14 +84,14 @@ void POROELAST::MonolithicStructureSplit::setup_rhs(bool firstcall)
   fgcur_ = structure_field()->Interface()->ExtractFSICondVector(structure_field()->RHS());
 }
 
-void POROELAST::MonolithicStructureSplit::setup_system_matrix(
-    CORE::LINALG::BlockSparseMatrixBase& mat)
+void PoroElast::MonolithicStructureSplit::setup_system_matrix(
+    Core::LinAlg::BlockSparseMatrixBase& mat)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("POROELAST::MonolithicStructureSplit::setup_system_matrix");
+  TEUCHOS_FUNC_TIME_MONITOR("PoroElast::MonolithicStructureSplit::setup_system_matrix");
 
-  Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> s = structure_field()->BlockSystemMatrix();
+  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> s = structure_field()->BlockSystemMatrix();
   if (s == Teuchos::null) FOUR_C_THROW("expect structure block matrix");
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> f = fluid_field()->SystemMatrix();
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> f = fluid_field()->SystemMatrix();
   if (f == Teuchos::null) FOUR_C_THROW("expect fluid matrix");
 
   // just to play it safe ...
@@ -108,7 +108,7 @@ void POROELAST::MonolithicStructureSplit::setup_system_matrix(
   // build mechanical-fluid block
 
   // create empty matrix
-  Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> k_sf = struct_fluid_coupling_block_matrix();
+  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> k_sf = struct_fluid_coupling_block_matrix();
   if (k_sf == Teuchos::null) FOUR_C_THROW("expect coupling block matrix");
 
   // call the element and calculate the matrix block
@@ -119,7 +119,7 @@ void POROELAST::MonolithicStructureSplit::setup_system_matrix(
   // build fluid-mechanical block
 
   // create empty matrix
-  Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> k_fs = fluid_struct_coupling_block_matrix();
+  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> k_fs = fluid_struct_coupling_block_matrix();
   if (k_fs == Teuchos::null) FOUR_C_THROW("expect coupling block matrix");
 
   // call the element and calculate the matrix block
@@ -144,34 +144,34 @@ void POROELAST::MonolithicStructureSplit::setup_system_matrix(
     double ftiparam = fluid_field()->TimIntParam();
 
     (*sigtransform_)(s->FullRowMap(), s->FullColMap(), s->Matrix(0, 1), 1. / timescale,
-        CORE::ADAPTER::CouplingMasterConverter(*icoupfs_),
+        Core::Adapter::CouplingMasterConverter(*icoupfs_),
         k_sf->Matrix(0, 1),  // k_sf->Matrix(0,1),mat.Matrix(0,1)
         true, true);
 
     (*sggtransform_)(s->Matrix(1, 1), (1.0 - ftiparam) / ((1.0 - stiparam) * scale * timescale),
-        CORE::ADAPTER::CouplingMasterConverter(*icoupfs_),
-        CORE::ADAPTER::CouplingMasterConverter(*icoupfs_), *f, true, true);
+        Core::Adapter::CouplingMasterConverter(*icoupfs_),
+        Core::Adapter::CouplingMasterConverter(*icoupfs_), *f, true, true);
 
     (*sgitransform_)(s->Matrix(1, 0), (1.0 - ftiparam) / ((1.0 - stiparam) * scale),
-        CORE::ADAPTER::CouplingMasterConverter(*icoupfs_),
+        Core::Adapter::CouplingMasterConverter(*icoupfs_),
         k_fs->Matrix(1, 0),  // k_fs->Matrix(1,0), mat.Matrix(1,0)
         true);
 
     (*cfggtransform_)(s->FullRowMap(),  // k_fs->FullRowMap(),
         s->FullColMap(),                // k_fs->FullColMap(),
-        k_fs->Matrix(1, 1), 1. / timescale, CORE::ADAPTER::CouplingMasterConverter(*icoupfs_), *f,
+        k_fs->Matrix(1, 1), 1. / timescale, Core::Adapter::CouplingMasterConverter(*icoupfs_), *f,
         true, true);
 
     (*cfigtransform_)(s->FullRowMap(),  // k_fs->FullRowMap(),
         s->FullColMap(),                // k_fs->FullColMap(),
-        k_fs->Matrix(0, 1), 1. / timescale, CORE::ADAPTER::CouplingMasterConverter(*icoupfs_), *f,
+        k_fs->Matrix(0, 1), 1. / timescale, Core::Adapter::CouplingMasterConverter(*icoupfs_), *f,
         true, true);
 
     (*csggtransform_)(k_sf->Matrix(1, 1), (1.0 - ftiparam) / ((1.0 - stiparam) * scale),
-        CORE::ADAPTER::CouplingMasterConverter(*icoupfs_), *f, true);
+        Core::Adapter::CouplingMasterConverter(*icoupfs_), *f, true);
 
     (*csgitransform_)(k_sf->Matrix(1, 0), (1.0 - ftiparam) / ((1.0 - stiparam) * scale),
-        CORE::ADAPTER::CouplingMasterConverter(*icoupfs_), *f, true);
+        Core::Adapter::CouplingMasterConverter(*icoupfs_), *f, true);
   }
 
   /*----------------------------------------------------------------------*/
@@ -183,7 +183,7 @@ void POROELAST::MonolithicStructureSplit::setup_system_matrix(
   mat.Matrix(0, 1).Add(k_sf->Matrix(0, 1), false, 1.0, 1.0);
 
   // pure fluid part
-  mat.Assign(1, 1, CORE::LINALG::View, *f);
+  mat.Assign(1, 1, Core::LinAlg::View, *f);
 
   // fluid coupling part
   mat.Matrix(1, 0).Add(k_fs->Matrix(0, 0), false, 1.0, 0.0);
@@ -192,13 +192,13 @@ void POROELAST::MonolithicStructureSplit::setup_system_matrix(
   // done. make sure all blocks are filled.
   mat.Complete();
 
-  sgicur_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(s->Matrix(1, 0)));
-  sggcur_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(s->Matrix(1, 1)));
-  cgicur_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(k_sf->Matrix(1, 0)));
-  cggcur_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(k_sf->Matrix(1, 1)));
+  sgicur_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(s->Matrix(1, 0)));
+  sggcur_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(s->Matrix(1, 1)));
+  cgicur_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(k_sf->Matrix(1, 0)));
+  cggcur_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(k_sf->Matrix(1, 1)));
 }
 
-void POROELAST::MonolithicStructureSplit::setup_vector(Epetra_Vector& f,
+void PoroElast::MonolithicStructureSplit::setup_vector(Epetra_Vector& f,
     Teuchos::RCP<const Epetra_Vector> sv, Teuchos::RCP<const Epetra_Vector> fv, double fluidscale)
 {
   // extract the inner and boundary dofs of all three fields
@@ -233,10 +233,10 @@ void POROELAST::MonolithicStructureSplit::setup_vector(Epetra_Vector& f,
   Extractor()->InsertVector(*sov, 0, f);
 }
 
-void POROELAST::MonolithicStructureSplit::extract_field_vectors(Teuchos::RCP<const Epetra_Vector> x,
+void PoroElast::MonolithicStructureSplit::extract_field_vectors(Teuchos::RCP<const Epetra_Vector> x,
     Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx, bool firstcall)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("POROELAST::MonolithicStructureSplit::extract_field_vectors");
+  TEUCHOS_FUNC_TIME_MONITOR("PoroElast::MonolithicStructureSplit::extract_field_vectors");
 
   // process fluid unknowns of the second field
   fx = Extractor()->ExtractVector(x, 1);
@@ -258,7 +258,7 @@ void POROELAST::MonolithicStructureSplit::extract_field_vectors(Teuchos::RCP<con
     structure_field()->Interface()->InsertFSICondVector(scx, s);
 
     auto zeros = Teuchos::rcp(new const Epetra_Vector(s->Map(), true));
-    CORE::LINALG::apply_dirichlet_to_system(
+    Core::LinAlg::apply_dirichlet_to_system(
         *s, *zeros, *(structure_field()->GetDBCMapExtractor()->CondMap()));
 
     sx = s;
@@ -291,10 +291,10 @@ void POROELAST::MonolithicStructureSplit::extract_field_vectors(Teuchos::RCP<con
     sx = Extractor()->ExtractVector(x, 0);
 }
 
-void POROELAST::MonolithicStructureSplit::recover_lagrange_multiplier_after_time_step()
+void PoroElast::MonolithicStructureSplit::recover_lagrange_multiplier_after_time_step()
 {
   TEUCHOS_FUNC_TIME_MONITOR(
-      "POROELAST::MonolithicStructureSplit::recover_lagrange_multiplier_after_time_step");
+      "PoroElast::MonolithicStructureSplit::recover_lagrange_multiplier_after_time_step");
   if (evaluateinterface_)
   {
     // get time integration parameter of structural time integrator
@@ -304,25 +304,25 @@ void POROELAST::MonolithicStructureSplit::recover_lagrange_multiplier_after_time
 
     // store the product S_{\GammaI} \Delta d_I^{n+1} in here
     Teuchos::RCP<Epetra_Vector> sgiddi =
-        CORE::LINALG::CreateVector(*structure_field()->Interface()->FSICondMap(), true);
+        Core::LinAlg::CreateVector(*structure_field()->Interface()->FSICondMap(), true);
     // compute the above mentioned product
     sgicur_->Multiply(false, *ddiinc_, *sgiddi);
 
     // store the product C_{\GammaI} \Delta u_I^{n+1} in here
     Teuchos::RCP<Epetra_Vector> fgiddi =
-        CORE::LINALG::CreateVector(*structure_field()->Interface()->FSICondMap(), true);
+        Core::LinAlg::CreateVector(*structure_field()->Interface()->FSICondMap(), true);
     // compute the above mentioned product
     cgicur_->Multiply(false, *duiinc_, *fgiddi);
 
     // store the product S_{\Gamma\Gamma} \Delta d_\Gamma^{n+1} in here
     Teuchos::RCP<Epetra_Vector> sggddg =
-        CORE::LINALG::CreateVector(*structure_field()->Interface()->FSICondMap(), true);
+        Core::LinAlg::CreateVector(*structure_field()->Interface()->FSICondMap(), true);
     // compute the above mentioned product
     sggcur_->Multiply(false, *ddginc_, *sggddg);
 
     // store the prodcut C_{\Gamma\Gamma} \Delta u_\Gamma^{n+1} in here
     Teuchos::RCP<Epetra_Vector> cggddg =
-        CORE::LINALG::CreateVector(*structure_field()->Interface()->FSICondMap(), true);
+        Core::LinAlg::CreateVector(*structure_field()->Interface()->FSICondMap(), true);
     // compute the above mentioned product
     cggcur_->Multiply(false, *ddginc_, *cggddg);
     cggddg->Scale(timescale);

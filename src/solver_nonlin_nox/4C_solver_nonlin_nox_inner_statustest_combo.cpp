@@ -15,13 +15,13 @@
 FOUR_C_NAMESPACE_OPEN
 
 // tolerated unconverged states
-const std::set<NOX::NLN::INNER::StatusTest::StatusType>
-    NOX::NLN::INNER::StatusTest::Combo::unconverged_ = {
+const std::set<NOX::Nln::Inner::StatusTest::StatusType>
+    NOX::Nln::Inner::StatusTest::Combo::unconverged_ = {
         status_step_too_long, status_step_too_short};
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::INNER::StatusTest::Combo::Combo(
+NOX::Nln::Inner::StatusTest::Combo::Combo(
     ::NOX::StatusTest::Combo::ComboType t, const ::NOX::Utils* u)
     : type_(t)
 {
@@ -30,7 +30,7 @@ NOX::NLN::INNER::StatusTest::Combo::Combo(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::INNER::StatusTest::Combo::Combo(
+NOX::Nln::Inner::StatusTest::Combo::Combo(
     ::NOX::StatusTest::Combo::ComboType t, const Teuchos::RCP<Generic>& a, const ::NOX::Utils* u)
     : type_(t)
 {
@@ -41,7 +41,7 @@ NOX::NLN::INNER::StatusTest::Combo::Combo(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::INNER::StatusTest::Combo::Combo(::NOX::StatusTest::Combo::ComboType t,
+NOX::Nln::Inner::StatusTest::Combo::Combo(::NOX::StatusTest::Combo::ComboType t,
     const Teuchos::RCP<Generic>& a, const Teuchos::RCP<Generic>& b, const ::NOX::Utils* u)
     : type_(t)
 {
@@ -56,7 +56,7 @@ NOX::NLN::INNER::StatusTest::Combo::Combo(::NOX::StatusTest::Combo::ComboType t,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::INNER::StatusTest::StatusType NOX::NLN::INNER::StatusTest::Combo::CheckStatus(
+NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::Combo::CheckStatus(
     const Interface::Required& interface, const ::NOX::Solver::Generic& solver,
     const ::NOX::Abstract::Group& grp, ::NOX::StatusTest::CheckType checkType)
 {
@@ -70,14 +70,14 @@ NOX::NLN::INNER::StatusTest::StatusType NOX::NLN::INNER::StatusTest::Combo::Chec
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::INNER::StatusTest::StatusType NOX::NLN::INNER::StatusTest::Combo::GetStatus() const
+NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::Combo::GetStatus() const
 {
   return status_;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::INNER::StatusTest::Combo::or_op(const Interface::Required& interface,
+void NOX::Nln::Inner::StatusTest::Combo::or_op(const Interface::Required& interface,
     const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp,
     ::NOX::StatusTest::CheckType checkType)
 {
@@ -90,7 +90,7 @@ void NOX::NLN::INNER::StatusTest::Combo::or_op(const Interface::Required& interf
   // any, that is unconverged is the status that it sets itself too.
   for (const auto& test : tests_)
   {
-    NOX::NLN::INNER::StatusTest::StatusType s =
+    NOX::Nln::Inner::StatusTest::StatusType s =
         test->CheckStatus(interface, solver, grp, checkType);
 
     if (unconverged_.find(status_) != unconverged_.end() and
@@ -108,7 +108,7 @@ void NOX::NLN::INNER::StatusTest::Combo::or_op(const Interface::Required& interf
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::INNER::StatusTest::Combo::and_op(const Interface::Required& interface,
+void NOX::Nln::Inner::StatusTest::Combo::and_op(const Interface::Required& interface,
     const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp,
     ::NOX::StatusTest::CheckType checkType)
 {
@@ -121,7 +121,7 @@ void NOX::NLN::INNER::StatusTest::Combo::and_op(const Interface::Required& inter
 
   for (const auto& test : tests_)
   {
-    NOX::NLN::INNER::StatusTest::StatusType s =
+    NOX::Nln::Inner::StatusTest::StatusType s =
         test->CheckStatus(interface, solver, grp, checkType);
 
     // If any of the tests are unconverged, then the AND test is
@@ -148,7 +148,7 @@ void NOX::NLN::INNER::StatusTest::Combo::and_op(const Interface::Required& inter
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::INNER::StatusTest::Combo& NOX::NLN::INNER::StatusTest::Combo::addStatusTest(
+NOX::Nln::Inner::StatusTest::Combo& NOX::Nln::Inner::StatusTest::Combo::addStatusTest(
     const Teuchos::RCP<Generic>& a)
 {
   if (is_safe(*a))
@@ -171,7 +171,7 @@ NOX::NLN::INNER::StatusTest::Combo& NOX::NLN::INNER::StatusTest::Combo::addStatu
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::NLN::INNER::StatusTest::Combo::is_safe(Generic& a)
+bool NOX::Nln::Inner::StatusTest::Combo::is_safe(Generic& a)
 {
   // Are we trying to add "this" to "this"? This would result in an infinite recursion.
   if (&a == this) return false;
@@ -180,8 +180,8 @@ bool NOX::NLN::INNER::StatusTest::Combo::is_safe(Generic& a)
   // in the list because that can also lead to infinite recursions.
   for (auto& test : tests_)
   {
-    NOX::NLN::INNER::StatusTest::Combo* ptr =
-        dynamic_cast<NOX::NLN::INNER::StatusTest::Combo*>(test.get());
+    NOX::Nln::Inner::StatusTest::Combo* ptr =
+        dynamic_cast<NOX::Nln::Inner::StatusTest::Combo*>(test.get());
     if (ptr != nullptr)
       if (!ptr->is_safe(a)) return false;
   }
@@ -191,15 +191,15 @@ bool NOX::NLN::INNER::StatusTest::Combo::is_safe(Generic& a)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const std::vector<Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>>&
-NOX::NLN::INNER::StatusTest::Combo::GetTestVector() const
+const std::vector<Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic>>&
+NOX::Nln::Inner::StatusTest::Combo::GetTestVector() const
 {
   return tests_;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::ostream& NOX::NLN::INNER::StatusTest::Combo::Print(std::ostream& stream, int indent) const
+std::ostream& NOX::Nln::Inner::StatusTest::Combo::Print(std::ostream& stream, int indent) const
 {
   stream << std::string(indent, ' ');
   stream << status_;

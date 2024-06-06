@@ -29,32 +29,32 @@ void FBI::BeamToFluidMeshtyingVtkOutputParams::Setup()
 
   // Teuchos parameter lists from input file.
   const Teuchos::ParameterList& beam_to_fluid_meshtying_visualization_output_paramslist =
-      GLOBAL::Problem::Instance()
+      Global::Problem::Instance()
           ->FBIParams()
           .sublist("BEAM TO FLUID MESHTYING")
           .sublist("RUNTIME VTK OUTPUT");
   const Teuchos::ParameterList& global_visualization_output_paramslist =
-      GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT");
+      Global::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT");
 
   // Get global parameters.
   output_interval_steps_ = global_visualization_output_paramslist.get<int>("INTERVAL_STEPS");
-  output_every_iteration_ = (bool)CORE::UTILS::IntegralValue<int>(
+  output_every_iteration_ = (bool)Core::UTILS::IntegralValue<int>(
       global_visualization_output_paramslist, "EVERY_ITERATION");
 
   // Get beam to fluid mesh tying specific parameters.
-  output_flag_ = (bool)CORE::UTILS::IntegralValue<int>(
+  output_flag_ = (bool)Core::UTILS::IntegralValue<int>(
       beam_to_fluid_meshtying_visualization_output_paramslist, "WRITE_OUTPUT");
 
-  nodal_forces_ = (bool)CORE::UTILS::IntegralValue<int>(
+  nodal_forces_ = (bool)Core::UTILS::IntegralValue<int>(
       beam_to_fluid_meshtying_visualization_output_paramslist, "NODAL_FORCES");
 
-  segmentation_ = (bool)CORE::UTILS::IntegralValue<int>(
+  segmentation_ = (bool)Core::UTILS::IntegralValue<int>(
       beam_to_fluid_meshtying_visualization_output_paramslist, "SEGMENTATION");
 
-  integration_points_ = (bool)CORE::UTILS::IntegralValue<int>(
+  integration_points_ = (bool)Core::UTILS::IntegralValue<int>(
       beam_to_fluid_meshtying_visualization_output_paramslist, "INTEGRATION_POINTS");
 
-  constraint_violation_ = (bool)CORE::UTILS::IntegralValue<int>(
+  constraint_violation_ = (bool)Core::UTILS::IntegralValue<int>(
       beam_to_fluid_meshtying_visualization_output_paramslist, "CONSTRAINT_VIOLATION");
 
   // Set the setup flag.

@@ -50,7 +50,7 @@ namespace CONTACT
     }
 
     void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
-        Teuchos::RCP<CORE::LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f,
+        Teuchos::RCP<Core::LinAlg::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f,
         const int step, const int iter, bool predictor) override
     {
       if (kt != Teuchos::null && f != Teuchos::null)
@@ -77,9 +77,9 @@ namespace CONTACT
 
     void Integrate(const CONTACT::ParamsInterface& cparams) override;
 
-    void set_state(const enum MORTAR::StateType& statename, const Epetra_Vector& vec) override;
+    void set_state(const enum Mortar::StateType& statename, const Epetra_Vector& vec) override;
 
-    void SetParentState(const enum MORTAR::StateType& statename, const Epetra_Vector& vec) override;
+    void SetParentState(const enum Mortar::StateType& statename, const Epetra_Vector& vec) override;
 
     Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
         const enum CONTACT::VecBlockType& bp) const override;
@@ -90,7 +90,7 @@ namespace CONTACT
      * @param[in] bt   block type of requested matrix block
      * @return pointer to matrix block
      */
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrixBlockPtr(
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> GetMatrixBlockPtr(
         const enum CONTACT::MatBlockType& bp) const;
 
     //! don't want = operator
@@ -102,22 +102,22 @@ namespace CONTACT
     Teuchos::RCP<Epetra_FEVector> setup_rhs_block_vec(
         const enum CONTACT::VecBlockType& bt) const override;
 
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> setup_matrix_block_ptr(
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> setup_matrix_block_ptr(
         const enum CONTACT::MatBlockType& bt) override;
 
     void complete_matrix_block_ptr(
-        const enum CONTACT::MatBlockType& bt, Teuchos::RCP<CORE::LINALG::SparseMatrix> kc) override;
+        const enum CONTACT::MatBlockType& bt, Teuchos::RCP<Core::LinAlg::SparseMatrix> kc) override;
 
     //! current scalar state vector
     Teuchos::RCP<Epetra_Vector> curr_state_scalar_;
     //! ScaTra residual
     Teuchos::RCP<Epetra_FEVector> fs_;
     //! linearization of ScaTra residual w.r.t ScaTra dofs
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> kss_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> kss_;
     //! linearization of ScaTra residual w.r.t displacement dofs
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> ksd_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> ksd_;
     //! linearization of displacement residual w.r.t ScaTra dofs
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> kds_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> kds_;
   };
 }  // namespace CONTACT
 FOUR_C_NAMESPACE_CLOSE

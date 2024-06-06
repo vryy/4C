@@ -14,9 +14,9 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
-  namespace TRAIT
+  namespace Trait
   {
     class Thermo
     {
@@ -25,23 +25,23 @@ namespace MAT
 
       //! Main material call to determine heat flux and constitutive tensor in 3D
       virtual void Evaluate(
-          const CORE::LINALG::Matrix<3, 1>& gradtemp,  ///< temperature gradient (strain tensor)
-          CORE::LINALG::Matrix<3, 3>& cmat,            ///< constitutive matrix
-          CORE::LINALG::Matrix<3, 1>& heatflux         ///< heatflux
+          const Core::LinAlg::Matrix<3, 1>& gradtemp,  ///< temperature gradient (strain tensor)
+          Core::LinAlg::Matrix<3, 3>& cmat,            ///< constitutive matrix
+          Core::LinAlg::Matrix<3, 1>& heatflux         ///< heatflux
       ) const = 0;
 
       //! Main material call to determine heat flux and constitutive tensor in 2D
       virtual void Evaluate(
-          const CORE::LINALG::Matrix<2, 1>& gradtemp,  ///< temperature gradient (strain tensor)
-          CORE::LINALG::Matrix<2, 2>& cmat,            ///< constitutive matrix
-          CORE::LINALG::Matrix<2, 1>& heatflux         ///< heatflux
+          const Core::LinAlg::Matrix<2, 1>& gradtemp,  ///< temperature gradient (strain tensor)
+          Core::LinAlg::Matrix<2, 2>& cmat,            ///< constitutive matrix
+          Core::LinAlg::Matrix<2, 1>& heatflux         ///< heatflux
       ) const = 0;
 
       //! Main material call to determine heat flux and constitutive tensor in 1D
       virtual void Evaluate(
-          const CORE::LINALG::Matrix<1, 1>& gradtemp,  ///< temperature gradient (strain tensor)
-          CORE::LINALG::Matrix<1, 1>& cmat,            ///< constitutive matrix
-          CORE::LINALG::Matrix<1, 1>& heatflux         ///< heatflux
+          const Core::LinAlg::Matrix<1, 1>& gradtemp,  ///< temperature gradient (strain tensor)
+          Core::LinAlg::Matrix<1, 1>& cmat,            ///< constitutive matrix
+          Core::LinAlg::Matrix<1, 1>& heatflux         ///< heatflux
       ) const = 0;
 
 
@@ -49,11 +49,11 @@ namespace MAT
       //! @{
 
       //! @brief Derivative of conductivity tensor wrt to temperature
-      virtual void ConductivityDerivT(CORE::LINALG::Matrix<3, 3>& dCondDT) const = 0;
+      virtual void ConductivityDerivT(Core::LinAlg::Matrix<3, 3>& dCondDT) const = 0;
 
-      virtual void ConductivityDerivT(CORE::LINALG::Matrix<2, 2>& dCondDT) const = 0;
+      virtual void ConductivityDerivT(Core::LinAlg::Matrix<2, 2>& dCondDT) const = 0;
 
-      virtual void ConductivityDerivT(CORE::LINALG::Matrix<1, 1>& dCondDT) const = 0;
+      virtual void ConductivityDerivT(Core::LinAlg::Matrix<1, 1>& dCondDT) const = 0;
 
       //! @}
 
@@ -76,8 +76,8 @@ namespace MAT
       //! persist currently set state to history
       virtual void CommitCurrentState() = 0;
     };
-  }  // namespace TRAIT
-}  // namespace MAT
+  }  // namespace Trait
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

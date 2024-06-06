@@ -16,7 +16,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE
+namespace Core
 {
   namespace UTILS
   {
@@ -86,7 +86,7 @@ namespace CORE
         return default_value;
     }
   }  // namespace UTILS
-}  // namespace CORE
+}  // namespace Core
 
 
 FOUR_C_NAMESPACE_CLOSE

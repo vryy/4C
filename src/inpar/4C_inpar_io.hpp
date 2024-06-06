@@ -19,7 +19,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
-namespace INPAR
+namespace Inpar
 {
   namespace IO
   {
@@ -30,7 +30,7 @@ namespace INPAR
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
   }  // namespace IO
-}  // namespace INPAR
+}  // namespace Inpar
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

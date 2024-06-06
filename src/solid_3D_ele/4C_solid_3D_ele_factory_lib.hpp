@@ -22,9 +22,9 @@ namespace STR::ELEMENTS
 {
   enum class EasType;
 }
-namespace DRT::ELEMENTS
+namespace Discret::ELEMENTS
 {
-  namespace DETAILS
+  namespace Details
   {
     /*!
      * @brief A simple container type that holds a pointer to the value of type T providing value
@@ -67,21 +67,21 @@ namespace DRT::ELEMENTS
     struct CreateVariant;
 
     template <typename... Ts>
-    struct CreateVariant<CORE::FE::BaseTypeList<Ts...>>
+    struct CreateVariant<Core::FE::BaseTypeList<Ts...>>
     {
       using type = std::variant<VariantItem<Ts>...>;
     };
 
-  }  // namespace DETAILS
+  }  // namespace Details
 
   /*!
    * @brief Meta function to create a std::variant of all provides types wrapped in a @p
-   * DETAILS::VariantItem.
+   * Details::VariantItem.
    */
   template <typename... Ts>
-  using CreateVariantType = typename DETAILS::CreateVariant<Ts...>::type;
+  using CreateVariantType = typename Details::CreateVariant<Ts...>::type;
 
-  namespace DETAILS
+  namespace Details
   {
     /*!
      * @brief A struct that determines whether @p T is a valid template type
@@ -99,7 +99,7 @@ namespace DRT::ELEMENTS
     struct IsValidTypeTrait<T, std::void_t<typename T::type>> : std::true_type
     {
     };
-  }  // namespace DETAILS
+  }  // namespace Details
 
   /*!
    * @brief Determines whether we have implemented a solid calculation formulation
@@ -107,7 +107,7 @@ namespace DRT::ELEMENTS
    * @tparam T typename: Template parameter that may be a valid type or not
    */
   template <typename T>
-  constexpr bool is_valid_type = DETAILS::IsValidTypeTrait<T>::value;
+  constexpr bool is_valid_type = Details::IsValidTypeTrait<T>::value;
 
   /*!
    * @brief An automatic switch from runtime kinematic type to constexpr kinematic type.
@@ -119,22 +119,22 @@ namespace DRT::ELEMENTS
    * @return auto
    */
   template <typename Function>
-  auto switch_kinematic_type(INPAR::STR::KinemType kinem_type, Function fct)
+  auto switch_kinematic_type(Inpar::STR::KinemType kinem_type, Function fct)
   {
     switch (kinem_type)
     {
-      case INPAR::STR::KinemType::linear:
-        return fct(std::integral_constant<INPAR::STR::KinemType, INPAR::STR::KinemType::linear>{});
-      case INPAR::STR::KinemType::nonlinearTotLag:
-        return fct(std::integral_constant<INPAR::STR::KinemType,
-            INPAR::STR::KinemType::nonlinearTotLag>{});
-      case INPAR::STR::KinemType::vague:
-        return fct(std::integral_constant<INPAR::STR::KinemType, INPAR::STR::KinemType::vague>{});
+      case Inpar::STR::KinemType::linear:
+        return fct(std::integral_constant<Inpar::STR::KinemType, Inpar::STR::KinemType::linear>{});
+      case Inpar::STR::KinemType::nonlinearTotLag:
+        return fct(std::integral_constant<Inpar::STR::KinemType,
+            Inpar::STR::KinemType::nonlinearTotLag>{});
+      case Inpar::STR::KinemType::vague:
+        return fct(std::integral_constant<Inpar::STR::KinemType, Inpar::STR::KinemType::vague>{});
     }
 
     FOUR_C_THROW("Your kinematic type is unknown: %d", kinem_type);
   }
-}  // namespace DRT::ELEMENTS
+}  // namespace Discret::ELEMENTS
 
 
 FOUR_C_NAMESPACE_CLOSE

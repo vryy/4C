@@ -21,12 +21,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::UTILS
+namespace Core::UTILS
 {
   class FunctionManager;
 }
 
-namespace CORE::Elements
+namespace Core::Elements
 {
 
   /*! \brief Parameter interface for the element <--> time integrator data exchange
@@ -60,10 +60,10 @@ namespace CORE::Elements
     virtual double GetDeltaTime() const = 0;
 
     //! get function manager
-    virtual const CORE::UTILS::FunctionManager* get_function_manager() const = 0;
+    virtual const Core::UTILS::FunctionManager* get_function_manager() const = 0;
     //! @}
   };  // class ParamsInterface
-}  // namespace CORE::Elements
+}  // namespace Core::Elements
 
 
 FOUR_C_NAMESPACE_CLOSE

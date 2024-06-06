@@ -20,10 +20,10 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::StructureTimeAdaZienXie::integrate_step_auxiliar()
+void Adapter::StructureTimeAdaZienXie::integrate_step_auxiliar()
 {
-  const STR::TIMINT::Base& stm = *stm_;
-  const STR::TIMINT::BaseDataGlobalState& gstate = stm.data_global_state();
+  const STR::TimeInt::Base& stm = *stm_;
+  const STR::TimeInt::BaseDataGlobalState& gstate = stm.data_global_state();
 
   // get state vectors of marching integrator
   Teuchos::RCP<const Epetra_Vector> dis = gstate.GetDisN();    // D_{n}^{A2}
@@ -39,7 +39,7 @@ void ADAPTER::StructureTimeAdaZienXie::integrate_step_auxiliar()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::StructureTimeAdaZienXie::update_auxiliar()
+void Adapter::StructureTimeAdaZienXie::update_auxiliar()
 {
   // NOTHING TO UPDATE
 }

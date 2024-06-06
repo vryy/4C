@@ -32,7 +32,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-PARTICLEINTERACTION::SPHSurfaceTension::SPHSurfaceTension(const Teuchos::ParameterList& params)
+ParticleInteraction::SPHSurfaceTension::SPHSurfaceTension(const Teuchos::ParameterList& params)
     : params_sph_(params),
       liquidtype_(PARTICLEENGINE::Phase1),
       gastype_(PARTICLEENGINE::Phase2),
@@ -54,9 +54,9 @@ PARTICLEINTERACTION::SPHSurfaceTension::SPHSurfaceTension(const Teuchos::Paramet
   // empty constructor
 }
 
-PARTICLEINTERACTION::SPHSurfaceTension::~SPHSurfaceTension() = default;
+ParticleInteraction::SPHSurfaceTension::~SPHSurfaceTension() = default;
 
-void PARTICLEINTERACTION::SPHSurfaceTension::Init()
+void ParticleInteraction::SPHSurfaceTension::Init()
 {
   // init interface viscosity handler
   init_interface_viscosity_handler();
@@ -82,11 +82,11 @@ void PARTICLEINTERACTION::SPHSurfaceTension::Init()
 
   if (alpha_t_ != 0.0)
   {
-    if (CORE::UTILS::IntegralValue<INPAR::PARTICLE::TemperatureEvaluationScheme>(
-            params_sph_, "TEMPERATUREEVALUATION") == INPAR::PARTICLE::NoTemperatureEvaluation)
+    if (Core::UTILS::IntegralValue<Inpar::PARTICLE::TemperatureEvaluationScheme>(
+            params_sph_, "TEMPERATUREEVALUATION") == Inpar::PARTICLE::NoTemperatureEvaluation)
       FOUR_C_THROW("temperature evaluation needed for temperature dependent surface tension!");
 
-    if (CORE::UTILS::IntegralValue<int>(params_sph_, "TEMPERATUREGRADIENT") == false)
+    if (Core::UTILS::IntegralValue<int>(params_sph_, "TEMPERATUREGRADIENT") == false)
       FOUR_C_THROW(
           "temperature gradient evaluation needed for temperature dependent surface tension!");
   }
@@ -94,18 +94,18 @@ void PARTICLEINTERACTION::SPHSurfaceTension::Init()
   if (trans_d_t_surf_ > 0.0 or trans_d_t_mara_ > 0.0 or trans_d_t_curv_ > 0.0 or
       trans_d_t_wet_ > 0.0)
   {
-    if (CORE::UTILS::IntegralValue<INPAR::PARTICLE::TemperatureEvaluationScheme>(
-            params_sph_, "TEMPERATUREEVALUATION") == INPAR::PARTICLE::NoTemperatureEvaluation)
+    if (Core::UTILS::IntegralValue<Inpar::PARTICLE::TemperatureEvaluationScheme>(
+            params_sph_, "TEMPERATUREEVALUATION") == Inpar::PARTICLE::NoTemperatureEvaluation)
       FOUR_C_THROW("temperature evaluation needed for linear transition of surface tension!");
   }
 }
 
-void PARTICLEINTERACTION::SPHSurfaceTension::Setup(
+void ParticleInteraction::SPHSurfaceTension::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-    const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel,
-    const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
-    const std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle,
-    const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs)
+    const std::shared_ptr<ParticleInteraction::SPHKernelBase> kernel,
+    const std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial,
+    const std::shared_ptr<ParticleInteraction::SPHEquationOfStateBundle> equationofstatebundle,
+    const std::shared_ptr<ParticleInteraction::SPHNeighborPairs> neighborpairs)
 {
   // set interface to particle engine
   particleengineinterface_ = particleengineinterface;
@@ -155,12 +155,12 @@ void PARTICLEINTERACTION::SPHSurfaceTension::Setup(
   }
 }
 
-void PARTICLEINTERACTION::SPHSurfaceTension::set_current_time(const double currenttime)
+void ParticleInteraction::SPHSurfaceTension::set_current_time(const double currenttime)
 {
   time_ = currenttime;
 }
 
-void PARTICLEINTERACTION::SPHSurfaceTension::insert_particle_states_of_particle_types(
+void ParticleInteraction::SPHSurfaceTension::insert_particle_states_of_particle_types(
     std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>& particlestatestotypes)
     const
 {
@@ -196,9 +196,9 @@ void PARTICLEINTERACTION::SPHSurfaceTension::insert_particle_states_of_particle_
   }
 }
 
-void PARTICLEINTERACTION::SPHSurfaceTension::compute_interface_quantities()
+void ParticleInteraction::SPHSurfaceTension::compute_interface_quantities()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHSurfaceTension::compute_interface_quantities");
+  TEUCHOS_FUNC_TIME_MONITOR("ParticleInteraction::SPHSurfaceTension::compute_interface_quantities");
 
   // compute colorfield gradient
   compute_colorfield_gradient();
@@ -219,10 +219,10 @@ void PARTICLEINTERACTION::SPHSurfaceTension::compute_interface_quantities()
   particleengineinterface_->refresh_particles_of_specific_states_and_types(intnormtorefresh_);
 }
 
-void PARTICLEINTERACTION::SPHSurfaceTension::add_acceleration_contribution()
+void ParticleInteraction::SPHSurfaceTension::add_acceleration_contribution()
 {
   TEUCHOS_FUNC_TIME_MONITOR(
-      "PARTICLEINTERACTION::SPHSurfaceTension::add_acceleration_contribution");
+      "ParticleInteraction::SPHSurfaceTension::add_acceleration_contribution");
 
   // compute curvature
   compute_curvature();
@@ -244,40 +244,40 @@ void PARTICLEINTERACTION::SPHSurfaceTension::add_acceleration_contribution()
   if (barrierforce_) barrierforce_->compute_barrier_force_contribution();
 }
 
-void PARTICLEINTERACTION::SPHSurfaceTension::init_interface_viscosity_handler()
+void ParticleInteraction::SPHSurfaceTension::init_interface_viscosity_handler()
 {
   // create interface viscosity handler
-  if (CORE::UTILS::IntegralValue<int>(params_sph_, "INTERFACE_VISCOSITY"))
-    interfaceviscosity_ = std::unique_ptr<PARTICLEINTERACTION::SPHInterfaceViscosity>(
-        new PARTICLEINTERACTION::SPHInterfaceViscosity(params_sph_));
+  if (Core::UTILS::IntegralValue<int>(params_sph_, "INTERFACE_VISCOSITY"))
+    interfaceviscosity_ = std::unique_ptr<ParticleInteraction::SPHInterfaceViscosity>(
+        new ParticleInteraction::SPHInterfaceViscosity(params_sph_));
 
   // init interface viscosity handler
   if (interfaceviscosity_) interfaceviscosity_->Init();
 }
 
-void PARTICLEINTERACTION::SPHSurfaceTension::init_recoil_pressure_evaporation_handler()
+void ParticleInteraction::SPHSurfaceTension::init_recoil_pressure_evaporation_handler()
 {
   // create evaporation induced recoil pressure handler
-  if (CORE::UTILS::IntegralValue<int>(params_sph_, "VAPOR_RECOIL"))
-    recoilpressureevaporation_ = std::unique_ptr<PARTICLEINTERACTION::SPHRecoilPressureEvaporation>(
-        new PARTICLEINTERACTION::SPHRecoilPressureEvaporation(params_sph_));
+  if (Core::UTILS::IntegralValue<int>(params_sph_, "VAPOR_RECOIL"))
+    recoilpressureevaporation_ = std::unique_ptr<ParticleInteraction::SPHRecoilPressureEvaporation>(
+        new ParticleInteraction::SPHRecoilPressureEvaporation(params_sph_));
 
   // init evaporation induced recoil pressure handler
   if (recoilpressureevaporation_) recoilpressureevaporation_->Init();
 }
 
-void PARTICLEINTERACTION::SPHSurfaceTension::init_barrier_force_handler()
+void ParticleInteraction::SPHSurfaceTension::init_barrier_force_handler()
 {
   // create barrier force handler
-  if (CORE::UTILS::IntegralValue<int>(params_sph_, "BARRIER_FORCE"))
-    barrierforce_ = std::unique_ptr<PARTICLEINTERACTION::SPHBarrierForce>(
-        new PARTICLEINTERACTION::SPHBarrierForce(params_sph_));
+  if (Core::UTILS::IntegralValue<int>(params_sph_, "BARRIER_FORCE"))
+    barrierforce_ = std::unique_ptr<ParticleInteraction::SPHBarrierForce>(
+        new ParticleInteraction::SPHBarrierForce(params_sph_));
 
   // init barrier force handler
   if (barrierforce_) barrierforce_->Init();
 }
 
-void PARTICLEINTERACTION::SPHSurfaceTension::compute_colorfield_gradient() const
+void ParticleInteraction::SPHSurfaceTension::compute_colorfield_gradient() const
 {
   // iterate over fluid particle types
   for (const auto& type_i : fluidtypes_)
@@ -367,7 +367,7 @@ void PARTICLEINTERACTION::SPHSurfaceTension::compute_colorfield_gradient() const
   }
 }
 
-void PARTICLEINTERACTION::SPHSurfaceTension::compute_interface_normal() const
+void ParticleInteraction::SPHSurfaceTension::compute_interface_normal() const
 {
   // iterate over fluid particle types
   for (const auto& type_i : fluidtypes_)
@@ -397,7 +397,7 @@ void PARTICLEINTERACTION::SPHSurfaceTension::compute_interface_normal() const
   }
 }
 
-void PARTICLEINTERACTION::SPHSurfaceTension::compute_wall_colorfield_and_wall_interface_normal()
+void ParticleInteraction::SPHSurfaceTension::compute_wall_colorfield_and_wall_interface_normal()
     const
 {
   // iterate over fluid particle types
@@ -447,7 +447,7 @@ void PARTICLEINTERACTION::SPHSurfaceTension::compute_wall_colorfield_and_wall_in
     if (fluidtypes_.count(type_i))
     {
       // get material for current particle type
-      const MAT::PAR::ParticleMaterialBase* material_j =
+      const Mat::PAR::ParticleMaterialBase* material_j =
           particlematerial_->get_ptr_to_particle_mat_parameter(type_j);
 
       // get pointer to particle states
@@ -485,7 +485,7 @@ void PARTICLEINTERACTION::SPHSurfaceTension::compute_wall_colorfield_and_wall_in
     if (fluidtypes_.count(type_j) and status_j == PARTICLEENGINE::Owned)
     {
       // get material for current particle type
-      const MAT::PAR::ParticleMaterialBase* material_i =
+      const Mat::PAR::ParticleMaterialBase* material_i =
           particlematerial_->get_ptr_to_particle_mat_parameter(type_i);
 
       // get pointer to particle states
@@ -546,7 +546,7 @@ void PARTICLEINTERACTION::SPHSurfaceTension::compute_wall_colorfield_and_wall_in
   }
 }
 
-void PARTICLEINTERACTION::SPHSurfaceTension::correct_triple_point_normal() const
+void ParticleInteraction::SPHSurfaceTension::correct_triple_point_normal() const
 {
   // iterate over fluid particle types
   for (const auto& type_i : fluidtypes_)
@@ -618,7 +618,7 @@ void PARTICLEINTERACTION::SPHSurfaceTension::correct_triple_point_normal() const
   }
 }
 
-void PARTICLEINTERACTION::SPHSurfaceTension::compute_curvature() const
+void ParticleInteraction::SPHSurfaceTension::compute_curvature() const
 {
   // determine size of vectors indexed by particle types
   const int typevectorsize = *(--particlecontainerbundle_->GetParticleTypes().end()) + 1;
@@ -784,13 +784,13 @@ void PARTICLEINTERACTION::SPHSurfaceTension::compute_curvature() const
   }
 }
 
-void PARTICLEINTERACTION::SPHSurfaceTension::compute_surface_tension_contribution() const
+void ParticleInteraction::SPHSurfaceTension::compute_surface_tension_contribution() const
 {
   // evaluate surface tension time ramp function
   double timefac = 1.0;
   if (timerampfct_ > 0)
-    timefac = GLOBAL::Problem::Instance()
-                  ->FunctionById<CORE::UTILS::FunctionOfTime>(timerampfct_ - 1)
+    timefac = Global::Problem::Instance()
+                  ->FunctionById<Core::UTILS::FunctionOfTime>(timerampfct_ - 1)
                   .Evaluate(time_);
 
   // iterate over fluid particle types
@@ -835,13 +835,13 @@ void PARTICLEINTERACTION::SPHSurfaceTension::compute_surface_tension_contributio
   }
 }
 
-void PARTICLEINTERACTION::SPHSurfaceTension::compute_temp_grad_driven_contribution() const
+void ParticleInteraction::SPHSurfaceTension::compute_temp_grad_driven_contribution() const
 {
   // evaluate surface tension time ramp function
   double timefac = 1.0;
   if (timerampfct_ > 0)
-    timefac = GLOBAL::Problem::Instance()
-                  ->FunctionById<CORE::UTILS::FunctionOfTime>(timerampfct_ - 1)
+    timefac = Global::Problem::Instance()
+                  ->FunctionById<Core::UTILS::FunctionOfTime>(timerampfct_ - 1)
                   .Evaluate(time_);
 
   // temperature in transition from linear to constant regime of surface tension coefficient

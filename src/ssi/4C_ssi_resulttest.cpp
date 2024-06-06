@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 SSI::SSIResultTest::SSIResultTest(const Teuchos::RCP<const SSI::SSIBase> ssi_base)
-    : CORE::UTILS::ResultTest("SSI"), ssi_base_(ssi_base)
+    : Core::UTILS::ResultTest("SSI"), ssi_base_(ssi_base)
 {
 }
 
@@ -75,7 +75,7 @@ const SSI::SsiMono& SSI::SSIResultTest::ssi_mono() const
 
 /*-------------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------------*/
-void SSI::SSIResultTest::TestSpecial(INPUT::LineDefinition& res, int& nerr, int& test_count)
+void SSI::SSIResultTest::TestSpecial(Input::LineDefinition& res, int& nerr, int& test_count)
 {
   // make sure that quantity is tested only by one processor
   if (ssi_base_->Comm().MyPID() == 0)

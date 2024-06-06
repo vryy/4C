@@ -26,26 +26,26 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::ScaTraEleCalcCardiacMonodomain(
+template <Core::FE::CellType distype, int probdim>
+Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::ScaTraEleCalcCardiacMonodomain(
     const int numdofpernode, const int numscal, const std::string& disname)
-    : DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ScaTraEleCalc(
+    : Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::ScaTraEleCalc(
           numdofpernode, numscal, disname),
-      DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::ScaTraEleCalcAniso(
+      Discret::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::ScaTraEleCalcAniso(
           numdofpernode, numscal, disname),
-      DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::ScaTraEleCalcAdvReac(
+      Discret::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::ScaTraEleCalcAdvReac(
           numdofpernode, numscal, disname)
 {
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>*
-DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::Instance(
+template <Core::FE::CellType distype, int probdim>
+Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>*
+Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
       [](const int numdofpernode, const int numscal, const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleCalcCardiacMonodomain<distype, probdim>>(
@@ -53,16 +53,16 @@ DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::Instance(
       });
 
   return singleton_map[disname].Instance(
-      CORE::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
+      Core::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 
 /*----------------------------------------------------------------------*
  |  evaluate single material  (protected)                    ljag 06/14 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::materials(
-    const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::materials(
+    const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
     double& densn,                                           //!< density at t_(n)
     double& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
@@ -73,12 +73,12 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::materials(
 )
 {
   // safety check
-  if (material->MaterialType() != CORE::Materials::m_myocard)
+  if (material->MaterialType() != Core::Materials::m_myocard)
     FOUR_C_THROW("Material type is not supported");
 
   // safety check
-  Teuchos::RCP<MAT::Myocard> actmat = Teuchos::rcp_dynamic_cast<MAT::Myocard>(
-      Teuchos::rcp_const_cast<CORE::MAT::Material>(material));
+  Teuchos::RCP<Mat::Myocard> actmat = Teuchos::rcp_dynamic_cast<Mat::Myocard>(
+      Teuchos::rcp_const_cast<Core::Mat::Material>(material));
   if (actmat->GetNumberOfGP() != 1 and not my::scatrapara_->MatGP())
   {
     actmat->SetGP(1);
@@ -93,9 +93,9 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::materials(
 /*----------------------------------------------------------------------*
  |  Material ScaTra                                          ljag 06/14 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::mat_myocard(
-    const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::mat_myocard(
+    const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
     double& densn,                                           //!< density at t_(n)
     double& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
@@ -104,8 +104,8 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::mat_myocar
     const int iquad  //!< id of current gauss point (default = -1)
 )
 {
-  const Teuchos::RCP<const MAT::Myocard>& actmat =
-      Teuchos::rcp_dynamic_cast<const MAT::Myocard>(material);
+  const Teuchos::RCP<const Mat::Myocard>& actmat =
+      Teuchos::rcp_dynamic_cast<const Mat::Myocard>(material);
 
   // dynamic cast to Advanced_Reaction-specific reaction manager
   Teuchos::RCP<ScaTraEleReaManagerAdvReac> advreamanager =
@@ -116,7 +116,7 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::mat_myocar
       Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerAniso<nsd_>>(my::diffmanager_);
 
   // get constant diffusivity
-  CORE::LINALG::Matrix<nsd_, nsd_> difftensor(true);
+  Core::LinAlg::Matrix<nsd_, nsd_> difftensor(true);
   actmat->Diffusivity(difftensor);
 
   diffmanageraniso->SetAnisotropicDiff(difftensor, k);
@@ -155,12 +155,12 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::mat_myocar
 /*----------------------------------------------------------------------*
 |  calculate system matrix and rhs for ep                 hoermann 06/16|
 *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::sysmat(
-    CORE::Elements::Element* ele,               ///< the element whose matrix is calculated
-    CORE::LINALG::SerialDenseMatrix& emat,      ///< element matrix to calculate
-    CORE::LINALG::SerialDenseVector& erhs,      ///< element rhs to calculate
-    CORE::LINALG::SerialDenseVector& subgrdiff  ///< subgrid-diff.-scaling vector
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::sysmat(
+    Core::Elements::Element* ele,               ///< the element whose matrix is calculated
+    Core::LinAlg::SerialDenseMatrix& emat,      ///< element matrix to calculate
+    Core::LinAlg::SerialDenseVector& erhs,      ///< element rhs to calculate
+    Core::LinAlg::SerialDenseVector& subgrdiff  ///< subgrid-diff.-scaling vector
 )
 {
   // density at t_(n) (one per transported scalar)
@@ -189,8 +189,8 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::sysmat(
       deg = 4 * ele->Degree();
     else
       deg = 3 * ele->Degree();
-    const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
-        SCATRA::DisTypeToMatGaussRule<distype>::get_gauss_rule(deg));
+    const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
+        ScaTra::DisTypeToMatGaussRule<distype>::get_gauss_rule(deg));
 
     // loop over integration points
     for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -209,7 +209,7 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::sysmat(
         double rhsint(0.0);
         advreac::get_rhs_int(rhsint, densnp[k], k);
 
-        CORE::LINALG::Matrix<nen_, 1> dummy(true);
+        Core::LinAlg::Matrix<nen_, 1> dummy(true);
         const double timefacfac = my::scatraparatimint_->TimeFac() * fac;
 
         // reactive terms on integration point on rhs
@@ -228,8 +228,8 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::sysmat(
   // integration loop for one element
   //----------------------------------------------------------------------
   // integration points and weights
-  const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
-      SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
+      ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
@@ -265,7 +265,7 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::sysmat(
       // 3) element matrix: reactive term
       //----------------------------------------------------------------
 
-      CORE::LINALG::Matrix<nen_, 1> dummy(true);
+      Core::LinAlg::Matrix<nen_, 1> dummy(true);
       if (not my::scatrapara_->MatGP())
         advreac::calc_mat_react(emat, k, timefacfac, 0., 0., densnp[k], dummy, dummy);
 
@@ -308,18 +308,18 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::sysmat(
 /*----------------------------------------------------------------------*
  | extract element based or nodal values                 hoermann 06/16 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype,
-    probdim>::extract_element_and_node_values(CORE::Elements::Element* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    CORE::Elements::Element::LocationArray& la)
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype,
+    probdim>::extract_element_and_node_values(Core::Elements::Element* ele,
+    Teuchos::ParameterList& params, Discret::Discretization& discretization,
+    Core::Elements::Element::LocationArray& la)
 {
   my::extract_element_and_node_values(ele, params, discretization, la);
 
   // extract additional local values from global vector
   Teuchos::RCP<const Epetra_Vector> phin = discretization.GetState("phin");
   if (phin == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phin'");
-  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phin, my::ephin_, la[0].lm_);
+  Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phin, my::ephin_, la[0].lm_);
 }
 
 
@@ -327,33 +327,33 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype,
  *----------------------------------------------------------------------*/
 // template classes
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::line2, 1>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::line2, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::line2, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::line3, 1>;
+template class Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::line2, 1>;
+template class Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::line2, 2>;
+template class Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::line2, 3>;
+template class Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::line3, 1>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::tri3, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::tri3, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::tri6, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::quad4, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::quad4, 3>;
+template class Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::tri3, 2>;
+template class Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::tri3, 3>;
+template class Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::tri6, 2>;
+template class Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::quad4, 2>;
+template class Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::quad4, 3>;
 // template class
-// DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::quad9, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::nurbs9, 2>;
+// Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::quad8>;
+template class Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::quad9, 2>;
+template class Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::nurbs9, 2>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::hex8, 3>;
+template class Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::hex8, 3>;
 // template class
-// DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::hex27, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::tet4, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::tet10, 3>;
+// Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::hex20>;
+template class Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::hex27, 3>;
+template class Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::tet4, 3>;
+template class Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::tet10, 3>;
 // template class
-// DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::pyramid5, 3>;
+// Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::wedge6>;
+template class Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::pyramid5, 3>;
 // template class
-// DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::nurbs27>;
+// Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::nurbs27>;
 
 FOUR_C_NAMESPACE_CLOSE

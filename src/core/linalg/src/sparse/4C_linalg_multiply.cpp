@@ -22,8 +22,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | Multiply matrices A*B                                     mwgee 02/08|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::LINALG::MLMultiply(
-    const CORE::LINALG::SparseMatrix& A, const CORE::LINALG::SparseMatrix& B, bool complete)
+Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::MLMultiply(
+    const Core::LinAlg::SparseMatrix& A, const Core::LinAlg::SparseMatrix& B, bool complete)
 {
   return MLMultiply(
       *A.EpetraMatrix(), *B.EpetraMatrix(), A.explicitdirichlet_, A.savegraph_, complete);
@@ -32,8 +32,8 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::LINALG::MLMultiply(
 /*----------------------------------------------------------------------*
  | Multiply matrices A*B                                     mwgee 02/08|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::LINALG::MLMultiply(
-    const CORE::LINALG::SparseMatrix& A, const CORE::LINALG::SparseMatrix& B,
+Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::MLMultiply(
+    const Core::LinAlg::SparseMatrix& A, const Core::LinAlg::SparseMatrix& B,
     bool explicitdirichlet, bool savegraph, bool complete)
 {
   return MLMultiply(*A.EpetraMatrix(), *B.EpetraMatrix(), explicitdirichlet, savegraph, complete);
@@ -41,8 +41,8 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::LINALG::MLMultiply(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::LINALG::MLMultiply(
-    const CORE::LINALG::SparseMatrix& A, bool transA, const CORE::LINALG::SparseMatrix& B,
+Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::MLMultiply(
+    const Core::LinAlg::SparseMatrix& A, bool transA, const Core::LinAlg::SparseMatrix& B,
     bool transB, bool explicitdirichlet, bool savegraph, bool completeoutput)
 {
   // make sure fill_complete was called on the matrices
@@ -64,8 +64,8 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::LINALG::MLMultiply(
   else
     Btrans = B.EpetraMatrix().get();
 
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> C;
-  C = CORE::LINALG::MLMultiply(*Atrans, *Btrans, explicitdirichlet, savegraph, completeoutput);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> C;
+  C = Core::LinAlg::MLMultiply(*Atrans, *Btrans, explicitdirichlet, savegraph, completeoutput);
 
   return C;
 }
@@ -74,7 +74,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::LINALG::MLMultiply(
  | Multiply matrices A*B                                     mwgee 02/08|
  *----------------------------------------------------------------------*/
 // static void CopySortDeleteZeros(const Epetra_CrsMatrix& A, Epetra_CrsMatrix& As);
-Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::LINALG::MLMultiply(const Epetra_CrsMatrix& Aorig,
+Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::MLMultiply(const Epetra_CrsMatrix& Aorig,
     const Epetra_CrsMatrix& Borig, bool explicitdirichlet, bool savegraph, bool complete)
 {
   EpetraExt::CrsMatrix_SolverMap Atransform;

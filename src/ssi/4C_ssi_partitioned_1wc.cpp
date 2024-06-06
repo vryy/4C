@@ -83,13 +83,13 @@ void SSI::SSIPart1WC::do_scatra_step()
     int diffsteps = structure_field()->Dt() / ScaTraField()->Dt();
     if (ScaTraField()->Step() % diffsteps == 0)
     {
-      Teuchos::RCP<CORE::IO::DiscretizationReader> reader =
-          Teuchos::rcp(new CORE::IO::DiscretizationReader(ScaTraField()->discretization(),
-              GLOBAL::Problem::Instance()->InputControlFile(), ScaTraField()->Step()));
+      Teuchos::RCP<Core::IO::DiscretizationReader> reader =
+          Teuchos::rcp(new Core::IO::DiscretizationReader(ScaTraField()->discretization(),
+              Global::Problem::Instance()->InputControlFile(), ScaTraField()->Step()));
 
       // check if this is a cardiac monodomain problem
-      Teuchos::RCP<SCATRA::TimIntCardiacMonodomain> cardmono =
-          Teuchos::rcp_dynamic_cast<SCATRA::TimIntCardiacMonodomain>(ScaTraField());
+      Teuchos::RCP<ScaTra::TimIntCardiacMonodomain> cardmono =
+          Teuchos::rcp_dynamic_cast<ScaTra::TimIntCardiacMonodomain>(ScaTraField());
 
       if (cardmono == Teuchos::null)
       {
@@ -107,7 +107,7 @@ void SSI::SSIPart1WC::do_scatra_step()
       {
         // create vector with noderowmap from previously performed scatra calculation
         Teuchos::RCP<Epetra_Vector> phinptemp =
-            CORE::LINALG::CreateVector(*cardmono->discretization()->NodeRowMap());
+            Core::LinAlg::CreateVector(*cardmono->discretization()->NodeRowMap());
 
         // read phinp from restart file
         reader->ReadVector(phinptemp, "phinp");
@@ -201,8 +201,8 @@ void SSI::SSIPart1WCSolidToScatra::Init(const Epetra_Comm& comm,
 
   // do some checks
   {
-    auto convform = CORE::UTILS::IntegralValue<INPAR::SCATRA::ConvForm>(scatraparams, "CONVFORM");
-    if (convform != INPAR::SCATRA::convform_conservative)
+    auto convform = Core::UTILS::IntegralValue<Inpar::ScaTra::ConvForm>(scatraparams, "CONVFORM");
+    if (convform != Inpar::ScaTra::convform_conservative)
     {
       FOUR_C_THROW(
           "If the scalar tranport problem is solved on the deforming domain, the conservative form "
@@ -272,8 +272,8 @@ void SSI::SSIPart1WCScatraToSolid::Init(const Epetra_Comm& comm,
       comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname, isAle);
 
   // Flag for reading scatra result from restart file instead of computing it
-  isscatrafromfile_ = CORE::UTILS::IntegralValue<bool>(
-      GLOBAL::Problem::Instance()->SSIControlParams(), "SCATRA_FROM_RESTART_FILE");
+  isscatrafromfile_ = Core::UTILS::IntegralValue<bool>(
+      Global::Problem::Instance()->SSIControlParams(), "SCATRA_FROM_RESTART_FILE");
 }
 
 /*----------------------------------------------------------------------*/
@@ -288,7 +288,7 @@ void SSI::SSIPart1WCScatraToSolid::Timeloop()
   }
 
   // set zero velocity and displacement field for scatra
-  auto zeros_structure = CORE::LINALG::CreateVector(*structure_field()->dof_row_map(), true);
+  auto zeros_structure = Core::LinAlg::CreateVector(*structure_field()->dof_row_map(), true);
   set_struct_solution(zeros_structure, zeros_structure, false);
 
   ScaTraField()->prepare_time_loop();

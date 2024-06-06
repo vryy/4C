@@ -111,18 +111,18 @@ struct WriteNodalStressStep : public SpecialFieldInterface
 
     FOUR_C_ASSERT(name.size() == 1, "Unexpected number of names");
 
-    const Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> data =
+    const Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> data =
         result.read_result_serialdensematrix(groupname);
 
-    const Teuchos::RCP<DRT::Discretization> dis = result.field()->discretization();
+    const Teuchos::RCP<Discret::Discretization> dis = result.field()->discretization();
     const Epetra_Map* noderowmap = dis->NodeRowMap();
 
     Teuchos::ParameterList p;
     Epetra_MultiVector nodal_stress(*noderowmap, 6, true);
 
     dis->Evaluate(
-        [&](CORE::Elements::Element& ele) {
-          CORE::FE::ExtrapolateGaussPointQuantityToNodes(
+        [&](Core::Elements::Element& ele) {
+          Core::FE::ExtrapolateGaussPointQuantityToNodes(
               ele, *data->at(ele.Id()), *dis, nodal_stress);
         });
 
@@ -151,15 +151,15 @@ struct WriteElementCenterStressStep : public SpecialFieldInterface
     using namespace FourC;
 
     FOUR_C_ASSERT(name.size() == 1, "Unexpected number of names");
-    const Teuchos::RCP<DRT::Discretization> dis = result.field()->discretization();
-    const Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> data =
+    const Teuchos::RCP<Discret::Discretization> dis = result.field()->discretization();
+    const Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> data =
         result.read_result_serialdensematrix(groupname);
 
     Epetra_MultiVector elestress(*(dis->ElementRowMap()), 6);
 
     dis->Evaluate(
-        [&](CORE::Elements::Element& ele) {
-          CORE::FE::EvaluateGaussPointQuantityAtElementCenter(ele, *data->at(ele.Id()), elestress);
+        [&](Core::Elements::Element& ele) {
+          Core::FE::EvaluateGaussPointQuantityAtElementCenter(ele, *data->at(ele.Id()), elestress);
         });
 
     filter_.GetWriter().write_element_result_step(
@@ -187,15 +187,15 @@ struct WriteElementCenterRotation : public SpecialFieldInterface
     using namespace FourC;
 
     FOUR_C_ASSERT(name.size() == 1, "Unexpected number of names");
-    const Teuchos::RCP<DRT::Discretization> dis = result.field()->discretization();
-    const Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> data =
+    const Teuchos::RCP<Discret::Discretization> dis = result.field()->discretization();
+    const Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> data =
         result.read_result_serialdensematrix(groupname);
 
     Epetra_MultiVector elerotation(*(dis->ElementRowMap()), 9);
     dis->Evaluate(
-        [&](CORE::Elements::Element& ele)
+        [&](Core::Elements::Element& ele)
         {
-          const CORE::LINALG::SerialDenseMatrix& elecenterrot = *data->at(ele.Id());
+          const Core::LinAlg::SerialDenseMatrix& elecenterrot = *data->at(ele.Id());
 
           const Epetra_BlockMap& elemap = elerotation.Map();
           int lid = elemap.LID(ele.Id());
@@ -231,10 +231,10 @@ struct WriteNodalMembraneThicknessStep : public SpecialFieldInterface
 
     FOUR_C_ASSERT(name.size() == 1, "Unexpected number of names");
 
-    const Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> data =
+    const Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> data =
         result.read_result_serialdensematrix(groupname);
 
-    const Teuchos::RCP<DRT::Discretization> dis = result.field()->discretization();
+    const Teuchos::RCP<Discret::Discretization> dis = result.field()->discretization();
     const Epetra_Map* noderowmap = dis->NodeRowMap();
 
     Teuchos::ParameterList p;
@@ -396,17 +396,17 @@ struct WriteNodalEigenStressStep : public SpecialFieldInterface
 
     FOUR_C_ASSERT(name.size() == 6, "Unexpected number of names");
 
-    const Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> data =
+    const Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> data =
         result.read_result_serialdensematrix(groupname);
 
-    const Teuchos::RCP<DRT::Discretization> dis = result.field()->discretization();
+    const Teuchos::RCP<Discret::Discretization> dis = result.field()->discretization();
     const Epetra_Map* noderowmap = dis->NodeRowMap();
 
     Epetra_MultiVector nodal_stress(*noderowmap, 6, true);
 
     dis->Evaluate(
-        [&](CORE::Elements::Element& ele) {
-          CORE::FE::ExtrapolateGaussPointQuantityToNodes(
+        [&](Core::Elements::Element& ele) {
+          Core::FE::ExtrapolateGaussPointQuantityToNodes(
               ele, *data->at(ele.Id()), *dis, nodal_stress);
         });
 
@@ -427,8 +427,8 @@ struct WriteNodalEigenStressStep : public SpecialFieldInterface
     {
       for (int i = 0; i < numnodes; ++i)
       {
-        CORE::LINALG::SerialDenseMatrix eigenvec(3, 3);
-        CORE::LINALG::SerialDenseVector eigenval(3);
+        Core::LinAlg::SerialDenseMatrix eigenvec(3, 3);
+        Core::LinAlg::SerialDenseVector eigenval(3);
 
         eigenvec(0, 0) = (*(nodal_stress(0)))[i];
         eigenvec(0, 1) = (*(nodal_stress(3)))[i];
@@ -440,7 +440,7 @@ struct WriteNodalEigenStressStep : public SpecialFieldInterface
         eigenvec(2, 1) = eigenvec(1, 2);
         eigenvec(2, 2) = (*(nodal_stress(2)))[i];
 
-        CORE::LINALG::SymmetricEigenProblem(eigenvec, eigenval, true);
+        Core::LinAlg::SymmetricEigenProblem(eigenvec, eigenval, true);
 
         for (int d = 0; d < 3; ++d)
         {
@@ -454,15 +454,15 @@ struct WriteNodalEigenStressStep : public SpecialFieldInterface
     {
       for (int i = 0; i < numnodes; ++i)
       {
-        CORE::LINALG::SerialDenseMatrix eigenvec(2, 2);
-        CORE::LINALG::SerialDenseVector eigenval(2);
+        Core::LinAlg::SerialDenseMatrix eigenvec(2, 2);
+        Core::LinAlg::SerialDenseVector eigenval(2);
 
         eigenvec(0, 0) = (*(nodal_stress(0)))[i];
         eigenvec(0, 1) = (*(nodal_stress(3)))[i];
         eigenvec(1, 0) = eigenvec(0, 1);
         eigenvec(1, 1) = (*(nodal_stress(1)))[i];
 
-        CORE::LINALG::SymmetricEigenProblem(eigenvec, eigenval, true);
+        Core::LinAlg::SymmetricEigenProblem(eigenvec, eigenval, true);
 
         (*((*nodal_eigen_val_vec[0])(0)))[i] = eigenval(0);
         (*((*nodal_eigen_val_vec[1])(0)))[i] = eigenval(1);
@@ -512,16 +512,16 @@ struct WriteElementCenterEigenStressStep : public SpecialFieldInterface
   {
     using namespace FourC;
 
-    const Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> data =
+    const Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> data =
         result.read_result_serialdensematrix(groupname);
 
-    const Teuchos::RCP<DRT::Discretization> dis = result.field()->discretization();
+    const Teuchos::RCP<Discret::Discretization> dis = result.field()->discretization();
 
     Epetra_MultiVector element_stress(*dis->ElementRowMap(), 6, true);
 
     dis->Evaluate(
-        [&](CORE::Elements::Element& ele) {
-          CORE::FE::EvaluateGaussPointQuantityAtElementCenter(
+        [&](Core::Elements::Element& ele) {
+          Core::FE::EvaluateGaussPointQuantityAtElementCenter(
               ele, *data->at(ele.Id()), element_stress);
         });
 
@@ -541,8 +541,8 @@ struct WriteElementCenterEigenStressStep : public SpecialFieldInterface
     {
       for (int i = 0; i < dis->NumMyRowElements(); ++i)
       {
-        CORE::LINALG::SerialDenseMatrix eigenvec(3, 3);
-        CORE::LINALG::SerialDenseVector eigenval(3);
+        Core::LinAlg::SerialDenseMatrix eigenvec(3, 3);
+        Core::LinAlg::SerialDenseVector eigenval(3);
 
         eigenvec(0, 0) = (*(element_stress(0)))[i];
         eigenvec(0, 1) = (*(element_stress(3)))[i];
@@ -554,7 +554,7 @@ struct WriteElementCenterEigenStressStep : public SpecialFieldInterface
         eigenvec(2, 1) = eigenvec(1, 2);
         eigenvec(2, 2) = (*(element_stress(2)))[i];
 
-        CORE::LINALG::SymmetricEigenProblem(eigenvec, eigenval, true);
+        Core::LinAlg::SymmetricEigenProblem(eigenvec, eigenval, true);
 
         for (int d = 0; d < 3; ++d)
         {
@@ -568,15 +568,15 @@ struct WriteElementCenterEigenStressStep : public SpecialFieldInterface
     {
       for (int i = 0; i < numnodes; ++i)
       {
-        CORE::LINALG::SerialDenseMatrix eigenvec(2, 2);
-        CORE::LINALG::SerialDenseVector eigenval(2);
+        Core::LinAlg::SerialDenseMatrix eigenvec(2, 2);
+        Core::LinAlg::SerialDenseVector eigenval(2);
 
         eigenvec(0, 0) = (*(element_stress(0)))[i];
         eigenvec(0, 1) = (*(element_stress(3)))[i];
         eigenvec(1, 0) = eigenvec(0, 1);
         eigenvec(1, 1) = (*(element_stress(1)))[i];
 
-        CORE::LINALG::SymmetricEigenProblem(eigenvec, eigenval, true);
+        Core::LinAlg::SymmetricEigenProblem(eigenvec, eigenval, true);
 
         (*((*nodal_eigen_val_vec[0])(0)))[i] = eigenval(0);
         (*((*nodal_eigen_val_vec[1])(0)))[i] = eigenval(1);

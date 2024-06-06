@@ -30,26 +30,26 @@ FOUR_C_NAMESPACE_OPEN
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public) meier 02/14|
  *----------------------------------------------------------------------------------------------------------*/
-int DRT::ELEMENTS::Rigidsphere::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
-    CORE::LINALG::SerialDenseVector& elevec3)
+int Discret::ELEMENTS::Rigidsphere::Evaluate(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
+    Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
+    Core::LinAlg::SerialDenseVector& elevec3)
 {
   set_params_interface_ptr(params);
 
   // start with "none"
-  CORE::Elements::ActionType act = params_interface().GetActionType();
+  Core::Elements::ActionType act = params_interface().GetActionType();
 
   switch (act)
   {
-    case CORE::Elements::struct_calc_linstiff:
-    case CORE::Elements::struct_calc_nlnstiff:
-    case CORE::Elements::struct_calc_internalforce:
-    case CORE::Elements::struct_calc_linstiffmass:
-    case CORE::Elements::struct_calc_nlnstiffmass:
-    case CORE::Elements::struct_calc_nlnstifflmass:
-    case CORE::Elements::struct_calc_internalinertiaforce:
+    case Core::Elements::struct_calc_linstiff:
+    case Core::Elements::struct_calc_nlnstiff:
+    case Core::Elements::struct_calc_internalforce:
+    case Core::Elements::struct_calc_linstiffmass:
+    case Core::Elements::struct_calc_nlnstiffmass:
+    case Core::Elements::struct_calc_nlnstifflmass:
+    case Core::Elements::struct_calc_internalinertiaforce:
     {
       // need current global displacement and residual forces and get them from discretization
       // making use of the local-to-global map lm one can extract current displacement and residual
@@ -59,7 +59,7 @@ int DRT::ELEMENTS::Rigidsphere::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
-      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::ExtractMyValues(*disp, mydisp, lm);
 
       Teuchos::RCP<const Epetra_Vector> vel;
       std::vector<double> myvel(lm.size());
@@ -69,46 +69,46 @@ int DRT::ELEMENTS::Rigidsphere::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> myacc(lm.size());
       myacc.clear();
 
-      if (act == CORE::Elements::struct_calc_nlnstiffmass or
-          act == CORE::Elements::struct_calc_nlnstifflmass or
-          act == CORE::Elements::struct_calc_linstiffmass)
+      if (act == Core::Elements::struct_calc_nlnstiffmass or
+          act == Core::Elements::struct_calc_nlnstifflmass or
+          act == Core::Elements::struct_calc_linstiffmass)
       {
         nlnstiffmass(params, myacc, myvel, mydisp, &elemat1, &elemat2, &elevec1, &elevec2);
       }
-      else if (act == CORE::Elements::struct_calc_linstiff or
-               act == CORE::Elements::struct_calc_nlnstiff)
+      else if (act == Core::Elements::struct_calc_linstiff or
+               act == Core::Elements::struct_calc_nlnstiff)
       {
         nlnstiffmass(params, myacc, myvel, mydisp, &elemat1, nullptr, &elevec1, nullptr);
       }
-      else if (act == CORE::Elements::struct_calc_internalforce)
+      else if (act == Core::Elements::struct_calc_internalforce)
       {
         nlnstiffmass(params, myacc, myvel, mydisp, nullptr, nullptr, &elevec1, nullptr);
       }
-      else if (act == CORE::Elements::struct_calc_internalinertiaforce)
+      else if (act == Core::Elements::struct_calc_internalinertiaforce)
       {
         nlnstiffmass(params, myacc, myvel, mydisp, nullptr, nullptr, &elevec1, &elevec2);
       }
     }
     break;
 
-    case CORE::Elements::struct_calc_brownianforce:
-    case CORE::Elements::struct_calc_brownianstiff:
+    case Core::Elements::struct_calc_brownianforce:
+    case Core::Elements::struct_calc_brownianstiff:
     {
       // get element displacements
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
-      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::ExtractMyValues(*disp, mydisp, lm);
 
       // get element velocity
       Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState("velocity");
       if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
       std::vector<double> myvel(lm.size());
-      CORE::FE::ExtractMyValues(*vel, myvel, lm);
+      Core::FE::ExtractMyValues(*vel, myvel, lm);
 
-      if (act == CORE::Elements::struct_calc_brownianforce)
+      if (act == Core::Elements::struct_calc_brownianforce)
         calc_brownian_forces_and_stiff(params, myvel, mydisp, nullptr, &elevec1);
-      else if (act == CORE::Elements::struct_calc_brownianstiff)
+      else if (act == Core::Elements::struct_calc_brownianstiff)
         calc_brownian_forces_and_stiff(params, myvel, mydisp, &elemat1, &elevec1);
       else
         FOUR_C_THROW("You shouldn't be here.");
@@ -116,33 +116,33 @@ int DRT::ELEMENTS::Rigidsphere::Evaluate(Teuchos::ParameterList& params,
       break;
     }
 
-    case CORE::Elements::struct_calc_stress:
+    case Core::Elements::struct_calc_stress:
     {
       FOUR_C_THROW("No stress output implemented for beam3 elements");
       break;
     }
-    case CORE::Elements::struct_calc_update_istep:
-    case CORE::Elements::struct_calc_reset_istep:
-    case CORE::Elements::struct_calc_recover:
+    case Core::Elements::struct_calc_update_istep:
+    case Core::Elements::struct_calc_reset_istep:
+    case Core::Elements::struct_calc_recover:
     {
       // not necessary since no class variables are modified in predicting steps
       break;
     }
 
-    case CORE::Elements::struct_calc_predict:
+    case Core::Elements::struct_calc_predict:
     {
       // do nothing here
       break;
     }
 
     // element based PTC scaling
-    case CORE::Elements::struct_calc_addjacPTC:
+    case Core::Elements::struct_calc_addjacPTC:
     {
       // nothing to do here
       break;
     }
 
-    case CORE::Elements::struct_calc_energy:
+    case Core::Elements::struct_calc_energy:
     {
       // no contribution of rigid sphere to system energy
       break;
@@ -161,10 +161,10 @@ int DRT::ELEMENTS::Rigidsphere::Evaluate(Teuchos::ParameterList& params,
 /*------------------------------------------------------------------------------------------------------------*
  | nonlinear stiffness and mass matrix (private) meier 05/12|
  *-----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Rigidsphere::nlnstiffmass(Teuchos::ParameterList& params,
+void Discret::ELEMENTS::Rigidsphere::nlnstiffmass(Teuchos::ParameterList& params,
     std::vector<double>& acc, std::vector<double>& vel, std::vector<double>& disp,
-    CORE::LINALG::SerialDenseMatrix* stiffmatrix, CORE::LINALG::SerialDenseMatrix* massmatrix,
-    CORE::LINALG::SerialDenseVector* force, CORE::LINALG::SerialDenseVector* inertia_force)
+    Core::LinAlg::SerialDenseMatrix* stiffmatrix, Core::LinAlg::SerialDenseMatrix* massmatrix,
+    Core::LinAlg::SerialDenseVector* force, Core::LinAlg::SerialDenseVector* inertia_force)
 {
   // assemble internal force vector if requested
   if (force != nullptr)
@@ -200,9 +200,9 @@ void DRT::ELEMENTS::Rigidsphere::nlnstiffmass(Teuchos::ParameterList& params,
  | calculation of thermal (i.e. stochastic) and damping forces according to Brownian dynamics grill
  03/14|
  *------------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Rigidsphere::calc_brownian_forces_and_stiff(Teuchos::ParameterList& params,
+void Discret::ELEMENTS::Rigidsphere::calc_brownian_forces_and_stiff(Teuchos::ParameterList& params,
     std::vector<double>& vel, std::vector<double>& disp,
-    CORE::LINALG::SerialDenseMatrix* stiffmatrix, CORE::LINALG::SerialDenseVector* force)
+    Core::LinAlg::SerialDenseMatrix* stiffmatrix, Core::LinAlg::SerialDenseVector* force)
 {
   calc_drag_force(params, vel, disp, stiffmatrix, force);
   calc_stochastic_force(params, vel, disp, stiffmatrix, force);
@@ -211,11 +211,11 @@ void DRT::ELEMENTS::Rigidsphere::calc_brownian_forces_and_stiff(Teuchos::Paramet
 /*------------------------------------------------------------------------------------------------------------*
  | compute drag forces and contribution to stiffness matrix  (private) grill 03/14|
  *-----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Rigidsphere::calc_drag_force(Teuchos::ParameterList& params,
+void Discret::ELEMENTS::Rigidsphere::calc_drag_force(Teuchos::ParameterList& params,
     const std::vector<double>& vel,                //!< element velocity vector
     const std::vector<double>& disp,               //!< element displacement vector
-    CORE::LINALG::SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-    CORE::LINALG::SerialDenseVector* force)        //!< element internal force vector
+    Core::LinAlg::SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+    Core::LinAlg::SerialDenseVector* force)        //!< element internal force vector
 {
   double gamma = my_damping_constant();
 
@@ -223,8 +223,8 @@ void DRT::ELEMENTS::Rigidsphere::calc_drag_force(Teuchos::ParameterList& params,
   double dt = params_interface().GetDeltaTime();
 
   // velocity and gradient of background velocity field
-  CORE::LINALG::Matrix<3, 1> velbackground;
-  CORE::LINALG::Matrix<3, 3> velbackgroundgrad;  // is a dummy so far
+  Core::LinAlg::Matrix<3, 1> velbackground;
+  Core::LinAlg::Matrix<3, 3> velbackgroundgrad;  // is a dummy so far
 
   // Compute background velocity
   get_background_velocity(params, velbackground, velbackgroundgrad);
@@ -254,10 +254,10 @@ void DRT::ELEMENTS::Rigidsphere::calc_drag_force(Teuchos::ParameterList& params,
  in       | |the physical space                                                         (public)
  grill   03/14|
  *----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Rigidsphere::get_background_velocity(
+void Discret::ELEMENTS::Rigidsphere::get_background_velocity(
     Teuchos::ParameterList& params,                 //!< parameter list
-    CORE::LINALG::Matrix<3, 1>& velbackground,      //!< velocity of background fluid
-    CORE::LINALG::Matrix<3, 3>& velbackgroundgrad)  //!< gradient of velocity of background fluid
+    Core::LinAlg::Matrix<3, 1>& velbackground,      //!< velocity of background fluid
+    Core::LinAlg::Matrix<3, 3>& velbackgroundgrad)  //!< gradient of velocity of background fluid
 {
   // only constant background velocity implemented yet. for case of shear flow, see beam3r
 
@@ -274,13 +274,13 @@ void DRT::ELEMENTS::Rigidsphere::get_background_velocity(
   //  Teuchos::RCP<std::vector<double> > periodlength = params.get("PERIODLENGTH", defvalues);
   //
   //  // check and throw error if shear flow is applied
-  //  INPAR::STATMECH::DBCType dbctype = params.get<INPAR::STATMECH::DBCType>("DBCTYPE",
-  //  INPAR::STATMECH::dbctype_std); bool shearflow = false;
-  //  if(dbctype==INPAR::STATMECH::dbctype_shearfixed ||
-  //     dbctype==INPAR::STATMECH::dbctype_shearfixeddel ||
-  //     dbctype==INPAR::STATMECH::dbctype_sheartrans ||
-  //     dbctype==INPAR::STATMECH::dbctype_affineshear||
-  //     dbctype==INPAR::STATMECH::dbctype_affinesheardel)
+  //  Inpar::STATMECH::DBCType dbctype = params.get<Inpar::STATMECH::DBCType>("DBCTYPE",
+  //  Inpar::STATMECH::dbctype_std); bool shearflow = false;
+  //  if(dbctype==Inpar::STATMECH::dbctype_shearfixed ||
+  //     dbctype==Inpar::STATMECH::dbctype_shearfixeddel ||
+  //     dbctype==Inpar::STATMECH::dbctype_sheartrans ||
+  //     dbctype==Inpar::STATMECH::dbctype_affineshear||
+  //     dbctype==Inpar::STATMECH::dbctype_affinesheardel)
   //  {
   //    shearflow = true;
   //    FOUR_C_THROW("Shear flow not implemented yet for rigid spherical particles!");
@@ -313,7 +313,7 @@ void DRT::ELEMENTS::Rigidsphere::get_background_velocity(
 /*-----------------------------------------------------------------------------------------------------------*
  | computes damping coefficient                                             (private) grill   03/14|
  *----------------------------------------------------------------------------------------------------------*/
-double DRT::ELEMENTS::Rigidsphere::my_damping_constant()
+double Discret::ELEMENTS::Rigidsphere::my_damping_constant()
 {
   // (dynamic) viscosity of background fluid
   double eta = params_interface().get_brownian_dyn_param_interface()->GetViscosity();
@@ -326,7 +326,7 @@ double DRT::ELEMENTS::Rigidsphere::my_damping_constant()
  |computes the number of different random numbers required in each time step for generation of
  stochastic    | |forces; (public)           grill   03/14|
  *----------------------------------------------------------------------------------------------------------*/
-int DRT::ELEMENTS::Rigidsphere::how_many_random_numbers_i_need()
+int Discret::ELEMENTS::Rigidsphere::how_many_random_numbers_i_need()
 {
   /*three randomly excited (translational) DOFs for Rigidsphere element*/
   return 3;
@@ -334,24 +334,24 @@ int DRT::ELEMENTS::Rigidsphere::how_many_random_numbers_i_need()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::GEOMETRICSEARCH::BoundingVolume DRT::ELEMENTS::Rigidsphere::GetBoundingVolume(
-    const DRT::Discretization& discret, const Epetra_Vector& result_data_dofbased,
-    const CORE::GEOMETRICSEARCH::GeometricSearchParams& params) const
+Core::GeometricSearch::BoundingVolume Discret::ELEMENTS::Rigidsphere::GetBoundingVolume(
+    const Discret::Discretization& discret, const Epetra_Vector& result_data_dofbased,
+    const Core::GeometricSearch::GeometricSearchParams& params) const
 {
   // Get the element displacements.
   std::vector<int> lm, lmowner, lmstride;
   this->LocationVector(discret, lm, lmowner, lmstride);
   std::vector<double> mydisp(lm.size());
-  CORE::FE::ExtractMyValues(result_data_dofbased, mydisp, lm);
+  Core::FE::ExtractMyValues(result_data_dofbased, mydisp, lm);
 
   // Add reference position.
   if (mydisp.size() != 3)
     FOUR_C_THROW("Got unexpected number of DOFs. Expected 3, but received %d", mydisp.size());
-  CORE::LINALG::Matrix<3, 1, double> sphere_center;
+  Core::LinAlg::Matrix<3, 1, double> sphere_center;
   for (unsigned int i_dof = 0; i_dof < 3; i_dof++)
     sphere_center(i_dof) = mydisp[i_dof] + Nodes()[0]->X()[i_dof];
 
-  CORE::GEOMETRICSEARCH::BoundingVolume bounding_volume;
+  Core::GeometricSearch::BoundingVolume bounding_volume;
   bounding_volume.AddPoint(sphere_center);
 
   // Add the radius times a safety factor.
@@ -364,33 +364,33 @@ CORE::GEOMETRICSEARCH::BoundingVolume DRT::ELEMENTS::Rigidsphere::GetBoundingVol
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Rigidsphere::get_generalized_interpolation_matrix_variations_at_xi(
-    CORE::LINALG::SerialDenseMatrix& Ivar, const double& dummy1,
+void Discret::ELEMENTS::Rigidsphere::get_generalized_interpolation_matrix_variations_at_xi(
+    Core::LinAlg::SerialDenseMatrix& Ivar, const double& dummy1,
     const std::vector<double>& dummy2) const
 {
-  CORE::LINALG::Matrix<6, 3, double> Ivar_fixedsize(&Ivar(0, 0), true);
+  Core::LinAlg::Matrix<6, 3, double> Ivar_fixedsize(&Ivar(0, 0), true);
   for (unsigned int i = 0; i < 3; ++i) Ivar_fixedsize(i, i) = 1.0;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Rigidsphere::get_generalized_interpolation_matrix_increments_at_xi(
-    CORE::LINALG::SerialDenseMatrix& Iinc, const double& dummy1,
+void Discret::ELEMENTS::Rigidsphere::get_generalized_interpolation_matrix_increments_at_xi(
+    Core::LinAlg::SerialDenseMatrix& Iinc, const double& dummy1,
     const std::vector<double>& dummy2) const
 {
-  CORE::LINALG::Matrix<6, 3, double> Iinc_fixedsize(&Iinc(0, 0), true);
+  Core::LinAlg::Matrix<6, 3, double> Iinc_fixedsize(&Iinc(0, 0), true);
   for (unsigned int i = 0; i < 3; ++i) Iinc_fixedsize(i, i) = 1.0;
 }
 
 /*-----------------------------------------------------------------------------------------------------------*
  | computes stochastic forces and resulting stiffness (public) grill   03/14|
  *----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Rigidsphere::calc_stochastic_force(
+void Discret::ELEMENTS::Rigidsphere::calc_stochastic_force(
     Teuchos::ParameterList& params,                //!< parameter list
     const std::vector<double>& vel,                //!< element velocity vector
     const std::vector<double>& disp,               //!< element disp vector
-    CORE::LINALG::SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-    CORE::LINALG::SerialDenseVector* force)        //!< element internal force vector
+    Core::LinAlg::SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+    Core::LinAlg::SerialDenseVector* force)        //!< element internal force vector
 {
   // damping coefficient
   double gamma = my_damping_constant();

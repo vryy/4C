@@ -18,14 +18,14 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace MORTAR
+namespace Mortar
 {
   class Element;
 }
 
 namespace CONTACT
 {
-  namespace AUG
+  namespace Aug
   {
     /*--------------------------------------------------------------------------*/
     class ProjectorBase
@@ -35,21 +35,21 @@ namespace CONTACT
 
      private:
       static ProjectorBase* get2_d(
-          CORE::FE::CellType ref_type, CORE::FE::CellType tar_type, const bool debug = false);
+          Core::FE::CellType ref_type, Core::FE::CellType tar_type, const bool debug = false);
 
-      template <CORE::FE::CellType ref_type>
-      static ProjectorBase* get2_d(CORE::FE::CellType tar_type, const bool debug = false);
+      template <Core::FE::CellType ref_type>
+      static ProjectorBase* get2_d(Core::FE::CellType tar_type, const bool debug = false);
 
       static ProjectorBase* get3_d(
-          CORE::FE::CellType ref_type, CORE::FE::CellType tar_type, const bool debug = false);
+          Core::FE::CellType ref_type, Core::FE::CellType tar_type, const bool debug = false);
 
-      template <CORE::FE::CellType ref_type>
-      static ProjectorBase* get3_d(CORE::FE::CellType tar_type, const bool debug = false);
+      template <Core::FE::CellType ref_type>
+      static ProjectorBase* get3_d(Core::FE::CellType tar_type, const bool debug = false);
 
      public:
       /// access the singleton pointer of the projector object
-      static ProjectorBase* Get(const unsigned probdim, CORE::FE::CellType ref_type,
-          CORE::FE::CellType tar_type, const bool debug = false);
+      static ProjectorBase* Get(const unsigned probdim, Core::FE::CellType ref_type,
+          Core::FE::CellType tar_type, const bool debug = false);
 
       virtual ~ProjectorBase() = default;
 
@@ -71,8 +71,8 @@ namespace CONTACT
        *  \return TRUE if the local Newton scheme did converge.
        *
        *  \author hiermeier \date 08/17 */
-      virtual bool operator()(MORTAR::Element& ref_ele, const double* ref_xi,
-          MORTAR::Element& target_ele, double* target_xi, double& alpha) = 0;
+      virtual bool operator()(Mortar::Element& ref_ele, const double* ref_xi,
+          Mortar::Element& target_ele, double* target_xi, double& alpha) = 0;
 
       /// return the relative solution tolerance, i.e. the maximal deviation of
       /// the calculated solution point to the analytical solution
@@ -81,22 +81,22 @@ namespace CONTACT
     };  // class ProjectorBase
 
     /*--------------------------------------------------------------------------*/
-    template <class DebugPolicy, unsigned probdim, CORE::FE::CellType ref_type,
-        CORE::FE::CellType tar_type>
+    template <class DebugPolicy, unsigned probdim, Core::FE::CellType ref_type,
+        Core::FE::CellType tar_type>
     class Projector : public ProjectorBase, public DebugPolicy
     {
-      static constexpr unsigned REF_DIM = CORE::FE::dim<ref_type>;
-      static constexpr unsigned REF_NUMNODES = CORE::FE::num_nodes<ref_type>;
+      static constexpr unsigned REF_DIM = Core::FE::dim<ref_type>;
+      static constexpr unsigned REF_NUMNODES = Core::FE::num_nodes<ref_type>;
 
-      static constexpr unsigned TAR_DIM = CORE::FE::dim<tar_type>;
-      static constexpr unsigned TAR_NUMNODES = CORE::FE::num_nodes<tar_type>;
+      static constexpr unsigned TAR_DIM = Core::FE::dim<tar_type>;
+      static constexpr unsigned TAR_NUMNODES = Core::FE::num_nodes<tar_type>;
 
      public:
       static ProjectorBase* Instance();
 
      protected:
       /// derived
-      bool operator()(MORTAR::Element& ref_ele, const double* ref_xi, MORTAR::Element& target_ele,
+      bool operator()(Mortar::Element& ref_ele, const double* ref_xi, Mortar::Element& target_ele,
           double* target_xi, double& alpha) override;
 
       /// derived
@@ -121,10 +121,10 @@ namespace CONTACT
        *  \param[in] n_ref       : normal evaluated at the reference point
        *
        *  \author hiermeier \date 07/17 */
-      void l_mat_gp(CORE::LINALG::Matrix<probdim, probdim>& lmat,
-          CORE::LINALG::Matrix<TAR_DIM, TAR_NUMNODES>& tar_deriv1, MORTAR::Element& tar_ele,
-          const CORE::LINALG::Matrix<probdim, TAR_NUMNODES>& tar_coords, const double* tar_xi,
-          const CORE::LINALG::Matrix<probdim, 1>& n_ref) const;
+      void l_mat_gp(Core::LinAlg::Matrix<probdim, probdim>& lmat,
+          Core::LinAlg::Matrix<TAR_DIM, TAR_NUMNODES>& tar_deriv1, Mortar::Element& tar_ele,
+          const Core::LinAlg::Matrix<probdim, TAR_NUMNODES>& tar_coords, const double* tar_xi,
+          const Core::LinAlg::Matrix<probdim, 1>& n_ref) const;
 
       /** \brief Get the right-hand-side for the GP projection
        *
@@ -140,10 +140,10 @@ namespace CONTACT
        *  \return FALSE, if get_global_position failed. Otherwise TRUE.
        *
        *  \author  hiermeier \date 07/17 */
-      bool rhs_gp(CORE::LINALG::Matrix<probdim, 1>& rhs,
-          const CORE::LINALG::Matrix<probdim, 1>& x_ref,
-          const CORE::LINALG::Matrix<probdim, 1>& n_ref, MORTAR::Element& target_ele,
-          const CORE::LINALG::Matrix<probdim, TAR_NUMNODES>& tar_coords, const double* tar_xi,
+      bool rhs_gp(Core::LinAlg::Matrix<probdim, 1>& rhs,
+          const Core::LinAlg::Matrix<probdim, 1>& x_ref,
+          const Core::LinAlg::Matrix<probdim, 1>& n_ref, Mortar::Element& target_ele,
+          const Core::LinAlg::Matrix<probdim, TAR_NUMNODES>& tar_coords, const double* tar_xi,
           const double& alpha) const;
 
       /** \brief Get the global position at the parametric coordinates xi
@@ -156,22 +156,22 @@ namespace CONTACT
        *  \return FALSE, if the shape function evaluation failed. Otherwise TRUE.
        *
        *  \author  hiermeier \date 07/17 */
-      template <CORE::FE::CellType type, unsigned numnodes = CORE::FE::num_nodes<type>>
-      bool get_global_position(MORTAR::Element& ele,
-          const CORE::LINALG::Matrix<probdim, numnodes>& coords, const double* xi,
-          CORE::LINALG::Matrix<probdim, 1>& pos) const;
+      template <Core::FE::CellType type, unsigned numnodes = Core::FE::num_nodes<type>>
+      bool get_global_position(Mortar::Element& ele,
+          const Core::LinAlg::Matrix<probdim, numnodes>& coords, const double* xi,
+          Core::LinAlg::Matrix<probdim, 1>& pos) const;
 
      private:
-      CORE::LINALG::Matrix<REF_NUMNODES, 1> ref_val_;
-      CORE::LINALG::Matrix<probdim, 1> x_ref_;
-      CORE::LINALG::Matrix<probdim, 1> n_ref_;
+      Core::LinAlg::Matrix<REF_NUMNODES, 1> ref_val_;
+      Core::LinAlg::Matrix<probdim, 1> x_ref_;
+      Core::LinAlg::Matrix<probdim, 1> n_ref_;
 
-      CORE::LINALG::Matrix<probdim, 1> rhs_;
-      CORE::LINALG::Matrix<probdim, probdim> lmat_;
-      CORE::LINALG::Matrix<probdim, 1> dx_;
+      Core::LinAlg::Matrix<probdim, 1> rhs_;
+      Core::LinAlg::Matrix<probdim, probdim> lmat_;
+      Core::LinAlg::Matrix<probdim, 1> dx_;
 
-      CORE::LINALG::Matrix<probdim, TAR_NUMNODES> tar_coords_;
-      CORE::LINALG::Matrix<TAR_DIM, TAR_NUMNODES> tar_deriv1_;
+      Core::LinAlg::Matrix<probdim, TAR_NUMNODES> tar_coords_;
+      Core::LinAlg::Matrix<TAR_DIM, TAR_NUMNODES> tar_deriv1_;
 
       unsigned iter_;
 
@@ -224,7 +224,7 @@ namespace CONTACT
         }
       }
     };
-  }  // namespace AUG
+  }  // namespace Aug
 }  // namespace CONTACT
 
 

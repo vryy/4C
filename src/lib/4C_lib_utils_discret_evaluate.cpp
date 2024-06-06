@@ -19,11 +19,11 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::UTILS::Evaluate(DRT::Discretization& discret, Teuchos::ParameterList& eparams,
-    const Teuchos::RCP<CORE::LINALG::SparseOperator>& systemmatrix,
+void Discret::UTILS::Evaluate(Discret::Discretization& discret, Teuchos::ParameterList& eparams,
+    const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,
     const Teuchos::RCP<Epetra_Vector>& systemvector, const Epetra_Map* col_ele_map)
 {
-  std::vector<Teuchos::RCP<CORE::LINALG::SparseOperator>> systemmatrices(2, Teuchos::null);
+  std::vector<Teuchos::RCP<Core::LinAlg::SparseOperator>> systemmatrices(2, Teuchos::null);
   std::vector<Teuchos::RCP<Epetra_Vector>> systemvectors(3, Teuchos::null);
 
   systemmatrices[0] = systemmatrix;
@@ -34,8 +34,8 @@ void DRT::UTILS::Evaluate(DRT::Discretization& discret, Teuchos::ParameterList& 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::UTILS::Evaluate(DRT::Discretization& discret, Teuchos::ParameterList& eparams,
-    std::vector<Teuchos::RCP<CORE::LINALG::SparseOperator>>& systemmatrices,
+void Discret::UTILS::Evaluate(Discret::Discretization& discret, Teuchos::ParameterList& eparams,
+    std::vector<Teuchos::RCP<Core::LinAlg::SparseOperator>>& systemmatrices,
     std::vector<Teuchos::RCP<Epetra_Vector>>& systemvectors, const Epetra_Map* col_ele_map)
 {
   FOUR_C_ASSERT(systemmatrices.size() <= 2,
@@ -48,17 +48,17 @@ void DRT::UTILS::Evaluate(DRT::Discretization& discret, Teuchos::ParameterList& 
   if (systemmatrices.size() < 2) systemmatrices.resize(2, Teuchos::null);
   if (systemvectors.size() < 3) systemvectors.resize(3, Teuchos::null);
 
-  CORE::FE::AssembleStrategy strategy(0, 0, systemmatrices[0], systemmatrices[1], systemvectors[0],
+  Core::FE::AssembleStrategy strategy(0, 0, systemmatrices[0], systemmatrices[1], systemvectors[0],
       systemvectors[1], systemvectors[2]);
   Evaluate(discret, eparams, strategy, col_ele_map);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::UTILS::Evaluate(DRT::Discretization& discret, Teuchos::ParameterList& eparams,
-    CORE::FE::AssembleStrategy& strategy, const Epetra_Map* col_ele_map)
+void Discret::UTILS::Evaluate(Discret::Discretization& discret, Teuchos::ParameterList& eparams,
+    Core::FE::AssembleStrategy& strategy, const Epetra_Map* col_ele_map)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("DRT::UTILS::Evaluate");
+  TEUCHOS_FUNC_TIME_MONITOR("Discret::UTILS::Evaluate");
 
   if (!discret.Filled()) FOUR_C_THROW("fill_complete() was not called");
   if (!discret.HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
@@ -71,13 +71,13 @@ void DRT::UTILS::Evaluate(DRT::Discretization& discret, Teuchos::ParameterList& 
   // for most element types, just the base class dummy is called
   // that does nothing
   {
-    TEUCHOS_FUNC_TIME_MONITOR("DRT::UTILS::Evaluate pre_evaluate");
-    CORE::COMM::ParObjectFactory::Instance().pre_evaluate(discret, eparams,
+    TEUCHOS_FUNC_TIME_MONITOR("Discret::UTILS::Evaluate pre_evaluate");
+    Core::Communication::ParObjectFactory::Instance().pre_evaluate(discret, eparams,
         strategy.Systemmatrix1(), strategy.Systemmatrix2(), strategy.Systemvector1(),
         strategy.Systemvector2(), strategy.Systemvector3());
   }
 
-  CORE::Elements::Element::LocationArray la(discret.NumDofSets());
+  Core::Elements::Element::LocationArray la(discret.NumDofSets());
 
   bool is_subset = false;
   if (not col_ele_map)
@@ -91,7 +91,7 @@ void DRT::UTILS::Evaluate(DRT::Discretization& discret, Teuchos::ParameterList& 
 
   for (int i = 0; i < numcolele; ++i)
   {
-    CORE::Elements::Element* actele = nullptr;
+    Core::Elements::Element* actele = nullptr;
     if (is_subset)
     {
       const int egid = ele_gids[i];
@@ -101,13 +101,13 @@ void DRT::UTILS::Evaluate(DRT::Discretization& discret, Teuchos::ParameterList& 
       actele = discret.lColElement(i);
 
     {
-      TEUCHOS_FUNC_TIME_MONITOR("DRT::UTILS::Evaluate LocationVector");
+      TEUCHOS_FUNC_TIME_MONITOR("Discret::UTILS::Evaluate LocationVector");
       // get element location vector, dirichlet flags and ownerships
       actele->LocationVector(discret, la, false);
     }
 
     {
-      TEUCHOS_FUNC_TIME_MONITOR("DRT::UTILS::Evaluate Resize");
+      TEUCHOS_FUNC_TIME_MONITOR("Discret::UTILS::Evaluate Resize");
 
       // get dimension of element matrices and vectors
       // Reshape element matrices and vectors and init to zero
@@ -115,7 +115,7 @@ void DRT::UTILS::Evaluate(DRT::Discretization& discret, Teuchos::ParameterList& 
     }
 
     {
-      TEUCHOS_FUNC_TIME_MONITOR("DRT::UTILS::Evaluate elements");
+      TEUCHOS_FUNC_TIME_MONITOR("Discret::UTILS::Evaluate elements");
       // call the element evaluate method
       int err = actele->Evaluate(eparams, discret, la, strategy.Elematrix1(), strategy.Elematrix2(),
           strategy.Elevector1(), strategy.Elevector2(), strategy.Elevector3());
@@ -125,7 +125,7 @@ void DRT::UTILS::Evaluate(DRT::Discretization& discret, Teuchos::ParameterList& 
     }
 
     {
-      TEUCHOS_FUNC_TIME_MONITOR("DRT::UTILS::Evaluate assemble");
+      TEUCHOS_FUNC_TIME_MONITOR("Discret::UTILS::Evaluate assemble");
       int eid = actele->Id();
       strategy.AssembleMatrix1(eid, la[row].lm_, la[col].lm_, la[row].lmowner_, la[col].stride_);
       strategy.AssembleMatrix2(eid, la[row].lm_, la[col].lm_, la[row].lmowner_, la[col].stride_);

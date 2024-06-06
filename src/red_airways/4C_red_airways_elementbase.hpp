@@ -28,7 +28,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   // forward declarations
   class Discretization;
@@ -37,38 +37,38 @@ namespace DRT
   {
     // forward declarations
     class RedAirwayImplInterface;
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     class AirwayImpl;
 
-    class RedAirwayType : public CORE::Elements::ElementType
+    class RedAirwayType : public Core::Elements::ElementType
     {
      public:
       std::string Name() const override { return "RedAirwayType"; }
 
       static RedAirwayType& Instance();
 
-      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
+          Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
-      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
+      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+          Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
-        CORE::LINALG::SerialDenseMatrix nullspace;
+        Core::LinAlg::SerialDenseMatrix nullspace;
         FOUR_C_THROW("method ComputeNullSpace not implemented");
         return nullspace;
       }
 
       void setup_element_definition(
-          std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+          std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
           override;
 
      private:
@@ -79,12 +79,12 @@ namespace DRT
     \brief A C++ wrapper for the airway element
 
     */
-    class RedAirway : public CORE::Elements::Element
+    class RedAirway : public Core::Elements::Element
     {
      public:
       //! @name Friends
       friend class RedAirwayImplInterface;
-      friend class AirwayImpl<CORE::FE::CellType::line2>;
+      friend class AirwayImpl<Core::FE::CellType::line2>;
 
       //@}
       //! @name Constructors and destructors and related methods
@@ -111,12 +111,12 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      CORE::Elements::Element* Clone() const override;
+      Core::Elements::Element* Clone() const override;
 
       /*!
       \brief Get shape type of element
       */
-      CORE::FE::CellType Shape() const override;
+      Core::FE::CellType Shape() const override;
 
       /*!
       \brief Return number of lines of this element
@@ -145,7 +145,7 @@ namespace DRT
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
       */
-      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
 
 
       /*!
@@ -165,7 +165,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(CORE::COMM::PackBuffer& data) const override;
+      void Pack(Core::Communication::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -183,18 +183,18 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom of a certain node
-             (implements pure virtual CORE::Elements::Element)
+             (implements pure virtual Core::Elements::Element)
 
       The element decides how many degrees of freedom its nodes must have.
       As this may vary along a simulation, the element can redecide the
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const CORE::Nodes::Node& node) const override { return 1; }
+      int NumDofPerNode(const Core::Nodes::Node& node) const override { return 1; }
 
       /*!
       \brief Get number of degrees of freedom per element
-             (implements pure virtual CORE::Elements::Element)
+             (implements pure virtual Core::Elements::Element)
 
       The element decides how many element degrees of freedom it has.
       It can redecide along the way of a simulation.
@@ -260,7 +260,7 @@ namespace DRT
       \brief Read input for this element
       */
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          INPUT::LineDefinition* linedef) override;
+          Input::LineDefinition* linedef) override;
 
       //@}
 
@@ -290,11 +290,11 @@ namespace DRT
                               to fill this vector
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
-          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2,
-          CORE::LINALG::SerialDenseVector& elevec3) override;
+      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
+          Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseVector& elevec2,
+          Core::LinAlg::SerialDenseVector& elevec3) override;
 
       /*!
       \brief Evaluate a Neumann boundary condition
@@ -315,10 +315,10 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          CORE::Conditions::Condition& condition, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
+      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Core::Conditions::Condition& condition, std::vector<int>& lm,
+          Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;
 
       /*!
       \brief Evaluate a Neumann boundary condition
@@ -328,8 +328,8 @@ namespace DRT
       \return 0 if successful, negative otherwise
       */
       virtual int evaluate_dirichlet(Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
-          std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1);
+          Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+          std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1);
 
 
       //@}
@@ -366,7 +366,7 @@ namespace DRT
       /*!
        * \brief Get fixed airway parameters of the RedAirway element
        */
-      [[nodiscard]] const REDAIRWAYS::AirwayParams& GetAirwayParams() const;
+      [[nodiscard]] const ReducedLung::AirwayParams& GetAirwayParams() const;
 
      private:
       //! action parameters recognized by airway
@@ -403,7 +403,7 @@ namespace DRT
       std::string elemsolving_type_;
 
       //! Airway-specific parameters
-      DRT::REDAIRWAYS::AirwayParams airway_params_;
+      Discret::ReducedLung::AirwayParams airway_params_;
 
 
       // internal calculation methods
@@ -413,48 +413,48 @@ namespace DRT
 
 
       /// set number of gauss points to element shape default
-      CORE::FE::GaussRule1D get_optimal_gaussrule(const CORE::FE::CellType& distype);
+      Core::FE::GaussRule1D get_optimal_gaussrule(const Core::FE::CellType& distype);
 
       /*!
        * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are
        * necessary \return boolean indicating higher order status
        */
-      bool is_higher_order_element(const CORE::FE::CellType distype  ///< discretization type
+      bool is_higher_order_element(const Core::FE::CellType distype  ///< discretization type
       ) const;
 
 
     };  // class RedAirway
 
 
-    class RedAcinusType : public CORE::Elements::ElementType
+    class RedAcinusType : public Core::Elements::ElementType
     {
      public:
       std::string Name() const override { return "RedAcinusType"; }
 
       static RedAcinusType& Instance();
 
-      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
+          Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
-      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
+      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+          Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
-        CORE::LINALG::SerialDenseMatrix nullspace;
+        Core::LinAlg::SerialDenseMatrix nullspace;
         FOUR_C_THROW("method ComputeNullSpace not implemented");
         return nullspace;
       }
 
       void setup_element_definition(
-          std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+          std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
           override;
 
      private:
@@ -465,12 +465,12 @@ namespace DRT
     \brief A C++ wrapper for the acinus element
 
     */
-    class RedAcinus : public CORE::Elements::Element
+    class RedAcinus : public Core::Elements::Element
     {
      public:
       //! @name Friends
       friend class RedAirwayImplInterface;
-      friend class AirwayImpl<CORE::FE::CellType::line2>;
+      friend class AirwayImpl<Core::FE::CellType::line2>;
 
       //@}
       //! @name Constructors and destructors and related methods
@@ -497,12 +497,12 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      CORE::Elements::Element* Clone() const override;
+      Core::Elements::Element* Clone() const override;
 
       /*!
       \brief Get shape type of element
       */
-      CORE::FE::CellType Shape() const override;
+      Core::FE::CellType Shape() const override;
 
       /*!
       \brief Return number of lines of this element
@@ -531,7 +531,7 @@ namespace DRT
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
       */
-      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
 
       /*!
       \brief Return center coordinates of element
@@ -555,7 +555,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(CORE::COMM::PackBuffer& data) const override;
+      void Pack(Core::Communication::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -573,18 +573,18 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom of a certain node
-             (implements pure virtual CORE::Elements::Element)
+             (implements pure virtual Core::Elements::Element)
 
       The element decides how many degrees of freedom its nodes must have.
       As this may vary along a simulation, the element can redecide the
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const CORE::Nodes::Node& node) const override { return 1; }
+      int NumDofPerNode(const Core::Nodes::Node& node) const override { return 1; }
 
       /*!
       \brief Get number of degrees of freedom per element
-             (implements pure virtual CORE::Elements::Element)
+             (implements pure virtual Core::Elements::Element)
 
       The element decides how many element degrees of freedom it has.
       It can redecide along the way of a simulation.
@@ -650,7 +650,7 @@ namespace DRT
       \brief Read input for this element
       */
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          INPUT::LineDefinition* linedef) override;
+          Input::LineDefinition* linedef) override;
 
       //@}
 
@@ -680,11 +680,11 @@ namespace DRT
                               to fill this vector
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
-          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2,
-          CORE::LINALG::SerialDenseVector& elevec3) override;
+      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
+          Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseVector& elevec2,
+          Core::LinAlg::SerialDenseVector& elevec3) override;
 
       /*!
       \brief Evaluate a Neumann boundary condition
@@ -705,10 +705,10 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          CORE::Conditions::Condition& condition, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
+      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Core::Conditions::Condition& condition, std::vector<int>& lm,
+          Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;
 
       /*!
       \brief Evaluate a Neumann boundary condition
@@ -718,8 +718,8 @@ namespace DRT
       \return 0 if successful, negative otherwise
       */
       virtual int evaluate_dirichlet(Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
-          std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1);
+          Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+          std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1);
 
 
       //@}
@@ -762,7 +762,7 @@ namespace DRT
       /*!
        * \brief Get fixed acinus parameters of the RedAcinus element
        */
-      [[nodiscard]] const REDAIRWAYS::AcinusParams& GetAcinusParams() const;
+      [[nodiscard]] const ReducedLung::AcinusParams& GetAcinusParams() const;
 
      private:
       //! action parameters recognized by acinus
@@ -795,7 +795,7 @@ namespace DRT
       std::string resistance_;
 
       //! Acinus-specific parameters
-      DRT::REDAIRWAYS::AcinusParams acinus_params_;
+      Discret::ReducedLung::AcinusParams acinus_params_;
 
 
       // internal calculation methods
@@ -805,13 +805,13 @@ namespace DRT
 
 
       /// set number of gauss points to element shape default
-      CORE::FE::GaussRule1D get_optimal_gaussrule(const CORE::FE::CellType& distype);
+      Core::FE::GaussRule1D get_optimal_gaussrule(const Core::FE::CellType& distype);
 
       /*!
        * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are
        * necessary \return boolean indicating higher order status
        */
-      bool is_higher_order_element(const CORE::FE::CellType distype  ///< discretization type
+      bool is_higher_order_element(const Core::FE::CellType distype  ///< discretization type
       ) const;
 
 
@@ -822,35 +822,35 @@ namespace DRT
 
     */
 
-    class RedInterAcinarDepType : public CORE::Elements::ElementType
+    class RedInterAcinarDepType : public Core::Elements::ElementType
     {
      public:
       std::string Name() const override { return "RedInterAcinarDepType"; }
 
       static RedInterAcinarDepType& Instance();
 
-      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
+          Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
-      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
+      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+          Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
-        CORE::LINALG::SerialDenseMatrix nullspace;
+        Core::LinAlg::SerialDenseMatrix nullspace;
         FOUR_C_THROW("method ComputeNullSpace not implemented");
         return nullspace;
       }
 
       void setup_element_definition(
-          std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+          std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
           override;
 
      private:
@@ -861,12 +861,12 @@ namespace DRT
     \brief A C++ wrapper for the inter acinar dependency element
 
     */
-    class RedInterAcinarDep : public CORE::Elements::Element
+    class RedInterAcinarDep : public Core::Elements::Element
     {
      public:
       //! @name Friends
       friend class RedAirwayImplInterface;
-      friend class AirwayImpl<CORE::FE::CellType::line2>;
+      friend class AirwayImpl<Core::FE::CellType::line2>;
 
       //@}
       //! @name Constructors and destructors and related methods
@@ -893,12 +893,12 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      CORE::Elements::Element* Clone() const override;
+      Core::Elements::Element* Clone() const override;
 
       /*!
       \brief Get shape type of element
       */
-      CORE::FE::CellType Shape() const override;
+      Core::FE::CellType Shape() const override;
 
       /*!
       \brief Return number of lines of this element
@@ -927,7 +927,7 @@ namespace DRT
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
       */
-      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
 
       /*!
       \brief Return unique ParObject id
@@ -946,7 +946,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(CORE::COMM::PackBuffer& data) const override;
+      void Pack(Core::Communication::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -964,18 +964,18 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom of a certain node
-             (implements pure virtual CORE::Elements::Element)
+             (implements pure virtual Core::Elements::Element)
 
       The element decides how many degrees of freedom its nodes must have.
       As this may vary along a simulation, the element can redecide the
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const CORE::Nodes::Node& node) const override { return 1; }
+      int NumDofPerNode(const Core::Nodes::Node& node) const override { return 1; }
 
       /*!
       \brief Get number of degrees of freedom per element
-             (implements pure virtual CORE::Elements::Element)
+             (implements pure virtual Core::Elements::Element)
 
       The element decides how many element degrees of freedom it has.
       It can redecide along the way of a simulation.
@@ -1044,7 +1044,7 @@ namespace DRT
       \brief Read input for this element
       */
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          INPUT::LineDefinition* linedef) override;
+          Input::LineDefinition* linedef) override;
 
       //@}
 
@@ -1074,11 +1074,11 @@ namespace DRT
                               to fill this vector
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
-          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2,
-          CORE::LINALG::SerialDenseVector& elevec3) override;
+      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
+          Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseVector& elevec2,
+          Core::LinAlg::SerialDenseVector& elevec3) override;
 
       /*!
       \brief Evaluate a Neumann boundary condition
@@ -1099,10 +1099,10 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          CORE::Conditions::Condition& condition, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
+      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Core::Conditions::Condition& condition, std::vector<int>& lm,
+          Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;
 
       /*!
       \brief Evaluate a Neumann boundary condition
@@ -1112,8 +1112,8 @@ namespace DRT
       \return 0 if successful, negative otherwise
       */
       virtual int evaluate_dirichlet(Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
-          std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1);
+          Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+          std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1);
 
 
       //@}
@@ -1178,13 +1178,13 @@ namespace DRT
 
 
       /// set number of gauss points to element shape default
-      CORE::FE::GaussRule1D get_optimal_gaussrule(const CORE::FE::CellType& distype);
+      Core::FE::GaussRule1D get_optimal_gaussrule(const Core::FE::CellType& distype);
 
       /*!
        * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are
        * necessary \return boolean indicating higher order status
        */
-      bool is_higher_order_element(const CORE::FE::CellType distype  ///< discretization type
+      bool is_higher_order_element(const Core::FE::CellType distype  ///< discretization type
       ) const;
 
 
@@ -1195,47 +1195,47 @@ namespace DRT
 
     */
 
-    class RedAirBloodScatraType : public CORE::Elements::ElementType
+    class RedAirBloodScatraType : public Core::Elements::ElementType
     {
      public:
       std::string Name() const override { return "RedAirBloodScatraType"; }
 
       static RedAirBloodScatraType& Instance();
 
-      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
+          Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
-      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
+      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+          Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
-        CORE::LINALG::SerialDenseMatrix nullspace;
+        Core::LinAlg::SerialDenseMatrix nullspace;
         FOUR_C_THROW("method ComputeNullSpace not implemented");
         return nullspace;
       }
 
       void setup_element_definition(
-          std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+          std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
           override;
 
      private:
       static RedAirBloodScatraType instance_;
     };  // class RedAirBloodScatraType
 
-    class RedAirBloodScatra : public CORE::Elements::Element
+    class RedAirBloodScatra : public Core::Elements::Element
     {
      public:
       //! @name Friends
       friend class RedAirwayImplInterface;
-      friend class AirwayImpl<CORE::FE::CellType::line2>;
+      friend class AirwayImpl<Core::FE::CellType::line2>;
 
       //@}
       //! @name Constructors and destructors and related methods
@@ -1262,12 +1262,12 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      CORE::Elements::Element* Clone() const override;
+      Core::Elements::Element* Clone() const override;
 
       /*!
       \brief Get shape type of element
       */
-      CORE::FE::CellType Shape() const override;
+      Core::FE::CellType Shape() const override;
 
       /*!
       \brief Return number of lines of this element
@@ -1296,7 +1296,7 @@ namespace DRT
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
       */
-      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
 
       /*!
       \brief Return unique ParObject id
@@ -1315,7 +1315,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(CORE::COMM::PackBuffer& data) const override;
+      void Pack(Core::Communication::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -1333,18 +1333,18 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom of a certain node
-             (implements pure virtual CORE::Elements::Element)
+             (implements pure virtual Core::Elements::Element)
 
       The element decides how many degrees of freedom its nodes must have.
       As this may vary along a simulation, the element can redecide the
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const CORE::Nodes::Node& node) const override { return 1; }
+      int NumDofPerNode(const Core::Nodes::Node& node) const override { return 1; }
 
       /*!
       \brief Get number of degrees of freedom per element
-             (implements pure virtual CORE::Elements::Element)
+             (implements pure virtual Core::Elements::Element)
 
       The element decides how many element degrees of freedom it has.
       It can redecide along the way of a simulation.
@@ -1413,7 +1413,7 @@ namespace DRT
       \brief Read input for this element
       */
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          INPUT::LineDefinition* linedef) override;
+          Input::LineDefinition* linedef) override;
 
       //@}
 
@@ -1484,35 +1484,35 @@ namespace DRT
     \brief A C++ wrapper for the Air/Blood diffusion element
 
     */
-    class RedAirBloodScatraLine3Type : public CORE::Elements::ElementType
+    class RedAirBloodScatraLine3Type : public Core::Elements::ElementType
     {
      public:
       std::string Name() const override { return "RedAirBloodScatraLine3Type"; }
 
       static RedAirBloodScatraLine3Type& Instance();
 
-      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
+          Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
-      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
+      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+          Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
-        CORE::LINALG::SerialDenseMatrix nullspace;
+        Core::LinAlg::SerialDenseMatrix nullspace;
         FOUR_C_THROW("method ComputeNullSpace not implemented");
         return nullspace;
       }
 
       void setup_element_definition(
-          std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+          std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
           override;
 
      private:
@@ -1524,12 +1524,12 @@ namespace DRT
     \brief A C++ wrapper for the inter acinar dependency element
 
     */
-    class RedAirBloodScatraLine3 : public CORE::Elements::Element
+    class RedAirBloodScatraLine3 : public Core::Elements::Element
     {
      public:
       //! @name Friends
       friend class RedAirwayImplInterface;
-      friend class AirwayImpl<CORE::FE::CellType::line3>;
+      friend class AirwayImpl<Core::FE::CellType::line3>;
 
       //@}
       //! @name Constructors and destructors and related methods
@@ -1556,12 +1556,12 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      CORE::Elements::Element* Clone() const override;
+      Core::Elements::Element* Clone() const override;
 
       /*!
       \brief Get shape type of element
       */
-      CORE::FE::CellType Shape() const override;
+      Core::FE::CellType Shape() const override;
 
       /*!
       \brief Return number of lines of this element
@@ -1592,7 +1592,7 @@ namespace DRT
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
       */
-      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
 
       /*!
       \brief Return unique ParObject id
@@ -1611,7 +1611,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(CORE::COMM::PackBuffer& data) const override;
+      void Pack(Core::Communication::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -1629,18 +1629,18 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom of a certain node
-             (implements pure virtual CORE::Elements::Element)
+             (implements pure virtual Core::Elements::Element)
 
       The element decides how many degrees of freedom its nodes must have.
       As this may vary along a simulation, the element can redecide the
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const CORE::Nodes::Node& node) const override { return 1; }
+      int NumDofPerNode(const Core::Nodes::Node& node) const override { return 1; }
 
       /*!
       \brief Get number of degrees of freedom per element
-             (implements pure virtual CORE::Elements::Element)
+             (implements pure virtual Core::Elements::Element)
 
       The element decides how many element degrees of freedom it has.
       It can redecide along the way of a simulation.
@@ -1709,7 +1709,7 @@ namespace DRT
       \brief Read input for this element
       */
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          INPUT::LineDefinition* linedef) override;
+          Input::LineDefinition* linedef) override;
 
       //@}
 
@@ -1739,11 +1739,11 @@ namespace DRT
                               to fill this vector
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
-          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2,
-          CORE::LINALG::SerialDenseVector& elevec3) override;
+      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
+          Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseVector& elevec2,
+          Core::LinAlg::SerialDenseVector& elevec3) override;
 
       /*!
       \brief Evaluate a Neumann boundary condition
@@ -1764,10 +1764,10 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          CORE::Conditions::Condition& condition, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
+      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Core::Conditions::Condition& condition, std::vector<int>& lm,
+          Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;
 
       /*!
       \brief Evaluate a Neumann boundary condition
@@ -1777,8 +1777,8 @@ namespace DRT
       \return 0 if successful, negative otherwise
       */
       virtual int evaluate_dirichlet(Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
-          std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1);
+          Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+          std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1);
 
 
       //@}
@@ -1844,20 +1844,20 @@ namespace DRT
 
 
       /// set number of gauss points to element shape default
-      CORE::FE::GaussRule1D get_optimal_gaussrule(const CORE::FE::CellType& distype);
+      Core::FE::GaussRule1D get_optimal_gaussrule(const Core::FE::CellType& distype);
 
       /*!
        * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are
        * necessary \return boolean indicating higher order status
        */
-      bool is_higher_order_element(const CORE::FE::CellType distype  ///< discretization type
+      bool is_higher_order_element(const Core::FE::CellType distype  ///< discretization type
       ) const;
 
     };  // class RedAirBloodScatraLine3
 
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 
 FOUR_C_NAMESPACE_CLOSE

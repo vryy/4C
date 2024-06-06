@@ -52,9 +52,9 @@ std::map<std::string, std::string> SSI::ScatraStructureCloneStrategyManifold::co
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-INPAR::SCATRA::ImplType SSI::ScatraStructureCloneStrategy::GetImplType(CORE::Elements::Element* ele)
+Inpar::ScaTra::ImplType SSI::ScatraStructureCloneStrategy::GetImplType(Core::Elements::Element* ele)
 {
-  return ADAPTER::GetScaTraImplType(ele);
+  return Adapter::GetScaTraImplType(ele);
 }
 
 
@@ -64,12 +64,12 @@ void SSI::ScatraStructureCloneStrategy::check_material_type(const int matid)
 {
   // We take the material with the ID specified by the user
   // Here we check first, whether this material is of admissible type
-  CORE::Materials::MaterialType mtype =
-      GLOBAL::Problem::Instance()->Materials()->ParameterById(matid)->Type();
-  if ((mtype != CORE::Materials::m_scatra) && (mtype != CORE::Materials::m_elchmat) &&
-      (mtype != CORE::Materials::m_electrode) && (mtype != CORE::Materials::m_matlist) &&
-      (mtype != CORE::Materials::m_matlist_reactions) && (mtype != CORE::Materials::m_myocard) &&
-      (mtype != CORE::Materials::m_thermostvenant))
+  Core::Materials::MaterialType mtype =
+      Global::Problem::Instance()->Materials()->ParameterById(matid)->Type();
+  if ((mtype != Core::Materials::m_scatra) && (mtype != Core::Materials::m_elchmat) &&
+      (mtype != Core::Materials::m_electrode) && (mtype != Core::Materials::m_matlist) &&
+      (mtype != Core::Materials::m_matlist_reactions) && (mtype != Core::Materials::m_myocard) &&
+      (mtype != Core::Materials::m_thermostvenant))
     FOUR_C_THROW("Material with ID %d is not admissible for scalar transport elements", matid);
 }
 
@@ -77,7 +77,7 @@ void SSI::ScatraStructureCloneStrategy::check_material_type(const int matid)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SSI::ScatraStructureCloneStrategy::set_element_data(
-    Teuchos::RCP<CORE::Elements::Element> newele, CORE::Elements::Element* oldele, const int matid,
+    Teuchos::RCP<Core::Elements::Element> newele, Core::Elements::Element* oldele, const int matid,
     const bool isnurbsdis)
 {
   // We need to set material and possibly other things to complete element setup.
@@ -85,15 +85,15 @@ void SSI::ScatraStructureCloneStrategy::set_element_data(
   // element type in order to access the material property
 
   // note: SetMaterial() was reimplemented by the transport element!
-  auto* trans = dynamic_cast<DRT::ELEMENTS::Transport*>(newele.get());
+  auto* trans = dynamic_cast<Discret::ELEMENTS::Transport*>(newele.get());
   if (trans != nullptr)
   {
     // set distype as well
     trans->SetDisType(oldele->Shape());
 
     // now check whether ImplType is reasonable and if set the ImplType
-    INPAR::SCATRA::ImplType impltype = SSI::ScatraStructureCloneStrategy::GetImplType(oldele);
-    if (impltype == INPAR::SCATRA::impltype_undefined)
+    Inpar::ScaTra::ImplType impltype = SSI::ScatraStructureCloneStrategy::GetImplType(oldele);
+    if (impltype == Inpar::ScaTra::impltype_undefined)
     {
       FOUR_C_THROW(
           "ScatraStructureCloneStrategy copies scatra discretization from structure "
@@ -117,31 +117,31 @@ void SSI::ScatraStructureCloneStrategy::set_element_data(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SSI::ScatraStructureCloneStrategyManifold::set_element_data(
-    Teuchos::RCP<CORE::Elements::Element> newele, CORE::Elements::Element* oldele, const int matid,
+    Teuchos::RCP<Core::Elements::Element> newele, Core::Elements::Element* oldele, const int matid,
     const bool isnurbsdis)
 {
   // determine impl type from manifold condition by identifying the condition for this element
-  auto struct_dis = GLOBAL::Problem::Instance()->GetDis("structure");
+  auto struct_dis = Global::Problem::Instance()->GetDis("structure");
 
-  std::vector<CORE::Conditions::Condition*> conditions;
+  std::vector<Core::Conditions::Condition*> conditions;
   struct_dis->GetCondition("SSISurfaceManifold", conditions);
 
-  auto impltype = INPAR::SCATRA::impltype_undefined;
+  auto impltype = Inpar::ScaTra::impltype_undefined;
   for (auto* condition : conditions)
   {
     auto cond_eles = condition->Geometry();
     if (cond_eles.find(oldele->Id()) != cond_eles.end())
     {
-      impltype = static_cast<INPAR::SCATRA::ImplType>(condition->parameters().Get<int>("ImplType"));
+      impltype = static_cast<Inpar::ScaTra::ImplType>(condition->parameters().Get<int>("ImplType"));
       continue;
     }
   }
 
-  if (impltype != INPAR::SCATRA::impltype_elch_electrode and
-      impltype != INPAR::SCATRA::impltype_elch_diffcond and impltype != INPAR::SCATRA::impltype_std)
+  if (impltype != Inpar::ScaTra::impltype_elch_electrode and
+      impltype != Inpar::ScaTra::impltype_elch_diffcond and impltype != Inpar::ScaTra::impltype_std)
     FOUR_C_THROW("Scatra Impltype not supported for SSI with transport on manifolds");
 
-  auto* trans = dynamic_cast<DRT::ELEMENTS::Transport*>(newele.get());
+  auto* trans = dynamic_cast<Discret::ELEMENTS::Transport*>(newele.get());
   if (trans == nullptr or oldele->ElementType().Name() != "StructuralSurfaceType")
     FOUR_C_THROW("element type not supported");
 
@@ -157,7 +157,7 @@ void SSI::ScatraStructureCloneStrategyManifold::set_element_data(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool SSI::ScatraStructureCloneStrategy::determine_ele_type(
-    CORE::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
+    Core::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
 {
   // note: ismyele, actele remain unused here! Used only for ALE creation
 

@@ -19,12 +19,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
@@ -49,11 +49,11 @@ namespace TSI
      protected:
       //! determine element type std::string and whether element is copied or not
       bool determine_ele_type(
-          CORE::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype);
+          Core::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype);
 
       //! set element-specific data (material etc.)
-      void set_element_data(Teuchos::RCP<CORE::Elements::Element> newele,
-          CORE::Elements::Element* oldele, const int matid, const bool isnurbs);
+      void set_element_data(Teuchos::RCP<Core::Elements::Element> newele,
+          Core::Elements::Element* oldele, const int matid, const bool isnurbs);
 
       //! returns conditions names to be copied (source and target name)
       std::map<std::string, std::string> conditions_to_copy() const;
@@ -68,8 +68,8 @@ namespace TSI
     void SetupTSI(const Epetra_Comm& comm);
 
 
-    void SetMaterialPointersMatchingGrid(Teuchos::RCP<const DRT::Discretization> sourcedis,
-        Teuchos::RCP<const DRT::Discretization> targetdis);
+    void SetMaterialPointersMatchingGrid(Teuchos::RCP<const Discret::Discretization> sourcedis,
+        Teuchos::RCP<const Discret::Discretization> targetdis);
 
     //! strategy for material assignment for non matching meshes with TSI
 
@@ -89,21 +89,23 @@ namespace TSI
 
      \author vuong 10/14
      */
-    class TSIMaterialStrategy : public CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy
+    class TSIMaterialStrategy : public Core::VolMortar::UTILS::DefaultMaterialStrategy
     {
      public:
       //! constructor
       TSIMaterialStrategy(){};
 
       //! assignment of thermo material to structure material
-      void AssignMaterial2To1(const CORE::VOLMORTAR::VolMortarCoupl* volmortar,
-          CORE::Elements::Element* ele1, const std::vector<int>& ids_2,
-          Teuchos::RCP<DRT::Discretization> dis1, Teuchos::RCP<DRT::Discretization> dis2) override;
+      void AssignMaterial2To1(const Core::VolMortar::VolMortarCoupl* volmortar,
+          Core::Elements::Element* ele1, const std::vector<int>& ids_2,
+          Teuchos::RCP<Discret::Discretization> dis1,
+          Teuchos::RCP<Discret::Discretization> dis2) override;
 
       //! assignment of structure material to thermo material
-      void AssignMaterial1To2(const CORE::VOLMORTAR::VolMortarCoupl* volmortar,
-          CORE::Elements::Element* ele2, const std::vector<int>& ids_1,
-          Teuchos::RCP<DRT::Discretization> dis1, Teuchos::RCP<DRT::Discretization> dis2) override;
+      void AssignMaterial1To2(const Core::VolMortar::VolMortarCoupl* volmortar,
+          Core::Elements::Element* ele2, const std::vector<int>& ids_1,
+          Teuchos::RCP<Discret::Discretization> dis1,
+          Teuchos::RCP<Discret::Discretization> dis2) override;
     };
 
   }  // namespace UTILS

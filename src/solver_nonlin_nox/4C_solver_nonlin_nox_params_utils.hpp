@@ -20,9 +20,9 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
-    namespace PUTILS
+    namespace ParameterUtils
     {
       /// \brief set a new set of validate integral parameters in the parameter list
       /** This function is a wrapper for the Teuchos method. The main difference
@@ -51,8 +51,8 @@ namespace NOX
         // convert the input value and return
         return Teuchos::getIntegralValue<IntegralType>(p, param_name);
       }
-    }  // namespace PUTILS
-  }    // namespace NLN
+    }  // namespace ParameterUtils
+  }    // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

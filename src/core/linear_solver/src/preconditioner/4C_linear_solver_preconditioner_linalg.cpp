@@ -31,7 +31,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::LINALG::Preconditioner::Preconditioner(Teuchos::RCP<Solver> solver)
+Core::LinAlg::Preconditioner::Preconditioner(Teuchos::RCP<Solver> solver)
     : solver_(solver), ncall_(0)
 {
 }
@@ -39,11 +39,12 @@ CORE::LINALG::Preconditioner::Preconditioner(Teuchos::RCP<Solver> solver)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::Preconditioner::Setup(Teuchos::RCP<Epetra_Operator> matrix,
-    Teuchos::RCP<CORE::LINALG::MapExtractor> fsidofmapex, Teuchos::RCP<DRT::Discretization> fdis,
-    Teuchos::RCP<Epetra_Map> inodes, bool structuresplit)
+void Core::LinAlg::Preconditioner::Setup(Teuchos::RCP<Epetra_Operator> matrix,
+    Teuchos::RCP<Core::LinAlg::MapExtractor> fsidofmapex,
+    Teuchos::RCP<Discret::Discretization> fdis, Teuchos::RCP<Epetra_Map> inodes,
+    bool structuresplit)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::Preconditioner::Setup");
+  TEUCHOS_FUNC_TIME_MONITOR("Core::LinAlg::Preconditioner::Setup");
 
   Teuchos::Time timer("", true);
   timer.reset();
@@ -111,7 +112,7 @@ void CORE::LINALG::Preconditioner::Setup(Teuchos::RCP<Epetra_Operator> matrix,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::Preconditioner::Solve(Teuchos::RCP<Epetra_Operator> matrix,
+void Core::LinAlg::Preconditioner::Solve(Teuchos::RCP<Epetra_Operator> matrix,
     Teuchos::RCP<Epetra_MultiVector> x, Teuchos::RCP<Epetra_MultiVector> b, bool refactor,
     bool reset)
 {
@@ -141,7 +142,7 @@ void CORE::LINALG::Preconditioner::Solve(Teuchos::RCP<Epetra_Operator> matrix,
       x_->Update(1.0, *x, 0.0);
     }
     // direct solves are done by the solver itself.
-    CORE::LINALG::SolverParams solver_params;
+    Core::LinAlg::SolverParams solver_params;
     solver_params.refactor = refactor;
     solver_params.reset = reset;
     solver_->Solve(matrix, x_, b_, solver_params);
@@ -153,12 +154,12 @@ void CORE::LINALG::Preconditioner::Solve(Teuchos::RCP<Epetra_Operator> matrix,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::ParameterList& CORE::LINALG::Preconditioner::Params() { return solver_->Params(); }
+Teuchos::ParameterList& Core::LinAlg::Preconditioner::Params() { return solver_->Params(); }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int CORE::LINALG::Preconditioner::SetUseTranspose(bool UseTranspose)
+int Core::LinAlg::Preconditioner::SetUseTranspose(bool UseTranspose)
 {
   return prec_->SetUseTranspose(UseTranspose);
 }
@@ -166,7 +167,7 @@ int CORE::LINALG::Preconditioner::SetUseTranspose(bool UseTranspose)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int CORE::LINALG::Preconditioner::Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
+int Core::LinAlg::Preconditioner::Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
 {
   return prec_->Apply(X, Y);
 }
@@ -174,7 +175,7 @@ int CORE::LINALG::Preconditioner::Apply(const Epetra_MultiVector& X, Epetra_Mult
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int CORE::LINALG::Preconditioner::ApplyInverse(
+int Core::LinAlg::Preconditioner::ApplyInverse(
     const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
 {
   return prec_->ApplyInverse(X, Y);
@@ -183,32 +184,32 @@ int CORE::LINALG::Preconditioner::ApplyInverse(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double CORE::LINALG::Preconditioner::NormInf() const { return prec_->NormInf(); }
+double Core::LinAlg::Preconditioner::NormInf() const { return prec_->NormInf(); }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const char* CORE::LINALG::Preconditioner::Label() const { return "CORE::LINALG::Preconditioner"; }
+const char* Core::LinAlg::Preconditioner::Label() const { return "Core::LinAlg::Preconditioner"; }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool CORE::LINALG::Preconditioner::UseTranspose() const { return prec_->UseTranspose(); }
+bool Core::LinAlg::Preconditioner::UseTranspose() const { return prec_->UseTranspose(); }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool CORE::LINALG::Preconditioner::HasNormInf() const { return prec_->HasNormInf(); }
+bool Core::LinAlg::Preconditioner::HasNormInf() const { return prec_->HasNormInf(); }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Epetra_Comm& CORE::LINALG::Preconditioner::Comm() const { return prec_->Comm(); }
+const Epetra_Comm& Core::LinAlg::Preconditioner::Comm() const { return prec_->Comm(); }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Epetra_Map& CORE::LINALG::Preconditioner::OperatorDomainMap() const
+const Epetra_Map& Core::LinAlg::Preconditioner::OperatorDomainMap() const
 {
   return prec_->OperatorDomainMap();
 }
@@ -216,7 +217,7 @@ const Epetra_Map& CORE::LINALG::Preconditioner::OperatorDomainMap() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Epetra_Map& CORE::LINALG::Preconditioner::OperatorRangeMap() const
+const Epetra_Map& Core::LinAlg::Preconditioner::OperatorRangeMap() const
 {
   return prec_->OperatorRangeMap();
 }

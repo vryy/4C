@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace STR
 {
-  namespace TIMINT
+  namespace TimeInt
   {
     /** \brief Explicit time integration strategy
      *
@@ -56,7 +56,7 @@ namespace STR
 
       void reset_step() override;
 
-      INPAR::STR::ConvergenceStatus Solve() override;
+      Inpar::STR::ConvergenceStatus Solve() override;
 
       void prepare_partition_step() override;
 
@@ -64,9 +64,9 @@ namespace STR
 
       void PrintStep() override;
 
-      INPAR::STR::StcScale GetSTCAlgo() override;
+      Inpar::STR::StcScale GetSTCAlgo() override;
 
-      Teuchos::RCP<CORE::LINALG::SparseMatrix> GetSTCMat() override;
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> GetSTCMat() override;
 
       Teuchos::RCP<const Epetra_Vector> initial_guess() override;
 
@@ -74,19 +74,19 @@ namespace STR
 
       Teuchos::RCP<Epetra_Vector> Freact() override;
 
-      Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() override;
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() override;
 
-      Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() override;
+      Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> BlockSystemMatrix() override;
 
-      void use_block_matrix(Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
-          Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> rangemaps) override;
+      void use_block_matrix(Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> domainmaps,
+          Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> rangemaps) override;
 
       ///@}
 
       //! @name Attribute access functions
       //@{
 
-      enum INPAR::STR::DynamicType MethodName() const override;
+      enum Inpar::STR::DynamicType MethodName() const override;
 
       bool IsImplicit() const override { return false; }
 
@@ -111,7 +111,7 @@ namespace STR
         return *explint_ptr_;
       };
 
-      STR::NLN::SOLVER::Generic& nln_solver()
+      STR::Nln::SOLVER::Generic& nln_solver()
       {
         check_init_setup();
         return *nlnsolver_ptr_;
@@ -122,9 +122,9 @@ namespace STR
       Teuchos::RCP<STR::EXPLICIT::Generic> explint_ptr_;
 
       //! ptr to the non-linear solver object
-      Teuchos::RCP<STR::NLN::SOLVER::Generic> nlnsolver_ptr_;
+      Teuchos::RCP<STR::Nln::SOLVER::Generic> nlnsolver_ptr_;
     };
-  }  // namespace TIMINT
+  }  // namespace TimeInt
 }  // namespace STR
 
 FOUR_C_NAMESPACE_CLOSE

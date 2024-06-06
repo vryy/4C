@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 
 CONTACT::RoughNodeType CONTACT::RoughNodeType::instance_;
 
-CORE::COMM::ParObject* CONTACT::RoughNodeType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* CONTACT::RoughNodeType::Create(const std::vector<char>& data)
 {
   std::vector<double> x(3, 0.0);
   std::vector<int> dofs(0);
@@ -52,11 +52,11 @@ CONTACT::RoughNode::RoughNode(int id, const std::vector<double>& coords, const i
   if (isslave)
   {
     hurstExponent_ =
-        GLOBAL::Problem::Instance()
-            ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(hurstexponentfunction_ - 1)
+        Global::Problem::Instance()
+            ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(hurstexponentfunction_ - 1)
             .Evaluate(this->X().data(), 1, this->Dim());
-    initialTopologyStdDeviation_ = GLOBAL::Problem::Instance()
-                                       ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
+    initialTopologyStdDeviation_ = Global::Problem::Instance()
+                                       ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(
                                            initialtopologystddeviationfunction_ - 1)
                                        .Evaluate(this->X().data(), 1, this->Dim());
 
@@ -85,16 +85,16 @@ CONTACT::RoughNode::RoughNode(int id, const std::vector<double>& coords, const i
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  *----------------------------------------------------------------------*/
-void CONTACT::RoughNode::Pack(CORE::COMM::PackBuffer& data) const
+void CONTACT::RoughNode::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data, type);
 
-  // add base class MORTAR::Node
+  // add base class Mortar::Node
   CONTACT::Node::Pack(data);
 
   AddtoPack(data, hurstexponentfunction_);
@@ -119,7 +119,7 @@ void CONTACT::RoughNode::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract base class CONTACT::Node
   std::vector<char> basedata(0);

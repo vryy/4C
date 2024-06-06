@@ -26,14 +26,14 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class Solver;
 }
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
     namespace CONSTRAINT
     {
@@ -42,7 +42,7 @@ namespace NOX
         class Preconditioner;
       }  // namespace Interface
       // typedef
-      typedef std::map<NOX::NLN::SolutionType, Teuchos::RCP<Interface::Preconditioner>>
+      typedef std::map<NOX::Nln::SolutionType, Teuchos::RCP<Interface::Preconditioner>>
           PrecInterfaceMap;
 
       namespace Interface
@@ -81,11 +81,11 @@ namespace NOX
               std::vector<Teuchos::RCP<Epetra_Map>>& maps) const = 0;
 
           //! Get the corresponding linear solver (optional)
-          virtual CORE::LINALG::Solver* GetLinearSolver() const { return nullptr; };
+          virtual Core::LinAlg::Solver* GetLinearSolver() const { return nullptr; };
         };
       }  // namespace Interface
     }    // namespace CONSTRAINT
-  }      // namespace NLN
+  }      // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

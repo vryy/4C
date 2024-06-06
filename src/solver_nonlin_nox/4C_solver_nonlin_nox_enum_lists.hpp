@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
     //! Supported solution type names
     enum SolutionType : int
@@ -397,7 +397,7 @@ namespace NOX
         return type;
       };
     }  // namespace StatusTest
-  }    // namespace NLN
+  }    // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------*
  *---------------------------------------------------------------------*/
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
@@ -40,14 +40,14 @@ namespace MAT
     /// material parameters for a single phase of porous multiphase fluid
     ///
     /// This object exists only once for each read fluid.
-    class FluidPoroSinglePhase : public CORE::MAT::PAR::Parameter
+    class FluidPoroSinglePhase : public Core::Mat::PAR::Parameter
     {
      public:
       /// standard constructor
-      FluidPoroSinglePhase(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      FluidPoroSinglePhase(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       /// initialize
       void Initialize();
@@ -77,14 +77,14 @@ namespace MAT
     /// material parameters for a single volfrac of porous multiphase fluid
     ///
     /// This object exists only once for each read fluid.
-    class FluidPoroSingleVolFrac : public CORE::MAT::PAR::Parameter
+    class FluidPoroSingleVolFrac : public Core::Mat::PAR::Parameter
     {
      public:
       /// standard constructor
-      FluidPoroSingleVolFrac(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      FluidPoroSingleVolFrac(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       /// initialize
       void Initialize();
@@ -116,14 +116,14 @@ namespace MAT
     /// material parameters for a single volfrac pressure of porous multiphase fluid
     ///
     /// This object exists only once for each read fluid.
-    class FluidPoroVolFracPressure : public CORE::MAT::PAR::Parameter
+    class FluidPoroVolFracPressure : public Core::Mat::PAR::Parameter
     {
      public:
       /// standard constructor
-      FluidPoroVolFracPressure(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      FluidPoroVolFracPressure(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       /// initialize
       void Initialize();
@@ -154,14 +154,14 @@ namespace MAT
   /*----------------------------------------------------------------------*
    | instance access method                                   vuong 08/16 |
    *----------------------------------------------------------------------*/
-  class FluidPoroSinglePhaseType : public CORE::COMM::ParObjectType
+  class FluidPoroSinglePhaseType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "FluidPoroSinglePhaseType"; }
 
     static FluidPoroSinglePhaseType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static FluidPoroSinglePhaseType instance_;
@@ -170,14 +170,14 @@ namespace MAT
   /*----------------------------------------------------------------------*
    | instance access method                                   vuong 08/16 |
    *----------------------------------------------------------------------*/
-  class FluidPoroSingleVolFracType : public CORE::COMM::ParObjectType
+  class FluidPoroSingleVolFracType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "FluidPoroSingleVolFracType"; }
 
     static FluidPoroSingleVolFracType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static FluidPoroSingleVolFracType instance_;
@@ -186,14 +186,14 @@ namespace MAT
   /*----------------------------------------------------------------------*
    | instance access method                              kremheller 02/18 |
    *----------------------------------------------------------------------*/
-  class FluidPoroVolFracPressureType : public CORE::COMM::ParObjectType
+  class FluidPoroVolFracPressureType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "FluidPoroVolFracPressureType"; }
 
     static FluidPoroVolFracPressureType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static FluidPoroVolFracPressureType instance_;
@@ -203,7 +203,7 @@ namespace MAT
   /// Base class for a single porous fluid phase within multiphase porous flow
   ///
   /// This object exists (several times) at every element
-  class FluidPoroSinglePhaseBase : public CORE::MAT::Material
+  class FluidPoroSinglePhaseBase : public Core::Mat::Material
   {
    public:
     /// construct empty material object
@@ -224,7 +224,7 @@ namespace MAT
     FluidPoroSinglePhase();
 
     /// construct the material object given material parameters
-    explicit FluidPoroSinglePhase(MAT::PAR::FluidPoroSinglePhase* params);
+    explicit FluidPoroSinglePhase(Mat::PAR::FluidPoroSinglePhase* params);
 
     //! @name Packing and Unpacking
 
@@ -249,7 +249,7 @@ namespace MAT
 
      \param data (in/out): char vector to store class information
      */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class
@@ -271,13 +271,13 @@ namespace MAT
     void Initialize() override;
 
     /// material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_fluidporo_singlephase;
+      return Core::Materials::m_fluidporo_singlephase;
     }
 
     /// return copy of this material object
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new FluidPoroSinglePhase(*this));
     }
@@ -322,13 +322,13 @@ namespace MAT
     double InvBulkmodulus() const { return params_->densitylaw_->InvBulkmodulus(); }
 
     /// return type of degree of freedom
-    CORE::Materials::MaterialType PoroDofType() const;
+    Core::Materials::MaterialType PoroDofType() const;
 
     /// return type of phase law
-    CORE::Materials::MaterialType PoroPhaseLawType() const;
+    Core::Materials::MaterialType PoroPhaseLawType() const;
 
     /// mark dofs associated with this phase in a given row (=numphase) in a matrix
-    void FillDoFMatrix(CORE::LINALG::SerialDenseMatrix& dofmat, int numphase) const;
+    void FillDoFMatrix(Core::LinAlg::SerialDenseMatrix& dofmat, int numphase) const;
 
     /// evaluate saturation of the phase
     double EvaluateSaturation(
@@ -350,11 +350,11 @@ namespace MAT
         int phasenum, int doftoderive, const std::vector<double>& state) const;
 
     /// Return quick accessible material parameter data
-    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
    private:
     /// my material parameters
-    MAT::PAR::FluidPoroSinglePhase* params_;
+    Mat::PAR::FluidPoroSinglePhase* params_;
   };
 
 
@@ -369,7 +369,7 @@ namespace MAT
     FluidPoroSingleVolFrac();
 
     /// construct the material object given material parameters
-    explicit FluidPoroSingleVolFrac(MAT::PAR::FluidPoroSingleVolFrac* params);
+    explicit FluidPoroSingleVolFrac(Mat::PAR::FluidPoroSingleVolFrac* params);
 
     //! @name Packing and Unpacking
 
@@ -394,7 +394,7 @@ namespace MAT
 
      \param data (in/out): char vector to store class information
      */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class
@@ -416,19 +416,19 @@ namespace MAT
     void Initialize() override;
 
     /// material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_fluidporo_singlevolfrac;
+      return Core::Materials::m_fluidporo_singlevolfrac;
     }
 
     /// return copy of this material object
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new FluidPoroSingleVolFrac(*this));
     }
 
     /// Return quick accessible material parameter data
-    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
     /// return density
     double Density() const override { return params_->density_; }
@@ -450,7 +450,7 @@ namespace MAT
 
    private:
     /// my material parameters
-    MAT::PAR::FluidPoroSingleVolFrac* params_;
+    Mat::PAR::FluidPoroSingleVolFrac* params_;
   };
 
   /*----------------------------------------------------------------------*/
@@ -464,7 +464,7 @@ namespace MAT
     FluidPoroVolFracPressure();
 
     /// construct the material object given material parameters
-    explicit FluidPoroVolFracPressure(MAT::PAR::FluidPoroVolFracPressure* params);
+    explicit FluidPoroVolFracPressure(Mat::PAR::FluidPoroVolFracPressure* params);
 
     //! @name Packing and Unpacking
 
@@ -489,7 +489,7 @@ namespace MAT
 
      \param data (in/out): char vector to store class information
      */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class
@@ -511,19 +511,19 @@ namespace MAT
     void Initialize() override;
 
     /// material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_fluidporo_volfracpressure;
+      return Core::Materials::m_fluidporo_volfracpressure;
     }
 
     /// return copy of this material object
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new FluidPoroVolFracPressure(*this));
     }
 
     /// Return quick accessible material parameter data
-    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
     /// return permeability
     double Permeability() const { return params_->permeability_; }
@@ -548,10 +548,10 @@ namespace MAT
 
    private:
     /// my material parameters
-    MAT::PAR::FluidPoroVolFracPressure* params_;
+    Mat::PAR::FluidPoroVolFracPressure* params_;
   };
 
-}  // namespace MAT
+}  // namespace Mat
 
 
 FOUR_C_NAMESPACE_CLOSE

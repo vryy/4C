@@ -28,23 +28,23 @@ FOUR_C_NAMESPACE_OPEN
 // divergence), the problem due to matrix conditioning does not appear
 // #define CHECBYSHEV
 
-CORE::GEO::CUT::QuadratureCompression::QuadratureCompression() {}
+Core::Geo::Cut::QuadratureCompression::QuadratureCompression() {}
 
 /*---------------------------------------------------------------------------------------------------------------*
  * Perform all operations related to quadrature compression
  * Only computing Leja points (from LU-decomposition) is checked
  *---------------------------------------------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::QuadratureCompression::perform_compression_of_quadrature(
-    CORE::FE::GaussPointsComposite& gin, CORE::GEO::CUT::VolumeCell* vc)
+bool Core::Geo::Cut::QuadratureCompression::perform_compression_of_quadrature(
+    Core::FE::GaussPointsComposite& gin, Core::Geo::Cut::VolumeCell* vc)
 {
   const double t_start = Teuchos::Time::wallTime();
 
-  Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> vander =
-      Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
-  Teuchos::RCP<CORE::LINALG::SerialDenseVector> x =
-      Teuchos::rcp(new CORE::LINALG::SerialDenseVector);
-  Teuchos::RCP<CORE::LINALG::SerialDenseVector> rhs =
-      Teuchos::rcp(new CORE::LINALG::SerialDenseVector);
+  Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> vander =
+      Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
+  Teuchos::RCP<Core::LinAlg::SerialDenseVector> x =
+      Teuchos::rcp(new Core::LinAlg::SerialDenseVector);
+  Teuchos::RCP<Core::LinAlg::SerialDenseVector> rhs =
+      Teuchos::rcp(new Core::LinAlg::SerialDenseVector);
 
   form_matrix_system(gin, vander, rhs);
 
@@ -59,9 +59,9 @@ bool CORE::GEO::CUT::QuadratureCompression::perform_compression_of_quadrature(
 /*---------------------------------------------------------------------------------------------------------------*
  * Compute the Vandermonde matrix and RHS of the matrix system sudhakar 08/15
  *---------------------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::QuadratureCompression::form_matrix_system(CORE::FE::GaussPointsComposite& gin,
-    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& mat,
-    Teuchos::RCP<CORE::LINALG::SerialDenseVector>& rhs)
+void Core::Geo::Cut::QuadratureCompression::form_matrix_system(Core::FE::GaussPointsComposite& gin,
+    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>& mat,
+    Teuchos::RCP<Core::LinAlg::SerialDenseVector>& rhs)
 {
   mat->shape(gin.NumPoints(), 56);
 
@@ -218,16 +218,16 @@ void CORE::GEO::CUT::QuadratureCompression::form_matrix_system(CORE::FE::GaussPo
  * L. Bos, S. De Marchi, A. Sommariva, and M. Vianello. Computing multivariate Fekete and Leja
  *points by numerical linear algebra. SIAM J Numer Anal. 48:1984--1999, 2010.
  *-----------------------------------------------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::QuadratureCompression::compress_leja_points(
-    CORE::FE::GaussPointsComposite& gin, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& mat,
-    Teuchos::RCP<CORE::LINALG::SerialDenseVector>& rhs,
-    Teuchos::RCP<CORE::LINALG::SerialDenseVector>& sol)
+bool Core::Geo::Cut::QuadratureCompression::compress_leja_points(
+    Core::FE::GaussPointsComposite& gin, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>& mat,
+    Teuchos::RCP<Core::LinAlg::SerialDenseVector>& rhs,
+    Teuchos::RCP<Core::LinAlg::SerialDenseVector>& sol)
 {
   int ma = mat->numRows();
   int na = mat->numCols();
 
-  Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> matTemp =
-      Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+  Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> matTemp =
+      Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
   matTemp->shape(ma, na);
 
   // copy this matrix to another
@@ -248,8 +248,8 @@ bool CORE::GEO::CUT::QuadratureCompression::compress_leja_points(
   std::cout<<"]\n";*/
 
 
-  Teuchos::RCP<CORE::LINALG::IntSerialDenseVector> work_temp =
-      Teuchos::rcp(new CORE::LINALG::IntSerialDenseVector);
+  Teuchos::RCP<Core::LinAlg::IntSerialDenseVector> work_temp =
+      Teuchos::rcp(new Core::LinAlg::IntSerialDenseVector);
   work_temp->shape(na, 1);
 
   Teuchos::LAPACK<int, double> ll;
@@ -279,8 +279,8 @@ bool CORE::GEO::CUT::QuadratureCompression::compress_leja_points(
     std::cout<<work[ii]<<" ";
   std::cout<<"\n";*/
 
-  Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> sqrmat =
-      Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+  Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> sqrmat =
+      Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
   sqrmat->shape(na, na);
 
   for (int ptno = 0; ptno < na; ptno++)
@@ -315,12 +315,12 @@ bool CORE::GEO::CUT::QuadratureCompression::compress_leja_points(
  * Form new quadrature rule from the quadrature points and weights obtained from compression
  *sudhakar 08/15 (just creating the required data structure)
  *-------------------------------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::FE::GaussPoints> CORE::GEO::CUT::QuadratureCompression::form_new_quadrature_rule(
-    CORE::FE::GaussPointsComposite& gin, Teuchos::RCP<CORE::LINALG::SerialDenseVector>& sol,
+Teuchos::RCP<Core::FE::GaussPoints> Core::Geo::Cut::QuadratureCompression::form_new_quadrature_rule(
+    Core::FE::GaussPointsComposite& gin, Teuchos::RCP<Core::LinAlg::SerialDenseVector>& sol,
     std::vector<int>& work, int& na)
 {
-  Teuchos::RCP<CORE::FE::CollectedGaussPoints> cgp =
-      Teuchos::rcp(new CORE::FE::CollectedGaussPoints(0));
+  Teuchos::RCP<Core::FE::CollectedGaussPoints> cgp =
+      Teuchos::rcp(new Core::FE::CollectedGaussPoints(0));
 
   for (int pt = 0; pt < na; pt++)
   {
@@ -334,8 +334,8 @@ Teuchos::RCP<CORE::FE::GaussPoints> CORE::GEO::CUT::QuadratureCompression::form_
   return cgp;
 }
 
-void CORE::GEO::CUT::QuadratureCompression::get_pivotal_rows(
-    Teuchos::RCP<CORE::LINALG::IntSerialDenseVector>& work_temp, std::vector<int>& work)
+void Core::Geo::Cut::QuadratureCompression::get_pivotal_rows(
+    Teuchos::RCP<Core::LinAlg::IntSerialDenseVector>& work_temp, std::vector<int>& work)
 {
   int na = (int)work.size();
   int index = 0;
@@ -350,7 +350,7 @@ void CORE::GEO::CUT::QuadratureCompression::get_pivotal_rows(
   }
 }
 
-bool CORE::GEO::CUT::QuadratureCompression::is_this_value_already_in_dense_vector(
+bool Core::Geo::Cut::QuadratureCompression::is_this_value_already_in_dense_vector(
     int& input, std::vector<int>& vec, int upper_range, int& index)
 {
   index = 0;
@@ -364,7 +364,7 @@ bool CORE::GEO::CUT::QuadratureCompression::is_this_value_already_in_dense_vecto
   return false;
 }
 
-int CORE::GEO::CUT::QuadratureCompression::get_correct_index(
+int Core::Geo::Cut::QuadratureCompression::get_correct_index(
     int& input, std::vector<int>& vec, int upper_range)
 {
   int index = 0;
@@ -383,9 +383,9 @@ int CORE::GEO::CUT::QuadratureCompression::get_correct_index(
  * Compute error between original and compressed quadrature points to evalute defined      sudhakar
  *08/15 base functions (either Chebyshev or monomial) and print the maximum absolute error
  *--------------------------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::QuadratureCompression::compute_and_print_error(
-    CORE::FE::GaussPointsComposite& gin, Teuchos::RCP<CORE::LINALG::SerialDenseVector>& rhs,
-    Teuchos::RCP<CORE::LINALG::SerialDenseVector>& sol, std::vector<int>& work, int& na)
+void Core::Geo::Cut::QuadratureCompression::compute_and_print_error(
+    Core::FE::GaussPointsComposite& gin, Teuchos::RCP<Core::LinAlg::SerialDenseVector>& rhs,
+    Teuchos::RCP<Core::LinAlg::SerialDenseVector>& sol, std::vector<int>& work, int& na)
 {
   /*-------------------------------------------------------------------*/
   // solution check
@@ -526,10 +526,10 @@ void CORE::GEO::CUT::QuadratureCompression::compute_and_print_error(
   /*-------------------------------------------------------------------*/
 }
 
-void CORE::GEO::CUT::QuadratureCompression::teuchos_gels(
-    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& mat,
-    Teuchos::RCP<CORE::LINALG::SerialDenseVector>& rhs,
-    Teuchos::RCP<CORE::LINALG::SerialDenseVector>& sol)
+void Core::Geo::Cut::QuadratureCompression::teuchos_gels(
+    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>& mat,
+    Teuchos::RCP<Core::LinAlg::SerialDenseVector>& rhs,
+    Teuchos::RCP<Core::LinAlg::SerialDenseVector>& sol)
 {
   mat->shape(3, 4);
   rhs->shape(3, 1);
@@ -563,8 +563,8 @@ void CORE::GEO::CUT::QuadratureCompression::teuchos_gels(
 
   int lwork = 2 * na + (na + 1) * 64;
 
-  Teuchos::RCP<CORE::LINALG::SerialDenseVector> work =
-      Teuchos::rcp(new CORE::LINALG::SerialDenseVector);
+  Teuchos::RCP<Core::LinAlg::SerialDenseVector> work =
+      Teuchos::rcp(new Core::LinAlg::SerialDenseVector);
   work->shape(na, 1);
 
   Teuchos::LAPACK<int, double> ll;
@@ -577,10 +577,10 @@ void CORE::GEO::CUT::QuadratureCompression::teuchos_gels(
   FOUR_C_THROW("done");
 }
 
-void CORE::GEO::CUT::QuadratureCompression::qr_decomposition_teuchos(
-    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& mat,
-    Teuchos::RCP<CORE::LINALG::SerialDenseVector>& rhs,
-    Teuchos::RCP<CORE::LINALG::SerialDenseVector>& sol)
+void Core::Geo::Cut::QuadratureCompression::qr_decomposition_teuchos(
+    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>& mat,
+    Teuchos::RCP<Core::LinAlg::SerialDenseVector>& rhs,
+    Teuchos::RCP<Core::LinAlg::SerialDenseVector>& sol)
 {
   Teuchos::SerialQRDenseSolver<int, double> qr;
 
@@ -614,10 +614,10 @@ void CORE::GEO::CUT::QuadratureCompression::qr_decomposition_teuchos(
   if (NotSolved != 0) FOUR_C_THROW("QR-factorization using Trilinos not successful\n");
 }
 
-void CORE::GEO::CUT::QuadratureCompression::qr_decomposition_lapack(
-    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& mat,
-    Teuchos::RCP<CORE::LINALG::SerialDenseVector>& rhs,
-    Teuchos::RCP<CORE::LINALG::SerialDenseVector>& sol)
+void Core::Geo::Cut::QuadratureCompression::qr_decomposition_lapack(
+    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>& mat,
+    Teuchos::RCP<Core::LinAlg::SerialDenseVector>& rhs,
+    Teuchos::RCP<Core::LinAlg::SerialDenseVector>& sol)
 {
   int ma = mat->numRows();
   int na = mat->numCols();
@@ -649,14 +649,14 @@ void CORE::GEO::CUT::QuadratureCompression::qr_decomposition_lapack(
   (*sol)(2) = 0.0;
   (*sol)(3) = 0.0;
 
-  Teuchos::RCP<CORE::LINALG::IntSerialDenseVector> jpvt =
-      Teuchos::rcp(new CORE::LINALG::IntSerialDenseVector);
-  Teuchos::RCP<CORE::LINALG::SerialDenseVector> tau =
-      Teuchos::rcp(new CORE::LINALG::SerialDenseVector);
-  Teuchos::RCP<CORE::LINALG::SerialDenseVector> work =
-      Teuchos::rcp(new CORE::LINALG::SerialDenseVector);
-  Teuchos::RCP<CORE::LINALG::SerialDenseVector> rwork =
-      Teuchos::rcp(new CORE::LINALG::SerialDenseVector);
+  Teuchos::RCP<Core::LinAlg::IntSerialDenseVector> jpvt =
+      Teuchos::rcp(new Core::LinAlg::IntSerialDenseVector);
+  Teuchos::RCP<Core::LinAlg::SerialDenseVector> tau =
+      Teuchos::rcp(new Core::LinAlg::SerialDenseVector);
+  Teuchos::RCP<Core::LinAlg::SerialDenseVector> work =
+      Teuchos::rcp(new Core::LinAlg::SerialDenseVector);
+  Teuchos::RCP<Core::LinAlg::SerialDenseVector> rwork =
+      Teuchos::rcp(new Core::LinAlg::SerialDenseVector);
   jpvt->shape(na, 1);
   tau->shape(na, 1);
   work->shape(na, 1);
@@ -695,8 +695,8 @@ void CORE::GEO::CUT::QuadratureCompression::qr_decomposition_lapack(
  * Write volumecell geometry, original quadrature points and compressed points        sudhakar 08/15
  * into GMSH output
  *------------------------------------------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::QuadratureCompression::write_compressed_quadrature_gmsh(
-    CORE::FE::GaussPointsComposite& gin, CORE::GEO::CUT::VolumeCell* vc)
+void Core::Geo::Cut::QuadratureCompression::write_compressed_quadrature_gmsh(
+    Core::FE::GaussPointsComposite& gin, Core::Geo::Cut::VolumeCell* vc)
 {
   static int sideno = 0;
   sideno++;
@@ -781,8 +781,8 @@ void CORE::GEO::CUT::QuadratureCompression::write_compressed_quadrature_gmsh(
  * Integrate predefined polynomial functions using original and compressed quadrature and compute
  *error         sudhakar 08/15 between these values
  *---------------------------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::QuadratureCompression::integrate_predefined_polynomials(
-    CORE::FE::GaussPointsComposite& gin)
+void Core::Geo::Cut::QuadratureCompression::integrate_predefined_polynomials(
+    Core::FE::GaussPointsComposite& gin)
 {
   std::vector<double> intOri(6, 0.0), intCom(6, 0.0), err(6, 0.0);
 

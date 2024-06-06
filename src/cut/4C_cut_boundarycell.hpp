@@ -21,9 +21,9 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::GEO
+namespace Core::Geo
 {
-  namespace CUT
+  namespace Cut
   {
     class Facet;
     class Element;
@@ -40,7 +40,7 @@ namespace CORE::GEO
     {
      public:
       /// constructor
-      BoundaryCell(const CORE::LINALG::SerialDenseMatrix& xyz, Facet* facet,
+      BoundaryCell(const Core::LinAlg::SerialDenseMatrix& xyz, Facet* facet,
           const std::vector<Point*>& points);
 
       /// destructor
@@ -49,7 +49,7 @@ namespace CORE::GEO
       \brief Returns the shape of the boundarycell
        */
 
-      virtual CORE::FE::CellType Shape() const = 0;
+      virtual Core::FE::CellType Shape() const = 0;
 
       /*! \brief Returns the cubature degree to generate quadrature rule for the cell
        *
@@ -75,13 +75,13 @@ namespace CORE::GEO
       /*!
       \brief Returns the center of tri3 and quad4 boundarycell
        */
-      virtual void element_center(CORE::LINALG::Matrix<3, 1>& midpoint) = 0;
+      virtual void element_center(Core::LinAlg::Matrix<3, 1>& midpoint) = 0;
 
       /*!
       \brief Get the outward normal vector for the tri3 and quad4 boundarycell
        */
       virtual void Normal(
-          const CORE::LINALG::Matrix<2, 1>& xsi, CORE::LINALG::Matrix<3, 1>& normal) const = 0;
+          const Core::LinAlg::Matrix<2, 1>& xsi, Core::LinAlg::Matrix<3, 1>& normal) const = 0;
 
       /*!
       \brief Get the corner points of the boundarycell in Cylce for geometrical operations
@@ -96,16 +96,16 @@ namespace CORE::GEO
       /*!
       \brief Get the coodinates of the corner points of boundarycell
        */
-      const CORE::LINALG::SerialDenseMatrix& Coordinates() const { return xyz_; }
+      const Core::LinAlg::SerialDenseMatrix& Coordinates() const { return xyz_; }
 
       /*!
       \brief Move the corner points of the boundary cell by a specific offset
        */
-      template <CORE::FE::CellType celldistype>
+      template <Core::FE::CellType celldistype>
       void AssignOffset(int idx, double offset)
       {
-        CORE::LINALG::Matrix<3, CORE::FE::num_nodes<celldistype>> xyz_mat(xyz_, true);
-        for (unsigned int n = 0; n < CORE::FE::num_nodes<celldistype>; ++n)
+        Core::LinAlg::Matrix<3, Core::FE::num_nodes<celldistype>> xyz_mat(xyz_, true);
+        for (unsigned int n = 0; n < Core::FE::num_nodes<celldistype>; ++n)
           xyz_mat(idx, n) += offset;
       }
 
@@ -138,17 +138,17 @@ namespace CORE::GEO
       /*!
       \brief Get the Gaussian integration rule for the boundarycell
        */
-      virtual CORE::FE::GaussIntegration gaussRule(int cubaturedegree) = 0;
+      virtual Core::FE::GaussIntegration gaussRule(int cubaturedegree) = 0;
 
       /*!
       \brief Get the Gaussian integration rule for the boundarycell
        */
-      virtual CORE::FE::GaussIntegration gaussRule() { return gaussRule(CubatureDegree()); }
+      virtual Core::FE::GaussIntegration gaussRule() { return gaussRule(CubatureDegree()); }
 
       /*!
       \brief Get the normal vector for the arbitrary boundarycell alone
        */
-      virtual CORE::LINALG::Matrix<3, 1> GetNormalVector() = 0;
+      virtual Core::LinAlg::Matrix<3, 1> GetNormalVector() = 0;
 
       /*! \brief Print the corner points on screen
        *
@@ -165,24 +165,24 @@ namespace CORE::GEO
       Gauss point location (eta) corresponding to the shape of the boundarycell. Also computes the
       factor to be multiplied with integration weight and normal vector of the boundarycell
        */
-      template <CORE::FE::CellType celldistype>
-      void Transform(const CORE::LINALG::Matrix<2, 1>& eta, CORE::LINALG::Matrix<3, 1>& x_gp_lin,
-          CORE::LINALG::Matrix<3, 1>& normal, double& drs, bool referencepos = false)
+      template <Core::FE::CellType celldistype>
+      void Transform(const Core::LinAlg::Matrix<2, 1>& eta, Core::LinAlg::Matrix<3, 1>& x_gp_lin,
+          Core::LinAlg::Matrix<3, 1>& normal, double& drs, bool referencepos = false)
       {
-        const int numnodes = CORE::FE::num_nodes<celldistype>;
-        CORE::LINALG::Matrix<3, numnodes> xyze(xyz_, true);
-        if (referencepos) xyze = CORE::LINALG::Matrix<3, numnodes>(xyz_ref_, true);
+        const int numnodes = Core::FE::num_nodes<celldistype>;
+        Core::LinAlg::Matrix<3, numnodes> xyze(xyz_, true);
+        if (referencepos) xyze = Core::LinAlg::Matrix<3, numnodes>(xyz_ref_, true);
 
-        CORE::LINALG::Matrix<numnodes, 1> funct(false);
-        CORE::LINALG::Matrix<2, numnodes> deriv(false);
-        CORE::LINALG::Matrix<2, 2> metrictensor(false);
+        Core::LinAlg::Matrix<numnodes, 1> funct(false);
+        Core::LinAlg::Matrix<2, numnodes> deriv(false);
+        Core::LinAlg::Matrix<2, 2> metrictensor(false);
 
-        CORE::FE::shape_function_2D(funct, eta(0), eta(1), celldistype);
+        Core::FE::shape_function_2D(funct, eta(0), eta(1), celldistype);
 
-        if (celldistype != CORE::FE::CellType::tri3)
+        if (celldistype != Core::FE::CellType::tri3)
         {
-          CORE::FE::shape_function_2D_deriv1(deriv, eta(0), eta(1), celldistype);
-          CORE::FE::ComputeMetricTensorForBoundaryEle<celldistype>(
+          Core::FE::shape_function_2D_deriv1(deriv, eta(0), eta(1), celldistype);
+          Core::FE::ComputeMetricTensorForBoundaryEle<celldistype>(
               xyze, deriv, metrictensor, drs, &normal);
         }
         else
@@ -190,16 +190,16 @@ namespace CORE::GEO
           // For Tri's this method of determining the area and thus the gp-weights is more robust.
           //  It is needed for TRI's which are small/ill-conditioned but large enough to affect the
           //  simulation.
-          static CORE::LINALG::Matrix<3, 1> p0(true);
-          static CORE::LINALG::Matrix<3, 1> p1(true);
-          static CORE::LINALG::Matrix<3, 1> p2(true);
+          static Core::LinAlg::Matrix<3, 1> p0(true);
+          static Core::LinAlg::Matrix<3, 1> p1(true);
+          static Core::LinAlg::Matrix<3, 1> p2(true);
           for (unsigned dim = 0; dim < 3; ++dim)
           {
             p0(dim) = xyze(dim, 0);
             p1(dim) = xyze(dim, 1);
             p2(dim) = xyze(dim, 2);
           }
-          drs = 2.0 * (CUT::KERNEL::getAreaTri(p0.A(), p1.A(), p2.A(), &normal));
+          drs = 2.0 * (Cut::Kernel::getAreaTri(p0.A(), p1.A(), p2.A(), &normal));
         }
 
         x_gp_lin.Multiply(xyze, funct);
@@ -208,7 +208,7 @@ namespace CORE::GEO
       }
 
       /// Reset the point with local index lid
-      void ResetPos(int lid, CORE::LINALG::Matrix<3, 1> newpos)
+      void ResetPos(int lid, Core::LinAlg::Matrix<3, 1> newpos)
       {
         if (lid > xyz_.numCols()) FOUR_C_THROW("Index out of range! %d > %d", lid, xyz_.numCols());
 
@@ -222,34 +222,34 @@ namespace CORE::GEO
       system setting shadow = true means the mapping is done w.r. to the parent quad element from
       which elem1 is derived
        */
-      template <CORE::FE::CellType celldistype>
-      void transform_local_coords(Element* elem1, const CORE::LINALG::Matrix<2, 1>& eta,
-          CORE::LINALG::Matrix<3, 1>& x_gp_lin, CORE::LINALG::Matrix<3, 1>& normal, double& drs,
+      template <Core::FE::CellType celldistype>
+      void transform_local_coords(Element* elem1, const Core::LinAlg::Matrix<2, 1>& eta,
+          Core::LinAlg::Matrix<3, 1>& x_gp_lin, Core::LinAlg::Matrix<3, 1>& normal, double& drs,
           bool shadow = false);
 
      protected:
-      virtual CORE::FE::GaussRule2D my_simple_gauss_rule() = 0;
+      virtual Core::FE::GaussRule2D my_simple_gauss_rule() = 0;
 
-      template <CORE::FE::CellType distype>
+      template <Core::FE::CellType distype>
       double my_area()
       {
-        const int numnodes = CORE::FE::num_nodes<distype>;
-        CORE::LINALG::Matrix<3, numnodes> xyze(this->xyz_, true);
-        CORE::LINALG::Matrix<numnodes, 1> funct;
-        CORE::LINALG::Matrix<2, numnodes> deriv;
-        CORE::LINALG::Matrix<2, 2> metrictensor;
+        const int numnodes = Core::FE::num_nodes<distype>;
+        Core::LinAlg::Matrix<3, numnodes> xyze(this->xyz_, true);
+        Core::LinAlg::Matrix<numnodes, 1> funct;
+        Core::LinAlg::Matrix<2, numnodes> deriv;
+        Core::LinAlg::Matrix<2, 2> metrictensor;
 
-        CORE::FE::GaussRule2D gaussrule = this->my_simple_gauss_rule();
-        CORE::FE::IntegrationPoints2D intpoints(gaussrule);
+        Core::FE::GaussRule2D gaussrule = this->my_simple_gauss_rule();
+        Core::FE::IntegrationPoints2D intpoints(gaussrule);
 
         double area = 0;
         double drs;
         for (int i = 0; i < intpoints.nquad; ++i)
         {
           double* eta = intpoints.qxg[i];
-          CORE::FE::shape_function_2D(funct, eta[0], eta[1], distype);
-          CORE::FE::shape_function_2D_deriv1(deriv, eta[0], eta[1], distype);
-          CORE::FE::ComputeMetricTensorForBoundaryEle<distype>(
+          Core::FE::shape_function_2D(funct, eta[0], eta[1], distype);
+          Core::FE::shape_function_2D_deriv1(deriv, eta[0], eta[1], distype);
+          Core::FE::ComputeMetricTensorForBoundaryEle<distype>(
               xyze, deriv, metrictensor, drs, nullptr);
           if (not std::isnan(drs)) area += intpoints.qwgt[i] * drs;
         }
@@ -260,22 +260,22 @@ namespace CORE::GEO
        *
        *  \author shahmiri
        *  \date 07/12 */
-      template <CORE::FE::CellType distype>
+      template <Core::FE::CellType distype>
       void my_element_center(
-          CORE::LINALG::Matrix<3, 1>& center, CORE::LINALG::Matrix<3, 1>& midpoint)
+          Core::LinAlg::Matrix<3, 1>& center, Core::LinAlg::Matrix<3, 1>& midpoint)
       {
-        const int numnodes = CORE::FE::num_nodes<distype>;
-        CORE::LINALG::Matrix<3, numnodes> xyze(this->xyz_, true);
-        CORE::LINALG::Matrix<numnodes, 1> funct;
-        CORE::FE::shape_function<distype>(center, funct);
+        const int numnodes = Core::FE::num_nodes<distype>;
+        Core::LinAlg::Matrix<3, numnodes> xyze(this->xyz_, true);
+        Core::LinAlg::Matrix<numnodes, 1> funct;
+        Core::FE::shape_function<distype>(center, funct);
         midpoint.Multiply(xyze, funct);
       }
 
       /// Current position of the boundary cell
-      CORE::LINALG::SerialDenseMatrix xyz_;
+      Core::LinAlg::SerialDenseMatrix xyz_;
 
       /// Reference position of the boundary cell
-      CORE::LINALG::SerialDenseMatrix xyz_ref_;
+      Core::LinAlg::SerialDenseMatrix xyz_ref_;
       Facet* facet_;
       Teuchos::RCP<Cycle> points_;
     };
@@ -285,14 +285,14 @@ namespace CORE::GEO
     class Point1BoundaryCell : public BoundaryCell
     {
      public:
-      Point1BoundaryCell(const CORE::LINALG::SerialDenseMatrix& xyz, Facet* facet,
+      Point1BoundaryCell(const Core::LinAlg::SerialDenseMatrix& xyz, Facet* facet,
           const std::vector<Point*>& points)
           : BoundaryCell(xyz, facet, points)
       {
         /* intentionally left blank */
       }
 
-      CORE::FE::CellType Shape() const override { return CORE::FE::CellType::point1; }
+      Core::FE::CellType Shape() const override { return Core::FE::CellType::point1; }
 
       int CubatureDegree() const override { return 0; }
 
@@ -300,21 +300,21 @@ namespace CORE::GEO
 
       double Area() override { return 0.0; };
 
-      void element_center(CORE::LINALG::Matrix<3, 1>& midpoint) override;
+      void element_center(Core::LinAlg::Matrix<3, 1>& midpoint) override;
 
       void Normal(
-          const CORE::LINALG::Matrix<2, 1>& xsi, CORE::LINALG::Matrix<3, 1>& normal) const override;
+          const Core::LinAlg::Matrix<2, 1>& xsi, Core::LinAlg::Matrix<3, 1>& normal) const override;
 
-      CORE::FE::GaussIntegration gaussRule(int cubaturedegree) override;
+      Core::FE::GaussIntegration gaussRule(int cubaturedegree) override;
 
-      CORE::LINALG::Matrix<3, 1> GetNormalVector() override;
+      Core::LinAlg::Matrix<3, 1> GetNormalVector() override;
 
       bool IsValidBoundaryCell() override { return true; };
 
      protected:
-      CORE::FE::GaussRule2D my_simple_gauss_rule() override
+      Core::FE::GaussRule2D my_simple_gauss_rule() override
       {
-        return CORE::FE::GaussRule2D::undefined;
+        return Core::FE::GaussRule2D::undefined;
       }
     };
 
@@ -323,14 +323,14 @@ namespace CORE::GEO
     class Line2BoundaryCell : public BoundaryCell
     {
      public:
-      Line2BoundaryCell(const CORE::LINALG::SerialDenseMatrix& xyz, Facet* facet,
+      Line2BoundaryCell(const Core::LinAlg::SerialDenseMatrix& xyz, Facet* facet,
           const std::vector<Point*>& points)
           : BoundaryCell(xyz, facet, points)
       {
         /* intentionally left blank */
       }
 
-      CORE::FE::CellType Shape() const override { return CORE::FE::CellType::line2; }
+      Core::FE::CellType Shape() const override { return Core::FE::CellType::line2; }
 
       int CubatureDegree() const override { return 4; }
 
@@ -338,21 +338,21 @@ namespace CORE::GEO
 
       double Area() override;
 
-      void element_center(CORE::LINALG::Matrix<3, 1>& midpoint) override;
+      void element_center(Core::LinAlg::Matrix<3, 1>& midpoint) override;
 
       void Normal(
-          const CORE::LINALG::Matrix<2, 1>& xsi, CORE::LINALG::Matrix<3, 1>& normal) const override;
+          const Core::LinAlg::Matrix<2, 1>& xsi, Core::LinAlg::Matrix<3, 1>& normal) const override;
 
-      CORE::FE::GaussIntegration gaussRule(int cubaturedegree) override;
+      Core::FE::GaussIntegration gaussRule(int cubaturedegree) override;
 
-      CORE::LINALG::Matrix<3, 1> GetNormalVector() override;
+      Core::LinAlg::Matrix<3, 1> GetNormalVector() override;
 
       bool IsValidBoundaryCell() override { return (Area() > REF_AREA_BCELL); };
 
      protected:
-      CORE::FE::GaussRule2D my_simple_gauss_rule() override
+      Core::FE::GaussRule2D my_simple_gauss_rule() override
       {
-        return CORE::FE::GaussRule2D::undefined;
+        return Core::FE::GaussRule2D::undefined;
       }
     };
 
@@ -361,13 +361,13 @@ namespace CORE::GEO
     class Tri3BoundaryCell : public BoundaryCell
     {
      public:
-      Tri3BoundaryCell(const CORE::LINALG::SerialDenseMatrix& xyz, Facet* facet,
+      Tri3BoundaryCell(const Core::LinAlg::SerialDenseMatrix& xyz, Facet* facet,
           const std::vector<Point*>& points)
           : BoundaryCell(xyz, facet, points)
       {
       }
 
-      CORE::FE::CellType Shape() const override { return CORE::FE::CellType::tri3; }
+      Core::FE::CellType Shape() const override { return Core::FE::CellType::tri3; }
 
       int CubatureDegree() const override { return 20; }
 
@@ -375,14 +375,14 @@ namespace CORE::GEO
 
       double Area() override;
 
-      void element_center(CORE::LINALG::Matrix<3, 1>& midpoint) override;
+      void element_center(Core::LinAlg::Matrix<3, 1>& midpoint) override;
 
       void Normal(
-          const CORE::LINALG::Matrix<2, 1>& xsi, CORE::LINALG::Matrix<3, 1>& normal) const override;
+          const Core::LinAlg::Matrix<2, 1>& xsi, Core::LinAlg::Matrix<3, 1>& normal) const override;
 
-      CORE::FE::GaussIntegration gaussRule(int cubaturedegree) override;
+      Core::FE::GaussIntegration gaussRule(int cubaturedegree) override;
 
-      CORE::LINALG::Matrix<3, 1> GetNormalVector() override;
+      Core::LinAlg::Matrix<3, 1> GetNormalVector() override;
 
       /** \brief  A first step to validate if a boundary cell is valid.
        *
@@ -391,9 +391,9 @@ namespace CORE::GEO
       bool IsValidBoundaryCell() override;
 
      protected:
-      CORE::FE::GaussRule2D my_simple_gauss_rule() override
+      Core::FE::GaussRule2D my_simple_gauss_rule() override
       {
-        return CORE::FE::GaussRule2D::tri_3point;
+        return Core::FE::GaussRule2D::tri_3point;
       }
     };
 
@@ -402,37 +402,37 @@ namespace CORE::GEO
     class Quad4BoundaryCell : public BoundaryCell
     {
      public:
-      Quad4BoundaryCell(const CORE::LINALG::SerialDenseMatrix& xyz, Facet* facet,
+      Quad4BoundaryCell(const Core::LinAlg::SerialDenseMatrix& xyz, Facet* facet,
           const std::vector<Point*>& points)
           : BoundaryCell(xyz, facet, points)
       {
       }
 
-      CORE::FE::CellType Shape() const override { return CORE::FE::CellType::quad4; }
+      Core::FE::CellType Shape() const override { return Core::FE::CellType::quad4; }
 
       int CubatureDegree() const override { return 20; }
 
       void DumpGmshNormal(std::ofstream& file) override;
 
       // Maybe shoelace theorem can be used here?
-      double Area() override { return my_area<CORE::FE::CellType::quad4>(); }
+      double Area() override { return my_area<Core::FE::CellType::quad4>(); }
 
-      void element_center(CORE::LINALG::Matrix<3, 1>& midpoint) override;
+      void element_center(Core::LinAlg::Matrix<3, 1>& midpoint) override;
 
       void Normal(
-          const CORE::LINALG::Matrix<2, 1>& xsi, CORE::LINALG::Matrix<3, 1>& normal) const override;
+          const Core::LinAlg::Matrix<2, 1>& xsi, Core::LinAlg::Matrix<3, 1>& normal) const override;
 
-      CORE::FE::GaussIntegration gaussRule(int cubaturedegree) override;
+      Core::FE::GaussIntegration gaussRule(int cubaturedegree) override;
 
-      CORE::LINALG::Matrix<3, 1> GetNormalVector() override;
+      Core::LinAlg::Matrix<3, 1> GetNormalVector() override;
 
       // Probably not the best way...
       bool IsValidBoundaryCell() override { return (Area() > REF_AREA_BCELL); }
 
      protected:
-      CORE::FE::GaussRule2D my_simple_gauss_rule() override
+      Core::FE::GaussRule2D my_simple_gauss_rule() override
       {
-        return CORE::FE::GaussRule2D::quad_4point;
+        return Core::FE::GaussRule2D::quad_4point;
       }
     };
 
@@ -441,14 +441,14 @@ namespace CORE::GEO
     class ArbitraryBoundaryCell : public BoundaryCell
     {
      public:
-      ArbitraryBoundaryCell(const CORE::LINALG::SerialDenseMatrix& xyz, Facet* facet,
-          const std::vector<Point*>& points, const CORE::FE::GaussIntegration& gaussRule,
-          const CORE::LINALG::Matrix<3, 1>& normal)
+      ArbitraryBoundaryCell(const Core::LinAlg::SerialDenseMatrix& xyz, Facet* facet,
+          const std::vector<Point*>& points, const Core::FE::GaussIntegration& gaussRule,
+          const Core::LinAlg::Matrix<3, 1>& normal)
           : BoundaryCell(xyz, facet, points), gauss_rule_(gaussRule), normal_(normal)
       {
       }
 
-      CORE::FE::CellType Shape() const override { return CORE::FE::CellType::dis_none; }
+      Core::FE::CellType Shape() const override { return Core::FE::CellType::dis_none; }
 
       int CubatureDegree() const override { return 0; }
 
@@ -456,30 +456,30 @@ namespace CORE::GEO
 
       double Area() override { return 0.0; }
 
-      void element_center(CORE::LINALG::Matrix<3, 1>& midpoint) override;
+      void element_center(Core::LinAlg::Matrix<3, 1>& midpoint) override;
 
       void Normal(
-          const CORE::LINALG::Matrix<2, 1>& xsi, CORE::LINALG::Matrix<3, 1>& normal) const override;
+          const Core::LinAlg::Matrix<2, 1>& xsi, Core::LinAlg::Matrix<3, 1>& normal) const override;
 
-      CORE::FE::GaussIntegration gaussRule(int cubaturedegree) override;
+      Core::FE::GaussIntegration gaussRule(int cubaturedegree) override;
 
-      CORE::LINALG::Matrix<3, 1> GetNormalVector() override;
+      Core::LinAlg::Matrix<3, 1> GetNormalVector() override;
 
       bool IsValidBoundaryCell() override { return (Area() > REF_AREA_BCELL); }
 
      protected:
-      CORE::FE::GaussRule2D my_simple_gauss_rule() override
+      Core::FE::GaussRule2D my_simple_gauss_rule() override
       {
-        return CORE::FE::GaussRule2D::quad_4point;
+        return Core::FE::GaussRule2D::quad_4point;
       }
 
      private:
-      CORE::FE::GaussIntegration gauss_rule_;
-      CORE::LINALG::Matrix<3, 1> normal_;
+      Core::FE::GaussIntegration gauss_rule_;
+      Core::LinAlg::Matrix<3, 1> normal_;
     };
 
-  }  // namespace CUT
-}  // namespace CORE::GEO
+  }  // namespace Cut
+}  // namespace Core::Geo
 
 FOUR_C_NAMESPACE_CLOSE
 

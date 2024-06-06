@@ -15,7 +15,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace INPAR::RVE_MPC
+namespace Inpar::RveMpc
 {
   /// Definition Type of the MultiPoint Constraint
   enum MultiPointConstraintType
@@ -69,8 +69,8 @@ namespace INPAR::RVE_MPC
 
   /// set multi point constraint specific conditions
   void SetValidConditions(
-      std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist);
-}  // namespace INPAR::RVE_MPC
+      std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist);
+}  // namespace Inpar::RveMpc
 
 FOUR_C_NAMESPACE_CLOSE
 #endif

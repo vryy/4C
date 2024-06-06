@@ -20,17 +20,17 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace CORE::GEO
+namespace Core::Geo
 {
   class CutWizard;
 }
 
-namespace CORE::Dofsets
+namespace Core::DOFSets
 {
   /// Alias dofset that shares dof numbers with another dofset
   /*!
@@ -48,7 +48,7 @@ namespace CORE::Dofsets
     \brief Standard Constructor
     */
     explicit TransparentIndependentDofSet(
-        Teuchos::RCP<DRT::Discretization> sourcedis, bool parallel);
+        Teuchos::RCP<Discret::Discretization> sourcedis, bool parallel);
 
 
 
@@ -57,14 +57,14 @@ namespace CORE::Dofsets
 
     /// Assign dof numbers to all elements and nodes of the discretization.
     int assign_degrees_of_freedom(
-        const DRT::Discretization& dis, const unsigned dspos, const int start) override;
+        const Discret::Discretization& dis, const unsigned dspos, const int start) override;
 
    protected:
-    int NumDofPerNode(const CORE::Nodes::Node& node) const override;
+    int NumDofPerNode(const Core::Nodes::Node& node) const override;
 
 
   };  // class TransparentDofSet
-}  // namespace CORE::Dofsets
+}  // namespace Core::DOFSets
 
 FOUR_C_NAMESPACE_CLOSE
 

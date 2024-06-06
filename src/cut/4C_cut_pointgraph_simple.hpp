@@ -19,11 +19,11 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::GEO
+namespace Core::Geo
 {
-  namespace CUT
+  namespace Cut
   {
-    namespace IMPL
+    namespace Impl
     {
       /*--------------------------------------------------------------------------*/
       /** \brief Simplified version of the base class for 1-D elements
@@ -185,9 +185,9 @@ namespace CORE::GEO
         Teuchos::RCP<SimplePointGraph2D::Graph> graph_2d_;
       };  // class SimplePointGraph_2D
 
-    }  // namespace IMPL
-  }    // namespace CUT
-}  // namespace CORE::GEO
+    }  // namespace Impl
+  }    // namespace Cut
+}  // namespace Core::Geo
 
 
 FOUR_C_NAMESPACE_CLOSE

@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief A collection of algebraic assemble methods for namespace CORE::LINALG
+\brief A collection of algebraic assemble methods for namespace Core::LinAlg
 
 \level 0
 */
@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  assemble a matrix                                         popp 01/08|
  *----------------------------------------------------------------------*/
-void CORE::LINALG::Assemble(Epetra_CrsMatrix& A, const CORE::LINALG::SerialDenseMatrix& Aele,
+void Core::LinAlg::Assemble(Epetra_CrsMatrix& A, const Core::LinAlg::SerialDenseMatrix& Aele,
     const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
     const std::vector<int>& lmcol)
 {
@@ -70,7 +70,7 @@ void CORE::LINALG::Assemble(Epetra_CrsMatrix& A, const CORE::LINALG::SerialDense
 /*----------------------------------------------------------------------*
  |  assemble a vector                                        mwgee 12/06|
  *----------------------------------------------------------------------*/
-void CORE::LINALG::Assemble(Epetra_Vector& V, const CORE::LINALG::SerialDenseVector& Vele,
+void Core::LinAlg::Assemble(Epetra_Vector& V, const Core::LinAlg::SerialDenseVector& Vele,
     const std::vector<int>& lm, const std::vector<int>& lmowner)
 {
   const int ldim = (int)lm.size();
@@ -92,7 +92,7 @@ void CORE::LINALG::Assemble(Epetra_Vector& V, const CORE::LINALG::SerialDenseVec
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::LINALG::AssembleMyVector(
+void Core::LinAlg::AssembleMyVector(
     double scalar_target, Epetra_Vector& target, double scalar_source, const Epetra_Vector& source)
 {
   for (int slid = 0; slid < source.Map().NumMyElements(); ++slid)
@@ -111,49 +111,49 @@ void CORE::LINALG::AssembleMyVector(
 }
 
 /*----------------------------------------------------------------------*
- |  assemble a vector  (wrapper for CORE::LINALG::Matrix<3,1>)     katta 10/16|
+ |  assemble a vector  (wrapper for Core::LinAlg::Matrix<3,1>)     katta 10/16|
  *----------------------------------------------------------------------*/
-void CORE::LINALG::Assemble(Epetra_Vector& V, CORE::LINALG::Matrix<3, 1>& Vele,
+void Core::LinAlg::Assemble(Epetra_Vector& V, Core::LinAlg::Matrix<3, 1>& Vele,
     const std::vector<int>& lm, const std::vector<int>& lmowner)
 {
-  const CORE::LINALG::SerialDenseVector VeleNew(Teuchos::View, &(Vele(0)), 3);
-  CORE::LINALG::Assemble(V, VeleNew, lm, lmowner);
+  const Core::LinAlg::SerialDenseVector VeleNew(Teuchos::View, &(Vele(0)), 3);
+  Core::LinAlg::Assemble(V, VeleNew, lm, lmowner);
 }
 
 /*----------------------------------------------------------------------*
  |  assemble a vector  (wrapper for 1 owner)                 katta 10/16|
  *----------------------------------------------------------------------*/
-void CORE::LINALG::Assemble(Epetra_Vector& V, CORE::LINALG::Matrix<3, 1>& Vele,
+void Core::LinAlg::Assemble(Epetra_Vector& V, Core::LinAlg::Matrix<3, 1>& Vele,
     const std::vector<int>& lm, const int& lmowner)
 {
   const std::vector<int> lmownerNew(3, lmowner);
-  CORE::LINALG::Assemble(V, Vele, lm, lmownerNew);
+  Core::LinAlg::Assemble(V, Vele, lm, lmownerNew);
 }
 
 /*----------------------------------------------------------------------*
  |  assemble a vector  (wrapper, node-based)                 katta 10/16|
  *----------------------------------------------------------------------*/
-void CORE::LINALG::Assemble(Epetra_Vector& V, double& Vele, const int& lm, const int& lmowner)
+void Core::LinAlg::Assemble(Epetra_Vector& V, double& Vele, const int& lm, const int& lmowner)
 {
-  const CORE::LINALG::SerialDenseVector VeleNew(Teuchos::View, &Vele, 1);
+  const Core::LinAlg::SerialDenseVector VeleNew(Teuchos::View, &Vele, 1);
   const std::vector<int> lmNew(1, lm);
   const std::vector<int> lmownerNew(1, lmowner);
-  CORE::LINALG::Assemble(V, VeleNew, lmNew, lmownerNew);
+  Core::LinAlg::Assemble(V, VeleNew, lmNew, lmownerNew);
 }
 
 /*----------------------------------------------------------------------*
  |  assemble a vector into MultiVector (public)              mwgee 01/08|
  *----------------------------------------------------------------------*/
-void CORE::LINALG::Assemble(Epetra_MultiVector& V, const int n,
-    const CORE::LINALG::SerialDenseVector& Vele, const std::vector<int>& lm,
+void Core::LinAlg::Assemble(Epetra_MultiVector& V, const int n,
+    const Core::LinAlg::SerialDenseVector& Vele, const std::vector<int>& lm,
     const std::vector<int>& lmowner)
 {
-  CORE::LINALG::Assemble(*(V(n)), Vele, lm, lmowner);
+  Core::LinAlg::Assemble(*(V(n)), Vele, lm, lmowner);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::apply_dirichlet_to_system(
+void Core::LinAlg::apply_dirichlet_to_system(
     Epetra_Vector& x, Epetra_Vector& b, const Epetra_Vector& dbcval, const Epetra_Vector& dbctoggle)
 {
   // set the prescribed value in x and b
@@ -170,7 +170,7 @@ void CORE::LINALG::apply_dirichlet_to_system(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::apply_dirichlet_to_system(
+void Core::LinAlg::apply_dirichlet_to_system(
     Epetra_Vector& x, Epetra_Vector& b, const Epetra_Vector& dbcval, const Epetra_Map& dbcmap)
 {
   if (not dbcmap.UniqueGIDs()) FOUR_C_THROW("unique map required");
@@ -199,7 +199,7 @@ void CORE::LINALG::apply_dirichlet_to_system(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::apply_dirichlet_to_system(
+void Core::LinAlg::apply_dirichlet_to_system(
     Epetra_Vector& b, const Epetra_Vector& dbcval, const Epetra_Map& dbcmap)
 {
   if (not dbcmap.UniqueGIDs()) FOUR_C_THROW("unique map required");
@@ -228,7 +228,7 @@ void CORE::LINALG::apply_dirichlet_to_system(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::apply_dirichlet_to_system(CORE::LINALG::SparseOperator& A, Epetra_Vector& x,
+void Core::LinAlg::apply_dirichlet_to_system(Core::LinAlg::SparseOperator& A, Epetra_Vector& x,
     Epetra_Vector& b, const Epetra_Vector& dbcval, const Epetra_Vector& dbctoggle)
 {
   A.ApplyDirichlet(dbctoggle);
@@ -237,7 +237,7 @@ void CORE::LINALG::apply_dirichlet_to_system(CORE::LINALG::SparseOperator& A, Ep
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::apply_dirichlet_to_system(CORE::LINALG::SparseOperator& A, Epetra_Vector& x,
+void Core::LinAlg::apply_dirichlet_to_system(Core::LinAlg::SparseOperator& A, Epetra_Vector& x,
     Epetra_Vector& b, const Epetra_Vector& dbcval, const Epetra_Map& dbcmap)
 {
   A.ApplyDirichlet(dbcmap);
@@ -246,8 +246,8 @@ void CORE::LINALG::apply_dirichlet_to_system(CORE::LINALG::SparseOperator& A, Ep
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::apply_dirichlet_to_system(CORE::LINALG::SparseMatrix& A, Epetra_Vector& x,
-    Epetra_Vector& b, const CORE::LINALG::SparseMatrix& trafo, const Epetra_Vector& dbcval,
+void Core::LinAlg::apply_dirichlet_to_system(Core::LinAlg::SparseMatrix& A, Epetra_Vector& x,
+    Epetra_Vector& b, const Core::LinAlg::SparseMatrix& trafo, const Epetra_Vector& dbcval,
     const Epetra_Map& dbcmap)
 {
   A.apply_dirichlet_with_trafo(trafo, dbcmap);
@@ -256,11 +256,11 @@ void CORE::LINALG::apply_dirichlet_to_system(CORE::LINALG::SparseMatrix& A, Epet
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::MapExtractor> CORE::LINALG::ConvertDirichletToggleVectorToMaps(
+Teuchos::RCP<Core::LinAlg::MapExtractor> Core::LinAlg::ConvertDirichletToggleVectorToMaps(
     const Teuchos::RCP<const Epetra_Vector>& dbctoggle)
 {
   const Epetra_BlockMap& fullblockmap = dbctoggle->Map();
-  // this copy is needed because the constructor of CORE::LINALG::MapExtractor
+  // this copy is needed because the constructor of Core::LinAlg::MapExtractor
   // accepts only Epetra_Map and not Epetra_BlockMap
   const Epetra_Map fullmap =
       Epetra_Map(fullblockmap.NumGlobalElements(), fullblockmap.NumMyElements(),
@@ -309,7 +309,7 @@ Teuchos::RCP<CORE::LINALG::MapExtractor> CORE::LINALG::ConvertDirichletToggleVec
   }
 
   // build and return the map extractor of Dirichlet-conditioned and free DOFs
-  return Teuchos::rcp(new CORE::LINALG::MapExtractor(fullmap, dbcmap, freemap));
+  return Teuchos::rcp(new Core::LinAlg::MapExtractor(fullmap, dbcmap, freemap));
 }
 
 FOUR_C_NAMESPACE_CLOSE

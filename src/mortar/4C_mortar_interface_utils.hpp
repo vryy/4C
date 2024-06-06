@@ -16,9 +16,9 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MORTAR
+namespace Mortar
 {
-  namespace INTERFACEUTILS
+  namespace InterfaceUtils
   {
     /*!
     \brief Compute statistics on parallel distribution
@@ -41,8 +41,8 @@ namespace MORTAR
     void ComputeAndPrintRowOfParallelDistributionStatisctics(const std::string& nameOfQuantity,
         const std::vector<int>& quantityAcrossAllRanks, const bool printOnThisRank);
 
-  }  // namespace INTERFACEUTILS
-}  // namespace MORTAR
+  }  // namespace InterfaceUtils
+}  // namespace Mortar
 
 FOUR_C_NAMESPACE_CLOSE
 

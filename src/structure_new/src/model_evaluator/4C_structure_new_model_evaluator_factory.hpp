@@ -43,7 +43,7 @@ namespace STR
 
 
       Teuchos::RCP<STR::ModelEvaluator::Map> build_model_evaluators(
-          const std::set<enum INPAR::STR::ModelType>& modeltypes,
+          const std::set<enum Inpar::STR::ModelType>& modeltypes,
           const Teuchos::RCP<STR::MODELEVALUATOR::Generic>& coupling_model_ptr) const;
 
      private:
@@ -57,7 +57,7 @@ namespace STR
 
     //! non-member function, which relates to the STR::MODELEVALUATOR::Factory
     Teuchos::RCP<STR::ModelEvaluator::Map> build_model_evaluators(
-        const std::set<enum INPAR::STR::ModelType>& modeltypes,
+        const std::set<enum Inpar::STR::ModelType>& modeltypes,
         const Teuchos::RCP<STR::MODELEVALUATOR::Generic>& coupling_model_ptr);
 
   }  // namespace MODELEVALUATOR

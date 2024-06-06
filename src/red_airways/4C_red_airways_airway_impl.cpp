@@ -2,7 +2,7 @@
 /*! \file
 
 \brief Internal implementation of RedAirway element. Methods implemented here
-       are called by airway_evaluate.cpp by DRT::ELEMENTS::RedAirway::Evaluate()
+       are called by airway_evaluate.cpp by Discret::ELEMENTS::RedAirway::Evaluate()
        with the corresponding action.
 
 
@@ -37,15 +37,15 @@ namespace
   |  get element length                                      ismail 08/13|
   |                                                                      |
   *----------------------------------------------------------------------*/
-  template <CORE::FE::CellType distype>
-  double GetElementLength(DRT::ELEMENTS::RedAirway* ele)
+  template <Core::FE::CellType distype>
+  double GetElementLength(Discret::ELEMENTS::RedAirway* ele)
   {
     double length = 0.0;
     // get node coordinates and number of elements per node
-    static const int numnode = CORE::FE::num_nodes<distype>;
-    CORE::Nodes::Node** nodes = ele->Nodes();
+    static const int numnode = Core::FE::num_nodes<distype>;
+    Core::Nodes::Node** nodes = ele->Nodes();
     // get airway length
-    CORE::LINALG::Matrix<3, numnode> xyze;
+    Core::LinAlg::Matrix<3, numnode> xyze;
     for (int inode = 0; inode < numnode; inode++)
     {
       const auto& x = nodes[inode]->X();
@@ -65,8 +65,8 @@ namespace
   |  calculate curve value a node with a certain BC          ismail 06/13|
   |                                                                      |
   *----------------------------------------------------------------------*/
-  template <CORE::FE::CellType distype>
-  bool GetCurveValAtCond(double& bcVal, CORE::Nodes::Node* node, std::string condName,
+  template <Core::FE::CellType distype>
+  bool GetCurveValAtCond(double& bcVal, Core::Nodes::Node* node, std::string condName,
       std::string optionName, std::string condType, double time)
   {
     // initialize bc value
@@ -82,7 +82,7 @@ namespace
     // check if condition exists
     if (node->GetCondition(condName))
     {
-      CORE::Conditions::Condition* condition = node->GetCondition(condName);
+      Core::Conditions::Condition* condition = node->GetCondition(condName);
       // Get the type of prescribed bc
       std::string Bc = (condition->parameters().Get<std::string>(optionName));
       if (Bc == condType)
@@ -99,8 +99,8 @@ namespace
         int curvenum = -1;
         if (curve) curvenum = (*curve)[0];
         if (curvenum >= 0)
-          curvefac = GLOBAL::Problem::Instance()
-                         ->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum)
+          curvefac = Global::Problem::Instance()
+                         ->FunctionById<Core::UTILS::FunctionOfTime>(curvenum)
                          .Evaluate(time);
 
         bcVal = (*vals)[0] * curvefac;
@@ -113,8 +113,8 @@ namespace
         double functionfac = 0.0;
         if (functnum > 0)
         {
-          functionfac = GLOBAL::Problem::Instance()
-                            ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
+          functionfac = Global::Problem::Instance()
+                            ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
                             .Evaluate(node->X().data(), time, 0);
         }
         // get curve2
@@ -122,8 +122,8 @@ namespace
         double curve2fac = 1.0;
         if (curve) curve2num = (*curve)[1];
         if (curve2num >= 0)
-          curve2fac = GLOBAL::Problem::Instance()
-                          ->FunctionById<CORE::UTILS::FunctionOfTime>(curve2num)
+          curve2fac = Global::Problem::Instance()
+                          ->FunctionById<Core::UTILS::FunctionOfTime>(curve2num)
                           .Evaluate(time);
 
         bcVal += functionfac * curve2fac;
@@ -151,11 +151,11 @@ namespace
   \param dt               (i) timestep
   \param compute_awacinter(i) computing airway-acinus interdependency
   */
-  template <CORE::FE::CellType distype>
-  void Sysmat(DRT::ELEMENTS::RedAirway* ele, CORE::LINALG::SerialDenseVector& epnp,
-      CORE::LINALG::SerialDenseVector& epn, CORE::LINALG::SerialDenseVector& epnm,
-      CORE::LINALG::SerialDenseMatrix& sysmat, CORE::LINALG::SerialDenseVector& rhs,
-      Teuchos::RCP<const CORE::MAT::Material> material, DRT::REDAIRWAYS::ElemParams& params,
+  template <Core::FE::CellType distype>
+  void Sysmat(Discret::ELEMENTS::RedAirway* ele, Core::LinAlg::SerialDenseVector& epnp,
+      Core::LinAlg::SerialDenseVector& epn, Core::LinAlg::SerialDenseVector& epnm,
+      Core::LinAlg::SerialDenseMatrix& sysmat, Core::LinAlg::SerialDenseVector& rhs,
+      Teuchos::RCP<const Core::Mat::Material> material, Discret::ReducedLung::ElemParams& params,
       double time, double dt, bool compute_awacinter)
   {
     const auto airway_params = ele->GetAirwayParams();
@@ -163,10 +163,10 @@ namespace
     double dens = 0.0;
     double visc = 0.0;
 
-    if (material->MaterialType() == CORE::Materials::m_fluid)
+    if (material->MaterialType() == Core::Materials::m_fluid)
     {
       // get actual material
-      const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(material.get());
+      const Mat::NewtonianFluid* actmat = static_cast<const Mat::NewtonianFluid*>(material.get());
 
       // get density
       dens = actmat->Density();
@@ -550,17 +550,17 @@ namespace
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::RedAirwayImplInterface* DRT::ELEMENTS::RedAirwayImplInterface::Impl(
-    DRT::ELEMENTS::RedAirway* red_airway)
+Discret::ELEMENTS::RedAirwayImplInterface* Discret::ELEMENTS::RedAirwayImplInterface::Impl(
+    Discret::ELEMENTS::RedAirway* red_airway)
 {
   switch (red_airway->Shape())
   {
-    case CORE::FE::CellType::line2:
+    case Core::FE::CellType::line2:
     {
-      static AirwayImpl<CORE::FE::CellType::line2>* airway;
+      static AirwayImpl<Core::FE::CellType::line2>* airway;
       if (airway == nullptr)
       {
-        airway = new AirwayImpl<CORE::FE::CellType::line2>;
+        airway = new AirwayImpl<Core::FE::CellType::line2>;
       }
       return airway;
     }
@@ -576,18 +576,19 @@ DRT::ELEMENTS::RedAirwayImplInterface* DRT::ELEMENTS::RedAirwayImplInterface::Im
 /*----------------------------------------------------------------------*
  | evaluate (public)                                       ismail 01/10 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(RedAirway* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec1_epetra,
-    CORE::LINALG::SerialDenseVector& elevec2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec3_epetra, Teuchos::RCP<CORE::MAT::Material> mat)
+template <Core::FE::CellType distype>
+int Discret::ELEMENTS::AirwayImpl<distype>::Evaluate(RedAirway* ele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+    Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec1_epetra,
+    Core::LinAlg::SerialDenseVector& elevec2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec3_epetra, Teuchos::RCP<Core::Mat::Material> mat)
 {
   const int elemVecdim = elevec1_epetra.length();
 
-  DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+  Discret::ReducedLung::EvaluationData& evaluation_data =
+      Discret::ReducedLung::EvaluationData::get();
   const auto airway_params = ele->GetAirwayParams();
 
   //----------------------------------------------------------------------
@@ -617,20 +618,20 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(RedAirway* ele, Teuchos::Parame
 
   // extract local values from the global vectors
   std::vector<double> mypnp(lm.size());
-  CORE::FE::ExtractMyValues(*pnp, mypnp, lm);
+  Core::FE::ExtractMyValues(*pnp, mypnp, lm);
 
   // extract local values from the global vectors
   std::vector<double> mypn(lm.size());
-  CORE::FE::ExtractMyValues(*pn, mypn, lm);
+  Core::FE::ExtractMyValues(*pn, mypn, lm);
 
   // extract local values from the global vectors
   std::vector<double> mypnm(lm.size());
-  CORE::FE::ExtractMyValues(*pnm, mypnm, lm);
+  Core::FE::ExtractMyValues(*pnm, mypnm, lm);
 
   // create objects for element arrays
-  CORE::LINALG::SerialDenseVector epnp(elemVecdim);
-  CORE::LINALG::SerialDenseVector epn(elemVecdim);
-  CORE::LINALG::SerialDenseVector epnm(elemVecdim);
+  Core::LinAlg::SerialDenseVector epnp(elemVecdim);
+  Core::LinAlg::SerialDenseVector epn(elemVecdim);
+  Core::LinAlg::SerialDenseVector epnm(elemVecdim);
   for (int i = 0; i < elemVecdim; ++i)
   {
     // split area and volumetric flow rate, insert into element arrays
@@ -647,7 +648,7 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(RedAirway* ele, Teuchos::Parame
   e_acin_e_vn = (*evaluation_data.acinar_vn)[ele->LID()];
 
   // get the volumetric flow rate from the previous time step
-  DRT::REDAIRWAYS::ElemParams elem_params;
+  Discret::ReducedLung::ElemParams elem_params;
   elem_params.qout_np = (*evaluation_data.qout_np)[ele->LID()];
   elem_params.qout_n = (*evaluation_data.qout_n)[ele->LID()];
   elem_params.qout_nm = (*evaluation_data.qout_nm)[ele->LID()];
@@ -693,15 +694,16 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(RedAirway* ele, Teuchos::Parame
 /*----------------------------------------------------------------------*
  |  calculate element matrix and right hand side (private)  ismail 01/10|
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::AirwayImpl<distype>::Initial(RedAirway* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseVector& radii_in, CORE::LINALG::SerialDenseVector& radii_out,
-    Teuchos::RCP<const CORE::MAT::Material> material)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::AirwayImpl<distype>::Initial(RedAirway* ele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseVector& radii_in, Core::LinAlg::SerialDenseVector& radii_out,
+    Teuchos::RCP<const Core::Mat::Material> material)
 {
   const int myrank = discretization.Comm().MyPID();
 
-  DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+  Discret::ReducedLung::EvaluationData& evaluation_data =
+      Discret::ReducedLung::EvaluationData::get();
   const auto airway_params = ele->GetAirwayParams();
 
   std::vector<int> lmstride;
@@ -767,11 +769,12 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(RedAirway* ele, Teuchos::Parame
  |  Bates and Irvin (2002), J. Appl. Physiol., 93:705-713.              |
  |                                                         roth 12/2015 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateCollapse(
-    RedAirway* ele, CORE::LINALG::SerialDenseVector& epn, Teuchos::ParameterList& params, double dt)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::AirwayImpl<distype>::EvaluateCollapse(
+    RedAirway* ele, Core::LinAlg::SerialDenseVector& epn, Teuchos::ParameterList& params, double dt)
 {
-  DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+  Discret::ReducedLung::EvaluationData& evaluation_data =
+      Discret::ReducedLung::EvaluationData::get();
   const auto airway_params = ele->GetAirwayParams();
 
   const double s_c = airway_params.s_close;
@@ -826,12 +829,13 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateCollapse(
  |  of an airway.                                                       |
  |                                                         roth 02/2016 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::AirwayImpl<distype>::ComputePext(RedAirway* ele,
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::AirwayImpl<distype>::ComputePext(RedAirway* ele,
     Teuchos::RCP<const Epetra_Vector> pn, Teuchos::RCP<const Epetra_Vector> pnp,
     Teuchos::ParameterList& params)
 {
-  DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+  Discret::ReducedLung::EvaluationData& evaluation_data =
+      Discret::ReducedLung::EvaluationData::get();
 
   // get node-Id of nearest acinus
   int node_id = (*evaluation_data.airway_acinus_dep)[ele->LID()];
@@ -850,14 +854,15 @@ void DRT::ELEMENTS::AirwayImpl<distype>::ComputePext(RedAirway* ele,
  |  Evaluate the values of the degrees of freedom           ismail 01/10|
  |  at terminal nodes.                                                  |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseVector& rhs, Teuchos::RCP<CORE::MAT::Material> material)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
+    Teuchos::ParameterList& params, Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseVector& rhs, Teuchos::RCP<Core::Mat::Material> material)
 {
   const int myrank = discretization.Comm().MyPID();
 
-  DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+  Discret::ReducedLung::EvaluationData& evaluation_data =
+      Discret::ReducedLung::EvaluationData::get();
 
   // get total time
   const double time = evaluation_data.time;
@@ -874,10 +879,10 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
 
   // extract local values from the global vectors
   std::vector<double> mypn(lm.size());
-  CORE::FE::ExtractMyValues(*pn, mypn, lm);
+  Core::FE::ExtractMyValues(*pn, mypn, lm);
 
   // create objects for element arrays
-  CORE::LINALG::SerialDenseVector epn(numnode);
+  Core::LinAlg::SerialDenseVector epn(numnode);
 
   // get all values at the last computed time step
   for (int i = 0; i < numnode; ++i)
@@ -886,7 +891,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
     epn(i) = mypn[i];
   }
 
-  CORE::LINALG::SerialDenseVector eqn(2);
+  Core::LinAlg::SerialDenseVector eqn(2);
   eqn(0) = (*evaluation_data.qin_n)[ele->LID()];
   eqn(1) = (*evaluation_data.qout_n)[ele->LID()];
   // ---------------------------------------------------------------------------------
@@ -904,7 +909,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
         double BCin = 0.0;
         if (ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond"))
         {
-          CORE::Conditions::Condition* condition =
+          Core::Conditions::Condition* condition =
               ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond");
           // Get the type of prescribed bc
           Bc = (condition->parameters().Get<std::string>("boundarycond"));
@@ -912,7 +917,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
           if (Bc == "switchFlowPressure")
           {
             // get switch condition variables
-            CORE::Conditions::Condition* switchCondition =
+            Core::Conditions::Condition* switchCondition =
                 ele->Nodes()[i]->GetCondition("RedAirwaySwitchFlowPressureCond");
 
             const int funct_id_flow = switchCondition->parameters().Get<int>("FUNCT_ID_FLOW");
@@ -922,8 +927,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
                 switchCondition->parameters().Get<int>("FUNCT_ID_PRESSURE_ACTIVE");
 
             const double pressure_active =
-                GLOBAL::Problem::Instance()
-                    ->FunctionById<CORE::UTILS::FunctionOfTime>(funct_id_switch - 1)
+                Global::Problem::Instance()
+                    ->FunctionById<Core::UTILS::FunctionOfTime>(funct_id_switch - 1)
                     .Evaluate(time);
 
             int funct_id_current = 0;
@@ -948,8 +953,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
               exit(1);
             }
 
-            BCin = GLOBAL::Problem::Instance()
-                       ->FunctionById<CORE::UTILS::FunctionOfTime>(funct_id_current - 1)
+            BCin = Global::Problem::Instance()
+                       ->FunctionById<Core::UTILS::FunctionOfTime>(funct_id_current - 1)
                        .Evaluate(time);
           }
           else
@@ -968,8 +973,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
               if (curve)
               {
                 if ((curvenum = (*curve)[id]) >= 0)
-                  return GLOBAL::Problem::Instance()
-                      ->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum)
+                  return Global::Problem::Instance()
+                      ->FunctionById<Core::UTILS::FunctionOfTime>(curvenum)
                       .Evaluate(time);
                 else
                   return 1.0;
@@ -987,8 +992,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
                       condition->parameters().GetIf<std::vector<int>>("funct");
                   if (functions)
                     if ((functnum = (*functions)[0]) > 0)
-                      return GLOBAL::Problem::Instance()
-                          ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                      return Global::Problem::Instance()
+                          ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
                           .Evaluate((ele->Nodes()[i])->X().data(), time, 0);
                     else
                       return 0.0;
@@ -1011,7 +1016,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
         }
         else if (ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond"))
         {
-          const CORE::Conditions::Condition* condition =
+          const Core::Conditions::Condition* condition =
               ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond");
 
           Teuchos::RCP<Teuchos::ParameterList> CoupledTo3DParams =
@@ -1075,7 +1080,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
         }
         else if (ele->Nodes()[i]->GetCondition("RedAirwayVentilatorCond"))
         {
-          CORE::Conditions::Condition* condition =
+          Core::Conditions::Condition* condition =
               ele->Nodes()[i]->GetCondition("RedAirwayVentilatorCond");
           // Get the type of prescribed bc
           Bc = (condition->parameters().Get<std::string>("phase1"));
@@ -1108,8 +1113,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
           int curvenum = -1;
           if (curve) curvenum = (*curve)[phase_number];
           if (curvenum >= 0)
-            curvefac = GLOBAL::Problem::Instance()
-                           ->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum)
+            curvefac = Global::Problem::Instance()
+                           ->FunctionById<Core::UTILS::FunctionOfTime>(curvenum)
                            .Evaluate(time);
 
           BCin = (*vals)[phase_number] * curvefac;
@@ -1123,8 +1128,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
             {
               double Vnp = BCin;
               double Vn =
-                  (*vals)[phase_number] * GLOBAL::Problem::Instance()
-                                              ->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum)
+                  (*vals)[phase_number] * Global::Problem::Instance()
+                                              ->FunctionById<Core::UTILS::FunctionOfTime>(curvenum)
                                               .Evaluate(time - dt);
               BCin = (Vnp - Vn) / dt;
               Bc = "flow";
@@ -1269,14 +1274,15 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
  |  Evaluate the values of the degrees of freedom           ismail 01/10|
  |  at terminal nodes.                                                  |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(RedAirway* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    Teuchos::RCP<CORE::MAT::Material> material)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(RedAirway* ele,
+    Teuchos::ParameterList& params, Discret::Discretization& discretization, std::vector<int>& lm,
+    Teuchos::RCP<Core::Mat::Material> material)
 {
   const int elemVecdim = lm.size();
 
-  DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+  Discret::ReducedLung::EvaluationData& evaluation_data =
+      Discret::ReducedLung::EvaluationData::get();
 
   //----------------------------------------------------------------------
   // get control parameters for time integration
@@ -1300,20 +1306,20 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(RedAirway* ele,
 
   // extract local values from the global vectors
   std::vector<double> mypnp(lm.size());
-  CORE::FE::ExtractMyValues(*pnp, mypnp, lm);
+  Core::FE::ExtractMyValues(*pnp, mypnp, lm);
 
   // extract local values from the global vectors
   std::vector<double> mypn(lm.size());
-  CORE::FE::ExtractMyValues(*pn, mypn, lm);
+  Core::FE::ExtractMyValues(*pn, mypn, lm);
 
   // extract local values from the global vectors
   std::vector<double> mypnm(lm.size());
-  CORE::FE::ExtractMyValues(*pnm, mypnm, lm);
+  Core::FE::ExtractMyValues(*pnm, mypnm, lm);
 
   // create objects for element arrays
-  CORE::LINALG::SerialDenseVector epnp(elemVecdim);
-  CORE::LINALG::SerialDenseVector epn(elemVecdim);
-  CORE::LINALG::SerialDenseVector epnm(elemVecdim);
+  Core::LinAlg::SerialDenseVector epnp(elemVecdim);
+  Core::LinAlg::SerialDenseVector epn(elemVecdim);
+  Core::LinAlg::SerialDenseVector epnm(elemVecdim);
   for (int i = 0; i < elemVecdim; ++i)
   {
     // split area and volumetric flow rate, insert into element arrays
@@ -1334,7 +1340,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(RedAirway* ele,
 
 
   // get the volumetric flow rate from the previous time step
-  DRT::REDAIRWAYS::ElemParams elem_params;
+  Discret::ReducedLung::ElemParams elem_params;
   elem_params.qout_np = (*evaluation_data.qout_np)[ele->LID()];
   elem_params.qout_n = (*evaluation_data.qout_n)[ele->LID()];
   elem_params.qout_nm = (*evaluation_data.qout_nm)[ele->LID()];
@@ -1360,8 +1366,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(RedAirway* ele,
   elem_params.p_extn = (*evaluation_data.p_extn)[ele->LID()];
   elem_params.p_extnp = (*evaluation_data.p_extnp)[ele->LID()];
 
-  CORE::LINALG::SerialDenseMatrix sysmat(elemVecdim, elemVecdim, true);
-  CORE::LINALG::SerialDenseVector rhs(elemVecdim);
+  Core::LinAlg::SerialDenseMatrix sysmat(elemVecdim, elemVecdim, true);
+  Core::LinAlg::SerialDenseVector rhs(elemVecdim);
 
 
   // ---------------------------------------------------------------------
@@ -1384,14 +1390,15 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(RedAirway* ele,
  |  Evaluate the elements volume from the change in flow    ismail 07/13|
  |  rates.                                                              |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::AirwayImpl<distype>::CalcElemVolume(RedAirway* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    Teuchos::RCP<CORE::MAT::Material> material)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::AirwayImpl<distype>::CalcElemVolume(RedAirway* ele,
+    Teuchos::ParameterList& params, Discret::Discretization& discretization, std::vector<int>& lm,
+    Teuchos::RCP<Core::Mat::Material> material)
 {
   // get all essential vector variables
 
-  DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+  Discret::ReducedLung::EvaluationData& evaluation_data =
+      Discret::ReducedLung::EvaluationData::get();
   const auto airway_params = ele->GetAirwayParams();
 
   // extract all essential element variables from their corresponding variables
@@ -1446,14 +1453,15 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcElemVolume(RedAirway* ele,
  |  Get the coupled the values on the coupling interface    ismail 07/10|
  |  of the 3D/reduced-D problem                                         |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(RedAirway* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    Teuchos::RCP<CORE::MAT::Material> material)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(RedAirway* ele,
+    Teuchos::ParameterList& params, Discret::Discretization& discretization, std::vector<int>& lm,
+    Teuchos::RCP<Core::Mat::Material> material)
 {
   const int myrank = discretization.Comm().MyPID();
 
-  DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+  Discret::ReducedLung::EvaluationData& evaluation_data =
+      Discret::ReducedLung::EvaluationData::get();
 
   // get total time
   const double time = evaluation_data.time;
@@ -1467,10 +1475,10 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(RedAirway* ele,
 
   // extract local values from the global vectors
   std::vector<double> mypnp(lm.size());
-  CORE::FE::ExtractMyValues(*pnp, mypnp, lm);
+  Core::FE::ExtractMyValues(*pnp, mypnp, lm);
 
   // create objects for element arrays
-  CORE::LINALG::SerialDenseVector epnp(numnode);
+  Core::LinAlg::SerialDenseVector epnp(numnode);
 
   // get all values at the last computed time step
   for (int i = 0; i < numnode; ++i)
@@ -1488,7 +1496,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(RedAirway* ele,
     {
       if (ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond"))
       {
-        const CORE::Conditions::Condition* condition =
+        const Core::Conditions::Condition* condition =
             ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond");
         Teuchos::RCP<Teuchos::ParameterList> CoupledTo3DParams =
             params.get<Teuchos::RCP<Teuchos::ParameterList>>("coupling with 3D fluid params");
@@ -1579,13 +1587,14 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(RedAirway* ele,
  |  calculate the ammount of fluid mixing inside a          ismail 02/13|
  |  junction                                                            |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::AirwayImpl<distype>::get_junction_volume_mix(RedAirway* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    CORE::LINALG::SerialDenseVector& volumeMix_np, std::vector<int>& lm,
-    Teuchos::RCP<CORE::MAT::Material> material)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::AirwayImpl<distype>::get_junction_volume_mix(RedAirway* ele,
+    Teuchos::ParameterList& params, Discret::Discretization& discretization,
+    Core::LinAlg::SerialDenseVector& volumeMix_np, std::vector<int>& lm,
+    Teuchos::RCP<Core::Mat::Material> material)
 {
-  DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+  Discret::ReducedLung::EvaluationData& evaluation_data =
+      Discret::ReducedLung::EvaluationData::get();
 
   // get the elements Qin and Qout
   double qoutnp = (*evaluation_data.qout_np)[ele->LID()];
@@ -1628,12 +1637,13 @@ void DRT::ELEMENTS::AirwayImpl<distype>::get_junction_volume_mix(RedAirway* ele,
  |  calculate element CFL                                   ismail 02/13|
  |                                                                      |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::AirwayImpl<distype>::CalcCFL(RedAirway* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    Teuchos::RCP<CORE::MAT::Material> material)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::AirwayImpl<distype>::CalcCFL(RedAirway* ele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Teuchos::RCP<Core::Mat::Material> material)
 {
-  DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+  Discret::ReducedLung::EvaluationData& evaluation_data =
+      Discret::ReducedLung::EvaluationData::get();
 
   // get the elements Qin and Qout
   double q_outnp = (*evaluation_data.qout_np)[ele->LID()];
@@ -1676,10 +1686,10 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcCFL(RedAirway* ele, Teuchos::Parame
  |  calculate the scalar transport                          ismail 02/13|
  |                                                                      |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::AirwayImpl<distype>::update_scatra(RedAirway* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    Teuchos::RCP<CORE::MAT::Material> material)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::AirwayImpl<distype>::update_scatra(RedAirway* ele,
+    Teuchos::ParameterList& params, Discret::Discretization& discretization, std::vector<int>& lm,
+    Teuchos::RCP<Core::Mat::Material> material)
 {
   const int myrank = discretization.Comm().MyPID();
 
@@ -1697,19 +1707,20 @@ void DRT::ELEMENTS::AirwayImpl<distype>::update_scatra(RedAirway* ele,
     Teuchos::RCP<const Epetra_Vector> avgscatranp = discretization.GetState("avg_scatranp");
     Teuchos::RCP<const Epetra_Vector> dscatranp = discretization.GetState("dscatranp");
 
-    DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+    Discret::ReducedLung::EvaluationData& evaluation_data =
+        Discret::ReducedLung::EvaluationData::get();
 
     // extract local values from the global vectors
     std::vector<double> mydscatranp(lm.size());
-    CORE::FE::ExtractMyValues(*dscatranp, mydscatranp, lm);
+    Core::FE::ExtractMyValues(*dscatranp, mydscatranp, lm);
 
     // extract local values from the global vectors
     std::vector<double> myscatranp(lm.size());
-    CORE::FE::ExtractMyValues(*scatranp, myscatranp, lm);
+    Core::FE::ExtractMyValues(*scatranp, myscatranp, lm);
 
     // extract local values from the global vectors
     std::vector<double> myavgscatranp(lm.size());
-    CORE::FE::ExtractMyValues(*avgscatranp, myavgscatranp, lm);
+    Core::FE::ExtractMyValues(*avgscatranp, myavgscatranp, lm);
 
     // get flowrate
 
@@ -1742,10 +1753,10 @@ void DRT::ELEMENTS::AirwayImpl<distype>::update_scatra(RedAirway* ele,
 
 
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::AirwayImpl<distype>::UpdateElem12Scatra(RedAirway* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    Teuchos::RCP<CORE::MAT::Material> material)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::AirwayImpl<distype>::UpdateElem12Scatra(RedAirway* ele,
+    Teuchos::ParameterList& params, Discret::Discretization& discretization, std::vector<int>& lm,
+    Teuchos::RCP<Core::Mat::Material> material)
 {
   // ---------------------------------------------------------------------
   // perform this step only for capillaries
@@ -1761,19 +1772,20 @@ void DRT::ELEMENTS::AirwayImpl<distype>::UpdateElem12Scatra(RedAirway* ele,
   Teuchos::RCP<const Epetra_Vector> scatranp = discretization.GetState("scatranp");
   Teuchos::RCP<const Epetra_Vector> volumeMix = discretization.GetState("junctionVolumeInMix");
 
-  DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+  Discret::ReducedLung::EvaluationData& evaluation_data =
+      Discret::ReducedLung::EvaluationData::get();
 
   // extract local values from the global vectors
   std::vector<double> mydscatranp(lm.size());
-  CORE::FE::ExtractMyValues(*dscatranp, mydscatranp, lm);
+  Core::FE::ExtractMyValues(*dscatranp, mydscatranp, lm);
 
   // extract local values from the global vectors
   std::vector<double> myscatranp(lm.size());
-  CORE::FE::ExtractMyValues(*scatranp, myscatranp, lm);
+  Core::FE::ExtractMyValues(*scatranp, myscatranp, lm);
 
   // extract local values from the global vectors
   std::vector<double> myvolmix(lm.size());
-  CORE::FE::ExtractMyValues(*volumeMix, myvolmix, lm);
+  Core::FE::ExtractMyValues(*volumeMix, myvolmix, lm);
 
   // ---------------------------------------------------------------------
   // element scatra must be updated only at the capillary nodes.
@@ -1791,12 +1803,12 @@ void DRT::ELEMENTS::AirwayImpl<distype>::UpdateElem12Scatra(RedAirway* ele,
  |  calculate the scalar transport                          ismail 06/13|
  |                                                                      |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::AirwayImpl<distype>::eval_nodal_essential_values(RedAirway* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    CORE::LINALG::SerialDenseVector& nodal_surface, CORE::LINALG::SerialDenseVector& nodal_volume,
-    CORE::LINALG::SerialDenseVector& nodal_avg_scatra, std::vector<int>& lm,
-    Teuchos::RCP<CORE::MAT::Material> material)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::AirwayImpl<distype>::eval_nodal_essential_values(RedAirway* ele,
+    Teuchos::ParameterList& params, Discret::Discretization& discretization,
+    Core::LinAlg::SerialDenseVector& nodal_surface, Core::LinAlg::SerialDenseVector& nodal_volume,
+    Core::LinAlg::SerialDenseVector& nodal_avg_scatra, std::vector<int>& lm,
+    Teuchos::RCP<Core::Mat::Material> material)
 {
   // ---------------------------------------------------------------------
   // perform this step only for capillaries
@@ -1807,7 +1819,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::eval_nodal_essential_values(RedAirway* 
     return;
   }
 
-  DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+  Discret::ReducedLung::EvaluationData& evaluation_data =
+      Discret::ReducedLung::EvaluationData::get();
 
   // get time-step size
   const double dt = evaluation_data.dt;
@@ -1822,7 +1835,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::eval_nodal_essential_values(RedAirway* 
   // ---------------------------------------------------------------------
   // extract local values from the global vectors
   std::vector<double> myscatranp(lm.size());
-  CORE::FE::ExtractMyValues(*scatranp, myscatranp, lm);
+  Core::FE::ExtractMyValues(*scatranp, myscatranp, lm);
 
   double qin = (*evaluation_data.qin_np)[ele->LID()];
   double eVolnp = (*evaluation_data.elemVolumenp)[ele->LID()];

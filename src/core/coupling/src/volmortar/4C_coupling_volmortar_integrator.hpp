@@ -29,22 +29,22 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------*
  | forward declarations                                    farah 01/14 |
  *---------------------------------------------------------------------*/
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SerialDenseVector;
   class SparseMatrix;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace MORTAR
+namespace Mortar
 {
   class IntCell;
 }
 
-namespace CORE::VOLMORTAR
+namespace Core::VolMortar
 {
   class Cell;
 
-  template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
+  template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
   class VolMortarIntegrator
   {
    public:
@@ -55,80 +55,82 @@ namespace CORE::VOLMORTAR
     virtual ~VolMortarIntegrator() = default;
 
     //! ns_: number of slave element nodes
-    static constexpr int ns_ = CORE::FE::num_nodes<distypeS>;
+    static constexpr int ns_ = Core::FE::num_nodes<distypeS>;
 
     //! nm_: number of master element nodes
-    static constexpr int nm_ = CORE::FE::num_nodes<distypeM>;
+    static constexpr int nm_ = Core::FE::num_nodes<distypeM>;
 
     //! number of space dimensions ("+1" due to considering only interface elements)
-    static constexpr int ndim_ = CORE::FE::dim<distypeS>;
+    static constexpr int ndim_ = Core::FE::dim<distypeS>;
 
     /*!
     \brief Initialize Gauss rule (points, weights)
 
     */
     void initialize_gp(bool integrateele = false, int domain = 0,
-        CORE::FE::CellType shape = CORE::FE::CellType::tet4);
+        Core::FE::CellType shape = Core::FE::CellType::tet4);
 
     /*!
     \brief Integrate cell for 2D problems
 
     */
-    void IntegrateCells2D(CORE::Elements::Element& sele, CORE::Elements::Element& mele,
-        Teuchos::RCP<MORTAR::IntCell> cell, CORE::LINALG::SparseMatrix& dmatrix,
-        CORE::LINALG::SparseMatrix& mmatrix, Teuchos::RCP<const DRT::Discretization> slavedis,
-        Teuchos::RCP<const DRT::Discretization> masterdis, int sdofset, int mdofset);
+    void IntegrateCells2D(Core::Elements::Element& sele, Core::Elements::Element& mele,
+        Teuchos::RCP<Mortar::IntCell> cell, Core::LinAlg::SparseMatrix& dmatrix,
+        Core::LinAlg::SparseMatrix& mmatrix, Teuchos::RCP<const Discret::Discretization> slavedis,
+        Teuchos::RCP<const Discret::Discretization> masterdis, int sdofset, int mdofset);
 
     /*!
     \brief Integrate cell for 3D problems
 
     */
-    void IntegrateCells3D(CORE::Elements::Element& Aele, CORE::Elements::Element& Bele,
-        Teuchos::RCP<CORE::VOLMORTAR::Cell> cell, CORE::LINALG::SparseMatrix& dmatrix_A,
-        CORE::LINALG::SparseMatrix& mmatrix_A, CORE::LINALG::SparseMatrix& dmatrix_B,
-        CORE::LINALG::SparseMatrix& mmatrix_B, Teuchos::RCP<const DRT::Discretization> Adis,
-        Teuchos::RCP<const DRT::Discretization> Bdis, int sdofset_A, int mdofset_A, int sdofset_B,
-        int mdofset_B);
+    void IntegrateCells3D(Core::Elements::Element& Aele, Core::Elements::Element& Bele,
+        Teuchos::RCP<Core::VolMortar::Cell> cell, Core::LinAlg::SparseMatrix& dmatrix_A,
+        Core::LinAlg::SparseMatrix& mmatrix_A, Core::LinAlg::SparseMatrix& dmatrix_B,
+        Core::LinAlg::SparseMatrix& mmatrix_B, Teuchos::RCP<const Discret::Discretization> Adis,
+        Teuchos::RCP<const Discret::Discretization> Bdis, int sdofset_A, int mdofset_A,
+        int sdofset_B, int mdofset_B);
 
     /*!
     \brief Integrate cell for 3D problems
 
     */
-    void integrate_cells3_d_direct_diveregence(CORE::Elements::Element& Aele,
-        CORE::Elements::Element& Bele, CORE::GEO::CUT::VolumeCell& vc,
-        Teuchos::RCP<CORE::FE::GaussPoints> intpoints, bool switched_conf,
-        CORE::LINALG::SparseMatrix& dmatrix_A, CORE::LINALG::SparseMatrix& mmatrix_A,
-        CORE::LINALG::SparseMatrix& dmatrix_B, CORE::LINALG::SparseMatrix& mmatrix_B,
-        Teuchos::RCP<const DRT::Discretization> Adis, Teuchos::RCP<const DRT::Discretization> Bdis,
-        int sdofset_A, int mdofset_A, int sdofset_B, int mdofset_B);
+    void integrate_cells3_d_direct_diveregence(Core::Elements::Element& Aele,
+        Core::Elements::Element& Bele, Core::Geo::Cut::VolumeCell& vc,
+        Teuchos::RCP<Core::FE::GaussPoints> intpoints, bool switched_conf,
+        Core::LinAlg::SparseMatrix& dmatrix_A, Core::LinAlg::SparseMatrix& mmatrix_A,
+        Core::LinAlg::SparseMatrix& dmatrix_B, Core::LinAlg::SparseMatrix& mmatrix_B,
+        Teuchos::RCP<const Discret::Discretization> Adis,
+        Teuchos::RCP<const Discret::Discretization> Bdis, int sdofset_A, int mdofset_A,
+        int sdofset_B, int mdofset_B);
 
     /*!
     \brief Integrate ele for 3D problems
 
     */
-    void IntegrateEle3D(int domain, CORE::Elements::Element& Aele, CORE::Elements::Element& Bele,
-        CORE::LINALG::SparseMatrix& dmatrix_A, CORE::LINALG::SparseMatrix& mmatrix_A,
-        CORE::LINALG::SparseMatrix& dmatrix_B, CORE::LINALG::SparseMatrix& mmatrix_B,
-        Teuchos::RCP<const DRT::Discretization> Adis, Teuchos::RCP<const DRT::Discretization> Bdis,
-        int sdofset_A, int mdofset_A, int sdofset_B, int mdofset_B);
+    void IntegrateEle3D(int domain, Core::Elements::Element& Aele, Core::Elements::Element& Bele,
+        Core::LinAlg::SparseMatrix& dmatrix_A, Core::LinAlg::SparseMatrix& mmatrix_A,
+        Core::LinAlg::SparseMatrix& dmatrix_B, Core::LinAlg::SparseMatrix& mmatrix_B,
+        Teuchos::RCP<const Discret::Discretization> Adis,
+        Teuchos::RCP<const Discret::Discretization> Bdis, int sdofset_A, int mdofset_A,
+        int sdofset_B, int mdofset_B);
 
     /*!
     \brief Integrate ele for 3D problems
 
     */
-    void integrate_ele_based3_d_a_dis(CORE::Elements::Element& Aele, std::vector<int>& foundeles,
-        CORE::LINALG::SparseMatrix& dmatrix_A, CORE::LINALG::SparseMatrix& mmatrix_A,
-        Teuchos::RCP<const DRT::Discretization> Adiscret,
-        Teuchos::RCP<const DRT::Discretization> Bdiscret, int dofsetA, int dofsetB);
+    void integrate_ele_based3_d_a_dis(Core::Elements::Element& Aele, std::vector<int>& foundeles,
+        Core::LinAlg::SparseMatrix& dmatrix_A, Core::LinAlg::SparseMatrix& mmatrix_A,
+        Teuchos::RCP<const Discret::Discretization> Adiscret,
+        Teuchos::RCP<const Discret::Discretization> Bdiscret, int dofsetA, int dofsetB);
 
     /*!
     \brief Integrate ele for 3D problems
 
     */
-    void integrate_ele_based3_d_b_dis(CORE::Elements::Element& Bele, std::vector<int>& foundeles,
-        CORE::LINALG::SparseMatrix& dmatrix_B, CORE::LINALG::SparseMatrix& mmatrix_B,
-        Teuchos::RCP<const DRT::Discretization> Adiscret,
-        Teuchos::RCP<const DRT::Discretization> Bdiscret, int dofsetA, int dofsetB);
+    void integrate_ele_based3_d_b_dis(Core::Elements::Element& Bele, std::vector<int>& foundeles,
+        Core::LinAlg::SparseMatrix& dmatrix_B, Core::LinAlg::SparseMatrix& mmatrix_B,
+        Teuchos::RCP<const Discret::Discretization> Adiscret,
+        Teuchos::RCP<const Discret::Discretization> Bdiscret, int dofsetA, int dofsetB);
 
    protected:
     /*!
@@ -136,18 +138,18 @@ namespace CORE::VOLMORTAR
 
     */
     bool check_mapping2_d(
-        CORE::Elements::Element& sele, CORE::Elements::Element& mele, double* sxi, double* mxi);
+        Core::Elements::Element& sele, Core::Elements::Element& mele, double* sxi, double* mxi);
 
     /*!
     \brief Check integration point mapping (3D)
 
     */
     bool check_mapping3_d(
-        CORE::Elements::Element& sele, CORE::Elements::Element& mele, double* sxi, double* mxi);
+        Core::Elements::Element& sele, Core::Elements::Element& mele, double* sxi, double* mxi);
 
     //@}
     int ngp_;                                 // number of Gauss points
-    CORE::LINALG::SerialDenseMatrix coords_;  // Gauss point coordinates
+    Core::LinAlg::SerialDenseMatrix coords_;  // Gauss point coordinates
     std::vector<double> weights_;             // Gauss point weights
 
     // input parameter
@@ -155,7 +157,7 @@ namespace CORE::VOLMORTAR
     Shapefcn shape_;     // type of test function
   };
 
-  template <CORE::FE::CellType distypeS>
+  template <Core::FE::CellType distypeS>
   class VolMortarIntegratorEleBased
   {
    public:
@@ -166,10 +168,10 @@ namespace CORE::VOLMORTAR
     virtual ~VolMortarIntegratorEleBased() = default;
 
     //! ns_: number of slave element nodes
-    static constexpr int ns_ = CORE::FE::num_nodes<distypeS>;
+    static constexpr int ns_ = Core::FE::num_nodes<distypeS>;
 
     //! number of space dimensions ("+1" due to considering only interface elements)
-    static constexpr int ndim_ = CORE::FE::dim<distypeS>;
+    static constexpr int ndim_ = Core::FE::dim<distypeS>;
 
     /*!
     \brief Initialize Gauss rule (points, weights)
@@ -181,10 +183,10 @@ namespace CORE::VOLMORTAR
     \brief Integrate ele for 3D problems
 
     */
-    void IntegrateEleBased3D(CORE::Elements::Element& sele, std::vector<int>& foundeles,
-        CORE::LINALG::SparseMatrix& dmatrixA, CORE::LINALG::SparseMatrix& mmatrixA,
-        Teuchos::RCP<const DRT::Discretization> Adiscret,
-        Teuchos::RCP<const DRT::Discretization> Bdiscret, int dofseta, int dofsetb,
+    void IntegrateEleBased3D(Core::Elements::Element& sele, std::vector<int>& foundeles,
+        Core::LinAlg::SparseMatrix& dmatrixA, Core::LinAlg::SparseMatrix& mmatrixA,
+        Teuchos::RCP<const Discret::Discretization> Adiscret,
+        Teuchos::RCP<const Discret::Discretization> Bdiscret, int dofseta, int dofsetb,
         const Teuchos::RCP<const Epetra_Map>& PAB_dofrowmap,
         const Teuchos::RCP<const Epetra_Map>& PAB_dofcolmap);
 
@@ -194,11 +196,11 @@ namespace CORE::VOLMORTAR
 
     */
     bool check_mapping3_d(
-        CORE::Elements::Element& sele, CORE::Elements::Element& mele, double* sxi, double* mxi);
+        Core::Elements::Element& sele, Core::Elements::Element& mele, double* sxi, double* mxi);
 
     //@}
     int ngp_;                                 // number of Gauss points
-    CORE::LINALG::SerialDenseMatrix coords_;  // Gauss point coordinates
+    Core::LinAlg::SerialDenseMatrix coords_;  // Gauss point coordinates
     std::vector<double> weights_;             // Gauss point weights
 
     // input parameter
@@ -209,14 +211,14 @@ namespace CORE::VOLMORTAR
   /*----------------------------------------------------------------------*
    |  Check paraspace mapping                                  farah 02/15|
    *----------------------------------------------------------------------*/
-  template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
+  template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
   bool CheckMapping(
-      CORE::Elements::Element& sele, CORE::Elements::Element& mele, double* sxi, double* mxi)
+      Core::Elements::Element& sele, Core::Elements::Element& mele, double* sxi, double* mxi)
   {
     // check GP projection (SLAVE)
     double tol = 1e-5;
-    if (distypeS == CORE::FE::CellType::hex8 || distypeS == CORE::FE::CellType::hex20 ||
-        distypeS == CORE::FE::CellType::hex27)
+    if (distypeS == Core::FE::CellType::hex8 || distypeS == Core::FE::CellType::hex20 ||
+        distypeS == Core::FE::CellType::hex27)
     {
       if (sxi[0] < -1.0 - tol || sxi[1] < -1.0 - tol || sxi[2] < -1.0 - tol || sxi[0] > 1.0 + tol ||
           sxi[1] > 1.0 + tol || sxi[2] > 1.0 + tol)
@@ -224,7 +226,7 @@ namespace CORE::VOLMORTAR
         return false;
       }
     }
-    else if (distypeS == CORE::FE::CellType::pyramid5)
+    else if (distypeS == Core::FE::CellType::pyramid5)
     {
       if (sxi[2] < 0.0 - tol || -sxi[0] + sxi[2] > 1.0 + tol || sxi[0] + sxi[2] > 1.0 + tol ||
           -sxi[1] + sxi[2] > 1.0 + tol || sxi[1] + sxi[2] > 1.0 + tol)
@@ -232,7 +234,7 @@ namespace CORE::VOLMORTAR
         return false;
       }
     }
-    else if (distypeS == CORE::FE::CellType::tet4 || distypeS == CORE::FE::CellType::tet10)
+    else if (distypeS == Core::FE::CellType::tet4 || distypeS == Core::FE::CellType::tet10)
     {
       if (sxi[0] < 0.0 - tol || sxi[1] < 0.0 - tol || sxi[2] < 0.0 - tol ||
           (sxi[0] + sxi[1] + sxi[2]) > 1.0 + tol)
@@ -240,15 +242,15 @@ namespace CORE::VOLMORTAR
         return false;
       }
     }
-    else if (distypeS == CORE::FE::CellType::tri3 || distypeS == CORE::FE::CellType::tri6)
+    else if (distypeS == Core::FE::CellType::tri3 || distypeS == Core::FE::CellType::tri6)
     {
       if (sxi[0] < 0.0 - tol || sxi[1] < 0.0 - tol || (sxi[0] + sxi[1]) > 1.0 + tol)
       {
         return false;
       }
     }
-    else if (distypeS == CORE::FE::CellType::quad4 || distypeS == CORE::FE::CellType::quad8 ||
-             distypeS == CORE::FE::CellType::quad9)
+    else if (distypeS == Core::FE::CellType::quad4 || distypeS == Core::FE::CellType::quad8 ||
+             distypeS == Core::FE::CellType::quad9)
     {
       if (sxi[0] < -1.0 - tol || sxi[1] < -1.0 - tol || sxi[0] > 1.0 + tol || sxi[1] > 1.0 + tol)
       {
@@ -259,8 +261,8 @@ namespace CORE::VOLMORTAR
       FOUR_C_THROW("Wrong element type!");
 
     // check GP projection (MASTER)
-    if (distypeM == CORE::FE::CellType::hex8 || distypeM == CORE::FE::CellType::hex20 ||
-        distypeM == CORE::FE::CellType::hex27)
+    if (distypeM == Core::FE::CellType::hex8 || distypeM == Core::FE::CellType::hex20 ||
+        distypeM == Core::FE::CellType::hex27)
     {
       if (mxi[0] < -1.0 - tol || mxi[1] < -1.0 - tol || mxi[2] < -1.0 - tol || mxi[0] > 1.0 + tol ||
           mxi[1] > 1.0 + tol || mxi[2] > 1.0 + tol)
@@ -268,7 +270,7 @@ namespace CORE::VOLMORTAR
         return false;
       }
     }
-    else if (distypeM == CORE::FE::CellType::pyramid5)
+    else if (distypeM == Core::FE::CellType::pyramid5)
     {
       if (mxi[2] < 0.0 - tol || -mxi[0] + mxi[2] > 1.0 + tol || mxi[0] + mxi[2] > 1.0 + tol ||
           -mxi[1] + mxi[2] > 1.0 + tol || mxi[1] + mxi[2] > 1.0 + tol)
@@ -276,7 +278,7 @@ namespace CORE::VOLMORTAR
         return false;
       }
     }
-    else if (distypeM == CORE::FE::CellType::tet4 || distypeM == CORE::FE::CellType::tet10)
+    else if (distypeM == Core::FE::CellType::tet4 || distypeM == Core::FE::CellType::tet10)
     {
       if (mxi[0] < 0.0 - tol || mxi[1] < 0.0 - tol || mxi[2] < 0.0 - tol ||
           (mxi[0] + mxi[1] + mxi[2]) > 1.0 + tol)
@@ -284,15 +286,15 @@ namespace CORE::VOLMORTAR
         return false;
       }
     }
-    else if (distypeM == CORE::FE::CellType::tri3 || distypeM == CORE::FE::CellType::tri6)
+    else if (distypeM == Core::FE::CellType::tri3 || distypeM == Core::FE::CellType::tri6)
     {
       if (mxi[0] < 0.0 - tol || mxi[1] < 0.0 - tol || (mxi[0] + mxi[1]) > 1.0 + tol)
       {
         return false;
       }
     }
-    else if (distypeM == CORE::FE::CellType::quad4 || distypeM == CORE::FE::CellType::quad8 ||
-             distypeM == CORE::FE::CellType::quad9)
+    else if (distypeM == Core::FE::CellType::quad4 || distypeM == Core::FE::CellType::quad8 ||
+             distypeM == Core::FE::CellType::quad9)
     {
       if (mxi[0] < -1.0 - tol || mxi[1] < -1.0 - tol || mxi[0] > 1.0 + tol || mxi[1] > 1.0 + tol)
       {
@@ -308,13 +310,13 @@ namespace CORE::VOLMORTAR
   /*----------------------------------------------------------------------*
    |  Check mapping                                            farah 06/14|
    *----------------------------------------------------------------------*/
-  template <CORE::FE::CellType distype>
-  bool CheckMapping(CORE::Elements::Element& ele, double* xi)
+  template <Core::FE::CellType distype>
+  bool CheckMapping(Core::Elements::Element& ele, double* xi)
   {
     // check node projection
     double tol = 1e-5;
-    if (distype == CORE::FE::CellType::hex8 || distype == CORE::FE::CellType::hex20 ||
-        distype == CORE::FE::CellType::hex27)
+    if (distype == Core::FE::CellType::hex8 || distype == Core::FE::CellType::hex20 ||
+        distype == Core::FE::CellType::hex27)
     {
       if (xi[0] < -1.0 - tol || xi[1] < -1.0 - tol || xi[2] < -1.0 - tol || xi[0] > 1.0 + tol ||
           xi[1] > 1.0 + tol || xi[2] > 1.0 + tol)
@@ -322,7 +324,7 @@ namespace CORE::VOLMORTAR
         return false;
       }
     }
-    else if (distype == CORE::FE::CellType::pyramid5)
+    else if (distype == Core::FE::CellType::pyramid5)
     {
       if (xi[2] < 0.0 - tol || -xi[0] + xi[2] > 1.0 + tol || xi[0] + xi[2] > 1.0 + tol ||
           -xi[1] + xi[2] > 1.0 + tol || xi[1] + xi[2] > 1.0 + tol)
@@ -330,7 +332,7 @@ namespace CORE::VOLMORTAR
         return false;
       }
     }
-    else if (distype == CORE::FE::CellType::tet4 || distype == CORE::FE::CellType::tet10)
+    else if (distype == Core::FE::CellType::tet4 || distype == Core::FE::CellType::tet10)
     {
       if (xi[0] < 0.0 - tol || xi[1] < 0.0 - tol || xi[2] < 0.0 - tol ||
           (xi[0] + xi[1] + xi[2]) > 1.0 + tol)
@@ -338,15 +340,15 @@ namespace CORE::VOLMORTAR
         return false;
       }
     }
-    else if (distype == CORE::FE::CellType::quad4 || distype == CORE::FE::CellType::quad8 ||
-             distype == CORE::FE::CellType::quad9)
+    else if (distype == Core::FE::CellType::quad4 || distype == Core::FE::CellType::quad8 ||
+             distype == Core::FE::CellType::quad9)
     {
       if (xi[0] < -1.0 - tol || xi[1] < -1.0 - tol || xi[0] > 1.0 + tol || xi[1] > 1.0 + tol)
       {
         return false;
       }
     }
-    else if (distype == CORE::FE::CellType::tri3 || distype == CORE::FE::CellType::tri6)
+    else if (distype == Core::FE::CellType::tri3 || distype == Core::FE::CellType::tri6)
     {
       if (xi[0] < -tol || xi[1] < -tol || xi[0] > 1.0 + tol || xi[1] > 1.0 + tol ||
           xi[0] + xi[1] > 1.0 + 2 * tol)
@@ -363,22 +365,23 @@ namespace CORE::VOLMORTAR
   }
 
   //===================================
-  template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-  bool VolMortarEleBasedGP(CORE::Elements::Element& sele, CORE::Elements::Element* mele,
+  template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
+  bool VolMortarEleBasedGP(Core::Elements::Element& sele, Core::Elements::Element* mele,
       std::vector<int>& foundeles, int& found, int& gpid, double& jac, double& wgt, double& gpdist,
       double* Axi, double* AuxXi, double* globgp, DualQuad& dq, Shapefcn& shape,
-      CORE::LINALG::SparseMatrix& dmatrix_A, CORE::LINALG::SparseMatrix& mmatrix_A,
-      Teuchos::RCP<const DRT::Discretization> Adis, Teuchos::RCP<const DRT::Discretization> Bdis,
-      int dofseta, int dofsetb, const Teuchos::RCP<const Epetra_Map>& PAB_dofrowmap,
+      Core::LinAlg::SparseMatrix& dmatrix_A, Core::LinAlg::SparseMatrix& mmatrix_A,
+      Teuchos::RCP<const Discret::Discretization> Adis,
+      Teuchos::RCP<const Discret::Discretization> Bdis, int dofseta, int dofsetb,
+      const Teuchos::RCP<const Epetra_Map>& PAB_dofrowmap,
       const Teuchos::RCP<const Epetra_Map>& PAB_dofcolmap);
 
   // evaluation of nts approach
-  template <CORE::FE::CellType distype>
-  bool ConsInterpolatorEval(CORE::Nodes::Node* node, CORE::Elements::Element* ele,
-      CORE::LINALG::SparseMatrix& pmatrix, Teuchos::RCP<const DRT::Discretization> nodediscret,
-      Teuchos::RCP<const DRT::Discretization> elediscret, std::vector<int>& foundeles, int& found,
-      int& eleid, double& dist, double* AuxXi, double* nodepos, std::pair<int, int>& dofset,
-      const Teuchos::RCP<const Epetra_Map>& P_dofrowmap,
+  template <Core::FE::CellType distype>
+  bool ConsInterpolatorEval(Core::Nodes::Node* node, Core::Elements::Element* ele,
+      Core::LinAlg::SparseMatrix& pmatrix, Teuchos::RCP<const Discret::Discretization> nodediscret,
+      Teuchos::RCP<const Discret::Discretization> elediscret, std::vector<int>& foundeles,
+      int& found, int& eleid, double& dist, double* AuxXi, double* nodepos,
+      std::pair<int, int>& dofset, const Teuchos::RCP<const Epetra_Map>& P_dofrowmap,
       const Teuchos::RCP<const Epetra_Map>& P_dofcolmap);
 
   //===================================
@@ -396,14 +399,14 @@ namespace CORE::VOLMORTAR
     \brief interpolation functionality
 
     */
-    void Interpolate(CORE::Nodes::Node* node, CORE::LINALG::SparseMatrix& pmatrix_,
-        Teuchos::RCP<const DRT::Discretization> nodediscret,
-        Teuchos::RCP<const DRT::Discretization> elediscret, std::vector<int>& foundeles,
+    void Interpolate(Core::Nodes::Node* node, Core::LinAlg::SparseMatrix& pmatrix_,
+        Teuchos::RCP<const Discret::Discretization> nodediscret,
+        Teuchos::RCP<const Discret::Discretization> elediscret, std::vector<int>& foundeles,
         std::pair<int, int>& dofset, const Teuchos::RCP<const Epetra_Map>& P_dofrowmap,
         const Teuchos::RCP<const Epetra_Map>& P_dofcolmap);
   };
 
-}  // namespace CORE::VOLMORTAR
+}  // namespace Core::VolMortar
 
 FOUR_C_NAMESPACE_CLOSE
 

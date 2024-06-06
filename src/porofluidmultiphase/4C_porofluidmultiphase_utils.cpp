@@ -30,14 +30,14 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
-  std::vector<int> GetCouplingArteriesNodeToPoint(
-      Teuchos::RCP<DRT::Discretization> artdis, Teuchos::RCP<DRT::Discretization> artsearchdis)
+  std::vector<int> GetCouplingArteriesNodeToPoint(Teuchos::RCP<Discret::Discretization> artdis,
+      Teuchos::RCP<Discret::Discretization> artsearchdis)
   {
     // this vector will be filled
     std::vector<int> artEleGIDs_help;
 
     // get 1D coupling IDs from Input
-    std::vector<CORE::Conditions::Condition*> artCoupcond;
+    std::vector<Core::Conditions::Condition*> artCoupcond;
 
     artdis->GetCondition("ArtPorofluidCouplConNodeToPoint", artCoupcond);
 
@@ -50,8 +50,8 @@ namespace
 
       for (auto const nodeid : *ArteryNodeIds)
       {
-        CORE::Nodes::Node* artnode = artsearchdis->gNode(nodeid);
-        CORE::Elements::Element** artele = artnode->Elements();
+        Core::Nodes::Node* artnode = artsearchdis->gNode(nodeid);
+        Core::Elements::Element** artele = artnode->Elements();
         // get Id of corresponding element; Note: in lung modeling only most distal nodes
         // are coupled, so coupling nodes can only belong to one element
         const int elementID = artele[0]->Id();
@@ -70,14 +70,15 @@ void POROFLUIDMULTIPHASE::UTILS::SetupMaterial(
     const Epetra_Comm& comm, const std::string& struct_disname, const std::string& fluid_disname)
 {
   // get the fluid discretization
-  Teuchos::RCP<DRT::Discretization> fluiddis = GLOBAL::Problem::Instance()->GetDis(fluid_disname);
+  Teuchos::RCP<Discret::Discretization> fluiddis =
+      Global::Problem::Instance()->GetDis(fluid_disname);
 
   // initialize material map
   std::map<int, int> matmap;
   {
     // get the cloning material map from the .dat file
     std::map<std::pair<std::string, std::string>, std::map<int, int>> clonefieldmatmap =
-        GLOBAL::Problem::Instance()->CloningMaterialMap();
+        Global::Problem::Instance()->CloningMaterialMap();
     if (clonefieldmatmap.size() < 1)
       FOUR_C_THROW("At least one material pairing required in --CLONING MATERIAL MAP.");
 
@@ -97,7 +98,7 @@ void POROFLUIDMULTIPHASE::UTILS::SetupMaterial(
   for (int i = 0; i < numelements; ++i)
   {
     // get current element
-    CORE::Elements::Element* ele = fluiddis->lColElement(i);
+    Core::Elements::Element* ele = fluiddis->lColElement(i);
 
     // find the corresponding material in the matmap
     int src_matid = ele->Material()->Parameter()->Id();
@@ -107,7 +108,7 @@ void POROFLUIDMULTIPHASE::UTILS::SetupMaterial(
       // get the ID of the secondary material
       const int tar_matid = mat_iter->second;
       // build the material usilng the factory
-      Teuchos::RCP<CORE::MAT::Material> mat = MAT::Factory(tar_matid);
+      Teuchos::RCP<Core::Mat::Material> mat = Mat::Factory(tar_matid);
 
       // add secondary material to poro fluid element
       if (ele->AddMaterial(mat) != 2) FOUR_C_THROW("unexpected number of materials!");
@@ -130,7 +131,7 @@ void POROFLUIDMULTIPHASE::UTILS::SetupMaterial(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector> POROFLUIDMULTIPHASE::UTILS::ConvertDofVectorToNodeBasedMultiVector(
-    const DRT::Discretization& dis, const Epetra_Vector& vector, const int nds,
+    const Discret::Discretization& dis, const Epetra_Vector& vector, const int nds,
     const int numdofpernode)
 {
   // initialize multi vector
@@ -144,7 +145,7 @@ Teuchos::RCP<Epetra_MultiVector> POROFLUIDMULTIPHASE::UTILS::ConvertDofVectorToN
   for (int inode = 0; inode < dis.NumMyRowNodes(); ++inode)
   {
     // get current node
-    CORE::Nodes::Node* node = dis.lRowNode(inode);
+    Core::Nodes::Node* node = dis.lRowNode(inode);
     // copy each dof value of node
     for (int idof = 0; idof < numdofpernode; ++idof)
       (*multi)[idof][inode] = vector[vectormap.LID(dis.Dof(nds, node, idof))];
@@ -156,14 +157,14 @@ Teuchos::RCP<Epetra_MultiVector> POROFLUIDMULTIPHASE::UTILS::ConvertDofVectorToN
 /*----------------------------------------------------------------------*
  | create algorithm                                                      |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<ADAPTER::PoroFluidMultiphase> POROFLUIDMULTIPHASE::UTILS::CreateAlgorithm(
-    INPAR::POROFLUIDMULTIPHASE::TimeIntegrationScheme timintscheme,
-    Teuchos::RCP<DRT::Discretization> dis, const int linsolvernumber,
+Teuchos::RCP<Adapter::PoroFluidMultiphase> POROFLUIDMULTIPHASE::UTILS::CreateAlgorithm(
+    Inpar::POROFLUIDMULTIPHASE::TimeIntegrationScheme timintscheme,
+    Teuchos::RCP<Discret::Discretization> dis, const int linsolvernumber,
     const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& poroparams,
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
 {
   // Creation of Coupled Problem algortihm.
-  Teuchos::RCP<ADAPTER::PoroFluidMultiphase> algo = Teuchos::null;
+  Teuchos::RCP<Adapter::PoroFluidMultiphase> algo = Teuchos::null;
 
   // -------------------------------------------------------------------
   // algorithm construction depending on
@@ -172,7 +173,7 @@ Teuchos::RCP<ADAPTER::PoroFluidMultiphase> POROFLUIDMULTIPHASE::UTILS::CreateAlg
 
   switch (timintscheme)
   {
-    case INPAR::POROFLUIDMULTIPHASE::timeint_one_step_theta:
+    case Inpar::POROFLUIDMULTIPHASE::timeint_one_step_theta:
     {
       // create algorithm
       algo = Teuchos::rcp(new POROFLUIDMULTIPHASE::TimIntOneStepTheta(
@@ -191,9 +192,9 @@ Teuchos::RCP<ADAPTER::PoroFluidMultiphase> POROFLUIDMULTIPHASE::UTILS::CreateAlg
  | perform extended ghosting for artery dis                kremheller 03/19 |
  *--------------------------------------------------------------------------*/
 std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::ExtendedGhostingArteryDiscretization(
-    Teuchos::RCP<DRT::Discretization> contdis, Teuchos::RCP<DRT::Discretization> artdis,
+    Teuchos::RCP<Discret::Discretization> contdis, Teuchos::RCP<Discret::Discretization> artdis,
     const bool evaluate_on_lateral_surface,
-    const INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod couplingmethod)
+    const Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod couplingmethod)
 {
   // user output
   if (contdis->Comm().MyPID() == 0)
@@ -207,7 +208,7 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::ExtendedGhostingArteryD
   if (!contdis->Filled()) contdis->fill_complete();
 
   // create the fully overlapping search discretization
-  Teuchos::RCP<DRT::Discretization> artsearchdis =
+  Teuchos::RCP<Discret::Discretization> artsearchdis =
       CreateFullyOverlappingArteryDiscretization(artdis, "artsearchdis", false);
 
   // to be filled with additional elements to be ghosted
@@ -232,7 +233,7 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::ExtendedGhostingArteryD
   const std::vector<int> artEleGIDs = std::invoke(
       [&]()
       {
-        if (couplingmethod == INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::ntp)
+        if (couplingmethod == Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod::ntp)
         {
           return GetCouplingArteriesNodeToPoint(artdis, artsearchdis);
         }
@@ -268,7 +269,7 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::ExtendedGhostingArteryD
 
   // fill and inform user
   artdis->fill_complete();
-  CORE::REBALANCE::UTILS::print_parallel_distribution(*artdis);
+  Core::Rebalance::UTILS::print_parallel_distribution(*artdis);
 
   // user output
   if (contdis->Comm().MyPID() == 0)
@@ -284,19 +285,19 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::ExtendedGhostingArteryD
 /*--------------------------------------------------------------------------*
  | create the fully overlapping artery discretization      kremheller 03/19 |
  *--------------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Discretization>
+Teuchos::RCP<Discret::Discretization>
 POROFLUIDMULTIPHASE::UTILS::CreateFullyOverlappingArteryDiscretization(
-    Teuchos::RCP<DRT::Discretization> artdis, std::string disname, bool doboundaryconditions)
+    Teuchos::RCP<Discret::Discretization> artdis, std::string disname, bool doboundaryconditions)
 {
   // we clone a search discretization of the artery discretization on which the search will be
   // performed in a brute force way fully overlapping
-  Teuchos::RCP<CORE::FE::DiscretizationCreatorBase> discloner =
-      Teuchos::rcp(new CORE::FE::DiscretizationCreatorBase());
-  Teuchos::RCP<DRT::Discretization> artsearchdis =
+  Teuchos::RCP<Core::FE::DiscretizationCreatorBase> discloner =
+      Teuchos::rcp(new Core::FE::DiscretizationCreatorBase());
+  Teuchos::RCP<Discret::Discretization> artsearchdis =
       discloner->create_matching_discretization(artdis, disname, false, false, false, false);
 
   // ghost on all procs.
-  CORE::REBALANCE::GhostDiscretizationOnAllProcs(artsearchdis);
+  Core::Rebalance::GhostDiscretizationOnAllProcs(artsearchdis);
   artsearchdis->fill_complete(false, false, doboundaryconditions);
 
   return artsearchdis;
@@ -305,26 +306,26 @@ POROFLUIDMULTIPHASE::UTILS::CreateFullyOverlappingArteryDiscretization(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::OctTreeSearch(
-    Teuchos::RCP<DRT::Discretization> contdis, Teuchos::RCP<DRT::Discretization> artdis,
-    Teuchos::RCP<DRT::Discretization> artsearchdis, const bool evaluate_on_lateral_surface,
+    Teuchos::RCP<Discret::Discretization> contdis, Teuchos::RCP<Discret::Discretization> artdis,
+    Teuchos::RCP<Discret::Discretization> artsearchdis, const bool evaluate_on_lateral_surface,
     const std::vector<int> artEleGIDs, std::set<int>& elecolset, std::set<int>& nodecolset)
 {
   // this map will be filled
   std::map<int, std::set<int>> nearbyelepairs;
 
   // search tree
-  Teuchos::RCP<CORE::GEO::SearchTree> searchTree = Teuchos::rcp(new CORE::GEO::SearchTree(5));
+  Teuchos::RCP<Core::Geo::SearchTree> searchTree = Teuchos::rcp(new Core::Geo::SearchTree(5));
 
   // nodal positions of 2D/3D-discretization
-  std::map<int, CORE::LINALG::Matrix<3, 1>> my_positions_cont =
+  std::map<int, Core::LinAlg::Matrix<3, 1>> my_positions_cont =
       GetNodalPositions(contdis, contdis->NodeColMap());
   // axis-aligned bounding boxes of all elements of 2D/3D discretization
-  std::map<int, CORE::LINALG::Matrix<3, 2>> aabb_cont =
-      CORE::GEO::getCurrentXAABBs(*contdis, my_positions_cont);
+  std::map<int, Core::LinAlg::Matrix<3, 2>> aabb_cont =
+      Core::Geo::getCurrentXAABBs(*contdis, my_positions_cont);
 
   // find the bounding box of the 2D/3D discretization
-  const CORE::LINALG::Matrix<3, 2> sourceEleBox = CORE::GEO::getXAABBofDis(*contdis);
-  searchTree->initializeTree(sourceEleBox, *contdis, CORE::GEO::TreeType(CORE::GEO::OCTTREE));
+  const Core::LinAlg::Matrix<3, 2> sourceEleBox = Core::Geo::getXAABBofDis(*contdis);
+  searchTree->initializeTree(sourceEleBox, *contdis, Core::Geo::TreeType(Core::Geo::OCTTREE));
 
   // user info and timer
   if (contdis->Comm().MyPID() == 0)
@@ -335,25 +336,25 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::OctTreeSearch(
   // *********** time measurement ***********
 
   // nodal positions of artery-discretization (fully overlapping)
-  std::map<int, CORE::LINALG::Matrix<3, 1>> positions_artery;
+  std::map<int, Core::LinAlg::Matrix<3, 1>> positions_artery;
   // nodal positions of artery-discretization (row-map format)
-  std::map<int, CORE::LINALG::Matrix<3, 1>> my_positions_artery =
+  std::map<int, Core::LinAlg::Matrix<3, 1>> my_positions_artery =
       GetNodalPositions(artdis, artdis->NodeRowMap());
 
   // gather
   std::vector<int> procs(contdis->Comm().NumProc());
   for (int i = 0; i < contdis->Comm().NumProc(); i++) procs[i] = i;
-  CORE::LINALG::Gather<int, CORE::LINALG::Matrix<3, 1>>(my_positions_artery, positions_artery,
+  Core::LinAlg::Gather<int, Core::LinAlg::Matrix<3, 1>>(my_positions_artery, positions_artery,
       contdis->Comm().NumProc(), procs.data(), contdis->Comm());
 
   // do the actual search on fully overlapping artery discretization
   for (unsigned int iart = 0; iart < artEleGIDs.size(); ++iart)
   {
     const int artelegid = artEleGIDs[iart];
-    CORE::Elements::Element* artele = artsearchdis->gElement(artelegid);
+    Core::Elements::Element* artele = artsearchdis->gElement(artelegid);
 
     // axis-aligned bounding box of artery
-    const CORE::LINALG::Matrix<3, 2> aabb_artery =
+    const Core::LinAlg::Matrix<3, 2> aabb_artery =
         GetAABB(artele, positions_artery, evaluate_on_lateral_surface);
 
     // get elements nearby
@@ -399,23 +400,23 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::OctTreeSearch(
 /*----------------------------------------------------------------------*
  | get axis-aligned bounding box of element            kremheller 03/19 |
  *----------------------------------------------------------------------*/
-CORE::LINALG::Matrix<3, 2> POROFLUIDMULTIPHASE::UTILS::GetAABB(CORE::Elements::Element* ele,
-    std::map<int, CORE::LINALG::Matrix<3, 1>>& positions, const bool evaluate_on_lateral_surface)
+Core::LinAlg::Matrix<3, 2> POROFLUIDMULTIPHASE::UTILS::GetAABB(Core::Elements::Element* ele,
+    std::map<int, Core::LinAlg::Matrix<3, 1>>& positions, const bool evaluate_on_lateral_surface)
 {
-  const CORE::LINALG::SerialDenseMatrix xyze_element(
-      CORE::GEO::getCurrentNodalPositions(ele, positions));
-  CORE::GEO::EleGeoType eleGeoType(CORE::GEO::HIGHERORDER);
-  CORE::GEO::checkRoughGeoType(ele, xyze_element, eleGeoType);
+  const Core::LinAlg::SerialDenseMatrix xyze_element(
+      Core::Geo::getCurrentNodalPositions(ele, positions));
+  Core::Geo::EleGeoType eleGeoType(Core::Geo::HIGHERORDER);
+  Core::Geo::checkRoughGeoType(ele, xyze_element, eleGeoType);
 
-  CORE::LINALG::Matrix<3, 2> aabb_artery =
-      CORE::GEO::computeFastXAABB(ele->Shape(), xyze_element, eleGeoType);
+  Core::LinAlg::Matrix<3, 2> aabb_artery =
+      Core::Geo::computeFastXAABB(ele->Shape(), xyze_element, eleGeoType);
 
   // add radius to axis aligned bounding box of artery element (in all coordinate directions) in
   // case of evaluation on lateral surface
   if (evaluate_on_lateral_surface)
   {
-    Teuchos::RCP<MAT::Cnst1dArt> arterymat =
-        Teuchos::rcp_static_cast<MAT::Cnst1dArt>(ele->Material());
+    Teuchos::RCP<Mat::Cnst1dArt> arterymat =
+        Teuchos::rcp_static_cast<Mat::Cnst1dArt>(ele->Material());
     if (arterymat == Teuchos::null) FOUR_C_THROW("Cast to artery material failed!");
     const double radius = arterymat->Diam() / 2.0;
     for (int idim = 0; idim < 3; idim++)
@@ -430,14 +431,14 @@ CORE::LINALG::Matrix<3, 2> POROFLUIDMULTIPHASE::UTILS::GetAABB(CORE::Elements::E
 /*----------------------------------------------------------------------*
  | get nodal positions                                 kremheller 10/19 |
  *----------------------------------------------------------------------*/
-std::map<int, CORE::LINALG::Matrix<3, 1>> POROFLUIDMULTIPHASE::UTILS::GetNodalPositions(
-    Teuchos::RCP<DRT::Discretization> dis, const Epetra_Map* nodemap)
+std::map<int, Core::LinAlg::Matrix<3, 1>> POROFLUIDMULTIPHASE::UTILS::GetNodalPositions(
+    Teuchos::RCP<Discret::Discretization> dis, const Epetra_Map* nodemap)
 {
-  std::map<int, CORE::LINALG::Matrix<3, 1>> positions;
+  std::map<int, Core::LinAlg::Matrix<3, 1>> positions;
   for (int lid = 0; lid < nodemap->NumMyElements(); ++lid)
   {
-    const CORE::Nodes::Node* node = dis->gNode(nodemap->GID(lid));
-    CORE::LINALG::Matrix<3, 1> currpos;
+    const Core::Nodes::Node* node = dis->gNode(nodemap->GID(lid));
+    Core::LinAlg::Matrix<3, 1> currpos;
 
     currpos(0) = node->X()[0];
     currpos(1) = node->X()[1];
@@ -452,7 +453,7 @@ std::map<int, CORE::LINALG::Matrix<3, 1>> POROFLUIDMULTIPHASE::UTILS::GetNodalPo
  | get maximum nodal distance                          kremheller 05/18 |
  *----------------------------------------------------------------------*/
 double POROFLUIDMULTIPHASE::UTILS::GetMaxNodalDistance(
-    CORE::Elements::Element* ele, Teuchos::RCP<DRT::Discretization> dis)
+    Core::Elements::Element* ele, Teuchos::RCP<Discret::Discretization> dis)
 {
   double maxdist = 0.0;
 
@@ -460,9 +461,9 @@ double POROFLUIDMULTIPHASE::UTILS::GetMaxNodalDistance(
   {
     // get first node and its position
     int node0_gid = ele->NodeIds()[inode];
-    CORE::Nodes::Node* node0 = dis->gNode(node0_gid);
+    Core::Nodes::Node* node0 = dis->gNode(node0_gid);
 
-    static CORE::LINALG::Matrix<3, 1> pos0;
+    static Core::LinAlg::Matrix<3, 1> pos0;
     pos0(0) = node0->X()[0];
     pos0(1) = node0->X()[1];
     pos0(2) = node0->X()[2];
@@ -471,14 +472,14 @@ double POROFLUIDMULTIPHASE::UTILS::GetMaxNodalDistance(
     for (int jnode = inode + 1; jnode < ele->num_node(); jnode++)
     {
       int node1_gid = ele->NodeIds()[jnode];
-      CORE::Nodes::Node* node1 = dis->gNode(node1_gid);
+      Core::Nodes::Node* node1 = dis->gNode(node1_gid);
 
-      static CORE::LINALG::Matrix<3, 1> pos1;
+      static Core::LinAlg::Matrix<3, 1> pos1;
       pos1(0) = node1->X()[0];
       pos1(1) = node1->X()[1];
       pos1(2) = node1->X()[2];
 
-      static CORE::LINALG::Matrix<3, 1> dist;
+      static Core::LinAlg::Matrix<3, 1> dist;
       dist.Update(1.0, pos0, -1.0, pos1, 0.0);
 
       maxdist = std::max(maxdist, dist.Norm2());
@@ -492,12 +493,12 @@ double POROFLUIDMULTIPHASE::UTILS::GetMaxNodalDistance(
  | calculate vector norm                             kremheller 12/17   |
  *----------------------------------------------------------------------*/
 double POROFLUIDMULTIPHASE::UTILS::calculate_vector_norm(
-    const enum INPAR::POROFLUIDMULTIPHASE::VectorNorm norm,
+    const enum Inpar::POROFLUIDMULTIPHASE::VectorNorm norm,
     const Teuchos::RCP<const Epetra_Vector> vect)
 {
   // L1 norm
   // norm = sum_0^i vect[i]
-  if (norm == INPAR::POROFLUIDMULTIPHASE::norm_l1)
+  if (norm == Inpar::POROFLUIDMULTIPHASE::norm_l1)
   {
     double vectnorm;
     vect->Norm1(&vectnorm);
@@ -505,7 +506,7 @@ double POROFLUIDMULTIPHASE::UTILS::calculate_vector_norm(
   }
   // L2/Euclidian norm
   // norm = sqrt{sum_0^i vect[i]^2 }
-  else if (norm == INPAR::POROFLUIDMULTIPHASE::norm_l2)
+  else if (norm == Inpar::POROFLUIDMULTIPHASE::norm_l2)
   {
     double vectnorm;
     vect->Norm2(&vectnorm);
@@ -513,7 +514,7 @@ double POROFLUIDMULTIPHASE::UTILS::calculate_vector_norm(
   }
   // RMS norm
   // norm = sqrt{sum_0^i vect[i]^2 }/ sqrt{length_vect}
-  else if (norm == INPAR::POROFLUIDMULTIPHASE::norm_rms)
+  else if (norm == Inpar::POROFLUIDMULTIPHASE::norm_rms)
   {
     double vectnorm;
     vect->Norm2(&vectnorm);
@@ -521,14 +522,14 @@ double POROFLUIDMULTIPHASE::UTILS::calculate_vector_norm(
   }
   // infinity/maximum norm
   // norm = max( vect[i] )
-  else if (norm == INPAR::POROFLUIDMULTIPHASE::norm_inf)
+  else if (norm == Inpar::POROFLUIDMULTIPHASE::norm_inf)
   {
     double vectnorm;
     vect->NormInf(&vectnorm);
     return vectnorm;
   }
   // norm = sum_0^i vect[i]/length_vect
-  else if (norm == INPAR::POROFLUIDMULTIPHASE::norm_l1_scaled)
+  else if (norm == Inpar::POROFLUIDMULTIPHASE::norm_l1_scaled)
   {
     double vectnorm;
     vect->Norm1(&vectnorm);

@@ -17,7 +17,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 
@@ -26,30 +26,30 @@ namespace DRT
     /*----------------------------------------------------------------------*
      |  QUAD 4 Element                                                      |
      *----------------------------------------------------------------------*/
-    class WallQuad4PoroP1Type : public DRT::ELEMENTS::WallQuad4PoroType
+    class WallQuad4PoroP1Type : public Discret::ELEMENTS::WallQuad4PoroType
     {
      public:
       std::string Name() const override { return "WallQuad4PoroP1Type"; }
 
       static WallQuad4PoroP1Type& Instance();
 
-      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+          Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
+      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+          Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
-      int Initialize(DRT::Discretization& dis) override;
+      int Initialize(Discret::Discretization& dis) override;
 
       void setup_element_definition(
-          std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+          std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
           override;
 
      private:
@@ -59,30 +59,30 @@ namespace DRT
     /*----------------------------------------------------------------------*
      |  QUAD 9 Element                                                      |
      *----------------------------------------------------------------------*/
-    class WallQuad9PoroP1Type : public DRT::ELEMENTS::WallQuad9PoroType
+    class WallQuad9PoroP1Type : public Discret::ELEMENTS::WallQuad9PoroType
     {
      public:
       std::string Name() const override { return "WallQuad9PoroP1Type"; }
 
       static WallQuad9PoroP1Type& Instance();
 
-      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+          Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
+      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+          Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
-      int Initialize(DRT::Discretization& dis) override;
+      int Initialize(Discret::Discretization& dis) override;
 
       void setup_element_definition(
-          std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+          std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
           override;
 
      private:
@@ -92,30 +92,30 @@ namespace DRT
     /*----------------------------------------------------------------------*
      |  TRI 3 Element                                                       |
      *----------------------------------------------------------------------*/
-    class WallTri3PoroP1Type : public DRT::ELEMENTS::WallTri3PoroType
+    class WallTri3PoroP1Type : public Discret::ELEMENTS::WallTri3PoroType
     {
      public:
       std::string Name() const override { return "WallTri3PoroP1Type"; }
 
       static WallTri3PoroP1Type& Instance();
 
-      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+          Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
+      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+          Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
-      int Initialize(DRT::Discretization& dis) override;
+      int Initialize(Discret::Discretization& dis) override;
 
       void setup_element_definition(
-          std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+          std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
           override;
 
      private:
@@ -123,7 +123,7 @@ namespace DRT
     };
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 
 FOUR_C_NAMESPACE_CLOSE

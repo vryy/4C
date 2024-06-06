@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 
 // Constructor for the parameter class
 MIXTURE::PAR::MixtureConstituentElastHyperBase::MixtureConstituentElastHyperBase(
-    const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
+    const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
     : MixtureConstituent(matdata),
       matid_prestress_strategy_(matdata->Get<int>("PRESTRESS_STRATEGY")),
       nummat_(matdata->Get<int>("NUMMAT")),
@@ -52,7 +52,7 @@ MIXTURE::MixtureConstituentElastHyperBase::MixtureConstituentElastHyperBase(
   // Create summands
   for (const auto& matid : params_->matids_)
   {
-    Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(matid);
+    Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::Factory(matid);
     if (sum == Teuchos::null) FOUR_C_THROW("Failed to read elastic summand.");
     potsum_.push_back(sum);
   }
@@ -67,17 +67,18 @@ MIXTURE::MixtureConstituentElastHyperBase::MixtureConstituentElastHyperBase(
 }
 
 // Pack the constituent
-void MIXTURE::MixtureConstituentElastHyperBase::PackConstituent(CORE::COMM::PackBuffer& data) const
+void MIXTURE::MixtureConstituentElastHyperBase::PackConstituent(
+    Core::Communication::PackBuffer& data) const
 {
   MixtureConstituent::PackConstituent(data);
 
   // matid
   int matid = -1;
   if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
-  CORE::COMM::ParObject::AddtoPack(data, matid);
+  Core::Communication::ParObject::AddtoPack(data, matid);
   summand_properties_.Pack(data);
 
-  CORE::COMM::ParObject::AddtoPack(data, prestretch_);
+  Core::Communication::ParObject::AddtoPack(data, prestretch_);
 
   cosy_anisotropy_extension_.PackAnisotropy(data);
 
@@ -102,15 +103,15 @@ void MIXTURE::MixtureConstituentElastHyperBase::UnpackConstituent(
 
   // matid and recover params_
   int matid;
-  CORE::COMM::ParObject::ExtractfromPack(position, data, matid);
+  Core::Communication::ParObject::ExtractfromPack(position, data, matid);
 
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
   {
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const unsigned int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const unsigned int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
       {
         params_ = dynamic_cast<MIXTURE::PAR::MixtureConstituentElastHyperBase*>(mat);
@@ -125,7 +126,7 @@ void MIXTURE::MixtureConstituentElastHyperBase::UnpackConstituent(
 
   summand_properties_.Unpack(position, data);
 
-  CORE::COMM::ParObject::ExtractfromPack(position, data, prestretch_);
+  Core::Communication::ParObject::ExtractfromPack(position, data, prestretch_);
 
   cosy_anisotropy_extension_.UnpackAnisotropy(data, position);
 
@@ -145,7 +146,7 @@ void MIXTURE::MixtureConstituentElastHyperBase::UnpackConstituent(
     for (m = params_->matids_.begin(); m != params_->matids_.end(); ++m)
     {
       const int summatid = *m;
-      Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(summatid);
+      Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::Factory(summatid);
       if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
       potsum_.push_back(sum);
     }
@@ -156,7 +157,7 @@ void MIXTURE::MixtureConstituentElastHyperBase::UnpackConstituent(
 }
 
 void MIXTURE::MixtureConstituentElastHyperBase::register_anisotropy_extensions(
-    MAT::Anisotropy& anisotropy)
+    Mat::Anisotropy& anisotropy)
 {
   // Setup summands
   for (const auto& summand : potsum_) summand->register_anisotropy_extensions(anisotropy);
@@ -166,7 +167,7 @@ void MIXTURE::MixtureConstituentElastHyperBase::register_anisotropy_extensions(
 
 // Reads the element from the input file
 void MIXTURE::MixtureConstituentElastHyperBase::ReadElement(
-    int numgp, INPUT::LineDefinition* linedef)
+    int numgp, Input::LineDefinition* linedef)
 {
   MixtureConstituent::ReadElement(numgp, linedef);
 
@@ -174,7 +175,7 @@ void MIXTURE::MixtureConstituentElastHyperBase::ReadElement(
   for (const auto& summand : potsum_) summand->Setup(numgp, linedef);
 
   // find out which formulations are used
-  MAT::ElastHyperProperties(potsum_, summand_properties_);
+  Mat::ElastHyperProperties(potsum_, summand_properties_);
 
   if (summand_properties_.viscoGeneral)
   {
@@ -183,7 +184,7 @@ void MIXTURE::MixtureConstituentElastHyperBase::ReadElement(
 }
 
 // Updates all summands
-void MIXTURE::MixtureConstituentElastHyperBase::Update(CORE::LINALG::Matrix<3, 3> const& defgrd,
+void MIXTURE::MixtureConstituentElastHyperBase::Update(Core::LinAlg::Matrix<3, 3> const& defgrd,
     Teuchos::ParameterList& params, const int gp, const int eleGID)
 {
   MixtureConstituent::Update(defgrd, params, gp, eleGID);
@@ -233,16 +234,16 @@ void MIXTURE::MixtureConstituentElastHyperBase::register_output_data_names(
 }
 
 bool MIXTURE::MixtureConstituentElastHyperBase::EvaluateOutputData(
-    const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const
+    const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const
 {
   if (prestress_strategy_ != nullptr &&
       name == "mixture_constituent_" + std::to_string(Id()) + "_elasthyper_prestretch")
   {
     for (int gp = 0; gp < num_gp(); ++gp)
     {
-      static CORE::LINALG::Matrix<9, 1> tmp(false);
+      static Core::LinAlg::Matrix<9, 1> tmp(false);
       tmp.Clear();
-      CORE::LINALG::VOIGT::Matrix3x3to9x1(prestretch_[gp], tmp);
+      Core::LinAlg::Voigt::Matrix3x3to9x1(prestretch_[gp], tmp);
 
       for (int i = 0; i < 9; ++i)
       {

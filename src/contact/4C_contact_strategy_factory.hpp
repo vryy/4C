@@ -37,7 +37,7 @@ namespace CONTACT
     /*! \brief Factory for contact strategies
      *
      */
-    class Factory : public MORTAR::STRATEGY::Factory
+    class Factory : public Mortar::STRATEGY::Factory
     {
      public:
       void Setup() override;
@@ -45,7 +45,7 @@ namespace CONTACT
       /*! \brief Read and check contact input parameters
        *
        * All specified contact-related input parameters are read from the
-       * GLOBAL::Problem::Instance() and stored into a local variable of
+       * Global::Problem::Instance() and stored into a local variable of
        * type Teuchos::ParameterList. Invalid parameter combinations are
        * sorted out and throw a FOUR_C_THROW.
        *
@@ -73,7 +73,7 @@ namespace CONTACT
        *  \author hiermeier \date 03/17 */
       static Teuchos::RCP<CONTACT::Interface> CreateInterface(const int id, const Epetra_Comm& comm,
           const int dim, Teuchos::ParameterList& icparams, const bool selfcontact,
-          const Teuchos::RCP<const DRT::Discretization>& parent_dis,
+          const Teuchos::RCP<const Discret::Discretization>& parent_dis,
           Teuchos::RCP<CONTACT::InterfaceDataContainer> interfaceData_ptr = Teuchos::null,
           const int contactconstitutivelaw_id = -1);
 
@@ -81,9 +81,9 @@ namespace CONTACT
        *
        *  \author hiermeier \date 03/17 */
       static Teuchos::RCP<CONTACT::Interface> CreateInterface(
-          const enum INPAR::CONTACT::SolvingStrategy stype, const int id, const Epetra_Comm& comm,
+          const enum Inpar::CONTACT::SolvingStrategy stype, const int id, const Epetra_Comm& comm,
           const int dim, Teuchos::ParameterList& icparams, const bool selfcontact,
-          const Teuchos::RCP<const DRT::Discretization>& parent_dis,
+          const Teuchos::RCP<const Discret::Discretization>& parent_dis,
           Teuchos::RCP<CONTACT::InterfaceDataContainer> interface_data_ptr,
           const int contactconstitutivelaw_id = -1);
 
@@ -102,7 +102,7 @@ namespace CONTACT
        *
        * \author hiermeier \date 03/17 */
       static Teuchos::RCP<CONTACT::AbstractStrategy> BuildStrategy(
-          const INPAR::CONTACT::SolvingStrategy stype, const Teuchos::ParameterList& params,
+          const Inpar::CONTACT::SolvingStrategy stype, const Teuchos::ParameterList& params,
           const bool& poroslave, const bool& poromaster, const int& dof_offset,
           std::vector<Teuchos::RCP<CONTACT::Interface>>& interfaces, const Epetra_Map* dof_row_map,
           const Epetra_Map* node_row_map, const int dim,
@@ -121,7 +121,7 @@ namespace CONTACT
       /*! \brief print strategy banner
        *
        *  \param soltype (in) : contact solving strategy type */
-      static void PrintStrategyBanner(const enum INPAR::CONTACT::SolvingStrategy soltype);
+      static void PrintStrategyBanner(const enum Inpar::CONTACT::SolvingStrategy soltype);
 
      protected:
      private:
@@ -134,16 +134,16 @@ namespace CONTACT
       /*! \brief Set Parent Elements for Poro Face Elements
        *
        *  \author Ager */
-      void set_poro_parent_element(enum MORTAR::Element::PhysicalType& slavetype,
-          enum MORTAR::Element::PhysicalType& mastertype, Teuchos::RCP<CONTACT::Element>& cele,
-          Teuchos::RCP<CORE::Elements::Element>& ele, const DRT::Discretization& discret) const;
+      void set_poro_parent_element(enum Mortar::Element::PhysicalType& slavetype,
+          enum Mortar::Element::PhysicalType& mastertype, Teuchos::RCP<CONTACT::Element>& cele,
+          Teuchos::RCP<Core::Elements::Element>& ele, const Discret::Discretization& discret) const;
 
       /*! \brief Find Physical Type (Poro or Structure) of Poro Interface
        *
        *  \author Ager */
       void find_poro_interface_types(bool& poromaster, bool& poroslave, bool& structmaster,
-          bool& structslave, enum MORTAR::Element::PhysicalType& slavetype,
-          enum MORTAR::Element::PhysicalType& mastertype) const;
+          bool& structslave, enum Mortar::Element::PhysicalType& slavetype,
+          enum Mortar::Element::PhysicalType& mastertype) const;
 
       //!@}
 

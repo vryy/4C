@@ -21,7 +21,7 @@ constraint enforcement technique with a discretization approach for Fluid-beam i
 
 FOUR_C_NAMESPACE_OPEN
 
-ADAPTER::FBIConstraintBridge::FBIConstraintBridge()
+Adapter::FBIConstraintBridge::FBIConstraintBridge()
     : beam_interaction_params_(Teuchos::null),
       assemblystrategy_(Teuchos::null),
       meshtying_pairs_(
@@ -29,8 +29,8 @@ ADAPTER::FBIConstraintBridge::FBIConstraintBridge()
       geometry_evaluation_data_(Teuchos::null){};
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FBIConstraintBridge::Setup(const Epetra_Map* beam_map, const Epetra_Map* fluid_map,
-    Teuchos::RCP<CORE::LINALG::SparseOperator> fluidmatrix, bool fluidmeshtying)
+void Adapter::FBIConstraintBridge::Setup(const Epetra_Map* beam_map, const Epetra_Map* fluid_map,
+    Teuchos::RCP<Core::LinAlg::SparseOperator> fluidmatrix, bool fluidmeshtying)
 {
   // Create the beaminteraction data container and set the parameters
   beam_interaction_params_ = Teuchos::rcp(new FBI::BeamToFluidMeshtyingParams());
@@ -38,7 +38,7 @@ void ADAPTER::FBIConstraintBridge::Setup(const Epetra_Map* beam_map, const Epetr
   beam_interaction_params_->Setup();
 
   const Teuchos::ParameterList& geometry_parameter_list =
-      GLOBAL::Problem::Instance()->FBIParams().sublist("BEAM TO FLUID MESHTYING");
+      Global::Problem::Instance()->FBIParams().sublist("BEAM TO FLUID MESHTYING");
 
   // Create the beaminteraction data container and set the parameters
   geometry_evaluation_data_ = Teuchos::rcp<GEOMETRYPAIR::LineTo3DEvaluationData>(
@@ -49,7 +49,7 @@ void ADAPTER::FBIConstraintBridge::Setup(const Epetra_Map* beam_map, const Epetr
     // For the option condensed smat this can be changed by creating a FEMatrix instead of a
     // CRSMatrix!
     if (beam_interaction_params_->get_contact_discretization() ==
-        INPAR::FBI::BeamToFluidDiscretization::mortar)
+        Inpar::FBI::BeamToFluidDiscretization::mortar)
       FOUR_C_THROW("Fluid Meshtying is not supported when using a mortar discretization!");
 
     assemblystrategy_ = Teuchos::rcp<FBI::UTILS::FBIBlockAssemblyStrategy>(
@@ -61,8 +61,8 @@ void ADAPTER::FBIConstraintBridge::Setup(const Epetra_Map* beam_map, const Epetr
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FBIConstraintBridge::CreatePair(
-    const std::vector<CORE::Elements::Element const*> elements,
+void Adapter::FBIConstraintBridge::CreatePair(
+    const std::vector<Core::Elements::Element const*> elements,
     const std::vector<double> beam_centerline_dofvec, const std::vector<double> fluid_nodal_dofvec)
 {
   // create a new beaminteratcion pair
@@ -83,7 +83,7 @@ void ADAPTER::FBIConstraintBridge::CreatePair(
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FBIConstraintBridge::ResetPair(const std::vector<double> beam_centerline_dofvec,
+void Adapter::FBIConstraintBridge::ResetPair(const std::vector<double> beam_centerline_dofvec,
     const std::vector<double> fluid_nodal_dofvec,
     Teuchos::RCP<BEAMINTERACTION::BeamContactPair> interactionpair)
 {
@@ -92,7 +92,7 @@ void ADAPTER::FBIConstraintBridge::ResetPair(const std::vector<double> beam_cent
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FBIConstraintBridge::Clear()
+void Adapter::FBIConstraintBridge::Clear()
 {
   // Delete all pairs and segmentation information
   meshtying_pairs_->clear();

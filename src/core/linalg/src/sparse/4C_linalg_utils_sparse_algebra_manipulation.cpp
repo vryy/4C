@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief A collection of sparse matrix manipulation methods for namespace CORE::LINALG
+\brief A collection of sparse matrix manipulation methods for namespace Core::LinAlg
 
 \level 0
 */
@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  export a Epetra_Vector                                   mwgee 12/06|
  *----------------------------------------------------------------------*/
-void CORE::LINALG::Export(const Epetra_MultiVector& source, Epetra_MultiVector& target)
+void Core::LinAlg::Export(const Epetra_MultiVector& source, Epetra_MultiVector& target)
 {
   try
   {
@@ -99,7 +99,7 @@ void CORE::LINALG::Export(const Epetra_MultiVector& source, Epetra_MultiVector& 
 /*----------------------------------------------------------------------*
  |  export a Epetra_IntVector                                mwgee 01/13|
  *----------------------------------------------------------------------*/
-void CORE::LINALG::Export(const Epetra_IntVector& source, Epetra_IntVector& target)
+void Core::LinAlg::Export(const Epetra_IntVector& source, Epetra_IntVector& target)
 {
   try
   {
@@ -162,7 +162,7 @@ void CORE::LINALG::Export(const Epetra_IntVector& source, Epetra_IntVector& targ
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> CORE::LINALG::ExtractMyVector(
+Teuchos::RCP<Epetra_Vector> Core::LinAlg::ExtractMyVector(
     const Epetra_Vector& source, const Epetra_Map& target_map)
 {
   Teuchos::RCP<Epetra_Vector> target = Teuchos::rcp(new Epetra_Vector(target_map));
@@ -174,7 +174,7 @@ Teuchos::RCP<Epetra_Vector> CORE::LINALG::ExtractMyVector(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::LINALG::ExtractMyVector(const Epetra_Vector& source, Epetra_Vector& target)
+void Core::LinAlg::ExtractMyVector(const Epetra_Vector& source, Epetra_Vector& target)
 {
   const int my_num_target_gids = target.Map().NumMyElements();
   const int* my_target_gids = target.Map().MyGlobalElements();
@@ -199,7 +199,7 @@ void CORE::LINALG::ExtractMyVector(const Epetra_Vector& source, Epetra_Vector& t
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::LINALG::ExtractMyVector(
+void Core::LinAlg::ExtractMyVector(
     double scalar_source, const Epetra_Vector& source, double scalar_target, Epetra_Vector& target)
 {
   const int my_num_target_gids = target.Map().NumMyElements();
@@ -226,23 +226,23 @@ void CORE::LINALG::ExtractMyVector(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool CORE::LINALG::SplitMatrix2x2(Teuchos::RCP<Epetra_CrsMatrix> A,
+bool Core::LinAlg::SplitMatrix2x2(Teuchos::RCP<Epetra_CrsMatrix> A,
     Teuchos::RCP<BlockSparseMatrix<DefaultBlockMatrixStrategy>>& Ablock,
     Teuchos::RCP<Epetra_Map>& A11rowmap, Teuchos::RCP<Epetra_Map>& A22rowmap)
 {
-  if (A == Teuchos::null) FOUR_C_THROW("CORE::LINALG::SplitMatrix2x2: A==null on entry");
+  if (A == Teuchos::null) FOUR_C_THROW("Core::LinAlg::SplitMatrix2x2: A==null on entry");
 
   if (A11rowmap == Teuchos::null && A22rowmap != Teuchos::null)
-    A11rowmap = CORE::LINALG::SplitMap(A->RowMap(), *A22rowmap);
+    A11rowmap = Core::LinAlg::SplitMap(A->RowMap(), *A22rowmap);
   else if (A11rowmap != Teuchos::null && A22rowmap == Teuchos::null)
-    A22rowmap = CORE::LINALG::SplitMap(A->RowMap(), *A11rowmap);
+    A22rowmap = Core::LinAlg::SplitMap(A->RowMap(), *A11rowmap);
   else if (A11rowmap == Teuchos::null && A22rowmap == Teuchos::null)
-    FOUR_C_THROW("CORE::LINALG::SplitMatrix2x2: Both A11rowmap and A22rowmap == null on entry");
+    FOUR_C_THROW("Core::LinAlg::SplitMatrix2x2: Both A11rowmap and A22rowmap == null on entry");
 
   std::vector<Teuchos::RCP<const Epetra_Map>> maps(2);
   maps[0] = Teuchos::rcp(new Epetra_Map(*A11rowmap));
   maps[1] = Teuchos::rcp(new Epetra_Map(*A22rowmap));
-  CORE::LINALG::MultiMapExtractor extractor(A->RowMap(), maps);
+  Core::LinAlg::MultiMapExtractor extractor(A->RowMap(), maps);
 
   // create SparseMatrix view to input matrix A
   SparseMatrix a(A, View);
@@ -256,7 +256,7 @@ bool CORE::LINALG::SplitMatrix2x2(Teuchos::RCP<Epetra_CrsMatrix> A,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool CORE::LINALG::SplitMatrix2x2(Teuchos::RCP<Epetra_CrsMatrix> A,
+bool Core::LinAlg::SplitMatrix2x2(Teuchos::RCP<Epetra_CrsMatrix> A,
     Teuchos::RCP<Epetra_Map>& A11rowmap, Teuchos::RCP<Epetra_Map>& A22rowmap,
     Teuchos::RCP<Epetra_CrsMatrix>& A11, Teuchos::RCP<Epetra_CrsMatrix>& A12,
     Teuchos::RCP<Epetra_CrsMatrix>& A21, Teuchos::RCP<Epetra_CrsMatrix>& A22)
@@ -276,30 +276,30 @@ bool CORE::LINALG::SplitMatrix2x2(Teuchos::RCP<Epetra_CrsMatrix> A,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool CORE::LINALG::SplitMatrix2x2(Teuchos::RCP<CORE::LINALG::SparseMatrix> A,
+bool Core::LinAlg::SplitMatrix2x2(Teuchos::RCP<Core::LinAlg::SparseMatrix> A,
     Teuchos::RCP<Epetra_Map>& A11rowmap, Teuchos::RCP<Epetra_Map>& A22rowmap,
     Teuchos::RCP<Epetra_Map>& A11domainmap, Teuchos::RCP<Epetra_Map>& A22domainmap,
-    Teuchos::RCP<CORE::LINALG::SparseMatrix>& A11, Teuchos::RCP<CORE::LINALG::SparseMatrix>& A12,
-    Teuchos::RCP<CORE::LINALG::SparseMatrix>& A21, Teuchos::RCP<CORE::LINALG::SparseMatrix>& A22)
+    Teuchos::RCP<Core::LinAlg::SparseMatrix>& A11, Teuchos::RCP<Core::LinAlg::SparseMatrix>& A12,
+    Teuchos::RCP<Core::LinAlg::SparseMatrix>& A21, Teuchos::RCP<Core::LinAlg::SparseMatrix>& A22)
 {
-  if (A == Teuchos::null) FOUR_C_THROW("CORE::LINALG::SplitMatrix2x2: A==null on entry");
+  if (A == Teuchos::null) FOUR_C_THROW("Core::LinAlg::SplitMatrix2x2: A==null on entry");
 
   // check and complete input row maps
   if (A11rowmap == Teuchos::null && A22rowmap != Teuchos::null)
-    A11rowmap = CORE::LINALG::SplitMap(A->RowMap(), *A22rowmap);
+    A11rowmap = Core::LinAlg::SplitMap(A->RowMap(), *A22rowmap);
   else if (A11rowmap != Teuchos::null && A22rowmap == Teuchos::null)
-    A22rowmap = CORE::LINALG::SplitMap(A->RowMap(), *A11rowmap);
+    A22rowmap = Core::LinAlg::SplitMap(A->RowMap(), *A11rowmap);
   else if (A11rowmap == Teuchos::null && A22rowmap == Teuchos::null)
-    FOUR_C_THROW("CORE::LINALG::SplitMatrix2x2: Both A11rowmap and A22rowmap == null on entry");
+    FOUR_C_THROW("Core::LinAlg::SplitMatrix2x2: Both A11rowmap and A22rowmap == null on entry");
 
   // check and complete input domain maps
   if (A11domainmap == Teuchos::null && A22domainmap != Teuchos::null)
-    A11domainmap = CORE::LINALG::SplitMap(A->DomainMap(), *A22domainmap);
+    A11domainmap = Core::LinAlg::SplitMap(A->DomainMap(), *A22domainmap);
   else if (A11domainmap != Teuchos::null && A22domainmap == Teuchos::null)
-    A22domainmap = CORE::LINALG::SplitMap(A->DomainMap(), *A11domainmap);
+    A22domainmap = Core::LinAlg::SplitMap(A->DomainMap(), *A11domainmap);
   else if (A11rowmap == Teuchos::null && A22rowmap == Teuchos::null)
     FOUR_C_THROW(
-        "CORE::LINALG::SplitMatrix2x2: Both A11domainmap and A22domainmap == null on entry");
+        "Core::LinAlg::SplitMatrix2x2: Both A11domainmap and A22domainmap == null on entry");
 
   // local variables
   std::vector<Teuchos::RCP<const Epetra_Map>> rangemaps(2);
@@ -308,8 +308,8 @@ bool CORE::LINALG::SplitMatrix2x2(Teuchos::RCP<CORE::LINALG::SparseMatrix> A,
   rangemaps[1] = Teuchos::rcp(new Epetra_Map(*A22rowmap));
   domainmaps[0] = Teuchos::rcp(new Epetra_Map(*A11domainmap));
   domainmaps[1] = Teuchos::rcp(new Epetra_Map(*A22domainmap));
-  CORE::LINALG::MultiMapExtractor range(A->RangeMap(), rangemaps);
-  CORE::LINALG::MultiMapExtractor domain(A->DomainMap(), domainmaps);
+  Core::LinAlg::MultiMapExtractor range(A->RangeMap(), rangemaps);
+  Core::LinAlg::MultiMapExtractor domain(A->DomainMap(), domainmaps);
 
   Teuchos::RCP<BlockSparseMatrix<DefaultBlockMatrixStrategy>> Ablock =
       A->Split<DefaultBlockMatrixStrategy>(domain, range);
@@ -327,8 +327,8 @@ bool CORE::LINALG::SplitMatrix2x2(Teuchos::RCP<CORE::LINALG::SparseMatrix> A,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int CORE::LINALG::InsertMyRowDiagonalIntoUnfilledMatrix(
-    CORE::LINALG::SparseMatrix& mat, const Epetra_Vector& diag)
+int Core::LinAlg::InsertMyRowDiagonalIntoUnfilledMatrix(
+    Core::LinAlg::SparseMatrix& mat, const Epetra_Vector& diag)
 {
   if (mat.Filled()) return -1;
 
@@ -376,7 +376,7 @@ int CORE::LINALG::InsertMyRowDiagonalIntoUnfilledMatrix(
 /*----------------------------------------------------------------------*
  | split a map into 2 pieces with given Agiven                     06/06|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> CORE::LINALG::SplitMap(const Epetra_Map& Amap, const Epetra_Map& Agiven)
+Teuchos::RCP<Epetra_Map> Core::LinAlg::SplitMap(const Epetra_Map& Amap, const Epetra_Map& Agiven)
 {
   const Epetra_Comm& Comm = Amap.Comm();
   const Epetra_Map& Ag = Agiven;
@@ -402,7 +402,7 @@ Teuchos::RCP<Epetra_Map> CORE::LINALG::SplitMap(const Epetra_Map& Amap, const Ep
 /*----------------------------------------------------------------------*
  | fill matrix row and check for success                     farah 06/14|
  *----------------------------------------------------------------------*/
-void CORE::LINALG::InsertGlobalValues(
+void Core::LinAlg::InsertGlobalValues(
     Teuchos::RCP<Epetra_CrsMatrix> mat, int GlobalRow, int NumEntries, double* Values, int* Indices)
 {
   int err;
@@ -420,16 +420,16 @@ void CORE::LINALG::InsertGlobalValues(
 /*----------------------------------------------------------------------*
  | merge two given maps to one map                            popp 01/08|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> CORE::LINALG::MergeMap(
+Teuchos::RCP<Epetra_Map> Core::LinAlg::MergeMap(
     const Epetra_Map& map1, const Epetra_Map& map2, bool overlap)
 {
   // check for unique GIDs and for identity
   // if ((!map1.UniqueGIDs()) || (!map2.UniqueGIDs()))
-  //  FOUR_C_THROW("CORE::LINALG::MergeMap: One or both input maps are not unique");
+  //  FOUR_C_THROW("Core::LinAlg::MergeMap: One or both input maps are not unique");
   if (map1.SameAs(map2))
   {
     if ((overlap == false) && map1.NumGlobalElements() > 0)
-      FOUR_C_THROW("CORE::LINALG::MergeMap: Result map is overlapping");
+      FOUR_C_THROW("Core::LinAlg::MergeMap: Result map is overlapping");
     else
       return Teuchos::rcp(new Epetra_Map(map1));
   }
@@ -446,7 +446,7 @@ Teuchos::RCP<Epetra_Map> CORE::LINALG::MergeMap(
     // check for overlap
     if (map1.MyGID(map2.GID(i)))
     {
-      if (overlap == false) FOUR_C_THROW("CORE::LINALG::MergeMap: Result map is overlapping");
+      if (overlap == false) FOUR_C_THROW("Core::LinAlg::MergeMap: Result map is overlapping");
     }
     // add new GIDs to mygids
     else
@@ -466,7 +466,7 @@ Teuchos::RCP<Epetra_Map> CORE::LINALG::MergeMap(
 /*----------------------------------------------------------------------*
  | merge two given maps to one map                            popp 01/08|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> CORE::LINALG::MergeMap(const Teuchos::RCP<const Epetra_Map>& map1,
+Teuchos::RCP<Epetra_Map> Core::LinAlg::MergeMap(const Teuchos::RCP<const Epetra_Map>& map1,
     const Teuchos::RCP<const Epetra_Map>& map2, bool overlap)
 {
   // check for cases with null Teuchos::RCPs
@@ -478,13 +478,13 @@ Teuchos::RCP<Epetra_Map> CORE::LINALG::MergeMap(const Teuchos::RCP<const Epetra_
     return Teuchos::rcp(new Epetra_Map(*map1));
 
   // wrapped call to non-Teuchos::RCP version of MergeMap
-  return CORE::LINALG::MergeMap(*map1, *map2, overlap);
+  return Core::LinAlg::MergeMap(*map1, *map2, overlap);
 }
 
 /*----------------------------------------------------------------------*
  | Find the intersection of two maps                     hiermeier 10/14|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> CORE::LINALG::IntersectMap(const Epetra_Map& map1, const Epetra_Map& map2)
+Teuchos::RCP<Epetra_Map> Core::LinAlg::IntersectMap(const Epetra_Map& map1, const Epetra_Map& map2)
 {
   // check if the maps are identical
   if (map1.SameAs(map2))
@@ -514,7 +514,7 @@ Teuchos::RCP<Epetra_Map> CORE::LINALG::IntersectMap(const Epetra_Map& map1, cons
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> CORE::LINALG::ExtractMyOverlappingSubMap(
+Teuchos::RCP<Epetra_Map> Core::LinAlg::ExtractMyOverlappingSubMap(
     const Epetra_BlockMap& src_map, const Epetra_BlockMap& ref_map)
 {
   std::vector<int> my_overlapping_gids;
@@ -538,12 +538,12 @@ Teuchos::RCP<Epetra_Map> CORE::LINALG::ExtractMyOverlappingSubMap(
 /*----------------------------------------------------------------------*
  | split a vector into 2 pieces with given submaps            popp 02/08|
  *----------------------------------------------------------------------*/
-bool CORE::LINALG::split_vector(const Epetra_Map& xmap, const Epetra_Vector& x,
+bool Core::LinAlg::split_vector(const Epetra_Map& xmap, const Epetra_Vector& x,
     Teuchos::RCP<Epetra_Map>& x1map, Teuchos::RCP<Epetra_Vector>& x1,
     Teuchos::RCP<Epetra_Map>& x2map, Teuchos::RCP<Epetra_Vector>& x2)
 {
   // map extractor with fullmap(xmap) and two other maps (x1map and x2map)
-  CORE::LINALG::MapExtractor extractor(xmap, x1map, x2map);
+  Core::LinAlg::MapExtractor extractor(xmap, x1map, x2map);
 
   // extract subvectors from fullvector
   x1 = extractor.ExtractVector(x, 1);
@@ -555,12 +555,12 @@ bool CORE::LINALG::split_vector(const Epetra_Map& xmap, const Epetra_Vector& x,
 /*----------------------------------------------------------------------*
  | split a vector into 2 pieces with given submaps           farah 02/16|
  *----------------------------------------------------------------------*/
-bool CORE::LINALG::split_vector(const Epetra_Map& xmap, const Epetra_Vector& x,
+bool Core::LinAlg::split_vector(const Epetra_Map& xmap, const Epetra_Vector& x,
     Teuchos::RCP<const Epetra_Map>& x1map, Teuchos::RCP<Epetra_Vector>& x1,
     Teuchos::RCP<const Epetra_Map>& x2map, Teuchos::RCP<Epetra_Vector>& x2)
 {
   // map extractor with fullmap(xmap) and two other maps (x1map and x2map)
-  CORE::LINALG::MapExtractor extractor(xmap, x1map, x2map);
+  Core::LinAlg::MapExtractor extractor(xmap, x1map, x2map);
 
   // extract subvectors from fullvector
   x1 = extractor.ExtractVector(x, 1);
@@ -571,8 +571,8 @@ bool CORE::LINALG::split_vector(const Epetra_Map& xmap, const Epetra_Vector& x,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::ComputeDofMapsFromNodeMaps(const int dofset_id,
-    const std::vector<Teuchos::RCP<Epetra_Map>>& node_maps, const DRT::Discretization& discret,
+void Core::LinAlg::ComputeDofMapsFromNodeMaps(const int dofset_id,
+    const std::vector<Teuchos::RCP<Epetra_Map>>& node_maps, const Discret::Discretization& discret,
     std::vector<Teuchos::RCP<Epetra_Map>>& dof_maps)
 {
   dof_maps.reserve(dof_maps.size() + node_maps.size());
@@ -582,8 +582,8 @@ void CORE::LINALG::ComputeDofMapsFromNodeMaps(const int dofset_id,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> CORE::LINALG::ComputeDofMapFromNodeMap(
-    const int dofset_id, const Epetra_Map& node_map, const DRT::Discretization& discret)
+Teuchos::RCP<Epetra_Map> Core::LinAlg::ComputeDofMapFromNodeMap(
+    const int dofset_id, const Epetra_Map& node_map, const Discret::Discretization& discret)
 {
   std::set<int> dof_set;
   std::vector<int> dof_vec;
@@ -593,7 +593,7 @@ Teuchos::RCP<Epetra_Map> CORE::LINALG::ComputeDofMapFromNodeMap(
 
   for (int nlid = 0; nlid < my_num_nodes; ++nlid)
   {
-    const CORE::Nodes::Node* node = discret.gNode(my_ngids[nlid]);
+    const Core::Nodes::Node* node = discret.gNode(my_ngids[nlid]);
 
     const int numdofs = discret.NumDof(dofset_id, node);
     for (int d = 0; d < numdofs; ++d) dof_set.insert(discret.Dof(dofset_id, node, d));
@@ -608,7 +608,7 @@ Teuchos::RCP<Epetra_Map> CORE::LINALG::ComputeDofMapFromNodeMap(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::StdVectorToEpetraMultiVector(const std::vector<double>& stdVector,
+void Core::LinAlg::StdVectorToEpetraMultiVector(const std::vector<double>& stdVector,
     Teuchos::RCP<Epetra_MultiVector> epetraMultiVector, int blockSize)
 {
   for (size_t dim = 0; dim < Teuchos::as<size_t>(blockSize); ++dim)
@@ -630,7 +630,7 @@ void CORE::LINALG::StdVectorToEpetraMultiVector(const std::vector<double>& stdVe
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::EpetraMultiVectorToStdVector(
+void Core::LinAlg::EpetraMultiVectorToStdVector(
     const Teuchos::RCP<Epetra_MultiVector> epetraMultiVector, std::vector<double>& stdVector,
     int blockSize)
 {

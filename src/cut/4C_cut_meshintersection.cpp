@@ -18,9 +18,9 @@ FOUR_C_NAMESPACE_OPEN
  * add this background element if it falls within the bounding box of cut mesh
  * If it is not within BB, this element is never cut
  *-----------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::ElementHandle* CORE::GEO::CUT::MeshIntersection::add_element(int eid,
-    const std::vector<int>& nids, const CORE::LINALG::SerialDenseMatrix& xyz,
-    CORE::FE::CellType distype, const double* lsv)
+Core::Geo::Cut::ElementHandle* Core::Geo::Cut::MeshIntersection::add_element(int eid,
+    const std::vector<int>& nids, const Core::LinAlg::SerialDenseMatrix& xyz,
+    Core::FE::CellType distype, const double* lsv)
 {
   for (std::vector<Teuchos::RCP<MeshHandle>>::iterator i = cut_mesh_.begin(); i != cut_mesh_.end();
        ++i)
@@ -58,8 +58,8 @@ CORE::GEO::CUT::ElementHandle* CORE::GEO::CUT::MeshIntersection::add_element(int
  * add a side of the cut mesh and return the sidehandle (e.g. quadratic
  * sidehandle for quadratic sides)
  *----------------------------------------------------------------------------*/
-CORE::GEO::CUT::SideHandle* CORE::GEO::CUT::MeshIntersection::AddCutSide(
-    int sid, const std::vector<int>& nids, CORE::FE::CellType distype, int mi)
+Core::Geo::Cut::SideHandle* Core::Geo::Cut::MeshIntersection::AddCutSide(
+    int sid, const std::vector<int>& nids, Core::FE::CellType distype, int mi)
 {
   // create side
   return cut_mesh_[mi]->create_side(sid, nids, distype, options_);
@@ -69,9 +69,9 @@ CORE::GEO::CUT::SideHandle* CORE::GEO::CUT::MeshIntersection::AddCutSide(
  * add a side of the cut mesh and return the sidehandle (e.g. quadratic
  * sidehandle for quadratic sides)
  *----------------------------------------------------------------------------*/
-CORE::GEO::CUT::SideHandle* CORE::GEO::CUT::MeshIntersection::AddCutSide(int sid,
-    const std::vector<int>& nids, const CORE::LINALG::SerialDenseMatrix& xyz,
-    CORE::FE::CellType distype, int mi)
+Core::Geo::Cut::SideHandle* Core::Geo::Cut::MeshIntersection::AddCutSide(int sid,
+    const std::vector<int>& nids, const Core::LinAlg::SerialDenseMatrix& xyz,
+    Core::FE::CellType distype, int mi)
 {
   Mesh& cut_mesh = CutMesh(mi);
 
@@ -107,7 +107,7 @@ CORE::GEO::CUT::SideHandle* CORE::GEO::CUT::MeshIntersection::AddCutSide(int sid
 /*------------------------------------------------------------------------------------------------*
  * build the static search tree for the collision detection in the self cut           wirtz 08/14 *
  *------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::MeshIntersection::BuildSelfCutTree()
+void Core::Geo::Cut::MeshIntersection::BuildSelfCutTree()
 {
   Mesh& cm = CutMesh();
 
@@ -117,7 +117,7 @@ void CORE::GEO::CUT::MeshIntersection::BuildSelfCutTree()
 /*------------------------------------------------------------------------------------------------*
  * build the static search tree for the collision detection                           wirtz 08/14 *
  *------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::MeshIntersection::build_static_search_tree()
+void Core::Geo::Cut::MeshIntersection::build_static_search_tree()
 {
   Mesh& m = NormalMesh();
 
@@ -131,8 +131,8 @@ void CORE::GEO::CUT::MeshIntersection::build_static_search_tree()
  * !!!IS JUST USED FOR CUT TESTS                                                                  *
  *                                                                                   schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::MeshIntersection::CutTest_Cut(bool include_inner,
-    INPAR::CUT::VCellGaussPts VCellgausstype, INPAR::CUT::BCellGaussPts BCellgausstype,
+void Core::Geo::Cut::MeshIntersection::CutTest_Cut(bool include_inner,
+    Inpar::Cut::VCellGaussPts VCellgausstype, Inpar::Cut::BCellGaussPts BCellgausstype,
     bool tetcellsonly, bool screenoutput, bool do_Cut_Positions_Dofsets)
 {
   int mypid = 0;
@@ -263,14 +263,14 @@ void CORE::GEO::CUT::MeshIntersection::CutTest_Cut(bool include_inner,
  * handles cut sides which cut each other                                                         *
  *                                                                                    wirtz 08/14 *
  *------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::MeshIntersection::Cut_SelfCut(bool include_inner, bool screenoutput)
+void Core::Geo::Cut::MeshIntersection::Cut_SelfCut(bool include_inner, bool screenoutput)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 2/6 --- Cut_SelfCut");
+  TEUCHOS_FUNC_TIME_MONITOR("Core::Geo::CUT --- 2/6 --- Cut_SelfCut");
 
   Teuchos::RCP<PointPool> point_pool = CutMesh().Points();
   if (CutMesh().GetOptions().Do_SelfCut())
   {
-    if (myrank_ == 0 and screenoutput) CORE::IO::cout << "\t * 2/6 Cut_SelfCut ...      ";
+    if (myrank_ == 0 and screenoutput) Core::IO::cout << "\t * 2/6 Cut_SelfCut ...      ";
 
     point_pool->SetMergeStrategy(PointpoolMergeStrategy::SelfCutLoad);
 
@@ -279,7 +279,7 @@ void CORE::GEO::CUT::MeshIntersection::Cut_SelfCut(bool include_inner, bool scre
     selfcut.PerformSelfCut();
   }
   else if (myrank_ == 0 and screenoutput)
-    CORE::IO::cout << "\t *2/6 (Skip Cut_SelfCut) ...";
+    Core::IO::cout << "\t *2/6 (Skip Cut_SelfCut) ...";
 
   point_pool->SetMergeStrategy(PointpoolMergeStrategy::NormalCutLoad);
 }
@@ -288,12 +288,12 @@ void CORE::GEO::CUT::MeshIntersection::Cut_SelfCut(bool include_inner, bool scre
  * detects if a side of the cut mesh possibly collides with an element of the background mesh     *
  *                                                                                    wirtz 08/14 *
  *------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::MeshIntersection::cut_collision_detection(
+void Core::Geo::Cut::MeshIntersection::cut_collision_detection(
     bool include_inner, bool screenoutput)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 3/6 --- cut_collision_detection");
+  TEUCHOS_FUNC_TIME_MONITOR("Core::Geo::CUT --- 3/6 --- cut_collision_detection");
 
-  if (myrank_ == 0 and screenoutput) CORE::IO::cout << "\t * 3/6 cut_collision_detection ...";
+  if (myrank_ == 0 and screenoutput) Core::IO::cout << "\t * 3/6 cut_collision_detection ...";
 
   Mesh& m = NormalMesh();
 
@@ -306,11 +306,11 @@ void CORE::GEO::CUT::MeshIntersection::cut_collision_detection(
  * standard Cut routine for parallel XFSI and XFLUIDFLUID where dofsets and node positions        *
  * have to be parallelized                                                           schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::MeshIntersection::cut_mesh_intersection(bool screenoutput)
+void Core::Geo::Cut::MeshIntersection::cut_mesh_intersection(bool screenoutput)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 4/6 --- cut_mesh_intersection");
+  TEUCHOS_FUNC_TIME_MONITOR("Core::Geo::CUT --- 4/6 --- cut_mesh_intersection");
 
-  if (myrank_ == 0 and screenoutput) CORE::IO::cout << "\t * 4/6 cut_mesh_intersection ...";
+  if (myrank_ == 0 and screenoutput) Core::IO::cout << "\t * 4/6 cut_mesh_intersection ...";
 
   //----------------------------------------------------------
 
@@ -321,17 +321,17 @@ void CORE::GEO::CUT::MeshIntersection::cut_mesh_intersection(bool screenoutput)
   m.MakeFacets();
   m.MakeVolumeCells();
 
-}  // CORE::GEO::CUT::MeshIntersection::cut_mesh_intersection
+}  // Core::Geo::Cut::MeshIntersection::cut_mesh_intersection
 
 /*------------------------------------------------------------------------------------------------*
  * Routine for deciding the inside-outside position. This creates the dofset data,                *
  * also in parallel                                                                  schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::MeshIntersection::cut_positions_dofsets(bool include_inner, bool screenoutput)
+void Core::Geo::Cut::MeshIntersection::cut_positions_dofsets(bool include_inner, bool screenoutput)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 5/6 --- cut_positions_dofsets (serial)");
+  TEUCHOS_FUNC_TIME_MONITOR("Core::Geo::CUT --- 5/6 --- cut_positions_dofsets (serial)");
 
-  if (myrank_ == 0 and screenoutput) CORE::IO::cout << "\t * 5/6 cut_positions_dofsets ...";
+  if (myrank_ == 0 and screenoutput) Core::IO::cout << "\t * 5/6 cut_positions_dofsets ...";
 
   //----------------------------------------------------------
 
@@ -350,13 +350,13 @@ void CORE::GEO::CUT::MeshIntersection::cut_positions_dofsets(bool include_inner,
     m.FindNodalDOFSets(include_inner);
   }
 
-}  // CORE::GEO::CUT::MeshIntersection::cut_positions_dofsets
+}  // Core::Geo::Cut::MeshIntersection::cut_positions_dofsets
 
 
 /*--------------------------------------------------------------------------------------*
  * get the cut mesh's side based on side id
  *-------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::SideHandle* CORE::GEO::CUT::MeshIntersection::GetCutSide(int sid, int mi) const
+Core::Geo::Cut::SideHandle* Core::Geo::Cut::MeshIntersection::GetCutSide(int sid, int mi) const
 {
   return cut_mesh_[mi]->get_side(sid);
 }

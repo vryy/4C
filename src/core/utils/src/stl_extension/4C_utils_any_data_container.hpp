@@ -25,14 +25,14 @@ FOUR_C_NAMESPACE_OPEN
 // forward declaration
 namespace CONTACT
 {
-  namespace AUG
+  namespace Aug
   {
     template <typename enum_class>
     class TimeMonitor;
-  }  // namespace AUG
+  }  // namespace Aug
 }  // namespace CONTACT
 
-namespace CORE::GEN
+namespace Core::Gen
 {
   /** \brief Data container of any content
    *
@@ -59,7 +59,7 @@ namespace CORE::GEN
 
     //! alias for the time monitor
     template <typename enum_class>
-    using TimeMonitor = CONTACT::AUG::TimeMonitor<enum_class>;
+    using TimeMonitor = CONTACT::Aug::TimeMonitor<enum_class>;
 
     //! @}
 
@@ -85,7 +85,7 @@ namespace CORE::GEN
               "to overwrite them? If yes: Clear the content first. Best practice "
               "is to clear the content right after you finished the "
               "respective task.",
-              CORE::UTILS::TryDemangle(data_.type().name()).c_str());
+              Core::UTILS::TryDemangle(data_.type().name()).c_str());
         }
         else
           data_ = data;
@@ -181,7 +181,7 @@ namespace CORE::GEN
     /// @{
 
     template <typename enum_class>
-    void SetTimer(const CONTACT::AUG::TimeMonitor<enum_class>* timer, const unsigned id = 0)
+    void SetTimer(const CONTACT::Aug::TimeMonitor<enum_class>* timer, const unsigned id = 0)
     {
       set_data<TimeMonitor<enum_class>, DataType::time_monitor>(timer, id);
     }
@@ -381,7 +381,7 @@ namespace CORE::GEN
     /// container for any data
     std::vector<AnyData> any_data_;
   };
-}  // namespace CORE::GEN
+}  // namespace Core::Gen
 
 
 FOUR_C_NAMESPACE_CLOSE

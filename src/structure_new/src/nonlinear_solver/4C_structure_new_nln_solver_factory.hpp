@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace STR
 {
-  namespace NLN
+  namespace Nln
   {
     namespace SOLVER
     {
@@ -38,16 +38,16 @@ namespace STR
         virtual ~Factory() = default;
 
         //! build the specific nonlinear solver
-        Teuchos::RCP<STR::NLN::SOLVER::Generic> BuildNlnSolver(
-            const enum INPAR::STR::NonlinSolTech& nlnSolType) const;
+        Teuchos::RCP<STR::Nln::SOLVER::Generic> BuildNlnSolver(
+            const enum Inpar::STR::NonlinSolTech& nlnSolType) const;
       };
 
-      /*! Non-member function, which relates to the STR::NLN::SOLVER::Factory class
+      /*! Non-member function, which relates to the STR::Nln::SOLVER::Factory class
        *  Please call this method from outside! */
-      Teuchos::RCP<STR::NLN::SOLVER::Generic> BuildNlnSolver(
-          const enum INPAR::STR::NonlinSolTech& nlnSolType);
+      Teuchos::RCP<STR::Nln::SOLVER::Generic> BuildNlnSolver(
+          const enum Inpar::STR::NonlinSolTech& nlnSolType);
     }  // namespace SOLVER
-  }    // namespace NLN
+  }    // namespace Nln
 }  // namespace STR
 
 

@@ -25,17 +25,17 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class Solver;
   class SparseOperator;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
-    namespace AUX
+    namespace Aux
     {
       /*! Set printing parameters
        *
@@ -45,11 +45,11 @@ namespace NOX
       /*! \brief Returns the type of operator that is passed in.
        *
        *   Uses dynamic casting to identify the underlying object type. */
-      NOX::NLN::LinSystem::OperatorType GetOperatorType(const CORE::LINALG::SparseOperator& op);
+      NOX::Nln::LinSystem::OperatorType GetOperatorType(const Core::LinAlg::SparseOperator& op);
 
       /// return linear system type
-      NOX::NLN::LinSystem::LinearSystemType GetLinearSystemType(
-          const std::map<enum NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>>&
+      NOX::Nln::LinSystem::LinearSystemType GetLinearSystemType(
+          const std::map<enum NOX::Nln::SolutionType, Teuchos::RCP<Core::LinAlg::Solver>>&
               linsolvers);
 
       /*! \brief Calculate the root mean square for the NOX status test
@@ -66,7 +66,7 @@ namespace NOX
           Teuchos::RCP<const Epetra_Vector> xnew, Teuchos::RCP<const Epetra_Vector> xincr,
           const bool& disable_implicit_weighting = false);
 
-      /*! \brief Do a recursive search for a NOX::NLN::StatusTest::NormWRMS object in the StatusTest
+      /*! \brief Do a recursive search for a NOX::Nln::StatusTest::NormWRMS object in the StatusTest
        * object list and return the class variable value of the desired quantity.
        *
        * \param test              : StatusTest object which will be scanned.
@@ -74,9 +74,9 @@ namespace NOX
        * \param classVariableName : Name of the class variable which will be returned. (Type:
        * double) */
       double GetNormWRMSClassVariable(const ::NOX::StatusTest::Generic& test,
-          const NOX::NLN::StatusTest::QuantityType& qType, const std::string& classVariableName);
+          const NOX::Nln::StatusTest::QuantityType& qType, const std::string& classVariableName);
 
-      /*! \brief Do a recursive search for a NOX::NLN::StatusTest::NormF object in the StatusTest
+      /*! \brief Do a recursive search for a NOX::Nln::StatusTest::NormF object in the StatusTest
        * object list and return the class variable value of the desired quantity.
        *
        * \param test              : StatusTest object which will be scanned.
@@ -84,7 +84,7 @@ namespace NOX
        * \param classVariableName : Name of the class variable which will be returned. (Type:
        * double) */
       double GetNormFClassVariable(const ::NOX::StatusTest::Generic& test,
-          const NOX::NLN::StatusTest::QuantityType& qType, const std::string& classVariableName);
+          const NOX::Nln::StatusTest::QuantityType& qType, const std::string& classVariableName);
 
       /*! Do a recursive search for a <T> status test and the given quantity
        *
@@ -92,7 +92,7 @@ namespace NOX
        *  holds the given quantity. */
       template <class T>
       bool IsQuantity(
-          const ::NOX::StatusTest::Generic& test, const NOX::NLN::StatusTest::QuantityType& qtype);
+          const ::NOX::StatusTest::Generic& test, const NOX::Nln::StatusTest::QuantityType& qtype);
 
       /*! \brief Do a recursive search for a <T> status test class and return the NormType of the
        * given quantity.
@@ -101,7 +101,7 @@ namespace NOX
        * normtype of the first we can find, will be returned! */
       template <class T>
       int GetNormType(
-          const ::NOX::StatusTest::Generic& test, const NOX::NLN::StatusTest::QuantityType& qtype);
+          const ::NOX::StatusTest::Generic& test, const NOX::Nln::StatusTest::QuantityType& qtype);
 
       /// \brief Do a recursive search for a <T> status test class.
       template <class T>
@@ -111,7 +111,7 @@ namespace NOX
        *  the given quantity. */
       template <class T>
       ::NOX::StatusTest::Generic* get_outer_status_test_with_quantity(
-          ::NOX::StatusTest::Generic& test, const NOX::NLN::StatusTest::QuantityType qtype);
+          ::NOX::StatusTest::Generic& test, const NOX::Nln::StatusTest::QuantityType qtype);
 
       /*! \brief Do a recursive search for a <T> status test class and return its status.
        *
@@ -129,8 +129,8 @@ namespace NOX
        *
        * \param qtype : Quantity type which has to be converted.
        */
-      enum NOX::NLN::SolutionType ConvertQuantityType2SolutionType(
-          const enum NOX::NLN::StatusTest::QuantityType& qtype);
+      enum NOX::Nln::SolutionType ConvertQuantityType2SolutionType(
+          const enum NOX::Nln::StatusTest::QuantityType& qtype);
 
       /*! \brief Map norm type stl_string to norm type enum
        *
@@ -145,8 +145,8 @@ namespace NOX
       /// return the name of the parameter list corresponding to the set direction method
       std::string GetDirectionMethodListName(const Teuchos::ParameterList& p);
 
-    }  // namespace AUX
-  }    // namespace NLN
+    }  // namespace Aux
+  }    // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

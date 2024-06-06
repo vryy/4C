@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 XFEM::DiscretizationXFEM::DiscretizationXFEM(
     const std::string name, Teuchos::RCP<Epetra_Comm> comm, const unsigned int n_dim)
-    : DRT::DiscretizationFaces(name, comm, n_dim),
+    : Discret::DiscretizationFaces(name, comm, n_dim),
       initialized_(false),
       initialfulldofrowmap_(Teuchos::null),
       initialpermdofrowmap_(Teuchos::null)
@@ -40,7 +40,7 @@ int XFEM::DiscretizationXFEM::InitialFillComplete(const std::vector<int>& nds,
     bool assigndegreesoffreedom, bool initelements, bool doboundaryconditions)
 {
   // Call from BaseClass
-  int val = DRT::Discretization::fill_complete(
+  int val = Discret::Discretization::fill_complete(
       assigndegreesoffreedom, initelements, doboundaryconditions);
 
   if (!assigndegreesoffreedom)
@@ -76,7 +76,7 @@ void XFEM::DiscretizationXFEM::store_initial_dofs(const std::vector<int>& nds)
   initialdofsets_.clear();
 
   initialdofsets_.push_back(
-      Teuchos::rcp_dynamic_cast<CORE::Dofsets::DofSet>(dofsets_[nds[0]], true)->Clone());
+      Teuchos::rcp_dynamic_cast<Core::DOFSets::DofSet>(dofsets_[nds[0]], true)->Clone());
 
   // store map required for export to active dofs
   if (initialdofsets_.size() > 1)
@@ -84,10 +84,10 @@ void XFEM::DiscretizationXFEM::store_initial_dofs(const std::vector<int>& nds)
         "DiscretizationXFEM: At the moment just one initial dofset is supported by "
         "DiscretisationXFEM!");
 
-  Teuchos::RCP<CORE::Dofsets::FixedSizeDofSet> fsds =
-      Teuchos::rcp_dynamic_cast<CORE::Dofsets::FixedSizeDofSet>(initialdofsets_[0]);
+  Teuchos::RCP<Core::DOFSets::FixedSizeDofSet> fsds =
+      Teuchos::rcp_dynamic_cast<Core::DOFSets::FixedSizeDofSet>(initialdofsets_[0]);
   if (fsds == Teuchos::null)
-    FOUR_C_THROW("DiscretizationXFEM: Cast to CORE::Dofsets::FixedSizeDofSet failed!");
+    FOUR_C_THROW("DiscretizationXFEM: Cast to Core::DOFSets::FixedSizeDofSet failed!");
 
   Teuchos::RCP<XFEM::XFEMDofSet> xfds =
       Teuchos::rcp_dynamic_cast<XFEM::XFEMDofSet>(initialdofsets_[0]);
@@ -135,7 +135,7 @@ void XFEM::DiscretizationXFEM::export_initialto_active_vector(
     if (initialvec->Comm().NumProc() == 1 &&
         activevec->Comm().NumProc() == 1)  // for one proc , Export works fine!
     {
-      CORE::LINALG::Export(*initialvec, *fullvec);
+      Core::LinAlg::Export(*initialvec, *fullvec);
     }
     else
     {
@@ -145,7 +145,7 @@ void XFEM::DiscretizationXFEM::export_initialto_active_vector(
     }
   }
   fullvec->ReplaceMap(*initialfulldofrowmap_);  /// replace |1 2 3 4|1 2 3 4| -> |1 2 3 4|5 6 7 8|
-  CORE::LINALG::Export(*fullvec, *activevec);
+  Core::LinAlg::Export(*fullvec, *activevec);
 }
 
 /*------------------------------------------------------------------------------*
@@ -158,7 +158,7 @@ void XFEM::DiscretizationXFEM::export_activeto_initial_vector(
   // Is the discretization initialized?
   Initialized();
 
-  CORE::LINALG::Export(*activevec, *initialvec);
+  Core::LinAlg::Export(*activevec, *initialvec);
 }
 
 /*----------------------------------------------------------------------*
@@ -241,8 +241,8 @@ void XFEM::DiscretizationXFEM::SetInitialState(
           name.c_str());
     }
 #endif
-    Teuchos::RCP<Epetra_Vector> tmp = CORE::LINALG::CreateVector(*colmap, false);
-    CORE::LINALG::Export(*state, *tmp);
+    Teuchos::RCP<Epetra_Vector> tmp = Core::LinAlg::CreateVector(*colmap, false);
+    Core::LinAlg::Export(*state, *tmp);
     state_[nds][name] = tmp;
   }
   return;

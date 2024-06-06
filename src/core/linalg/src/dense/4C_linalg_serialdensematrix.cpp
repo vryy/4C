@@ -14,11 +14,11 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  B = alpha*A + beta*B                                                |
  *----------------------------------------------------------------------*/
-void CORE::LINALG::Update(double alpha, const CORE::LINALG::SerialDenseMatrix& A, double beta,
-    CORE::LINALG::SerialDenseMatrix& B)
+void Core::LinAlg::Update(double alpha, const Core::LinAlg::SerialDenseMatrix& A, double beta,
+    Core::LinAlg::SerialDenseMatrix& B)
 {
   B.scale(beta);
-  CORE::LINALG::SerialDenseMatrix Acopy(A);
+  Core::LinAlg::SerialDenseMatrix Acopy(A);
   Acopy.scale(alpha);
   B += Acopy;
 }
@@ -28,7 +28,7 @@ void CORE::LINALG::Update(double alpha, const CORE::LINALG::SerialDenseMatrix& A
  | recursive computation of determinant of a  matrix using Sarrus rule  |
  | (uses long double to boost accuracy). Do not use for n > 4.          |
  *----------------------------------------------------------------------*/
-long double CORE::LINALG::Det_long(const CORE::LINALG::SerialDenseMatrix& matrix)
+long double Core::LinAlg::Det_long(const Core::LinAlg::SerialDenseMatrix& matrix)
 {
   if (matrix.numCols() == 1)
   {
@@ -72,7 +72,7 @@ long double CORE::LINALG::Det_long(const CORE::LINALG::SerialDenseMatrix& matrix
  |   Set matrix components to zero                                      |
  |   this(0:Length) = 0.0                                               |
  *----------------------------------------------------------------------*/
-void CORE::LINALG::Zero(CORE::LINALG::SerialDenseMatrix& mat, int Length)
+void Core::LinAlg::Zero(Core::LinAlg::SerialDenseMatrix& mat, int Length)
 {
   int cnt = 0;
   for (int j = 0; j < mat.numCols(); ++j)
@@ -90,7 +90,7 @@ void CORE::LINALG::Zero(CORE::LINALG::SerialDenseMatrix& mat, int Length)
 /*----------------------------------------------------------------------*
  |   Fill the SerialDenseMatrix column-wise with vector data            |
  *----------------------------------------------------------------------*/
-void CORE::LINALG::copy(const double* vec, CORE::LINALG::SerialDenseMatrix::Base& mat)
+void Core::LinAlg::copy(const double* vec, Core::LinAlg::SerialDenseMatrix::Base& mat)
 {
   int cnt = 0;
   for (int j = 0; j < mat.numCols(); ++j)

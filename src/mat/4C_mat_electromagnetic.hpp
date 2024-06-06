@@ -26,20 +26,20 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
     /*----------------------------------------------------------------------*/
     /// material parameters for electromagnetic wave propagation
-    class ElectromagneticMat : public CORE::MAT::PAR::Parameter
+    class ElectromagneticMat : public Core::Mat::PAR::Parameter
     {
      public:
       /// standard constructor
-      ElectromagneticMat(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      ElectromagneticMat(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       enum Matparamnames
       {
@@ -54,14 +54,14 @@ namespace MAT
 
   }  // namespace PAR
 
-  class ElectromagneticMatType : public CORE::COMM::ParObjectType
+  class ElectromagneticMatType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "ElectromagneticMatType"; }
 
     static ElectromagneticMatType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ElectromagneticMatType instance_;
@@ -70,14 +70,14 @@ namespace MAT
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for Sound propagation material
-  class ElectromagneticMat : public CORE::MAT::Material
+  class ElectromagneticMat : public Core::Mat::Material
   {
    public:
     /// construct empty material object
     ElectromagneticMat();
 
     /// construct the material object given material parameters
-    explicit ElectromagneticMat(MAT::PAR::ElectromagneticMat* params);
+    explicit ElectromagneticMat(Mat::PAR::ElectromagneticMat* params);
 
     //! @name Packing and Unpacking
 
@@ -102,7 +102,7 @@ namespace MAT
 
         \param data (in/out): char vector to store class information
      */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
         \brief Unpack data from a char vector into this class
@@ -123,13 +123,13 @@ namespace MAT
     //! @name Access methods
 
     /// material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_electromagneticmat;
+      return Core::Materials::m_electromagneticmat;
     }
 
     /// return copy of this material object
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new ElectromagneticMat(*this));
     }
@@ -146,17 +146,17 @@ namespace MAT
 
 
     /// Return quick accessible material parameter data
-    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
     //@}
 
 
    private:
     /// my material parameters
-    MAT::PAR::ElectromagneticMat* params_;
+    Mat::PAR::ElectromagneticMat* params_;
   };
 
-}  // namespace MAT
+}  // namespace Mat
 
 
 

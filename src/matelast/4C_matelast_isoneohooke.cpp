@@ -13,23 +13,23 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-MAT::ELASTIC::PAR::IsoNeoHooke::IsoNeoHooke(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
+Mat::Elastic::PAR::IsoNeoHooke::IsoNeoHooke(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
     : Parameter(matdata), mue_(matdata->Get<double>("MUE"))
 {
 }
 
-MAT::ELASTIC::IsoNeoHooke::IsoNeoHooke(MAT::ELASTIC::PAR::IsoNeoHooke* params) : params_(params) {}
+Mat::Elastic::IsoNeoHooke::IsoNeoHooke(Mat::Elastic::PAR::IsoNeoHooke* params) : params_(params) {}
 
-void MAT::ELASTIC::IsoNeoHooke::AddShearMod(bool& haveshearmod, double& shearmod) const
+void Mat::Elastic::IsoNeoHooke::AddShearMod(bool& haveshearmod, double& shearmod) const
 {
   haveshearmod = haveshearmod or true;
 
   shearmod += params_->mue_;
 }
 
-void MAT::ELASTIC::IsoNeoHooke::AddStrainEnergy(double& psi,
-    const CORE::LINALG::Matrix<3, 1>& prinv, const CORE::LINALG::Matrix<3, 1>& modinv,
-    const CORE::LINALG::Matrix<6, 1>& glstrain, const int gp, const int eleGID)
+void Mat::Elastic::IsoNeoHooke::AddStrainEnergy(double& psi,
+    const Core::LinAlg::Matrix<3, 1>& prinv, const Core::LinAlg::Matrix<3, 1>& modinv,
+    const Core::LinAlg::Matrix<6, 1>& glstrain, const int gp, const int eleGID)
 {
   const double mue = params_->mue_;
 
@@ -39,8 +39,8 @@ void MAT::ELASTIC::IsoNeoHooke::AddStrainEnergy(double& psi,
 }
 
 
-void MAT::ELASTIC::IsoNeoHooke::add_derivatives_modified(CORE::LINALG::Matrix<3, 1>& dPmodI,
-    CORE::LINALG::Matrix<6, 1>& ddPmodII, const CORE::LINALG::Matrix<3, 1>& modinv, const int gp,
+void Mat::Elastic::IsoNeoHooke::add_derivatives_modified(Core::LinAlg::Matrix<3, 1>& dPmodI,
+    Core::LinAlg::Matrix<6, 1>& ddPmodII, const Core::LinAlg::Matrix<3, 1>& modinv, const int gp,
     const int eleGID)
 {
   const double mue = params_->mue_;
@@ -48,10 +48,10 @@ void MAT::ELASTIC::IsoNeoHooke::add_derivatives_modified(CORE::LINALG::Matrix<3,
   dPmodI(0) += 0.5 * mue;
 }
 
-// void MAT::ELASTIC::IsoNeoHooke::add_coefficients_stretches_principal(
-//   CORE::LINALG::Matrix<3,1>& gamma,  ///< see above, [gamma_1, gamma_2, gamma_3]
-//   CORE::LINALG::Matrix<6,1>& delta,  ///< see above, [delta_11, delta_22, delta_33, delta_12,
-//   delta_23, delta_31] const CORE::LINALG::Matrix<3,1>& prstr  ///< principal stretches,
+// void Mat::Elastic::IsoNeoHooke::add_coefficients_stretches_principal(
+//   Core::LinAlg::Matrix<3,1>& gamma,  ///< see above, [gamma_1, gamma_2, gamma_3]
+//   Core::LinAlg::Matrix<6,1>& delta,  ///< see above, [delta_11, delta_22, delta_33, delta_12,
+//   delta_23, delta_31] const Core::LinAlg::Matrix<3,1>& prstr  ///< principal stretches,
 //   [lambda_1, lambda_2, lambda_3]
 //   )
 // {
@@ -127,10 +127,10 @@ void MAT::ELASTIC::IsoNeoHooke::add_derivatives_modified(CORE::LINALG::Matrix<3,
 //     + (-1.0/3.0)*mue*fst*jac53*prstr(1);
 // }
 
-// void MAT::ELASTIC::IsoNeoHooke::add_coefficients_stretches_modified(
-//   CORE::LINALG::Matrix<3,1>& gamma,  ///< see above, [gamma_1, gamma_2, gamma_3]
-//   CORE::LINALG::Matrix<6,1>& delta,  ///< see above, [delta_11, delta_22, delta_33, delta_12,
-//   delta_23, delta_31] const CORE::LINALG::Matrix<3,1>& modstr  ///< modified principal stretches,
+// void Mat::Elastic::IsoNeoHooke::add_coefficients_stretches_modified(
+//   Core::LinAlg::Matrix<3,1>& gamma,  ///< see above, [gamma_1, gamma_2, gamma_3]
+//   Core::LinAlg::Matrix<6,1>& delta,  ///< see above, [delta_11, delta_22, delta_33, delta_12,
+//   delta_23, delta_31] const Core::LinAlg::Matrix<3,1>& modstr  ///< modified principal stretches,
 //   [lambda_1, lambda_2, lambda_3]
 //   )
 // {

@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::GEO::CUT::Tri6SideHandle::Tri6SideHandle(
+Core::Geo::Cut::Tri6SideHandle::Tri6SideHandle(
     Mesh& mesh, int sid, const std::vector<int>& node_ids)
 {
   subsides_.reserve(4);
@@ -57,12 +57,12 @@ CORE::GEO::CUT::Tri6SideHandle::Tri6SideHandle(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::GEO::CUT::Quad4SideHandle::Quad4SideHandle(
+Core::Geo::Cut::Quad4SideHandle::Quad4SideHandle(
     Mesh& mesh, int sid, const std::vector<int>& node_ids)
 {
   subsides_.reserve(4);
 
-  CORE::LINALG::Matrix<3, 4> xyze;
+  Core::LinAlg::Matrix<3, 4> xyze;
   nodes_.reserve(4);
   for (int i = 0; i < 4; ++i)
   {
@@ -75,10 +75,10 @@ CORE::GEO::CUT::Quad4SideHandle::Quad4SideHandle(
 
   // create middle node
 
-  CORE::LINALG::Matrix<4, 1> funct;
-  CORE::FE::shape_function_2D(funct, 0.0, 0.0, CORE::FE::CellType::quad4);
+  Core::LinAlg::Matrix<4, 1> funct;
+  Core::FE::shape_function_2D(funct, 0.0, 0.0, Core::FE::CellType::quad4);
 
-  CORE::LINALG::Matrix<3, 1> xyz;
+  Core::LinAlg::Matrix<3, 1> xyz;
   xyz.Multiply(xyze, funct);
 
   plain_int_set node_nids;
@@ -111,7 +111,7 @@ CORE::GEO::CUT::Quad4SideHandle::Quad4SideHandle(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::GEO::CUT::Quad8SideHandle::Quad8SideHandle(
+Core::Geo::Cut::Quad8SideHandle::Quad8SideHandle(
     Mesh& mesh, int sid, const std::vector<int>& node_ids, bool iscutside)
 {
   if (iscutside)
@@ -159,7 +159,7 @@ CORE::GEO::CUT::Quad8SideHandle::Quad8SideHandle(
   {
     subsides_.reserve(4);
 
-    CORE::LINALG::Matrix<3, 8> xyze;
+    Core::LinAlg::Matrix<3, 8> xyze;
     nodes_.reserve(8);
     for (int i = 0; i < 8; ++i)
     {
@@ -172,10 +172,10 @@ CORE::GEO::CUT::Quad8SideHandle::Quad8SideHandle(
 
     // create middle node
 
-    CORE::LINALG::Matrix<8, 1> funct;
-    CORE::FE::shape_function_2D(funct, 0.0, 0.0, CORE::FE::CellType::quad8);
+    Core::LinAlg::Matrix<8, 1> funct;
+    Core::FE::shape_function_2D(funct, 0.0, 0.0, Core::FE::CellType::quad8);
 
-    CORE::LINALG::Matrix<3, 1> xyz;
+    Core::LinAlg::Matrix<3, 1> xyz;
     xyz.Multiply(xyze, funct);
 
     plain_int_set node_nids;
@@ -213,7 +213,7 @@ CORE::GEO::CUT::Quad8SideHandle::Quad8SideHandle(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::GEO::CUT::Quad9SideHandle::Quad9SideHandle(
+Core::Geo::Cut::Quad9SideHandle::Quad9SideHandle(
     Mesh& mesh, int sid, const std::vector<int>& node_ids, bool iscutside)
 {
   if (iscutside)
@@ -303,10 +303,10 @@ CORE::GEO::CUT::Quad9SideHandle::Quad9SideHandle(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Tri6SideHandle::local_coordinates(
-    const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<2, 1>& rst)
+void Core::Geo::Cut::Tri6SideHandle::local_coordinates(
+    const Core::LinAlg::Matrix<3, 1>& xyz, Core::LinAlg::Matrix<2, 1>& rst)
 {
-  CORE::LINALG::Matrix<3, 6> xyze;
+  Core::LinAlg::Matrix<3, 6> xyze;
 
   for (int i = 0; i < 6; ++i)
   {
@@ -315,7 +315,7 @@ void CORE::GEO::CUT::Tri6SideHandle::local_coordinates(
   }
 
   Teuchos::RCP<Position> pos =
-      PositionFactory::build_position<3, CORE::FE::CellType::tri6>(xyze, xyz);
+      PositionFactory::build_position<3, Core::FE::CellType::tri6>(xyze, xyz);
   bool success = pos->Compute();
   if (not success)
   {
@@ -325,10 +325,10 @@ void CORE::GEO::CUT::Tri6SideHandle::local_coordinates(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Quad4SideHandle::local_coordinates(
-    const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<2, 1>& rst)
+void Core::Geo::Cut::Quad4SideHandle::local_coordinates(
+    const Core::LinAlg::Matrix<3, 1>& xyz, Core::LinAlg::Matrix<2, 1>& rst)
 {
-  CORE::LINALG::Matrix<3, 4> xyze;
+  Core::LinAlg::Matrix<3, 4> xyze;
 
   for (int i = 0; i < 4; ++i)
   {
@@ -337,7 +337,7 @@ void CORE::GEO::CUT::Quad4SideHandle::local_coordinates(
   }
 
   Teuchos::RCP<Position> pos =
-      PositionFactory::build_position<3, CORE::FE::CellType::quad4>(xyze, xyz);
+      PositionFactory::build_position<3, Core::FE::CellType::quad4>(xyze, xyz);
   bool success = pos->Compute();
   if (not success)
   {
@@ -347,10 +347,10 @@ void CORE::GEO::CUT::Quad4SideHandle::local_coordinates(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Quad8SideHandle::local_coordinates(
-    const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<2, 1>& rst)
+void Core::Geo::Cut::Quad8SideHandle::local_coordinates(
+    const Core::LinAlg::Matrix<3, 1>& xyz, Core::LinAlg::Matrix<2, 1>& rst)
 {
-  CORE::LINALG::Matrix<3, 8> xyze;
+  Core::LinAlg::Matrix<3, 8> xyze;
 
   for (int i = 0; i < 8; ++i)
   {
@@ -359,7 +359,7 @@ void CORE::GEO::CUT::Quad8SideHandle::local_coordinates(
   }
 
   Teuchos::RCP<Position> pos =
-      PositionFactory::build_position<3, CORE::FE::CellType::quad8>(xyze, xyz);
+      PositionFactory::build_position<3, Core::FE::CellType::quad8>(xyze, xyz);
   bool success = pos->Compute();
   if (not success)
   {
@@ -369,10 +369,10 @@ void CORE::GEO::CUT::Quad8SideHandle::local_coordinates(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Quad9SideHandle::local_coordinates(
-    const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<2, 1>& rst)
+void Core::Geo::Cut::Quad9SideHandle::local_coordinates(
+    const Core::LinAlg::Matrix<3, 1>& xyz, Core::LinAlg::Matrix<2, 1>& rst)
 {
-  CORE::LINALG::Matrix<3, 9> xyze;
+  Core::LinAlg::Matrix<3, 9> xyze;
 
   for (int i = 0; i < 9; ++i)
   {
@@ -381,7 +381,7 @@ void CORE::GEO::CUT::Quad9SideHandle::local_coordinates(
   }
 
   Teuchos::RCP<Position> pos =
-      PositionFactory::build_position<3, CORE::FE::CellType::quad9>(xyze, xyz);
+      PositionFactory::build_position<3, Core::FE::CellType::quad9>(xyze, xyz);
   bool success = pos->Compute();
   if (not success)
   {

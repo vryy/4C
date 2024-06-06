@@ -19,12 +19,12 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | singleton access method                                gebauer 06/19 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-DRT::ELEMENTS::ScaTraEleCalcNoPhysics<distype, probdim>*
-DRT::ELEMENTS::ScaTraEleCalcNoPhysics<distype, probdim>::Instance(
+template <Core::FE::CellType distype, int probdim>
+Discret::ELEMENTS::ScaTraEleCalcNoPhysics<distype, probdim>*
+Discret::ELEMENTS::ScaTraEleCalcNoPhysics<distype, probdim>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::pair<std::string, int>>(
+  static auto singleton_map = Core::UTILS::MakeSingletonMap<std::pair<std::string, int>>(
       [](const int numdofpernode, const int numscal, const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleCalcNoPhysics<distype, probdim>>(
@@ -32,17 +32,18 @@ DRT::ELEMENTS::ScaTraEleCalcNoPhysics<distype, probdim>::Instance(
       });
 
   return singleton_map[std::make_pair(disname, numdofpernode)].Instance(
-      CORE::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
+      Core::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 
 /*----------------------------------------------------------------------*
  | private constructor for singletons                     gebauer 06/19 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-DRT::ELEMENTS::ScaTraEleCalcNoPhysics<distype, probdim>::ScaTraEleCalcNoPhysics(
+template <Core::FE::CellType distype, int probdim>
+Discret::ELEMENTS::ScaTraEleCalcNoPhysics<distype, probdim>::ScaTraEleCalcNoPhysics(
     const int numdofpernode, const int numscal, const std::string& disname)
-    : DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ScaTraEleCalc(numdofpernode, numscal, disname)
+    : Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::ScaTraEleCalc(
+          numdofpernode, numscal, disname)
 {
 }
 

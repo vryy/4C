@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
@@ -26,15 +26,15 @@ namespace DRT
     class ScaTraEleDiffManagerElch;
 
     // class implementation
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     class ScaTraEleUtilsElch
     {
      protected:
       //! number of element nodes
-      static constexpr int nen_ = CORE::FE::num_nodes<distype>;
+      static constexpr int nen_ = Core::FE::num_nodes<distype>;
 
       //! number of space dimensions
-      static constexpr int nsd_ = CORE::FE::dim<distype>;
+      static constexpr int nsd_ = Core::FE::dim<distype>;
 
      public:
       //! singleton access method
@@ -49,17 +49,17 @@ namespace DRT
 
       //! evaluation of electrochemistry kinetics at integration point on domain or boundary element
       void evaluate_elch_kinetics_at_integration_point(
-          const CORE::Elements::Element* ele,     ///< current element
-          CORE::LINALG::SerialDenseMatrix& emat,  ///< element matrix
-          CORE::LINALG::SerialDenseVector& erhs,  ///< element right-hand side vector
-          const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
+          const Core::Elements::Element* ele,     ///< current element
+          Core::LinAlg::SerialDenseMatrix& emat,  ///< element matrix
+          Core::LinAlg::SerialDenseVector& erhs,  ///< element right-hand side vector
+          const std::vector<Core::LinAlg::Matrix<nen_, 1>>&
               ephinp,  ///< state variables at element nodes
-          const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
+          const std::vector<Core::LinAlg::Matrix<nen_, 1>>&
               ehist,                                   ///< history variables at element nodes
           const double timefac,                        ///< time factor
           const double fac,                            ///< Gauss integration factor
-          const CORE::LINALG::Matrix<nen_, 1>& funct,  ///< shape functions at int. point
-          const Teuchos::RCP<CORE::Conditions::Condition>& cond,  ///< condition
+          const Core::LinAlg::Matrix<nen_, 1>& funct,  ///< shape functions at int. point
+          const Teuchos::RCP<Core::Conditions::Condition>& cond,  ///< condition
           const int nume,                  ///< number of transferred electrons
           const std::vector<int>& stoich,  ///< stoichiometry of the reaction
           const double valence_k,          ///< valence of the single reactant
@@ -75,15 +75,15 @@ namespace DRT
       //! evaluate electrode kinetics status information at integration point on domain or boundary
       //! element
       void evaluate_electrode_status_at_integration_point(
-          const CORE::Elements::Element* ele,                     ///< current element
-          CORE::LINALG::SerialDenseVector& scalars,               ///< scalars to be computed
+          const Core::Elements::Element* ele,                     ///< current element
+          Core::LinAlg::SerialDenseVector& scalars,               ///< scalars to be computed
           const Teuchos::ParameterList& params,                   ///< parameter list
-          const Teuchos::RCP<CORE::Conditions::Condition>& cond,  ///< condition
-          const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
+          const Teuchos::RCP<Core::Conditions::Condition>& cond,  ///< condition
+          const std::vector<Core::LinAlg::Matrix<nen_, 1>>&
               ephinp,  ///< nodal values of concentration and electric potential
-          const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
+          const std::vector<Core::LinAlg::Matrix<nen_, 1>>&
               ephidtnp,                                ///< nodal time derivative vector
-          const CORE::LINALG::Matrix<nen_, 1>& funct,  ///< shape functions at integration point
+          const Core::LinAlg::Matrix<nen_, 1>& funct,  ///< shape functions at integration point
           const int zerocur,                           ///< flag for zero current
           const int kinetics,                          ///< desired electrode kinetics model
           const std::vector<int>& stoich,              ///< stoichiometry of the reaction
@@ -97,9 +97,9 @@ namespace DRT
       ) const;
 
       //! evaluate ion material
-      void MatIon(const Teuchos::RCP<const CORE::MAT::Material> material,  //!< ion material
+      void MatIon(const Teuchos::RCP<const Core::Mat::Material> material,  //!< ion material
           const int k,                                                     //!< ID of ion material
-          const INPAR::ELCH::EquPot equpot,  //!< type of closing equation for electric potential
+          const Inpar::ElCh::EquPot equpot,  //!< type of closing equation for electric potential
           const Teuchos::RCP<ScaTraEleDiffManagerElch>& diffmanager  //!< diffusion manager
       );
 
@@ -118,7 +118,7 @@ namespace DRT
       const int numscal_;
     };  // class ScaTraEleUtilsElch
   }     // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

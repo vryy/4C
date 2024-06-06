@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 CONTACT::IntegratorNitscheFpi::IntegratorNitscheFpi(
-    Teuchos::ParameterList& params, CORE::FE::CellType eletype, const Epetra_Comm& comm)
+    Teuchos::ParameterList& params, Core::FE::CellType eletype, const Epetra_Comm& comm)
     : IntegratorNitschePoro(params, eletype, comm), ele_contact_state_(-2)
 {
   if (imortar_.isParameter("XFluidContactComm"))
@@ -30,15 +30,15 @@ CONTACT::IntegratorNitscheFpi::IntegratorNitscheFpi(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::IntegratorNitscheFpi::IntegrateDerivEle3D(MORTAR::Element& sele,
-    std::vector<MORTAR::Element*> meles, bool* boundary_ele, bool* proj_, const Epetra_Comm& comm,
+void CONTACT::IntegratorNitscheFpi::IntegrateDerivEle3D(Mortar::Element& sele,
+    std::vector<Mortar::Element*> meles, bool* boundary_ele, bool* proj_, const Epetra_Comm& comm,
     const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
 {
   auto* csele = dynamic_cast<CONTACT::Element*>(&sele);
   if (!csele) FOUR_C_THROW("Could cast to Contact Element!");
 
   // do quick orientation check
-  CORE::LINALG::Matrix<3, 1> sn, mn;
+  Core::LinAlg::Matrix<3, 1> sn, mn;
   double center[2] = {0., 0.};
   sele.compute_unit_normal_at_xi(center, sn.A());
   for (auto mit = meles.begin(); mit != meles.end(); ++mit)
@@ -62,22 +62,22 @@ void CONTACT::IntegratorNitscheFpi::IntegrateDerivEle3D(MORTAR::Element& sele,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::IntegratorNitscheFpi::integrate_gp_3_d(MORTAR::Element& sele, MORTAR::Element& mele,
-    CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
-    CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
-    CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
-    CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap, double& wgt,
-    double& jac, CORE::GEN::Pairedvector<int, double>& derivjac, double* normal,
-    std::vector<CORE::GEN::Pairedvector<int, double>>& dnmap_unit, double& gap,
-    CORE::GEN::Pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
-    std::vector<CORE::GEN::Pairedvector<int, double>>& derivsxi,
-    std::vector<CORE::GEN::Pairedvector<int, double>>& derivmxi)
+void CONTACT::IntegratorNitscheFpi::integrate_gp_3_d(Mortar::Element& sele, Mortar::Element& mele,
+    Core::LinAlg::SerialDenseVector& sval, Core::LinAlg::SerialDenseVector& lmval,
+    Core::LinAlg::SerialDenseVector& mval, Core::LinAlg::SerialDenseMatrix& sderiv,
+    Core::LinAlg::SerialDenseMatrix& mderiv, Core::LinAlg::SerialDenseMatrix& lmderiv,
+    Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>& dualmap, double& wgt,
+    double& jac, Core::Gen::Pairedvector<int, double>& derivjac, double* normal,
+    std::vector<Core::Gen::Pairedvector<int, double>>& dnmap_unit, double& gap,
+    Core::Gen::Pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
+    std::vector<Core::Gen::Pairedvector<int, double>>& derivsxi,
+    std::vector<Core::Gen::Pairedvector<int, double>>& derivmxi)
 {
   // Here the consistent element normal is use to allow for a continous transition between FSI and
   // Contact
   double n[3];
   sele.compute_unit_normal_at_xi(sxi, n);
-  std::vector<CORE::GEN::Pairedvector<int, double>> dn(3, sele.num_node() * 3);
+  std::vector<Core::Gen::Pairedvector<int, double>> dn(3, sele.num_node() * 3);
   dynamic_cast<CONTACT::Element&>(sele).DerivUnitNormalAtXi(sxi, dn);
 
   gpts_forces<3>(sele, mele, sval, sderiv, derivsxi, mval, mderiv, derivmxi, jac, derivjac, wgt,
@@ -87,19 +87,19 @@ void CONTACT::IntegratorNitscheFpi::integrate_gp_3_d(MORTAR::Element& sele, MORT
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-void CONTACT::IntegratorNitscheFpi::gpts_forces(MORTAR::Element& sele, MORTAR::Element& mele,
-    const CORE::LINALG::SerialDenseVector& sval, const CORE::LINALG::SerialDenseMatrix& sderiv,
-    const std::vector<CORE::GEN::Pairedvector<int, double>>& dsxi,
-    const CORE::LINALG::SerialDenseVector& mval, const CORE::LINALG::SerialDenseMatrix& mderiv,
-    const std::vector<CORE::GEN::Pairedvector<int, double>>& dmxi, const double jac,
-    const CORE::GEN::Pairedvector<int, double>& jacintcellmap, const double wgt, const double gap,
-    const CORE::GEN::Pairedvector<int, double>& dgapgp, const double* gpn,
-    std::vector<CORE::GEN::Pairedvector<int, double>>& dnmap_unit, double* sxi, double* mxi)
+void CONTACT::IntegratorNitscheFpi::gpts_forces(Mortar::Element& sele, Mortar::Element& mele,
+    const Core::LinAlg::SerialDenseVector& sval, const Core::LinAlg::SerialDenseMatrix& sderiv,
+    const std::vector<Core::Gen::Pairedvector<int, double>>& dsxi,
+    const Core::LinAlg::SerialDenseVector& mval, const Core::LinAlg::SerialDenseMatrix& mderiv,
+    const std::vector<Core::Gen::Pairedvector<int, double>>& dmxi, const double jac,
+    const Core::Gen::Pairedvector<int, double>& jacintcellmap, const double wgt, const double gap,
+    const Core::Gen::Pairedvector<int, double>& dgapgp, const double* gpn,
+    std::vector<Core::Gen::Pairedvector<int, double>>& dnmap_unit, double* sxi, double* mxi)
 {
   // first rough check
   if (gap > 10 * std::max(sele.MaxEdgeSize(), mele.MaxEdgeSize())) return;
 
-  const CORE::LINALG::Matrix<dim, 1> normal(gpn, true);
+  const Core::LinAlg::Matrix<dim, 1> normal(gpn, true);
 
   if (dim != Dim()) FOUR_C_THROW("dimension inconsistency");
 
@@ -114,8 +114,8 @@ void CONTACT::IntegratorNitscheFpi::gpts_forces(MORTAR::Element& sele, MORTAR::E
   bool FSI_integrated = true;  // bool indicates if fsi condition is already evaluated ... --> if
                                // true no contribution here ...
 
-  CORE::LINALG::Matrix<dim, 1> pxsi(true);
-  CORE::LINALG::Matrix<dim, dim> derivtravo_slave;
+  Core::LinAlg::Matrix<dim, 1> pxsi(true);
+  Core::LinAlg::Matrix<dim, dim> derivtravo_slave;
   CONTACT::UTILS::MapGPtoParent<dim>(sele, sxi, wgt, pxsi, derivtravo_slave);
 
   bool gp_on_this_proc;
@@ -124,7 +124,7 @@ void CONTACT::IntegratorNitscheFpi::gpts_forces(MORTAR::Element& sele, MORTAR::E
 
 #ifdef WRITE_GMSH
   {
-    CORE::LINALG::Matrix<3, 1> sgp_x;
+    Core::LinAlg::Matrix<3, 1> sgp_x;
     for (int i = 0; i < sele.num_node(); ++i)
       for (int d = 0; d < dim; ++d)
         sgp_x(d) += sval(i) * dynamic_cast<CONTACT::Node*>(sele.Nodes()[i])->xspatial()[d];
@@ -146,14 +146,14 @@ void CONTACT::IntegratorNitscheFpi::gpts_forces(MORTAR::Element& sele, MORTAR::E
   // fast check
   const double snn_pengap =
       ws * CONTACT::UTILS::SolidCauchyAtXi(dynamic_cast<CONTACT::Element*>(&sele),
-               CORE::LINALG::Matrix<dim - 1, 1>(sxi, true), normal, normal) +
+               Core::LinAlg::Matrix<dim - 1, 1>(sxi, true), normal, normal) +
       wm * CONTACT::UTILS::SolidCauchyAtXi(dynamic_cast<CONTACT::Element*>(&mele),
-               CORE::LINALG::Matrix<dim - 1, 1>(mxi, true), normal, normal) +
+               Core::LinAlg::Matrix<dim - 1, 1>(mxi, true), normal, normal) +
       pen * gap;
 
 #ifdef WRITE_GMSH
   {
-    CORE::LINALG::Matrix<3, 1> sgp_x;
+    Core::LinAlg::Matrix<3, 1> sgp_x;
     for (int i = 0; i < sele.num_node(); ++i)
       for (int d = 0; d < dim; ++d)
         sgp_x(d) += sval(i) * dynamic_cast<CONTACT::Node*>(sele.Nodes()[i])->xspatial()[d];
@@ -180,7 +180,7 @@ void CONTACT::IntegratorNitscheFpi::gpts_forces(MORTAR::Element& sele, MORTAR::E
         -ffac, sele, sxi, sval, sderiv, jac, jacintcellmap, wgt, normal, dnmap_unit, mele, mval);
 #ifdef WRITE_GMSH
     {
-      CORE::LINALG::Matrix<3, 1> sgp_x;
+      Core::LinAlg::Matrix<3, 1> sgp_x;
       for (int i = 0; i < sele.num_node(); ++i)
         for (int d = 0; d < dim; ++d)
           sgp_x(d) += sval(i) * dynamic_cast<CONTACT::Node*>(sele.Nodes()[i])->xspatial()[d];
@@ -192,7 +192,7 @@ void CONTACT::IntegratorNitscheFpi::gpts_forces(MORTAR::Element& sele, MORTAR::E
   {
 #ifdef WRITE_GMSH
     {
-      CORE::LINALG::Matrix<3, 1> sgp_x;
+      Core::LinAlg::Matrix<3, 1> sgp_x;
       for (int i = 0; i < sele.num_node(); ++i)
         for (int d = 0; d < dim; ++d)
           sgp_x(d) += sval(i) * dynamic_cast<CONTACT::Node*>(sele.Nodes()[i])->xspatial()[d];
@@ -204,12 +204,12 @@ void CONTACT::IntegratorNitscheFpi::gpts_forces(MORTAR::Element& sele, MORTAR::E
 
   if (snn_pengap >= normal_contact_transition && !FSI_integrated)
   {
-    CORE::GEN::Pairedvector<int, double> lin_fluid_traction(0);
+    Core::Gen::Pairedvector<int, double> lin_fluid_traction(0);
     integrate_test<dim>(-1., sele, sval, sderiv, dsxi, jac, jacintcellmap, wgt,
         normal_contact_transition, lin_fluid_traction, lin_fluid_traction, normal, dnmap_unit);
 #ifdef WRITE_GMSH
     {
-      CORE::LINALG::Matrix<3, 1> sgp_x;
+      Core::LinAlg::Matrix<3, 1> sgp_x;
       for (int i = 0; i < sele.num_node(); ++i)
         for (int d = 0; d < dim; ++d)
           sgp_x(d) += sval(i) * dynamic_cast<CONTACT::Node*>(sele.Nodes()[i])->xspatial()[d];
@@ -231,10 +231,10 @@ void CONTACT::IntegratorNitscheFpi::gpts_forces(MORTAR::Element& sele, MORTAR::E
   }
 
   double cauchy_nn_weighted_average = 0.;
-  CORE::GEN::Pairedvector<int, double> cauchy_nn_weighted_average_deriv_d(
+  Core::Gen::Pairedvector<int, double> cauchy_nn_weighted_average_deriv_d(
       sele.num_node() * 3 * 12 + sele.MoData().ParentDisp().size() +
       mele.MoData().ParentDisp().size());
-  CORE::GEN::Pairedvector<int, double> cauchy_nn_weighted_average_deriv_p(
+  Core::Gen::Pairedvector<int, double> cauchy_nn_weighted_average_deriv_p(
       sele.MoData().ParentPFPres().size() + mele.MoData().ParentPFPres().size());
 
   so_ele_cauchy<dim>(sele, sxi, dsxi, wgt, normal, dnmap_unit, normal, dnmap_unit, ws,
@@ -245,7 +245,7 @@ void CONTACT::IntegratorNitscheFpi::gpts_forces(MORTAR::Element& sele, MORTAR::E
       cauchy_nn_weighted_average_deriv_p);
 
   const double snn_av_pen_gap = cauchy_nn_weighted_average + pen * gap;
-  CORE::GEN::Pairedvector<int, double> d_snn_av_pen_gap(
+  Core::Gen::Pairedvector<int, double> d_snn_av_pen_gap(
       cauchy_nn_weighted_average_deriv_d.size() + dgapgp.size());
   for (const auto& p : cauchy_nn_weighted_average_deriv_d) d_snn_av_pen_gap[p.first] += p.second;
   for (const auto& p : dgapgp) d_snn_av_pen_gap[p.first] += pen * p.second;
@@ -257,7 +257,7 @@ void CONTACT::IntegratorNitscheFpi::gpts_forces(MORTAR::Element& sele, MORTAR::E
   update_ele_contact_state(sele, 1);
 #ifdef WRITE_GMSH
   {
-    CORE::LINALG::Matrix<3, 1> sgp_x;
+    Core::LinAlg::Matrix<3, 1> sgp_x;
     for (int i = 0; i < sele.num_node(); ++i)
       for (int d = 0; d < dim; ++d)
         sgp_x(d) += sval(i) * dynamic_cast<CONTACT::Node*>(sele.Nodes()[i])->xspatial()[d];
@@ -269,7 +269,7 @@ void CONTACT::IntegratorNitscheFpi::gpts_forces(MORTAR::Element& sele, MORTAR::E
   xf_c_comm_->Inc_GP(0);
 }
 
-void CONTACT::IntegratorNitscheFpi::update_ele_contact_state(MORTAR::Element& sele, int state)
+void CONTACT::IntegratorNitscheFpi::update_ele_contact_state(Mortar::Element& sele, int state)
 {
   if (!state && ele_contact_state_)
   {
@@ -288,20 +288,20 @@ void CONTACT::IntegratorNitscheFpi::update_ele_contact_state(MORTAR::Element& se
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-double CONTACT::IntegratorNitscheFpi::get_normal_contact_transition(MORTAR::Element& sele,
-    MORTAR::Element& mele, const CORE::LINALG::SerialDenseVector& sval,
-    const CORE::LINALG::SerialDenseVector& mval, const double* sxi,
-    const CORE::LINALG::Matrix<dim, 1>& pxsi, const CORE::LINALG::Matrix<dim, 1>& normal,
+double CONTACT::IntegratorNitscheFpi::get_normal_contact_transition(Mortar::Element& sele,
+    Mortar::Element& mele, const Core::LinAlg::SerialDenseVector& sval,
+    const Core::LinAlg::SerialDenseVector& mval, const double* sxi,
+    const Core::LinAlg::Matrix<dim, 1>& pxsi, const Core::LinAlg::Matrix<dim, 1>& normal,
     bool& FSI_integrated, bool& gp_on_this_proc)
 {
   double poropressure(0.0);
   if (get_poro_pressure(sele, sval, mele, mval, poropressure))
   {
-    return xf_c_comm_->Get_FSI_Traction(&sele, pxsi, CORE::LINALG::Matrix<dim - 1, 1>(sxi, false),
+    return xf_c_comm_->Get_FSI_Traction(&sele, pxsi, Core::LinAlg::Matrix<dim - 1, 1>(sxi, false),
         normal, FSI_integrated, gp_on_this_proc, &poropressure);
   }
   else
-    return xf_c_comm_->Get_FSI_Traction(&sele, pxsi, CORE::LINALG::Matrix<dim - 1, 1>(sxi, false),
+    return xf_c_comm_->Get_FSI_Traction(&sele, pxsi, Core::LinAlg::Matrix<dim - 1, 1>(sxi, false),
         normal, FSI_integrated, gp_on_this_proc);
 }
 

@@ -23,13 +23,13 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class Solver;
   class MapExtractor;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationWriter;
 }
@@ -44,14 +44,14 @@ namespace FLD
   }  // namespace UTILS
 }  // namespace FLD
 
-namespace ADAPTER
+namespace Adapter
 {
   class FluidFluidFSI : public FluidFSI
   {
    public:
     /// constructor
     FluidFluidFSI(Teuchos::RCP<Fluid> xfluidfluid, Teuchos::RCP<Fluid> embfluid,
-        Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+        Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         bool isale, bool dirichletcond);
 
     /// initialize and prepare maps
@@ -102,13 +102,13 @@ namespace ADAPTER
     Teuchos::RCP<const Epetra_Map> VelocityRowMap() override;
 
     /// get block system matrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() override;
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> BlockSystemMatrix() override;
 
     // access to embedded discretization
-    const Teuchos::RCP<DRT::Discretization>& discretization() override;
+    const Teuchos::RCP<Discret::Discretization>& discretization() override;
 
     // return discretization writer of embedded fluid discretization (for special purpose output)
-    const Teuchos::RCP<CORE::IO::DiscretizationWriter>& DiscWriter() override { return output_; }
+    const Teuchos::RCP<Core::IO::DiscretizationWriter>& DiscWriter() override { return output_; }
 
     /// get map extractor for background/embedded fluid
     Teuchos::RCP<FLD::UTILS::XFluidFluidMapExtractor> const& x_fluid_fluid_map_extractor();
@@ -138,12 +138,12 @@ namespace ADAPTER
     bool IsAleRelaxationStep(int step) const;
 
     /// get type of monolithic XFFSI approach
-    INPAR::XFEM::MonolithicXffsiApproach monolithic_xffsi_approach() const
+    Inpar::XFEM::MonolithicXffsiApproach monolithic_xffsi_approach() const
     {
       return monolithic_approach_;
     }
 
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> ShapeDerivatives() override;
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> ShapeDerivatives() override;
 
    private:
     /// setup of map extractor to distinguish between FSI DOF-map and
@@ -164,7 +164,7 @@ namespace ADAPTER
 
     /// type of monolithic XFluid-Fluid approach (decides whether ALE-mesh is fixed during
     /// Newton iteration)
-    enum INPAR::XFEM::MonolithicXffsiApproach monolithic_approach_;
+    enum Inpar::XFEM::MonolithicXffsiApproach monolithic_approach_;
 
     /// flag, that indicates, whether ALE-relaxation is activated
     bool relaxing_ale_;
@@ -172,7 +172,7 @@ namespace ADAPTER
     /// no. of timesteps, after which ALE-mesh should be relaxed
     int relaxing_ale_every_;
   };
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 FOUR_C_NAMESPACE_CLOSE
 

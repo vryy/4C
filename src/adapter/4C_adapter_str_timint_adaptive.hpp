@@ -30,7 +30,7 @@ namespace STR
 
 /*----------------------------------------------------------------------*/
 /* adapting adapter */
-namespace ADAPTER
+namespace Adapter
 {
   /*====================================================================*/
   /*!
@@ -72,7 +72,7 @@ namespace ADAPTER
 
   };  // class StructureTimIntAda
 
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

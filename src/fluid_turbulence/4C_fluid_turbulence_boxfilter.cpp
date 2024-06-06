@@ -24,11 +24,12 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     krank 09/13|
  *----------------------------------------------------------------------*/
-FLD::Boxfilter::Boxfilter(Teuchos::RCP<DRT::Discretization> actdis, Teuchos::ParameterList& params)
+FLD::Boxfilter::Boxfilter(
+    Teuchos::RCP<Discret::Discretization> actdis, Teuchos::ParameterList& params)
     :  // call constructor for "nontrivial" objects
       discret_(actdis),
       params_(params),
-      physicaltype_(CORE::UTILS::GetAsEnum<INPAR::FLUID::PhysicalType>(params_, "Physical Type")),
+      physicaltype_(Core::UTILS::GetAsEnum<Inpar::FLUID::PhysicalType>(params_, "Physical Type")),
       //  available control settings
       apply_dynamic_smagorinsky_(false),
       vreman_dynamic_(false),
@@ -62,9 +63,9 @@ FLD::Boxfilter::Boxfilter(Teuchos::RCP<DRT::Discretization> actdis, Teuchos::Par
         "Multifractal_Subgrid_Scales")
       apply_box_filter_ = true;
 
-    if (physicaltype_ == INPAR::FLUID::loma) loma_ = true;
+    if (physicaltype_ == Inpar::FLUID::loma) loma_ = true;
 
-    if (physicaltype_ == INPAR::FLUID::incompressible) incomp_ = true;
+    if (physicaltype_ == Inpar::FLUID::incompressible) incomp_ = true;
 
     if (modelparams->get<std::string>("PHYSICAL_MODEL", "no_model") == "Dynamic_Vreman")
       vreman_dynamic_ = true;
@@ -103,7 +104,7 @@ FLD::Boxfilter::Boxfilter(Teuchos::RCP<DRT::Discretization> actdis, Teuchos::Par
 /*----------------------------------------------------------------------*
  | add some scatra specific parameters                  rasthofer 08/12 |
  * ---------------------------------------------------------------------*/
-void FLD::Boxfilter::AddScatra(Teuchos::RCP<DRT::Discretization> scatradis)
+void FLD::Boxfilter::AddScatra(Teuchos::RCP<Discret::Discretization> scatradis)
 {
   scatradiscret_ = scatradis;
 
@@ -120,7 +121,7 @@ void FLD::Boxfilter::InitializeVreman()
   return;
 }
 
-void FLD::Boxfilter::initialize_vreman_scatra(Teuchos::RCP<DRT::Discretization> scatradis)
+void FLD::Boxfilter::initialize_vreman_scatra(Teuchos::RCP<Discret::Discretization> scatradis)
 {
   scatradiscret_ = scatradis;
 
@@ -179,11 +180,11 @@ void FLD::Boxfilter::apply_box_filter(const Teuchos::RCP<const Epetra_Vector> ve
   discret_->set_state("T (trial)", scalar);
 
   // dummies
-  CORE::LINALG::SerialDenseMatrix emat1;
-  CORE::LINALG::SerialDenseMatrix emat2;
-  CORE::LINALG::SerialDenseVector evec1;
-  CORE::LINALG::SerialDenseVector evec2;
-  CORE::LINALG::SerialDenseVector evec3;
+  Core::LinAlg::SerialDenseMatrix emat1;
+  Core::LinAlg::SerialDenseMatrix emat2;
+  Core::LinAlg::SerialDenseVector evec1;
+  Core::LinAlg::SerialDenseVector evec2;
+  Core::LinAlg::SerialDenseVector evec3;
 
   // ---------------------------------------------------------------
   // get a vector layout from the discretization to construct
@@ -235,7 +236,7 @@ void FLD::Boxfilter::apply_box_filter(const Teuchos::RCP<const Epetra_Vector> ve
   for (int nele = 0; nele < discret_->NumMyColElements(); ++nele)
   {
     // get the element
-    CORE::Elements::Element* ele = discret_->lColElement(nele);
+    Core::Elements::Element* ele = discret_->lColElement(nele);
 
     // provide vectors for filtered quantities
     Teuchos::RCP<std::vector<double>> vel_hat =
@@ -323,10 +324,10 @@ void FLD::Boxfilter::apply_box_filter(const Teuchos::RCP<const Epetra_Vector> ve
     double alpha2_hat = filterparams.get<double>("alpha2_hat");
 
     // loop all nodes of this element, add values to the global vectors
-    CORE::Nodes::Node** elenodes = ele->Nodes();
+    Core::Nodes::Node** elenodes = ele->Nodes();
     for (int nn = 0; nn < ele->num_node(); ++nn)
     {
-      CORE::Nodes::Node* node = (elenodes[nn]);
+      Core::Nodes::Node* node = (elenodes[nn]);
 
       // we are interested only in  row nodes
       if (node->Owner() == discret_->Comm().MyPID())
@@ -595,7 +596,7 @@ void FLD::Boxfilter::apply_box_filter(const Teuchos::RCP<const Epetra_Vector> ve
     for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); ++lnodeid)
     {
       // get the processor local node
-      CORE::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
+      Core::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
 
       // the set of degrees of freedom associated with the node
       std::vector<int> nodedofset = discret_->Dof(lnode);
@@ -630,20 +631,20 @@ void FLD::Boxfilter::apply_box_filter(const Teuchos::RCP<const Epetra_Vector> ve
 
         // determine density
         double dens = 1.0;
-        if (physicaltype_ == INPAR::FLUID::incompressible)  // this is important to have here,
+        if (physicaltype_ == Inpar::FLUID::incompressible)  // this is important to have here,
         {  //  since, for the pure box filter application,
            // get fluid viscosity from material definition                                //  we do
            // not want to multiply the reynolds stress by density
           int id =
-              GLOBAL::Problem::Instance()->Materials()->FirstIdByType(CORE::Materials::m_fluid);
+              Global::Problem::Instance()->Materials()->FirstIdByType(Core::Materials::m_fluid);
           if (id == -1)
             FOUR_C_THROW("Could not find Newtonian fluid material");
           else
           {
-            const CORE::MAT::PAR::Parameter* mat =
-                GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
-            const MAT::PAR::NewtonianFluid* actmat =
-                static_cast<const MAT::PAR::NewtonianFluid*>(mat);
+            const Core::Mat::PAR::Parameter* mat =
+                Global::Problem::Instance()->Materials()->ParameterById(id);
+            const Mat::PAR::NewtonianFluid* actmat =
+                static_cast<const Mat::PAR::NewtonianFluid*>(mat);
             // we need the kinematic viscosity here
             dens = actmat->density_;
           }
@@ -856,7 +857,7 @@ void FLD::Boxfilter::apply_box_filter(const Teuchos::RCP<const Epetra_Vector> ve
     for (int nid = 0; nid < discret_->NumMyRowNodes(); ++nid)
     {
       // get the node
-      CORE::Nodes::Node* node = discret_->lRowNode(nid);
+      Core::Nodes::Node* node = discret_->lRowNode(nid);
       // get global ids of all dofs of the node
       std::vector<int> dofs = discret_->Dof(node);
       // we only loop over all velocity dofs
@@ -905,20 +906,20 @@ void FLD::Boxfilter::apply_box_filter(const Teuchos::RCP<const Epetra_Vector> ve
   if (alpha2_) col_filtered_alpha2_ = Teuchos::rcp(new Epetra_Vector(*nodecolmap, true));
 
   // export filtered vectors in rowmap to columnmap format
-  if (velocity_) CORE::LINALG::Export(*filtered_vel_, *col_filtered_vel_);
+  if (velocity_) Core::LinAlg::Export(*filtered_vel_, *col_filtered_vel_);
   if (reynoldsstress_)
-    CORE::LINALG::Export(*filtered_reynoldsstress_, *col_filtered_reynoldsstress_);
+    Core::LinAlg::Export(*filtered_reynoldsstress_, *col_filtered_reynoldsstress_);
   if (modeled_subgrid_stress_)
-    CORE::LINALG::Export(*filtered_modeled_subgrid_stress_, *col_filtered_modeled_subgrid_stress_);
-  if (finescale_velocity_) CORE::LINALG::Export(*fs_vel_, *col_fs_vel_);
-  if (densvelocity_) CORE::LINALG::Export(*filtered_dens_vel_, *col_filtered_dens_vel_);
-  if (density_) CORE::LINALG::Export(*filtered_dens_, *col_filtered_dens_);
+    Core::LinAlg::Export(*filtered_modeled_subgrid_stress_, *col_filtered_modeled_subgrid_stress_);
+  if (finescale_velocity_) Core::LinAlg::Export(*fs_vel_, *col_fs_vel_);
+  if (densvelocity_) Core::LinAlg::Export(*filtered_dens_vel_, *col_filtered_dens_vel_);
+  if (density_) Core::LinAlg::Export(*filtered_dens_, *col_filtered_dens_);
   if (densstrainrate_)
-    CORE::LINALG::Export(*filtered_dens_strainrate_, *col_filtered_dens_strainrate_);
-  if (strainrate_) CORE::LINALG::Export(*filtered_strainrate_, *col_filtered_strainrate_);
-  if (alphaij_) CORE::LINALG::Export(*filtered_alphaij_, *col_filtered_alphaij_);
-  if (expression_) CORE::LINALG::Export(*filtered_expression_, *col_filtered_expression_);
-  if (alpha2_) CORE::LINALG::Export(*filtered_alpha2_, *col_filtered_alpha2_);
+    Core::LinAlg::Export(*filtered_dens_strainrate_, *col_filtered_dens_strainrate_);
+  if (strainrate_) Core::LinAlg::Export(*filtered_strainrate_, *col_filtered_strainrate_);
+  if (alphaij_) Core::LinAlg::Export(*filtered_alphaij_, *col_filtered_alphaij_);
+  if (expression_) Core::LinAlg::Export(*filtered_expression_, *col_filtered_expression_);
+  if (alpha2_) Core::LinAlg::Export(*filtered_alpha2_, *col_filtered_alpha2_);
   return;
 }
 
@@ -939,8 +940,8 @@ void FLD::Boxfilter::apply_box_filter_scatra(const Teuchos::RCP<const Epetra_Vec
   // generate a parameterlist for communication and control
   Teuchos::ParameterList filterparams;
   // action for elements
-  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
-      "action", SCATRA::Action::calc_scatra_box_filter, filterparams);
+  Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+      "action", ScaTra::Action::calc_scatra_box_filter, filterparams);
 
   filterparams.set("thermpress", thermpress);
 
@@ -949,11 +950,11 @@ void FLD::Boxfilter::apply_box_filter_scatra(const Teuchos::RCP<const Epetra_Vec
   scatradiscret_->set_state("scalar", scalar);
 
   // dummies
-  CORE::LINALG::SerialDenseMatrix emat1;
-  CORE::LINALG::SerialDenseMatrix emat2;
-  CORE::LINALG::SerialDenseVector evec1;
-  CORE::LINALG::SerialDenseVector evec2;
-  CORE::LINALG::SerialDenseVector evec3;
+  Core::LinAlg::SerialDenseMatrix emat1;
+  Core::LinAlg::SerialDenseMatrix emat2;
+  Core::LinAlg::SerialDenseVector evec1;
+  Core::LinAlg::SerialDenseVector evec2;
+  Core::LinAlg::SerialDenseVector evec3;
 
   // ---------------------------------------------------------------
   // get a vector layout from the discretization to construct
@@ -997,7 +998,7 @@ void FLD::Boxfilter::apply_box_filter_scatra(const Teuchos::RCP<const Epetra_Vec
   for (int nele = 0; nele < scatradiscret_->NumMyColElements(); ++nele)
   {
     // get the element
-    CORE::Elements::Element* ele = scatradiscret_->lColElement(nele);
+    Core::Elements::Element* ele = scatradiscret_->lColElement(nele);
 
     // provide vectors for filtered quantities //declaration necessary even if not used
     Teuchos::RCP<std::vector<double>> vel_hat =
@@ -1042,7 +1043,7 @@ void FLD::Boxfilter::apply_box_filter_scatra(const Teuchos::RCP<const Epetra_Vec
     double volume_contribution = 0.0;
 
     // get element location vector, dirichlet flags and ownerships
-    CORE::Elements::Element::LocationArray la(scatradiscret_->NumDofSets());
+    Core::Elements::Element::LocationArray la(scatradiscret_->NumDofSets());
     ele->LocationVector(*scatradiscret_, la, false);
 
     // call the element evaluate method to integrate functions
@@ -1063,10 +1064,10 @@ void FLD::Boxfilter::apply_box_filter_scatra(const Teuchos::RCP<const Epetra_Vec
     if (phi2_) phi2_hat = filterparams.get<double>("phi2_hat");
     if (phiexpression_) phiexpression_hat = filterparams.get<double>("phiexpression_hat");
     // loop all nodes of this element, add values to the global vectors
-    CORE::Nodes::Node** elenodes = ele->Nodes();
+    Core::Nodes::Node** elenodes = ele->Nodes();
     for (int nn = 0; nn < ele->num_node(); ++nn)
     {
-      CORE::Nodes::Node* node = (elenodes[nn]);
+      Core::Nodes::Node* node = (elenodes[nn]);
 
       // we are interested only in  row nodes
       if (node->Owner() == scatradiscret_->Comm().MyPID())
@@ -1297,13 +1298,13 @@ void FLD::Boxfilter::apply_box_filter_scatra(const Teuchos::RCP<const Epetra_Vec
     for (int lnodeid = 0; lnodeid < scatradiscret_->NumMyRowNodes(); ++lnodeid)
     {
       // get the processor local node
-      CORE::Nodes::Node* lnode = scatradiscret_->lRowNode(lnodeid);
+      Core::Nodes::Node* lnode = scatradiscret_->lRowNode(lnodeid);
       std::vector<int> nodedofs = scatradiscret_->Dof(ndsvel, lnode);
       // get the corresponding porcessor local fluid node
-      CORE::Nodes::Node* fluidlnode = discret_->lRowNode(lnodeid);
+      Core::Nodes::Node* fluidlnode = discret_->lRowNode(lnodeid);
 
       // do we have a dirichlet boundary conditions in the fluid
-      std::vector<CORE::Conditions::Condition*> dbccond;
+      std::vector<Core::Conditions::Condition*> dbccond;
       fluidlnode->GetCondition("Dirichlet", dbccond);
 
       // yes, we have a dirichlet boundary condition
@@ -1525,17 +1526,17 @@ void FLD::Boxfilter::apply_box_filter_scatra(const Teuchos::RCP<const Epetra_Vec
     col_filtered_alphaijsc_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap, 9, true));
 
   // export filtered vectors in rowmap to columnmap format
-  CORE::LINALG::Export(*filtered_vel_, *col_filtered_vel_);
-  CORE::LINALG::Export(*filtered_dens_vel_, *col_filtered_dens_vel_);
-  CORE::LINALG::Export(*filtered_dens_vel_temp_, *col_filtered_dens_vel_temp_);
-  CORE::LINALG::Export(*filtered_dens_rateofstrain_temp_, *col_filtered_dens_rateofstrain_temp_);
-  CORE::LINALG::Export(*filtered_temp_, *col_filtered_temp_);
-  CORE::LINALG::Export(*filtered_dens_, *col_filtered_dens_);
-  CORE::LINALG::Export(*filtered_dens_temp_, *col_filtered_dens_temp_);
-  if (phi_) CORE::LINALG::Export(*filtered_phi_, *col_filtered_phi_);
-  if (phi2_) CORE::LINALG::Export(*filtered_phi2_, *col_filtered_phi2_);
-  if (phiexpression_) CORE::LINALG::Export(*filtered_phiexpression_, *col_filtered_phiexpression_);
-  if (alphaijsc_) CORE::LINALG::Export(*filtered_alphaijsc_, *col_filtered_alphaijsc_);
+  Core::LinAlg::Export(*filtered_vel_, *col_filtered_vel_);
+  Core::LinAlg::Export(*filtered_dens_vel_, *col_filtered_dens_vel_);
+  Core::LinAlg::Export(*filtered_dens_vel_temp_, *col_filtered_dens_vel_temp_);
+  Core::LinAlg::Export(*filtered_dens_rateofstrain_temp_, *col_filtered_dens_rateofstrain_temp_);
+  Core::LinAlg::Export(*filtered_temp_, *col_filtered_temp_);
+  Core::LinAlg::Export(*filtered_dens_, *col_filtered_dens_);
+  Core::LinAlg::Export(*filtered_dens_temp_, *col_filtered_dens_temp_);
+  if (phi_) Core::LinAlg::Export(*filtered_phi_, *col_filtered_phi_);
+  if (phi2_) Core::LinAlg::Export(*filtered_phi2_, *col_filtered_phi2_);
+  if (phiexpression_) Core::LinAlg::Export(*filtered_phiexpression_, *col_filtered_phiexpression_);
+  if (alphaijsc_) Core::LinAlg::Export(*filtered_alphaijsc_, *col_filtered_alphaijsc_);
 
   return;
 }

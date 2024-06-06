@@ -44,12 +44,12 @@ namespace BINSTRATEGY
   class BinningStrategy;
 }
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
@@ -211,7 +211,7 @@ namespace PARTICLEWALL
      */
     virtual bool have_valid_wall_neighbors() const final { return validwallneighbors_; };
 
-    Teuchos::RCP<const DRT::Discretization> get_wall_discretization() const final
+    Teuchos::RCP<const Discret::Discretization> get_wall_discretization() const final
     {
       return walldiscretization_;
     };
@@ -231,8 +231,8 @@ namespace PARTICLEWALL
      * \param ele[in]             column wall element
      * \param colelenodalpos[out] current nodal position
      */
-    void determine_col_wall_ele_nodal_pos(CORE::Elements::Element* ele,
-        std::map<int, CORE::LINALG::Matrix<3, 1>>& colelenodalpos) const final;
+    void determine_col_wall_ele_nodal_pos(Core::Elements::Element* ele,
+        std::map<int, Core::LinAlg::Matrix<3, 1>>& colelenodalpos) const final;
 
    private:
     //! \name init and setup methods
@@ -300,7 +300,7 @@ namespace PARTICLEWALL
     Teuchos::RCP<Epetra_Map> bincolmap_;
 
     //! wall discretization
-    Teuchos::RCP<DRT::Discretization> walldiscretization_;
+    Teuchos::RCP<Discret::Discretization> walldiscretization_;
 
     //! wall data state container
     std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate_;

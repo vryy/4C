@@ -17,14 +17,14 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
-    template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype> + 1>
+    template <Core::FE::CellType distype, int probdim = Core::FE::dim<distype> + 1>
     class ScaTraEleBoundaryCalcPoro : public ScaTraEleBoundaryCalc<distype, probdim>
     {
-      typedef DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim> my;
+      typedef Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim> my;
       using my::nen_;
       using my::nsd_;
       using my::nsd_ele_;
@@ -35,25 +35,25 @@ namespace DRT
           const int numdofpernode, const int numscal, const std::string& disname);
 
       //! evaluate action
-      int evaluate_action(CORE::Elements::FaceElement* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, SCATRA::BoundaryAction action,
-          CORE::Elements::Element::LocationArray& la,
-          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra,
-          CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
+      int evaluate_action(Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
+          Discret::Discretization& discretization, ScaTra::BoundaryAction action,
+          Core::Elements::Element::LocationArray& la,
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec1_epetra,
+          Core::LinAlg::SerialDenseVector& elevec2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec3_epetra) override;
 
      protected:
       //! compute integral of convective mass/heat flux over boundary surface
-      std::vector<double> calc_convective_flux(const CORE::Elements::FaceElement* ele,
-          const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,
-          const CORE::LINALG::Matrix<nsd_, nen_>& evelnp,
-          CORE::LINALG::SerialDenseVector& erhs) override;
+      std::vector<double> calc_convective_flux(const Core::Elements::FaceElement* ele,
+          const std::vector<Core::LinAlg::Matrix<nen_, 1>>& ephinp,
+          const Core::LinAlg::Matrix<nsd_, nen_>& evelnp,
+          Core::LinAlg::SerialDenseVector& erhs) override;
 
       //! compute porosity based on solid, fluid and (potentially) scatra solution
       virtual double compute_porosity(
-          const CORE::Elements::FaceElement* ele  //!< the element we are dealing with
+          const Core::Elements::FaceElement* ele  //!< the element we are dealing with
       );
 
      private:
@@ -62,17 +62,17 @@ namespace DRT
           const int numdofpernode, const int numscal, const std::string& disname);
 
       //! nodal porosity values at t_(n+1)
-      CORE::LINALG::Matrix<nen_, 1> eporosity_;
+      Core::LinAlg::Matrix<nen_, 1> eporosity_;
 
       //! nodal pressure values at t_(n+1) or t_(n+alpha_F)
-      CORE::LINALG::Matrix<nen_, 1> eprenp_;
+      Core::LinAlg::Matrix<nen_, 1> eprenp_;
 
       //! flag indacting a node based porosity
       bool isnodalporosity_;
 
     };  // class ScaTraEleBoundaryCalcPoro
   }     // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

@@ -24,7 +24,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::BeamToSolidVolumeMeshtyingPar
     : BeamToSolidParamsBase(),
       integration_points_circumference_(0),
       rotational_coupling_triad_construction_(
-          INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling::none),
+          Inpar::BeamToSolid::BeamToSolidRotationCoupling::none),
       rotational_coupling_penalty_parameter_(0.0),
       output_params_ptr_(Teuchos::null),
       couple_restart_state_(false)
@@ -40,7 +40,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::Init()
 {
   // Teuchos parameter list for beam contact
   const Teuchos::ParameterList& beam_to_solid_contact_params_list =
-      GLOBAL::Problem::Instance()->beam_interaction_params().sublist(
+      Global::Problem::Instance()->beam_interaction_params().sublist(
           "BEAM TO SOLID VOLUME MESHTYING");
 
   // Set the common beam-to-solid parameters.
@@ -54,20 +54,20 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::Init()
 
     // Type of rotational coupling.
     rotational_coupling_triad_construction_ =
-        Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling>(
+        Teuchos::getIntegralValue<Inpar::BeamToSolid::BeamToSolidRotationCoupling>(
             beam_to_solid_contact_params_list, "ROTATION_COUPLING");
     rotational_coupling_ = rotational_coupling_triad_construction_ !=
-                           INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling::none;
+                           Inpar::BeamToSolid::BeamToSolidRotationCoupling::none;
 
     // Mortar contact discretization to be used.
     mortar_shape_function_rotation_ =
-        Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions>(
+        Teuchos::getIntegralValue<Inpar::BeamToSolid::BeamToSolidMortarShapefunctions>(
             beam_to_solid_contact_params_list, "ROTATION_COUPLING_MORTAR_SHAPE_FUNCTION");
     if (get_contact_discretization() ==
-            INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::mortar and
+            Inpar::BeamToSolid::BeamToSolidContactDiscretization::mortar and
         rotational_coupling_ and
         mortar_shape_function_rotation_ ==
-            INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::none)
+            Inpar::BeamToSolid::BeamToSolidMortarShapefunctions::none)
       FOUR_C_THROW(
           "If mortar coupling and rotational coupling are activated, the shape function type for "
           "rotational coupling has to be explicitly given.");
@@ -77,7 +77,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::Init()
         beam_to_solid_contact_params_list.get<double>("ROTATION_COUPLING_PENALTY_PARAMETER");
 
     // If the restart configuration should be coupled.
-    couple_restart_state_ = (bool)CORE::UTILS::IntegralValue<int>(
+    couple_restart_state_ = (bool)Core::UTILS::IntegralValue<int>(
         beam_to_solid_contact_params_list, "COUPLE_RESTART_STATE");
   }
 

@@ -42,9 +42,9 @@ namespace THR
     TimIntExpl(const Teuchos::ParameterList& ioparams,       //!< ioflags
         const Teuchos::ParameterList& tdynparams,            //!< input parameters
         const Teuchos::ParameterList& xparams,               //!< extra flags
-        Teuchos::RCP<DRT::Discretization> actdis,            //!< current discretisation
-        Teuchos::RCP<CORE::LINALG::Solver> solver,           //!< the solver
-        Teuchos::RCP<CORE::IO::DiscretizationWriter> output  //!< the output
+        Teuchos::RCP<Discret::Discretization> actdis,        //!< current discretisation
+        Teuchos::RCP<Core::LinAlg::Solver> solver,           //!< the solver
+        Teuchos::RCP<Core::IO::DiscretizationWriter> output  //!< the output
     );
 
     //! Empty constructor
@@ -66,10 +66,10 @@ namespace THR
 
     //! Solve dynamic equilibrium
     //! This is a general wrapper around the specific techniques.
-    INPAR::THR::ConvergenceStatus Solve() override
+    Inpar::THR::ConvergenceStatus Solve() override
     {
       IntegrateStep();
-      return INPAR::THR::conv_success;
+      return Inpar::THR::conv_success;
     }
 
     //! build linear system tangent matrix, rhs/force residual
@@ -154,7 +154,7 @@ namespace THR
     //@{
 
     //! Return time integrator name
-    enum INPAR::THR::DynamicType MethodName() const override = 0;
+    enum Inpar::THR::DynamicType MethodName() const override = 0;
 
     //! These time integrators are all explicit (mark their name)
     bool MethodImplicit() override { return false; }
@@ -202,7 +202,7 @@ namespace THR
     void ReadRestartForce() override = 0;
 
     //! Write internal and external forces for restart
-    void WriteRestartForce(Teuchos::RCP<CORE::IO::DiscretizationWriter> output) override = 0;
+    void WriteRestartForce(Teuchos::RCP<Core::IO::DiscretizationWriter> output) override = 0;
 
     //@}
 

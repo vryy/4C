@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 // forward declaration
 
 /*----------------------------------------------------------------------*/
-namespace INPAR
+namespace Inpar
 {
   namespace XFEM
   {
@@ -318,13 +318,13 @@ namespace INPAR
 
     /// set specific xfem conditions
     void SetValidConditions(
-        const std::vector<Teuchos::RCP<INPUT::LineComponent>> &dirichletbundcomponents,
-        const std::vector<Teuchos::RCP<INPUT::LineComponent>> &neumanncomponents,
-        std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>> &condlist);
+        const std::vector<Teuchos::RCP<Input::LineComponent>> &dirichletbundcomponents,
+        const std::vector<Teuchos::RCP<Input::LineComponent>> &neumanncomponents,
+        std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>> &condlist);
 
   }  // namespace XFEM
 
-}  // namespace INPAR
+}  // namespace Inpar
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE
 

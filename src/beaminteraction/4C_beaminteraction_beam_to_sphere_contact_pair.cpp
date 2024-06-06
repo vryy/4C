@@ -62,7 +62,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Setup()
 
 
   // cast first element to Beam3Base
-  beam_element_ = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(Element1());
+  beam_element_ = dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(Element1());
 
   if (beam_element_ == nullptr)
     FOUR_C_THROW(
@@ -74,7 +74,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Setup()
   beamele_reflength_ = beam_element_->RefLength();
 
   // cast second element to RigidSphere
-  sphere_element_ = dynamic_cast<const DRT::ELEMENTS::Rigidsphere*>(Element2());
+  sphere_element_ = dynamic_cast<const Discret::ELEMENTS::Rigidsphere*>(Element2());
 
   if (sphere_element_ == nullptr)
     FOUR_C_THROW(
@@ -111,9 +111,9 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::pre_eva
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
 bool BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Evaluate(
-    CORE::LINALG::SerialDenseVector* forcevec1, CORE::LINALG::SerialDenseVector* forcevec2,
-    CORE::LINALG::SerialDenseMatrix* stiffmat11, CORE::LINALG::SerialDenseMatrix* stiffmat12,
-    CORE::LINALG::SerialDenseMatrix* stiffmat21, CORE::LINALG::SerialDenseMatrix* stiffmat22)
+    Core::LinAlg::SerialDenseVector* forcevec1, Core::LinAlg::SerialDenseVector* forcevec2,
+    Core::LinAlg::SerialDenseMatrix* stiffmat11, Core::LinAlg::SerialDenseMatrix* stiffmat12,
+    Core::LinAlg::SerialDenseMatrix* stiffmat21, Core::LinAlg::SerialDenseMatrix* stiffmat22)
 {
   unsigned int dim1 = 3 * numnodes * numnodalvalues;
   unsigned int dim2 = 3;
@@ -146,24 +146,24 @@ bool BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Evaluat
   closest_point_projection();
 
   // vectors for shape functions and their derivatives
-  CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE> N1_i;
-  CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE> N1_i_xi;
-  CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE> N1_i_xixi;
+  Core::LinAlg::Matrix<1, numnodes * numnodalvalues, TYPE> N1_i;
+  Core::LinAlg::Matrix<1, numnodes * numnodalvalues, TYPE> N1_i_xi;
+  Core::LinAlg::Matrix<1, numnodes * numnodalvalues, TYPE> N1_i_xixi;
 
   // coords and derivatives of the two contact points
-  CORE::LINALG::Matrix<3, 1, TYPE> x1;    // = x1
-  CORE::LINALG::Matrix<3, 1, TYPE> x2;    // = x2
-  CORE::LINALG::Matrix<3, 1, TYPE> dx1;   // = x1,xi
-  CORE::LINALG::Matrix<3, 1, TYPE> ddx1;  // = x1,xixi
+  Core::LinAlg::Matrix<3, 1, TYPE> x1;    // = x1
+  Core::LinAlg::Matrix<3, 1, TYPE> x2;    // = x2
+  Core::LinAlg::Matrix<3, 1, TYPE> dx1;   // = x1,xi
+  Core::LinAlg::Matrix<3, 1, TYPE> ddx1;  // = x1,xixi
 
   // initialize
-  CORE::LINALG::Matrix<3, 1, TYPE> normal;
+  Core::LinAlg::Matrix<3, 1, TYPE> normal;
   TYPE gap = 0.0;
   TYPE norm = 0.0;
 
   bool validclosestpointprojection = true;
 
-  if (std::abs(CORE::FADUTILS::CastToDouble(xicontact_)) <
+  if (std::abs(Core::FADUtils::CastToDouble(xicontact_)) <
       (1.0 + XIETATOL))  // ToDo when to reset nodalcontactflag_?
   {
     nodalcontactflag_[0] = false;
@@ -317,16 +317,16 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::closest
   TYPE eta = 0.0;
 
   // vectors for shape functions and their derivatives
-  CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE> N1_i;
-  CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE> N1_i_xi;
-  CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE> N1_i_xixi;
+  Core::LinAlg::Matrix<1, numnodes * numnodalvalues, TYPE> N1_i;
+  Core::LinAlg::Matrix<1, numnodes * numnodalvalues, TYPE> N1_i_xi;
+  Core::LinAlg::Matrix<1, numnodes * numnodalvalues, TYPE> N1_i_xixi;
 
   // coords and derivatives of the two contact points
-  CORE::LINALG::Matrix<3, 1, TYPE> x1;       // = x1
-  CORE::LINALG::Matrix<3, 1, TYPE> x2;       // = x2
-  CORE::LINALG::Matrix<3, 1, TYPE> dx1;      // = x1,xi
-  CORE::LINALG::Matrix<3, 1, TYPE> ddx1;     // = x1,xixi
-  CORE::LINALG::Matrix<3, 1, TYPE> delta_x;  // = x1 - x2
+  Core::LinAlg::Matrix<3, 1, TYPE> x1;       // = x1
+  Core::LinAlg::Matrix<3, 1, TYPE> x2;       // = x2
+  Core::LinAlg::Matrix<3, 1, TYPE> dx1;      // = x1,xi
+  Core::LinAlg::Matrix<3, 1, TYPE> ddx1;     // = x1,xixi
+  Core::LinAlg::Matrix<3, 1, TYPE> delta_x;  // = x1 - x2
 
   // initialize function f and Jacobian df for Newton iteration
   TYPE f;
@@ -359,7 +359,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::closest
     // Note: Even if automatic differentiation via FAD is applied, norm_delta_r has to be of type
     // double since this factor is needed for a pure scaling of the nonlinear CCP and has not to be
     // linearized!
-    double norm_delta_x = CORE::FADUTILS::CastToDouble(CORE::FADUTILS::VectorNorm<3>(delta_x));
+    double norm_delta_x = Core::FADUtils::CastToDouble(Core::FADUtils::VectorNorm<3>(delta_x));
 
     // the closer the beams get, the smaller is norm
     // norm is not allowed to be too small, else numerical problems occur
@@ -372,7 +372,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::closest
     evaluate_orthogonality_condition(f, delta_x, norm_delta_x, dx1);
 
     // compute the scalar residuum
-    residual = abs(CORE::FADUTILS::CastToDouble(f));
+    residual = abs(Core::FADUtils::CastToDouble(f));
 
     // check if Newton iteration has converged
     if (residual < BEAMCONTACTTOL) break;
@@ -425,8 +425,8 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::closest
 template <unsigned int numnodes, unsigned int numnodalvalues>
 void BEAMINTERACTION::BeamToSphereContactPair<numnodes,
     numnodalvalues>::evaluate_orthogonality_condition(TYPE& f,
-    const CORE::LINALG::Matrix<3, 1, TYPE>& delta_x, const double norm_delta_x,
-    const CORE::LINALG::Matrix<3, 1, TYPE>& dx1)
+    const Core::LinAlg::Matrix<3, 1, TYPE>& delta_x, const double norm_delta_x,
+    const Core::LinAlg::Matrix<3, 1, TYPE>& dx1)
 {
   // reset f
   f = 0.0;
@@ -447,8 +447,8 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes,
 template <unsigned int numnodes, unsigned int numnodalvalues>
 void BEAMINTERACTION::BeamToSphereContactPair<numnodes,
     numnodalvalues>::evaluate_lin_orthogonality_condition(TYPE& df,
-    CORE::LINALG::Matrix<3, 1, TYPE>& delta_x, const double norm_delta_x,
-    const CORE::LINALG::Matrix<3, 1, TYPE>& dx1, const CORE::LINALG::Matrix<3, 1, TYPE>& ddx1)
+    Core::LinAlg::Matrix<3, 1, TYPE>& delta_x, const double norm_delta_x,
+    const Core::LinAlg::Matrix<3, 1, TYPE>& dx1, const Core::LinAlg::Matrix<3, 1, TYPE>& ddx1)
 
 {
   // reset df
@@ -478,9 +478,9 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes,
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
 void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::evaluate_fc_contact(
-    CORE::LINALG::SerialDenseVector& forcevec1, CORE::LINALG::SerialDenseVector& forcevec2,
-    const double& pp, const TYPE& gap, const CORE::LINALG::Matrix<3, 1, TYPE>& normal,
-    const CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i, const bool contactactive)
+    Core::LinAlg::SerialDenseVector& forcevec1, Core::LinAlg::SerialDenseVector& forcevec2,
+    const double& pp, const TYPE& gap, const Core::LinAlg::Matrix<3, 1, TYPE>& normal,
+    const Core::LinAlg::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i, const bool contactactive)
 {
   fc1_.Clear();
   fc2_.Clear();
@@ -530,9 +530,9 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::evaluat
   //**********************************************************************
   if (!DoNotAssemble)
   {
-    for (unsigned int i = 0; i < dim1; ++i) forcevec1(i) += CORE::FADUTILS::CastToDouble(fc1_(i));
+    for (unsigned int i = 0; i < dim1; ++i) forcevec1(i) += Core::FADUtils::CastToDouble(fc1_(i));
 
-    for (unsigned int i = 0; i < dim2; ++i) forcevec2(i) += CORE::FADUTILS::CastToDouble(fc2_(i));
+    for (unsigned int i = 0; i < dim2; ++i) forcevec2(i) += Core::FADUtils::CastToDouble(fc2_(i));
   }
 }
 
@@ -540,15 +540,15 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::evaluat
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
 void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::evaluate_stiffc_contact(
-    CORE::LINALG::SerialDenseMatrix& stiffmat11, CORE::LINALG::SerialDenseMatrix& stiffmat12,
-    CORE::LINALG::SerialDenseMatrix& stiffmat21, CORE::LINALG::SerialDenseMatrix& stiffmat22,
-    const double& pp, const TYPE& gap, const CORE::LINALG::Matrix<3, 1, TYPE>& normal,
-    const TYPE& norm, const CORE::LINALG::Matrix<3, 1, TYPE>& x1,
-    const CORE::LINALG::Matrix<3, 1, TYPE>& x2, const CORE::LINALG::Matrix<3, 1, TYPE>& dx1,
-    const CORE::LINALG::Matrix<3, 1, TYPE>& ddx1,
-    const CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i,
-    const CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i_xi,
-    const CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i_xixi, bool activecontact,
+    Core::LinAlg::SerialDenseMatrix& stiffmat11, Core::LinAlg::SerialDenseMatrix& stiffmat12,
+    Core::LinAlg::SerialDenseMatrix& stiffmat21, Core::LinAlg::SerialDenseMatrix& stiffmat22,
+    const double& pp, const TYPE& gap, const Core::LinAlg::Matrix<3, 1, TYPE>& normal,
+    const TYPE& norm, const Core::LinAlg::Matrix<3, 1, TYPE>& x1,
+    const Core::LinAlg::Matrix<3, 1, TYPE>& x2, const Core::LinAlg::Matrix<3, 1, TYPE>& dx1,
+    const Core::LinAlg::Matrix<3, 1, TYPE>& ddx1,
+    const Core::LinAlg::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i,
+    const Core::LinAlg::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i_xi,
+    const Core::LinAlg::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i_xixi, bool activecontact,
     bool linxi)
 {
   // get dimensions for vector fc1 and fc2
@@ -556,8 +556,8 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::evaluat
   const unsigned int dim2 = 3;
 
   // temporary matrices for stiffness matrices
-  CORE::LINALG::Matrix<dim1, dim1 + dim2, TYPE> stiffc1;
-  CORE::LINALG::Matrix<dim2, dim1 + dim2, TYPE> stiffc2;
+  Core::LinAlg::Matrix<dim1, dim1 + dim2, TYPE> stiffc1;
+  Core::LinAlg::Matrix<dim2, dim1 + dim2, TYPE> stiffc2;
 
   // flag indicating assembly
   bool DoNotAssemble = false;
@@ -572,19 +572,19 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::evaluat
   // evaluate contact stiffness for active pairs
   //**********************************************************************
   // initialize delta_xi here because we need it outside the if-environment for FAD Check
-  CORE::LINALG::Matrix<dim1 + dim2, 1, TYPE> delta_xi;
+  Core::LinAlg::Matrix<dim1 + dim2, 1, TYPE> delta_xi;
 
   if (activecontact)
   {
     // auxiliary stiffmatrix for part III of linearization to avoid tensor notation
-    CORE::LINALG::Matrix<dim1 + dim2, dim1 + dim2, TYPE> stiffc_III;
+    Core::LinAlg::Matrix<dim1 + dim2, dim1 + dim2, TYPE> stiffc_III;
 
     // initialize storage for linearizations
-    CORE::LINALG::Matrix<3, 1, TYPE> distance;
+    Core::LinAlg::Matrix<3, 1, TYPE> distance;
     TYPE normdist = 0.0;
-    CORE::LINALG::Matrix<dim1 + dim2, 1, TYPE> delta_gap;
-    CORE::LINALG::Matrix<3, dim1 + dim2, TYPE> delta_x1_minus_x2;
-    CORE::LINALG::Matrix<3, dim1 + dim2, TYPE> delta_n;
+    Core::LinAlg::Matrix<dim1 + dim2, 1, TYPE> delta_gap;
+    Core::LinAlg::Matrix<3, dim1 + dim2, TYPE> delta_x1_minus_x2;
+    Core::LinAlg::Matrix<3, dim1 + dim2, TYPE> delta_n;
 
     //********************************************************************
     // evaluate linearizations and distance
@@ -616,7 +616,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::evaluat
     //********************************************************************
     // part I
     //********************************************************************
-    CORE::LINALG::Matrix<dim1, 1, TYPE> N1T_normal;
+    Core::LinAlg::Matrix<dim1, 1, TYPE> N1T_normal;
     for (unsigned int i = 0; i < 3; i++)
     {
       for (unsigned int j = 0; j < numnodes * numnodalvalues; j++)
@@ -650,7 +650,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::evaluat
     //********************************************************************
     // part III
     //********************************************************************
-    CORE::LINALG::Matrix<dim1, 1, TYPE> N1xiT_normal;
+    Core::LinAlg::Matrix<dim1, 1, TYPE> N1xiT_normal;
     for (unsigned int i = 0; i < 3; i++)
     {
       for (unsigned int j = 0; j < numnodes * numnodalvalues; j++)
@@ -724,16 +724,16 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::evaluat
     for (unsigned int j = 0; j < dim1; j++)
     {
       for (unsigned int i = 0; i < dim1; i++)
-        stiffmat11(i, j) += -CORE::FADUTILS::CastToDouble(stiffc1(i, j));
+        stiffmat11(i, j) += -Core::FADUtils::CastToDouble(stiffc1(i, j));
       for (unsigned int i = 0; i < dim2; i++)
-        stiffmat21(i, j) += -CORE::FADUTILS::CastToDouble(stiffc2(i, j));
+        stiffmat21(i, j) += -Core::FADUtils::CastToDouble(stiffc2(i, j));
     }
     for (unsigned int j = 0; j < dim2; j++)
     {
       for (unsigned int i = 0; i < dim1; i++)
-        stiffmat12(i, j) += -CORE::FADUTILS::CastToDouble(stiffc1(i, dim1 + j));
+        stiffmat12(i, j) += -Core::FADUtils::CastToDouble(stiffc1(i, dim1 + j));
       for (unsigned int i = 0; i < dim2; i++)
-        stiffmat22(i, j) += -CORE::FADUTILS::CastToDouble(stiffc2(i, dim1 + j));
+        stiffmat22(i, j) += -Core::FADUtils::CastToDouble(stiffc2(i, dim1 + j));
     }
 #else
     FOUR_C_THROW(
@@ -743,10 +743,10 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::evaluat
     {
       for (unsigned int i = 0; i < dim1; i++)
         stiffc1_copy(i, j) =
-            -CORE::FADUTILS::CastToDouble(fc1_(i).dx(j) + fc1_(i).dx(dim1 + dim2) * delta_xi(j));
+            -Core::FADUtils::CastToDouble(fc1_(i).dx(j) + fc1_(i).dx(dim1 + dim2) * delta_xi(j));
       for (unsigned int i = 0; i < dim2; i++)
         stiffc2_copy(i, j) =
-            -CORE::FADUTILS::CastToDouble(fc2_(i).dx(j) + fc2_(i).dx(dim1 + dim2) * delta_xi(j));
+            -Core::FADUtils::CastToDouble(fc2_(i).dx(j) + fc2_(i).dx(dim1 + dim2) * delta_xi(j));
     }
 
 #ifdef FADCHECKS
@@ -807,14 +807,14 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::evaluat
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
 void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::compute_normal(
-    CORE::LINALG::Matrix<3, 1, TYPE>& normal, TYPE& gap, TYPE& norm,
-    const CORE::LINALG::Matrix<3, 1, TYPE>& x1, const CORE::LINALG::Matrix<3, 1, TYPE>& x2)
+    Core::LinAlg::Matrix<3, 1, TYPE>& normal, TYPE& gap, TYPE& norm,
+    const Core::LinAlg::Matrix<3, 1, TYPE>& x1, const Core::LinAlg::Matrix<3, 1, TYPE>& x2)
 {
   // compute non-unit normal
   for (unsigned int i = 0; i < 3; i++) normal(i) = x1(i) - x2(i);
 
   // compute length of normal
-  norm = CORE::FADUTILS::VectorNorm<3>(normal);
+  norm = Core::FADUtils::VectorNorm<3>(normal);
   if (norm < NORMTOL) FOUR_C_THROW("ERROR: Normal of length zero! --> change time step!");
 
   // compute unit normal and store it in class variable
@@ -847,11 +847,11 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::compute
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
 void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::compute_coords_and_derivs(
-    CORE::LINALG::Matrix<3, 1, TYPE>& x1, CORE::LINALG::Matrix<3, 1, TYPE>& x2,
-    CORE::LINALG::Matrix<3, 1, TYPE>& dx1, CORE::LINALG::Matrix<3, 1, TYPE>& ddx1,
-    const CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i,
-    const CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i_xi,
-    const CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i_xixi)
+    Core::LinAlg::Matrix<3, 1, TYPE>& x1, Core::LinAlg::Matrix<3, 1, TYPE>& x2,
+    Core::LinAlg::Matrix<3, 1, TYPE>& dx1, Core::LinAlg::Matrix<3, 1, TYPE>& ddx1,
+    const Core::LinAlg::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i,
+    const Core::LinAlg::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i_xi,
+    const Core::LinAlg::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i_xixi)
 {
   // reset input variables
   x1.Clear();
@@ -897,30 +897,30 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::compute
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
 void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::get_shape_functions(
-    CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i,
-    CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i_xi,
-    CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i_xixi, const TYPE& eta)
+    Core::LinAlg::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i,
+    Core::LinAlg::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i_xi,
+    Core::LinAlg::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i_xixi, const TYPE& eta)
 {
   // get both discretization types
-  const CORE::FE::CellType distype1 = BeamElement()->Shape();
+  const Core::FE::CellType distype1 = BeamElement()->Shape();
 
   if (numnodalvalues == 1)
   {
     // get values and derivatives of shape functions
-    CORE::FE::shape_function_1D(N1_i, eta, distype1);
-    CORE::FE::shape_function_1D_deriv1(N1_i_xi, eta, distype1);
-    CORE::FE::shape_function_1D_deriv2(N1_i_xixi, eta, distype1);
+    Core::FE::shape_function_1D(N1_i, eta, distype1);
+    Core::FE::shape_function_1D_deriv1(N1_i_xi, eta, distype1);
+    Core::FE::shape_function_1D_deriv2(N1_i_xixi, eta, distype1);
   }
   else if (numnodalvalues == 2)
   {
     /* TODO hard set distype to line2 in case of numnodalvalues_=2 because
      *  only 3rd order Hermite interpolation is used (always 2 nodes) */
-    const CORE::FE::CellType distype1herm = CORE::FE::CellType::line2;
+    const Core::FE::CellType distype1herm = Core::FE::CellType::line2;
 
     // get values and derivatives of shape functions
-    CORE::FE::shape_function_hermite_1D(N1_i, eta, beamele_reflength_, distype1herm);
-    CORE::FE::shape_function_hermite_1D_deriv1(N1_i_xi, eta, beamele_reflength_, distype1herm);
-    CORE::FE::shape_function_hermite_1D_deriv2(N1_i_xixi, eta, beamele_reflength_, distype1herm);
+    Core::FE::shape_function_hermite_1D(N1_i, eta, beamele_reflength_, distype1herm);
+    Core::FE::shape_function_hermite_1D_deriv1(N1_i_xi, eta, beamele_reflength_, distype1herm);
+    Core::FE::shape_function_hermite_1D_deriv2(N1_i_xixi, eta, beamele_reflength_, distype1herm);
   }
   else
     FOUR_C_THROW(
@@ -934,20 +934,20 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::get_sha
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
 void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::compute_lin_xi(
-    CORE::LINALG::Matrix<3 * numnodes * numnodalvalues + 3, 1, TYPE>& delta_xi,
-    const CORE::LINALG::Matrix<3, 1, TYPE>& x1, const CORE::LINALG::Matrix<3, 1, TYPE>& x2,
-    const CORE::LINALG::Matrix<3, 1, TYPE>& dx1, const CORE::LINALG::Matrix<3, 1, TYPE>& ddx1,
-    const CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i,
-    const CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i_xi)
+    Core::LinAlg::Matrix<3 * numnodes * numnodalvalues + 3, 1, TYPE>& delta_xi,
+    const Core::LinAlg::Matrix<3, 1, TYPE>& x1, const Core::LinAlg::Matrix<3, 1, TYPE>& x2,
+    const Core::LinAlg::Matrix<3, 1, TYPE>& dx1, const Core::LinAlg::Matrix<3, 1, TYPE>& ddx1,
+    const Core::LinAlg::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i,
+    const Core::LinAlg::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i_xi)
 {
   const unsigned int dim1 = 3 * numnodes * numnodalvalues;
   const unsigned int dim2 = 3;
 
   // matrices to compute Lin_Xi (in case of beam-sphere contact: scalar and vector)
   TYPE L = 0.0;
-  CORE::LINALG::Matrix<1, dim1 + dim2, TYPE> B;
+  Core::LinAlg::Matrix<1, dim1 + dim2, TYPE> B;
 
-  CORE::LINALG::Matrix<3, 1, TYPE> delta_x;
+  Core::LinAlg::Matrix<3, 1, TYPE> delta_x;
 
   // compute L
   for (unsigned int i = 0; i < 3; i++)
@@ -982,8 +982,8 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::compute
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
 void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::compute_distance(
-    CORE::LINALG::Matrix<3, 1, TYPE>& distance, TYPE& normdist,
-    const CORE::LINALG::Matrix<3, 1, TYPE>& normal, const TYPE& norm)
+    Core::LinAlg::Matrix<3, 1, TYPE>& distance, TYPE& normdist,
+    const Core::LinAlg::Matrix<3, 1, TYPE>& normal, const TYPE& norm)
 {
   // compute distance vector
   for (unsigned int i = 0; i < 3; i++) distance(i) = normal(i) * norm;
@@ -998,13 +998,13 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::compute
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
 void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::compute_lin_gap(
-    CORE::LINALG::Matrix<3 * numnodes * numnodalvalues + 3, 1, TYPE>& delta_gap,
-    CORE::LINALG::Matrix<3 * numnodes * numnodalvalues + 3, 1, TYPE>& delta_xi,
-    const CORE::LINALG::Matrix<3, 1, TYPE>& x1, const CORE::LINALG::Matrix<3, 1, TYPE>& x2,
-    const CORE::LINALG::Matrix<3, 1, TYPE>& dx1,
-    const CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i, const TYPE& normdist,
-    const CORE::LINALG::Matrix<3, 1, TYPE>& normal, const TYPE& norm, const TYPE& gap,
-    CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues + 3, TYPE>& delta_x1_minus_x2)
+    Core::LinAlg::Matrix<3 * numnodes * numnodalvalues + 3, 1, TYPE>& delta_gap,
+    Core::LinAlg::Matrix<3 * numnodes * numnodalvalues + 3, 1, TYPE>& delta_xi,
+    const Core::LinAlg::Matrix<3, 1, TYPE>& x1, const Core::LinAlg::Matrix<3, 1, TYPE>& x2,
+    const Core::LinAlg::Matrix<3, 1, TYPE>& dx1,
+    const Core::LinAlg::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i, const TYPE& normdist,
+    const Core::LinAlg::Matrix<3, 1, TYPE>& normal, const TYPE& norm, const TYPE& gap,
+    Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues + 3, TYPE>& delta_x1_minus_x2)
 {
   const unsigned int dim1 = 3 * numnodes * numnodalvalues;
   const unsigned int dim2 = 3;
@@ -1013,7 +1013,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::compute
   // delta g := delta_r/||delta_r||*auxiliary_matri1 delta d, with auxiliary_matri1 =
   // (r1_xi*delta_xi-r2_xi*delta_eta + (N1, -N2))
 
-  CORE::LINALG::Matrix<3, dim1 + dim2, TYPE> auxiliary_matrix1(true);
+  Core::LinAlg::Matrix<3, dim1 + dim2, TYPE> auxiliary_matrix1(true);
 
   for (unsigned int i = 0; i < 3; i++)
   {
@@ -1052,11 +1052,11 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::compute
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
 void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::compute_lin_normal(
-    CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues + 3, TYPE>& delta_normal,
-    const CORE::LINALG::Matrix<3 * numnodes * numnodalvalues + 3, 1, TYPE>& delta_xi,
-    const CORE::LINALG::Matrix<3, 1, TYPE>& normal, const TYPE& norm_delta_x,
-    const CORE::LINALG::Matrix<3, 1, TYPE>& x1_xi,
-    const CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i)
+    Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues + 3, TYPE>& delta_normal,
+    const Core::LinAlg::Matrix<3 * numnodes * numnodalvalues + 3, 1, TYPE>& delta_xi,
+    const Core::LinAlg::Matrix<3, 1, TYPE>& normal, const TYPE& norm_delta_x,
+    const Core::LinAlg::Matrix<3, 1, TYPE>& x1_xi,
+    const Core::LinAlg::Matrix<1, numnodes * numnodalvalues, TYPE>& N1_i)
 {
   const unsigned int dim1 = 3 * numnodes * numnodalvalues;
   const unsigned int dim2 = 3;
@@ -1064,8 +1064,8 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::compute
   // delta n := auxiliary_matri2*auxiliary_matrix1* delta d, with auxiliary_matri2 =
   // (I-nxn)/||r1-r2|| and auxiliary_matri1 = (r1_xi*delta_xi-r2_xi*delta_eta + (N1, -N2))
 
-  CORE::LINALG::Matrix<3, dim1 + dim2, TYPE> auxiliary_matrix1(true);
-  CORE::LINALG::Matrix<3, 3, TYPE> auxiliary_matrix2(true);
+  Core::LinAlg::Matrix<3, dim1 + dim2, TYPE> auxiliary_matrix1(true);
+  Core::LinAlg::Matrix<3, 3, TYPE> auxiliary_matrix2(true);
 
   // compute auxiliary_matrix1
   for (unsigned int i = 0; i < 3; i++)
@@ -1169,7 +1169,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes,
         << std::left << std::setprecision(2) << -1 << std::setw(9) << std::left
         << std::setprecision(3) << -1 << std::setw(12) << std::left << std::scientific << gap_
         << std::setw(12) << std::left << std::scientific
-        << CORE::FADUTILS::CastToDouble<TYPE, 3, 1>(fc2_).Norm2() << std::setprecision(6)
+        << Core::FADUtils::CastToDouble<TYPE, 3, 1>(fc2_).Norm2() << std::setprecision(6)
         << std::resetiosflags(std::ios::scientific) << std::right;
 
     out << "\n";

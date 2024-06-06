@@ -27,19 +27,19 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 THR::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& ioparams,
     const Teuchos::ParameterList& tdynparams, const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver,
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
+    Teuchos::RCP<Discret::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : TimInt(ioparams, tdynparams, xparams, actdis, solver, output),
-      pred_(CORE::UTILS::IntegralValue<INPAR::THR::PredEnum>(tdynparams, "PREDICT")),
-      itertype_(CORE::UTILS::IntegralValue<INPAR::THR::NonlinSolTech>(tdynparams, "NLNSOL")),
-      normtypetempi_(CORE::UTILS::IntegralValue<INPAR::THR::ConvNorm>(tdynparams, "NORM_TEMP")),
-      normtypefres_(CORE::UTILS::IntegralValue<INPAR::THR::ConvNorm>(tdynparams, "NORM_RESF")),
+      pred_(Core::UTILS::IntegralValue<Inpar::THR::PredEnum>(tdynparams, "PREDICT")),
+      itertype_(Core::UTILS::IntegralValue<Inpar::THR::NonlinSolTech>(tdynparams, "NLNSOL")),
+      normtypetempi_(Core::UTILS::IntegralValue<Inpar::THR::ConvNorm>(tdynparams, "NORM_TEMP")),
+      normtypefres_(Core::UTILS::IntegralValue<Inpar::THR::ConvNorm>(tdynparams, "NORM_RESF")),
       combtempifres_(
-          CORE::UTILS::IntegralValue<INPAR::THR::BinaryOp>(tdynparams, "NORMCOMBI_RESFTEMP")),
-      iternorm_(CORE::UTILS::IntegralValue<INPAR::THR::VectorNorm>(tdynparams, "ITERNORM")),
+          Core::UTILS::IntegralValue<Inpar::THR::BinaryOp>(tdynparams, "NORMCOMBI_RESFTEMP")),
+      iternorm_(Core::UTILS::IntegralValue<Inpar::THR::VectorNorm>(tdynparams, "ITERNORM")),
       itermax_(tdynparams.get<int>("MAXITER")),
       itermin_(tdynparams.get<int>("MINITER")),
-      divcontype_(CORE::UTILS::IntegralValue<INPAR::THR::DivContAct>(tdynparams, "DIVERCONT")),
+      divcontype_(Core::UTILS::IntegralValue<Inpar::THR::DivContAct>(tdynparams, "DIVERCONT")),
       divcontrefinelevel_(0),
       divcontfinesteps_(0),
       toltempi_(tdynparams.get<double>("TOLTEMP")),
@@ -57,33 +57,33 @@ THR::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& ioparams,
       freact_(Teuchos::null)
 {
   // create empty residual force vector
-  fres_ = CORE::LINALG::CreateVector(*discret_->dof_row_map(), false);
+  fres_ = Core::LinAlg::CreateVector(*discret_->dof_row_map(), false);
 
   // create empty reaction force vector of full length
-  freact_ = CORE::LINALG::CreateVector(*discret_->dof_row_map(), false);
+  freact_ = Core::LinAlg::CreateVector(*discret_->dof_row_map(), false);
 
   // iterative temperature increments IncT_{n+1}
   // also known as residual temperatures
-  tempi_ = CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);
+  tempi_ = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
 
   // incremental temperature increments IncT_{n+1}
-  tempinc_ = CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);
+  tempinc_ = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
 
   // setup mortar coupling
-  if (GLOBAL::Problem::Instance()->GetProblemType() == CORE::ProblemType::thermo)
+  if (Global::Problem::Instance()->GetProblemType() == Core::ProblemType::thermo)
   {
-    CORE::Conditions::Condition* mrtrcond = actdis->GetCondition("Mortar");
+    Core::Conditions::Condition* mrtrcond = actdis->GetCondition("Mortar");
     if (mrtrcond != nullptr)
     {
       adaptermeshtying_ =
-          Teuchos::rcp(new CORE::ADAPTER::CouplingMortar(GLOBAL::Problem::Instance()->NDim(),
-              GLOBAL::Problem::Instance()->mortar_coupling_params(),
-              GLOBAL::Problem::Instance()->contact_dynamic_params(),
-              GLOBAL::Problem::Instance()->spatial_approximation_type()));
+          Teuchos::rcp(new Core::Adapter::CouplingMortar(Global::Problem::Instance()->NDim(),
+              Global::Problem::Instance()->mortar_coupling_params(),
+              Global::Problem::Instance()->contact_dynamic_params(),
+              Global::Problem::Instance()->spatial_approximation_type()));
 
       std::vector<int> coupleddof(1, 1);
       adaptermeshtying_->Setup(actdis, actdis, Teuchos::null, coupleddof, "Mortar", actdis->Comm(),
-          GLOBAL::Problem::Instance()->FunctionManager(), false, false, 0, 0);
+          Global::Problem::Instance()->FunctionManager(), false, false, 0, 0);
       adaptermeshtying_->Evaluate();
     }
   }
@@ -154,17 +154,17 @@ void THR::TimIntImpl::Evaluate()
 void THR::TimIntImpl::Predict()
 {
   // choose predictor
-  if (pred_ == INPAR::THR::pred_consttemp)
+  if (pred_ == Inpar::THR::pred_consttemp)
   {
     predict_const_temp_consist_rate();
     normtempi_ = 1.0e6;
   }
-  else if (pred_ == INPAR::THR::pred_consttemprate)
+  else if (pred_ == Inpar::THR::pred_consttemprate)
   {
     predict_const_temp_rate();
     normtempi_ = 1.0e6;
   }
-  else if (pred_ == INPAR::THR::pred_tangtemp)
+  else if (pred_ == Inpar::THR::pred_tangtemp)
   {
     predict_tang_temp_consist_rate();
     // normtempi_ has been set
@@ -197,7 +197,7 @@ void THR::TimIntImpl::Predict()
   dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
 
   // build residual force norm
-  normfres_ = THR::AUX::calculate_vector_norm(iternorm_, fres_);
+  normfres_ = THR::Aux::calculate_vector_norm(iternorm_, fres_);
 
   // determine characteristic norms
   // we set the minimum of CalcRefNormForce() and #tolfres_, because
@@ -239,7 +239,7 @@ void THR::TimIntImpl::prepare_partition_step()
 
   // split norms
   // build residual force norm
-  normfres_ = THR::AUX::calculate_vector_norm(iternorm_, fres_);
+  normfres_ = THR::Aux::calculate_vector_norm(iternorm_, fres_);
 
   // determine characteristic norms
   // we set the minumum of CalcRefNormForce() and #tolfres_, because
@@ -283,7 +283,7 @@ void THR::TimIntImpl::predict_tang_temp_consist_rate()
   tempi_->PutScalar(0.0);
 
   // for temperature increments on Dirichlet boundary
-  Teuchos::RCP<Epetra_Vector> dbcinc = CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);
+  Teuchos::RCP<Epetra_Vector> dbcinc = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
 
   // copy last converged temperatures
   dbcinc->Update(1.0, *(*temp_)(0), 0.0);
@@ -303,7 +303,7 @@ void THR::TimIntImpl::predict_tang_temp_consist_rate()
   // add linear reaction forces to residual
   {
     // linear reactions
-    Teuchos::RCP<Epetra_Vector> freact = CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);
+    Teuchos::RCP<Epetra_Vector> freact = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
     tang_->Multiply(false, *dbcinc, *freact);
 
     // add linear reaction forces due to prescribed Dirichlet BCs
@@ -324,19 +324,19 @@ void THR::TimIntImpl::predict_tang_temp_consist_rate()
   // apply Dirichlet BCs to system of equations
   tempi_->PutScalar(0.0);
   tang_->Complete();
-  CORE::LINALG::apply_dirichlet_to_system(*tang_, *tempi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
+  Core::LinAlg::apply_dirichlet_to_system(*tang_, *tempi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
 
   // solve for tempi_
   // Solve K_Teffdyn . IncT = -R  ===>  IncT_{n+1}
   solver_->Reset();
-  CORE::LINALG::SolverParams solver_params;
+  Core::LinAlg::SolverParams solver_params;
   solver_params.refactor = true;
   solver_params.reset = true;
   solver_->Solve(tang_->EpetraMatrix(), tempi_, fres_, solver_params);
   solver_->Reset();
 
   // build residual temperature norm
-  normtempi_ = THR::AUX::calculate_vector_norm(iternorm_, tempi_);
+  normtempi_ = THR::Aux::calculate_vector_norm(iternorm_, tempi_);
 
   // set Dirichlet increments in temperature increments
   tempi_->Update(1.0, *dbcinc, 1.0);
@@ -407,13 +407,13 @@ bool THR::TimIntImpl::Converged()
   // residual forces
   switch (normtypefres_)
   {
-    case INPAR::THR::convnorm_abs:
+    case Inpar::THR::convnorm_abs:
       convfres = normfres_ < tolfres_;
       break;
-    case INPAR::THR::convnorm_rel:
+    case Inpar::THR::convnorm_rel:
       convfres = normfres_ < std::max(normcharforce_ * tolfres_, 1e-15);
       break;
-    case INPAR::THR::convnorm_mix:
+    case Inpar::THR::convnorm_mix:
       convfres =
           ((normfres_ < tolfres_) or (normfres_ < std::max(normcharforce_ * tolfres_, 1e-15)));
       break;
@@ -425,13 +425,13 @@ bool THR::TimIntImpl::Converged()
   // residual temperature
   switch (normtypetempi_)
   {
-    case INPAR::THR::convnorm_abs:
+    case Inpar::THR::convnorm_abs:
       convtemp = normtempi_ < toltempi_;
       break;
-    case INPAR::THR::convnorm_rel:
+    case Inpar::THR::convnorm_rel:
       convtemp = normtempi_ < std::max(normchartemp_ * toltempi_, 1e-15);
       break;
-    case INPAR::THR::convnorm_mix:
+    case Inpar::THR::convnorm_mix:
       convtemp =
           ((normtempi_ < toltempi_) or (normtempi_ < std::max(normchartemp_ * toltempi_, 1e-15)));
       break;
@@ -442,9 +442,9 @@ bool THR::TimIntImpl::Converged()
 
   // combine temperature-like and force-like residuals
   bool conv = false;
-  if (combtempifres_ == INPAR::THR::bop_and)
+  if (combtempifres_ == Inpar::THR::bop_and)
     conv = convtemp and convfres;
-  else if (combtempifres_ == INPAR::THR::bop_or)
+  else if (combtempifres_ == Inpar::THR::bop_or)
     conv = convtemp or convfres;
   else
     FOUR_C_THROW("Something went terribly wrong with binary operator!");
@@ -456,25 +456,25 @@ bool THR::TimIntImpl::Converged()
 /*----------------------------------------------------------------------*
  | solve equilibrium                                        bborn 08/09 |
  *----------------------------------------------------------------------*/
-INPAR::THR::ConvergenceStatus THR::TimIntImpl::Solve()
+Inpar::THR::ConvergenceStatus THR::TimIntImpl::Solve()
 {
   // choose solution technique in accordance with user's will
   switch (itertype_)
   {
-    case INPAR::THR::soltech_newtonfull:
+    case Inpar::THR::soltech_newtonfull:
       return NewtonFull();
     // catch problems
     default:
       FOUR_C_THROW("Solution technique \"%s\" is not implemented",
-          INPAR::THR::NonlinSolTechString(itertype_).c_str());
-      return INPAR::THR::conv_nonlin_fail;  // compiler happiness
+          Inpar::THR::NonlinSolTechString(itertype_).c_str());
+      return Inpar::THR::conv_nonlin_fail;  // compiler happiness
   }
 }
 
 /*----------------------------------------------------------------------*
  | solution with full Newton-Raphson iteration              bborn 08/09 |
  *----------------------------------------------------------------------*/
-INPAR::THR::ConvergenceStatus THR::TimIntImpl::NewtonFull()
+Inpar::THR::ConvergenceStatus THR::TimIntImpl::NewtonFull()
 {
   // we do a Newton-Raphson iteration here.
   // the specific time integration has set the following
@@ -509,12 +509,12 @@ INPAR::THR::ConvergenceStatus THR::TimIntImpl::NewtonFull()
 
     // apply Dirichlet BCs to system of equations
     tempi_->PutScalar(0.0);  // Useful? depends on solver and more
-    CORE::LINALG::apply_dirichlet_to_system(
+    Core::LinAlg::apply_dirichlet_to_system(
         *tang_, *tempi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
 
     // Solve for tempi_
     // Solve K_Teffdyn . IncT = -R  ===>  IncT_{n+1}
-    CORE::LINALG::SolverParams solver_params;
+    Core::LinAlg::SolverParams solver_params;
     if (solveradapttol_ and (iter_ > 1))
     {
       solver_params.nonlin_tolerance = tolfres_;
@@ -569,53 +569,53 @@ void THR::TimIntImpl::blank_dirichlet_and_calc_norms()
   if (adaptermeshtying_ != Teuchos::null) adaptermeshtying_->MortarCondensation(tang_, fres_);
 
   // build residual force norm
-  normfres_ = THR::AUX::calculate_vector_norm(iternorm_, fres_);
+  normfres_ = THR::Aux::calculate_vector_norm(iternorm_, fres_);
   // build residual temperature norm
-  normtempi_ = THR::AUX::calculate_vector_norm(iternorm_, tempi_);
+  normtempi_ = THR::Aux::calculate_vector_norm(iternorm_, tempi_);
 }
 
 
 
-INPAR::THR::ConvergenceStatus THR::TimIntImpl::newton_full_error_check()
+Inpar::THR::ConvergenceStatus THR::TimIntImpl::newton_full_error_check()
 {
   // do some error checks
-  if ((iter_ >= itermax_) and (divcontype_ == INPAR::THR::divcont_stop))
+  if ((iter_ >= itermax_) and (divcontype_ == Inpar::THR::divcont_stop))
   {
     // write restart output of last converged step before stopping
     Output(true);
 
     FOUR_C_THROW("Newton unconverged in %d iterations", iter_);
-    return INPAR::THR::conv_nonlin_fail;
+    return Inpar::THR::conv_nonlin_fail;
   }
-  else if ((iter_ >= itermax_) and (divcontype_ == INPAR::THR::divcont_continue))
+  else if ((iter_ >= itermax_) and (divcontype_ == Inpar::THR::divcont_continue))
   {
     if (myrank_ == 0)
-      CORE::IO::cout << "Newton unconverged in " << iter_ << " iterations, continuing"
-                     << CORE::IO::endl;
-    return INPAR::THR::conv_success;
+      Core::IO::cout << "Newton unconverged in " << iter_ << " iterations, continuing"
+                     << Core::IO::endl;
+    return Inpar::THR::conv_success;
   }
-  else if ((iter_ >= itermax_) and divcontype_ == INPAR::THR::divcont_halve_step)
+  else if ((iter_ >= itermax_) and divcontype_ == Inpar::THR::divcont_halve_step)
   {
     halve_time_step();
-    return INPAR::THR::conv_fail_repeat;
+    return Inpar::THR::conv_fail_repeat;
   }
-  else if (divcontype_ == INPAR::THR::divcont_repeat_step or
-           divcontype_ == INPAR::THR::divcont_repeat_simulation)
+  else if (divcontype_ == Inpar::THR::divcont_repeat_step or
+           divcontype_ == Inpar::THR::divcont_repeat_simulation)
   {
     if (myrank_ == 0)
       FOUR_C_THROW(
           "Fatal failure in newton_full_error_check()! divcont_repeat_step and "
           "divcont_repeat_simulation not implemented for THR");
-    return INPAR::THR::conv_nonlin_fail;
+    return Inpar::THR::conv_nonlin_fail;
   }
   // if everything is fine print to screen and return
   if (Converged())
   {
     check_for_time_step_increase();
-    return INPAR::THR::conv_success;
+    return Inpar::THR::conv_success;
   }
   else
-    return INPAR::THR::conv_nonlin_fail;
+    return Inpar::THR::conv_nonlin_fail;
 
 }  // NewtonFull()
 
@@ -639,11 +639,11 @@ void THR::TimIntImpl::halve_time_step()
   // remember number of iterations
   resetiter_ += iter_;
   if (Comm().MyPID() == 0)
-    CORE::IO::cout << "Nonlinear solver failed to converge in step " << Step()
+    Core::IO::cout << "Nonlinear solver failed to converge in step " << Step()
                    << ". Divide timestep in half. "
-                   << "Old time step: " << old_dt << CORE::IO::endl
-                   << "New time step: " << new_dt << CORE::IO::endl
-                   << CORE::IO::endl;
+                   << "Old time step: " << old_dt << Core::IO::endl
+                   << "New time step: " << new_dt << Core::IO::endl
+                   << Core::IO::endl;
 }
 
 /*-----------------------------------------------------------------------------*
@@ -654,7 +654,7 @@ void THR::TimIntImpl::check_for_time_step_increase()
 {
   const int maxnumfinestep = 4;
 
-  if (divcontype_ != INPAR::THR::divcont_halve_step)
+  if (divcontype_ != Inpar::THR::divcont_halve_step)
     return;
   else if (divcontrefinelevel_ != 0)
   {
@@ -666,7 +666,7 @@ void THR::TimIntImpl::check_for_time_step_increase()
       if (((NumStep() - Step()) % 2) == 0 and NumStep() != Step())
       {
         if (Comm().MyPID() == 0)
-          CORE::IO::cout << "Nonlinear solver successful. Double timestep size!" << CORE::IO::endl;
+          Core::IO::cout << "Nonlinear solver successful. Double timestep size!" << Core::IO::endl;
 
         // step up one refinement level
         divcontrefinelevel_--;
@@ -700,7 +700,7 @@ void THR::TimIntImpl::prepare_system_for_newton_solve()
   tempi_->PutScalar(0.0);  // Useful? depends on solver and more
   // at dofs with DBC change tang_:
   // blank all off-diagonal terms and put 1s at diagonal terms of tang_
-  CORE::LINALG::apply_dirichlet_to_system(*tang_, *tempi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
+  Core::LinAlg::apply_dirichlet_to_system(*tang_, *tempi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
 
   // final sip
   return;
@@ -801,17 +801,17 @@ void THR::TimIntImpl::print_predictor()
   if ((myrank_ == 0) and printscreen_ and (StepOld() % printscreen_ == 0))
   {
     // relative check of force residual
-    if (normtypefres_ == INPAR::THR::convnorm_rel)
+    if (normtypefres_ == Inpar::THR::convnorm_rel)
     {
       std::cout << "Predictor thermo scaled res-norm " << normfres_ / normcharforce_ << std::endl;
     }
     // absolute check of force residual
-    else if (normtypefres_ == INPAR::THR::convnorm_abs)
+    else if (normtypefres_ == Inpar::THR::convnorm_abs)
     {
       std::cout << "Predictor thermo absolute res-norm " << normfres_ << std::endl;
     }
     // mixed absolute-relative check of force residual
-    else if (normtypefres_ == INPAR::THR::convnorm_mix)
+    else if (normtypefres_ == Inpar::THR::convnorm_mix)
     {
       std::cout << "Predictor thermo mixed res-norm "
                 << std::min(normfres_, normfres_ / normcharforce_) << std::endl;
@@ -862,13 +862,13 @@ void THR::TimIntImpl::print_newton_iter_header(FILE* ofile)
   // temperature
   switch (normtypefres_)
   {
-    case INPAR::THR::convnorm_rel:
+    case Inpar::THR::convnorm_rel:
       oss << std::setw(18) << "rel-res-norm";
       break;
-    case INPAR::THR::convnorm_abs:
+    case Inpar::THR::convnorm_abs:
       oss << std::setw(18) << "abs-res-norm";
       break;
-    case INPAR::THR::convnorm_mix:
+    case Inpar::THR::convnorm_mix:
       oss << std::setw(18) << "mix-res-norm";
       break;
     default:
@@ -878,13 +878,13 @@ void THR::TimIntImpl::print_newton_iter_header(FILE* ofile)
 
   switch (normtypetempi_)
   {
-    case INPAR::THR::convnorm_rel:
+    case Inpar::THR::convnorm_rel:
       oss << std::setw(18) << "rel-temp-norm";
       break;
-    case INPAR::THR::convnorm_abs:
+    case Inpar::THR::convnorm_abs:
       oss << std::setw(18) << "abs-temp-norm";
       break;
-    case INPAR::THR::convnorm_mix:
+    case Inpar::THR::convnorm_mix:
       oss << std::setw(18) << "mix-temp-norm";
       break;
     default:
@@ -925,13 +925,13 @@ void THR::TimIntImpl::print_newton_iter_text(FILE* ofile)
   // temperature
   switch (normtypefres_)
   {
-    case INPAR::THR::convnorm_rel:
+    case Inpar::THR::convnorm_rel:
       oss << std::setw(18) << std::setprecision(5) << std::scientific << normfres_ / normcharforce_;
       break;
-    case INPAR::THR::convnorm_abs:
+    case Inpar::THR::convnorm_abs:
       oss << std::setw(18) << std::setprecision(5) << std::scientific << normfres_;
       break;
-    case INPAR::THR::convnorm_mix:
+    case Inpar::THR::convnorm_mix:
       oss << std::setw(18) << std::setprecision(5) << std::scientific
           << std::min(normfres_, normfres_ / normcharforce_);
       break;
@@ -942,13 +942,13 @@ void THR::TimIntImpl::print_newton_iter_text(FILE* ofile)
 
   switch (normtypetempi_)
   {
-    case INPAR::THR::convnorm_rel:
+    case Inpar::THR::convnorm_rel:
       oss << std::setw(18) << std::setprecision(5) << std::scientific << normtempi_ / normchartemp_;
       break;
-    case INPAR::THR::convnorm_abs:
+    case Inpar::THR::convnorm_abs:
       oss << std::setw(18) << std::setprecision(5) << std::scientific << normtempi_;
       break;
-    case INPAR::THR::convnorm_mix:
+    case Inpar::THR::convnorm_mix:
       oss << std::setw(18) << std::setprecision(5) << std::scientific
           << std::min(normtempi_, normtempi_ / normchartemp_);
       break;
@@ -1034,7 +1034,7 @@ void THR::TimIntImpl::fd_check()
   // ------------------------------------------ initialise matrices and vectors
 
   // initialise discurbed increment vector
-  Teuchos::RCP<Epetra_Vector> disturbtempi = CORE::LINALG::CreateVector(*dof_row_map(), true);
+  Teuchos::RCP<Epetra_Vector> disturbtempi = Core::LinAlg::CreateVector(*dof_row_map(), true);
   const int dofs = disturbtempi->GlobalLength();
   disturbtempi->PutScalar(0.0);
   disturbtempi->ReplaceGlobalValue(0, 0, delta);
@@ -1047,10 +1047,10 @@ void THR::TimIntImpl::fd_check()
       Teuchos::rcp(new Epetra_Vector(*discret_->dof_row_map(), true));
 
   // initialise approximation of tangent
-  Teuchos::RCP<Epetra_CrsMatrix> tang_approx = CORE::LINALG::CreateMatrix((tang_->RowMap()), 81);
+  Teuchos::RCP<Epetra_CrsMatrix> tang_approx = Core::LinAlg::CreateMatrix((tang_->RowMap()), 81);
 
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> tang_copy =
-      Teuchos::rcp(new CORE::LINALG::SparseMatrix(tang_->EpetraMatrix(), CORE::LINALG::Copy));
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> tang_copy =
+      Teuchos::rcp(new Core::LinAlg::SparseMatrix(tang_->EpetraMatrix(), Core::LinAlg::Copy));
   std::cout << "\n****************** THR finite difference check ******************" << std::endl;
   std::cout << "thermo field has " << dofs << " DOFs" << std::endl;
 
@@ -1069,7 +1069,7 @@ void THR::TimIntImpl::fd_check()
     Evaluate(disturbtempi);
     rhs_copy->Update(1.0, *fres_, 0.0);
     tempi_->PutScalar(0.0);
-    CORE::LINALG::apply_dirichlet_to_system(
+    Core::LinAlg::apply_dirichlet_to_system(
         *tang_copy, *disturbtempi, *rhs_copy, *zeros_, *(dbcmaps_->CondMap()));
     // finite difference approximation of partial derivative
     // rhs_copy = ( rhs_disturb - rhs_old ) . (-1)/delta with rhs_copy==rhs_disturb
@@ -1098,8 +1098,8 @@ void THR::TimIntImpl::fd_check()
   Evaluate(disturbtempi);
   tang_approx->FillComplete();
   // copy tang_approx
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> tang_approx_sparse =
-      Teuchos::rcp(new CORE::LINALG::SparseMatrix(tang_approx, CORE::LINALG::Copy));
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> tang_approx_sparse =
+      Teuchos::rcp(new Core::LinAlg::SparseMatrix(tang_approx, Core::LinAlg::Copy));
   // tang_approx_sparse = tang_approx_sparse - tang_copy
   tang_approx_sparse->Add(*tang_copy, false, -1.0, 1.0);
 

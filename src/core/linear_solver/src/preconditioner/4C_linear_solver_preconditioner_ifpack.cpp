@@ -4,7 +4,7 @@
 \brief Declaration
 \level 0
 
-\brief CORE::LINALG::SOLVER wrapper around Trilinos' IFPACK preconditioner
+\brief Core::LinAlg::SOLVER wrapper around Trilinos' IFPACK preconditioner
 */
 /*----------------------------------------------------------------------------*/
 
@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-CORE::LINEAR_SOLVER::IFPACKPreconditioner::IFPACKPreconditioner(
+Core::LinearSolver::IFPACKPreconditioner::IFPACKPreconditioner(
     Teuchos::ParameterList& ifpacklist, Teuchos::ParameterList& solverlist)
     : ifpacklist_(ifpacklist), solverlist_(solverlist)
 {
@@ -25,7 +25,7 @@ CORE::LINEAR_SOLVER::IFPACKPreconditioner::IFPACKPreconditioner(
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-void CORE::LINEAR_SOLVER::IFPACKPreconditioner::Setup(
+void Core::LinearSolver::IFPACKPreconditioner::Setup(
     bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
 {
   if (create)

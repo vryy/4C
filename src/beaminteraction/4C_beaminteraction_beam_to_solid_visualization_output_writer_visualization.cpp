@@ -23,10 +23,10 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 BEAMINTERACTION::BeamToSolidOutputWriterVisualization::BeamToSolidOutputWriterVisualization(
-    const std::string& writer_full_name, CORE::IO::VisualizationParameters visualization_params,
-    Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params)
-    : CORE::IO::VisualizationManager(std::move(visualization_params),
-          *(GLOBAL::Problem::Instance()->GetCommunicators()->GlobalComm()), writer_full_name),
+    const std::string& writer_full_name, Core::IO::VisualizationParameters visualization_params,
+    Teuchos::RCP<const STR::TimeInt::ParamsRuntimeOutput> visualization_output_params)
+    : Core::IO::VisualizationManager(std::move(visualization_params),
+          *(Global::Problem::Instance()->GetCommunicators()->GlobalComm()), writer_full_name),
       visualization_output_params_(visualization_output_params),
       writer_full_name_(writer_full_name),
       discret_(Teuchos::null),
@@ -39,7 +39,7 @@ BEAMINTERACTION::BeamToSolidOutputWriterVisualization::BeamToSolidOutputWriterVi
  */
 void BEAMINTERACTION::BeamToSolidOutputWriterVisualization::
     add_discretization_nodal_reference_position(
-        const Teuchos::RCP<const DRT::Discretization>& discret)
+        const Teuchos::RCP<const Discret::Discretization>& discret)
 {
   auto& visualization_data = get_visualization_data();
 
@@ -77,7 +77,7 @@ void BEAMINTERACTION::BeamToSolidOutputWriterVisualization::
   // Loop over the nodes on this rank.
   for (unsigned int i_node = 0; i_node < num_my_nodes; i_node++)
   {
-    const CORE::Nodes::Node* current_node = discret_->lRowNode(i_node);
+    const Core::Nodes::Node* current_node = discret_->lRowNode(i_node);
     node_global_dof_ids.clear();
     discret_->Dof(current_node, node_global_dof_ids);
     for (unsigned int dim = 0; dim < 3; ++dim)
@@ -102,7 +102,7 @@ void BEAMINTERACTION::BeamToSolidOutputWriterVisualization::add_discretization_n
   // Extract the vector according to the GIDs needed on this rank.
   Teuchos::RCP<Epetra_Vector> vector_extract =
       Teuchos::rcp<Epetra_Vector>(new Epetra_Vector(*node_gid_map_, true));
-  CORE::LINALG::Export(*vector, *vector_extract);
+  Core::LinAlg::Export(*vector, *vector_extract);
 
   // Add the values form the vector to the writer data.
   const int num_my_gid = node_gid_map_->NumMyElements();

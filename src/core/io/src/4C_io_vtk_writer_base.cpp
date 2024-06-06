@@ -22,12 +22,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace LIBB64
+namespace LibB64
 {
   // functions taken from the libb64 project, http://sourceforge.net/projects/libb64
   //
   // libb64 is in the public domain
-  namespace base64
+  namespace Base64
   {
     typedef enum
     {
@@ -143,20 +143,20 @@ namespace LIBB64
 
       return codechar - code_out;
     }
-  }  // namespace base64
+  }  // namespace Base64
 
   /*----------------------------------------------------------------------*
    *----------------------------------------------------------------------*/
   char* encode_block(const char* data, const int data_size)
   {
-    base64::base64_encodestate state;
-    base64::base64_init_encodestate(&state);
+    Base64::base64_encodestate state;
+    Base64::base64_init_encodestate(&state);
 
     char* encoded_data = new char[2 * data_size + 1];
 
     const int encoded_length_data =
-        base64::base64_encode_block(data, data_size, encoded_data, &state);
-    base64::base64_encode_blockend(encoded_data + encoded_length_data, &state);
+        Base64::base64_encode_block(data, data_size, encoded_data, &state);
+    Base64::base64_encode_blockend(encoded_data + encoded_length_data, &state);
 
     return encoded_data;
   }
@@ -175,7 +175,7 @@ namespace LIBB64
     return digitstring;
   }
 
-}  // namespace LIBB64
+}  // namespace LibB64
 
 
 
@@ -187,8 +187,8 @@ VtkWriterBase::VtkWriterBase(unsigned int myrank, unsigned int num_processors,
     const std::string& name_new_vtk_subdirectory, const std::string& geometry_name,
     const std::string& restart_name, const double restart_time, bool write_binary_output)
     : currentPhase_(VAGUE),
-      num_timestep_digits_(LIBB64::ndigits(max_number_timesteps_to_be_written)),
-      num_processor_digits_(LIBB64::ndigits(num_processors)),
+      num_timestep_digits_(LibB64::ndigits(max_number_timesteps_to_be_written)),
+      num_processor_digits_(LibB64::ndigits(num_processors)),
       geometry_name_(geometry_name),
       time_(restart_time),
       timestep_(std::numeric_limits<unsigned int>::min()),
@@ -317,7 +317,7 @@ void VtkWriterBase::WriteVtkHeaders()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void VtkWriterBase::write_vtk_field_data_and_or_time_and_or_cycle(
-    const std::map<std::string, CORE::IO::visualization_vector_type_variant>& field_data_map)
+    const std::map<std::string, Core::IO::visualization_vector_type_variant>& field_data_map)
 {
   throw_error_if_invalid_file_stream(currentout_);
 
@@ -357,7 +357,7 @@ void VtkWriterBase::write_vtk_field_data_and_or_time_and_or_cycle(
  *----------------------------------------------------------------------*/
 void VtkWriterBase::write_vtk_time_and_or_cycle()
 {
-  std::map<std::string, CORE::IO::visualization_vector_type_variant> empty_map;
+  std::map<std::string, Core::IO::visualization_vector_type_variant> empty_map;
   empty_map.clear();
   write_vtk_field_data_and_or_time_and_or_cycle(empty_map);
 }
@@ -426,7 +426,7 @@ void VtkWriterBase::write_field_data_array(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void VtkWriterBase::write_data_array(const CORE::IO::visualization_vector_type_variant& data,
+void VtkWriterBase::write_data_array(const Core::IO::visualization_vector_type_variant& data,
     const int num_components, const std::string& name)
 {
   std::string vtk_type_name = "";
@@ -499,7 +499,7 @@ void VtkWriterBase::write_data_array_this_processor(
   {
     filestream << " format=\"binary\">\n";
 
-    LIBB64::writeCompressedBlock(data, filestream);
+    LibB64::writeCompressedBlock(data, filestream);
   }
   else
   {
@@ -592,9 +592,9 @@ void VtkWriterBase::write_vtk_footer_master_file()
   currentmasterout_ << std::flush;
 
   if (myrank_ == 0)
-    CORE::IO::cout(CORE::IO::verbose)
+    Core::IO::cout(Core::IO::verbose)
         << "\nVtk Files '" << filename_base_ << "' written. Time: " << std::scientific
-        << std::setprecision(std::numeric_limits<double>::digits10 - 1) << time_ << CORE::IO::endl;
+        << std::setprecision(std::numeric_limits<double>::digits10 - 1) << time_ << Core::IO::endl;
 }
 
 /*----------------------------------------------------------------------*

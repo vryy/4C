@@ -28,17 +28,17 @@ namespace
 {
   using ActivationMapType = std::unordered_map<int, std::vector<std::pair<double, double>>>;
 
-  MAT::PAR::MuscleCombo::ActivationParameterVariant GetActivationParams(
-      const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata,
-      const INPAR::MAT::ActivationType& activation_type)
+  Mat::PAR::MuscleCombo::ActivationParameterVariant GetActivationParams(
+      const Teuchos::RCP<Core::Mat::PAR::Material>& matdata,
+      const Inpar::Mat::ActivationType& activation_type)
   {
-    if (activation_type == INPAR::MAT::ActivationType::function_of_space_time)
+    if (activation_type == Inpar::Mat::ActivationType::function_of_space_time)
     {
       auto actFunctId = matdata->Get<int>("FUNCTID");
       if (actFunctId <= 0) FOUR_C_THROW("Function id must be positive");
       return actFunctId;
     }
-    else if (activation_type == INPAR::MAT::ActivationType::map)
+    else if (activation_type == Inpar::Mat::ActivationType::map)
     {
       return matdata->Get<const ActivationMapType>("MAPFILE");
     }
@@ -48,18 +48,18 @@ namespace
 
   struct ActivationParamsVisitor
   {
-    MAT::MuscleCombo::ActivationEvaluatorVariant operator()(const int function_id) const
+    Mat::MuscleCombo::ActivationEvaluatorVariant operator()(const int function_id) const
     {
-      return &GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
+      return &Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfSpaceTime>(
           function_id - 1);
     }
 
-    MAT::MuscleCombo::ActivationEvaluatorVariant operator()(const ActivationMapType& map) const
+    Mat::MuscleCombo::ActivationEvaluatorVariant operator()(const ActivationMapType& map) const
     {
       return &map;
     }
 
-    MAT::MuscleCombo::ActivationEvaluatorVariant operator()(const std::monostate& /*unused*/) const
+    Mat::MuscleCombo::ActivationEvaluatorVariant operator()(const std::monostate& /*unused*/) const
     {
       FOUR_C_THROW(
           "Error in ActivationParamsVisitor. You're calling it with the default-constructed "
@@ -72,13 +72,13 @@ namespace
     double operator()(const ActivationMapType*& map) const
     {
       // use one-based element ids in the pattern file (corresponding to the ones in the dat-file)
-      return MAT::UTILS::MUSCLE::EvaluateTimeSpaceDependentActiveStressByMap(
+      return Mat::UTILS::Muscle::EvaluateTimeSpaceDependentActiveStressByMap(
           Popt_, *map, t_tot_, eleGID_ + 1);
     }
 
-    double operator()(const CORE::UTILS::FunctionOfSpaceTime*& function) const
+    double operator()(const Core::UTILS::FunctionOfSpaceTime*& function) const
     {
-      return MAT::UTILS::MUSCLE::EvaluateTimeSpaceDependentActiveStressByFunct(
+      return Mat::UTILS::Muscle::EvaluateTimeSpaceDependentActiveStressByFunct(
           Popt_, *function, t_tot_, element_center_reference_coordinates_);
     }
 
@@ -90,13 +90,13 @@ namespace
 
     const double& Popt_;
     const double& t_tot_;
-    const CORE::LINALG::Matrix<3, 1>& element_center_reference_coordinates_;
+    const Core::LinAlg::Matrix<3, 1>& element_center_reference_coordinates_;
     const int& eleGID_;
   };
 }  // namespace
 
 
-MAT::PAR::MuscleCombo::MuscleCombo(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::MuscleCombo::MuscleCombo(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : Parameter(matdata),
       alpha_(matdata->Get<double>("ALPHA")),
       beta_(matdata->Get<double>("BETA")),
@@ -106,7 +106,7 @@ MAT::PAR::MuscleCombo::MuscleCombo(Teuchos::RCP<CORE::MAT::PAR::Material> matdat
       Popt_(matdata->Get<double>("POPT")),
       lambdaMin_(matdata->Get<double>("LAMBDAMIN")),
       lambdaOpt_(matdata->Get<double>("LAMBDAOPT")),
-      activationType_(static_cast<INPAR::MAT::ActivationType>(matdata->Get<int>("ACTEVALTYPE"))),
+      activationType_(static_cast<Inpar::Mat::ActivationType>(matdata->Get<int>("ACTEVALTYPE"))),
       activationParams_(GetActivationParams(matdata, activationType_)),
       density_(matdata->Get<double>("DENS"))
 {
@@ -131,37 +131,37 @@ MAT::PAR::MuscleCombo::MuscleCombo(Teuchos::RCP<CORE::MAT::PAR::Material> matdat
   if (density_ < 0.0) FOUR_C_THROW("DENS should be positive");
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::MuscleCombo::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::MuscleCombo::create_material()
 {
-  return Teuchos::rcp(new MAT::MuscleCombo(this));
+  return Teuchos::rcp(new Mat::MuscleCombo(this));
 }
 
-MAT::MuscleComboType MAT::MuscleComboType::instance_;
+Mat::MuscleComboType Mat::MuscleComboType::instance_;
 
-CORE::COMM::ParObject* MAT::MuscleComboType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::MuscleComboType::Create(const std::vector<char>& data)
 {
-  auto* muscle_combo = new MAT::MuscleCombo();
+  auto* muscle_combo = new Mat::MuscleCombo();
   muscle_combo->Unpack(data);
   return muscle_combo;
 }
 
-MAT::MuscleCombo::MuscleCombo()
+Mat::MuscleCombo::MuscleCombo()
     : params_(nullptr),
       anisotropy_(),
       anisotropy_extension_(true, 0.0, 0,
-          Teuchos::rcp<MAT::ELASTIC::StructuralTensorStrategyBase>(
-              new MAT::ELASTIC::StructuralTensorStrategyStandard(nullptr)),
+          Teuchos::rcp<Mat::Elastic::StructuralTensorStrategyBase>(
+              new Mat::Elastic::StructuralTensorStrategyStandard(nullptr)),
           {0}),
       activation_evaluator_(std::monostate{})
 {
 }
 
-MAT::MuscleCombo::MuscleCombo(MAT::PAR::MuscleCombo* params)
+Mat::MuscleCombo::MuscleCombo(Mat::PAR::MuscleCombo* params)
     : params_(params),
       anisotropy_(),
       anisotropy_extension_(true, 0.0, 0,
-          Teuchos::rcp<MAT::ELASTIC::StructuralTensorStrategyBase>(
-              new MAT::ELASTIC::StructuralTensorStrategyStandard(nullptr)),
+          Teuchos::rcp<Mat::Elastic::StructuralTensorStrategyBase>(
+              new Mat::Elastic::StructuralTensorStrategyStandard(nullptr)),
           {0}),
       activation_evaluator_(std::monostate{})
 {
@@ -170,16 +170,16 @@ MAT::MuscleCombo::MuscleCombo(MAT::PAR::MuscleCombo* params)
 
   // initialize fiber directions and structural tensor
   anisotropy_extension_.register_needed_tensors(
-      MAT::FiberAnisotropyExtension<1>::FIBER_VECTORS |
-      MAT::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR |
-      MAT::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR_STRESS);
+      Mat::FiberAnisotropyExtension<1>::FIBER_VECTORS |
+      Mat::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR |
+      Mat::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR_STRESS);
 
   // cannot set activation_function here, because function manager did not yet read functions
 }
 
-void MAT::MuscleCombo::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::MuscleCombo::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -194,11 +194,11 @@ void MAT::MuscleCombo::Pack(CORE::COMM::PackBuffer& data) const
   anisotropy_extension_.PackAnisotropy(data);
 }
 
-void MAT::MuscleCombo::Unpack(const std::vector<char>& data)
+void Mat::MuscleCombo::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // make sure we have a pristine material
   params_ = nullptr;
@@ -207,16 +207,16 @@ void MAT::MuscleCombo::Unpack(const std::vector<char>& data)
   int matid;
   ExtractfromPack(position, data, matid);
 
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
   {
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
       {
-        params_ = static_cast<MAT::PAR::MuscleCombo*>(mat);
+        params_ = static_cast<Mat::PAR::MuscleCombo*>(mat);
         activation_evaluator_ = std::visit(ActivationParamsVisitor(), params_->activationParams_);
       }
       else
@@ -231,7 +231,7 @@ void MAT::MuscleCombo::Unpack(const std::vector<char>& data)
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
-void MAT::MuscleCombo::Setup(int numgp, INPUT::LineDefinition* linedef)
+void Mat::MuscleCombo::Setup(int numgp, Input::LineDefinition* linedef)
 {
   // Read anisotropy
   anisotropy_.set_number_of_gauss_points(numgp);
@@ -240,18 +240,18 @@ void MAT::MuscleCombo::Setup(int numgp, INPUT::LineDefinition* linedef)
   activation_evaluator_ = std::visit(ActivationParamsVisitor(), params_->activationParams_);
 }
 
-void MAT::MuscleCombo::Update(CORE::LINALG::Matrix<3, 3> const& defgrd, int const gp,
+void Mat::MuscleCombo::Update(Core::LinAlg::Matrix<3, 3> const& defgrd, int const gp,
     Teuchos::ParameterList& params, int const eleGID)
 {
 }
 
-void MAT::MuscleCombo::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
-    const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-    CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, const int gp,
+void Mat::MuscleCombo::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+    const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+    Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
 {
-  CORE::LINALG::Matrix<6, 1> Sc_stress(true);
-  CORE::LINALG::Matrix<6, 6> ccmat(true);
+  Core::LinAlg::Matrix<6, 1> Sc_stress(true);
+  Core::LinAlg::Matrix<6, 6> ccmat(true);
 
   // get passive material parameters
   const double alpha = params_->alpha_;
@@ -262,39 +262,39 @@ void MAT::MuscleCombo::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
 
   // compute matrices
   // right Cauchy Green tensor C
-  CORE::LINALG::Matrix<3, 3> C(false);                   // matrix notation
+  Core::LinAlg::Matrix<3, 3> C(false);                   // matrix notation
   C.MultiplyTN(*defgrd, *defgrd);                        // C = F^T F
-  CORE::LINALG::Matrix<6, 1> Cv(false);                  // Voigt notation
-  CORE::LINALG::VOIGT::Stresses::MatrixToVector(C, Cv);  // Cv
+  Core::LinAlg::Matrix<6, 1> Cv(false);                  // Voigt notation
+  Core::LinAlg::Voigt::Stresses::MatrixToVector(C, Cv);  // Cv
 
   // inverse right Cauchy Green tensor C^-1
-  CORE::LINALG::Matrix<3, 3> invC(false);                      // matrix notation
+  Core::LinAlg::Matrix<3, 3> invC(false);                      // matrix notation
   invC.Invert(C);                                              // invC = C^-1
-  CORE::LINALG::Matrix<6, 1> invCv(false);                     // Voigt notation
-  CORE::LINALG::VOIGT::Stresses::MatrixToVector(invC, invCv);  // invCv
+  Core::LinAlg::Matrix<6, 1> invCv(false);                     // Voigt notation
+  Core::LinAlg::Voigt::Stresses::MatrixToVector(invC, invCv);  // invCv
 
   // structural tensor M, i.e. dyadic product of fibre directions
-  CORE::LINALG::Matrix<3, 3> M = anisotropy_extension_.GetStructuralTensor(gp, 0);
-  CORE::LINALG::Matrix<6, 1> Mv(false);                  // Voigt notation
-  CORE::LINALG::VOIGT::Stresses::MatrixToVector(M, Mv);  // Mv
+  Core::LinAlg::Matrix<3, 3> M = anisotropy_extension_.GetStructuralTensor(gp, 0);
+  Core::LinAlg::Matrix<6, 1> Mv(false);                  // Voigt notation
+  Core::LinAlg::Voigt::Stresses::MatrixToVector(M, Mv);  // Mv
   // structural tensor L = omega0/3*Identity + omegap*M
-  CORE::LINALG::Matrix<3, 3> L(M);
+  Core::LinAlg::Matrix<3, 3> L(M);
   L.Scale(1.0 - omega0);  // omegap*M
   for (unsigned i = 0; i < 3; ++i) L(i, i) += omega0 / 3.0;
 
   // product invC*L
-  CORE::LINALG::Matrix<3, 3> invCL(false);
+  Core::LinAlg::Matrix<3, 3> invCL(false);
   invCL.MultiplyNN(invC, L);
 
   // product invC*L*invC
-  CORE::LINALG::Matrix<3, 3> invCLinvC(false);  // matrix notation
+  Core::LinAlg::Matrix<3, 3> invCLinvC(false);  // matrix notation
   invCLinvC.MultiplyNN(invCL, invC);
-  CORE::LINALG::Matrix<6, 1> invCLinvCv(false);  // Voigt notation
-  CORE::LINALG::VOIGT::Stresses::MatrixToVector(invCLinvC, invCLinvCv);
+  Core::LinAlg::Matrix<6, 1> invCLinvCv(false);  // Voigt notation
+  Core::LinAlg::Voigt::Stresses::MatrixToVector(invCLinvC, invCLinvCv);
 
   // stretch in fibre direction lambdaM
   // lambdaM = sqrt(C:M) = sqrt(tr(C^T M)), see Holzapfel2000, p.14
-  double lambdaM = MAT::UTILS::MUSCLE::FiberStretch(C, M);
+  double lambdaM = Mat::UTILS::Muscle::FiberStretch(C, M);
 
   // computation of active nominal stress Pa, and derivative derivPa
   double intPa = 0.0;
@@ -336,25 +336,25 @@ void MAT::MuscleCombo::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   }
 
   // compute derivative \frac{\partial omegaa}{\partial C} in Voigt notation
-  CORE::LINALG::Matrix<6, 1> domegaadCv(Mv);
+  Core::LinAlg::Matrix<6, 1> domegaadCv(Mv);
   domegaadCv.Scale(derivOmegaa * 0.5 / lambdaM);
 
   // compute helper matrices for further calculation
-  CORE::LINALG::Matrix<3, 3> LomegaaM(L);
+  Core::LinAlg::Matrix<3, 3> LomegaaM(L);
   LomegaaM.Update(omegaa, M, 1.0);  // LomegaaM = L + omegaa*M
-  CORE::LINALG::Matrix<6, 1> LomegaaMv(false);
-  CORE::LINALG::VOIGT::Stresses::MatrixToVector(LomegaaM, LomegaaMv);
+  Core::LinAlg::Matrix<6, 1> LomegaaMv(false);
+  Core::LinAlg::Voigt::Stresses::MatrixToVector(LomegaaM, LomegaaMv);
 
-  CORE::LINALG::Matrix<3, 3> LfacomegaaM(L);  // LfacomegaaM = L + fac*M
+  Core::LinAlg::Matrix<3, 3> LfacomegaaM(L);  // LfacomegaaM = L + fac*M
   LfacomegaaM.Update((1.0 + omegaa * alpha * std::pow(lambdaM, 2)) / (alpha * std::pow(lambdaM, 2)),
       M, 1.0);  // + fac*M
-  CORE::LINALG::Matrix<6, 1> LfacomegaaMv(false);
-  CORE::LINALG::VOIGT::Stresses::MatrixToVector(LfacomegaaM, LfacomegaaMv);
+  Core::LinAlg::Matrix<6, 1> LfacomegaaMv(false);
+  Core::LinAlg::Voigt::Stresses::MatrixToVector(LfacomegaaM, LfacomegaaMv);
 
-  CORE::LINALG::Matrix<3, 3> transpCLomegaaM(false);
+  Core::LinAlg::Matrix<3, 3> transpCLomegaaM(false);
   transpCLomegaaM.MultiplyTN(1.0, C, LomegaaM);  // C^T*(L+omegaa*M)
-  CORE::LINALG::Matrix<6, 1> transpCLomegaaMv(false);
-  CORE::LINALG::VOIGT::Stresses::MatrixToVector(transpCLomegaaM, transpCLomegaaMv);
+  Core::LinAlg::Matrix<6, 1> transpCLomegaaMv(false);
+  Core::LinAlg::Voigt::Stresses::MatrixToVector(transpCLomegaaM, transpCLomegaaMv);
 
   // generalized invariants including active material properties
   double detC = C.Determinant();  // detC = det(C)
@@ -367,13 +367,13 @@ void MAT::MuscleCombo::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   double expbeta = std::exp(beta * (J - 1.0));
 
   // compute second Piola-Kirchhoff stress
-  CORE::LINALG::Matrix<3, 3> stressM(false);
+  Core::LinAlg::Matrix<3, 3> stressM(false);
   stressM.Update(expalpha, LomegaaM, 0.0);  // add contributions
   stressM.Update(-expbeta * detC, invCLinvC, 1.0);
   stressM.Update(J * expbeta - std::pow(detC, -kappa), invC, 1.0);
   stressM.Update(0.5 * eta, M, 1.0);
   stressM.Scale(0.5 * gamma);
-  CORE::LINALG::VOIGT::Stresses::MatrixToVector(
+  Core::LinAlg::Voigt::Stresses::MatrixToVector(
       stressM, Sc_stress);  // convert to Voigt notation and update stress
 
   // compute cmat
@@ -385,9 +385,9 @@ void MAT::MuscleCombo::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   ccmat.MultiplyNT(
       (beta * J + 1.) * J * expbeta + kappa * std::pow(detC, -kappa), invCv, invCv, 1.0);
   // adds scalar * (invC boeppel invC) to cmat, see Holzapfel2000, p. 254
-  MAT::AddtoCmatHolzapfelProduct(ccmat, invCv, -(J * expbeta - std::pow(detC, -kappa)));
+  Mat::AddtoCmatHolzapfelProduct(ccmat, invCv, -(J * expbeta - std::pow(detC, -kappa)));
   // adds -expbeta*detC * dinvCLinvCdCv to cmats
-  MAT::AddDerivInvABInvBProduct(-expbeta * detC, invCv, invCLinvCv, ccmat);
+  Mat::AddDerivInvABInvBProduct(-expbeta * detC, invCv, invCLinvCv, ccmat);
   // additional term for corrected derivative of strain energy function
   ccmat.MultiplyNT(dEta / (8 * lambdaM), Mv, Mv, 1.0);
   ccmat.Scale(gamma);
@@ -397,7 +397,7 @@ void MAT::MuscleCombo::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   cmat->Update(1.0, ccmat, 1.0);
 }
 
-void MAT::MuscleCombo::evaluate_active_nominal_stress(Teuchos::ParameterList& params,
+void Mat::MuscleCombo::evaluate_active_nominal_stress(Teuchos::ParameterList& params,
     const int eleGID, const double lambdaM, double& intPa, double& Pa, double& derivPa)
 {
   // save current simulation time
@@ -416,7 +416,7 @@ void MAT::MuscleCombo::evaluate_active_nominal_stress(Teuchos::ParameterList& pa
 
   // get element center coordinates in reference configuration
   const auto& element_center_reference_coordinates =
-      params.get<CORE::LINALG::Matrix<3, 1>>("elecenter_coords_ref");
+      params.get<Core::LinAlg::Matrix<3, 1>>("elecenter_coords_ref");
 
   // compute force-time-space dependency Poptft
   const double Poptft =
@@ -425,11 +425,11 @@ void MAT::MuscleCombo::evaluate_active_nominal_stress(Teuchos::ParameterList& pa
 
   // compute the force-stretch dependency fxi, its integral in the boundaries lambdaMin to lambdaM,
   // and its derivative w.r.t. lambdaM
-  double intFxi = MAT::UTILS::MUSCLE::EvaluateIntegralForceStretchDependencyEhret(
+  double intFxi = Mat::UTILS::Muscle::EvaluateIntegralForceStretchDependencyEhret(
       lambdaM, lambdaMin, lambdaOpt);
   double fxi =
-      MAT::UTILS::MUSCLE::EvaluateForceStretchDependencyEhret(lambdaM, lambdaMin, lambdaOpt);
-  double dFxidLamdaM = MAT::UTILS::MUSCLE::EvaluateDerivativeForceStretchDependencyEhret(
+      Mat::UTILS::Muscle::EvaluateForceStretchDependencyEhret(lambdaM, lambdaMin, lambdaOpt);
+  double dFxidLamdaM = Mat::UTILS::Muscle::EvaluateDerivativeForceStretchDependencyEhret(
       lambdaM, lambdaMin, lambdaOpt);
 
   // compute active nominal stress Pa, its integral in the boundaries lambdaMin to lambdaM,
@@ -439,7 +439,7 @@ void MAT::MuscleCombo::evaluate_active_nominal_stress(Teuchos::ParameterList& pa
   derivPa = Poptft * dFxidLamdaM;
 }
 
-void MAT::MuscleCombo::evaluate_activation_level(const double lambdaM, const double intPa,
+void Mat::MuscleCombo::evaluate_activation_level(const double lambdaM, const double intPa,
     const double Pa, const double derivPa, double& omegaa, double& derivOmegaa,
     double& derivDerivOmegaa)
 {

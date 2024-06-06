@@ -24,16 +24,16 @@ The functions in this file are not problem-specific and may be useful for a numb
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::UTILS
+namespace Core::UTILS
 {
   class CubicSplineInterpolation;
   class FunctionManager;
-}  // namespace CORE::UTILS
+}  // namespace Core::UTILS
 
-namespace CORE::UTILS
+namespace Core::UTILS
 {
   /// add valid function lines
-  void AddValidLibraryFunctions(CORE::UTILS::FunctionManager& function_manager);
+  void AddValidLibraryFunctions(Core::UTILS::FunctionManager& function_manager);
 
   /**
    * @brief special implementation of a 1D polynomial function
@@ -76,7 +76,7 @@ namespace CORE::UTILS
 
    private:
     //! internal polynomial representation
-    const CORE::FE::Polynomial mypoly_;
+    const Core::FE::Polynomial mypoly_;
   };
 
   /**
@@ -109,9 +109,9 @@ namespace CORE::UTILS
     [[nodiscard]] double EvaluateDerivative(double scalar, int deriv_order) const override;
 
    private:
-    std::unique_ptr<CORE::UTILS::CubicSplineInterpolation> cubic_spline_;
+    std::unique_ptr<Core::UTILS::CubicSplineInterpolation> cubic_spline_;
   };
-}  // namespace CORE::UTILS
+}  // namespace Core::UTILS
 
 FOUR_C_NAMESPACE_CLOSE
 

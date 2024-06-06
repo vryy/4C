@@ -40,7 +40,7 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::Setup()
 }
 
 void PARTICLEENGINE::UniqueGlobalIdHandler::write_restart(
-    std::shared_ptr<CORE::IO::DiscretizationWriter> writer) const
+    std::shared_ptr<Core::IO::DiscretizationWriter> writer) const
 {
   // write maximum global id in restart
   writer->WriteInt(objectname_ + "maxglobalid", maxglobalid_);
@@ -49,10 +49,10 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::write_restart(
   {
     Teuchos::RCP<std::vector<char>> buffer = Teuchos::rcp(new std::vector<char>);
 
-    CORE::COMM::PackBuffer data;
-    CORE::COMM::ParObject::AddtoPack(data, reusableglobalids_);
+    Core::Communication::PackBuffer data;
+    Core::Communication::ParObject::AddtoPack(data, reusableglobalids_);
     data.StartPacking();
-    CORE::COMM::ParObject::AddtoPack(data, reusableglobalids_);
+    Core::Communication::ParObject::AddtoPack(data, reusableglobalids_);
 
     buffer->insert(buffer->end(), data().begin(), data().end());
 
@@ -61,7 +61,7 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::write_restart(
 }
 
 void PARTICLEENGINE::UniqueGlobalIdHandler::read_restart(
-    const std::shared_ptr<CORE::IO::DiscretizationReader> reader)
+    const std::shared_ptr<Core::IO::DiscretizationReader> reader)
 {
   // get maximum global id from restart
   maxglobalid_ = reader->ReadInt(objectname_ + "maxglobalid");
@@ -76,7 +76,7 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::read_restart(
 
     while (position < buffer->size())
     {
-      CORE::COMM::ParObject::ExtractfromPack(position, *buffer, reusableglobalids_);
+      Core::Communication::ParObject::ExtractfromPack(position, *buffer, reusableglobalids_);
     }
 
     if (position != buffer->size())
@@ -133,10 +133,10 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::
   if (myrank_ != masterrank_)
   {
     // pack data for sending
-    CORE::COMM::PackBuffer data;
-    CORE::COMM::ParObject::AddtoPack(data, reusableglobalids_);
+    Core::Communication::PackBuffer data;
+    Core::Communication::ParObject::AddtoPack(data, reusableglobalids_);
     data.StartPacking();
-    CORE::COMM::ParObject::AddtoPack(data, reusableglobalids_);
+    Core::Communication::ParObject::AddtoPack(data, reusableglobalids_);
 
     // clear reusable global ids
     reusableglobalids_.clear();
@@ -178,7 +178,7 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::
 
       while (position < rmsg.size())
       {
-        CORE::COMM::ParObject::ExtractfromPack(position, rmsg, receivedreusableglobalids);
+        Core::Communication::ParObject::ExtractfromPack(position, rmsg, receivedreusableglobalids);
 
         reusableglobalids_.insert(reusableglobalids_.end(), receivedreusableglobalids.begin(),
             receivedreusableglobalids.end());
@@ -298,10 +298,10 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::
       if (tobesendglobalids[torank].empty()) continue;
 
       // pack data for sending
-      CORE::COMM::PackBuffer data;
-      CORE::COMM::ParObject::AddtoPack(data, tobesendglobalids[torank]);
+      Core::Communication::PackBuffer data;
+      Core::Communication::ParObject::AddtoPack(data, tobesendglobalids[torank]);
       data.StartPacking();
-      CORE::COMM::ParObject::AddtoPack(data, tobesendglobalids[torank]);
+      Core::Communication::ParObject::AddtoPack(data, tobesendglobalids[torank]);
 
       sdata[torank].insert(sdata[torank].end(), data().begin(), data().end());
     }
@@ -332,7 +332,7 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::
 
       while (position < rmsg.size())
       {
-        CORE::COMM::ParObject::ExtractfromPack(position, rmsg, requesteduniqueglobalids);
+        Core::Communication::ParObject::ExtractfromPack(position, rmsg, requesteduniqueglobalids);
       }
 
       if (position != rmsg.size())

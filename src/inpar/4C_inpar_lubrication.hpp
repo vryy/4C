@@ -16,7 +16,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace INPAR
+namespace Inpar
 {
   namespace LUBRICATION
   {
@@ -67,19 +67,19 @@ namespace INPAR
     {
       switch (norm)
       {
-        case INPAR::LUBRICATION::norm_vague:
+        case Inpar::LUBRICATION::norm_vague:
           return "Vague";
           break;
-        case INPAR::LUBRICATION::norm_l1:
+        case Inpar::LUBRICATION::norm_l1:
           return "L1";
           break;
-        case INPAR::LUBRICATION::norm_l2:
+        case Inpar::LUBRICATION::norm_l2:
           return "L2";
           break;
-        case INPAR::LUBRICATION::norm_rms:
+        case Inpar::LUBRICATION::norm_rms:
           return "Rms";
           break;
-        case INPAR::LUBRICATION::norm_inf:
+        case Inpar::LUBRICATION::norm_inf:
           return "Inf";
           break;
         default:
@@ -92,7 +92,7 @@ namespace INPAR
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
   }  // namespace LUBRICATION
-}  // namespace INPAR
+}  // namespace Inpar
 
 FOUR_C_NAMESPACE_CLOSE
 

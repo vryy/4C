@@ -24,11 +24,11 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 FSI::BlockPreconditioningMatrix::BlockPreconditioningMatrix(
-    Teuchos::RCP<UTILS::MonolithicDebugWriter> pcdbg, const CORE::LINALG::MultiMapExtractor& maps,
-    ADAPTER::FSIStructureWrapper& structure, ADAPTER::Fluid& fluid, ADAPTER::AleFsiWrapper& ale,
+    Teuchos::RCP<UTILS::MonolithicDebugWriter> pcdbg, const Core::LinAlg::MultiMapExtractor& maps,
+    Adapter::FSIStructureWrapper& structure, Adapter::Fluid& fluid, Adapter::AleFsiWrapper& ale,
     int symmetric, double omega, int iterations, double somega, int siterations, double fomega,
     int fiterations, double aomega, int aiterations, FILE* err)
-    : CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
+    : Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
           maps, maps, 81, false, true),
       symmetric_(symmetric),
       omega_(omega),
@@ -42,31 +42,31 @@ FSI::BlockPreconditioningMatrix::BlockPreconditioningMatrix(
       err_(err),
       pcdbg_(pcdbg)
 {
-  fluidsolver_ = Teuchos::rcp(new CORE::LINALG::Preconditioner(fluid.LinearSolver()));
+  fluidsolver_ = Teuchos::rcp(new Core::LinAlg::Preconditioner(fluid.LinearSolver()));
 
 #ifndef BLOCKMATRIXMERGE
-  structuresolver_ = Teuchos::rcp(new CORE::LINALG::Preconditioner(structure.LinearSolver()));
-  alesolver_ = Teuchos::rcp(new CORE::LINALG::Preconditioner(ale.LinearSolver()));
+  structuresolver_ = Teuchos::rcp(new Core::LinAlg::Preconditioner(structure.LinearSolver()));
+  alesolver_ = Teuchos::rcp(new Core::LinAlg::Preconditioner(ale.LinearSolver()));
 #endif
 
   // check and fix ml nullspace if neccessary
   {
-    CORE::LINALG::Solver& solver = *(structure.LinearSolver());
+    Core::LinAlg::Solver& solver = *(structure.LinearSolver());
     const Epetra_Map& oldmap = *(structure.discretization()->dof_row_map());
     const Epetra_Map& newmap = Matrix(0, 0).EpetraMatrix()->RowMap();
-    CORE::LINEAR_SOLVER::Parameters::FixNullSpace("Structure", oldmap, newmap, solver.Params());
+    Core::LinearSolver::Parameters::FixNullSpace("Structure", oldmap, newmap, solver.Params());
   }
   {
-    CORE::LINALG::Solver& solver = *(fluid.LinearSolver());
+    Core::LinAlg::Solver& solver = *(fluid.LinearSolver());
     const Epetra_Map& oldmap = *(fluid.dof_row_map());
     const Epetra_Map& newmap = Matrix(1, 1).EpetraMatrix()->RowMap();
-    CORE::LINEAR_SOLVER::Parameters::FixNullSpace("Fluid", oldmap, newmap, solver.Params());
+    Core::LinearSolver::Parameters::FixNullSpace("Fluid", oldmap, newmap, solver.Params());
   }
   {
-    CORE::LINALG::Solver& solver = *(ale.LinearSolver());
+    Core::LinAlg::Solver& solver = *(ale.LinearSolver());
     const Epetra_Map& oldmap = *(ale.discretization()->dof_row_map());
     const Epetra_Map& newmap = Matrix(2, 2).EpetraMatrix()->RowMap();
-    CORE::LINEAR_SOLVER::Parameters::FixNullSpace("Ale", oldmap, newmap, solver.Params());
+    Core::LinearSolver::Parameters::FixNullSpace("Ale", oldmap, newmap, solver.Params());
   }
 }
 
@@ -113,7 +113,7 @@ int FSI::BlockPreconditioningMatrix::ApplyInverse(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void FSI::BlockPreconditioningMatrix::local_block_richardson(
-    Teuchos::RCP<CORE::LINALG::Preconditioner> solver, const CORE::LINALG::SparseMatrix& innerOp,
+    Teuchos::RCP<Core::LinAlg::Preconditioner> solver, const Core::LinAlg::SparseMatrix& innerOp,
     Teuchos::RCP<Epetra_Vector> x, Teuchos::RCP<Epetra_Vector> y, Teuchos::RCP<Epetra_Vector> tmpx,
     int iterations, double omega, FILE* err, const Epetra_Comm& comm)
 {
@@ -147,8 +147,8 @@ void FSI::BlockPreconditioningMatrix::local_block_richardson(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 FSI::OverlappingBlockMatrix::OverlappingBlockMatrix(
-    Teuchos::RCP<UTILS::MonolithicDebugWriter> pcdbg, const CORE::LINALG::MultiMapExtractor& maps,
-    ADAPTER::FSIStructureWrapper& structure, ADAPTER::Fluid& fluid, ADAPTER::AleFsiWrapper& ale,
+    Teuchos::RCP<UTILS::MonolithicDebugWriter> pcdbg, const Core::LinAlg::MultiMapExtractor& maps,
+    Adapter::FSIStructureWrapper& structure, Adapter::Fluid& fluid, Adapter::AleFsiWrapper& ale,
     bool structuresplit, int symmetric, double omega, int iterations, double somega,
     int siterations, double fomega, int fiterations, double aomega, int aiterations)
     : BlockPreconditioningMatrix(pcdbg, maps, structure, fluid, ale, symmetric, omega, iterations,

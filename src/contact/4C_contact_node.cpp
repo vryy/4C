@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 CONTACT::NodeType CONTACT::NodeType::instance_;
 
 
-CORE::COMM::ParObject* CONTACT::NodeType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* CONTACT::NodeType::Create(const std::vector<char>& data)
 {
   std::vector<double> x(3, 0.0);
   std::vector<int> dofs(0);
@@ -61,20 +61,20 @@ CONTACT::NodeDataContainer::NodeDataContainer()
  |  Pack data                                                  (public) |
  |                                                            mgit 02/10|
  *----------------------------------------------------------------------*/
-void CONTACT::NodeDataContainer::Pack(CORE::COMM::PackBuffer& data) const
+void CONTACT::NodeDataContainer::Pack(Core::Communication::PackBuffer& data) const
 {
   // add txi_
-  CORE::COMM::ParObject::AddtoPack(data, txi_, 3 * sizeof(double));
+  Core::Communication::ParObject::AddtoPack(data, txi_, 3 * sizeof(double));
   // add teta_
-  CORE::COMM::ParObject::AddtoPack(data, teta_, 3 * sizeof(double));
+  Core::Communication::ParObject::AddtoPack(data, teta_, 3 * sizeof(double));
   // add grow_
-  CORE::COMM::ParObject::AddtoPack(data, grow_);
+  Core::Communication::ParObject::AddtoPack(data, grow_);
   // add kappa_
-  CORE::COMM::ParObject::AddtoPack(data, kappa_);
+  Core::Communication::ParObject::AddtoPack(data, kappa_);
   // add activeold_
-  CORE::COMM::ParObject::AddtoPack(data, activeold_);
+  Core::Communication::ParObject::AddtoPack(data, activeold_);
   // add n_old_
-  CORE::COMM::ParObject::AddtoPack(data, n_old_, 3 * sizeof(double));
+  Core::Communication::ParObject::AddtoPack(data, n_old_, 3 * sizeof(double));
 
   // no need to pack derivs_
   // (these will evaluated anew anyway)
@@ -90,24 +90,24 @@ void CONTACT::NodeDataContainer::Unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   // txi_
-  CORE::COMM::ParObject::ExtractfromPack(position, data, txi_, 3 * sizeof(double));
+  Core::Communication::ParObject::ExtractfromPack(position, data, txi_, 3 * sizeof(double));
   // teta_
-  CORE::COMM::ParObject::ExtractfromPack(position, data, teta_, 3 * sizeof(double));
+  Core::Communication::ParObject::ExtractfromPack(position, data, teta_, 3 * sizeof(double));
   // grow_
-  CORE::COMM::ParObject::ExtractfromPack(position, data, grow_);
+  Core::Communication::ParObject::ExtractfromPack(position, data, grow_);
   // kappa_
-  CORE::COMM::ParObject::ExtractfromPack(position, data, kappa_);
+  Core::Communication::ParObject::ExtractfromPack(position, data, kappa_);
   // activeold_
-  activeold_ = CORE::COMM::ParObject::ExtractInt(position, data);
+  activeold_ = Core::Communication::ParObject::ExtractInt(position, data);
   // n_old_
-  CORE::COMM::ParObject::ExtractfromPack(position, data, n_old_, 3 * sizeof(double));
+  Core::Communication::ParObject::ExtractfromPack(position, data, n_old_, 3 * sizeof(double));
 
   return;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CONTACT::AUG::NodeDataContainer::NodeDataContainer(Node& parentNode)
+CONTACT::Aug::NodeDataContainer::NodeDataContainer(Node& parentNode)
     : mentries_(-1),
       kappa_(1.0e12),
       w_gap_(1.0e12),
@@ -119,7 +119,7 @@ CONTACT::AUG::NodeDataContainer::NodeDataContainer(Node& parentNode)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CONTACT::AUG::NodeDataContainer::NodeDataContainer(
+CONTACT::Aug::NodeDataContainer::NodeDataContainer(
     Node& parentNode, const int slMaElementAreaRatio, const bool isTriangleOnMaster)
     : kappa_(1.0e12), w_gap_(1.0e12), aug_a_(1.0e12), parent_node_(parentNode)
 {
@@ -128,7 +128,7 @@ CONTACT::AUG::NodeDataContainer::NodeDataContainer(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int CONTACT::AUG::NodeDataContainer::approximate_m_entries(
+int CONTACT::Aug::NodeDataContainer::approximate_m_entries(
     const int slMaElementAreaRatio, const bool isTriangleOnMaster) const
 {
   // number of adjacent slave elements
@@ -172,7 +172,7 @@ int CONTACT::AUG::NodeDataContainer::approximate_m_entries(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::NodeDataContainer::Setup()
+void CONTACT::Aug::NodeDataContainer::Setup()
 {
   if (mentries_ == -1) FOUR_C_THROW("mentries_ must be initialized!");
 
@@ -182,8 +182,8 @@ void CONTACT::AUG::NodeDataContainer::Setup()
   d_aug_a_.resize(dentries);
   d_kappa_.resize(dentries);
 
-  CORE::GEN::reset(dentries, dd_aug_a_);
-  CORE::GEN::reset(dentries, dd_kappa_);
+  Core::Gen::reset(dentries, dd_aug_a_);
+  Core::Gen::reset(dentries, dd_kappa_);
 
   d_wgap_sl_.resize(dentries);
   d_wgap_ma_.resize(mentries_);
@@ -191,22 +191,22 @@ void CONTACT::AUG::NodeDataContainer::Setup()
   d_wgap_sl_complete_ = Teuchos::rcp(new Deriv1stMap(dentries));
   d_wgap_ma_complete_ = Teuchos::rcp(new Deriv1stMap(mentries_));
 
-  CORE::GEN::reset(dentries, dd_wgap_sl_);
-  CORE::GEN::reset(mentries_, dd_wgap_ma_);
+  Core::Gen::reset(dentries, dd_wgap_sl_);
+  Core::Gen::reset(mentries_, dd_wgap_ma_);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::NodeDataContainer::Pack(CORE::COMM::PackBuffer& data) const
+void CONTACT::Aug::NodeDataContainer::Pack(Core::Communication::PackBuffer& data) const
 {
   // add maxNumMasterElements
-  CORE::COMM::ParObject::AddtoPack(data, mentries_);
+  Core::Communication::ParObject::AddtoPack(data, mentries_);
   // add kappa_
-  CORE::COMM::ParObject::AddtoPack(data, kappa_);
+  Core::Communication::ParObject::AddtoPack(data, kappa_);
   // add grow_
-  CORE::COMM::ParObject::AddtoPack(data, w_gap_);
+  Core::Communication::ParObject::AddtoPack(data, w_gap_);
   // add augA_
-  CORE::COMM::ParObject::AddtoPack(data, aug_a_);
+  Core::Communication::ParObject::AddtoPack(data, aug_a_);
 
   // no need to pack derivs_
   // (these will evaluated new anyway)
@@ -216,24 +216,24 @@ void CONTACT::AUG::NodeDataContainer::Pack(CORE::COMM::PackBuffer& data) const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::NodeDataContainer::Unpack(
+void CONTACT::Aug::NodeDataContainer::Unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   // maxNumMasterElements
-  CORE::COMM::ParObject::ExtractfromPack(position, data, mentries_);
+  Core::Communication::ParObject::ExtractfromPack(position, data, mentries_);
   // kappa_
-  CORE::COMM::ParObject::ExtractfromPack(position, data, kappa_);
+  Core::Communication::ParObject::ExtractfromPack(position, data, kappa_);
   // grow_
-  CORE::COMM::ParObject::ExtractfromPack(position, data, w_gap_);
+  Core::Communication::ParObject::ExtractfromPack(position, data, w_gap_);
   // augA_
-  CORE::COMM::ParObject::ExtractfromPack(position, data, aug_a_);
+  Core::Communication::ParObject::ExtractfromPack(position, data, aug_a_);
 
   return;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::NodeDataContainer::Complete()
+void CONTACT::Aug::NodeDataContainer::Complete()
 {
   GetDeriv1st_WGapSl().complete();
   GetDeriv1st_WGapMa().complete();
@@ -253,13 +253,13 @@ void CONTACT::AUG::NodeDataContainer::Complete()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::NodeDataContainer::Debug::Complete()
+void CONTACT::Aug::NodeDataContainer::Debug::Complete()
 {
   d_.complete();
   dd_.complete();
 
-  CORE::GEN::complete(d_vec_);
-  CORE::GEN::complete(dd_vec_);
+  Core::Gen::complete(d_vec_);
+  Core::Gen::complete(dd_vec_);
 }
 
 /*----------------------------------------------------------------------*
@@ -282,18 +282,18 @@ CONTACT::NodePoroDataContainer::NodePoroDataContainer()
  |  Pack data                                                  (public) |
  |                                                            ager 08/14|
  *----------------------------------------------------------------------*/
-void CONTACT::NodePoroDataContainer::Pack(CORE::COMM::PackBuffer& data) const
+void CONTACT::NodePoroDataContainer::Pack(Core::Communication::PackBuffer& data) const
 {
   // add fvel
-  CORE::COMM::ParObject::AddtoPack(data, fvel_, 3 * sizeof(double));
+  Core::Communication::ParObject::AddtoPack(data, fvel_, 3 * sizeof(double));
   // add fpres
-  CORE::COMM::ParObject::AddtoPack(data, fpres_);
+  Core::Communication::ParObject::AddtoPack(data, fpres_);
   // add svel
-  CORE::COMM::ParObject::AddtoPack(data, svel_, 3 * sizeof(double));
+  Core::Communication::ParObject::AddtoPack(data, svel_, 3 * sizeof(double));
   // add poroLM
-  CORE::COMM::ParObject::AddtoPack(data, porolm_, 3 * sizeof(double));
+  Core::Communication::ParObject::AddtoPack(data, porolm_, 3 * sizeof(double));
   // add ncoup
-  CORE::COMM::ParObject::AddtoPack(data, ncouprow_);
+  Core::Communication::ParObject::AddtoPack(data, ncouprow_);
   return;
 }
 
@@ -305,15 +305,15 @@ void CONTACT::NodePoroDataContainer::Unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   // fvel
-  CORE::COMM::ParObject::ExtractfromPack(position, data, fvel_, 3 * sizeof(double));
+  Core::Communication::ParObject::ExtractfromPack(position, data, fvel_, 3 * sizeof(double));
   // fpres
-  CORE::COMM::ParObject::ExtractfromPack(position, data, fpres_);
+  Core::Communication::ParObject::ExtractfromPack(position, data, fpres_);
   // svel
-  CORE::COMM::ParObject::ExtractfromPack(position, data, svel_, 3 * sizeof(double));
+  Core::Communication::ParObject::ExtractfromPack(position, data, svel_, 3 * sizeof(double));
   // poroLM
-  CORE::COMM::ParObject::ExtractfromPack(position, data, porolm_, 3 * sizeof(double));
+  Core::Communication::ParObject::ExtractfromPack(position, data, porolm_, 3 * sizeof(double));
   // ncoup
-  CORE::COMM::ParObject::ExtractfromPack(position, data, ncouprow_);
+  Core::Communication::ParObject::ExtractfromPack(position, data, ncouprow_);
   return;
 }
 
@@ -330,13 +330,13 @@ CONTACT::NodeTSIDataContainer::NodeTSIDataContainer(double t_ref, double t_dam)
  |  Pack data                                                  (public) |
  |                                                           seitz 08/15|
  *----------------------------------------------------------------------*/
-void CONTACT::NodeTSIDataContainer::Pack(CORE::COMM::PackBuffer& data) const
+void CONTACT::NodeTSIDataContainer::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::ParObject::AddtoPack(data, temp_master_);
-  CORE::COMM::ParObject::AddtoPack(data, t_ref_);
-  CORE::COMM::ParObject::AddtoPack(data, t_dam_);
-  CORE::COMM::ParObject::AddtoPack(data, derivTempMasterDisp_);
-  CORE::COMM::ParObject::AddtoPack(data, derivTempMasterTemp_);
+  Core::Communication::ParObject::AddtoPack(data, temp_master_);
+  Core::Communication::ParObject::AddtoPack(data, t_ref_);
+  Core::Communication::ParObject::AddtoPack(data, t_dam_);
+  Core::Communication::ParObject::AddtoPack(data, derivTempMasterDisp_);
+  Core::Communication::ParObject::AddtoPack(data, derivTempMasterTemp_);
   return;
 }
 
@@ -347,11 +347,11 @@ void CONTACT::NodeTSIDataContainer::Pack(CORE::COMM::PackBuffer& data) const
 void CONTACT::NodeTSIDataContainer::Unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
-  CORE::COMM::ParObject::ExtractfromPack(position, data, temp_master_);
-  CORE::COMM::ParObject::ExtractfromPack(position, data, t_ref_);
-  CORE::COMM::ParObject::ExtractfromPack(position, data, t_dam_);
-  CORE::COMM::ParObject::ExtractfromPack(position, data, derivTempMasterDisp_);
-  CORE::COMM::ParObject::ExtractfromPack(position, data, derivTempMasterTemp_);
+  Core::Communication::ParObject::ExtractfromPack(position, data, temp_master_);
+  Core::Communication::ParObject::ExtractfromPack(position, data, t_ref_);
+  Core::Communication::ParObject::ExtractfromPack(position, data, t_dam_);
+  Core::Communication::ParObject::ExtractfromPack(position, data, derivTempMasterDisp_);
+  Core::Communication::ParObject::ExtractfromPack(position, data, derivTempMasterTemp_);
   return;
 }
 
@@ -373,7 +373,7 @@ void CONTACT::NodeTSIDataContainer::Clear()
  *----------------------------------------------------------------------*/
 CONTACT::Node::Node(int id, const std::vector<double>& coords, const int owner,
     const std::vector<int>& dofs, const bool isslave, const bool initactive)
-    : MORTAR::Node(id, coords, owner, dofs, isslave),
+    : Mortar::Node(id, coords, owner, dofs, isslave),
       active_(false),
       initactive_(initactive),
       involvedm_(false),
@@ -389,7 +389,7 @@ CONTACT::Node::Node(int id, const std::vector<double>& coords, const int owner,
  |  copy-ctor (public)                                       mwgee 10/07|
  *----------------------------------------------------------------------*/
 CONTACT::Node::Node(const CONTACT::Node& old)
-    : MORTAR::Node(old),
+    : Mortar::Node(old),
       active_(old.active_),
       initactive_(old.initactive_),
       involvedm_(false),
@@ -431,7 +431,7 @@ void CONTACT::Node::Print(std::ostream& os) const
 {
   // Print id and coordinates
   os << "Contact ";
-  MORTAR::Node::Print(os);
+  Mortar::Node::Print(os);
   if (IsSlave())
     if (IsInitActive()) os << " InitActive ";
   return;
@@ -441,17 +441,17 @@ void CONTACT::Node::Print(std::ostream& os) const
  |  Pack data                                                  (public) |
  |                                                           mwgee 10/07|
  *----------------------------------------------------------------------*/
-void CONTACT::Node::Pack(CORE::COMM::PackBuffer& data) const
+void CONTACT::Node::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data, type);
 
-  // add base class MORTAR::Node
-  MORTAR::Node::Pack(data);
+  // add base class Mortar::Node
+  Mortar::Node::Pack(data);
 
   // add active_
   AddtoPack(data, active_);
@@ -493,12 +493,12 @@ void CONTACT::Node::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
-  // extract base class MORTAR::Node
+  // extract base class Mortar::Node
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
-  MORTAR::Node::Unpack(basedata);
+  Mortar::Node::Unpack(basedata);
 
   // active_
   active_ = ExtractInt(position, data);
@@ -525,7 +525,7 @@ void CONTACT::Node::Unpack(const std::vector<char>& data)
   bool hasdataaug = ExtractInt(position, data);
   if (hasdataaug)
   {
-    augdata_ = Teuchos::rcp(new CONTACT::AUG::NodeDataContainer(*this));
+    augdata_ = Teuchos::rcp(new CONTACT::Aug::NodeDataContainer(*this));
     augdata_->Unpack(position, data);
     augdata_->Setup();
   }
@@ -734,7 +734,7 @@ void CONTACT::Node::initialize_data_container()
   for (int i = 0; i < NumElement(); ++i)
   {
     const int* snodeIds = Elements()[i]->NodeIds();
-    const CORE::Nodes::Node* const* nodes = Elements()[i]->Nodes();
+    const Core::Nodes::Node* const* nodes = Elements()[i]->Nodes();
     for (int j = 0; j < Elements()[i]->num_node(); ++j)
     {
       const int numdof = Elements()[i]->NumDofPerNode(*(nodes[j]));
@@ -758,7 +758,7 @@ void CONTACT::Node::initialize_data_container()
   if (modata_ == Teuchos::null && codata_ == Teuchos::null)
   {
     codata_ = Teuchos::rcp(new CONTACT::NodeDataContainer());
-    modata_ = Teuchos::rcp(new MORTAR::NodeDataContainer());
+    modata_ = Teuchos::rcp(new Mortar::NodeDataContainer());
   }
 
   return;
@@ -773,7 +773,7 @@ void CONTACT::Node::initialize_aug_data_container(
   if (augdata_.is_null())
   {
     augdata_ = Teuchos::rcp(
-        new CONTACT::AUG::NodeDataContainer(*this, slMaElementAreaRatio, isTriangleOnMaster));
+        new CONTACT::Aug::NodeDataContainer(*this, slMaElementAreaRatio, isTriangleOnMaster));
 
     augdata_->Setup();
   }
@@ -845,13 +845,13 @@ void CONTACT::Node::build_averaged_edge_tangent()
     MoData().EdgeTangent()[j] = 0.0;
   }
   int nseg = NumElement();
-  CORE::Elements::Element** adjeles = Elements();
+  Core::Elements::Element** adjeles = Elements();
 
   //**************************************************
   //              CALCULATE EDGES
   //**************************************************
   // empty vector of slave element pointers
-  std::vector<Teuchos::RCP<MORTAR::Element>> lineElementsS;
+  std::vector<Teuchos::RCP<Mortar::Element>> lineElementsS;
   std::set<std::pair<int, int>> donebefore;
 
   // loop over all surface elements
@@ -859,7 +859,7 @@ void CONTACT::Node::build_averaged_edge_tangent()
   {
     Element* cele = dynamic_cast<Element*>(adjeles[surfele]);
 
-    if (cele->Shape() == CORE::FE::CellType::quad4)
+    if (cele->Shape() == Core::FE::CellType::quad4)
     {
       for (int j = 0; j < 4; ++j)
       {
@@ -900,8 +900,8 @@ void CONTACT::Node::build_averaged_edge_tangent()
         }
 
         // check if both nodes on edge geometry
-        bool node0Edge = dynamic_cast<MORTAR::Node*>(cele->Nodes()[nodeLIds[0]])->IsOnEdge();
-        bool node1Edge = dynamic_cast<MORTAR::Node*>(cele->Nodes()[nodeLIds[1]])->IsOnEdge();
+        bool node0Edge = dynamic_cast<Mortar::Node*>(cele->Nodes()[nodeLIds[0]])->IsOnEdge();
+        bool node1Edge = dynamic_cast<Mortar::Node*>(cele->Nodes()[nodeLIds[1]])->IsOnEdge();
 
         if (!node0Edge or !node1Edge) continue;
 
@@ -921,11 +921,11 @@ void CONTACT::Node::build_averaged_edge_tangent()
           donebefore.insert(actIDstw);
 
           // create line ele:
-          Teuchos::RCP<MORTAR::Element> lineEle = Teuchos::rcp(
-              new MORTAR::Element(j, cele->Owner(), CORE::FE::CellType::line2, 2, nodeIds, false));
+          Teuchos::RCP<Mortar::Element> lineEle = Teuchos::rcp(
+              new Mortar::Element(j, cele->Owner(), Core::FE::CellType::line2, 2, nodeIds, false));
 
           // get nodes
-          std::array<CORE::Nodes::Node*, 2> nodes = {
+          std::array<Core::Nodes::Node*, 2> nodes = {
               cele->Nodes()[nodeLIds[0]], cele->Nodes()[nodeLIds[1]]};
           lineEle->BuildNodalPointers(nodes.data());
 
@@ -1001,14 +1001,14 @@ void CONTACT::Node::build_averaged_edge_tangent()
   //**************************************************
   //      LINEARIZATION
   //**************************************************
-  typedef CORE::GEN::Pairedvector<int, double>::const_iterator _CI;
+  typedef Core::Gen::Pairedvector<int, double>::const_iterator _CI;
 
   for (int j = 0; j < (int)((Data().GetDerivTangent()).size()); ++j)
     (Data().GetDerivTangent())[j].clear();
   (Data().GetDerivTangent()).resize(0, 0);
   if ((int)Data().GetDerivTangent().size() == 0) Data().GetDerivTangent().resize(3, 2 * 100);
 
-  std::vector<CORE::GEN::Pairedvector<int, double>> lint(3, 100);  // added all sizes
+  std::vector<Core::Gen::Pairedvector<int, double>> lint(3, 100);  // added all sizes
   if (n1 != nullptr)
   {
     lint[0][n1->Dofs()[0]] += 1;
@@ -1022,12 +1022,12 @@ void CONTACT::Node::build_averaged_edge_tangent()
     lint[2][n2->Dofs()[2]] -= 1;
   }
   // first part
-  std::vector<CORE::GEN::Pairedvector<int, double>> Lin1(3, 100);  // added all sizes
+  std::vector<Core::Gen::Pairedvector<int, double>> Lin1(3, 100);  // added all sizes
   for (_CI p = lint[0].begin(); p != lint[0].end(); ++p) Lin1[0][p->first] += p->second / length;
   for (_CI p = lint[1].begin(); p != lint[1].end(); ++p) Lin1[1][p->first] += p->second / length;
   for (_CI p = lint[2].begin(); p != lint[2].end(); ++p) Lin1[2][p->first] += p->second / length;
 
-  CORE::GEN::Pairedvector<int, double> Lin2(100);  // added all sizes
+  Core::Gen::Pairedvector<int, double> Lin2(100);  // added all sizes
   for (_CI p = lint[0].begin(); p != lint[0].end(); ++p)
     Lin2[p->first] += p->second * MoData().EdgeTangent()[0];
   for (_CI p = lint[1].begin(); p != lint[1].end(); ++p)
@@ -1035,7 +1035,7 @@ void CONTACT::Node::build_averaged_edge_tangent()
   for (_CI p = lint[2].begin(); p != lint[2].end(); ++p)
     Lin2[p->first] += p->second * MoData().EdgeTangent()[2];
 
-  std::vector<CORE::GEN::Pairedvector<int, double>> Lin3(3, 100);  // added all sizes
+  std::vector<Core::Gen::Pairedvector<int, double>> Lin3(3, 100);  // added all sizes
   for (_CI p = Lin2.begin(); p != Lin2.end(); ++p)
     Lin3[0][p->first] += p->second * MoData().EdgeTangent()[0] / (length * length * length);
   for (_CI p = Lin2.begin(); p != Lin2.end(); ++p)
@@ -1078,11 +1078,11 @@ void CONTACT::Node::BuildAveragedNormal()
   }
 
   int nseg = NumElement();
-  CORE::Elements::Element** adjeles = Elements();
+  Core::Elements::Element** adjeles = Elements();
 
   // temporary vector to store nodal normal
   std::array<double, 3> n_tmp = {0., 0., 0.};
-  CORE::LINALG::SerialDenseMatrix elens(6, nseg);
+  Core::LinAlg::SerialDenseMatrix elens(6, nseg);
 
   // we need to store some stuff here
   //**********************************************************************
@@ -1206,10 +1206,10 @@ void CONTACT::Node::BuildAveragedNormal()
  |  Build directional deriv. of nodal normal + tangents       popp 09/08|
  *----------------------------------------------------------------------*/
 void CONTACT::Node::deriv_averaged_normal(
-    CORE::LINALG::SerialDenseMatrix& elens, double length, double ltxi)
+    Core::LinAlg::SerialDenseMatrix& elens, double length, double ltxi)
 {
   int nseg = NumElement();
-  CORE::Elements::Element** adjeles = Elements();
+  Core::Elements::Element** adjeles = Elements();
 
   // prepare nodal storage maps for derivative
   if ((int)Data().GetDerivN().size() == 0) Data().GetDerivN().resize(3, linsize_);
@@ -1232,13 +1232,13 @@ void CONTACT::Node::deriv_averaged_normal(
   // normalize directional derivative
   // (length differs for weighted/unweighted case but not the procedure!)
   // (be careful with reference / copy of derivative maps!)
-  typedef CORE::GEN::Pairedvector<int, double>::const_iterator CI;
-  CORE::GEN::Pairedvector<int, double>& derivnx = Data().GetDerivN()[0];
-  CORE::GEN::Pairedvector<int, double>& derivny = Data().GetDerivN()[1];
-  CORE::GEN::Pairedvector<int, double>& derivnz = Data().GetDerivN()[2];
-  CORE::GEN::Pairedvector<int, double> cderivnx = Data().GetDerivN()[0];
-  CORE::GEN::Pairedvector<int, double> cderivny = Data().GetDerivN()[1];
-  CORE::GEN::Pairedvector<int, double> cderivnz = Data().GetDerivN()[2];
+  typedef Core::Gen::Pairedvector<int, double>::const_iterator CI;
+  Core::Gen::Pairedvector<int, double>& derivnx = Data().GetDerivN()[0];
+  Core::Gen::Pairedvector<int, double>& derivny = Data().GetDerivN()[1];
+  Core::Gen::Pairedvector<int, double>& derivnz = Data().GetDerivN()[2];
+  Core::Gen::Pairedvector<int, double> cderivnx = Data().GetDerivN()[0];
+  Core::Gen::Pairedvector<int, double> cderivny = Data().GetDerivN()[1];
+  Core::Gen::Pairedvector<int, double> cderivnz = Data().GetDerivN()[2];
   const double nxnx = MoData().n()[0] * MoData().n()[0];
   const double nxny = MoData().n()[0] * MoData().n()[1];
   const double nxnz = MoData().n()[0] * MoData().n()[2];
@@ -1303,8 +1303,8 @@ void CONTACT::Node::deriv_averaged_normal(
     // get directional derivative of nodal tangent txi "for free"
     // (we just have to use the orthogonality of n and t)
     // the directional derivative of nodal tangent teta is 0
-    CORE::GEN::Pairedvector<int, double>& derivtxix = Data().GetDerivTxi()[0];
-    CORE::GEN::Pairedvector<int, double>& derivtxiy = Data().GetDerivTxi()[1];
+    Core::Gen::Pairedvector<int, double>& derivtxix = Data().GetDerivTxi()[0];
+    Core::Gen::Pairedvector<int, double>& derivtxiy = Data().GetDerivTxi()[1];
 
     for (CI p = derivny.begin(); p != derivny.end(); ++p) derivtxix[p->first] = -(p->second);
     for (CI p = derivnx.begin(); p != derivnx.end(); ++p) derivtxiy[p->first] = (p->second);
@@ -1321,9 +1321,9 @@ void CONTACT::Node::deriv_averaged_normal(
 
     // get normalized tangent derivative txi
     // use corkscrew rule from BuildAveragedNormal()
-    CORE::GEN::Pairedvector<int, double>& derivtxix = Data().GetDerivTxi()[0];
-    CORE::GEN::Pairedvector<int, double>& derivtxiy = Data().GetDerivTxi()[1];
-    CORE::GEN::Pairedvector<int, double>& derivtxiz = Data().GetDerivTxi()[2];
+    Core::Gen::Pairedvector<int, double>& derivtxix = Data().GetDerivTxi()[0];
+    Core::Gen::Pairedvector<int, double>& derivtxiy = Data().GetDerivTxi()[1];
+    Core::Gen::Pairedvector<int, double>& derivtxiz = Data().GetDerivTxi()[2];
 
     for (CI p = derivnx.begin(); p != derivnx.end(); ++p)
     {
@@ -1346,8 +1346,8 @@ void CONTACT::Node::deriv_averaged_normal(
     // use definitions for txi from BuildAveragedNormal()
     if (abs(MoData().n()[0]) > 1.0e-4 || abs(MoData().n()[1]) > 1.0e-4)
     {
-      CORE::GEN::Pairedvector<int, double>& derivtxix = Data().GetDerivTxi()[0];
-      CORE::GEN::Pairedvector<int, double>& derivtxiy = Data().GetDerivTxi()[1];
+      Core::Gen::Pairedvector<int, double>& derivtxix = Data().GetDerivTxi()[0];
+      Core::Gen::Pairedvector<int, double>& derivtxiy = Data().GetDerivTxi()[1];
 
       for (CI p = derivny.begin(); p != derivny.end(); ++p) derivtxix[p->first] -= (p->second);
 
@@ -1355,8 +1355,8 @@ void CONTACT::Node::deriv_averaged_normal(
     }
     else
     {
-      CORE::GEN::Pairedvector<int, double>& derivtxiy = Data().GetDerivTxi()[1];
-      CORE::GEN::Pairedvector<int, double>& derivtxiz = Data().GetDerivTxi()[2];
+      Core::Gen::Pairedvector<int, double>& derivtxiy = Data().GetDerivTxi()[1];
+      Core::Gen::Pairedvector<int, double>& derivtxiz = Data().GetDerivTxi()[2];
 
       for (CI p = derivnz.begin(); p != derivnz.end(); ++p) derivtxiy[p->first] -= (p->second);
 
@@ -1365,13 +1365,13 @@ void CONTACT::Node::deriv_averaged_normal(
 
     // normalize txi directional derivative
     // (identical to normalization of normal derivative)
-    typedef CORE::GEN::Pairedvector<int, double>::const_iterator CI;
-    CORE::GEN::Pairedvector<int, double>& derivtxix = Data().GetDerivTxi()[0];
-    CORE::GEN::Pairedvector<int, double>& derivtxiy = Data().GetDerivTxi()[1];
-    CORE::GEN::Pairedvector<int, double>& derivtxiz = Data().GetDerivTxi()[2];
-    CORE::GEN::Pairedvector<int, double> cderivtxix = Data().GetDerivTxi()[0];
-    CORE::GEN::Pairedvector<int, double> cderivtxiy = Data().GetDerivTxi()[1];
-    CORE::GEN::Pairedvector<int, double> cderivtxiz = Data().GetDerivTxi()[2];
+    typedef Core::Gen::Pairedvector<int, double>::const_iterator CI;
+    Core::Gen::Pairedvector<int, double>& derivtxix = Data().GetDerivTxi()[0];
+    Core::Gen::Pairedvector<int, double>& derivtxiy = Data().GetDerivTxi()[1];
+    Core::Gen::Pairedvector<int, double>& derivtxiz = Data().GetDerivTxi()[2];
+    Core::Gen::Pairedvector<int, double> cderivtxix = Data().GetDerivTxi()[0];
+    Core::Gen::Pairedvector<int, double> cderivtxiy = Data().GetDerivTxi()[1];
+    Core::Gen::Pairedvector<int, double> cderivtxiz = Data().GetDerivTxi()[2];
     const double txtx = Data().txi()[0] * Data().txi()[0];
     const double txty = Data().txi()[0] * Data().txi()[1];
     const double txtz = Data().txi()[0] * Data().txi()[2];
@@ -1433,9 +1433,9 @@ void CONTACT::Node::deriv_averaged_normal(
 
     // get normalized tangent derivative teta
     // use corkscrew rule from BuildAveragedNormal()
-    CORE::GEN::Pairedvector<int, double>& derivtetax = Data().GetDerivTeta()[0];
-    CORE::GEN::Pairedvector<int, double>& derivtetay = Data().GetDerivTeta()[1];
-    CORE::GEN::Pairedvector<int, double>& derivtetaz = Data().GetDerivTeta()[2];
+    Core::Gen::Pairedvector<int, double>& derivtetax = Data().GetDerivTeta()[0];
+    Core::Gen::Pairedvector<int, double>& derivtetay = Data().GetDerivTeta()[1];
+    Core::Gen::Pairedvector<int, double>& derivtetaz = Data().GetDerivTeta()[2];
 
     for (CI p = derivnx.begin(); p != derivnx.end(); ++p)
     {

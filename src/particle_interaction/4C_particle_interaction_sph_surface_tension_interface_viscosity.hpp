@@ -31,27 +31,27 @@ namespace PARTICLEENGINE
   class ParticleContainerBundle;
 }  // namespace PARTICLEENGINE
 
-namespace PARTICLEINTERACTION
+namespace ParticleInteraction
 {
   class SPHKernelBase;
   class MaterialHandler;
   class SPHEquationOfStateBundle;
   class SPHNeighborPairs;
   class SPHArtificialViscosity;
-}  // namespace PARTICLEINTERACTION
+}  // namespace ParticleInteraction
 
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
     class ParticleMaterialSPHFluid;
   }
-}  // namespace MAT
+}  // namespace Mat
 
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
  *---------------------------------------------------------------------------*/
-namespace PARTICLEINTERACTION
+namespace ParticleInteraction
 {
   class SPHInterfaceViscosity
   {
@@ -75,10 +75,10 @@ namespace PARTICLEINTERACTION
     //! setup interface viscosity handler
     void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-        const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel,
-        const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
-        const std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle,
-        const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs);
+        const std::shared_ptr<ParticleInteraction::SPHKernelBase> kernel,
+        const std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial,
+        const std::shared_ptr<ParticleInteraction::SPHEquationOfStateBundle> equationofstatebundle,
+        const std::shared_ptr<ParticleInteraction::SPHNeighborPairs> neighborpairs);
 
     //! compute interface viscosity contribution
     void compute_interface_viscosity_contribution() const;
@@ -103,19 +103,19 @@ namespace PARTICLEINTERACTION
     PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle_;
 
     //! kernel handler
-    std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel_;
+    std::shared_ptr<ParticleInteraction::SPHKernelBase> kernel_;
 
     //! equation of state bundle
-    std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle_;
+    std::shared_ptr<ParticleInteraction::SPHEquationOfStateBundle> equationofstatebundle_;
 
     //! neighbor pair handler
-    std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs_;
+    std::shared_ptr<ParticleInteraction::SPHNeighborPairs> neighborpairs_;
 
     //! artificial viscosity handler
-    std::unique_ptr<PARTICLEINTERACTION::SPHArtificialViscosity> artificialviscosity_;
+    std::unique_ptr<ParticleInteraction::SPHArtificialViscosity> artificialviscosity_;
 
     //! pointer to fluid material of particle types
-    std::vector<const MAT::PAR::ParticleMaterialSPHFluid*> fluidmaterial_;
+    std::vector<const Mat::PAR::ParticleMaterialSPHFluid*> fluidmaterial_;
 
     //! liquid particle type
     PARTICLEENGINE::TypeEnum liquidtype_;
@@ -142,7 +142,7 @@ namespace PARTICLEINTERACTION
     const double trans_d_t_intvisc_;
   };
 
-}  // namespace PARTICLEINTERACTION
+}  // namespace ParticleInteraction
 
 /*---------------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

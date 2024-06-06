@@ -23,24 +23,24 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   // forward declarations
   class BlockSparseMatrixBase;
   class SparseMatrixBase;
   class SparseMatrix;
 
-  /*! \enum CORE::LINALG::DataAccess
+  /*! \enum Core::LinAlg::DataAccess
    *  \brief Handling of data access (Copy or View)
    *
-   *  If set to CORE::LINALG::Copy, user data will be copied at construction.
-   *  If set to CORE::LINALG::View, user data will be encapsulated and used throughout
+   *  If set to Core::LinAlg::Copy, user data will be copied at construction.
+   *  If set to Core::LinAlg::View, user data will be encapsulated and used throughout
    *  the life of the object.
    *
-   *  \note A separate CORE::LINALG::DataAccess is necessary in order to resolve
+   *  \note A separate Core::LinAlg::DataAccess is necessary in order to resolve
    *  possible ambiguity conflicts with the Epetra_DataAccess.
    *
-   *  Use CORE::LINALG::DataAccess for construction of any CORE::LINALG matrix object.
+   *  Use Core::LinAlg::DataAccess for construction of any Core::LINALG matrix object.
    *  Use plain 'Copy' or 'View' for construction of any Epetra matrix object.
    *
    *  \author mayr.mt \date 10/2015
@@ -63,7 +63,7 @@ namespace CORE::LINALG
                             a block matrix, then of course N is the number of all sub matrix blocks*/
     block_condition,     /*!< System matrix is a block matrix that consists of NxN sparse matrices.
                             How the system matrix is divided has to be defined by a condition (e.g.
-                            \link ::CORE::Conditions::ScatraPartitioning ScatraPartitioning \endlink.)*/
+                            \link ::Core::Conditions::ScatraPartitioning ScatraPartitioning \endlink.)*/
     block_condition_dof, /*!< System matrix is a block matrix that consists of NxN sparse
                             matrices. Each of the blocks as created by block_condition is
                             further subdivided by the dofs, meaning e.g. for two dofs per node
@@ -103,7 +103,7 @@ namespace CORE::LINALG
     /// throw away the matrix and its graph and start anew
     virtual void Reset() = 0;
 
-    /// Assemble a CORE::LINALG::SerialDenseMatrix into a matrix with striding
+    /// Assemble a Core::LinAlg::SerialDenseMatrix into a matrix with striding
     /*!
 
     This is an individual call.  Will only assemble locally and will never
@@ -134,13 +134,13 @@ namespace CORE::LINALG
     \param lmowner (in) : vector with owner procs of gids
     */
     virtual void Assemble(int eid, const std::vector<int>& lmstride,
-        const CORE::LINALG::SerialDenseMatrix& Aele, const std::vector<int>& lm,
+        const Core::LinAlg::SerialDenseMatrix& Aele, const std::vector<int>& lm,
         const std::vector<int>& lmowner)
     {
       Assemble(eid, lmstride, Aele, lm, lmowner, lm);
     }
 
-    /// Assemble a CORE::LINALG::SerialDenseMatrix into a matrix with striding
+    /// Assemble a Core::LinAlg::SerialDenseMatrix into a matrix with striding
     /*!
 
       This is an individual call.
@@ -176,7 +176,7 @@ namespace CORE::LINALG
       \param lmcol (in)      : vector with column gids
     */
     virtual void Assemble(int eid, const std::vector<int>& lmstride,
-        const CORE::LINALG::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
+        const Core::LinAlg::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
         const std::vector<int>& lmrowowner, const std::vector<int>& lmcol) = 0;
 
     /// single value assemble using gids
@@ -223,21 +223,21 @@ namespace CORE::LINALG
      *
      *  \author hiermeier \date 01/18 */
     virtual bool IsDbcApplied(const Epetra_Map& dbcmap, bool diagonalblock = true,
-        const CORE::LINALG::SparseMatrix* trafo = nullptr) const = 0;
+        const Core::LinAlg::SparseMatrix* trafo = nullptr) const = 0;
 
     /// Returns the Epetra_Map object associated with the (full) domain of this operator.
     virtual const Epetra_Map& DomainMap() const = 0;
 
     /// Add one operator to another
-    virtual void Add(const CORE::LINALG::SparseOperator& A, const bool transposeA,
+    virtual void Add(const Core::LinAlg::SparseOperator& A, const bool transposeA,
         const double scalarA, const double scalarB) = 0;
 
     /// Add one SparseMatrixBase to another
-    virtual void AddOther(CORE::LINALG::SparseMatrixBase& A, const bool transposeA,
+    virtual void AddOther(Core::LinAlg::SparseMatrixBase& A, const bool transposeA,
         const double scalarA, const double scalarB) const = 0;
 
     /// Add one BlockSparseMatrix to another
-    virtual void AddOther(CORE::LINALG::BlockSparseMatrixBase& A, const bool transposeA,
+    virtual void AddOther(Core::LinAlg::BlockSparseMatrixBase& A, const bool transposeA,
         const double scalarA, const double scalarB) const = 0;
 
     /// Multiply all values by a constant value (in place: A <- ScalarConstant * A).
@@ -248,7 +248,7 @@ namespace CORE::LINALG
   };
 
 
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 FOUR_C_NAMESPACE_CLOSE
 

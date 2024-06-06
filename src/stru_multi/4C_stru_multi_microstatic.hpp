@@ -30,23 +30,23 @@ FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class Solver;
   class SparseMatrix;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationWriter;
 }
 
-namespace STRUMULTI
+namespace MultiScale
 {
   /*!
   \brief Stop nested parallelism support by sending a message to the
@@ -86,7 +86,7 @@ namespace STRUMULTI
 
     */
     void read_restart(int step, Teuchos::RCP<Epetra_Vector> dis,
-        Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> lastalpha,
+        Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> lastalpha,
         std::string name);
 
     /*!
@@ -99,19 +99,19 @@ namespace STRUMULTI
     \brief Predictor step
 
     */
-    void Predictor(CORE::LINALG::Matrix<3, 3>* defgrd);
+    void Predictor(Core::LinAlg::Matrix<3, 3>* defgrd);
 
     /*!
     \brief Predictor step
 
     */
-    void PredictConstDis(CORE::LINALG::Matrix<3, 3>* defgrd);
+    void PredictConstDis(Core::LinAlg::Matrix<3, 3>* defgrd);
 
     /*!
    \brief Predictor step
 
    */
-    void PredictTangDis(CORE::LINALG::Matrix<3, 3>* defgrd);
+    void PredictTangDis(Core::LinAlg::Matrix<3, 3>* defgrd);
 
     /*!
     \brief Full Newton iteration
@@ -129,7 +129,7 @@ namespace STRUMULTI
     \brief Write output and (possibly) restart
 
     */
-    void Output(Teuchos::RCP<CORE::IO::DiscretizationWriter> output, const double time,
+    void Output(Teuchos::RCP<Core::IO::DiscretizationWriter> output, const double time,
         const int istep, const double dt);
 
     /*!
@@ -143,7 +143,7 @@ namespace STRUMULTI
     associated macroscale deformation gradient
 
     */
-    void EvaluateMicroBC(CORE::LINALG::Matrix<3, 3>* defgrd, Teuchos::RCP<Epetra_Vector> disp);
+    void EvaluateMicroBC(Core::LinAlg::Matrix<3, 3>* defgrd, Teuchos::RCP<Epetra_Vector> disp);
 
     /*!
     \brief Set old state given from micromaterialgp
@@ -152,11 +152,11 @@ namespace STRUMULTI
     void set_state(Teuchos::RCP<Epetra_Vector> dis, Teuchos::RCP<Epetra_Vector> disn,
         Teuchos::RCP<std::vector<char>> stress, Teuchos::RCP<std::vector<char>> strain,
         Teuchos::RCP<std::vector<char>> plstrain,
-        Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> lastalpha,
-        Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> oldalpha,
-        Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> oldfeas,
-        Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> oldKaainv,
-        Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> oldKda);
+        Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> lastalpha,
+        Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> oldalpha,
+        Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> oldfeas,
+        Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> oldKaainv,
+        Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> oldKda);
 
     /*!
     \brief Set time and step
@@ -183,8 +183,8 @@ namespace STRUMULTI
     stresses and constitutive tensor by averaging over RVE
 
     */
-    void static_homogenization(CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat,
-        CORE::LINALG::Matrix<3, 3>* defgrd, const bool mod_newton, bool& build_stiff);
+    void static_homogenization(Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat,
+        Core::LinAlg::Matrix<3, 3>* defgrd, const bool mod_newton, bool& build_stiff);
 
     /*!
     \brief Convert constitutive tensor relating first Piola-Kirchhoff
@@ -196,8 +196,8 @@ namespace STRUMULTI
     Marsden and Hughes, Mathematical Foundations of Elasticity,
     Dover, pg. 215
     */
-    void ConvertMat(const Epetra_MultiVector& cmatpf, const CORE::LINALG::Matrix<3, 3>& F_inv,
-        const CORE::LINALG::Matrix<6, 1>& S, CORE::LINALG::Matrix<6, 6>& cmat);
+    void ConvertMat(const Epetra_MultiVector& cmatpf, const Core::LinAlg::Matrix<3, 3>& F_inv,
+        const Core::LinAlg::Matrix<6, 1>& S, Core::LinAlg::Matrix<6, 6>& cmat);
 
 
     /*!
@@ -239,8 +239,8 @@ namespace STRUMULTI
     MicroStatic operator=(const MicroStatic& old);
     MicroStatic(const MicroStatic& old);
 
-    Teuchos::RCP<DRT::Discretization> discret_;
-    Teuchos::RCP<CORE::LINALG::Solver> solver_;
+    Teuchos::RCP<Discret::Discretization> discret_;
+    Teuchos::RCP<Core::LinAlg::Solver> solver_;
     int myrank_;
     int maxentriesperrow_;
 
@@ -248,7 +248,7 @@ namespace STRUMULTI
     double time_;
     double timen_;
 
-    INPAR::STR::PredEnum pred_;  //!< predictor
+    Inpar::STR::PredEnum pred_;  //!< predictor
 
     bool isadapttol_;
     double adaptolbetter_;
@@ -261,31 +261,31 @@ namespace STRUMULTI
 
     bool iodisp_;
     int resevrydisp_;
-    INPAR::STR::StressType iostress_;
+    Inpar::STR::StressType iostress_;
     int resevrystrs_;
-    INPAR::STR::StrainType iostrain_;
-    INPAR::STR::StrainType ioplstrain_;
+    Inpar::STR::StrainType iostrain_;
+    Inpar::STR::StrainType ioplstrain_;
     bool iosurfactant_;
     int restart_;
     int restartevry_;
     int printscreen_;
 
-    INPAR::STR::VectorNorm iternorm_;
+    Inpar::STR::VectorNorm iternorm_;
     double tolfres_;
     double toldisi_;
 
 
-    enum INPAR::STR::BinaryOp combdisifres_;  //!< binary operator to
+    enum Inpar::STR::BinaryOp combdisifres_;  //!< binary operator to
                                               // combine displacement and forces
-    enum INPAR::STR::ConvNorm normtypedisi_;  //!< convergence check for residual displacements
-    enum INPAR::STR::ConvNorm normtypefres_;  //!< convergence check for residual forces
+    enum Inpar::STR::ConvNorm normtypedisi_;  //!< convergence check for residual displacements
+    enum Inpar::STR::ConvNorm normtypefres_;  //!< convergence check for residual forces
     double normcharforce_;
     double normfres_;
     double normchardis_;
     double normdisi_;
 
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_;
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_dirich_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_dirich_;
 
     Teuchos::RCP<Epetra_Vector> dirichtoggle_;
     Teuchos::RCP<Epetra_Vector> invtoggle_;
@@ -303,11 +303,11 @@ namespace STRUMULTI
     Teuchos::RCP<std::vector<char>> plstrain_;
 
     // EAS history data
-    Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> lastalpha_;
-    Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> oldalpha_;
-    Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> oldfeas_;
-    Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> oldKaainv_;
-    Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> oldKda_;
+    Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> lastalpha_;
+    Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> oldalpha_;
+    Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> oldfeas_;
+    Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> oldKaainv_;
+    Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> oldKda_;
 
     Teuchos::RCP<Epetra_MultiVector> D_;    //!< D Matrix following Miehe et al., 2002
     Teuchos::RCP<Epetra_MultiVector> rhs_;  //!< exported transpose of D (pdof -> dofrowmap)
@@ -328,28 +328,28 @@ namespace STRUMULTI
   };
 
 
-  class MicroStaticParObjectType : public CORE::COMM::ParObjectType
+  class MicroStaticParObjectType : public Core::Communication::ParObjectType
   {
    public:
     [[nodiscard]] std::string Name() const override { return "MicroStaticParObjectType"; }
 
     static MicroStaticParObjectType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static MicroStaticParObjectType instance_;
   };
 
-  class MicroStaticParObject : public CORE::COMM::ParObject
+  class MicroStaticParObject : public Core::Communication::ParObject
   {
    public:
     [[nodiscard]] inline int UniqueParObjectId() const override
     {
-      return STRUMULTI::MicroStaticParObjectType::Instance().UniqueParObjectId();
+      return MultiScale::MicroStaticParObjectType::Instance().UniqueParObjectId();
     };
 
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     void Unpack(const std::vector<char>& data) override;
 
@@ -359,9 +359,9 @@ namespace STRUMULTI
       int microdisnum_{};
       int eleowner_{};
       double V0_{};
-      CORE::LINALG::SerialDenseMatrix defgrd_;
-      CORE::LINALG::SerialDenseMatrix stress_;
-      CORE::LINALG::SerialDenseMatrix cmat_;
+      Core::LinAlg::SerialDenseMatrix defgrd_;
+      Core::LinAlg::SerialDenseMatrix stress_;
+      Core::LinAlg::SerialDenseMatrix cmat_;
     };
 
     [[nodiscard]] inline const MicroStaticData* get_micro_static_data_ptr() const
@@ -374,7 +374,7 @@ namespace STRUMULTI
    private:
     MicroStaticData microstatic_data_{};
   };
-}  // namespace STRUMULTI
+}  // namespace MultiScale
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

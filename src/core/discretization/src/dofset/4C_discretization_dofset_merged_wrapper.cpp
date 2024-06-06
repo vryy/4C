@@ -24,8 +24,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::Dofsets::DofSetMergedWrapper::DofSetMergedWrapper(Teuchos::RCP<DofSetInterface> sourcedofset,
-    Teuchos::RCP<const DRT::Discretization> sourcedis, const std::string& couplingcond_master,
+Core::DOFSets::DofSetMergedWrapper::DofSetMergedWrapper(Teuchos::RCP<DofSetInterface> sourcedofset,
+    Teuchos::RCP<const Discret::Discretization> sourcedis, const std::string& couplingcond_master,
     const std::string& couplingcond_slave)
     : DofSetBase(),
       master_nodegids_col_layout_(Teuchos::null),
@@ -43,14 +43,14 @@ CORE::Dofsets::DofSetMergedWrapper::DofSetMergedWrapper(Teuchos::RCP<DofSetInter
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::Dofsets::DofSetMergedWrapper::~DofSetMergedWrapper()
+Core::DOFSets::DofSetMergedWrapper::~DofSetMergedWrapper()
 {
   if (sourcedofset_ != Teuchos::null) sourcedofset_->Unregister(this);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Epetra_Map* CORE::Dofsets::DofSetMergedWrapper::dof_row_map() const
+const Epetra_Map* Core::DOFSets::DofSetMergedWrapper::dof_row_map() const
 {
   // the merged dofset does not add new dofs. So we can just return the
   // originial dof map here.
@@ -59,7 +59,7 @@ const Epetra_Map* CORE::Dofsets::DofSetMergedWrapper::dof_row_map() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Epetra_Map* CORE::Dofsets::DofSetMergedWrapper::DofColMap() const
+const Epetra_Map* Core::DOFSets::DofSetMergedWrapper::DofColMap() const
 {
   // the merged dofset does not add new dofs. So we can just return the
   // originial dof map here.
@@ -68,8 +68,8 @@ const Epetra_Map* CORE::Dofsets::DofSetMergedWrapper::DofColMap() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int CORE::Dofsets::DofSetMergedWrapper::assign_degrees_of_freedom(
-    const DRT::Discretization& dis, const unsigned dspos, const int start)
+int Core::DOFSets::DofSetMergedWrapper::assign_degrees_of_freedom(
+    const Discret::Discretization& dis, const unsigned dspos, const int start)
 {
   if (sourcedofset_ == Teuchos::null) FOUR_C_THROW("No source dof set assigned to merged dof set!");
   if (sourcedis_ == Teuchos::null)
@@ -77,12 +77,12 @@ int CORE::Dofsets::DofSetMergedWrapper::assign_degrees_of_freedom(
 
   // get nodes to be coupled
   std::vector<int> masternodes;
-  CORE::Conditions::FindConditionedNodes(*sourcedis_, couplingcond_master_, masternodes);
+  Core::Conditions::FindConditionedNodes(*sourcedis_, couplingcond_master_, masternodes);
   std::vector<int> slavenodes;
-  CORE::Conditions::FindConditionedNodes(dis, couplingcond_slave_, slavenodes);
+  Core::Conditions::FindConditionedNodes(dis, couplingcond_slave_, slavenodes);
 
   // initialize search tree
-  auto tree = CORE::COUPLING::NodeMatchingOctree();
+  auto tree = Core::COUPLING::NodeMatchingOctree();
   tree.Init(*sourcedis_, masternodes, 150);
   tree.Setup();
 
@@ -127,7 +127,7 @@ int CORE::Dofsets::DofSetMergedWrapper::assign_degrees_of_freedom(
   master_nodegids_col_layout_ = Teuchos::rcp(new Epetra_IntVector(*dis.NodeColMap()));
 
   // export to column map
-  CORE::LINALG::Export(*my_master_nodegids_row_layout, *master_nodegids_col_layout_);
+  Core::LinAlg::Export(*my_master_nodegids_row_layout, *master_nodegids_col_layout_);
 
 
   ////////////////////////////////////////////////////
@@ -136,9 +136,9 @@ int CORE::Dofsets::DofSetMergedWrapper::assign_degrees_of_freedom(
 
   // get nodes to be coupled
   masternodes.clear();
-  CORE::Conditions::FindConditionedNodes(*sourcedis_, couplingcond_slave_, masternodes);
+  Core::Conditions::FindConditionedNodes(*sourcedis_, couplingcond_slave_, masternodes);
   slavenodes.clear();
-  CORE::Conditions::FindConditionedNodes(dis, couplingcond_slave_, slavenodes);
+  Core::Conditions::FindConditionedNodes(dis, couplingcond_slave_, slavenodes);
 
   // initialize search tree
   tree.Init(*sourcedis_, masternodes, 150);
@@ -185,7 +185,7 @@ int CORE::Dofsets::DofSetMergedWrapper::assign_degrees_of_freedom(
   slave_nodegids_col_layout_ = Teuchos::rcp(new Epetra_IntVector(*dis.NodeColMap()));
 
   // export to column map
-  CORE::LINALG::Export(*my_slave_nodegids_row_layout, *slave_nodegids_col_layout_);
+  Core::LinAlg::Export(*my_slave_nodegids_row_layout, *slave_nodegids_col_layout_);
 
   // set filled flag true
   filled_ = true;
@@ -198,7 +198,7 @@ int CORE::Dofsets::DofSetMergedWrapper::assign_degrees_of_freedom(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::Dofsets::DofSetMergedWrapper::Reset()
+void Core::DOFSets::DofSetMergedWrapper::Reset()
 {
   master_nodegids_col_layout_ = Teuchos::null;
   slave_nodegids_col_layout_ = Teuchos::null;
@@ -211,7 +211,7 @@ void CORE::Dofsets::DofSetMergedWrapper::Reset()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::Dofsets::DofSetMergedWrapper::Disconnect(DofSetInterface* dofset)
+void Core::DOFSets::DofSetMergedWrapper::Disconnect(DofSetInterface* dofset)
 {
   if (dofset == sourcedofset_.get())
   {

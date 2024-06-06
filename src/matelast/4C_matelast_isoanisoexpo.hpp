@@ -18,9 +18,9 @@ material
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
-  namespace ELASTIC
+  namespace Elastic
   {
     namespace PAR
     {
@@ -32,11 +32,11 @@ namespace MAT
        * MAT 1 ELAST_IsoAnisoExpo K1 10.0 K2 1.0 GAMMA 35.0 K1COMP 0.0 K2COMP 1.0 INIT 0 ADAPT_ANGLE
        * 0
        */
-      class IsoAnisoExpo : public MAT::PAR::ParameterAniso
+      class IsoAnisoExpo : public Mat::PAR::ParameterAniso
       {
        public:
         /// standard constructor
-        IsoAnisoExpo(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
+        IsoAnisoExpo(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
 
         /// @name material parameters
         //@{
@@ -57,11 +57,11 @@ namespace MAT
 
         /// Override this method and throw error, as the material should be created in within the
         /// Factory method of the elastic summand
-        Teuchos::RCP<CORE::MAT::Material> create_material() override
+        Teuchos::RCP<Core::Mat::Material> create_material() override
         {
           FOUR_C_THROW(
               "Cannot create a material from this method, as it should be created in "
-              "MAT::ELASTIC::Summand::Factory.");
+              "Mat::Elastic::Summand::Factory.");
           return Teuchos::null;
         };
       };  // class IsoAnisoExpo
@@ -89,12 +89,12 @@ namespace MAT
     {
      public:
       /// constructor with given material parameters
-      IsoAnisoExpo(MAT::ELASTIC::PAR::IsoAnisoExpo* params);
+      IsoAnisoExpo(Mat::Elastic::PAR::IsoAnisoExpo* params);
 
       ///@name Packing and Unpacking
       //@{
 
-      void PackSummand(CORE::COMM::PackBuffer& data) const override;
+      void PackSummand(Core::Communication::PackBuffer& data) const override;
 
       void UnpackSummand(
           const std::vector<char>& data, std::vector<char>::size_type& position) override;
@@ -105,22 +105,22 @@ namespace MAT
       //@{
 
       /// material type
-      CORE::Materials::MaterialType MaterialType() const override
+      Core::Materials::MaterialType MaterialType() const override
       {
-        return CORE::Materials::mes_isoanisoexpo;
+        return Core::Materials::mes_isoanisoexpo;
       }
 
       //@}
 
       /// Setup of summand
-      void Setup(int numgp, INPUT::LineDefinition* linedef) override;
+      void Setup(int numgp, Input::LineDefinition* linedef) override;
 
       /// Add anisotropic modified stresses
       void add_stress_aniso_modified(
-          const CORE::LINALG::Matrix<6, 1>& rcg,  ///< right Cauchy Green Tensor
-          const CORE::LINALG::Matrix<6, 1>& icg,  ///< inverse of right Cauchy Green Tensor
-          CORE::LINALG::Matrix<6, 6>& cmat,       ///< material stiffness matrix
-          CORE::LINALG::Matrix<6, 1>& stress,     ///< 2nd PK-stress
+          const Core::LinAlg::Matrix<6, 1>& rcg,  ///< right Cauchy Green Tensor
+          const Core::LinAlg::Matrix<6, 1>& icg,  ///< inverse of right Cauchy Green Tensor
+          Core::LinAlg::Matrix<6, 6>& cmat,       ///< material stiffness matrix
+          Core::LinAlg::Matrix<6, 1>& stress,     ///< 2nd PK-stress
           double I3,                              ///< third principal invariant
           int gp,                                 ///< Gauss point
           int eleGID,                             ///< element GID
@@ -130,10 +130,10 @@ namespace MAT
       /// retrieve coefficients of first, second and third derivative
       /// of summand with respect to anisotropic invariants
       virtual void GetDerivativesAniso(
-          CORE::LINALG::Matrix<2, 1>& dPI_aniso,  ///< first derivative with respect to invariants
-          CORE::LINALG::Matrix<3, 1>&
+          Core::LinAlg::Matrix<2, 1>& dPI_aniso,  ///< first derivative with respect to invariants
+          Core::LinAlg::Matrix<3, 1>&
               ddPII_aniso,  ///< second derivative with respect to invariants
-          CORE::LINALG::Matrix<4, 1>&
+          Core::LinAlg::Matrix<4, 1>&
               dddPIII_aniso,  ///< third derivative with respect to invariants
           double I4,          ///< fourth invariant
           int gp,             ///< Gauss point
@@ -141,13 +141,13 @@ namespace MAT
 
       /// Set fiber directions
       void SetFiberVecs(const double newgamma,       ///< new angle
-          const CORE::LINALG::Matrix<3, 3>& locsys,  ///< local coordinate system
-          const CORE::LINALG::Matrix<3, 3>& defgrd   ///< deformation gradient
+          const Core::LinAlg::Matrix<3, 3>& locsys,  ///< local coordinate system
+          const Core::LinAlg::Matrix<3, 3>& defgrd   ///< deformation gradient
           ) override;
 
       /// Get fiber directions
       void GetFiberVecs(
-          std::vector<CORE::LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
+          std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
           ) override;
 
       /// Indicator for formulation
@@ -165,16 +165,16 @@ namespace MAT
 
      protected:
       /// my material parameters
-      MAT::ELASTIC::PAR::IsoAnisoExpo* params_;
+      Mat::Elastic::PAR::IsoAnisoExpo* params_;
 
       /// fiber direction
-      CORE::LINALG::Matrix<3, 1> a_;
+      Core::LinAlg::Matrix<3, 1> a_;
       /// structural tensors in voigt notation for anisotropy
-      CORE::LINALG::Matrix<6, 1> structural_tensor_;
+      Core::LinAlg::Matrix<6, 1> structural_tensor_;
     };
 
-  }  // namespace ELASTIC
-}  // namespace MAT
+  }  // namespace Elastic
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -20,14 +20,14 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-PARTICLEINTERACTION::ParticleInteractionBase::ParticleInteractionBase(
+ParticleInteraction::ParticleInteractionBase::ParticleInteractionBase(
     const Epetra_Comm& comm, const Teuchos::ParameterList& params)
     : comm_(comm), myrank_(comm.MyPID()), params_(params), time_(0.0), dt_(0.0)
 {
   // empty constructor
 }
 
-void PARTICLEINTERACTION::ParticleInteractionBase::Init()
+void ParticleInteraction::ParticleInteractionBase::Init()
 {
   // init particle material handler
   init_particle_material_handler();
@@ -36,7 +36,7 @@ void PARTICLEINTERACTION::ParticleInteractionBase::Init()
   init_particle_interaction_writer();
 }
 
-void PARTICLEINTERACTION::ParticleInteractionBase::Setup(
+void ParticleInteraction::ParticleInteractionBase::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface)
 {
@@ -59,19 +59,19 @@ void PARTICLEINTERACTION::ParticleInteractionBase::Setup(
   gravity_.resize(3, 0.0);
 }
 
-void PARTICLEINTERACTION::ParticleInteractionBase::write_restart() const
+void ParticleInteraction::ParticleInteractionBase::write_restart() const
 {
   // nothing to do
 }
 
-void PARTICLEINTERACTION::ParticleInteractionBase::read_restart(
-    const std::shared_ptr<CORE::IO::DiscretizationReader> reader)
+void ParticleInteraction::ParticleInteractionBase::read_restart(
+    const std::shared_ptr<Core::IO::DiscretizationReader> reader)
 {
   // read restart of particle interaction writer
   particleinteractionwriter_->read_restart(reader);
 }
 
-void PARTICLEINTERACTION::ParticleInteractionBase::
+void ParticleInteraction::ParticleInteractionBase::
     check_particle_interaction_distance_concerning_bin_size() const
 {
   // get maximum particle interaction distance
@@ -103,56 +103,56 @@ void PARTICLEINTERACTION::ParticleInteractionBase::
   }
 }
 
-void PARTICLEINTERACTION::ParticleInteractionBase::set_current_time(const double currenttime)
+void ParticleInteraction::ParticleInteractionBase::set_current_time(const double currenttime)
 {
   time_ = currenttime;
 }
 
-void PARTICLEINTERACTION::ParticleInteractionBase::set_current_step_size(
+void ParticleInteraction::ParticleInteractionBase::set_current_step_size(
     const double currentstepsize)
 {
   dt_ = currentstepsize;
 }
 
-void PARTICLEINTERACTION::ParticleInteractionBase::set_current_write_result_flag(
+void ParticleInteraction::ParticleInteractionBase::set_current_write_result_flag(
     bool writeresultsthisstep)
 {
   // set current write result flag in particle interaction writer
   particleinteractionwriter_->set_current_write_result_flag(writeresultsthisstep);
 }
 
-void PARTICLEINTERACTION::ParticleInteractionBase::SetGravity(std::vector<double>& gravity)
+void ParticleInteraction::ParticleInteractionBase::SetGravity(std::vector<double>& gravity)
 {
   gravity_ = gravity;
 }
 
-void PARTICLEINTERACTION::ParticleInteractionBase::write_interaction_runtime_output(
+void ParticleInteraction::ParticleInteractionBase::write_interaction_runtime_output(
     const int step, const double time)
 {
   // write particle interaction runtime output
   particleinteractionwriter_->write_particle_interaction_runtime_output(step, time);
 }
 
-void PARTICLEINTERACTION::ParticleInteractionBase::init_particle_material_handler()
+void ParticleInteraction::ParticleInteractionBase::init_particle_material_handler()
 {
   // create particle material handler
-  particlematerial_ = std::make_shared<PARTICLEINTERACTION::MaterialHandler>(params_);
+  particlematerial_ = std::make_shared<ParticleInteraction::MaterialHandler>(params_);
 
   // init particle material handler
   particlematerial_->Init();
 }
 
-void PARTICLEINTERACTION::ParticleInteractionBase::init_particle_interaction_writer()
+void ParticleInteraction::ParticleInteractionBase::init_particle_interaction_writer()
 {
   // create particle interaction writer
   particleinteractionwriter_ =
-      std::make_shared<PARTICLEINTERACTION::InteractionWriter>(comm_, params_);
+      std::make_shared<ParticleInteraction::InteractionWriter>(comm_, params_);
 
   // init particle interaction writer
   particleinteractionwriter_->Init();
 }
 
-double PARTICLEINTERACTION::ParticleInteractionBase::max_particle_radius() const
+double ParticleInteraction::ParticleInteractionBase::max_particle_radius() const
 {
   // init value of maximum radius
   double maxrad = 0.0;

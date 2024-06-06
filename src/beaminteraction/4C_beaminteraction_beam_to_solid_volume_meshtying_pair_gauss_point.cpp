@@ -42,9 +42,9 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam,
  */
 template <typename beam, typename solid>
 bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Evaluate(
-    CORE::LINALG::SerialDenseVector* forcevec1, CORE::LINALG::SerialDenseVector* forcevec2,
-    CORE::LINALG::SerialDenseMatrix* stiffmat11, CORE::LINALG::SerialDenseMatrix* stiffmat12,
-    CORE::LINALG::SerialDenseMatrix* stiffmat21, CORE::LINALG::SerialDenseMatrix* stiffmat22)
+    Core::LinAlg::SerialDenseVector* forcevec1, Core::LinAlg::SerialDenseVector* forcevec2,
+    Core::LinAlg::SerialDenseMatrix* stiffmat11, Core::LinAlg::SerialDenseMatrix* stiffmat12,
+    Core::LinAlg::SerialDenseMatrix* stiffmat21, Core::LinAlg::SerialDenseMatrix* stiffmat22)
 {
   // Call Evaluate on the geometry Pair. Only do this once for meshtying.
   if (!this->meshtying_is_evaluated_)
@@ -61,12 +61,12 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
   if (this->line_to_3D_segments_.size() == 0) return false;
 
   // Initialize variables for position and force vectors.
-  CORE::LINALG::Matrix<3, 1, double> dr_beam_ref;
-  CORE::LINALG::Matrix<3, 1, scalar_type> r_beam;
-  CORE::LINALG::Matrix<3, 1, scalar_type> r_solid;
-  CORE::LINALG::Matrix<3, 1, scalar_type> force;
-  CORE::LINALG::Matrix<beam::n_dof_, 1, scalar_type> force_element_1(true);
-  CORE::LINALG::Matrix<solid::n_dof_, 1, scalar_type> force_element_2(true);
+  Core::LinAlg::Matrix<3, 1, double> dr_beam_ref;
+  Core::LinAlg::Matrix<3, 1, scalar_type> r_beam;
+  Core::LinAlg::Matrix<3, 1, scalar_type> r_solid;
+  Core::LinAlg::Matrix<3, 1, scalar_type> force;
+  Core::LinAlg::Matrix<beam::n_dof_, 1, scalar_type> force_element_1(true);
+  Core::LinAlg::Matrix<solid::n_dof_, 1, scalar_type> force_element_2(true);
 
   // Initialize scalar variables.
   double segment_jacobian = 0.0;
@@ -135,10 +135,10 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
     {
       // $f_1$
       for (unsigned int i_dof = 0; i_dof < beam::n_dof_; i_dof++)
-        (*forcevec1)(i_dof) = CORE::FADUTILS::CastToDouble(force_element_1(i_dof));
+        (*forcevec1)(i_dof) = Core::FADUtils::CastToDouble(force_element_1(i_dof));
       // $f_2$
       for (unsigned int i_dof = 0; i_dof < solid::n_dof_; i_dof++)
-        (*forcevec2)(i_dof) = CORE::FADUTILS::CastToDouble(force_element_2(i_dof));
+        (*forcevec2)(i_dof) = Core::FADUtils::CastToDouble(force_element_2(i_dof));
     }
 
     if (stiffmat11 != nullptr && stiffmat12 != nullptr && stiffmat21 != nullptr &&
@@ -148,7 +148,7 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
       for (unsigned int i_dof_1 = 0; i_dof_1 < beam::n_dof_; i_dof_1++)
         for (unsigned int i_dof_2 = 0; i_dof_2 < beam::n_dof_; i_dof_2++)
           (*stiffmat11)(i_dof_1, i_dof_2) =
-              -CORE::FADUTILS::CastToDouble(force_element_1(i_dof_1).dx(i_dof_2));
+              -Core::FADUtils::CastToDouble(force_element_1(i_dof_1).dx(i_dof_2));
 
       // $k_{12}, k_{21}$
       for (unsigned int i_dof_1 = 0; i_dof_1 < beam::n_dof_; i_dof_1++)
@@ -156,9 +156,9 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
         for (unsigned int i_dof_2 = 0; i_dof_2 < solid::n_dof_; i_dof_2++)
         {
           (*stiffmat12)(i_dof_1, i_dof_2) =
-              -CORE::FADUTILS::CastToDouble(force_element_1(i_dof_1).dx(beam::n_dof_ + i_dof_2));
+              -Core::FADUtils::CastToDouble(force_element_1(i_dof_1).dx(beam::n_dof_ + i_dof_2));
           (*stiffmat21)(i_dof_2, i_dof_1) =
-              -CORE::FADUTILS::CastToDouble(force_element_2(i_dof_2).dx(i_dof_1));
+              -Core::FADUtils::CastToDouble(force_element_2(i_dof_2).dx(i_dof_1));
         }
       }
 
@@ -166,7 +166,7 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
       for (unsigned int i_dof_1 = 0; i_dof_1 < solid::n_dof_; i_dof_1++)
         for (unsigned int i_dof_2 = 0; i_dof_2 < solid::n_dof_; i_dof_2++)
           (*stiffmat22)(i_dof_1, i_dof_2) =
-              -CORE::FADUTILS::CastToDouble(force_element_2(i_dof_1).dx(beam::n_dof_ + i_dof_2));
+              -Core::FADUtils::CastToDouble(force_element_2(i_dof_1).dx(beam::n_dof_ + i_dof_2));
     }
   }
 
@@ -180,15 +180,15 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
  */
 template <typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::EvaluateAndAssemble(
-    const Teuchos::RCP<const DRT::Discretization>& discret,
+    const Teuchos::RCP<const Discret::Discretization>& discret,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
-    const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
+    const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
 {
   // This function only gives contributions for rotational coupling.
   auto rot_coupling_type =
       this->Params()->beam_to_solid_volume_meshtying_params()->get_rotational_coupling_type();
-  if (rot_coupling_type == INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling::none) return;
+  if (rot_coupling_type == Inpar::BeamToSolid::BeamToSolidRotationCoupling::none) return;
 
   // Call Evaluate on the geometry Pair. Only do this once for meshtying.
   if (!this->meshtying_is_evaluated_)
@@ -205,8 +205,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
   if (this->line_to_3D_segments_.size() == 0) return;
 
   // Get the beam triad interpolation schemes.
-  LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double> triad_interpolation_scheme;
-  LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double> ref_triad_interpolation_scheme;
+  LargeRotations::TriadInterpolationLocalRotationVectors<3, double> triad_interpolation_scheme;
+  LargeRotations::TriadInterpolationLocalRotationVectors<3, double> ref_triad_interpolation_scheme;
   GetBeamTriadInterpolationScheme(*discret, displacement_vector, this->Element1(),
       triad_interpolation_scheme, ref_triad_interpolation_scheme);
 
@@ -215,24 +215,24 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
       GEOMETRYPAIR::InitializeElementData<solid, scalar_type_rot_2nd>::Initialize(this->Element2());
   for (unsigned int i_solid = 0; i_solid < solid::n_dof_; i_solid++)
     q_solid.element_position_(i_solid) =
-        CORE::FADUTILS::HigherOrderFadValue<scalar_type_rot_2nd>::apply(3 + solid::n_dof_,
-            3 + i_solid, CORE::FADUTILS::CastToDouble(this->ele2pos_.element_position_(i_solid)));
+        Core::FADUtils::HigherOrderFadValue<scalar_type_rot_2nd>::apply(3 + solid::n_dof_,
+            3 + i_solid, Core::FADUtils::CastToDouble(this->ele2pos_.element_position_(i_solid)));
 
 
   // Initialize local matrices.
-  CORE::LINALG::Matrix<n_dof_pair_, 1, double> local_force(true);
-  CORE::LINALG::Matrix<n_dof_pair_, n_dof_pair_, double> local_stiff(true);
+  Core::LinAlg::Matrix<n_dof_pair_, 1, double> local_force(true);
+  Core::LinAlg::Matrix<n_dof_pair_, n_dof_pair_, double> local_stiff(true);
 
 
-  if (rot_coupling_type == INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling::fix_triad_2d)
+  if (rot_coupling_type == Inpar::BeamToSolid::BeamToSolidRotationCoupling::fix_triad_2d)
   {
     // In the case of "fix_triad_2d" we couple both, the ey and ez direction to the beam. Therefore,
     // we have to evaluate the coupling terms w.r.t both of those coupling types.
     evaluate_rotational_coupling_terms(
-        INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling::deformation_gradient_y_2d, q_solid,
+        Inpar::BeamToSolid::BeamToSolidRotationCoupling::deformation_gradient_y_2d, q_solid,
         triad_interpolation_scheme, ref_triad_interpolation_scheme, local_force, local_stiff);
     evaluate_rotational_coupling_terms(
-        INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling::deformation_gradient_z_2d, q_solid,
+        Inpar::BeamToSolid::BeamToSolidRotationCoupling::deformation_gradient_z_2d, q_solid,
         triad_interpolation_scheme, ref_triad_interpolation_scheme, local_force, local_stiff);
   }
   else
@@ -247,7 +247,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
   this->Element1()->LocationVector(*discret, lm_beam, lmowner, lmstride);
   this->Element2()->LocationVector(*discret, lm_solid, lmowner, lmstride);
   std::array<int, 9> rot_dof_indices = {3, 4, 5, 12, 13, 14, 18, 19, 20};
-  CORE::LINALG::Matrix<n_dof_pair_, 1, int> gid_pair;
+  Core::LinAlg::Matrix<n_dof_pair_, 1, int> gid_pair;
   for (unsigned int i = 0; i < n_dof_rot_; i++) gid_pair(i) = lm_beam[rot_dof_indices[i]];
   for (unsigned int i = 0; i < solid::n_dof_; i++) gid_pair(i + n_dof_rot_) = lm_solid[i];
 
@@ -260,7 +260,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
   if (stiffness_matrix != Teuchos::null)
     for (unsigned int i_dof = 0; i_dof < n_dof_pair_; i_dof++)
       for (unsigned int j_dof = 0; j_dof < n_dof_pair_; j_dof++)
-        stiffness_matrix->FEAssemble(CORE::FADUTILS::CastToDouble(local_stiff(i_dof, j_dof)),
+        stiffness_matrix->FEAssemble(Core::FADUtils::CastToDouble(local_stiff(i_dof, j_dof)),
             gid_pair(i_dof), gid_pair(j_dof));
 }
 
@@ -270,45 +270,45 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
 template <typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam,
     solid>::evaluate_rotational_coupling_terms(  //
-    const INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling& rot_coupling_type,
+    const Inpar::BeamToSolid::BeamToSolidRotationCoupling& rot_coupling_type,
     const GEOMETRYPAIR::ElementData<solid, scalar_type_rot_2nd>& q_solid,
-    const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>&
+    const LargeRotations::TriadInterpolationLocalRotationVectors<3, double>&
         triad_interpolation_scheme,
-    const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>&
+    const LargeRotations::TriadInterpolationLocalRotationVectors<3, double>&
         ref_triad_interpolation_scheme,
-    CORE::LINALG::Matrix<n_dof_pair_, 1, double>& local_force,
-    CORE::LINALG::Matrix<n_dof_pair_, n_dof_pair_, double>& local_stiff) const
+    Core::LinAlg::Matrix<n_dof_pair_, 1, double>& local_force,
+    Core::LinAlg::Matrix<n_dof_pair_, n_dof_pair_, double>& local_stiff) const
 {
   // Initialize variables.
-  CORE::LINALG::Matrix<3, 1, double> dr_beam_ref;
-  CORE::LINALG::Matrix<4, 1, double> quaternion_beam_double;
-  CORE::LINALG::Matrix<3, 1, double> psi_beam_double;
-  CORE::LINALG::Matrix<3, 1, scalar_type_rot_1st> psi_beam;
-  CORE::LINALG::Matrix<3, 1, scalar_type_rot_2nd> psi_solid;
-  CORE::LINALG::Matrix<3, 1, scalar_type_rot_1st> psi_solid_val;
-  CORE::LINALG::Matrix<3, 1, scalar_type_rot_1st> psi_rel;
-  CORE::LINALG::Matrix<4, 1, scalar_type_rot_1st> quaternion_beam;
-  CORE::LINALG::Matrix<4, 1, scalar_type_rot_1st> quaternion_beam_inv;
-  CORE::LINALG::Matrix<4, 1, double> quaternion_beam_ref;
-  CORE::LINALG::Matrix<4, 1, scalar_type_rot_1st> quaternion_solid;
-  CORE::LINALG::Matrix<4, 1, scalar_type_rot_1st> quaternion_rel;
-  CORE::LINALG::Matrix<3, 3, double> T_beam;
-  CORE::LINALG::Matrix<3, 3, scalar_type_rot_1st> T_solid;
-  CORE::LINALG::Matrix<3, 3, scalar_type_rot_1st> T_solid_inv;
-  CORE::LINALG::Matrix<3, 1, scalar_type_rot_1st> potential_variation;
-  CORE::LINALG::Matrix<n_dof_rot_, 1, scalar_type_rot_1st> fc_beam_gp;
-  CORE::LINALG::Matrix<3, solid::n_dof_, scalar_type_rot_1st> d_psi_solid_d_q_solid;
-  CORE::LINALG::Matrix<3, 1, scalar_type_rot_1st> Tinv_solid_times_potential_variation;
-  CORE::LINALG::Matrix<solid::n_dof_, 1, scalar_type_rot_1st> fc_solid_gp;
-  CORE::LINALG::SerialDenseVector L_i(3);
-  CORE::LINALG::Matrix<n_dof_rot_, 3, double> d_fc_beam_d_psi_beam;
-  CORE::LINALG::Matrix<solid::n_dof_, 3, double> d_fc_solid_d_psi_beam;
-  std::vector<CORE::LINALG::Matrix<3, 3, double>> I_beam_tilde;
-  CORE::LINALG::Matrix<3, n_dof_rot_, double> I_beam_tilde_full;
-  CORE::LINALG::Matrix<3, n_dof_rot_, double> T_beam_times_I_beam_tilde_full;
-  CORE::LINALG::Matrix<n_dof_rot_, n_dof_rot_, double> stiff_beam_beam_gp;
-  CORE::LINALG::Matrix<solid::n_dof_, n_dof_rot_, double> stiff_solid_beam_gp;
-  CORE::LINALG::Matrix<n_dof_rot_, solid::n_dof_, double> stiff_beam_solid_gp;
+  Core::LinAlg::Matrix<3, 1, double> dr_beam_ref;
+  Core::LinAlg::Matrix<4, 1, double> quaternion_beam_double;
+  Core::LinAlg::Matrix<3, 1, double> psi_beam_double;
+  Core::LinAlg::Matrix<3, 1, scalar_type_rot_1st> psi_beam;
+  Core::LinAlg::Matrix<3, 1, scalar_type_rot_2nd> psi_solid;
+  Core::LinAlg::Matrix<3, 1, scalar_type_rot_1st> psi_solid_val;
+  Core::LinAlg::Matrix<3, 1, scalar_type_rot_1st> psi_rel;
+  Core::LinAlg::Matrix<4, 1, scalar_type_rot_1st> quaternion_beam;
+  Core::LinAlg::Matrix<4, 1, scalar_type_rot_1st> quaternion_beam_inv;
+  Core::LinAlg::Matrix<4, 1, double> quaternion_beam_ref;
+  Core::LinAlg::Matrix<4, 1, scalar_type_rot_1st> quaternion_solid;
+  Core::LinAlg::Matrix<4, 1, scalar_type_rot_1st> quaternion_rel;
+  Core::LinAlg::Matrix<3, 3, double> T_beam;
+  Core::LinAlg::Matrix<3, 3, scalar_type_rot_1st> T_solid;
+  Core::LinAlg::Matrix<3, 3, scalar_type_rot_1st> T_solid_inv;
+  Core::LinAlg::Matrix<3, 1, scalar_type_rot_1st> potential_variation;
+  Core::LinAlg::Matrix<n_dof_rot_, 1, scalar_type_rot_1st> fc_beam_gp;
+  Core::LinAlg::Matrix<3, solid::n_dof_, scalar_type_rot_1st> d_psi_solid_d_q_solid;
+  Core::LinAlg::Matrix<3, 1, scalar_type_rot_1st> Tinv_solid_times_potential_variation;
+  Core::LinAlg::Matrix<solid::n_dof_, 1, scalar_type_rot_1st> fc_solid_gp;
+  Core::LinAlg::SerialDenseVector L_i(3);
+  Core::LinAlg::Matrix<n_dof_rot_, 3, double> d_fc_beam_d_psi_beam;
+  Core::LinAlg::Matrix<solid::n_dof_, 3, double> d_fc_solid_d_psi_beam;
+  std::vector<Core::LinAlg::Matrix<3, 3, double>> I_beam_tilde;
+  Core::LinAlg::Matrix<3, n_dof_rot_, double> I_beam_tilde_full;
+  Core::LinAlg::Matrix<3, n_dof_rot_, double> T_beam_times_I_beam_tilde_full;
+  Core::LinAlg::Matrix<n_dof_rot_, n_dof_rot_, double> stiff_beam_beam_gp;
+  Core::LinAlg::Matrix<solid::n_dof_, n_dof_rot_, double> stiff_solid_beam_gp;
+  Core::LinAlg::Matrix<n_dof_rot_, solid::n_dof_, double> stiff_beam_solid_gp;
 
   // Initialize scalar variables.
   double segment_jacobian = 0.0;
@@ -343,12 +343,12 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam,
       // Calculate the rotation vector of this cross section.
       triad_interpolation_scheme.get_interpolated_quaternion_at_xi(
           quaternion_beam_double, projected_gauss_point.GetEta());
-      CORE::LARGEROTATIONS::quaterniontoangle(quaternion_beam_double, psi_beam_double);
+      Core::LargeRotations::quaterniontoangle(quaternion_beam_double, psi_beam_double);
       for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-        psi_beam(i_dim) = CORE::FADUTILS::HigherOrderFadValue<scalar_type_rot_1st>::apply(
+        psi_beam(i_dim) = Core::FADUtils::HigherOrderFadValue<scalar_type_rot_1st>::apply(
             3 + solid::n_dof_, i_dim, psi_beam_double(i_dim));
-      CORE::LARGEROTATIONS::angletoquaternion(psi_beam, quaternion_beam);
-      quaternion_beam_inv = CORE::LARGEROTATIONS::inversequaternion(quaternion_beam);
+      Core::LargeRotations::angletoquaternion(psi_beam, quaternion_beam);
+      quaternion_beam_inv = Core::LargeRotations::inversequaternion(quaternion_beam);
 
       // Get the solid rotation vector.
       ref_triad_interpolation_scheme.get_interpolated_quaternion_at_xi(
@@ -357,19 +357,19 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam,
           this->ele2posref_, q_solid, quaternion_beam_ref, psi_solid);
       for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
         psi_solid_val(i_dim) = psi_solid(i_dim).val();
-      CORE::LARGEROTATIONS::angletoquaternion(psi_solid_val, quaternion_solid);
+      Core::LargeRotations::angletoquaternion(psi_solid_val, quaternion_solid);
 
       // Calculate the relative rotation vector.
-      CORE::LARGEROTATIONS::quaternionproduct(
+      Core::LargeRotations::quaternionproduct(
           quaternion_beam_inv, quaternion_solid, quaternion_rel);
-      CORE::LARGEROTATIONS::quaterniontoangle(quaternion_rel, psi_rel);
+      Core::LargeRotations::quaterniontoangle(quaternion_rel, psi_rel);
 
       // Calculate the transformation matrices.
-      T_beam = CORE::LARGEROTATIONS::Tmatrix(CORE::FADUTILS::CastToDouble(psi_beam));
-      T_solid = CORE::LARGEROTATIONS::Tmatrix(psi_solid_val);
+      T_beam = Core::LargeRotations::Tmatrix(Core::FADUtils::CastToDouble(psi_beam));
+      T_solid = Core::LargeRotations::Tmatrix(psi_solid_val);
 
       // Force terms.
-      CORE::FE::shape_function_1D(L_i, projected_gauss_point.GetEta(), CORE::FE::CellType::line3);
+      Core::FE::shape_function_1D(L_i, projected_gauss_point.GetEta(), Core::FE::CellType::line3);
       potential_variation = psi_rel;
       potential_variation.Scale(rotational_penalty_parameter);
       for (unsigned int i_node = 0; i_node < 3; i_node++)
@@ -378,18 +378,18 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam,
                                            projected_gauss_point.GetGaussWeight() *
                                            segment_jacobian;
       for (unsigned int i_dof = 0; i_dof < n_dof_rot_; i_dof++)
-        local_force(i_dof) += CORE::FADUTILS::CastToDouble(fc_beam_gp(i_dof));
+        local_force(i_dof) += Core::FADUtils::CastToDouble(fc_beam_gp(i_dof));
 
       for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
         for (unsigned int i_solid = 0; i_solid < solid::n_dof_; i_solid++)
           d_psi_solid_d_q_solid(i_dim, i_solid) = psi_solid(i_dim).dx(3 + i_solid);
       T_solid_inv = T_solid;
-      CORE::LINALG::Inverse(T_solid_inv);
+      Core::LinAlg::Inverse(T_solid_inv);
       Tinv_solid_times_potential_variation.MultiplyTN(T_solid_inv, potential_variation);
       fc_solid_gp.MultiplyTN(d_psi_solid_d_q_solid, Tinv_solid_times_potential_variation);
       fc_solid_gp.Scale(projected_gauss_point.GetGaussWeight() * segment_jacobian);
       for (unsigned int i_dof = 0; i_dof < solid::n_dof_; i_dof++)
-        local_force(n_dof_rot_ + i_dof) += CORE::FADUTILS::CastToDouble(fc_solid_gp(i_dof));
+        local_force(n_dof_rot_ + i_dof) += Core::FADUtils::CastToDouble(fc_solid_gp(i_dof));
 
 
       // Stiffness terms.
@@ -409,7 +409,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam,
                 I_beam_tilde[i_node](i_dim_0, i_dim_1);
 
       T_beam_times_I_beam_tilde_full.Multiply(
-          CORE::FADUTILS::CastToDouble(T_beam), I_beam_tilde_full);
+          Core::FADUtils::CastToDouble(T_beam), I_beam_tilde_full);
       stiff_beam_beam_gp.Multiply(d_fc_beam_d_psi_beam, T_beam_times_I_beam_tilde_full);
       for (unsigned int i_dof = 0; i_dof < n_dof_rot_; i_dof++)
         for (unsigned int j_dof = 0; j_dof < n_dof_rot_; j_dof++)

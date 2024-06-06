@@ -16,7 +16,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace ADAPTER
+namespace Adapter
 {
   /// Just wrap, do nothing new, meant to be derived from
   class FluidWrapper : public Fluid
@@ -82,38 +82,38 @@ namespace ADAPTER
     {
       return fluid_->dof_row_map(nds);
     };
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() override
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() override
     {
       return fluid_->SystemMatrix();
     }
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemSparseMatrix() override
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemSparseMatrix() override
     {
       return fluid_->SystemSparseMatrix();
     }
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() override
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> BlockSystemMatrix() override
     {
       return fluid_->BlockSystemMatrix();
     }
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> ShapeDerivatives() override
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> ShapeDerivatives() override
     {
       return fluid_->ShapeDerivatives();
     }
-    const Teuchos::RCP<DRT::Discretization>& discretization() override
+    const Teuchos::RCP<Discret::Discretization>& discretization() override
     {
       return fluid_->discretization();
     }
-    Teuchos::RCP<const CORE::Dofsets::DofSet> DofSet() override { return fluid_->DofSet(); }
-    Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() override
+    Teuchos::RCP<const Core::DOFSets::DofSet> DofSet() override { return fluid_->DofSet(); }
+    Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor() override
     {
       return fluid_->GetDBCMapExtractor();
     }
     void SetInitialFlowField(
-        const INPAR::FLUID::InitialField initfield, const int startfuncno) override
+        const Inpar::FLUID::InitialField initfield, const int startfuncno) override
     {
       return fluid_->SetInitialFlowField(initfield, startfuncno);
     }
     void set_initial_porosity_field(
-        const INPAR::POROELAST::InitialField initfield, const int startfuncno) override
+        const Inpar::PoroElast::InitialField initfield, const int startfuncno) override
     {
       return fluid_->set_initial_porosity_field(initfield, startfuncno);
     };
@@ -142,20 +142,20 @@ namespace ADAPTER
         Teuchos::RCP<const Epetra_Vector> scalaram, Teuchos::RCP<const Epetra_Vector> scalardtam,
         Teuchos::RCP<const Epetra_Vector> fsscalaraf, const double thermpressaf,
         const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
-        Teuchos::RCP<DRT::Discretization> scatradis) override
+        Teuchos::RCP<Discret::Discretization> scatradis) override
     {
       return fluid_->set_loma_iter_scalar_fields(scalaraf, scalaram, scalardtam, fsscalaraf,
           thermpressaf, thermpressam, thermpressdtaf, thermpressdtam, scatradis);
     }
     void SetIterScalarFields(Teuchos::RCP<const Epetra_Vector> scalaraf,
         Teuchos::RCP<const Epetra_Vector> scalaram, Teuchos::RCP<const Epetra_Vector> scalardtam,
-        Teuchos::RCP<DRT::Discretization> scatradis, int dofset = 0) override
+        Teuchos::RCP<Discret::Discretization> scatradis, int dofset = 0) override
     {
       return fluid_->SetIterScalarFields(scalaraf, scalaram, scalardtam, scatradis, dofset);
     }
     void SetScalarFields(Teuchos::RCP<const Epetra_Vector> scalarnp, const double thermpressnp,
         Teuchos::RCP<const Epetra_Vector> scatraresidual,
-        Teuchos::RCP<DRT::Discretization> scatradis, const int whichscalar = -1) override
+        Teuchos::RCP<Discret::Discretization> scatradis, const int whichscalar = -1) override
     {
       return fluid_->SetScalarFields(
           scalarnp, thermpressnp, scatraresidual, scatradis, whichscalar);
@@ -204,11 +204,11 @@ namespace ADAPTER
       FOUR_C_THROW("not implemented!");
       return;
     }
-    const Teuchos::RCP<CORE::IO::DiscretizationWriter>& DiscWriter() override
+    const Teuchos::RCP<Core::IO::DiscretizationWriter>& DiscWriter() override
     {
       return fluid_->DiscWriter();
     }
-    Teuchos::RCP<CORE::LINALG::MapExtractor> GetVelPressSplitter() override
+    Teuchos::RCP<Core::LinAlg::MapExtractor> GetVelPressSplitter() override
     {
       return fluid_->GetVelPressSplitter();
     }
@@ -296,7 +296,7 @@ namespace ADAPTER
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() override { return fluid_->LinearSolver(); }
+    Teuchos::RCP<Core::LinAlg::Solver> LinearSolver() override { return fluid_->LinearSolver(); }
     void calc_intermediate_solution() override { return fluid_->calc_intermediate_solution(); }
     Teuchos::RCP<const Epetra_Map> InnerVelocityRowMap() override
     {
@@ -332,7 +332,7 @@ namespace ADAPTER
       static Teuchos::RCP<FLD::UTILS::MapExtractor> ret = Teuchos::null;
       return ret;
     }
-    INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const override
+    Inpar::FLUID::TimeIntegrationScheme TimIntScheme() const override
     {
       return fluid_->TimIntScheme();
     }
@@ -409,7 +409,7 @@ namespace ADAPTER
     {
       return fluid_->use_block_matrix(splitmatrix);
     }
-    Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() override
+    Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() override
     {
       return fluid_->CreateFieldTest();
     }
@@ -429,12 +429,12 @@ namespace ADAPTER
     }
 
     /// return physical type of fluid algorithm
-    INPAR::FLUID::PhysicalType PhysicalType() const override { return fluid_->PhysicalType(); }
+    Inpar::FLUID::PhysicalType PhysicalType() const override { return fluid_->PhysicalType(); }
 
    protected:
     Teuchos::RCP<Fluid> fluid_;
   };
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 FOUR_C_NAMESPACE_CLOSE
 

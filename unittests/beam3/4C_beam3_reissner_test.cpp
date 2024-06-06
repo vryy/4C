@@ -28,16 +28,16 @@ namespace
    public:
     Beam3r()
     {
-      testdis_ =
-          Teuchos::rcp(new DRT::Discretization("Beam3r", Teuchos::rcp(new Epetra_SerialComm), 3));
+      testdis_ = Teuchos::rcp(
+          new Discret::Discretization("Beam3r", Teuchos::rcp(new Epetra_SerialComm), 3));
 
       std::vector<std::vector<double>> xrefe{{-0.05, 0.05, 0.3}, {0.45, -0.05, 0.1}};
       std::vector<double> xrefe_full{-0.05, 0.05, 0.3, 0.45, -0.05, 0.1};
 
       for (int lid = 0; lid < 2; ++lid)
-        testdis_->AddNode(Teuchos::rcp(new CORE::Nodes::Node(lid, xrefe[lid], 0)));
+        testdis_->AddNode(Teuchos::rcp(new Core::Nodes::Node(lid, xrefe[lid], 0)));
 
-      testele_ = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
+      testele_ = Teuchos::rcp(new Discret::ELEMENTS::Beam3r(0, 0));
       std::array<int, 2> node_ids{0, 1};
       testele_->SetNodeIds(2, node_ids.data());
 
@@ -63,9 +63,9 @@ namespace
 
    protected:
     //! dummy discretization for holding element and node pointers
-    Teuchos::RCP<DRT::Discretization> testdis_;
+    Teuchos::RCP<Discret::Discretization> testdis_;
     //! the beam3r element to be tested
-    Teuchos::RCP<DRT::ELEMENTS::Beam3r> testele_;
+    Teuchos::RCP<Discret::ELEMENTS::Beam3r> testele_;
   };
 
   /**

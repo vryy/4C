@@ -31,11 +31,11 @@ namespace STR
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
     namespace CONSTRAINT
     {
-      class Group : public virtual NOX::NLN::Group
+      class Group : public virtual NOX::Nln::Group
       {
        public:
         //! Standard constructor
@@ -46,14 +46,14 @@ namespace NOX
             const ::NOX::Epetra::Vector& x,  //!< current solution vector
             const Teuchos::RCP<::NOX::Epetra::LinearSystem>&
                 linSys,  //!< linear system, matrix and RHS etc.
-            const std::map<enum NOX::NLN::SolutionType,
-                Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required>>&
+            const std::map<enum NOX::Nln::SolutionType,
+                Teuchos::RCP<NOX::Nln::CONSTRAINT::Interface::Required>>&
                 iConstr  //!< constraint interfaces
         );
 
         /*! \brief Copy constructor. If type is DeepCopy, takes ownership of
           valid shared linear system. */
-        Group(const NOX::NLN::CONSTRAINT::Group& source, ::NOX::CopyType type = ::NOX::DeepCopy);
+        Group(const NOX::Nln::CONSTRAINT::Group& source, ::NOX::CopyType type = ::NOX::DeepCopy);
 
         //! generate a clone of the given object concerning the given \c CopyType
         Teuchos::RCP<::NOX::Abstract::Group> clone(::NOX::CopyType type) const override;
@@ -65,29 +65,29 @@ namespace NOX
 
         //! Returns a pointer to the given soltype. If the solution type is not found an error is
         //! thrown.
-        Teuchos::RCP<const NOX::NLN::CONSTRAINT::Interface::Required> get_constraint_interface_ptr(
-            const NOX::NLN::SolutionType soltype) const;
+        Teuchos::RCP<const NOX::Nln::CONSTRAINT::Interface::Required> get_constraint_interface_ptr(
+            const NOX::Nln::SolutionType soltype) const;
 
         //! If the \c errflag is set to true, a error is thrown as soon as we cannot find the
         //! corresponding entry in the stl_map. Otherwise a Teuchos::null pointer is returned.
-        Teuchos::RCP<const NOX::NLN::CONSTRAINT::Interface::Required> get_constraint_interface_ptr(
-            const NOX::NLN::SolutionType soltype, const bool errflag) const;
+        Teuchos::RCP<const NOX::Nln::CONSTRAINT::Interface::Required> get_constraint_interface_ptr(
+            const NOX::Nln::SolutionType soltype, const bool errflag) const;
 
         // @name "Get" functions
         //@{
 
         double GetModelValue(
-            const enum NOX::NLN::MeritFunction::MeritFctName merit_func_type) const override;
+            const enum NOX::Nln::MeritFunction::MeritFctName merit_func_type) const override;
 
         double get_linearized_model_terms(const ::NOX::Abstract::Vector& dir,
-            const enum NOX::NLN::MeritFunction::MeritFctName merit_func_type,
-            const enum NOX::NLN::MeritFunction::LinOrder linorder,
-            const enum NOX::NLN::MeritFunction::LinType lintype) const override;
+            const enum NOX::Nln::MeritFunction::MeritFctName merit_func_type,
+            const enum NOX::Nln::MeritFunction::LinOrder linorder,
+            const enum NOX::Nln::MeritFunction::LinType lintype) const override;
 
         //! Returns the right-hand-side norms of the primary and constraint quantities
         Teuchos::RCP<const std::vector<double>> GetRHSNorms(
             const std::vector<::NOX::Abstract::Vector::NormType>& type,
-            const std::vector<NOX::NLN::StatusTest::QuantityType>& chQ,
+            const std::vector<NOX::Nln::StatusTest::QuantityType>& chQ,
             const Teuchos::RCP<const std::vector<::NOX::StatusTest::NormF::ScaleType>> scale =
                 Teuchos::null) const override;
 
@@ -95,7 +95,7 @@ namespace NOX
         Teuchos::RCP<std::vector<double>> get_solution_update_rms(
             const ::NOX::Abstract::Vector& xOld, const std::vector<double>& aTol,
             const std::vector<double>& rTol,
-            const std::vector<NOX::NLN::StatusTest::QuantityType>& chQ,
+            const std::vector<NOX::Nln::StatusTest::QuantityType>& chQ,
             const std::vector<bool>& disable_implicit_weighting) const override;
 
         //! Returns the desired norm of the primary solution updates and Lagrange multiplier updates
@@ -120,16 +120,16 @@ namespace NOX
         //! @{
         //! Returns the current active set map (only needed for inequality constraint problems)
         Teuchos::RCP<const Epetra_Map> get_current_active_set_map(
-            const enum NOX::NLN::StatusTest::QuantityType& qtype) const;
+            const enum NOX::Nln::StatusTest::QuantityType& qtype) const;
 
         //! Returns the active set map of the previous Newton step (only needed for inequality
         //! constraint problems)
         Teuchos::RCP<const Epetra_Map> GetOldActiveSetMap(
-            const enum NOX::NLN::StatusTest::QuantityType& qtype) const;
+            const enum NOX::Nln::StatusTest::QuantityType& qtype) const;
 
         //! Returns basic information about the active set status (no Epetra_Maps needed!)
         enum ::NOX::StatusTest::StatusType GetActiveSetInfo(
-            const enum NOX::NLN::StatusTest::QuantityType& qtype, int& activeset_size) const;
+            const enum NOX::Nln::StatusTest::QuantityType& qtype, int& activeset_size) const;
 
         //@}
 
@@ -142,7 +142,7 @@ namespace NOX
         ReqInterfaceMap user_constraint_interfaces_;
       };  // class Group
     }     // end namespace CONSTRAINT
-  }       // namespace NLN
+  }       // namespace Nln
 }  // end namespace  NOX
 
 FOUR_C_NAMESPACE_CLOSE

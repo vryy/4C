@@ -20,7 +20,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 
@@ -47,57 +47,58 @@ namespace DRT
         This class does not provide a definition for this function, it
         must be defined in ScaTraHDGBoundaryImpl.
        */
-      virtual int evaluate_neumann(DRT::ELEMENTS::ScaTraHDGBoundary* ele,
-          Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          CORE::Elements::Element::LocationArray& la,
-          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra) = 0;
+      virtual int evaluate_neumann(Discret::ELEMENTS::ScaTraHDGBoundary* ele,
+          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Core::Elements::Element::LocationArray& la,
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::LinAlg::SerialDenseVector& elevec1_epetra) = 0;
 
       //! Internal implementation class for ScaTraHDGBoundary elements
-      static ScaTraHDGBoundaryImplInterface* Impl(const CORE::Elements::Element* ele);
+      static ScaTraHDGBoundaryImplInterface* Impl(const Core::Elements::Element* ele);
 
     };  // class ScaTraHDGBoundaryImplInterface
 
 
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     class ScaTraHDGBoundaryImpl : public ScaTraHDGBoundaryImplInterface
     {
      public:
       //! Singleton access method
       static ScaTraHDGBoundaryImpl<distype>* Instance(
-          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
+          Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
       //! Constructor
       ScaTraHDGBoundaryImpl();
 
       //! number of element nodes
-      static constexpr int bdrynen_ = CORE::FE::num_nodes<distype>;
+      static constexpr int bdrynen_ = Core::FE::num_nodes<distype>;
 
       //! number of space dimensions of the ScaTraHDGBoundary element
-      static constexpr int bdrynsd_ = CORE::FE::dim<distype>;
+      static constexpr int bdrynsd_ = Core::FE::dim<distype>;
 
       //! number of space dimensions of the parent element
       static constexpr int nsd_ = bdrynsd_ + 1;
 
       //! Evaluate a Neumann boundary condition
-      int evaluate_neumann(DRT::ELEMENTS::ScaTraHDGBoundary* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
-          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra) override;
+      int evaluate_neumann(Discret::ELEMENTS::ScaTraHDGBoundary* ele,
+          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Core::Elements::Element::LocationArray& la,
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::LinAlg::SerialDenseVector& elevec1_epetra) override;
 
      private:
       //! node coordinates for boundary element
-      CORE::LINALG::Matrix<nsd_, bdrynen_> xyze_;
+      Core::LinAlg::Matrix<nsd_, bdrynen_> xyze_;
       //! coordinates of current integration point in reference coordinates
-      CORE::LINALG::Matrix<bdrynsd_, 1> xsi_;
+      Core::LinAlg::Matrix<bdrynsd_, 1> xsi_;
       //! array for shape functions for boundary element
-      CORE::LINALG::Matrix<bdrynen_, 1> funct_;
+      Core::LinAlg::Matrix<bdrynen_, 1> funct_;
       //! array for shape function derivatives for boundary element
-      CORE::LINALG::Matrix<bdrynsd_, bdrynen_> deriv_;
+      Core::LinAlg::Matrix<bdrynsd_, bdrynen_> deriv_;
       //! normal vector pointing out of the domain
-      CORE::LINALG::Matrix<nsd_, 1> unitnormal_;
+      Core::LinAlg::Matrix<nsd_, 1> unitnormal_;
       //! velocity vector at integration point
-      CORE::LINALG::Matrix<nsd_, 1> velint_;
+      Core::LinAlg::Matrix<nsd_, 1> velint_;
       //! infinitesimal area element drs
       double drs_;
       //! integration factor
@@ -106,7 +107,7 @@ namespace DRT
     };  // class ScaTraHDGBoundaryImpl
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

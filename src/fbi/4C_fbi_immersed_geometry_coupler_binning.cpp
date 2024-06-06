@@ -32,7 +32,7 @@ FBI::FBIBinningGeometryCoupler::FBIBinningGeometryCoupler()
 }
 /*----------------------------------------------------------------------*/
 void FBI::FBIBinningGeometryCoupler::setup_binning(
-    std::vector<Teuchos::RCP<DRT::Discretization>>& discretizations,
+    std::vector<Teuchos::RCP<Discret::Discretization>>& discretizations,
     Teuchos::RCP<const Epetra_Vector> structure_displacement)
 {
   Teuchos::RCP<const Epetra_Vector> disp2 =
@@ -44,7 +44,7 @@ void FBI::FBIBinningGeometryCoupler::setup_binning(
 }
 /*----------------------------------------------------------------------*/
 void FBI::FBIBinningGeometryCoupler::partition_geometry(
-    std::vector<Teuchos::RCP<DRT::Discretization>>& discretizations,
+    std::vector<Teuchos::RCP<Discret::Discretization>>& discretizations,
     Teuchos::RCP<const Epetra_Vector> structure_displacement)
 {
   Teuchos::RCP<const Epetra_Vector> disp2 =
@@ -88,7 +88,7 @@ void FBI::FBIBinningGeometryCoupler::partition_geometry(
 }
 /*----------------------------------------------------------------------*/
 void FBI::FBIBinningGeometryCoupler::UpdateBinning(
-    Teuchos::RCP<DRT::Discretization>& structure_discretization,
+    Teuchos::RCP<Discret::Discretization>& structure_discretization,
     Teuchos::RCP<const Epetra_Vector> structure_column_displacement)
 {
   binstrategy_->distribute_col_elements_to_bins_using_ele_aabb(
@@ -101,7 +101,7 @@ void FBI::FBIBinningGeometryCoupler::UpdateBinning(
 }
 /*----------------------------------------------------------------------*/
 void FBI::FBIBinningGeometryCoupler::Setup(
-    std::vector<Teuchos::RCP<DRT::Discretization>>& discretizations,
+    std::vector<Teuchos::RCP<Discret::Discretization>>& discretizations,
     Teuchos::RCP<const Epetra_Vector> structure_displacement)
 {
   Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("FBI::FBICoupler::Setup");
@@ -114,7 +114,7 @@ void FBI::FBIBinningGeometryCoupler::Setup(
 /*----------------------------------------------------------------------*/
 
 Teuchos::RCP<std::map<int, std::vector<int>>> FBI::FBIBinningGeometryCoupler::Search(
-    std::vector<Teuchos::RCP<DRT::Discretization>>& discretizations,
+    std::vector<Teuchos::RCP<Discret::Discretization>>& discretizations,
     Teuchos::RCP<const Epetra_Vector>& column_structure_displacement)
 {
   Teuchos::RCP<Teuchos::Time> t =
@@ -133,8 +133,8 @@ Teuchos::RCP<std::map<int, std::vector<int>>> FBI::FBIBinningGeometryCoupler::Se
 
 /*----------------------------------------------------------------------*/
 
-void FBI::FBIBinningGeometryCoupler::compute_current_positions(DRT::Discretization& dis,
-    Teuchos::RCP<std::map<int, CORE::LINALG::Matrix<3, 1>>> positions,
+void FBI::FBIBinningGeometryCoupler::compute_current_positions(Discret::Discretization& dis,
+    Teuchos::RCP<std::map<int, Core::LinAlg::Matrix<3, 1>>> positions,
     Teuchos::RCP<const Epetra_Vector> disp) const
 {
   positions->clear();
@@ -148,28 +148,28 @@ void FBI::FBIBinningGeometryCoupler::compute_current_positions(DRT::Discretizati
 
   for (int lid = 0; lid < bincolmap->NumMyElements(); ++lid)
   {
-    CORE::Elements::Element* currbin = binstrategy_->BinDiscret()->lColElement(lid);
+    Core::Elements::Element* currbin = binstrategy_->BinDiscret()->lColElement(lid);
     colbinvec.push_back(currbin->Id());
   }
 
-  std::set<CORE::Elements::Element*> beam_element_list;
+  std::set<Core::Elements::Element*> beam_element_list;
 
   binstrategy_->GetBinContent(beam_element_list, {BINSTRATEGY::UTILS::Beam}, colbinvec, false);
 
-  for (std::set<CORE::Elements::Element*>::iterator element = beam_element_list.begin();
+  for (std::set<Core::Elements::Element*>::iterator element = beam_element_list.begin();
        element != beam_element_list.end(); element++)
   {
-    CORE::Nodes::Node** node_list = (*element)->Nodes();
+    Core::Nodes::Node** node_list = (*element)->Nodes();
     unsigned int numnode = (*element)->num_node();
     for (unsigned int i = 0; i < numnode; i++)
     {
-      const CORE::Nodes::Node* node = node_list[i];
+      const Core::Nodes::Node* node = node_list[i];
       if (disp != Teuchos::null)
       {
         // get the DOF numbers of the current node
         dis.Dof(node, 0, src_dofs);
         // get the current displacements
-        CORE::FE::ExtractMyValues(*disp, mydisp, src_dofs);
+        Core::FE::ExtractMyValues(*disp, mydisp, src_dofs);
 
         for (int d = 0; d < 3; ++d) (*positions)[node->Id()](d) = node->X()[d] + mydisp.at(d);
       }

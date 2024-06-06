@@ -22,20 +22,20 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class MultiMapExtractor;
 }
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
-namespace ADAPTER
+namespace Adapter
 {
   class Coupling;
 }
 
-namespace POROMULTIPHASESCATRA
+namespace PoroMultiPhaseScaTra
 {
   class PoroMultiPhaseScaTraBase;
   class PoroMultiPhaseScaTraArtCouplBase;
@@ -54,19 +54,20 @@ namespace POROMULTIPHASESCATRA
         const bool artery_coupl);
 
     //! create solution algorithm depending on input file
-    Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase>
-    CreatePoroMultiPhaseScatraAlgorithm(INPAR::POROMULTIPHASESCATRA::SolutionSchemeOverFields
+    Teuchos::RCP<PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase>
+    CreatePoroMultiPhaseScatraAlgorithm(Inpar::PoroMultiPhaseScaTra::SolutionSchemeOverFields
                                             solscheme,  //!< solution scheme to build (i)
         const Teuchos::ParameterList& timeparams,       //!< problem parameters (i)
         const Epetra_Comm& comm                         //!< communicator(i)
     );
 
     //! create coupling strategy for coupling with 1D network depending on input file
-    Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase>
-    CreateAndInitArteryCouplingStrategy(Teuchos::RCP<DRT::Discretization> arterydis,
-        Teuchos::RCP<DRT::Discretization> contdis, const Teuchos::ParameterList& meshtyingparams,
-        const std::string& condname, const std::string& artcoupleddofname,
-        const std::string& contcoupleddofname, const bool evaluate_on_lateral_surface);
+    Teuchos::RCP<PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplBase>
+    CreateAndInitArteryCouplingStrategy(Teuchos::RCP<Discret::Discretization> arterydis,
+        Teuchos::RCP<Discret::Discretization> contdis,
+        const Teuchos::ParameterList& meshtyingparams, const std::string& condname,
+        const std::string& artcoupleddofname, const std::string& contcoupleddofname,
+        const bool evaluate_on_lateral_surface);
 
     /**
      * Determine norm of vector
@@ -74,7 +75,7 @@ namespace POROMULTIPHASESCATRA
      * @param vect [in]: the vector of interest
      * @return: the norm
      */
-    double calculate_vector_norm(const enum INPAR::POROMULTIPHASESCATRA::VectorNorm norm,
+    double calculate_vector_norm(const enum Inpar::PoroMultiPhaseScaTra::VectorNorm norm,
         const Teuchos::RCP<const Epetra_Vector> vect);
 
     /**
@@ -122,7 +123,7 @@ namespace POROMULTIPHASESCATRA
   }  // namespace UTILS
   //! Print the logo
   void PrintLogo();
-}  // namespace POROMULTIPHASESCATRA
+}  // namespace PoroMultiPhaseScaTra
 
 
 

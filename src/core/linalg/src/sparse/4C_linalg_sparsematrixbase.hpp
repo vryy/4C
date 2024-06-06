@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   /// Base class of sparse matrix that provides the simple functions
   class SparseMatrixBase : public SparseOperator
@@ -70,7 +70,7 @@ namespace CORE::LINALG
      *
      *  \author hiermeier \date 01/2018 */
     bool IsDbcApplied(const Epetra_Map& dbcmap, bool diagonalblock = true,
-        const CORE::LINALG::SparseMatrix* trafo = nullptr) const override;
+        const Core::LinAlg::SparseMatrix* trafo = nullptr) const override;
 
     //@}
 
@@ -180,15 +180,15 @@ namespace CORE::LINALG
     //@}
 
     /// Add one operator to another
-    void Add(const CORE::LINALG::SparseOperator& A, const bool transposeA, const double scalarA,
+    void Add(const Core::LinAlg::SparseOperator& A, const bool transposeA, const double scalarA,
         const double scalarB) override;
 
     /// Add one SparseMatrixBase to another
-    void AddOther(CORE::LINALG::SparseMatrixBase& B, const bool transposeA, const double scalarA,
+    void AddOther(Core::LinAlg::SparseMatrixBase& B, const bool transposeA, const double scalarA,
         const double scalarB) const override;
 
     /// Add one BlockSparseMatrix to another
-    void AddOther(CORE::LINALG::BlockSparseMatrixBase& B, const bool transposeA,
+    void AddOther(Core::LinAlg::BlockSparseMatrixBase& B, const bool transposeA,
         const double scalarA, const double scalarB) const override;
 
    protected:
@@ -196,7 +196,7 @@ namespace CORE::LINALG
     Teuchos::RCP<Epetra_CrsMatrix> sysmat_;
   };
 
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 FOUR_C_NAMESPACE_CLOSE
 

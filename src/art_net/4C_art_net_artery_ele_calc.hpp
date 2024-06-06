@@ -22,7 +22,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
@@ -58,7 +58,7 @@ namespace DRT
       \date 03/18
     */
 
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     class ArteryEleCalc : public ArteryEleInterface
     {
      protected:
@@ -69,7 +69,7 @@ namespace DRT
 
      public:
       //! number of nodes
-      static constexpr int iel_ = CORE::FE::num_nodes<distype>;
+      static constexpr int iel_ = Core::FE::num_nodes<distype>;
 
       /*!
        * \brief  calculate element length
@@ -83,22 +83,22 @@ namespace DRT
 
      protected:
       //! array for shape functions
-      CORE::LINALG::Matrix<iel_, 1> funct_;
+      Core::LinAlg::Matrix<iel_, 1> funct_;
       //! array for shape function derivatives w.r.t s
-      CORE::LINALG::Matrix<1, iel_> deriv_;
+      Core::LinAlg::Matrix<1, iel_> deriv_;
       //! transposed array for shape function derivatives w.r.t s
-      CORE::LINALG::Matrix<iel_, 1> tderiv_;
+      Core::LinAlg::Matrix<iel_, 1> tderiv_;
       //! transposed jacobian "dx/ds"
-      CORE::LINALG::Matrix<1, 1> xjm_;
+      Core::LinAlg::Matrix<1, 1> xjm_;
       //! inverse of transposed jacobian "ds/dx"
-      CORE::LINALG::Matrix<1, 1> xji_;
+      Core::LinAlg::Matrix<1, 1> xji_;
       //! global derivatives of shape functions w.r.t s
-      CORE::LINALG::Matrix<2, iel_> derxy_;
+      Core::LinAlg::Matrix<2, iel_> derxy_;
     };
 
   }  // namespace ELEMENTS
 
-}  // namespace DRT
+}  // namespace Discret
 
 
 

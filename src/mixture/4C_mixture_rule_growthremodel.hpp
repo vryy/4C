@@ -32,21 +32,21 @@ namespace Teuchos
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace LINALG
+namespace LinAlg
 {
   class SerialDenseMatrix;
 }
-namespace CORE::COMM
+namespace Core::Communication
 {
   class PackBuffer;
 }
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
     class Material;
   }
-}  // namespace MAT
+}  // namespace Mat
 
 namespace MIXTURE
 {
@@ -66,7 +66,7 @@ namespace MIXTURE
       static constexpr int GROWTH_TYPE_ANISOTROPIC = 1;
 
       /// constructor
-      explicit GrowthRemodelMixtureRule(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
+      explicit GrowthRemodelMixtureRule(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
 
       /// Create mixturerule instance
       std::unique_ptr<MIXTURE::MixtureRule> CreateRule() override;
@@ -100,21 +100,21 @@ namespace MIXTURE
     /// Constructor for mixture rule given the input parameters
     explicit GrowthRemodelMixtureRule(MIXTURE::PAR::GrowthRemodelMixtureRule* params);
 
-    void PackMixtureRule(CORE::COMM::PackBuffer& data) const override;
+    void PackMixtureRule(Core::Communication::PackBuffer& data) const override;
 
     void UnpackMixtureRule(
         std::vector<char>::size_type& position, const std::vector<char>& data) override;
 
-    void register_anisotropy_extensions(MAT::Anisotropy& anisotropy) override;
+    void register_anisotropy_extensions(Mat::Anisotropy& anisotropy) override;
 
     void Setup(Teuchos::ParameterList& params, int eleGID) override;
 
-    void Update(CORE::LINALG::Matrix<3, 3> const& F, Teuchos::ParameterList& params, int gp,
+    void Update(Core::LinAlg::Matrix<3, 3> const& F, Teuchos::ParameterList& params, int gp,
         int eleGID) override;
 
-    void Evaluate(const CORE::LINALG::Matrix<3, 3>& F, const CORE::LINALG::Matrix<6, 1>& E_strain,
-        Teuchos::ParameterList& params, CORE::LINALG::Matrix<6, 1>& S_stress,
-        CORE::LINALG::Matrix<6, 6>& cmat, int gp, int eleGID) override;
+    void Evaluate(const Core::LinAlg::Matrix<3, 3>& F, const Core::LinAlg::Matrix<6, 1>& E_strain,
+        Teuchos::ParameterList& params, Core::LinAlg::Matrix<6, 1>& S_stress,
+        Core::LinAlg::Matrix<6, 6>& cmat, int gp, int eleGID) override;
 
     /*!
      * \brief Returns the initial reference mass denstity of the constituent
@@ -129,7 +129,7 @@ namespace MIXTURE
         std::unordered_map<std::string, int>& names_and_size) const override;
 
     bool EvaluateOutputData(
-        const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const override;
+        const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const override;
 
    private:
     double compute_current_reference_growth_scalar(int gp) const;

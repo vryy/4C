@@ -22,33 +22,33 @@ namespace
    */
 
   template <unsigned int N>
-  void AssertIsUnitaryMatrix(const CORE::LINALG::Matrix<N, N>& M)
+  void AssertIsUnitaryMatrix(const Core::LinAlg::Matrix<N, N>& M)
   {
-    CORE::LINALG::Matrix<N, N> MHM(false);
+    Core::LinAlg::Matrix<N, N> MHM(false);
     MHM.MultiplyTN(M, M);
 
     for (unsigned int i = 0; i < N; ++i)
       for (unsigned int j = 0; j < N; ++j) EXPECT_NEAR(MHM(i, j), i == j, 1e-9);
   }
 
-  void AssertIsUnitaryMatrix(const CORE::LINALG::SerialDenseMatrix& M)
+  void AssertIsUnitaryMatrix(const Core::LinAlg::SerialDenseMatrix& M)
   {
-    CORE::LINALG::SerialDenseMatrix MHM(M.numRows(), M.numCols(), false);
+    Core::LinAlg::SerialDenseMatrix MHM(M.numRows(), M.numCols(), false);
 
-    CORE::LINALG::multiplyTN(MHM, M, M);
+    Core::LinAlg::multiplyTN(MHM, M, M);
 
     for (int i = 0; i < M.numRows(); ++i)
       for (int j = 0; j < M.numCols(); ++j) EXPECT_NEAR(MHM(i, j), i == j, 1e-9);
   }
 
   template <unsigned int rows, unsigned int cols, size_t length>
-  void AssertSVDResult(const CORE::LINALG::Matrix<rows, cols>& A,
-      const CORE::LINALG::Matrix<rows, rows>& Q, const CORE::LINALG::Matrix<rows, cols>& S,
-      const CORE::LINALG::Matrix<cols, cols>& VT, const std::array<double, length>& singularValues)
+  void AssertSVDResult(const Core::LinAlg::Matrix<rows, cols>& A,
+      const Core::LinAlg::Matrix<rows, rows>& Q, const Core::LinAlg::Matrix<rows, cols>& S,
+      const Core::LinAlg::Matrix<cols, cols>& VT, const std::array<double, length>& singularValues)
   {
     // check whether SVD fulfills: A = Q * S * VT
-    CORE::LINALG::Matrix<rows, cols> QS(false);
-    CORE::LINALG::Matrix<rows, cols> A_result(false);
+    Core::LinAlg::Matrix<rows, cols> QS(false);
+    Core::LinAlg::Matrix<rows, cols> A_result(false);
     QS.MultiplyNN(Q, S);
     A_result.MultiplyNN(QS, VT);
 
@@ -70,17 +70,17 @@ namespace
   }
 
   template <size_t length>
-  void AssertSVDResult(const CORE::LINALG::SerialDenseMatrix& A,
-      const CORE::LINALG::SerialDenseMatrix& Q, const CORE::LINALG::SerialDenseMatrix& S,
-      const CORE::LINALG::SerialDenseMatrix& VT, const std::array<double, length>& singularValues)
+  void AssertSVDResult(const Core::LinAlg::SerialDenseMatrix& A,
+      const Core::LinAlg::SerialDenseMatrix& Q, const Core::LinAlg::SerialDenseMatrix& S,
+      const Core::LinAlg::SerialDenseMatrix& VT, const std::array<double, length>& singularValues)
   {
     int rows = A.numRows();
     int cols = A.numCols();
     // check whether SVD fulfills: A = Q * S * VT
-    CORE::LINALG::SerialDenseMatrix QS(rows, cols, false);
-    CORE::LINALG::SerialDenseMatrix A_result(rows, cols, false);
-    CORE::LINALG::multiply(QS, Q, S);
-    CORE::LINALG::multiply(A_result, QS, VT);
+    Core::LinAlg::SerialDenseMatrix QS(rows, cols, false);
+    Core::LinAlg::SerialDenseMatrix A_result(rows, cols, false);
+    Core::LinAlg::multiply(QS, Q, S);
+    Core::LinAlg::multiply(A_result, QS, VT);
 
     FOUR_C_EXPECT_NEAR(A, A_result, 1e-9);
 
@@ -108,7 +108,7 @@ namespace
   {
     constexpr int rows = 2;
     constexpr int cols = 2;
-    CORE::LINALG::Matrix<rows, cols, double> A;
+    Core::LinAlg::Matrix<rows, cols, double> A;
     A(0, 0) = 0.771320643266746;
     A(0, 1) = 0.0207519493594015;
     A(1, 0) = 0.6336482349262754;
@@ -116,12 +116,12 @@ namespace
 
     std::array singular_values{1.1469088916371344, 0.49212144085114373};
 
-    CORE::LINALG::Matrix<rows, rows, double> Q;
-    CORE::LINALG::Matrix<rows, cols, double> S;
+    Core::LinAlg::Matrix<rows, rows, double> Q;
+    Core::LinAlg::Matrix<rows, cols, double> S;
 
-    CORE::LINALG::Matrix<cols, cols, double> VT;
+    Core::LinAlg::Matrix<cols, cols, double> VT;
 
-    CORE::LINALG::SVD(A, Q, S, VT);
+    Core::LinAlg::SVD(A, Q, S, VT);
 
     AssertSVDResult(A, Q, S, VT, singular_values);
   }
@@ -131,7 +131,7 @@ namespace
     constexpr int rows = 2;
     constexpr int cols = 2;
 
-    CORE::LINALG::SerialDenseMatrix A(rows, cols, false);
+    Core::LinAlg::SerialDenseMatrix A(rows, cols, false);
     A(0, 0) = 0.771320643266746;
     A(0, 1) = 0.0207519493594015;
     A(1, 0) = 0.6336482349262754;
@@ -139,12 +139,12 @@ namespace
 
     std::array singular_values{1.1469088916371344, 0.49212144085114373};
 
-    CORE::LINALG::SerialDenseMatrix Q(rows, rows, false);
-    CORE::LINALG::SerialDenseMatrix S(rows, cols, false);
+    Core::LinAlg::SerialDenseMatrix Q(rows, rows, false);
+    Core::LinAlg::SerialDenseMatrix S(rows, cols, false);
 
-    CORE::LINALG::SerialDenseMatrix VT(cols, cols, false);
+    Core::LinAlg::SerialDenseMatrix VT(cols, cols, false);
 
-    CORE::LINALG::SVD(A, Q, S, VT);
+    Core::LinAlg::SVD(A, Q, S, VT);
 
     AssertSVDResult(A, Q, S, VT, singular_values);
   }
@@ -154,7 +154,7 @@ namespace
     constexpr int rows = 3;
     constexpr int cols = 3;
 
-    CORE::LINALG::Matrix<rows, cols, double> A;
+    Core::LinAlg::Matrix<rows, cols, double> A;
     A(0, 0) = 0.4985070123025904;
     A(0, 1) = 0.22479664553084766;
     A(0, 2) = 0.19806286475962398;
@@ -167,12 +167,12 @@ namespace
 
     std::array singular_values{1.4366496228962886, 0.5015270327633732, 0.12760122260790782};
 
-    CORE::LINALG::Matrix<rows, rows, double> Q;
-    CORE::LINALG::Matrix<rows, cols, double> S;
+    Core::LinAlg::Matrix<rows, rows, double> Q;
+    Core::LinAlg::Matrix<rows, cols, double> S;
 
-    CORE::LINALG::Matrix<cols, cols, double> VT;
+    Core::LinAlg::Matrix<cols, cols, double> VT;
 
-    CORE::LINALG::SVD(A, Q, S, VT);
+    Core::LinAlg::SVD(A, Q, S, VT);
 
     AssertSVDResult(A, Q, S, VT, singular_values);
   }
@@ -182,7 +182,7 @@ namespace
     constexpr int rows = 3;
     constexpr int cols = 3;
 
-    CORE::LINALG::SerialDenseMatrix A(rows, cols, false);
+    Core::LinAlg::SerialDenseMatrix A(rows, cols, false);
     A(0, 0) = 0.4985070123025904;
     A(0, 1) = 0.22479664553084766;
     A(0, 2) = 0.19806286475962398;
@@ -195,12 +195,12 @@ namespace
 
     std::array singular_values{1.4366496228962886, 0.5015270327633732, 0.12760122260790782};
 
-    CORE::LINALG::SerialDenseMatrix Q(rows, rows, false);
-    CORE::LINALG::SerialDenseMatrix S(rows, cols, false);
+    Core::LinAlg::SerialDenseMatrix Q(rows, rows, false);
+    Core::LinAlg::SerialDenseMatrix S(rows, cols, false);
 
-    CORE::LINALG::SerialDenseMatrix VT(cols, cols, false);
+    Core::LinAlg::SerialDenseMatrix VT(cols, cols, false);
 
-    CORE::LINALG::SVD(A, Q, S, VT);
+    Core::LinAlg::SVD(A, Q, S, VT);
 
     AssertSVDResult(A, Q, S, VT, singular_values);
   }
@@ -210,7 +210,7 @@ namespace
     constexpr int rows = 4;
     constexpr int cols = 4;
 
-    CORE::LINALG::Matrix<rows, cols, double> A;
+    Core::LinAlg::Matrix<rows, cols, double> A;
     A(0, 0) = 0.5121922633857766;
     A(0, 1) = 0.8126209616521135;
     A(0, 2) = 0.6125260668293881;
@@ -231,12 +231,12 @@ namespace
     std::array singular_values{
         2.3331219940832653, 0.33317539589309747, 0.2493797215886197, 0.015235517801683926};
 
-    CORE::LINALG::Matrix<rows, rows, double> Q;
-    CORE::LINALG::Matrix<rows, cols, double> S;
+    Core::LinAlg::Matrix<rows, rows, double> Q;
+    Core::LinAlg::Matrix<rows, cols, double> S;
 
-    CORE::LINALG::Matrix<cols, cols, double> VT;
+    Core::LinAlg::Matrix<cols, cols, double> VT;
 
-    CORE::LINALG::SVD(A, Q, S, VT);
+    Core::LinAlg::SVD(A, Q, S, VT);
 
     AssertSVDResult(A, Q, S, VT, singular_values);
   }
@@ -246,7 +246,7 @@ namespace
     constexpr int rows = 4;
     constexpr int cols = 4;
 
-    CORE::LINALG::SerialDenseMatrix A(rows, cols, false);
+    Core::LinAlg::SerialDenseMatrix A(rows, cols, false);
     A(0, 0) = 0.5121922633857766;
     A(0, 1) = 0.8126209616521135;
     A(0, 2) = 0.6125260668293881;
@@ -267,12 +267,12 @@ namespace
     std::array singular_values{
         2.3331219940832653, 0.33317539589309747, 0.2493797215886197, 0.015235517801683926};
 
-    CORE::LINALG::SerialDenseMatrix Q(rows, rows, false);
-    CORE::LINALG::SerialDenseMatrix S(rows, cols, false);
+    Core::LinAlg::SerialDenseMatrix Q(rows, rows, false);
+    Core::LinAlg::SerialDenseMatrix S(rows, cols, false);
 
-    CORE::LINALG::SerialDenseMatrix VT(cols, cols, false);
+    Core::LinAlg::SerialDenseMatrix VT(cols, cols, false);
 
-    CORE::LINALG::SVD(A, Q, S, VT);
+    Core::LinAlg::SVD(A, Q, S, VT);
 
     AssertSVDResult(A, Q, S, VT, singular_values);
   }
@@ -282,7 +282,7 @@ namespace
     constexpr int rows = 3;
     constexpr int cols = 2;
 
-    CORE::LINALG::Matrix<rows, cols, double> A;
+    Core::LinAlg::Matrix<rows, cols, double> A;
     A(0, 0) = 0.6010389534045444;
     A(0, 1) = 0.8052231968327465;
     A(1, 0) = 0.5216471523936341;
@@ -292,12 +292,12 @@ namespace
 
     std::array singular_values{1.4710166760448906, 0.23150653036895066};
 
-    CORE::LINALG::Matrix<rows, rows, double> Q;
-    CORE::LINALG::Matrix<rows, cols, double> S;
+    Core::LinAlg::Matrix<rows, rows, double> Q;
+    Core::LinAlg::Matrix<rows, cols, double> S;
 
-    CORE::LINALG::Matrix<cols, cols, double> VT;
+    Core::LinAlg::Matrix<cols, cols, double> VT;
 
-    CORE::LINALG::SVD(A, Q, S, VT);
+    Core::LinAlg::SVD(A, Q, S, VT);
 
     AssertSVDResult(A, Q, S, VT, singular_values);
   }
@@ -307,7 +307,7 @@ namespace
     constexpr int rows = 3;
     constexpr int cols = 2;
 
-    CORE::LINALG::SerialDenseMatrix A(rows, cols, false);
+    Core::LinAlg::SerialDenseMatrix A(rows, cols, false);
     A(0, 0) = 0.6010389534045444;
     A(0, 1) = 0.8052231968327465;
     A(1, 0) = 0.5216471523936341;
@@ -317,12 +317,12 @@ namespace
 
     std::array singular_values{1.4710166760448906, 0.23150653036895066};
 
-    CORE::LINALG::SerialDenseMatrix Q(rows, rows, false);
-    CORE::LINALG::SerialDenseMatrix S(rows, cols, false);
+    Core::LinAlg::SerialDenseMatrix Q(rows, rows, false);
+    Core::LinAlg::SerialDenseMatrix S(rows, cols, false);
 
-    CORE::LINALG::SerialDenseMatrix VT(cols, cols, false);
+    Core::LinAlg::SerialDenseMatrix VT(cols, cols, false);
 
-    CORE::LINALG::SVD(A, Q, S, VT);
+    Core::LinAlg::SVD(A, Q, S, VT);
 
     AssertSVDResult(A, Q, S, VT, singular_values);
   }
@@ -332,7 +332,7 @@ namespace
     constexpr int rows = 2;
     constexpr int cols = 3;
 
-    CORE::LINALG::Matrix<rows, cols, double> A;
+    Core::LinAlg::Matrix<rows, cols, double> A;
     A(0, 0) = 0.30070005663620336;
     A(0, 1) = 0.11398436186354977;
     A(0, 2) = 0.8286813263076767;
@@ -342,12 +342,12 @@ namespace
 
     std::array singular_values{1.1329579091315047, 0.44812669032826474};
 
-    CORE::LINALG::Matrix<rows, rows, double> Q;
-    CORE::LINALG::Matrix<rows, cols, double> S;
+    Core::LinAlg::Matrix<rows, rows, double> Q;
+    Core::LinAlg::Matrix<rows, cols, double> S;
 
-    CORE::LINALG::Matrix<cols, cols, double> VT;
+    Core::LinAlg::Matrix<cols, cols, double> VT;
 
-    CORE::LINALG::SVD(A, Q, S, VT);
+    Core::LinAlg::SVD(A, Q, S, VT);
 
     AssertSVDResult(A, Q, S, VT, singular_values);
   }
@@ -357,7 +357,7 @@ namespace
     constexpr int rows = 2;
     constexpr int cols = 3;
 
-    CORE::LINALG::SerialDenseMatrix A(rows, cols, false);
+    Core::LinAlg::SerialDenseMatrix A(rows, cols, false);
     A(0, 0) = 0.30070005663620336;
     A(0, 1) = 0.11398436186354977;
     A(0, 2) = 0.8286813263076767;
@@ -367,12 +367,12 @@ namespace
 
     std::array singular_values{1.1329579091315047, 0.44812669032826474};
 
-    CORE::LINALG::SerialDenseMatrix Q(rows, rows, false);
-    CORE::LINALG::SerialDenseMatrix S(rows, cols, false);
+    Core::LinAlg::SerialDenseMatrix Q(rows, rows, false);
+    Core::LinAlg::SerialDenseMatrix S(rows, cols, false);
 
-    CORE::LINALG::SerialDenseMatrix VT(cols, cols, false);
+    Core::LinAlg::SerialDenseMatrix VT(cols, cols, false);
 
-    CORE::LINALG::SVD(A, Q, S, VT);
+    Core::LinAlg::SVD(A, Q, S, VT);
 
     AssertSVDResult(A, Q, S, VT, singular_values);
   }
@@ -382,19 +382,19 @@ namespace
     constexpr int rows = 1;
     constexpr int cols = 3;
 
-    CORE::LINALG::Matrix<rows, cols, double> A;
+    Core::LinAlg::Matrix<rows, cols, double> A;
     A(0, 0) = 0.8192869956700687;
     A(0, 1) = 0.1989475396788123;
     A(0, 2) = 0.8568503024577332;
 
     std::array singular_values{1.202083085997074};
 
-    CORE::LINALG::Matrix<rows, rows, double> Q;
-    CORE::LINALG::Matrix<rows, cols, double> S;
+    Core::LinAlg::Matrix<rows, rows, double> Q;
+    Core::LinAlg::Matrix<rows, cols, double> S;
 
-    CORE::LINALG::Matrix<cols, cols, double> VT;
+    Core::LinAlg::Matrix<cols, cols, double> VT;
 
-    CORE::LINALG::SVD(A, Q, S, VT);
+    Core::LinAlg::SVD(A, Q, S, VT);
 
     AssertSVDResult(A, Q, S, VT, singular_values);
   }
@@ -404,19 +404,19 @@ namespace
     constexpr int rows = 1;
     constexpr int cols = 3;
 
-    CORE::LINALG::SerialDenseMatrix A(rows, cols, false);
+    Core::LinAlg::SerialDenseMatrix A(rows, cols, false);
     A(0, 0) = 0.8192869956700687;
     A(0, 1) = 0.1989475396788123;
     A(0, 2) = 0.8568503024577332;
 
     std::array singular_values{1.202083085997074};
 
-    CORE::LINALG::SerialDenseMatrix Q(rows, rows, false);
-    CORE::LINALG::SerialDenseMatrix S(rows, cols, false);
+    Core::LinAlg::SerialDenseMatrix Q(rows, rows, false);
+    Core::LinAlg::SerialDenseMatrix S(rows, cols, false);
 
-    CORE::LINALG::SerialDenseMatrix VT(cols, cols, false);
+    Core::LinAlg::SerialDenseMatrix VT(cols, cols, false);
 
-    CORE::LINALG::SVD(A, Q, S, VT);
+    Core::LinAlg::SVD(A, Q, S, VT);
 
     AssertSVDResult(A, Q, S, VT, singular_values);
   }
@@ -426,19 +426,19 @@ namespace
     constexpr int rows = 3;
     constexpr int cols = 1;
 
-    CORE::LINALG::Matrix<rows, cols, double> A;
+    Core::LinAlg::Matrix<rows, cols, double> A;
     A(0, 0) = 0.3516526394320879;
     A(1, 0) = 0.7546476915298572;
     A(2, 0) = 0.2959617068796787;
 
     std::array singular_values{0.88359835281084};
 
-    CORE::LINALG::Matrix<rows, rows, double> Q;
-    CORE::LINALG::Matrix<rows, cols, double> S;
+    Core::LinAlg::Matrix<rows, rows, double> Q;
+    Core::LinAlg::Matrix<rows, cols, double> S;
 
-    CORE::LINALG::Matrix<cols, cols, double> VT;
+    Core::LinAlg::Matrix<cols, cols, double> VT;
 
-    CORE::LINALG::SVD(A, Q, S, VT);
+    Core::LinAlg::SVD(A, Q, S, VT);
 
     AssertSVDResult(A, Q, S, VT, singular_values);
   }
@@ -448,19 +448,19 @@ namespace
     constexpr int rows = 3;
     constexpr int cols = 1;
 
-    CORE::LINALG::SerialDenseMatrix A(rows, cols, false);
+    Core::LinAlg::SerialDenseMatrix A(rows, cols, false);
     A(0, 0) = 0.3516526394320879;
     A(1, 0) = 0.7546476915298572;
     A(2, 0) = 0.2959617068796787;
 
     std::array singular_values{0.88359835281084};
 
-    CORE::LINALG::SerialDenseMatrix Q(rows, rows, false);
-    CORE::LINALG::SerialDenseMatrix S(rows, cols, false);
+    Core::LinAlg::SerialDenseMatrix Q(rows, rows, false);
+    Core::LinAlg::SerialDenseMatrix S(rows, cols, false);
 
-    CORE::LINALG::SerialDenseMatrix VT(cols, cols, false);
+    Core::LinAlg::SerialDenseMatrix VT(cols, cols, false);
 
-    CORE::LINALG::SVD(A, Q, S, VT);
+    Core::LinAlg::SVD(A, Q, S, VT);
 
     AssertSVDResult(A, Q, S, VT, singular_values);
   }

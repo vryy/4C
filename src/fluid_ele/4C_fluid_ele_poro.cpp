@@ -18,42 +18,46 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-DRT::ELEMENTS::FluidPoroEleType DRT::ELEMENTS::FluidPoroEleType::instance_;
+Discret::ELEMENTS::FluidPoroEleType Discret::ELEMENTS::FluidPoroEleType::instance_;
 
-DRT::ELEMENTS::FluidPoroEleType& DRT::ELEMENTS::FluidPoroEleType::Instance() { return instance_; }
-
-CORE::COMM::ParObject* DRT::ELEMENTS::FluidPoroEleType::Create(const std::vector<char>& data)
+Discret::ELEMENTS::FluidPoroEleType& Discret::ELEMENTS::FluidPoroEleType::Instance()
 {
-  auto* object = new DRT::ELEMENTS::FluidPoro(-1, -1);
+  return instance_;
+}
+
+Core::Communication::ParObject* Discret::ELEMENTS::FluidPoroEleType::Create(
+    const std::vector<char>& data)
+{
+  auto* object = new Discret::ELEMENTS::FluidPoro(-1, -1);
   object->Unpack(data);
   return object;
 }
 
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::FluidPoroEleType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidPoroEleType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "FLUIDPORO")
   {
-    return Teuchos::rcp(new DRT::ELEMENTS::FluidPoro(id, owner));
+    return Teuchos::rcp(new Discret::ELEMENTS::FluidPoro(id, owner));
   }
   return Teuchos::null;
 }
 
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::FluidPoroEleType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidPoroEleType::Create(
     const int id, const int owner)
 {
-  return Teuchos::rcp(new DRT::ELEMENTS::FluidPoro(id, owner));
+  return Teuchos::rcp(new Discret::ELEMENTS::FluidPoro(id, owner));
 }
 
-void DRT::ELEMENTS::FluidPoroEleType::setup_element_definition(
-    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+void Discret::ELEMENTS::FluidPoroEleType::setup_element_definition(
+    std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
-  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_fluid;
+  std::map<std::string, std::map<std::string, Input::LineDefinition>> definitions_fluid;
   FluidType::setup_element_definition(definitions_fluid);
 
-  std::map<std::string, INPUT::LineDefinition>& defs_fluid = definitions_fluid["FLUID"];
+  std::map<std::string, Input::LineDefinition>& defs_fluid = definitions_fluid["FLUID"];
 
-  std::map<std::string, INPUT::LineDefinition>& defs = definitions["FLUIDPORO"];
+  std::map<std::string, Input::LineDefinition>& defs = definitions["FLUIDPORO"];
 
   // 3D
   defs["HEX8"] = defs_fluid["HEX8"];
@@ -77,14 +81,14 @@ void DRT::ELEMENTS::FluidPoroEleType::setup_element_definition(
   defs["NURBS9"] = defs_fluid["NURBS9"];
 }
 
-DRT::ELEMENTS::FluidPoro::FluidPoro(int id, int owner)
-    : Fluid(id, owner), kintype_(INPAR::STR::KinemType::vague)
+Discret::ELEMENTS::FluidPoro::FluidPoro(int id, int owner)
+    : Fluid(id, owner), kintype_(Inpar::STR::KinemType::vague)
 {
   anisotropic_permeability_directions_.resize(3, std::vector<double>(1, 0.0));
   anisotropic_permeability_nodal_coeffs_.resize(3, std::vector<double>(1, 0.0));
 }
 
-DRT::ELEMENTS::FluidPoro::FluidPoro(const DRT::ELEMENTS::FluidPoro& old)
+Discret::ELEMENTS::FluidPoro::FluidPoro(const Discret::ELEMENTS::FluidPoro& old)
     : Fluid(old),
       kintype_(old.kintype_),
       anisotropic_permeability_directions_(old.anisotropic_permeability_directions_),
@@ -92,15 +96,15 @@ DRT::ELEMENTS::FluidPoro::FluidPoro(const DRT::ELEMENTS::FluidPoro& old)
 {
 }
 
-CORE::Elements::Element* DRT::ELEMENTS::FluidPoro::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::FluidPoro::Clone() const
 {
-  auto* newelement = new DRT::ELEMENTS::FluidPoro(*this);
+  auto* newelement = new Discret::ELEMENTS::FluidPoro(*this);
   return newelement;
 }
 
-void DRT::ELEMENTS::FluidPoro::Pack(CORE::COMM::PackBuffer& data) const
+void Discret::ELEMENTS::FluidPoro::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -124,14 +128,14 @@ void DRT::ELEMENTS::FluidPoro::Pack(CORE::COMM::PackBuffer& data) const
   Fluid::Pack(data);
 }
 
-void DRT::ELEMENTS::FluidPoro::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::FluidPoro::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // kintype_
-  kintype_ = static_cast<INPAR::STR::KinemType>(ExtractInt(position, data));
+  kintype_ = static_cast<Inpar::STR::KinemType>(ExtractInt(position, data));
 
   // anisotropic_permeability_directions_
   int size = 0;
@@ -156,19 +160,19 @@ void DRT::ELEMENTS::FluidPoro::Unpack(const std::vector<char>& data)
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", static_cast<int>(data.size()), position);
 }
 
-std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::FluidPoro::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::FluidPoro::Lines()
 {
-  return CORE::COMM::GetElementLines<FluidPoroBoundary, FluidPoro>(*this);
+  return Core::Communication::GetElementLines<FluidPoroBoundary, FluidPoro>(*this);
 }
 
-std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::FluidPoro::Surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::FluidPoro::Surfaces()
 {
-  return CORE::COMM::GetElementSurfaces<FluidPoroBoundary, FluidPoro>(*this);
+  return Core::Communication::GetElementSurfaces<FluidPoroBoundary, FluidPoro>(*this);
 }
 
-void DRT::ELEMENTS::FluidPoro::Print(std::ostream& os) const
+void Discret::ELEMENTS::FluidPoro::Print(std::ostream& os) const
 {
-  os << "FluidPoro " << (CORE::FE::CellTypeToString(distype_)).c_str();
+  os << "FluidPoro " << (Core::FE::CellTypeToString(distype_)).c_str();
   Element::Print(os);
 }
 

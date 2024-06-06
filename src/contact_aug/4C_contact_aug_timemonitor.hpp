@@ -23,9 +23,9 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace CONTACT
 {
-  namespace AUG
+  namespace Aug
   {
-    /** enumerator list for the inner CONTACT::AUG::Integrator functions
+    /** enumerator list for the inner CONTACT::Aug::Integrator functions
      *  which can be found in the respective policy */
     enum class TimeID : unsigned
     {
@@ -40,7 +40,7 @@ namespace CONTACT
       MAX_TIME_ID
     };
 
-    /** enumerator list of the \"global\" CONTACT::AUG::Integrator functions
+    /** enumerator list of the \"global\" CONTACT::Aug::Integrator functions
      *  or other element specific time consuming functions. */
     enum class GlobalTimeID : unsigned
     {
@@ -150,7 +150,7 @@ namespace CONTACT
     };
 
     typedef TimeMonitor<GlobalTimeID> GlobalTimeMonitor;
-  }  // namespace AUG
+  }  // namespace Aug
 }  // namespace CONTACT
 
 

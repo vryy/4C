@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace ADAPTER
+namespace Adapter
 {
   class Coupling;
 }
@@ -57,18 +57,18 @@ namespace CONTACT
     }
 
     void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
-        Teuchos::RCP<CORE::LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f,
+        Teuchos::RCP<Core::LinAlg::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f,
         const int step, const int iter, bool predictor) override;
 
     //  void Integrate(CONTACT::ParamsInterface& cparams);
-    void set_state(const enum MORTAR::StateType& statename, const Epetra_Vector& vec) override;
+    void set_state(const enum Mortar::StateType& statename, const Epetra_Vector& vec) override;
 
-    void SetParentState(const enum MORTAR::StateType& statename, const Epetra_Vector& vec) override;
+    void SetParentState(const enum Mortar::StateType& statename, const Epetra_Vector& vec) override;
 
     Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
         const enum CONTACT::VecBlockType& bp) const override;
 
-    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrixBlockPtr(
+    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> GetMatrixBlockPtr(
         const enum CONTACT::MatBlockType& bp) const;
 
 
@@ -85,19 +85,19 @@ namespace CONTACT
         const enum CONTACT::VecBlockType& bt) const override;
 
     // create an appropriate matrix block
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> setup_matrix_block_ptr(
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> setup_matrix_block_ptr(
         const enum CONTACT::MatBlockType& bt) override;
 
     // complete matrix block with correct maps
     void complete_matrix_block_ptr(
-        const enum CONTACT::MatBlockType& bt, Teuchos::RCP<CORE::LINALG::SparseMatrix> kc) override;
+        const enum CONTACT::MatBlockType& bt, Teuchos::RCP<Core::LinAlg::SparseMatrix> kc) override;
 
     bool no_penetration_;
 
     Teuchos::RCP<Epetra_FEVector> fp_;
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> kpp_;
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> kpd_;
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> kdp_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> kpp_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> kpd_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> kdp_;
   };
 }  // namespace CONTACT
 FOUR_C_NAMESPACE_CLOSE

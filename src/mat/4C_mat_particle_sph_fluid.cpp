@@ -21,13 +21,13 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | define static class member                                 sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-MAT::ParticleMaterialSPHFluidType MAT::ParticleMaterialSPHFluidType::instance_;
+Mat::ParticleMaterialSPHFluidType Mat::ParticleMaterialSPHFluidType::instance_;
 
 /*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-MAT::PAR::ParticleMaterialSPHFluid::ParticleMaterialSPHFluid(
-    Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::ParticleMaterialSPHFluid::ParticleMaterialSPHFluid(
+    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : Parameter(matdata),
       ParticleMaterialBase(matdata),
       ParticleMaterialThermo(matdata),
@@ -45,16 +45,17 @@ MAT::PAR::ParticleMaterialSPHFluid::ParticleMaterialSPHFluid(
 /*---------------------------------------------------------------------------*
  | create material instance of matching type with parameters  sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ParticleMaterialSPHFluid::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::ParticleMaterialSPHFluid::create_material()
 {
-  return Teuchos::rcp(new MAT::ParticleMaterialSPHFluid(this));
+  return Teuchos::rcp(new Mat::ParticleMaterialSPHFluid(this));
 }
 
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
-CORE::COMM::ParObject* MAT::ParticleMaterialSPHFluidType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::ParticleMaterialSPHFluidType::Create(
+    const std::vector<char>& data)
 {
-  MAT::ParticleMaterialSPHFluid* particlematsph = new MAT::ParticleMaterialSPHFluid();
+  Mat::ParticleMaterialSPHFluid* particlematsph = new Mat::ParticleMaterialSPHFluid();
   particlematsph->Unpack(data);
   return particlematsph;
 }
@@ -62,7 +63,7 @@ CORE::COMM::ParObject* MAT::ParticleMaterialSPHFluidType::Create(const std::vect
 /*---------------------------------------------------------------------------*
  | constructor (empty material object)                        sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-MAT::ParticleMaterialSPHFluid::ParticleMaterialSPHFluid() : params_(nullptr)
+Mat::ParticleMaterialSPHFluid::ParticleMaterialSPHFluid() : params_(nullptr)
 {
   // empty constructor
 }
@@ -70,7 +71,7 @@ MAT::ParticleMaterialSPHFluid::ParticleMaterialSPHFluid() : params_(nullptr)
 /*---------------------------------------------------------------------------*
  | constructor (with given material parameters)               sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-MAT::ParticleMaterialSPHFluid::ParticleMaterialSPHFluid(MAT::PAR::ParticleMaterialSPHFluid* params)
+Mat::ParticleMaterialSPHFluid::ParticleMaterialSPHFluid(Mat::PAR::ParticleMaterialSPHFluid* params)
     : params_(params)
 {
   // empty constructor
@@ -79,9 +80,9 @@ MAT::ParticleMaterialSPHFluid::ParticleMaterialSPHFluid(MAT::PAR::ParticleMateri
 /*---------------------------------------------------------------------------*
  | pack                                                       sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-void MAT::ParticleMaterialSPHFluid::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::ParticleMaterialSPHFluid::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -97,25 +98,25 @@ void MAT::ParticleMaterialSPHFluid::Pack(CORE::COMM::PackBuffer& data) const
 /*---------------------------------------------------------------------------*
  | unpack                                                     sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-void MAT::ParticleMaterialSPHFluid::Unpack(const std::vector<char>& data)
+void Mat::ParticleMaterialSPHFluid::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
       // note: dynamic_cast needed due diamond inheritance structure
-      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = dynamic_cast<MAT::PAR::ParticleMaterialSPHFluid*>(mat);
+        params_ = dynamic_cast<Mat::PAR::ParticleMaterialSPHFluid*>(mat);
       else
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());

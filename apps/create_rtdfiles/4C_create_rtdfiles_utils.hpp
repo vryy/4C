@@ -183,7 +183,7 @@ namespace RTD
    *  \param[in] matlist: vector containing all material definitions
    */
   void WriteMaterialReference(
-      std::ostream& stream, const std::vector<Teuchos::RCP<MAT::MaterialDefinition>>& matlist);
+      std::ostream& stream, const std::vector<Teuchos::RCP<Mat::MaterialDefinition>>& matlist);
 
   /*!
    *  \brief write the information of a single material to readthedocs
@@ -192,7 +192,7 @@ namespace RTD
    *  \param[in] material: single material definition
    */
   void WriteSingleMaterialReadTheDocs(
-      std::ostream& stream, const Teuchos::RCP<MAT::MaterialDefinition> material);
+      std::ostream& stream, const Teuchos::RCP<Mat::MaterialDefinition> material);
   /*!
    *  \brief write all parameters of the header sections for readthedocs
    *
@@ -212,7 +212,7 @@ namespace RTD
    *  @param[in] condlist List of prescribed conditions to be written to that file
    */
   void WriteConditionsReference(std::ostream& stream,
-      const std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist);
+      const std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist);
 
   /*!
    *  write a single condition including explanations (if available) to a .rst file for
@@ -222,7 +222,7 @@ namespace RTD
    *  @param[in] condition Single prescribed condition to be written to that file
    */
   void WriteSingleConditionReadTheDocs(
-      std::ostream& stream, const Teuchos::RCP<CORE::Conditions::ConditionDefinition> condition);
+      std::ostream& stream, const Teuchos::RCP<Core::Conditions::ConditionDefinition> condition);
 
   /*!
    *  write a single contact law including explanations (if available) to a .rst file for

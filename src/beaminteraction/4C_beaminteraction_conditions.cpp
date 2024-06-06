@@ -32,7 +32,7 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 BEAMINTERACTION::BeamInteractionConditionBase::BeamInteractionConditionBase(
-    const Teuchos::RCP<const CORE::Conditions::Condition>& condition_line)
+    const Teuchos::RCP<const Core::Conditions::Condition>& condition_line)
     : condition_line_(condition_line), line_ids_()
 {
 }
@@ -41,7 +41,7 @@ BEAMINTERACTION::BeamInteractionConditionBase::BeamInteractionConditionBase(
  *
  */
 void BEAMINTERACTION::BeamInteractionConditionBase::BuildIdSets(
-    const Teuchos::RCP<const DRT::Discretization>& discretization)
+    const Teuchos::RCP<const Discret::Discretization>& discretization)
 {
   // Set the IDs of the line elements.
   std::vector<int> line_ids;
@@ -53,7 +53,7 @@ void BEAMINTERACTION::BeamInteractionConditionBase::BuildIdSets(
  *
  */
 void BEAMINTERACTION::BeamInteractionConditionBase::Setup(
-    const Teuchos::RCP<const DRT::Discretization>& discret)
+    const Teuchos::RCP<const Discret::Discretization>& discret)
 {
 }
 
@@ -71,19 +71,19 @@ BEAMINTERACTION::BeamInteractionConditions::BeamInteractionConditions() {}
  *
  */
 void BEAMINTERACTION::BeamInteractionConditions::set_beam_interaction_conditions(
-    const Teuchos::RCP<const DRT::Discretization>& discret,
+    const Teuchos::RCP<const Discret::Discretization>& discret,
     const Teuchos::RCP<const BeamContactParams>& params_ptr)
 {
   condition_map_.clear();
 
   // Get all available interaction types.
-  std::vector<INPAR::BEAMINTERACTION::BeamInteractionConditions> interaction_types;
-  INPAR::BEAMINTERACTION::BeamInteractionConditionsGetAll(interaction_types);
+  std::vector<Inpar::BEAMINTERACTION::BeamInteractionConditions> interaction_types;
+  Inpar::BEAMINTERACTION::BeamInteractionConditionsGetAll(interaction_types);
 
   // Loop over interaction types.
   for (const auto& interaction_type : interaction_types)
   {
-    if (interaction_type == INPAR::BEAMINTERACTION::BeamInteractionConditions::beam_to_beam_contact)
+    if (interaction_type == Inpar::BEAMINTERACTION::BeamInteractionConditions::beam_to_beam_contact)
     {
       // Add all beam-to-beam contitions.
       std::vector<Teuchos::RCP<BeamInteractionConditionBase>>& interaction_vector =
@@ -93,12 +93,12 @@ void BEAMINTERACTION::BeamInteractionConditions::set_beam_interaction_conditions
       std::string condition_name = "BeamToBeamContact";
 
       // Get the line conditions from the discretization.
-      std::vector<Teuchos::RCP<CORE::Conditions::Condition>> condition_lines;
+      std::vector<Teuchos::RCP<Core::Conditions::Condition>> condition_lines;
       discret->GetCondition(condition_name, condition_lines);
 
       // Match the coupling IDs from the input line.
-      std::map<int, std::pair<Teuchos::RCP<const CORE::Conditions::Condition>,
-                        Teuchos::RCP<const CORE::Conditions::Condition>>>
+      std::map<int, std::pair<Teuchos::RCP<const Core::Conditions::Condition>,
+                        Teuchos::RCP<const Core::Conditions::Condition>>>
           coupling_id_map;
       for (const auto& condition : condition_lines)
       {
@@ -134,12 +134,12 @@ void BEAMINTERACTION::BeamInteractionConditions::set_beam_interaction_conditions
         FOUR_C_THROW("There are multiple definitions of the same COUPLING_ID for %s",
             condition_name.c_str());
     }
-    else if (interaction_type == INPAR::BEAMINTERACTION::BeamInteractionConditions::
+    else if (interaction_type == Inpar::BEAMINTERACTION::BeamInteractionConditions::
                                      beam_to_solid_volume_meshtying or
-             interaction_type == INPAR::BEAMINTERACTION::BeamInteractionConditions::
+             interaction_type == Inpar::BEAMINTERACTION::BeamInteractionConditions::
                                      beam_to_solid_surface_meshtying or
              interaction_type ==
-                 INPAR::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_surface_contact)
+                 Inpar::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_surface_contact)
     {
       // Add all beam-to-solid conditions.
       std::vector<Teuchos::RCP<BeamInteractionConditionBase>>& interaction_vector =
@@ -147,11 +147,11 @@ void BEAMINTERACTION::BeamInteractionConditions::set_beam_interaction_conditions
 
       // Get the names for the conditions of this type.
       std::array<std::string, 2> condition_names;
-      INPAR::BEAMTOSOLID::BeamToSolidInteractionGetString(interaction_type, condition_names);
+      Inpar::BeamToSolid::BeamToSolidInteractionGetString(interaction_type, condition_names);
 
       // Get the conditions from the discretization.
-      std::vector<Teuchos::RCP<CORE::Conditions::Condition>> condition_line;
-      std::vector<Teuchos::RCP<CORE::Conditions::Condition>> condition_other;
+      std::vector<Teuchos::RCP<Core::Conditions::Condition>> condition_line;
+      std::vector<Teuchos::RCP<Core::Conditions::Condition>> condition_other;
       discret->GetCondition(condition_names[0], condition_line);
       discret->GetCondition(condition_names[1], condition_other);
 
@@ -162,8 +162,8 @@ void BEAMINTERACTION::BeamInteractionConditions::set_beam_interaction_conditions
             condition_names[1].c_str());
 
       // Match the coupling IDs from the input line.
-      std::map<int, std::pair<Teuchos::RCP<const CORE::Conditions::Condition>,
-                        Teuchos::RCP<const CORE::Conditions::Condition>>>
+      std::map<int, std::pair<Teuchos::RCP<const Core::Conditions::Condition>,
+                        Teuchos::RCP<const Core::Conditions::Condition>>>
           coupling_id_map;
       for (const auto& condition : condition_line)
         coupling_id_map[condition->parameters().Get<int>("COUPLING_ID")].first = condition;
@@ -176,17 +176,17 @@ void BEAMINTERACTION::BeamInteractionConditions::set_beam_interaction_conditions
           // We found the matching conditions, now create the beam-to-solid condition objects.
           Teuchos::RCP<BeamInteractionConditionBase> new_condition;
           if (interaction_type ==
-              INPAR::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_volume_meshtying)
+              Inpar::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_volume_meshtying)
             new_condition = Teuchos::rcp(
                 new BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying(map_item.second.first,
                     map_item.second.second, params_ptr->beam_to_solid_volume_meshtying_params()));
-          else if (interaction_type == INPAR::BEAMINTERACTION::BeamInteractionConditions::
+          else if (interaction_type == Inpar::BEAMINTERACTION::BeamInteractionConditions::
                                            beam_to_solid_surface_meshtying)
             new_condition = Teuchos::rcp(new BEAMINTERACTION::BeamToSolidConditionSurface(
                 map_item.second.first, map_item.second.second,
                 params_ptr->beam_to_solid_surface_meshtying_params(), true));
           else if (interaction_type ==
-                   INPAR::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_surface_contact)
+                   Inpar::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_surface_contact)
             new_condition = Teuchos::rcp(new BEAMINTERACTION::BeamToSolidConditionSurface(
                 map_item.second.first, map_item.second.second,
                 params_ptr->beam_to_solid_surface_contact_params(), false));
@@ -206,13 +206,13 @@ void BEAMINTERACTION::BeamInteractionConditions::set_beam_interaction_conditions
             condition_names[0].c_str(), condition_names[1].c_str());
     }
     else if (interaction_type ==
-             INPAR::BEAMINTERACTION::BeamInteractionConditions::beam_to_beam_point_coupling)
+             Inpar::BEAMINTERACTION::BeamInteractionConditions::beam_to_beam_point_coupling)
     {
       std::vector<Teuchos::RCP<BeamInteractionConditionBase>>& interaction_vector =
           condition_map_[interaction_type];
 
       // Get the conditions from the discretization.
-      std::vector<Teuchos::RCP<CORE::Conditions::Condition>> coupling_conditions;
+      std::vector<Teuchos::RCP<Core::Conditions::Condition>> coupling_conditions;
       discret->GetCondition("PenaltyPointCouplingCondition", coupling_conditions);
       for (const auto& condition : coupling_conditions)
       {
@@ -235,7 +235,7 @@ void BEAMINTERACTION::BeamInteractionConditions::set_beam_interaction_conditions
  *
  */
 void BEAMINTERACTION::BeamInteractionConditions::BuildIdSets(
-    Teuchos::RCP<DRT::Discretization> discretization)
+    Teuchos::RCP<Discret::Discretization> discretization)
 {
   for (auto const& map_pair : condition_map_)
     for (auto const& condition : map_pair.second) condition->BuildIdSets(discretization);
@@ -245,7 +245,7 @@ void BEAMINTERACTION::BeamInteractionConditions::BuildIdSets(
  *
  */
 void BEAMINTERACTION::BeamInteractionConditions::set_state(
-    const Teuchos::RCP<const DRT::Discretization>& discret,
+    const Teuchos::RCP<const Discret::Discretization>& discret,
     const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>&
         beaminteraction_data_state)
 {
@@ -258,7 +258,7 @@ void BEAMINTERACTION::BeamInteractionConditions::set_state(
  *
  */
 void BEAMINTERACTION::BeamInteractionConditions::Setup(
-    const Teuchos::RCP<const DRT::Discretization>& discret)
+    const Teuchos::RCP<const Discret::Discretization>& discret)
 {
   for (auto const& map_pair : condition_map_)
     for (auto const& condition : map_pair.second) condition->Setup(discret);
@@ -278,7 +278,7 @@ void BEAMINTERACTION::BeamInteractionConditions::Clear()
  */
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
 BEAMINTERACTION::BeamInteractionConditions::CreateContactPair(
-    const std::vector<CORE::Elements::Element const*>& ele_ptrs)
+    const std::vector<Core::Elements::Element const*>& ele_ptrs)
 {
   Teuchos::RCP<BEAMINTERACTION::BeamContactPair> new_pair;
   for (auto& map_pair : condition_map_)
@@ -298,7 +298,7 @@ BEAMINTERACTION::BeamInteractionConditions::CreateContactPair(
  *
  */
 void BEAMINTERACTION::BeamInteractionConditions::create_indirect_assembly_managers(
-    const Teuchos::RCP<const DRT::Discretization>& discret,
+    const Teuchos::RCP<const Discret::Discretization>& discret,
     std::vector<Teuchos::RCP<SUBMODELEVALUATOR::BeamContactAssemblyManager>>& assembly_managers)
 {
   Teuchos::RCP<BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManager>
@@ -318,7 +318,7 @@ void BEAMINTERACTION::BeamInteractionConditions::create_indirect_assembly_manage
  *
  */
 void BEAMINTERACTION::ConditionToElementIds(
-    const Teuchos::RCP<const CORE::Conditions::Condition>& condition, std::vector<int>& element_ids)
+    const Teuchos::RCP<const Core::Conditions::Condition>& condition, std::vector<int>& element_ids)
 {
   // Loop over the elements in the condition and get the "real" element by comparing the node IDs.
   element_ids.clear();
@@ -336,7 +336,7 @@ void BEAMINTERACTION::ConditionToElementIds(
     // last node, since if there are nodes connected to fewer elements, those are usually at the
     // end of the list.
     int local_node_id = n_nodes - 1;
-    CORE::Elements::Element** elements = item.second->Nodes()[local_node_id]->Elements();
+    Core::Elements::Element** elements = item.second->Nodes()[local_node_id]->Elements();
     for (int i_element = 0; i_element < item.second->Nodes()[local_node_id]->NumElement();
          i_element++)
     {

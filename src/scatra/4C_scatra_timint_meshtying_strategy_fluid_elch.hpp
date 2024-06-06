@@ -17,7 +17,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace SCATRA
+namespace ScaTra
 {
   /*!
   \brief Fluid-fluid meshtying strategy for electrochemistry problems
@@ -37,7 +37,7 @@ namespace SCATRA
   {
    public:
     //! constructor
-    explicit MeshtyingStrategyFluidElch(SCATRA::ScaTraTimIntElch* elchtimint);
+    explicit MeshtyingStrategyFluidElch(ScaTra::ScaTraTimIntElch* elchtimint);
 
 
     //! initialize meshtying objects
@@ -51,15 +51,15 @@ namespace SCATRA
     MeshtyingStrategyFluidElch(const MeshtyingStrategyFluidElch& old);
 
     //! return pointer to elch time integrator after cast
-    SCATRA::ScaTraTimIntElch* elch_tim_int() const
+    ScaTra::ScaTraTimIntElch* elch_tim_int() const
     {
-      return dynamic_cast<SCATRA::ScaTraTimIntElch*>(scatratimint_);
+      return dynamic_cast<ScaTra::ScaTraTimIntElch*>(scatratimint_);
     };
 
     //! instantiate strategy for Newton-Raphson convergence check
     void init_conv_check_strategy() override;
   };  // class MeshtyingStrategyFluidElch
-}  // namespace SCATRA
+}  // namespace ScaTra
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

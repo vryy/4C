@@ -49,11 +49,11 @@ output.
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationReader;
   class DiscretizationWriter;
-}  // namespace CORE::IO
+}  // namespace Core::IO
 
 namespace FLD
 {
@@ -68,7 +68,7 @@ namespace FLD
     o Allocate distributed vector for squares
 
     */
-    TurbulenceStatisticsLdc(Teuchos::RCP<DRT::Discretization> actdis,
+    TurbulenceStatisticsLdc(Teuchos::RCP<Discret::Discretization> actdis,
         Teuchos::ParameterList& params, const std::string& statistics_outfilename);
 
     /*!
@@ -124,12 +124,12 @@ namespace FLD
     \brief Input of statistics data after restart
     */
 
-    void read_restart(CORE::IO::DiscretizationReader& reader);
+    void read_restart(Core::IO::DiscretizationReader& reader);
 
     /*!
     \brief Write output file of statistics data to allow restart
     */
-    void write_restart(CORE::IO::DiscretizationWriter& writer);
+    void write_restart(Core::IO::DiscretizationWriter& writer);
 
    protected:
     /*!
@@ -162,7 +162,7 @@ namespace FLD
     double x3max_;
 
     //! The discretisation (required for nodes, dofs etc;)
-    Teuchos::RCP<DRT::Discretization> discret_;
+    Teuchos::RCP<Discret::Discretization> discret_;
 
     //! parameter list
     Teuchos::ParameterList& params_;

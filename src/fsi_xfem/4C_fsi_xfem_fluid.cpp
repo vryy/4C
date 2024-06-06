@@ -19,12 +19,12 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 FSI::FluidXFEMAlgorithm::FluidXFEMAlgorithm(const Epetra_Comm& comm)
     : FluidMovingBoundaryBaseAlgorithm(
-          GLOBAL::Problem::Instance()->FluidDynamicParams(), "FSICoupling"),
+          Global::Problem::Instance()->FluidDynamicParams(), "FSICoupling"),
       comm_(comm)
 {
-  const Teuchos::ParameterList& fluiddyn = GLOBAL::Problem::Instance()->FluidDynamicParams();
+  const Teuchos::ParameterList& fluiddyn = Global::Problem::Instance()->FluidDynamicParams();
 
-  if (comm_.MyPID() == 0) INPUT::PrintDefaultParameters(CORE::IO::cout, fluiddyn);
+  if (comm_.MyPID() == 0) Input::PrintDefaultParameters(Core::IO::cout, fluiddyn);
 
   step_ = 0;
   time_ = 0.;
@@ -39,7 +39,7 @@ FSI::FluidXFEMAlgorithm::FluidXFEMAlgorithm(const Epetra_Comm& comm)
 /*----------------------------------------------------------------------*/
 void FSI::FluidXFEMAlgorithm::Timeloop()
 {
-  if (GLOBAL::Problem::Instance()->GetProblemType() == CORE::ProblemType::fluid_xfem)
+  if (Global::Problem::Instance()->GetProblemType() == Core::ProblemType::fluid_xfem)
   {
     if (Comm().MyPID() == 0)
       std::cout << "Integrate routine for MOVING INTERFACES"

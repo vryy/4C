@@ -30,7 +30,7 @@ Created on: Feb 27, 2014
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace CORE::LINEAR_SOLVER::AMGNXN
+namespace Core::LinearSolver::AMGNxN
 {
   class GenericSmoother
   {
@@ -167,9 +167,9 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
         const BlockedVector& X, BlockedVector& Y, bool InitialGuessIsZero = false) const override;
 
    private:
-    Teuchos::RCP<CORE::LINALG::Solver> solver_;
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> sparse_matrix_;
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> block_sparse_matrix_;
+    Teuchos::RCP<Core::LinAlg::Solver> solver_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> sparse_matrix_;
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> block_sparse_matrix_;
     Teuchos::RCP<Epetra_Operator> a_;
     mutable Teuchos::RCP<Epetra_MultiVector> x_;
     mutable Teuchos::RCP<Epetra_MultiVector> b_;
@@ -185,7 +185,7 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
   class CoupledAmg : public BlockedSmoother
   {
    public:
-    CoupledAmg(Teuchos::RCP<AMGNXN::BlockedMatrix> A, std::vector<int> num_pdes,
+    CoupledAmg(Teuchos::RCP<AMGNxN::BlockedMatrix> A, std::vector<int> num_pdes,
         std::vector<int> null_spaces_dim,
         std::vector<Teuchos::RCP<std::vector<double>>> null_spaces_data,
         const Teuchos::ParameterList& amgnxn_params, const Teuchos::ParameterList& smoothers_params,
@@ -197,7 +197,7 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
    private:
     void setup();
 
-    Teuchos::RCP<AMGNXN::BlockedMatrix> a_;
+    Teuchos::RCP<AMGNxN::BlockedMatrix> a_;
     std::vector<Teuchos::ParameterList> muelu_lists_;
     std::vector<int> num_pdes_;
     std::vector<int> null_spaces_dim_;
@@ -207,9 +207,9 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
     Teuchos::ParameterList muelu_params_;
 
     bool is_setup_flag_;
-    Teuchos::RCP<AMGNXN::Hierarchies> h_;
-    Teuchos::RCP<AMGNXN::MonolithicHierarchy> m_;
-    Teuchos::RCP<AMGNXN::Vcycle> v_;
+    Teuchos::RCP<AMGNxN::Hierarchies> h_;
+    Teuchos::RCP<AMGNxN::MonolithicHierarchy> m_;
+    Teuchos::RCP<AMGNxN::Vcycle> v_;
   };
 
   class MueluSmootherWrapper : public SingleFieldSmoother
@@ -245,7 +245,7 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
   class MueluAMGWrapper : public SingleFieldSmoother
   {
    public:
-    MueluAMGWrapper(Teuchos::RCP<CORE::LINALG::SparseMatrix> A, int num_pde, int null_space_dim,
+    MueluAMGWrapper(Teuchos::RCP<Core::LinAlg::SparseMatrix> A, int num_pde, int null_space_dim,
         Teuchos::RCP<std::vector<double>> null_space_data,
         const Teuchos::ParameterList& muelu_list);
 
@@ -255,7 +255,7 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
     void Setup();
 
    protected:
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> A_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> A_;
     int num_pde_;
     int null_space_dim_;
     Teuchos::RCP<std::vector<double>> null_space_data_;
@@ -270,7 +270,7 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
   class SingleFieldAMG : public MueluAMGWrapper
   {
    public:
-    SingleFieldAMG(Teuchos::RCP<CORE::LINALG::SparseMatrix> A, int num_pde, int null_space_dim,
+    SingleFieldAMG(Teuchos::RCP<Core::LinAlg::SparseMatrix> A, int num_pde, int null_space_dim,
         Teuchos::RCP<std::vector<double>> null_space_data, const Teuchos::ParameterList& muelu_list,
         const Teuchos::ParameterList& fine_smoother_list);
 
@@ -286,14 +286,14 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
   class IfpackWrapper : public SingleFieldSmoother
   {
    public:
-    IfpackWrapper(Teuchos::RCP<CORE::LINALG::SparseMatrixBase> A, Teuchos::ParameterList& list);
+    IfpackWrapper(Teuchos::RCP<Core::LinAlg::SparseMatrixBase> A, Teuchos::ParameterList& list);
     ~IfpackWrapper() override { delete prec_; }
     void Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y,
         bool InitialGuessIsZero = false) const override;
 
    private:
     Ifpack_Preconditioner* prec_;
-    Teuchos::RCP<CORE::LINALG::SparseMatrixBase> a_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrixBase> a_;
     Teuchos::RCP<Epetra_RowMatrix> arow_;
     Teuchos::ParameterList list_;
     std::string type_;
@@ -303,14 +303,14 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
   {
    public:
     DirectSolverWrapper();
-    void Setup(Teuchos::RCP<CORE::LINALG::SparseMatrix> matrix,
+    void Setup(Teuchos::RCP<Core::LinAlg::SparseMatrix> matrix,
         Teuchos::RCP<Teuchos::ParameterList> params);
 
     void Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y,
         bool InitialGuessIsZero = false) const override;
 
    private:
-    Teuchos::RCP<CORE::LINALG::Solver> solver_;
+    Teuchos::RCP<Core::LinAlg::Solver> solver_;
     Teuchos::RCP<Epetra_Operator> a_;
     mutable Teuchos::RCP<Epetra_MultiVector> x_;
     mutable Teuchos::RCP<Epetra_MultiVector> b_;
@@ -455,8 +455,8 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
     Teuchos::RCP<GenericSmoother> Create() override;
 
    private:
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> approximate_inverse(
-        const CORE::LINALG::SparseMatrixBase& A, const std::string& method);
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> approximate_inverse(
+        const Core::LinAlg::SparseMatrixBase& A, const std::string& method);
     Teuchos::RCP<BlockedMatrix> compute_schur_complement(const BlockedMatrix& invApp,
         const BlockedMatrix& Aps, const BlockedMatrix& Asp, const BlockedMatrix& Ass);
   };
@@ -502,7 +502,7 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
    public:
     Teuchos::RCP<GenericSmoother> Create() override;
   };
-}  // namespace CORE::LINEAR_SOLVER::AMGNXN
+}  // namespace Core::LinearSolver::AMGNxN
 
 FOUR_C_NAMESPACE_CLOSE
 

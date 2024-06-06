@@ -26,13 +26,13 @@ namespace FBI
 {
   class BeamToFluidMeshtyingParams;
 }
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 namespace STR
 {
-  namespace TIMINT
+  namespace TimeInt
   {
     class BaseDataGlobalState;
   }
@@ -43,10 +43,10 @@ namespace BEAMINTERACTION
   class BeamContactPair;
 }  // namespace BEAMINTERACTION
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 namespace BEAMINTERACTION
 {
@@ -95,8 +95,8 @@ namespace BEAMINTERACTION
      * @param[in] params Parameters for the beam contact.
      * @param[in] start_value_lambda_gid Start value for the Lagrange multiplier global IDs.
      */
-    BeamToFluidMortarManager(Teuchos::RCP<const DRT::Discretization> discretization1,
-        Teuchos::RCP<const DRT::Discretization> discretization2,
+    BeamToFluidMortarManager(Teuchos::RCP<const Discret::Discretization> discretization1,
+        Teuchos::RCP<const Discret::Discretization> discretization2,
         Teuchos::RCP<const FBI::BeamToFluidMeshtyingParams> params, int start_value_lambda_gid);
 
     /**
@@ -163,9 +163,9 @@ namespace BEAMINTERACTION
      * @param[out] beam_force Global force vector acting on the beam
      */
     void add_global_force_stiffness_contributions(Teuchos::RCP<Epetra_FEVector> fluid_force,
-        Teuchos::RCP<Epetra_FEVector> beam_force, Teuchos::RCP<CORE::LINALG::SparseMatrix> kbb,
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> kbf, Teuchos::RCP<CORE::LINALG::SparseMatrix> kff,
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> kfb, Teuchos::RCP<const Epetra_Vector> beam_vel,
+        Teuchos::RCP<Epetra_FEVector> beam_force, Teuchos::RCP<Core::LinAlg::SparseMatrix> kbb,
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> kbf, Teuchos::RCP<Core::LinAlg::SparseMatrix> kff,
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> kfb, Teuchos::RCP<const Epetra_Vector> beam_vel,
         Teuchos::RCP<const Epetra_Vector> fluid_vel) const;
 
     /**
@@ -238,10 +238,10 @@ namespace BEAMINTERACTION
     unsigned int n_lambda_element_;
 
     //! structure discretization
-    Teuchos::RCP<const DRT::Discretization> discretization_structure_;
+    Teuchos::RCP<const Discret::Discretization> discretization_structure_;
 
     //! fluid discretization
-    Teuchos::RCP<const DRT::Discretization> discretization_fluid_;
+    Teuchos::RCP<const Discret::Discretization> discretization_fluid_;
 
     //! Pointer to the beam contact parameters.
     Teuchos::RCP<const FBI::BeamToFluidMeshtyingParams> beam_contact_parameters_ptr_;
@@ -279,10 +279,10 @@ namespace BEAMINTERACTION
     std::map<int, std::vector<int>> element_gid_to_lambda_gid_map_;
 
     //! Global \f$D\f$ matrix.
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> global_d_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> global_d_;
 
     //! Global \f$M\f$ matrix.
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> global_m_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> global_m_;
 
     //! Global \f$\kappa\f$ vector. This vector is used to scale the mortar matrices. See Yang et
     //! al: Two dimensional mortar contact methods for large deformation frictional sliding (eq.

@@ -25,17 +25,17 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
 
-namespace CORE::GEO
+namespace Core::Geo
 {
   class SearchTree;
 }
@@ -46,8 +46,8 @@ namespace XFEM
   {
    public:
     //! ctor
-    MeshProjector(Teuchos::RCP<const DRT::Discretization> sourcedis,
-        Teuchos::RCP<const DRT::Discretization> targetdis, const Teuchos::ParameterList& params,
+    MeshProjector(Teuchos::RCP<const Discret::Discretization> sourcedis,
+        Teuchos::RCP<const Discret::Discretization> targetdis, const Teuchos::ParameterList& params,
         Teuchos::RCP<const Epetra_Vector> sourcedisp = Teuchos::null);
 
     //! set current displacements of source discretization
@@ -76,7 +76,7 @@ namespace XFEM
 
    private:
     /// determine the search radius for the search tree
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     void find_search_radius();
 
     //! build a search tree for elements of source discretization
@@ -84,48 +84,48 @@ namespace XFEM
 
     //! for every node search for a covering element from the source discretization
     void find_covering_elements_and_interpolate_values(
-        std::vector<CORE::LINALG::Matrix<3, 1>>& tar_nodepositions,
-        std::vector<CORE::LINALG::Matrix<8, 1>>& interpolated_vecs,
+        std::vector<Core::LinAlg::Matrix<3, 1>>& tar_nodepositions,
+        std::vector<Core::LinAlg::Matrix<8, 1>>& interpolated_vecs,
         std::vector<int>& projection_targetnodes, std::vector<int>& have_values);
 
     //! compute position of target node w.r.t. source element and interpolate when covered by it
-    template <CORE::FE::CellType distype>
-    bool check_position_and_project(const CORE::Elements::Element* src_ele,
-        const CORE::LINALG::Matrix<3, 1>& node_xyz, CORE::LINALG::Matrix<8, 1>& interpolatedvec);
+    template <Core::FE::CellType distype>
+    bool check_position_and_project(const Core::Elements::Element* src_ele,
+        const Core::LinAlg::Matrix<3, 1>& node_xyz, Core::LinAlg::Matrix<8, 1>& interpolatedvec);
 
     //! communicate nodes demanding reconstruction in a Round-Robin pattern
-    void communicate_nodes(std::vector<CORE::LINALG::Matrix<3, 1>>& tar_nodepositions,
-        std::vector<CORE::LINALG::Matrix<8, 1>>& interpolated_vecs,
+    void communicate_nodes(std::vector<Core::LinAlg::Matrix<3, 1>>& tar_nodepositions,
+        std::vector<Core::LinAlg::Matrix<8, 1>>& interpolated_vecs,
         std::vector<int>& projection_targetnodes, std::vector<int>& have_values);
 
     /// receive a block in the round robin communication pattern
     void receive_block(
-        std::vector<char>& rblock, CORE::COMM::Exporter& exporter, MPI_Request& request);
+        std::vector<char>& rblock, Core::Communication::Exporter& exporter, MPI_Request& request);
 
     /// send a block in the round robin communication pattern
     void send_block(
-        std::vector<char>& sblock, CORE::COMM::Exporter& exporter, MPI_Request& request);
+        std::vector<char>& sblock, Core::Communication::Exporter& exporter, MPI_Request& request);
 
     /// pack values in the round robin communication pattern
-    void pack_values(std::vector<CORE::LINALG::Matrix<3, 1>>& tar_nodepositions,
-        std::vector<CORE::LINALG::Matrix<8, 1>>& interpolated_vecs,
+    void pack_values(std::vector<Core::LinAlg::Matrix<3, 1>>& tar_nodepositions,
+        std::vector<Core::LinAlg::Matrix<8, 1>>& interpolated_vecs,
         std::vector<int>& projection_targetnodes, std::vector<int>& have_values,
         std::vector<char>& sblock);
 
-    Teuchos::RCP<const DRT::Discretization> sourcedis_;
-    Teuchos::RCP<const DRT::Discretization> targetdis_;
+    Teuchos::RCP<const Discret::Discretization> sourcedis_;
+    Teuchos::RCP<const Discret::Discretization> targetdis_;
 
     //! search radius factor
     double searchradius_fac_;
 
     //! 3D seach tree for embedded discretization
-    Teuchos::RCP<CORE::GEO::SearchTree> search_tree_;
+    Teuchos::RCP<Core::Geo::SearchTree> search_tree_;
 
     //! min. radius needed for the search tree
     double searchradius_;
 
     //! map of source node to coordinates (including possible displacements)
-    std::map<int, CORE::LINALG::Matrix<3, 1>> src_nodepositions_n_;
+    std::map<int, Core::LinAlg::Matrix<3, 1>> src_nodepositions_n_;
 
     //! state vectors from projection source
     std::vector<Teuchos::RCP<const Epetra_Vector>> source_statevecs_;

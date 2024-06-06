@@ -24,10 +24,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 03/09|
  *----------------------------------------------------------------------*/
-MORTAR::IntElement::IntElement(int lid, int id, int owner, MORTAR::Element* parele,
-    const CORE::FE::CellType& shape, const int numnode, const int* nodeids,
-    std::vector<CORE::Nodes::Node*> nodes, const bool isslave, const bool rewind)
-    : MORTAR::Element(id, owner, shape, numnode, nodeids, isslave),
+Mortar::IntElement::IntElement(int lid, int id, int owner, Mortar::Element* parele,
+    const Core::FE::CellType& shape, const int numnode, const int* nodeids,
+    std::vector<Core::Nodes::Node*> nodes, const bool isslave, const bool rewind)
+    : Mortar::Element(id, owner, shape, numnode, nodeids, isslave),
       lid_(lid),
       rewind_(rewind),
       parele_(parele)
@@ -37,7 +37,7 @@ MORTAR::IntElement::IntElement(int lid, int id, int owner, MORTAR::Element* pare
   // check for consistency of nodeids and nodes
   // for nurbs, the nodes are not actual nodes in the
   // discretization, so just skip that part.
-  if (ParShape() != CORE::FE::CellType::nurbs9)
+  if (ParShape() != Core::FE::CellType::nurbs9)
     for (int i = 0; i < numnode; ++i)
       if (nodes[i]->Id() != nodeids[i])
         FOUR_C_THROW("IntElement: Inconsistency Nodes and NodeIds!");
@@ -63,7 +63,7 @@ MORTAR::IntElement::IntElement(int lid, int id, int owner, MORTAR::Element* pare
 /*----------------------------------------------------------------------*
  |  map IntElement coords to Element coords (public)          popp 03/09|
  *----------------------------------------------------------------------*/
-bool MORTAR::IntElement::MapToParent(const double* xi, double* parxi)
+bool Mortar::IntElement::MapToParent(const double* xi, double* parxi)
 {
   // outdated (popp 05/2016)
   // - affine mapping is only correct for undistorted planar elements
@@ -73,7 +73,7 @@ bool MORTAR::IntElement::MapToParent(const double* xi, double* parxi)
   // *********************************************************************
   // do mapping for given IntElement and Element
   // *********************************************************** quad9 ***
-  if (ParShape() == CORE::FE::CellType::quad9)
+  if (ParShape() == Core::FE::CellType::quad9)
   {
     // do mapping according to sub-element id
     switch (Lid())
@@ -110,7 +110,7 @@ bool MORTAR::IntElement::MapToParent(const double* xi, double* parxi)
     }
   }
   // *********************************************************** quad8 ***
-  else if (ParShape() == CORE::FE::CellType::quad8)
+  else if (ParShape() == Core::FE::CellType::quad8)
   {
     // do mapping according to sub-element id
     switch (Lid())
@@ -153,7 +153,7 @@ bool MORTAR::IntElement::MapToParent(const double* xi, double* parxi)
     }
   }
   // ************************************************************ tri6 ***
-  else if (ParShape() == CORE::FE::CellType::tri6)
+  else if (ParShape() == Core::FE::CellType::tri6)
   {
     // do mapping according to sub-element id
     switch (Lid())
@@ -190,7 +190,7 @@ bool MORTAR::IntElement::MapToParent(const double* xi, double* parxi)
     }
   }
   // *********************************************************** quad4 ***
-  else if (ParShape() == CORE::FE::CellType::quad4)
+  else if (ParShape() == Core::FE::CellType::quad4)
   {
     // do mapping according to sub-element id
     switch (Lid())
@@ -209,7 +209,7 @@ bool MORTAR::IntElement::MapToParent(const double* xi, double* parxi)
     }
   }
   // ************************************************************ tri3 ***
-  else if (ParShape() == CORE::FE::CellType::tri3)
+  else if (ParShape() == Core::FE::CellType::tri3)
   {
     // do mapping according to sub-element id
     switch (Lid())
@@ -228,7 +228,7 @@ bool MORTAR::IntElement::MapToParent(const double* xi, double* parxi)
     }
   }
   // ************************************************************ nurbs9 ***
-  else if (ParShape() == CORE::FE::CellType::nurbs9)
+  else if (ParShape() == Core::FE::CellType::nurbs9)
   {
     if (Lid() != 0) FOUR_C_THROW("nurbs9 should only have one integration element");
     // TODO: There is not necessarily a constant mapping from the IntEle
@@ -262,8 +262,8 @@ bool MORTAR::IntElement::MapToParent(const double* xi, double* parxi)
 /*----------------------------------------------------------------------*
  |  map IntElement coord derivatives to Element (public)      popp 03/09|
  *----------------------------------------------------------------------*/
-bool MORTAR::IntElement::MapToParent(const std::vector<CORE::GEN::Pairedvector<int, double>>& dxi,
-    std::vector<CORE::GEN::Pairedvector<int, double>>& dparxi)
+bool Mortar::IntElement::MapToParent(const std::vector<Core::Gen::Pairedvector<int, double>>& dxi,
+    std::vector<Core::Gen::Pairedvector<int, double>>& dparxi)
 {
   // outdated (popp 05/2016)
   // - affine mapping is only correct for undistorted planar elements
@@ -271,12 +271,12 @@ bool MORTAR::IntElement::MapToParent(const std::vector<CORE::GEN::Pairedvector<i
   FOUR_C_THROW("MapToParent() function is outdated");
 
   // map iterator
-  typedef CORE::GEN::Pairedvector<int, double>::const_iterator CI;
+  typedef Core::Gen::Pairedvector<int, double>::const_iterator CI;
 
   // *********************************************************************
   // do mapping for given IntElement and Element
   // *********************************************************** quad9 ***
-  if (ParShape() == CORE::FE::CellType::quad9)
+  if (ParShape() == Core::FE::CellType::quad9)
   {
     // do mapping according to sub-element id
     switch (Lid())
@@ -321,7 +321,7 @@ bool MORTAR::IntElement::MapToParent(const std::vector<CORE::GEN::Pairedvector<i
     }
   }
   // *********************************************************** quad8 ***
-  else if (ParShape() == CORE::FE::CellType::quad8)
+  else if (ParShape() == Core::FE::CellType::quad8)
   {
     // do mapping according to sub-element id
     switch (Lid())
@@ -372,7 +372,7 @@ bool MORTAR::IntElement::MapToParent(const std::vector<CORE::GEN::Pairedvector<i
     }
   }
   // ************************************************************ tri6 ***
-  else if (ParShape() == CORE::FE::CellType::tri6)
+  else if (ParShape() == Core::FE::CellType::tri6)
   {
     // do mapping according to sub-element id
     switch (Lid())
@@ -417,7 +417,7 @@ bool MORTAR::IntElement::MapToParent(const std::vector<CORE::GEN::Pairedvector<i
     }
   }
   // *********************************************************** quad4 ***
-  else if (ParShape() == CORE::FE::CellType::quad4)
+  else if (ParShape() == Core::FE::CellType::quad4)
   {
     // do mapping according to sub-element id
     switch (Lid())
@@ -436,7 +436,7 @@ bool MORTAR::IntElement::MapToParent(const std::vector<CORE::GEN::Pairedvector<i
     }
   }
   // ************************************************************ tri3 ***
-  else if (ParShape() == CORE::FE::CellType::tri3)
+  else if (ParShape() == Core::FE::CellType::tri3)
   {
     // do mapping according to sub-element id
     switch (Lid())
@@ -455,7 +455,7 @@ bool MORTAR::IntElement::MapToParent(const std::vector<CORE::GEN::Pairedvector<i
     }
   }
   // ************************************************************ nurbs9 ***
-  else if (ParShape() == CORE::FE::CellType::nurbs9)
+  else if (ParShape() == Core::FE::CellType::nurbs9)
   {
     if (Lid() != 0) FOUR_C_THROW("nurbs9 should only have one integration element");
     if (!rewind_)
@@ -479,35 +479,35 @@ bool MORTAR::IntElement::MapToParent(const std::vector<CORE::GEN::Pairedvector<i
   return true;
 }
 
-void MORTAR::IntElement::NodeLinearization(
-    std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& nodelin)
+void Mortar::IntElement::NodeLinearization(
+    std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& nodelin)
 {
   switch (parele_->Shape())
   {
     // for all Lagrange Finite elements we can associate them directly with
     // the interpolatory nodes of the parent element
-    case CORE::FE::CellType::quad4:
-    case CORE::FE::CellType::quad8:
-    case CORE::FE::CellType::quad9:
-    case CORE::FE::CellType::tri3:
-    case CORE::FE::CellType::tri6:
+    case Core::FE::CellType::quad4:
+    case Core::FE::CellType::quad8:
+    case Core::FE::CellType::quad9:
+    case Core::FE::CellType::tri3:
+    case Core::FE::CellType::tri6:
     {
       // resize the linearizations
-      nodelin.resize(num_node(), std::vector<CORE::GEN::Pairedvector<int, double>>(3, 1));
+      nodelin.resize(num_node(), std::vector<Core::Gen::Pairedvector<int, double>>(3, 1));
 
       // loop over all intEle nodes
       for (int in = 0; in < num_node(); ++in)
       {
-        MORTAR::Node* mrtrnode = dynamic_cast<MORTAR::Node*>(Nodes()[in]);
+        Mortar::Node* mrtrnode = dynamic_cast<Mortar::Node*>(Nodes()[in]);
         for (int dim = 0; dim < 3; ++dim) nodelin[in][dim][mrtrnode->Dofs()[dim]] += 1.;
       }
       break;
     }
-    case CORE::FE::CellType::nurbs9:
+    case Core::FE::CellType::nurbs9:
     {
       // resize the linearizations
       nodelin.resize(num_node(),
-          std::vector<CORE::GEN::Pairedvector<int, double>>(3, 3 * (parele_->num_node())));
+          std::vector<Core::Gen::Pairedvector<int, double>>(3, 3 * (parele_->num_node())));
 
       // parameter space coords of pseudo nodes
       double pseudo_nodes_param_coords[4][2];
@@ -541,14 +541,14 @@ void MORTAR::IntElement::NodeLinearization(
         double xi[2] = {pseudo_nodes_param_coords[pn][0], pseudo_nodes_param_coords[pn][1]};
 
         // evaluate shape functions at pseudo node param coords
-        CORE::LINALG::SerialDenseVector sval(9);
-        CORE::LINALG::SerialDenseMatrix sderiv(9, 2);
+        Core::LinAlg::SerialDenseVector sval(9);
+        Core::LinAlg::SerialDenseMatrix sderiv(9, 2);
         parele_->evaluate_shape(xi, sval, sderiv, 9, true);
 
         // loop over all parent element control points
         for (int cp = 0; cp < parele_->num_node(); ++cp)
         {
-          MORTAR::Node* mrtrcp = dynamic_cast<MORTAR::Node*>(parele_->Nodes()[cp]);
+          Mortar::Node* mrtrcp = dynamic_cast<Mortar::Node*>(parele_->Nodes()[cp]);
 
           // loop over all dimensions
           for (int dim = 0; dim < 3; ++dim) nodelin.at(pn).at(dim)[mrtrcp->Dofs()[dim]] += sval(cp);
@@ -569,17 +569,17 @@ void MORTAR::IntElement::NodeLinearization(
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 11/08|
  *----------------------------------------------------------------------*/
-MORTAR::IntCell::IntCell(int id, int nvertices, CORE::LINALG::Matrix<3, 3>& coords, double* auxn,
-    const CORE::FE::CellType& shape, std::vector<CORE::GEN::Pairedvector<int, double>>& linv1,
-    std::vector<CORE::GEN::Pairedvector<int, double>>& linv2,
-    std::vector<CORE::GEN::Pairedvector<int, double>>& linv3,
-    std::vector<CORE::GEN::Pairedvector<int, double>>& linauxn)
+Mortar::IntCell::IntCell(int id, int nvertices, Core::LinAlg::Matrix<3, 3>& coords, double* auxn,
+    const Core::FE::CellType& shape, std::vector<Core::Gen::Pairedvector<int, double>>& linv1,
+    std::vector<Core::Gen::Pairedvector<int, double>>& linv2,
+    std::vector<Core::Gen::Pairedvector<int, double>>& linv3,
+    std::vector<Core::Gen::Pairedvector<int, double>>& linauxn)
     : id_(id), slaveId_(-1), masterId_(-1), nvertices_(nvertices), coords_(coords), shape_(shape)
 {
   // store auxiliary plane normal
   for (int k = 0; k < 3; ++k) Auxn()[k] = auxn[k];
 
-  if (shape == CORE::FE::CellType::tri3)
+  if (shape == Core::FE::CellType::tri3)
   {
     // compute area of IntCell
     std::array<double, 3> t1 = {0.0, 0.0, 0.0};
@@ -596,7 +596,7 @@ MORTAR::IntCell::IntCell(int id, int nvertices, CORE::LINALG::Matrix<3, 3>& coor
     t1xt2[2] = t1[0] * t2[1] - t1[1] * t2[0];
     area_ = 0.5 * sqrt(t1xt2[0] * t1xt2[0] + t1xt2[1] * t1xt2[1] + t1xt2[2] * t1xt2[2]);
   }
-  else if (shape == CORE::FE::CellType::line2)
+  else if (shape == Core::FE::CellType::line2)
   {
     // compute length of int_line
     std::array<double, 3> v = {0.0, 0.0, 0.0};
@@ -629,17 +629,17 @@ MORTAR::IntCell::IntCell(int id, int nvertices, CORE::LINALG::Matrix<3, 3>& coor
 /*----------------------------------------------------------------------*
  |  Get global coords for given local coords (IntCell)        popp 11/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::IntCell::LocalToGlobal(const double* xi, double* globcoord, int inttype)
+bool Mortar::IntCell::LocalToGlobal(const double* xi, double* globcoord, int inttype)
 {
   // check input
   if (!xi) FOUR_C_THROW("LocalToGlobal called with xi=nullptr");
   if (!globcoord) FOUR_C_THROW("LocalToGlobal called with globcoord=nullptr");
 
-  if (Shape() == CORE::FE::CellType::tri3 or Shape() == CORE::FE::CellType::line2)
+  if (Shape() == Core::FE::CellType::tri3 or Shape() == Core::FE::CellType::line2)
   {
     // collect fundamental data
-    CORE::LINALG::Matrix<3, 1> val;
-    CORE::LINALG::Matrix<3, 2> deriv;
+    Core::LinAlg::Matrix<3, 1> val;
+    Core::LinAlg::Matrix<3, 2> deriv;
 
     // Evaluate shape, get nodal coords and interpolate global coords
     evaluate_shape(xi, val, deriv);
@@ -663,7 +663,7 @@ bool MORTAR::IntCell::LocalToGlobal(const double* xi, double* globcoord, int int
       }
       else if (inttype == 2)
       {
-        if (Shape() == CORE::FE::CellType::line2)
+        if (Shape() == Core::FE::CellType::line2)
           FOUR_C_THROW("for line2 elements only 1 parameter space coordinate");
 
         // use shape function derivatives eta for interpolation
@@ -683,7 +683,7 @@ bool MORTAR::IntCell::LocalToGlobal(const double* xi, double* globcoord, int int
 /*----------------------------------------------------------------------*
  |  output for integration cell                              farah 01/16|
  *----------------------------------------------------------------------*/
-void MORTAR::IntCell::Print()
+void Mortar::IntCell::Print()
 {
   std::cout << "Slave  ID= " << GetSlaveId() << std::endl;
   std::cout << "Master ID= " << GetMasterId() << std::endl;
@@ -701,13 +701,13 @@ void MORTAR::IntCell::Print()
 /*----------------------------------------------------------------------*
  |  Evaluate shape functions (IntCell)                        popp 11/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::IntCell::evaluate_shape(
-    const double* xi, CORE::LINALG::Matrix<3, 1>& val, CORE::LINALG::Matrix<3, 2>& deriv)
+bool Mortar::IntCell::evaluate_shape(
+    const double* xi, Core::LinAlg::Matrix<3, 1>& val, Core::LinAlg::Matrix<3, 2>& deriv)
 {
   if (!xi) FOUR_C_THROW("evaluate_shape (IntCell) called with xi=nullptr");
 
   // 3noded triangular element
-  if (Shape() == CORE::FE::CellType::tri3)
+  if (Shape() == Core::FE::CellType::tri3)
   {
     val(0) = 1.0 - xi[0] - xi[1];
     val(1) = xi[0];
@@ -719,7 +719,7 @@ bool MORTAR::IntCell::evaluate_shape(
     deriv(2, 0) = 0.0;
     deriv(2, 1) = 1.0;
   }
-  else if (Shape() == CORE::FE::CellType::line2)
+  else if (Shape() == Core::FE::CellType::line2)
   {
     val(0) = 0.5 * (1 - xi[0]);
     val(1) = 0.5 * (1 + xi[0]);
@@ -737,14 +737,14 @@ bool MORTAR::IntCell::evaluate_shape(
 /*----------------------------------------------------------------------*
  |  Evaluate Jacobian determinant (IntCell)                   popp 11/08|
  *----------------------------------------------------------------------*/
-double MORTAR::IntCell::Jacobian()
+double Mortar::IntCell::Jacobian()
 {
   double jac = 0.0;
 
   // 2D linear case (2noded line element)
-  if (Shape() == CORE::FE::CellType::tri3)
+  if (Shape() == Core::FE::CellType::tri3)
     jac = Area() * 2.0;
-  else if (Shape() == CORE::FE::CellType::line2)
+  else if (Shape() == Core::FE::CellType::line2)
     jac = Area() * 0.5;
   // unknown case
   else
@@ -756,13 +756,13 @@ double MORTAR::IntCell::Jacobian()
 /*----------------------------------------------------------------------*
  |  Evaluate directional deriv. of Jacobian det. AuxPlane     popp 03/09|
  *----------------------------------------------------------------------*/
-void MORTAR::IntCell::DerivJacobian(CORE::GEN::Pairedvector<int, double>& derivjac)
+void Mortar::IntCell::DerivJacobian(Core::Gen::Pairedvector<int, double>& derivjac)
 {
   // define iterator
-  typedef CORE::GEN::Pairedvector<int, double>::const_iterator CI;
+  typedef Core::Gen::Pairedvector<int, double>::const_iterator CI;
 
   // 1d line element
-  if (Shape() == CORE::FE::CellType::line2)
+  if (Shape() == Core::FE::CellType::line2)
   {
     // compute length of int_line
     std::array<double, 3> v = {0.0, 0.0, 0.0};
@@ -775,7 +775,7 @@ void MORTAR::IntCell::DerivJacobian(CORE::GEN::Pairedvector<int, double>& derivj
     double fac = 0.25 * linv;
 
     // linearizarion of v
-    std::vector<CORE::GEN::Pairedvector<int, double>> vg(3, 1000);
+    std::vector<Core::Gen::Pairedvector<int, double>> vg(3, 1000);
 
     // first entry (x component lin)
     for (CI p = GetDerivVertex(0)[0].begin(); p != GetDerivVertex(0)[0].end(); ++p)
@@ -796,7 +796,7 @@ void MORTAR::IntCell::DerivJacobian(CORE::GEN::Pairedvector<int, double>& derivj
       vg[2][p->first] -= (p->second);
 
     // linearizarion of v^t * v
-    CORE::GEN::Pairedvector<int, double> vv(1000);
+    Core::Gen::Pairedvector<int, double> vv(1000);
 
     // delta v^T * v
     for (CI p = vg[0].begin(); p != vg[0].end(); ++p) vv[p->first] += v[0] * (p->second);
@@ -812,7 +812,7 @@ void MORTAR::IntCell::DerivJacobian(CORE::GEN::Pairedvector<int, double>& derivj
     for (CI p = vv.begin(); p != vv.end(); ++p) derivjac[p->first] += fac * (p->second);
   }
   // 2D linear case (2noded line element)
-  else if (Shape() == CORE::FE::CellType::tri3)
+  else if (Shape() == Core::FE::CellType::tri3)
   {
     // metrics routine gives local basis vectors
     static std::vector<double> gxi(3);
@@ -906,7 +906,7 @@ void MORTAR::IntCell::DerivJacobian(CORE::GEN::Pairedvector<int, double>& derivj
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 11/08|
  *----------------------------------------------------------------------*/
-MORTAR::Vertex::Vertex(std::vector<double> coord, Vertex::VType type, std::vector<int> nodeids,
+Mortar::Vertex::Vertex(std::vector<double> coord, Vertex::VType type, std::vector<int> nodeids,
     Vertex* next, Vertex* prev, bool intersect, bool entryexit, Vertex* neighbor, double alpha)
     : coord_(coord),
       type_(type),
@@ -925,7 +925,7 @@ MORTAR::Vertex::Vertex(std::vector<double> coord, Vertex::VType type, std::vecto
 /*----------------------------------------------------------------------*
  |  cctor (public)                                            popp 11/08|
  *----------------------------------------------------------------------*/
-MORTAR::Vertex::Vertex(const Vertex& old)
+Mortar::Vertex::Vertex(const Vertex& old)
     : coord_(old.coord_),
       type_(old.type_),
       nodeids_(old.nodeids_),

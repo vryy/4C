@@ -35,8 +35,8 @@ FOUR_C_NAMESPACE_OPEN
 BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerIndirect::
     PartitionedBeamInteractionAssemblyManagerIndirect(
         std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& assembly_contact_elepairs,
-        Teuchos::RCP<const DRT::Discretization>& discretization1,
-        Teuchos::RCP<const DRT::Discretization>& discretization2,
+        Teuchos::RCP<const Discret::Discretization>& discretization1,
+        Teuchos::RCP<const Discret::Discretization>& discretization2,
         Teuchos::RCP<FBI::BeamToFluidMeshtyingParams> beam_contact_params_ptr)
     : PartitionedBeamInteractionAssemblyManager(assembly_contact_elepairs)
 {
@@ -55,12 +55,12 @@ BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerInd
  *
  */
 void BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerIndirect::
-    evaluate_force_stiff(const DRT::Discretization& discretization1,
-        const DRT::Discretization& discretization2, Teuchos::RCP<Epetra_FEVector>& ff,
-        Teuchos::RCP<Epetra_FEVector>& fb, Teuchos::RCP<CORE::LINALG::SparseOperator> cff,
-        Teuchos::RCP<CORE::LINALG::SparseMatrix>& cbb,
-        Teuchos::RCP<CORE::LINALG::SparseMatrix>& cfb,
-        Teuchos::RCP<CORE::LINALG::SparseMatrix>& cbf, Teuchos::RCP<const Epetra_Vector> fluid_vel,
+    evaluate_force_stiff(const Discret::Discretization& discretization1,
+        const Discret::Discretization& discretization2, Teuchos::RCP<Epetra_FEVector>& ff,
+        Teuchos::RCP<Epetra_FEVector>& fb, Teuchos::RCP<Core::LinAlg::SparseOperator> cff,
+        Teuchos::RCP<Core::LinAlg::SparseMatrix>& cbb,
+        Teuchos::RCP<Core::LinAlg::SparseMatrix>& cfb,
+        Teuchos::RCP<Core::LinAlg::SparseMatrix>& cbf, Teuchos::RCP<const Epetra_Vector> fluid_vel,
         Teuchos::RCP<const Epetra_Vector> beam_vel)
 {
   Teuchos::RCP<Teuchos::Time> t =
@@ -77,7 +77,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManag
 
   // Add the global mortar matrices to the force vector and stiffness matrix.
   mortar_manager_->add_global_force_stiffness_contributions(ff, fb, cbb, cbf,
-      Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(cff, true), cfb, beam_vel, fluid_vel);
+      Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(cff, true), cfb, beam_vel, fluid_vel);
 }
 
 FOUR_C_NAMESPACE_CLOSE

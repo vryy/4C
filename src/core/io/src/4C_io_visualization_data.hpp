@@ -23,7 +23,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::IO
+namespace Core::IO
 {
   //! Type to be used for global index and offset values
   using index_type = int32_t;
@@ -819,7 +819,7 @@ namespace CORE::IO
     std::map<std::string, visualization_vector_type_variant> field_data_;
   };
 
-}  // namespace CORE::IO
+}  // namespace Core::IO
 
 
 FOUR_C_NAMESPACE_CLOSE

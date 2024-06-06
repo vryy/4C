@@ -20,12 +20,12 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 FSI::FluidAleAlgorithm::FluidAleAlgorithm(const Epetra_Comm& comm)
     : FluidMovingBoundaryBaseAlgorithm(
-          GLOBAL::Problem::Instance()->FSIDynamicParams(), "FSICoupling"),
+          Global::Problem::Instance()->FSIDynamicParams(), "FSICoupling"),
       comm_(comm)
 {
-  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
 
-  if (comm_.MyPID() == 0) INPUT::PrintDefaultParameters(CORE::IO::cout, fsidyn);
+  if (comm_.MyPID() == 0) Input::PrintDefaultParameters(Core::IO::cout, fsidyn);
 
   step_ = 0;
   time_ = 0.;

@@ -31,42 +31,42 @@ void EXODUS::ValidateInputFile(const Teuchos::RCP<Epetra_Comm> comm, const std::
   using namespace FourC;
 
   // access our problem instance
-  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
+  Global::Problem* problem = Global::Problem::Instance();
 
   // create a DatFileReader
-  CORE::IO::DatFileReader reader(datfile, comm, 0);
+  Core::IO::DatFileReader reader(datfile, comm, 0);
 
   // read and validate dynamic and solver sections
   std::cout << "...Read parameters" << std::endl;
-  GLOBAL::ReadParameter(*problem, reader);
+  Global::ReadParameter(*problem, reader);
 
   // read and validate all material definitions
   std::cout << "...Read materials" << std::endl;
-  GLOBAL::ReadMaterials(*problem, reader);
+  Global::ReadMaterials(*problem, reader);
 
   // do NOT allocate the different fields (discretizations) here,
   // since RAM might be a problem for huge problems!
   // But, we have to perform at least the problem-specific setup since
   // some reading procedures depend on the number of fields (e.g., ReadKnots())
   std::cout << "...Read field setup" << std::endl;
-  GLOBAL::ReadFields(*problem, reader, false);  // option false is important here!
+  Global::ReadFields(*problem, reader, false);  // option false is important here!
 
   std::cout << "...";
   {
-    CORE::UTILS::FunctionManager function_manager;
+    Core::UTILS::FunctionManager function_manager;
     GlobalLegacyModuleCallbacks().AttachFunctionDefinitions(function_manager);
     function_manager.ReadInput(reader);
   }
 
-  GLOBAL::ReadResult(*problem, reader);
-  GLOBAL::ReadConditions(*problem, reader);
+  Global::ReadResult(*problem, reader);
+  Global::ReadConditions(*problem, reader);
 
   // input of materials of cloned fields (if needed)
-  GLOBAL::ReadCloningMaterialMap(*problem, reader);
+  Global::ReadCloningMaterialMap(*problem, reader);
 
   // read all knot information for isogeometric analysis
   // and add it to the (derived) nurbs discretization
-  GLOBAL::ReadKnots(*problem, reader);
+  Global::ReadKnots(*problem, reader);
 
   // inform user about unused/obsolete section names being found
   // and force him/her to correct the input file accordingly
@@ -90,7 +90,7 @@ void EXODUS::ValidateMeshElementJacobians(Mesh& mymesh)
   for (i_eb = myebs.begin(); i_eb != myebs.end(); ++i_eb)
   {
     Teuchos::RCP<ElementBlock> eb = i_eb->second;
-    const CORE::FE::CellType distype = PreShapeToDrt(eb->GetShape());
+    const Core::FE::CellType distype = PreShapeToDrt(eb->GetShape());
     // check and rewind if necessary
     ValidateElementJacobian(mymesh, distype, eb);
     // full check at all gausspoints
@@ -105,52 +105,52 @@ void EXODUS::ValidateMeshElementJacobians(Mesh& mymesh)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void EXODUS::ValidateElementJacobian(
-    Mesh& mymesh, const CORE::FE::CellType distype, Teuchos::RCP<ElementBlock> eb)
+    Mesh& mymesh, const Core::FE::CellType distype, Teuchos::RCP<ElementBlock> eb)
 {
   using namespace FourC;
 
   // use one point gauss rule to calculate jacobian at element center
-  CORE::FE::GaussRule3D integrationrule_1point = CORE::FE::GaussRule3D::undefined;
+  Core::FE::GaussRule3D integrationrule_1point = Core::FE::GaussRule3D::undefined;
   switch (distype)
   {
-    case CORE::FE::CellType::hex8:
-    case CORE::FE::CellType::hex20:
-      integrationrule_1point = CORE::FE::GaussRule3D::hex_1point;
+    case Core::FE::CellType::hex8:
+    case Core::FE::CellType::hex20:
+      integrationrule_1point = Core::FE::GaussRule3D::hex_1point;
       break;
-    case CORE::FE::CellType::hex27:
+    case Core::FE::CellType::hex27:
       integrationrule_1point =
-          CORE::FE::GaussRule3D::hex_27point;  // one point is not enough for hex27!!
+          Core::FE::GaussRule3D::hex_27point;  // one point is not enough for hex27!!
       break;
-    case CORE::FE::CellType::tet4:
-    case CORE::FE::CellType::tet10:
-      integrationrule_1point = CORE::FE::GaussRule3D::tet_1point;
+    case Core::FE::CellType::tet4:
+    case Core::FE::CellType::tet10:
+      integrationrule_1point = Core::FE::GaussRule3D::tet_1point;
       break;
-    case CORE::FE::CellType::wedge6:
-    case CORE::FE::CellType::wedge15:
-      integrationrule_1point = CORE::FE::GaussRule3D::wedge_1point;
+    case Core::FE::CellType::wedge6:
+    case Core::FE::CellType::wedge15:
+      integrationrule_1point = Core::FE::GaussRule3D::wedge_1point;
       break;
-    case CORE::FE::CellType::pyramid5:
-      integrationrule_1point = CORE::FE::GaussRule3D::pyramid_1point;
+    case Core::FE::CellType::pyramid5:
+      integrationrule_1point = Core::FE::GaussRule3D::pyramid_1point;
       break;
     // do nothing for 2D, 1D and 0D elements
-    case CORE::FE::CellType::quad4:
-    case CORE::FE::CellType::quad8:
-    case CORE::FE::CellType::quad9:
-    case CORE::FE::CellType::tri3:
-    case CORE::FE::CellType::tri6:
-    case CORE::FE::CellType::line2:
-    case CORE::FE::CellType::line3:
-    case CORE::FE::CellType::point1:
+    case Core::FE::CellType::quad4:
+    case Core::FE::CellType::quad8:
+    case Core::FE::CellType::quad9:
+    case Core::FE::CellType::tri3:
+    case Core::FE::CellType::tri6:
+    case Core::FE::CellType::line2:
+    case Core::FE::CellType::line3:
+    case Core::FE::CellType::point1:
       return;
     default:
       FOUR_C_THROW("Unknown element type, validation failed!");
       break;
   }
-  const CORE::FE::IntegrationPoints3D intpoints(integrationrule_1point);
+  const Core::FE::IntegrationPoints3D intpoints(integrationrule_1point);
   const int iel = eb->GetEleNodes(0).size();
   // shape functions derivatives
   const int NSD = 3;
-  CORE::LINALG::SerialDenseMatrix deriv(NSD, iel);
+  Core::LinAlg::SerialDenseMatrix deriv(NSD, iel);
 
   // go through all elements
   Teuchos::RCP<std::map<int, std::vector<int>>> eleconn = eb->GetEleConn();
@@ -161,7 +161,7 @@ void EXODUS::ValidateElementJacobian(
     int rewcount = 0;
     for (int igp = 0; igp < intpoints.nquad; ++igp)
     {
-      CORE::FE::shape_function_3D_deriv1(
+      Core::FE::shape_function_3D_deriv1(
           deriv, intpoints.qxg[igp][0], intpoints.qxg[igp][1], intpoints.qxg[igp][2], distype);
       if (!PositiveEle(i_ele->first, i_ele->second, mymesh, deriv))
       {
@@ -189,54 +189,54 @@ void EXODUS::ValidateElementJacobian(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 int EXODUS::ValidateElementJacobian_fullgp(
-    Mesh& mymesh, const CORE::FE::CellType distype, Teuchos::RCP<ElementBlock> eb)
+    Mesh& mymesh, const Core::FE::CellType distype, Teuchos::RCP<ElementBlock> eb)
 {
   using namespace FourC;
 
-  CORE::FE::GaussRule3D integrationrule = CORE::FE::GaussRule3D::undefined;
+  Core::FE::GaussRule3D integrationrule = Core::FE::GaussRule3D::undefined;
   switch (distype)
   {
-    case CORE::FE::CellType::hex8:
-      integrationrule = CORE::FE::GaussRule3D::hex_8point;
+    case Core::FE::CellType::hex8:
+      integrationrule = Core::FE::GaussRule3D::hex_8point;
       break;
-    case CORE::FE::CellType::hex20:
-      integrationrule = CORE::FE::GaussRule3D::hex_27point;
+    case Core::FE::CellType::hex20:
+      integrationrule = Core::FE::GaussRule3D::hex_27point;
       break;
-    case CORE::FE::CellType::hex27:
-      integrationrule = CORE::FE::GaussRule3D::hex_27point;
+    case Core::FE::CellType::hex27:
+      integrationrule = Core::FE::GaussRule3D::hex_27point;
       break;
-    case CORE::FE::CellType::tet4:
-      integrationrule = CORE::FE::GaussRule3D::tet_4point;
+    case Core::FE::CellType::tet4:
+      integrationrule = Core::FE::GaussRule3D::tet_4point;
       break;
-    case CORE::FE::CellType::tet10:
-      integrationrule = CORE::FE::GaussRule3D::tet_10point;
+    case Core::FE::CellType::tet10:
+      integrationrule = Core::FE::GaussRule3D::tet_10point;
       break;
-    case CORE::FE::CellType::wedge6:
-    case CORE::FE::CellType::wedge15:
-      integrationrule = CORE::FE::GaussRule3D::wedge_6point;
+    case Core::FE::CellType::wedge6:
+    case Core::FE::CellType::wedge15:
+      integrationrule = Core::FE::GaussRule3D::wedge_6point;
       break;
-    case CORE::FE::CellType::pyramid5:
-      integrationrule = CORE::FE::GaussRule3D::pyramid_8point;
+    case Core::FE::CellType::pyramid5:
+      integrationrule = Core::FE::GaussRule3D::pyramid_8point;
       break;
     // do nothing for 2D, 1D and 0D elements
-    case CORE::FE::CellType::quad4:
-    case CORE::FE::CellType::quad8:
-    case CORE::FE::CellType::quad9:
-    case CORE::FE::CellType::tri3:
-    case CORE::FE::CellType::tri6:
-    case CORE::FE::CellType::line2:
-    case CORE::FE::CellType::line3:
-    case CORE::FE::CellType::point1:
+    case Core::FE::CellType::quad4:
+    case Core::FE::CellType::quad8:
+    case Core::FE::CellType::quad9:
+    case Core::FE::CellType::tri3:
+    case Core::FE::CellType::tri6:
+    case Core::FE::CellType::line2:
+    case Core::FE::CellType::line3:
+    case Core::FE::CellType::point1:
       return 0;
     default:
       FOUR_C_THROW("Unknown element type, validation failed!");
       break;
   }
-  const CORE::FE::IntegrationPoints3D intpoints(integrationrule);
+  const Core::FE::IntegrationPoints3D intpoints(integrationrule);
   const int iel = eb->GetEleNodes(0).size();
   // shape functions derivatives
   const int NSD = 3;
-  CORE::LINALG::SerialDenseMatrix deriv(NSD, iel);
+  Core::LinAlg::SerialDenseMatrix deriv(NSD, iel);
 
   // go through all elements
   int invalids = 0;
@@ -246,7 +246,7 @@ int EXODUS::ValidateElementJacobian_fullgp(
   {
     for (int igp = 0; igp < intpoints.nquad; ++igp)
     {
-      CORE::FE::shape_function_3D_deriv1(
+      Core::FE::shape_function_3D_deriv1(
           deriv, intpoints.qxg[igp][0], intpoints.qxg[igp][1], intpoints.qxg[igp][2], distype);
       if (PositiveEle(i_ele->first, i_ele->second, mymesh, deriv) == false)
       {
@@ -261,13 +261,13 @@ int EXODUS::ValidateElementJacobian_fullgp(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 bool EXODUS::PositiveEle(const int& eleid, const std::vector<int>& nodes, const Mesh& mymesh,
-    const CORE::LINALG::SerialDenseMatrix& deriv)
+    const Core::LinAlg::SerialDenseMatrix& deriv)
 {
   using namespace FourC;
 
   const int iel = deriv.numCols();
   const int NSD = deriv.numRows();
-  CORE::LINALG::SerialDenseMatrix xyze(deriv.numRows(), iel);
+  Core::LinAlg::SerialDenseMatrix xyze(deriv.numRows(), iel);
   for (int inode = 0; inode < iel; inode++)
   {
     const std::vector<double> x = mymesh.GetNode(nodes.at(inode));
@@ -279,9 +279,9 @@ bool EXODUS::PositiveEle(const int& eleid, const std::vector<int>& nodes, const 
   // actually compute its transpose....
   if (NSD == 3)
   {
-    CORE::LINALG::SerialDenseMatrix xjm(NSD, NSD);
-    CORE::LINALG::multiplyNT(xjm, deriv, xyze);
-    CORE::LINALG::Matrix<3, 3> jac(xjm.values(), true);
+    Core::LinAlg::SerialDenseMatrix xjm(NSD, NSD);
+    Core::LinAlg::multiplyNT(xjm, deriv, xyze);
+    Core::LinAlg::Matrix<3, 3> jac(xjm.values(), true);
     const double det = jac.Determinant();
 
     if (abs(det) < 1E-16)
@@ -304,8 +304,8 @@ int EXODUS::EleSaneSign(
 
   const int iel = nodes.size();
   // to be even stricter we test the Jacobian at every Node, not just at the gausspoints
-  CORE::LINALG::SerialDenseMatrix local_nodecoords(iel, 3);
-  CORE::FE::CellType distype;
+  Core::LinAlg::SerialDenseMatrix local_nodecoords(iel, 3);
+  Core::FE::CellType distype;
   switch (iel)
   {
     case 8:  // hex8
@@ -333,7 +333,7 @@ int EXODUS::EleSaneSign(
       local_nodecoords(7, 0) = -1.;
       local_nodecoords(7, 1) = 1.;
       local_nodecoords(7, 2) = 1.;
-      distype = CORE::FE::CellType::hex8;
+      distype = Core::FE::CellType::hex8;
       break;
     case 6:  // wedge6
       local_nodecoords(0, 0) = 0.;
@@ -354,7 +354,7 @@ int EXODUS::EleSaneSign(
       local_nodecoords(5, 0) = 0.;
       local_nodecoords(5, 1) = 1.;
       local_nodecoords(5, 2) = 1.;
-      distype = CORE::FE::CellType::wedge6;
+      distype = Core::FE::CellType::wedge6;
       break;
     default:
       FOUR_C_THROW("No Element Sanity Check for this distype");
@@ -362,9 +362,9 @@ int EXODUS::EleSaneSign(
   }
   // shape functions derivatives
   const int NSD = 3;
-  CORE::LINALG::SerialDenseMatrix deriv(NSD, iel);
+  Core::LinAlg::SerialDenseMatrix deriv(NSD, iel);
 
-  CORE::LINALG::SerialDenseMatrix xyze(deriv.numRows(), iel);
+  Core::LinAlg::SerialDenseMatrix xyze(deriv.numRows(), iel);
   for (int inode = 0; inode < iel; inode++)
   {
     const std::vector<double> x = nodecoords.find(nodes[inode])->second;
@@ -374,15 +374,15 @@ int EXODUS::EleSaneSign(
   }
   // get Jacobian matrix and determinant
   // actually compute its transpose....
-  CORE::LINALG::SerialDenseMatrix xjm(NSD, NSD);
+  Core::LinAlg::SerialDenseMatrix xjm(NSD, NSD);
   int n_posdet = 0;
   int n_negdet = 0;
 
   for (int i = 0; i < iel; ++i)
   {
-    CORE::FE::shape_function_3D_deriv1(
+    Core::FE::shape_function_3D_deriv1(
         deriv, local_nodecoords(i, 0), local_nodecoords(i, 1), local_nodecoords(i, 2), distype);
-    CORE::LINALG::multiplyNT(xjm, deriv, xyze);
+    Core::LinAlg::multiplyNT(xjm, deriv, xyze);
     const double det = xjm(0, 0) * xjm(1, 1) * xjm(2, 2) + xjm(0, 1) * xjm(1, 2) * xjm(2, 0) +
                        xjm(0, 2) * xjm(1, 0) * xjm(2, 1) - xjm(0, 2) * xjm(1, 1) * xjm(2, 0) -
                        xjm(0, 0) * xjm(1, 2) * xjm(2, 1) - xjm(0, 1) * xjm(1, 0) * xjm(2, 2);
@@ -407,7 +407,7 @@ int EXODUS::EleSaneSign(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::vector<int> EXODUS::RewindEle(std::vector<int> old_nodeids, const CORE::FE::CellType distype)
+std::vector<int> EXODUS::RewindEle(std::vector<int> old_nodeids, const Core::FE::CellType distype)
 {
   using namespace FourC;
 
@@ -415,7 +415,7 @@ std::vector<int> EXODUS::RewindEle(std::vector<int> old_nodeids, const CORE::FE:
   // rewinding of nodes to arrive at mathematically positive element
   switch (distype)
   {
-    case CORE::FE::CellType::tet4:
+    case Core::FE::CellType::tet4:
     {
       new_nodeids[0] = old_nodeids[0];
       new_nodeids[1] = old_nodeids[2];
@@ -423,7 +423,7 @@ std::vector<int> EXODUS::RewindEle(std::vector<int> old_nodeids, const CORE::FE:
       new_nodeids[3] = old_nodeids[3];
       break;
     }
-    case CORE::FE::CellType::tet10:
+    case Core::FE::CellType::tet10:
     {
       new_nodeids[0] = old_nodeids[0];
       new_nodeids[1] = old_nodeids[2];
@@ -437,7 +437,7 @@ std::vector<int> EXODUS::RewindEle(std::vector<int> old_nodeids, const CORE::FE:
       new_nodeids[9] = old_nodeids[9];
       break;
     }
-    case CORE::FE::CellType::hex8:
+    case Core::FE::CellType::hex8:
     {
       new_nodeids[0] = old_nodeids[4];
       new_nodeids[1] = old_nodeids[5];
@@ -449,7 +449,7 @@ std::vector<int> EXODUS::RewindEle(std::vector<int> old_nodeids, const CORE::FE:
       new_nodeids[7] = old_nodeids[3];
       break;
     }
-    case CORE::FE::CellType::wedge6:
+    case Core::FE::CellType::wedge6:
     {
       new_nodeids[0] = old_nodeids[3];
       new_nodeids[1] = old_nodeids[4];
@@ -459,7 +459,7 @@ std::vector<int> EXODUS::RewindEle(std::vector<int> old_nodeids, const CORE::FE:
       new_nodeids[5] = old_nodeids[2];
       break;
     }
-    case CORE::FE::CellType::pyramid5:
+    case Core::FE::CellType::pyramid5:
     {
       new_nodeids[1] = old_nodeids[3];
       new_nodeids[3] = old_nodeids[1];
@@ -469,7 +469,7 @@ std::vector<int> EXODUS::RewindEle(std::vector<int> old_nodeids, const CORE::FE:
       new_nodeids[4] = old_nodeids[4];
       break;
     }
-    case CORE::FE::CellType::hex27:
+    case Core::FE::CellType::hex27:
     {
       // nodes 1 - 20 can stay the same (no rewinding for hex20)
       for (int i = 0; i < 20; i++)

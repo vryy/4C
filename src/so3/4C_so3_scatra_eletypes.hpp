@@ -21,7 +21,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   // forward declarations
   class Discretization;
@@ -38,17 +38,17 @@ namespace DRT
 
       static SoHex8ScatraType& Instance();
 
-      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-      int Initialize(DRT::Discretization& dis) override;
+      int Initialize(Discret::Discretization& dis) override;
 
       void setup_element_definition(
-          std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+          std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
           override;
 
      private:
@@ -68,17 +68,17 @@ namespace DRT
 
       static SoHex8fbarScatraType& Instance();
 
-      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-      int Initialize(DRT::Discretization& dis) override;
+      int Initialize(Discret::Discretization& dis) override;
 
       void setup_element_definition(
-          std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+          std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
           override;
 
      private:
@@ -98,17 +98,17 @@ namespace DRT
 
       static SoHex27ScatraType& Instance();
 
-      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-      int Initialize(DRT::Discretization& dis) override;
+      int Initialize(Discret::Discretization& dis) override;
 
       void setup_element_definition(
-          std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+          std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
           override;
 
      private:
@@ -127,17 +127,17 @@ namespace DRT
 
       static SoTet4ScatraType& Instance();
 
-      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-      int Initialize(DRT::Discretization& dis) override;
+      int Initialize(Discret::Discretization& dis) override;
 
       void setup_element_definition(
-          std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+          std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
           override;
 
      private:
@@ -156,17 +156,17 @@ namespace DRT
 
       static SoTet10ScatraType& Instance();
 
-      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-      int Initialize(DRT::Discretization& dis) override;
+      int Initialize(Discret::Discretization& dis) override;
 
       void setup_element_definition(
-          std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+          std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
           override;
 
      private:
@@ -185,17 +185,17 @@ namespace DRT
 
       static SoWeg6ScatraType& Instance();
 
-      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-      int Initialize(DRT::Discretization& dis) override;
+      int Initialize(Discret::Discretization& dis) override;
 
       void setup_element_definition(
-          std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+          std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
           override;
 
      private:
@@ -204,7 +204,7 @@ namespace DRT
       std::string get_element_type_string() const { return "SOLIDW6SCATRA"; }
     };
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

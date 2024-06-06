@@ -47,9 +47,9 @@ sveln_      (old.sveln_      )
  |  Pack data                                                  (public) |
  |                                                            gjb 12/12 |
  *----------------------------------------------------------------------*/
-void FLD::TDSEleData::Pack(CORE::COMM::PackBuffer& data) const
+void FLD::TDSEleData::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -77,7 +77,7 @@ void FLD::TDSEleData::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // history variables (subgrid-scale velocities, accelerations and pressure)
   {

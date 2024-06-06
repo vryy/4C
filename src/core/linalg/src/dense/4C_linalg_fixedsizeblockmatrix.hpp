@@ -14,7 +14,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   template <class value_type, unsigned int brows, unsigned int bcols>
   class BlockMatrix
@@ -133,7 +133,7 @@ namespace CORE::LINALG
     }
 
     template <int rows, int cols>
-    void AssembleTo(CORE::LINALG::Matrix<rows, cols, scalar_type>& dest, double f)
+    void AssembleTo(Core::LinAlg::Matrix<rows, cols, scalar_type>& dest, double f)
     {
       const int local_rows = rows / brows;
       const int local_cols = cols / bcols;
@@ -145,7 +145,7 @@ namespace CORE::LINALG
         {
           if (IsUsed(irb, icb))
           {
-            CORE::LINALG::Matrix<local_rows, local_cols>& local = *(*this)(irb, icb);
+            Core::LinAlg::Matrix<local_rows, local_cols>& local = *(*this)(irb, icb);
             for (int ic = 0; ic < local_cols; ++ic)
             {
               unsigned c = col_blocks * ic + icb;
@@ -196,7 +196,7 @@ namespace CORE::LINALG
     value_type* blocks_[brows * bcols];
   };
 
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 FOUR_C_NAMESPACE_CLOSE
 

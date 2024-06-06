@@ -20,7 +20,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT::ELEMENTS::SHELL::EAS
+namespace Discret::ELEMENTS::Shell::EAS
 {
   /*!
    * @brief Evaluates the transformation matrix T0^{-1} which maps the M-matrix from centroid point
@@ -29,17 +29,17 @@ namespace DRT::ELEMENTS::SHELL::EAS
    * @param akov (in) : Jacobian mapping evaluated at the gaussina point
    * @param akov0 (in) : Jacobian mapping evaluated at the element centroid
    *
-   * @return CORE::LINALG::SerialDenseMatrix : Transformation matrix T0inv
+   * @return Core::LinAlg::SerialDenseMatrix : Transformation matrix T0inv
    */
-  template <CORE::FE::CellType distype>
-  CORE::LINALG::SerialDenseMatrix EvaluateT0inv(
-      const CORE::LINALG::Matrix<DRT::ELEMENTS::SHELL::DETAIL::num_dim,
-          DRT::ELEMENTS::SHELL::DETAIL::num_dim>& akov,
-      const CORE::LINALG::Matrix<DRT::ELEMENTS::SHELL::DETAIL::num_dim,
-          DRT::ELEMENTS::SHELL::DETAIL::num_dim>& akon0)
+  template <Core::FE::CellType distype>
+  Core::LinAlg::SerialDenseMatrix EvaluateT0inv(
+      const Core::LinAlg::Matrix<Discret::ELEMENTS::Shell::DETAIL::num_dim,
+          Discret::ELEMENTS::Shell::DETAIL::num_dim>& akov,
+      const Core::LinAlg::Matrix<Discret::ELEMENTS::Shell::DETAIL::num_dim,
+          Discret::ELEMENTS::Shell::DETAIL::num_dim>& akon0)
   {
-    CORE::LINALG::SerialDenseMatrix T0inv(DRT::ELEMENTS::SHELL::DETAIL::num_internal_variables,
-        DRT::ELEMENTS::SHELL::DETAIL::num_internal_variables);
+    Core::LinAlg::SerialDenseMatrix T0inv(Discret::ELEMENTS::Shell::DETAIL::num_internal_variables,
+        Discret::ELEMENTS::Shell::DETAIL::num_internal_variables);
     double t11, t12, t13, t21, t22, t23, t31, t32, t33;
     // components of the transformation matrix T0^{-1}
     t11 = 0.0;
@@ -51,7 +51,7 @@ namespace DRT::ELEMENTS::SHELL::EAS
     t31 = 0.0;
     t32 = 0.0;
     t33 = 1.0;
-    for (int i = 0; i < DRT::ELEMENTS::SHELL::DETAIL::num_dim; ++i)
+    for (int i = 0; i < Discret::ELEMENTS::Shell::DETAIL::num_dim; ++i)
     {
       t11 += akov(0, i) * akon0(0, i);
       t12 += akov(0, i) * akon0(1, i);
@@ -143,12 +143,12 @@ namespace DRT::ELEMENTS::SHELL::EAS
     T0inv(10, 11) = 2 * t23 * t33;
     T0inv(11, 11) = t33 * t33;
 
-    for (int i = 0; i < DRT::ELEMENTS::SHELL::DETAIL::node_dof; ++i)
+    for (int i = 0; i < Discret::ELEMENTS::Shell::DETAIL::node_dof; ++i)
     {
-      for (int j = 0; j < DRT::ELEMENTS::SHELL::DETAIL::node_dof; ++j)
+      for (int j = 0; j < Discret::ELEMENTS::Shell::DETAIL::node_dof; ++j)
       {
-        T0inv(i, j + DRT::ELEMENTS::SHELL::DETAIL::node_dof) = 0.0;
-        T0inv(i + DRT::ELEMENTS::SHELL::DETAIL::node_dof, j) = 0.0;
+        T0inv(i, j + Discret::ELEMENTS::Shell::DETAIL::node_dof) = 0.0;
+        T0inv(i + Discret::ELEMENTS::Shell::DETAIL::node_dof, j) = 0.0;
       }
     }
     return T0inv;
@@ -163,16 +163,16 @@ namespace DRT::ELEMENTS::SHELL::EAS
    * @param xi_gp (in) : Coordinate in the parameter space
    * @param eas (in) : Number of eas parameters for each locking part
    * @param neas (in) : Total number of eas parameters
-   * @return CORE::LINALG::SerialDenseMatrix : Enhanced strains shape function matrix in parameter
+   * @return Core::LinAlg::SerialDenseMatrix : Enhanced strains shape function matrix in parameter
    * space M
    */
-  template <CORE::FE::CellType distype>
-  CORE::LINALG::SerialDenseMatrix EvaluateEASShapeFunctionsParameterSpace(
+  template <Core::FE::CellType distype>
+  Core::LinAlg::SerialDenseMatrix EvaluateEASShapeFunctionsParameterSpace(
       const std::array<double, 2>& xi_gp, const STR::ELEMENTS::ShellLockingTypes& locking_types)
   {
     // evaluation of the shape function matrix to interpolate the enhanced strains alpha
-    CORE::LINALG::SerialDenseMatrix M(
-        DRT::ELEMENTS::SHELL::DETAIL::num_internal_variables, locking_types.total);
+    Core::LinAlg::SerialDenseMatrix M(
+        Discret::ELEMENTS::Shell::DETAIL::num_internal_variables, locking_types.total);
 
     const double xi = xi_gp[0];
     const double eta = xi_gp[1];
@@ -185,7 +185,7 @@ namespace DRT::ELEMENTS::SHELL::EAS
     const double xietaeta = xieta * eta;
     const double xixietaeta = xieta * xieta;
 
-    const int num_node = DRT::ELEMENTS::SHELL::DETAIL::num_node<distype>;
+    const int num_node = Discret::ELEMENTS::Shell::DETAIL::num_node<distype>;
     if (num_node > 4)
     {
       // membrane locking: E_{11}, E_{12}, E_{22} constant
@@ -614,9 +614,9 @@ namespace DRT::ELEMENTS::SHELL::EAS
    * @param strain (in) : Strains
    * @param zeta (in) : Thickness coordinate of gaussian point (scaled via SDC)
    */
-  template <CORE::FE::CellType distype>
-  void UpdateCurrentMetricsEAS(DRT::ELEMENTS::SHELL::BasisVectorsAndMetrics<distype>& g,
-      const CORE::LINALG::SerialDenseVector& strain, const double& zeta)
+  template <Core::FE::CellType distype>
+  void UpdateCurrentMetricsEAS(Discret::ELEMENTS::Shell::BasisVectorsAndMetrics<distype>& g,
+      const Core::LinAlg::SerialDenseVector& strain, const double& zeta)
   {
     // update kovariant metric tensor
     // g_11 += 2 * (alpha_11 + zeta * beta_11)
@@ -658,20 +658,20 @@ namespace DRT::ELEMENTS::SHELL::EAS
    * metric tensors of the shell body
    * @param metrics_centroid_reference (in) : An object holding the current basis vectors and
    * metric tensors evaluated at the element center
-   * @return CORE::LINALG::SerialDenseMatrix : EAS shapefunction matrix M
+   * @return Core::LinAlg::SerialDenseMatrix : EAS shapefunction matrix M
    */
-  template <CORE::FE::CellType distype>
-  CORE::LINALG::SerialDenseMatrix MapEasShapeFunctionsToGaussPoint(const int& neas,
-      const DRT::ELEMENTS::SHELL::BasisVectorsAndMetrics<distype>& a_reference,
-      const DRT::ELEMENTS::SHELL::BasisVectorsAndMetrics<distype>& metrics_centroid_reference,
-      CORE::LINALG::SerialDenseMatrix& M)
+  template <Core::FE::CellType distype>
+  Core::LinAlg::SerialDenseMatrix MapEasShapeFunctionsToGaussPoint(const int& neas,
+      const Discret::ELEMENTS::Shell::BasisVectorsAndMetrics<distype>& a_reference,
+      const Discret::ELEMENTS::Shell::BasisVectorsAndMetrics<distype>& metrics_centroid_reference,
+      Core::LinAlg::SerialDenseMatrix& M)
   {
     // get transformation matrix T0^-1 to map M from midpoint to gaussian point
-    CORE::LINALG::SerialDenseMatrix T0inv =
+    Core::LinAlg::SerialDenseMatrix T0inv =
         EvaluateT0inv<distype>(a_reference.kovariant_, metrics_centroid_reference.kontravariant_);
     // transform basis of M-matrix to gaussian point: M_gp = detJ0/ detJ * T0^-T * M
-    CORE::LINALG::SerialDenseMatrix M_gp(
-        DRT::ELEMENTS::SHELL::DETAIL::num_internal_variables, neas);
+    Core::LinAlg::SerialDenseMatrix M_gp(
+        Discret::ELEMENTS::Shell::DETAIL::num_internal_variables, neas);
     M_gp.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS,
         metrics_centroid_reference.detJ_ / a_reference.detJ_, T0inv, M, 0.0);
     return M_gp;
@@ -679,23 +679,23 @@ namespace DRT::ELEMENTS::SHELL::EAS
 
 
   // Evaluates M_gp by setting up M and mapping M to M_gp via T0^{-T}
-  template <CORE::FE::CellType distype>
-  CORE::LINALG::SerialDenseMatrix EvaluateEasShapeFunctions(const std::array<double, 2>& xi_gp,
+  template <Core::FE::CellType distype>
+  Core::LinAlg::SerialDenseMatrix EvaluateEasShapeFunctions(const std::array<double, 2>& xi_gp,
       const STR::ELEMENTS::ShellLockingTypes& locking_types,
-      const DRT::ELEMENTS::SHELL::BasisVectorsAndMetrics<distype>& a_reference,
-      const DRT::ELEMENTS::SHELL::BasisVectorsAndMetrics<distype>& metrics_centroid_reference)
+      const Discret::ELEMENTS::Shell::BasisVectorsAndMetrics<distype>& a_reference,
+      const Discret::ELEMENTS::Shell::BasisVectorsAndMetrics<distype>& metrics_centroid_reference)
   {
-    CORE::LINALG::SerialDenseMatrix M =
+    Core::LinAlg::SerialDenseMatrix M =
         EAS::EvaluateEASShapeFunctionsParameterSpace<distype>(xi_gp, locking_types);
-    CORE::LINALG::SerialDenseMatrix M_gp = MapEasShapeFunctionsToGaussPoint(
+    Core::LinAlg::SerialDenseMatrix M_gp = MapEasShapeFunctionsToGaussPoint(
         locking_types.total, a_reference, metrics_centroid_reference, M);
     return M_gp;
   }
 
 
   // Evaluate enhanced EAS strains
-  void EvaluateEasStrains(CORE::LINALG::SerialDenseVector& strain_enh,
-      const CORE::LINALG::SerialDenseMatrix& alpha, CORE::LINALG::SerialDenseMatrix& M)
+  void EvaluateEasStrains(Core::LinAlg::SerialDenseVector& strain_enh,
+      const Core::LinAlg::SerialDenseMatrix& alpha, Core::LinAlg::SerialDenseMatrix& M)
   {
     // evaluate enhanced strains = M * alpha to "unlock" element
     strain_enh.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, M, alpha, 0.0);
@@ -708,8 +708,8 @@ namespace DRT::ELEMENTS::SHELL::EAS
    * @param RTilde (in) : RTilde
    * @param force (in/out) : internal force vector where the local contribution is added to
    */
-  void AddEASInternalForce(const CORE::LINALG::SerialDenseMatrix& LinvDTilde,
-      const CORE::LINALG::SerialDenseMatrix& RTilde, CORE::LINALG::SerialDenseVector& force_vector)
+  void AddEASInternalForce(const Core::LinAlg::SerialDenseMatrix& LinvDTilde,
+      const Core::LinAlg::SerialDenseMatrix& RTilde, Core::LinAlg::SerialDenseVector& force_vector)
   {
     // EAS internal force vector is: R - L * DTilde^-1 * RTilde (R is the usual unenhanced
     // internal force vector
@@ -724,15 +724,15 @@ namespace DRT::ELEMENTS::SHELL::EAS
    * @param stiffness_matrix (in/out) : stiffness matrix where the local contribution is added
    * to
    */
-  void AddEASStiffnessMatrix(const CORE::LINALG::SerialDenseMatrix& LinvDTilde,
-      const CORE::LINALG::SerialDenseMatrix& transL,
-      CORE::LINALG::SerialDenseMatrix& stiffness_matrix)
+  void AddEASStiffnessMatrix(const Core::LinAlg::SerialDenseMatrix& LinvDTilde,
+      const Core::LinAlg::SerialDenseMatrix& transL,
+      Core::LinAlg::SerialDenseMatrix& stiffness_matrix)
   {
     // EAS-stiffness matrix is: K- L * DTilde^-1 * L^T (K is the usual unenhanced stiffness
     // matrix)
     stiffness_matrix.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1., LinvDTilde, transL, 1.0);
   }
-}  // namespace DRT::ELEMENTS::SHELL::EAS
+}  // namespace Discret::ELEMENTS::Shell::EAS
 
 FOUR_C_NAMESPACE_CLOSE
 

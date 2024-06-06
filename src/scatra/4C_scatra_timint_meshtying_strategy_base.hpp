@@ -23,21 +23,21 @@ strategy without meshtying)
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace CORE::IO
+namespace Core::IO
 {
   class InputControl;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class KrylovProjector;
   class Solver;
   struct SolverParams;
   class SparseOperator;
   class MultiMapExtractor;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace SCATRA
+namespace ScaTra
 {
   class ConvCheckStrategyBase;
   class ScaTraTimIntImpl;
@@ -67,7 +67,7 @@ namespace SCATRA
     virtual ~MeshtyingStrategyBase() = default;
 
     //! constructor
-    explicit MeshtyingStrategyBase(SCATRA::ScaTraTimIntImpl* scatratimint)
+    explicit MeshtyingStrategyBase(ScaTra::ScaTraTimIntImpl* scatratimint)
         : convcheckstrategy_(Teuchos::null), scatratimint_(scatratimint)
     {
     }
@@ -125,7 +125,7 @@ namespace SCATRA
      * @param residual            residual vector
      * @param calcinittimederiv   flag for calculation of initial time derivative
      */
-    virtual void CondenseMatAndRHS(const Teuchos::RCP<CORE::LINALG::SparseOperator>& systemmatrix,
+    virtual void CondenseMatAndRHS(const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,
         const Teuchos::RCP<Epetra_Vector>& residual, const bool calcinittimederiv = false) const {};
 
     //! return global map of degrees of freedom
@@ -159,8 +159,8 @@ namespace SCATRA
     \author rauch
     */
     virtual void evaluate_condition(Teuchos::ParameterList& params,
-        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
-        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
+        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
+        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
         Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
         Teuchos::RCP<Epetra_Vector> systemvector3, const std::string& condstring, const int condid)
     {
@@ -187,10 +187,10 @@ namespace SCATRA
     virtual bool system_matrix_initialization_needed() const = 0;
 
     //! initialize system matrix
-    virtual Teuchos::RCP<CORE::LINALG::SparseOperator> init_system_matrix() const = 0;
+    virtual Teuchos::RCP<Core::LinAlg::SparseOperator> init_system_matrix() const = 0;
 
     //! return interface map extractor
-    virtual Teuchos::RCP<CORE::LINALG::MultiMapExtractor> InterfaceMaps() const = 0;
+    virtual Teuchos::RCP<Core::LinAlg::MultiMapExtractor> InterfaceMaps() const = 0;
 
     //! output solution for post-processing
     virtual void Output() const { return; };
@@ -205,7 +205,7 @@ namespace SCATRA
      * @param input control file manager
      */
     virtual void read_restart(
-        const int step, Teuchos::RCP<CORE::IO::InputControl> input = Teuchos::null) const {};
+        const int step, Teuchos::RCP<Core::IO::InputControl> input = Teuchos::null) const {};
 
     //! set general parameters for element evaluation
     virtual void set_element_general_parameters(Teuchos::ParameterList& parameters) const
@@ -255,14 +255,14 @@ namespace SCATRA
      * @param iteration     number of current Newton-Raphson iteration
      * @param projector     Krylov projector
      */
-    virtual void Solve(const Teuchos::RCP<CORE::LINALG::Solver>& solver,
-        const Teuchos::RCP<CORE::LINALG::SparseOperator>& systemmatrix,
+    virtual void Solve(const Teuchos::RCP<Core::LinAlg::Solver>& solver,
+        const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,
         const Teuchos::RCP<Epetra_Vector>& increment, const Teuchos::RCP<Epetra_Vector>& residual,
         const Teuchos::RCP<Epetra_Vector>& phinp, const int iteration,
-        CORE::LINALG::SolverParams& solver_params) const = 0;
+        Core::LinAlg::SolverParams& solver_params) const = 0;
 
     //! return linear solver for global system of linear equations
-    virtual const CORE::LINALG::Solver& Solver() const = 0;
+    virtual const Core::LinAlg::Solver& Solver() const = 0;
 
     //! update solution after convergence of the nonlinear Newton-Raphson iteration
     virtual void Update() const { return; };
@@ -272,16 +272,16 @@ namespace SCATRA
     virtual void init_conv_check_strategy() = 0;
 
     //! strategy for Newton-Raphson convergence check called by scalar transport time integrator
-    Teuchos::RCP<SCATRA::ConvCheckStrategyBase> convcheckstrategy_;
+    Teuchos::RCP<ScaTra::ConvCheckStrategyBase> convcheckstrategy_;
 
     //! scalar transport time integrator
-    SCATRA::ScaTraTimIntImpl* scatratimint_;
+    ScaTra::ScaTraTimIntImpl* scatratimint_;
 
    private:
     //! copy constructor
     MeshtyingStrategyBase(const MeshtyingStrategyBase& old);
   };  // class MeshtyingStrategyBase
-}  // namespace SCATRA
+}  // namespace ScaTra
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

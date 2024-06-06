@@ -19,9 +19,9 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::GEO
+namespace Core::Geo
 {
-  namespace CUT
+  namespace Cut
   {
     class Point;
     class Facet;
@@ -58,7 +58,7 @@ namespace CORE::GEO
       */
       bool Contains(Point* p);
 
-      bool Contains(CORE::LINALG::Matrix<3, 1>& x);
+      bool Contains(Core::LinAlg::Matrix<3, 1>& x);
 
       bool IsEqual(const plain_facet_set& vcell) const;
 
@@ -90,14 +90,14 @@ namespace CORE::GEO
       volumecells
        */
       void moment_fit_gauss_weights(
-          Element* elem, Mesh& mesh, bool include_inner, INPAR::CUT::BCellGaussPts BCellgausstype);
+          Element* elem, Mesh& mesh, bool include_inner, Inpar::Cut::BCellGaussPts BCellgausstype);
 
       /*!
       \brief Construct the Gaussian quadrature rule by triangulating the facets of volumecell and
       applying divergence theorem
        */
       void direct_divergence_gauss_rule(Element* elem, Mesh& mesh, bool include_inner,
-          INPAR::CUT::BCellGaussPts BCellgausstype = INPAR::CUT::BCellGaussPts_Tessellation);
+          Inpar::Cut::BCellGaussPts BCellgausstype = Inpar::Cut::BCellGaussPts_Tessellation);
 
       /*!
       \brief Project the integration rule generated w.r to the global coordinates of the element to
@@ -109,21 +109,21 @@ namespace CORE::GEO
       \brief Generate boundarycells for the cut facets. This is used when volumecells are treated by
       momentfitting and boundarycells are by tessellation
        */
-      void generate_boundary_cells(Mesh& mesh, const CORE::GEO::CUT::Point::PointPosition posi,
-          Element* elem, int BaseNos, INPAR::CUT::BCellGaussPts BCellgausstype);
+      void generate_boundary_cells(Mesh& mesh, const Core::Geo::Cut::Point::PointPosition posi,
+          Element* elem, int BaseNos, Inpar::Cut::BCellGaussPts BCellgausstype);
 
       void generate_boundary_cells_level_set_side(Mesh& mesh,
-          const CORE::GEO::CUT::Point::PointPosition posi, Element* elem, Facet* facet, int BaseNos,
-          INPAR::CUT::BCellGaussPts BCellgausstype);
+          const Core::Geo::Cut::Point::PointPosition posi, Element* elem, Facet* facet, int BaseNos,
+          Inpar::Cut::BCellGaussPts BCellgausstype);
 
       /*!
       \brief Get the boundarycells generated from this volumecell
          get a map of boundary cells for all cutting sides, key= side-Id, value= vector of boundary
       cells note that the boundary cells of subsides with the same side id are stored now in one key
        */
-      void GetBoundaryCells(std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>& bcells);
+      void GetBoundaryCells(std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>& bcells);
       void get_boundary_cells_to_be_integrated(
-          std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>& bcells);
+          std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>& bcells);
 
 
       /// collect cut sides
@@ -135,12 +135,12 @@ namespace CORE::GEO
       /*!
       \brief Return the position of volumecell whether they are in the fluid region in structure
        */
-      CORE::GEO::CUT::Point::PointPosition Position() const { return position_; }
+      Core::Geo::Cut::Point::PointPosition Position() const { return position_; }
 
       /*!
       \brief Identify the position of volumecell whether they are in the fluid region in structure
        */
-      void Position(CORE::GEO::CUT::Point::PointPosition position);
+      void Position(Core::Geo::Cut::Point::PointPosition position);
 
       inline void Print() const { Print(std::cout); };
       void Print(std::ostream& stream) const;
@@ -182,7 +182,7 @@ namespace CORE::GEO
       /*!
       \brief Create integration cell of specified shape
        */
-      void NewIntegrationCell(Mesh& mesh, CORE::FE::CellType shape, const std::vector<Point*>& x);
+      void NewIntegrationCell(Mesh& mesh, Core::FE::CellType shape, const std::vector<Point*>& x);
 
       /// create line2 volume cell
       void NewLine2Cell(Mesh& mesh, const std::vector<Point*>& points);
@@ -209,7 +209,7 @@ namespace CORE::GEO
       \brief Create boundary cells of specified shape
       */
       void NewBoundaryCell(
-          Mesh& mesh, CORE::FE::CellType shape, Facet* f, const std::vector<Point*>& x);
+          Mesh& mesh, Core::FE::CellType shape, Facet* f, const std::vector<Point*>& x);
 
       /*!
       \brief Create Point1 boundary cell
@@ -233,7 +233,7 @@ namespace CORE::GEO
       \brief Create boundary cell which contains more than 4 corner points
       */
       void NewArbitraryCell(Mesh& mesh, Facet* f, const std::vector<Point*>& x,
-          const CORE::FE::GaussIntegration& gp, const CORE::LINALG::Matrix<3, 1>& normal);
+          const Core::FE::GaussIntegration& gp, const Core::LinAlg::Matrix<3, 1>& normal);
 
       /*!
       \brief Return the volume of the cell
@@ -246,7 +246,7 @@ namespace CORE::GEO
       \brief Return the number of Gauss points generated over the volumecell when tessellation is
       used
        */
-      int NumGaussPoints(CORE::FE::CellType shape);
+      int NumGaussPoints(Core::FE::CellType shape);
 
       /*!
       \brief Write Geometry of volumecell together with gauss points produced from moment fitting
@@ -274,13 +274,13 @@ namespace CORE::GEO
       \brief return the integration rule for this volumecell when MomentFitting or DirectDivergence
       is used
        */
-      Teuchos::RCP<CORE::FE::GaussPoints> get_gauss_rule() { return gp_; }
+      Teuchos::RCP<Core::FE::GaussPoints> get_gauss_rule() { return gp_; }
 
       /*!
       \brief replace the integration rule for this volumecell when MomentFitting or DirectDivergence
       is used
        */
-      void SetGaussRule(Teuchos::RCP<CORE::FE::GaussPoints> gps) { gp_ = gps; }
+      void SetGaussRule(Teuchos::RCP<Core::FE::GaussPoints> gps) { gp_ = gps; }
 
       /*!
       \brief Set the volume of this cell
@@ -313,7 +313,7 @@ namespace CORE::GEO
       \brief Chcek whether this Global coordinate point is inside, outside or on boundary of this
       this volumecell. The output std::string will be either "outside", "inside" or "onBoundary"
        */
-      std::string IsThisPointInside(CORE::LINALG::Matrix<3, 1>& x);
+      std::string IsThisPointInside(Core::LinAlg::Matrix<3, 1>& x);
 
       /*!
       \brief Integrate specific predifined functions over the volumecell by integrating over each of
@@ -322,8 +322,8 @@ namespace CORE::GEO
        */
       void integrate_specific_functions_tessellation();
 
-      template <CORE::FE::CellType distype>
-      Teuchos::RCP<CORE::FE::GaussPoints> create_projected(CORE::GEO::CUT::IntegrationCell* ic);
+      template <Core::FE::CellType distype>
+      Teuchos::RCP<Core::FE::GaussPoints> create_projected(Core::Geo::Cut::IntegrationCell* ic);
 
       /*!
       \brief Returns whether this volumecell is negligibly small (used only in DirectDIvergence
@@ -345,26 +345,26 @@ namespace CORE::GEO
       \brief Check whether the numbering of points need to be reversed. This is to ensure outward
       pointing normal for the boundarycells when triangulation is performed
        */
-      bool to_reverse(const CORE::GEO::CUT::Point::PointPosition posi,
+      bool to_reverse(const Core::Geo::Cut::Point::PointPosition posi,
           const std::vector<double>& parEqn, const std::vector<double>& facetEqn);
 
       /*!
       \brief return the Gauss points computed using moment fitting equations
       */
-      Teuchos::RCP<CORE::FE::GaussPoints> gauss_points_fitting();
+      Teuchos::RCP<Core::FE::GaussPoints> gauss_points_fitting();
 
       /*!
       \brief Generate internal gauss rule for every integration point on the facet when
       DirectDivergence method is used
        */
-      Teuchos::RCP<CORE::FE::GaussPoints> generate_internal_gauss_rule(
-          Teuchos::RCP<CORE::FE::GaussPoints>& gp);
+      Teuchos::RCP<Core::FE::GaussPoints> generate_internal_gauss_rule(
+          Teuchos::RCP<Core::FE::GaussPoints>& gp);
 
       /// the element this is a part of
       Element* element_;
 
       /// position relative to cut surface
-      CORE::GEO::CUT::Point::PointPosition position_;
+      Core::Geo::Cut::Point::PointPosition position_;
 
       /// defining facets
       plain_facet_set facets_;
@@ -393,12 +393,12 @@ namespace CORE::GEO
 
       /// store the Gauss point weights and location for volumecells when moment fitting equations
       /// are used to arrive at them
-      CORE::LINALG::SerialDenseVector weights_;
+      Core::LinAlg::SerialDenseVector weights_;
       std::vector<std::vector<double>> gaus_pts_;
 
       /// store the Gauss point weights and location for boundarycells when moment fitting equations
       /// are used to arrive at them
-      CORE::LINALG::SerialDenseVector bcellweights_;
+      Core::LinAlg::SerialDenseVector bcellweights_;
       std::vector<std::vector<double>> bcellgaus_pts_;
 
       /// Equation of plane which contains the reference facet when using DirectDivergence
@@ -406,11 +406,11 @@ namespace CORE::GEO
 
       /// Gauss rule for this volumecell. In case of DirectDivergence method, this just stores main
       /// Gauss points
-      Teuchos::RCP<CORE::FE::GaussPoints> gp_;
+      Teuchos::RCP<Core::FE::GaussPoints> gp_;
     };
 
-  }  // namespace CUT
-}  // namespace CORE::GEO
+  }  // namespace Cut
+}  // namespace Core::Geo
 
 FOUR_C_NAMESPACE_CLOSE
 

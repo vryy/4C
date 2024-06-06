@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace GEOMETRYPAIR
 {
-  namespace CONSTANTS
+  namespace Constants
   {
     //! Parameter coordinates are considered equal if they are within this tolerance.
     const double projection_xi_eta_tol = 1e-8;
@@ -36,7 +36,7 @@ namespace GEOMETRYPAIR
 
     //! Tolerance for positions to be equal.
     const double pos_tol = 1e-10;
-  }  // namespace CONSTANTS
+  }  // namespace Constants
 }  // namespace GEOMETRYPAIR
 
 FOUR_C_NAMESPACE_CLOSE

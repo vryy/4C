@@ -23,12 +23,12 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::UTILS::evaluate_initial_field(const CORE::UTILS::FunctionManager& function_manager,
-    const DRT::Discretization& discret, const std::string& fieldstring,
+void Discret::UTILS::evaluate_initial_field(const Core::UTILS::FunctionManager& function_manager,
+    const Discret::Discretization& discret, const std::string& fieldstring,
     Teuchos::RCP<Epetra_Vector> fieldvector, const std::vector<int>& locids)
 {
   // get initial field conditions
-  std::vector<CORE::Conditions::Condition*> initfieldconditions;
+  std::vector<Core::Conditions::Condition*> initfieldconditions;
   discret.GetCondition("Initfield", initfieldconditions);
 
   //--------------------------------------------------------
@@ -42,9 +42,9 @@ void DRT::UTILS::evaluate_initial_field(const CORE::UTILS::FunctionManager& func
   //                LineInitfield
   //                PointInitfield
   // This way, lower entities override higher ones.
-  const std::vector<CORE::Conditions::ConditionType> evaluation_type_order = {
-      CORE::Conditions::VolumeInitfield, CORE::Conditions::SurfaceInitfield,
-      CORE::Conditions::LineInitfield, CORE::Conditions::PointInitfield};
+  const std::vector<Core::Conditions::ConditionType> evaluation_type_order = {
+      Core::Conditions::VolumeInitfield, Core::Conditions::SurfaceInitfield,
+      Core::Conditions::LineInitfield, Core::Conditions::PointInitfield};
 
   for (const auto& type : evaluation_type_order)
   {
@@ -61,8 +61,8 @@ void DRT::UTILS::evaluate_initial_field(const CORE::UTILS::FunctionManager& func
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::UTILS::DoInitialField(const CORE::UTILS::FunctionManager& function_manager,
-    const DRT::Discretization& discret, CORE::Conditions::Condition& cond,
+void Discret::UTILS::DoInitialField(const Core::UTILS::FunctionManager& function_manager,
+    const Discret::Discretization& discret, Core::Conditions::Condition& cond,
     Epetra_Vector& fieldvector, const std::vector<int>& locids)
 {
   const std::vector<int> cond_nodeids = *cond.GetNodes();
@@ -77,7 +77,7 @@ void DRT::UTILS::DoInitialField(const CORE::UTILS::FunctionManager& function_man
     // do only nodes in my row map
     int cond_node_lid = discret.NodeRowMap()->LID(cond_nodeid);
     if (cond_node_lid < 0) continue;
-    CORE::Nodes::Node* node = discret.lRowNode(cond_node_lid);
+    Core::Nodes::Node* node = discret.lRowNode(cond_node_lid);
 
     // call explicitly the main dofset, i.e. the first column
     std::vector<int> node_dofs = discret.Dof(0, node);
@@ -88,7 +88,7 @@ void DRT::UTILS::DoInitialField(const CORE::UTILS::FunctionManager& function_man
     // of this.
     auto* const myeles = node->Elements();
     auto* ele_with_max_dof = std::max_element(myeles, myeles + node->NumElement(),
-        [&](CORE::Elements::Element* a, CORE::Elements::Element* b)
+        [&](Core::Elements::Element* a, Core::Elements::Element* b)
         { return a->NumDofPerNode(*node) < b->NumDofPerNode(*node); });
     const int numdof = (*ele_with_max_dof)->NumDofPerNode(*node);
 
@@ -109,7 +109,7 @@ void DRT::UTILS::DoInitialField(const CORE::UTILS::FunctionManager& function_man
 
           const double functfac =
               funct_num > 0
-                  ? function_manager.FunctionById<CORE::UTILS::FunctionOfSpaceTime>(funct_num - 1)
+                  ? function_manager.FunctionById<Core::UTILS::FunctionOfSpaceTime>(funct_num - 1)
                         .Evaluate(node->X().data(), time, localdof)
                   : 0.0;
 

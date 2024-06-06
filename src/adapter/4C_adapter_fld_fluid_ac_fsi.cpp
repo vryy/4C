@@ -18,15 +18,16 @@ FOUR_C_NAMESPACE_OPEN
 
 /*======================================================================*/
 /* constructor */
-ADAPTER::FluidACFSI::FluidACFSI(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<DRT::Discretization> dis,
-    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output, bool isale, bool dirichletcond)
+Adapter::FluidACFSI::FluidACFSI(Teuchos::RCP<Fluid> fluid,
+    Teuchos::RCP<Discret::Discretization> dis, Teuchos::RCP<Core::LinAlg::Solver> solver,
+    Teuchos::RCP<Teuchos::ParameterList> params,
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output, bool isale, bool dirichletcond)
     : FluidFSI(fluid, dis, solver, params, output, isale, dirichletcond)
 {
   return;
 }
 
-std::vector<double> ADAPTER::FluidACFSI::GetWindkesselErrors()
+std::vector<double> Adapter::FluidACFSI::GetWindkesselErrors()
 {
   if (fluidimpl_->ImpedanceBC_() == Teuchos::null)  // iff there is no windkessel condition
   {

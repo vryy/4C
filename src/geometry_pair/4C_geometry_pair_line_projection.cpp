@@ -30,10 +30,10 @@ template <typename pair_type>
 void GEOMETRYPAIR::LineTo3DBase<pair_type>::project_point_on_line_to_other(const pair_type* pair,
     const ElementData<line, scalar_type>& element_data_line,
     const ElementData<other, scalar_type>& element_data_other, const scalar_type& eta,
-    CORE::LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result)
+    Core::LinAlg::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result)
 {
   // Get the point on the line.
-  CORE::LINALG::Matrix<3, 1, scalar_type> r_line;
+  Core::LinAlg::Matrix<3, 1, scalar_type> r_line;
   GEOMETRYPAIR::EvaluatePosition<line>(eta, element_data_line, r_line);
 
   // Project the point to the solid.
@@ -99,14 +99,14 @@ void GEOMETRYPAIR::LineTo3DBase<pair_type>::project_gauss_points_on_segment_to_o
     const ElementData<other, scalar_type>& element_data_other, LineSegment<scalar_type>& segment)
 {
   const auto& evaluation_data = *(pair->GetEvaluationData());
-  const CORE::FE::IntegrationPoints1D& gauss_points = evaluation_data.GetGaussPoints();
+  const Core::FE::IntegrationPoints1D& gauss_points = evaluation_data.GetGaussPoints();
 
   // Set up the vector with the projection points.
   std::vector<ProjectionPoint1DTo3D<scalar_type>>& projection_points =
       segment.GetProjectionPoints();
   projection_points.clear();
   projection_points.reserve(gauss_points.nquad);
-  CORE::LINALG::Matrix<3, 1, scalar_type> xi_start;
+  Core::LinAlg::Matrix<3, 1, scalar_type> xi_start;
   StartValues<other::geometry_type_>::Set(xi_start);
   for (unsigned int i = 0; i < (unsigned int)gauss_points.nquad; i++)
   {
@@ -127,11 +127,11 @@ void GEOMETRYPAIR::LineTo3DBase<pair_type>::project_gauss_points_on_segment_to_o
   const bool all_projected = n_projections == static_cast<unsigned int>(gauss_points.nquad);
   const bool is_warning = all_projected and (!all_valid) and
                           evaluation_data.get_not_all_gauss_points_project_valid_action() ==
-                              INPAR::GEOMETRYPAIR::NotAllGaussPointsProjectValidAction::warning;
+                              Inpar::GEOMETRYPAIR::NotAllGaussPointsProjectValidAction::warning;
   const bool is_error =
       !all_projected or
       (!all_valid and evaluation_data.get_not_all_gauss_points_project_valid_action() !=
-                          INPAR::GEOMETRYPAIR::NotAllGaussPointsProjectValidAction::warning);
+                          Inpar::GEOMETRYPAIR::NotAllGaussPointsProjectValidAction::warning);
   if (is_warning or is_error)
   {
     // Add detailed output that allows for a reconstruction of the failed projection
@@ -144,9 +144,9 @@ void GEOMETRYPAIR::LineTo3DBase<pair_type>::project_gauss_points_on_segment_to_o
     auto print_projection_point = [&error_message](const auto& projection_point)
     {
       error_message << "\n  line parameter coordinate: "
-                    << CORE::FADUTILS::CastToDouble(projection_point.GetEta());
+                    << Core::FADUtils::CastToDouble(projection_point.GetEta());
       error_message << "\n  other parameter coordinate: ";
-      CORE::FADUTILS::CastToDouble(projection_point.GetXi()).Print(error_message);
+      Core::FADUtils::CastToDouble(projection_point.GetXi()).Print(error_message);
       error_message << "  projection result: " << (int)projection_point.GetProjectionResult();
     };
 
@@ -190,7 +190,7 @@ void GEOMETRYPAIR::LineTo3DBase<pair_type>::intersect_line_with_other(const pair
 {
   // Set default values for the parameter coordinates.
   scalar_type eta_start;
-  CORE::LINALG::Matrix<3, 1, scalar_type> xi_start;
+  Core::LinAlg::Matrix<3, 1, scalar_type> xi_start;
   StartValues<line::geometry_type_>::Set(eta_start);
   StartValues<other::geometry_type_>::Set(xi_start);
 
@@ -212,11 +212,11 @@ void GEOMETRYPAIR::LineTo3DGaussPointProjection<pair_type>::pre_evaluate(const p
   std::vector<bool>& line_projection_tracker = get_line_projection_vector(pair);
 
   // Gauss rule.
-  CORE::FE::IntegrationPoints1D gauss_points = pair->GetEvaluationData()->GetGaussPoints();
+  Core::FE::IntegrationPoints1D gauss_points = pair->GetEvaluationData()->GetGaussPoints();
 
   // Initialize variables for the projection.
   scalar_type eta;
-  CORE::LINALG::Matrix<3, 1, scalar_type> xi;
+  Core::LinAlg::Matrix<3, 1, scalar_type> xi;
   ProjectionResult projection_result;
   LineSegment<scalar_type> line_segment;
   bool one_projects = false;
@@ -262,10 +262,10 @@ void GEOMETRYPAIR::LineTo3DGaussPointProjection<pair_type>::Evaluate(const pair_
   // We only check for boundary segmentation if it is needed.
   switch (pair->GetEvaluationData()->GetStrategy())
   {
-    case INPAR::GEOMETRYPAIR::LineTo3DStrategy::
+    case Inpar::GEOMETRYPAIR::LineTo3DStrategy::
         gauss_point_projection_without_boundary_segmentation:
       return;
-    case INPAR::GEOMETRYPAIR::LineTo3DStrategy::gauss_point_projection_boundary_segmentation:
+    case Inpar::GEOMETRYPAIR::LineTo3DStrategy::gauss_point_projection_boundary_segmentation:
       break;
     default:
       FOUR_C_THROW("Wrong LineTo3DStrategy in Evaluate of Gauss point projection pairs.");
@@ -365,7 +365,7 @@ void GEOMETRYPAIR::LineTo3DSegmentation<pair_type>::Evaluate(const pair_type* pa
   // Set up vector with projection points for the search points.
   std::vector<ProjectionPoint1DTo3D<scalar_type>> search_points;
   search_points.reserve(n_search_points);
-  CORE::LINALG::Matrix<3, 1, scalar_type> xi_start;
+  Core::LinAlg::Matrix<3, 1, scalar_type> xi_start;
   StartValues<other::geometry_type_>::Set(xi_start);
   scalar_type eta;
   for (unsigned int i_search_point = 0; i_search_point < n_search_points; i_search_point++)
@@ -485,8 +485,8 @@ void GEOMETRYPAIR::LineTo3DSegmentation<pair_type>::Evaluate(const pair_type* pa
           {
             // Create a segment with double as the scalar type.
             LineSegment<double> new_segment_double(
-                CORE::FADUTILS::CastToDouble(segment_start.GetEta()),
-                CORE::FADUTILS::CastToDouble(start_point.GetEta()));
+                Core::FADUtils::CastToDouble(segment_start.GetEta()),
+                Core::FADUtils::CastToDouble(start_point.GetEta()));
 
             // Check if the segment already exists for this line.
             if (segment_tracker.find(new_segment_double) == segment_tracker.end())

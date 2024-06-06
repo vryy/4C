@@ -28,12 +28,12 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace CORE::Nodes
+namespace Core::Nodes
 {
   class Node;
 }
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
@@ -58,9 +58,9 @@ namespace BEAMINTERACTION
       void post_setup() override;
 
       //! Returns the type of the current model evaluator
-      INPAR::BEAMINTERACTION::SubModelType Type() const override
+      Inpar::BEAMINTERACTION::SubModelType Type() const override
       {
-        return INPAR::BEAMINTERACTION::submodel_spherebeamlink;
+        return Inpar::BEAMINTERACTION::submodel_spherebeamlink;
       }
 
       //! derived
@@ -91,7 +91,7 @@ namespace BEAMINTERACTION
       std::map<STR::EnergyType, double> get_energy() const override;
 
       //! derived
-      void OutputStepState(CORE::IO::DiscretizationWriter& iowriter) const override;
+      void OutputStepState(Core::IO::DiscretizationWriter& iowriter) const override;
 
       //! derived
       void runtime_output_step_state() const override;
@@ -100,15 +100,15 @@ namespace BEAMINTERACTION
       void ResetStepState() override;
 
       //! derived
-      void write_restart(CORE::IO::DiscretizationWriter& ia_writer,
-          CORE::IO::DiscretizationWriter& bin_writer) const override;
+      void write_restart(Core::IO::DiscretizationWriter& ia_writer,
+          Core::IO::DiscretizationWriter& bin_writer) const override;
 
       //! derived
       void PreReadRestart() override;
 
       //! derived
-      void read_restart(CORE::IO::DiscretizationReader& ia_reader,
-          CORE::IO::DiscretizationReader& bin_reader) override;
+      void read_restart(Core::IO::DiscretizationReader& ia_reader,
+          Core::IO::DiscretizationReader& bin_reader) override;
 
       //! derived
       void PostReadRestart() override;
@@ -147,8 +147,8 @@ namespace BEAMINTERACTION
           std::map<int, std::vector<std::pair<int, int>>>& newlinks);
 
       /// get neighboring eles in discret
-      virtual void check_feasibility_of_new_link(CORE::Elements::Element const* currele,
-          std::vector<CORE::Elements::Element const*> const& neighbors,
+      virtual void check_feasibility_of_new_link(Core::Elements::Element const* currele,
+          std::vector<Core::Elements::Element const*> const& neighbors,
           std::unordered_set<int>& tobebonded,
           std::map<int, std::vector<std::pair<int, int>>>& newlinks) const;
 
@@ -176,7 +176,7 @@ namespace BEAMINTERACTION
       Teuchos::RCP<BEAMINTERACTION::SphereBeamLinkingParams> spherebeamlinking_params_ptr_;
 
       //! runtime output for cell beam crosslinks (integrins)
-      Teuchos::RCP<CORE::IO::VisualizationManager> visualization_manager_ptr_;
+      Teuchos::RCP<Core::IO::VisualizationManager> visualization_manager_ptr_;
 
       //! step number for random stuff concerning sphere beam linking
       int random_number_sphere_beam_linking_step_;

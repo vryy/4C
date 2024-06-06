@@ -17,18 +17,18 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::Nodes
+namespace Core::Nodes
 {
   class Node;
 
-  class ImmersedNodeType : public CORE::COMM::ParObjectType
+  class ImmersedNodeType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "ImmersedNodeType"; }
 
     static ImmersedNodeType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
 
    private:
@@ -94,7 +94,7 @@ namespace CORE::Nodes
     \ref Pack and \ref Unpack are used to communicate this node
 
     */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class
@@ -160,10 +160,10 @@ namespace CORE::Nodes
     //@}
 
   };  // class ImmersedNode
-}  // namespace CORE::Nodes
+}  // namespace Core::Nodes
 
 // << operator
-std::ostream& operator<<(std::ostream& os, const CORE::Nodes::ImmersedNode& immersednode);
+std::ostream& operator<<(std::ostream& os, const Core::Nodes::ImmersedNode& immersednode);
 
 
 

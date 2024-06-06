@@ -28,12 +28,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINEAR_SOLVER::AMGNXN
+namespace Core::LinearSolver::AMGNxN
 {
   class Hierarchies
   {
    public:
-    Hierarchies(Teuchos::RCP<AMGNXN::BlockedMatrix> A,
+    Hierarchies(Teuchos::RCP<AMGNxN::BlockedMatrix> A,
         std::vector<Teuchos::ParameterList> muelu_params, std::vector<int> num_pdes,
         std::vector<int> null_spaces_dim,
         std::vector<Teuchos::RCP<std::vector<double>>> null_spaces_data, int NumLevelAMG,
@@ -43,27 +43,27 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
     int GetNumBlocks();
     int GetNumLevels(int block);
 
-    Teuchos::RCP<AMGNXN::BlockedMatrix> GetBlockMatrix();
+    Teuchos::RCP<AMGNxN::BlockedMatrix> GetBlockMatrix();
     Teuchos::RCP<MueLu::Hierarchy<Scalar, LocalOrdinal, GlobalOrdinal, Node>> GetH(int block);
 
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> GetA(int block, int level);
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> GetP(int block, int level);
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> GetR(int block, int level);
-    Teuchos::RCP<AMGNXN::MueluSmootherWrapper> GetSPre(int block, int level);
-    Teuchos::RCP<AMGNXN::MueluSmootherWrapper> GetSPos(int block, int level);
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> GetA(int block, int level);
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> GetP(int block, int level);
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> GetR(int block, int level);
+    Teuchos::RCP<AMGNxN::MueluSmootherWrapper> GetSPre(int block, int level);
+    Teuchos::RCP<AMGNxN::MueluSmootherWrapper> GetSPos(int block, int level);
 
-    std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>> GetA(int block);
-    std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>> GetP(int block);
-    std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>> GetR(int block);
-    std::vector<Teuchos::RCP<AMGNXN::MueluSmootherWrapper>> GetSPre(int block);
-    std::vector<Teuchos::RCP<AMGNXN::MueluSmootherWrapper>> GetSPos(int block);
+    std::vector<Teuchos::RCP<Core::LinAlg::SparseMatrix>> GetA(int block);
+    std::vector<Teuchos::RCP<Core::LinAlg::SparseMatrix>> GetP(int block);
+    std::vector<Teuchos::RCP<Core::LinAlg::SparseMatrix>> GetR(int block);
+    std::vector<Teuchos::RCP<AMGNxN::MueluSmootherWrapper>> GetSPre(int block);
+    std::vector<Teuchos::RCP<AMGNxN::MueluSmootherWrapper>> GetSPos(int block);
 
     int GetNumPDEs(int block);
     int GetNullSpaceDim(int block);
     Teuchos::RCP<std::vector<double>> GetNullSpaceData(int block);
 
    private:
-    Teuchos::RCP<AMGNXN::BlockedMatrix> a_;
+    Teuchos::RCP<AMGNxN::BlockedMatrix> a_;
     std::vector<Teuchos::ParameterList> muelu_params_;
     std::vector<int> num_pdes_;
     std::vector<int> null_spaces_dim_;
@@ -73,11 +73,11 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
     int num_level_min_;
     int num_level_amg_;
     std::vector<Teuchos::RCP<MueLu::Hierarchy<Scalar, LocalOrdinal, GlobalOrdinal, Node>>> h_block_;
-    std::vector<std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>>> a_block_level_;
-    std::vector<std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>>> p_block_level_;
-    std::vector<std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>>> r_block_level_;
-    std::vector<std::vector<Teuchos::RCP<AMGNXN::MueluSmootherWrapper>>> s_pre_block_level_;
-    std::vector<std::vector<Teuchos::RCP<AMGNXN::MueluSmootherWrapper>>> s_pos_block_level_;
+    std::vector<std::vector<Teuchos::RCP<Core::LinAlg::SparseMatrix>>> a_block_level_;
+    std::vector<std::vector<Teuchos::RCP<Core::LinAlg::SparseMatrix>>> p_block_level_;
+    std::vector<std::vector<Teuchos::RCP<Core::LinAlg::SparseMatrix>>> r_block_level_;
+    std::vector<std::vector<Teuchos::RCP<AMGNxN::MueluSmootherWrapper>>> s_pre_block_level_;
+    std::vector<std::vector<Teuchos::RCP<AMGNxN::MueluSmootherWrapper>>> s_pos_block_level_;
     std::string verbosity_;
 
     void setup();
@@ -100,33 +100,33 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
   class MonolithicHierarchy
   {
    public:
-    MonolithicHierarchy(Teuchos::RCP<AMGNXN::Hierarchies> H, const Teuchos::ParameterList& params,
+    MonolithicHierarchy(Teuchos::RCP<AMGNxN::Hierarchies> H, const Teuchos::ParameterList& params,
         const Teuchos::ParameterList& params_smoothers);
 
     int GetNumLevels();
 
-    Teuchos::RCP<AMGNXN::Hierarchies> GetHierarchies();
+    Teuchos::RCP<AMGNxN::Hierarchies> GetHierarchies();
 
-    Teuchos::RCP<AMGNXN::BlockedMatrix> GetA(int level);
+    Teuchos::RCP<AMGNxN::BlockedMatrix> GetA(int level);
 
     Teuchos::RCP<Vcycle> BuildVCycle();
 
    private:
-    Teuchos::RCP<AMGNXN::Hierarchies> h_;
+    Teuchos::RCP<AMGNxN::Hierarchies> h_;
     int num_levels_;
     int num_blocks_;
-    std::vector<Teuchos::RCP<AMGNXN::BlockedMatrix>> a_;
-    std::vector<Teuchos::RCP<AMGNXN::BlockedMatrix>> p_;
-    std::vector<Teuchos::RCP<AMGNXN::BlockedMatrix>> r_;
-    std::vector<Teuchos::RCP<AMGNXN::GenericSmoother>> spre_;
-    std::vector<Teuchos::RCP<AMGNXN::GenericSmoother>> spos_;
+    std::vector<Teuchos::RCP<AMGNxN::BlockedMatrix>> a_;
+    std::vector<Teuchos::RCP<AMGNxN::BlockedMatrix>> p_;
+    std::vector<Teuchos::RCP<AMGNxN::BlockedMatrix>> r_;
+    std::vector<Teuchos::RCP<AMGNxN::GenericSmoother>> spre_;
+    std::vector<Teuchos::RCP<AMGNxN::GenericSmoother>> spos_;
     Teuchos::ParameterList params_;
     Teuchos::ParameterList params_smoothers_;
 
     void setup();
-    Teuchos::RCP<AMGNXN::GenericSmoother> build_smoother(int level);
+    Teuchos::RCP<AMGNxN::GenericSmoother> build_smoother(int level);
   };
-}  // namespace CORE::LINEAR_SOLVER::AMGNXN
+}  // namespace Core::LinearSolver::AMGNxN
 
 FOUR_C_NAMESPACE_CLOSE
 

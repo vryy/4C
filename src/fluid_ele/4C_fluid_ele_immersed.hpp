@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
@@ -29,12 +29,12 @@ namespace DRT
 
       static FluidTypeImmersed& Instance();
 
-      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
       void setup_element_definition(
-          std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+          std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
           override;
 
 
@@ -71,7 +71,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      CORE::Elements::Element* Clone() const override;
+      Core::Elements::Element* Clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -265,7 +265,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(CORE::COMM::PackBuffer& data) const override;
+      void Pack(Core::Communication::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -287,7 +287,7 @@ namespace DRT
           stored_projected_intpoint_divergence_;  //!< 1000 max number of gp
     };
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

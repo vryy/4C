@@ -32,8 +32,8 @@ using FAD = Sacado::Fad::DFad<double>;
 FOUR_C_NAMESPACE_OPEN
 
 template <typename T>
-void MAT::AddtoCmatHolzapfelProduct(
-    CORE::LINALG::Matrix<6, 6, T>& cmat, const CORE::LINALG::Matrix<6, 1, T>& invc, const T scalar)
+void Mat::AddtoCmatHolzapfelProduct(
+    Core::LinAlg::Matrix<6, 6, T>& cmat, const Core::LinAlg::Matrix<6, 1, T>& invc, const T scalar)
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   if (cmat.numRows() != 6 or cmat.numCols() != 6 or invc.numRows() != 6)
@@ -84,13 +84,13 @@ void MAT::AddtoCmatHolzapfelProduct(
   cmat(5, 5) += scalar * 0.5 * (invc(0) * invc(2) + invc(5) * invc(5));
 }
 
-void MAT::ElastSymTensorMultiply(CORE::LINALG::Matrix<6, 6>& C, const double ScalarAB,
-    const CORE::LINALG::Matrix<3, 3>& A, const CORE::LINALG::Matrix<3, 3>& B,
+void Mat::ElastSymTensorMultiply(Core::LinAlg::Matrix<6, 6>& C, const double ScalarAB,
+    const Core::LinAlg::Matrix<3, 3>& A, const Core::LinAlg::Matrix<3, 3>& B,
     const double ScalarThis)
 {
   // everything in Voigt-Notation
-  CORE::LINALG::Matrix<6, 1> AVoigt;
-  CORE::LINALG::Matrix<6, 1> BVoigt;
+  Core::LinAlg::Matrix<6, 1> AVoigt;
+  Core::LinAlg::Matrix<6, 1> BVoigt;
 
   AVoigt(0, 0) = A(0, 0);
   AVoigt(1, 0) = A(1, 1);
@@ -111,8 +111,8 @@ void MAT::ElastSymTensorMultiply(CORE::LINALG::Matrix<6, 6>& C, const double Sca
   C.MultiplyNT(ScalarAB, AVoigt, BVoigt, ScalarThis);
 }
 
-void MAT::ElastSymTensorMultiplyAddSym(CORE::LINALG::Matrix<6, 6>& C, const double ScalarAB,
-    const CORE::LINALG::Matrix<3, 3>& A, const CORE::LINALG::Matrix<3, 3>& B,
+void Mat::ElastSymTensorMultiplyAddSym(Core::LinAlg::Matrix<6, 6>& C, const double ScalarAB,
+    const Core::LinAlg::Matrix<3, 3>& A, const Core::LinAlg::Matrix<3, 3>& B,
     const double ScalarThis)
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -127,8 +127,8 @@ void MAT::ElastSymTensorMultiplyAddSym(CORE::LINALG::Matrix<6, 6>& C, const doub
 #endif
 
   // everything in Voigt-Notation
-  CORE::LINALG::Matrix<6, 1> AVoigt;
-  CORE::LINALG::Matrix<6, 1> BVoigt;
+  Core::LinAlg::Matrix<6, 1> AVoigt;
+  Core::LinAlg::Matrix<6, 1> BVoigt;
 
   AVoigt(0, 0) = A(0, 0);
   AVoigt(1, 0) = A(1, 1);
@@ -150,8 +150,8 @@ void MAT::ElastSymTensorMultiplyAddSym(CORE::LINALG::Matrix<6, 6>& C, const doub
   C.MultiplyNT(ScalarAB, BVoigt, AVoigt, 1.0);
 }
 
-void MAT::ElastSymTensor_o_Multiply(CORE::LINALG::Matrix<6, 6>& C, const double ScalarAB,
-    const CORE::LINALG::Matrix<3, 3>& A, const CORE::LINALG::Matrix<3, 3>& B,
+void Mat::ElastSymTensor_o_Multiply(Core::LinAlg::Matrix<6, 6>& C, const double ScalarAB,
+    const Core::LinAlg::Matrix<3, 3>& A, const Core::LinAlg::Matrix<3, 3>& B,
     const double ScalarThis)
 {
   const double ScalarABhalf = ScalarAB * 0.5;
@@ -198,10 +198,10 @@ void MAT::ElastSymTensor_o_Multiply(CORE::LINALG::Matrix<6, 6>& C, const double 
   C(5, 5) = ScalarThis * C(5, 5) + ScalarABhalf * (A(0, 0) * B(2, 2) + A(0, 2) * B(2, 0));  // C1313
 }
 
-void MAT::VolumetrifyAndIsochorify(CORE::LINALG::Matrix<6, 1>* pk2vol,
-    CORE::LINALG::Matrix<6, 6>* cvol, CORE::LINALG::Matrix<6, 1>* pk2iso,
-    CORE::LINALG::Matrix<6, 6>* ciso, const CORE::LINALG::Matrix<6, 1>& gl,
-    const CORE::LINALG::Matrix<6, 1>& pk2, const CORE::LINALG::Matrix<6, 6>& cmat)
+void Mat::VolumetrifyAndIsochorify(Core::LinAlg::Matrix<6, 1>* pk2vol,
+    Core::LinAlg::Matrix<6, 6>* cvol, Core::LinAlg::Matrix<6, 1>* pk2iso,
+    Core::LinAlg::Matrix<6, 6>* ciso, const Core::LinAlg::Matrix<6, 1>& gl,
+    const Core::LinAlg::Matrix<6, 1>& pk2, const Core::LinAlg::Matrix<6, 6>& cmat)
 {
   // useful call?
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -211,7 +211,7 @@ void MAT::VolumetrifyAndIsochorify(CORE::LINALG::Matrix<6, 1>* pk2vol,
 
   // right Cauchy--Green tensor
   // REMARK: stored in _strain_-like 6-Voigt vector
-  CORE::LINALG::Matrix<6, 1> rcg(gl);
+  Core::LinAlg::Matrix<6, 1> rcg(gl);
   rcg.Scale(2.0);
   for (int i = 0; i < 3; i++) rcg(i) += 1.0;
 
@@ -222,7 +222,7 @@ void MAT::VolumetrifyAndIsochorify(CORE::LINALG::Matrix<6, 1>* pk2vol,
 
   // inverse right Cauchy--Green tensor C^{-1}
   // REMARK: stored in as _stress_ 6-Voigt vector
-  CORE::LINALG::Matrix<6, 1> icg(false);
+  Core::LinAlg::Matrix<6, 1> icg(false);
   icg(0) = (rcg(1) * rcg(2) - 0.25 * rcg(4) * rcg(4)) / rcg3rd;        // (C^{-1})^{11}
   icg(1) = (rcg(0) * rcg(2) - 0.25 * rcg(5) * rcg(5)) / rcg3rd;        // (C^{-1})^{22}
   icg(2) = (rcg(0) * rcg(1) - 0.25 * rcg(3) * rcg(3)) / rcg3rd;        // (C^{-1})^{33}
@@ -238,7 +238,7 @@ void MAT::VolumetrifyAndIsochorify(CORE::LINALG::Matrix<6, 1>* pk2vol,
   // stress splitting
   {
     // volumetric 2nd Piola--Kirchhoff stress
-    CORE::LINALG::Matrix<6, 1> pk2vol_(false);
+    Core::LinAlg::Matrix<6, 1> pk2vol_(false);
     if (pk2vol != nullptr) pk2vol_.SetView(*pk2vol);
     pk2vol_.Update(pk2rcg / 3.0, icg);
 
@@ -251,7 +251,7 @@ void MAT::VolumetrifyAndIsochorify(CORE::LINALG::Matrix<6, 1>* pk2vol,
   {
     // 'linearised' 2nd Piola--Kirchhoff stress
     // S^{CD}_lin = S^{CD} + 1/2 C_{AB} C^{ABCD}
-    CORE::LINALG::Matrix<6, 1> pk2lin(pk2);
+    Core::LinAlg::Matrix<6, 1> pk2lin(pk2);
     pk2lin.MultiplyTN(0.5, cmat, rcg, 1.0);  // transpose on purpose
 
     // volumetric part of constitutive tensor
@@ -259,7 +259,7 @@ void MAT::VolumetrifyAndIsochorify(CORE::LINALG::Matrix<6, 1>* pk2vol,
     //              - 2/3 (S^{EF} C_{EF}) ( 1/2 (
     //                (C^{-1})^{AC} (C^{-1})^{BD} + (C^{-1})^{AD} (C^{-1})^{BC}
     //              ) )
-    CORE::LINALG::Matrix<6, 6> cvol_(false);
+    Core::LinAlg::Matrix<6, 6> cvol_(false);
     if (cvol != nullptr) cvol_.SetView(*cvol);
     cvol_.MultiplyNT(2.0 / 3.0, icg, pk2lin);
     AddtoCmatHolzapfelProduct(cvol_, icg, -2.0 / 3.0 * pk2rcg);
@@ -270,8 +270,8 @@ void MAT::VolumetrifyAndIsochorify(CORE::LINALG::Matrix<6, 1>* pk2vol,
   }
 }
 
-void MAT::AddToCmatDerivTensorSquare(CORE::LINALG::Matrix<6, 6>& C, double ScalarDX2,
-    CORE::LINALG::Matrix<3, 3> X, double ScalarThis)
+void Mat::AddToCmatDerivTensorSquare(Core::LinAlg::Matrix<6, 6>& C, double ScalarDX2,
+    Core::LinAlg::Matrix<3, 3> X, double ScalarThis)
 {
   C(0, 0) = ScalarThis * C(0, 0) + ScalarDX2 * 2. * X(0, 0);  // C1111
   C(0, 1) = ScalarThis * C(0, 1);                             // C1122
@@ -316,8 +316,8 @@ void MAT::AddToCmatDerivTensorSquare(CORE::LINALG::Matrix<6, 6>& C, double Scala
   C(5, 5) = ScalarThis * C(5, 5) + ScalarDX2 * 0.5 * (X(2, 2) + X(0, 0));  // C1313
 }
 
-void MAT::AddSymmetricHolzapfelProduct(CORE::LINALG::Matrix<6, 6>& X,
-    const CORE::LINALG::Matrix<3, 3>& A, const CORE::LINALG::Matrix<3, 3>& B, const double fac)
+void Mat::AddSymmetricHolzapfelProduct(Core::LinAlg::Matrix<6, 6>& X,
+    const Core::LinAlg::Matrix<3, 3>& A, const Core::LinAlg::Matrix<3, 3>& B, const double fac)
 {
   X(0, 0) += 4 * fac * A(0, 0) * B(0, 0);
   X(0, 3) += fac * (2 * A(0, 0) * B(1, 0) + 2 * A(1, 0) * B(0, 0));
@@ -363,8 +363,8 @@ void MAT::AddSymmetricHolzapfelProduct(CORE::LINALG::Matrix<6, 6>& X,
 }
 
 template <typename T>
-void MAT::AddRightNonSymmetricHolzapfelProduct(CORE::LINALG::Matrix<6, 9, T>& out,
-    CORE::LINALG::Matrix<3, 3, T> const& A, CORE::LINALG::Matrix<3, 3, T> const& B, T const fac)
+void Mat::AddRightNonSymmetricHolzapfelProduct(Core::LinAlg::Matrix<6, 9, T>& out,
+    Core::LinAlg::Matrix<3, 3, T> const& A, Core::LinAlg::Matrix<3, 3, T> const& B, T const fac)
 {
   out(0, 0) += 2 * fac * A(0, 0) * B(0, 0);
   out(0, 3) += 2 * fac * A(0, 0) * B(0, 1);
@@ -428,8 +428,8 @@ void MAT::AddRightNonSymmetricHolzapfelProduct(CORE::LINALG::Matrix<6, 9, T>& ou
 }
 
 template <typename T>
-void MAT::AddRightNonSymmetricHolzapfelProductStrainLike(CORE::LINALG::Matrix<6, 9, T>& out,
-    CORE::LINALG::Matrix<3, 3, T> const& A, CORE::LINALG::Matrix<3, 3, T> const& B, T const fac)
+void Mat::AddRightNonSymmetricHolzapfelProductStrainLike(Core::LinAlg::Matrix<6, 9, T>& out,
+    Core::LinAlg::Matrix<3, 3, T> const& A, Core::LinAlg::Matrix<3, 3, T> const& B, T const fac)
 {
   out(0, 0) += 2 * fac * A(0, 0) * B(0, 0);
   out(0, 3) += 2 * fac * A(0, 0) * B(0, 1);
@@ -492,8 +492,8 @@ void MAT::AddRightNonSymmetricHolzapfelProductStrainLike(CORE::LINALG::Matrix<6,
   out(5, 2) += 2 * fac * (A(0, 2) * B(2, 2) + A(2, 2) * B(0, 2));
 }
 
-void MAT::AddLeftNonSymmetricHolzapfelProduct(CORE::LINALG::Matrix<9, 6>& out,
-    CORE::LINALG::Matrix<3, 3> const& A, CORE::LINALG::Matrix<3, 3> const& B, double const fac)
+void Mat::AddLeftNonSymmetricHolzapfelProduct(Core::LinAlg::Matrix<9, 6>& out,
+    Core::LinAlg::Matrix<3, 3> const& A, Core::LinAlg::Matrix<3, 3> const& B, double const fac)
 {
   out(0, 0) += fac * 2 * A(0, 0) * B(0, 0);
   out(0, 3) += fac * (A(0, 0) * B(0, 1) + A(0, 1) * B(0, 0));
@@ -559,8 +559,8 @@ void MAT::AddLeftNonSymmetricHolzapfelProduct(CORE::LINALG::Matrix<9, 6>& out,
   out(2, 2) += fac * 2 * A(2, 2) * B(2, 2);
 }
 
-void MAT::AddNonSymmetricProduct(double const& fac, CORE::LINALG::Matrix<3, 3> const& A,
-    CORE::LINALG::Matrix<3, 3> const& B, CORE::LINALG::Matrix<9, 9>& out)
+void Mat::AddNonSymmetricProduct(double const& fac, Core::LinAlg::Matrix<3, 3> const& A,
+    Core::LinAlg::Matrix<3, 3> const& B, Core::LinAlg::Matrix<9, 9>& out)
 {
   out(0, 0) += fac * A(0, 0) * B(0, 0);
   out(0, 3) += fac * A(0, 0) * B(1, 0);
@@ -653,8 +653,8 @@ void MAT::AddNonSymmetricProduct(double const& fac, CORE::LINALG::Matrix<3, 3> c
   out(2, 2) += fac * A(2, 2) * B(2, 2);
 }
 
-void MAT::AddDerivInvABInvBProduct(double const& fac, const CORE::LINALG::Matrix<6, 1>& invA,
-    const CORE::LINALG::Matrix<6, 1>& invABinvA, CORE::LINALG::Matrix<6, 6>& out)
+void Mat::AddDerivInvABInvBProduct(double const& fac, const Core::LinAlg::Matrix<6, 1>& invA,
+    const Core::LinAlg::Matrix<6, 1>& invABinvA, Core::LinAlg::Matrix<6, 6>& out)
 {
   out(0, 0) -= 2.0 * fac * (invA(0) * invABinvA(0));
   out(0, 1) -= 2.0 * fac * (invA(3) * invABinvA(3));
@@ -714,8 +714,8 @@ void MAT::AddDerivInvABInvBProduct(double const& fac, const CORE::LINALG::Matrix
       fac * (0.5 * (invA(0) * invABinvA(2) + invA(2) * invABinvA(0)) + invA(5) * invABinvA(5));
 }
 
-void MAT::invariants_modified(
-    CORE::LINALG::Matrix<3, 1>& modinv, const CORE::LINALG::Matrix<3, 1>& prinv)
+void Mat::invariants_modified(
+    Core::LinAlg::Matrix<3, 1>& modinv, const Core::LinAlg::Matrix<3, 1>& prinv)
 {
   // 1st invariant, trace
   modinv(0) = prinv(0) * std::pow(prinv(2), -1. / 3.);
@@ -725,11 +725,11 @@ void MAT::invariants_modified(
   modinv(2) = std::pow(prinv(2), 1. / 2.);
 }
 
-void MAT::StretchesPrincipal(CORE::LINALG::Matrix<3, 1>& prstr, CORE::LINALG::Matrix<3, 3>& prdir,
-    const CORE::LINALG::Matrix<6, 1>& rcg)
+void Mat::StretchesPrincipal(Core::LinAlg::Matrix<3, 1>& prstr, Core::LinAlg::Matrix<3, 3>& prdir,
+    const Core::LinAlg::Matrix<6, 1>& rcg)
 {
   // create right Cauchy-Green 2-tensor
-  CORE::LINALG::Matrix<3, 3> rcgt(false);
+  Core::LinAlg::Matrix<3, 3> rcgt(false);
   rcgt(0, 0) = rcg(0);
   rcgt(1, 1) = rcg(1);
   rcgt(2, 2) = rcg(2);
@@ -738,15 +738,15 @@ void MAT::StretchesPrincipal(CORE::LINALG::Matrix<3, 1>& prstr, CORE::LINALG::Ma
   rcgt(2, 0) = rcgt(0, 2) = 0.5 * rcg(5);
 
   // eigenvalue decomposition
-  CORE::LINALG::Matrix<3, 3> prstr2;  // squared principal stretches
-  CORE::LINALG::SYEV(rcgt, prstr2, prdir);
+  Core::LinAlg::Matrix<3, 3> prstr2;  // squared principal stretches
+  Core::LinAlg::SYEV(rcgt, prstr2, prdir);
 
   // THE principal stretches
   for (int al = 0; al < 3; ++al) prstr(al) = std::sqrt(prstr2(al, al));
 }
 
-void MAT::StretchesModified(
-    CORE::LINALG::Matrix<3, 1>& modstr, const CORE::LINALG::Matrix<3, 1>& prstr)
+void Mat::StretchesModified(
+    Core::LinAlg::Matrix<3, 1>& modstr, const Core::LinAlg::Matrix<3, 1>& prstr)
 {
   // determinant of deformation gradient
   const double detdefgrad = prstr(0) * prstr(1) * prstr(2);
@@ -756,7 +756,7 @@ void MAT::StretchesModified(
 }
 
 template <int dim>
-void MAT::ClearFourTensor(CORE::LINALG::FourTensor<dim>& fourTensor)
+void Mat::ClearFourTensor(Core::LinAlg::FourTensor<dim>& fourTensor)
 {
   for (int i = 0; i < dim; ++i)
   {
@@ -774,8 +774,8 @@ void MAT::ClearFourTensor(CORE::LINALG::FourTensor<dim>& fourTensor)
 }
 
 template <int dim>
-void MAT::MultiplyFourTensorMatrix(CORE::LINALG::FourTensor<dim>& fourTensorResult,
-    const CORE::LINALG::FourTensor<dim>& fourTensor, const CORE::LINALG::Matrix<dim, dim>& matrix,
+void Mat::MultiplyFourTensorMatrix(Core::LinAlg::FourTensor<dim>& fourTensorResult,
+    const Core::LinAlg::FourTensor<dim>& fourTensor, const Core::LinAlg::Matrix<dim, dim>& matrix,
     const bool clearResultTensor)
 {
   if (clearResultTensor) ClearFourTensor(fourTensorResult);
@@ -798,8 +798,8 @@ void MAT::MultiplyFourTensorMatrix(CORE::LINALG::FourTensor<dim>& fourTensorResu
 }
 
 template <int dim>
-void MAT::MultiplyMatrixFourTensor(CORE::LINALG::FourTensor<dim>& fourTensorResult,
-    const CORE::LINALG::Matrix<dim, dim>& matrix, const CORE::LINALG::FourTensor<dim>& fourTensor,
+void Mat::MultiplyMatrixFourTensor(Core::LinAlg::FourTensor<dim>& fourTensorResult,
+    const Core::LinAlg::Matrix<dim, dim>& matrix, const Core::LinAlg::FourTensor<dim>& fourTensor,
     const bool clearResultTensor)
 {
   if (clearResultTensor) ClearFourTensor(fourTensorResult);
@@ -823,8 +823,8 @@ void MAT::MultiplyMatrixFourTensor(CORE::LINALG::FourTensor<dim>& fourTensorResu
 }
 
 template <int dim>
-void MAT::MultiplyMatrixFourTensorBySecondIndex(CORE::LINALG::FourTensor<dim>& fourTensorResult,
-    const CORE::LINALG::Matrix<dim, dim>& matrix, const CORE::LINALG::FourTensor<dim>& fourTensor,
+void Mat::MultiplyMatrixFourTensorBySecondIndex(Core::LinAlg::FourTensor<dim>& fourTensorResult,
+    const Core::LinAlg::Matrix<dim, dim>& matrix, const Core::LinAlg::FourTensor<dim>& fourTensor,
     const bool clearResultTensor)
 {
   if (clearResultTensor) ClearFourTensor(fourTensorResult);
@@ -848,9 +848,9 @@ void MAT::MultiplyMatrixFourTensorBySecondIndex(CORE::LINALG::FourTensor<dim>& f
 }
 
 template <int dim>
-void MAT::MultiplyFourTensorFourTensor(CORE::LINALG::FourTensor<dim>& fourTensorResult,
-    const CORE::LINALG::FourTensor<dim>& fourTensor1,
-    const CORE::LINALG::FourTensor<dim>& fourTensor2, const bool clearResultTensor)
+void Mat::MultiplyFourTensorFourTensor(Core::LinAlg::FourTensor<dim>& fourTensorResult,
+    const Core::LinAlg::FourTensor<dim>& fourTensor1,
+    const Core::LinAlg::FourTensor<dim>& fourTensor2, const bool clearResultTensor)
 {
   if (clearResultTensor) ClearFourTensor(fourTensorResult);
   for (int i = 0; i < dim; ++i)
@@ -872,19 +872,19 @@ void MAT::MultiplyFourTensorFourTensor(CORE::LINALG::FourTensor<dim>& fourTensor
 }
 
 template <int dim>
-CORE::LINALG::Matrix<6, 6> MAT::PullBackFourTensor(
-    const CORE::LINALG::Matrix<dim, dim>& defgr, const CORE::LINALG::Matrix<6, 6>& cMatVoigt)
+Core::LinAlg::Matrix<6, 6> Mat::PullBackFourTensor(
+    const Core::LinAlg::Matrix<dim, dim>& defgr, const Core::LinAlg::Matrix<6, 6>& cMatVoigt)
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   if (dim != 3) FOUR_C_THROW("Current implementation only valid for dim = 3.");
 #endif
 
-  CORE::LINALG::FourTensor<dim> cMatTensor(true);
+  Core::LinAlg::FourTensor<dim> cMatTensor(true);
   SetupFourTensor(cMatTensor, cMatVoigt);
 
   // We can use the fact that cMatResultVoigt(i,j,k,l)=cMatResultVoigt(k,l,i,j) if we have a
   // hyper-elastic material
-  CORE::LINALG::Matrix<6, 6> cMatResultVoigt(true);
+  Core::LinAlg::Matrix<6, 6> cMatResultVoigt(true);
 
   cMatResultVoigt(0, 0) = PullBackFourTensorijkl<dim>(defgr, cMatTensor, 0, 0, 0, 0);
   cMatResultVoigt(0, 1) = PullBackFourTensorijkl<dim>(defgr, cMatTensor, 0, 0, 1, 1);
@@ -927,8 +927,8 @@ CORE::LINALG::Matrix<6, 6> MAT::PullBackFourTensor(
 }
 
 template <int dim>
-double MAT::PullBackFourTensorijkl(const CORE::LINALG::Matrix<dim, dim>& defgr,
-    const CORE::LINALG::FourTensor<dim>& fourTensor, const int i, const int j, const int k,
+double Mat::PullBackFourTensorijkl(const Core::LinAlg::Matrix<dim, dim>& defgr,
+    const Core::LinAlg::FourTensor<dim>& fourTensor, const int i, const int j, const int k,
     const int l)
 {
   double cMatResult_ijkl(0.0);
@@ -952,8 +952,8 @@ double MAT::PullBackFourTensorijkl(const CORE::LINALG::Matrix<dim, dim>& defgr,
 }
 
 template <int dim>
-void MAT::SetupFourTensor(
-    CORE::LINALG::FourTensor<dim>& fourTensor, const CORE::LINALG::Matrix<6, 6>& matrixVoigt)
+void Mat::SetupFourTensor(
+    Core::LinAlg::FourTensor<dim>& fourTensor, const Core::LinAlg::Matrix<6, 6>& matrixVoigt)
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   if (dim != 3) FOUR_C_THROW("Current implementation only valid for dim = 3.");
@@ -1049,8 +1049,8 @@ void MAT::SetupFourTensor(
 }
 
 template <int dim>
-void MAT::Setup6x6VoigtMatrix(
-    CORE::LINALG::Matrix<6, 6>& matrixVoigt, const CORE::LINALG::FourTensor<dim>& fourTensor)
+void Mat::Setup6x6VoigtMatrix(
+    Core::LinAlg::Matrix<6, 6>& matrixVoigt, const Core::LinAlg::FourTensor<dim>& fourTensor)
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   if (dim != 3) FOUR_C_THROW("Current implementation only valid for dim = 3.");
@@ -1119,8 +1119,8 @@ void MAT::Setup6x6VoigtMatrix(
 }
 
 template <int dim>
-void MAT::TransposeFourTensor12(
-    CORE::LINALG::FourTensor<dim>& resultTensor, const CORE::LINALG::FourTensor<dim>& inputTensor)
+void Mat::TransposeFourTensor12(
+    Core::LinAlg::FourTensor<dim>& resultTensor, const Core::LinAlg::FourTensor<dim>& inputTensor)
 {
   for (int i = 0; i < dim; ++i)
   {
@@ -1137,8 +1137,8 @@ void MAT::TransposeFourTensor12(
   }
 }
 
-void MAT::AddDyadicProductMatrixMatrix(CORE::LINALG::FourTensor<3>& fourTensorResult,
-    const CORE::LINALG::Matrix<3, 3>& matrixA, const CORE::LINALG::Matrix<3, 3>& matrixB)
+void Mat::AddDyadicProductMatrixMatrix(Core::LinAlg::FourTensor<3>& fourTensorResult,
+    const Core::LinAlg::Matrix<3, 3>& matrixA, const Core::LinAlg::Matrix<3, 3>& matrixB)
 {
   for (unsigned i = 0; i < 3; ++i)
     for (unsigned j = 0; j < 3; ++j)
@@ -1147,8 +1147,8 @@ void MAT::AddDyadicProductMatrixMatrix(CORE::LINALG::FourTensor<3>& fourTensorRe
           fourTensorResult(i, j, k, l) += matrixA(i, j) * matrixB(k, l);
 }
 
-void MAT::AddContractionMatrixFourTensor(CORE::LINALG::Matrix<3, 3>& matrixResult,
-    const CORE::LINALG::Matrix<3, 3>& matrix, const CORE::LINALG::FourTensor<3>& fourTensor)
+void Mat::AddContractionMatrixFourTensor(Core::LinAlg::Matrix<3, 3>& matrixResult,
+    const Core::LinAlg::Matrix<3, 3>& matrix, const Core::LinAlg::FourTensor<3>& fourTensor)
 {
   for (unsigned k = 0; k < 3; ++k)
     for (unsigned l = 0; l < 3; ++l)
@@ -1156,8 +1156,8 @@ void MAT::AddContractionMatrixFourTensor(CORE::LINALG::Matrix<3, 3>& matrixResul
         for (unsigned j = 0; j < 3; ++j)
           matrixResult(k, l) += matrix(i, j) * fourTensor(i, j, k, l);
 }
-double MAT::ContractMatrixMatrix(
-    const CORE::LINALG::Matrix<3, 3>& matrixA, const CORE::LINALG::Matrix<3, 3>& matrixB)
+double Mat::ContractMatrixMatrix(
+    const Core::LinAlg::Matrix<3, 3>& matrixA, const Core::LinAlg::Matrix<3, 3>& matrixB)
 {
   double scalarContraction = 0.0;
   for (unsigned i = 0; i < 3; ++i)
@@ -1167,53 +1167,53 @@ double MAT::ContractMatrixMatrix(
 }
 
 // explicit instantiation of template functions
-template void MAT::AddRightNonSymmetricHolzapfelProduct<double>(CORE::LINALG::Matrix<6, 9, double>&,
-    CORE::LINALG::Matrix<3, 3, double> const&, CORE::LINALG::Matrix<3, 3, double> const&,
+template void Mat::AddRightNonSymmetricHolzapfelProduct<double>(Core::LinAlg::Matrix<6, 9, double>&,
+    Core::LinAlg::Matrix<3, 3, double> const&, Core::LinAlg::Matrix<3, 3, double> const&,
     double const);
-template void MAT::AddRightNonSymmetricHolzapfelProduct<FAD>(CORE::LINALG::Matrix<6, 9, FAD>&,
-    CORE::LINALG::Matrix<3, 3, FAD> const&, CORE::LINALG::Matrix<3, 3, FAD> const&, FAD const);
-template void MAT::AddRightNonSymmetricHolzapfelProductStrainLike<double>(
-    CORE::LINALG::Matrix<6, 9, double>& out, CORE::LINALG::Matrix<3, 3, double> const& A,
-    CORE::LINALG::Matrix<3, 3, double> const& B, double const fac);
-template void MAT::AddRightNonSymmetricHolzapfelProductStrainLike<FAD>(
-    CORE::LINALG::Matrix<6, 9, FAD>& out, CORE::LINALG::Matrix<3, 3, FAD> const& A,
-    CORE::LINALG::Matrix<3, 3, FAD> const& B, FAD const fac);
-template void MAT::AddtoCmatHolzapfelProduct<double>(CORE::LINALG::Matrix<6, 6, double>&,
-    const CORE::LINALG::Matrix<6, 1, double>&, const double scalar);
-template void MAT::AddtoCmatHolzapfelProduct<FAD>(
-    CORE::LINALG::Matrix<6, 6, FAD>&, const CORE::LINALG::Matrix<6, 1, FAD>&, const FAD scalar);
+template void Mat::AddRightNonSymmetricHolzapfelProduct<FAD>(Core::LinAlg::Matrix<6, 9, FAD>&,
+    Core::LinAlg::Matrix<3, 3, FAD> const&, Core::LinAlg::Matrix<3, 3, FAD> const&, FAD const);
+template void Mat::AddRightNonSymmetricHolzapfelProductStrainLike<double>(
+    Core::LinAlg::Matrix<6, 9, double>& out, Core::LinAlg::Matrix<3, 3, double> const& A,
+    Core::LinAlg::Matrix<3, 3, double> const& B, double const fac);
+template void Mat::AddRightNonSymmetricHolzapfelProductStrainLike<FAD>(
+    Core::LinAlg::Matrix<6, 9, FAD>& out, Core::LinAlg::Matrix<3, 3, FAD> const& A,
+    Core::LinAlg::Matrix<3, 3, FAD> const& B, FAD const fac);
+template void Mat::AddtoCmatHolzapfelProduct<double>(Core::LinAlg::Matrix<6, 6, double>&,
+    const Core::LinAlg::Matrix<6, 1, double>&, const double scalar);
+template void Mat::AddtoCmatHolzapfelProduct<FAD>(
+    Core::LinAlg::Matrix<6, 6, FAD>&, const Core::LinAlg::Matrix<6, 1, FAD>&, const FAD scalar);
 
-template void MAT::ClearFourTensor<3>(CORE::LINALG::FourTensor<3>& fourTensor);
+template void Mat::ClearFourTensor<3>(Core::LinAlg::FourTensor<3>& fourTensor);
 
-template void MAT::MultiplyFourTensorMatrix<3>(CORE::LINALG::FourTensor<3>& fourTensorResult,
-    const CORE::LINALG::FourTensor<3>& fourTensor, const CORE::LINALG::Matrix<3, 3>& matrix,
+template void Mat::MultiplyFourTensorMatrix<3>(Core::LinAlg::FourTensor<3>& fourTensorResult,
+    const Core::LinAlg::FourTensor<3>& fourTensor, const Core::LinAlg::Matrix<3, 3>& matrix,
     const bool clearResultTensor);
 
-template void MAT::MultiplyMatrixFourTensor<3>(CORE::LINALG::FourTensor<3>& fourTensorResult,
-    const CORE::LINALG::Matrix<3, 3>& matrix, const CORE::LINALG::FourTensor<3>& fourTensor,
+template void Mat::MultiplyMatrixFourTensor<3>(Core::LinAlg::FourTensor<3>& fourTensorResult,
+    const Core::LinAlg::Matrix<3, 3>& matrix, const Core::LinAlg::FourTensor<3>& fourTensor,
     const bool clearResultTensor);
 
-template void MAT::MultiplyMatrixFourTensorBySecondIndex<3>(
-    CORE::LINALG::FourTensor<3>& fourTensorResult, const CORE::LINALG::Matrix<3, 3>& matrix,
-    const CORE::LINALG::FourTensor<3>& fourTensor, const bool clearResultTensor);
+template void Mat::MultiplyMatrixFourTensorBySecondIndex<3>(
+    Core::LinAlg::FourTensor<3>& fourTensorResult, const Core::LinAlg::Matrix<3, 3>& matrix,
+    const Core::LinAlg::FourTensor<3>& fourTensor, const bool clearResultTensor);
 
-template void MAT::MultiplyFourTensorFourTensor<3>(CORE::LINALG::FourTensor<3>& fourTensorResult,
-    const CORE::LINALG::FourTensor<3>& fourTensor1, const CORE::LINALG::FourTensor<3>& fourTensor2,
+template void Mat::MultiplyFourTensorFourTensor<3>(Core::LinAlg::FourTensor<3>& fourTensorResult,
+    const Core::LinAlg::FourTensor<3>& fourTensor1, const Core::LinAlg::FourTensor<3>& fourTensor2,
     const bool clearResultTensor);
 
-template CORE::LINALG::Matrix<6, 6> MAT::PullBackFourTensor<3>(
-    const CORE::LINALG::Matrix<3, 3>& defgr, const CORE::LINALG::Matrix<6, 6>& cMatVoigt);
+template Core::LinAlg::Matrix<6, 6> Mat::PullBackFourTensor<3>(
+    const Core::LinAlg::Matrix<3, 3>& defgr, const Core::LinAlg::Matrix<6, 6>& cMatVoigt);
 
-template double MAT::PullBackFourTensorijkl<3>(const CORE::LINALG::Matrix<3, 3>& defgr,
-    const CORE::LINALG::FourTensor<3>& fourTensor, const int i, const int j, const int k,
+template double Mat::PullBackFourTensorijkl<3>(const Core::LinAlg::Matrix<3, 3>& defgr,
+    const Core::LinAlg::FourTensor<3>& fourTensor, const int i, const int j, const int k,
     const int l);
 
-template void MAT::SetupFourTensor<3>(
-    CORE::LINALG::FourTensor<3>& fourTensor, const CORE::LINALG::Matrix<6, 6>& matrixVoigt);
+template void Mat::SetupFourTensor<3>(
+    Core::LinAlg::FourTensor<3>& fourTensor, const Core::LinAlg::Matrix<6, 6>& matrixVoigt);
 
-template void MAT::Setup6x6VoigtMatrix<3>(
-    CORE::LINALG::Matrix<6, 6>& matrixVoigt, const CORE::LINALG::FourTensor<3>& fourTensor);
+template void Mat::Setup6x6VoigtMatrix<3>(
+    Core::LinAlg::Matrix<6, 6>& matrixVoigt, const Core::LinAlg::FourTensor<3>& fourTensor);
 
-template void MAT::TransposeFourTensor12<3>(
-    CORE::LINALG::FourTensor<3>& resultTensor, const CORE::LINALG::FourTensor<3>& inputTensor);
+template void Mat::TransposeFourTensor12<3>(
+    Core::LinAlg::FourTensor<3>& resultTensor, const Core::LinAlg::FourTensor<3>& inputTensor);
 FOUR_C_NAMESPACE_CLOSE

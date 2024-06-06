@@ -73,9 +73,9 @@ namespace CONTACT
       //! @name Access methods
 
       /// contact constitutive law type
-      INPAR::CONTACT::ConstitutiveLawType get_constitutive_law_type() const override
+      Inpar::CONTACT::ConstitutiveLawType get_constitutive_law_type() const override
       {
-        return INPAR::CONTACT::ConstitutiveLawType::colaw_power;
+        return Inpar::CONTACT::ConstitutiveLawType::colaw_power;
       }
 
       /// Get scaling factor of power law

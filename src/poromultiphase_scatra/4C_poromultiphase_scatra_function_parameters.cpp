@@ -57,7 +57,7 @@ namespace
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-POROMULTIPHASESCATRA::TumorGrowthLawHeavisideParameters::TumorGrowthLawHeavisideParameters(
+PoroMultiPhaseScaTra::TumorGrowthLawHeavisideParameters::TumorGrowthLawHeavisideParameters(
     const std::vector<std::pair<std::string, double>>& funct_params)
     : gamma_T_growth(funct_params[0].second),
       w_nl_crit(funct_params[1].second),
@@ -77,7 +77,7 @@ POROMULTIPHASESCATRA::TumorGrowthLawHeavisideParameters::TumorGrowthLawHeaviside
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-POROMULTIPHASESCATRA::NecrosisLawHeavisideParameters::NecrosisLawHeavisideParameters(
+PoroMultiPhaseScaTra::NecrosisLawHeavisideParameters::NecrosisLawHeavisideParameters(
     const std::vector<std::pair<std::string, double>>& funct_params)
     : gamma_t_necr(funct_params[0].second),
       w_nl_crit(funct_params[1].second),
@@ -98,7 +98,7 @@ POROMULTIPHASESCATRA::NecrosisLawHeavisideParameters::NecrosisLawHeavisideParame
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-POROMULTIPHASESCATRA::OxygenConsumptionLawHeavisideParameters::
+PoroMultiPhaseScaTra::OxygenConsumptionLawHeavisideParameters::
     OxygenConsumptionLawHeavisideParameters(
         const std::vector<std::pair<std::string, double>>& funct_params)
     : gamma_nl_growth(funct_params[0].second),
@@ -119,7 +119,7 @@ POROMULTIPHASESCATRA::OxygenConsumptionLawHeavisideParameters::
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecroOxyParameters::
+PoroMultiPhaseScaTra::TumorGrowthLawHeavisideNecroOxyParameters::
     TumorGrowthLawHeavisideNecroOxyParameters(
         const std::vector<std::pair<std::string, double>>& funct_params)
     : gamma_T_growth(funct_params[0].second),
@@ -140,7 +140,7 @@ POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecroOxyParameters::
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawContParameters::
+PoroMultiPhaseScaTra::OxygenTransvascularExchangeLawContParameters::
     OxygenTransvascularExchangeLawContParameters(
         const std::vector<std::pair<std::string, double>>& funct_params)
     : n(funct_params[0].second),
@@ -165,7 +165,7 @@ POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawContParameters::
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDiscParameters::
+PoroMultiPhaseScaTra::OxygenTransvascularExchangeLawDiscParameters::
     OxygenTransvascularExchangeLawDiscParameters(
         const std::vector<std::pair<std::string, double>>& funct_params)
     : n(funct_params[0].second),
@@ -191,7 +191,7 @@ POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDiscParameters::
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-POROMULTIPHASESCATRA::LungOxygenExchangeLawParameters::LungOxygenExchangeLawParameters(
+PoroMultiPhaseScaTra::LungOxygenExchangeLawParameters::LungOxygenExchangeLawParameters(
     const std::vector<std::pair<std::string, double>>& funct_params)
     : rho_oxy(funct_params[0].second),
       DiffAdVTLC(funct_params[1].second),
@@ -218,7 +218,7 @@ POROMULTIPHASESCATRA::LungOxygenExchangeLawParameters::LungOxygenExchangeLawPara
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-POROMULTIPHASESCATRA::LungCarbonDioxideExchangeLawParameters::
+PoroMultiPhaseScaTra::LungCarbonDioxideExchangeLawParameters::
     LungCarbonDioxideExchangeLawParameters(
         const std::vector<std::pair<std::string, double>>& funct_params)
     : rho_CO2(funct_params[0].second),

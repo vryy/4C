@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-namespace INPAR
+namespace Inpar
 {
   namespace SSTI
   {
@@ -41,10 +41,10 @@ namespace INPAR
 
     /// set specific ssti conditions
     void SetValidConditions(
-        std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist);
+        std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist);
 
   }  // namespace SSTI
-}  // namespace INPAR
+}  // namespace Inpar
 
 FOUR_C_NAMESPACE_CLOSE
 

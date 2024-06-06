@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
  *---------------------------------------------------------------------------*/
-namespace PASI
+namespace PaSI
 {
   /*!
    * \brief two way coupled partitioned algorithm
@@ -360,7 +360,7 @@ namespace PASI
     double minomega_;
   };
 
-}  // namespace PASI
+}  // namespace PaSI
 
 /*---------------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

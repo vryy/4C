@@ -45,7 +45,7 @@ namespace FLD
       columns are evaluation planes corresponding to the positions in "posEvaluation_"
 
     */
-    TurbulenceStatisticsBfda(Teuchos::RCP<DRT::Discretization> actdis,
+    TurbulenceStatisticsBfda(Teuchos::RCP<Discret::Discretization> actdis,
         Teuchos::ParameterList& params, const std::string& statistics_outfilename);
 
     /*!
@@ -98,7 +98,7 @@ namespace FLD
     int numrstatlocations_;
 
     //! The discretisation (required for nodes, dofs etc;)
-    Teuchos::RCP<DRT::Discretization> discret_;
+    Teuchos::RCP<Discret::Discretization> discret_;
 
     //! parameter list
     Teuchos::ParameterList& params_;
@@ -119,15 +119,15 @@ namespace FLD
     //! vector for z-coordinates
     Teuchos::RCP<std::vector<double>> zcoordinates_;
     //! matrix for r-coordinates (columns are evaluation planes
-    CORE::LINALG::SerialDenseMatrix rcoordinates_;
+    Core::LinAlg::SerialDenseMatrix rcoordinates_;
 
     //! matrices for mean values along z-axis
-    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> zsumw_;
-    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> zsump_;
+    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> zsumw_;
+    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> zsump_;
 
     //! matrices for mean values of evaluation planes
-    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> rsumw_;
-    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> rsump_;
+    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> rsumw_;
+    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> rsump_;
   };
 
 }  // namespace FLD

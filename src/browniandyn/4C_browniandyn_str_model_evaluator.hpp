@@ -26,15 +26,15 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration ...
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 namespace STR
 {
@@ -55,7 +55,7 @@ namespace STR
       //! derived
 
       //! derived
-      INPAR::STR::ModelType Type() const override { return INPAR::STR::model_browniandyn; }
+      Inpar::STR::ModelType Type() const override { return Inpar::STR::model_browniandyn; }
 
       //! derived
       bool evaluate_force() override;
@@ -77,21 +77,21 @@ namespace STR
 
       //! derived
       bool assemble_jacobian(
-          CORE::LINALG::SparseOperator& jac, const double& timefac_np) const override;
+          Core::LinAlg::SparseOperator& jac, const double& timefac_np) const override;
 
       //! derived
       void write_restart(
-          CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
+          Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
 
       //! derived
-      void read_restart(CORE::IO::DiscretizationReader& ioreader) override;
+      void read_restart(Core::IO::DiscretizationReader& ioreader) override;
 
       //! [derived]
-      void Predict(const INPAR::STR::PredEnum& pred_type) override { return; };
+      void Predict(const Inpar::STR::PredEnum& pred_type) override { return; };
 
       //! derived
       void run_pre_compute_x(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
-          const NOX::NLN::Group& curr_grp) override
+          const NOX::Nln::Group& curr_grp) override
       {
         return;
       };
@@ -119,7 +119,7 @@ namespace STR
       void determine_optional_quantity() override;
 
       //! derived
-      void OutputStepState(CORE::IO::DiscretizationWriter& iowriter) const override;
+      void OutputStepState(Core::IO::DiscretizationWriter& iowriter) const override;
 
       //! derived
       Teuchos::RCP<const Epetra_Map> get_block_dof_row_map_ptr() const override;
@@ -156,15 +156,15 @@ namespace STR
 
       //! evaluate brownian specific neumann conditions
       void evaluate_neumann_brownian_dyn(Teuchos::RCP<Epetra_Vector> eval_vec,
-          Teuchos::RCP<CORE::LINALG::SparseOperator> eval_mat);
+          Teuchos::RCP<Core::LinAlg::SparseOperator> eval_mat);
 
       //! evaluate brownian (stochastic and damping forces)
-      void evaluate_brownian(Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat,
+      void evaluate_brownian(Teuchos::RCP<Core::LinAlg::SparseOperator>* eval_mat,
           Teuchos::RCP<Epetra_Vector>* eval_vec);
 
       //! evaluate brownian (stochastic and damping forces)
       void evaluate_brownian(Teuchos::ParameterList& p,
-          Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat,
+          Teuchos::RCP<Core::LinAlg::SparseOperator>* eval_mat,
           Teuchos::RCP<Epetra_Vector>* eval_vec);
 
       //! \brief retrieve random numbers per element
@@ -195,7 +195,7 @@ namespace STR
       Teuchos::RCP<Epetra_Vector> f_ext_np_ptr_;
 
       //! stiffness contributions from brownian dynamics simulations
-      Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_brownian_ptr_;
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_brownian_ptr_;
 
       //! \brief maximal number of random numbers to be generated in each time step per element
       int maxrandnumelement_;
@@ -204,7 +204,7 @@ namespace STR
       BrownDynStateData brown_dyn_state_data_;
 
       //! casted pointer ( necessary due to need of column information )
-      Teuchos::RCP<DRT::Discretization> discret_ptr_;
+      Teuchos::RCP<Discret::Discretization> discret_ptr_;
 
     };  // class BrownianDyn
   }     // namespace MODELEVALUATOR

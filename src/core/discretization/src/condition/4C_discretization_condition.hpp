@@ -25,17 +25,17 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
 
-namespace CORE::Conditions
+namespace Core::Conditions
 {
 
   /*!
@@ -56,7 +56,7 @@ namespace CORE::Conditions
            to the private methods that would otherwise have to be public.
 
     */
-    friend class DRT::Discretization;
+    friend class Discret::Discretization;
 
     //@}
 
@@ -68,10 +68,10 @@ namespace CORE::Conditions
     The way a condition is treated later on depends on the type of the
     condition. E.g. Dirichlet conditions are treated differently from
     Neumann conditions. How they are treated is not described here but in
-    DRT::Discretization.
+    Discret::Discretization.
 
     \note In case you might wonder where this condition class actually stores
-          data necessary for the condition: This class implements CORE::IO::InputParameterContainer.
+          data necessary for the condition: This class implements Core::IO::InputParameterContainer.
 
     \param id (in): a unique id for this condition
     \param type (in): type of the condition
@@ -79,8 +79,8 @@ namespace CORE::Conditions
                                (elements) have to be build
     \param gtype (in): type of geometric entity this condition lives on
     */
-    Condition(const int id, const CORE::Conditions::ConditionType type, const bool buildgeometry,
-        const CORE::Conditions::GeometryType gtype);
+    Condition(const int id, const Core::Conditions::ConditionType type, const bool buildgeometry,
+        const Core::Conditions::GeometryType gtype);
 
     /*!
     \brief Default constructor with type condition_none
@@ -113,7 +113,7 @@ namespace CORE::Conditions
     [[nodiscard]] bool ContainsNode(int ngid) const
     {
       const std::vector<int>* n = GetNodes();
-      // CORE::Conditions::Condition nodes are ordered by design! So we can perform a binary
+      // Core::Conditions::Condition nodes are ordered by design! So we can perform a binary
       // search here.
       return std::binary_search(n->begin(), n->end(), ngid);
     }
@@ -139,7 +139,7 @@ namespace CORE::Conditions
     geometry description is build for this condition iff GeometryDescription()==true
 
     */
-    [[nodiscard]] inline CORE::Conditions::GeometryType GType() const { return gtype_; }
+    [[nodiscard]] inline Core::Conditions::GeometryType GType() const { return gtype_; }
 
     /*!
     \brief Print this Condition
@@ -149,24 +149,24 @@ namespace CORE::Conditions
     /*!
     \brief Return type of condition
     */
-    [[nodiscard]] inline CORE::Conditions::ConditionType Type() const { return type_; }
+    [[nodiscard]] inline Core::Conditions::ConditionType Type() const { return type_; }
 
     /*!
     \brief Get a reference to the geometry description of the condition
 
     */
-    std::map<int, Teuchos::RCP<CORE::Elements::Element>>& Geometry() { return *geometry_; }
+    std::map<int, Teuchos::RCP<Core::Elements::Element>>& Geometry() { return *geometry_; }
 
-    [[nodiscard]] const std::map<int, Teuchos::RCP<CORE::Elements::Element>>& Geometry() const
+    [[nodiscard]] const std::map<int, Teuchos::RCP<Core::Elements::Element>>& Geometry() const
     {
       return *geometry_;
     }
 
     //! Access the container that stores the input parameters.
-    [[nodiscard]] const CORE::IO::InputParameterContainer& parameters() const { return container_; }
+    [[nodiscard]] const Core::IO::InputParameterContainer& parameters() const { return container_; }
 
     //! Access the container that stores the input parameters.
-    CORE::IO::InputParameterContainer& parameters() { return container_; }
+    Core::IO::InputParameterContainer& parameters() { return container_; }
 
     /*!
     \brief Adjust IDs of associated elements in order to obtain global
@@ -177,7 +177,7 @@ namespace CORE::Conditions
     /**
      * Create a copy of this object but do not copy the geometry.
      */
-    [[nodiscard]] Teuchos::RCP<CORE::Conditions::Condition> copy_without_geometry() const;
+    [[nodiscard]] Teuchos::RCP<Core::Conditions::Condition> copy_without_geometry() const;
 
     //! Comparison operator.
     friend bool operator<(const Condition& lhs, const Condition& rhs);
@@ -193,14 +193,13 @@ namespace CORE::Conditions
     In case the condition refers to lines, surfaces or volumes, a
     geometry description might be needed to properly evaluate the condition
     (e.g. in the case of Neumann conditions).
-    Such a geometry description is build in \ref DRT::Discretization::boundary_conditions_geometry
-    and then added to this Condition.
-    The geometry description consists of elements that are capable to
-    perform the necessary operations on the condition (e.g. integrate a Neumann BC
-    along a line). The matching nodes are taken from the
-    underlying discretization itself. Also, it is actually the discretization class
-    that drives this process, so do not add elements yourself to the condition, let
-    the discretization do it for you.
+    Such a geometry description is build in \ref
+    Discret::Discretization::boundary_conditions_geometry and then added to this Condition. The
+    geometry description consists of elements that are capable to perform the necessary operations
+    on the condition (e.g. integrate a Neumann BC along a line). The matching nodes are taken from
+    the underlying discretization itself. Also, it is actually the discretization class that drives
+    this process, so do not add elements yourself to the condition, let the discretization do it for
+    you.
 
     \param geom (in): Map of elements describing the geometry.
                       A deep copy of the map is made and stored.
@@ -209,7 +208,7 @@ namespace CORE::Conditions
                       Do not mess with their Teuchos::RCP!
 
     */
-    void add_geometry(Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::Elements::Element>>> geom)
+    void add_geometry(Teuchos::RCP<std::map<int, Teuchos::RCP<Core::Elements::Element>>> geom)
     {
       geometry_ = geom;
     }
@@ -235,15 +234,15 @@ namespace CORE::Conditions
     bool buildgeometry_{};
 
     //! Type of this condition
-    CORE::Conditions::ConditionType type_{};
+    Core::Conditions::ConditionType type_{};
 
     //! Type of geometry the condition lives on
-    CORE::Conditions::GeometryType gtype_{};
+    Core::Conditions::GeometryType gtype_{};
 
     //! Geometry description of this condition
-    Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::Elements::Element>>> geometry_{};
+    Teuchos::RCP<std::map<int, Teuchos::RCP<Core::Elements::Element>>> geometry_{};
 
-    CORE::IO::InputParameterContainer container_;
+    Core::IO::InputParameterContainer container_;
   };  // class Condition
 
   inline bool operator<(const Condition& lhs, const Condition& rhs)
@@ -256,11 +255,11 @@ namespace CORE::Conditions
       std::make_pair(GeometryType::geometry_type_point, 0), std::make_pair(geometry_type_line, 1),
       std::make_pair(geometry_type_surface, 2), std::make_pair(geometry_type_volume, 3)};
 
-}  // namespace CORE::Conditions
+}  // namespace Core::Conditions
 
 
 //! << operator
-std::ostream& operator<<(std::ostream& os, const CORE::Conditions::Condition& cond);
+std::ostream& operator<<(std::ostream& os, const Core::Conditions::Condition& cond);
 
 
 FOUR_C_NAMESPACE_CLOSE

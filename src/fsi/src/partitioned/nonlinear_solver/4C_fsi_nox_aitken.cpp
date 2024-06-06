@@ -135,7 +135,7 @@ bool NOX::FSI::AitkenRelaxation::compute(::NOX::Abstract::Group& grp, double& st
     static std::ofstream* out;
     if (out == nullptr)
     {
-      std::string s = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
+      std::string s = Global::Problem::Instance()->OutputControlFile()->FileName();
       s.append(".omega");
       out = new std::ofstream(s.c_str());
     }

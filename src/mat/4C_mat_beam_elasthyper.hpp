@@ -26,12 +26,12 @@ FOUR_C_NAMESPACE_OPEN
 
 
 // forward declaration
-namespace DRT
+namespace Discret
 {
   class ParObject;
 }
 
-namespace MAT
+namespace Mat
 {
   // forward declaration
   namespace PAR
@@ -41,14 +41,14 @@ namespace MAT
 
   /// singleton for constitutive law of a beam formulation (hyperelastic stored energy function)
   template <typename T>
-  class BeamElastHyperMaterialType : public CORE::COMM::ParObjectType
+  class BeamElastHyperMaterialType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return typeid(this).name(); }
 
     static BeamElastHyperMaterialType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static BeamElastHyperMaterialType instance_;
@@ -66,7 +66,7 @@ namespace MAT
     BeamElastHyperMaterial();
 
     /// construct the material object from given material parameters
-    explicit BeamElastHyperMaterial(MAT::PAR::BeamElastHyperMaterialParameterGeneric* params);
+    explicit BeamElastHyperMaterial(Mat::PAR::BeamElastHyperMaterialParameterGeneric* params);
 
     /**
      * \brief Initialize and setup element specific variables
@@ -98,7 +98,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -122,18 +122,18 @@ namespace MAT
     /** \brief get type of this material
      *
      */
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
       /* the idea is that we have a generic type of material (this class), but two
        * possible types of material parameter definitions and hence types
        * (BeamReissnerElastHyperMaterialParams and BeamReissnerElastHyperMaterialParamsByMode) */
-      return CORE::Materials::m_beam_elast_hyper_generic;
+      return Core::Materials::m_beam_elast_hyper_generic;
     }
 
     /** \brief return copy of this material object
      *
      */
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new BeamElastHyperMaterial(*this));
     }
@@ -141,7 +141,7 @@ namespace MAT
     /** \brief get quick accessible material parameter data
      *
      */
-    CORE::MAT::PAR::Parameter* Parameter() const override;
+    Core::Mat::PAR::Parameter* Parameter() const override;
 
     //@}
 
@@ -152,7 +152,7 @@ namespace MAT
     /** \brief get quick accessible material parameter data
      *
      */
-    const MAT::PAR::BeamElastHyperMaterialParameterGeneric& Params() const;
+    const Mat::PAR::BeamElastHyperMaterialParameterGeneric& Params() const;
 
     /*
      * \brief Compute axial stress contributions
@@ -163,8 +163,8 @@ namespace MAT
      *
      *\param[in] Cur curvature
      */
-    void evaluate_moment_contributions_to_stress(CORE::LINALG::Matrix<3, 1, T>& stressM,
-        const CORE::LINALG::Matrix<3, 3, T>& CM, const CORE::LINALG::Matrix<3, 1, T>& Cur,
+    void evaluate_moment_contributions_to_stress(Core::LinAlg::Matrix<3, 1, T>& stressM,
+        const Core::LinAlg::Matrix<3, 3, T>& CM, const Core::LinAlg::Matrix<3, 1, T>& Cur,
         const unsigned int gp) override;
 
     /*
@@ -177,29 +177,29 @@ namespace MAT
      *\param[in] Gamma triad
      */
 
-    void evaluate_force_contributions_to_stress(CORE::LINALG::Matrix<3, 1, T>& stressN,
-        const CORE::LINALG::Matrix<3, 3, T>& CN, const CORE::LINALG::Matrix<3, 1, T>& Gamma,
+    void evaluate_force_contributions_to_stress(Core::LinAlg::Matrix<3, 1, T>& stressN,
+        const Core::LinAlg::Matrix<3, 3, T>& CN, const Core::LinAlg::Matrix<3, 1, T>& Gamma,
         const unsigned int gp) override;
 
     /*
      * \brief Update material-dependent variables
      */
     void compute_constitutive_parameter(
-        CORE::LINALG::Matrix<3, 3, T>& C_N, CORE::LINALG::Matrix<3, 3, T>& C_M) override;
+        Core::LinAlg::Matrix<3, 3, T>& C_N, Core::LinAlg::Matrix<3, 3, T>& C_M) override;
 
     /** \brief get constitutive matrix relating stress force resultants and translational strain
      *         measures, expressed w.r.t. material frame
      *
      */
     void get_constitutive_matrix_of_forces_material_frame(
-        CORE::LINALG::Matrix<3, 3, T>& C_N) const override;
+        Core::LinAlg::Matrix<3, 3, T>& C_N) const override;
 
     /** \brief get constitutive matrix relating stress moment resultants and rotational strain
      *         measures, expressed w.r.t. material frame
      *
      */
     void get_constitutive_matrix_of_moments_material_frame(
-        CORE::LINALG::Matrix<3, 3, T>& C_M) const override;
+        Core::LinAlg::Matrix<3, 3, T>& C_M) const override;
 
     /** \brief get mass inertia factor with respect to translational accelerations
      *         (usually: density * cross-section area)
@@ -210,12 +210,12 @@ namespace MAT
      *
      */
     void get_mass_moment_of_inertia_tensor_material_frame(
-        CORE::LINALG::Matrix<3, 3>& J) const override;
+        Core::LinAlg::Matrix<3, 3>& J) const override;
 
     /** \brief get mass moment of inertia tensor, expressed w.r.t. material frame
      */
     void get_mass_moment_of_inertia_tensor_material_frame(
-        CORE::LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>& J) const override;
+        Core::LinAlg::Matrix<3, 3, Sacado::Fad::DFad<double>>& J) const override;
 
 
 
@@ -225,27 +225,27 @@ namespace MAT
      */
     double get_interaction_radius() const override;
 
-    void get_stiffness_matrix_of_moments(CORE::LINALG::Matrix<3, 3, T>& stiffness_matrix,
-        const CORE::LINALG::Matrix<3, 3, T>& C_M, const int gp) override;
+    void get_stiffness_matrix_of_moments(Core::LinAlg::Matrix<3, 3, T>& stiffness_matrix,
+        const Core::LinAlg::Matrix<3, 3, T>& C_M, const int gp) override;
 
-    void get_stiffness_matrix_of_forces(CORE::LINALG::Matrix<3, 3, T>& stiffness_matrix,
-        const CORE::LINALG::Matrix<3, 3, T>& C_N, const int gp) override;
+    void get_stiffness_matrix_of_forces(Core::LinAlg::Matrix<3, 3, T>& stiffness_matrix,
+        const Core::LinAlg::Matrix<3, 3, T>& C_N, const int gp) override;
 
     void Update() override{};
 
     void Reset() override{};
 
    protected:
-    void set_parameter(MAT::PAR::BeamElastHyperMaterialParameterGeneric* parameter)
+    void set_parameter(Mat::PAR::BeamElastHyperMaterialParameterGeneric* parameter)
     {
       params_ = parameter;
     }
 
    private:
     /// my material parameters
-    MAT::PAR::BeamElastHyperMaterialParameterGeneric* params_;
+    Mat::PAR::BeamElastHyperMaterialParameterGeneric* params_;
   };
-}  // namespace MAT
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -19,8 +19,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CONTACT::AUG::ProjectorBase* CONTACT::AUG::ProjectorBase::Get(const unsigned probdim,
-    CORE::FE::CellType ref_type, CORE::FE::CellType tar_type, const bool debug)
+CONTACT::Aug::ProjectorBase* CONTACT::Aug::ProjectorBase::Get(const unsigned probdim,
+    Core::FE::CellType ref_type, Core::FE::CellType tar_type, const bool debug)
 {
   switch (probdim)
   {
@@ -36,119 +36,119 @@ CONTACT::AUG::ProjectorBase* CONTACT::AUG::ProjectorBase::Get(const unsigned pro
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CONTACT::AUG::ProjectorBase* CONTACT::AUG::ProjectorBase::get2_d(
-    CORE::FE::CellType ref_type, CORE::FE::CellType tar_type, const bool debug)
+CONTACT::Aug::ProjectorBase* CONTACT::Aug::ProjectorBase::get2_d(
+    Core::FE::CellType ref_type, Core::FE::CellType tar_type, const bool debug)
 {
   switch (ref_type)
   {
-    case CORE::FE::CellType::line2:
-      return get2_d<CORE::FE::CellType::line2>(tar_type, debug);
-    case CORE::FE::CellType::nurbs2:
-      return get2_d<CORE::FE::CellType::nurbs2>(tar_type, debug);
-    case CORE::FE::CellType::nurbs3:
-      return get2_d<CORE::FE::CellType::nurbs3>(tar_type, debug);
+    case Core::FE::CellType::line2:
+      return get2_d<Core::FE::CellType::line2>(tar_type, debug);
+    case Core::FE::CellType::nurbs2:
+      return get2_d<Core::FE::CellType::nurbs2>(tar_type, debug);
+    case Core::FE::CellType::nurbs3:
+      return get2_d<Core::FE::CellType::nurbs3>(tar_type, debug);
     default:
-      FOUR_C_THROW("Unsupported reference-type %s.", CORE::FE::CellTypeToString(ref_type).c_str());
+      FOUR_C_THROW("Unsupported reference-type %s.", Core::FE::CellTypeToString(ref_type).c_str());
       exit(EXIT_FAILURE);
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <CORE::FE::CellType ref_type>
-CONTACT::AUG::ProjectorBase* CONTACT::AUG::ProjectorBase::get2_d(
-    CORE::FE::CellType tar_type, const bool debug)
+template <Core::FE::CellType ref_type>
+CONTACT::Aug::ProjectorBase* CONTACT::Aug::ProjectorBase::get2_d(
+    Core::FE::CellType tar_type, const bool debug)
 {
   switch (tar_type)
   {
-    case CORE::FE::CellType::line2:
-      if (debug) return Projector<ProjDebugger, 2, ref_type, CORE::FE::CellType::line2>::Instance();
-      return Projector<EmptyProjDebugger, 2, ref_type, CORE::FE::CellType::line2>::Instance();
-    case CORE::FE::CellType::nurbs2:
+    case Core::FE::CellType::line2:
+      if (debug) return Projector<ProjDebugger, 2, ref_type, Core::FE::CellType::line2>::Instance();
+      return Projector<EmptyProjDebugger, 2, ref_type, Core::FE::CellType::line2>::Instance();
+    case Core::FE::CellType::nurbs2:
       if (debug)
-        return Projector<ProjDebugger, 2, ref_type, CORE::FE::CellType::nurbs2>::Instance();
-      return Projector<EmptyProjDebugger, 2, ref_type, CORE::FE::CellType::nurbs2>::Instance();
-    case CORE::FE::CellType::nurbs3:
+        return Projector<ProjDebugger, 2, ref_type, Core::FE::CellType::nurbs2>::Instance();
+      return Projector<EmptyProjDebugger, 2, ref_type, Core::FE::CellType::nurbs2>::Instance();
+    case Core::FE::CellType::nurbs3:
       if (debug)
-        return Projector<ProjDebugger, 2, ref_type, CORE::FE::CellType::nurbs3>::Instance();
-      return Projector<EmptyProjDebugger, 2, ref_type, CORE::FE::CellType::nurbs3>::Instance();
+        return Projector<ProjDebugger, 2, ref_type, Core::FE::CellType::nurbs3>::Instance();
+      return Projector<EmptyProjDebugger, 2, ref_type, Core::FE::CellType::nurbs3>::Instance();
     default:
-      FOUR_C_THROW("Unsupported target-type %s.", CORE::FE::CellTypeToString(tar_type).c_str());
+      FOUR_C_THROW("Unsupported target-type %s.", Core::FE::CellTypeToString(tar_type).c_str());
       exit(EXIT_FAILURE);
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CONTACT::AUG::ProjectorBase* CONTACT::AUG::ProjectorBase::get3_d(
-    CORE::FE::CellType ref_type, CORE::FE::CellType tar_type, const bool debug)
+CONTACT::Aug::ProjectorBase* CONTACT::Aug::ProjectorBase::get3_d(
+    Core::FE::CellType ref_type, Core::FE::CellType tar_type, const bool debug)
 {
   switch (ref_type)
   {
-    case CORE::FE::CellType::quad4:
-      return get3_d<CORE::FE::CellType::quad4>(tar_type, debug);
-    case CORE::FE::CellType::tri3:
-      return get3_d<CORE::FE::CellType::tri3>(tar_type, debug);
-    case CORE::FE::CellType::nurbs4:
-      return get3_d<CORE::FE::CellType::nurbs4>(tar_type, debug);
-    case CORE::FE::CellType::nurbs9:
-      return get3_d<CORE::FE::CellType::nurbs9>(tar_type, debug);
+    case Core::FE::CellType::quad4:
+      return get3_d<Core::FE::CellType::quad4>(tar_type, debug);
+    case Core::FE::CellType::tri3:
+      return get3_d<Core::FE::CellType::tri3>(tar_type, debug);
+    case Core::FE::CellType::nurbs4:
+      return get3_d<Core::FE::CellType::nurbs4>(tar_type, debug);
+    case Core::FE::CellType::nurbs9:
+      return get3_d<Core::FE::CellType::nurbs9>(tar_type, debug);
     default:
-      FOUR_C_THROW("Unsupported reference-type %s.", CORE::FE::CellTypeToString(ref_type).c_str());
+      FOUR_C_THROW("Unsupported reference-type %s.", Core::FE::CellTypeToString(ref_type).c_str());
       exit(EXIT_FAILURE);
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <CORE::FE::CellType ref_type>
-CONTACT::AUG::ProjectorBase* CONTACT::AUG::ProjectorBase::get3_d(
-    CORE::FE::CellType tar_type, const bool debug)
+template <Core::FE::CellType ref_type>
+CONTACT::Aug::ProjectorBase* CONTACT::Aug::ProjectorBase::get3_d(
+    Core::FE::CellType tar_type, const bool debug)
 {
   switch (tar_type)
   {
-    case CORE::FE::CellType::quad4:
-      if (debug) return Projector<ProjDebugger, 3, ref_type, CORE::FE::CellType::quad4>::Instance();
-      return Projector<EmptyProjDebugger, 3, ref_type, CORE::FE::CellType::quad4>::Instance();
-    case CORE::FE::CellType::tri3:
-      if (debug) return Projector<ProjDebugger, 3, ref_type, CORE::FE::CellType::tri3>::Instance();
-      return Projector<EmptyProjDebugger, 3, ref_type, CORE::FE::CellType::tri3>::Instance();
-    case CORE::FE::CellType::nurbs4:
+    case Core::FE::CellType::quad4:
+      if (debug) return Projector<ProjDebugger, 3, ref_type, Core::FE::CellType::quad4>::Instance();
+      return Projector<EmptyProjDebugger, 3, ref_type, Core::FE::CellType::quad4>::Instance();
+    case Core::FE::CellType::tri3:
+      if (debug) return Projector<ProjDebugger, 3, ref_type, Core::FE::CellType::tri3>::Instance();
+      return Projector<EmptyProjDebugger, 3, ref_type, Core::FE::CellType::tri3>::Instance();
+    case Core::FE::CellType::nurbs4:
       if (debug)
-        return Projector<ProjDebugger, 3, ref_type, CORE::FE::CellType::nurbs4>::Instance();
-      return Projector<EmptyProjDebugger, 3, ref_type, CORE::FE::CellType::nurbs4>::Instance();
-    case CORE::FE::CellType::nurbs9:
+        return Projector<ProjDebugger, 3, ref_type, Core::FE::CellType::nurbs4>::Instance();
+      return Projector<EmptyProjDebugger, 3, ref_type, Core::FE::CellType::nurbs4>::Instance();
+    case Core::FE::CellType::nurbs9:
       if (debug)
-        return Projector<ProjDebugger, 3, ref_type, CORE::FE::CellType::nurbs9>::Instance();
-      return Projector<EmptyProjDebugger, 3, ref_type, CORE::FE::CellType::nurbs9>::Instance();
+        return Projector<ProjDebugger, 3, ref_type, Core::FE::CellType::nurbs9>::Instance();
+      return Projector<EmptyProjDebugger, 3, ref_type, Core::FE::CellType::nurbs9>::Instance();
     default:
-      FOUR_C_THROW("Unsupported target-type %s.", CORE::FE::CellTypeToString(tar_type).c_str());
+      FOUR_C_THROW("Unsupported target-type %s.", Core::FE::CellTypeToString(tar_type).c_str());
       exit(EXIT_FAILURE);
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <class DebugPolicy, unsigned probdim, CORE::FE::CellType ref_type,
-    CORE::FE::CellType tar_type>
-CONTACT::AUG::ProjectorBase*
-CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::Instance()
+template <class DebugPolicy, unsigned probdim, Core::FE::CellType ref_type,
+    Core::FE::CellType tar_type>
+CONTACT::Aug::ProjectorBase*
+CONTACT::Aug::Projector<DebugPolicy, probdim, ref_type, tar_type>::Instance()
 {
-  static auto singleton_owner = CORE::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
       []()
       {
         return std::unique_ptr<Projector<DebugPolicy, probdim, ref_type, tar_type>>(
             new Projector<DebugPolicy, probdim, ref_type, tar_type>);
       });
 
-  return singleton_owner.Instance(CORE::UTILS::SingletonAction::create);
+  return singleton_owner.Instance(Core::UTILS::SingletonAction::create);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <class DebugPolicy, unsigned probdim, CORE::FE::CellType ref_type,
-    CORE::FE::CellType tar_type>
-void CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::setup()
+template <class DebugPolicy, unsigned probdim, Core::FE::CellType ref_type,
+    Core::FE::CellType tar_type>
+void CONTACT::Aug::Projector<DebugPolicy, probdim, ref_type, tar_type>::setup()
 {
   ref_val_.putScalar(0.0);
   x_ref_.putScalar(0.0);
@@ -158,23 +158,23 @@ void CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <class DebugPolicy, unsigned probdim, CORE::FE::CellType ref_type,
-    CORE::FE::CellType tar_type>
-bool CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::operator()(
-    MORTAR::Element& ref_ele, const double* ref_xi, MORTAR::Element& target_ele, double* target_xi,
+template <class DebugPolicy, unsigned probdim, Core::FE::CellType ref_type,
+    Core::FE::CellType tar_type>
+bool CONTACT::Aug::Projector<DebugPolicy, probdim, ref_type, tar_type>::operator()(
+    Mortar::Element& ref_ele, const double* ref_xi, Mortar::Element& target_ele, double* target_xi,
     double& alpha)
 {
   setup();
 
-  const CORE::Nodes::Node* const* ref_nodes = ref_ele.Nodes();
+  const Core::Nodes::Node* const* ref_nodes = ref_ele.Nodes();
 
-  const CORE::LINALG::Matrix<REF_DIM, 1> rxi(ref_xi, true);
+  const Core::LinAlg::Matrix<REF_DIM, 1> rxi(ref_xi, true);
 
   shape_function<ref_type>(ref_ele, rxi, ref_val_);
 
   for (unsigned i = 0; i < REF_NUMNODES; ++i)
   {
-    const MORTAR::Node& mnode = static_cast<const MORTAR::Node&>(*ref_nodes[i]);
+    const Mortar::Node& mnode = static_cast<const Mortar::Node&>(*ref_nodes[i]);
     const double* x_ref_node = mnode.xspatial();
     const double* n_ref_node = mnode.MoData().n();
 
@@ -186,22 +186,22 @@ bool CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::operator
   }
 
   // get the spatial coordinates of the target element
-  const CORE::Nodes::Node* const* tnodes = target_ele.Nodes();
+  const Core::Nodes::Node* const* tnodes = target_ele.Nodes();
 
   for (unsigned i = 0; i < TAR_NUMNODES; ++i)
   {
-    const MORTAR::Node& mnode = static_cast<const MORTAR::Node&>(*tnodes[i]);
+    const Mortar::Node& mnode = static_cast<const Mortar::Node&>(*tnodes[i]);
     const double* tar_x = mnode.xspatial();
 
     std::copy(tar_x, tar_x + probdim, &tar_coords_(0, i));
   }
 
   // initial value
-  CORE::LINALG::Matrix<TAR_DIM, 1> txi(target_xi, true);
+  Core::LinAlg::Matrix<TAR_DIM, 1> txi(target_xi, true);
   alpha = 0.0;
 
-  CORE::LINALG::Matrix<TAR_DIM, 1> txi_center(false);
-  CORE::FE::getLocalCenterPosition<TAR_DIM>(tar_type, txi_center);
+  Core::LinAlg::Matrix<TAR_DIM, 1> txi_center(false);
+  Core::FE::getLocalCenterPosition<TAR_DIM>(tar_type, txi_center);
   std::copy(txi_center.A(), txi_center.A() + TAR_DIM, txi.A());
 
   rhs_gp(rhs_, x_ref_, n_ref_, target_ele, tar_coords_, target_xi, alpha);
@@ -217,7 +217,7 @@ bool CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::operator
     l_mat_gp(lmat_, tar_deriv1_, target_ele, tar_coords_, target_xi, n_ref_);
 
     rhs_.Scale(-1.0);
-    const double det = CORE::LINALG::gaussElimination<true, probdim>(lmat_, rhs_, dx_);
+    const double det = Core::LinAlg::gaussElimination<true, probdim>(lmat_, rhs_, dx_);
 
     // safety check
     if (std::abs(det) < 1.0e-12)
@@ -277,15 +277,15 @@ bool CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::operator
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <class DebugPolicy, unsigned probdim, CORE::FE::CellType ref_type,
-    CORE::FE::CellType tar_type>
-bool CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::rhs_gp(
-    CORE::LINALG::Matrix<probdim, 1>& rhs, const CORE::LINALG::Matrix<probdim, 1>& x_ref,
-    const CORE::LINALG::Matrix<probdim, 1>& n_ref, MORTAR::Element& target_ele,
-    const CORE::LINALG::Matrix<probdim, TAR_NUMNODES>& tar_coords, const double* tar_xi,
+template <class DebugPolicy, unsigned probdim, Core::FE::CellType ref_type,
+    Core::FE::CellType tar_type>
+bool CONTACT::Aug::Projector<DebugPolicy, probdim, ref_type, tar_type>::rhs_gp(
+    Core::LinAlg::Matrix<probdim, 1>& rhs, const Core::LinAlg::Matrix<probdim, 1>& x_ref,
+    const Core::LinAlg::Matrix<probdim, 1>& n_ref, Mortar::Element& target_ele,
+    const Core::LinAlg::Matrix<probdim, TAR_NUMNODES>& tar_coords, const double* tar_xi,
     const double& alpha) const
 {
-  CORE::LINALG::Matrix<probdim, 1> x_tar(false);
+  Core::LinAlg::Matrix<probdim, 1> x_tar(false);
   const bool status = get_global_position<tar_type>(target_ele, tar_coords, tar_xi, x_tar);
 
   // evaluate right hand side
@@ -297,17 +297,17 @@ bool CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::rhs_gp(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <class DebugPolicy, unsigned probdim, CORE::FE::CellType ref_type,
-    CORE::FE::CellType tar_type>
-template <CORE::FE::CellType type, unsigned numnodes>
-bool CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::get_global_position(
-    MORTAR::Element& ele, const CORE::LINALG::Matrix<probdim, numnodes>& coords, const double* xi,
-    CORE::LINALG::Matrix<probdim, 1>& pos) const
+template <class DebugPolicy, unsigned probdim, Core::FE::CellType ref_type,
+    Core::FE::CellType tar_type>
+template <Core::FE::CellType type, unsigned numnodes>
+bool CONTACT::Aug::Projector<DebugPolicy, probdim, ref_type, tar_type>::get_global_position(
+    Mortar::Element& ele, const Core::LinAlg::Matrix<probdim, numnodes>& coords, const double* xi,
+    Core::LinAlg::Matrix<probdim, 1>& pos) const
 {
-  const unsigned dim = CORE::FE::dim<type>;
-  const CORE::LINALG::Matrix<dim, 1> mat_xi(xi, true);
+  const unsigned dim = Core::FE::dim<type>;
+  const Core::LinAlg::Matrix<dim, 1> mat_xi(xi, true);
 
-  CORE::LINALG::Matrix<numnodes, 1> val(true);
+  Core::LinAlg::Matrix<numnodes, 1> val(true);
   const bool status = shape_function<type>(ele, mat_xi, val);
 
   pos.Multiply(coords, val);
@@ -316,15 +316,15 @@ bool CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::get_glob
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <class DebugPolicy, unsigned probdim, CORE::FE::CellType ref_type,
-    CORE::FE::CellType tar_type>
-void CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::l_mat_gp(
-    CORE::LINALG::Matrix<probdim, probdim>& lmat,
-    CORE::LINALG::Matrix<TAR_DIM, TAR_NUMNODES>& tar_deriv1, MORTAR::Element& tar_ele,
-    const CORE::LINALG::Matrix<probdim, TAR_NUMNODES>& tar_coords, const double* tar_xi,
-    const CORE::LINALG::Matrix<probdim, 1>& n_ref) const
+template <class DebugPolicy, unsigned probdim, Core::FE::CellType ref_type,
+    Core::FE::CellType tar_type>
+void CONTACT::Aug::Projector<DebugPolicy, probdim, ref_type, tar_type>::l_mat_gp(
+    Core::LinAlg::Matrix<probdim, probdim>& lmat,
+    Core::LinAlg::Matrix<TAR_DIM, TAR_NUMNODES>& tar_deriv1, Mortar::Element& tar_ele,
+    const Core::LinAlg::Matrix<probdim, TAR_NUMNODES>& tar_coords, const double* tar_xi,
+    const Core::LinAlg::Matrix<probdim, 1>& n_ref) const
 {
-  const CORE::LINALG::Matrix<TAR_DIM, 1> txi(tar_xi, true);
+  const Core::LinAlg::Matrix<TAR_DIM, 1> txi(tar_xi, true);
   std::fill(lmat.A(), lmat.A() + 2 * probdim, 0.0);
 
   shape_function_deriv1<tar_type>(tar_ele, txi, tar_deriv1);
@@ -337,72 +337,72 @@ void CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::l_mat_gp
 }
 
 
-template CONTACT::AUG::ProjectorBase*
-CONTACT::AUG::ProjectorBase::get2_d<CORE::FE::CellType::line2>(
-    CORE::FE::CellType tar_type, const bool debug);
-template CONTACT::AUG::ProjectorBase*
-CONTACT::AUG::ProjectorBase::get3_d<CORE::FE::CellType::quad4>(
-    CORE::FE::CellType tar_type, const bool debug);
-template CONTACT::AUG::ProjectorBase* CONTACT::AUG::ProjectorBase::get3_d<CORE::FE::CellType::tri3>(
-    CORE::FE::CellType tar_type, const bool debug);
+template CONTACT::Aug::ProjectorBase*
+CONTACT::Aug::ProjectorBase::get2_d<Core::FE::CellType::line2>(
+    Core::FE::CellType tar_type, const bool debug);
+template CONTACT::Aug::ProjectorBase*
+CONTACT::Aug::ProjectorBase::get3_d<Core::FE::CellType::quad4>(
+    Core::FE::CellType tar_type, const bool debug);
+template CONTACT::Aug::ProjectorBase* CONTACT::Aug::ProjectorBase::get3_d<Core::FE::CellType::tri3>(
+    Core::FE::CellType tar_type, const bool debug);
 
 // standard discretization types
-template class CONTACT::AUG::Projector<CONTACT::AUG::ProjDebugger, 2, CORE::FE::CellType::line2,
-    CORE::FE::CellType::line2>;
-template class CONTACT::AUG::Projector<CONTACT::AUG::EmptyProjDebugger, 2,
-    CORE::FE::CellType::line2, CORE::FE::CellType::line2>;
+template class CONTACT::Aug::Projector<CONTACT::Aug::ProjDebugger, 2, Core::FE::CellType::line2,
+    Core::FE::CellType::line2>;
+template class CONTACT::Aug::Projector<CONTACT::Aug::EmptyProjDebugger, 2,
+    Core::FE::CellType::line2, Core::FE::CellType::line2>;
 
-template class CONTACT::AUG::Projector<CONTACT::AUG::ProjDebugger, 3, CORE::FE::CellType::quad4,
-    CORE::FE::CellType::quad4>;
-template class CONTACT::AUG::Projector<CONTACT::AUG::EmptyProjDebugger, 3,
-    CORE::FE::CellType::quad4, CORE::FE::CellType::quad4>;
-template class CONTACT::AUG::Projector<CONTACT::AUG::ProjDebugger, 3, CORE::FE::CellType::quad4,
-    CORE::FE::CellType::tri3>;
-template class CONTACT::AUG::Projector<CONTACT::AUG::EmptyProjDebugger, 3,
-    CORE::FE::CellType::quad4, CORE::FE::CellType::tri3>;
+template class CONTACT::Aug::Projector<CONTACT::Aug::ProjDebugger, 3, Core::FE::CellType::quad4,
+    Core::FE::CellType::quad4>;
+template class CONTACT::Aug::Projector<CONTACT::Aug::EmptyProjDebugger, 3,
+    Core::FE::CellType::quad4, Core::FE::CellType::quad4>;
+template class CONTACT::Aug::Projector<CONTACT::Aug::ProjDebugger, 3, Core::FE::CellType::quad4,
+    Core::FE::CellType::tri3>;
+template class CONTACT::Aug::Projector<CONTACT::Aug::EmptyProjDebugger, 3,
+    Core::FE::CellType::quad4, Core::FE::CellType::tri3>;
 
-template class CONTACT::AUG::Projector<CONTACT::AUG::ProjDebugger, 3, CORE::FE::CellType::tri3,
-    CORE::FE::CellType::tri3>;
-template class CONTACT::AUG::Projector<CONTACT::AUG::EmptyProjDebugger, 3, CORE::FE::CellType::tri3,
-    CORE::FE::CellType::tri3>;
-template class CONTACT::AUG::Projector<CONTACT::AUG::ProjDebugger, 3, CORE::FE::CellType::tri3,
-    CORE::FE::CellType::quad4>;
-template class CONTACT::AUG::Projector<CONTACT::AUG::EmptyProjDebugger, 3, CORE::FE::CellType::tri3,
-    CORE::FE::CellType::quad4>;
+template class CONTACT::Aug::Projector<CONTACT::Aug::ProjDebugger, 3, Core::FE::CellType::tri3,
+    Core::FE::CellType::tri3>;
+template class CONTACT::Aug::Projector<CONTACT::Aug::EmptyProjDebugger, 3, Core::FE::CellType::tri3,
+    Core::FE::CellType::tri3>;
+template class CONTACT::Aug::Projector<CONTACT::Aug::ProjDebugger, 3, Core::FE::CellType::tri3,
+    Core::FE::CellType::quad4>;
+template class CONTACT::Aug::Projector<CONTACT::Aug::EmptyProjDebugger, 3, Core::FE::CellType::tri3,
+    Core::FE::CellType::quad4>;
 
 // pure NURBS discretization types
-template class CONTACT::AUG::Projector<CONTACT::AUG::ProjDebugger, 3, CORE::FE::CellType::nurbs2,
-    CORE::FE::CellType::nurbs2>;
-template class CONTACT::AUG::Projector<CONTACT::AUG::EmptyProjDebugger, 3,
-    CORE::FE::CellType::nurbs2, CORE::FE::CellType::nurbs2>;
-template class CONTACT::AUG::Projector<CONTACT::AUG::ProjDebugger, 3, CORE::FE::CellType::nurbs3,
-    CORE::FE::CellType::nurbs3>;
-template class CONTACT::AUG::Projector<CONTACT::AUG::EmptyProjDebugger, 3,
-    CORE::FE::CellType::nurbs3, CORE::FE::CellType::nurbs3>;
-template class CONTACT::AUG::Projector<CONTACT::AUG::ProjDebugger, 3, CORE::FE::CellType::nurbs2,
-    CORE::FE::CellType::nurbs3>;
-template class CONTACT::AUG::Projector<CONTACT::AUG::EmptyProjDebugger, 3,
-    CORE::FE::CellType::nurbs2, CORE::FE::CellType::nurbs3>;
-template class CONTACT::AUG::Projector<CONTACT::AUG::ProjDebugger, 3, CORE::FE::CellType::nurbs3,
-    CORE::FE::CellType::nurbs2>;
-template class CONTACT::AUG::Projector<CONTACT::AUG::EmptyProjDebugger, 3,
-    CORE::FE::CellType::nurbs3, CORE::FE::CellType::nurbs2>;
+template class CONTACT::Aug::Projector<CONTACT::Aug::ProjDebugger, 3, Core::FE::CellType::nurbs2,
+    Core::FE::CellType::nurbs2>;
+template class CONTACT::Aug::Projector<CONTACT::Aug::EmptyProjDebugger, 3,
+    Core::FE::CellType::nurbs2, Core::FE::CellType::nurbs2>;
+template class CONTACT::Aug::Projector<CONTACT::Aug::ProjDebugger, 3, Core::FE::CellType::nurbs3,
+    Core::FE::CellType::nurbs3>;
+template class CONTACT::Aug::Projector<CONTACT::Aug::EmptyProjDebugger, 3,
+    Core::FE::CellType::nurbs3, Core::FE::CellType::nurbs3>;
+template class CONTACT::Aug::Projector<CONTACT::Aug::ProjDebugger, 3, Core::FE::CellType::nurbs2,
+    Core::FE::CellType::nurbs3>;
+template class CONTACT::Aug::Projector<CONTACT::Aug::EmptyProjDebugger, 3,
+    Core::FE::CellType::nurbs2, Core::FE::CellType::nurbs3>;
+template class CONTACT::Aug::Projector<CONTACT::Aug::ProjDebugger, 3, Core::FE::CellType::nurbs3,
+    Core::FE::CellType::nurbs2>;
+template class CONTACT::Aug::Projector<CONTACT::Aug::EmptyProjDebugger, 3,
+    Core::FE::CellType::nurbs3, Core::FE::CellType::nurbs2>;
 
-template class CONTACT::AUG::Projector<CONTACT::AUG::ProjDebugger, 3, CORE::FE::CellType::nurbs4,
-    CORE::FE::CellType::nurbs4>;
-template class CONTACT::AUG::Projector<CONTACT::AUG::EmptyProjDebugger, 3,
-    CORE::FE::CellType::nurbs4, CORE::FE::CellType::nurbs4>;
-template class CONTACT::AUG::Projector<CONTACT::AUG::ProjDebugger, 3, CORE::FE::CellType::nurbs9,
-    CORE::FE::CellType::nurbs9>;
-template class CONTACT::AUG::Projector<CONTACT::AUG::EmptyProjDebugger, 3,
-    CORE::FE::CellType::nurbs9, CORE::FE::CellType::nurbs9>;
-template class CONTACT::AUG::Projector<CONTACT::AUG::ProjDebugger, 3, CORE::FE::CellType::nurbs4,
-    CORE::FE::CellType::nurbs9>;
-template class CONTACT::AUG::Projector<CONTACT::AUG::EmptyProjDebugger, 3,
-    CORE::FE::CellType::nurbs4, CORE::FE::CellType::nurbs9>;
-template class CONTACT::AUG::Projector<CONTACT::AUG::ProjDebugger, 3, CORE::FE::CellType::nurbs9,
-    CORE::FE::CellType::nurbs4>;
-template class CONTACT::AUG::Projector<CONTACT::AUG::EmptyProjDebugger, 3,
-    CORE::FE::CellType::nurbs9, CORE::FE::CellType::nurbs4>;
+template class CONTACT::Aug::Projector<CONTACT::Aug::ProjDebugger, 3, Core::FE::CellType::nurbs4,
+    Core::FE::CellType::nurbs4>;
+template class CONTACT::Aug::Projector<CONTACT::Aug::EmptyProjDebugger, 3,
+    Core::FE::CellType::nurbs4, Core::FE::CellType::nurbs4>;
+template class CONTACT::Aug::Projector<CONTACT::Aug::ProjDebugger, 3, Core::FE::CellType::nurbs9,
+    Core::FE::CellType::nurbs9>;
+template class CONTACT::Aug::Projector<CONTACT::Aug::EmptyProjDebugger, 3,
+    Core::FE::CellType::nurbs9, Core::FE::CellType::nurbs9>;
+template class CONTACT::Aug::Projector<CONTACT::Aug::ProjDebugger, 3, Core::FE::CellType::nurbs4,
+    Core::FE::CellType::nurbs9>;
+template class CONTACT::Aug::Projector<CONTACT::Aug::EmptyProjDebugger, 3,
+    Core::FE::CellType::nurbs4, Core::FE::CellType::nurbs9>;
+template class CONTACT::Aug::Projector<CONTACT::Aug::ProjDebugger, 3, Core::FE::CellType::nurbs9,
+    Core::FE::CellType::nurbs4>;
+template class CONTACT::Aug::Projector<CONTACT::Aug::EmptyProjDebugger, 3,
+    Core::FE::CellType::nurbs9, Core::FE::CellType::nurbs4>;
 
 FOUR_C_NAMESPACE_CLOSE

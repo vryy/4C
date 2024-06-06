@@ -24,19 +24,19 @@ namespace ArborX
   using namespace FourC;
 
   template <>
-  struct AccessTraits<std::vector<std::pair<int, CORE::GEOMETRICSEARCH::BoundingVolume>>,
+  struct AccessTraits<std::vector<std::pair<int, Core::GeometricSearch::BoundingVolume>>,
       PrimitivesTag>
   {
     using memory_space = Kokkos::HostSpace;
 
     static std::size_t size(
-        const std::vector<std::pair<int, CORE::GEOMETRICSEARCH::BoundingVolume>>& vector)
+        const std::vector<std::pair<int, Core::GeometricSearch::BoundingVolume>>& vector)
     {
       return vector.size();
     }
 
     static auto get(
-        const std::vector<std::pair<int, CORE::GEOMETRICSEARCH::BoundingVolume>>& vector,
+        const std::vector<std::pair<int, Core::GeometricSearch::BoundingVolume>>& vector,
         std::size_t i)
     {
       return ArborX::Box{vector[i].second.bounding_volume_};
@@ -44,19 +44,19 @@ namespace ArborX
   };
 
   template <>
-  struct AccessTraits<std::vector<std::pair<int, CORE::GEOMETRICSEARCH::BoundingVolume>>,
+  struct AccessTraits<std::vector<std::pair<int, Core::GeometricSearch::BoundingVolume>>,
       PredicatesTag>
   {
     using memory_space = Kokkos::HostSpace;
 
     static std::size_t size(
-        const std::vector<std::pair<int, CORE::GEOMETRICSEARCH::BoundingVolume>>& vector)
+        const std::vector<std::pair<int, Core::GeometricSearch::BoundingVolume>>& vector)
     {
       return vector.size();
     }
 
     static auto get(
-        const std::vector<std::pair<int, CORE::GEOMETRICSEARCH::BoundingVolume>>& vector,
+        const std::vector<std::pair<int, Core::GeometricSearch::BoundingVolume>>& vector,
         std::size_t i)
     {
       auto const& vector_entry = vector[i];

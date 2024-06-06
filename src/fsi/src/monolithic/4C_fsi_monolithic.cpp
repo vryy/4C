@@ -60,21 +60,22 @@ FSI::MonolithicBase::MonolithicBase(
       isadastructure_(false),
       isadafluid_(false),
       isadasolver_(false),
-      verbosity_(CORE::UTILS::IntegralValue<INPAR::FSI::Verbosity>(
-          GLOBAL::Problem::Instance()->FSIDynamicParams(), "VERBOSITY"))
+      verbosity_(Core::UTILS::IntegralValue<Inpar::FSI::Verbosity>(
+          Global::Problem::Instance()->FSIDynamicParams(), "VERBOSITY"))
 {
   // access the discretizations
-  Teuchos::RCP<DRT::Discretization> structdis = GLOBAL::Problem::Instance()->GetDis("structure");
-  Teuchos::RCP<DRT::Discretization> fluiddis = GLOBAL::Problem::Instance()->GetDis("fluid");
-  Teuchos::RCP<DRT::Discretization> aledis = GLOBAL::Problem::Instance()->GetDis("ale");
+  Teuchos::RCP<Discret::Discretization> structdis =
+      Global::Problem::Instance()->GetDis("structure");
+  Teuchos::RCP<Discret::Discretization> fluiddis = Global::Problem::Instance()->GetDis("fluid");
+  Teuchos::RCP<Discret::Discretization> aledis = Global::Problem::Instance()->GetDis("ale");
 
   create_structure_time_integrator(timeparams, structdis);
   create_fluid_and_ale_time_integrator(timeparams, fluiddis, aledis);
 
-  coupsf_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
-  coupsa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
-  coupfa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
-  icoupfa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
+  coupsf_ = Teuchos::rcp(new Core::Adapter::Coupling());
+  coupsa_ = Teuchos::rcp(new Core::Adapter::Coupling());
+  coupfa_ = Teuchos::rcp(new Core::Adapter::Coupling());
+  icoupfa_ = Teuchos::rcp(new Core::Adapter::Coupling());
 }
 
 
@@ -93,25 +94,25 @@ void FSI::MonolithicBase::read_restart(int step)
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void FSI::MonolithicBase::create_structure_time_integrator(
-    const Teuchos::ParameterList& timeparams, Teuchos::RCP<DRT::Discretization> structdis)
+    const Teuchos::ParameterList& timeparams, Teuchos::RCP<Discret::Discretization> structdis)
 {
   // delete deprecated time integrator
   structure_ = Teuchos::null;
 
   // access structural dynamic params
-  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->structural_dynamic_params();
+  const Teuchos::ParameterList& sdyn = Global::Problem::Instance()->structural_dynamic_params();
 
   // ask base algorithm for the structural time integrator
-  Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure =
-      Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(
+  Teuchos::RCP<Adapter::StructureBaseAlgorithm> structure =
+      Teuchos::rcp(new Adapter::StructureBaseAlgorithm(
           timeparams, const_cast<Teuchos::ParameterList&>(sdyn), structdis));
   structure_ =
-      Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapper>(structure->structure_field());
+      Teuchos::rcp_dynamic_cast<Adapter::FSIStructureWrapper>(structure->structure_field());
   structure_->Setup();
 
   if (structure_ == Teuchos::null)
     FOUR_C_THROW(
-        "Cast from ADAPTER::Structure to ADAPTER::FSIStructureWrapper "
+        "Cast from Adapter::Structure to Adapter::FSIStructureWrapper "
         "failed.");
 
   return;
@@ -120,27 +121,27 @@ void FSI::MonolithicBase::create_structure_time_integrator(
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void FSI::MonolithicBase::create_fluid_and_ale_time_integrator(
-    const Teuchos::ParameterList& timeparams, Teuchos::RCP<DRT::Discretization> fluiddis,
-    Teuchos::RCP<DRT::Discretization> aledis)
+    const Teuchos::ParameterList& timeparams, Teuchos::RCP<Discret::Discretization> fluiddis,
+    Teuchos::RCP<Discret::Discretization> aledis)
 {
   // delete deprecated time integrators
   fluid_ = Teuchos::null;
   ale_ = Teuchos::null;
 
   // ask base algorithm for the fluid time integrator
-  Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(
-      timeparams, GLOBAL::Problem::Instance()->FluidDynamicParams(), "fluid", true));
-  fluid_ = Teuchos::rcp_dynamic_cast<ADAPTER::FluidFSI>(fluid->fluid_field());
+  Teuchos::RCP<Adapter::FluidBaseAlgorithm> fluid = Teuchos::rcp(new Adapter::FluidBaseAlgorithm(
+      timeparams, Global::Problem::Instance()->FluidDynamicParams(), "fluid", true));
+  fluid_ = Teuchos::rcp_dynamic_cast<Adapter::FluidFSI>(fluid->fluid_field());
 
-  if (fluid_ == Teuchos::null) FOUR_C_THROW("Cast from ADAPTER::Fluid to ADAPTER::FluidFSI failed");
+  if (fluid_ == Teuchos::null) FOUR_C_THROW("Cast from Adapter::Fluid to Adapter::FluidFSI failed");
 
   // ask base algorithm for the ale time integrator
-  Teuchos::RCP<ADAPTER::AleBaseAlgorithm> ale =
-      Teuchos::rcp(new ADAPTER::AleBaseAlgorithm(timeparams, aledis));
-  ale_ = Teuchos::rcp_dynamic_cast<ADAPTER::AleFsiWrapper>(ale->ale_field());
+  Teuchos::RCP<Adapter::AleBaseAlgorithm> ale =
+      Teuchos::rcp(new Adapter::AleBaseAlgorithm(timeparams, aledis));
+  ale_ = Teuchos::rcp_dynamic_cast<Adapter::AleFsiWrapper>(ale->ale_field());
 
   if (ale_ == Teuchos::null)
-    FOUR_C_THROW("Cast from ADAPTER::Ale to ADAPTER::AleFsiWrapper failed");
+    FOUR_C_THROW("Cast from Adapter::Ale to Adapter::AleFsiWrapper failed");
 
   return;
 }
@@ -150,7 +151,7 @@ void FSI::MonolithicBase::create_fluid_and_ale_time_integrator(
 void FSI::MonolithicBase::prepare_time_step()
 {
   increment_time_and_step();
-  if (verbosity_ >= INPAR::FSI::verbosity_low) print_header();
+  if (verbosity_ >= Inpar::FSI::verbosity_low) print_header();
   prepare_time_step_preconditioner();
   prepare_time_step_fields();
 
@@ -328,24 +329,24 @@ FSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
       log_(Teuchos::null),
       logada_(Teuchos::null)
 {
-  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
 
   // enable debugging
-  if (CORE::UTILS::IntegralValue<int>(fsidyn, "DEBUGOUTPUT") == 1)
+  if (Core::UTILS::IntegralValue<int>(fsidyn, "DEBUGOUTPUT") == 1)
   {
     sdbg_ = Teuchos::rcp(new UTILS::DebugWriter(structure_field()->discretization()));
     // fdbg_ = Teuchos::rcp(new UTILS::DebugWriter(fluid_field()->discretization()));
   }
 
   // write iterations-file
-  std::string fileiter = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
+  std::string fileiter = Global::Problem::Instance()->OutputControlFile()->FileName();
   fileiter.append(".iteration");
   log_ = Teuchos::rcp(new std::ofstream(fileiter.c_str()));
 
   // write energy-file
-  if (CORE::UTILS::IntegralValue<int>(fsidyn.sublist("MONOLITHIC SOLVER"), "ENERGYFILE") == 1)
+  if (Core::UTILS::IntegralValue<int>(fsidyn.sublist("MONOLITHIC SOLVER"), "ENERGYFILE") == 1)
   {
-    std::string fileiter2 = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
+    std::string fileiter2 = Global::Problem::Instance()->OutputControlFile()->FileName();
     fileiter2.append(".fsienergy");
     logenergy_ = Teuchos::rcp(new std::ofstream(fileiter2.c_str()));
   }
@@ -357,7 +358,7 @@ FSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
   // time step size adaptivity
   //-------------------------------------------------------------------------
   const bool timeadapton =
-      CORE::UTILS::IntegralValue<bool>(fsidyn.sublist("TIMEADAPTIVITY"), "TIMEADAPTON");
+      Core::UTILS::IntegralValue<bool>(fsidyn.sublist("TIMEADAPTIVITY"), "TIMEADAPTON");
 
   if (timeadapton)
   {
@@ -371,12 +372,12 @@ void FSI::Monolithic::SetupSystem()
 {
   // right now we use matching meshes at the interface
 
-  const int ndim = GLOBAL::Problem::Instance()->NDim();
+  const int ndim = Global::Problem::Instance()->NDim();
 
-  CORE::ADAPTER::Coupling& coupsf = structure_fluid_coupling();
-  CORE::ADAPTER::Coupling& coupsa = structure_ale_coupling();
-  CORE::ADAPTER::Coupling& coupfa = fluid_ale_coupling();
-  CORE::ADAPTER::Coupling& icoupfa = interface_fluid_ale_coupling();
+  Core::Adapter::Coupling& coupsf = structure_fluid_coupling();
+  Core::Adapter::Coupling& coupsa = structure_ale_coupling();
+  Core::Adapter::Coupling& coupfa = fluid_ale_coupling();
+  Core::Adapter::Coupling& icoupfa = interface_fluid_ale_coupling();
 
   // structure to fluid
 
@@ -422,9 +423,9 @@ void FSI::Monolithic::SetupSystem()
 /*----------------------------------------------------------------------------*/
 void FSI::Monolithic::Timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface)
 {
-  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
   const bool timeadapton =
-      CORE::UTILS::IntegralValue<bool>(fsidyn.sublist("TIMEADAPTIVITY"), "TIMEADAPTON");
+      Core::UTILS::IntegralValue<bool>(fsidyn.sublist("TIMEADAPTIVITY"), "TIMEADAPTON");
 
   // Run time loop with constant or adaptive time step size (depending on the user's will)
   if (not timeadapton)
@@ -520,11 +521,11 @@ void FSI::Monolithic::PrepareTimeloop()
   // check for prestressing,
   // do not allow monolithic in the pre-phase
   // allow monolithic in the post-phase
-  const INPAR::STR::PreStress pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(
-      GLOBAL::Problem::Instance()->structural_dynamic_params(), "PRESTRESS");
+  const Inpar::STR::PreStress pstype = Teuchos::getIntegralValue<Inpar::STR::PreStress>(
+      Global::Problem::Instance()->structural_dynamic_params(), "PRESTRESS");
   const double pstime =
-      GLOBAL::Problem::Instance()->structural_dynamic_params().get<double>("PRESTRESSTIME");
-  if (pstype != INPAR::STR::PreStress::none && Time() + Dt() <= pstime + 1.0e-15)
+      Global::Problem::Instance()->structural_dynamic_params().get<double>("PRESTRESSTIME");
+  if (pstype != Inpar::STR::PreStress::none && Time() + Dt() <= pstime + 1.0e-15)
     FOUR_C_THROW("No monolithic FSI in the pre-phase of prestressing, use Aitken!");
 
   return;
@@ -552,7 +553,7 @@ void FSI::Monolithic::TimeStep(const Teuchos::RCP<::NOX::Epetra::Interface::Requ
 
   switch (verbosity_)
   {
-    case INPAR::FSI::verbosity_full:
+    case Inpar::FSI::verbosity_full:
     {
       printParams.set(
           "Output Information", ::NOX::Utils::Error | ::NOX::Utils::Warning |
@@ -566,7 +567,7 @@ void FSI::Monolithic::TimeStep(const Teuchos::RCP<::NOX::Epetra::Interface::Requ
                                     ::NOX::Utils::Debug | 0);
       break;
     }
-    case INPAR::FSI::verbosity_medium:
+    case Inpar::FSI::verbosity_medium:
     {
       printParams.set(
           "Output Information", ::NOX::Utils::Error | ::NOX::Utils::Warning |
@@ -580,8 +581,8 @@ void FSI::Monolithic::TimeStep(const Teuchos::RCP<::NOX::Epetra::Interface::Requ
                                     ::NOX::Utils::Debug | 0);
       break;
     }
-    case INPAR::FSI::verbosity_low:
-    case INPAR::FSI::verbosity_subproblem:
+    case Inpar::FSI::verbosity_low:
+    case Inpar::FSI::verbosity_subproblem:
     {
       printParams.set(
           "Output Information", ::NOX::Utils::Error | ::NOX::Utils::Warning |
@@ -690,9 +691,9 @@ void FSI::Monolithic::TimeStep(const Teuchos::RCP<::NOX::Epetra::Interface::Requ
 /*----------------------------------------------------------------------------*/
 void FSI::Monolithic::update()
 {
-  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
   bool timeadapton =
-      CORE::UTILS::IntegralValue<int>(fsidyn.sublist("TIMEADAPTIVITY"), "TIMEADAPTON");
+      Core::UTILS::IntegralValue<int>(fsidyn.sublist("TIMEADAPTIVITY"), "TIMEADAPTON");
 
   if (not timeadapton)
     structure_field()->Update();  // constant dt
@@ -701,7 +702,7 @@ void FSI::Monolithic::update()
     structure_field()->Update(Time());  // variable/adaptive dt
 
     if (is_ada_structure())
-      Teuchos::rcp_dynamic_cast<ADAPTER::StructureFSITimIntAda>(structure_field(), true)
+      Teuchos::rcp_dynamic_cast<Adapter::StructureFSITimIntAda>(structure_field(), true)
           ->UpdateStepSize(Dt());
   }
 
@@ -726,17 +727,17 @@ void FSI::Monolithic::NonLinErrorCheck()
   // that depends on the user's will given in the input file
 
   // get the FSI parameter list
-  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
 
   // get the user's will
-  const INPAR::FSI::DivContAct divcontype = CORE::UTILS::IntegralValue<INPAR::FSI::DivContAct>(
+  const Inpar::FSI::DivContAct divcontype = Core::UTILS::IntegralValue<Inpar::FSI::DivContAct>(
       fsidyn.sublist("TIMEADAPTIVITY"), ("DIVERCONT"));
 
   if (NoxStatus() != ::NOX::StatusTest::Converged)
   {
     switch (divcontype)
     {
-      case INPAR::FSI::divcont_stop:
+      case Inpar::FSI::divcont_stop:
       {
         // set the corresponding error action
         erroraction_ = erroraction_stop;
@@ -746,7 +747,7 @@ void FSI::Monolithic::NonLinErrorCheck()
             noxiter_, Step());
         break;
       }
-      case INPAR::FSI::divcont_continue:
+      case Inpar::FSI::divcont_continue:
       {
         // set the corresponding error action
         erroraction_ = erroraction_continue;
@@ -754,19 +755,19 @@ void FSI::Monolithic::NonLinErrorCheck()
         // Notify user about non-converged nonlinear solver, but do not abort the simulation
         if (Comm().MyPID() == 0)
         {
-          CORE::IO::cout << "\n*** Nonlinear solver did not converge in " << noxiter_
+          Core::IO::cout << "\n*** Nonlinear solver did not converge in " << noxiter_
                          << " iterations in time step " << Step() << ". Continue ..."
-                         << CORE::IO::endl;
+                         << Core::IO::endl;
         }
         break;
       }
-      case INPAR::FSI::divcont_halve_step:
+      case Inpar::FSI::divcont_halve_step:
       {
         // set the corresponding error action
         erroraction_ = erroraction_halve_step;
 
         const bool timeadapton =
-            CORE::UTILS::IntegralValue<bool>(fsidyn.sublist("TIMEADAPTIVITY"), "TIMEADAPTON");
+            Core::UTILS::IntegralValue<bool>(fsidyn.sublist("TIMEADAPTIVITY"), "TIMEADAPTON");
         if (not timeadapton)
         {
           FOUR_C_THROW(
@@ -777,19 +778,19 @@ void FSI::Monolithic::NonLinErrorCheck()
         // Notify user about non-converged nonlinear solver, but do not abort the simulation
         if (Comm().MyPID() == 0)
         {
-          CORE::IO::cout << CORE::IO::endl
+          Core::IO::cout << Core::IO::endl
                          << "*** Nonlinear solver did not converge in " << noxiter_
-                         << " iterations. Halve the time step size." << CORE::IO::endl;
+                         << " iterations. Halve the time step size." << Core::IO::endl;
         }
         break;
       }
-      case INPAR::FSI::divcont_revert_dt:
+      case Inpar::FSI::divcont_revert_dt:
       {
         // set the corresponding error action
         erroraction_ = erroraction_revert_dt;
 
         const bool timeadapton =
-            CORE::UTILS::IntegralValue<bool>(fsidyn.sublist("TIMEADAPTIVITY"), "TIMEADAPTON");
+            Core::UTILS::IntegralValue<bool>(fsidyn.sublist("TIMEADAPTIVITY"), "TIMEADAPTON");
         if (not timeadapton)
         {
           FOUR_C_THROW(
@@ -800,10 +801,10 @@ void FSI::Monolithic::NonLinErrorCheck()
         // Notify user about non-converged nonlinear solver, but do not abort the simulation
         if (Comm().MyPID() == 0)
         {
-          CORE::IO::cout << CORE::IO::endl
+          Core::IO::cout << Core::IO::endl
                          << "*** Nonlinear solver did not converge in " << noxiter_
                          << " iterations. Revert the time step size to the previous one."
-                         << CORE::IO::endl;
+                         << Core::IO::endl;
         }
         break;
       }
@@ -853,19 +854,19 @@ void FSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> step_increment)
   // only. But the Jacobian is stored internally and will be returned
   // later on without looking at x again!
 
-  if (verbosity_ >= INPAR::FSI::verbosity_medium) utils()->out() << "\nEvaluate elements\n";
+  if (verbosity_ >= Inpar::FSI::verbosity_medium) utils()->out() << "\nEvaluate elements\n";
 
   {
     Teuchos::Time ts("structure", true);
     structure_field()->Evaluate(sx);
-    if (verbosity_ >= INPAR::FSI::verbosity_medium)
+    if (verbosity_ >= Inpar::FSI::verbosity_medium)
       utils()->out() << "structure: " << ts.totalElapsedTime(true) << " sec\n";
   }
 
   {
     Teuchos::Time ta("ale", true);
     ale_field()->Evaluate(ax);
-    if (verbosity_ >= INPAR::FSI::verbosity_medium)
+    if (verbosity_ >= Inpar::FSI::verbosity_medium)
       utils()->out() << "ale      : " << ta.totalElapsedTime(true) << " sec\n";
   }
 
@@ -876,18 +877,18 @@ void FSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> step_increment)
   {
     Teuchos::Time tf("fluid", true);
     fluid_field()->Evaluate(fx);
-    if (verbosity_ >= INPAR::FSI::verbosity_medium)
+    if (verbosity_ >= Inpar::FSI::verbosity_medium)
       utils()->out() << "fluid    : " << tf.totalElapsedTime(true) << " sec\n";
   }
 
-  if (verbosity_ >= INPAR::FSI::verbosity_medium) utils()->out() << "\n";
+  if (verbosity_ >= Inpar::FSI::verbosity_medium) utils()->out() << "\n";
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void FSI::Monolithic::set_dof_row_maps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps)
 {
-  Teuchos::RCP<Epetra_Map> fullmap = CORE::LINALG::MultiMapExtractor::MergeMaps(maps);
+  Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::MergeMaps(maps);
   blockrowdofmap_.Setup(*fullmap, maps);
 }
 
@@ -970,7 +971,7 @@ void FSI::Monolithic::set_default_parameters(
   lsParams.set<double>("base tolerance", fsimono.get<double>("BASETOL"));  // relative tolerance
   lsParams.set<double>(
       "adaptive distance", fsimono.get<double>("ADAPTIVEDIST"));  // adaptive distance
-  lsParams.set<INPAR::FSI::Verbosity>("verbosity", verbosity_);  // verbosity level of FSI algorithm
+  lsParams.set<Inpar::FSI::Verbosity>("verbosity", verbosity_);  // verbosity level of FSI algorithm
 }
 
 /*----------------------------------------------------------------------------*/
@@ -1037,7 +1038,7 @@ void FSI::Monolithic::setup_rhs(Epetra_Vector& f, bool firstcall)
     // Finally, we take care of Dirichlet boundary conditions
     Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(f));
     Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(f.Map(), true));
-    CORE::LINALG::apply_dirichlet_to_system(*rhs, *zeros, *(dbcmaps_->CondMap()));
+    Core::LinAlg::apply_dirichlet_to_system(*rhs, *zeros, *(dbcmaps_->CondMap()));
     f.Update(1.0, *rhs, 0.0);
   }
 
@@ -1102,8 +1103,8 @@ bool FSI::BlockMonolithic::computeJacobian(const Epetra_Vector& x, Epetra_Operat
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::BlockMonolithic::computeJacobian");
   Evaluate(Teuchos::rcp(&x, false));
-  CORE::LINALG::BlockSparseMatrixBase& mat =
-      Teuchos::dyn_cast<CORE::LINALG::BlockSparseMatrixBase>(Jac);
+  Core::LinAlg::BlockSparseMatrixBase& mat =
+      Teuchos::dyn_cast<Core::LinAlg::BlockSparseMatrixBase>(Jac);
   setup_system_matrix(mat);
   return true;
 }
@@ -1121,7 +1122,7 @@ bool FSI::BlockMonolithic::computePreconditioner(
     // the perfect place to initialize the block preconditioners.
     SystemMatrix()->SetupPreconditioner();
 
-    const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
+    const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
     const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
     precondreusecount_ = fsimono.get<int>("PRECONDREUSE");
   }
@@ -1141,17 +1142,17 @@ bool FSI::BlockMonolithic::computePreconditioner(
 void FSI::BlockMonolithic::prepare_time_step_preconditioner()
 {
   const Teuchos::ParameterList& fsimono =
-      GLOBAL::Problem::Instance()->FSIDynamicParams().sublist("MONOLITHIC SOLVER");
+      Global::Problem::Instance()->FSIDynamicParams().sublist("MONOLITHIC SOLVER");
 
-  if (CORE::UTILS::IntegralValue<int>(fsimono, "REBUILDPRECEVERYSTEP")) precondreusecount_ = 0;
+  if (Core::UTILS::IntegralValue<int>(fsimono, "REBUILDPRECEVERYSTEP")) precondreusecount_ = 0;
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void FSI::BlockMonolithic::create_system_matrix(
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>& mat, bool structuresplit)
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>& mat, bool structuresplit)
 {
-  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
 
   std::vector<int> pciter;
@@ -1205,36 +1206,36 @@ void FSI::BlockMonolithic::create_system_matrix(
     }
   }
 
-  INPAR::FSI::LinearBlockSolver linearsolverstrategy =
-      CORE::UTILS::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
+  Inpar::FSI::LinearBlockSolver linearsolverstrategy =
+      Core::UTILS::IntegralValue<Inpar::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
 
   // create block system matrix
   switch (linearsolverstrategy)
   {
-    case INPAR::FSI::PreconditionedKrylov:
+    case Inpar::FSI::PreconditionedKrylov:
     {
       mat = Teuchos::rcp(new OverlappingBlockMatrixFSIAMG(extractor(), *structure_field(),
           *fluid_field(), *ale_field(), structuresplit,
-          CORE::UTILS::IntegralValue<int>(fsimono, "SYMMETRICPRECOND"), blocksmoother, schuromega,
+          Core::UTILS::IntegralValue<int>(fsimono, "SYMMETRICPRECOND"), blocksmoother, schuromega,
           pcomega, pciter, spcomega, spciter, fpcomega, fpciter, apcomega, apciter,
-          CORE::UTILS::IntegralValue<int>(fsimono, "FSIAMGANALYZE"), linearsolverstrategy,
+          Core::UTILS::IntegralValue<int>(fsimono, "FSIAMGANALYZE"), linearsolverstrategy,
           verbosity_));
       break;
     }
-    case INPAR::FSI::HybridSchwarz:
+    case Inpar::FSI::HybridSchwarz:
     {
       mat = Teuchos::rcp(new OverlappingBlockMatrixHybridSchwarz(extractor(), *structure_field(),
           *fluid_field(), *ale_field(), structuresplit,
-          CORE::UTILS::IntegralValue<int>(fsimono, "SYMMETRICPRECOND"), blocksmoother, schuromega,
+          Core::UTILS::IntegralValue<int>(fsimono, "SYMMETRICPRECOND"), blocksmoother, schuromega,
           pcomega, pciter, spcomega, spciter, fpcomega, fpciter, apcomega, apciter,
-          CORE::UTILS::IntegralValue<int>(fsimono, "FSIAMGANALYZE"), linearsolverstrategy,
+          Core::UTILS::IntegralValue<int>(fsimono, "FSIAMGANALYZE"), linearsolverstrategy,
           interfaceprocs_, verbosity_));
       break;
     }
-    case INPAR::FSI::LinalgSolver:
+    case Inpar::FSI::LinalgSolver:
     {
       mat = Teuchos::rcp(
-          new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
+          new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
               extractor(), extractor(), 81, false, true));
       break;
     }
@@ -1264,21 +1265,21 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::BlockMonolithic::create_linear_sy
   const Teuchos::RCP<Epetra_Operator> J = SystemMatrix();
   const Teuchos::RCP<Epetra_Operator> M = SystemMatrix();
 
-  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
-  INPAR::FSI::LinearBlockSolver linearsolverstrategy =
-      CORE::UTILS::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
+  Inpar::FSI::LinearBlockSolver linearsolverstrategy =
+      Core::UTILS::IntegralValue<Inpar::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
 
   switch (linearsolverstrategy)
   {
-    case INPAR::FSI::PreconditionedKrylov:
-    case INPAR::FSI::HybridSchwarz:
+    case Inpar::FSI::PreconditionedKrylov:
+    case Inpar::FSI::HybridSchwarz:
     {
       linSys = Teuchos::rcp(new ::NOX::Epetra::LinearSystemAztecOO(printParams, lsParams,
           Teuchos::rcp(iJac, false), J, Teuchos::rcp(iPrec, false), M, noxSoln));
       break;
     }
-    case INPAR::FSI::LinalgSolver:
+    case Inpar::FSI::LinalgSolver:
     {
       const int linsolvernumber = fsimono.get<int>("LINEAR_SOLVER");
       if (linsolvernumber == -1)
@@ -1287,50 +1288,50 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::BlockMonolithic::create_linear_sy
             "DYNAMIC/MONOLITHIC SOLVER to a valid number!");
 
       const Teuchos::ParameterList& fsisolverparams =
-          GLOBAL::Problem::Instance()->SolverParams(linsolvernumber);
+          Global::Problem::Instance()->SolverParams(linsolvernumber);
 
-      auto solver = Teuchos::rcp(new CORE::LINALG::Solver(fsisolverparams, Comm()));
+      auto solver = Teuchos::rcp(new Core::LinAlg::Solver(fsisolverparams, Comm()));
 
-      const auto azprectype = Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::PreconditionerType>(
+      const auto azprectype = Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(
           fsisolverparams, "AZPREC");
 
       switch (azprectype)
       {
-        case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu_fsi:
+        case Core::LinearSolver::PreconditionerType::multigrid_muelu_fsi:
         {
           solver->put_solver_params_to_sub_params("Inverse1", fsisolverparams);
-          // This might be an alternative to "CORE::LINALG::FixNullspace()", directly calculate
+          // This might be an alternative to "Core::LinAlg::FixNullspace()", directly calculate
           // nullspace on correct map
           // solver->Params().sublist("Inverse1").set<Teuchos::RCP<Epetra_Map>>("null space: map",
           // Teuchos::rcp(new Epetra_Map(SystemMatrix()->Matrix(0,0).RowMap())));
           structure_field()->discretization()->compute_null_space_if_necessary(
               solver->Params().sublist("Inverse1"));
-          CORE::LINEAR_SOLVER::Parameters::FixNullSpace("Structure",
+          Core::LinearSolver::Parameters::FixNullSpace("Structure",
               *structure_field()->discretization()->dof_row_map(),
               SystemMatrix()->Matrix(0, 0).EpetraMatrix()->RowMap(),
               solver->Params().sublist("Inverse1"));
 
           solver->put_solver_params_to_sub_params("Inverse2", fsisolverparams);
-          // This might be an alternative to "CORE::LINALG::FixNullspace()", directly calculate
+          // This might be an alternative to "Core::LinAlg::FixNullspace()", directly calculate
           // nullspace on correct map
           // solver->Params().sublist("Inverse2").set<Teuchos::RCP<Epetra_Map>>("null space: map",
           // Teuchos::rcp(new Epetra_Map(SystemMatrix()->Matrix(1,1).RowMap())));
           fluid_field()->discretization()->compute_null_space_if_necessary(
               solver->Params().sublist("Inverse2"));
-          CORE::LINEAR_SOLVER::Parameters::FixNullSpace("Fluid",
+          Core::LinearSolver::Parameters::FixNullSpace("Fluid",
               *fluid_field()->discretization()->dof_row_map(),
               SystemMatrix()->Matrix(1, 1).EpetraMatrix()->RowMap(),
               solver->Params().sublist("Inverse2"));
 
           solver->put_solver_params_to_sub_params("Inverse3", fsisolverparams);
-          // This might be an alternative to "CORE::LINALG::FixNullspace()", directly calculate
+          // This might be an alternative to "Core::LinAlg::FixNullspace()", directly calculate
           // nullspace on correct map
           // solver->Params().sublist("Inverse3").set<Teuchos::RCP<Epetra_Map>>("null space: map",
           // Teuchos::rcp(new Epetra_Map(SystemMatrix()->Matrix(2,2).RowMap()))); we have to cast
           // the const on the ale discretization away!
-          const_cast<DRT::Discretization&>(*(ale_field()->discretization()))
+          const_cast<Discret::Discretization&>(*(ale_field()->discretization()))
               .compute_null_space_if_necessary(solver->Params().sublist("Inverse3"));
-          CORE::LINEAR_SOLVER::Parameters::FixNullSpace("Ale",
+          Core::LinearSolver::Parameters::FixNullSpace("Ale",
               *ale_field()->discretization()->dof_row_map(),
               SystemMatrix()->Matrix(2, 2).EpetraMatrix()->RowMap(),
               solver->Params().sublist("Inverse3"));

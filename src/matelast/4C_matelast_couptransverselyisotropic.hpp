@@ -18,9 +18,9 @@ strain computations
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
-  namespace ELASTIC
+  namespace Elastic
   {
     namespace PAR
     {
@@ -61,14 +61,14 @@ namespace MAT
        *
        * H. Schuermann, "Konstruieren mit Faser-Kunststoff-Verbunden", Springer, 2005.
        */
-      class CoupTransverselyIsotropic : public MAT::PAR::ParameterAniso
+      class CoupTransverselyIsotropic : public Mat::PAR::ParameterAniso
       {
        public:
         /// no default constructor
         CoupTransverselyIsotropic() = delete;
 
         /// standard constructor
-        explicit CoupTransverselyIsotropic(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
+        explicit CoupTransverselyIsotropic(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
 
         /// alpha parameter of the constitutive law
         double alpha_ = 0.0;
@@ -94,11 +94,11 @@ namespace MAT
        private:
         /// Override this method and throw error, as the material should be created in within the
         /// Factory method of the elastic summand
-        Teuchos::RCP<CORE::MAT::Material> create_material() override
+        Teuchos::RCP<Core::Mat::Material> create_material() override
         {
           FOUR_C_THROW(
               "Cannot create a material from this method, as it should be created in "
-              "MAT::ELASTIC::Summand::Factory.");
+              "Mat::Elastic::Summand::Factory.");
           return Teuchos::null;
         };
       };  // class CoupAnisoSimple
@@ -119,7 +119,7 @@ namespace MAT
      */
     class CoupTransverselyIsotropic : public Summand
     {
-      using my_params = MAT::ELASTIC::PAR::CoupTransverselyIsotropic;
+      using my_params = Mat::Elastic::PAR::CoupTransverselyIsotropic;
 
      public:
       /// no default constructor
@@ -131,7 +131,7 @@ namespace MAT
       /// @name Packing and Unpacking
       /// @{
 
-      void PackSummand(CORE::COMM::PackBuffer& data) const override;
+      void PackSummand(Core::Communication::PackBuffer& data) const override;
 
       void UnpackSummand(
           const std::vector<char>& data, std::vector<char>::size_type& position) override;
@@ -139,13 +139,13 @@ namespace MAT
       /// @}
 
       /// material type
-      CORE::Materials::MaterialType MaterialType() const override
+      Core::Materials::MaterialType MaterialType() const override
       {
-        return CORE::Materials::mes_couptransverselyisotropic;
+        return Core::Materials::mes_couptransverselyisotropic;
       }
 
       /// Setup of summand
-      void Setup(int numgp, INPUT::LineDefinition* linedef) override;
+      void Setup(int numgp, Input::LineDefinition* linedef) override;
 
       /*!
        * \brief add strain energy [derived]
@@ -165,8 +165,8 @@ namespace MAT
        * \param[in]  go       Gauss point
        * \param[in]  eleGID   element global ID
        */
-      void AddStrainEnergy(double& psi, const CORE::LINALG::Matrix<3, 1>& prinv,
-          const CORE::LINALG::Matrix<3, 1>& modinv, const CORE::LINALG::Matrix<6, 1>& glstrain,
+      void AddStrainEnergy(double& psi, const Core::LinAlg::Matrix<3, 1>& prinv,
+          const Core::LinAlg::Matrix<3, 1>& modinv, const Core::LinAlg::Matrix<6, 1>& glstrain,
           const int gp, const int eleGID) override;
 
       /*!
@@ -179,8 +179,8 @@ namespace MAT
        * \param[in]  go       Gauss point
        * \param[in]  eleGID element GID
        */
-      void add_stress_aniso_principal(const CORE::LINALG::Matrix<6, 1>& rcg,
-          CORE::LINALG::Matrix<6, 6>& cmat, CORE::LINALG::Matrix<6, 1>& stress,
+      void add_stress_aniso_principal(const Core::LinAlg::Matrix<6, 1>& rcg,
+          Core::LinAlg::Matrix<6, 6>& cmat, Core::LinAlg::Matrix<6, 1>& stress,
           Teuchos::ParameterList& params, const int gp, const int eleGID) override;
 
       /*!
@@ -190,12 +190,12 @@ namespace MAT
        * \param[in] locsys    local coordinate system
        * \param[in] defgrd    deformation gradient
        */
-      void SetFiberVecs(const double newangle, const CORE::LINALG::Matrix<3, 3>& locsys,
-          const CORE::LINALG::Matrix<3, 3>& defgrd) override;
+      void SetFiberVecs(const double newangle, const Core::LinAlg::Matrix<3, 3>& locsys,
+          const Core::LinAlg::Matrix<3, 3>& defgrd) override;
 
       /// Get fiber directions
       void GetFiberVecs(
-          std::vector<CORE::LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
+          std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
           ) override;
 
       /*!
@@ -222,7 +222,7 @@ namespace MAT
        * \param[in] param parameter list pointer (optional)
        */
       int reset_invariants(
-          const CORE::LINALG::Matrix<6, 1>& rcg, const Teuchos::ParameterList* params = nullptr);
+          const Core::LinAlg::Matrix<6, 1>& rcg, const Teuchos::ParameterList* params = nullptr);
 
       /*!
        * \brief Add the material contributions to the second Piola Kirchhoff stress tensor
@@ -251,8 +251,8 @@ namespace MAT
        * \param[out] rcg_inv_s  Inverse of the right Cauchy green strain tensor
        *                        in perturbed Voigt stress notation
        */
-      void update_second_piola_kirchhoff_stress(CORE::LINALG::Matrix<6, 1>& stress,
-          const CORE::LINALG::Matrix<6, 1>& rcg_s, CORE::LINALG::Matrix<6, 1>& rcg_inv_s) const;
+      void update_second_piola_kirchhoff_stress(Core::LinAlg::Matrix<6, 1>& stress,
+          const Core::LinAlg::Matrix<6, 1>& rcg_s, Core::LinAlg::Matrix<6, 1>& rcg_inv_s) const;
 
       /*!
        * \brief Update the elasticity tensor
@@ -289,7 +289,7 @@ namespace MAT
        *                        stress notation
        */
       void update_elasticity_tensor(
-          CORE::LINALG::Matrix<6, 6>& cmat, const CORE::LINALG::Matrix<6, 1>& rcg_inv_s) const;
+          Core::LinAlg::Matrix<6, 6>& cmat, const Core::LinAlg::Matrix<6, 1>& rcg_inv_s) const;
 
       /// error handling in case of a negative deformation gradient determinant
       void error_handling(const Teuchos::ParameterList* params, std::stringstream& msg) const;
@@ -299,14 +299,14 @@ namespace MAT
       my_params* params_ = nullptr;
 
       /// fiber direction
-      CORE::LINALG::Matrix<3, 1> a_;
+      Core::LinAlg::Matrix<3, 1> a_;
 
       /** \brief outer product of the fiber directions
        * \f$ \underline{A} \otimes \underline{A}\f$
        *
        * \note We are following a perturbed Voigt notation:
        * {11, 22, 33, 12, 23, 13}. */
-      CORE::LINALG::Matrix<6, 1> aa_;
+      Core::LinAlg::Matrix<6, 1> aa_;
 
       /// pseudo invariant \f$ I_4 \f$ ( strain measure in fiber direction )
       double i4_ = 0.0;
@@ -318,8 +318,8 @@ namespace MAT
       double j_ = 0.0;
     };  // class CoupAnisoSimple
 
-  }  // namespace ELASTIC
-}  // namespace MAT
+  }  // namespace Elastic
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -22,8 +22,8 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 THR::TimIntStatics::TimIntStatics(const Teuchos::ParameterList& ioparams,
     const Teuchos::ParameterList& tdynparams, const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver,
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
+    Teuchos::RCP<Discret::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : TimIntImpl(ioparams, tdynparams, xparams, actdis, solver, output),
       fint_(Teuchos::null),
       fintn_(Teuchos::null),
@@ -39,15 +39,15 @@ THR::TimIntStatics::TimIntStatics(const Teuchos::ParameterList& ioparams,
   //! create force vectors
 
   //! internal force vector F_{int;n} at last time
-  fint_ = CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);
+  fint_ = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
   //! internal force vector F_{int;n+1} at new time
-  fintn_ = CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);
+  fintn_ = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
   //! set initial internal force vector
   apply_force_tang_internal((*time_)[0], (*dt_)[0], (*temp_)(0), zeros_, fint_, tang_);
   //! external force vector F_ext at last times
-  fext_ = CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);
+  fext_ = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
   //! external force vector F_{n+1} at new time
-  fextn_ = CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);
+  fextn_ = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
 
   // set initial external force vector of convective heat transfer boundary
   // conditions
@@ -133,7 +133,7 @@ double THR::TimIntStatics::calc_ref_norm_temperature()
   //! points within the timestep (end point, generalized midpoint).
 
   double charnormtemp = 0.0;
-  charnormtemp = THR::AUX::calculate_vector_norm(iternorm_, (*temp_)(0));
+  charnormtemp = THR::Aux::calculate_vector_norm(iternorm_, (*temp_)(0));
 
   //! rise your hat
   return charnormtemp;
@@ -154,15 +154,15 @@ double THR::TimIntStatics::CalcRefNormForce()
 
   //! norm of the internal forces
   double fintnorm = 0.0;
-  fintnorm = THR::AUX::calculate_vector_norm(iternorm_, fintn_);
+  fintnorm = THR::Aux::calculate_vector_norm(iternorm_, fintn_);
 
   //! norm of the external forces
   double fextnorm = 0.0;
-  fextnorm = THR::AUX::calculate_vector_norm(iternorm_, fextn_);
+  fextnorm = THR::Aux::calculate_vector_norm(iternorm_, fextn_);
 
   //! norm of reaction forces
   double freactnorm = 0.0;
-  freactnorm = THR::AUX::calculate_vector_norm(iternorm_, freact_);
+  freactnorm = THR::Aux::calculate_vector_norm(iternorm_, freact_);
 
   //! return char norm
   return std::max(fintnorm, std::max(fextnorm, freactnorm));
@@ -256,7 +256,7 @@ void THR::TimIntStatics::ReadRestartForce()
 /*----------------------------------------------------------------------*
  | write internal and external forces for restart            dano 07/13 |
  *----------------------------------------------------------------------*/
-void THR::TimIntStatics::WriteRestartForce(Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
+void THR::TimIntStatics::WriteRestartForce(Teuchos::RCP<Core::IO::DiscretizationWriter> output)
 {
   // do nothing
   return;
@@ -272,7 +272,7 @@ void THR::TimIntStatics::apply_force_tang_internal(const double time,  //!< eval
     const Teuchos::RCP<Epetra_Vector> temp,                            //!< temperature state
     const Teuchos::RCP<Epetra_Vector> tempi,                           //!< residual temperatures
     Teuchos::RCP<Epetra_Vector> fint,                                  //!< internal force
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> tang                      //!< tangent matrix
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> tang                      //!< tangent matrix
 )
 {
   //! create the parameters for the discretization
@@ -317,7 +317,7 @@ void THR::TimIntStatics::apply_force_external_conv(const double time,  //!< eval
     const Teuchos::RCP<Epetra_Vector> tempn,       //!< old temperature state T_n
     const Teuchos::RCP<Epetra_Vector> temp,        //!< temperature state T_n+1
     Teuchos::RCP<Epetra_Vector> fext,              //!< external force
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> tang  //!< tangent matrix
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> tang  //!< tangent matrix
 )
 {
   // create the parameters for the discretization

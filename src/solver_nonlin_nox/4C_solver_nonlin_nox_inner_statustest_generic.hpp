@@ -21,9 +21,9 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
-    namespace INNER
+    namespace Inner
     {
       namespace StatusTest
       {
@@ -65,7 +65,7 @@ namespace NOX
             case status_converged:
               return "status_converged";
             default:
-              return "Unknown NOX:NLN:INNER::StatusTest::StatusType";
+              return "Unknown NOX:NLN:Inner::StatusTest::StatusType";
           }
         }
 
@@ -97,8 +97,8 @@ namespace NOX
         // non-member function
         std::ostream& operator<<(std::ostream& os, StatusType type);
       }  // namespace StatusTest
-    }    // namespace INNER
-  }      // namespace NLN
+    }    // namespace Inner
+  }      // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

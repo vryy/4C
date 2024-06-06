@@ -36,7 +36,7 @@ namespace MIXTURE
      public:
       /// constructor
       explicit IsotropicCylinderPrestressStrategy(
-          const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
+          const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
 
       /// create prestress strategy instance of matching type with my parameters
       std::unique_ptr<MIXTURE::PrestressStrategy> create_prestress_strategy() override;
@@ -77,8 +77,8 @@ namespace MIXTURE
      * @param eleGID (in) : Global element id
      */
     void EvaluatePrestress(const MixtureRule& mixtureRule,
-        const Teuchos::RCP<const MAT::CoordinateSystemProvider> cosy,
-        MIXTURE::MixtureConstituent& constituent, CORE::LINALG::Matrix<3, 3>& G,
+        const Teuchos::RCP<const Mat::CoordinateSystemProvider> cosy,
+        MIXTURE::MixtureConstituent& constituent, Core::LinAlg::Matrix<3, 3>& G,
         Teuchos::ParameterList& params, int gp, int eleGID) override;
 
     /*!
@@ -94,13 +94,13 @@ namespace MIXTURE
      * \return double Fraction of the membrane stress contribution to ensure equilibrium
      */
     double EvaluateMueFrac(MixtureRule& mixtureRule,
-        const Teuchos::RCP<const MAT::CoordinateSystemProvider> cosy,
+        const Teuchos::RCP<const Mat::CoordinateSystemProvider> cosy,
         MIXTURE::MixtureConstituent& constituent, ElastinMembraneEvaluation& membraneEvaluation,
         Teuchos::ParameterList& params, int gp, int eleGID) const override;
 
-    void Update(const Teuchos::RCP<const MAT::CoordinateSystemProvider> anisotropy,
-        MIXTURE::MixtureConstituent& constituent, const CORE::LINALG::Matrix<3, 3>& F,
-        CORE::LINALG::Matrix<3, 3>& G, Teuchos::ParameterList& params, int gp, int eleGID) override;
+    void Update(const Teuchos::RCP<const Mat::CoordinateSystemProvider> anisotropy,
+        MIXTURE::MixtureConstituent& constituent, const Core::LinAlg::Matrix<3, 3>& F,
+        Core::LinAlg::Matrix<3, 3>& G, Teuchos::ParameterList& params, int gp, int eleGID) override;
 
    private:
     /// Holder for internal parameters

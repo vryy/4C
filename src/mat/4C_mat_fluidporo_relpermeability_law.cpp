@@ -17,35 +17,35 @@
 FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::PAR::FluidPoroRelPermeabilityLaw*
-MAT::PAR::FluidPoroRelPermeabilityLaw::create_rel_permeability_law(int matID)
+Mat::PAR::FluidPoroRelPermeabilityLaw*
+Mat::PAR::FluidPoroRelPermeabilityLaw::create_rel_permeability_law(int matID)
 {
   // initialize null pointer
-  MAT::PAR::FluidPoroRelPermeabilityLaw* relpermeabilitylaw = nullptr;
+  Mat::PAR::FluidPoroRelPermeabilityLaw* relpermeabilitylaw = nullptr;
 
   // retrieve problem instance to read from
-  const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
+  const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
 
   // for the sake of safety
-  if (GLOBAL::Problem::Instance(probinst)->Materials() == Teuchos::null)
+  if (Global::Problem::Instance(probinst)->Materials() == Teuchos::null)
     FOUR_C_THROW("List of materials cannot be accessed in the global problem instance.");
   // yet another safety check
-  if (GLOBAL::Problem::Instance(probinst)->Materials()->Num() == 0)
+  if (Global::Problem::Instance(probinst)->Materials()->Num() == 0)
     FOUR_C_THROW("List of materials in the global problem instance is empty.");
 
   // retrieve validated input line of material ID in question
-  auto* curmat = GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matID);
+  auto* curmat = Global::Problem::Instance(probinst)->Materials()->ParameterById(matID);
 
   switch (curmat->Type())
   {
-    case CORE::Materials::m_fluidporo_relpermeabilitylaw_constant:
+    case Core::Materials::m_fluidporo_relpermeabilitylaw_constant:
     {
-      relpermeabilitylaw = static_cast<MAT::PAR::FluidPoroRelPermeabilityLawConstant*>(curmat);
+      relpermeabilitylaw = static_cast<Mat::PAR::FluidPoroRelPermeabilityLawConstant*>(curmat);
       break;
     }
-    case CORE::Materials::m_fluidporo_relpermeabilitylaw_exp:
+    case Core::Materials::m_fluidporo_relpermeabilitylaw_exp:
     {
-      relpermeabilitylaw = static_cast<MAT::PAR::FluidPoroRelPermeabilityLawExponent*>(curmat);
+      relpermeabilitylaw = static_cast<Mat::PAR::FluidPoroRelPermeabilityLawExponent*>(curmat);
       break;
     }
     default:
@@ -57,8 +57,8 @@ MAT::PAR::FluidPoroRelPermeabilityLaw::create_rel_permeability_law(int matID)
 }
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::PAR::FluidPoroRelPermeabilityLawConstant::FluidPoroRelPermeabilityLawConstant(
-    Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::FluidPoroRelPermeabilityLawConstant::FluidPoroRelPermeabilityLawConstant(
+    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : FluidPoroRelPermeabilityLaw(matdata, true), relpermeability_(matdata->Get<double>("VALUE"))
 {
   if (relpermeability_ > 1.0)
@@ -69,8 +69,8 @@ MAT::PAR::FluidPoroRelPermeabilityLawConstant::FluidPoroRelPermeabilityLawConsta
 }
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::PAR::FluidPoroRelPermeabilityLawExponent::FluidPoroRelPermeabilityLawExponent(
-    Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::FluidPoroRelPermeabilityLawExponent::FluidPoroRelPermeabilityLawExponent(
+    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : FluidPoroRelPermeabilityLaw(matdata, false),
       exp_(matdata->Get<double>("EXP")),
       minsat_(matdata->Get<double>("MIN_SAT"))

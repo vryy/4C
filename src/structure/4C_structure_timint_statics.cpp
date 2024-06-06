@@ -22,9 +22,9 @@ FOUR_C_NAMESPACE_OPEN
 /* constructor */
 STR::TimIntStatics::TimIntStatics(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioparams, const Teuchos::ParameterList& sdynparams,
-    const Teuchos::ParameterList& xparams, Teuchos::RCP<DRT::Discretization> actdis,
-    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<CORE::LINALG::Solver> contactsolver,
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
+    const Teuchos::ParameterList& xparams, Teuchos::RCP<Discret::Discretization> actdis,
+    Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Core::LinAlg::Solver> contactsolver,
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : TimIntImpl(timeparams, ioparams, sdynparams, xparams, actdis, solver, contactsolver, output),
       fint_(Teuchos::null),
       fintn_(Teuchos::null),
@@ -44,16 +44,16 @@ STR::TimIntStatics::TimIntStatics(const Teuchos::ParameterList& timeparams,
  *----------------------------------------------------------------------------------------------*/
 void STR::TimIntStatics::Init(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver)
+    Teuchos::RCP<Discret::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver)
 {
   // call Init() in base class
   STR::TimIntImpl::Init(timeparams, sdynparams, xparams, actdis, solver);
 
-  auto dyntype = CORE::UTILS::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP");
-  const INPAR::STR::PreStress pre_stress_type = Teuchos::getIntegralValue<INPAR::STR::PreStress>(
-      GLOBAL::Problem::Instance()->structural_dynamic_params(), "PRESTRESS");
+  auto dyntype = Core::UTILS::IntegralValue<Inpar::STR::DynamicType>(sdynparams, "DYNAMICTYP");
+  const Inpar::STR::PreStress pre_stress_type = Teuchos::getIntegralValue<Inpar::STR::PreStress>(
+      Global::Problem::Instance()->structural_dynamic_params(), "PRESTRESS");
 
-  if (pre_stress_type != INPAR::STR::PreStress::none && dyntype != INPAR::STR::dyna_statics)
+  if (pre_stress_type != Inpar::STR::PreStress::none && dyntype != Inpar::STR::dyna_statics)
   {
     FOUR_C_THROW(
         "Paranoia Error: PRESTRESS is only allowed in combinations with DYNAMICTYPE Statics!!");
@@ -63,10 +63,10 @@ void STR::TimIntStatics::Init(const Teuchos::ParameterList& timeparams,
   if (myrank_ == 0 && bool(printscreen_))
   {
     // check if we are in prestressing mode
-    if (pre_stress_type == INPAR::STR::PreStress::mulf)
-      CORE::IO::cout << "with static MULF prestress" << CORE::IO::endl;
+    if (pre_stress_type == Inpar::STR::PreStress::mulf)
+      Core::IO::cout << "with static MULF prestress" << Core::IO::endl;
     else
-      CORE::IO::cout << "with statics" << CORE::IO::endl;
+      Core::IO::cout << "with statics" << Core::IO::endl;
   }
 
   // have a nice day
@@ -84,16 +84,16 @@ void STR::TimIntStatics::Setup()
   // create force vectors
 
   // internal force vector F_{int;n+1} at new time
-  fintn_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  fintn_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
 
   // external force vector F_{n+1} at new time
-  fextn_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  fextn_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
 
   // internal force vector F_{int;n} at new time
-  fint_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  fint_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
 
   // external force vector F_{n} at new time
-  fext_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  fext_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
 
   return;
 }
@@ -133,9 +133,9 @@ void STR::TimIntStatics::predict_const_vel_consist_acc()
   else
   {
     // Displacement increment over last time step
-    Teuchos::RCP<Epetra_Vector> disp_inc = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+    Teuchos::RCP<Epetra_Vector> disp_inc = Core::LinAlg::CreateVector(*DofRowMapView(), true);
     disp_inc->Update((*dt_)[0], *(*vel_)(0), 0.);
-    CORE::LINALG::apply_dirichlet_to_system(*disp_inc, *zeros_, *(dbcmaps_->CondMap()));
+    Core::LinAlg::apply_dirichlet_to_system(*disp_inc, *zeros_, *(dbcmaps_->CondMap()));
     disn_->Update(1.0, *(*dis_)(0), 0.0);
     disn_->Update(1., *disp_inc, 1.);
     veln_->Update(1.0, *(*vel_)(0), 0.0);
@@ -165,10 +165,10 @@ void STR::TimIntStatics::PredictConstAcc()
   else
   {
     // Displacement increment over last time step
-    Teuchos::RCP<Epetra_Vector> disp_inc = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+    Teuchos::RCP<Epetra_Vector> disp_inc = Core::LinAlg::CreateVector(*DofRowMapView(), true);
     disp_inc->Update((*dt_)[0], *(*vel_)(0), 0.);
     disp_inc->Update(.5 * (*dt_)[0] * (*dt_)[0], *(*acc_)(0), 1.);
-    CORE::LINALG::apply_dirichlet_to_system(*disp_inc, *zeros_, *(dbcmaps_->CondMap()));
+    Core::LinAlg::apply_dirichlet_to_system(*disp_inc, *zeros_, *(dbcmaps_->CondMap()));
     disn_->Update(1.0, *(*dis_)(0), 0.0);
     disn_->Update(1., *disp_inc, 1.);
     veln_->Update(1.0, *(*vel_)(0), 0.0);
@@ -239,7 +239,7 @@ void STR::TimIntStatics::evaluate_force_stiff_residual(Teuchos::ParameterList& p
   {
     fresn_str_->Update(1., *fintn_str_, 0.);
     fresn_str_->Update(-1., *fextn_, 1.);
-    CORE::LINALG::apply_dirichlet_to_system(*fresn_str_, *zeros_, *(dbcmaps_->CondMap()));
+    Core::LinAlg::apply_dirichlet_to_system(*fresn_str_, *zeros_, *(dbcmaps_->CondMap()));
   }
 
   // build tangent matrix : effective dynamic stiffness matrix
@@ -309,7 +309,7 @@ void STR::TimIntStatics::evaluate_force_residual()
   {
     fresn_str_->Update(1., *fintn_str_, 0.);
     fresn_str_->Update(-1., *fextn_, 1.);
-    CORE::LINALG::apply_dirichlet_to_system(*fresn_str_, *zeros_, *(dbcmaps_->CondMap()));
+    Core::LinAlg::apply_dirichlet_to_system(*fresn_str_, *zeros_, *(dbcmaps_->CondMap()));
   }
 
   return;
@@ -368,10 +368,10 @@ void STR::TimIntStatics::UpdateStepState()
 {
   // calculate pseudo velocity and acceleration for predictor and/or binning
   // of the contact interface before updates
-  if (pred_ == INPAR::STR::pred_constvel || pred_ == INPAR::STR::pred_constacc ||
+  if (pred_ == Inpar::STR::pred_constvel || pred_ == Inpar::STR::pred_constacc ||
       have_contact_meshtying())
     veln_->Update(1. / (*(*dt_)(0)), *disn_, -1. / (*(*dt_)(0)), *(*dis_)(0), 0.);
-  if (pred_ == INPAR::STR::pred_constacc)
+  if (pred_ == Inpar::STR::pred_constacc)
     accn_->Update(1. / (*(*dt_)(0)), *veln_, -1. / (*(*dt_)(0)), *(*vel_)(0), 0.);
 
   // update state
@@ -446,7 +446,7 @@ void STR::TimIntStatics::ReadRestartForce() { return; }
 
 /*----------------------------------------------------------------------*/
 /* write internal and external forces for restart */
-void STR::TimIntStatics::WriteRestartForce(Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
+void STR::TimIntStatics::WriteRestartForce(Teuchos::RCP<Core::IO::DiscretizationWriter> output)
 {
   output->WriteVector("fexternal", fext_);
   output->WriteVector("fint", fint_);

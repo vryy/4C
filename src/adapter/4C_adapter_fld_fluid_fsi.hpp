@@ -22,13 +22,13 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class Solver;
   class MapExtractor;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationWriter;
 }
@@ -42,7 +42,7 @@ namespace FLD
   }
 }  // namespace FLD
 
-namespace ADAPTER
+namespace Adapter
 {
   /*! \brief Fluid field adapter for fsi
    *
@@ -53,9 +53,9 @@ namespace ADAPTER
   {
    public:
     /// Constructor
-    FluidFSI(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<DRT::Discretization> dis,
-        Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-        Teuchos::RCP<CORE::IO::DiscretizationWriter> output, bool isale, bool dirichletcond);
+    FluidFSI(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<Discret::Discretization> dis,
+        Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+        Teuchos::RCP<Core::IO::DiscretizationWriter> output, bool isale, bool dirichletcond);
 
     /// initialize algorithm
     void Init() override;
@@ -71,7 +71,7 @@ namespace ADAPTER
     void Update() override;
 
     /// get the linear solver object used for this field
-    Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() override;
+    Teuchos::RCP<Core::LinAlg::Solver> LinearSolver() override;
 
     Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel) override;
 
@@ -233,9 +233,9 @@ namespace ADAPTER
     Teuchos::RCP<FLD::FluidImplicitTimeInt> fluidimpl_;
 
     //! @name local copies of input parameters
-    Teuchos::RCP<DRT::Discretization> dis_;
+    Teuchos::RCP<Discret::Discretization> dis_;
     Teuchos::RCP<Teuchos::ParameterList> params_;
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output_;
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output_;
     bool dirichletcond_;
     //@}
 
@@ -248,7 +248,7 @@ namespace ADAPTER
     Teuchos::RCP<Epetra_Vector> interfaceforcen_;
 
     /// ALE dof map
-    Teuchos::RCP<CORE::LINALG::MapExtractor> meshmap_;
+    Teuchos::RCP<Core::LinAlg::MapExtractor> meshmap_;
 
     /// all velocity dofs not at the interface
     Teuchos::RCP<Epetra_Map> innervelmap_;
@@ -323,7 +323,7 @@ namespace ADAPTER
 
     Teuchos::RCP<Epetra_Vector> locerrvelnp_;  ///< vector of temporal local discretization error
 
-    INPAR::FSI::FluidMethod auxintegrator_;  ///< auxiliary time integrator in fluid field
+    Inpar::FSI::FluidMethod auxintegrator_;  ///< auxiliary time integrator in fluid field
 
     int numfsidbcdofs_;  ///< number of interface DOFs with Dirichlet boundary condition
 
@@ -331,7 +331,7 @@ namespace ADAPTER
 
     //@}
   };
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 FOUR_C_NAMESPACE_CLOSE
 

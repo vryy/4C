@@ -30,17 +30,17 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |                                                           cbert 08/13 |
  *----------------------------------------------------------------------*/
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
     /*----------------------------------------------------------------------*/
     /// parameters for scalar transport material
-    class Myocard : public CORE::MAT::PAR::Parameter
+    class Myocard : public Core::Mat::PAR::Parameter
     {
      public:
       /// standard constructor
-      Myocard(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      Myocard(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -68,17 +68,17 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
     };  // class myocard
   }     // namespace PAR
 
-  class MyocardType : public CORE::COMM::ParObjectType
+  class MyocardType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "MyocardType"; }
     static MyocardType& Instance() { return instance_; };
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static MyocardType instance_;
@@ -94,7 +94,7 @@ namespace MAT
   ///
   /// \date 08/13
 
-  class Myocard : public CORE::MAT::Material
+  class Myocard : public Core::Mat::Material
 
   {
    public:
@@ -102,7 +102,7 @@ namespace MAT
     Myocard();
 
     /// constructor with given material parameters
-    Myocard(MAT::PAR::Myocard* params);
+    Myocard(Mat::PAR::Myocard* params);
 
     /// @name Packing and Unpacking
     //@{
@@ -119,7 +119,7 @@ namespace MAT
     /// The first information to be stored in data has to be the
     /// unique parobject id delivered by UniqueParObjectId() which will then
     /// identify the exact class on the receiving processor.
-    void Pack(CORE::COMM::PackBuffer& data)
+    void Pack(Core::Communication::PackBuffer& data)
         const override;  ///< (in/out): char vector to store class information
 
     /// \brief Unpack data from a char vector into this class
@@ -142,48 +142,48 @@ namespace MAT
     void SetGP(int gp) { params_->num_gp = gp; };
 
     /// material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_myocard;
+      return Core::Materials::m_myocard;
     }
 
     /// return copy of this material object
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new Myocard(*this));
     }
 
-    /// material call from DRT::ELEMENTS::Transport::ReadElement function
+    /// material call from Discret::ELEMENTS::Transport::ReadElement function
     /// to setup conductivity tensor for each element
-    void Setup(const CORE::LINALG::Matrix<3, 1>& fiber1);
-    void Setup(const CORE::LINALG::Matrix<2, 1>& fiber1);
-    void Setup(INPUT::LineDefinition* linedef);
+    void Setup(const Core::LinAlg::Matrix<3, 1>& fiber1);
+    void Setup(const Core::LinAlg::Matrix<2, 1>& fiber1);
+    void Setup(Input::LineDefinition* linedef);
 
     void setup_diffusion_tensor(const std::vector<double>& fiber1);
-    void setup_diffusion_tensor(const CORE::LINALG::Matrix<3, 1>& fiber1);
-    void setup_diffusion_tensor(const CORE::LINALG::Matrix<2, 1>& fiber1);
+    void setup_diffusion_tensor(const Core::LinAlg::Matrix<3, 1>& fiber1);
+    void setup_diffusion_tensor(const Core::LinAlg::Matrix<2, 1>& fiber1);
 
     /// diffusivity
-    void Diffusivity(CORE::LINALG::Matrix<1, 1>& diffus3) const
+    void Diffusivity(Core::LinAlg::Matrix<1, 1>& diffus3) const
     {
       Diffusivity(diffus3, 0);
       return;
     };
-    void Diffusivity(CORE::LINALG::Matrix<2, 2>& diffus3) const
+    void Diffusivity(Core::LinAlg::Matrix<2, 2>& diffus3) const
     {
       Diffusivity(diffus3, 0);
       return;
     };
-    void Diffusivity(CORE::LINALG::Matrix<3, 3>& diffus3) const
+    void Diffusivity(Core::LinAlg::Matrix<3, 3>& diffus3) const
     {
       Diffusivity(diffus3, 0);
       return;
     };
 
     /// diffusivity
-    void Diffusivity(CORE::LINALG::Matrix<1, 1>& diffus3, int gp) const;
-    void Diffusivity(CORE::LINALG::Matrix<2, 2>& diffus3, int gp) const;
-    void Diffusivity(CORE::LINALG::Matrix<3, 3>& diffus3, int gp) const;
+    void Diffusivity(Core::LinAlg::Matrix<1, 1>& diffus3, int gp) const;
+    void Diffusivity(Core::LinAlg::Matrix<2, 2>& diffus3, int gp) const;
+    void Diffusivity(Core::LinAlg::Matrix<3, 3>& diffus3, int gp) const;
 
     bool diffusion_at_ele_center() const { return diff_at_ele_center_; };
 
@@ -259,14 +259,14 @@ namespace MAT
     //@}
 
     /// Return quick accessible material parameter data
-    MAT::PAR::Myocard* Parameter() const override { return params_; }
+    Mat::PAR::Myocard* Parameter() const override { return params_; }
 
    private:
     /// my material parameters
-    MAT::PAR::Myocard* params_;
+    Mat::PAR::Myocard* params_;
 
     /// conductivity tensor
-    std::vector<CORE::LINALG::Matrix<3, 3>> difftensor_;
+    std::vector<Core::LinAlg::Matrix<3, 3>> difftensor_;
 
     /// number of internal state variables
     int nb_state_variables_;
@@ -278,7 +278,7 @@ namespace MAT
     bool diff_at_ele_center_;
 
   };  // Myocard
-}  // namespace MAT
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

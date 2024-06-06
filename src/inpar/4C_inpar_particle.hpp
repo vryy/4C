@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | input parameters for particle problems                     sfuchs 03/2018 |
  *---------------------------------------------------------------------------*/
-namespace INPAR
+namespace Inpar
 {
   namespace PARTICLE
   {
@@ -256,11 +256,11 @@ namespace INPAR
 
     //! set the particle conditions
     void SetValidConditions(
-        std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist);
+        std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist);
 
   }  // namespace PARTICLE
 
-}  // namespace INPAR
+}  // namespace Inpar
 
 /*---------------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

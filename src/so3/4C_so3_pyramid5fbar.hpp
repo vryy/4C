@@ -15,7 +15,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   // forward declarations
   class Discretization;
@@ -23,30 +23,30 @@ namespace DRT
   namespace ELEMENTS
   {
     // forward declarations
-    class SoPyramid5fbarType : public CORE::Elements::ElementType
+    class SoPyramid5fbarType : public Core::Elements::ElementType
     {
      public:
       std::string Name() const override { return "So_pyramid5fbarType"; }
 
       static SoPyramid5fbarType& Instance();
 
-      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-      int Initialize(DRT::Discretization& dis) override;
+      int Initialize(Discret::Discretization& dis) override;
 
       void nodal_block_information(
-          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+          Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
+      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+          Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       void setup_element_definition(
-          std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+          std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
           override;
 
      private:
@@ -89,7 +89,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      CORE::Elements::Element* Clone() const override;
+      Core::Elements::Element* Clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -108,7 +108,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(CORE::COMM::PackBuffer& data) const override;
+      void Pack(Core::Communication::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -128,7 +128,7 @@ namespace DRT
       */
       void Print(std::ostream& os) const override;
 
-      CORE::Elements::ElementType& ElementType() const override
+      Core::Elements::ElementType& ElementType() const override
       {
         return SoPyramid5fbarType::Instance();
       }
@@ -141,7 +141,7 @@ namespace DRT
       \brief Read input for this element
       */
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          INPUT::LineDefinition* linedef) override;
+          Input::LineDefinition* linedef) override;
 
       //@}
 
@@ -160,15 +160,15 @@ namespace DRT
       int Evaluate(
           Teuchos::ParameterList&
               params,  ///< ParameterList for communication between control routine and elements
-          DRT::Discretization& discretization,  ///< pointer to discretization for de-assembly
-          std::vector<int>& lm,                 ///< location matrix for de-assembly
-          CORE::LINALG::SerialDenseMatrix&
+          Discret::Discretization& discretization,  ///< pointer to discretization for de-assembly
+          std::vector<int>& lm,                     ///< location matrix for de-assembly
+          Core::LinAlg::SerialDenseMatrix&
               elemat1,  ///< (stiffness-)matrix to be filled by element.
-          CORE::LINALG::SerialDenseMatrix& elemat2,  ///< (mass-)matrix to be filled by element.
-          CORE::LINALG::SerialDenseVector&
+          Core::LinAlg::SerialDenseMatrix& elemat2,  ///< (mass-)matrix to be filled by element.
+          Core::LinAlg::SerialDenseVector&
               elevec1,  ///< (internal force-)vector to be filled by element
-          CORE::LINALG::SerialDenseVector& elevec2,  ///< vector to be filled by element
-          CORE::LINALG::SerialDenseVector& elevec3   ///< vector to be filled by element
+          Core::LinAlg::SerialDenseVector& elevec2,  ///< vector to be filled by element
+          Core::LinAlg::SerialDenseVector& elevec3   ///< vector to be filled by element
           ) override;
 
       /*!
@@ -185,10 +185,10 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          CORE::Conditions::Condition& condition, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
+      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Core::Conditions::Condition& condition, std::vector<int>& lm,
+          Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;
 
       //@}
 
@@ -198,10 +198,10 @@ namespace DRT
 
       // compute Jacobian mapping wrt to deformed configuration
       virtual void update_jacobian_mapping(
-          const std::vector<double>& disp, DRT::ELEMENTS::PreStress& prestress);
+          const std::vector<double>& disp, Discret::ELEMENTS::PreStress& prestress);
       // compute defgrd in all gp for given disp
       virtual void def_gradient(const std::vector<double>& disp,
-          CORE::LINALG::SerialDenseMatrix& gpdefgrd, DRT::ELEMENTS::PreStress& prestress);
+          Core::LinAlg::SerialDenseMatrix& gpdefgrd, Discret::ELEMENTS::PreStress& prestress);
 
       //! Calculate nonlinear stiffness and mass matrix
       virtual void nlnstiffmass(std::vector<int>& lm,  ///< location matrix
@@ -210,20 +210,20 @@ namespace DRT
           std::vector<double>* acc,                    ///< current accelerations
           std::vector<double>& residual,               ///< current residual displ
           std::vector<double>& dispmat,                ///< current material displacements
-          CORE::LINALG::Matrix<NUMDOF_SOP5, NUMDOF_SOP5>*
+          Core::LinAlg::Matrix<NUMDOF_SOP5, NUMDOF_SOP5>*
               stiffmatrix,                                             ///< element stiffness matrix
-          CORE::LINALG::Matrix<NUMDOF_SOP5, NUMDOF_SOP5>* massmatrix,  ///< element mass matrix
-          CORE::LINALG::Matrix<NUMDOF_SOP5, 1>* force,       ///< element internal force vector
-          CORE::LINALG::Matrix<NUMDOF_SOP5, 1>* forceinert,  ///< element inertial force vector
-          CORE::LINALG::Matrix<NUMDOF_SOP5, 1>* force_str,   ///< element structural force vector
-          CORE::LINALG::Matrix<NUMGPT_SOP5, MAT::NUM_STRESS_3D>* elestress,  ///< stresses at GP
-          CORE::LINALG::Matrix<NUMGPT_SOP5, MAT::NUM_STRESS_3D>* elestrain,  ///< strains at GP
-          CORE::LINALG::Matrix<NUMGPT_SOP5, MAT::NUM_STRESS_3D>*
+          Core::LinAlg::Matrix<NUMDOF_SOP5, NUMDOF_SOP5>* massmatrix,  ///< element mass matrix
+          Core::LinAlg::Matrix<NUMDOF_SOP5, 1>* force,       ///< element internal force vector
+          Core::LinAlg::Matrix<NUMDOF_SOP5, 1>* forceinert,  ///< element inertial force vector
+          Core::LinAlg::Matrix<NUMDOF_SOP5, 1>* force_str,   ///< element structural force vector
+          Core::LinAlg::Matrix<NUMGPT_SOP5, Mat::NUM_STRESS_3D>* elestress,  ///< stresses at GP
+          Core::LinAlg::Matrix<NUMGPT_SOP5, Mat::NUM_STRESS_3D>* elestrain,  ///< strains at GP
+          Core::LinAlg::Matrix<NUMGPT_SOP5, Mat::NUM_STRESS_3D>*
               eleplstrain,                           ///< plastic strains at GP
           Teuchos::ParameterList& params,            ///< algorithmic parameters e.g. time
-          const INPAR::STR::StressType iostress,     ///< stress output option
-          const INPAR::STR::StrainType iostrain,     ///< strain output option
-          const INPAR::STR::StrainType ioplstrain);  ///< plastic strain output option
+          const Inpar::STR::StressType iostress,     ///< stress output option
+          const Inpar::STR::StrainType iostrain,     ///< strain output option
+          const Inpar::STR::StrainType ioplstrain);  ///< plastic strain output option
 
       //! init the inverse of the jacobian and its determinant in the material configuration
       void init_jacobian_mapping() override;
@@ -238,7 +238,7 @@ namespace DRT
     //=======================================================================
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

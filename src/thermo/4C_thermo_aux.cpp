@@ -16,32 +16,32 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | Calculate vector norm                                    bborn 08/09 |
  *----------------------------------------------------------------------*/
-double THR::AUX::calculate_vector_norm(
-    const enum INPAR::THR::VectorNorm norm, const Teuchos::RCP<Epetra_Vector> vect)
+double THR::Aux::calculate_vector_norm(
+    const enum Inpar::THR::VectorNorm norm, const Teuchos::RCP<Epetra_Vector> vect)
 {
   // L1 norm
-  if (norm == INPAR::THR::norm_l1)
+  if (norm == Inpar::THR::norm_l1)
   {
     double vectnorm;
     vect->Norm1(&vectnorm);
     return vectnorm;
   }
   // L2/Euclidian norm
-  else if (norm == INPAR::THR::norm_l2)
+  else if (norm == Inpar::THR::norm_l2)
   {
     double vectnorm;
     vect->Norm2(&vectnorm);
     return vectnorm;
   }
   // RMS norm
-  else if (norm == INPAR::THR::norm_rms)
+  else if (norm == Inpar::THR::norm_rms)
   {
     double vectnorm;
     vect->Norm2(&vectnorm);
     return vectnorm / std::sqrt((double)vect->GlobalLength());
   }
   // infinity/maximum norm
-  else if (norm == INPAR::THR::norm_inf)
+  else if (norm == Inpar::THR::norm_inf)
   {
     double vectnorm;
     vect->NormInf(&vectnorm);

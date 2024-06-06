@@ -88,16 +88,16 @@ for gas exchange in the human lungs", J Theor biol (2006)
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
   class SparseOperator;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 namespace UTILS
 {
@@ -111,7 +111,7 @@ namespace UTILS
     */
 
     CardiovascularRespiratory0DSysPulPeriphCirculation(
-        Teuchos::RCP<DRT::Discretization>
+        Teuchos::RCP<Discret::Discretization>
             discr,                         ///< discretization where Cardiovascular0D lives on
         const std::string& conditionname,  ///< Name of condition to create Cardiovascular0D from
         std::vector<int>& curID            ///< current ID
@@ -135,10 +135,10 @@ namespace UTILS
     void Evaluate(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat1,  ///< Cardiovascular0D stiffness matrix
-        Teuchos::RCP<CORE::LINALG::SparseOperator>
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat1,  ///< Cardiovascular0D stiffness matrix
+        Teuchos::RCP<Core::LinAlg::SparseOperator>
             sysmat2,  ///< Cardiovascular0D offdiagonal matrix dV/dd
-        Teuchos::RCP<CORE::LINALG::SparseOperator>
+        Teuchos::RCP<Core::LinAlg::SparseOperator>
             sysmat3,                          ///< Cardiovascular0D offdiagonal matrix dfext/dp
         Teuchos::RCP<Epetra_Vector> sysvec1,  ///< distributed vectors that may be filled by
                                               ///< assembly of element contributions
@@ -179,7 +179,7 @@ namespace UTILS
     //! Evaluate routine to call from outside. In here the right action is determined and the
     //! #EvaluateCardiovascular0D routine is called
     virtual void EvaluateRespiratory(Teuchos::ParameterList& params, std::vector<double>& df_np,
-        std::vector<double>& f_np, CORE::LINALG::SerialDenseMatrix& wkstiff,
+        std::vector<double>& f_np, Core::LinAlg::SerialDenseMatrix& wkstiff,
         Teuchos::RCP<Epetra_Vector> dofvec, Teuchos::RCP<Epetra_Vector> volvec, bool evalstiff);
 
    private:

@@ -21,17 +21,17 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
 }
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace CORE::FE
+namespace Core::FE
 {
   /*!
     \brief compute L2 projection of a dof based field onto a node based field in a least
@@ -45,24 +45,24 @@ namespace CORE::FE
     \date 06/14
    */
   Teuchos::RCP<Epetra_MultiVector> compute_nodal_l2_projection(
-      Teuchos::RCP<DRT::Discretization> dis,  ///< underlying discretization
-      const std::string& statename,           ///< name of state which will be set
-      const int& numvec,                      ///< number of entries per node to project
-      Teuchos::ParameterList& params,         ///< parameter list that contains the element action
+      Teuchos::RCP<Discret::Discretization> dis,  ///< underlying discretization
+      const std::string& statename,               ///< name of state which will be set
+      const int& numvec,                          ///< number of entries per node to project
+      Teuchos::ParameterList& params,  ///< parameter list that contains the element action
       const Teuchos::ParameterList&
           solverparams);  ///< solver parameters for solving the resulting global system;
 
-  Teuchos::RCP<Epetra_MultiVector> evaluate_and_solve_nodal_l2_projection(DRT::Discretization& dis,
-      const Epetra_Map& noderowmap, const std::string& statename, const int& numvec,
-      Teuchos::ParameterList& params, const Teuchos::ParameterList& solverparams,
+  Teuchos::RCP<Epetra_MultiVector> evaluate_and_solve_nodal_l2_projection(
+      Discret::Discretization& dis, const Epetra_Map& noderowmap, const std::string& statename,
+      const int& numvec, Teuchos::ParameterList& params, const Teuchos::ParameterList& solverparams,
       const Epetra_Map& fullnoderowmap, const std::map<int, int>& slavetomastercolnodesmap);
 
-  Teuchos::RCP<Epetra_MultiVector> solve_nodal_l2_projection(CORE::LINALG::SparseMatrix& massmatrix,
+  Teuchos::RCP<Epetra_MultiVector> solve_nodal_l2_projection(Core::LinAlg::SparseMatrix& massmatrix,
       Epetra_MultiVector& rhs, const Epetra_Comm& comm, const int& numvec,
       const Teuchos::ParameterList& solverparams, const Epetra_Map& noderowmap,
       const Epetra_Map& fullnoderowmap, const std::map<int, int>& slavetomastercolnodesmap);
 
-}  // namespace CORE::FE
+}  // namespace Core::FE
 
 
 FOUR_C_NAMESPACE_CLOSE

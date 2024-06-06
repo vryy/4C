@@ -51,18 +51,18 @@ TSI::Partitioned::Partitioned(const Epetra_Comm& comm)
       mu_(0.0)
 {
   // call the TSI parameter list
-  const Teuchos::ParameterList& tsidyn = GLOBAL::Problem::Instance()->TSIDynamicParams();
+  const Teuchos::ParameterList& tsidyn = Global::Problem::Instance()->TSIDynamicParams();
   // call the TSI parameter list
   const Teuchos::ParameterList& tsidynpart =
-      GLOBAL::Problem::Instance()->TSIDynamicParams().sublist("PARTITIONED");
+      Global::Problem::Instance()->TSIDynamicParams().sublist("PARTITIONED");
 
   // get the parameters for the convergence_check
   itmax_ = tsidyn.get<int>("ITEMAX");          // default: =1
   ittol_ = tsidynpart.get<double>("CONVTOL");  // default: =1e-6
-  normtypeinc_ = CORE::UTILS::IntegralValue<INPAR::TSI::ConvNorm>(tsidyn, "NORM_INC");
+  normtypeinc_ = Core::UTILS::IntegralValue<Inpar::TSI::ConvNorm>(tsidyn, "NORM_INC");
 
   // decide which coupling scheme is applied (e.g. one-way or full coupling)
-  coupling_ = CORE::UTILS::IntegralValue<INPAR::TSI::SolutionSchemeOverFields>(tsidyn, "COUPALGO");
+  coupling_ = Core::UTILS::IntegralValue<Inpar::TSI::SolutionSchemeOverFields>(tsidyn, "COUPALGO");
 
   // coupling variable
   displacementcoupling_ = tsidynpart.get<std::string>("COUPVARIABLE") == "Displacement";
@@ -72,10 +72,10 @@ TSI::Partitioned::Partitioned(const Epetra_Comm& comm)
     std::cout << "Coupling variable: temperature" << std::endl;
 
   // if structure field is quasi-static --> calc_velocity
-  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->structural_dynamic_params();
+  const Teuchos::ParameterList& sdyn = Global::Problem::Instance()->structural_dynamic_params();
   // major switch to different time integrators
-  quasistatic_ = (CORE::UTILS::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP") ==
-                  INPAR::STR::dyna_statics);
+  quasistatic_ = (Core::UTILS::IntegralValue<Inpar::STR::DynamicType>(sdyn, "DYNAMICTYP") ==
+                  Inpar::STR::dyna_statics);
 
   // initialise internal variables with values
   tempincnp_ = Teuchos::rcp(new Epetra_Vector(*(ThermoField()->Tempnp())));
@@ -153,23 +153,23 @@ void TSI::Partitioned::Solve()
   // choose algorithm depending on solution type
   switch (coupling_)
   {
-    case INPAR::TSI::OneWay:
+    case Inpar::TSI::OneWay:
     {
       time_loop_one_way();
       break;
     }
     // complete volume coupling system
     // sequential staggered scheme
-    case INPAR::TSI::SequStagg:
+    case Inpar::TSI::SequStagg:
     {
       TimeLoopSequStagg();
       break;
     }
     // iterative staggered scheme
-    case INPAR::TSI::IterStagg:
-    case INPAR::TSI::IterStaggAitken:
-    case INPAR::TSI::IterStaggAitkenIrons:
-    case INPAR::TSI::IterStaggFixedRel:
+    case Inpar::TSI::IterStagg:
+    case Inpar::TSI::IterStaggAitken:
+    case Inpar::TSI::IterStaggAitkenIrons:
+    case Inpar::TSI::IterStaggFixedRel:
     {
       TimeLoopFull();
       break;
@@ -442,17 +442,17 @@ void TSI::Partitioned::outer_iteration_loop()
   }
 
   // call the TSI parameter lists
-  const Teuchos::ParameterList& tsidyn = GLOBAL::Problem::Instance()->TSIDynamicParams();
+  const Teuchos::ParameterList& tsidyn = Global::Problem::Instance()->TSIDynamicParams();
   const Teuchos::ParameterList& tsidynpart =
-      GLOBAL::Problem::Instance()->TSIDynamicParams().sublist("PARTITIONED");
+      Global::Problem::Instance()->TSIDynamicParams().sublist("PARTITIONED");
 
   // decide if one-way coupling or full coupling
-  INPAR::TSI::SolutionSchemeOverFields coupling =
-      CORE::UTILS::IntegralValue<INPAR::TSI::SolutionSchemeOverFields>(tsidyn, "COUPALGO");
+  Inpar::TSI::SolutionSchemeOverFields coupling =
+      Core::UTILS::IntegralValue<Inpar::TSI::SolutionSchemeOverFields>(tsidyn, "COUPALGO");
 
   // Pure iterative staggered algorithms
   // iterative staggered TSI withOUT Aitken relaxation
-  if (coupling == INPAR::TSI::IterStagg)
+  if (coupling == Inpar::TSI::IterStagg)
   {
     // structural predictor
     if (displacementcoupling_)  // (temperature change due to deformation)
@@ -462,7 +462,7 @@ void TSI::Partitioned::outer_iteration_loop()
       // d^p_n+1 = d_n, v^p_n+1 = v_n
       // initialise new time step n+1 with values of old time step n
       Teuchos::RCP<Epetra_Vector> dispnp =
-          CORE::LINALG::CreateVector(*(structure_field()->dof_row_map(0)), true);
+          Core::LinAlg::CreateVector(*(structure_field()->dof_row_map(0)), true);
       if (Step() == 1)
       {
         dispnp->Update(1.0, *(structure_field()->Dispn()), 0.0);
@@ -597,7 +597,7 @@ void TSI::Partitioned::outer_iteration_loop()
   }  // iterstagg WITHOUT relaxation
 
   // notation according to Aitken relaxation of FSI Mok, Uli
-  // coupling==INPAR::TSI::IterStaggAitken
+  // coupling==Inpar::TSI::IterStaggAitken
   // 1. calculate the Aitken factor mu
   // 2. calculate the relaxation factor omega = 1-mu
   // 3. T^{i+1} = T^i + omega^{i+1} * ( T^{i+1} - T^i )
@@ -605,18 +605,18 @@ void TSI::Partitioned::outer_iteration_loop()
   // 4. limit Aitken factor mu_ for next time step with 1.0
   //
   // another notation of relaxation according to Paper by Irons & Tuck (1969)
-  // coupling==INPAR::TSI::IterStaggAitkenIrons
+  // coupling==Inpar::TSI::IterStaggAitkenIrons
   // 1. calculate an relaxation factor mu
   // 2. T^{i+1} = (1 - mu^{i+1}) T^{i+1} + mu^{i+1} T^i
   // 3. limit Aitken factor mu for next time step with maximal value MAXOMEGA
   //
-  // coupling==INPAR::TSI::IterStaggFixedRel
+  // coupling==Inpar::TSI::IterStaggFixedRel
   // 1. relaxation factor omega = FIXEDOMEGA = const
   // 2. T^{i+1} = omega^{i+1} . T^{i+1} + (1- omega^{i+1}) T^i
   //            = T^i + omega^{i+1} * ( T^{i+1} - T^i )
-  else if ((coupling == INPAR::TSI::IterStaggAitken) or
-           (coupling == INPAR::TSI::IterStaggAitkenIrons) or
-           (coupling == INPAR::TSI::IterStaggFixedRel))
+  else if ((coupling == Inpar::TSI::IterStaggAitken) or
+           (coupling == Inpar::TSI::IterStaggAitkenIrons) or
+           (coupling == Inpar::TSI::IterStaggFixedRel))
   {
     if (Comm().MyPID() == 0)
     {
@@ -632,15 +632,15 @@ void TSI::Partitioned::outer_iteration_loop()
       // d^p_n+1 = d_n, v^p_n+1 = v_n
       // initialise new time step n+1 with values of old time step n
       Teuchos::RCP<Epetra_Vector> dispnp =
-          CORE::LINALG::CreateVector(*(structure_field()->dof_row_map(0)), true);
+          Core::LinAlg::CreateVector(*(structure_field()->dof_row_map(0)), true);
       if (Step() == 1)
       {
         dispnp->Update(1.0, *(structure_field()->Dispn()), 0.0);
       }
       // else: use the velocity of the last converged step
 
-      if ((coupling == INPAR::TSI::IterStaggAitken) or
-          (coupling == INPAR::TSI::IterStaggAitkenIrons))
+      if ((coupling == Inpar::TSI::IterStaggAitken) or
+          (coupling == Inpar::TSI::IterStaggAitkenIrons))
       {
         // constrain the Aitken factor in the 1st relaxation step of new time
         // step n+1 to maximal value maxomega
@@ -703,7 +703,7 @@ void TSI::Partitioned::outer_iteration_loop()
         // prepare time step with coupled variables
         if (itnum == 1) structure_field()->prepare_time_step();
 
-        if (coupling == INPAR::TSI::IterStaggFixedRel)
+        if (coupling == Inpar::TSI::IterStaggFixedRel)
         {
           // get the displacements of the old iteration step d^i_{n+1}
           dispnp->Update(1.0, *(structure_field()->Dispnp()), 0.0);
@@ -721,7 +721,7 @@ void TSI::Partitioned::outer_iteration_loop()
         // if r_{i+1} not converged in convergence_check()
         // --> apply relaxation to displacements
 
-        if (coupling == INPAR::TSI::IterStaggFixedRel)
+        if (coupling == Inpar::TSI::IterStaggFixedRel)
         {
           // ------------------------------------ relax the displacements
 
@@ -758,8 +758,8 @@ void TSI::Partitioned::outer_iteration_loop()
           // difference of last two solutions
           if (del_ == Teuchos::null)  // first iteration, itnum==1
           {
-            del_ = CORE::LINALG::CreateVector(*(ThermoField()->dof_row_map(0)), true);
-            delhist_ = CORE::LINALG::CreateVector(*(ThermoField()->dof_row_map(0)), true);
+            del_ = Core::LinAlg::CreateVector(*(ThermoField()->dof_row_map(0)), true);
+            delhist_ = Core::LinAlg::CreateVector(*(ThermoField()->dof_row_map(0)), true);
             del_->PutScalar(1.0e20);
             delhist_->PutScalar(0.0);
           }
@@ -804,7 +804,7 @@ void TSI::Partitioned::outer_iteration_loop()
           }
           else  // (itnum > 1)
           {
-            if (coupling == INPAR::TSI::IterStaggAitken)
+            if (coupling == Inpar::TSI::IterStaggAitken)
             {
               // relax temperature solution for next iteration step
               // overwrite temp_ with relaxed solution vector
@@ -816,7 +816,7 @@ void TSI::Partitioned::outer_iteration_loop()
             // 1. calculate an Aitken factor mu == relaxation factor
             // 2. d^{i+1} = (1 - mu^{i+1}) d^{i+1} + mu^{i+1} d^i
             // 3. limit Aitken factor mu for next time step with 0.0
-            else if (coupling == INPAR::TSI::IterStaggAitkenIrons)
+            else if (coupling == Inpar::TSI::IterStaggAitkenIrons)
             {
               // relax displacement solution for next iteration step
               // overwrite dispnp with relaxed solution vector
@@ -847,8 +847,8 @@ void TSI::Partitioned::outer_iteration_loop()
         temp_->Update(1.0, *(ThermoField()->Tempn()), 0.0);
       }
 
-      if ((coupling == INPAR::TSI::IterStaggAitken) or
-          (coupling == INPAR::TSI::IterStaggAitkenIrons))
+      if ((coupling == Inpar::TSI::IterStaggAitken) or
+          (coupling == Inpar::TSI::IterStaggAitkenIrons))
       {
         // initial guess for next time step n+1
         // use minimum between omega_n and maxomega as start value for mu_{n+1}^{i=0}
@@ -925,7 +925,7 @@ void TSI::Partitioned::outer_iteration_loop()
         else if (itnum != 1)
           ThermoField()->prepare_partition_step();
 
-        if (coupling == INPAR::TSI::IterStaggFixedRel)
+        if (coupling == Inpar::TSI::IterStaggFixedRel)
         {
           // get temperature solution of old iteration step T_{n+1}^i
           temp_->Update(1.0, *(ThermoField()->Tempnp()), 0.0);
@@ -943,7 +943,7 @@ void TSI::Partitioned::outer_iteration_loop()
 
         // --------------------------------------------- start relaxation
 
-        if (coupling == INPAR::TSI::IterStaggFixedRel)
+        if (coupling == Inpar::TSI::IterStaggFixedRel)
         {
           // ------------------------------------- relax the temperatures
 
@@ -985,8 +985,8 @@ void TSI::Partitioned::outer_iteration_loop()
           // difference of last two solutions
           if (del_ == Teuchos::null)  // first iteration, itnum==1
           {
-            del_ = CORE::LINALG::CreateVector(*(ThermoField()->dof_row_map(0)), true);
-            delhist_ = CORE::LINALG::CreateVector(*(ThermoField()->dof_row_map(0)), true);
+            del_ = Core::LinAlg::CreateVector(*(ThermoField()->dof_row_map(0)), true);
+            delhist_ = Core::LinAlg::CreateVector(*(ThermoField()->dof_row_map(0)), true);
             del_->PutScalar(1.0e20);
             delhist_->PutScalar(0.0);
           }
@@ -1023,7 +1023,7 @@ void TSI::Partitioned::outer_iteration_loop()
             temp_->Update(1.0, *(ThermoField()->Tempnp()), 0.0);
           else  // (itnum > 1)
           {
-            if (coupling == INPAR::TSI::IterStaggAitken)
+            if (coupling == Inpar::TSI::IterStaggAitken)
             {
               // relaxation parameter
               // omega^{i+1} = 1- mu^{i+1}
@@ -1035,7 +1035,7 @@ void TSI::Partitioned::outer_iteration_loop()
               //         = T^i + omega^{i+1} * ( T^{i+1} - T^i )
               temp_->Update(omega, *tempincnp_, 1.0);
             }
-            else if (coupling == INPAR::TSI::IterStaggAitkenIrons)
+            else if (coupling == Inpar::TSI::IterStaggAitkenIrons)
             {
               // relax displacement solution for next iteration step
               // overwrite tempnp with relaxed solution vector
@@ -1159,7 +1159,7 @@ bool TSI::Partitioned::convergence_check(int itnum, const int itmax, const doubl
   switch (normtypeinc_)
   {
     // default check:
-    case INPAR::TSI::convnorm_abs:
+    case Inpar::TSI::convnorm_abs:
     {
       // print the incremental based convergence check to the screen
       // test here increment
@@ -1219,10 +1219,10 @@ bool TSI::Partitioned::convergence_check(int itnum, const int itmax, const doubl
           printf("\n");
         }
       }
-    }  // INPAR::TSI::convnorm_abs
+    }  // Inpar::TSI::convnorm_abs
     break;
 
-    case INPAR::TSI::convnorm_rel:
+    case Inpar::TSI::convnorm_rel:
     {
       // print the incremental based convergence check to the screen
       // test here increment/variable
@@ -1280,10 +1280,10 @@ bool TSI::Partitioned::convergence_check(int itnum, const int itmax, const doubl
           printf("\n");
         }
       }
-    }  // INPAR::TSI::convnorm_rel
+    }  // Inpar::TSI::convnorm_rel
     break;
 
-    case INPAR::TSI::convnorm_mix:
+    case Inpar::TSI::convnorm_mix:
     default:
       FOUR_C_THROW("Cannot check for convergence of residual values!");
       break;
@@ -1318,10 +1318,10 @@ void TSI::Partitioned::prepare_contact_strategy()
 
   if (contact_strategy_nitsche_ != Teuchos::null)
   {
-    const auto& model_eval = structure_field()->ModelEvaluator(INPAR::STR::model_structure);
+    const auto& model_eval = structure_field()->ModelEvaluator(Inpar::STR::model_structure);
     const auto cparams = model_eval.EvalData().ContactPtr();
     auto cparams_new = cparams;
-    cparams_new->SetCouplingScheme(INPAR::CONTACT::CouplingScheme::partitioning);
+    cparams_new->SetCouplingScheme(Inpar::CONTACT::CouplingScheme::partitioning);
     ThermoField()->set_nitsche_contact_parameters(cparams_new);
   }
 }  // prepare_contact_strategy()

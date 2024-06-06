@@ -38,9 +38,9 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<beam,
  */
 template <typename beam, typename surface>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<beam, surface>::EvaluateAndAssemble(
-    const Teuchos::RCP<const DRT::Discretization>& discret,
+    const Teuchos::RCP<const Discret::Discretization>& discret,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
-    const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
+    const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
 {
   // Call Evaluate on the geometry Pair. Only do this once for mesh tying.
@@ -55,10 +55,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<beam, surface>::
   if (this->line_to_3D_segments_.size() == 0) return;
 
   // Initialize variables for position and force vectors.
-  CORE::LINALG::Matrix<3, 1, double> dr_beam_ref;
-  CORE::LINALG::Matrix<3, 1, scalar_type> coupling_vector;
-  CORE::LINALG::Matrix<3, 1, scalar_type> force;
-  CORE::LINALG::Matrix<beam::n_dof_ + surface::n_dof_, 1, scalar_type> force_pair(true);
+  Core::LinAlg::Matrix<3, 1, double> dr_beam_ref;
+  Core::LinAlg::Matrix<3, 1, scalar_type> coupling_vector;
+  Core::LinAlg::Matrix<3, 1, scalar_type> force;
+  Core::LinAlg::Matrix<beam::n_dof_ + surface::n_dof_, 1, scalar_type> force_pair(true);
 
   // Initialize scalar variables.
   double segment_jacobian = 0.0;
@@ -110,10 +110,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<beam, surface>::
   }
 
   // Get the pair GIDs.
-  CORE::LINALG::Matrix<beam::n_dof_ + surface::n_dof_, 1, int> pair_gid;
+  Core::LinAlg::Matrix<beam::n_dof_ + surface::n_dof_, 1, int> pair_gid;
   {
     // Get the beam centerline GIDs.
-    CORE::LINALG::Matrix<beam::n_dof_, 1, int> beam_centerline_gid;
+    Core::LinAlg::Matrix<beam::n_dof_, 1, int> beam_centerline_gid;
     UTILS::GetElementCenterlineGIDIndices(*discret, this->Element1(), beam_centerline_gid);
 
     // Get the patch (in this case just the one face element) GIDs.
@@ -129,7 +129,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<beam, surface>::
   // If given, assemble force terms into the global vector.
   if (force_vector != Teuchos::null)
   {
-    const auto force_pair_double = CORE::FADUTILS::CastToDouble(force_pair);
+    const auto force_pair_double = Core::FADUtils::CastToDouble(force_pair);
     force_vector->SumIntoGlobalValues(
         beam::n_dof_ + surface::n_dof_, pair_gid.A(), force_pair_double.A());
   }
@@ -138,7 +138,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<beam, surface>::
   if (stiffness_matrix != Teuchos::null)
     for (unsigned int i_dof = 0; i_dof < beam::n_dof_ + surface::n_dof_; i_dof++)
       for (unsigned int j_dof = 0; j_dof < beam::n_dof_ + surface::n_dof_; j_dof++)
-        stiffness_matrix->FEAssemble(CORE::FADUTILS::CastToDouble(force_pair(i_dof).dx(j_dof)),
+        stiffness_matrix->FEAssemble(Core::FADUtils::CastToDouble(force_pair(i_dof).dx(j_dof)),
             pair_gid(i_dof), pair_gid(j_dof));
 }
 

@@ -19,13 +19,13 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::SoSh8p8::ReadElement(
-    const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
+bool Discret::ELEMENTS::SoSh8p8::ReadElement(
+    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
   // read number of material model
   int material = 0;
   linedef->ExtractInt("MAT", material);
-  SetMaterial(0, MAT::Factory(material));
+  SetMaterial(0, Mat::Factory(material));
 
   SolidMaterial()->Setup(NUMGPT_SOH8, linedef);
 
@@ -39,13 +39,13 @@ bool DRT::ELEMENTS::SoSh8p8::ReadElement(
   }
   else if (buffer == "nonlinear")
   {
-    kintype_ = INPAR::STR::KinemType::nonlinearTotLag;
+    kintype_ = Inpar::STR::KinemType::nonlinearTotLag;
   }
   else
     FOUR_C_THROW("Reading SO_SH8P8 element failed unknown KINEM Type");
 
   // we expect kintype to be total lagrangian
-  kintype_ = INPAR::STR::KinemType::nonlinearTotLag;
+  kintype_ = Inpar::STR::KinemType::nonlinearTotLag;
 
   // check if material kinematics is compatible to element kinematics
   SolidMaterial()->ValidKinematics(kintype_);

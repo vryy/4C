@@ -26,23 +26,23 @@ namespace Teuchos
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class ResultTest;
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace SCATRA
+namespace ScaTra
 {
   class ScaTraTimIntImpl;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class Solver;
 }
 
-namespace ADAPTER
+namespace Adapter
 {
   /// general scalar transport field interface for multiphysics problems
   /*!
@@ -73,14 +73,14 @@ namespace ADAPTER
     virtual void Setup();
 
     /// access to the scalar transport field solver
-    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ScaTraField() { return scatra_; }
+    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> ScaTraField() { return scatra_; }
 
     /// create result test for scalar transport field
-    Teuchos::RCP<CORE::UTILS::ResultTest> create_sca_tra_field_test();
+    Teuchos::RCP<Core::UTILS::ResultTest> create_sca_tra_field_test();
 
    private:
     /// scalar transport field solver
-    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_;
+    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra_;
 
    private:
     //! flag indicating if class is setup
@@ -111,7 +111,7 @@ namespace ADAPTER
 
   };  // class ScaTraBaseAlgorithm
 
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 FOUR_C_NAMESPACE_CLOSE
 

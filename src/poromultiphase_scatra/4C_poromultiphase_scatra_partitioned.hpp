@@ -15,7 +15,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace POROMULTIPHASESCATRA
+namespace PoroMultiPhaseScaTra
 {
   //! Base class of all solid-scatra algorithms
   class PoroMultiPhaseScaTraPartitioned : public PoroMultiPhaseScaTraBase
@@ -30,7 +30,7 @@ namespace POROMULTIPHASESCATRA
   };  // PoroMultiPhasePartitioned
 
 
-}  // namespace POROMULTIPHASESCATRA
+}  // namespace PoroMultiPhaseScaTra
 
 
 

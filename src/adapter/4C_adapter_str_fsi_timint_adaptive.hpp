@@ -32,7 +32,7 @@ namespace STR
 
 /*----------------------------------------------------------------------*/
 /* adapting adapter */
-namespace ADAPTER
+namespace Adapter
 {
   /*====================================================================*/
   /*!
@@ -40,8 +40,8 @@ namespace ADAPTER
    *
    * Use this adapter in case you want to do monolithic FSI with time step size
    * adaptivity. By inheritance, we combine FSI functionalities with structural
-   * time adaptivity. The FSI stuff is inherited from ADAPTER::FSIStructureWrapper
-   * and the time adaptivity from ADAPTER::StructureTimIntAda
+   * time adaptivity. The FSI stuff is inherited from Adapter::FSIStructureWrapper
+   * and the time adaptivity from Adapter::StructureTimIntAda
    *
    * The time loop is implemented in FSI::Monolithic, which requires
    * error estimation and time step size calculation based on the structure field.
@@ -109,7 +109,7 @@ namespace ADAPTER
         double& errinfother  ///< L-inf-norm of temporal discretization error based on interior DOFs
     );
 
-    enum INPAR::STR::VectorNorm errnorm_;  //!< norm for local error vector
+    enum Inpar::STR::VectorNorm errnorm_;  //!< norm for local error vector
 
     int numdbcdofs_;       ///< number of DOFs with Dirichlet boundary condition
     int numdbcfsidofs_;    ///< number of interface DOFs with Dirichlet boundary condition
@@ -119,7 +119,7 @@ namespace ADAPTER
 
   };  // class StructureFSITimIntAda
 
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

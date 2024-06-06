@@ -17,26 +17,26 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void CORE::FE::EvaluateShapeFunctionSpatialDerivativeInProbDim(
-    CORE::LINALG::Matrix<probdim, CORE::FE::num_nodes<distype>>& deriv_xyz,
-    const CORE::LINALG::Matrix<CORE::FE::dim<distype>, CORE::FE::num_nodes<distype>>& deriv,
-    const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, probdim>& xyze,
-    const CORE::LINALG::Matrix<probdim, 1>& normal)
+template <Core::FE::CellType distype, int probdim>
+void Core::FE::EvaluateShapeFunctionSpatialDerivativeInProbDim(
+    Core::LinAlg::Matrix<probdim, Core::FE::num_nodes<distype>>& deriv_xyz,
+    const Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::num_nodes<distype>>& deriv,
+    const Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, probdim>& xyze,
+    const Core::LinAlg::Matrix<probdim, 1>& normal)
 {
-  const int nen = CORE::FE::num_nodes<distype>;
-  const int nsd_ele = CORE::FE::dim<distype>;
+  const int nen = Core::FE::num_nodes<distype>;
+  const int nsd_ele = Core::FE::dim<distype>;
 
   FOUR_C_ASSERT(nsd_ele != probdim,
       "This method is designed to be used if the dimension of the element is smaller than the "
       "problem dimension");
 
-  CORE::LINALG::Matrix<probdim, nen> deriv_full;
+  Core::LinAlg::Matrix<probdim, nen> deriv_full;
 
   // transform the derivatives and Jacobians to the higher dimensional coordinates (problem
   // dimension)
-  CORE::LINALG::Matrix<nsd_ele, probdim> dx_dr_red;
-  CORE::LINALG::Matrix<probdim, probdim> dx_dr, dr_dx;
+  Core::LinAlg::Matrix<nsd_ele, probdim> dx_dr_red;
+  Core::LinAlg::Matrix<probdim, probdim> dx_dr, dr_dx;
   dx_dr_red.MultiplyNN(deriv, xyze);
 
   for (unsigned i = 0; i < probdim; ++i)
@@ -76,34 +76,34 @@ void CORE::FE::EvaluateShapeFunctionSpatialDerivativeInProbDim(
   deriv_xyz.Multiply(dr_dx, deriv_full);
 }
 
-template void CORE::FE::EvaluateShapeFunctionSpatialDerivativeInProbDim<CORE::FE::CellType::line2,
-    2>(CORE::LINALG::Matrix<2, 2>& deriv_xyz, const CORE::LINALG::Matrix<1, 2>& deriv,
-    const CORE::LINALG::Matrix<2, 2>& xyze, const CORE::LINALG::Matrix<2, 1>& normal);
-template void CORE::FE::EvaluateShapeFunctionSpatialDerivativeInProbDim<CORE::FE::CellType::line2,
-    3>(CORE::LINALG::Matrix<3, 2>& deriv_xyz, const CORE::LINALG::Matrix<1, 2>& deriv,
-    const CORE::LINALG::Matrix<2, 3>& xyze, const CORE::LINALG::Matrix<3, 1>& normal);
-template void CORE::FE::EvaluateShapeFunctionSpatialDerivativeInProbDim<CORE::FE::CellType::line3,
-    2>(CORE::LINALG::Matrix<2, 3>& deriv_xyz, const CORE::LINALG::Matrix<1, 3>& deriv,
-    const CORE::LINALG::Matrix<3, 2>& xyze, const CORE::LINALG::Matrix<2, 1>& normal);
-template void CORE::FE::EvaluateShapeFunctionSpatialDerivativeInProbDim<CORE::FE::CellType::nurbs3,
-    2>(CORE::LINALG::Matrix<2, 3>& deriv_xyz, const CORE::LINALG::Matrix<1, 3>& deriv,
-    const CORE::LINALG::Matrix<3, 2>& xyze, const CORE::LINALG::Matrix<2, 1>& normal);
-template void CORE::FE::EvaluateShapeFunctionSpatialDerivativeInProbDim<CORE::FE::CellType::nurbs9,
-    3>(CORE::LINALG::Matrix<3, 9>& deriv_xyz, const CORE::LINALG::Matrix<2, 9>& deriv,
-    const CORE::LINALG::Matrix<9, 3>& xyze, const CORE::LINALG::Matrix<3, 1>& normal);
-template void CORE::FE::EvaluateShapeFunctionSpatialDerivativeInProbDim<CORE::FE::CellType::quad4,
-    3>(CORE::LINALG::Matrix<3, 4>& deriv_xyz, const CORE::LINALG::Matrix<2, 4>& deriv,
-    const CORE::LINALG::Matrix<4, 3>& xyze, const CORE::LINALG::Matrix<3, 1>& normal);
-template void CORE::FE::EvaluateShapeFunctionSpatialDerivativeInProbDim<CORE::FE::CellType::quad8,
-    3>(CORE::LINALG::Matrix<3, 8>& deriv_xyz, const CORE::LINALG::Matrix<2, 8>& deriv,
-    const CORE::LINALG::Matrix<8, 3>& xyze, const CORE::LINALG::Matrix<3, 1>& normal);
-template void CORE::FE::EvaluateShapeFunctionSpatialDerivativeInProbDim<CORE::FE::CellType::quad9,
-    3>(CORE::LINALG::Matrix<3, 9>& deriv_xyz, const CORE::LINALG::Matrix<2, 9>& deriv,
-    const CORE::LINALG::Matrix<9, 3>& xyze, const CORE::LINALG::Matrix<3, 1>& normal);
-template void CORE::FE::EvaluateShapeFunctionSpatialDerivativeInProbDim<CORE::FE::CellType::tri3,
-    3>(CORE::LINALG::Matrix<3, 3>& deriv_xyz, const CORE::LINALG::Matrix<2, 3>& deriv,
-    const CORE::LINALG::Matrix<3, 3>& xyze, const CORE::LINALG::Matrix<3, 1>& normal);
-template void CORE::FE::EvaluateShapeFunctionSpatialDerivativeInProbDim<CORE::FE::CellType::tri6,
-    3>(CORE::LINALG::Matrix<3, 6>& deriv_xyz, const CORE::LINALG::Matrix<2, 6>& deriv,
-    const CORE::LINALG::Matrix<6, 3>& xyze, const CORE::LINALG::Matrix<3, 1>& normal);
+template void Core::FE::EvaluateShapeFunctionSpatialDerivativeInProbDim<Core::FE::CellType::line2,
+    2>(Core::LinAlg::Matrix<2, 2>& deriv_xyz, const Core::LinAlg::Matrix<1, 2>& deriv,
+    const Core::LinAlg::Matrix<2, 2>& xyze, const Core::LinAlg::Matrix<2, 1>& normal);
+template void Core::FE::EvaluateShapeFunctionSpatialDerivativeInProbDim<Core::FE::CellType::line2,
+    3>(Core::LinAlg::Matrix<3, 2>& deriv_xyz, const Core::LinAlg::Matrix<1, 2>& deriv,
+    const Core::LinAlg::Matrix<2, 3>& xyze, const Core::LinAlg::Matrix<3, 1>& normal);
+template void Core::FE::EvaluateShapeFunctionSpatialDerivativeInProbDim<Core::FE::CellType::line3,
+    2>(Core::LinAlg::Matrix<2, 3>& deriv_xyz, const Core::LinAlg::Matrix<1, 3>& deriv,
+    const Core::LinAlg::Matrix<3, 2>& xyze, const Core::LinAlg::Matrix<2, 1>& normal);
+template void Core::FE::EvaluateShapeFunctionSpatialDerivativeInProbDim<Core::FE::CellType::nurbs3,
+    2>(Core::LinAlg::Matrix<2, 3>& deriv_xyz, const Core::LinAlg::Matrix<1, 3>& deriv,
+    const Core::LinAlg::Matrix<3, 2>& xyze, const Core::LinAlg::Matrix<2, 1>& normal);
+template void Core::FE::EvaluateShapeFunctionSpatialDerivativeInProbDim<Core::FE::CellType::nurbs9,
+    3>(Core::LinAlg::Matrix<3, 9>& deriv_xyz, const Core::LinAlg::Matrix<2, 9>& deriv,
+    const Core::LinAlg::Matrix<9, 3>& xyze, const Core::LinAlg::Matrix<3, 1>& normal);
+template void Core::FE::EvaluateShapeFunctionSpatialDerivativeInProbDim<Core::FE::CellType::quad4,
+    3>(Core::LinAlg::Matrix<3, 4>& deriv_xyz, const Core::LinAlg::Matrix<2, 4>& deriv,
+    const Core::LinAlg::Matrix<4, 3>& xyze, const Core::LinAlg::Matrix<3, 1>& normal);
+template void Core::FE::EvaluateShapeFunctionSpatialDerivativeInProbDim<Core::FE::CellType::quad8,
+    3>(Core::LinAlg::Matrix<3, 8>& deriv_xyz, const Core::LinAlg::Matrix<2, 8>& deriv,
+    const Core::LinAlg::Matrix<8, 3>& xyze, const Core::LinAlg::Matrix<3, 1>& normal);
+template void Core::FE::EvaluateShapeFunctionSpatialDerivativeInProbDim<Core::FE::CellType::quad9,
+    3>(Core::LinAlg::Matrix<3, 9>& deriv_xyz, const Core::LinAlg::Matrix<2, 9>& deriv,
+    const Core::LinAlg::Matrix<9, 3>& xyze, const Core::LinAlg::Matrix<3, 1>& normal);
+template void Core::FE::EvaluateShapeFunctionSpatialDerivativeInProbDim<Core::FE::CellType::tri3,
+    3>(Core::LinAlg::Matrix<3, 3>& deriv_xyz, const Core::LinAlg::Matrix<2, 3>& deriv,
+    const Core::LinAlg::Matrix<3, 3>& xyze, const Core::LinAlg::Matrix<3, 1>& normal);
+template void Core::FE::EvaluateShapeFunctionSpatialDerivativeInProbDim<Core::FE::CellType::tri6,
+    3>(Core::LinAlg::Matrix<3, 6>& deriv_xyz, const Core::LinAlg::Matrix<2, 6>& deriv,
+    const Core::LinAlg::Matrix<6, 3>& xyze, const Core::LinAlg::Matrix<3, 1>& normal);
 FOUR_C_NAMESPACE_CLOSE

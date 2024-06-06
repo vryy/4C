@@ -29,52 +29,52 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CONTACT::AUG::PenaltyUpdate* CONTACT::AUG::PenaltyUpdate::Create(
+CONTACT::Aug::PenaltyUpdate* CONTACT::Aug::PenaltyUpdate::Create(
     const Teuchos::ParameterList& sa_params)
 {
-  const INPAR::CONTACT::PenaltyUpdate update_type =
-      Teuchos::getIntegralValue<INPAR::CONTACT::PenaltyUpdate>(sa_params, "PENALTY_UPDATE");
+  const Inpar::CONTACT::PenaltyUpdate update_type =
+      Teuchos::getIntegralValue<Inpar::CONTACT::PenaltyUpdate>(sa_params, "PENALTY_UPDATE");
 
   return Create(update_type);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CONTACT::AUG::PenaltyUpdate* CONTACT::AUG::PenaltyUpdate::Create(
-    const INPAR::CONTACT::PenaltyUpdate update_type, const PenaltyUpdate* pu_src)
+CONTACT::Aug::PenaltyUpdate* CONTACT::Aug::PenaltyUpdate::Create(
+    const Inpar::CONTACT::PenaltyUpdate update_type, const PenaltyUpdate* pu_src)
 {
   switch (update_type)
   {
-    case INPAR::CONTACT::PenaltyUpdate::sufficient_lin_reduction:
+    case Inpar::CONTACT::PenaltyUpdate::sufficient_lin_reduction:
     {
       // call copy constructor
       if (pu_src) return new PenaltyUpdateSufficientLinReduction(*pu_src);
       return new PenaltyUpdateSufficientLinReduction();
     }
-    case INPAR::CONTACT::PenaltyUpdate::sufficient_angle:
+    case Inpar::CONTACT::PenaltyUpdate::sufficient_angle:
     {
       // call copy constructor
       if (pu_src) return new PenaltyUpdateSufficientAngle(*pu_src);
       return new PenaltyUpdateSufficientAngle();
     }
-    case INPAR::CONTACT::PenaltyUpdate::none:
+    case Inpar::CONTACT::PenaltyUpdate::none:
     {
       // call copy constructor
       if (pu_src) return new PenaltyUpdateEmpty(*pu_src);
       return new PenaltyUpdateEmpty();
     }
-    case INPAR::CONTACT::PenaltyUpdate::vague:
+    case Inpar::CONTACT::PenaltyUpdate::vague:
     {
       FOUR_C_THROW(
           "You specified no PENALTY_UPDATE routine. Fix you input file!\n"
           "enum = %d | \"%s\"",
-          update_type, INPAR::CONTACT::PenaltyUpdate2String(update_type).c_str());
+          update_type, Inpar::CONTACT::PenaltyUpdate2String(update_type).c_str());
       exit(EXIT_FAILURE);
     }
     default:
     {
       FOUR_C_THROW("Unknown penalty update type! (enum = %d | \"%s\")", update_type,
-          INPAR::CONTACT::PenaltyUpdate2String(update_type).c_str());
+          Inpar::CONTACT::PenaltyUpdate2String(update_type).c_str());
       exit(EXIT_FAILURE);
     }
   }
@@ -82,8 +82,8 @@ CONTACT::AUG::PenaltyUpdate* CONTACT::AUG::PenaltyUpdate::Create(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::PenaltyUpdate::Init(
-    CONTACT::AUG::Strategy* const strategy, CONTACT::AUG::DataContainer* const data)
+void CONTACT::Aug::PenaltyUpdate::Init(
+    CONTACT::Aug::Strategy* const strategy, CONTACT::Aug::DataContainer* const data)
 {
   strategy_ptr_ = strategy;
   data_ptr_ = data;
@@ -92,21 +92,21 @@ void CONTACT::AUG::PenaltyUpdate::Init(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::PenaltyUpdate::throw_if_not_initialized() const
+void CONTACT::Aug::PenaltyUpdate::throw_if_not_initialized() const
 {
   if (not isinit_) FOUR_C_THROW("Call Init() first!");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::PenaltyUpdate::set_state(
+void CONTACT::Aug::PenaltyUpdate::set_state(
     const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold, const Epetra_Vector& dir)
 {
   throw_if_not_initialized();
 
-  CORE::IO::cout(CORE::IO::debug) << std::string(40, '*') << CORE::IO::endl;
-  CORE::IO::cout(CORE::IO::debug) << __LINE__ << " -- " << CONTACT_FUNC_NAME << CORE::IO::endl;
-  CORE::IO::cout(CORE::IO::debug) << std::string(40, '*') << CORE::IO::endl;
+  Core::IO::cout(Core::IO::debug) << std::string(40, '*') << Core::IO::endl;
+  Core::IO::cout(Core::IO::debug) << __LINE__ << " -- " << CONTACT_FUNC_NAME << Core::IO::endl;
+  Core::IO::cout(Core::IO::debug) << std::string(40, '*') << Core::IO::endl;
 
   state_.Set(xold, dir, data());
 
@@ -117,15 +117,15 @@ void CONTACT::AUG::PenaltyUpdate::set_state(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::PenaltyUpdate::post_update()
+void CONTACT::Aug::PenaltyUpdate::post_update()
 {
-  PrintUpdate(CORE::IO::cout.os(CORE::IO::standard));
+  PrintUpdate(Core::IO::cout.os(Core::IO::standard));
   reset();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::PenaltyUpdate::reset()
+void CONTACT::Aug::PenaltyUpdate::reset()
 {
   state_.Reset();
   status_ = Status::unevaluated;
@@ -133,10 +133,10 @@ void CONTACT::AUG::PenaltyUpdate::reset()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::PenaltyUpdate::PrintInfo(std::ostream& os) const
+void CONTACT::Aug::PenaltyUpdate::PrintInfo(std::ostream& os) const
 {
-  os << "\nCONTACT::AUG::PenaltyUpdate\n";
-  os << "Type = " << INPAR::CONTACT::PenaltyUpdate2String(Type()) << "\n";
+  os << "\nCONTACT::Aug::PenaltyUpdate\n";
+  os << "Type = " << Inpar::CONTACT::PenaltyUpdate2String(Type()) << "\n";
   os << "isinit_ = " << (isinit_ ? "TRUE" : "FALSE") << "\n";
   os << "strategy_ptr_ = " << strategy_ptr_ << "\n";
   os << "data_ptr_ = " << data_ptr_ << "\n";
@@ -147,8 +147,8 @@ void CONTACT::AUG::PenaltyUpdate::PrintInfo(std::ostream& os) const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::PenaltyUpdate::State::Set(
-    const Epetra_Vector& xold, const Epetra_Vector& dir, const CONTACT::AUG::DataContainer& data)
+void CONTACT::Aug::PenaltyUpdate::State::Set(
+    const Epetra_Vector& xold, const Epetra_Vector& dir, const CONTACT::Aug::DataContainer& data)
 {
   xold_ = Teuchos::rcp(new Epetra_Vector(xold));
   full_direction_ = Teuchos::rcp(new Epetra_Vector(dir));
@@ -156,7 +156,7 @@ void CONTACT::AUG::PenaltyUpdate::State::Set(
   tributary_area_active_ = Teuchos::rcp(new Epetra_Vector(*data.KappaVecPtr()));
   tributary_area_inactive_ = Teuchos::rcp(new Epetra_Vector(*data.AVecPtr()));
 
-  CONTACT::AUG::Potential& pot = pu_.data().Potential();
+  CONTACT::Aug::Potential& pot = pu_.data().Potential();
   pot.Compute();
   gn_gn_ = pot.Get(POTENTIAL::Type::infeasibility_measure, POTENTIAL::SetType::active);
   pot.ComputeLin(dir);
@@ -166,7 +166,7 @@ void CONTACT::AUG::PenaltyUpdate::State::Set(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::PenaltyUpdate::State::Reset()
+void CONTACT::Aug::PenaltyUpdate::State::Reset()
 {
   xold_ = Teuchos::null;
   full_direction_ = Teuchos::null;
@@ -180,7 +180,7 @@ void CONTACT::AUG::PenaltyUpdate::State::Reset()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Vector& CONTACT::AUG::PenaltyUpdate::State::GetDirection() const
+const Epetra_Vector& CONTACT::Aug::PenaltyUpdate::State::GetDirection() const
 {
   if (full_direction_.is_null()) FOUR_C_THROW("Set the state first!");
 
@@ -189,9 +189,9 @@ const Epetra_Vector& CONTACT::AUG::PenaltyUpdate::State::GetDirection() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::PenaltyUpdate::State::Print(std::ostream& os) const
+void CONTACT::Aug::PenaltyUpdate::State::Print(std::ostream& os) const
 {
-  os << "--- CONTACT::AUG::PenaltyUpdate::State object\n";
+  os << "--- CONTACT::Aug::PenaltyUpdate::State object\n";
   os << "    <RCP> fulldirection_:" << full_direction_ << ")\n";
   os << "    <RCP> xold_: " << xold_ << "\n";
   os << "    <RCP> wgap_: " << wgap_ << "\n";
@@ -203,7 +203,7 @@ void CONTACT::AUG::PenaltyUpdate::State::Print(std::ostream& os) const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Vector& CONTACT::AUG::PenaltyUpdate::State::get_previously_accepted_state() const
+const Epetra_Vector& CONTACT::Aug::PenaltyUpdate::State::get_previously_accepted_state() const
 {
   if (xold_.is_null()) FOUR_C_THROW("Set the state first!");
 
@@ -212,7 +212,7 @@ const Epetra_Vector& CONTACT::AUG::PenaltyUpdate::State::get_previously_accepted
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Vector& CONTACT::AUG::PenaltyUpdate::State::GetWGap() const
+const Epetra_Vector& CONTACT::Aug::PenaltyUpdate::State::GetWGap() const
 {
   if (wgap_.is_null()) FOUR_C_THROW("Set the state first!");
 
@@ -221,7 +221,7 @@ const Epetra_Vector& CONTACT::AUG::PenaltyUpdate::State::GetWGap() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Vector& CONTACT::AUG::PenaltyUpdate::State::get_active_tributary_area() const
+const Epetra_Vector& CONTACT::Aug::PenaltyUpdate::State::get_active_tributary_area() const
 {
   if (tributary_area_active_.is_null()) FOUR_C_THROW("Set the state first!");
 
@@ -230,7 +230,7 @@ const Epetra_Vector& CONTACT::AUG::PenaltyUpdate::State::get_active_tributary_ar
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Vector& CONTACT::AUG::PenaltyUpdate::State::get_inactive_tributary_area() const
+const Epetra_Vector& CONTACT::Aug::PenaltyUpdate::State::get_inactive_tributary_area() const
 {
   if (tributary_area_inactive_.is_null()) FOUR_C_THROW("Set the state first!");
 
@@ -239,7 +239,7 @@ const Epetra_Vector& CONTACT::AUG::PenaltyUpdate::State::get_inactive_tributary_
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::PenaltyUpdate::Update(const CONTACT::ParamsInterface& cparams)
+void CONTACT::Aug::PenaltyUpdate::Update(const CONTACT::ParamsInterface& cparams)
 {
   pre_update();
 
@@ -250,7 +250,7 @@ void CONTACT::AUG::PenaltyUpdate::Update(const CONTACT::ParamsInterface& cparams
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::PenaltyUpdate::Decrease(const CONTACT::ParamsInterface& cparams)
+void CONTACT::Aug::PenaltyUpdate::Decrease(const CONTACT::ParamsInterface& cparams)
 {
   status_ = execute_decrease(cparams);
 
@@ -259,28 +259,28 @@ void CONTACT::AUG::PenaltyUpdate::Decrease(const CONTACT::ParamsInterface& cpara
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum CONTACT::AUG::PenaltyUpdate::Status CONTACT::AUG::PenaltyUpdate::execute_decrease(
+enum CONTACT::Aug::PenaltyUpdate::Status CONTACT::Aug::PenaltyUpdate::execute_decrease(
     const CONTACT::ParamsInterface& cparams)
 {
-  CORE::IO::cout(CORE::IO::standard) << std::string(80, '!') << "\n"
+  Core::IO::cout(Core::IO::standard) << std::string(80, '!') << "\n"
                                      << "WARNING: The current PenaltyUpdate strategy does "
                                         "not support a decrease of the regularization parameter!\n"
-                                     << std::string(80, '!') << CORE::IO::endl;
+                                     << std::string(80, '!') << Core::IO::endl;
 
   return Status::unevaluated;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::PenaltyUpdate::post_decrease()
+void CONTACT::Aug::PenaltyUpdate::post_decrease()
 {
-  PrintUpdate(CORE::IO::cout.os(CORE::IO::standard));
+  PrintUpdate(Core::IO::cout.os(Core::IO::standard));
   reset();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> CONTACT::AUG::PenaltyUpdate::get_d_gap_n(
+Teuchos::RCP<const Epetra_Vector> CONTACT::Aug::PenaltyUpdate::get_d_gap_n(
     const Epetra_Vector& dincr_slma) const
 {
   Teuchos::RCP<Epetra_Vector> dgapn_ptr =
@@ -293,7 +293,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::AUG::PenaltyUpdate::get_d_gap_n(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> CONTACT::AUG::PenaltyUpdate::get_inconsistent_d_gap_n(
+Teuchos::RCP<const Epetra_Vector> CONTACT::Aug::PenaltyUpdate::get_inconsistent_d_gap_n(
     const Epetra_Vector& dincr_slma) const
 {
   Teuchos::RCP<Epetra_Vector> dgapn_ptr =
@@ -306,9 +306,9 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::AUG::PenaltyUpdate::get_inconsistent_
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> CONTACT::AUG::PenaltyUpdate::get_problem_rhs(
+Teuchos::RCP<const Epetra_Vector> CONTACT::Aug::PenaltyUpdate::get_problem_rhs(
     const CONTACT::ParamsInterface& cparams,
-    const std::vector<INPAR::STR::ModelType>* without_these_models) const
+    const std::vector<Inpar::STR::ModelType>* without_these_models) const
 {
   const STR::MODELEVALUATOR::Generic& model = cparams.GetModelEvaluator();
   const STR::MODELEVALUATOR::Contact& cmodel =
@@ -319,8 +319,8 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::AUG::PenaltyUpdate::get_problem_rhs(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const CORE::LINALG::SparseMatrix>
-CONTACT::AUG::PenaltyUpdate::get_structural_stiffness_matrix(
+Teuchos::RCP<const Core::LinAlg::SparseMatrix>
+CONTACT::Aug::PenaltyUpdate::get_structural_stiffness_matrix(
     const CONTACT::ParamsInterface& cparams) const
 {
   const STR::MODELEVALUATOR::Generic& model = cparams.GetModelEvaluator();
@@ -328,14 +328,14 @@ CONTACT::AUG::PenaltyUpdate::get_structural_stiffness_matrix(
       dynamic_cast<const STR::MODELEVALUATOR::Contact&>(model);
 
   // access the full stiffness matrix
-  Teuchos::RCP<const CORE::LINALG::SparseMatrix> full_stiff_ptr =
+  Teuchos::RCP<const Core::LinAlg::SparseMatrix> full_stiff_ptr =
       cmodel.GetJacobianBlock(STR::MatBlockType::displ_displ);
   return full_stiff_ptr;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::PenaltyUpdate::PrintUpdate(std::ostream& os) const
+void CONTACT::Aug::PenaltyUpdate::PrintUpdate(std::ostream& os) const
 {
   double cnmax = 0.0;
   data().Cn().MaxValue(&cnmax);
@@ -344,7 +344,7 @@ void CONTACT::AUG::PenaltyUpdate::PrintUpdate(std::ostream& os) const
      << std::string(80, '=') << "\n"
      << "Update of the regularization parameter\n"
      << std::string(80, '=') << "\n";
-  os << "Type   = " << INPAR::CONTACT::PenaltyUpdate2String(Type()) << "\n"
+  os << "Type   = " << Inpar::CONTACT::PenaltyUpdate2String(Type()) << "\n"
      << "Increase Parameter = " << data().SaData().get_penalty_correction_parameter() << "\n"
      << "Decrease Parameter = " << data().SaData().get_penalty_decrease_correction_parameter()
      << "\n"
@@ -358,21 +358,21 @@ void CONTACT::AUG::PenaltyUpdate::PrintUpdate(std::ostream& os) const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-INPAR::CONTACT::PenaltyUpdate CONTACT::AUG::PenaltyUpdateEmpty::Type() const
+Inpar::CONTACT::PenaltyUpdate CONTACT::Aug::PenaltyUpdateEmpty::Type() const
 {
-  return INPAR::CONTACT::PenaltyUpdate::none;
+  return Inpar::CONTACT::PenaltyUpdate::none;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-INPAR::CONTACT::PenaltyUpdate CONTACT::AUG::PenaltyUpdateSufficientLinReduction::Type() const
+Inpar::CONTACT::PenaltyUpdate CONTACT::Aug::PenaltyUpdateSufficientLinReduction::Type() const
 {
-  return INPAR::CONTACT::PenaltyUpdate::sufficient_lin_reduction;
+  return Inpar::CONTACT::PenaltyUpdate::sufficient_lin_reduction;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::PenaltyUpdateSufficientLinReduction::set_state(
+void CONTACT::Aug::PenaltyUpdateSufficientLinReduction::set_state(
     const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold, const Epetra_Vector& dir)
 {
   PenaltyUpdate::set_state(cparams, xold, dir);
@@ -381,7 +381,7 @@ void CONTACT::AUG::PenaltyUpdateSufficientLinReduction::set_state(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum CONTACT::AUG::PenaltyUpdate::Status CONTACT::AUG::PenaltyUpdateSufficientLinReduction::execute(
+enum CONTACT::Aug::PenaltyUpdate::Status CONTACT::Aug::PenaltyUpdateSufficientLinReduction::execute(
     const CONTACT::ParamsInterface& cparams)
 {
   const State& state = get_state();
@@ -402,8 +402,8 @@ enum CONTACT::AUG::PenaltyUpdate::Status CONTACT::AUG::PenaltyUpdateSufficientLi
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum CONTACT::AUG::PenaltyUpdate::Status
-CONTACT::AUG::PenaltyUpdateSufficientLinReduction::execute_decrease(
+enum CONTACT::Aug::PenaltyUpdate::Status
+CONTACT::Aug::PenaltyUpdateSufficientLinReduction::execute_decrease(
     const CONTACT::ParamsInterface& cparams)
 {
   const State& state = get_state();
@@ -428,28 +428,28 @@ CONTACT::AUG::PenaltyUpdateSufficientLinReduction::execute_decrease(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::AUG::PenaltyUpdateSufficientLinReduction::beta_theta() const
+double CONTACT::Aug::PenaltyUpdateSufficientLinReduction::beta_theta() const
 {
   return data().SaData().get_penalty_correction_parameter();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::AUG::PenaltyUpdateSufficientLinReduction::beta_theta_decrease() const
+double CONTACT::Aug::PenaltyUpdateSufficientLinReduction::beta_theta_decrease() const
 {
   return data().SaData().get_penalty_decrease_correction_parameter();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-INPAR::CONTACT::PenaltyUpdate CONTACT::AUG::PenaltyUpdateSufficientAngle::Type() const
+Inpar::CONTACT::PenaltyUpdate CONTACT::Aug::PenaltyUpdateSufficientAngle::Type() const
 {
-  return INPAR::CONTACT::PenaltyUpdate::sufficient_angle;
+  return Inpar::CONTACT::PenaltyUpdate::sufficient_angle;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::PenaltyUpdateSufficientAngle::set_state(
+void CONTACT::Aug::PenaltyUpdateSufficientAngle::set_state(
     const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold, const Epetra_Vector& dir)
 {
   PenaltyUpdate::set_state(cparams, xold, dir);
@@ -479,12 +479,12 @@ void CONTACT::AUG::PenaltyUpdateSufficientAngle::set_state(
   const STR::MODELEVALUATOR::Contact& cmodel =
       dynamic_cast<const STR::MODELEVALUATOR::Contact&>(cparams.GetModelEvaluator());
 
-  const std::vector<INPAR::STR::ModelType> without_contact(1, cmodel.Type());
+  const std::vector<Inpar::STR::ModelType> without_contact(1, cmodel.Type());
   Teuchos::RCP<Epetra_Vector> str_gradient =
       cmodel.assemble_force_of_models(&without_contact, true);
 
   Epetra_Vector dincr_str(str_gradient->Map());
-  CORE::LINALG::ExtractMyVector(dir, dincr_str);
+  Core::LinAlg::ExtractMyVector(dir, dincr_str);
 
   double dstr_grad = 0.0;
   CATCH_EPETRA_ERROR(str_gradient->Dot(dincr_str, &dstr_grad));
@@ -492,7 +492,7 @@ void CONTACT::AUG::PenaltyUpdateSufficientAngle::set_state(
   // directional derivative of the active constraint gradient
   Teuchos::RCP<const Epetra_Vector> dgapn_ptr = get_inconsistent_d_gap_n(*dincr_slma);
   Epetra_Vector dgapn_active(*data().g_active_n_dof_row_map_ptr());
-  CORE::LINALG::ExtractMyVector(*dgapn_ptr, dgapn_active);
+  Core::LinAlg::ExtractMyVector(*dgapn_ptr, dgapn_active);
 
   double dgapn_zn = 0.0;
   CATCH_EPETRA_ERROR(dgapn_active.Dot(*zn_active, &dgapn_zn));
@@ -528,7 +528,7 @@ void CONTACT::AUG::PenaltyUpdateSufficientAngle::set_state(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum CONTACT::AUG::PenaltyUpdate::Status CONTACT::AUG::PenaltyUpdateSufficientAngle::execute(
+enum CONTACT::Aug::PenaltyUpdate::Status CONTACT::Aug::PenaltyUpdateSufficientAngle::execute(
     const CONTACT::ParamsInterface& cparams)
 {
   if (ratio() > 1.0)
@@ -541,7 +541,7 @@ enum CONTACT::AUG::PenaltyUpdate::Status CONTACT::AUG::PenaltyUpdateSufficientAn
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::AUG::PenaltyUpdateSufficientAngle::beta_angle() const
+double CONTACT::Aug::PenaltyUpdateSufficientAngle::beta_angle() const
 {
   return data().SaData().get_penalty_correction_parameter();
 }

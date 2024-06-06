@@ -23,11 +23,11 @@ FOUR_C_NAMESPACE_OPEN
 
 
 // Forward declarations.
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SerialDenseVector;
   class SerialDenseMatrix;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 namespace GEOMETRYPAIR
 {
   template <typename scalar_type, typename line, typename volume>
@@ -120,8 +120,8 @@ namespace BEAMINTERACTION
      * @param element2 Pointer to the second element
      * @param geometry_evaluation_data_ptr Evaluation data that will be linked to the pair.
      */
-    void CreateGeometryPair(const CORE::Elements::Element* element1,
-        const CORE::Elements::Element* element2,
+    void CreateGeometryPair(const Core::Elements::Element* element1,
+        const Core::Elements::Element* element2,
         const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
         override;
 
@@ -147,9 +147,9 @@ namespace BEAMINTERACTION
      * @param r_solid (in) Position on the solid.
      * @param force (out) Force acting on the beam (the negative force acts on the solid).
      */
-    virtual void evaluate_penalty_force_double(const CORE::LINALG::Matrix<3, 1, double>& r_beam,
-        const CORE::LINALG::Matrix<3, 1, double>& r_solid,
-        CORE::LINALG::Matrix<3, 1, double>& force) const;
+    virtual void evaluate_penalty_force_double(const Core::LinAlg::Matrix<3, 1, double>& r_beam,
+        const Core::LinAlg::Matrix<3, 1, double>& r_solid,
+        Core::LinAlg::Matrix<3, 1, double>& force) const;
 
     /**
      * \brief Get the reference position to be used for the evaluation of the coupling terms.
@@ -174,8 +174,8 @@ namespace BEAMINTERACTION
     //! is not the undeformed reference position, i.e. in restart simulations where the restart
     //! state is coupled. This only makes sense for volume mesh tying, which is why we also define
     //! the beam restart DOFs here.
-    CORE::LINALG::Matrix<beam::n_dof_, 1, double> ele1posref_offset_;
-    CORE::LINALG::Matrix<solid::n_dof_, 1, double> ele2posref_offset_;
+    Core::LinAlg::Matrix<beam::n_dof_, 1, double> ele1posref_offset_;
+    Core::LinAlg::Matrix<solid::n_dof_, 1, double> ele2posref_offset_;
   };
 }  // namespace BEAMINTERACTION
 

@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ADAPTER::FSIStructureWrapperImmersed::FSIStructureWrapperImmersed(Teuchos::RCP<Structure> structure)
+Adapter::FSIStructureWrapperImmersed::FSIStructureWrapperImmersed(Teuchos::RCP<Structure> structure)
     : FPSIStructureWrapper(structure)
 {
   // immersed_ale fsi part
@@ -35,19 +35,19 @@ ADAPTER::FSIStructureWrapperImmersed::FSIStructureWrapperImmersed(Teuchos::RCP<S
   vecSpaces.push_back(interface_->FSICondMap());       // fsi
   vecSpaces.push_back(interface_->IMMERSEDCondMap());  // immersed
 
-  combinedmap_ = CORE::LINALG::MultiMapExtractor::MergeMaps(vecSpaces);
+  combinedmap_ = Core::LinAlg::MultiMapExtractor::MergeMaps(vecSpaces);
 
   // full blockmap
-  CORE::LINALG::MultiMapExtractor blockrowdofmap;
+  Core::LinAlg::MultiMapExtractor blockrowdofmap;
   blockrowdofmap.Setup(*combinedmap_, vecSpaces);
 
-  combinedinterface_ = Teuchos::rcp(new CORE::LINALG::MapExtractor(
+  combinedinterface_ = Teuchos::rcp(new Core::LinAlg::MapExtractor(
       *combinedmap_, interface_->FSICondMap(), interface_->IMMERSEDCondMap()));
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FSIStructureWrapperImmersed::apply_immersed_interface_forces(
+void Adapter::FSIStructureWrapperImmersed::apply_immersed_interface_forces(
     Teuchos::RCP<Epetra_Vector> iforce_fsi, Teuchos::RCP<Epetra_Vector> iforce_immersed)
 {
   fsi_model_evaluator()->get_interface_force_np_ptr()->PutScalar(0.0);
@@ -64,7 +64,7 @@ void ADAPTER::FSIStructureWrapperImmersed::apply_immersed_interface_forces(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector>
-ADAPTER::FSIStructureWrapperImmersed::extract_immersed_interface_dispnp()
+Adapter::FSIStructureWrapperImmersed::extract_immersed_interface_dispnp()
 {
   FOUR_C_ASSERT(interface_->FullMap()->PointSameAs(Dispnp()->Map()),
       "Full map of map extractor and Dispnp() do not match.");
@@ -74,7 +74,7 @@ ADAPTER::FSIStructureWrapperImmersed::extract_immersed_interface_dispnp()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapperImmersed::extract_full_interface_dispnp()
+Teuchos::RCP<Epetra_Vector> Adapter::FSIStructureWrapperImmersed::extract_full_interface_dispnp()
 {
   FOUR_C_ASSERT(interface_->FullMap()->PointSameAs(Dispnp()->Map()),
       "Full map of map extractor and Dispnp() do not match.");
@@ -93,7 +93,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapperImmersed::extract_full_i
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector>
-ADAPTER::FSIStructureWrapperImmersed::predict_immersed_interface_dispnp()
+Adapter::FSIStructureWrapperImmersed::predict_immersed_interface_dispnp()
 {
   Teuchos::RCP<Epetra_Vector> idis;
 
@@ -134,7 +134,7 @@ ADAPTER::FSIStructureWrapperImmersed::predict_immersed_interface_dispnp()
     }
     default:
       FOUR_C_THROW(
-          "unknown interface displacement predictor '%s'", GLOBAL::Problem::Instance()
+          "unknown interface displacement predictor '%s'", Global::Problem::Instance()
                                                                ->FSIDynamicParams()
                                                                .sublist("PARTITIONED SOLVER")
                                                                .get<std::string>("PREDICTOR")
@@ -147,7 +147,7 @@ ADAPTER::FSIStructureWrapperImmersed::predict_immersed_interface_dispnp()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapperImmersed::predict_full_interface_dispnp()
+Teuchos::RCP<Epetra_Vector> Adapter::FSIStructureWrapperImmersed::predict_full_interface_dispnp()
 {
   Teuchos::RCP<Epetra_Vector> idis =
       Teuchos::rcp(new Epetra_Vector(*combinedinterface_->FullMap(), true));
@@ -219,7 +219,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapperImmersed::predict_full_i
     }
     default:
       FOUR_C_THROW(
-          "unknown interface displacement predictor '%s'", GLOBAL::Problem::Instance()
+          "unknown interface displacement predictor '%s'", Global::Problem::Instance()
                                                                ->FSIDynamicParams()
                                                                .sublist("PARTITIONED SOLVER")
                                                                .get<std::string>("PREDICTOR")
@@ -232,7 +232,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapperImmersed::predict_full_i
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FSIStructureWrapperImmersed::Output(
+void Adapter::FSIStructureWrapperImmersed::Output(
     bool forced_writerestart, const int step, const double time)
 {
   // always write velocity and displacement for extra output
@@ -264,14 +264,14 @@ void ADAPTER::FSIStructureWrapperImmersed::Output(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-STR::Dbc& ADAPTER::FSIStructureWrapperImmersed::GetDBC()
+STR::Dbc& Adapter::FSIStructureWrapperImmersed::GetDBC()
 {
-  return Teuchos::rcp_dynamic_cast<STR::TIMINT::Base>(structure_, true)->GetDBC();
+  return Teuchos::rcp_dynamic_cast<STR::TimeInt::Base>(structure_, true)->GetDBC();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FSIStructureWrapperImmersed::AddDirichDofs(
+void Adapter::FSIStructureWrapperImmersed::AddDirichDofs(
     const Teuchos::RCP<const Epetra_Map> maptoadd)
 {
   GetDBC().AddDirichDofs(maptoadd);
@@ -279,7 +279,7 @@ void ADAPTER::FSIStructureWrapperImmersed::AddDirichDofs(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FSIStructureWrapperImmersed::RemoveDirichDofs(
+void Adapter::FSIStructureWrapperImmersed::RemoveDirichDofs(
     const Teuchos::RCP<const Epetra_Map> maptoremove)
 {
   GetDBC().RemoveDirichDofs(maptoremove);
@@ -287,9 +287,9 @@ void ADAPTER::FSIStructureWrapperImmersed::RemoveDirichDofs(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FSIStructureWrapperImmersed::set_state(const Teuchos::RCP<Epetra_Vector>& x)
+void Adapter::FSIStructureWrapperImmersed::set_state(const Teuchos::RCP<Epetra_Vector>& x)
 {
-  return Teuchos::rcp_dynamic_cast<STR::TIMINT::Implicit>(structure_, true)->set_state(x);
+  return Teuchos::rcp_dynamic_cast<STR::TimeInt::Implicit>(structure_, true)->set_state(x);
 }
 
 FOUR_C_NAMESPACE_CLOSE

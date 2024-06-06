@@ -28,8 +28,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*======================================================================*/
 /*======================================================================*/
-MAT::MaterialDefinition::MaterialDefinition(
-    std::string materialname, std::string description, CORE::Materials::MaterialType mattype)
+Mat::MaterialDefinition::MaterialDefinition(
+    std::string materialname, std::string description, Core::Materials::MaterialType mattype)
     : materialname_(std::move(materialname)),
       description_(std::move(description)),
       mattype_(mattype)
@@ -38,7 +38,7 @@ MAT::MaterialDefinition::MaterialDefinition(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::MaterialDefinition::AddComponent(const Teuchos::RCP<INPUT::LineComponent>& c)
+void Mat::MaterialDefinition::AddComponent(const Teuchos::RCP<Input::LineComponent>& c)
 {
   inputline_.push_back(c);
 }
@@ -46,13 +46,13 @@ void MAT::MaterialDefinition::AddComponent(const Teuchos::RCP<INPUT::LineCompone
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::vector<std::pair<int, CORE::IO::InputParameterContainer>> MAT::MaterialDefinition::Read(
-    CORE::IO::DatFileReader& reader)
+std::vector<std::pair<int, Core::IO::InputParameterContainer>> Mat::MaterialDefinition::Read(
+    Core::IO::DatFileReader& reader)
 {
   std::string name = "--MATERIALS";
   std::vector<const char*> section = reader.Section(name);
 
-  std::vector<std::pair<int, CORE::IO::InputParameterContainer>> found_materials;
+  std::vector<std::pair<int, Core::IO::InputParameterContainer>> found_materials;
   if (!section.empty())
   {
     for (std::vector<const char*>::const_iterator i = section.begin(); i != section.end(); ++i)
@@ -66,7 +66,7 @@ std::vector<std::pair<int, CORE::IO::InputParameterContainer>> MAT::MaterialDefi
       condline->seekp(0, condline->end);
       *condline << " ";
 
-      CORE::IO::LineParser parser("While reading 'MATERIALS' section: ");
+      Core::IO::LineParser parser("While reading 'MATERIALS' section: ");
 
       parser.Consume(*condline, "MAT");
       const int matid = parser.Read<int>(*condline);
@@ -79,7 +79,7 @@ std::vector<std::pair<int, CORE::IO::InputParameterContainer>> MAT::MaterialDefi
       {
         if (matid <= -1) FOUR_C_THROW("Illegal negative ID provided");
 
-        CORE::IO::InputParameterContainer input_data;
+        Core::IO::InputParameterContainer input_data;
         for (auto& j : inputline_) condline = j->Read(Name(), condline, input_data);
 
         // current material input line contains bad elements
@@ -100,7 +100,8 @@ std::vector<std::pair<int, CORE::IO::InputParameterContainer>> MAT::MaterialDefi
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::ostream& MAT::MaterialDefinition::Print(std::ostream& stream, const DRT::Discretization* dis)
+std::ostream& Mat::MaterialDefinition::Print(
+    std::ostream& stream, const Discret::Discretization* dis)
 {
   // a string holding the comment indicating symbols for DAT input file
   const std::string comment = "//";
@@ -131,14 +132,14 @@ std::ostream& MAT::MaterialDefinition::Print(std::ostream& stream, const DRT::Di
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::AppendMaterialDefinition(std::vector<Teuchos::RCP<MaterialDefinition>>& matlist,
+void Mat::AppendMaterialDefinition(std::vector<Teuchos::RCP<MaterialDefinition>>& matlist,
     const Teuchos::RCP<MaterialDefinition>& mat)
 {
   // test if material was defined with same name or type
-  std::vector<Teuchos::RCP<MAT::MaterialDefinition>>::const_iterator m;
+  std::vector<Teuchos::RCP<Mat::MaterialDefinition>>::const_iterator m;
   for (m = matlist.begin(); m != matlist.end(); ++m)
   {
-    Teuchos::RCP<MAT::MaterialDefinition> mmd = *m;
+    Teuchos::RCP<Mat::MaterialDefinition> mmd = *m;
 
     if (mmd->Type() == mat->Type())
       FOUR_C_THROW(

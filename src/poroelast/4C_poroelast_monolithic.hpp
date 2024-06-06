@@ -24,7 +24,7 @@ namespace Teuchos
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
   class SparseOperator;
@@ -34,9 +34,9 @@ namespace CORE::LINALG
 
   class Equilibration;
   enum class EquilibrationMethod;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace POROELAST
+namespace PoroElast
 {
   //! base class of all monolithic Poroelasticity algorithms
   class Monolithic : public PoroBase
@@ -44,7 +44,7 @@ namespace POROELAST
    public:
     //! create using a Epetra_Comm
     Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams,
-        Teuchos::RCP<CORE::LINALG::MapExtractor> porosity_splitter);
+        Teuchos::RCP<Core::LinAlg::MapExtractor> porosity_splitter);
 
     /*! do the setup for the monolithic system
 
@@ -72,7 +72,7 @@ namespace POROELAST
     virtual void setup_system_matrix() { setup_system_matrix(*systemmatrix_); }
 
     //! setup composed system matrix from field solvers
-    virtual void setup_system_matrix(CORE::LINALG::BlockSparseMatrixBase& mat);
+    virtual void setup_system_matrix(Core::LinAlg::BlockSparseMatrixBase& mat);
 
     //! setup equilibration of system matrix
     void SetupEquilibration();
@@ -87,7 +87,7 @@ namespace POROELAST
     //! @name Access methods for subclasses
 
     //! extractor to communicate between full monolithic map and block maps
-    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> Extractor() const override
+    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> Extractor() const override
     {
       return blockrowdofmap_;
     }
@@ -101,10 +101,10 @@ namespace POROELAST
     // this method merges the block matrix when called.
     // As this is very expensive this,this method is not meant to be used any more.
     // Use BlockSystemMatrix() instead and assemble the blocks separately, if necessary.
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() override;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() override;
 
     //! block system matrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() override
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> BlockSystemMatrix() override
     {
       return systemmatrix_;
     }
@@ -223,8 +223,8 @@ namespace POROELAST
     [[maybe_unused]] void PoroFDCheck();
 
     //! Evaluate no penetration condition
-    void evaluate_condition(Teuchos::RCP<CORE::LINALG::SparseOperator> Sysmat,
-        POROELAST::Coupltype coupltype = POROELAST::fluidfluid);
+    void evaluate_condition(Teuchos::RCP<Core::LinAlg::SparseOperator> Sysmat,
+        PoroElast::Coupltype coupltype = PoroElast::fluidfluid);
 
     //! recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each time
     //! step (i.e. condensed forces onto the structure) needed for rhs in next time step
@@ -252,12 +252,12 @@ namespace POROELAST
 
     //! Evaluate mechanical-fluid system matrix
     virtual void apply_str_coupl_matrix(
-        Teuchos::RCP<CORE::LINALG::SparseOperator> k_sf  //!< mechanical-fluid stiffness matrix
+        Teuchos::RCP<Core::LinAlg::SparseOperator> k_sf  //!< mechanical-fluid stiffness matrix
     );
 
     //! Evaluate fluid-mechanical system matrix
     virtual void apply_fluid_coupl_matrix(
-        Teuchos::RCP<CORE::LINALG::SparseOperator> k_fs  //!< fluid-mechanical tangent matrix
+        Teuchos::RCP<Core::LinAlg::SparseOperator> k_fs  //!< fluid-mechanical tangent matrix
     );
 
     //!@}
@@ -282,7 +282,7 @@ namespace POROELAST
 
     bool solveradapttol_;                        //!< adapt solver tolerance
     double solveradaptolbetter_;                 //!< tolerance to which is adpated ????
-    Teuchos::RCP<CORE::LINALG::Solver> solver_;  //!< linear algebraic solver
+    Teuchos::RCP<Core::LinAlg::Solver> solver_;  //!< linear algebraic solver
 
     //!@}
 
@@ -301,17 +301,17 @@ namespace POROELAST
 
     //!@}
 
-    enum INPAR::STR::DynamicType strmethodname_;  //!< enum for STR time integration
+    enum Inpar::STR::DynamicType strmethodname_;  //!< enum for STR time integration
 
     //! @name Global matrixes
 
     //! block systemmatrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> systemmatrix_;
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> systemmatrix_;
 
     //! structure-fluid coupling matrix
-    Teuchos::RCP<CORE::LINALG::SparseOperator> k_sf_;
+    Teuchos::RCP<Core::LinAlg::SparseOperator> k_sf_;
     //! fluid-structure coupling matrix
-    Teuchos::RCP<CORE::LINALG::SparseOperator> k_fs_;
+    Teuchos::RCP<Core::LinAlg::SparseOperator> k_fs_;
 
     //!@}
 
@@ -319,22 +319,22 @@ namespace POROELAST
     Teuchos::RCP<Epetra_Map> fullmap_;
 
     //! dof row map splitted in (field) blocks
-    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> blockrowdofmap_;
+    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> blockrowdofmap_;
 
     //! dirichlet map of monolithic system
     Teuchos::RCP<Epetra_Map> combinedDBCMap_;
 
     //! return structure fluid coupling sparse matrix
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> struct_fluid_coupling_matrix();
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> struct_fluid_coupling_matrix();
 
     //! return fluid structure coupling sparse matrix
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> fluid_struct_coupling_matrix();
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> fluid_struct_coupling_matrix();
 
     //! return structure fluid coupling block sparse matrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> struct_fluid_coupling_block_matrix();
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> struct_fluid_coupling_block_matrix();
 
     //! return fluid structure coupling block sparse matrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> fluid_struct_coupling_block_matrix();
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> fluid_struct_coupling_block_matrix();
 
 
     //! @name poro-contact
@@ -358,12 +358,12 @@ namespace POROELAST
 
     //! @name Iterative solution technique
 
-    enum INPAR::POROELAST::ConvNorm normtypeinc_;   //!< convergence check for residual temperatures
-    enum INPAR::POROELAST::ConvNorm normtypefres_;  //!< convergence check for residual forces
-    enum INPAR::POROELAST::BinaryOp
+    enum Inpar::PoroElast::ConvNorm normtypeinc_;   //!< convergence check for residual temperatures
+    enum Inpar::PoroElast::ConvNorm normtypefres_;  //!< convergence check for residual forces
+    enum Inpar::PoroElast::BinaryOp
         combincfres_;  //!< binary operator to combine temperatures and forces
-    enum INPAR::POROELAST::VectorNorm vectornormfres_;  //!< type of norm for residual
-    enum INPAR::POROELAST::VectorNorm vectornorminc_;   //!< type of norm for increments
+    enum Inpar::PoroElast::VectorNorm vectornormfres_;  //!< type of norm for residual
+    enum Inpar::PoroElast::VectorNorm vectornorminc_;   //!< type of norm for increments
 
     double tolinc_;   //!< tolerance residual increment
     double tolfres_;  //!< tolerance force residual
@@ -429,16 +429,16 @@ namespace POROELAST
     //! @name matrix equilibration
 
     //! all equilibration of global system matrix and RHS is done in here
-    Teuchos::RCP<CORE::LINALG::Equilibration> equilibration_;
+    Teuchos::RCP<Core::LinAlg::Equilibration> equilibration_;
 
     //! equilibration method applied to system matrix
-    CORE::LINALG::EquilibrationMethod equilibration_method_;
+    Core::LinAlg::EquilibrationMethod equilibration_method_;
     //!@}
 
     //!@}
   };
 
-}  // namespace POROELAST
+}  // namespace PoroElast
 
 
 /*----------------------------------------------------------------------*/

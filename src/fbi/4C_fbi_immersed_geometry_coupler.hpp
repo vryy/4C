@@ -22,7 +22,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace ADAPTER
+namespace Adapter
 {
   class ConstraintEnforcerFactory;
 }
@@ -32,12 +32,12 @@ namespace BINSTRATEGY
   class BinningStrategy;
 }
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace CORE::GEO
+namespace Core::Geo
 {
   class SearchTree;
 }
@@ -70,7 +70,7 @@ namespace FBI
      * \param[in] discretizations vector containing the structure and fluid discretization
      * \param[in] structure_displacement vector containing the column structure displacement
      */
-    virtual void Setup(std::vector<Teuchos::RCP<DRT::Discretization>>&,
+    virtual void Setup(std::vector<Teuchos::RCP<Discret::Discretization>>&,
         Teuchos::RCP<const Epetra_Vector> structure_displacement);
 
     /**
@@ -87,7 +87,7 @@ namespace FBI
      * \returns map relating the beam element IDs to a vector of nearby fluid element IDs
      */
     virtual Teuchos::RCP<std::map<int, std::vector<int>>> Search(
-        std::vector<Teuchos::RCP<DRT::Discretization>>& discretizations,
+        std::vector<Teuchos::RCP<Discret::Discretization>>& discretizations,
         Teuchos::RCP<const Epetra_Vector>& column_structure_displacement);
 
     /**
@@ -98,7 +98,7 @@ namespace FBI
      * \note For now we assume that we only have beam elements in the structure discretization
      */
 
-    virtual void ExtendBeamGhosting(DRT::Discretization& discretization);
+    virtual void ExtendBeamGhosting(Discret::Discretization& discretization);
 
     /**
      * \brief Handles the parallel communication necessary to create the beam-fluid pairs
@@ -115,7 +115,7 @@ namespace FBI
      * of fluid elements ids which they potentially cut
      */
     virtual void PreparePairCreation(
-        std::vector<Teuchos::RCP<DRT::Discretization>>& discretizations,
+        std::vector<Teuchos::RCP<Discret::Discretization>>& discretizations,
         Teuchos::RCP<std::map<int, std::vector<int>>> pairids);
 
     /** \brief Update distribution of elements to bins
@@ -123,7 +123,7 @@ namespace FBI
      * \param[in] structure_discretization structure discretization
      * \param[in] structure_displacement vector containing the column structure displacement
      */
-    virtual void UpdateBinning(Teuchos::RCP<DRT::Discretization>& structure_discretization,
+    virtual void UpdateBinning(Teuchos::RCP<Discret::Discretization>& structure_discretization,
         Teuchos::RCP<const Epetra_Vector> structure_column_displacement){};
 
    protected:
@@ -140,8 +140,8 @@ namespace FBI
      * \param[in, out] positions map relating the node IDs to reference positions
      *
      */
-    virtual void compute_fixed_positions(DRT::Discretization& dis,
-        Teuchos::RCP<std::map<int, CORE::LINALG::Matrix<3, 1>>> positions) const;
+    virtual void compute_fixed_positions(Discret::Discretization& dis,
+        Teuchos::RCP<std::map<int, Core::LinAlg::Matrix<3, 1>>> positions) const;
 
     /**
      * \brief Computes the reference current positions needed for the search
@@ -150,18 +150,18 @@ namespace FBI
      * \param[in, out] positions map relating the node IDs to reference positions
      * \param[in] disp current displacements
      */
-    virtual void compute_current_positions(DRT::Discretization& dis,
-        Teuchos::RCP<std::map<int, CORE::LINALG::Matrix<3, 1>>> positions,
+    virtual void compute_current_positions(Discret::Discretization& dis,
+        Teuchos::RCP<std::map<int, Core::LinAlg::Matrix<3, 1>>> positions,
         Teuchos::RCP<const Epetra_Vector> disp) const;
 
     /// Get function for the fludi positions
-    virtual Teuchos::RCP<const std::map<int, CORE::LINALG::Matrix<3, 1>>> get_fluid_positions()
+    virtual Teuchos::RCP<const std::map<int, Core::LinAlg::Matrix<3, 1>>> get_fluid_positions()
         const final
     {
       return fluidpositions_;
     };
     /// Get function for the beam positions
-    virtual Teuchos::RCP<const std::map<int, CORE::LINALG::Matrix<3, 1>>> get_beam_positions()
+    virtual Teuchos::RCP<const std::map<int, Core::LinAlg::Matrix<3, 1>>> get_beam_positions()
         const final
     {
       return beampositions_;
@@ -170,13 +170,13 @@ namespace FBI
 
    private:
     /// Map storing the nodal positions of the fluid for the search
-    Teuchos::RCP<std::map<int, CORE::LINALG::Matrix<3, 1>>> fluidpositions_;
+    Teuchos::RCP<std::map<int, Core::LinAlg::Matrix<3, 1>>> fluidpositions_;
 
     /// Map storing the centerline positions of the beam for the search
-    Teuchos::RCP<std::map<int, CORE::LINALG::Matrix<3, 1>>> beampositions_;
+    Teuchos::RCP<std::map<int, Core::LinAlg::Matrix<3, 1>>> beampositions_;
 
     /// 3D search tree for embedded discretization
-    Teuchos::RCP<CORE::GEO::SearchTree> searchtree_;
+    Teuchos::RCP<Core::Geo::SearchTree> searchtree_;
 
     /** \brief The search radius is used for the pair search and describes the maximum distance of a
      * beam node and a respective fluid node in order for the respective element pair to be found

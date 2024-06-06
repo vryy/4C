@@ -54,19 +54,19 @@ namespace STR::ELEMENTS
   };
 }  // namespace STR::ELEMENTS
 
-namespace DRT::ELEMENTS::SHELL::DETAIL
+namespace Discret::ELEMENTS::Shell::DETAIL
 {
-  template <CORE::FE::CellType distype>
-  inline static constexpr int num_node = CORE::FE::num_nodes<distype>;
+  template <Core::FE::CellType distype>
+  inline static constexpr int num_node = Core::FE::num_nodes<distype>;
   inline static constexpr int num_dim = 3;
   inline static constexpr int node_dof = 6;
   inline static constexpr int num_internal_variables = 12;
 
-  template <CORE::FE::CellType distype>
+  template <Core::FE::CellType distype>
   inline static constexpr int numdofperelement = num_node<distype>* node_dof;
-}  // namespace DRT::ELEMENTS::SHELL::DETAIL
+}  // namespace Discret::ELEMENTS::Shell::DETAIL
 
-namespace STR::UTILS::SHELL
+namespace STR::UTILS::Shell
 {
   /*!
    * \brief Helper function for the nodal nullspace of Shell elements in 3D
@@ -92,14 +92,14 @@ namespace STR::UTILS::SHELL
    *  rotational (around x,y,z) nullspace contribution for given node
    */
   Teuchos::SerialDenseMatrix<int, double> ComputeShellNullSpace(
-      CORE::Nodes::Node& node, const double* x0, const CORE::LINALG::Matrix<3, 1>& dir);
+      Core::Nodes::Node& node, const double* x0, const Core::LinAlg::Matrix<3, 1>& dir);
 
   void NodalBlockInformationShell(
-      CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
+      Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
 
-  void LumpMassMatrix(CORE::LINALG::SerialDenseMatrix& mass_matrix);
+  void LumpMassMatrix(Core::LinAlg::SerialDenseMatrix& mass_matrix);
 
-  namespace DIRECTOR
+  namespace Director
   {
     /*!
      * @brief A setup routine for the nodal director after the whole input is read and before
@@ -109,7 +109,7 @@ namespace STR::UTILS::SHELL
      * @param dis (in) : Reference to the discretization
      */
     void SetupShellElementDirectors(
-        const CORE::Elements::ElementType& eletype, const DRT::Discretization& dis);
+        const Core::Elements::ElementType& eletype, const Discret::Discretization& dis);
 
     /*!
      * @brief Sets the nodal directors for one element
@@ -118,7 +118,7 @@ namespace STR::UTILS::SHELL
      * @param nodal_directors (in/out) : Nodal directors of one element
      */
     void SetupDirectorForElement(
-        const CORE::Elements::Element& ele, CORE::LINALG::SerialDenseMatrix& nodal_directors);
+        const Core::Elements::Element& ele, Core::LinAlg::SerialDenseMatrix& nodal_directors);
 
     /*!
      * @brief Evaluates the average director for one node depending on the neighboring nodes
@@ -127,8 +127,8 @@ namespace STR::UTILS::SHELL
      * @param num_directors (in) : Number of directors to be considered
      * @param nodal_director (in/out) : Nodal director
      */
-    void AverageDirector(const CORE::LINALG::Matrix<3, 8>& dir_list, const int num_directors,
-        CORE::LINALG::Matrix<3, 1>& nodal_director);
+    void AverageDirector(const Core::LinAlg::Matrix<3, 8>& dir_list, const int num_directors,
+        Core::LinAlg::Matrix<3, 1>& nodal_director);
 
     /*!
      * @brief Evaluates average directors at all nodes
@@ -137,8 +137,8 @@ namespace STR::UTILS::SHELL
      * @param dis (in) : Reference to the discretization
      * @param director_map (in/out) : Nodal director map
      */
-    void AverageDirectorsAtNodes(const CORE::Elements::ElementType& eletype,
-        const DRT::Discretization& dis, std::map<int, std::vector<double>>& director_map);
+    void AverageDirectorsAtNodes(const Core::Elements::ElementType& eletype,
+        const Discret::Discretization& dis, std::map<int, std::vector<double>>& director_map);
 
     /*!
      * @brief Export map of nodal directors from nodal row map to nodal column map
@@ -147,23 +147,23 @@ namespace STR::UTILS::SHELL
      * @param dis (in) : Reference to the discretization
      * @param director_map (in) : Nodal director map
      */
-    void ExportDirectorMapFromRowToColMap(const CORE::Elements::ElementType& eletype,
-        const DRT::Discretization& dis, std::map<int, std::vector<double>>& director_map);
+    void ExportDirectorMapFromRowToColMap(const Core::Elements::ElementType& eletype,
+        const Discret::Discretization& dis, std::map<int, std::vector<double>>& director_map);
 
-  }  // namespace DIRECTOR
+  }  // namespace Director
 
-  namespace READELEMENT
+  namespace ReadElement
   {
-    int ReadAndSetElementMaterial(INPUT::LineDefinition* linedef);
+    int ReadAndSetElementMaterial(Input::LineDefinition* linedef);
 
-    void ReadAndSetLockingTypes(const CORE::FE::CellType& distype, INPUT::LineDefinition* linedef,
+    void ReadAndSetLockingTypes(const Core::FE::CellType& distype, Input::LineDefinition* linedef,
         STR::ELEMENTS::ShellLockingTypes& locking_types);
 
-    int ReadAndSetNumANS(const CORE::FE::CellType& distype);
+    int ReadAndSetNumANS(const Core::FE::CellType& distype);
 
-  }  // namespace READELEMENT
+  }  // namespace ReadElement
 
-}  // namespace STR::UTILS::SHELL
+}  // namespace STR::UTILS::Shell
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -20,9 +20,9 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-void INPAR::IMMERSED::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::Immersed::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
-  using namespace INPUT;
+  using namespace Input;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
   Teuchos::ParameterList& immersedmethod =
@@ -69,11 +69,11 @@ void INPAR::IMMERSED::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       "summarize time monitor every nln iteration", tuple<std::string>("everyiter", "endofsim"),
       tuple<int>(1, 0), &immersedmethod);
 
-  CORE::UTILS::DoubleParameter(
+  Core::UTILS::DoubleParameter(
       "FLD_SRCHRADIUS_FAC", 1.0, "fac times fluid ele. diag. length", &immersedmethod);
-  CORE::UTILS::DoubleParameter(
+  Core::UTILS::DoubleParameter(
       "STRCT_SRCHRADIUS_FAC", 0.5, "fac times structure bounding box diagonal", &immersedmethod);
-  CORE::UTILS::IntParameter("NUM_GP_FLUID_BOUND", 8,
+  Core::UTILS::IntParameter("NUM_GP_FLUID_BOUND", 8,
       "number of gp in fluid elements cut by surface of immersed structure (higher number yields "
       "better mass conservation)",
       &immersedmethod);
@@ -94,48 +94,48 @@ void INPAR::IMMERSED::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       "Coupling variable at the fsi interface", tuple<std::string>("Displacement", "Force"),
       tuple<int>(0, 1), &immersedpart);
 
-  CORE::UTILS::DoubleParameter("CONVTOL", 1e-6,
+  Core::UTILS::DoubleParameter("CONVTOL", 1e-6,
       "Tolerance for iteration over fields in case of partitioned scheme", &immersedpart);
-  CORE::UTILS::DoubleParameter(
+  Core::UTILS::DoubleParameter(
       "RELAX", 1.0, "fixed relaxation parameter for partitioned FSI solvers", &immersedpart);
-  CORE::UTILS::DoubleParameter("MAXOMEGA", 0.0,
+  Core::UTILS::DoubleParameter("MAXOMEGA", 0.0,
       "largest omega allowed for Aitken relaxation (0.0 means no constraint)", &immersedpart);
-  CORE::UTILS::IntParameter(
+  Core::UTILS::IntParameter(
       "ITEMAX", 100, "Maximum number of iterations over fields", &immersedpart);
 }
 
 
 
-void INPAR::IMMERSED::SetValidConditions(
-    std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist)
+void Inpar::Immersed::SetValidConditions(
+    std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist)
 {
-  using namespace INPUT;
+  using namespace Input;
 
   /*--------------------------------------------------------------------*/
   // IMMERSED FSI
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> immersedsearchbox =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN VOLUME IMMERSED SEARCHBOX",
-          "ImmersedSearchbox", "Immersed Searchbox", CORE::Conditions::ImmersedSearchbox, true,
-          CORE::Conditions::geometry_type_volume));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> immersedsearchbox =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN VOLUME IMMERSED SEARCHBOX",
+          "ImmersedSearchbox", "Immersed Searchbox", Core::Conditions::ImmersedSearchbox, true,
+          Core::Conditions::geometry_type_volume));
 
   condlist.push_back(immersedsearchbox);
 
   /*--------------------------------------------------------------------*/
   // IMMERSED COUPLING
 
-  std::vector<Teuchos::RCP<INPUT::LineComponent>> immersedcomponents;
+  std::vector<Teuchos::RCP<Input::LineComponent>> immersedcomponents;
 
-  immersedcomponents.push_back(Teuchos::rcp(new INPUT::IntComponent("coupling id")));
+  immersedcomponents.push_back(Teuchos::rcp(new Input::IntComponent("coupling id")));
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> lineimmersed =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> lineimmersed =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN IMMERSED COUPLING LINE CONDITIONS", "IMMERSEDCoupling", "IMMERSED Coupling",
-          CORE::Conditions::IMMERSEDCoupling, true, CORE::Conditions::geometry_type_line));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> surfimmersed =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          Core::Conditions::IMMERSEDCoupling, true, Core::Conditions::geometry_type_line));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfimmersed =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN IMMERSED COUPLING SURF CONDITIONS", "IMMERSEDCoupling", "IMMERSED Coupling",
-          CORE::Conditions::IMMERSEDCoupling, true, CORE::Conditions::geometry_type_surface));
+          Core::Conditions::IMMERSEDCoupling, true, Core::Conditions::geometry_type_surface));
 
   for (unsigned i = 0; i < immersedcomponents.size(); ++i)
   {

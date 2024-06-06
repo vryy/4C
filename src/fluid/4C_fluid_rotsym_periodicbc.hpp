@@ -26,8 +26,8 @@ FOUR_C_NAMESPACE_OPEN
 namespace FLD
 {
   /// numdofpernode = number of dofs per node for fluid problem
-  template <CORE::FE::CellType distype, int numdofpernode,
-      DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+  template <Core::FE::CellType distype, int numdofpernode,
+      Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
 
   /*!
   \brief  This class manages local transformations(rotation) of velocity fields
@@ -43,9 +43,9 @@ namespace FLD
    public:
     /// number of nodes for this element type including virtual nodes
     static constexpr int elenumnode =
-        DRT::ELEMENTS::MultipleNumNode<enrtype>::multipleNode * CORE::FE::num_nodes<distype>;
+        Discret::ELEMENTS::MultipleNumNode<enrtype>::multipleNode * Core::FE::num_nodes<distype>;
     /// number of nodes for this element type (only real nodes)
-    static constexpr int elenumnodereal = CORE::FE::num_nodes<distype>;
+    static constexpr int elenumnodereal = Core::FE::num_nodes<distype>;
 
     /// standard constructor
     explicit RotationallySymmetricPeriodicBC() : rotangle_(0.0), rotmat_(true) { return; };
@@ -68,14 +68,14 @@ namespace FLD
     }
 
     /// prepare the class for this element
-    void Setup(CORE::Elements::Element* ele)
+    void Setup(Core::Elements::Element* ele)
     {
       // clean everything
       rotangle_ = 0.0;
       slavenodelids_.clear();
       rotmat_.Clear();
 
-      CORE::Nodes::Node** nodes = ele->Nodes();
+      Core::Nodes::Node** nodes = ele->Nodes();
       slavenodelids_.reserve(elenumnodereal);
 
       for (int inode = 0; inode < elenumnodereal; inode++)
@@ -131,7 +131,7 @@ namespace FLD
 
     /// rotate velocity vector used in element routine if necessary
     void rotate_my_values_if_necessary(
-        CORE::LINALG::Matrix<numdofpernode - 1, elenumnode>& myvalues)
+        Core::LinAlg::Matrix<numdofpernode - 1, elenumnode>& myvalues)
     {
       if (HasRotSymmPBC())
       {
@@ -152,7 +152,7 @@ namespace FLD
 
     /// rotate velocity vector used in element routine if necessary
     template <int rows, int cols>
-    void rotate_my_values_if_necessary(CORE::LINALG::Matrix<rows, cols>& myvalues)
+    void rotate_my_values_if_necessary(Core::LinAlg::Matrix<rows, cols>& myvalues)
     {
       if (HasRotSymmPBC())
       {
@@ -173,9 +173,9 @@ namespace FLD
 
     /// rotate element matrix and vectors if necessary (first version)
     void rotate_matand_vec_if_necessary(
-        CORE::LINALG::Matrix<numdofpernode * elenumnode, numdofpernode * elenumnode>& elemat1,
-        CORE::LINALG::Matrix<numdofpernode * elenumnode, numdofpernode * elenumnode>& elemat2,
-        CORE::LINALG::Matrix<numdofpernode * elenumnode, 1>& elevec1)
+        Core::LinAlg::Matrix<numdofpernode * elenumnode, numdofpernode * elenumnode>& elemat1,
+        Core::LinAlg::Matrix<numdofpernode * elenumnode, numdofpernode * elenumnode>& elemat2,
+        Core::LinAlg::Matrix<numdofpernode * elenumnode, 1>& elevec1)
     {
       if (HasRotSymmPBC())
       {
@@ -187,25 +187,25 @@ namespace FLD
          */
         if (elemat1.IsInitialized())  // do not try to access an uninitialized matrix!
         {
-          CORE::LINALG::Matrix<numdofpernode * elenumnode, numdofpernode * elenumnode> elematold1(
+          Core::LinAlg::Matrix<numdofpernode * elenumnode, numdofpernode * elenumnode> elematold1(
               elemat1);
-          CORE::LINALG::Matrix<numdofpernode * elenumnode, numdofpernode * elenumnode> tempmatrix(
+          Core::LinAlg::Matrix<numdofpernode * elenumnode, numdofpernode * elenumnode> tempmatrix(
               true);
           tempmatrix.MultiplyNT(elematold1, rotmat_);
           elemat1.Multiply(rotmat_, tempmatrix);
         }
         if (elemat2.IsInitialized())
         {
-          CORE::LINALG::Matrix<numdofpernode * elenumnode, numdofpernode * elenumnode> elematold2(
+          Core::LinAlg::Matrix<numdofpernode * elenumnode, numdofpernode * elenumnode> elematold2(
               elemat2);
-          CORE::LINALG::Matrix<numdofpernode * elenumnode, numdofpernode * elenumnode> tempmatrix(
+          Core::LinAlg::Matrix<numdofpernode * elenumnode, numdofpernode * elenumnode> tempmatrix(
               true);
           tempmatrix.MultiplyNT(elematold2, rotmat_);
           elemat2.Multiply(rotmat_, tempmatrix);
         }
         if (elevec1.IsInitialized())
         {
-          CORE::LINALG::Matrix<numdofpernode * elenumnode, 1> elevec1old(elevec1);
+          Core::LinAlg::Matrix<numdofpernode * elenumnode, 1> elevec1old(elevec1);
           elevec1.Multiply(rotmat_, elevec1old);
         }
       }
@@ -214,8 +214,8 @@ namespace FLD
 
     /// rotate element matrix and vectors if necessary (second version)
     void rotate_matand_vec_if_necessary(
-        CORE::LINALG::Matrix<numdofpernode * elenumnode, numdofpernode * elenumnode>& elemat1,
-        CORE::LINALG::Matrix<numdofpernode * elenumnode, 1>& elevec1)
+        Core::LinAlg::Matrix<numdofpernode * elenumnode, numdofpernode * elenumnode>& elemat1,
+        Core::LinAlg::Matrix<numdofpernode * elenumnode, 1>& elevec1)
     {
       if (HasRotSymmPBC())
       {
@@ -227,9 +227,9 @@ namespace FLD
          */
         if (elemat1.IsInitialized())  // do not try to access an uninitialized matrix!
         {
-          CORE::LINALG::Matrix<numdofpernode * elenumnode, numdofpernode * elenumnode> elemat1old(
+          Core::LinAlg::Matrix<numdofpernode * elenumnode, numdofpernode * elenumnode> elemat1old(
               elemat1);
-          CORE::LINALG::Matrix<numdofpernode * elenumnode, numdofpernode * elenumnode> tempmatrix(
+          Core::LinAlg::Matrix<numdofpernode * elenumnode, numdofpernode * elenumnode> tempmatrix(
               true);
           tempmatrix.MultiplyNT(elemat1old, rotmat_);
           elemat1.Multiply(rotmat_, tempmatrix);
@@ -237,7 +237,7 @@ namespace FLD
 
         if (elevec1.IsInitialized())
         {
-          CORE::LINALG::Matrix<numdofpernode * elenumnode, 1> elevec1old(elevec1);
+          Core::LinAlg::Matrix<numdofpernode * elenumnode, 1> elevec1old(elevec1);
           elevec1.Multiply(rotmat_, elevec1old);
         }
       }
@@ -254,7 +254,7 @@ namespace FLD
     double rotangle_;
 
     //! rotation matrix
-    CORE::LINALG::Matrix<numdofpernode * elenumnode, numdofpernode * elenumnode> rotmat_;
+    Core::LinAlg::Matrix<numdofpernode * elenumnode, numdofpernode * elenumnode> rotmat_;
   };
 
 }  // namespace FLD

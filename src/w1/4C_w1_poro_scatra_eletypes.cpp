@@ -19,17 +19,18 @@ FOUR_C_NAMESPACE_OPEN
  |  QUAD 4 Element                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
 
-DRT::ELEMENTS::WallQuad4PoroScatraType DRT::ELEMENTS::WallQuad4PoroScatraType::instance_;
+Discret::ELEMENTS::WallQuad4PoroScatraType Discret::ELEMENTS::WallQuad4PoroScatraType::instance_;
 
-DRT::ELEMENTS::WallQuad4PoroScatraType& DRT::ELEMENTS::WallQuad4PoroScatraType::Instance()
+Discret::ELEMENTS::WallQuad4PoroScatraType& Discret::ELEMENTS::WallQuad4PoroScatraType::Instance()
 {
   return instance_;
 }
 
-CORE::COMM::ParObject* DRT::ELEMENTS::WallQuad4PoroScatraType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Discret::ELEMENTS::WallQuad4PoroScatraType::Create(
+    const std::vector<char>& data)
 {
-  DRT::ELEMENTS::Wall1PoroScatra<CORE::FE::CellType::quad4>* object =
-      new DRT::ELEMENTS::Wall1PoroScatra<CORE::FE::CellType::quad4>(-1, -1);
+  Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::quad4>* object =
+      new Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::quad4>(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -37,13 +38,13 @@ CORE::COMM::ParObject* DRT::ELEMENTS::WallQuad4PoroScatraType::Create(const std:
 /*----------------------------------------------------------------------*
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::WallQuad4PoroScatraType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallQuad4PoroScatraType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "WALLQ4POROSCATRA")
   {
-    Teuchos::RCP<CORE::Elements::Element> ele =
-        Teuchos::rcp(new DRT::ELEMENTS::Wall1PoroScatra<CORE::FE::CellType::quad4>(id, owner));
+    Teuchos::RCP<Core::Elements::Element> ele =
+        Teuchos::rcp(new Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::quad4>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -52,45 +53,46 @@ Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::WallQuad4PoroScatraType::Cr
 /*----------------------------------------------------------------------*
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::WallQuad4PoroScatraType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallQuad4PoroScatraType::Create(
     const int id, const int owner)
 {
-  Teuchos::RCP<CORE::Elements::Element> ele =
-      Teuchos::rcp(new DRT::ELEMENTS::Wall1PoroScatra<CORE::FE::CellType::quad4>(id, owner));
+  Teuchos::RCP<Core::Elements::Element> ele =
+      Teuchos::rcp(new Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::quad4>(id, owner));
   return ele;
 }
 
 /*----------------------------------------------------------------------*
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::WallQuad4PoroScatraType::setup_element_definition(
-    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+void Discret::ELEMENTS::WallQuad4PoroScatraType::setup_element_definition(
+    std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
-  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_wall;
+  std::map<std::string, std::map<std::string, Input::LineDefinition>> definitions_wall;
   WallQuad4PoroType::setup_element_definition(definitions_wall);
 
-  std::map<std::string, INPUT::LineDefinition>& defs_wall = definitions_wall["WALLQ4PORO"];
+  std::map<std::string, Input::LineDefinition>& defs_wall = definitions_wall["WALLQ4PORO"];
 
-  std::map<std::string, INPUT::LineDefinition>& defs = definitions["WALLQ4POROSCATRA"];
+  std::map<std::string, Input::LineDefinition>& defs = definitions["WALLQ4POROSCATRA"];
 
-  defs["QUAD4"] = INPUT::LineDefinition::Builder(defs_wall["QUAD4"]).AddNamedString("TYPE").Build();
+  defs["QUAD4"] = Input::LineDefinition::Builder(defs_wall["QUAD4"]).AddNamedString("TYPE").Build();
 }
 
 
 /*----------------------------------------------------------------------*
  |  QUAD 9 Element                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::WallQuad9PoroScatraType DRT::ELEMENTS::WallQuad9PoroScatraType::instance_;
+Discret::ELEMENTS::WallQuad9PoroScatraType Discret::ELEMENTS::WallQuad9PoroScatraType::instance_;
 
-DRT::ELEMENTS::WallQuad9PoroScatraType& DRT::ELEMENTS::WallQuad9PoroScatraType::Instance()
+Discret::ELEMENTS::WallQuad9PoroScatraType& Discret::ELEMENTS::WallQuad9PoroScatraType::Instance()
 {
   return instance_;
 }
 
-CORE::COMM::ParObject* DRT::ELEMENTS::WallQuad9PoroScatraType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Discret::ELEMENTS::WallQuad9PoroScatraType::Create(
+    const std::vector<char>& data)
 {
-  DRT::ELEMENTS::Wall1PoroScatra<CORE::FE::CellType::quad9>* object =
-      new DRT::ELEMENTS::Wall1PoroScatra<CORE::FE::CellType::quad9>(-1, -1);
+  Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::quad9>* object =
+      new Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::quad9>(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -98,13 +100,13 @@ CORE::COMM::ParObject* DRT::ELEMENTS::WallQuad9PoroScatraType::Create(const std:
 /*----------------------------------------------------------------------*
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::WallQuad9PoroScatraType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallQuad9PoroScatraType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "WALLQ9POROSCATRA")
   {
-    Teuchos::RCP<CORE::Elements::Element> ele =
-        Teuchos::rcp(new DRT::ELEMENTS::Wall1PoroScatra<CORE::FE::CellType::quad9>(id, owner));
+    Teuchos::RCP<Core::Elements::Element> ele =
+        Teuchos::rcp(new Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::quad9>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -113,46 +115,46 @@ Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::WallQuad9PoroScatraType::Cr
 /*----------------------------------------------------------------------*
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::WallQuad9PoroScatraType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallQuad9PoroScatraType::Create(
     const int id, const int owner)
 {
-  Teuchos::RCP<CORE::Elements::Element> ele =
-      Teuchos::rcp(new DRT::ELEMENTS::Wall1PoroScatra<CORE::FE::CellType::quad9>(id, owner));
+  Teuchos::RCP<Core::Elements::Element> ele =
+      Teuchos::rcp(new Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::quad9>(id, owner));
   return ele;
 }
 
 /*----------------------------------------------------------------------*
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::WallQuad9PoroScatraType::setup_element_definition(
-    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+void Discret::ELEMENTS::WallQuad9PoroScatraType::setup_element_definition(
+    std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
-  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_wall;
+  std::map<std::string, std::map<std::string, Input::LineDefinition>> definitions_wall;
   WallQuad9PoroType::setup_element_definition(definitions_wall);
 
-  std::map<std::string, INPUT::LineDefinition>& defs_wall = definitions_wall["WALLQ9PORO"];
+  std::map<std::string, Input::LineDefinition>& defs_wall = definitions_wall["WALLQ9PORO"];
 
-  std::map<std::string, INPUT::LineDefinition>& defs = definitions["WALLQ9POROSCATRA"];
+  std::map<std::string, Input::LineDefinition>& defs = definitions["WALLQ9POROSCATRA"];
 
-  defs["QUAD9"] = INPUT::LineDefinition::Builder(defs_wall["QUAD9"]).AddNamedString("TYPE").Build();
+  defs["QUAD9"] = Input::LineDefinition::Builder(defs_wall["QUAD9"]).AddNamedString("TYPE").Build();
 }
 
 /*----------------------------------------------------------------------*
  |  NURBS 4 Element                                       schmidt 09/17 |
  *----------------------------------------------------------------------*/
 
-DRT::ELEMENTS::WallNurbs4PoroScatraType DRT::ELEMENTS::WallNurbs4PoroScatraType::instance_;
+Discret::ELEMENTS::WallNurbs4PoroScatraType Discret::ELEMENTS::WallNurbs4PoroScatraType::instance_;
 
-DRT::ELEMENTS::WallNurbs4PoroScatraType& DRT::ELEMENTS::WallNurbs4PoroScatraType::Instance()
+Discret::ELEMENTS::WallNurbs4PoroScatraType& Discret::ELEMENTS::WallNurbs4PoroScatraType::Instance()
 {
   return instance_;
 }
 
-CORE::COMM::ParObject* DRT::ELEMENTS::WallNurbs4PoroScatraType::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::WallNurbs4PoroScatraType::Create(
     const std::vector<char>& data)
 {
-  DRT::ELEMENTS::Wall1PoroScatra<CORE::FE::CellType::nurbs4>* object =
-      new DRT::ELEMENTS::Wall1PoroScatra<CORE::FE::CellType::nurbs4>(-1, -1);
+  Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::nurbs4>* object =
+      new Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::nurbs4>(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -160,13 +162,13 @@ CORE::COMM::ParObject* DRT::ELEMENTS::WallNurbs4PoroScatraType::Create(
 /*----------------------------------------------------------------------*
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::WallNurbs4PoroScatraType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallNurbs4PoroScatraType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "WALLN4POROSCATRA")
   {
-    Teuchos::RCP<CORE::Elements::Element> ele =
-        Teuchos::rcp(new DRT::ELEMENTS::Wall1PoroScatra<CORE::FE::CellType::nurbs4>(id, owner));
+    Teuchos::RCP<Core::Elements::Element> ele =
+        Teuchos::rcp(new Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::nurbs4>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -175,47 +177,47 @@ Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::WallNurbs4PoroScatraType::C
 /*----------------------------------------------------------------------*
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::WallNurbs4PoroScatraType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallNurbs4PoroScatraType::Create(
     const int id, const int owner)
 {
-  Teuchos::RCP<CORE::Elements::Element> ele =
-      Teuchos::rcp(new DRT::ELEMENTS::Wall1PoroScatra<CORE::FE::CellType::nurbs4>(id, owner));
+  Teuchos::RCP<Core::Elements::Element> ele =
+      Teuchos::rcp(new Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::nurbs4>(id, owner));
   return ele;
 }
 
 /*----------------------------------------------------------------------*
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::WallNurbs4PoroScatraType::setup_element_definition(
-    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+void Discret::ELEMENTS::WallNurbs4PoroScatraType::setup_element_definition(
+    std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
-  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_wall;
+  std::map<std::string, std::map<std::string, Input::LineDefinition>> definitions_wall;
   WallNurbs4PoroType::setup_element_definition(definitions_wall);
 
-  std::map<std::string, INPUT::LineDefinition>& defs_wall = definitions_wall["WALLN4PORO"];
+  std::map<std::string, Input::LineDefinition>& defs_wall = definitions_wall["WALLN4PORO"];
 
-  std::map<std::string, INPUT::LineDefinition>& defs = definitions["WALLN4POROSCATRA"];
+  std::map<std::string, Input::LineDefinition>& defs = definitions["WALLN4POROSCATRA"];
 
   defs["NURBS4"] =
-      INPUT::LineDefinition::Builder(defs_wall["NURBS4"]).AddNamedString("TYPE").Build();
+      Input::LineDefinition::Builder(defs_wall["NURBS4"]).AddNamedString("TYPE").Build();
 }
 
 /*----------------------------------------------------------------------*
  |  NURBS 9 Element                                       schmidt 09/17 |
  *----------------------------------------------------------------------*/
 
-DRT::ELEMENTS::WallNurbs9PoroScatraType DRT::ELEMENTS::WallNurbs9PoroScatraType::instance_;
+Discret::ELEMENTS::WallNurbs9PoroScatraType Discret::ELEMENTS::WallNurbs9PoroScatraType::instance_;
 
-DRT::ELEMENTS::WallNurbs9PoroScatraType& DRT::ELEMENTS::WallNurbs9PoroScatraType::Instance()
+Discret::ELEMENTS::WallNurbs9PoroScatraType& Discret::ELEMENTS::WallNurbs9PoroScatraType::Instance()
 {
   return instance_;
 }
 
-CORE::COMM::ParObject* DRT::ELEMENTS::WallNurbs9PoroScatraType::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::WallNurbs9PoroScatraType::Create(
     const std::vector<char>& data)
 {
-  DRT::ELEMENTS::Wall1PoroScatra<CORE::FE::CellType::nurbs9>* object =
-      new DRT::ELEMENTS::Wall1PoroScatra<CORE::FE::CellType::nurbs9>(-1, -1);
+  Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::nurbs9>* object =
+      new Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::nurbs9>(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -223,13 +225,13 @@ CORE::COMM::ParObject* DRT::ELEMENTS::WallNurbs9PoroScatraType::Create(
 /*----------------------------------------------------------------------*
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::WallNurbs9PoroScatraType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallNurbs9PoroScatraType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "WALLN9POROSCATRA")
   {
-    Teuchos::RCP<CORE::Elements::Element> ele =
-        Teuchos::rcp(new DRT::ELEMENTS::Wall1PoroScatra<CORE::FE::CellType::nurbs9>(id, owner));
+    Teuchos::RCP<Core::Elements::Element> ele =
+        Teuchos::rcp(new Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::nurbs9>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -238,46 +240,47 @@ Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::WallNurbs9PoroScatraType::C
 /*----------------------------------------------------------------------*
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::WallNurbs9PoroScatraType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallNurbs9PoroScatraType::Create(
     const int id, const int owner)
 {
-  Teuchos::RCP<CORE::Elements::Element> ele =
-      Teuchos::rcp(new DRT::ELEMENTS::Wall1PoroScatra<CORE::FE::CellType::nurbs9>(id, owner));
+  Teuchos::RCP<Core::Elements::Element> ele =
+      Teuchos::rcp(new Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::nurbs9>(id, owner));
   return ele;
 }
 
 /*----------------------------------------------------------------------*
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::WallNurbs9PoroScatraType::setup_element_definition(
-    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+void Discret::ELEMENTS::WallNurbs9PoroScatraType::setup_element_definition(
+    std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
-  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_wall;
+  std::map<std::string, std::map<std::string, Input::LineDefinition>> definitions_wall;
   WallNurbs9PoroType::setup_element_definition(definitions_wall);
 
-  std::map<std::string, INPUT::LineDefinition>& defs_wall = definitions_wall["WALLN9PORO"];
+  std::map<std::string, Input::LineDefinition>& defs_wall = definitions_wall["WALLN9PORO"];
 
-  std::map<std::string, INPUT::LineDefinition>& defs = definitions["WALLN9POROSCATRA"];
+  std::map<std::string, Input::LineDefinition>& defs = definitions["WALLN9POROSCATRA"];
 
   defs["NURBS9"] =
-      INPUT::LineDefinition::Builder(defs_wall["NURBS9"]).AddNamedString("TYPE").Build();
+      Input::LineDefinition::Builder(defs_wall["NURBS9"]).AddNamedString("TYPE").Build();
 }
 
 /*----------------------------------------------------------------------*
  |  TRI 3 Element                                         schmidt 09/17 |
  *----------------------------------------------------------------------*/
 
-DRT::ELEMENTS::WallTri3PoroScatraType DRT::ELEMENTS::WallTri3PoroScatraType::instance_;
+Discret::ELEMENTS::WallTri3PoroScatraType Discret::ELEMENTS::WallTri3PoroScatraType::instance_;
 
-DRT::ELEMENTS::WallTri3PoroScatraType& DRT::ELEMENTS::WallTri3PoroScatraType::Instance()
+Discret::ELEMENTS::WallTri3PoroScatraType& Discret::ELEMENTS::WallTri3PoroScatraType::Instance()
 {
   return instance_;
 }
 
-CORE::COMM::ParObject* DRT::ELEMENTS::WallTri3PoroScatraType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Discret::ELEMENTS::WallTri3PoroScatraType::Create(
+    const std::vector<char>& data)
 {
-  DRT::ELEMENTS::Wall1PoroScatra<CORE::FE::CellType::tri3>* object =
-      new DRT::ELEMENTS::Wall1PoroScatra<CORE::FE::CellType::tri3>(-1, -1);
+  Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::tri3>* object =
+      new Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::tri3>(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -285,13 +288,13 @@ CORE::COMM::ParObject* DRT::ELEMENTS::WallTri3PoroScatraType::Create(const std::
 /*----------------------------------------------------------------------*
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::WallTri3PoroScatraType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallTri3PoroScatraType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "WALLT3POROSCATRA")
   {
-    Teuchos::RCP<CORE::Elements::Element> ele =
-        Teuchos::rcp(new DRT::ELEMENTS::Wall1PoroScatra<CORE::FE::CellType::tri3>(id, owner));
+    Teuchos::RCP<Core::Elements::Element> ele =
+        Teuchos::rcp(new Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::tri3>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -300,28 +303,28 @@ Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::WallTri3PoroScatraType::Cre
 /*----------------------------------------------------------------------*
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::WallTri3PoroScatraType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallTri3PoroScatraType::Create(
     const int id, const int owner)
 {
-  Teuchos::RCP<CORE::Elements::Element> ele =
-      Teuchos::rcp(new DRT::ELEMENTS::Wall1PoroScatra<CORE::FE::CellType::tri3>(id, owner));
+  Teuchos::RCP<Core::Elements::Element> ele =
+      Teuchos::rcp(new Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::tri3>(id, owner));
   return ele;
 }
 
 /*----------------------------------------------------------------------*
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::WallTri3PoroScatraType::setup_element_definition(
-    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+void Discret::ELEMENTS::WallTri3PoroScatraType::setup_element_definition(
+    std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
-  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_wall;
+  std::map<std::string, std::map<std::string, Input::LineDefinition>> definitions_wall;
   WallTri3PoroType::setup_element_definition(definitions_wall);
 
-  std::map<std::string, INPUT::LineDefinition>& defs_wall = definitions_wall["WALLT3PORO"];
+  std::map<std::string, Input::LineDefinition>& defs_wall = definitions_wall["WALLT3PORO"];
 
-  std::map<std::string, INPUT::LineDefinition>& defs = definitions["WALLT3POROSCATRA"];
+  std::map<std::string, Input::LineDefinition>& defs = definitions["WALLT3POROSCATRA"];
 
-  defs["TRI3"] = INPUT::LineDefinition::Builder(defs_wall["TRI3"]).AddNamedString("TYPE").Build();
+  defs["TRI3"] = Input::LineDefinition::Builder(defs_wall["TRI3"]).AddNamedString("TYPE").Build();
 }
 
 FOUR_C_NAMESPACE_CLOSE

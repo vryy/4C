@@ -16,8 +16,8 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void MAT::ReadAnisotropyFiber(
-    INPUT::LineDefinition* linedef, std::string specifier, CORE::LINALG::Matrix<3, 1>& fiber_vector)
+void Mat::ReadAnisotropyFiber(
+    Input::LineDefinition* linedef, std::string specifier, Core::LinAlg::Matrix<3, 1>& fiber_vector)
 {
   std::vector<double> fiber;
   linedef->ExtractDoubleVector(std::move(specifier), fiber);
@@ -42,10 +42,10 @@ void MAT::ReadAnisotropyFiber(
 }
 
 template <typename T, unsigned int numfib>
-void MAT::compute_structural_tensors(
-    std::vector<std::array<CORE::LINALG::Matrix<3, 1>, numfib>>& fibers,
+void Mat::compute_structural_tensors(
+    std::vector<std::array<Core::LinAlg::Matrix<3, 1>, numfib>>& fibers,
     std::vector<std::array<T, numfib>>& structural_tensor,
-    const Teuchos::RCP<ELASTIC::StructuralTensorStrategyBase>& strategy)
+    const Teuchos::RCP<Elastic::StructuralTensorStrategyBase>& strategy)
 {
   // Need to compute the stuctural tensors
   if (Teuchos::is_null(strategy))
@@ -54,10 +54,10 @@ void MAT::compute_structural_tensors(
   }
 
   structural_tensor.resize(fibers.size());
-  for (std::vector<std::vector<CORE::LINALG::Matrix<3, 1>>>::size_type gp = 0; gp < fibers.size();
+  for (std::vector<std::vector<Core::LinAlg::Matrix<3, 1>>>::size_type gp = 0; gp < fibers.size();
        ++gp)
   {
-    for (std::vector<CORE::LINALG::Matrix<3, 1>>::size_type i = 0; i < numfib; ++i)
+    for (std::vector<Core::LinAlg::Matrix<3, 1>>::size_type i = 0; i < numfib; ++i)
     {
       T A(false);
       strategy->setup_structural_tensor(fibers[gp].at(i), A);
@@ -68,57 +68,59 @@ void MAT::compute_structural_tensors(
 }
 
 template <typename T>
-void MAT::PackFiberVector(CORE::COMM::PackBuffer& buffer, const std::vector<std::vector<T>>& vct)
+void Mat::PackFiberVector(
+    Core::Communication::PackBuffer& buffer, const std::vector<std::vector<T>>& vct)
 {
-  CORE::COMM::ParObject::AddtoPack(buffer, static_cast<int>(vct.size()));
+  Core::Communication::ParObject::AddtoPack(buffer, static_cast<int>(vct.size()));
 
   for (const auto& list : vct)
   {
-    CORE::COMM::ParObject::AddtoPack(buffer, list);
+    Core::Communication::ParObject::AddtoPack(buffer, list);
   }
 }
 
 template <typename T, unsigned int numfib>
-void MAT::PackFiberArray(
-    CORE::COMM::PackBuffer& buffer, const std::vector<std::array<T, numfib>>& vct)
+void Mat::PackFiberArray(
+    Core::Communication::PackBuffer& buffer, const std::vector<std::array<T, numfib>>& vct)
 {
-  CORE::COMM::ParObject::AddtoPack(buffer, static_cast<int>(vct.size()));
+  Core::Communication::ParObject::AddtoPack(buffer, static_cast<int>(vct.size()));
 
   for (const auto& list : vct)
   {
     for (const auto& fiber : list)
     {
-      CORE::COMM::ParObject::AddtoPack<T::numRows(), T::numCols()>(buffer, fiber);
+      Core::Communication::ParObject::AddtoPack<T::numRows(), T::numCols()>(buffer, fiber);
     }
   }
 }
 
 template <typename T>
-void MAT::UnpackFiberVector(std::vector<char>::size_type& position, const std::vector<char>& data,
+void Mat::UnpackFiberVector(std::vector<char>::size_type& position, const std::vector<char>& data,
     std::vector<std::vector<T>>& vct)
 {
   vct.clear();
-  int numgps = CORE::COMM::ParObject::ExtractInt(position, data);
+  int numgps = Core::Communication::ParObject::ExtractInt(position, data);
   for (int i = 0; i < numgps; ++i)
   {
     std::vector<T> mat(0);
-    CORE::COMM::ParObject::ExtractfromPack(position, data, mat);
+    Core::Communication::ParObject::ExtractfromPack(position, data, mat);
     vct.emplace_back(mat);
   }
 }
 
 template <typename T, unsigned int numfib>
-void MAT::UnpackFiberArray(std::vector<char>::size_type& position, const std::vector<char>& data,
+void Mat::UnpackFiberArray(std::vector<char>::size_type& position, const std::vector<char>& data,
     std::vector<std::array<T, numfib>>& vct)
 {
   vct.clear();
-  int numgps = CORE::COMM::ParObject::ExtractInt(position, data);
+  int numgps = Core::Communication::ParObject::ExtractInt(position, data);
   for (int i = 0; i < numgps; ++i)
   {
     std::array<T, numfib> mat;
     for (unsigned int j = 0; j < numfib; ++j)
     {
-      CORE::COMM::ParObject::ExtractfromPack<T::numRows(), T::numCols()>(position, data, mat.at(j));
+      Core::Communication::ParObject::ExtractfromPack<T::numRows(), T::numCols()>(
+          position, data, mat.at(j));
     }
     vct.emplace_back(mat);
   }
@@ -126,68 +128,74 @@ void MAT::UnpackFiberArray(std::vector<char>::size_type& position, const std::ve
 
 /*----------------------------------------------------------------------------*/
 // explicit instantiation of template functions
-template void MAT::compute_structural_tensors<CORE::LINALG::Matrix<6, 1>, 1u>(
-    std::vector<std::array<CORE::LINALG::Matrix<3, 1>, 1>>& fibers,
-    std::vector<std::array<CORE::LINALG::Matrix<6, 1>, 1>>& structural_tensor,
-    const Teuchos::RCP<ELASTIC::StructuralTensorStrategyBase>& strategy);
-template void MAT::compute_structural_tensors<CORE::LINALG::Matrix<3, 3>, 1u>(
-    std::vector<std::array<CORE::LINALG::Matrix<3, 1>, 1>>& fibers,
-    std::vector<std::array<CORE::LINALG::Matrix<3, 3>, 1>>& structural_tensor,
-    const Teuchos::RCP<ELASTIC::StructuralTensorStrategyBase>& strategy);
-template void MAT::compute_structural_tensors<CORE::LINALG::Matrix<6, 1>, 2u>(
-    std::vector<std::array<CORE::LINALG::Matrix<3, 1>, 2>>& fibers,
-    std::vector<std::array<CORE::LINALG::Matrix<6, 1>, 2>>& structural_tensor,
-    const Teuchos::RCP<ELASTIC::StructuralTensorStrategyBase>& strategy);
-template void MAT::compute_structural_tensors<CORE::LINALG::Matrix<3, 3>, 2u>(
-    std::vector<std::array<CORE::LINALG::Matrix<3, 1>, 2>>& fibers,
-    std::vector<std::array<CORE::LINALG::Matrix<3, 3>, 2>>& structural_tensor,
-    const Teuchos::RCP<ELASTIC::StructuralTensorStrategyBase>& strategy);
+template void Mat::compute_structural_tensors<Core::LinAlg::Matrix<6, 1>, 1u>(
+    std::vector<std::array<Core::LinAlg::Matrix<3, 1>, 1>>& fibers,
+    std::vector<std::array<Core::LinAlg::Matrix<6, 1>, 1>>& structural_tensor,
+    const Teuchos::RCP<Elastic::StructuralTensorStrategyBase>& strategy);
+template void Mat::compute_structural_tensors<Core::LinAlg::Matrix<3, 3>, 1u>(
+    std::vector<std::array<Core::LinAlg::Matrix<3, 1>, 1>>& fibers,
+    std::vector<std::array<Core::LinAlg::Matrix<3, 3>, 1>>& structural_tensor,
+    const Teuchos::RCP<Elastic::StructuralTensorStrategyBase>& strategy);
+template void Mat::compute_structural_tensors<Core::LinAlg::Matrix<6, 1>, 2u>(
+    std::vector<std::array<Core::LinAlg::Matrix<3, 1>, 2>>& fibers,
+    std::vector<std::array<Core::LinAlg::Matrix<6, 1>, 2>>& structural_tensor,
+    const Teuchos::RCP<Elastic::StructuralTensorStrategyBase>& strategy);
+template void Mat::compute_structural_tensors<Core::LinAlg::Matrix<3, 3>, 2u>(
+    std::vector<std::array<Core::LinAlg::Matrix<3, 1>, 2>>& fibers,
+    std::vector<std::array<Core::LinAlg::Matrix<3, 3>, 2>>& structural_tensor,
+    const Teuchos::RCP<Elastic::StructuralTensorStrategyBase>& strategy);
 
-template void MAT::PackFiberVector(CORE::COMM::PackBuffer& buffer,
-    const std::vector<std::vector<CORE::LINALG::Matrix<3, 3>>>& vct);
-template void MAT::UnpackFiberVector(std::vector<char>::size_type& position,
-    const std::vector<char>& data, std::vector<std::vector<CORE::LINALG::Matrix<3, 3>>>& vct);
-template void MAT::PackFiberVector(CORE::COMM::PackBuffer& buffer,
-    const std::vector<std::vector<CORE::LINALG::Matrix<3, 1>>>& vct);
-template void MAT::UnpackFiberVector(std::vector<char>::size_type& position,
-    const std::vector<char>& data, std::vector<std::vector<CORE::LINALG::Matrix<3, 1>>>& vct);
-template void MAT::PackFiberVector(CORE::COMM::PackBuffer& buffer,
-    const std::vector<std::vector<CORE::LINALG::Matrix<6, 1>>>& vct);
-template void MAT::UnpackFiberVector(std::vector<char>::size_type& position,
-    const std::vector<char>& data, std::vector<std::vector<CORE::LINALG::Matrix<6, 1>>>& vct);
+template void Mat::PackFiberVector(Core::Communication::PackBuffer& buffer,
+    const std::vector<std::vector<Core::LinAlg::Matrix<3, 3>>>& vct);
+template void Mat::UnpackFiberVector(std::vector<char>::size_type& position,
+    const std::vector<char>& data, std::vector<std::vector<Core::LinAlg::Matrix<3, 3>>>& vct);
+template void Mat::PackFiberVector(Core::Communication::PackBuffer& buffer,
+    const std::vector<std::vector<Core::LinAlg::Matrix<3, 1>>>& vct);
+template void Mat::UnpackFiberVector(std::vector<char>::size_type& position,
+    const std::vector<char>& data, std::vector<std::vector<Core::LinAlg::Matrix<3, 1>>>& vct);
+template void Mat::PackFiberVector(Core::Communication::PackBuffer& buffer,
+    const std::vector<std::vector<Core::LinAlg::Matrix<6, 1>>>& vct);
+template void Mat::UnpackFiberVector(std::vector<char>::size_type& position,
+    const std::vector<char>& data, std::vector<std::vector<Core::LinAlg::Matrix<6, 1>>>& vct);
 
-template void MAT::PackFiberArray<CORE::LINALG::Matrix<3, 1>, 1u>(CORE::COMM::PackBuffer& buffer,
-    const std::vector<std::array<CORE::LINALG::Matrix<3, 1>, 1>>& vct);
-template void MAT::PackFiberArray<CORE::LINALG::Matrix<3, 3>, 1u>(CORE::COMM::PackBuffer& buffer,
-    const std::vector<std::array<CORE::LINALG::Matrix<3, 3>, 1>>& vct);
-template void MAT::PackFiberArray<CORE::LINALG::Matrix<6, 1>, 1u>(CORE::COMM::PackBuffer& buffer,
-    const std::vector<std::array<CORE::LINALG::Matrix<6, 1>, 1>>& vct);
+template void Mat::PackFiberArray<Core::LinAlg::Matrix<3, 1>, 1u>(
+    Core::Communication::PackBuffer& buffer,
+    const std::vector<std::array<Core::LinAlg::Matrix<3, 1>, 1>>& vct);
+template void Mat::PackFiberArray<Core::LinAlg::Matrix<3, 3>, 1u>(
+    Core::Communication::PackBuffer& buffer,
+    const std::vector<std::array<Core::LinAlg::Matrix<3, 3>, 1>>& vct);
+template void Mat::PackFiberArray<Core::LinAlg::Matrix<6, 1>, 1u>(
+    Core::Communication::PackBuffer& buffer,
+    const std::vector<std::array<Core::LinAlg::Matrix<6, 1>, 1>>& vct);
 
-template void MAT::UnpackFiberArray<CORE::LINALG::Matrix<3, 1>, 1>(
+template void Mat::UnpackFiberArray<Core::LinAlg::Matrix<3, 1>, 1>(
     std::vector<char>::size_type& position, const std::vector<char>& data,
-    std::vector<std::array<CORE::LINALG::Matrix<3, 1>, 1>>& vct);
-template void MAT::UnpackFiberArray<CORE::LINALG::Matrix<3, 3>, 1>(
+    std::vector<std::array<Core::LinAlg::Matrix<3, 1>, 1>>& vct);
+template void Mat::UnpackFiberArray<Core::LinAlg::Matrix<3, 3>, 1>(
     std::vector<char>::size_type& position, const std::vector<char>& data,
-    std::vector<std::array<CORE::LINALG::Matrix<3, 3>, 1>>& vct);
-template void MAT::UnpackFiberArray<CORE::LINALG::Matrix<6, 1>, 1>(
+    std::vector<std::array<Core::LinAlg::Matrix<3, 3>, 1>>& vct);
+template void Mat::UnpackFiberArray<Core::LinAlg::Matrix<6, 1>, 1>(
     std::vector<char>::size_type& position, const std::vector<char>& data,
-    std::vector<std::array<CORE::LINALG::Matrix<6, 1>, 1>>& vct);
+    std::vector<std::array<Core::LinAlg::Matrix<6, 1>, 1>>& vct);
 
-template void MAT::PackFiberArray<CORE::LINALG::Matrix<3, 1>, 2u>(CORE::COMM::PackBuffer& buffer,
-    const std::vector<std::array<CORE::LINALG::Matrix<3, 1>, 2>>& vct);
-template void MAT::PackFiberArray<CORE::LINALG::Matrix<3, 3>, 2u>(CORE::COMM::PackBuffer& buffer,
-    const std::vector<std::array<CORE::LINALG::Matrix<3, 3>, 2>>& vct);
-template void MAT::PackFiberArray<CORE::LINALG::Matrix<6, 1>, 2u>(CORE::COMM::PackBuffer& buffer,
-    const std::vector<std::array<CORE::LINALG::Matrix<6, 1>, 2>>& vct);
+template void Mat::PackFiberArray<Core::LinAlg::Matrix<3, 1>, 2u>(
+    Core::Communication::PackBuffer& buffer,
+    const std::vector<std::array<Core::LinAlg::Matrix<3, 1>, 2>>& vct);
+template void Mat::PackFiberArray<Core::LinAlg::Matrix<3, 3>, 2u>(
+    Core::Communication::PackBuffer& buffer,
+    const std::vector<std::array<Core::LinAlg::Matrix<3, 3>, 2>>& vct);
+template void Mat::PackFiberArray<Core::LinAlg::Matrix<6, 1>, 2u>(
+    Core::Communication::PackBuffer& buffer,
+    const std::vector<std::array<Core::LinAlg::Matrix<6, 1>, 2>>& vct);
 
-template void MAT::UnpackFiberArray<CORE::LINALG::Matrix<3, 1>, 2>(
+template void Mat::UnpackFiberArray<Core::LinAlg::Matrix<3, 1>, 2>(
     std::vector<char>::size_type& position, const std::vector<char>& data,
-    std::vector<std::array<CORE::LINALG::Matrix<3, 1>, 2>>& vct);
-template void MAT::UnpackFiberArray<CORE::LINALG::Matrix<3, 3>, 2>(
+    std::vector<std::array<Core::LinAlg::Matrix<3, 1>, 2>>& vct);
+template void Mat::UnpackFiberArray<Core::LinAlg::Matrix<3, 3>, 2>(
     std::vector<char>::size_type& position, const std::vector<char>& data,
-    std::vector<std::array<CORE::LINALG::Matrix<3, 3>, 2>>& vct);
-template void MAT::UnpackFiberArray<CORE::LINALG::Matrix<6, 1>, 2>(
+    std::vector<std::array<Core::LinAlg::Matrix<3, 3>, 2>>& vct);
+template void Mat::UnpackFiberArray<Core::LinAlg::Matrix<6, 1>, 2>(
     std::vector<char>::size_type& position, const std::vector<char>& data,
-    std::vector<std::array<CORE::LINALG::Matrix<6, 1>, 2>>& vct);
+    std::vector<std::array<Core::LinAlg::Matrix<6, 1>, 2>>& vct);
 
 FOUR_C_NAMESPACE_CLOSE

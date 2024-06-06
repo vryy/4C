@@ -21,13 +21,13 @@ FOUR_C_NAMESPACE_OPEN
 
 //-----------------------------------------------------------------------
 //-----------------------------------------------------------------------
-void STRUMULTI::MicroStatic::DetermineToggle()
+void MultiScale::MicroStatic::DetermineToggle()
 {
   int np = 0;  // local number of prescribed (=boundary) dofs needed for the
                // creation of vectors and matrices for homogenization
                // procedure
 
-  std::vector<CORE::Conditions::Condition*> conds;
+  std::vector<Core::Conditions::Condition*> conds;
   discret_->GetCondition("MicroBoundary", conds);
   for (auto& cond : conds)
   {
@@ -37,7 +37,7 @@ void STRUMULTI::MicroStatic::DetermineToggle()
     {
       // do only nodes in my row map
       if (!discret_->NodeRowMap()->MyGID(i)) continue;
-      CORE::Nodes::Node* actnode = discret_->gNode(i);
+      Core::Nodes::Node* actnode = discret_->gNode(i);
       if (!actnode) FOUR_C_THROW("Cannot find global node %d", i);
       std::vector<int> dofs = discret_->Dof(actnode);
       const unsigned numdf = dofs.size();
@@ -65,7 +65,7 @@ void STRUMULTI::MicroStatic::DetermineToggle()
 
 //-----------------------------------------------------------------------
 //-----------------------------------------------------------------------
-void STRUMULTI::MicroStatic::SetUpHomogenization()
+void MultiScale::MicroStatic::SetUpHomogenization()
 {
   int indp = 0;
   int indf = 0;
@@ -103,7 +103,7 @@ void STRUMULTI::MicroStatic::SetUpHomogenization()
   // create vector containing material coordinates of prescribed nodes
   Epetra_Vector Xp_temp(*pdof_);
 
-  std::vector<CORE::Conditions::Condition*> conds;
+  std::vector<Core::Conditions::Condition*> conds;
   discret_->GetCondition("MicroBoundary", conds);
   for (auto& cond : conds)
   {
@@ -113,7 +113,7 @@ void STRUMULTI::MicroStatic::SetUpHomogenization()
     {
       // do only nodes in my row map
       if (!discret_->NodeRowMap()->MyGID(i)) continue;
-      CORE::Nodes::Node* actnode = discret_->gNode(i);
+      Core::Nodes::Node* actnode = discret_->gNode(i);
       if (!actnode) FOUR_C_THROW("Cannot find global node %d", i);
 
       // nodal coordinates
@@ -136,7 +136,7 @@ void STRUMULTI::MicroStatic::SetUpHomogenization()
     }
   }
 
-  Xp_ = CORE::LINALG::CreateVector(*pdof_, true);
+  Xp_ = Core::LinAlg::CreateVector(*pdof_, true);
   *Xp_ = Xp_temp;
 
   // now create D and its transpose DT (following Miehe et al., 2002)
@@ -186,7 +186,7 @@ void STRUMULTI::MicroStatic::SetUpHomogenization()
 /*----------------------------------------------------------------------*
  |  check convergence of Newton iteration (public)              lw 12/07|
  *----------------------------------------------------------------------*/
-bool STRUMULTI::MicroStatic::Converged()
+bool MultiScale::MicroStatic::Converged()
 {
   // check for single norms
   bool convdis = false;
@@ -195,13 +195,13 @@ bool STRUMULTI::MicroStatic::Converged()
   // residual displacement
   switch (normtypedisi_)
   {
-    case INPAR::STR::convnorm_abs:
+    case Inpar::STR::convnorm_abs:
       convdis = normdisi_ < toldisi_;
       break;
-    case INPAR::STR::convnorm_rel:
+    case Inpar::STR::convnorm_rel:
       convdis = normdisi_ / normchardis_ < toldisi_;
       break;
-    case INPAR::STR::convnorm_mix:
+    case Inpar::STR::convnorm_mix:
       convdis = ((normdisi_ < toldisi_) or (normdisi_ / normchardis_ < toldisi_));
       break;
     default:
@@ -212,13 +212,13 @@ bool STRUMULTI::MicroStatic::Converged()
   // residual forces
   switch (normtypefres_)
   {
-    case INPAR::STR::convnorm_abs:
+    case Inpar::STR::convnorm_abs:
       convfres = normfres_ < tolfres_;
       break;
-    case INPAR::STR::convnorm_rel:
+    case Inpar::STR::convnorm_rel:
       convfres = normfres_ / normcharforce_ < tolfres_;
       break;
-    case INPAR::STR::convnorm_mix:
+    case Inpar::STR::convnorm_mix:
       convfres = ((normfres_ < tolfres_) or (normfres_ / normcharforce_ < tolfres_));
       break;
     default:
@@ -228,9 +228,9 @@ bool STRUMULTI::MicroStatic::Converged()
 
   // combine displacement-like and force-like residuals
   bool conv = false;
-  if (combdisifres_ == INPAR::STR::bop_and)
+  if (combdisifres_ == Inpar::STR::bop_and)
     conv = convdis and convfres;
-  else if (combdisifres_ == INPAR::STR::bop_or)
+  else if (combdisifres_ == Inpar::STR::bop_or)
     conv = convdis or convfres;
   else
     FOUR_C_THROW("Something went terribly wrong with binary operator!");
@@ -242,7 +242,7 @@ bool STRUMULTI::MicroStatic::Converged()
 /*----------------------------------------------------------------------*
  |  calculate reference norms for relative convergence checks   lw 12/07|
  *----------------------------------------------------------------------*/
-void STRUMULTI::MicroStatic::CalcRefNorms()
+void MultiScale::MicroStatic::CalcRefNorms()
 {
   // The reference norms are used to scale the calculated iterative
   // displacement norm and/or the residual force norm. For this
@@ -272,11 +272,11 @@ void STRUMULTI::MicroStatic::CalcRefNorms()
 /*----------------------------------------------------------------------*
  |  print to screen and/or error file                           lw 12/07|
  *----------------------------------------------------------------------*/
-void STRUMULTI::MicroStatic::PrintNewton(bool print_unconv, Teuchos::Time timer)
+void MultiScale::MicroStatic::PrintNewton(bool print_unconv, Teuchos::Time timer)
 {
-  bool relres = (normtypefres_ == INPAR::STR::convnorm_rel);
+  bool relres = (normtypefres_ == Inpar::STR::convnorm_rel);
 
-  bool relres_reldis = ((normtypedisi_ == INPAR::STR::convnorm_rel) && relres);
+  bool relres_reldis = ((normtypedisi_ == Inpar::STR::convnorm_rel) && relres);
 
   if (relres)
   {
@@ -348,9 +348,9 @@ void STRUMULTI::MicroStatic::PrintNewton(bool print_unconv, Teuchos::Time timer)
 /*----------------------------------------------------------------------*
  |  print to screen                                             lw 12/07|
  *----------------------------------------------------------------------*/
-void STRUMULTI::MicroStatic::print_predictor()
+void MultiScale::MicroStatic::print_predictor()
 {
-  if (normtypefres_ == INPAR::STR::convnorm_rel)
+  if (normtypefres_ == Inpar::STR::convnorm_rel)
   {
     normfres_ /= normcharforce_;
     std::cout << "      MICROSCALE Predictor scaled res-norm " << normfres_ << std::endl;

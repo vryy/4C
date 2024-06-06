@@ -35,7 +35,7 @@ namespace FLD
     /*!
     \brief Standard Constructor (public)
     */
-    TurbulenceStatisticsTgv(Teuchos::RCP<DRT::Discretization> actdis,
+    TurbulenceStatisticsTgv(Teuchos::RCP<Discret::Discretization> actdis,
         Teuchos::ParameterList& params, const std::string& statistics_outfilename);
 
     /*!
@@ -79,7 +79,7 @@ namespace FLD
     int numele_;
 
     //! The discretization (required for nodes, dofs etc;)
-    Teuchos::RCP<DRT::Discretization> discret_;
+    Teuchos::RCP<Discret::Discretization> discret_;
 
     //! contains plane normal direction etc --- this is the original
     //! fluid dynamic parameterlist

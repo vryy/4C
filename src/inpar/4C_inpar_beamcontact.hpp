@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 
 // Forward declaration.
 
-namespace INPAR
+namespace Inpar
 {
   namespace BEAMCONTACT
   {
@@ -91,10 +91,10 @@ namespace INPAR
      * \brief Set beam beam-to-beam specific conditions.
      */
     void SetValidConditions(
-        std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist);
+        std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist);
   }  // namespace BEAMCONTACT
 
-}  // namespace INPAR
+}  // namespace Inpar
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

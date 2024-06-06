@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ELCH::MovingBoundaryAlgorithm::MovingBoundaryAlgorithm(const Epetra_Comm& comm,
+ElCh::MovingBoundaryAlgorithm::MovingBoundaryAlgorithm(const Epetra_Comm& comm,
     const Teuchos::ParameterList& elchcontrol, const Teuchos::ParameterList& scatradyn,
     const Teuchos::ParameterList& solverparams)
     : ScaTraFluidAleCouplingAlgorithm(comm, scatradyn, "FSICoupling", solverparams),
@@ -41,10 +41,10 @@ ELCH::MovingBoundaryAlgorithm::MovingBoundaryAlgorithm(const Epetra_Comm& comm,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ELCH::MovingBoundaryAlgorithm::Init()
+void ElCh::MovingBoundaryAlgorithm::Init()
 {
   // call setup in base class
-  ADAPTER::ScaTraFluidAleCouplingAlgorithm::Init();
+  Adapter::ScaTraFluidAleCouplingAlgorithm::Init();
 
   // safety check
   if (!ScaTraField()->discretization()->GetCondition("ScaTraFluxCalc"))
@@ -54,17 +54,17 @@ void ELCH::MovingBoundaryAlgorithm::Init()
         "interface!");
   }
 
-  pseudotransient_ = (CORE::UTILS::IntegralValue<INPAR::ELCH::ElchMovingBoundary>(elch_params_,
-                          "MOVINGBOUNDARY") == INPAR::ELCH::elch_mov_bndry_pseudo_transient);
+  pseudotransient_ = (Core::UTILS::IntegralValue<Inpar::ElCh::ElchMovingBoundary>(elch_params_,
+                          "MOVINGBOUNDARY") == Inpar::ElCh::elch_mov_bndry_pseudo_transient);
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ELCH::MovingBoundaryAlgorithm::Setup()
+void ElCh::MovingBoundaryAlgorithm::Setup()
 {
   // call init in base class
-  ADAPTER::ScaTraFluidAleCouplingAlgorithm::Setup();
+  Adapter::ScaTraFluidAleCouplingAlgorithm::Setup();
 
   // set pointers
   idispn_ = fluid_field()->extract_interface_veln();
@@ -91,7 +91,7 @@ void ELCH::MovingBoundaryAlgorithm::Setup()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ELCH::MovingBoundaryAlgorithm::TimeLoop()
+void ElCh::MovingBoundaryAlgorithm::TimeLoop()
 {
   // safety checks
   check_is_init();
@@ -195,7 +195,7 @@ void ELCH::MovingBoundaryAlgorithm::TimeLoop()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ELCH::MovingBoundaryAlgorithm::prepare_time_step()
+void ElCh::MovingBoundaryAlgorithm::prepare_time_step()
 {
   increment_time_and_step();
 
@@ -226,7 +226,7 @@ void ELCH::MovingBoundaryAlgorithm::prepare_time_step()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ELCH::MovingBoundaryAlgorithm::solve_fluid_ale()
+void ElCh::MovingBoundaryAlgorithm::solve_fluid_ale()
 {
   // screen output
   if (Comm().MyPID() == 0)
@@ -244,7 +244,7 @@ void ELCH::MovingBoundaryAlgorithm::solve_fluid_ale()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ELCH::MovingBoundaryAlgorithm::solve_sca_tra()
+void ElCh::MovingBoundaryAlgorithm::solve_sca_tra()
 {
   if (Comm().MyPID() == 0)
   {
@@ -256,12 +256,12 @@ void ELCH::MovingBoundaryAlgorithm::solve_sca_tra()
 
   switch (fluid_field()->TimIntScheme())
   {
-    case INPAR::FLUID::timeint_npgenalpha:
-    case INPAR::FLUID::timeint_afgenalpha:
+    case Inpar::FLUID::timeint_npgenalpha:
+    case Inpar::FLUID::timeint_afgenalpha:
       FOUR_C_THROW("ConvectiveVel() not implemented for Gen.Alpha versions");
       break;
-    case INPAR::FLUID::timeint_one_step_theta:
-    case INPAR::FLUID::timeint_bdf2:
+    case Inpar::FLUID::timeint_one_step_theta:
+    case Inpar::FLUID::timeint_bdf2:
     {
       if (not pseudotransient_)
       {
@@ -286,7 +286,7 @@ void ELCH::MovingBoundaryAlgorithm::solve_sca_tra()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ELCH::MovingBoundaryAlgorithm::update()
+void ElCh::MovingBoundaryAlgorithm::update()
 {
   fluid_field()->Update();
   ale_field()->Update();
@@ -301,7 +301,7 @@ void ELCH::MovingBoundaryAlgorithm::update()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ELCH::MovingBoundaryAlgorithm::output()
+void ElCh::MovingBoundaryAlgorithm::output()
 {
   // Note: The order is important here! In here control file entries are
   // written. And these entries define the order in which the filters handle
@@ -321,15 +321,15 @@ void ELCH::MovingBoundaryAlgorithm::output()
 }
 
 
-void ELCH::MovingBoundaryAlgorithm::compute_interface_vectors(
+void ElCh::MovingBoundaryAlgorithm::compute_interface_vectors(
     Teuchos::RCP<Epetra_Vector> idispnp, Teuchos::RCP<Epetra_Vector> iveln)
 {
   // calculate normal flux vector field at FSI boundaries (no output to file)
   fluxnp_ = ScaTraField()->CalcFluxAtBoundary(false);
 
   // access discretizations
-  Teuchos::RCP<DRT::Discretization> fluiddis = fluid_field()->discretization();
-  Teuchos::RCP<DRT::Discretization> scatradis = ScaTraField()->discretization();
+  Teuchos::RCP<Discret::Discretization> fluiddis = fluid_field()->discretization();
+  Teuchos::RCP<Discret::Discretization> scatradis = ScaTraField()->discretization();
 
   // no support for multiple reactions at the interface !
   // id of the reacting species
@@ -345,7 +345,7 @@ void ELCH::MovingBoundaryAlgorithm::compute_interface_vectors(
     // local (and global) ID as its corresponding fluid node!
 
     // get the processor's local fluid node with the same lnodeid
-    CORE::Nodes::Node* fluidlnode = fluiddis->lRowNode(lnodeid);
+    Core::Nodes::Node* fluidlnode = fluiddis->lRowNode(lnodeid);
     // get the degrees of freedom associated with this fluid node
     std::vector<int> fluidnodedofs = fluiddis->Dof(0, fluidlnode);
 
@@ -379,15 +379,15 @@ void ELCH::MovingBoundaryAlgorithm::compute_interface_vectors(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ELCH::MovingBoundaryAlgorithm::read_restart(int step)
+void ElCh::MovingBoundaryAlgorithm::read_restart(int step)
 {
   ScaTraFluidCouplingAlgorithm::read_restart(step);
 
   ale_field()->read_restart(step);  // add reading of ALE restart data
 
   // finally read isdispn which was written to the fluid restart data
-  CORE::IO::DiscretizationReader reader(
-      fluid_field()->discretization(), GLOBAL::Problem::Instance()->InputControlFile(), step);
+  Core::IO::DiscretizationReader reader(
+      fluid_field()->discretization(), Global::Problem::Instance()->InputControlFile(), step);
   reader.ReadVector(idispn_, "idispn");
   // read same result into vector isdispnp_ as a 'good guess'
   reader.ReadVector(idispnp_, "idispn");
@@ -395,9 +395,9 @@ void ELCH::MovingBoundaryAlgorithm::read_restart(int step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ELCH::MovingBoundaryAlgorithm::TestResults()
+void ElCh::MovingBoundaryAlgorithm::TestResults()
 {
-  auto* problem = GLOBAL::Problem::Instance();
+  auto* problem = Global::Problem::Instance();
   problem->AddFieldTest(fluid_field()->CreateFieldTest());
   problem->AddFieldTest(ale_field()->CreateFieldTest());
   problem->AddFieldTest(ScaTraField()->create_sca_tra_field_test());

@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
     namespace StatusTest
     {
@@ -34,7 +34,7 @@ namespace NOX
     {
       class Generic;
     }  // namespace LineSearch
-    namespace INNER
+    namespace Inner
     {
       namespace StatusTest
       {
@@ -43,22 +43,22 @@ namespace NOX
          public:
           //! constructor
           UpperBound(const double& upperboundval, const ::NOX::Abstract::Vector::NormType normtype,
-              const NOX::NLN::StatusTest::QuantityType qtype);
+              const NOX::Nln::StatusTest::QuantityType qtype);
 
           //! Test the line search stopping criterion
-          NOX::NLN::INNER::StatusTest::StatusType CheckStatus(
-              const NOX::NLN::INNER::StatusTest::Interface::Required& interface,
+          NOX::Nln::Inner::StatusTest::StatusType CheckStatus(
+              const NOX::Nln::Inner::StatusTest::Interface::Required& interface,
               const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp,
               ::NOX::StatusTest::CheckType checkType) override;
 
           //! Return the result of the most recent checkStatus call
-          NOX::NLN::INNER::StatusTest::StatusType GetStatus() const override;
+          NOX::Nln::Inner::StatusTest::StatusType GetStatus() const override;
 
           ///! Output formatted description of stopping test to output stream.
           std::ostream& Print(std::ostream& stream, int indent = 0) const override;
 
          protected:
-          double get_search_direction_length(const NOX::NLN::LineSearch::Generic& linesearch,
+          double get_search_direction_length(const NOX::Nln::LineSearch::Generic& linesearch,
               const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp) const;
 
          private:
@@ -66,13 +66,13 @@ namespace NOX
 
          protected:
           //! Status
-          NOX::NLN::INNER::StatusTest::StatusType status_;
+          NOX::Nln::Inner::StatusTest::StatusType status_;
 
           //! norm type
           ::NOX::Abstract::Vector::NormType normtype_;
 
           //! degree of freedom type
-          NOX::NLN::StatusTest::QuantityType qtype_;
+          NOX::Nln::StatusTest::QuantityType qtype_;
 
           //! value for upper bound of Newton step size
           double upperboundval_;
@@ -83,8 +83,8 @@ namespace NOX
           double stepmaxval_;
         };
       }  // namespace StatusTest
-    }    // namespace INNER
-  }      // namespace NLN
+    }    // namespace Inner
+  }      // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

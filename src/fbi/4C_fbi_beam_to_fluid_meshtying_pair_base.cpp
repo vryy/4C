@@ -76,27 +76,27 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam,
   // Beam element.
   for (unsigned int i = 0; i < beam::n_dof_; i++)
   {
-    this->ele1pos_.element_position_(i) = CORE::FADUTILS::HigherOrderFadValue<scalar_type>::apply(
+    this->ele1pos_.element_position_(i) = Core::FADUtils::HigherOrderFadValue<scalar_type>::apply(
         beam::n_dof_ + fluid::n_dof_, i, beam_centerline_dofvec[i]);
     this->ele1poscur_.element_position_(i) = beam_centerline_dofvec[i];
-    this->ele1vel_.element_position_(i) = CORE::FADUTILS::HigherOrderFadValue<scalar_type>::apply(
+    this->ele1vel_.element_position_(i) = Core::FADUtils::HigherOrderFadValue<scalar_type>::apply(
         beam::n_dof_ + fluid::n_dof_, i, beam_centerline_dofvec[beam::n_dof_ + i]);
   }
 
   // Fluid element.
   for (unsigned int i = 0; i < fluid::n_dof_; i++)
   {
-    this->ele2pos_.element_position_(i) = CORE::FADUTILS::HigherOrderFadValue<scalar_type>::apply(
+    this->ele2pos_.element_position_(i) = Core::FADUtils::HigherOrderFadValue<scalar_type>::apply(
         beam::n_dof_ + fluid::n_dof_, beam::n_dof_ + i, fluid_nodal_dofvec[i]);
     this->ele2poscur_.element_position_(i) = fluid_nodal_dofvec[i];
-    this->ele2vel_.element_position_(i) = CORE::FADUTILS::HigherOrderFadValue<scalar_type>::apply(
+    this->ele2vel_.element_position_(i) = Core::FADUtils::HigherOrderFadValue<scalar_type>::apply(
         beam::n_dof_ + fluid::n_dof_, beam::n_dof_ + i, fluid_nodal_dofvec[fluid::n_dof_ + i]);
   }
 }
 
 template <typename beam, typename fluid>
 void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::CreateGeometryPair(
-    const CORE::Elements::Element* element1, const CORE::Elements::Element* element2,
+    const Core::Elements::Element* element1, const Core::Elements::Element* element2,
     const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
 {
   // Set up the geometry pair
@@ -186,12 +186,12 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::get_pair_visual
   if (visualization != Teuchos::null)
   {
     // Setup variables.
-    CORE::LINALG::Matrix<3, 1, scalar_type> X;
-    CORE::LINALG::Matrix<3, 1, scalar_type> u;
-    CORE::LINALG::Matrix<3, 1, scalar_type> r;
-    CORE::LINALG::Matrix<3, 1, scalar_type> r_fluid;
-    CORE::LINALG::Matrix<3, 1, scalar_type> v_beam;
-    CORE::LINALG::Matrix<3, 1, scalar_type> force_integration_point;
+    Core::LinAlg::Matrix<3, 1, scalar_type> X;
+    Core::LinAlg::Matrix<3, 1, scalar_type> u;
+    Core::LinAlg::Matrix<3, 1, scalar_type> r;
+    Core::LinAlg::Matrix<3, 1, scalar_type> r_fluid;
+    Core::LinAlg::Matrix<3, 1, scalar_type> v_beam;
+    Core::LinAlg::Matrix<3, 1, scalar_type> force_integration_point;
 
     // Get the visualization vectors.
     auto& visualization_data = visualization->get_visualization_data();
@@ -210,8 +210,8 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::get_pair_visual
         u -= X;
         for (unsigned int dim = 0; dim < 3; dim++)
         {
-          point_coordinates.push_back(CORE::FADUTILS::CastToDouble(X(dim)));
-          displacement.push_back(CORE::FADUTILS::CastToDouble(u(dim)));
+          point_coordinates.push_back(Core::FADUtils::CastToDouble(X(dim)));
+          displacement.push_back(Core::FADUtils::CastToDouble(u(dim)));
         }
       }
     }
@@ -223,9 +223,9 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::get_pair_visual
   if (visualization != Teuchos::null)
   {
     // Setup variables.
-    CORE::LINALG::Matrix<3, 1, scalar_type> X;
-    CORE::LINALG::Matrix<3, 1, scalar_type> u;
-    CORE::LINALG::Matrix<3, 1, scalar_type> r;
+    Core::LinAlg::Matrix<3, 1, scalar_type> X;
+    Core::LinAlg::Matrix<3, 1, scalar_type> u;
+    Core::LinAlg::Matrix<3, 1, scalar_type> r;
 
     // Get the visualization vectors.
     auto& visualization_data = visualization->get_visualization_data();
@@ -244,8 +244,8 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::get_pair_visual
         u -= X;
         for (unsigned int dim = 0; dim < 3; dim++)
         {
-          point_coordinates.push_back(CORE::FADUTILS::CastToDouble(X(dim)));
-          displacement.push_back(CORE::FADUTILS::CastToDouble(u(dim)));
+          point_coordinates.push_back(Core::FADUtils::CastToDouble(X(dim)));
+          displacement.push_back(Core::FADUtils::CastToDouble(u(dim)));
         }
       }
     }
@@ -255,7 +255,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::get_pair_visual
 template <typename beam, typename fluid>
 void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::evaluate_beam_position(
     const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& integration_point,
-    CORE::LINALG::Matrix<3, 1, scalar_type>& r_beam, bool reference) const
+    Core::LinAlg::Matrix<3, 1, scalar_type>& r_beam, bool reference) const
 {
   if (reference)
     GEOMETRYPAIR::EvaluatePosition<beam>(integration_point.GetEta(), this->ele1posref_, r_beam);

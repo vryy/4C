@@ -28,22 +28,22 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-namespace DRT::ELEMENTS
+namespace Discret::ELEMENTS
 {
 
-  template <CORE::FE::CellType celltype>
+  template <Core::FE::CellType celltype>
   constexpr auto GetGaussRuleStiffnessMatrixPoro()
   {
-    return DRT::ELEMENTS::DisTypeToOptGaussRule<celltype>::rule;
+    return Discret::ELEMENTS::DisTypeToOptGaussRule<celltype>::rule;
   }
 
   //! extract element data from global vector
-  template <CORE::FE::CellType celltype>
-  void extract_values_from_global_vector(const DRT::Discretization& discretization,
+  template <Core::FE::CellType celltype>
+  void extract_values_from_global_vector(const Discret::Discretization& discretization,
       const int& dofset, const std::vector<int>& lm,
-      CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_nodes<celltype>>* matrixtofill,
-      CORE::LINALG::Matrix<DETAIL::num_nodes<celltype>, 1>* vectortofill, const std::string& state,
-      const CORE::Elements::Element& ele)
+      Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_nodes<celltype>>* matrixtofill,
+      Core::LinAlg::Matrix<DETAIL::num_nodes<celltype>, 1>* vectortofill, const std::string& state,
+      const Core::Elements::Element& ele)
   {
     // get state of the global vector
     Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(dofset, state);
@@ -54,7 +54,7 @@ namespace DRT::ELEMENTS
 
     // extract local values of the global vectors
     std::vector<double> mymatrix(lm.size());
-    CORE::FE::ExtractMyValues(*matrix_state, mymatrix, lm);
+    Core::FE::ExtractMyValues(*matrix_state, mymatrix, lm);
 
     if (numdofpernode == DETAIL::num_dim<celltype> + 1)
     {
@@ -118,22 +118,22 @@ namespace DRT::ELEMENTS
    * @param kinematictype (in): kinematic type of element
    * @return volchange: volume change
    */
-  template <CORE::FE::CellType celltype>
+  template <Core::FE::CellType celltype>
   double ComputeVolumeChange(const SpatialMaterialMapping<celltype>& spatial_material_mapping,
-      const JacobianMapping<celltype>& jacobian_mapping, const CORE::Elements::Element& ele,
-      const DRT::Discretization& discretization, const std::vector<int>& lm,
-      const INPAR::STR::KinemType& kinematictype)
+      const JacobianMapping<celltype>& jacobian_mapping, const Core::Elements::Element& ele,
+      const Discret::Discretization& discretization, const std::vector<int>& lm,
+      const Inpar::STR::KinemType& kinematictype)
   {
-    if (kinematictype == INPAR::STR::KinemType::linear)
+    if (kinematictype == Inpar::STR::KinemType::linear)
     {
       // for linear kinematics the volume change is the trace of the linearized strains
 
       // gradient of displacements
-      CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_nodes<celltype>> mydisp(true);
+      Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_nodes<celltype>> mydisp(true);
       extract_values_from_global_vector<celltype>(
           discretization, 0, lm, &mydisp, nullptr, "displacement", ele);
 
-      CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>> dispgrad;
+      Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>> dispgrad;
       dispgrad.Clear();
       // gradient of displacements
       dispgrad.MultiplyNT(mydisp, jacobian_mapping.N_XYZ_);
@@ -164,22 +164,22 @@ namespace DRT::ELEMENTS
    * @return dDetDefGrad_dDisp: derivative of determinant of deformation gradient w.r.t.
    * the displacements
    */
-  template <CORE::FE::CellType celltype, std::enable_if_t<DETAIL::num_dim<celltype> == 3, int> = 0>
-  CORE::LINALG::Matrix<1, DETAIL::num_dof_per_ele<celltype>>
+  template <Core::FE::CellType celltype, std::enable_if_t<DETAIL::num_dim<celltype> == 3, int> = 0>
+  Core::LinAlg::Matrix<1, DETAIL::num_dof_per_ele<celltype>>
   ComputeLinearizationOfDetDefGradWrtDisp(
       const SpatialMaterialMapping<celltype> spatial_material_mapping,
-      const JacobianMapping<celltype> jacobian_mapping, const INPAR::STR::KinemType& kinematictype)
+      const JacobianMapping<celltype> jacobian_mapping, const Inpar::STR::KinemType& kinematictype)
   {
-    CORE::LINALG::Matrix<1, DETAIL::num_dof_per_ele<celltype>> dDetDefGrad_dDisp;
+    Core::LinAlg::Matrix<1, DETAIL::num_dof_per_ele<celltype>> dDetDefGrad_dDisp;
 
-    if (kinematictype == INPAR::STR::KinemType::linear)
+    if (kinematictype == Inpar::STR::KinemType::linear)
     {
       dDetDefGrad_dDisp.Clear();
       return dDetDefGrad_dDisp;
     }
     else
     {
-      CORE::LINALG::Matrix<DETAIL::num_dim<celltype> * DETAIL::num_dim<celltype>, 1> defgrd_inv_vec;
+      Core::LinAlg::Matrix<DETAIL::num_dim<celltype> * DETAIL::num_dim<celltype>, 1> defgrd_inv_vec;
       defgrd_inv_vec(0) = spatial_material_mapping.inverse_deformation_gradient_(0, 0);
       defgrd_inv_vec(1) = spatial_material_mapping.inverse_deformation_gradient_(0, 1);
       defgrd_inv_vec(2) = spatial_material_mapping.inverse_deformation_gradient_(0, 2);
@@ -191,7 +191,7 @@ namespace DRT::ELEMENTS
       defgrd_inv_vec(8) = spatial_material_mapping.inverse_deformation_gradient_(2, 2);
 
       // build N_X operator (w.r.t. material configuration)
-      CORE::LINALG::Matrix<9, DETAIL::num_dof_per_ele<celltype>> N_X(true);  // set to zero
+      Core::LinAlg::Matrix<9, DETAIL::num_dof_per_ele<celltype>> N_X(true);  // set to zero
       for (int i = 0; i < DETAIL::num_nodes<celltype>; ++i)
       {
         N_X(0, 3 * i + 0) = jacobian_mapping.N_XYZ_(0, i);
@@ -226,16 +226,16 @@ namespace DRT::ELEMENTS
    * @param kinematictype (in): kinematic type of element
    * @return dVolchange_dDisp: derivative of volume change w.r.t. the displacements
    */
-  template <CORE::FE::CellType celltype, std::enable_if_t<DETAIL::num_dim<celltype> == 3, int> = 0>
-  CORE::LINALG::Matrix<1, DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>>
+  template <Core::FE::CellType celltype, std::enable_if_t<DETAIL::num_dim<celltype> == 3, int> = 0>
+  Core::LinAlg::Matrix<1, DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>>
   ComputeLinearizationOfVolchangeWrtDisp(
-      const CORE::LINALG::Matrix<1, DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>>
+      const Core::LinAlg::Matrix<1, DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>>
           dDetDefGrad_dDisp,
-      const JacobianMapping<celltype>& jacobian_mapping, const INPAR::STR::KinemType& kinematictype)
+      const JacobianMapping<celltype>& jacobian_mapping, const Inpar::STR::KinemType& kinematictype)
   {
-    if (kinematictype == INPAR::STR::KinemType::linear)
+    if (kinematictype == Inpar::STR::KinemType::linear)
     {
-      CORE::LINALG::Matrix<1, DETAIL::num_dof_per_ele<celltype>> dVolchange_dDisp;
+      Core::LinAlg::Matrix<1, DETAIL::num_dof_per_ele<celltype>> dVolchange_dDisp;
 
       for (int i = 0; i < DETAIL::num_dim<celltype>; ++i)
         for (int j = 0; j < DETAIL::num_nodes<celltype>; ++j)
@@ -265,12 +265,12 @@ namespace DRT::ELEMENTS
    * displacements
    * @param dPorosity_dDisp (in/out): derivative of porosity w.r.t. the displacements
    */
-  template <CORE::FE::CellType celltype>
-  void compute_porosity_and_linearization(MAT::StructPoro& porostructmat,
+  template <Core::FE::CellType celltype>
+  void compute_porosity_and_linearization(Mat::StructPoro& porostructmat,
       Teuchos::ParameterList& params, const double solidpressure, const int gp,
       const double volchange, double& porosity,
-      const CORE::LINALG::Matrix<1, DETAIL::num_dof_per_ele<celltype>>& dDetDefGrad_dDisp,
-      CORE::LINALG::Matrix<1, DETAIL::num_dof_per_ele<celltype>>& dPorosity_dDisp)
+      const Core::LinAlg::Matrix<1, DETAIL::num_dof_per_ele<celltype>>& dDetDefGrad_dDisp,
+      Core::LinAlg::Matrix<1, DETAIL::num_dof_per_ele<celltype>>& dPorosity_dDisp)
   {
     double dphi_dJ = 0.0;
 
@@ -297,8 +297,8 @@ namespace DRT::ELEMENTS
    * @param gp (in): Gauss point
    * @return porosity (volfrac of multiphase porspace + volfracs of additional porous networks)
    */
-  template <CORE::FE::CellType celltype>
-  double compute_porosity(MAT::StructPoro& porostructmat, Teuchos::ParameterList& params,
+  template <Core::FE::CellType celltype>
+  double compute_porosity(Mat::StructPoro& porostructmat, Teuchos::ParameterList& params,
       const double solidpressure, const double volchange, const int gp)
   {
     double porosity = 0.0;
@@ -325,13 +325,13 @@ namespace DRT::ELEMENTS
    * @param dPorosity_dDisp (in): derivative of porosity w.r.t. the displacements
    * @param dSolidpressure_dDisp (in/out): derivative of solidpressure w.r.t. the displacements
    */
-  template <CORE::FE::CellType celltype>
+  template <Core::FE::CellType celltype>
   void RecalculateLinearizationOfSolPressWrtDisp(const double fluidpress, const double porosity,
       const int nummultifluiddofpernode, const int numfluidphases, const int numvolfrac,
       const std::vector<double>& fluidmultiphase_phiAtGP,
-      const CORE::LINALG::Matrix<1, DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>>&
+      const Core::LinAlg::Matrix<1, DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>>&
           dPorosity_dDisp,
-      CORE::LINALG::Matrix<1, DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>>&
+      Core::LinAlg::Matrix<1, DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>>&
           dSolidpressure_dDisp)
   {
     // get volume fraction primary variables
@@ -410,11 +410,11 @@ namespace DRT::ELEMENTS
    * * @param BopCinv (in) : B^T . C^-1
    * @param force_vector (in/out) : Force vector where the local contribution is added to
    */
-  template <CORE::FE::CellType celltype>
+  template <Core::FE::CellType celltype>
   void UpdateInternalForceVectorMultiPhasePressureBased(const double detJ_w,
       const double solidpressure, const double DetDefGrad,
-      const CORE::LINALG::Matrix<DETAIL::num_dof_per_ele<celltype>, 1>& BopCinv,
-      CORE::LINALG::Matrix<DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>, 1>&
+      const Core::LinAlg::Matrix<DETAIL::num_dof_per_ele<celltype>, 1>& BopCinv,
+      Core::LinAlg::Matrix<DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>, 1>&
           force_vector)
   {
     // additional fluid stress- stiffness term RHS -(B^T .  C^-1  * J * p^f * detJ * w(gp))
@@ -440,19 +440,19 @@ namespace DRT::ELEMENTS
    * w.r.t. the displacements
    * @param stiffness_matrix (in/out) : stiffness matrix where the local contribution is added to
    */
-  template <CORE::FE::CellType celltype>
+  template <Core::FE::CellType celltype>
   void UpdateElasticStiffnessMatrixMultiPhasePressureBased(const double detJ_w,
       const double solidpressure, const double DetDefGrad,
-      const CORE::LINALG::Matrix<DETAIL::num_dof_per_ele<celltype>, 1>& BopCinv,
-      const CORE::LINALG::Matrix<DETAIL::num_str<celltype>, DETAIL::num_dof_per_ele<celltype>>& Bop,
-      const CORE::LINALG::Matrix<1, DETAIL::num_dof_per_ele<celltype>>& dDetDefGrad_dDisp,
-      const CORE::LINALG::Matrix<1, DETAIL::num_dof_per_ele<celltype>>& dSolidpressure_dDisp,
-      const CORE::LINALG::Matrix<DETAIL::num_str<celltype>, DETAIL::num_dof_per_ele<celltype>>&
+      const Core::LinAlg::Matrix<DETAIL::num_dof_per_ele<celltype>, 1>& BopCinv,
+      const Core::LinAlg::Matrix<DETAIL::num_str<celltype>, DETAIL::num_dof_per_ele<celltype>>& Bop,
+      const Core::LinAlg::Matrix<1, DETAIL::num_dof_per_ele<celltype>>& dDetDefGrad_dDisp,
+      const Core::LinAlg::Matrix<1, DETAIL::num_dof_per_ele<celltype>>& dSolidpressure_dDisp,
+      const Core::LinAlg::Matrix<DETAIL::num_str<celltype>, DETAIL::num_dof_per_ele<celltype>>&
           dInverseRightCauchyGreen_dDisp,
-      CORE::LINALG::Matrix<DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>,
+      Core::LinAlg::Matrix<DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>,
           DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>>& stiffness_matrix)
   {
-    CORE::LINALG::Matrix<DETAIL::num_dof_per_ele<celltype>, DETAIL::num_dof_per_ele<celltype>> tmp;
+    Core::LinAlg::Matrix<DETAIL::num_dof_per_ele<celltype>, DETAIL::num_dof_per_ele<celltype>> tmp;
 
     // additional fluid stress- stiffness term -(B^T . C^-1 . dJ/d(us) * p^f * detJ * w(gp))
     tmp.Multiply((-detJ_w * solidpressure), BopCinv, dDetDefGrad_dDisp);
@@ -479,16 +479,16 @@ namespace DRT::ELEMENTS
    * @param n_xyz (in) : derivatives of the shape functions w.r.t. XYZ
    * @param stiffness_matrix (in/out) : stiffness matrix where the local contribution is added to
    */
-  template <CORE::FE::CellType celltype>
+  template <Core::FE::CellType celltype>
   void UpdateGeometricStiffnessMatrixMultiPhasePressureBased(const double detJ_w,
       const double solidpressure, const double DetDefGrad,
-      const CORE::LINALG::Matrix<DETAIL::num_str<celltype>, 1>& C_inv_vec,
-      const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_nodes<celltype>>& N_XYZ_,
-      CORE::LINALG::Matrix<DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>,
+      const Core::LinAlg::Matrix<DETAIL::num_str<celltype>, 1>& C_inv_vec,
+      const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_nodes<celltype>>& N_XYZ_,
+      Core::LinAlg::Matrix<DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>,
           DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>>& stiffness_matrix)
   {
     // integrate `geometric' stiffness matrix and add to keu *****************
-    CORE::LINALG::Matrix<DETAIL::num_str<celltype>, 1> sfac(
+    Core::LinAlg::Matrix<DETAIL::num_str<celltype>, 1> sfac(
         C_inv_vec);  // auxiliary integrated stress
 
     // scale
@@ -530,12 +530,12 @@ namespace DRT::ELEMENTS
    * @param nummultifluiddofpernode (in) : number of fluid multiphase dofs per node
    * @param stiffness_matrix (in/out) : stiffness matrix where the local contribution is added to
    */
-  template <CORE::FE::CellType celltype>
+  template <Core::FE::CellType celltype>
   void UpdateStiffnessMatrixCouplingMultiPhasePressureBased(const double detJ_w,
       const std::vector<double>& solidpressurederiv,
-      const CORE::LINALG::Matrix<DETAIL::num_dof_per_ele<celltype>, 1>& BopCinv,
+      const Core::LinAlg::Matrix<DETAIL::num_dof_per_ele<celltype>, 1>& BopCinv,
       ShapeFunctionsAndDerivatives<celltype> shape_functions, const double DetDefGrad,
-      const int nummultifluiddofpernode, CORE::LINALG::SerialDenseMatrix& stiffness_matrix)
+      const int nummultifluiddofpernode, Core::LinAlg::SerialDenseMatrix& stiffness_matrix)
   {
     for (int i = 0; i < DETAIL::num_nodes<celltype>; i++)
     {
@@ -570,7 +570,7 @@ namespace DRT::ELEMENTS
    * @param: shape_functions (in): Shape functions
    * @returns: fluidmultiphase_phiAtGP: fluid multiphase primary variables at GP
    */
-  template <CORE::FE::CellType celltype>
+  template <Core::FE::CellType celltype>
   std::vector<double> ComputeFluidMultiPhasePrimaryVariablesAtGP(
       const std::vector<double>& fluidmultiphase_ephi, const int nummultifluiddofpernode,
       const ShapeFunctionsAndDerivatives<celltype>& shape_functions)
@@ -600,8 +600,8 @@ namespace DRT::ELEMENTS
    * @returns solidpressurederiv: derivative of solidpressure w.r.t. fluid multiphase
    * primary variables
    */
-  template <CORE::FE::CellType celltype>
-  std::vector<double> ComputeSolidPressureDeriv(MAT::FluidPoroMultiPhase& porofluidmat,
+  template <Core::FE::CellType celltype>
+  std::vector<double> ComputeSolidPressureDeriv(Mat::FluidPoroMultiPhase& porofluidmat,
       const std::vector<double>& fluidmultiphase_phiAtGP, const int numfluidphases)
   {
     // zero out everything
@@ -611,9 +611,9 @@ namespace DRT::ELEMENTS
     std::vector<double> genpress(numfluidphases);
     std::vector<double> press(numfluidphases);
     std::vector<double> sat(numfluidphases);
-    CORE::LINALG::SerialDenseMatrix helpderiv(numfluidphases, numfluidphases, true);
-    CORE::LINALG::SerialDenseMatrix satderiv(numfluidphases, numfluidphases, true);
-    CORE::LINALG::SerialDenseMatrix pressderiv(numfluidphases, numfluidphases, true);
+    Core::LinAlg::SerialDenseMatrix helpderiv(numfluidphases, numfluidphases, true);
+    Core::LinAlg::SerialDenseMatrix satderiv(numfluidphases, numfluidphases, true);
+    Core::LinAlg::SerialDenseMatrix pressderiv(numfluidphases, numfluidphases, true);
     std::vector<double> fluidphi(
         &fluidmultiphase_phiAtGP[0], &fluidmultiphase_phiAtGP[numfluidphases]);
 
@@ -669,9 +669,9 @@ namespace DRT::ELEMENTS
    * @param: porofluidmat (in): material of multiphase fluid
    * @return solidpressure
    */
-  template <CORE::FE::CellType celltype>
+  template <Core::FE::CellType celltype>
   double compute_sol_pressure_at_gp(const int nummultifluiddofpernode, const int numfluidphases,
-      const std::vector<double>& fluidmultiphase_phiAtGP, MAT::FluidPoroMultiPhase& porofluidmat)
+      const std::vector<double>& fluidmultiphase_phiAtGP, Mat::FluidPoroMultiPhase& porofluidmat)
   {
     // initialize auxiliary variables
     std::vector<double> genpress(numfluidphases, 0.0);
@@ -739,11 +739,11 @@ namespace DRT::ELEMENTS
     }
   }
 
-  template <CORE::FE::CellType celltype>
+  template <Core::FE::CellType celltype>
   struct CauchyGreenAndInverse
   {
-    CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>> right_cauchy_green_;
-    CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>>
+    Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>> right_cauchy_green_;
+    Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>>
         inverse_right_cauchy_green_;
   };
 
@@ -757,13 +757,14 @@ namespace DRT::ELEMENTS
    * @return CauchyGreenAndInverse<celltype> : An object holding the right Cauchy-Green deformation
    * tensor and its inverse
    */
-  template <CORE::FE::CellType celltype, std::enable_if_t<DETAIL::num_dim<celltype> == 3, int> = 0>
+  template <Core::FE::CellType celltype, std::enable_if_t<DETAIL::num_dim<celltype> == 3, int> = 0>
   CauchyGreenAndInverse<celltype> EvaluateCauchyGreenAndInverse(
       const SpatialMaterialMapping<celltype>& spatial_material_mapping)
   {
     CauchyGreenAndInverse<celltype> cauchygreen;
 
-    cauchygreen.right_cauchy_green_ = DRT::ELEMENTS::EvaluateCauchyGreen(spatial_material_mapping);
+    cauchygreen.right_cauchy_green_ =
+        Discret::ELEMENTS::EvaluateCauchyGreen(spatial_material_mapping);
     cauchygreen.inverse_right_cauchy_green_.Invert(cauchygreen.right_cauchy_green_);
 
     return cauchygreen;
@@ -784,15 +785,15 @@ namespace DRT::ELEMENTS
    * @return dInverseCauchyGreen_dDisp : derivative of the inverse right Cauchy-Green deformation
    * tensor w.r.t. the displacements
    */
-  template <CORE::FE::CellType celltype, std::enable_if_t<DETAIL::num_dim<celltype> == 3, int> = 0>
-  CORE::LINALG::Matrix<DETAIL::num_str<celltype>,
+  template <Core::FE::CellType celltype, std::enable_if_t<DETAIL::num_dim<celltype> == 3, int> = 0>
+  Core::LinAlg::Matrix<DETAIL::num_str<celltype>,
       DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>>
   EvaluateInverseCauchyGreenLinearization(CauchyGreenAndInverse<celltype> cauchygreen,
       JacobianMapping<celltype> jacobian_mapping,
       SpatialMaterialMapping<celltype> spatial_material_mapping)
   {
     // dC^-1/dDisp
-    CORE::LINALG::Matrix<DETAIL::num_str<celltype>,
+    Core::LinAlg::Matrix<DETAIL::num_str<celltype>,
         DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>>
         dInverseCauchyGreen_dDisp(true);
 
@@ -833,7 +834,7 @@ namespace DRT::ELEMENTS
     }
     return dInverseCauchyGreen_dDisp;
   }
-}  // namespace DRT::ELEMENTS
+}  // namespace Discret::ELEMENTS
 
 FOUR_C_NAMESPACE_CLOSE
 

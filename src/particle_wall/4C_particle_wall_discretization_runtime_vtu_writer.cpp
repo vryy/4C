@@ -27,15 +27,15 @@ FOUR_C_NAMESPACE_OPEN
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::WallDiscretizationRuntimeVtuWriter(
-    const Teuchos::RCP<DRT::Discretization> walldiscretization,
+    const Teuchos::RCP<Discret::Discretization> walldiscretization,
     const std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate, const double restart_time)
     : walldiscretization_(walldiscretization), walldatastate_(walldatastate)
 {
   // construct the writer object
-  runtime_vtuwriter_ = std::make_unique<CORE::IO::DiscretizationVisualizationWriterMesh>(
-      walldiscretization, CORE::IO::VisualizationParametersFactory(
-                              GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
-                              *GLOBAL::Problem::Instance()->OutputControlFile(), restart_time));
+  runtime_vtuwriter_ = std::make_unique<Core::IO::DiscretizationVisualizationWriterMesh>(
+      walldiscretization, Core::IO::VisualizationParametersFactory(
+                              Global::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
+                              *Global::Problem::Instance()->OutputControlFile(), restart_time));
 }
 
 void PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::write_wall_discretization_runtime_output(
@@ -57,7 +57,7 @@ void PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::write_wall_discretization
         Teuchos::rcp(new Epetra_Vector(*walldiscretization_->NodeColMap(), true));
     for (int inode = 0; inode < walldiscretization_->NumMyColNodes(); ++inode)
     {
-      const CORE::Nodes::Node* node = walldiscretization_->lColNode(inode);
+      const Core::Nodes::Node* node = walldiscretization_->lColNode(inode);
       (*nodeowner)[inode] = node->Owner();
     }
     runtime_vtuwriter_->append_node_based_result_data_vector(nodeowner, 1, "owner");
@@ -74,7 +74,7 @@ void PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::write_wall_discretization
         Teuchos::rcp(new Epetra_Vector(*walldiscretization_->ElementRowMap(), true));
     for (int iele = 0; iele < walldiscretization_->NumMyRowElements(); ++iele)
     {
-      const CORE::Elements::Element* ele = walldiscretization_->lRowElement(iele);
+      const Core::Elements::Element* ele = walldiscretization_->lRowElement(iele);
       (*eleid)[iele] = ele->Id();
     }
     runtime_vtuwriter_->append_element_based_result_data_vector(eleid, 1, "id");

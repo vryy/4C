@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief A collection of singular value decomposition (SVD) methods for namespace CORE::LINALG
+\brief A collection of singular value decomposition (SVD) methods for namespace Core::LinAlg
 
 \level 0
 */
@@ -19,7 +19,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   /*!
    \brief Compute singular value decomposition (SVD) of a real M-by-N matrix A
@@ -30,8 +30,8 @@ namespace CORE::LINALG
    \param SIGMA (in/out):M-by-N matrix which is zero except for its min(m,n) diagonal elements
    \param Vt (in/out):   V is a N-by-N orthogonal matrix, actually returned is V^T
    */
-  void SVD(const CORE::LINALG::SerialDenseMatrix::Base& A, CORE::LINALG::SerialDenseMatrix& Q,
-      CORE::LINALG::SerialDenseMatrix& SIGMA, CORE::LINALG::SerialDenseMatrix& Vt);
+  void SVD(const Core::LinAlg::SerialDenseMatrix::Base& A, Core::LinAlg::SerialDenseMatrix& Q,
+      Core::LinAlg::SerialDenseMatrix& SIGMA, Core::LinAlg::SerialDenseMatrix& Vt);
 
   /*!
    \brief Singular value decomposition (SVD) of a real M-by-N matrix in fixed
@@ -48,8 +48,8 @@ namespace CORE::LINALG
    \param VT (out):      N-by-N orthogonal matrix (transpose of V)
    */
   template <unsigned int rows, unsigned int cols>
-  void SVD(const CORE::LINALG::Matrix<rows, cols>& A, CORE::LINALG::Matrix<rows, rows>& Q,
-      CORE::LINALG::Matrix<rows, cols>& S, CORE::LINALG::Matrix<cols, cols>& VT)
+  void SVD(const Core::LinAlg::Matrix<rows, cols>& A, Core::LinAlg::Matrix<rows, rows>& Q,
+      Core::LinAlg::Matrix<rows, cols>& S, Core::LinAlg::Matrix<cols, cols>& VT)
   {
     Matrix<rows, cols> tmp(A.A(), false);  // copy, because content of matrix is destroyed
     const char jobu = 'A';                 // compute and return all M columns of U
@@ -76,7 +76,7 @@ namespace CORE::LINALG
     return;
   }
 
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 FOUR_C_NAMESPACE_CLOSE
 

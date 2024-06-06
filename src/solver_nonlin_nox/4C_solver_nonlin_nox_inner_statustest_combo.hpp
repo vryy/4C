@@ -25,13 +25,13 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
-    namespace INNER
+    namespace Inner
     {
       namespace StatusTest
       {
-        class Combo : public NOX::NLN::INNER::StatusTest::Generic
+        class Combo : public NOX::Nln::Inner::StatusTest::Generic
         {
          public:
           //! Constructor. Optional argument is the error stream for output.
@@ -83,8 +83,8 @@ namespace NOX
           ::NOX::Utils utils_;
 
           /// inner test status
-          NOX::NLN::INNER::StatusTest::StatusType status_ =
-              NOX::NLN::INNER::StatusTest::status_unevaluated;
+          NOX::Nln::Inner::StatusTest::StatusType status_ =
+              NOX::Nln::Inner::StatusTest::status_unevaluated;
 
           /// specified combo type
           ::NOX::StatusTest::Combo::ComboType type_;
@@ -94,8 +94,8 @@ namespace NOX
 
         };  // class Combo
       }     // namespace StatusTest
-    }       // namespace INNER
-  }         // namespace NLN
+    }       // namespace Inner
+  }         // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

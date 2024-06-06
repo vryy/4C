@@ -25,11 +25,11 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::GEO
+namespace Core::Geo
 {
-  namespace CUT
+  namespace Cut
   {
-    namespace IMPL
+    namespace Impl
     {
       class PointLineFilter
       {
@@ -38,7 +38,7 @@ namespace CORE::GEO
         virtual bool operator()(Line* line) const = 0;
       };
 
-    }  // namespace IMPL
+    }  // namespace Impl
 
     /// Points in a mesh. Both nodal points and cut points.
     /*!
@@ -180,11 +180,11 @@ namespace CORE::GEO
 
       Line* CutLine(Line* line, Side* side, Element* element);
 
-      Line* CutLine(const IMPL::PointLineFilter& filter, bool unique = true);
+      Line* CutLine(const Impl::PointLineFilter& filter, bool unique = true);
 
-      Line* CutLine(Line* line, const IMPL::PointLineFilter& filter, bool unique = true);
+      Line* CutLine(Line* line, const Impl::PointLineFilter& filter, bool unique = true);
 
-      void CutLines(const IMPL::PointLineFilter& filter, plain_line_set& cut_lines);
+      void CutLines(const Impl::PointLineFilter& filter, plain_line_set& cut_lines);
 
       void CutLines(Side* side, plain_line_set& cut_lines);
 
@@ -231,7 +231,7 @@ namespace CORE::GEO
       /// However, we want to obtain position of the cut_point
       /// on the edge based on the real intersection( before mergin),to be consistest with rest of
       /// the code
-      double t(Edge* edge, const CORE::LINALG::Matrix<3, 1>& coord);
+      double t(Edge* edge, const Core::LinAlg::Matrix<3, 1>& coord);
 
       // void t( Edge* edge, double pos ) { t_[edge] = pos; }
 
@@ -310,9 +310,9 @@ namespace CORE::GEO
 #if CUT_CREATION_INFO
       // Add merged pair. If the coord = nullptr, it means it was inserted without actual
       // computation of the coordinate, solely on topology e.g. in the insert_cut
-      void AddMergedPair(const std::pair<Side*, Edge*>& inter, CORE::LINALG::Matrix<3, 1>* coord);
+      void AddMergedPair(const std::pair<Side*, Edge*>& inter, Core::LinAlg::Matrix<3, 1>* coord);
 
-      const std::map<std::pair<Side*, Edge*>, std::pair<CORE::LINALG::Matrix<3, 1>, bool>>&
+      const std::map<std::pair<Side*, Edge*>, std::pair<Core::LinAlg::Matrix<3, 1>, bool>>&
       GetMergedPointsInfo()
       {
         return merged_points_info_;
@@ -415,7 +415,7 @@ namespace CORE::GEO
       // Map that indicates what intersections (keys of the map)  merged coordinates in the the
       // first part of value pair to the Point* of second part of value parit.Indicates what
       // coordinates were merged in this particular point, due to closeness
-      std::map<std::pair<Side*, Edge*>, std::pair<CORE::LINALG::Matrix<3, 1>, bool>>
+      std::map<std::pair<Side*, Edge*>, std::pair<Core::LinAlg::Matrix<3, 1>, bool>>
           merged_points_info_;
 
       // Displays why particular cut pair is intersected in this point
@@ -491,10 +491,10 @@ namespace CORE::GEO
       PointFactory(){};
 
       // non-member function to create a concrete point of desired dimension
-      Teuchos::RCP<CORE::GEO::CUT::Point> create_point(unsigned pid, const double* x,
+      Teuchos::RCP<Core::Geo::Cut::Point> create_point(unsigned pid, const double* x,
           Edge* cut_edge, Side* cut_side, double tolerance, int probdim) const
       {
-        Teuchos::RCP<CORE::GEO::CUT::Point> point = Teuchos::null;
+        Teuchos::RCP<Core::Geo::Cut::Point> point = Teuchos::null;
 
         switch (probdim)
         {
@@ -513,7 +513,7 @@ namespace CORE::GEO
     };  // class PointFactory
 
     // non-member function to create a concrete point of desired dimension
-    Teuchos::RCP<CORE::GEO::CUT::Point> create_point(
+    Teuchos::RCP<Core::Geo::Cut::Point> create_point(
         unsigned pid, const double* x, Edge* cut_edge, Side* cut_side, double tolerance);
 
     inline int EntityId(const Point& p) { return p.Pid(); }
@@ -573,7 +573,7 @@ namespace CORE::GEO
 
 #endif
 
-    namespace IMPL
+    namespace Impl
     {
       class ExcludeLineFilter : public PointLineFilter
       {
@@ -624,7 +624,7 @@ namespace CORE::GEO
         Side* side2_;
       };
 
-    }  // namespace IMPL
+    }  // namespace Impl
 
     /** \brief Find if the points in element share a common element,
      *  (i.e. do all points lie on the same element?)
@@ -671,10 +671,10 @@ namespace CORE::GEO
 
     /// Find distance between points
     template <unsigned int probDim>
-    double DistanceBetweenPoints(const CORE::LINALG::Matrix<probDim, 1>& coord_a,
-        const CORE::LINALG::Matrix<probDim, 1>& coord_b)
+    double DistanceBetweenPoints(const Core::LinAlg::Matrix<probDim, 1>& coord_a,
+        const Core::LinAlg::Matrix<probDim, 1>& coord_b)
     {
-      CORE::LINALG::Matrix<probDim, 1> diff;
+      Core::LinAlg::Matrix<probDim, 1> diff;
       diff.Update(1, coord_a, -1, coord_b);
       return diff.Norm2();
     }
@@ -683,17 +683,17 @@ namespace CORE::GEO
     double DistanceBetweenPoints(Point* p1, Point* p2);
 
     /// Find distance between points
-    double DistanceBetweenPoints(Point* p1, const CORE::LINALG::Matrix<3, 1>& coord_b);
+    double DistanceBetweenPoints(Point* p1, const Core::LinAlg::Matrix<3, 1>& coord_b);
 
     bool IsCutPositionUnchanged(Point::PointPosition position, Point::PointPosition pos);
 
-  }  // namespace CUT
-}  // namespace CORE::GEO
+  }  // namespace Cut
+}  // namespace Core::Geo
 
 
-std::ostream& operator<<(std::ostream& stream, CORE::GEO::CUT::Point& point);
+std::ostream& operator<<(std::ostream& stream, Core::Geo::Cut::Point& point);
 
-std::ostream& operator<<(std::ostream& stream, CORE::GEO::CUT::Point* point);
+std::ostream& operator<<(std::ostream& stream, Core::Geo::Cut::Point* point);
 
 FOUR_C_NAMESPACE_CLOSE
 

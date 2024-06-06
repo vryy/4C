@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
     enum class CorrectionType : int;
     namespace Direction
@@ -64,7 +64,7 @@ namespace NOX
          *  changed but instead used as it is. If the solver fails, the correction
          *  fails and the line search method takes care. */
         bool compute_correction_direction(::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp,
-            const ::NOX::Solver::Generic& solver, NOX::NLN::CorrectionType corr_type);
+            const ::NOX::Solver::Generic& solver, NOX::Nln::CorrectionType corr_type);
 
         /** \brief update the successive correction counter
          *
@@ -121,7 +121,7 @@ namespace NOX
         Teuchos::RCP<Epetra_Vector> get_diagonal(const ::NOX::Abstract::Group& grp) const;
 
         /// print info to stream
-        void print(std::ostream& os, const NOX::NLN::CorrectionType* corr_type = nullptr) const;
+        void print(std::ostream& os, const NOX::Nln::CorrectionType* corr_type = nullptr) const;
 
         /// throw error which can be caught
         void throw_error(
@@ -179,10 +179,10 @@ namespace NOX
         Teuchos::ParameterList* params_;
 
         /// set of direction tests
-        std::vector<Teuchos::RCP<NOX::NLN::Direction::Test::Generic>> dstests_;
+        std::vector<Teuchos::RCP<NOX::Nln::Direction::Test::Generic>> dstests_;
       };
     }  // namespace Direction
-  }    // namespace NLN
+  }    // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

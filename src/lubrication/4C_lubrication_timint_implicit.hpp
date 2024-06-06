@@ -41,17 +41,17 @@ FOUR_C_NAMESPACE_OPEN
 // forward declarations
 /*==========================================================================*/
 
-namespace CORE::Dofsets
+namespace Core::DOFSets
 {
   class DofSet;
-}  // namespace CORE::Dofsets
+}  // namespace Core::DOFSets
 
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationWriter;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class Solver;
   class SparseMatrix;
@@ -59,7 +59,7 @@ namespace CORE::LINALG
   class BlockSparseMatrixBase;
   class SparseOperator;
   class KrylovProjector;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 namespace FLD
 {
@@ -76,7 +76,7 @@ namespace LUBRICATION
   class TimIntImpl
   {
    public:
-    virtual Teuchos::RCP<CORE::IO::DiscretizationWriter> DiscWriter() { return output_; }
+    virtual Teuchos::RCP<Core::IO::DiscretizationWriter> DiscWriter() { return output_; }
 
     Teuchos::RCP<Epetra_Vector>& InfGapToggle() { return inf_gap_toggle_lub_; }
 
@@ -85,10 +85,10 @@ namespace LUBRICATION
     /*========================================================================*/
 
     //! Standard Constructor
-    TimIntImpl(Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<CORE::LINALG::Solver> solver,
+    TimIntImpl(Teuchos::RCP<Discret::Discretization> dis, Teuchos::RCP<Core::LinAlg::Solver> solver,
         Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
-        Teuchos::RCP<CORE::IO::DiscretizationWriter> output);
+        Teuchos::RCP<Core::IO::DiscretizationWriter> output);
 
     //! Destructor
     virtual ~TimIntImpl() = default;
@@ -158,7 +158,7 @@ namespace LUBRICATION
     virtual void print_time_step_info();
 
     //! return system matrix downcasted as sparse matrix
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix();
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix();
 
     //! update Newton step
     virtual void UpdateNewton(Teuchos::RCP<const Epetra_Vector> prei);
@@ -190,7 +190,7 @@ namespace LUBRICATION
     }
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() const { return dbcmaps_; }
+    Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor() const { return dbcmaps_; }
 
     //! right-hand side alias the dynamic force residual
     Teuchos::RCP<const Epetra_Vector> RHS() { return residual_; }
@@ -199,7 +199,7 @@ namespace LUBRICATION
     bool IsIncremental() { return incremental_; }
 
     //! return discretization
-    Teuchos::RCP<DRT::Discretization> discretization() { return discret_; }
+    Teuchos::RCP<Discret::Discretization> discretization() { return discret_; }
 
     //! output solution and restart data to file
     virtual void Output(const int num = 0);
@@ -360,7 +360,7 @@ namespace LUBRICATION
     /*========================================================================*/
 
     //! solver
-    Teuchos::RCP<CORE::LINALG::Solver> solver_;
+    Teuchos::RCP<Core::LinAlg::Solver> solver_;
 
     //! parameter list
     const Teuchos::RCP<Teuchos::ParameterList> params_;
@@ -449,19 +449,19 @@ namespace LUBRICATION
     /*========================================================================*/
 
     //! the lubrication discretization
-    Teuchos::RCP<DRT::Discretization> discret_;
+    Teuchos::RCP<Discret::Discretization> discret_;
 
     //! the discretization writer
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output_;
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output_;
 
     //! system matrix (either sparse matrix or block sparse matrix)
-    Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat_;
+    Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat_;
 
     //! a vector of zeros to be used to enforce zero dirichlet boundary conditions
     Teuchos::RCP<Epetra_Vector> zeros_;
 
     //! maps for extracting Dirichlet and free DOF sets
-    Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps_;
+    Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps_;
 
     //! the vector containing body and surface forces
     Teuchos::RCP<Epetra_Vector> neumann_loads_;

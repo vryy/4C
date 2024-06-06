@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
     namespace Direction
     {
@@ -44,7 +44,7 @@ namespace NOX
         Teuchos::RCP<::NOX::Utils> utils_;
       };
     }  // namespace Direction
-  }    // namespace NLN
+  }    // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

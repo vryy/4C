@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::LINALG::BgS2x2Operator::BgS2x2Operator(Teuchos::RCP<Epetra_Operator> A,
+Core::LinAlg::BgS2x2Operator::BgS2x2Operator(Teuchos::RCP<Epetra_Operator> A,
     const Teuchos::ParameterList& list1, const Teuchos::ParameterList& list2, int global_iter,
     double global_omega, int block1_iter, double block1_omega, int block2_iter, double block2_omega,
     bool fliporder)
@@ -69,18 +69,18 @@ CORE::LINALG::BgS2x2Operator::BgS2x2Operator(Teuchos::RCP<Epetra_Operator> A,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::BgS2x2Operator::setup_block_preconditioners()
+void Core::LinAlg::BgS2x2Operator::setup_block_preconditioners()
 {
-  Teuchos::RCP<CORE::LINALG::Solver> s1 =
-      Teuchos::rcp(new CORE::LINALG::Solver(list1_, a_->Comm(), false));
-  solver1_ = Teuchos::rcp(new CORE::LINALG::Preconditioner(s1));
-  const CORE::LINALG::SparseMatrix& Op11 = a_->Matrix(firstind_, firstind_);
+  Teuchos::RCP<Core::LinAlg::Solver> s1 =
+      Teuchos::rcp(new Core::LinAlg::Solver(list1_, a_->Comm(), false));
+  solver1_ = Teuchos::rcp(new Core::LinAlg::Preconditioner(s1));
+  const Core::LinAlg::SparseMatrix& Op11 = a_->Matrix(firstind_, firstind_);
   solver1_->Setup(Op11.EpetraMatrix());
 
-  Teuchos::RCP<CORE::LINALG::Solver> s2 =
-      Teuchos::rcp(new CORE::LINALG::Solver(list2_, a_->Comm(), false));
-  solver2_ = Teuchos::rcp(new CORE::LINALG::Preconditioner(s2));
-  const CORE::LINALG::SparseMatrix& Op22 = a_->Matrix(secind_, secind_);
+  Teuchos::RCP<Core::LinAlg::Solver> s2 =
+      Teuchos::rcp(new Core::LinAlg::Solver(list2_, a_->Comm(), false));
+  solver2_ = Teuchos::rcp(new Core::LinAlg::Preconditioner(s2));
+  const Core::LinAlg::SparseMatrix& Op22 = a_->Matrix(secind_, secind_);
   solver2_->Setup(Op22.EpetraMatrix());
 
   return;
@@ -89,7 +89,7 @@ void CORE::LINALG::BgS2x2Operator::setup_block_preconditioners()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int CORE::LINALG::BgS2x2Operator::ApplyInverse(
+int Core::LinAlg::BgS2x2Operator::ApplyInverse(
     const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
 {
   Teuchos::RCP<Epetra_MultiVector> y1 = mmex_.ExtractVector(Y, firstind_);
@@ -105,10 +105,10 @@ int CORE::LINALG::BgS2x2Operator::ApplyInverse(
   Teuchos::RCP<Epetra_MultiVector> tmpx2 =
       Teuchos::rcp(new Epetra_MultiVector(a_->DomainMap(secind_), y2->NumVectors()));
 
-  const CORE::LINALG::SparseMatrix& Op11 = a_->Matrix(firstind_, firstind_);
-  const CORE::LINALG::SparseMatrix& Op22 = a_->Matrix(secind_, secind_);
-  const CORE::LINALG::SparseMatrix& Op12 = a_->Matrix(firstind_, secind_);
-  const CORE::LINALG::SparseMatrix& Op21 = a_->Matrix(secind_, firstind_);
+  const Core::LinAlg::SparseMatrix& Op11 = a_->Matrix(firstind_, firstind_);
+  const Core::LinAlg::SparseMatrix& Op22 = a_->Matrix(secind_, secind_);
+  const Core::LinAlg::SparseMatrix& Op12 = a_->Matrix(firstind_, secind_);
+  const Core::LinAlg::SparseMatrix& Op21 = a_->Matrix(secind_, firstind_);
 
   // outer Richardson loop
   for (int run = 0; run < global_iter_; ++run)
@@ -175,8 +175,8 @@ int CORE::LINALG::BgS2x2Operator::ApplyInverse(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::BgS2x2Operator::local_block_richardson(
-    Teuchos::RCP<CORE::LINALG::Preconditioner> solver, const CORE::LINALG::SparseMatrix& Op,
+void Core::LinAlg::BgS2x2Operator::local_block_richardson(
+    Teuchos::RCP<Core::LinAlg::Preconditioner> solver, const Core::LinAlg::SparseMatrix& Op,
     Teuchos::RCP<Epetra_MultiVector> x, Teuchos::RCP<Epetra_MultiVector> y,
     Teuchos::RCP<Epetra_MultiVector> tmpx, int iter, double omega) const
 {

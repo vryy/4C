@@ -25,23 +25,23 @@ namespace Teuchos
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationWriter;
   class DiscretizationReader;
-}  // namespace CORE::IO
+}  // namespace Core::IO
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
 
-namespace MORTAR
+namespace Mortar
 {
   // forward declarations
   class StrategyBase;
@@ -101,7 +101,7 @@ namespace MORTAR
     have to be specialized in subclasses of StrategyBase
 
     */
-    MORTAR::StrategyBase& GetStrategy() { return *strategy_; }
+    Mortar::StrategyBase& GetStrategy() { return *strategy_; }
 
     //@}
 
@@ -109,7 +109,7 @@ namespace MORTAR
     //! @{
 
     //! Write interface quantities for postprocessing
-    virtual void postprocess_quantities(CORE::IO::DiscretizationWriter& output) = 0;
+    virtual void postprocess_quantities(Core::IO::DiscretizationWriter& output) = 0;
 
     /*!
     \brief Write results for visualization separately for each meshtying/contact interface
@@ -122,12 +122,12 @@ namespace MORTAR
         Teuchos::RCP<Teuchos::ParameterList> outputParams) = 0;
 
     //! Read restart data from disk
-    virtual void read_restart(CORE::IO::DiscretizationReader& reader,
+    virtual void read_restart(Core::IO::DiscretizationReader& reader,
         Teuchos::RCP<Epetra_Vector> dis, Teuchos::RCP<Epetra_Vector> zero) = 0;
 
     //! Write restart data to disk
     virtual void write_restart(
-        CORE::IO::DiscretizationWriter& output, bool forcedrestart = false) = 0;
+        Core::IO::DiscretizationWriter& output, bool forcedrestart = false) = 0;
 
     //! @}
 
@@ -139,10 +139,10 @@ namespace MORTAR
     Teuchos::RCP<Epetra_Comm> comm_;
 
     //! Strategy object
-    Teuchos::RCP<MORTAR::StrategyBase> strategy_;
+    Teuchos::RCP<Mortar::StrategyBase> strategy_;
 
   };  // class ManagerBase
-}  // namespace MORTAR
+}  // namespace Mortar
 
 
 FOUR_C_NAMESPACE_CLOSE

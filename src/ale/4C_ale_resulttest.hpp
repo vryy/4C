@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
@@ -40,7 +40,7 @@ namespace ALE
 namespace ALE
 {
   /// Result test subclass for linear ale algorithm
-  class AleResultTest : public CORE::UTILS::ResultTest
+  class AleResultTest : public Core::UTILS::ResultTest
   {
    public:
     AleResultTest(ALE::Ale& ale);
@@ -50,11 +50,11 @@ namespace ALE
       Possible position flags are "velx", "vely", "velz" and
       "pressure". With the obvious meaning.
      */
-    void test_node(INPUT::LineDefinition& res, int& nerr, int& test_count) override;
+    void test_node(Input::LineDefinition& res, int& nerr, int& test_count) override;
 
    private:
     /// pointer to ALE discretization
-    Teuchos::RCP<const DRT::Discretization> aledis_;
+    Teuchos::RCP<const Discret::Discretization> aledis_;
 
     /// pointer to ALE displacement result vector
     Teuchos::RCP<const Epetra_Vector> dispnp_;

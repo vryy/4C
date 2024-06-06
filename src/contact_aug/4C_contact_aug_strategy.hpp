@@ -23,22 +23,22 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
-namespace CORE::Nodes
+namespace Core::Nodes
 {
   class Node;
 }
-namespace MORTAR
+namespace Mortar
 {
   class MatrixRowColTransformer;
-}  // namespace MORTAR
+}  // namespace Mortar
 namespace CONTACT
 {
-  namespace AUG
+  namespace Aug
   {
-    namespace STEEPESTASCENT
+    namespace SteepestAscent
     {
       class DataContainer;
-    }  // namespace STEEPESTASCENT
+    }  // namespace SteepestAscent
     class Interface;
     class Potential;
     namespace POTENTIAL
@@ -60,7 +60,7 @@ namespace CONTACT
       DataContainer();
 
       //! initialize optional sub-data container
-      void init_sub_data_container(const INPAR::CONTACT::SolvingStrategy strat_type);
+      void init_sub_data_container(const Inpar::CONTACT::SolvingStrategy strat_type);
 
       //! @}
 
@@ -70,14 +70,14 @@ namespace CONTACT
       //! @name Sub-data container accessors
       //! @{
 
-      CONTACT::AUG::STEEPESTASCENT::DataContainer& SaData()
+      CONTACT::Aug::SteepestAscent::DataContainer& SaData()
       {
         if (sa_data_ptr_.is_null())
           FOUR_C_THROW("The steepest ascent sub data container was not initialized!");
         return *sa_data_ptr_;
       }
 
-      const CONTACT::AUG::STEEPESTASCENT::DataContainer& SaData() const
+      const CONTACT::Aug::SteepestAscent::DataContainer& SaData() const
       {
         if (sa_data_ptr_.is_null())
           FOUR_C_THROW("The steepest ascent sub data container was not initialized!");
@@ -141,42 +141,42 @@ namespace CONTACT
         return cn_;
       };
 
-      void set_current_eval_state(MORTAR::ActionType eval_state) { eval_state_ = eval_state; }
+      void set_current_eval_state(Mortar::ActionType eval_state) { eval_state_ = eval_state; }
 
-      MORTAR::ActionType GetCurrentEvalState() const { return eval_state_; }
+      Mortar::ActionType GetCurrentEvalState() const { return eval_state_; }
 
       //! get the parallel strategy enumerator
-      void SetGhostingStrategy(INPAR::MORTAR::ExtendGhosting ghosting_strategy)
+      void SetGhostingStrategy(Inpar::Mortar::ExtendGhosting ghosting_strategy)
       {
         ghosting_strategy_ = ghosting_strategy;
       }
 
       //! get the parallel strategy enumerator
-      INPAR::MORTAR::ExtendGhosting GhostingStrategy() const { return ghosting_strategy_; }
+      Inpar::Mortar::ExtendGhosting GhostingStrategy() const { return ghosting_strategy_; }
 
-      void set_variational_approach_type(const enum INPAR::CONTACT::VariationalApproach var_type)
+      void set_variational_approach_type(const enum Inpar::CONTACT::VariationalApproach var_type)
       {
         var_type_ = var_type;
       }
 
-      enum INPAR::CONTACT::VariationalApproach variational_approach_type() const
+      enum Inpar::CONTACT::VariationalApproach variational_approach_type() const
       {
         return var_type_;
       }
 
       void SetPotential(const Teuchos::RCP<Potential>& potential) { potentialPtr_ = potential; }
 
-      CONTACT::AUG::Potential& Potential() { return *potentialPtr_; }
+      CONTACT::Aug::Potential& Potential() { return *potentialPtr_; }
 
-      const CONTACT::AUG::Potential& Potential() const { return *potentialPtr_; }
+      const CONTACT::Aug::Potential& Potential() const { return *potentialPtr_; }
 
       void SetPDController(
-          const Teuchos::RCP<CONTACT::AUG::ParallelDistributionController>& pd_control)
+          const Teuchos::RCP<CONTACT::Aug::ParallelDistributionController>& pd_control)
       {
         pd_control_ = pd_control;
       }
 
-      CONTACT::AUG::ParallelDistributionController& PDController()
+      CONTACT::Aug::ParallelDistributionController& PDController()
       {
         if (pd_control_.is_null())
           FOUR_C_THROW("ParallelDistributionController is not initialized!");
@@ -185,14 +185,14 @@ namespace CONTACT
       }
 
       void set_matrix_row_col_transformer(
-          const Teuchos::RCP<MORTAR::MatrixRowColTransformer>& transformer)
+          const Teuchos::RCP<Mortar::MatrixRowColTransformer>& transformer)
       {
         mat_row_col_transformer_ = transformer;
       }
 
       void init_matrix_row_col_transformer();
 
-      MORTAR::MatrixRowColTransformer& matrix_row_col_transformer() const
+      Mortar::MatrixRowColTransformer& matrix_row_col_transformer() const
       {
         if (mat_row_col_transformer_.is_null())
           FOUR_C_THROW("The mat_row_col_transformer was not initialized correctly!");
@@ -235,48 +235,48 @@ namespace CONTACT
        *   transpose of the gradient of the weighted gap vector and is
        *   equal to dLmNWGapLin. In the incomplete case the B-Matrix represents
        *   an incomplete estimate of the gradient. */
-      Teuchos::RCP<CORE::LINALG::SparseMatrix>& BMatrixPtr() { return BMatrixPtr_; }
-      Teuchos::RCP<const CORE::LINALG::SparseMatrix> BMatrixPtr() const { return BMatrixPtr_; }
-      CORE::LINALG::SparseMatrix& BMatrix()
+      Teuchos::RCP<Core::LinAlg::SparseMatrix>& BMatrixPtr() { return BMatrixPtr_; }
+      Teuchos::RCP<const Core::LinAlg::SparseMatrix> BMatrixPtr() const { return BMatrixPtr_; }
+      Core::LinAlg::SparseMatrix& BMatrix()
       {
         if (BMatrixPtr_.is_null()) FOUR_C_THROW("The BMatrixPtr_ is not initialized!");
         return *BMatrixPtr_;
       }
 
       //! Return dGLmLinMatrix
-      Teuchos::RCP<CORE::LINALG::SparseMatrix>& DGLmLinMatrixPtr() { return dGLmLinMatrixPtr_; }
-      Teuchos::RCP<const CORE::LINALG::SparseMatrix> DGLmLinMatrixPtr() const
+      Teuchos::RCP<Core::LinAlg::SparseMatrix>& DGLmLinMatrixPtr() { return dGLmLinMatrixPtr_; }
+      Teuchos::RCP<const Core::LinAlg::SparseMatrix> DGLmLinMatrixPtr() const
       {
         return dGLmLinMatrixPtr_;
       }
-      CORE::LINALG::SparseMatrix& DGLmLinMatrix()
+      Core::LinAlg::SparseMatrix& DGLmLinMatrix()
       {
         if (dGLmLinMatrixPtr_.is_null()) FOUR_C_THROW("The dGLmLinMatrixPtr_ is not initialized!");
         return *dGLmLinMatrixPtr_;
       }
 
       //! Return dGGLinMatrix
-      Teuchos::RCP<CORE::LINALG::SparseMatrix>& DGGLinMatrixPtr() { return dGGLinMatrixPtr_; }
-      Teuchos::RCP<const CORE::LINALG::SparseMatrix> DGGLinMatrixPtr() const
+      Teuchos::RCP<Core::LinAlg::SparseMatrix>& DGGLinMatrixPtr() { return dGGLinMatrixPtr_; }
+      Teuchos::RCP<const Core::LinAlg::SparseMatrix> DGGLinMatrixPtr() const
       {
         return dGGLinMatrixPtr_;
       }
-      CORE::LINALG::SparseMatrix& DGGLinMatrix()
+      Core::LinAlg::SparseMatrix& DGGLinMatrix()
       {
         if (dGGLinMatrixPtr_.is_null()) FOUR_C_THROW("The dGGLinMatrixPtr_ is not initialized!");
         return *dGGLinMatrixPtr_;
       }
 
       //! Return dLmNWGapLinMatrix
-      Teuchos::RCP<CORE::LINALG::SparseMatrix>& d_lm_nw_gap_lin_matrix_ptr()
+      Teuchos::RCP<Core::LinAlg::SparseMatrix>& d_lm_nw_gap_lin_matrix_ptr()
       {
         return dLmNWGapLinMatrixPtr_;
       }
-      Teuchos::RCP<const CORE::LINALG::SparseMatrix> d_lm_nw_gap_lin_matrix_ptr() const
+      Teuchos::RCP<const Core::LinAlg::SparseMatrix> d_lm_nw_gap_lin_matrix_ptr() const
       {
         return dLmNWGapLinMatrixPtr_;
       }
-      CORE::LINALG::SparseMatrix& DLmNWGapLinMatrix()
+      Core::LinAlg::SparseMatrix& DLmNWGapLinMatrix()
       {
         if (dLmNWGapLinMatrixPtr_.is_null())
           FOUR_C_THROW("The dLmNWGapLinMatrixPtr_ is not initialized!");
@@ -284,57 +284,57 @@ namespace CONTACT
       }
 
       //! Return dLmTLmTMatrix
-      Teuchos::RCP<CORE::LINALG::SparseMatrix>& DLmTLmTMatrixPtr() { return dLmTLmTMatrixPtr_; }
-      Teuchos::RCP<const CORE::LINALG::SparseMatrix> DLmTLmTMatrixPtr() const
+      Teuchos::RCP<Core::LinAlg::SparseMatrix>& DLmTLmTMatrixPtr() { return dLmTLmTMatrixPtr_; }
+      Teuchos::RCP<const Core::LinAlg::SparseMatrix> DLmTLmTMatrixPtr() const
       {
         return dLmTLmTMatrixPtr_;
       }
-      CORE::LINALG::SparseMatrix& DLmTLmTMatrix()
+      Core::LinAlg::SparseMatrix& DLmTLmTMatrix()
       {
         if (dLmTLmTMatrixPtr_.is_null()) FOUR_C_THROW("The dLmTLmTMatrixPtr_ is not initialized!");
         return *dLmTLmTMatrixPtr_;
       }
 
       //! Return dLmTLmTLinMatrix
-      Teuchos::RCP<CORE::LINALG::SparseMatrix>& DLmTLmTLinMatrixPtr()
+      Teuchos::RCP<Core::LinAlg::SparseMatrix>& DLmTLmTLinMatrixPtr()
       {
         return dLmTLmTLinMatrixPtr_;
       }
-      Teuchos::RCP<const CORE::LINALG::SparseMatrix> DLmTLmTLinMatrixPtr() const
+      Teuchos::RCP<const Core::LinAlg::SparseMatrix> DLmTLmTLinMatrixPtr() const
       {
         return dLmTLmTLinMatrixPtr_;
       }
-      CORE::LINALG::SparseMatrix& DLmTLmTLinMatrix()
+      Core::LinAlg::SparseMatrix& DLmTLmTLinMatrix()
       {
         if (dLmTLmTLinMatrixPtr_.is_null())
           FOUR_C_THROW("The dLmTLmTLinMatrixPtr_ is not initialized!");
         return *dLmTLmTLinMatrixPtr_;
       }
 
-      Teuchos::RCP<CORE::LINALG::SparseMatrix>& inactive_lin_matrix_ptr()
+      Teuchos::RCP<Core::LinAlg::SparseMatrix>& inactive_lin_matrix_ptr()
       {
         return inactiveLinMatrixPtr_;
       }
-      Teuchos::RCP<const CORE::LINALG::SparseMatrix> inactive_lin_matrix_ptr() const
+      Teuchos::RCP<const Core::LinAlg::SparseMatrix> inactive_lin_matrix_ptr() const
       {
         return inactiveLinMatrixPtr_;
       }
-      CORE::LINALG::SparseMatrix& InactiveLinMatrix()
+      Core::LinAlg::SparseMatrix& InactiveLinMatrix()
       {
         if (inactiveLinMatrixPtr_.is_null())
           FOUR_C_THROW("The augInactiveLinMatrixPtr_ is not initialized!");
         return *inactiveLinMatrixPtr_;
       }
 
-      Teuchos::RCP<CORE::LINALG::SparseMatrix>& InactiveDDMatrixPtr()
+      Teuchos::RCP<Core::LinAlg::SparseMatrix>& InactiveDDMatrixPtr()
       {
         return inactive_dd_matrixPtr_;
       }
-      Teuchos::RCP<const CORE::LINALG::SparseMatrix> InactiveDDMatrixPtr() const
+      Teuchos::RCP<const Core::LinAlg::SparseMatrix> InactiveDDMatrixPtr() const
       {
         return inactive_dd_matrixPtr_;
       }
-      CORE::LINALG::SparseMatrix& InactiveDDMatrix()
+      Core::LinAlg::SparseMatrix& InactiveDDMatrix()
       {
         if (inactive_dd_matrixPtr_.is_null())
           FOUR_C_THROW("The inactive_dd_matrixPtr_ is not initialized!");
@@ -589,49 +589,49 @@ namespace CONTACT
       double cn_;
 
       /// access the current evaluation state of the contact strategy
-      enum MORTAR::ActionType eval_state_;
+      enum Mortar::ActionType eval_state_;
 
       /// defines the type of the ghosting strategy
-      enum INPAR::MORTAR::ExtendGhosting ghosting_strategy_;
+      enum Inpar::Mortar::ExtendGhosting ghosting_strategy_;
 
       /// which variational approach shall be followed? (complete, incomplete, ...)
-      enum INPAR::CONTACT::VariationalApproach var_type_;
+      enum Inpar::CONTACT::VariationalApproach var_type_;
 
       /// global or gp/nodal finite difference check?
-      enum INPAR::CONTACT::FdCheck fd_check_type_;
+      enum Inpar::CONTACT::FdCheck fd_check_type_;
 
       /// pointer to the potential object
-      Teuchos::RCP<CONTACT::AUG::Potential> potentialPtr_;
+      Teuchos::RCP<CONTACT::Aug::Potential> potentialPtr_;
 
       /// row column parallel transformer for matrices
-      Teuchos::RCP<MORTAR::MatrixRowColTransformer> mat_row_col_transformer_;
+      Teuchos::RCP<Mortar::MatrixRowColTransformer> mat_row_col_transformer_;
 
       /// parallel redistribution controller
-      Teuchos::RCP<CONTACT::AUG::ParallelDistributionController> pd_control_;
+      Teuchos::RCP<CONTACT::Aug::ParallelDistributionController> pd_control_;
 
       //! global matrix B-matrix (slave + master)
-      Teuchos::RCP<CORE::LINALG::SparseMatrix> BMatrixPtr_;
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> BMatrixPtr_;
 
       //! global matrix dGLmLin (slave + master)
-      Teuchos::RCP<CORE::LINALG::SparseMatrix> dGLmLinMatrixPtr_;
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> dGLmLinMatrixPtr_;
 
       //! global matrix dGGLin (slave + master)
-      Teuchos::RCP<CORE::LINALG::SparseMatrix> dGGLinMatrixPtr_;
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> dGGLinMatrixPtr_;
 
       //! global matrix dLmNWGapLin
-      Teuchos::RCP<CORE::LINALG::SparseMatrix> dLmNWGapLinMatrixPtr_;
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> dLmNWGapLinMatrixPtr_;
 
       //! global matrix dLmTLmT
-      Teuchos::RCP<CORE::LINALG::SparseMatrix> dLmTLmTMatrixPtr_;
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> dLmTLmTMatrixPtr_;
 
       //! global matrix dLmTLmTLin
-      Teuchos::RCP<CORE::LINALG::SparseMatrix> dLmTLmTLinMatrixPtr_;
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> dLmTLmTLinMatrixPtr_;
 
       //! global inactive linearization matrix
-      Teuchos::RCP<CORE::LINALG::SparseMatrix> inactiveLinMatrixPtr_;
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> inactiveLinMatrixPtr_;
 
       //! global inactive 2-nd order derivative matrix w.r.t. the displacements
-      Teuchos::RCP<CORE::LINALG::SparseMatrix> inactive_dd_matrixPtr_;
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> inactive_dd_matrixPtr_;
 
       //! global inactive diagonal matrix ( represented as vector )
       Teuchos::RCP<Epetra_Vector> inactiveDiagMatrixPtr_;
@@ -716,7 +716,7 @@ namespace CONTACT
       /// @{
 
       /// steepest ascent data container
-      Teuchos::RCP<CONTACT::AUG::STEEPESTASCENT::DataContainer> sa_data_ptr_;
+      Teuchos::RCP<CONTACT::Aug::SteepestAscent::DataContainer> sa_data_ptr_;
 
       /// @}
     };  // class DataContainer
@@ -730,10 +730,10 @@ namespace CONTACT
     {
       /** The combo_strategy is a wrapper class for a set of augmented Lagrangian
        *  strategies and needs access to all methods. */
-      friend class CONTACT::AUG::ComboStrategy;
+      friend class CONTACT::Aug::ComboStrategy;
 
-      friend class CONTACT::AUG::ParallelDistributionController;
-      friend class CONTACT::AUG::ActiveSet;
+      friend class CONTACT::Aug::ParallelDistributionController;
+      friend class CONTACT::Aug::ActiveSet;
 
      public:
       //! Standard constructor
@@ -743,9 +743,9 @@ namespace CONTACT
           const Teuchos::RCP<const Epetra_Comm>& comm, int maxdof);
 
       /// derived
-      INPAR::CONTACT::SolvingStrategy Type() const override
+      Inpar::CONTACT::SolvingStrategy Type() const override
       {
-        return INPAR::CONTACT::solution_augmented;
+        return Inpar::CONTACT::solution_augmented;
       }
 
       /// derived
@@ -761,7 +761,7 @@ namespace CONTACT
       void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis) override{};
 
       //! Read the restart information and adjust the members accordingly
-      void DoReadRestart(CORE::IO::DiscretizationReader& reader,
+      void DoReadRestart(Core::IO::DiscretizationReader& reader,
           Teuchos::RCP<const Epetra_Vector> dis,
           Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr) override;
 
@@ -849,13 +849,13 @@ namespace CONTACT
       };
 
       //! Return the desired matrix block pointer
-      Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrixBlockPtr(
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> GetMatrixBlockPtr(
           const enum CONTACT::MatBlockType& bt,
           const CONTACT::ParamsInterface* cparams = nullptr) const override;
 
       //! Return the condensed matrix block pointer (currently unsupported!)
-      Teuchos::RCP<CORE::LINALG::SparseMatrix> get_condensed_matrix_block_ptr(
-          Teuchos::RCP<CORE::LINALG::SparseMatrix>& kteff, const double& timefac_np) const override
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> get_condensed_matrix_block_ptr(
+          Teuchos::RCP<Core::LinAlg::SparseMatrix>& kteff, const double& timefac_np) const override
       {
         FOUR_C_THROW("There is no condensed matrix block in the augmented Lagrangian case!");
         exit(EXIT_FAILURE);
@@ -895,14 +895,14 @@ namespace CONTACT
        *                        will contain zero values.
        *
        *  \author hiermeier \date 09/17 */
-      Teuchos::RCP<const CORE::LINALG::SparseMatrix> get_weighted_gap_gradient(
+      Teuchos::RCP<const Core::LinAlg::SparseMatrix> get_weighted_gap_gradient(
           const enum WGapGradientType grad_type, const enum MapType map_type) const;
 
       void eval_weighted_gap_gradient_error(CONTACT::ParamsInterface& cparams) override;
 
       //! @}
 
-      double characteristic_interface_element_length(const enum CONTACT::AUG::SideType stype) const;
+      double characteristic_interface_element_length(const enum CONTACT::Aug::SideType stype) const;
 
       inline double get_total_gradient_error() const { return data().TotalGradientError(); }
 
@@ -930,13 +930,13 @@ namespace CONTACT
 
       /// return the potential function value
       double GetPotentialValue(
-          const enum NOX::NLN::MeritFunction::MeritFctName mrt_type) const override;
+          const enum NOX::Nln::MeritFunction::MeritFctName mrt_type) const override;
 
       /// return the desired contributions to the linear model of the potential function
       double get_linearized_potential_value_terms(const Epetra_Vector& dir,
-          const enum NOX::NLN::MeritFunction::MeritFctName mrt_type,
-          const enum NOX::NLN::MeritFunction::LinOrder linorder,
-          const enum NOX::NLN::MeritFunction::LinType lintype) const override;
+          const enum NOX::Nln::MeritFunction::MeritFctName mrt_type,
+          const enum NOX::Nln::MeritFunction::LinOrder linorder,
+          const enum NOX::Nln::MeritFunction::LinType lintype) const override;
 
       /** \brief Split state vector (e.g. direction or x) into the displacement
        *  part as well as into its active and inactive normal Lagrange multiplier
@@ -963,17 +963,17 @@ namespace CONTACT
       /// helper function to access the right model terms
       double get_linearized_potential_model_terms(const Epetra_Vector& dir,
           const enum POTENTIAL::Type pottype, const enum POTENTIAL::SetType potset,
-          const enum NOX::NLN::MeritFunction::LinOrder linorder,
-          const enum NOX::NLN::MeritFunction::LinType lintype) const;
+          const enum NOX::Nln::MeritFunction::LinOrder linorder,
+          const enum NOX::Nln::MeritFunction::LinType lintype) const;
 
       /// helper function to access the correct 1st order derivative model terms
       void get_linearized_potential_model_terms_1st_order(const enum POTENTIAL::Type pottype,
-          const enum POTENTIAL::SetType potset, const enum NOX::NLN::MeritFunction::LinType lintype,
+          const enum POTENTIAL::SetType potset, const enum NOX::Nln::MeritFunction::LinType lintype,
           double& linval) const;
 
       // helper function to access the correct 2nd order derivative model terms
       void get_linearized_potential_model_terms_2nd_order(const enum POTENTIAL::Type pottype,
-          const enum POTENTIAL::SetType potset, const enum NOX::NLN::MeritFunction::LinType lintype,
+          const enum POTENTIAL::SetType potset, const enum NOX::Nln::MeritFunction::LinType lintype,
           double& linval) const;
       //! @}
 
@@ -1078,9 +1078,9 @@ namespace CONTACT
       void update_active_set_semi_smooth(const CONTACT::ParamsInterface& cparams);
 
       //! Initialize all matrices
-      void Initialize() override { Initialize(MORTAR::eval_force_stiff); }
+      void Initialize() override { Initialize(Mortar::eval_force_stiff); }
       //! Initialize only the necessary member variables
-      void Initialize(enum MORTAR::ActionType actiontype);
+      void Initialize(enum Mortar::ActionType actiontype);
 
       /*! \brief Projection of the nodal LM values in the nodal normal and tangential direction.
        *
@@ -1095,7 +1095,7 @@ namespace CONTACT
       /*! \brief Write contact force output
        *
        *  \author hiermeier \date 12/17 */
-      void WriteOutput(CORE::IO::DiscretizationWriter& writer) const override;
+      void WriteOutput(Core::IO::DiscretizationWriter& writer) const override;
 
       /*! @name Auxiliary routines, debugging and visualization methods
        *        (all these methods are defined in the contact_augmented_strategy_tools.cpp) */
@@ -1116,10 +1116,10 @@ namespace CONTACT
        public:
         /// singleton creation
         static FdDebug* Instance(Strategy* strat, const double delta = 1.0e-8,
-            CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
+            Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
         /// perform the FD evaluate calls
-        void Evaluate(const Teuchos::RCP<CORE::LINALG::SparseMatrix>& derivMatrixPtr,
+        void Evaluate(const Teuchos::RCP<Core::LinAlg::SparseMatrix>& derivMatrixPtr,
             Teuchos::RCP<Epetra_Vector>& rhsVector, CONTACT::ParamsInterface& cparams);
 
        private:
@@ -1137,7 +1137,7 @@ namespace CONTACT
         /// undo the perturbation
         void undo_perturbation(const int gid, const int dof) const;
 
-        CORE::Nodes::Node* find_i_node(const int gid) const;
+        Core::Nodes::Node* find_i_node(const int gid) const;
 
         /// call back to the wrapping strategy
         Strategy* strat_;
@@ -1149,7 +1149,7 @@ namespace CONTACT
         bool is_fd_check_;
 
         /// reference values to undo a previous perturbation
-        std::map<int, CORE::LINALG::Matrix<3, 1>> ref_x_;
+        std::map<int, Core::LinAlg::Matrix<3, 1>> ref_x_;
       };
       //@}
 
@@ -1245,7 +1245,7 @@ namespace CONTACT
       void InitEvalInterface(Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr) override;
 
       //! evaluate interface
-      void eval_interface(CONTACT::AUG::Interface& interface, const int rriter,
+      void eval_interface(CONTACT::Aug::Interface& interface, const int rriter,
           const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr);
 
       //! The contributions to the structural right-hand-side block are calculated.
@@ -1297,38 +1297,38 @@ namespace CONTACT
        *
        *  \author hiermeier \date 03/17 */
       virtual void add_contributions_to_matrix_block_displ_displ(
-          CORE::LINALG::SparseMatrix& kdd, const CONTACT::ParamsInterface* cparams = nullptr) const;
+          Core::LinAlg::SparseMatrix& kdd, const CONTACT::ParamsInterface* cparams = nullptr) const;
 
       /** \brief All contributions to the final system matrix block:
        *  ROW => Displacement, COLUMN => Lagrange Multiplier
        *
        *  \author hiermeier \date 03/17 */
-      void add_contributions_to_matrix_block_displ_lm(CORE::LINALG::SparseMatrix& kdz) const;
+      void add_contributions_to_matrix_block_displ_lm(Core::LinAlg::SparseMatrix& kdz) const;
 
       /** \brief All contributions to the final system matrix block:
        *  ROW => Lagrange Multiplier, COLUMN => Displacement
        *
        *  \author hiermeier \date 03/17 */
-      void add_contributions_to_matrix_block_lm_displ(CORE::LINALG::SparseMatrix& kzd) const;
+      void add_contributions_to_matrix_block_lm_displ(Core::LinAlg::SparseMatrix& kzd) const;
 
       /** \brief All contributions to the final system matrix block:
        *  ROW => Lagrange Multiplier, COLUMN => Lagrange Multiplier
        *
        *  \author hiermeier \date 03/17 */
-      virtual void add_contributions_to_matrix_block_lm_lm(CORE::LINALG::SparseMatrix& kzz) const;
+      virtual void add_contributions_to_matrix_block_lm_lm(Core::LinAlg::SparseMatrix& kzz) const;
 
      protected:
       /*! \brief Get access to the internal data container of the strategy (mutable)
        *
        * \author hiermeier
        * \date 05/16 */
-      inline CONTACT::AUG::DataContainer& data() { return aug_data_; }
+      inline CONTACT::Aug::DataContainer& data() { return aug_data_; }
 
       /*! \brief Get access to the internal data container of the strategy (read-only)
        *
        * \author hiermeier
        * \date 05/16 */
-      inline const CONTACT::AUG::DataContainer& data() const { return aug_data_; }
+      inline const CONTACT::Aug::DataContainer& data() const { return aug_data_; }
 
      public:
       //! @name Unsupported derived routines (dead-end)
@@ -1345,19 +1345,19 @@ namespace CONTACT
 
       //! @name Deprecated methods
       //! @{
-      void EvaluateContact(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
+      void EvaluateContact(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
           Teuchos::RCP<Epetra_Vector>& feff) override
       {
         FOUR_C_THROW("Deprecated function call!");
       };
-      void EvaluateFriction(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
+      void EvaluateFriction(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
           Teuchos::RCP<Epetra_Vector>& feff) override
       {
         FOUR_C_THROW("Deprecated function call!");
       };
-      void build_saddle_point_system(Teuchos::RCP<CORE::LINALG::SparseOperator> kdd,
+      void build_saddle_point_system(Teuchos::RCP<Core::LinAlg::SparseOperator> kdd,
           Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
-          Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
+          Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
           Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) override
       {
         FOUR_C_THROW("Deprecated function call!");
@@ -1399,7 +1399,7 @@ namespace CONTACT
         FOUR_C_THROW("Wrong strategy!");
         exit(EXIT_FAILURE);
       };
-      void InitializeUzawa(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
+      void InitializeUzawa(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
           Teuchos::RCP<Epetra_Vector>& feff) override
       {
         FOUR_C_THROW("Wrong strategy!");
@@ -1420,10 +1420,10 @@ namespace CONTACT
 
      private:
       /// augmented contact strategy data container pointer
-      Teuchos::RCP<CONTACT::AUG::DataContainer> aug_data_ptr_;
+      Teuchos::RCP<CONTACT::Aug::DataContainer> aug_data_ptr_;
 
       /// reference to the augmented contact strategy data container
-      CONTACT::AUG::DataContainer& aug_data_;
+      CONTACT::Aug::DataContainer& aug_data_;
 
       /// contact interface set
       plain_interface_set interface_;
@@ -1448,7 +1448,7 @@ namespace CONTACT
      *  \return A RCP to the completed sub-sparse matrix will be returned.
      *
      *  \author hiermeier \date 06/17 */
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> ExtractMatrix(const CORE::LINALG::SparseMatrix& source,
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> ExtractMatrix(const Core::LinAlg::SparseMatrix& source,
         const Epetra_Map& target_range_map, const Epetra_Map& target_domain_map);
 
     /*--------------------------------------------------------------------------*/
@@ -1487,7 +1487,7 @@ namespace CONTACT
      *  \author hiermeier \date 03/17 */
     void RedistributeRowMap(const Epetra_Map& ref_map, Epetra_Map& red_map);
 
-  }  // namespace AUG
+  }  // namespace Aug
 }  // namespace CONTACT
 
 

@@ -25,8 +25,8 @@ namespace XFEM
   {
     //! extract the nodal vectors and store them in node-vector-map
     //! \author schott \date 01/13
-    void extract_node_vectors(Teuchos::RCP<DRT::Discretization> dis,
-        std::map<int, CORE::LINALG::Matrix<3, 1>>& nodevecmap, Teuchos::RCP<Epetra_Vector> idispnp);
+    void extract_node_vectors(Teuchos::RCP<Discret::Discretization> dis,
+        std::map<int, Core::LinAlg::Matrix<3, 1>>& nodevecmap, Teuchos::RCP<Epetra_Vector> idispnp);
 
     //! @name Get material properties for the Volume Cell
 
@@ -38,10 +38,10 @@ namespace XFEM
     on the point position.
 
      */
-    void get_volume_cell_material(CORE::Elements::Element* actele,  // element for volume cell INPUT
-        Teuchos::RCP<CORE::MAT::Material>& mat,  // material of volume cell OUTPUT
-        CORE::GEO::CUT::Point::PointPosition position =
-            CORE::GEO::CUT::Point::outside  // position of volume cell INPUT to determine
+    void get_volume_cell_material(Core::Elements::Element* actele,  // element for volume cell INPUT
+        Teuchos::RCP<Core::Mat::Material>& mat,  // material of volume cell OUTPUT
+        Core::Geo::Cut::Point::PointPosition position =
+            Core::Geo::Cut::Point::outside  // position of volume cell INPUT to determine
                                             // position
     );
 
@@ -53,25 +53,25 @@ namespace XFEM
 
      */
     void SafetyCheckMaterials(
-        Teuchos::RCP<CORE::MAT::Material>& pmat, Teuchos::RCP<CORE::MAT::Material>& nmat);
+        Teuchos::RCP<Core::Mat::Material>& pmat, Teuchos::RCP<Core::Mat::Material>& nmat);
 
     //! @name Extract quantities on a element
     /*!
     \brief Needs a column-vector to extract correctly in parallel
      */
-    void ExtractQuantityAtElement(CORE::LINALG::SerialDenseMatrix::Base& element_vector,
-        const CORE::Elements::Element* element,
+    void ExtractQuantityAtElement(Core::LinAlg::SerialDenseMatrix::Base& element_vector,
+        const Core::Elements::Element* element,
         const Teuchos::RCP<const Epetra_MultiVector>& global_col_vector,
-        Teuchos::RCP<DRT::Discretization>& dis, const int nds_vector, const int nsd);
+        Teuchos::RCP<Discret::Discretization>& dis, const int nds_vector, const int nsd);
 
     //! @name Extract quantities on a node
     /*!
     \brief Needs a column-vector to extract correctly in parallel
      */
-    void ExtractQuantityAtNode(CORE::LINALG::SerialDenseMatrix::Base& element_vector,
-        const CORE::Nodes::Node* node,
+    void ExtractQuantityAtNode(Core::LinAlg::SerialDenseMatrix::Base& element_vector,
+        const Core::Nodes::Node* node,
         const Teuchos::RCP<const Epetra_MultiVector>& global_col_vector,
-        Teuchos::RCP<DRT::Discretization>& dis, const int nds_vector, const unsigned int nsd);
+        Teuchos::RCP<Discret::Discretization>& dis, const int nds_vector, const unsigned int nsd);
 
   }  // namespace UTILS
 }  // namespace XFEM

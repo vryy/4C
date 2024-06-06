@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /* A collection of time integration utilities */
-namespace TIMESTEPPING
+namespace TimeStepping
 {
   /*====================================================================*/
   /*!
@@ -385,7 +385,7 @@ namespace TIMESTEPPING
     //@}
 
   };  // class TimIntMStep<Epetra_Vector>
-}  // namespace TIMESTEPPING
+}  // namespace TimeStepping
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

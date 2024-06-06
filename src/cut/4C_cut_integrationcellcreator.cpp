@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::IntegrationCellCreator::CreateCells(
+bool Core::Geo::Cut::IntegrationCellCreator::CreateCells(
     Mesh& mesh, Element* element, const plain_volumecell_set& cells)
 {
   IntegrationCellCreator creator;
@@ -43,8 +43,8 @@ bool CORE::GEO::CUT::IntegrationCellCreator::CreateCells(
         break;
       case 2:
       {
-        found = (creator.create2_d_cell<CORE::FE::CellType::tri3>(mesh, cell, cell->Facets()) or
-                 creator.create2_d_cell<CORE::FE::CellType::quad4>(mesh, cell, cell->Facets()));
+        found = (creator.create2_d_cell<Core::FE::CellType::tri3>(mesh, cell, cell->Facets()) or
+                 creator.create2_d_cell<Core::FE::CellType::quad4>(mesh, cell, cell->Facets()));
         if (not found)
           FOUR_C_THROW(
               "No 2-D cell could be generated and tessellation is currently "
@@ -81,39 +81,39 @@ bool CORE::GEO::CUT::IntegrationCellCreator::CreateCells(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::IntegrationCellCreator::CreateCell(
-    Mesh& mesh, CORE::FE::CellType shape, VolumeCell* cell)
+bool Core::Geo::Cut::IntegrationCellCreator::CreateCell(
+    Mesh& mesh, Core::FE::CellType shape, VolumeCell* cell)
 {
   IntegrationCellCreator creator;
 
   bool success;
   switch (shape)
   {
-    case CORE::FE::CellType::tet4:
+    case Core::FE::CellType::tet4:
       success = creator.create_tet4_cell(mesh, cell, cell->Facets());
       break;
-    case CORE::FE::CellType::hex8:
+    case Core::FE::CellType::hex8:
       success = creator.create_hex8_cell(mesh, cell, cell->Facets());
       break;
-    case CORE::FE::CellType::wedge6:
+    case Core::FE::CellType::wedge6:
       success = creator.create_wedge6_cell(mesh, cell, cell->Facets());
       break;
-    case CORE::FE::CellType::pyramid5:
+    case Core::FE::CellType::pyramid5:
       // success = creator.create_pyramid5_cell( mesh, cell, cell->Facets() );
       success = false;
       break;
-    case CORE::FE::CellType::line2:
+    case Core::FE::CellType::line2:
       success = creator.create_line2_cell(mesh, cell, cell->Facets());
       break;
-    case CORE::FE::CellType::tri3:
-      success = creator.create2_d_cell<CORE::FE::CellType::tri3>(mesh, cell, cell->Facets());
+    case Core::FE::CellType::tri3:
+      success = creator.create2_d_cell<Core::FE::CellType::tri3>(mesh, cell, cell->Facets());
       break;
-    case CORE::FE::CellType::quad4:
-      success = creator.create2_d_cell<CORE::FE::CellType::quad4>(mesh, cell, cell->Facets());
+    case Core::FE::CellType::quad4:
+      success = creator.create2_d_cell<Core::FE::CellType::quad4>(mesh, cell, cell->Facets());
       break;
     default:
       FOUR_C_THROW(
-          "unsupported element shape ( shape = %s )", CORE::FE::CellTypeToString(shape).c_str());
+          "unsupported element shape ( shape = %s )", Core::FE::CellTypeToString(shape).c_str());
       exit(EXIT_FAILURE);
   }
   // if the create process was successful, we can finally create the integration cell
@@ -127,7 +127,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::CreateCell(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::IntegrationCellCreator::execute(Mesh& mesh)
+void Core::Geo::Cut::IntegrationCellCreator::execute(Mesh& mesh)
 {
   for (std::map<VolumeCell*, Volume>::iterator it = cells_.begin(); it != cells_.end(); ++it)
   {
@@ -139,7 +139,7 @@ void CORE::GEO::CUT::IntegrationCellCreator::execute(Mesh& mesh)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::IntegrationCellCreator::create_point1_cell(
+bool Core::Geo::Cut::IntegrationCellCreator::create_point1_cell(
     Mesh& mesh, VolumeCell* cell, const plain_facet_set& facets)
 {
   // check the facet number
@@ -147,33 +147,33 @@ bool CORE::GEO::CUT::IntegrationCellCreator::create_point1_cell(
 
   // check the actual facet type
   Facet* f = *facets.begin();
-  if (not f->Equals(CORE::FE::CellType::point1)) return false;
+  if (not f->Equals(Core::FE::CellType::point1)) return false;
 
   // add the side for the boundary integration cell creation
-  if (f->OnBoundaryCellSide()) add_side(cell, f, CORE::FE::CellType::point1, f->CornerPoints());
+  if (f->OnBoundaryCellSide()) add_side(cell, f, Core::FE::CellType::point1, f->CornerPoints());
 
   return true;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::IntegrationCellCreator::add_side(
-    INPAR::CUT::BoundaryCellPosition bcell_position, VolumeCell* vc, Facet* facet,
-    CORE::FE::CellType shape, const std::vector<Point*>& side)
+void Core::Geo::Cut::IntegrationCellCreator::add_side(
+    Inpar::Cut::BoundaryCellPosition bcell_position, VolumeCell* vc, Facet* facet,
+    Core::FE::CellType shape, const std::vector<Point*>& side)
 {
   switch (bcell_position)
   {
-    case INPAR::CUT::bcells_on_cut_side:
+    case Inpar::Cut::bcells_on_cut_side:
     {
       if (facet->OnBoundaryCellSide()) add_side(vc, facet, shape, side);
       break;
     }
-    case INPAR::CUT::bcells_on_all_sides:
+    case Inpar::Cut::bcells_on_all_sides:
     {
       if (vc->parent_element()->IsCut()) add_side(vc, facet, shape, side);
       break;
     }
-    case INPAR::CUT::bcells_none:
+    case Inpar::Cut::bcells_none:
       /* do nothing */
       break;
     default:
@@ -186,7 +186,7 @@ void CORE::GEO::CUT::IntegrationCellCreator::add_side(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::IntegrationCellCreator::create_line2_cell(
+bool Core::Geo::Cut::IntegrationCellCreator::create_line2_cell(
     Mesh& mesh, VolumeCell* cell, const plain_facet_set& facets)
 {
   // check the facet number
@@ -195,17 +195,17 @@ bool CORE::GEO::CUT::IntegrationCellCreator::create_line2_cell(
   std::vector<Point*> line_corner_points;
   line_corner_points.reserve(2);
 
-  const enum INPAR::CUT::BoundaryCellPosition bcell_pos =
+  const enum Inpar::Cut::BoundaryCellPosition bcell_pos =
       mesh.CreateOptions().gen_boundary_cell_position();
 
   for (plain_facet_set::const_iterator cit = facets.begin(); cit != facets.end(); ++cit)
   {
     // check the actual facet type
     Facet* f = *cit;
-    if (not f->Equals(CORE::FE::CellType::point1)) return false;
+    if (not f->Equals(Core::FE::CellType::point1)) return false;
 
     // add the side for the boundary integration cell creation
-    add_side(bcell_pos, cell, f, CORE::FE::CellType::point1, f->CornerPoints());
+    add_side(bcell_pos, cell, f, Core::FE::CellType::point1, f->CornerPoints());
 
     // collect the facet points
     line_corner_points.push_back(*f->CornerPoints().begin());
@@ -223,27 +223,27 @@ bool CORE::GEO::CUT::IntegrationCellCreator::create_line2_cell(
         "reach this point!");
 
   // add the actual cell
-  add(cell, CORE::FE::CellType::line2, line_corner_points);
+  add(cell, Core::FE::CellType::line2, line_corner_points);
 
   return true;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <CORE::FE::CellType celltype, CORE::FE::CellType facetype, unsigned numfaces>
-bool CORE::GEO::CUT::IntegrationCellCreator::create2_d_cell(
+template <Core::FE::CellType celltype, Core::FE::CellType facetype, unsigned numfaces>
+bool Core::Geo::Cut::IntegrationCellCreator::create2_d_cell(
     Mesh& mesh, VolumeCell* cell, const plain_facet_set& facets)
 {
   // check the facet number
   if (facets.size() != numfaces) return false;
 
-  const enum INPAR::CUT::BoundaryCellPosition bcell_pos =
+  const enum Inpar::Cut::BoundaryCellPosition bcell_pos =
       mesh.CreateOptions().gen_boundary_cell_position();
 
-  IMPL::SimplePointGraph2D pg = IMPL::SimplePointGraph2D();
+  Impl::SimplePointGraph2D pg = Impl::SimplePointGraph2D();
   pg.FindLineFacetCycles(facets, cell->parent_element());
 
-  for (IMPL::PointGraph::facet_iterator it = pg.fbegin(); it != pg.fend(); ++it)
+  for (Impl::PointGraph::facet_iterator it = pg.fbegin(); it != pg.fend(); ++it)
   {
     Cycle& line_cycle = *it;
 
@@ -266,7 +266,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::create2_d_cell(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::IntegrationCellCreator::create_tet4_cell(
+bool Core::Geo::Cut::IntegrationCellCreator::create_tet4_cell(
     Mesh& mesh, VolumeCell* cell, const plain_facet_set& facets)
 {
   // check if the volumecell has 4 facets and each facet is tri3
@@ -275,7 +275,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::create_tet4_cell(
   for (plain_facet_set::const_iterator i = facets.begin(); i != facets.end(); ++i)
   {
     Facet* f = *i;
-    if (not f->Equals(CORE::FE::CellType::tri3))
+    if (not f->Equals(Core::FE::CellType::tri3))
     {
       return false;
     }
@@ -319,14 +319,14 @@ bool CORE::GEO::CUT::IntegrationCellCreator::create_tet4_cell(
   //       f->NewTri3Cell( mesh );
   //     }
 
-  CORE::LINALG::Matrix<3, 3> bot_xyze;
-  CORE::LINALG::Matrix<3, 1> top_xyz;
+  Core::LinAlg::Matrix<3, 3> bot_xyze;
+  Core::LinAlg::Matrix<3, 1> top_xyz;
 
   bot->CornerCoordinates(bot_xyze.A());
   top_point->Coordinates(top_xyz.A());
 
-  Teuchos::RCP<CORE::GEO::CUT::Position> bot_distance =
-      CORE::GEO::CUT::Position::Create(bot_xyze, top_xyz, CORE::FE::CellType::tri3);
+  Teuchos::RCP<Core::Geo::Cut::Position> bot_distance =
+      Core::Geo::Cut::Position::Create(bot_xyze, top_xyz, Core::FE::CellType::tri3);
 
   bot_distance->Compute(true);
   const bool invalid_pos = (bot_distance->Status() < Position::position_distance_valid);
@@ -344,16 +344,16 @@ bool CORE::GEO::CUT::IntegrationCellCreator::create_tet4_cell(
       std::vector<Point*> side(3);
       for (int j = 0; j < 3; ++j)
       {
-        side[j] = points[CORE::FE::eleNodeNumbering_tet10_surfaces[i][j]];
+        side[j] = points[Core::FE::eleNodeNumbering_tet10_surfaces[i][j]];
       }
       Facet* f = FindFacet(facets, side);
-      if (f->OnBoundaryCellSide()) add_side(cell, f, CORE::FE::CellType::tri3, side);
+      if (f->OnBoundaryCellSide()) add_side(cell, f, Core::FE::CellType::tri3, side);
     }
 
     /* We create no TET4 cell, if the position calculation failed or the cell
      * is planar. */
     if (not invalid_pos and bot_distance->Distance() > 0)
-      add(cell, CORE::FE::CellType::tet4, points);
+      add(cell, Core::FE::CellType::tet4, points);
 
     return true;
   }
@@ -370,13 +370,13 @@ bool CORE::GEO::CUT::IntegrationCellCreator::create_tet4_cell(
       std::vector<Point*> side(3);
       for (int j = 0; j < 3; ++j)
       {
-        side[j] = points[CORE::FE::eleNodeNumbering_tet10_surfaces[i][j]];
+        side[j] = points[Core::FE::eleNodeNumbering_tet10_surfaces[i][j]];
       }
       Facet* f = FindFacet(facets, side);
-      if (f->OnBoundaryCellSide()) add_side(cell, f, CORE::FE::CellType::tri3, side);
+      if (f->OnBoundaryCellSide()) add_side(cell, f, Core::FE::CellType::tri3, side);
     }
 
-    add(cell, CORE::FE::CellType::tet4, points);
+    add(cell, Core::FE::CellType::tet4, points);
     return true;
   }
   else
@@ -388,7 +388,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::create_tet4_cell(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::IntegrationCellCreator::create_hex8_cell(
+bool Core::Geo::Cut::IntegrationCellCreator::create_hex8_cell(
     Mesh& mesh, VolumeCell* cell, const plain_facet_set& facets)
 {
   if (facets.size() == 6)
@@ -396,7 +396,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::create_hex8_cell(
     for (plain_facet_set::const_iterator i = facets.begin(); i != facets.end(); ++i)
     {
       Facet* f = *i;
-      if (not f->Equals(CORE::FE::CellType::quad4))
+      if (not f->Equals(Core::FE::CellType::quad4))
       {
         return false;
       }
@@ -506,8 +506,8 @@ bool CORE::GEO::CUT::IntegrationCellCreator::create_hex8_cell(
     // can have arbitrary concave situations, all points have to be
     // checked. If we cannot decide on an orientation, we reject the cell.
 
-    CORE::LINALG::Matrix<3, 4> bot_xyze;
-    CORE::LINALG::Matrix<3, 4> top_xyze;
+    Core::LinAlg::Matrix<3, 4> bot_xyze;
+    Core::LinAlg::Matrix<3, 4> top_xyze;
 
     bot->CornerCoordinates(bot_xyze.A());
     top->CornerCoordinates(top_xyze.A());
@@ -515,9 +515,9 @@ bool CORE::GEO::CUT::IntegrationCellCreator::create_hex8_cell(
     int distance_counter = 0;
     for (int i = 0; i < 4; ++i)
     {
-      CORE::LINALG::Matrix<3, 1> top_xyz(&top_xyze(0, i), true);
-      Teuchos::RCP<CORE::GEO::CUT::Position> bot_distance =
-          CORE::GEO::CUT::Position::Create(bot_xyze, top_xyz, CORE::FE::CellType::quad4);
+      Core::LinAlg::Matrix<3, 1> top_xyz(&top_xyze(0, i), true);
+      Teuchos::RCP<Core::Geo::Cut::Position> bot_distance =
+          Core::Geo::Cut::Position::Create(bot_xyze, top_xyz, Core::FE::CellType::quad4);
 
       bot_distance->Compute(true);
 
@@ -552,13 +552,13 @@ bool CORE::GEO::CUT::IntegrationCellCreator::create_hex8_cell(
         std::vector<Point*> side(4);
         for (int j = 0; j < 4; ++j)
         {
-          side[j] = rpoints[CORE::FE::eleNodeNumbering_hex27_surfaces[i][j]];
+          side[j] = rpoints[Core::FE::eleNodeNumbering_hex27_surfaces[i][j]];
         }
         Facet* f = FindFacet(facets, side);
-        if (f->OnBoundaryCellSide()) add_side(cell, f, CORE::FE::CellType::quad4, side);
+        if (f->OnBoundaryCellSide()) add_side(cell, f, Core::FE::CellType::quad4, side);
       }
 
-      add(cell, CORE::FE::CellType::hex8, rpoints);
+      add(cell, Core::FE::CellType::hex8, rpoints);
       return true;
     }
     else if (distance_counter == 4)
@@ -568,13 +568,13 @@ bool CORE::GEO::CUT::IntegrationCellCreator::create_hex8_cell(
         std::vector<Point*> side(4);
         for (int j = 0; j < 4; ++j)
         {
-          side[j] = points[CORE::FE::eleNodeNumbering_hex27_surfaces[i][j]];
+          side[j] = points[Core::FE::eleNodeNumbering_hex27_surfaces[i][j]];
         }
         Facet* f = FindFacet(facets, side);
-        if (f->OnBoundaryCellSide()) add_side(cell, f, CORE::FE::CellType::quad4, side);
+        if (f->OnBoundaryCellSide()) add_side(cell, f, Core::FE::CellType::quad4, side);
       }
 
-      add(cell, CORE::FE::CellType::hex8, points);
+      add(cell, Core::FE::CellType::hex8, points);
       return true;
     }
     else
@@ -587,7 +587,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::create_hex8_cell(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::IntegrationCellCreator::create_wedge6_cell(
+bool Core::Geo::Cut::IntegrationCellCreator::create_wedge6_cell(
     Mesh& mesh, VolumeCell* cell, const plain_facet_set& facets)
 {
   if (facets.size() == 5)
@@ -598,11 +598,11 @@ bool CORE::GEO::CUT::IntegrationCellCreator::create_wedge6_cell(
     for (plain_facet_set::const_iterator i = facets.begin(); i != facets.end(); ++i)
     {
       Facet* f = *i;
-      if (f->Equals(CORE::FE::CellType::tri3))
+      if (f->Equals(Core::FE::CellType::tri3))
       {
         tris.push_back(f);
       }
-      else if (f->Equals(CORE::FE::CellType::quad4))
+      else if (f->Equals(Core::FE::CellType::quad4))
       {
         quads.push_back(f);
       }
@@ -696,8 +696,8 @@ bool CORE::GEO::CUT::IntegrationCellCreator::create_wedge6_cell(
     // can have arbitrary concave situations, all points have to be
     // checked. If we cannot decide on an orientation, we reject the cell.
 
-    CORE::LINALG::Matrix<3, 3> bot_xyze;
-    CORE::LINALG::Matrix<3, 3> top_xyze;
+    Core::LinAlg::Matrix<3, 3> bot_xyze;
+    Core::LinAlg::Matrix<3, 3> top_xyze;
 
     bot->CornerCoordinates(bot_xyze.A());
     top->CornerCoordinates(top_xyze.A());
@@ -705,9 +705,9 @@ bool CORE::GEO::CUT::IntegrationCellCreator::create_wedge6_cell(
     int distance_counter = 0;
     for (int i = 0; i < 3; ++i)
     {
-      CORE::LINALG::Matrix<3, 1> top_xyz(&top_xyze(0, i), true);
-      Teuchos::RCP<CORE::GEO::CUT::Position> bot_distance =
-          CORE::GEO::CUT::Position::Create(bot_xyze, top_xyz, CORE::FE::CellType::tri3);
+      Core::LinAlg::Matrix<3, 1> top_xyz(&top_xyze(0, i), true);
+      Teuchos::RCP<Core::Geo::Cut::Position> bot_distance =
+          Core::Geo::Cut::Position::Create(bot_xyze, top_xyz, Core::FE::CellType::tri3);
 
       bot_distance->Compute(true);
 
@@ -755,23 +755,23 @@ bool CORE::GEO::CUT::IntegrationCellCreator::create_wedge6_cell(
         std::vector<Point*> side(3);
         for (int j = 0; j < 3; ++j)
         {
-          side[j] = rpoints[CORE::FE::eleNodeNumbering_wedge18_trisurfaces[i][j]];
+          side[j] = rpoints[Core::FE::eleNodeNumbering_wedge18_trisurfaces[i][j]];
         }
         Facet* f = FindFacet(facets, side);
-        if (f->OnBoundaryCellSide()) add_side(cell, f, CORE::FE::CellType::tri3, side);
+        if (f->OnBoundaryCellSide()) add_side(cell, f, Core::FE::CellType::tri3, side);
       }
       for (int i = 0; i < 3; ++i)
       {
         std::vector<Point*> side(4);
         for (int j = 0; j < 4; ++j)
         {
-          side[j] = rpoints[CORE::FE::eleNodeNumbering_wedge18_quadsurfaces[i][j]];
+          side[j] = rpoints[Core::FE::eleNodeNumbering_wedge18_quadsurfaces[i][j]];
         }
         Facet* f = FindFacet(facets, side);
-        if (f->OnBoundaryCellSide()) add_side(cell, f, CORE::FE::CellType::quad4, side);
+        if (f->OnBoundaryCellSide()) add_side(cell, f, Core::FE::CellType::quad4, side);
       }
 
-      add(cell, CORE::FE::CellType::wedge6, rpoints);
+      add(cell, Core::FE::CellType::wedge6, rpoints);
       return true;
     }
     else if (distance_counter == 3)
@@ -781,23 +781,23 @@ bool CORE::GEO::CUT::IntegrationCellCreator::create_wedge6_cell(
         std::vector<Point*> side(3);
         for (int j = 0; j < 3; ++j)
         {
-          side[j] = points[CORE::FE::eleNodeNumbering_wedge18_trisurfaces[i][j]];
+          side[j] = points[Core::FE::eleNodeNumbering_wedge18_trisurfaces[i][j]];
         }
         Facet* f = FindFacet(facets, side);
-        if (f->OnBoundaryCellSide()) add_side(cell, f, CORE::FE::CellType::tri3, side);
+        if (f->OnBoundaryCellSide()) add_side(cell, f, Core::FE::CellType::tri3, side);
       }
       for (int i = 0; i < 3; ++i)
       {
         std::vector<Point*> side(4);
         for (int j = 0; j < 4; ++j)
         {
-          side[j] = points[CORE::FE::eleNodeNumbering_wedge18_quadsurfaces[i][j]];
+          side[j] = points[Core::FE::eleNodeNumbering_wedge18_quadsurfaces[i][j]];
         }
         Facet* f = FindFacet(facets, side);
-        if (f->OnBoundaryCellSide()) add_side(cell, f, CORE::FE::CellType::quad4, side);
+        if (f->OnBoundaryCellSide()) add_side(cell, f, Core::FE::CellType::quad4, side);
       }
 
-      add(cell, CORE::FE::CellType::wedge6, points);
+      add(cell, Core::FE::CellType::wedge6, points);
       return true;
     }
     else
@@ -810,7 +810,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::create_wedge6_cell(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::IntegrationCellCreator::create_pyramid5_cell(
+bool Core::Geo::Cut::IntegrationCellCreator::create_pyramid5_cell(
     Mesh& mesh, VolumeCell* cell, const plain_facet_set& facets)
 {
   if (facets.size() == 5)
@@ -821,11 +821,11 @@ bool CORE::GEO::CUT::IntegrationCellCreator::create_pyramid5_cell(
     for (plain_facet_set::const_iterator i = facets.begin(); i != facets.end(); ++i)
     {
       Facet* f = *i;
-      if (f->Equals(CORE::FE::CellType::tri3))
+      if (f->Equals(Core::FE::CellType::tri3))
       {
         tris.push_back(f);
       }
-      else if (f->Equals(CORE::FE::CellType::quad4))
+      else if (f->Equals(Core::FE::CellType::quad4))
       {
         quads.push_back(f);
       }
@@ -881,14 +881,14 @@ bool CORE::GEO::CUT::IntegrationCellCreator::create_pyramid5_cell(
     //       f->NewQuad4Cell( mesh );
     //     }
 
-    CORE::LINALG::Matrix<3, 4> bot_xyze;
-    CORE::LINALG::Matrix<3, 1> top_xyze;
+    Core::LinAlg::Matrix<3, 4> bot_xyze;
+    Core::LinAlg::Matrix<3, 1> top_xyze;
 
     bot->CornerCoordinates(bot_xyze.A());
     top_point->Coordinates(top_xyze.A());
 
     Teuchos::RCP<Position> bot_distance =
-        CORE::GEO::CUT::Position::Create(bot_xyze, top_xyze, CORE::FE::CellType::quad4);
+        Core::Geo::Cut::Position::Create(bot_xyze, top_xyze, Core::FE::CellType::quad4);
     bot_distance->Compute(true);
 
     // check the status of the position computation
@@ -907,26 +907,26 @@ bool CORE::GEO::CUT::IntegrationCellCreator::create_pyramid5_cell(
         std::vector<Point*> side(3);
         for (int j = 0; j < 3; ++j)
         {
-          side[j] = points[CORE::FE::eleNodeNumbering_pyramid5_trisurfaces[i][j]];
+          side[j] = points[Core::FE::eleNodeNumbering_pyramid5_trisurfaces[i][j]];
         }
         Facet* f = FindFacet(facets, side);
-        if (f->OnBoundaryCellSide()) add_side(cell, f, CORE::FE::CellType::tri3, side);
+        if (f->OnBoundaryCellSide()) add_side(cell, f, Core::FE::CellType::tri3, side);
       }
       for (int i = 0; i < 1; ++i)
       {
         std::vector<Point*> side(4);
         for (int j = 0; j < 4; ++j)
         {
-          side[j] = points[CORE::FE::eleNodeNumbering_pyramid5_quadsurfaces[i][j]];
+          side[j] = points[Core::FE::eleNodeNumbering_pyramid5_quadsurfaces[i][j]];
         }
         Facet* f = FindFacet(facets, side);
-        if (f->OnBoundaryCellSide()) add_side(cell, f, CORE::FE::CellType::quad4, side);
+        if (f->OnBoundaryCellSide()) add_side(cell, f, Core::FE::CellType::quad4, side);
       }
 
       /* We create no PYRAMID5 cell, if the position calculation failed or the cell
        * is planar. */
       if ((not invalid_pos) and (bot_distance->Distance() > 0))
-        add(cell, CORE::FE::CellType::pyramid5, points);
+        add(cell, Core::FE::CellType::pyramid5, points);
       return true;
     }
     else if (bot_distance->Distance() < 0)
@@ -942,24 +942,24 @@ bool CORE::GEO::CUT::IntegrationCellCreator::create_pyramid5_cell(
         std::vector<Point*> side(3);
         for (int j = 0; j < 3; ++j)
         {
-          side[j] = points[CORE::FE::eleNodeNumbering_pyramid5_trisurfaces[i][j]];
+          side[j] = points[Core::FE::eleNodeNumbering_pyramid5_trisurfaces[i][j]];
         }
         Facet* f = FindFacet(facets, side);
-        if (f->OnBoundaryCellSide()) add_side(cell, f, CORE::FE::CellType::tri3, side);
+        if (f->OnBoundaryCellSide()) add_side(cell, f, Core::FE::CellType::tri3, side);
       }
       for (int i = 0; i < 1; ++i)
       {
         std::vector<Point*> side(4);
         for (int j = 0; j < 4; ++j)
         {
-          side[j] = points[CORE::FE::eleNodeNumbering_pyramid5_quadsurfaces[i][j]];
+          side[j] = points[Core::FE::eleNodeNumbering_pyramid5_quadsurfaces[i][j]];
         }
         Facet* f = FindFacet(facets, side);
-        if (f->OnBoundaryCellSide()) add_side(cell, f, CORE::FE::CellType::quad4, side);
+        if (f->OnBoundaryCellSide()) add_side(cell, f, Core::FE::CellType::quad4, side);
       }
 
       // cell->NewPyramid5Cell( mesh, points );
-      add(cell, CORE::FE::CellType::pyramid5, points);
+      add(cell, Core::FE::CellType::pyramid5, points);
       return true;
     }
     else
@@ -972,7 +972,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::create_pyramid5_cell(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::IntegrationCellCreator::create_special_cases(
+bool Core::Geo::Cut::IntegrationCellCreator::create_special_cases(
     Mesh& mesh, VolumeCell* cell, const plain_facet_set& facets)
 {
   for (plain_facet_set::const_iterator i = facets.begin(); i != facets.end(); ++i)
@@ -989,7 +989,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::create_special_cases(
 
   switch (parent->Shape())
   {
-    case CORE::FE::CellType::hex8:
+    case Core::FE::CellType::hex8:
     {
       // find how many element sides are touched by this volume cell and how
       // often those sides are touched.
@@ -1103,7 +1103,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::create_special_cases(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::IntegrationCellCreator::hex8_horizontal_cut(Mesh& mesh, Element* element,
+bool Core::Geo::Cut::IntegrationCellCreator::hex8_horizontal_cut(Mesh& mesh, Element* element,
     VolumeCell* cell, const plain_facet_set& facets, int axis, double r)
 {
   //  Point::PointPosition position = cell->Position();
@@ -1143,16 +1143,16 @@ bool CORE::GEO::CUT::IntegrationCellCreator::hex8_horizontal_cut(Mesh& mesh, Ele
 
   // project along given axis to r
 
-  CORE::LINALG::Matrix<3, 1> rst;
+  Core::LinAlg::Matrix<3, 1> rst;
 
-  std::vector<CORE::LINALG::Matrix<3, 1>> local_points;
+  std::vector<Core::LinAlg::Matrix<3, 1>> local_points;
   local_points.reserve(inner_points.size());
   projected_points.reserve(inner_points.size());
 
   for (std::vector<Point*>::iterator i = inner_points.begin(); i != inner_points.end(); ++i)
   {
     Point* p = *i;
-    CORE::LINALG::Matrix<3, 1> xyz;
+    Core::LinAlg::Matrix<3, 1> xyz;
     p->Coordinates(xyz.A());
     element->local_coordinates(xyz, rst);
 
@@ -1177,7 +1177,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::hex8_horizontal_cut(Mesh& mesh, Ele
   for (std::vector<Facet*>::iterator i = inner_facets.begin(); i != inner_facets.end(); ++i)
   {
     Facet* f = *i;
-    if (f->Equals(CORE::FE::CellType::tri3))
+    if (f->Equals(Core::FE::CellType::tri3))
     {
       std::vector<Point*> points;
       points.reserve(6);
@@ -1186,10 +1186,10 @@ bool CORE::GEO::CUT::IntegrationCellCreator::hex8_horizontal_cut(Mesh& mesh, Ele
 
       // find facet orientation in local coordinates
       double drs = 0;
-      CORE::LINALG::Matrix<3, 3> xyze;
-      CORE::LINALG::Matrix<3, 1> normal;
-      CORE::LINALG::Matrix<2, 3> deriv;
-      CORE::LINALG::Matrix<2, 2> metrictensor;
+      Core::LinAlg::Matrix<3, 3> xyze;
+      Core::LinAlg::Matrix<3, 1> normal;
+      Core::LinAlg::Matrix<2, 3> deriv;
+      Core::LinAlg::Matrix<2, 2> metrictensor;
 
       double* x = xyze.A();
 
@@ -1214,7 +1214,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::hex8_horizontal_cut(Mesh& mesh, Ele
 
         points.push_back(projected_points[pos - inner_points.begin()]);
 
-        const CORE::LINALG::Matrix<3, 1>& rst = local_points[pos - inner_points.begin()];
+        const Core::LinAlg::Matrix<3, 1>& rst = local_points[pos - inner_points.begin()];
         x = std::copy(rst.A(), rst.A() + 3, x);
       }
 
@@ -1225,8 +1225,8 @@ bool CORE::GEO::CUT::IntegrationCellCreator::hex8_horizontal_cut(Mesh& mesh, Ele
         points.insert(points.end(), corner_points.begin(), corner_points.end());
       }
 
-      CORE::FE::shape_function_2D_deriv1(deriv, 0., 0., CORE::FE::CellType::tri3);
-      CORE::FE::ComputeMetricTensorForBoundaryEle<CORE::FE::CellType::tri3>(
+      Core::FE::shape_function_2D_deriv1(deriv, 0., 0., Core::FE::CellType::tri3);
+      Core::FE::ComputeMetricTensorForBoundaryEle<Core::FE::CellType::tri3>(
           xyze, deriv, metrictensor, drs, &normal);
 
       if (normal(axis) < 0)
@@ -1238,15 +1238,15 @@ bool CORE::GEO::CUT::IntegrationCellCreator::hex8_horizontal_cut(Mesh& mesh, Ele
       std::vector<Point*> side(3);
       for (int j = 0; j < 3; ++j)
       {
-        side[j] = points[CORE::FE::eleNodeNumbering_wedge18_trisurfaces[sidepos][j]];
+        side[j] = points[Core::FE::eleNodeNumbering_wedge18_trisurfaces[sidepos][j]];
       }
       // Tri3BoundaryCell::CreateCell( mesh, cell, f, side );
-      add_side(cell, f, CORE::FE::CellType::tri3, side);
+      add_side(cell, f, Core::FE::CellType::tri3, side);
 
       // cell->NewWedge6Cell( mesh, points );
-      add(cell, CORE::FE::CellType::wedge6, points);
+      add(cell, Core::FE::CellType::wedge6, points);
     }
-    else if (f->Equals(CORE::FE::CellType::quad4))
+    else if (f->Equals(Core::FE::CellType::quad4))
     {
       std::vector<Point*> points;
       points.reserve(8);
@@ -1255,10 +1255,10 @@ bool CORE::GEO::CUT::IntegrationCellCreator::hex8_horizontal_cut(Mesh& mesh, Ele
 
       // find facet orientation in local coordinates
       double drs = 0;
-      CORE::LINALG::Matrix<3, 4> xyze;
-      CORE::LINALG::Matrix<3, 1> normal;
-      CORE::LINALG::Matrix<2, 4> deriv;
-      CORE::LINALG::Matrix<2, 2> metrictensor;
+      Core::LinAlg::Matrix<3, 4> xyze;
+      Core::LinAlg::Matrix<3, 1> normal;
+      Core::LinAlg::Matrix<2, 4> deriv;
+      Core::LinAlg::Matrix<2, 2> metrictensor;
 
       double* x = xyze.A();
 
@@ -1283,7 +1283,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::hex8_horizontal_cut(Mesh& mesh, Ele
 
         points.push_back(projected_points[pos - inner_points.begin()]);
 
-        const CORE::LINALG::Matrix<3, 1>& rst = local_points[pos - inner_points.begin()];
+        const Core::LinAlg::Matrix<3, 1>& rst = local_points[pos - inner_points.begin()];
         x = std::copy(rst.A(), rst.A() + 3, x);
       }
 
@@ -1294,8 +1294,8 @@ bool CORE::GEO::CUT::IntegrationCellCreator::hex8_horizontal_cut(Mesh& mesh, Ele
         points.insert(points.end(), corner_points.begin(), corner_points.end());
       }
 
-      CORE::FE::shape_function_2D_deriv1(deriv, 0., 0., CORE::FE::CellType::quad4);
-      CORE::FE::ComputeMetricTensorForBoundaryEle<CORE::FE::CellType::quad4>(
+      Core::FE::shape_function_2D_deriv1(deriv, 0., 0., Core::FE::CellType::quad4);
+      Core::FE::ComputeMetricTensorForBoundaryEle<Core::FE::CellType::quad4>(
           xyze, deriv, metrictensor, drs, &normal);
 
       if (normal(axis) < 0)
@@ -1307,13 +1307,13 @@ bool CORE::GEO::CUT::IntegrationCellCreator::hex8_horizontal_cut(Mesh& mesh, Ele
       std::vector<Point*> side(4);
       for (int j = 0; j < 4; ++j)
       {
-        side[j] = points[CORE::FE::eleNodeNumbering_hex27_surfaces[sidepos][j]];
+        side[j] = points[Core::FE::eleNodeNumbering_hex27_surfaces[sidepos][j]];
       }
       // Quad4BoundaryCell::CreateCell( mesh, cell, f, side );
-      add_side(cell, f, CORE::FE::CellType::quad4, side);
+      add_side(cell, f, Core::FE::CellType::quad4, side);
 
       // cell->NewHex8Cell( mesh, points );
-      add(cell, CORE::FE::CellType::hex8, points);
+      add(cell, Core::FE::CellType::hex8, points);
     }
     else
       return false;
@@ -1321,9 +1321,9 @@ bool CORE::GEO::CUT::IntegrationCellCreator::hex8_horizontal_cut(Mesh& mesh, Ele
   return true;
 }
 
-template bool CORE::GEO::CUT::IntegrationCellCreator::create2_d_cell<CORE::FE::CellType::tri3>(
+template bool Core::Geo::Cut::IntegrationCellCreator::create2_d_cell<Core::FE::CellType::tri3>(
     Mesh& mesh, VolumeCell* cell, const plain_facet_set& facets);
-template bool CORE::GEO::CUT::IntegrationCellCreator::create2_d_cell<CORE::FE::CellType::quad4>(
+template bool Core::Geo::Cut::IntegrationCellCreator::create2_d_cell<Core::FE::CellType::quad4>(
     Mesh& mesh, VolumeCell* cell, const plain_facet_set& facets);
 
 FOUR_C_NAMESPACE_CLOSE

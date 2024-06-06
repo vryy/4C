@@ -23,19 +23,19 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::UTILS::DebugWriter::DebugWriter(Teuchos::RCP<DRT::Discretization> dis) : itnum_(-1)
+FSI::UTILS::DebugWriter::DebugWriter(Teuchos::RCP<Discret::Discretization> dis) : itnum_(-1)
 {
   std::vector<std::string> conditions_to_copy = {"FSICoupling"};
-  Teuchos::RCP<CORE::FE::DiscretizationCreatorBase> discreator =
-      Teuchos::rcp(new CORE::FE::DiscretizationCreatorBase());
+  Teuchos::RCP<Core::FE::DiscretizationCreatorBase> discreator =
+      Teuchos::rcp(new Core::FE::DiscretizationCreatorBase());
   dis_ = discreator->create_matching_discretization_from_condition(
       *dis, "FSICoupling", "boundary", "BELE3_3", conditions_to_copy);
 
   dis_->fill_complete(true, true, true);
 
-  coup_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
-  const int ndim = GLOBAL::Problem::Instance()->NDim();
-  coup_->setup_coupling(*dis, *dis_, *CORE::Conditions::ConditionNodeRowMap(*dis, "FSICoupling"),
+  coup_ = Teuchos::rcp(new Core::Adapter::Coupling());
+  const int ndim = Global::Problem::Instance()->NDim();
+  coup_->setup_coupling(*dis, *dis_, *Core::Conditions::ConditionNodeRowMap(*dis, "FSICoupling"),
       *dis_->NodeRowMap(), ndim);
 }
 
@@ -45,19 +45,19 @@ FSI::UTILS::DebugWriter::DebugWriter(Teuchos::RCP<DRT::Discretization> dis) : it
 void FSI::UTILS::DebugWriter::NewTimeStep(int step, std::string name)
 {
   std::stringstream s;
-  s << GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
+  s << Global::Problem::Instance()->OutputControlFile()->FileName();
   if (name != "") s << "-" << name;
   s << "-step" << step;
 
-  control_ = Teuchos::rcp(new CORE::IO::OutputControl(dis_->Comm(),
+  control_ = Teuchos::rcp(new Core::IO::OutputControl(dis_->Comm(),
       "none",                                   // we do not have a problem type
-      CORE::FE::ShapeFunctionType::polynomial,  // this is a FE code ... no nurbs
+      Core::FE::ShapeFunctionType::polynomial,  // this is a FE code ... no nurbs
       "debug-output",                           // no input file either
       s.str(),                                  // an output file name is needed
-      GLOBAL::Problem::Instance()->NDim(),
+      Global::Problem::Instance()->NDim(),
       0,     // restart is meaningless here
       1000,  // we never expect to get 1000 iterations
-      CORE::UTILS::IntegralValue<bool>(GLOBAL::Problem::Instance()->IOParams(), "OUTPUT_BIN")));
+      Core::UTILS::IntegralValue<bool>(Global::Problem::Instance()->IOParams(), "OUTPUT_BIN")));
 
   writer_ = dis_->Writer();
   writer_->SetOutput(control_);
@@ -86,7 +86,7 @@ void FSI::UTILS::DebugWriter::WriteVector(const std::string& name, const Epetra_
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::UTILS::SimpleDebugWriter::SimpleDebugWriter(
-    Teuchos::RCP<DRT::Discretization> dis, const std::string& name)
+    Teuchos::RCP<Discret::Discretization> dis, const std::string& name)
     : dis_(dis), name_(name), itnum_(-1)
 {
 }
@@ -97,19 +97,19 @@ FSI::UTILS::SimpleDebugWriter::SimpleDebugWriter(
 void FSI::UTILS::SimpleDebugWriter::NewLinearSystem(int step, std::string name)
 {
   std::stringstream s;
-  s << GLOBAL::Problem::Instance()->OutputControlFile()->FileName() << "-" << name_;
+  s << Global::Problem::Instance()->OutputControlFile()->FileName() << "-" << name_;
   if (name != "") s << "-" << name;
   s << "-step" << step;
 
-  control_ = Teuchos::rcp(new CORE::IO::OutputControl(dis_->Comm(),
+  control_ = Teuchos::rcp(new Core::IO::OutputControl(dis_->Comm(),
       "none",                                   // we do not have a problem type
-      CORE::FE::ShapeFunctionType::polynomial,  // this is a FE code ... no nurbs
+      Core::FE::ShapeFunctionType::polynomial,  // this is a FE code ... no nurbs
       "debug-output",                           // no input file either
       s.str(),                                  // an output file name is needed
-      GLOBAL::Problem::Instance()->NDim(),
+      Global::Problem::Instance()->NDim(),
       0,     // restart is meaningless here
       1000,  // we never expect to get 1000 iterations
-      CORE::UTILS::IntegralValue<bool>(GLOBAL::Problem::Instance()->IOParams(), "OUTPUT_BIN")));
+      Core::UTILS::IntegralValue<bool>(Global::Problem::Instance()->IOParams(), "OUTPUT_BIN")));
 
   writer_ = dis_->Writer();
   writer_->SetOutput(control_);

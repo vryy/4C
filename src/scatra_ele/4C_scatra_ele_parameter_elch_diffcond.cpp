@@ -31,25 +31,25 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 02/15 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ScaTraEleParameterElchDiffCond*
-DRT::ELEMENTS::ScaTraEleParameterElchDiffCond::Instance(
+Discret::ELEMENTS::ScaTraEleParameterElchDiffCond*
+Discret::ELEMENTS::ScaTraEleParameterElchDiffCond::Instance(
     const std::string& disname  //!< name of discretization
 )
 {
-  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
       [](const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleParameterElchDiffCond>(
             new ScaTraEleParameterElchDiffCond(disname));
       });
 
-  return singleton_map[disname].Instance(CORE::UTILS::SingletonAction::create, disname);
+  return singleton_map[disname].Instance(Core::UTILS::SingletonAction::create, disname);
 }
 
 /*----------------------------------------------------------------------*
  | private constructor for singletons                        fang 02/15 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ScaTraEleParameterElchDiffCond::ScaTraEleParameterElchDiffCond(
+Discret::ELEMENTS::ScaTraEleParameterElchDiffCond::ScaTraEleParameterElchDiffCond(
     const std::string& disname  //!< name of discretization
     )
     : cursolvar_(false),
@@ -65,7 +65,7 @@ DRT::ELEMENTS::ScaTraEleParameterElchDiffCond::ScaTraEleParameterElchDiffCond(
 /*---------------------------------------------------------------------*
  | set parameters                                           fang 02/15 |
  *---------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraEleParameterElchDiffCond::SetParameters(
+void Discret::ELEMENTS::ScaTraEleParameterElchDiffCond::SetParameters(
     Teuchos::ParameterList& parameters  //!< parameter list
 )
 {
@@ -73,12 +73,12 @@ void DRT::ELEMENTS::ScaTraEleParameterElchDiffCond::SetParameters(
   Teuchos::ParameterList& diffcondparams = parameters.sublist("DIFFCOND");
 
   // flag if current is used as a solution variable
-  cursolvar_ = CORE::UTILS::IntegralValue<int>(diffcondparams, "CURRENT_SOLUTION_VAR");
+  cursolvar_ = Core::UTILS::IntegralValue<int>(diffcondparams, "CURRENT_SOLUTION_VAR");
 
   // mat_diffcond: flag if diffusion potential is based on diffusion coefficients or transference
   // number
   diffusioncoefbased_ =
-      CORE::UTILS::IntegralValue<INPAR::ELCH::EquPot>(diffcondparams, "MAT_DIFFCOND_DIFFBASED");
+      Core::UTILS::IntegralValue<Inpar::ElCh::EquPot>(diffcondparams, "MAT_DIFFCOND_DIFFBASED");
 
   // switch for dilute and concentrated solution theory (diffusion potential in current equation):
   //    A          B

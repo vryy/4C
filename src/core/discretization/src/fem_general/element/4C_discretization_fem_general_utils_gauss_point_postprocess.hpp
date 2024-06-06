@@ -19,12 +19,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
 
-namespace CORE::FE
+namespace Core::FE
 {
 
   /*!
@@ -38,8 +38,8 @@ namespace CORE::FE
    * @param dis (in) : Reference to the discretization
    * @param nodal_data (out) : Assembled data
    */
-  void ExtrapolateGaussPointQuantityToNodes(CORE::Elements::Element& ele,
-      const CORE::LINALG::SerialDenseMatrix& data, const DRT::Discretization& dis,
+  void ExtrapolateGaussPointQuantityToNodes(Core::Elements::Element& ele,
+      const Core::LinAlg::SerialDenseMatrix& data, const Discret::Discretization& dis,
       Epetra_MultiVector& nodal_data);
 
   /*!
@@ -50,26 +50,26 @@ namespace CORE::FE
    * @param data (in) : Gauss point data in a Matrix (numgp x numdim of vector)
    * @param element_data (out) : Assembled data
    */
-  void EvaluateGaussPointQuantityAtElementCenter(CORE::Elements::Element& ele,
-      const CORE::LINALG::SerialDenseMatrix& data, Epetra_MultiVector& element_data);
+  void EvaluateGaussPointQuantityAtElementCenter(Core::Elements::Element& ele,
+      const Core::LinAlg::SerialDenseMatrix& data, Epetra_MultiVector& element_data);
 
   /*!
    * \brief Assemble averaged data. The data at the Gauss points are averaged within the element.
    *
-   * \tparam T Type of the data, either SerialDenseMatrix or CORE::LINALG::Matrix
+   * \tparam T Type of the data, either SerialDenseMatrix or Core::LinAlg::Matrix
    * \param global_data Global cell data
    * \param gp_data (numgp x size) matrix of the Gauss point data
    * \param ele element
    */
   template <class T>
   void AssembleAveragedElementValues(
-      Epetra_MultiVector& global_data, const T& gp_data, const CORE::Elements::Element& ele);
+      Epetra_MultiVector& global_data, const T& gp_data, const Core::Elements::Element& ele);
 
 
   // --- template and inline functions --- //
   template <class T>
   void AssembleAveragedElementValues(
-      Epetra_MultiVector& global_data, const T& gp_data, const CORE::Elements::Element& ele)
+      Epetra_MultiVector& global_data, const T& gp_data, const Core::Elements::Element& ele)
   {
     const Epetra_BlockMap& elemap = global_data.Map();
     int lid = elemap.LID(ele.Id());
@@ -88,7 +88,7 @@ namespace CORE::FE
     }
   }
 
-}  // namespace CORE::FE
+}  // namespace Core::FE
 
 FOUR_C_NAMESPACE_CLOSE
 

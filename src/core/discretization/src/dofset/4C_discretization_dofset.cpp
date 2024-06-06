@@ -26,8 +26,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             ukue 04/07|
  *----------------------------------------------------------------------*/
-CORE::Dofsets::DofSet::DofSet()
-    : CORE::Dofsets::DofSetBase(), filled_(false), dspos_(0), pccdofhandling_(false)
+Core::DOFSets::DofSet::DofSet()
+    : Core::DOFSets::DofSetBase(), filled_(false), dspos_(0), pccdofhandling_(false)
 {
   return;
 }
@@ -37,7 +37,7 @@ CORE::Dofsets::DofSet::DofSet()
 /*----------------------------------------------------------------------*
  |  << operator                                               ukue 04/07|
  *----------------------------------------------------------------------*/
-std::ostream& operator<<(std::ostream& os, const CORE::Dofsets::DofSet& dofset)
+std::ostream& operator<<(std::ostream& os, const Core::DOFSets::DofSet& dofset)
 {
   dofset.Print(os);
   return os;
@@ -47,7 +47,7 @@ std::ostream& operator<<(std::ostream& os, const CORE::Dofsets::DofSet& dofset)
 /*----------------------------------------------------------------------*
  |  print this  (public)                                      ukue 04/07|
  *----------------------------------------------------------------------*/
-void CORE::Dofsets::DofSet::Print(std::ostream& os) const
+void Core::DOFSets::DofSet::Print(std::ostream& os) const
 {
   for (int proc = 0; proc < numdfcolelements_->Comm().NumProc(); ++proc)
   {
@@ -106,7 +106,7 @@ void CORE::Dofsets::DofSet::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  reset everything  (public)                                ukue 04/07|
  *----------------------------------------------------------------------*/
-void CORE::Dofsets::DofSet::Reset()
+void Core::DOFSets::DofSet::Reset()
 {
   dofrowmap_ = Teuchos::null;
   dofcolmap_ = Teuchos::null;
@@ -126,8 +126,8 @@ void CORE::Dofsets::DofSet::Reset()
 /*----------------------------------------------------------------------*
  |  setup everything  (public)                                ukue 04/07|
  *----------------------------------------------------------------------*/
-int CORE::Dofsets::DofSet::assign_degrees_of_freedom(
-    const DRT::Discretization& dis, const unsigned dspos, const int start)
+int Core::DOFSets::DofSet::assign_degrees_of_freedom(
+    const Discret::Discretization& dis, const unsigned dspos, const int start)
 {
   if (!dis.Filled()) FOUR_C_THROW("discretization Filled()==false");
   if (!dis.NodeRowMap()->UniqueGIDs()) FOUR_C_THROW("Nodal row map is not unique");
@@ -163,8 +163,8 @@ int CORE::Dofsets::DofSet::assign_degrees_of_freedom(
   int count = get_first_gid_number_to_be_used(dis);
 
   // Check if we have a face discretization which supports degrees of freedom on faces
-  Teuchos::RCP<const DRT::DiscretizationHDG> facedis =
-      Teuchos::rcp_dynamic_cast<const DRT::DiscretizationHDG>(Teuchos::rcp(&dis, false));
+  Teuchos::RCP<const Discret::DiscretizationHDG> facedis =
+      Teuchos::rcp_dynamic_cast<const Discret::DiscretizationHDG>(Teuchos::rcp(&dis, false));
 
   // set count to 0 in case of dofset 2 in HDG discretizations
   if (facedis != Teuchos::null && dspos_ == 2) count = 0;
@@ -208,7 +208,7 @@ int CORE::Dofsets::DofSet::assign_degrees_of_freedom(
 
   {
     // get DoF coupling conditions
-    std::vector<CORE::Conditions::Condition*> couplingconditions(0);
+    std::vector<Core::Conditions::Condition*> couplingconditions(0);
     dis.GetCondition("PointCoupling", couplingconditions);
     if ((int)couplingconditions.size() > 0) pccdofhandling_ = true;
 
@@ -219,7 +219,7 @@ int CORE::Dofsets::DofSet::assign_degrees_of_freedom(
     int numrownodes = dis.NumMyRowNodes();
     for (int i = 0; i < numrownodes; ++i)
     {
-      CORE::Nodes::Node* actnode = dis.lRowNode(i);
+      Core::Nodes::Node* actnode = dis.lRowNode(i);
       numdfrownodes[i] = NumDofPerNode(*actnode);
     }
 
@@ -229,7 +229,7 @@ int CORE::Dofsets::DofSet::assign_degrees_of_freedom(
 
     for (int i = 0; i < numrownodes; ++i)
     {
-      CORE::Nodes::Node* actnode = dis.lRowNode(i);
+      Core::Nodes::Node* actnode = dis.lRowNode(i);
       const int gid = actnode->Id();
 
       // **********************************************************************
@@ -360,7 +360,7 @@ int CORE::Dofsets::DofSet::assign_degrees_of_freedom(
       const int mypid = dis.Comm().MyPID();
       for (int i = 0; i < numcolelements; ++i)
       {
-        Teuchos::RCP<CORE::Elements::FaceElement>* faces = dis.lColElement(i)->Faces();
+        Teuchos::RCP<Core::Elements::FaceElement>* faces = dis.lColElement(i)->Faces();
         // If no faces are found, continue...
         if (faces == nullptr) continue;
         for (int face = 0; face < dis.lColElement(i)->NumFace(); ++face)
@@ -376,7 +376,7 @@ int CORE::Dofsets::DofSet::assign_degrees_of_freedom(
 
       for (int i = 0; i < numcolelements; ++i)
       {
-        Teuchos::RCP<CORE::Elements::FaceElement>* faces = dis.lColElement(i)->Faces();
+        Teuchos::RCP<Core::Elements::FaceElement>* faces = dis.lColElement(i)->Faces();
         if (faces == nullptr) continue;
         for (int face = 0; face < dis.lColElement(i)->NumFace(); ++face)
           if (faces[face]->Owner() == mypid)
@@ -417,7 +417,7 @@ int CORE::Dofsets::DofSet::assign_degrees_of_freedom(
     int numrowelements = dis.NumMyRowElements();
     for (int i = 0; i < numrowelements; ++i)
     {
-      CORE::Elements::Element* actele = dis.lRowElement(i);
+      Core::Elements::Element* actele = dis.lRowElement(i);
       // const int gid = actele->Id();
       int numdf = num_dof_per_element(*actele);
       numdfrowelements[i] = numdf;
@@ -428,7 +428,7 @@ int CORE::Dofsets::DofSet::assign_degrees_of_freedom(
 
     for (int i = 0; i < numrowelements; ++i)
     {
-      CORE::Elements::Element* actelement = dis.lRowElement(i);
+      Core::Elements::Element* actelement = dis.lRowElement(i);
       const int gid = actelement->Id();
       int numdf = numdfrowelements[i];
       int dof = count + (gid - minelementgid) * maxelementnumdf;
@@ -492,15 +492,17 @@ int CORE::Dofsets::DofSet::assign_degrees_of_freedom(
     // printf("\n");
   }
 
-  CORE::COMM::Exporter nodeexporter(*dis.NodeRowMap(), *dis.NodeColMap(), dis.Comm());
+  Core::Communication::Exporter nodeexporter(*dis.NodeRowMap(), *dis.NodeColMap(), dis.Comm());
   nodeexporter.Export(nodedofset);
 
-  CORE::COMM::Exporter elementexporter(*dis.ElementRowMap(), *dis.ElementColMap(), dis.Comm());
+  Core::Communication::Exporter elementexporter(
+      *dis.ElementRowMap(), *dis.ElementColMap(), dis.Comm());
   elementexporter.Export(elementdofset);
 
   if (facedis != Teuchos::null && facedis->FaceRowMap() != nullptr)
   {
-    CORE::COMM::Exporter faceexporter(*facedis->FaceRowMap(), *facedis->FaceColMap(), dis.Comm());
+    Core::Communication::Exporter faceexporter(
+        *facedis->FaceRowMap(), *facedis->FaceColMap(), dis.Comm());
     faceexporter.Export(facedofset);
   }
 
@@ -551,7 +553,7 @@ int CORE::Dofsets::DofSet::assign_degrees_of_freedom(
     }
     else
     {
-      CORE::Nodes::Node* lastnode = dis.lColNode(i - 1);
+      Core::Nodes::Node* lastnode = dis.lColNode(i - 1);
       (*shiftcolnodes_)[i] = (*shiftcolnodes_)[i - 1] + NumDofPerNode(*lastnode);
     }
   }
@@ -571,7 +573,7 @@ int CORE::Dofsets::DofSet::assign_degrees_of_freedom(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool CORE::Dofsets::DofSet::Initialized() const
+bool Core::DOFSets::DofSet::Initialized() const
 {
   if (dofcolmap_ == Teuchos::null or dofrowmap_ == Teuchos::null)
     return false;
@@ -581,56 +583,56 @@ bool CORE::Dofsets::DofSet::Initialized() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Epetra_Map* CORE::Dofsets::DofSet::dof_row_map() const
+const Epetra_Map* Core::DOFSets::DofSet::dof_row_map() const
 {
   if (dofrowmap_ == Teuchos::null)
-    FOUR_C_THROW("CORE::Dofsets::DofSet::dof_row_map(): dofrowmap_ not initialized, yet");
+    FOUR_C_THROW("Core::DOFSets::DofSet::dof_row_map(): dofrowmap_ not initialized, yet");
   return dofrowmap_.get();
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Epetra_Map* CORE::Dofsets::DofSet::DofColMap() const
+const Epetra_Map* Core::DOFSets::DofSet::DofColMap() const
 {
   if (dofcolmap_ == Teuchos::null)
-    FOUR_C_THROW("CORE::Dofsets::DofSet::DofColMap(): dofcolmap_ not initialized, yet");
+    FOUR_C_THROW("Core::DOFSets::DofSet::DofColMap(): dofcolmap_ not initialized, yet");
   return dofcolmap_.get();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int CORE::Dofsets::DofSet::NumGlobalElements() const
+int Core::DOFSets::DofSet::NumGlobalElements() const
 {
   if (dofrowmap_ == Teuchos::null)
-    FOUR_C_THROW("CORE::Dofsets::DofSet::NumGlobalElements(): dofrowmap_ not initialized, yet");
+    FOUR_C_THROW("Core::DOFSets::DofSet::NumGlobalElements(): dofrowmap_ not initialized, yet");
   return dofrowmap_->NumGlobalElements();
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int CORE::Dofsets::DofSet::MaxAllGID() const
+int Core::DOFSets::DofSet::MaxAllGID() const
 {
   if (dofrowmap_ == Teuchos::null)
-    FOUR_C_THROW("CORE::Dofsets::DofSet::MaxAllGID(): dofrowmap_ not initialized, yet");
+    FOUR_C_THROW("Core::DOFSets::DofSet::MaxAllGID(): dofrowmap_ not initialized, yet");
   return dofrowmap_->MaxAllGID();
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int CORE::Dofsets::DofSet::MinAllGID() const
+int Core::DOFSets::DofSet::MinAllGID() const
 {
   if (dofrowmap_ == Teuchos::null)
-    FOUR_C_THROW("CORE::Dofsets::DofSet::MinAllGID(): dofrowmap_ not initialized, yet");
+    FOUR_C_THROW("Core::DOFSets::DofSet::MinAllGID(): dofrowmap_ not initialized, yet");
   return dofrowmap_->MinAllGID();
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int CORE::Dofsets::DofSet::get_first_gid_number_to_be_used(const DRT::Discretization& dis) const
+int Core::DOFSets::DofSet::get_first_gid_number_to_be_used(const Discret::Discretization& dis) const
 {
   return MaxGIDinList(dis.Comm()) + 1;
 }
@@ -638,7 +640,8 @@ int CORE::Dofsets::DofSet::get_first_gid_number_to_be_used(const DRT::Discretiza
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int CORE::Dofsets::DofSet::get_minimal_node_gid_if_relevant(const DRT::Discretization& dis) const
+int Core::DOFSets::DofSet::get_minimal_node_gid_if_relevant(
+    const Discret::Discretization& dis) const
 {
   return dis.NodeRowMap()->MinAllGID();
 }

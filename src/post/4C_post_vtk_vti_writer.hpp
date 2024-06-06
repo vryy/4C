@@ -29,12 +29,12 @@ class PostField;
 class PostResult;
 
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::Nodes
+namespace Core::Nodes
 {
   class Node;
 }

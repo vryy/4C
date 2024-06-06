@@ -34,7 +34,7 @@ namespace FLD
    | constructor                                  rasthofer 04/13 |
    *--------------------------------------------------------------*/
   HomIsoTurbInitialField::HomIsoTurbInitialField(
-      FluidImplicitTimeInt& timeint, const INPAR::FLUID::InitialField initfield)
+      FluidImplicitTimeInt& timeint, const Inpar::FLUID::InitialField initfield)
       : discret_(timeint.discret_),
         velnp_(timeint.velnp_),
         veln_(timeint.veln_),
@@ -98,7 +98,7 @@ namespace FLD
     // loop all nodes and store x1-coordinate
     for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
     {
-      CORE::Nodes::Node* node = discret_->lRowNode(inode);
+      Core::Nodes::Node* node = discret_->lRowNode(inode);
       if ((node->X()[1] < 2e-9 && node->X()[1] > -2e-9) and
           (node->X()[2] < 2e-9 && node->X()[2] > -2e-9))
         coords.insert(node->X()[0]);
@@ -112,23 +112,23 @@ namespace FLD
       std::vector<char> rblock;
 
       // create an exporter for point to point communication
-      CORE::COMM::Exporter exporter(discret_->Comm());
+      Core::Communication::Exporter exporter(discret_->Comm());
 
       // communicate coordinates
       for (int np = 0; np < numprocs; ++np)
       {
-        CORE::COMM::PackBuffer data;
+        Core::Communication::PackBuffer data;
 
         for (std::set<double, LineSortCriterion>::iterator x1line = coords.begin();
              x1line != coords.end(); ++x1line)
         {
-          CORE::COMM::ParObject::AddtoPack(data, *x1line);
+          Core::Communication::ParObject::AddtoPack(data, *x1line);
         }
         data.StartPacking();
         for (std::set<double, LineSortCriterion>::iterator x1line = coords.begin();
              x1line != coords.end(); ++x1line)
         {
-          CORE::COMM::ParObject::AddtoPack(data, *x1line);
+          Core::Communication::ParObject::AddtoPack(data, *x1line);
         }
         std::swap(sblock, data());
 
@@ -170,7 +170,7 @@ namespace FLD
           while (index < rblock.size())
           {
             double onecoord;
-            CORE::COMM::ParObject::ExtractfromPack(index, rblock, onecoord);
+            Core::Communication::ParObject::ExtractfromPack(index, rblock, onecoord);
             coords.insert(onecoord);
           }
         }
@@ -192,7 +192,7 @@ namespace FLD
     //-------------------------------------------------
     // non-dimensionalize and store experimental data
 
-    if (type_ == INPAR::FLUID::initfield_hit_comte_bellot_corrsin)
+    if (type_ == Inpar::FLUID::initfield_hit_comte_bellot_corrsin)
       // of Comte-Bellot-Corrsin experiment
       prepare_exparimental_data();
 
@@ -296,7 +296,7 @@ namespace FLD
               // velocity field in physical space
               if (discret_->Comm().MyPID() == 0)
               {
-                CORE::UTILS::Random* random = GLOBAL::Problem::Instance()->Random();
+                Core::UTILS::Random* random = Global::Problem::Instance()->Random();
                 // set range [0;1] (default: [-1;1])
                 //              random->SetRandRange(0.0,1.0);
                 //              random_theta1 = random->Uni();
@@ -312,7 +312,7 @@ namespace FLD
 
               // estimate energy at wave number from energy spectrum
               double energy = 0.0;
-              if (type_ == INPAR::FLUID::initfield_hit_comte_bellot_corrsin)
+              if (type_ == Inpar::FLUID::initfield_hit_comte_bellot_corrsin)
                 energy = interpolate_energy_from_spectrum(k);
               else
                 energy = calculate_energy_from_spectrum(k);
@@ -497,10 +497,10 @@ namespace FLD
     for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
     {
       // get node
-      CORE::Nodes::Node* node = discret_->lRowNode(inode);
+      Core::Nodes::Node* node = discret_->lRowNode(inode);
 
       // get coordinates
-      CORE::LINALG::Matrix<3, 1> xyz(true);
+      Core::LinAlg::Matrix<3, 1> xyz(true);
       for (int idim = 0; idim < 3; idim++) xyz(idim, 0) = node->X()[idim];
 
       //    std::cout << "coords " << xyz << std::endl;
@@ -690,19 +690,19 @@ namespace FLD
 
     double energy = 0.0;
 
-    if (type_ == INPAR::FLUID::initfield_forced_hit_simple_algebraic_spectrum)
+    if (type_ == Inpar::FLUID::initfield_forced_hit_simple_algebraic_spectrum)
     {
       // initial spectrum as used in Hickel et al. 2006
       energy = 0.5 * pow(k, -5.0 / 3.0);
     }
-    else if (type_ == INPAR::FLUID::initfield_passive_hit_const_input)
+    else if (type_ == Inpar::FLUID::initfield_passive_hit_const_input)
     {
       if (k <= 2)
         energy = 0.1 * 1.0;
       else
         energy = 0.1 * pow(2.0, 5.0 / 3.0) * pow(k, -5.0 / 3.0);
     }
-    else if (type_ == INPAR::FLUID::initfield_forced_hit_numeric_spectrum)
+    else if (type_ == Inpar::FLUID::initfield_forced_hit_numeric_spectrum)
     {
       // initial spectrum as used in Bazilevs et al. 2007 (from Langford & Moser 1999)
       std::vector<double> k_vec(48);
@@ -837,7 +837,7 @@ namespace FLD
    | constructor                                         bk 03/15 |
    *--------------------------------------------------------------*/
   HomIsoTurbInitialFieldHDG::HomIsoTurbInitialFieldHDG(
-      FluidImplicitTimeInt& timeint, const INPAR::FLUID::InitialField initfield)
+      FluidImplicitTimeInt& timeint, const Inpar::FLUID::InitialField initfield)
       : HomIsoTurbInitialField(timeint, initfield)
   {
     // here we are using the interior velocity
@@ -983,7 +983,7 @@ namespace FLD
               // velocity field in physical space
               if (discret_->Comm().MyPID() == 0)
               {
-                CORE::UTILS::Random* random = GLOBAL::Problem::Instance()->Random();
+                Core::UTILS::Random* random = Global::Problem::Instance()->Random();
                 // set range [0;1] (default: [-1;1])
                 //              random->SetRandRange(0.0,1.0);
                 //              random_theta1 = random->Uni();
@@ -999,7 +999,7 @@ namespace FLD
 
               // estimate energy at wave number from energy spectrum
               double energy = 0.0;
-              if (type_ == INPAR::FLUID::initfield_hit_comte_bellot_corrsin)
+              if (type_ == Inpar::FLUID::initfield_hit_comte_bellot_corrsin)
                 energy = interpolate_energy_from_spectrum(k);
               else
                 energy = calculate_energy_from_spectrum(k);
@@ -1186,8 +1186,8 @@ namespace FLD
     params.set<int>("action", FLD::interpolate_hdg_for_hit);
 
     std::vector<int> dummy;
-    CORE::LINALG::SerialDenseMatrix dummyMat;
-    CORE::LINALG::SerialDenseVector dummyVec;
+    Core::LinAlg::SerialDenseMatrix dummyMat;
+    Core::LinAlg::SerialDenseVector dummyVec;
     // this is a dummy, should be zero is written in the first components of interpolVec
     intvelnp_->PutScalar(0.0);
     // set dummy
@@ -1195,20 +1195,20 @@ namespace FLD
 
     // for 2nd evaluate
     const Epetra_Map* intdofrowmap = discret_->dof_row_map(1);
-    CORE::LINALG::SerialDenseVector elevec1, elevec3;
-    CORE::LINALG::SerialDenseMatrix elemat1, elemat2;
+    Core::LinAlg::SerialDenseVector elevec1, elevec3;
+    Core::LinAlg::SerialDenseMatrix elemat1, elemat2;
     Teuchos::ParameterList initParams;
     initParams.set<int>("action", FLD::project_hdg_initial_field_for_hit);
 
     // loop over all elements on the processor
-    CORE::Elements::Element::LocationArray la(2);
+    Core::Elements::Element::LocationArray la(2);
     double error = 0;
     for (int el = 0; el < discret_->NumMyRowElements(); ++el)
     {
       // 1st evaluate
-      CORE::Elements::Element* ele = discret_->lRowElement(el);
+      Core::Elements::Element* ele = discret_->lRowElement(el);
 
-      CORE::LINALG::SerialDenseVector interpolVec;
+      Core::LinAlg::SerialDenseVector interpolVec;
       interpolVec.resize(5 * 5 * 5 * 6);  // 5*5*5 points: velx, vely, velz, x, y, z
 
       ele->Evaluate(params, *discret_, dummy, dummyMat, dummyMat, interpolVec, dummyVec, dummyVec);
@@ -1217,7 +1217,7 @@ namespace FLD
       for (int i = 0; i < 5 * 5 * 5; ++i)
       {
         // get coordinates
-        CORE::LINALG::Matrix<3, 1> xyz(true);
+        Core::LinAlg::Matrix<3, 1> xyz(true);
         for (int d = 0; d < 3; ++d) xyz(d) = interpolVec(i * 6 + d + 3);
         // determine position
         std::vector<int> loc(3);

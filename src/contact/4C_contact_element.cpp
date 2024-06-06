@@ -19,29 +19,29 @@ CONTACT::ElementType CONTACT::ElementType::instance_;
 
 CONTACT::ElementType& CONTACT::ElementType::Instance() { return instance_; }
 
-CORE::COMM::ParObject* CONTACT::ElementType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* CONTACT::ElementType::Create(const std::vector<char>& data)
 {
   CONTACT::Element* ele =
-      new CONTACT::Element(0, 0, CORE::FE::CellType::dis_none, 0, nullptr, false);
+      new CONTACT::Element(0, 0, Core::FE::CellType::dis_none, 0, nullptr, false);
   ele->Unpack(data);
   return ele;
 }
 
-Teuchos::RCP<CORE::Elements::Element> CONTACT::ElementType::Create(const int id, const int owner)
+Teuchos::RCP<Core::Elements::Element> CONTACT::ElementType::Create(const int id, const int owner)
 {
   // return Teuchos::rcp( new Element( id, owner ) );
   return Teuchos::null;
 }
 
 void CONTACT::ElementType::nodal_block_information(
-    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+    Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
 }
 
-CORE::LINALG::SerialDenseMatrix CONTACT::ElementType::ComputeNullSpace(
-    CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
+Core::LinAlg::SerialDenseMatrix CONTACT::ElementType::ComputeNullSpace(
+    Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  CORE::LINALG::SerialDenseMatrix nullspace;
+  Core::LinAlg::SerialDenseMatrix nullspace;
   FOUR_C_THROW("method ComputeNullSpace not implemented!");
   return nullspace;
 }
@@ -49,9 +49,9 @@ CORE::LINALG::SerialDenseMatrix CONTACT::ElementType::ComputeNullSpace(
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
  *----------------------------------------------------------------------*/
-CONTACT::Element::Element(int id, int owner, const CORE::FE::CellType& shape, const int numnode,
+CONTACT::Element::Element(int id, int owner, const Core::FE::CellType& shape, const int numnode,
     const int* nodeids, const bool isslave, bool isnurbs)
-    : MORTAR::Element(id, owner, shape, numnode, nodeids, isslave, isnurbs)
+    : Mortar::Element(id, owner, shape, numnode, nodeids, isslave, isnurbs)
 {
   // empty constructor
 
@@ -61,7 +61,7 @@ CONTACT::Element::Element(int id, int owner, const CORE::FE::CellType& shape, co
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                        mwgee 10/07|
  *----------------------------------------------------------------------*/
-CONTACT::Element::Element(const CONTACT::Element& old) : MORTAR::Element(old)
+CONTACT::Element::Element(const CONTACT::Element& old) : Mortar::Element(old)
 {
   // empty copy-constructor
 
@@ -71,7 +71,7 @@ CONTACT::Element::Element(const CONTACT::Element& old) : MORTAR::Element(old)
 /*----------------------------------------------------------------------*
  |  clone-ctor (public)                                      mwgee 10/07|
  *----------------------------------------------------------------------*/
-CORE::Elements::Element* CONTACT::Element::Clone() const
+Core::Elements::Element* CONTACT::Element::Clone() const
 {
   CONTACT::Element* newele = new CONTACT::Element(*this);
   return newele;
@@ -92,7 +92,7 @@ std::ostream& operator<<(std::ostream& os, const CONTACT::Element& element)
 void CONTACT::Element::Print(std::ostream& os) const
 {
   os << "Contact ";
-  MORTAR::Element::Print(os);
+  Mortar::Element::Print(os);
 
   return;
 }
@@ -101,17 +101,17 @@ void CONTACT::Element::Print(std::ostream& os) const
  |  Pack data                                                  (public) |
  |                                                           mwgee 10/07|
  *----------------------------------------------------------------------*/
-void CONTACT::Element::Pack(CORE::COMM::PackBuffer& data) const
+void CONTACT::Element::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data, type);
 
-  // add base class MORTAR::Element
-  MORTAR::Element::Pack(data);
+  // add base class Mortar::Element
+  Mortar::Element::Pack(data);
 
   return;
 }
@@ -124,12 +124,12 @@ void CONTACT::Element::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
-  // extract base class MORTAR::Element
+  // extract base class Mortar::Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
-  MORTAR::Element::Unpack(basedata);
+  Mortar::Element::Unpack(basedata);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
@@ -139,7 +139,7 @@ void CONTACT::Element::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  number of dofs per node (public)                         mwgee 10/07|
  *----------------------------------------------------------------------*/
-int CONTACT::Element::NumDofPerNode(const CORE::Nodes::Node& node) const
+int CONTACT::Element::NumDofPerNode(const Core::Nodes::Node& node) const
 {
   const CONTACT::Node* cnode = dynamic_cast<const CONTACT::Node*>(&node);
   if (!cnode) FOUR_C_THROW("Node is not a Node");
@@ -149,10 +149,11 @@ int CONTACT::Element::NumDofPerNode(const CORE::Nodes::Node& node) const
 /*----------------------------------------------------------------------*
  |  evaluate element (public)                                mwgee 10/07|
  *----------------------------------------------------------------------*/
-int CONTACT::Element::Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
-    CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-    CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3)
+int CONTACT::Element::Evaluate(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
+    Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
+    Core::LinAlg::SerialDenseVector& elevec3)
 {
   FOUR_C_THROW("CONTACT::Element::Evaluate not implemented!");
   return -1;
@@ -161,8 +162,8 @@ int CONTACT::Element::Evaluate(Teuchos::ParameterList& params, DRT::Discretizati
 /*----------------------------------------------------------------------*
  |  Build element normal derivative at node                   popp 05/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Element::DerivNormalAtNode(int nid, int& i, CORE::LINALG::SerialDenseMatrix& elens,
-    std::vector<CORE::GEN::Pairedvector<int, double>>& derivn)
+void CONTACT::Element::DerivNormalAtNode(int nid, int& i, Core::LinAlg::SerialDenseMatrix& elens,
+    std::vector<Core::Gen::Pairedvector<int, double>>& derivn)
 {
   // find this node in my list of nodes and get local numbering
   int lid = GetLocalNodeId(nid);
@@ -181,15 +182,15 @@ void CONTACT::Element::DerivNormalAtNode(int nid, int& i, CORE::LINALG::SerialDe
  |  Compute element normal derivative at loc. coord. xi       popp 09/08|
  *----------------------------------------------------------------------*/
 void CONTACT::Element::deriv_normal_at_xi(double* xi, int& i,
-    CORE::LINALG::SerialDenseMatrix& elens,
-    std::vector<CORE::GEN::Pairedvector<int, double>>& derivn)
+    Core::LinAlg::SerialDenseMatrix& elens,
+    std::vector<Core::Gen::Pairedvector<int, double>>& derivn)
 {
   // initialize variables
   const int nnodes = num_node();
-  CORE::Nodes::Node** mynodes = Nodes();
+  Core::Nodes::Node** mynodes = Nodes();
   if (!mynodes) FOUR_C_THROW("deriv_normal_at_xi: Null pointer!");
-  CORE::LINALG::SerialDenseVector val(nnodes);
-  CORE::LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
+  Core::LinAlg::SerialDenseVector val(nnodes);
+  Core::LinAlg::SerialDenseMatrix deriv(nnodes, 2, true);
 
   double gxi[3];
   double geta[3];
@@ -201,7 +202,7 @@ void CONTACT::Element::deriv_normal_at_xi(double* xi, int& i,
   Metrics(xi, gxi, geta);
 
   // derivative weighting matrix for current element
-  CORE::LINALG::Matrix<3, 3> W;
+  Core::LinAlg::Matrix<3, 3> W;
   const double lcubeinv = 1.0 / (elens(4, i) * elens(4, i) * elens(4, i));
 
   for (int j = 0; j < 3; ++j)
@@ -221,7 +222,7 @@ void CONTACT::Element::deriv_normal_at_xi(double* xi, int& i,
     int ndof = mycnode->NumDof();
 
     // derivative weighting matrix for current node
-    static CORE::LINALG::Matrix<3, 3> F;
+    static Core::LinAlg::Matrix<3, 3> F;
     F(0, 0) = 0.0;
     F(1, 1) = 0.0;
     F(2, 2) = 0.0;
@@ -233,7 +234,7 @@ void CONTACT::Element::deriv_normal_at_xi(double* xi, int& i,
     F(2, 1) = gxi[0] * deriv(n, 1) - geta[0] * deriv(n, 0);
 
     // total weighting matrix
-    static CORE::LINALG::Matrix<3, 3> WF;
+    static Core::LinAlg::Matrix<3, 3> WF;
     WF.MultiplyNN(W, F);
 
     // create directional derivatives
@@ -248,11 +249,11 @@ void CONTACT::Element::deriv_normal_at_xi(double* xi, int& i,
  |  Compute element normal of last time step at xi          seitz 05/17 |
  *----------------------------------------------------------------------*/
 void CONTACT::Element::OldUnitNormalAtXi(
-    const double* xi, CORE::LINALG::Matrix<3, 1>& n_old, CORE::LINALG::Matrix<3, 2>& d_n_old_dxi)
+    const double* xi, Core::LinAlg::Matrix<3, 1>& n_old, Core::LinAlg::Matrix<3, 2>& d_n_old_dxi)
 {
   const int nnodes = num_node();
-  CORE::LINALG::SerialDenseVector val(nnodes);
-  CORE::LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
+  Core::LinAlg::SerialDenseVector val(nnodes);
+  Core::LinAlg::SerialDenseMatrix deriv(nnodes, 2, true);
 
   // get shape function values and derivatives at xi
   evaluate_shape(xi, val, deriv, nnodes);
@@ -260,8 +261,8 @@ void CONTACT::Element::OldUnitNormalAtXi(
   n_old.Clear();
   d_n_old_dxi.Clear();
 
-  CORE::LINALG::Matrix<3, 1> tmp_n;
-  CORE::LINALG::Matrix<3, 2> tmp_n_deriv;
+  Core::LinAlg::Matrix<3, 1> tmp_n;
+  Core::LinAlg::Matrix<3, 2> tmp_n_deriv;
   for (int i = 0; i < nnodes; ++i)
   {
     Node* cnode = dynamic_cast<CONTACT::Node*>(Nodes()[i]);
@@ -269,7 +270,7 @@ void CONTACT::Element::OldUnitNormalAtXi(
 
     for (int d = 0; d < Dim(); ++d)
     {
-      if (CORE::LINALG::Matrix<3, 1>(cnode->Data().Normal_old(), true).Norm2() < 0.9)
+      if (Core::LinAlg::Matrix<3, 1>(cnode->Data().Normal_old(), true).Norm2() < 0.9)
         FOUR_C_THROW("where's my old normal");
       tmp_n(d) += val(i) * cnode->Data().Normal_old()[d];
       for (int x = 0; x < Dim() - 1; ++x)
@@ -279,7 +280,7 @@ void CONTACT::Element::OldUnitNormalAtXi(
   const double l = tmp_n.Norm2();
   n_old.Update(1. / l, tmp_n, 0.);
 
-  CORE::LINALG::Matrix<2, 1> dli_dxi;
+  Core::LinAlg::Matrix<2, 1> dli_dxi;
   dli_dxi.MultiplyTN(-1. / (l * l * l), tmp_n_deriv, tmp_n, 0.);
   d_n_old_dxi.Update(1. / l, tmp_n_deriv, 0.);
   d_n_old_dxi.MultiplyNT(1., tmp_n, dli_dxi, 1.);
@@ -289,26 +290,26 @@ void CONTACT::Element::OldUnitNormalAtXi(
  |  Evaluate derivative J,xi of Jacobian determinant          popp 05/08|
  *----------------------------------------------------------------------*/
 void CONTACT::Element::DJacDXi(
-    double* djacdxi, double* xi, const CORE::LINALG::SerialDenseMatrix& secderiv)
+    double* djacdxi, double* xi, const Core::LinAlg::SerialDenseMatrix& secderiv)
 {
   // the derivative dJacdXi
   djacdxi[0] = 0.0;
   djacdxi[1] = 0.0;
-  CORE::FE::CellType dt = Shape();
+  Core::FE::CellType dt = Shape();
 
   // 2D linear case (2noded line element)
   // 3D linear case (3noded triangular element)
-  if (dt == CORE::FE::CellType::line2 || dt == CORE::FE::CellType::tri3)
+  if (dt == Core::FE::CellType::line2 || dt == Core::FE::CellType::tri3)
   {
     // do nothing
   }
 
   // 2D quadratic case (3noded line element)
-  else if (dt == CORE::FE::CellType::line3 || dt == CORE::FE::CellType::nurbs2 ||
-           dt == CORE::FE::CellType::nurbs3)
+  else if (dt == Core::FE::CellType::line3 || dt == Core::FE::CellType::nurbs2 ||
+           dt == Core::FE::CellType::nurbs3)
   {
     // get nodal coords for 2nd deriv. evaluation
-    CORE::LINALG::SerialDenseMatrix coord(3, num_node());
+    Core::LinAlg::SerialDenseMatrix coord(3, num_node());
     GetNodalCoords(coord);
 
     // metrics routine gives local basis vectors
@@ -331,13 +332,13 @@ void CONTACT::Element::DJacDXi(
   // 3D quadratic case   (6noded triangular element)
   // 3D serendipity case (8noded quadrilateral element)
   // 3D biquadratic case (9noded quadrilateral element)
-  else if (dt == CORE::FE::CellType::quad4 || dt == CORE::FE::CellType::tri6 ||
-           dt == CORE::FE::CellType::quad8 || dt == CORE::FE::CellType::quad9 ||
-           dt == CORE::FE::CellType::nurbs4 || dt == CORE::FE::CellType::nurbs8 ||
-           dt == CORE::FE::CellType::nurbs9)
+  else if (dt == Core::FE::CellType::quad4 || dt == Core::FE::CellType::tri6 ||
+           dt == Core::FE::CellType::quad8 || dt == Core::FE::CellType::quad9 ||
+           dt == Core::FE::CellType::nurbs4 || dt == Core::FE::CellType::nurbs8 ||
+           dt == Core::FE::CellType::nurbs9)
   {
     // get nodal coords for 2nd deriv. evaluation
-    CORE::LINALG::SerialDenseMatrix coord(3, num_node());
+    Core::LinAlg::SerialDenseMatrix coord(3, num_node());
     GetNodalCoords(coord);
 
     // metrics routine gives local basis vectors
@@ -356,7 +357,7 @@ void CONTACT::Element::DJacDXi(
         1.0 / sqrt(cross[0] * cross[0] + cross[1] * cross[1] + cross[2] * cross[2]);
 
     // 2nd deriv. evaluation
-    CORE::LINALG::Matrix<3, 3> gsec(true);
+    Core::LinAlg::Matrix<3, 3> gsec(true);
     for (int i = 0; i < num_node(); ++i)
       for (int k = 0; k < 3; ++k)
         for (int d = 0; d < 3; ++d) gsec(k, d) += secderiv(i, d) * coord(k, i);
@@ -384,24 +385,24 @@ void CONTACT::Element::DJacDXi(
 }
 
 
-void CONTACT::Element::PrepareDderiv(const std::vector<MORTAR::Element*>& meles)
+void CONTACT::Element::PrepareDderiv(const std::vector<Mortar::Element*>& meles)
 {
   // number of dofs that may appear in the linearization
   int numderiv = 0;
   numderiv += num_node() * 3 * 12;
   for (unsigned m = 0; m < meles.size(); ++m) numderiv += (meles.at(m))->num_node() * 3;
-  d_matrix_deriv_ = Teuchos::rcp(new CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>(
-      numderiv, 0, CORE::LINALG::SerialDenseMatrix(num_node(), num_node())));
+  d_matrix_deriv_ = Teuchos::rcp(new Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>(
+      numderiv, 0, Core::LinAlg::SerialDenseMatrix(num_node(), num_node())));
 }
 
-void CONTACT::Element::PrepareMderiv(const std::vector<MORTAR::Element*>& meles, const int m)
+void CONTACT::Element::PrepareMderiv(const std::vector<Mortar::Element*>& meles, const int m)
 {
   // number of dofs that may appear in the linearization
   int numderiv = 0;
   numderiv += num_node() * 3 * 12;
   for (unsigned i = 0; i < meles.size(); ++i) numderiv += meles[i]->num_node() * 3;
-  m_matrix_deriv_ = Teuchos::rcp(new CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>(
-      numderiv, 0, CORE::LINALG::SerialDenseMatrix(num_node(), meles.at(m)->num_node())));
+  m_matrix_deriv_ = Teuchos::rcp(new Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>(
+      numderiv, 0, Core::LinAlg::SerialDenseMatrix(num_node(), meles.at(m)->num_node())));
 }
 
 
@@ -423,7 +424,7 @@ void CONTACT::Element::assemble_dderiv_to_nodes(bool dual)
         CONTACT::Node* cnode_k = dynamic_cast<CONTACT::Node*>(Nodes()[k]);
         std::map<int, double>& ddmap_jk = cnode_j->Data().GetDerivD()[cnode_k->Id()];
 
-        for (CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>::const_iterator p =
+        for (Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>::const_iterator p =
                  d_matrix_deriv_->begin();
              p != d_matrix_deriv_->end(); ++p)
           ddmap_jk[p->first] += (p->second)(j, k);
@@ -433,7 +434,7 @@ void CONTACT::Element::assemble_dderiv_to_nodes(bool dual)
     {
       std::map<int, double>& ddmap_jj = cnode_j->Data().GetDerivD()[cnode_j->Id()];
 
-      for (CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>::const_iterator p =
+      for (Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>::const_iterator p =
                d_matrix_deriv_->begin();
            p != d_matrix_deriv_->end(); ++p)
         ddmap_jj[p->first] += (p->second)(j, j);
@@ -442,7 +443,7 @@ void CONTACT::Element::assemble_dderiv_to_nodes(bool dual)
   d_matrix_deriv_ = Teuchos::null;
 }
 
-void CONTACT::Element::assemble_mderiv_to_nodes(MORTAR::Element& mele)
+void CONTACT::Element::assemble_mderiv_to_nodes(Mortar::Element& mele)
 {
   if (m_matrix_deriv_ == Teuchos::null)
     FOUR_C_THROW("assemble_mderiv_to_nodes called w/o PrepareMderiv first");
@@ -457,7 +458,7 @@ void CONTACT::Element::assemble_mderiv_to_nodes(MORTAR::Element& mele)
       CONTACT::Node* cnode_k = dynamic_cast<CONTACT::Node*>(mele.Nodes()[k]);
       std::map<int, double>& dmmap_jk = cnode_j->Data().GetDerivM()[cnode_k->Id()];
 
-      for (CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>::const_iterator p =
+      for (Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>::const_iterator p =
                m_matrix_deriv_->begin();
            p != m_matrix_deriv_->end(); ++p)
         dmmap_jk[p->first] += (p->second)(j, k);

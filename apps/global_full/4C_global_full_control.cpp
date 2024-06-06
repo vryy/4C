@@ -36,7 +36,7 @@ void ntam(int argc, char *argv[])
 {
   using namespace FourC;
 
-  Teuchos::RCP<Epetra_Comm> gcomm = GLOBAL::Problem::Instance()->GetCommunicators()->GlobalComm();
+  Teuchos::RCP<Epetra_Comm> gcomm = Global::Problem::Instance()->GetCommunicators()->GlobalComm();
 
   double t0, ti, tc;
 
@@ -56,7 +56,7 @@ void ntam(int argc, char *argv[])
   ti = walltime_in_seconds() - t0;
   if (gcomm->MyPID() == 0)
   {
-    CORE::IO::cout << "\nTotal CPU Time for INPUT:       " << std::setw(10) << std::setprecision(3)
+    Core::IO::cout << "\nTotal CPU Time for INPUT:       " << std::setw(10) << std::setprecision(3)
                    << std::scientific << ti << " sec \n\n";
   }
 
@@ -68,7 +68,7 @@ void ntam(int argc, char *argv[])
   tc = walltime_in_seconds() - t0;
   if (gcomm->MyPID() == 0)
   {
-    CORE::IO::cout << "\nTotal CPU Time for CALCULATION: " << std::setw(10) << std::setprecision(3)
+    Core::IO::cout << "\nTotal CPU Time for CALCULATION: " << std::setw(10) << std::setprecision(3)
                    << std::scientific << tc << " sec \n\n";
   }
 }

@@ -22,13 +22,13 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
-namespace INPAR::IO_RUNTIME_OUTPUT
+namespace Inpar::IORuntimeOutput
 {
 
   /// set the valid parameters related to writing of output at runtime
   void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
-}  // namespace INPAR::IO_RUNTIME_OUTPUT
+}  // namespace Inpar::IORuntimeOutput
 
 FOUR_C_NAMESPACE_CLOSE
 

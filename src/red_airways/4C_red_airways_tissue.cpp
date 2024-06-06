@@ -27,15 +27,16 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                 yoshihara 09/12|
  *----------------------------------------------------------------------*/
-AIRWAY::RedAirwayTissue::RedAirwayTissue(
+Airway::RedAirwayTissue::RedAirwayTissue(
     const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
-    : ADAPTER::AlgorithmBase(comm, timeparams)
+    : Adapter::AlgorithmBase(comm, timeparams)
 {
   // Before setting up the structure time integrator, manipulate coupling conditions -> turn them
   // into neumann orthopressure conditions
-  std::vector<CORE::Conditions::Condition*> surfneumcond;
+  std::vector<Core::Conditions::Condition*> surfneumcond;
   std::vector<int> tmp;
-  Teuchos::RCP<DRT::Discretization> structdis = GLOBAL::Problem::Instance()->GetDis("structure");
+  Teuchos::RCP<Discret::Discretization> structdis =
+      Global::Problem::Instance()->GetDis("structure");
   if (structdis == Teuchos::null) FOUR_C_THROW("no structure discretization available");
 
   // First get all Neumann conditions on structure
@@ -44,18 +45,18 @@ AIRWAY::RedAirwayTissue::RedAirwayTissue(
   if (numneumcond == 0) FOUR_C_THROW("no Neumann conditions on structure");
 
   // Now filter those Neumann conditions that are due to the coupling
-  std::vector<CORE::Conditions::Condition*> coupcond;
+  std::vector<Core::Conditions::Condition*> coupcond;
   for (unsigned int i = 0; i < numneumcond; ++i)
   {
-    CORE::Conditions::Condition* actcond = surfneumcond[i];
-    if (actcond->Type() == CORE::Conditions::RedAirwayTissue) coupcond.push_back(actcond);
+    Core::Conditions::Condition* actcond = surfneumcond[i];
+    if (actcond->Type() == Core::Conditions::RedAirwayTissue) coupcond.push_back(actcond);
   }
   unsigned int numcond = coupcond.size();
   if (numcond == 0) FOUR_C_THROW("no coupling conditions found");
 
   for (unsigned int i = 0; i < numcond; ++i)
   {
-    CORE::Conditions::Condition* cond = coupcond[i];
+    Core::Conditions::Condition* cond = coupcond[i];
     std::string type = "neum_orthopressure";
     cond->parameters().Add("type", type);
     std::vector<int> onoff(6, 0);
@@ -68,9 +69,9 @@ AIRWAY::RedAirwayTissue::RedAirwayTissue(
     tmp.push_back(condID);
   }
 
-  std::vector<CORE::Conditions::Condition*> nodecond;
-  Teuchos::RCP<DRT::Discretization> redairwaydis =
-      GLOBAL::Problem::Instance()->GetDis("red_airway");
+  std::vector<Core::Conditions::Condition*> nodecond;
+  Teuchos::RCP<Discret::Discretization> redairwaydis =
+      Global::Problem::Instance()->GetDis("red_airway");
   if (redairwaydis == Teuchos::null) FOUR_C_THROW("no redairway discretization available");
 
   // First get all redairway prescribed conditions on structure
@@ -80,18 +81,18 @@ AIRWAY::RedAirwayTissue::RedAirwayTissue(
     FOUR_C_THROW("no redairway prescribed conditions on redairway discretization");
 
   // Now filter those node conditions that are due to the coupling
-  std::vector<CORE::Conditions::Condition*> nodecoupcond;
+  std::vector<Core::Conditions::Condition*> nodecoupcond;
   for (unsigned int i = 0; i < numnodecond; ++i)
   {
-    CORE::Conditions::Condition* actcond = nodecond[i];
-    if (actcond->Type() == CORE::Conditions::RedAirwayNodeTissue) nodecoupcond.push_back(actcond);
+    Core::Conditions::Condition* actcond = nodecond[i];
+    if (actcond->Type() == Core::Conditions::RedAirwayNodeTissue) nodecoupcond.push_back(actcond);
   }
   unsigned int numnodecoupcond = nodecoupcond.size();
   if (numnodecoupcond == 0) FOUR_C_THROW("no coupling conditions found");
 
   for (unsigned int i = 0; i < numnodecoupcond; ++i)
   {
-    CORE::Conditions::Condition* cond = nodecoupcond[i];
+    Core::Conditions::Condition* cond = nodecoupcond[i];
     std::string bc_data = "flow";
     cond->parameters().Add("boundarycond", bc_data);
     std::vector<double> val(1, 0.0);
@@ -111,17 +112,17 @@ AIRWAY::RedAirwayTissue::RedAirwayTissue(
   coupvol_ip_ = Teuchos::rcp(new Epetra_Vector(redundantmap, true));
   coupvol_im_ = Teuchos::rcp(new Epetra_Vector(redundantmap, true));
 
-  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->structural_dynamic_params();
+  const Teuchos::ParameterList& sdyn = Global::Problem::Instance()->structural_dynamic_params();
 
-  Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure =
-      Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(
+  Teuchos::RCP<Adapter::StructureBaseAlgorithm> structure =
+      Teuchos::rcp(new Adapter::StructureBaseAlgorithm(
           sdyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis));
-  structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::StructureRedAirway>(structure->structure_field());
+  structure_ = Teuchos::rcp_dynamic_cast<Adapter::StructureRedAirway>(structure->structure_field());
   structure_->Setup();
 
   SetupRedAirways();
   const Teuchos::ParameterList& rawdyn =
-      GLOBAL::Problem::Instance()->reduced_d_airway_dynamic_params();
+      Global::Problem::Instance()->reduced_d_airway_dynamic_params();
 
   // Check Time integration parameters
   if (sdyn.get<double>("TIMESTEP") != timeparams.get<double>("TIMESTEP") or
@@ -137,7 +138,7 @@ AIRWAY::RedAirwayTissue::RedAirwayTissue(
 
   // Get coupling parameters
   const Teuchos::ParameterList& rawtisdyn =
-      GLOBAL::Problem::Instance()->red_airway_tissue_dynamic_params();
+      Global::Problem::Instance()->red_airway_tissue_dynamic_params();
   // Get max iterations
   itermax_ = rawtisdyn.get<int>("MAXITER");
 
@@ -148,7 +149,8 @@ AIRWAY::RedAirwayTissue::RedAirwayTissue(
   tolq_ = rawtisdyn.get<double>("CONVTOL_Q");
 
   // Dynamic relaxation type
-  relaxtype_ = CORE::UTILS::IntegralValue<INPAR::ARTNET::Relaxtype3D0D>(rawtisdyn, "RELAXTYPE");
+  relaxtype_ =
+      Core::UTILS::IntegralValue<Inpar::ArteryNetwork::Relaxtype3D0D>(rawtisdyn, "RELAXTYPE");
 
   // Get normal direction
   // -> if normal == 1.0 : the pressure will be implemented from inside the element to the outside
@@ -164,7 +166,7 @@ AIRWAY::RedAirwayTissue::RedAirwayTissue(
 /*----------------------------------------------------------------------*
  |  Read restart                                              roth 10/13|
  *----------------------------------------------------------------------*/
-void AIRWAY::RedAirwayTissue::read_restart(const int step)
+void Airway::RedAirwayTissue::read_restart(const int step)
 {
   structure_->read_restart(step);
   structure_->InitVol();
@@ -185,7 +187,7 @@ void AIRWAY::RedAirwayTissue::read_restart(const int step)
 /*----------------------------------------------------------------------*
  |  Integrate                                            yoshihara 09/12|
  *----------------------------------------------------------------------*/
-void AIRWAY::RedAirwayTissue::Integrate()
+void Airway::RedAirwayTissue::Integrate()
 {
   while (NotFinished())
   {
@@ -214,7 +216,7 @@ void AIRWAY::RedAirwayTissue::Integrate()
 /*----------------------------------------------------------------------*
  |  Integrate airways time step and calculate pressures  yoshihara 09/12|
  *----------------------------------------------------------------------*/
-void AIRWAY::RedAirwayTissue::DoRedAirwayStep()
+void Airway::RedAirwayTissue::DoRedAirwayStep()
 {
   // Scale with -1 (redairway convention: outflow is negative)
   coupflux_ip_->Scale(-1.0);
@@ -230,18 +232,18 @@ void AIRWAY::RedAirwayTissue::DoRedAirwayStep()
  |  "Fixed-point-fluid-structure interaction solvers with dynamic       |
  |   relaxation" (2008)                                       roth 10/13|
  *----------------------------------------------------------------------*/
-void AIRWAY::RedAirwayTissue::RelaxPressure(int iter)
+void Airway::RedAirwayTissue::RelaxPressure(int iter)
 {
   switch (relaxtype_)
   {
-    case INPAR::ARTNET::norelaxation:
+    case Inpar::ArteryNetwork::norelaxation:
     {
       printf("No dynamic relaxation \n");
       couppres_ip_->Update(1.0, *couppres_ip_tilde_, 0.0);
     }
     break;
 
-    case INPAR::ARTNET::fixedrelaxation:
+    case Inpar::ArteryNetwork::fixedrelaxation:
     {
       // Fixed \omega_i
       omega_ = 0.85;
@@ -255,7 +257,7 @@ void AIRWAY::RedAirwayTissue::RelaxPressure(int iter)
     }
     break;
 
-    case INPAR::ARTNET::Aitken:
+    case Inpar::ArteryNetwork::Aitken:
     {
       // \omega_{i+1} = omega_np_
       // Kuettler (2008), Remark 10: Two previous steps are required to calculate the \omega,
@@ -309,7 +311,7 @@ void AIRWAY::RedAirwayTissue::RelaxPressure(int iter)
     break;
 
     // not implemented yet...
-    case INPAR::ARTNET::SD:
+    case Inpar::ArteryNetwork::SD:
     {
       FOUR_C_THROW(
           "Currently only two types of RELAXTYPE possible: norelaxation, fixedrelaxation, Aitken");
@@ -336,7 +338,7 @@ void AIRWAY::RedAirwayTissue::RelaxPressure(int iter)
 /*----------------------------------------------------------------------*
  |  Integrate structure time step and calculate fluxes   yoshihara 09/12|
  *----------------------------------------------------------------------*/
-void AIRWAY::RedAirwayTissue::do_structure_step()
+void Airway::RedAirwayTissue::do_structure_step()
 {
   structure_->SetPressure(couppres_ip_);
   structure_->prepare_time_step();
@@ -351,7 +353,7 @@ void AIRWAY::RedAirwayTissue::do_structure_step()
 /* Note: This has to be done for each field on its own, not as a Norm2
  * over all fields.
  */
-bool AIRWAY::RedAirwayTissue::NotConverged(int iter)
+bool Airway::RedAirwayTissue::NotConverged(int iter)
 {
   Teuchos::RCP<Epetra_Vector> pres_inc = Teuchos::rcp(new Epetra_Vector(*couppres_ip_));
   Teuchos::RCP<Epetra_Vector> scaled_pres_inc = Teuchos::rcp(new Epetra_Vector(*couppres_ip_));
@@ -407,7 +409,7 @@ bool AIRWAY::RedAirwayTissue::NotConverged(int iter)
 /*----------------------------------------------------------------------*
  |  Output of one iteration between fields               yoshihara 09/12|
  *----------------------------------------------------------------------*/
-void AIRWAY::RedAirwayTissue::OutputIteration(Teuchos::RCP<Epetra_Vector> pres_inc,
+void Airway::RedAirwayTissue::OutputIteration(Teuchos::RCP<Epetra_Vector> pres_inc,
     Teuchos::RCP<Epetra_Vector> scaled_pres_inc, Teuchos::RCP<Epetra_Vector> flux_inc,
     Teuchos::RCP<Epetra_Vector> scaled_flux_inc, int iter)
 {
@@ -437,7 +439,7 @@ void AIRWAY::RedAirwayTissue::OutputIteration(Teuchos::RCP<Epetra_Vector> pres_i
 /*----------------------------------------------------------------------*
  |  Update and output                                    yoshihara 09/12|
  *----------------------------------------------------------------------*/
-void AIRWAY::RedAirwayTissue::update_and_output()
+void Airway::RedAirwayTissue::update_and_output()
 {
   constexpr bool force_prepare = false;
   structure_->prepare_output(force_prepare);
@@ -457,11 +459,11 @@ void AIRWAY::RedAirwayTissue::update_and_output()
 }
 
 
-void AIRWAY::RedAirwayTissue::SetupRedAirways()
+void Airway::RedAirwayTissue::SetupRedAirways()
 {
   // Access the discretization
-  Teuchos::RCP<DRT::Discretization> actdis = Teuchos::null;
-  actdis = GLOBAL::Problem::Instance()->GetDis("red_airway");
+  Teuchos::RCP<Discret::Discretization> actdis = Teuchos::null;
+  actdis = Global::Problem::Instance()->GetDis("red_airway");
 
   // Set degrees of freedom in the discretization
   if (!actdis->Filled())
@@ -470,12 +472,12 @@ void AIRWAY::RedAirwayTissue::SetupRedAirways()
   }
 
   // Context for output and restart
-  Teuchos::RCP<CORE::IO::DiscretizationWriter> output = actdis->Writer();
+  Teuchos::RCP<Core::IO::DiscretizationWriter> output = actdis->Writer();
   output->WriteMesh(0, 0.0);
 
   // Set some pointers and variables
   const Teuchos::ParameterList& rawdyn =
-      GLOBAL::Problem::Instance()->reduced_d_airway_dynamic_params();
+      Global::Problem::Instance()->reduced_d_airway_dynamic_params();
 
   // Create a solver
   // Get the solver number
@@ -485,15 +487,15 @@ void AIRWAY::RedAirwayTissue::SetupRedAirways()
     FOUR_C_THROW(
         "no linear solver defined. Please set LINEAR_SOLVER in REDUCED DIMENSIONAL AIRWAYS DYNAMIC "
         "to a valid number!");
-  std::unique_ptr<CORE::LINALG::Solver> solver = std::make_unique<CORE::LINALG::Solver>(
-      GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm());
+  std::unique_ptr<Core::LinAlg::Solver> solver = std::make_unique<Core::LinAlg::Solver>(
+      Global::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm());
   actdis->compute_null_space_if_necessary(solver->Params());
 
   // Set parameters in list required for all schemes
   Teuchos::ParameterList airwaystimeparams;
 
   // Number of degrees of freedom
-  const int ndim = GLOBAL::Problem::Instance()->NDim();
+  const int ndim = Global::Problem::Instance()->NDim();
   airwaystimeparams.set<int>("number of degrees of freedom", 1 * ndim);
 
   // Time integration
@@ -544,7 +546,7 @@ void AIRWAY::RedAirwayTissue::SetupRedAirways()
   // velocity degrees of freedom
   //------------------------------------------------------------------
   redairways_ = Teuchos::rcp(
-      new AIRWAY::RedAirwayImplicitTimeInt(actdis, std::move(solver), airwaystimeparams, *output));
+      new Airway::RedAirwayImplicitTimeInt(actdis, std::move(solver), airwaystimeparams, *output));
 
   redairways_->SetupForCoupling();
 }

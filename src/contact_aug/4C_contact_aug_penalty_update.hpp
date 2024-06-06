@@ -27,7 +27,7 @@ namespace Teuchos
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace INPAR
+namespace Inpar
 {
   namespace STR
   {
@@ -37,17 +37,17 @@ namespace INPAR
   {
     enum class PenaltyUpdate : char;
   }  // namespace CONTACT
-}  // namespace INPAR
+}  // namespace Inpar
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 namespace CONTACT
 {
   class ParamsInterface;
-  namespace AUG
+  namespace Aug
   {
     class Strategy;
     class DataContainer;
@@ -99,7 +99,7 @@ namespace CONTACT
       /** create a new penalty update object and use the data of another
        *  penalty update object to set it up. */
       static PenaltyUpdate* Create(
-          const INPAR::CONTACT::PenaltyUpdate update_type, const PenaltyUpdate* pu_src = nullptr);
+          const Inpar::CONTACT::PenaltyUpdate update_type, const PenaltyUpdate* pu_src = nullptr);
 
      public:
       /// default constructor
@@ -112,7 +112,7 @@ namespace CONTACT
       virtual ~PenaltyUpdate() = default;
 
       /// return the type enum
-      virtual INPAR::CONTACT::PenaltyUpdate Type() const = 0;
+      virtual Inpar::CONTACT::PenaltyUpdate Type() const = 0;
 
       /// initialize the penalty update object
       void Init(Strategy* const strategy, DataContainer* const data);
@@ -141,12 +141,12 @@ namespace CONTACT
 
      protected:
       /// access the structural stiffness matrix
-      Teuchos::RCP<const CORE::LINALG::SparseMatrix> get_structural_stiffness_matrix(
+      Teuchos::RCP<const Core::LinAlg::SparseMatrix> get_structural_stiffness_matrix(
           const CONTACT::ParamsInterface& cparams) const;
 
       /// access the right hand side vector of the entire problem
       Teuchos::RCP<const Epetra_Vector> get_problem_rhs(const CONTACT::ParamsInterface& cparams,
-          const std::vector<INPAR::STR::ModelType>* without_these_models) const;
+          const std::vector<Inpar::STR::ModelType>* without_these_models) const;
 
       /// do stuff before the update
       virtual void pre_update(){/* empty */};
@@ -170,8 +170,8 @@ namespace CONTACT
       void throw_if_not_initialized() const;
 
       /// access the surrounding strategy
-      AUG::Strategy& strategy() { return *strategy_ptr_; };
-      const AUG::Strategy& strategy() const { return *strategy_ptr_; };
+      Aug::Strategy& strategy() { return *strategy_ptr_; };
+      const Aug::Strategy& strategy() const { return *strategy_ptr_; };
 
       /// access the data container of the surrounding strategy
       DataContainer& data() { return *data_ptr_; };
@@ -228,7 +228,7 @@ namespace CONTACT
 
         /// set state
         void Set(const Epetra_Vector& xold, const Epetra_Vector& dir,
-            const CONTACT::AUG::DataContainer& data);
+            const CONTACT::Aug::DataContainer& data);
 
         /// get direction
         const Epetra_Vector& GetDirection() const;
@@ -281,7 +281,7 @@ namespace CONTACT
       bool isinit_ = false;
 
       /// call-back to the surrounding strategy
-      AUG::Strategy* strategy_ptr_ = nullptr;
+      Aug::Strategy* strategy_ptr_ = nullptr;
 
       /// container of the surrounding strategy
       DataContainer* data_ptr_ = nullptr;
@@ -310,7 +310,7 @@ namespace CONTACT
 
       PenaltyUpdateEmpty(const PenaltyUpdateEmpty& pu) = delete;
 
-      INPAR::CONTACT::PenaltyUpdate Type() const override;
+      Inpar::CONTACT::PenaltyUpdate Type() const override;
 
      protected:
       Status execute(const CONTACT::ParamsInterface& cparams) override
@@ -333,7 +333,7 @@ namespace CONTACT
 
       PenaltyUpdateSufficientLinReduction(const PenaltyUpdateSufficientLinReduction& pu) = delete;
 
-      INPAR::CONTACT::PenaltyUpdate Type() const override;
+      Inpar::CONTACT::PenaltyUpdate Type() const override;
 
      protected:
       Status execute(const CONTACT::ParamsInterface& cparams) override;
@@ -365,7 +365,7 @@ namespace CONTACT
 
       PenaltyUpdateSufficientAngle(const PenaltyUpdateSufficientAngle& pu) = delete;
 
-      INPAR::CONTACT::PenaltyUpdate Type() const override;
+      Inpar::CONTACT::PenaltyUpdate Type() const override;
 
      protected:
       Status execute(const CONTACT::ParamsInterface& cparams) override;
@@ -378,7 +378,7 @@ namespace CONTACT
       double beta_angle() const;
     };
 
-  }  // namespace AUG
+  }  // namespace Aug
 }  // namespace CONTACT
 
 

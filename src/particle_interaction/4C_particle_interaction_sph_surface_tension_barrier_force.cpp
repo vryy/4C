@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-PARTICLEINTERACTION::SPHBarrierForce::SPHBarrierForce(const Teuchos::ParameterList& params)
+ParticleInteraction::SPHBarrierForce::SPHBarrierForce(const Teuchos::ParameterList& params)
     : params_sph_(params),
       liquidtype_(PARTICLEENGINE::Phase1),
       gastype_(PARTICLEENGINE::Phase2),
@@ -37,7 +37,7 @@ PARTICLEINTERACTION::SPHBarrierForce::SPHBarrierForce(const Teuchos::ParameterLi
   // empty constructor
 }
 
-void PARTICLEINTERACTION::SPHBarrierForce::Init()
+void ParticleInteraction::SPHBarrierForce::Init()
 {
   // init fluid particle types
   fluidtypes_ = {liquidtype_, gastype_};
@@ -56,15 +56,15 @@ void PARTICLEINTERACTION::SPHBarrierForce::Init()
 
   if (trans_dT_barrier_ > 0.0)
   {
-    if (CORE::UTILS::IntegralValue<INPAR::PARTICLE::TemperatureEvaluationScheme>(
-            params_sph_, "TEMPERATUREEVALUATION") == INPAR::PARTICLE::NoTemperatureEvaluation)
+    if (Core::UTILS::IntegralValue<Inpar::PARTICLE::TemperatureEvaluationScheme>(
+            params_sph_, "TEMPERATUREEVALUATION") == Inpar::PARTICLE::NoTemperatureEvaluation)
       FOUR_C_THROW("temperature evaluation needed for linear transition of surface tension!");
   }
 }
 
-void PARTICLEINTERACTION::SPHBarrierForce::Setup(
+void ParticleInteraction::SPHBarrierForce::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-    const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs)
+    const std::shared_ptr<ParticleInteraction::SPHNeighborPairs> neighborpairs)
 {
   // set interface to particle engine
   particleengineinterface_ = particleengineinterface;
@@ -88,7 +88,7 @@ void PARTICLEINTERACTION::SPHBarrierForce::Setup(
       boundarytypes_.erase(type_i);
 }
 
-void PARTICLEINTERACTION::SPHBarrierForce::compute_barrier_force_contribution() const
+void ParticleInteraction::SPHBarrierForce::compute_barrier_force_contribution() const
 {
   // compute barrier force contribution (particle contribution)
   compute_barrier_force_particle_contribution();
@@ -97,7 +97,7 @@ void PARTICLEINTERACTION::SPHBarrierForce::compute_barrier_force_contribution() 
   compute_barrier_force_particle_boundary_contribution();
 }
 
-void PARTICLEINTERACTION::SPHBarrierForce::compute_barrier_force_particle_contribution() const
+void ParticleInteraction::SPHBarrierForce::compute_barrier_force_particle_contribution() const
 {
   // get relevant particle pair indices
   std::vector<int> relindices;
@@ -175,7 +175,7 @@ void PARTICLEINTERACTION::SPHBarrierForce::compute_barrier_force_particle_contri
   }
 }
 
-void PARTICLEINTERACTION::SPHBarrierForce::compute_barrier_force_particle_boundary_contribution()
+void ParticleInteraction::SPHBarrierForce::compute_barrier_force_particle_boundary_contribution()
     const
 {
   // get relevant particle pair indices

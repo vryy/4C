@@ -17,12 +17,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::GEOMETRICSEARCH
+namespace Core::GeometricSearch
 {
   GeometricSearchVisualization::GeometricSearchVisualization(
-      CORE::IO::VisualizationParameters parameters, const Epetra_Comm& comm,
+      Core::IO::VisualizationParameters parameters, const Epetra_Comm& comm,
       std::string base_output_name)
-      : CORE::IO::VisualizationManager(std::move(parameters), comm, std::move(base_output_name))
+      : Core::IO::VisualizationManager(std::move(parameters), comm, std::move(base_output_name))
   {
     my_rank_ = comm.MyPID();
     this->get_visualization_data().RegisterCellData<int>("element_id", 1);
@@ -32,12 +32,12 @@ namespace CORE::GEOMETRICSEARCH
 
   void GeometricSearchVisualization::write_primitives_and_predicates_to_disk(
       const double visualziation_time, const int visualization_step,
-      const std::vector<std::pair<int, CORE::GEOMETRICSEARCH::BoundingVolume>>& primitives,
-      const std::vector<std::pair<int, CORE::GEOMETRICSEARCH::BoundingVolume>>& predicates)
+      const std::vector<std::pair<int, Core::GeometricSearch::BoundingVolume>>& primitives,
+      const std::vector<std::pair<int, Core::GeometricSearch::BoundingVolume>>& predicates)
   {
 #ifndef FOUR_C_WITH_ARBORX
     FOUR_C_THROW(
-        "CORE::GEOMETRICSEARCH::write_primitives_and_predicates_to_disk can only be used with "
+        "Core::GeometricSearch::write_primitives_and_predicates_to_disk can only be used with "
         "ArborX."
         "To use it, enable ArborX during the configure process.");
 #else
@@ -69,6 +69,6 @@ namespace CORE::GEOMETRICSEARCH
 #endif
   }
 
-}  // namespace CORE::GEOMETRICSEARCH
+}  // namespace Core::GeometricSearch
 
 FOUR_C_NAMESPACE_CLOSE

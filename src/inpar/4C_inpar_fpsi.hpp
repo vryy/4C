@@ -26,7 +26,7 @@ enum FpsiCoupling
   partitioned
 };
 
-namespace INPAR
+namespace Inpar
 {
   namespace FPSI
   {
@@ -66,11 +66,11 @@ namespace INPAR
 
     /// set specific fpsi conditions
     void SetValidConditions(
-        std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist);
+        std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist);
 
   }  // namespace FPSI
 
-}  // namespace INPAR
+}  // namespace Inpar
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

@@ -31,10 +31,10 @@ FOUR_C_NAMESPACE_OPEN
  |  Constructor (public)                                      als 01/18 |    // TODO als fix
  fluid_timint_stat_hdg because it is not working
  *----------------------------------------------------------------------*/
-FLD::TimIntStationaryHDG::TimIntStationaryHDG(const Teuchos::RCP<DRT::Discretization>& actdis,
-    const Teuchos::RCP<CORE::LINALG::Solver>& solver,
+FLD::TimIntStationaryHDG::TimIntStationaryHDG(const Teuchos::RCP<Discret::Discretization>& actdis,
+    const Teuchos::RCP<Core::LinAlg::Solver>& solver,
     const Teuchos::RCP<Teuchos::ParameterList>& params,
-    const Teuchos::RCP<CORE::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
+    const Teuchos::RCP<Core::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
     : FluidImplicitTimeInt(actdis, solver, params, output, alefluid),
       TimIntStationary(actdis, solver, params, output, alefluid),
       first_assembly_(false)
@@ -47,17 +47,17 @@ FLD::TimIntStationaryHDG::TimIntStationaryHDG(const Teuchos::RCP<DRT::Discretiza
  *----------------------------------------------------------------------*/
 void FLD::TimIntStationaryHDG::Init()
 {
-  DRT::DiscretizationHDG* hdgdis = dynamic_cast<DRT::DiscretizationHDG*>(discret_.get());
+  Discret::DiscretizationHDG* hdgdis = dynamic_cast<Discret::DiscretizationHDG*>(discret_.get());
   if (hdgdis == nullptr) FOUR_C_THROW("Did not receive an HDG discretization");
 
   int elementndof = hdgdis->NumMyRowElements() > 0
-                        ? dynamic_cast<DRT::ELEMENTS::FluidHDG*>(hdgdis->lRowElement(0))
+                        ? dynamic_cast<Discret::ELEMENTS::FluidHDG*>(hdgdis->lRowElement(0))
                               ->num_dof_per_element_auxiliary()
                         : 0;
 
   // set degrees of freedom in the discretization
-  Teuchos::RCP<CORE::Dofsets::DofSetInterface> dofsetaux =
-      Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(0, elementndof, 0, false));
+  Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux =
+      Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(0, elementndof, 0, false));
   discret_->AddDofSet(dofsetaux);
   discret_->fill_complete();
 
@@ -101,7 +101,7 @@ void FLD::TimIntStationaryHDG::Reset(bool completeReset, int numsteps, int iter)
 {
   FluidImplicitTimeInt::Reset(completeReset, numsteps, iter);
   const Epetra_Map* intdofrowmap = discret_->dof_row_map(1);
-  intvelnp_ = CORE::LINALG::CreateVector(*intdofrowmap, true);
+  intvelnp_ = Core::LinAlg::CreateVector(*intdofrowmap, true);
   if (discret_->Comm().MyPID() == 0)
     std::cout << "Number of degrees of freedom in HDG system: "
               << discret_->dof_row_map(0)->NumGlobalElements() << std::endl;
@@ -143,7 +143,7 @@ void FLD::TimIntStationaryHDG::set_old_part_of_righthandside()
 void FLD::TimIntStationaryHDG::SetStateTimInt()
 {
   const Epetra_Map* intdofrowmap = discret_->dof_row_map(1);
-  Teuchos::RCP<Epetra_Vector> zerovec = CORE::LINALG::CreateVector(*intdofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> zerovec = Core::LinAlg::CreateVector(*intdofrowmap, true);
 
   discret_->set_state(0, "velaf", velnp_);
   discret_->set_state(1, "intvelaf", intvelnp_);  // TODO als fill in intvelnp_!
@@ -172,22 +172,22 @@ void FLD::TimIntStationaryHDG::clear_state_assemble_mat_and_rhs()
  |  set initial flow field for test cases              kronbichler 05/14|
  *----------------------------------------------------------------------*/
 void FLD::TimIntStationaryHDG::SetInitialFlowField(
-    const INPAR::FLUID::InitialField initfield, const int startfuncno)
+    const Inpar::FLUID::InitialField initfield, const int startfuncno)
 {
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
   const Epetra_Map* intdofrowmap = discret_->dof_row_map(1);
-  CORE::LINALG::SerialDenseVector elevec1, elevec2, elevec3;
-  CORE::LINALG::SerialDenseMatrix elemat1, elemat2;
+  Core::LinAlg::SerialDenseVector elevec1, elevec2, elevec3;
+  Core::LinAlg::SerialDenseMatrix elemat1, elemat2;
   Teuchos::ParameterList initParams;
   initParams.set<int>("action", FLD::project_fluid_field);
   initParams.set("startfuncno", startfuncno);
   initParams.set<int>("initfield", initfield);
   // loop over all elements on the processor
-  CORE::Elements::Element::LocationArray la(2);
+  Core::Elements::Element::LocationArray la(2);
   double error = 0;
   for (int el = 0; el < discret_->NumMyColElements(); ++el)
   {
-    CORE::Elements::Element* ele = discret_->lColElement(el);
+    Core::Elements::Element* ele = discret_->lColElement(el);
 
     ele->LocationVector(*discret_, la, false);
     if (static_cast<std::size_t>(elevec1.numRows()) != la[0].lm_.size())

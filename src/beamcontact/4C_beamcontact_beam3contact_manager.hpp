@@ -32,17 +32,17 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
 }
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
@@ -68,7 +68,7 @@ namespace CONTACT
     \param discret (in): A discretization containing beam elements
 
     */
-    Beam3cmanager(DRT::Discretization& discret, double alphaf);
+    Beam3cmanager(Discret::Discretization& discret, double alphaf);
 
     /*!
     \brief Destructor
@@ -90,13 +90,13 @@ namespace CONTACT
     \brief Get problem discretization
 
     */
-    inline const DRT::Discretization& ProblemDiscret() const { return pdiscret_; }
+    inline const Discret::Discretization& ProblemDiscret() const { return pdiscret_; }
 
     /*!
     \brief Get beam to solid contact discretization
 
     */
-    inline DRT::Discretization& BTSolDiscret() { return *btsoldiscret_; }
+    inline Discret::Discretization& BTSolDiscret() { return *btsoldiscret_; }
 
     /*!
     \brief Get communicator
@@ -157,7 +157,7 @@ namespace CONTACT
     are assembles into global force resdiual and global stiffness matrix.
 
     */
-    void Evaluate(CORE::LINALG::SparseMatrix& stiffmatrix, Epetra_Vector& fres,
+    void Evaluate(Core::LinAlg::SparseMatrix& stiffmatrix, Epetra_Vector& fres,
         const Epetra_Vector& disrow, Teuchos::ParameterList timeintparams, bool newsti = false,
         double time = 0.0);
 
@@ -229,13 +229,13 @@ namespace CONTACT
     /*!
     \brief Read restart
     */
-    void read_restart(CORE::IO::DiscretizationReader& reader);
+    void read_restart(Core::IO::DiscretizationReader& reader);
 
     /*!
     \brief Write restart
     */
-    void write_restart(Teuchos::RCP<CORE::IO::DiscretizationWriter> output);
-    void write_restart(CORE::IO::DiscretizationWriter& output);
+    void write_restart(Teuchos::RCP<Core::IO::DiscretizationWriter> output);
+    void write_restart(Core::IO::DiscretizationWriter& output);
 
     //@}
 
@@ -269,10 +269,10 @@ namespace CONTACT
     int numnodalvalues_;
 
     //! problem discretizaton
-    DRT::Discretization& pdiscret_;
+    Discret::Discretization& pdiscret_;
 
     //! contact discretization (basically a copy)
-    Teuchos::RCP<DRT::Discretization> btsoldiscret_;
+    Teuchos::RCP<Discret::Discretization> btsoldiscret_;
 
     //! the Comm interface of the problem discretization
     const Epetra_Comm& pdiscomm_;
@@ -315,9 +315,9 @@ namespace CONTACT
     std::vector<Teuchos::RCP<CONTACT::Node>> solcontactnodes_;
 
     //! total vector of solid meshtying elements
-    std::vector<Teuchos::RCP<MORTAR::Element>> solmeshtyingeles_;
+    std::vector<Teuchos::RCP<Mortar::Element>> solmeshtyingeles_;
     //! total vector of solid meyhtying nodes
-    std::vector<Teuchos::RCP<MORTAR::Node>> solmeshtyingnodes_;
+    std::vector<Teuchos::RCP<Mortar::Node>> solmeshtyingnodes_;
 
     //! 2D-map with pointers on the contact pairs_. This map is necessary, to call a contact pair
     //! directly by the two element-iD's of the pair.
@@ -372,7 +372,7 @@ namespace CONTACT
     Teuchos::RCP<Epetra_Vector> fcold_;
 
     //! contact stiffness matrix of current time step
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> stiffc_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> stiffc_;
 
     //! time integration parameter (0.0 for statics)
     double alphaf_;
@@ -435,10 +435,10 @@ namespace CONTACT
     Teuchos::RCP<std::vector<double>> mi_;
 
     //! line charge conditions
-    std::vector<CORE::Conditions::Condition*> linechargeconds_;
+    std::vector<Core::Conditions::Condition*> linechargeconds_;
 
     //! point charge conditions (rigid sphere)
-    std::vector<CORE::Conditions::Condition*> pointchargeconds_;
+    std::vector<Core::Conditions::Condition*> pointchargeconds_;
 
     // bool indicating if we are in the first time step of a simulation
     bool firststep_;
@@ -472,8 +472,8 @@ namespace CONTACT
     We search pairs of elements that might get in contact. Pairs of elements that are direct
     neighbours, i.e. share one node, will be rejected.
     */
-    std::vector<std::vector<CORE::Elements::Element*>> brute_force_search(
-        std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions, const double searchradius,
+    std::vector<std::vector<Core::Elements::Element*>> brute_force_search(
+        std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions, const double searchradius,
         const double sphericalsearchradius);
 
     /*!
@@ -508,16 +508,16 @@ namespace CONTACT
     /*
     \brief Test if element midpoints are close (spherical bounding box intersection)
     */
-    bool close_midpoint_distance(const CORE::Elements::Element* ele1,
-        const CORE::Elements::Element* ele2,
-        std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
+    bool close_midpoint_distance(const Core::Elements::Element* ele1,
+        const Core::Elements::Element* ele2,
+        std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions,
         const double sphericalsearchradius);
 
     /*!
     \brief Set the member variables numnodes_ and numnodalvalues depending on the element type
     handed in!
     */
-    void set_element_type_and_distype(CORE::Elements::Element* ele1);
+    void set_element_type_and_distype(Core::Elements::Element* ele1);
 
     /*!
     \brief Check, if pair with given element IDs is allready existing in the vector pairs_!
@@ -544,7 +544,7 @@ namespace CONTACT
 
     */
     void transform_angle_to_triad(
-        CORE::LINALG::SerialDenseVector& theta, CORE::LINALG::SerialDenseMatrix& R);
+        Core::LinAlg::SerialDenseVector& theta, Core::LinAlg::SerialDenseMatrix& R);
 
     /*!
     \brief Compute spin
@@ -553,7 +553,7 @@ namespace CONTACT
 
     */
     void compute_spin(
-        CORE::LINALG::SerialDenseMatrix& spin, CORE::LINALG::SerialDenseVector& rotationangle);
+        Core::LinAlg::SerialDenseMatrix& spin, Core::LinAlg::SerialDenseVector& rotationangle);
 
     /*!
     \brief Shift map of displacement vector
@@ -573,7 +573,7 @@ namespace CONTACT
 
     */
     void set_current_positions(
-        std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions, const Epetra_Vector& disccol);
+        std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions, const Epetra_Vector& disccol);
 
     /*!
     \brief Set displacment state on contact element pair level
@@ -582,7 +582,7 @@ namespace CONTACT
     the current tangent vectors in case of Kirchhoff beam elements
     */
     void set_state(
-        std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions, const Epetra_Vector& disccol);
+        std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions, const Epetra_Vector& disccol);
 
     /*!
     \brief Evaluate all pairs stored in the different pairs vectors (BTB, BTSPH, BTSOL; contact and
@@ -596,55 +596,55 @@ namespace CONTACT
 
     */
     void fill_contact_pairs_vectors(
-        const std::vector<std::vector<CORE::Elements::Element*>> elementpairs);
+        const std::vector<std::vector<Core::Elements::Element*>> elementpairs);
 
     /*!
     \brief Sort found element pairs and fill vectors of potential pairs (BTB, BTSOL and BTSPH)
 
     */
     void fill_potential_pairs_vectors(
-        const std::vector<std::vector<CORE::Elements::Element*>> elementpairs);
+        const std::vector<std::vector<Core::Elements::Element*>> elementpairs);
 
     /*!
     \brief Compute coordinates for GMSH-Output for two-noded-elements
 
     */
-    void gmsh_2_noded(const int& n, const CORE::LINALG::SerialDenseMatrix& coord,
-        const CORE::Elements::Element* thisele, std::stringstream& gmshfilecontent);
+    void gmsh_2_noded(const int& n, const Core::LinAlg::SerialDenseMatrix& coord,
+        const Core::Elements::Element* thisele, std::stringstream& gmshfilecontent);
 
     /*!
     \brief Compute coordinates for GMSH-Output for three-noded-elements
 
     */
-    void gmsh_3_noded(const int& n, const CORE::LINALG::SerialDenseMatrix& allcoord,
-        const CORE::Elements::Element* thisele, std::stringstream& gmshfilecontent);
+    void gmsh_3_noded(const int& n, const Core::LinAlg::SerialDenseMatrix& allcoord,
+        const Core::Elements::Element* thisele, std::stringstream& gmshfilecontent);
 
     /*!
     \brief Compute coordinates for GMSH-Output for four-noded-elements
 
     */
-    void gmsh_4_noded(const int& n, const CORE::LINALG::SerialDenseMatrix& allcoord,
-        const CORE::Elements::Element* thisele, std::stringstream& gmshfilecontent);
+    void gmsh_4_noded(const int& n, const Core::LinAlg::SerialDenseMatrix& allcoord,
+        const Core::Elements::Element* thisele, std::stringstream& gmshfilecontent);
 
     /*!
     \brief Compute coordinates for GMSH-Output for N-noded-elements
     */
-    void gmsh_n_noded(const int& n, int& n_axial, const CORE::LINALG::SerialDenseMatrix& allcoord,
-        const CORE::Elements::Element* thisele, std::stringstream& gmshfilecontent);
+    void gmsh_n_noded(const int& n, int& n_axial, const Core::LinAlg::SerialDenseMatrix& allcoord,
+        const Core::Elements::Element* thisele, std::stringstream& gmshfilecontent);
 
     /*!
     \brief Compute coordinates for GMSH-Line-Output for N-noded-elements
     */
     void gmsh_n_noded_line(const int& n, const int& n_axial,
-        const CORE::LINALG::SerialDenseMatrix& allcoord, const CORE::Elements::Element* thisele,
+        const Core::LinAlg::SerialDenseMatrix& allcoord, const Core::Elements::Element* thisele,
         std::stringstream& gmshfilecontent);
 
     /*!
     \brief Compute coordinates for GMSH-Output of rigid sphere
 
     */
-    void gmsh_sphere(const CORE::LINALG::SerialDenseMatrix& coord,
-        const CORE::Elements::Element* thisele, std::stringstream& gmshfilecontent);
+    void gmsh_sphere(const Core::LinAlg::SerialDenseMatrix& coord,
+        const Core::Elements::Element* thisele, std::stringstream& gmshfilecontent);
 
     /*!
     \brief Print Gmsh Triangle to stringstream by specifying the vertices
@@ -664,19 +664,19 @@ namespace CONTACT
     /*!
     \brief GMSH-Surface-Output for solid elements
     */
-    void gmsh_solid(const CORE::Elements::Element* element, const Epetra_Vector& disrow,
+    void gmsh_solid(const Core::Elements::Element* element, const Epetra_Vector& disrow,
         std::stringstream& gmshfilecontent);
 
     /*!
     \brief GMSH-Surface-Output for solid surfaces
     */
-    void gmsh_solid_surface_element_numbers(const CORE::Elements::Element* element,
+    void gmsh_solid_surface_element_numbers(const Core::Elements::Element* element,
         const Epetra_Vector& disrow, std::stringstream& gmshfilecontent);
 
     /*!
     \brief Get color of solid element surfaces for GMSH-Output
     */
-    void gmsh_get_surf_color(const CORE::Elements::Element* element, const int& n_surfNodes,
+    void gmsh_get_surf_color(const Core::Elements::Element* element, const int& n_surfNodes,
         const int surfNodes[6][9], double surfColor[6]);
 
     /*!

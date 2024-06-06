@@ -29,15 +29,15 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::FluidEleCalcXFEM<distype>* DRT::ELEMENTS::FluidEleCalcXFEM<distype>::Instance(
-    CORE::UTILS::SingletonAction action)
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::FluidEleCalcXFEM<distype>*
+Discret::ELEMENTS::FluidEleCalcXFEM<distype>::Instance(Core::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = CORE::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
       []()
       {
-        return std::unique_ptr<DRT::ELEMENTS::FluidEleCalcXFEM<distype>>(
-            new DRT::ELEMENTS::FluidEleCalcXFEM<distype>());
+        return std::unique_ptr<Discret::ELEMENTS::FluidEleCalcXFEM<distype>>(
+            new Discret::ELEMENTS::FluidEleCalcXFEM<distype>());
       });
 
   return singleton_owner.Instance(action);
@@ -46,9 +46,9 @@ DRT::ELEMENTS::FluidEleCalcXFEM<distype>* DRT::ELEMENTS::FluidEleCalcXFEM<distyp
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::FluidEleCalcXFEM<distype>::FluidEleCalcXFEM()
-    : DRT::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc(),
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::FluidEleCalcXFEM<distype>::FluidEleCalcXFEM()
+    : Discret::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc(),
       densaf_master_(0.0),
       densaf_slave_(0.0),
       viscaf_master_(0.0),
@@ -74,36 +74,36 @@ DRT::ELEMENTS::FluidEleCalcXFEM<distype>::FluidEleCalcXFEM()
 {
   // we use the standard parameter list here, since there are not any additional
   // xfem-specific parameters required in this derived class
-  my::fldpara_ = DRT::ELEMENTS::FluidEleParameterXFEM::Instance();
-  fldparaxfem_ = static_cast<DRT::ELEMENTS::FluidEleParameterXFEM*>(my::fldpara_);
+  my::fldpara_ = Discret::ELEMENTS::FluidEleParameterXFEM::Instance();
+  fldparaxfem_ = static_cast<Discret::ELEMENTS::FluidEleParameterXFEM*>(my::fldpara_);
 }
 
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
     /*-------------------------------------------------------------------------------*
               Evaluate routine for cut elements of XFEM  (public)
     *-------------------------------------------------------------------------------*/
-    template <CORE::FE::CellType distype>
-    int FluidEleCalcXFEM<distype>::EvaluateXFEM(DRT::ELEMENTS::Fluid* ele,
-        DRT::Discretization& discretization, const std::vector<int>& lm,
-        Teuchos::ParameterList& params, Teuchos::RCP<CORE::MAT::Material>& mat,
-        CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-        CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-        CORE::LINALG::SerialDenseVector& elevec1_epetra,
-        CORE::LINALG::SerialDenseVector& elevec2_epetra,
-        CORE::LINALG::SerialDenseVector& elevec3_epetra,
-        const std::vector<CORE::FE::GaussIntegration>& intpoints,
-        const CORE::GEO::CUT::plain_volumecell_set& cells, bool offdiag)
+    template <Core::FE::CellType distype>
+    int FluidEleCalcXFEM<distype>::EvaluateXFEM(Discret::ELEMENTS::Fluid* ele,
+        Discret::Discretization& discretization, const std::vector<int>& lm,
+        Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
+        Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+        Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+        Core::LinAlg::SerialDenseVector& elevec1_epetra,
+        Core::LinAlg::SerialDenseVector& elevec2_epetra,
+        Core::LinAlg::SerialDenseVector& elevec3_epetra,
+        const std::vector<Core::FE::GaussIntegration>& intpoints,
+        const Core::Geo::Cut::plain_volumecell_set& cells, bool offdiag)
     {
       int err = 0;
 
-      for (std::vector<CORE::FE::GaussIntegration>::const_iterator i = intpoints.begin();
+      for (std::vector<Core::FE::GaussIntegration>::const_iterator i = intpoints.begin();
            i != intpoints.end(); ++i)
       {
-        const CORE::FE::GaussIntegration intpoints_cell = *i;
+        const Core::FE::GaussIntegration intpoints_cell = *i;
         err = my::Evaluate(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
             elevec1_epetra, elevec2_epetra, elevec3_epetra, intpoints_cell, offdiag);
         if (err) return err;
@@ -114,19 +114,19 @@ namespace DRT
     /*-------------------------------------------------------------------------------*
               Evaluate routine for cut elements of XFEM  (public)
     *-------------------------------------------------------------------------------*/
-    template <CORE::FE::CellType distype>
-    int FluidEleCalcXFEM<distype>::integrate_shape_function_xfem(DRT::ELEMENTS::Fluid* ele,
-        DRT::Discretization& discretization, const std::vector<int>& lm,
-        CORE::LINALG::SerialDenseVector& elevec1_epetra,
-        const std::vector<CORE::FE::GaussIntegration>& intpoints,
-        const CORE::GEO::CUT::plain_volumecell_set& cells)
+    template <Core::FE::CellType distype>
+    int FluidEleCalcXFEM<distype>::integrate_shape_function_xfem(Discret::ELEMENTS::Fluid* ele,
+        Discret::Discretization& discretization, const std::vector<int>& lm,
+        Core::LinAlg::SerialDenseVector& elevec1_epetra,
+        const std::vector<Core::FE::GaussIntegration>& intpoints,
+        const Core::Geo::Cut::plain_volumecell_set& cells)
     {
       int err = 0;
 
-      for (std::vector<CORE::FE::GaussIntegration>::const_iterator i = intpoints.begin();
+      for (std::vector<Core::FE::GaussIntegration>::const_iterator i = intpoints.begin();
            i != intpoints.end(); ++i)
       {
-        const CORE::FE::GaussIntegration gint = *i;
+        const Core::FE::GaussIntegration gint = *i;
         err = my::integrate_shape_function(ele, discretization, lm, elevec1_epetra, gint);
         if (err) return err;
       }
@@ -136,38 +136,38 @@ namespace DRT
 
 
     /// error computation
-    template <CORE::FE::CellType distype>
-    int FluidEleCalcXFEM<distype>::compute_error(DRT::ELEMENTS::Fluid* ele,
-        Teuchos::ParameterList& params, Teuchos::RCP<CORE::MAT::Material>& mat,
-        DRT::Discretization& discretization, std::vector<int>& lm,
-        CORE::LINALG::SerialDenseVector& ele_dom_norms)
+    template <Core::FE::CellType distype>
+    int FluidEleCalcXFEM<distype>::compute_error(Discret::ELEMENTS::Fluid* ele,
+        Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
+        Discret::Discretization& discretization, std::vector<int>& lm,
+        Core::LinAlg::SerialDenseVector& ele_dom_norms)
     {
       // integrations points and weights
       // more GP than usual due to (possible) cos/exp fcts in analytical solutions
       // degree 5
-      const CORE::FE::GaussIntegration intpoints(distype, 8);
+      const Core::FE::GaussIntegration intpoints(distype, 8);
       return compute_error(ele, params, mat, discretization, lm, ele_dom_norms, intpoints);
     }
 
-    template <CORE::FE::CellType distype>
-    int FluidEleCalcXFEM<distype>::compute_error(DRT::ELEMENTS::Fluid* ele,
-        Teuchos::ParameterList& params, Teuchos::RCP<CORE::MAT::Material>& mat,
-        DRT::Discretization& discretization, std::vector<int>& lm,
-        CORE::LINALG::SerialDenseVector& ele_dom_norms,  // squared element domain norms
-        const CORE::FE::GaussIntegration& intpoints)
+    template <Core::FE::CellType distype>
+    int FluidEleCalcXFEM<distype>::compute_error(Discret::ELEMENTS::Fluid* ele,
+        Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
+        Discret::Discretization& discretization, std::vector<int>& lm,
+        Core::LinAlg::SerialDenseVector& ele_dom_norms,  // squared element domain norms
+        const Core::FE::GaussIntegration& intpoints)
     {
       // analytical solution
-      CORE::LINALG::Matrix<nsd_, 1> u_analyt(true);
-      CORE::LINALG::Matrix<nsd_, nsd_> grad_u_analyt(true);
+      Core::LinAlg::Matrix<nsd_, 1> u_analyt(true);
+      Core::LinAlg::Matrix<nsd_, nsd_> grad_u_analyt(true);
       double p_analyt = 0.0;
 
       // error
-      CORE::LINALG::Matrix<nsd_, 1> u_err(true);
-      CORE::LINALG::Matrix<nsd_, nsd_> grad_u_err(true);
+      Core::LinAlg::Matrix<nsd_, 1> u_err(true);
+      Core::LinAlg::Matrix<nsd_, nsd_> grad_u_err(true);
       double p_err = 0.0;
 
       const int calcerr =
-          CORE::UTILS::GetAsEnum<INPAR::FLUID::CalcError>(params, "calculate error");
+          Core::UTILS::GetAsEnum<Inpar::FLUID::CalcError>(params, "calculate error");
       const int calcerrfunctno = params.get<int>("error function number");
 
       const double t = my::fldparatimint_->Time();
@@ -181,8 +181,8 @@ namespace DRT
       //----------------------------------------------------------------------------
 
       // fill the local element vector/matrix with the global values
-      CORE::LINALG::Matrix<nsd_, nen_> evelaf(true);
-      CORE::LINALG::Matrix<nen_, 1> epreaf(true);
+      Core::LinAlg::Matrix<nsd_, nen_> evelaf(true);
+      Core::LinAlg::Matrix<nen_, 1> epreaf(true);
       this->extract_values_from_global_vector(discretization, lm, *my::rotsymmpbc_, &evelaf,
           &epreaf, "u and p at time n+1 (converged)");
 
@@ -191,7 +191,7 @@ namespace DRT
       //----------------------------------------------------------------------------
 
       // get node coordinates
-      CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(
+      Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
           ele, my::xyze_);
 
       //----------------------------------------------------------------
@@ -201,7 +201,7 @@ namespace DRT
       {
         //    // access knots and weights for this element
         //    bool zero_size =
-        //    DRT::NURBS::GetMyNurbsKnotsAndWeights(discretization,ele,my::myknots_,my::weights_);
+        //    Discret::Nurbs::GetMyNurbsKnotsAndWeights(discretization,ele,my::myknots_,my::weights_);
         //
         //    // if we have a zero sized element due to a interpolated point -> exit here
         //    if(zero_size)
@@ -211,7 +211,7 @@ namespace DRT
 
       if (ele->IsAle())
       {
-        CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
+        Core::LinAlg::Matrix<nsd_, nen_> edispnp(true);
         this->extract_values_from_global_vector(
             discretization, lm, *my::rotsymmpbc_, &edispnp, nullptr, "dispnp");
 
@@ -223,7 +223,7 @@ namespace DRT
       //                       INTEGRATION LOOP
       //------------------------------------------------------------------
 
-      for (CORE::FE::GaussIntegration::iterator iquad = intpoints.begin(); iquad != intpoints.end();
+      for (Core::FE::GaussIntegration::iterator iquad = intpoints.begin(); iquad != intpoints.end();
            ++iquad)
       {
         // evaluate shape functions and derivatives at integration point
@@ -242,13 +242,13 @@ namespace DRT
         double preint = my::funct_.Dot(epreaf);
 
         // get coordinates at integration point
-        CORE::LINALG::Matrix<nsd_, 1> xyzint(true);
+        Core::LinAlg::Matrix<nsd_, 1> xyzint(true);
         xyzint.Multiply(my::xyze_, my::funct_);
 
         // get viscosity
-        if (mat->MaterialType() == CORE::Materials::m_fluid)
+        if (mat->MaterialType() == Core::Materials::m_fluid)
         {
-          const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
+          const Mat::NewtonianFluid* actmat = static_cast<const Mat::NewtonianFluid*>(mat.get());
 
           // get constant kinematic viscosity
           my::visc_ = actmat->Viscosity() / actmat->Density();
@@ -350,24 +350,24 @@ namespace DRT
       return 0;
     }
 
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::analytical_reference(
         const int calcerr,                         ///< which reference solution
         const int calcerrfunctno,                  ///< error function number
-        CORE::LINALG::Matrix<nsd_, 1>& u,          ///< exact jump vector (coupled)
-        CORE::LINALG::Matrix<nsd_, nsd_>& grad_u,  ///< exact velocity gradient
+        Core::LinAlg::Matrix<nsd_, 1>& u,          ///< exact jump vector (coupled)
+        Core::LinAlg::Matrix<nsd_, nsd_>& grad_u,  ///< exact velocity gradient
         double& p,                                 ///< exact pressure
-        CORE::LINALG::Matrix<nsd_, 1>& xyzint,     ///< xyz position of gaussian point
+        Core::LinAlg::Matrix<nsd_, 1>& xyzint,     ///< xyz position of gaussian point
         const double& t,                           ///< time
-        Teuchos::RCP<CORE::MAT::Material> mat)
+        Teuchos::RCP<Core::Mat::Material> mat)
     {
       // Compute analytical solution
       switch (calcerr)
       {
-        case INPAR::FLUID::beltrami_stat_stokes:
-        case INPAR::FLUID::beltrami_stat_navier_stokes:
-        case INPAR::FLUID::beltrami_instat_stokes:
-        case INPAR::FLUID::beltrami_instat_navier_stokes:
+        case Inpar::FLUID::beltrami_stat_stokes:
+        case Inpar::FLUID::beltrami_stat_navier_stokes:
+        case Inpar::FLUID::beltrami_instat_stokes:
+        case Inpar::FLUID::beltrami_instat_navier_stokes:
         {
           // function evaluation requires a 3D position vector!!
           double position[3];
@@ -382,14 +382,14 @@ namespace DRT
             FOUR_C_THROW("invalid nsd %d", nsd_);
 
           // evaluate velocity and pressure
-          Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime> function = Teuchos::null;
+          Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime> function = Teuchos::null;
 
           // evaluate the velocity gradient
-          Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime> function_grad = Teuchos::null;
+          Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime> function_grad = Teuchos::null;
 
           // get material
-          CORE::MAT::PAR::Parameter* params = mat->Parameter();
-          auto* fparams = dynamic_cast<MAT::PAR::NewtonianFluid*>(params);
+          Core::Mat::PAR::Parameter* params = mat->Parameter();
+          auto* fparams = dynamic_cast<Mat::PAR::NewtonianFluid*>(params);
 
           if (!fparams) FOUR_C_THROW("Material does not cast to Newtonian fluid");
 
@@ -428,7 +428,7 @@ namespace DRT
         }
         break;
 
-        case INPAR::FLUID::beltrami_flow:
+        case Inpar::FLUID::beltrami_flow:
         {
           if (nsd_ == 3)
           {
@@ -491,10 +491,10 @@ namespace DRT
         }
         break;
 
-        case INPAR::FLUID::kimmoin_stat_stokes:
-        case INPAR::FLUID::kimmoin_stat_navier_stokes:
-        case INPAR::FLUID::kimmoin_instat_stokes:
-        case INPAR::FLUID::kimmoin_instat_navier_stokes:
+        case Inpar::FLUID::kimmoin_stat_stokes:
+        case Inpar::FLUID::kimmoin_stat_navier_stokes:
+        case Inpar::FLUID::kimmoin_instat_stokes:
+        case Inpar::FLUID::kimmoin_instat_navier_stokes:
         {
           // function evaluation requires a 3D position vector!!
           double position[3];
@@ -509,29 +509,29 @@ namespace DRT
             FOUR_C_THROW("invalid nsd %d", nsd_);
 
           // evaluate velocity and pressure
-          Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime> function = Teuchos::null;
+          Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime> function = Teuchos::null;
 
           // evaluate the velocity gradient
-          Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime> function_grad = Teuchos::null;
+          Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime> function_grad = Teuchos::null;
 
           bool is_stationary = false;
 
           // evaluate velocity and pressure
           // evaluate the velocity gradient
-          if (calcerr == INPAR::FLUID::kimmoin_stat_stokes or
-              calcerr == INPAR::FLUID::kimmoin_stat_navier_stokes)
+          if (calcerr == Inpar::FLUID::kimmoin_stat_stokes or
+              calcerr == Inpar::FLUID::kimmoin_stat_navier_stokes)
           {
             is_stationary = true;
           }
-          else if (calcerr == INPAR::FLUID::kimmoin_instat_stokes or
-                   calcerr == INPAR::FLUID::kimmoin_instat_navier_stokes)
+          else if (calcerr == Inpar::FLUID::kimmoin_instat_stokes or
+                   calcerr == Inpar::FLUID::kimmoin_instat_navier_stokes)
           {
             is_stationary = false;
           }
 
           // get material
-          CORE::MAT::PAR::Parameter* params = mat->Parameter();
-          auto* fparams = dynamic_cast<MAT::PAR::NewtonianFluid*>(params);
+          Core::Mat::PAR::Parameter* params = mat->Parameter();
+          auto* fparams = dynamic_cast<Mat::PAR::NewtonianFluid*>(params);
           if (!fparams) FOUR_C_THROW("Material does not cast to Newtonian fluid");
 
           function = Teuchos::rcp(new FLD::KimMoinUP(*fparams, is_stationary));
@@ -567,7 +567,7 @@ namespace DRT
         }
         break;
 
-        case INPAR::FLUID::shear_flow:
+        case Inpar::FLUID::shear_flow:
         {
           const double maxvel = 1.0;
           const double hight = 1.0;
@@ -589,7 +589,7 @@ namespace DRT
         }
         break;
 
-        case INPAR::FLUID::gravitation:
+        case Inpar::FLUID::gravitation:
         {
           const double gravity = 10.0;
           const double hight = 1.0;
@@ -613,7 +613,7 @@ namespace DRT
         }
         break;
 
-        case INPAR::FLUID::channel2D:
+        case Inpar::FLUID::channel2D:
         {
           const double maxvel = 1.25;
           const double hight = 1.0;
@@ -635,7 +635,7 @@ namespace DRT
         }
         break;
 
-        case INPAR::FLUID::byfunct:
+        case Inpar::FLUID::byfunct:
         {
           // function evaluation requires a 3D position vector!!
           double position[3];
@@ -658,16 +658,16 @@ namespace DRT
           if (nsd_ == 2)
           {
             const double u_exact_x =
-                GLOBAL::Problem::Instance()
-                    ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                Global::Problem::Instance()
+                    ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
                     .Evaluate(position, t, 0);
             const double u_exact_y =
-                GLOBAL::Problem::Instance()
-                    ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                Global::Problem::Instance()
+                    ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
                     .Evaluate(position, t, 1);
             const double p_exact =
-                GLOBAL::Problem::Instance()
-                    ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                Global::Problem::Instance()
+                    ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
                     .Evaluate(position, t, 2);
 
             u(0) = u_exact_x;
@@ -676,15 +676,15 @@ namespace DRT
 
 
             std::vector<double> uder_exact_x =
-                GLOBAL::Problem::Instance()
-                    ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                Global::Problem::Instance()
+                    ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
                     .evaluate_spatial_derivative(position, t, 0);
             std::vector<double> uder_exact_y =
-                GLOBAL::Problem::Instance()
-                    ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                Global::Problem::Instance()
+                    ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
                     .evaluate_spatial_derivative(position, t, 1);
             // std::vector<double> pder_exact   =
-            // GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(func_no-1).evaluate_spatial_derivative(2,position,t,1);
+            // Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfSpaceTime>(func_no-1).evaluate_spatial_derivative(2,position,t,1);
 
             if (uder_exact_x.size())
             {
@@ -701,20 +701,20 @@ namespace DRT
           else if (nsd_ == 3)
           {
             const double u_exact_x =
-                GLOBAL::Problem::Instance()
-                    ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                Global::Problem::Instance()
+                    ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
                     .Evaluate(position, t, 0);
             const double u_exact_y =
-                GLOBAL::Problem::Instance()
-                    ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                Global::Problem::Instance()
+                    ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
                     .Evaluate(position, t, 1);
             const double u_exact_z =
-                GLOBAL::Problem::Instance()
-                    ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                Global::Problem::Instance()
+                    ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
                     .Evaluate(position, t, 2);
             const double p_exact =
-                GLOBAL::Problem::Instance()
-                    ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                Global::Problem::Instance()
+                    ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
                     .Evaluate(position, t, 3);
 
             u(0) = u_exact_x;
@@ -723,16 +723,16 @@ namespace DRT
             p = p_exact;
 
             std::vector<double> uder_exact_x =
-                GLOBAL::Problem::Instance()
-                    ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                Global::Problem::Instance()
+                    ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
                     .evaluate_spatial_derivative(position, t, 0);
             std::vector<double> uder_exact_y =
-                GLOBAL::Problem::Instance()
-                    ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                Global::Problem::Instance()
+                    ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
                     .evaluate_spatial_derivative(position, t, 1);
             std::vector<double> uder_exact_z =
-                GLOBAL::Problem::Instance()
-                    ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                Global::Problem::Instance()
+                    ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
                     .evaluate_spatial_derivative(position, t, 2);
 
             if (uder_exact_x.size())
@@ -781,19 +781,19 @@ namespace DRT
     /*--------------------------------------------------------------------------------
      * compute interface error norms
      *--------------------------------------------------------------------------------*/
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     int FluidEleCalcXFEM<distype>::compute_error_interface(
-        DRT::ELEMENTS::Fluid* ele,                                 ///< fluid element
-        DRT::Discretization& dis,                                  ///< background discretization
+        Discret::ELEMENTS::Fluid* ele,                             ///< fluid element
+        Discret::Discretization& dis,                              ///< background discretization
         const std::vector<int>& lm,                                ///< element local map
         const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
-        Teuchos::RCP<CORE::MAT::Material>& mat,                    ///< material
-        CORE::LINALG::SerialDenseVector& ele_interf_norms,  /// squared element interface norms
-        const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>&
+        Teuchos::RCP<Core::Mat::Material>& mat,                    ///< material
+        Core::LinAlg::SerialDenseVector& ele_interf_norms,  /// squared element interface norms
+        const std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>&
             bcells,  ///< boundary cells
-        const std::map<int, std::vector<CORE::FE::GaussIntegration>>&
+        const std::map<int, std::vector<Core::FE::GaussIntegration>>&
             bintpoints,                                     ///< boundary integration points
-        const CORE::GEO::CUT::plain_volumecell_set& vcSet,  ///< set of plain volume cells
+        const Core::Geo::Cut::plain_volumecell_set& vcSet,  ///< set of plain volume cells
         Teuchos::ParameterList& params                      ///< parameter list
     )
     {
@@ -802,7 +802,7 @@ namespace DRT
 #endif
 
       const int calcerr =
-          CORE::UTILS::GetAsEnum<INPAR::FLUID::CalcError>(params, "calculate error");
+          Core::UTILS::GetAsEnum<Inpar::FLUID::CalcError>(params, "calculate error");
       const int calcerrfunctno = params.get<int>("error function number");
 
       const double t = my::fldparatimint_->Time();
@@ -816,15 +816,15 @@ namespace DRT
       // get initial node coordinates for element
       // ---------------------------------------------------------------------
       // get node coordinates
-      CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(
+      Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
           ele, my::xyze_);
 
       // ---------------------------------------------------------------------
       // get additional state vectors for ALE case: grid displacement and vel.
       // ---------------------------------------------------------------------
 
-      CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
-      CORE::LINALG::Matrix<nsd_, nen_> egridv(true);
+      Core::LinAlg::Matrix<nsd_, nen_> edispnp(true);
+      Core::LinAlg::Matrix<nsd_, nen_> egridv(true);
 
       if (ele->IsAle()) my::get_grid_disp_vel_ale(dis, lm, edispnp, egridv);
       // add displacement when fluid nodes move in the ALE case
@@ -834,7 +834,7 @@ namespace DRT
       // ---------------------------------------------------------------------
 
       /// element coordinates in EpetraMatrix
-      CORE::LINALG::SerialDenseMatrix ele_xyze(nsd_, nen_);
+      Core::LinAlg::SerialDenseMatrix ele_xyze(nsd_, nen_);
       for (int i = 0; i < nen_; ++i)
       {
         for (int j = 0; j < nsd_; j++) ele_xyze(j, i) = my::xyze_(j, i);
@@ -845,8 +845,8 @@ namespace DRT
       // ---------------------------------------------------------------------
 
       // get element-wise velocity/pressure field
-      CORE::LINALG::Matrix<nsd_, nen_> evelaf(true);
-      CORE::LINALG::Matrix<nen_, 1> epreaf(true);
+      Core::LinAlg::Matrix<nsd_, nen_> evelaf(true);
+      Core::LinAlg::Matrix<nen_, 1> epreaf(true);
       my::extract_values_from_global_vector(
           dis, lm, *my::rotsymmpbc_, &evelaf, &epreaf, "u and p at time n+1 (converged)");
 
@@ -854,7 +854,7 @@ namespace DRT
       // ---------------------------------------------------------------------
       // set element advective field for Oseen problems
       // ---------------------------------------------------------------------
-      if (my::fldpara_->PhysicalType() == INPAR::FLUID::oseen) my::set_advective_vel_oseen(ele);
+      if (my::fldpara_->PhysicalType() == Inpar::FLUID::oseen) my::set_advective_vel_oseen(ele);
 
 
       // ---------------------------------------------------------------------
@@ -887,61 +887,61 @@ namespace DRT
       //-----------------------------------------------------------------------------------
 
       // analytical solution
-      CORE::LINALG::Matrix<nsd_, 1> u_analyt(true);
-      CORE::LINALG::Matrix<nsd_, nsd_> grad_u_analyt(true);
+      Core::LinAlg::Matrix<nsd_, 1> u_analyt(true);
+      Core::LinAlg::Matrix<nsd_, nsd_> grad_u_analyt(true);
       double p_analyt = 0.0;
 
       // error
-      CORE::LINALG::Matrix<nsd_, 1> u_err(true);
-      CORE::LINALG::Matrix<nsd_, nsd_> grad_u_err(true);
+      Core::LinAlg::Matrix<nsd_, 1> u_err(true);
+      Core::LinAlg::Matrix<nsd_, nsd_> grad_u_err(true);
       double p_err = 0.0;
 
-      CORE::LINALG::Matrix<nsd_, 1> flux_u_err(true);
-      CORE::LINALG::Matrix<nsd_, 1> flux_p_err(true);
+      Core::LinAlg::Matrix<nsd_, 1> flux_u_err(true);
+      Core::LinAlg::Matrix<nsd_, 1> flux_p_err(true);
 
 
       //--------------------------------------------
       // loop intersecting sides
       //--------------------------------------------
       // map of side-element id and Gauss points
-      for (std::map<int, std::vector<CORE::FE::GaussIntegration>>::const_iterator i =
+      for (std::map<int, std::vector<Core::FE::GaussIntegration>>::const_iterator i =
                bintpoints.begin();
            i != bintpoints.end(); ++i)
       {
         //-----------------------------------------------------------------------------------
 
         // interface normal vector, pointing from background domain into the interface
-        CORE::LINALG::Matrix<3, 1> normal(true);
+        Core::LinAlg::Matrix<3, 1> normal(true);
         // gauss-point coordinates
-        CORE::LINALG::Matrix<3, 1> x_side(true);
+        Core::LinAlg::Matrix<3, 1> x_side(true);
 
         // we need an interface to the boundary element (for projection)
-        Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype>> si;
+        Teuchos::RCP<Discret::ELEMENTS::XFLUID::SlaveElementInterface<distype>> si;
 
         // location array of boundary element
-        CORE::Elements::Element::LocationArray cutla(1);
+        Core::Elements::Element::LocationArray cutla(1);
 
         // pointer to boundary element
-        CORE::Elements::Element* side = nullptr;
+        Core::Elements::Element* side = nullptr;
 
         // location array of element to couple with (only used for embedded fluid problems)
-        CORE::Elements::Element::LocationArray coupl_la(1);
+        Core::Elements::Element::LocationArray coupl_la(1);
 
         // coordinates of boundary element
-        CORE::LINALG::SerialDenseMatrix side_xyze;
+        Core::LinAlg::SerialDenseMatrix side_xyze;
 
         //-----------------------------------------------------------------------------------
         // only used for couplings:
 
         // coupling object between background element and each coupling element (side for
         // xfluid-sided coupling, element for other couplings)
-        Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype>> ci;
+        Teuchos::RCP<Discret::ELEMENTS::XFLUID::SlaveElementInterface<distype>> ci;
 
         // pointer to coupling element
-        CORE::Elements::Element* coupl_ele = nullptr;
+        Core::Elements::Element* coupl_ele = nullptr;
 
         // coupling element coordinates
-        CORE::LINALG::SerialDenseMatrix coupl_xyze;
+        Core::LinAlg::SerialDenseMatrix coupl_xyze;
 
         //-----------------------------------------------------------------------------------
 
@@ -952,15 +952,15 @@ namespace DRT
         // get the coupling strategy for coupling of two fields
         const XFEM::EleCoupCond& coupcond =
             cond_manager->get_coupling_condition(coup_sid, my::eid_);
-        const INPAR::XFEM::EleCouplingCondType& cond_type = coupcond.first;
+        const Inpar::XFEM::EleCouplingCondType& cond_type = coupcond.first;
 
-        const std::vector<CORE::FE::GaussIntegration>& cutintpoints = i->second;
+        const std::vector<Core::FE::GaussIntegration>& cutintpoints = i->second;
 
-        std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>::const_iterator j =
+        std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>::const_iterator j =
             bcells.find(coup_sid);
         if (j == bcells.end()) FOUR_C_THROW("missing boundary cell");
 
-        const std::vector<CORE::GEO::CUT::BoundaryCell*>& bcs = j->second;
+        const std::vector<Core::Geo::Cut::BoundaryCell*>& bcs = j->second;
         if (bcs.size() != cutintpoints.size())
           FOUR_C_THROW("boundary cell integration rules mismatch");
 
@@ -970,7 +970,7 @@ namespace DRT
         bool is_ls_coupling_side = cond_manager->IsLevelSetCoupling(coup_sid);
         bool is_mesh_coupling_side = cond_manager->IsMeshCoupling(coup_sid);
 
-        Teuchos::RCP<DRT::Discretization> cutter_dis = cond_manager->GetCutterDis(coup_sid);
+        Teuchos::RCP<Discret::Discretization> cutter_dis = cond_manager->GetCutterDis(coup_sid);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
         if (is_ls_coupling_side and is_mesh_coupling_side)
@@ -989,33 +989,33 @@ namespace DRT
         {
           // get the side element and its coordinates for projection of Gaussian points
           side = cond_manager->get_side(coup_sid);
-          CORE::GEO::InitialPositionArray(side_xyze, side);
+          Core::Geo::InitialPositionArray(side_xyze, side);
 
           // create auxiliary coupling object for the boundary element, in order to perform
           // projection
-          si = DRT::ELEMENTS::XFLUID::SlaveElementInterface<
+          si = Discret::ELEMENTS::XFLUID::SlaveElementInterface<
               distype>::create_slave_element_representation(side, side_xyze);
 
           // set displacement of side
           side->LocationVector(*cutter_dis, cutla, false);
           si->AddSlaveEleDisp(*cutter_dis, cutla[0].lm_);
 
-          if (cond_type == INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET or
-              cond_type == INPAR::XFEM::CouplingCond_SURF_FSI_PART or
-              cond_type == INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP or
-              cond_type == INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP_TWOPHASE)
+          if (cond_type == Inpar::XFEM::CouplingCond_SURF_WEAK_DIRICHLET or
+              cond_type == Inpar::XFEM::CouplingCond_SURF_FSI_PART or
+              cond_type == Inpar::XFEM::CouplingCond_SURF_NAVIER_SLIP or
+              cond_type == Inpar::XFEM::CouplingCond_SURF_NAVIER_SLIP_TWOPHASE)
           {
             si->set_interface_jump_statenp(*cutter_dis, "ivelnp", cutla[0].lm_);
           }
 
-          if (cond_type == INPAR::XFEM::CouplingCond_SURF_FLUIDFLUID)
+          if (cond_type == Inpar::XFEM::CouplingCond_SURF_FLUIDFLUID)
           {
             // force to get the embedded element, even if background-sided coupling is active
             coupl_ele = cond_manager->GetCondElement(coup_sid);
 
-            CORE::GEO::InitialPositionArray(coupl_xyze, coupl_ele);
+            Core::Geo::InitialPositionArray(coupl_xyze, coupl_ele);
 
-            ci = DRT::ELEMENTS::XFLUID::SlaveElementInterface<
+            ci = Discret::ELEMENTS::XFLUID::SlaveElementInterface<
                 distype>::create_slave_element_representation(coupl_ele, coupl_xyze);
 
             // set velocity (and pressure) of coupling/slave element at current time step
@@ -1027,7 +1027,7 @@ namespace DRT
           }
         }
 
-        if (cond_manager->has_averaging_strategy(INPAR::XFEM::Xfluid_Sided))
+        if (cond_manager->has_averaging_strategy(Inpar::XFEM::Xfluid_Sided))
         {
           h_k = XFEM::UTILS::ComputeCharEleLength<distype>(
               ele, ele_xyze, cond_manager, vcSet, bcells, bintpoints, fldparaxfem_->ViscStabHK());
@@ -1037,30 +1037,30 @@ namespace DRT
         //--------------------------------------------
         // loop boundary cells w.r.t current cut side
         //--------------------------------------------
-        for (std::vector<CORE::FE::GaussIntegration>::const_iterator i = cutintpoints.begin();
+        for (std::vector<Core::FE::GaussIntegration>::const_iterator i = cutintpoints.begin();
              i != cutintpoints.end(); ++i)
         {
-          const CORE::FE::GaussIntegration& gi = *i;
-          CORE::GEO::CUT::BoundaryCell* bc =
+          const Core::FE::GaussIntegration& gi = *i;
+          Core::Geo::Cut::BoundaryCell* bc =
               bcs[i - cutintpoints.begin()];  // get the corresponding boundary cell
 
           //--------------------------------------------
           // loop gausspoints w.r.t current boundary cell
           //--------------------------------------------
-          for (CORE::FE::GaussIntegration::iterator iquad = gi.begin(); iquad != gi.end(); ++iquad)
+          for (Core::FE::GaussIntegration::iterator iquad = gi.begin(); iquad != gi.end(); ++iquad)
           {
             double drs =
                 0.0;  // transformation factor between reference cell and linearized boundary cell
 
-            const CORE::LINALG::Matrix<2, 1> eta(
+            const Core::LinAlg::Matrix<2, 1> eta(
                 iquad.Point());  // xi-coordinates with respect to side
 
-            CORE::LINALG::Matrix<3, 1> rst(true);  // local coordinates w.r.t background element
+            Core::LinAlg::Matrix<3, 1> rst(true);  // local coordinates w.r.t background element
 
-            CORE::LINALG::Matrix<3, 1> x_gp_lin(true);  // gp in xyz-system on linearized interface
+            Core::LinAlg::Matrix<3, 1> x_gp_lin(true);  // gp in xyz-system on linearized interface
 
             // compute transformation factor, normal vector and global Gauss point coordiantes
-            if (bc->Shape() != CORE::FE::CellType::dis_none)  // Tessellation approach
+            if (bc->Shape() != Core::FE::CellType::dis_none)  // Tessellation approach
             {
               XFEM::UTILS::ComputeSurfaceTransformation(drs, x_gp_lin, normal, bc, eta);
             }
@@ -1076,15 +1076,15 @@ namespace DRT
             }
 
             // find element local position of gauss point
-            Teuchos::RCP<CORE::GEO::CUT::Position> pos =
-                CORE::GEO::CUT::PositionFactory::build_position<nsd_, distype>(my::xyze_, x_gp_lin);
+            Teuchos::RCP<Core::Geo::Cut::Position> pos =
+                Core::Geo::Cut::PositionFactory::build_position<nsd_, distype>(my::xyze_, x_gp_lin);
             pos->Compute();
             pos->local_coordinates(rst);
 
             //        if (!levelset_cut)
             //        {
             //          // project gaussian point from linearized interface to warped side (get/set
-            //          local side coordinates in SideImpl) CORE::LINALG::Matrix<2,1> xi_side(true);
+            //          local side coordinates in SideImpl) Core::LinAlg::Matrix<2,1> xi_side(true);
             //
             //          //          side_impl[sid]->project_on_side(x_gp_lin, x_side, xi_side);
             //          si->project_on_side(x_gp_lin, x_side, xi_side);
@@ -1098,11 +1098,11 @@ namespace DRT
             {
               // project gaussian point from linearized interface to warped side (get/set local side
               // coordinates in SideImpl)
-              CORE::LINALG::Matrix<3, 1> xi_side(true);
+              Core::LinAlg::Matrix<3, 1> xi_side(true);
               // project on boundary element
               si->project_on_side(x_gp_lin, x_side, xi_side);
 
-              if (cond_type == INPAR::XFEM::CouplingCond_SURF_FLUIDFLUID)
+              if (cond_type == Inpar::XFEM::CouplingCond_SURF_FLUIDFLUID)
                 ci->Evaluate(x_side);  // evaluate embedded element's shape functions at gauss-point
                                        // coordinates
             }
@@ -1126,7 +1126,7 @@ namespace DRT
             }
             else
             {
-              CORE::FE::shape_function<distype>(rst, my::funct_);
+              Core::FE::shape_function<distype>(rst, my::funct_);
             }
 
 
@@ -1149,10 +1149,10 @@ namespace DRT
             //--------------------------------------------
             // compute errors
 
-            CORE::LINALG::Matrix<nsd_, 1> u_analyt(
+            Core::LinAlg::Matrix<nsd_, 1> u_analyt(
                 true);  // boundary condition to enforce (xfsi),
                         // interfacial jump to enforce (fluidfluid)
-            CORE::LINALG::Matrix<nsd_, nsd_> grad_u_analyt(true);
+            Core::LinAlg::Matrix<nsd_, nsd_> grad_u_analyt(true);
             p_analyt = 0.0;
 
             analytical_reference(calcerr,  ///< which reference solution
@@ -1164,17 +1164,17 @@ namespace DRT
                 t,              ///< time t
                 mat);
 
-            CORE::LINALG::Matrix<nsd_, 1> velint_s;
+            Core::LinAlg::Matrix<nsd_, 1> velint_s;
             if (is_mesh_coupling_side)
             {
               si->GetInterfaceVelnp(velint_s);
             }
 
-            if (cond_type == INPAR::XFEM::CouplingCond_SURF_FLUIDFLUID)
+            if (cond_type == Inpar::XFEM::CouplingCond_SURF_FLUIDFLUID)
             {
               u_err.Update(1.0, my::velint_, -1.0, velint_s, 0.0);
 
-              CORE::LINALG::Matrix<nsd_, nsd_> grad_u_side(true);
+              Core::LinAlg::Matrix<nsd_, nsd_> grad_u_side(true);
               ci->get_interface_vel_gradnp(grad_u_side);
 
               grad_u_err.Update(1.0, my::vderxy_, -1.0, grad_u_side, 0.0);
@@ -1275,29 +1275,29 @@ namespace DRT
     /*--------------------------------------------------------------------------------
      * add mixed/hybrid stress-based LM interface condition to element matrix and rhs
      *--------------------------------------------------------------------------------*/
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::element_xfem_interface_hybrid_lm(
-        DRT::ELEMENTS::Fluid* ele,                                 ///< fluid element
-        DRT::Discretization& dis,                                  ///< background discretization
+        Discret::ELEMENTS::Fluid* ele,                             ///< fluid element
+        Discret::Discretization& dis,                              ///< background discretization
         const std::vector<int>& lm,                                ///< element local map
         const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
-        const std::vector<CORE::FE::GaussIntegration>& intpoints,  ///< element gauss points
-        const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>&
+        const std::vector<Core::FE::GaussIntegration>& intpoints,  ///< element gauss points
+        const std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>&
             bcells,  ///< boundary cells
-        const std::map<int, std::vector<CORE::FE::GaussIntegration>>&
+        const std::map<int, std::vector<Core::FE::GaussIntegration>>&
             bintpoints,  ///< boundary integration points
         const std::map<int, std::vector<int>>&
             patchcouplm,  ///< lm vectors for coupling elements, key= global coupling side-Id
-        std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>&
+        std::map<int, std::vector<Core::LinAlg::SerialDenseMatrix>>&
             side_coupling,                       ///< side coupling matrices
         Teuchos::ParameterList& params,          ///< parameter list
-        Teuchos::RCP<CORE::MAT::Material>& mat,  ///< material
-        CORE::LINALG::SerialDenseMatrix&
+        Teuchos::RCP<Core::Mat::Material>& mat,  ///< material
+        Core::LinAlg::SerialDenseMatrix&
             elemat1_epetra,  ///< local system matrix of intersected element
-        CORE::LINALG::SerialDenseVector&
+        Core::LinAlg::SerialDenseVector&
             elevec1_epetra,                      ///< local element vector of intersected element
-        CORE::LINALG::SerialDenseMatrix& Cuiui,  ///< coupling matrix of a side with itself
-        const CORE::GEO::CUT::plain_volumecell_set& vcSet  ///< set of plain volume cells
+        Core::LinAlg::SerialDenseMatrix& Cuiui,  ///< coupling matrix of a side with itself
+        const Core::Geo::Cut::plain_volumecell_set& vcSet  ///< set of plain volume cells
     )
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -1308,15 +1308,15 @@ namespace DRT
       // determine, whether this is a Cauchy stress-based (MHCS)
       // or viscous stress-based LM approach (MHVS)
       //--------------------------------------------------------
-      INPAR::XFEM::CouplingMethod coupling_method = fldparaxfem_->GetCouplingMethod();
+      Inpar::XFEM::CouplingMethod coupling_method = fldparaxfem_->GetCouplingMethod();
 
       // check for valid boundary integration type
       switch (coupling_method)
       {
-        case INPAR::XFEM::Hybrid_LM_viscous_stress:
-        case INPAR::XFEM::Hybrid_LM_Cauchy_stress:
+        case Inpar::XFEM::Hybrid_LM_viscous_stress:
+        case Inpar::XFEM::Hybrid_LM_Cauchy_stress:
           break;
-        case INPAR::XFEM::Nitsche:
+        case Inpar::XFEM::Nitsche:
           FOUR_C_THROW(
               "Wrong evaluation routine for Nitsche coupling. Try element_xfem_interface_nit/NIT2 "
               "instead.");
@@ -1328,7 +1328,7 @@ namespace DRT
           break;
       }
 
-      const bool is_MHVS = (coupling_method == INPAR::XFEM::Hybrid_LM_viscous_stress);
+      const bool is_MHVS = (coupling_method == Inpar::XFEM::Hybrid_LM_viscous_stress);
 
 
       // REMARK: to avoid confusion -
@@ -1337,8 +1337,8 @@ namespace DRT
 
       // do we need convective stabilization?
       bool add_conv_stab(
-          fldparaxfem_->XffConvStabScaling() != INPAR::XFEM::XFF_ConvStabScaling_none ||
-          fldparaxfem_->ConvStabScaling() != INPAR::XFEM::ConvStabScaling_none);
+          fldparaxfem_->XffConvStabScaling() != Inpar::XFEM::XFF_ConvStabScaling_none ||
+          fldparaxfem_->ConvStabScaling() != Inpar::XFEM::ConvStabScaling_none);
 
       //----------------------------------------------------------------------------
       //                         ELEMENT GEOMETRY
@@ -1348,15 +1348,15 @@ namespace DRT
       // get initial node coordinates for element
       // ---------------------------------------------------------------------
       // get node coordinates
-      CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(
+      Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
           ele, my::xyze_);
 
       // ---------------------------------------------------------------------
       // get additional state vectors for ALE case: grid displacement and vel.
       // ---------------------------------------------------------------------
 
-      CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
-      CORE::LINALG::Matrix<nsd_, nen_> egridv(true);
+      Core::LinAlg::Matrix<nsd_, nen_> edispnp(true);
+      Core::LinAlg::Matrix<nsd_, nen_> egridv(true);
 
       if (ele->IsAle()) my::get_grid_disp_vel_ale(dis, lm, edispnp, egridv);
 
@@ -1364,7 +1364,7 @@ namespace DRT
       // ---------------------------------------------------------------------
 
       /// element coordinates in EpetraMatrix
-      CORE::LINALG::SerialDenseMatrix ele_xyze(nsd_, nen_);
+      Core::LinAlg::SerialDenseMatrix ele_xyze(nsd_, nen_);
       for (int i = 0; i < nen_; ++i)
       {
         for (int j = 0; j < nsd_; j++) ele_xyze(j, i) = my::xyze_(j, i);
@@ -1375,20 +1375,20 @@ namespace DRT
       // ---------------------------------------------------------------------
 
       // get element-wise velocity/pressure field for current time step
-      CORE::LINALG::Matrix<nsd_, nen_> evelaf(true);
-      CORE::LINALG::Matrix<nen_, 1> epreaf(true);
+      Core::LinAlg::Matrix<nsd_, nen_> evelaf(true);
+      Core::LinAlg::Matrix<nen_, 1> epreaf(true);
       my::extract_values_from_global_vector(dis, lm, *my::rotsymmpbc_, &evelaf, &epreaf, "velaf");
 
       // get element-wise velocity/pressure field for previous time step
-      CORE::LINALG::Matrix<nsd_, nen_> eveln(true);
-      CORE::LINALG::Matrix<nen_, 1> epren(true);
+      Core::LinAlg::Matrix<nsd_, nen_> eveln(true);
+      Core::LinAlg::Matrix<nen_, 1> epren(true);
       if (my::fldparatimint_->is_new_ost_implementation())
         my::extract_values_from_global_vector(dis, lm, *my::rotsymmpbc_, &eveln, &epren, "veln");
 
       // ---------------------------------------------------------------------
       // set element advective field for Oseen problems
       // ---------------------------------------------------------------------
-      if (my::fldpara_->PhysicalType() == INPAR::FLUID::oseen) my::set_advective_vel_oseen(ele);
+      if (my::fldpara_->PhysicalType() == Inpar::FLUID::oseen) my::set_advective_vel_oseen(ele);
 
       // compute characteristic element length based on the background element
       const double h_k = XFEM::UTILS::ComputeCharEleLength<distype>(
@@ -1399,9 +1399,9 @@ namespace DRT
       //--------------------------------------------------------
 
       // sub-blocks of matrix K_{\sigma\sigma} (-->K_ss)
-      CORE::LINALG::Matrix<nen_, nen_> bK_ss(true);         // N * N^T
-      CORE::LINALG::Matrix<nen_, nen_> invbK_ss(true);      // inverse of bK_ss, (N * N^T)^-1
-      CORE::LINALG::Matrix<nen_, nen_> halfInvbK_ss(true);  // inverse scaled by 1/2
+      Core::LinAlg::Matrix<nen_, nen_> bK_ss(true);         // N * N^T
+      Core::LinAlg::Matrix<nen_, nen_> invbK_ss(true);      // inverse of bK_ss, (N * N^T)^-1
+      Core::LinAlg::Matrix<nen_, nen_> halfInvbK_ss(true);  // inverse scaled by 1/2
 
       // The block matrices K_... result from the volume integrals on the cut element.
       // In case of a viscous stress-based approach (MHVS), there is no term like K_sp,
@@ -1412,27 +1412,27 @@ namespace DRT
       // K_su and K_us. In the case of a MHVS-approach, these remain empty, as we have G_up and
       // G_pu.
 
-      CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, nen_>, numstressdof_, numdofpernode_>
+      Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, nen_>, numstressdof_, numdofpernode_>
           K_su;  // s-u, s-p
-      CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, nen_>, numdofpernode_, numstressdof_>
+      Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, nen_>, numdofpernode_, numstressdof_>
           K_us;  // u-s, p-s
 
-      CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, nen_>, numstressdof_, numstressdof_>
+      Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, nen_>, numstressdof_, numstressdof_>
           invK_ss;  // K_ss^-1
-      CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, 1>, numstressdof_, 1> rhs_s;
+      Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, 1>, numstressdof_, 1> rhs_s;
 
       // Only for MHVS:
 
-      CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, nen_>, nsd_, nsd_> K_uu;
-      CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, 1>, nsd_, 1> rhs_uu;
+      Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, nen_>, nsd_, nsd_> K_uu;
+      Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, 1>, nsd_, 1> rhs_uu;
 
       // surface-based pressure terms, analogous to Nitsche
-      CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, nen_>, nsd_, 1> G_up;
-      CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, nen_>, 1, nsd_> G_pu;
+      Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, nen_>, nsd_, 1> G_up;
+      Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, nen_>, 1, nsd_> G_pu;
 
       // rhs-contributions from interface integration
-      CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, 1>, nsd_, 1> rhs_up;
-      CORE::LINALG::Matrix<nen_, 1> rhs_pu(true);
+      Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, 1>, nsd_, 1> rhs_up;
+      Core::LinAlg::Matrix<nen_, 1> rhs_pu(true);
 
       //--------------------------------------------------------
       // build matrices K (based on volume terms)
@@ -1466,14 +1466,14 @@ namespace DRT
 
       // side coupling implementation between background element and each cutting side OR
       // embedded element
-      std::map<int, Teuchos::RCP<DRT::ELEMENTS::XFLUID::HybridLMInterface<distype>>> ci;
+      std::map<int, Teuchos::RCP<Discret::ELEMENTS::XFLUID::HybridLMInterface<distype>>> ci;
 
       //-----------------------------------------------------------------------------------
       //                     application-specific flags & parameters
       //-----------------------------------------------------------------------------------
 
       // map of boundary element gids and coupling matrices, [0]: Gsui, [1]: Guis
-      std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>> Cuiui_coupling;
+      std::map<int, std::vector<Core::LinAlg::SerialDenseMatrix>> Cuiui_coupling;
 
       std::vector<int> patchelementslm;
 
@@ -1481,14 +1481,14 @@ namespace DRT
       // auxiliary coupling implementation for terms
       // find all the intersecting elements of actele
       std::set<int> begids;
-      for (std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>::const_iterator bc =
+      for (std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>::const_iterator bc =
                bcells.begin();
            bc != bcells.end(); ++bc)
       {
         const int coup_sid = bc->first;
 
         // get the coupling strategy for coupling of two fields
-        const INPAR::XFEM::AveragingStrategy averaging_strategy =
+        const Inpar::XFEM::AveragingStrategy averaging_strategy =
             cond_manager->get_averaging_strategy(coup_sid, my::eid_);
 
         begids.insert(coup_sid);
@@ -1501,7 +1501,7 @@ namespace DRT
               "PatchLocationVector for level-set coupling not supported for hybrid-lm methods yet");
 
         // get coupling matrices for the current side (boundary element)
-        std::vector<CORE::LINALG::SerialDenseMatrix>& Cuiui_matrices =
+        std::vector<Core::LinAlg::SerialDenseMatrix>& Cuiui_matrices =
             Cuiui_coupling[coup_sid];  // create new vector of Coupling matrices
 
         std::map<int, std::vector<int>>::const_iterator j = patchcouplm.find(coup_sid);
@@ -1515,7 +1515,7 @@ namespace DRT
         patchelementslm.reserve(patchelementslm.size() + ndof_i);
         patchelementslm.insert(patchelementslm.end(), patchlm.begin(), patchlm.end());
 
-        if (averaging_strategy != INPAR::XFEM::Xfluid_Sided)
+        if (averaging_strategy != Inpar::XFEM::Xfluid_Sided)
           FOUR_C_THROW(
               "Embedded-sided or Mean or Harmonic coupling for stress-based hybrid LM approach is "
               "not yet available!");
@@ -1528,10 +1528,10 @@ namespace DRT
 
 
       // map of Nitsche-interfaces for building convective stabilization terms
-      std::map<int, Teuchos::RCP<DRT::ELEMENTS::XFLUID::NitscheInterface<distype>>> si_nit;
+      std::map<int, Teuchos::RCP<Discret::ELEMENTS::XFLUID::NitscheInterface<distype>>> si_nit;
 
       // map of boundary element gids and coupling contributions from convective stabilization terms
-      std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>> side_coupling_extra;
+      std::map<int, std::vector<Core::LinAlg::SerialDenseMatrix>> side_coupling_extra;
 
       // reshape coupling matrices for convective stabilization terms
       if (add_conv_stab || my::fldparatimint_->is_new_ost_implementation())
@@ -1544,37 +1544,37 @@ namespace DRT
       // loop intersecting sides
       //--------------------------------------------
       // map of side-element id and Gauss points
-      for (std::map<int, std::vector<CORE::FE::GaussIntegration>>::const_iterator i =
+      for (std::map<int, std::vector<Core::FE::GaussIntegration>>::const_iterator i =
                bintpoints.begin();
            i != bintpoints.end(); ++i)
       {
         //-----------------------------------------------------------------------------------
 
         // interface normal vector, pointing from background domain into the interface
-        CORE::LINALG::Matrix<3, 1> normal(true);
+        Core::LinAlg::Matrix<3, 1> normal(true);
         // gauss-point coordinates
-        CORE::LINALG::Matrix<3, 1> x_side(true);
+        Core::LinAlg::Matrix<3, 1> x_side(true);
 
         // we need an interface to the boundary element (for projection)
-        Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype>> si;
+        Teuchos::RCP<Discret::ELEMENTS::XFLUID::SlaveElementInterface<distype>> si;
 
         // location array of boundary element
-        CORE::Elements::Element::LocationArray cutla(1);
+        Core::Elements::Element::LocationArray cutla(1);
 
         // pointer to boundary element
-        CORE::Elements::Element* side = nullptr;
+        Core::Elements::Element* side = nullptr;
 
         // coordinates of boundary element
-        CORE::LINALG::SerialDenseMatrix side_xyze;
+        Core::LinAlg::SerialDenseMatrix side_xyze;
 
         //-----------------------------------------------------------------------------------
         // only used for couplings:
 
         // pointer to coupling element
-        CORE::Elements::Element* coupl_ele = nullptr;
+        Core::Elements::Element* coupl_ele = nullptr;
 
         // coupling element coordinates
-        CORE::LINALG::SerialDenseMatrix coupl_xyze;
+        Core::LinAlg::SerialDenseMatrix coupl_xyze;
 
         //-----------------------------------------------------------------------------------
 
@@ -1582,23 +1582,23 @@ namespace DRT
         int coup_sid = i->first;
 
         // get the coupling strategy for coupling of two fields
-        const INPAR::XFEM::AveragingStrategy averaging_strategy =
+        const Inpar::XFEM::AveragingStrategy averaging_strategy =
             cond_manager->get_averaging_strategy(coup_sid, my::eid_);
         const XFEM::EleCoupCond& coupcond =
             cond_manager->get_coupling_condition(coup_sid, my::eid_);
-        const INPAR::XFEM::EleCouplingCondType& cond_type = coupcond.first;
+        const Inpar::XFEM::EleCouplingCondType& cond_type = coupcond.first;
 
         const int coup_idx = cond_manager->GetCouplingIndex(coup_sid, my::eid_);
         Teuchos::RCP<XFEM::CouplingBase> coupling = cond_manager->GetCouplingByIdx(coup_idx);
 
-        const std::vector<CORE::FE::GaussIntegration>& cutintpoints = i->second;
+        const std::vector<Core::FE::GaussIntegration>& cutintpoints = i->second;
 
         // get side's boundary cells
-        std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>::const_iterator j =
+        std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>::const_iterator j =
             bcells.find(coup_sid);
         if (j == bcells.end()) FOUR_C_THROW("missing boundary cell");
 
-        const std::vector<CORE::GEO::CUT::BoundaryCell*>& bcs = j->second;
+        const std::vector<Core::Geo::Cut::BoundaryCell*>& bcs = j->second;
         if (bcs.size() != cutintpoints.size())
           FOUR_C_THROW("boundary cell integration rules mismatch");
 
@@ -1607,7 +1607,7 @@ namespace DRT
         bool is_ls_coupling_side = cond_manager->IsLevelSetCoupling(coup_sid);
         bool is_mesh_coupling_side = cond_manager->IsMeshCoupling(coup_sid);
 
-        Teuchos::RCP<DRT::Discretization> cutter_dis = cond_manager->GetCutterDis(coup_sid);
+        Teuchos::RCP<Discret::Discretization> cutter_dis = cond_manager->GetCutterDis(coup_sid);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
         if (is_ls_coupling_side and is_mesh_coupling_side)
@@ -1634,21 +1634,21 @@ namespace DRT
 
           // get the side element and its coordinates for projection of Gaussian points
           side = cond_manager->get_side(coup_sid);
-          CORE::GEO::InitialPositionArray(side_xyze, side);
+          Core::Geo::InitialPositionArray(side_xyze, side);
 
           // create auxiliary coupling object for the boundary element, in order to perform
           // projection
-          si = DRT::ELEMENTS::XFLUID::SlaveElementInterface<
+          si = Discret::ELEMENTS::XFLUID::SlaveElementInterface<
               distype>::create_slave_element_representation(side, side_xyze);
 
           // set displacement of side
           side->LocationVector(*cutter_dis, cutla, false);
           si->AddSlaveEleDisp(*cutter_dis, cutla[0].lm_);
 
-          if (cond_type == INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET or
-              cond_type == INPAR::XFEM::CouplingCond_SURF_FSI_PART or
-              cond_type == INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP or
-              cond_type == INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP_TWOPHASE)
+          if (cond_type == Inpar::XFEM::CouplingCond_SURF_WEAK_DIRICHLET or
+              cond_type == Inpar::XFEM::CouplingCond_SURF_FSI_PART or
+              cond_type == Inpar::XFEM::CouplingCond_SURF_NAVIER_SLIP or
+              cond_type == Inpar::XFEM::CouplingCond_SURF_NAVIER_SLIP_TWOPHASE)
           {
             si->set_interface_jump_statenp(*cutter_dis, "ivelnp", cutla[0].lm_);
             if (my::fldparatimint_->is_new_ost_implementation())
@@ -1656,13 +1656,13 @@ namespace DRT
           }
         }
 
-        Teuchos::RCP<DRT::Discretization> coupl_dis_ = cond_manager->GetCouplingDis(coup_sid);
+        Teuchos::RCP<Discret::Discretization> coupl_dis_ = cond_manager->GetCouplingDis(coup_sid);
 
         if (!(is_ls_coupling_side and
                 !cond_manager->IsCoupling(coup_sid, my::eid_)))  // not level-set-WDBC case
         {
-          if (averaging_strategy == INPAR::XFEM::Embedded_Sided or
-              averaging_strategy == INPAR::XFEM::Mean)  // for coupling-sided and two-sided coupling
+          if (averaging_strategy == Inpar::XFEM::Embedded_Sided or
+              averaging_strategy == Inpar::XFEM::Mean)  // for coupling-sided and two-sided coupling
             FOUR_C_THROW("embedded or two-sided coupling not supported");
           else
           {
@@ -1670,7 +1670,7 @@ namespace DRT
             coupl_ele = cond_manager->get_side(coup_sid);
           }
 
-          CORE::GEO::InitialPositionArray(coupl_xyze, coupl_ele);
+          Core::Geo::InitialPositionArray(coupl_xyze, coupl_ele);
         }
 
         if (!cond_manager->IsCoupling(coup_sid, my::eid_))
@@ -1678,45 +1678,45 @@ namespace DRT
           if (is_ls_coupling_side)  //... for problems with cut interface defined by level-set
                                     // field, currently only one-sided
           {
-            ci[coup_sid] = DRT::ELEMENTS::XFLUID::HybridLMInterface<distype>::
+            ci[coup_sid] = Discret::ELEMENTS::XFLUID::HybridLMInterface<distype>::
                 create_hybrid_lm_coupling_x_fluid_wdbc(
                     fldparaxfem_->is_viscous_adjoint_symmetric());
           }
           else if (is_mesh_coupling_side)
           {
-            ci[coup_sid] = DRT::ELEMENTS::XFLUID::HybridLMInterface<
+            ci[coup_sid] = Discret::ELEMENTS::XFLUID::HybridLMInterface<
                 distype>::create_hybrid_lm_coupling_x_fluid_wdbc(coupl_ele, coupl_xyze,
                 fldparaxfem_->is_viscous_adjoint_symmetric());
           }
         }
         else  // coupling
         {
-          std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>::iterator c =
+          std::map<int, std::vector<Core::LinAlg::SerialDenseMatrix>>::iterator c =
               side_coupling.find(coup_sid);
 
-          std::vector<CORE::LINALG::SerialDenseMatrix>& side_matrices = c->second;
+          std::vector<Core::LinAlg::SerialDenseMatrix>& side_matrices = c->second;
 
           if (side_matrices.size() != 3)
             FOUR_C_THROW(
                 "Obtained only %d side coupling matrices. 3 required.", side_matrices.size());
 
           // coupling matrices between background element and one! side
-          CORE::LINALG::SerialDenseMatrix& C_uiu = side_matrices[0];
-          CORE::LINALG::SerialDenseMatrix& C_uui = side_matrices[1];
-          CORE::LINALG::SerialDenseMatrix& rhC_ui = side_matrices[2];
+          Core::LinAlg::SerialDenseMatrix& C_uiu = side_matrices[0];
+          Core::LinAlg::SerialDenseMatrix& C_uui = side_matrices[1];
+          Core::LinAlg::SerialDenseMatrix& rhC_ui = side_matrices[2];
 
           // coupling matrices between one side and itself via the element Kss
-          std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>::iterator c2 =
+          std::map<int, std::vector<Core::LinAlg::SerialDenseMatrix>>::iterator c2 =
               Cuiui_coupling.find(coup_sid);
-          std::vector<CORE::LINALG::SerialDenseMatrix>& Cuiui_matrices = c2->second;
-          CORE::LINALG::SerialDenseMatrix& eleGsui = Cuiui_matrices[0];
-          CORE::LINALG::SerialDenseMatrix& eleGuis = Cuiui_matrices[1];
+          std::vector<Core::LinAlg::SerialDenseMatrix>& Cuiui_matrices = c2->second;
+          Core::LinAlg::SerialDenseMatrix& eleGsui = Cuiui_matrices[0];
+          Core::LinAlg::SerialDenseMatrix& eleGuis = Cuiui_matrices[1];
 
-          if (averaging_strategy == INPAR::XFEM::Embedded_Sided or
-              averaging_strategy == INPAR::XFEM::Mean)  // for coupling-sided and two-sided coupling
+          if (averaging_strategy == Inpar::XFEM::Embedded_Sided or
+              averaging_strategy == Inpar::XFEM::Mean)  // for coupling-sided and two-sided coupling
             FOUR_C_THROW("embedded or two-sided coupling not supported");
 
-          ci[coup_sid] = DRT::ELEMENTS::XFLUID::HybridLMInterface<
+          ci[coup_sid] = Discret::ELEMENTS::XFLUID::HybridLMInterface<
               distype>::create_hybrid_lm_coupling_x_fluid_sided(coupl_ele, coupl_xyze, C_uiu, C_uui,
               rhC_ui, eleGsui, eleGuis, fldparaxfem_->is_viscous_adjoint_symmetric());
         }
@@ -1745,7 +1745,7 @@ namespace DRT
 
 
         // define interface force vector w.r.t side
-        CORE::LINALG::SerialDenseVector iforce;
+        Core::LinAlg::SerialDenseVector iforce;
         iforce.size(cutla[0].lm_.size());
 
         // we need an instance of Nitsche-evaluation class for evaluation of
@@ -1761,21 +1761,21 @@ namespace DRT
             if (cond_manager->IsCoupling(coup_sid, my::eid_))  //... for two-sided problems
             {
               // coupling matrices between background element and one! side
-              std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>::iterator c =
+              std::map<int, std::vector<Core::LinAlg::SerialDenseMatrix>>::iterator c =
                   side_coupling_extra.find(coup_sid);
-              std::vector<CORE::LINALG::SerialDenseMatrix>& side_matrices_extra = c->second;
-              CORE::LINALG::SerialDenseMatrix& C_uiu = side_matrices_extra[0];
-              CORE::LINALG::SerialDenseMatrix& C_uui = side_matrices_extra[1];
-              CORE::LINALG::SerialDenseMatrix& rhC_ui = side_matrices_extra[2];
-              CORE::LINALG::SerialDenseMatrix& C_uiui = side_matrices_extra[3];
+              std::vector<Core::LinAlg::SerialDenseMatrix>& side_matrices_extra = c->second;
+              Core::LinAlg::SerialDenseMatrix& C_uiu = side_matrices_extra[0];
+              Core::LinAlg::SerialDenseMatrix& C_uui = side_matrices_extra[1];
+              Core::LinAlg::SerialDenseMatrix& rhC_ui = side_matrices_extra[2];
+              Core::LinAlg::SerialDenseMatrix& C_uiui = side_matrices_extra[3];
 
-              si_nit[coup_sid] = DRT::ELEMENTS::XFLUID::NitscheInterface<
+              si_nit[coup_sid] = Discret::ELEMENTS::XFLUID::NitscheInterface<
                   distype>::create_nitsche_coupling_x_fluid_sided(side, side_xyze, elemat1_epetra,
                   C_uiu, C_uui, C_uiui, elevec1_epetra, rhC_ui, *fldparaxfem_);
             }
             else
             {
-              si_nit[coup_sid] = DRT::ELEMENTS::XFLUID::NitscheInterface<
+              si_nit[coup_sid] = Discret::ELEMENTS::XFLUID::NitscheInterface<
                   distype>::create_nitsche_coupling_x_fluid_wdbc(side, side_xyze, elemat1_epetra,
                   elevec1_epetra, *fldparaxfem_);
             }
@@ -1795,7 +1795,7 @@ namespace DRT
             }
             else
             {
-              si_nit[coup_sid] = DRT::ELEMENTS::XFLUID::NitscheInterface<
+              si_nit[coup_sid] = Discret::ELEMENTS::XFLUID::NitscheInterface<
                   distype>::create_nitsche_coupling_x_fluid_wdbc(elemat1_epetra, elevec1_epetra,
                   *fldparaxfem_);
             }
@@ -1818,30 +1818,30 @@ namespace DRT
         //--------------------------------------------
         // loop boundary cells w.r.t current cut side
         //--------------------------------------------
-        for (std::vector<CORE::FE::GaussIntegration>::const_iterator i = cutintpoints.begin();
+        for (std::vector<Core::FE::GaussIntegration>::const_iterator i = cutintpoints.begin();
              i != cutintpoints.end(); ++i)
         {
-          const CORE::FE::GaussIntegration& gi = *i;
-          CORE::GEO::CUT::BoundaryCell* bc =
+          const Core::FE::GaussIntegration& gi = *i;
+          Core::Geo::Cut::BoundaryCell* bc =
               bcs[i - cutintpoints.begin()];  // get the corresponding boundary cell
 
           //--------------------------------------------
           // loop gausspoints w.r.t current boundary cell
           //--------------------------------------------
-          for (CORE::FE::GaussIntegration::iterator iquad = gi.begin(); iquad != gi.end(); ++iquad)
+          for (Core::FE::GaussIntegration::iterator iquad = gi.begin(); iquad != gi.end(); ++iquad)
           {
             double drs =
                 0.0;  // transformation factor between reference cell and linearized boundary cell
 
-            const CORE::LINALG::Matrix<2, 1> eta(
+            const Core::LinAlg::Matrix<2, 1> eta(
                 iquad.Point());  // xi-coordinates with respect to side
 
-            CORE::LINALG::Matrix<3, 1> rst(true);  // local coordinates w.r.t background element
+            Core::LinAlg::Matrix<3, 1> rst(true);  // local coordinates w.r.t background element
 
-            CORE::LINALG::Matrix<3, 1> x_gp_lin(true);  // gp in xyz-system on linearized interface
+            Core::LinAlg::Matrix<3, 1> x_gp_lin(true);  // gp in xyz-system on linearized interface
 
             // compute transformation factor, normal vector and global Gauss point coordiantes
-            if (bc->Shape() != CORE::FE::CellType::dis_none)  // Tessellation approach
+            if (bc->Shape() != Core::FE::CellType::dis_none)  // Tessellation approach
             {
               XFEM::UTILS::ComputeSurfaceTransformation(drs, x_gp_lin, normal, bc, eta);
             }
@@ -1857,8 +1857,8 @@ namespace DRT
             }
 
             // find element local position of gauss point
-            Teuchos::RCP<CORE::GEO::CUT::Position> pos =
-                CORE::GEO::CUT::PositionFactory::build_position<nsd_, distype>(my::xyze_, x_gp_lin);
+            Teuchos::RCP<Core::Geo::Cut::Position> pos =
+                Core::Geo::Cut::PositionFactory::build_position<nsd_, distype>(my::xyze_, x_gp_lin);
             pos->Compute();
             pos->local_coordinates(rst);
 
@@ -1868,12 +1868,12 @@ namespace DRT
             {
               // project gaussian point from linearized interface to warped side (get/set local side
               // coordinates in SideImpl)
-              CORE::LINALG::Matrix<3, 1> xi_side(true);
+              Core::LinAlg::Matrix<3, 1> xi_side(true);
               // project on boundary element
               si->project_on_side(x_gp_lin, x_side, xi_side);
 
-              if (averaging_strategy == INPAR::XFEM::Embedded_Sided or
-                  averaging_strategy == INPAR::XFEM::Mean)
+              if (averaging_strategy == Inpar::XFEM::Embedded_Sided or
+                  averaging_strategy == Inpar::XFEM::Mean)
                 FOUR_C_THROW(
                     "embedded or two-sided weighting not supported");  // evaluate embedded
                                                                        // element's shape functions
@@ -1911,7 +1911,7 @@ namespace DRT
             }
             else
             {
-              CORE::FE::shape_function<distype>(rst, my::funct_);
+              Core::FE::shape_function<distype>(rst, my::funct_);
             }
 
 
@@ -1923,10 +1923,10 @@ namespace DRT
             //-----------------------------------------------------------------------------
             // define the prescribed interface jump vectors for velocity and traction
 
-            CORE::LINALG::Matrix<nsd_, 1> ivelint_jump(true);
-            CORE::LINALG::Matrix<nsd_, 1> itraction_jump(true);
-            CORE::LINALG::Matrix<nsd_, nsd_> proj_tangential(true);
-            CORE::LINALG::Matrix<nsd_, nsd_> LB_proj_matrix(true);
+            Core::LinAlg::Matrix<nsd_, 1> ivelint_jump(true);
+            Core::LinAlg::Matrix<nsd_, 1> itraction_jump(true);
+            Core::LinAlg::Matrix<nsd_, nsd_> proj_tangential(true);
+            Core::LinAlg::Matrix<nsd_, nsd_> LB_proj_matrix(true);
 
             double kappa_m = 0.0;
             double kappa_s = 0.0;
@@ -1934,23 +1934,23 @@ namespace DRT
 #ifdef FOUR_C_ENABLE_ASSERTIONS
             // Only Navier Slip used kappa_m,kappa_s and visc_m defined just before!
             // To use Navier Slip specify them correct!
-            if (cond_type == INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP ||
-                cond_type == INPAR::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP)
+            if (cond_type == Inpar::XFEM::CouplingCond_SURF_NAVIER_SLIP ||
+                cond_type == Inpar::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP)
               FOUR_C_THROW(
                   "element_xfem_interface_hybrid_lm with Navier Slip, what to do with "
                   "kappa_m/kappa_s "
                   "for the dyn_visc in the traction_jump?");
 #endif
 
-            CORE::LINALG::Matrix<3, 1> dummy1;
+            Core::LinAlg::Matrix<3, 1> dummy1;
             std::vector<double> dummy2;
 
             get_interface_jump_vectors(coupcond, coupling, ivelint_jump, itraction_jump,
                 proj_tangential, LB_proj_matrix, x_gp_lin, normal, si, rst, kappa_m, kappa_s,
                 visc_m, dummy1, dummy2);
 
-            if (cond_type == INPAR::XFEM::CouplingCond_LEVELSET_NEUMANN or
-                cond_type == INPAR::XFEM::CouplingCond_SURF_NEUMANN)
+            if (cond_type == Inpar::XFEM::CouplingCond_LEVELSET_NEUMANN or
+                cond_type == Inpar::XFEM::CouplingCond_SURF_NEUMANN)
             {
               //-----------------------------------------------------------------------------
               // evaluate the Neumann boundary condition term
@@ -2005,7 +2005,7 @@ namespace DRT
 
                 if (cond_manager->IsCoupling(coup_sid, my::eid_))
                 {
-                  CORE::LINALG::Matrix<nsd_, 1> velint_s;
+                  Core::LinAlg::Matrix<nsd_, 1> velint_s;
                   ci[coup_sid]->GetInterfaceVelnp(velint_s);
 
 
@@ -2040,7 +2040,7 @@ namespace DRT
                 }
                 else  // non-coupling
                 {
-                  CORE::LINALG::Matrix<nsd_, 1> velint_s;
+                  Core::LinAlg::Matrix<nsd_, 1> velint_s;
                   ci[coup_sid]->GetInterfaceVelnp(velint_s);
 
                   // Get Material parameters for the master side!
@@ -2096,12 +2096,12 @@ namespace DRT
                 //            // REMARK: do not add adjoint and penalty terms at t_n for hybrid LM
                 //            approach!
                 //            // (these are Nitsche-terms! find best settings for Nitsche's method
-                //            first!) CORE::LINALG::Matrix<nsd_,1> ivelintn_jump (true);
-                //            CORE::LINALG::Matrix<nsd_,1> itractionn_jump(true);
+                //            first!) Core::LinAlg::Matrix<nsd_,1> ivelintn_jump (true);
+                //            Core::LinAlg::Matrix<nsd_,1> itractionn_jump(true);
                 //
                 //            //Get Configuration Map (finally we should modify the configuration
                 //            map here in a way that it fits hybrid LM approach)
-                //            std::map<INPAR::XFEM::CoupTerm, std::pair<bool,double> >&
+                //            std::map<Inpar::XFEM::CoupTerm, std::pair<bool,double> >&
                 //            hlm_configmap_n = coupling->GetConfigurationmap();
                 //
                 //            si_nit.at(coup_sid)->nit_evaluate_coupling_old_state(
@@ -2120,7 +2120,7 @@ namespace DRT
                 //              ivelintn_jump,
                 //              itractionn_jump,
                 //              hlm_configmap_n,
-                //              INPAR::XFEM::PreviousState_only_consistency
+                //              Inpar::XFEM::PreviousState_only_consistency
                 //            );
               }
             }  // hybrid lm method
@@ -2141,7 +2141,7 @@ namespace DRT
             //-------------------------------
             // traction vector w.r.t fluid domain, resulting stresses acting on the fluid surface
             // t= (-p*I + 2mu*eps(u))*n^f
-            CORE::LINALG::Matrix<nsd_, 1> traction(true);
+            Core::LinAlg::Matrix<nsd_, 1> traction(true);
 
             build_traction_vector(traction, press, normal);
 
@@ -2160,7 +2160,7 @@ namespace DRT
       --------------------------------------------------------*/
 
       // compute inverse K_ss^-1
-      CORE::LINALG::FixedSizeSerialDenseSolver<nen_, nen_> invsolver;
+      Core::LinAlg::FixedSizeSerialDenseSolver<nen_, nen_> invsolver;
       invsolver.SetMatrix(invbK_ss);
       invsolver.Invert();
 
@@ -2176,27 +2176,27 @@ namespace DRT
       invK_ss.AddView(Sigmazz, Sigmazz, invbK_ss);
 
       // create views
-      CORE::LINALG::Matrix<numdofpernode_ * nen_, numdofpernode_ * nen_> elemat(
+      Core::LinAlg::Matrix<numdofpernode_ * nen_, numdofpernode_ * nen_> elemat(
           elemat1_epetra, true);
-      CORE::LINALG::Matrix<numdofpernode_ * nen_, 1> elevec(elevec1_epetra, true);
+      Core::LinAlg::Matrix<numdofpernode_ * nen_, 1> elevec(elevec1_epetra, true);
 
       // now the matrix products involving the inverse matrix will be computed!
 
       // REMARK: at this step, the K matrices already include contributions from surface terms G_us,
       // G_su
-      CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, nen_>, numdofpernode_, numstressdof_>
+      Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, nen_>, numdofpernode_, numstressdof_>
           KusinvKss;
 
       // (K_us + G_us) K_ss^-1 (MHVS) or G_us K_ss^-1 (MHCS)
       KusinvKss.Multiply(K_us, invK_ss);
 
       // (K_us + G_us) K_ss^-1 (K_su + G_su) (MHVS) or G_us  K_ss^-1 (K_su + G_su + K_sp) (MHCS)
-      CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, nen_>, numdofpernode_, numdofpernode_>
+      Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, nen_>, numdofpernode_, numdofpernode_>
           KusinvKssKsu;
       KusinvKssKsu.Multiply(KusinvKss, K_su);
 
       // (K_us + G_us) K_ss^-1 rhs_s (MHVS) or G_us K_ss^-1 rhs_s (MHCS)
-      CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, 1>, numdofpernode_, 1> KusinvKssrhs_s;
+      Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, 1>, numdofpernode_, 1> KusinvKssrhs_s;
 
       KusinvKssrhs_s.Multiply(KusinvKss, rhs_s);
 
@@ -2261,7 +2261,7 @@ namespace DRT
           // add -KusinvKssKsu
           if (KusinvKssKsu.IsUsed(ibr, ibc))
           {
-            CORE::LINALG::Matrix<nen_, nen_>& bKusinvKssKsu = *KusinvKssKsu(ibr, ibc);
+            Core::LinAlg::Matrix<nen_, nen_>& bKusinvKssKsu = *KusinvKssKsu(ibr, ibc);
 
             for (int ir = 0; ir < nen_; ++ir)
             {
@@ -2292,7 +2292,7 @@ namespace DRT
 
           if (K_uu.IsUsed(ibr, ibc))
           {
-            CORE::LINALG::Matrix<nen_, nen_>& bK_uu = *K_uu(ibr, ibc);
+            Core::LinAlg::Matrix<nen_, nen_>& bK_uu = *K_uu(ibr, ibc);
 
             for (int ir = 0; ir < nen_; ++ir)
             {
@@ -2317,7 +2317,7 @@ namespace DRT
         // loop over row blocks
         if (G_up.IsUsed(ibr, 0))
         {
-          CORE::LINALG::Matrix<nen_, nen_>& bGup = *G_up(ibr, 0);
+          Core::LinAlg::Matrix<nen_, nen_>& bGup = *G_up(ibr, 0);
 
           for (int ic = 0; ic < nen_; ++ic)
           {
@@ -2345,7 +2345,7 @@ namespace DRT
         {
           if (G_pu.IsUsed(0, ibc))
           {
-            CORE::LINALG::Matrix<nen_, nen_>& bGpu = *G_pu(0, ibc);
+            Core::LinAlg::Matrix<nen_, nen_>& bGpu = *G_pu(0, ibc);
 
             // pressure-velocity entries
             for (int ir = 0; ir < nen_; ++ir)
@@ -2388,7 +2388,7 @@ namespace DRT
       {
         if (KusinvKssrhs_s.IsUsed(ibr, 0))
         {
-          CORE::LINALG::Matrix<nen_, 1>& bKusinvKssrhs_s = *KusinvKssrhs_s(ibr, 0);
+          Core::LinAlg::Matrix<nen_, 1>& bKusinvKssrhs_s = *KusinvKssrhs_s(ibr, 0);
 
           for (int ir = 0; ir < nen_; ++ir)
           {
@@ -2406,7 +2406,7 @@ namespace DRT
 
         if (rhs_uu.IsUsed(ibr, 0))
         {
-          CORE::LINALG::Matrix<nen_, 1>& brhs_uu = *rhs_uu(ibr, 0);
+          Core::LinAlg::Matrix<nen_, 1>& brhs_uu = *rhs_uu(ibr, 0);
 
           for (int ir = 0; ir < nen_; ++ir)
           {
@@ -2420,7 +2420,7 @@ namespace DRT
 
         if (rhs_up.IsUsed(ibr, 0))
         {
-          CORE::LINALG::Matrix<nen_, 1>& brhs_up = *rhs_up(ibr, 0);
+          Core::LinAlg::Matrix<nen_, 1>& brhs_up = *rhs_up(ibr, 0);
 
           for (int ir = 0; ir < nen_; ++ir)
           {
@@ -2456,11 +2456,11 @@ namespace DRT
 
       // build interface coupling matrices - therefore iterate through the interface elements
       for (typename std::map<int,
-               Teuchos::RCP<DRT::ELEMENTS::XFLUID::HybridLMInterface<distype>>>::iterator sit =
+               Teuchos::RCP<Discret::ELEMENTS::XFLUID::HybridLMInterface<distype>>>::iterator sit =
                ci.begin();
            sit != ci.end(); ++sit)
       {
-        Teuchos::RCP<DRT::ELEMENTS::XFLUID::HybridLMInterface<distype>> si = sit->second;
+        Teuchos::RCP<Discret::ELEMENTS::XFLUID::HybridLMInterface<distype>> si = sit->second;
         const int coup_sid = sit->first;
 
         // creation of Cuiu,Cuui,rhCui,Guis and Gsui:
@@ -2469,12 +2469,12 @@ namespace DRT
         // add contributions from convective stabilization, if active
         if (add_conv_stab)
         {
-          std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>::iterator c =
+          std::map<int, std::vector<Core::LinAlg::SerialDenseMatrix>>::iterator c =
               side_coupling.find(coup_sid);
-          std::vector<CORE::LINALG::SerialDenseMatrix>& side_matrices = c->second;
-          std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>::iterator cc =
+          std::vector<Core::LinAlg::SerialDenseMatrix>& side_matrices = c->second;
+          std::map<int, std::vector<Core::LinAlg::SerialDenseMatrix>>::iterator cc =
               side_coupling_extra.find(coup_sid);
-          std::vector<CORE::LINALG::SerialDenseMatrix>& side_matrices_extra = cc->second;
+          std::vector<Core::LinAlg::SerialDenseMatrix>& side_matrices_extra = cc->second;
 #ifdef FOUR_C_ENABLE_ASSERTIONS
           if (side_matrices.size() != 3)
             FOUR_C_THROW(
@@ -2504,12 +2504,12 @@ namespace DRT
         // add contributions from old time step to RHS
         if (my::fldparatimint_->is_new_ost_implementation())
         {
-          std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>::iterator c =
+          std::map<int, std::vector<Core::LinAlg::SerialDenseMatrix>>::iterator c =
               side_coupling.find(coup_sid);
-          std::vector<CORE::LINALG::SerialDenseMatrix>& side_matrices = c->second;
-          std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>::iterator cc =
+          std::vector<Core::LinAlg::SerialDenseMatrix>& side_matrices = c->second;
+          std::map<int, std::vector<Core::LinAlg::SerialDenseMatrix>>::iterator cc =
               side_coupling_extra.find(coup_sid);
-          std::vector<CORE::LINALG::SerialDenseMatrix>& side_matrices_extra = cc->second;
+          std::vector<Core::LinAlg::SerialDenseMatrix>& side_matrices_extra = cc->second;
 #ifdef FOUR_C_ENABLE_ASSERTIONS
           if (side_matrices.size() != 3)
             FOUR_C_THROW(
@@ -2541,13 +2541,13 @@ namespace DRT
        * out of the element submatrices collected in vector 'Cuiui_matrices'.
        * In there, the G_sui & G_uis contributions from the sides are collected!
        */
-      CORE::LINALG::SerialDenseMatrix G_sui(numstressdof_ * nen_, patchelementslm.size());
-      CORE::LINALG::SerialDenseMatrix G_uis(patchelementslm.size(), numstressdof_ * nen_);
-      CORE::LINALG::SerialDenseMatrix Cuiui_conv(patchelementslm.size(), patchelementslm.size());
+      Core::LinAlg::SerialDenseMatrix G_sui(numstressdof_ * nen_, patchelementslm.size());
+      Core::LinAlg::SerialDenseMatrix G_uis(patchelementslm.size(), numstressdof_ * nen_);
+      Core::LinAlg::SerialDenseMatrix Cuiui_conv(patchelementslm.size(), patchelementslm.size());
 
       // transform the block matrix invK_ss to an EpetraSerialDenseMatrix,
       // to be later multiplied with G_sui & G_uis!
-      CORE::LINALG::SerialDenseMatrix InvKss(nen_ * numstressdof_, nen_ * numstressdof_);
+      Core::LinAlg::SerialDenseMatrix InvKss(nen_ * numstressdof_, nen_ * numstressdof_);
 
       //--------------------------------------------
       // Build InvKss ( K_ss^(-1) )
@@ -2558,7 +2558,7 @@ namespace DRT
         {
           if (invK_ss.IsUsed(ibr, ibc))
           {
-            CORE::LINALG::Matrix<nen_, nen_>& binvK_ss = *invK_ss(ibr, ibc);
+            Core::LinAlg::Matrix<nen_, nen_>& binvK_ss = *invK_ss(ibr, ibc);
             for (int ic = 0; ic < nen_; ++ic)
             {
               unsigned col = ibc + numstressdof_ * ic;
@@ -2577,11 +2577,11 @@ namespace DRT
       //--------------------------------------------
       int ipatchsizesbefore = 0;
 
-      for (std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>::const_iterator m =
+      for (std::map<int, std::vector<Core::LinAlg::SerialDenseMatrix>>::const_iterator m =
                Cuiui_coupling.begin();
            m != Cuiui_coupling.end(); ++m)
       {
-        const std::vector<CORE::LINALG::SerialDenseMatrix>& Cuiui_matrices = m->second;
+        const std::vector<Core::LinAlg::SerialDenseMatrix>& Cuiui_matrices = m->second;
 
         // assemble Gsui
         for (int ibc = 0; ibc < Cuiui_matrices[0].numCols(); ++ibc)
@@ -2604,9 +2604,9 @@ namespace DRT
         if (add_conv_stab)
         {
           const int coup_sid = m->first;
-          std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>::const_iterator c =
+          std::map<int, std::vector<Core::LinAlg::SerialDenseMatrix>>::const_iterator c =
               side_coupling_extra.find(coup_sid);
-          const std::vector<CORE::LINALG::SerialDenseMatrix>& Cuiui_conv_matrices = c->second;
+          const std::vector<Core::LinAlg::SerialDenseMatrix>& Cuiui_conv_matrices = c->second;
 
           for (int ibc = 0; ibc < Cuiui_conv_matrices[3].numCols(); ++ibc)
           {
@@ -2621,13 +2621,13 @@ namespace DRT
         ipatchsizesbefore += Cuiui_matrices[0].numCols();
       }
 
-      CORE::LINALG::SerialDenseMatrix GuisInvKss(patchelementslm.size(), numstressdof_ * nen_);
+      Core::LinAlg::SerialDenseMatrix GuisInvKss(patchelementslm.size(), numstressdof_ * nen_);
 
       // G_uis * K_ss^-1
-      CORE::LINALG::multiply(1.0, GuisInvKss, 1.0, G_uis, InvKss);
+      Core::LinAlg::multiply(1.0, GuisInvKss, 1.0, G_uis, InvKss);
 
       // Cuiui <--> (-)G_uis * K_ss^-1 * G_sui
-      CORE::LINALG::multiply(1.0, Cuiui, 1.0, GuisInvKss, G_sui);
+      Core::LinAlg::multiply(1.0, Cuiui, 1.0, GuisInvKss, G_sui);
 
       if (add_conv_stab) Cuiui += Cuiui_conv;
     }
@@ -2636,23 +2636,23 @@ namespace DRT
      * setup volume-based terms
      * (mixed/hybrid viscous stress-based LM approach)
      *-------------------------------------------------------------------------------*/
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::hybrid_lm_build_vol_based(
-        const std::vector<CORE::FE::GaussIntegration>& intpoints,
-        const CORE::GEO::CUT::plain_volumecell_set& cells,
-        const CORE::LINALG::Matrix<nsd_, nen_>& evelaf,  ///< element velocity
-        const CORE::LINALG::Matrix<nen_, 1>& epreaf,     ///< element pressure
-        CORE::LINALG::Matrix<nen_, nen_>& bK_ss,         ///< block K_ss matrix
-        CORE::LINALG::Matrix<nen_, nen_>& invbK_ss,      ///< inverse of block K_ss matrix
-        CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, nen_>, numstressdof_, numdofpernode_>&
+        const std::vector<Core::FE::GaussIntegration>& intpoints,
+        const Core::Geo::Cut::plain_volumecell_set& cells,
+        const Core::LinAlg::Matrix<nsd_, nen_>& evelaf,  ///< element velocity
+        const Core::LinAlg::Matrix<nen_, 1>& epreaf,     ///< element pressure
+        Core::LinAlg::Matrix<nen_, nen_>& bK_ss,         ///< block K_ss matrix
+        Core::LinAlg::Matrix<nen_, nen_>& invbK_ss,      ///< inverse of block K_ss matrix
+        Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, nen_>, numstressdof_, numdofpernode_>&
             K_su,  ///< K_su matrix
-        CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, 1>, numstressdof_, 1>&
+        Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, 1>, numstressdof_, 1>&
             rhs_s,  ///< rhs_s vector
-        CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, nen_>, numdofpernode_, numstressdof_>&
+        Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, nen_>, numdofpernode_, numstressdof_>&
             K_us,  ///< K_us matrix
-        CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, nen_>, nsd_, nsd_>&
+        Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, nen_>, nsd_, nsd_>&
             K_uu,  ///< K_uu matrix
-        CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, 1>, nsd_, 1>&
+        Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, 1>, nsd_, 1>&
             rhs_uu,              ///< rhs_u(u) vector
         const bool is_MHVS,      ///< viscous (true) or Cauchy (false) stress-based LM
         const double mhvs_param  ///< stabilizing parameter for viscous stress-based LM
@@ -2660,10 +2660,10 @@ namespace DRT
     {
       // full L2-projection means integration over the full background element,
       // not only the physical part
-      if (fldparaxfem_->HybridLM_L2Proj() == INPAR::XFEM::Hybrid_LM_L2_Proj_full)
+      if (fldparaxfem_->HybridLM_L2Proj() == Inpar::XFEM::Hybrid_LM_L2_Proj_full)
       {
         // get the standard set of gauss-points from the intersected element
-        for (CORE::FE::GaussIntegration::const_iterator iquad = my::intpoints_.begin();
+        for (Core::FE::GaussIntegration::const_iterator iquad = my::intpoints_.begin();
              iquad != my::intpoints_.end(); ++iquad)
         {
           my::eval_shape_func_and_derivs_at_int_point(iquad.Point(), iquad.Weight());
@@ -2681,11 +2681,11 @@ namespace DRT
       }
       else
       {
-        for (std::vector<CORE::FE::GaussIntegration>::const_iterator i = intpoints.begin();
+        for (std::vector<Core::FE::GaussIntegration>::const_iterator i = intpoints.begin();
              i != intpoints.end(); ++i)
         {
-          const CORE::FE::GaussIntegration intcell = *i;
-          for (CORE::FE::GaussIntegration::iterator iquad = intcell.begin(); iquad != intcell.end();
+          const Core::FE::GaussIntegration intcell = *i;
+          for (Core::FE::GaussIntegration::iterator iquad = intcell.begin(); iquad != intcell.end();
                ++iquad)
           {
             // evaluate shape functions and derivatives at integration point
@@ -2710,25 +2710,25 @@ namespace DRT
      * evaluate volume-based terms for current gauss point
      * (mixed/hybrid Cauchy stress-based LM approach)
      *-------------------------------------------------------------------------------*/
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::mhcs_evaluate_vol_based(
-        const CORE::LINALG::Matrix<nsd_, nen_>& evelaf,  ///< element velocity
-        const CORE::LINALG::Matrix<nen_, 1>& epreaf,     ///< element pressure
-        CORE::LINALG::Matrix<nen_, nen_>& bK_ss,         ///< block K_ss matrix
-        CORE::LINALG::Matrix<nen_, nen_>& invbK_ss,      ///< inverse of block K_ss matrix
-        CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, nen_>, numstressdof_, numdofpernode_>&
+        const Core::LinAlg::Matrix<nsd_, nen_>& evelaf,  ///< element velocity
+        const Core::LinAlg::Matrix<nen_, 1>& epreaf,     ///< element pressure
+        Core::LinAlg::Matrix<nen_, nen_>& bK_ss,         ///< block K_ss matrix
+        Core::LinAlg::Matrix<nen_, nen_>& invbK_ss,      ///< inverse of block K_ss matrix
+        Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, nen_>, numstressdof_, numdofpernode_>&
             K_su,  ///< K_su matrix
-        CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, 1>, numstressdof_, 1>&
+        Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, 1>, numstressdof_, 1>&
             rhs_s  ///< rhs_s vector
     )
     {
-      CORE::LINALG::Matrix<nen_, 1> dx;
-      CORE::LINALG::Matrix<nen_, 1> dy;
-      CORE::LINALG::Matrix<nen_, 1> dz;
+      Core::LinAlg::Matrix<nen_, 1> dx;
+      Core::LinAlg::Matrix<nen_, 1> dy;
+      Core::LinAlg::Matrix<nen_, 1> dz;
 
-      CORE::LINALG::Matrix<nen_, nen_> conv_x;
-      CORE::LINALG::Matrix<nen_, nen_> conv_y;
-      CORE::LINALG::Matrix<nen_, nen_> conv_z;
+      Core::LinAlg::Matrix<nen_, nen_> conv_x;
+      Core::LinAlg::Matrix<nen_, nen_> conv_y;
+      Core::LinAlg::Matrix<nen_, nen_> conv_z;
 
       //----------------------------------------------------------------------
       // set time-integration factors for left- and right-hand side
@@ -2832,17 +2832,17 @@ namespace DRT
      * evaluate volume-based matrices K for current gauss point
      * (mixed/hybrid viscous stress-based LM approach)
      *-------------------------------------------------------------------------------*/
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::mhvs_evaluate_vol_based(
-        const CORE::LINALG::Matrix<nsd_, nen_>& evelaf, CORE::LINALG::Matrix<nen_, nen_>& bK_ss,
-        CORE::LINALG::Matrix<nen_, nen_>& invbK_ss,
-        CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, nen_>, numstressdof_, numdofpernode_>&
+        const Core::LinAlg::Matrix<nsd_, nen_>& evelaf, Core::LinAlg::Matrix<nen_, nen_>& bK_ss,
+        Core::LinAlg::Matrix<nen_, nen_>& invbK_ss,
+        Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, nen_>, numstressdof_, numdofpernode_>&
             K_su,
-        CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, 1>, numstressdof_, 1>& rhs_s,
-        CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, nen_>, numdofpernode_, numstressdof_>&
+        Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, 1>, numstressdof_, 1>& rhs_s,
+        Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, nen_>, numdofpernode_, numstressdof_>&
             K_us,
-        CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, nen_>, nsd_, nsd_>& K_uu,
-        CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, 1>, nsd_, 1>& rhs_uu,
+        Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, nen_>, nsd_, nsd_>& K_uu,
+        Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, 1>, nsd_, 1>& rhs_uu,
         const double& mhvs_param)
     {
       // velocities at current gauss point
@@ -2853,9 +2853,9 @@ namespace DRT
 
       // compute shape function derivatives:
       // get derivatives of nodal shape function vector w. r. t. x,y,z
-      CORE::LINALG::Matrix<nen_, 1> dx;
-      CORE::LINALG::Matrix<nen_, 1> dy;
-      CORE::LINALG::Matrix<nen_, 1> dz;
+      Core::LinAlg::Matrix<nen_, 1> dx;
+      Core::LinAlg::Matrix<nen_, 1> dy;
+      Core::LinAlg::Matrix<nen_, 1> dz;
 
       // derxy(coordinate,node)
       for (int i = 0; i < nen_; ++i)
@@ -2894,9 +2894,9 @@ namespace DRT
        */
 
       // create blocks
-      CORE::LINALG::Matrix<nen_, nen_> NdNdxT;
-      CORE::LINALG::Matrix<nen_, nen_> NdNdyT;
-      CORE::LINALG::Matrix<nen_, nen_> NdNdzT;
+      Core::LinAlg::Matrix<nen_, nen_> NdNdxT;
+      Core::LinAlg::Matrix<nen_, nen_> NdNdyT;
+      Core::LinAlg::Matrix<nen_, nen_> NdNdzT;
 
       NdNdxT.MultiplyNT(my::funct_, dx);
       NdNdyT.MultiplyNT(my::funct_, dy);
@@ -2949,9 +2949,9 @@ namespace DRT
 
       // as the viscous stresses are condensed, there is no contribution of this term to
       // the RHS vector
-      CORE::LINALG::Matrix<nen_, nen_> dNdxNT;
-      CORE::LINALG::Matrix<nen_, nen_> dNdyNT;
-      CORE::LINALG::Matrix<nen_, nen_> dNdzNT;
+      Core::LinAlg::Matrix<nen_, nen_> dNdxNT;
+      Core::LinAlg::Matrix<nen_, nen_> dNdyNT;
+      Core::LinAlg::Matrix<nen_, nen_> dNdzNT;
 
       dNdxNT.UpdateT(NdNdxT);
       dNdyNT.UpdateT(NdNdyT);
@@ -2991,13 +2991,13 @@ namespace DRT
       // factor 2 from above is cancelled out
       const double visc_timefac_mhvs = -alpha * my::visceff_ * timefacfac;
 
-      std::vector<const CORE::LINALG::Matrix<nen_, 1>*> dN;
+      std::vector<const Core::LinAlg::Matrix<nen_, 1>*> dN;
       dN.push_back(&dx);
       dN.push_back(&dy);
       dN.push_back(&dz);
 
-      CORE::LINALG::Matrix<nen_, nen_> dNidxj(true);
-      CORE::LINALG::Matrix<nen_, nen_> dNjdxj(true);
+      Core::LinAlg::Matrix<nen_, nen_> dNidxj(true);
+      Core::LinAlg::Matrix<nen_, nen_> dNjdxj(true);
 
       for (int idim = 0; idim < nsd_; ++idim)
       {
@@ -3018,24 +3018,24 @@ namespace DRT
      * build surface-based terms for current gauss point
      * (mixed/hybrid Cauchy or viscous stress-based LM approach)
      *-------------------------------------------------------------------------------*/
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::hybrid_lm_evaluate_surf_based(
-        Teuchos::RCP<DRT::ELEMENTS::XFLUID::HybridLMInterface<distype>>& si,
-        const CORE::LINALG::Matrix<nen_, nen_>& bK_ss,
-        CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, nen_>, numstressdof_, numdofpernode_>&
+        Teuchos::RCP<Discret::ELEMENTS::XFLUID::HybridLMInterface<distype>>& si,
+        const Core::LinAlg::Matrix<nen_, nen_>& bK_ss,
+        Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, nen_>, numstressdof_, numdofpernode_>&
             K_su,
-        CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, nen_>, numdofpernode_, numstressdof_>&
+        Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, nen_>, numdofpernode_, numstressdof_>&
             K_us,
-        CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, 1>, numstressdof_, 1>& rhs_s,
-        const CORE::LINALG::Matrix<nen_, 1>& epreaf,
-        CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, nen_>, nsd_, nsd_>& K_uu,
-        CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, 1>, nsd_, 1>& rhs_uu,
-        CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, nen_>, nsd_, 1>& G_up,
-        CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, nen_>, 1, nsd_>& G_pu,
-        CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, 1>, nsd_, 1>& rhs_up,
-        CORE::LINALG::Matrix<nen_, 1>& rhs_pu, const CORE::LINALG::Matrix<nsd_, 1>& normal,
-        const double& timesurffac, const CORE::LINALG::Matrix<nsd_, 1>& ivelint_jump,
-        const CORE::LINALG::Matrix<nsd_, 1>& itraction_jump, const bool eval_side_coupling,
+        Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, 1>, numstressdof_, 1>& rhs_s,
+        const Core::LinAlg::Matrix<nen_, 1>& epreaf,
+        Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, nen_>, nsd_, nsd_>& K_uu,
+        Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, 1>, nsd_, 1>& rhs_uu,
+        Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, nen_>, nsd_, 1>& G_up,
+        Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, nen_>, 1, nsd_>& G_pu,
+        Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, 1>, nsd_, 1>& rhs_up,
+        Core::LinAlg::Matrix<nen_, 1>& rhs_pu, const Core::LinAlg::Matrix<nsd_, 1>& normal,
+        const double& timesurffac, const Core::LinAlg::Matrix<nsd_, 1>& ivelint_jump,
+        const Core::LinAlg::Matrix<nsd_, 1>& itraction_jump, const bool eval_side_coupling,
         const bool is_MHVS)
     {
       K_us(Velx, Sigmaxx)->Update(-timesurffac * normal(Velx), bK_ss, 1.0);
@@ -3190,22 +3190,22 @@ namespace DRT
 
     /*--------------------------------------------------------------------------------
      *--------------------------------------------------------------------------------*/
-    template <CORE::FE::CellType distype>
-    void FluidEleCalcXFEM<distype>::element_xfem_interface_nit(DRT::ELEMENTS::Fluid* ele,
-        DRT::Discretization& dis, const std::vector<int>& lm,
+    template <Core::FE::CellType distype>
+    void FluidEleCalcXFEM<distype>::element_xfem_interface_nit(Discret::ELEMENTS::Fluid* ele,
+        Discret::Discretization& dis, const std::vector<int>& lm,
         const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
-        const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>& bcells,
-        const std::map<int, std::vector<CORE::FE::GaussIntegration>>& bintpoints,
+        const std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>& bcells,
+        const std::map<int, std::vector<Core::FE::GaussIntegration>>& bintpoints,
         const std::map<int, std::vector<int>>&
             patchcouplm,  ///< lm vectors for coupling elements, key= global coupling side-Id
         Teuchos::ParameterList& params,
-        Teuchos::RCP<CORE::MAT::Material>& mat_master,  ///< material for the background
-        Teuchos::RCP<CORE::MAT::Material>& mat_slave,   ///< material for the coupled side
-        CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-        CORE::LINALG::SerialDenseVector& elevec1_epetra,
-        const CORE::GEO::CUT::plain_volumecell_set& vcSet,
-        std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>& side_coupling,
-        CORE::LINALG::SerialDenseMatrix& Cuiui, bool evaluated_cut)
+        Teuchos::RCP<Core::Mat::Material>& mat_master,  ///< material for the background
+        Teuchos::RCP<Core::Mat::Material>& mat_slave,   ///< material for the coupled side
+        Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+        Core::LinAlg::SerialDenseVector& elevec1_epetra,
+        const Core::Geo::Cut::plain_volumecell_set& vcSet,
+        std::map<int, std::vector<Core::LinAlg::SerialDenseMatrix>>& side_coupling,
+        Core::LinAlg::SerialDenseMatrix& Cuiui, bool evaluated_cut)
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
       if (cond_manager == Teuchos::null) FOUR_C_THROW("set the condition manager!");
@@ -3221,7 +3221,7 @@ namespace DRT
       // get initial node coordinates for element
       // ---------------------------------------------------------------------
       // get node coordinates
-      CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(
+      Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
           ele, my::xyze_);
 
       // ---------------------------------------------------------------------
@@ -3237,7 +3237,7 @@ namespace DRT
       // ---------------------------------------------------------------------
 
       /// element coordinates in EpetraMatrix
-      CORE::LINALG::SerialDenseMatrix ele_xyze(nsd_, nen_);
+      Core::LinAlg::SerialDenseMatrix ele_xyze(nsd_, nen_);
       for (int i = 0; i < nen_; ++i)
       {
         for (int j = 0; j < nsd_; ++j) ele_xyze(j, i) = my::xyze_(j, i);
@@ -3261,7 +3261,7 @@ namespace DRT
       // ---------------------------------------------------------------------
       // set element advective field for Oseen problems
       // ---------------------------------------------------------------------
-      if (my::fldpara_->PhysicalType() == INPAR::FLUID::oseen) my::set_advective_vel_oseen(ele);
+      if (my::fldpara_->PhysicalType() == Inpar::FLUID::oseen) my::set_advective_vel_oseen(ele);
 
 
       //-----------------------------------------------------------------------------------
@@ -3269,7 +3269,7 @@ namespace DRT
       //-----------------------------------------------------------------------------------
 
       // map of boundary element gids, to coupling matrices Cuiui
-      std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>> Cuiui_coupling;
+      std::map<int, std::vector<Core::LinAlg::SerialDenseMatrix>> Cuiui_coupling;
 
       //-----------------------------------------------------------------------------------
       //            preparation of Cuiui-coupling matrices for each side
@@ -3279,7 +3279,7 @@ namespace DRT
       // Dirichlet problems...)
 
       // loop all the intersecting sides of actele
-      for (std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>::const_iterator bc =
+      for (std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>::const_iterator bc =
                bcells.begin();
            bc != bcells.end(); ++bc)
       {
@@ -3289,7 +3289,7 @@ namespace DRT
           continue;  // no couplings to be evaluated for current side
 
         // get coupling matrices for the current side (boundary element)
-        std::vector<CORE::LINALG::SerialDenseMatrix>& Cuiui_matrices =
+        std::vector<Core::LinAlg::SerialDenseMatrix>& Cuiui_matrices =
             Cuiui_coupling[coup_sid];  // create new vector of Coupling matrices
 
         std::map<int, std::vector<int>>::const_iterator j = patchcouplm.find(coup_sid);
@@ -3314,7 +3314,7 @@ namespace DRT
       // compute characteristic element length for background element in case of background-sided
       // coupling
 
-      if (cond_manager->has_averaging_strategy(INPAR::XFEM::Xfluid_Sided))
+      if (cond_manager->has_averaging_strategy(Inpar::XFEM::Xfluid_Sided))
       {
         h_k = XFEM::UTILS::ComputeCharEleLength<distype>(
             ele, ele_xyze, cond_manager, vcSet, bcells, bintpoints, fldparaxfem_->ViscStabHK());
@@ -3347,7 +3347,7 @@ namespace DRT
       //      surface integral --- loop sides
       //-----------------------------------------------------------------------------------
       // map of side-element id and Gauss points
-      for (std::map<int, std::vector<CORE::FE::GaussIntegration>>::const_iterator i =
+      for (std::map<int, std::vector<Core::FE::GaussIntegration>>::const_iterator i =
                bintpoints.begin();
            i != bintpoints.end(); ++i)
       {
@@ -3361,29 +3361,29 @@ namespace DRT
         x_side_.Clear();
 
         // we need an interface to the boundary element (for projection)
-        Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype>> si;
+        Teuchos::RCP<Discret::ELEMENTS::XFLUID::SlaveElementInterface<distype>> si;
 
         // location array of boundary element
-        CORE::Elements::Element::LocationArray cutla(1);
+        Core::Elements::Element::LocationArray cutla(1);
 
         // pointer to boundary element
-        CORE::Elements::Element* side = nullptr;
+        Core::Elements::Element* side = nullptr;
 
         // coordinates of boundary element
-        CORE::LINALG::SerialDenseMatrix side_xyze;
+        Core::LinAlg::SerialDenseMatrix side_xyze;
 
         //-----------------------------------------------------------------------------------
         // only used for couplings:
 
         // coupling object between background element and each coupling element (side for
         // xfluid-sided coupling, element for other couplings)
-        Teuchos::RCP<DRT::ELEMENTS::XFLUID::NitscheInterface<distype>> ci;
+        Teuchos::RCP<Discret::ELEMENTS::XFLUID::NitscheInterface<distype>> ci;
 
         // pointer to coupling element
-        CORE::Elements::Element* coupl_ele = nullptr;
+        Core::Elements::Element* coupl_ele = nullptr;
 
         // coupling element coordinates
-        CORE::LINALG::SerialDenseMatrix coupl_xyze;
+        Core::LinAlg::SerialDenseMatrix coupl_xyze;
 
         //-----------------------------------------------------------------------------------
 
@@ -3392,19 +3392,19 @@ namespace DRT
         // get the coupling strategy for coupling of two fields
         const XFEM::EleCoupCond& coupcond =
             cond_manager->get_coupling_condition(coup_sid, my::eid_);
-        const INPAR::XFEM::EleCouplingCondType& cond_type = coupcond.first;
+        const Inpar::XFEM::EleCouplingCondType& cond_type = coupcond.first;
 
         const int coup_idx = cond_manager->GetCouplingIndex(coup_sid, my::eid_);
         Teuchos::RCP<XFEM::CouplingBase> coupling = cond_manager->GetCouplingByIdx(coup_idx);
 
 
-        const std::vector<CORE::FE::GaussIntegration>& cutintpoints = i->second;
+        const std::vector<Core::FE::GaussIntegration>& cutintpoints = i->second;
 
-        std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>::const_iterator j =
+        std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>::const_iterator j =
             bcells.find(coup_sid);
         if (j == bcells.end()) FOUR_C_THROW("missing boundary cell");
 
-        const std::vector<CORE::GEO::CUT::BoundaryCell*>& bcs = j->second;
+        const std::vector<Core::Geo::Cut::BoundaryCell*>& bcs = j->second;
         if (bcs.size() != cutintpoints.size())
           FOUR_C_THROW("boundary cell integration rules mismatch");
 
@@ -3422,7 +3422,7 @@ namespace DRT
         bool is_ls_coupling_side = cond_manager->IsLevelSetCoupling(coup_sid);
         bool is_mesh_coupling_side = cond_manager->IsMeshCoupling(coup_sid);
 
-        Teuchos::RCP<DRT::Discretization> cutter_dis = cond_manager->GetCutterDis(coup_sid);
+        Teuchos::RCP<Discret::Discretization> cutter_dis = cond_manager->GetCutterDis(coup_sid);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
         if (is_ls_coupling_side and is_mesh_coupling_side)
@@ -3448,7 +3448,7 @@ namespace DRT
 
           if (mc_fsi != Teuchos::null || mc_fpi != Teuchos::null)
           {
-            if (coupling->get_averaging_strategy() == INPAR::XFEM::Xfluid_Sided &&
+            if (coupling->get_averaging_strategy() == Inpar::XFEM::Xfluid_Sided &&
                 mc_fsi != Teuchos::null)
               assemble_iforce = true;
             else
@@ -3466,21 +3466,21 @@ namespace DRT
 
           // get the side element and its coordinates for projection of Gaussian points
           side = cond_manager->get_side(coup_sid);
-          CORE::GEO::InitialPositionArray(side_xyze, side);
+          Core::Geo::InitialPositionArray(side_xyze, side);
 
           // create auxiliary coupling object for the boundary element, in order to perform
           // projection
-          si = DRT::ELEMENTS::XFLUID::SlaveElementInterface<
+          si = Discret::ELEMENTS::XFLUID::SlaveElementInterface<
               distype>::create_slave_element_representation(side, side_xyze);
 
           // set displacement of side
           side->LocationVector(*cutter_dis, cutla, false);
           si->AddSlaveEleDisp(*cutter_dis, cutla[0].lm_);
 
-          if (cond_type == INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET or
-              cond_type == INPAR::XFEM::CouplingCond_SURF_FSI_PART or
-              cond_type == INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP or
-              cond_type == INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP_TWOPHASE)
+          if (cond_type == Inpar::XFEM::CouplingCond_SURF_WEAK_DIRICHLET or
+              cond_type == Inpar::XFEM::CouplingCond_SURF_FSI_PART or
+              cond_type == Inpar::XFEM::CouplingCond_SURF_NAVIER_SLIP or
+              cond_type == Inpar::XFEM::CouplingCond_SURF_NAVIER_SLIP_TWOPHASE)
           {
             si->set_interface_jump_statenp(*cutter_dis, "ivelnp", cutla[0].lm_);
             if (my::fldparatimint_->is_new_ost_implementation())
@@ -3488,7 +3488,7 @@ namespace DRT
           }
         }
 
-        Teuchos::RCP<DRT::Discretization> coupl_dis_ = cond_manager->GetCouplingDis(coup_sid);
+        Teuchos::RCP<Discret::Discretization> coupl_dis_ = cond_manager->GetCouplingDis(coup_sid);
 
         if (!(is_ls_coupling_side and
                 !cond_manager->IsCoupling(coup_sid, my::eid_)))  // not level-set-WDBC case
@@ -3496,7 +3496,7 @@ namespace DRT
           coupl_ele = cond_manager->GetCouplingElement(coup_sid, ele);
           if (coupl_ele == nullptr)
             FOUR_C_THROW("Failed to obtain coupling element for global coup_sid %d", coup_sid);
-          CORE::GEO::InitialPositionArray(coupl_xyze, coupl_ele);
+          Core::Geo::InitialPositionArray(coupl_xyze, coupl_ele);
         }
 
         if (!cond_manager->IsCoupling(coup_sid, my::eid_))
@@ -3504,46 +3504,45 @@ namespace DRT
           if (is_ls_coupling_side)  //... for problems with cut interface defined by level-set
                                     // field, currently only one-sided
           {
-            ci = DRT::ELEMENTS::XFLUID::NitscheInterface<
+            ci = Discret::ELEMENTS::XFLUID::NitscheInterface<
                 distype>::create_nitsche_coupling_x_fluid_wdbc(elemat1_epetra, elevec1_epetra,
                 *fldparaxfem_);
           }
           else if (is_mesh_coupling_side)
           {
-            ci = DRT::ELEMENTS::XFLUID::NitscheInterface<
+            ci = Discret::ELEMENTS::XFLUID::NitscheInterface<
                 distype>::create_nitsche_coupling_x_fluid_wdbc(coupl_ele, coupl_xyze,
                 elemat1_epetra, elevec1_epetra, *fldparaxfem_);
           }
         }
         else  // coupling
         {
-          std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>::iterator c =
+          std::map<int, std::vector<Core::LinAlg::SerialDenseMatrix>>::iterator c =
               side_coupling.find(coup_sid);
 
-          std::vector<CORE::LINALG::SerialDenseMatrix>& side_matrices = c->second;
+          std::vector<Core::LinAlg::SerialDenseMatrix>& side_matrices = c->second;
 
           // coupling matrices between background element and one! side
-          CORE::LINALG::SerialDenseMatrix& C_uiu = side_matrices[0];
-          CORE::LINALG::SerialDenseMatrix& C_uui = side_matrices[1];
-          CORE::LINALG::SerialDenseMatrix& rhC_ui = side_matrices[2];
+          Core::LinAlg::SerialDenseMatrix& C_uiu = side_matrices[0];
+          Core::LinAlg::SerialDenseMatrix& C_uui = side_matrices[1];
+          Core::LinAlg::SerialDenseMatrix& rhC_ui = side_matrices[2];
 
           // coupling matrices between one side and itself via the element Kss
-          std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>::iterator c2 =
+          std::map<int, std::vector<Core::LinAlg::SerialDenseMatrix>>::iterator c2 =
               Cuiui_coupling.find(coup_sid);
-          std::vector<CORE::LINALG::SerialDenseMatrix>& Cuiui_matrices = c2->second;
-          CORE::LINALG::SerialDenseMatrix& eleCuiui = Cuiui_matrices[0];
+          std::vector<Core::LinAlg::SerialDenseMatrix>& Cuiui_matrices = c2->second;
+          Core::LinAlg::SerialDenseMatrix& eleCuiui = Cuiui_matrices[0];
 
           if (non_xfluid_coupling)
           {
             // create interface for the embedded element and the associated side
-            ci =
-                DRT::ELEMENTS::XFLUID::NitscheInterface<distype>::create_nitsche_coupling_two_sided(
-                    coupl_ele, coupl_xyze, elemat1_epetra, C_uiu, C_uui, eleCuiui, elevec1_epetra,
-                    rhC_ui, *fldparaxfem_);
+            ci = Discret::ELEMENTS::XFLUID::NitscheInterface<
+                distype>::create_nitsche_coupling_two_sided(coupl_ele, coupl_xyze, elemat1_epetra,
+                C_uiu, C_uui, eleCuiui, elevec1_epetra, rhC_ui, *fldparaxfem_);
           }
           else  // ... for xfluid-sided coupling
           {
-            ci = DRT::ELEMENTS::XFLUID::NitscheInterface<
+            ci = Discret::ELEMENTS::XFLUID::NitscheInterface<
                 distype>::create_nitsche_coupling_x_fluid_sided(coupl_ele, coupl_xyze,
                 elemat1_epetra, C_uiu, C_uui, eleCuiui, elevec1_epetra, rhC_ui, *fldparaxfem_);
           }
@@ -3583,7 +3582,7 @@ namespace DRT
 
           // char. length defined by local eigenvalue problem
           if (fldparaxfem_->visc_stab_trac_estimate() ==
-              INPAR::XFEM::ViscStab_TraceEstimate_eigenvalue)
+              Inpar::XFEM::ViscStab_TraceEstimate_eigenvalue)
           {
             inv_hk = cond_manager->get_trace_estimate_max_eigenvalue(coup_sid);
             h_k = 1.0 / inv_hk;
@@ -3609,35 +3608,35 @@ namespace DRT
             fldparaxfem_, NIT_visc_stab_fac, NIT_visc_stab_fac_tang);
 
         // define interface force vector w.r.t side (for XFSI)
-        CORE::LINALG::SerialDenseVector iforce;
+        Core::LinAlg::SerialDenseVector iforce;
         iforce.size(cutla[0].lm_.size());
 
         //---------------------------------------------------------------------------------
         // loop boundary cells w.r.t current cut side
         //---------------------------------------------------------------------------------
-        for (std::vector<CORE::FE::GaussIntegration>::const_iterator i = cutintpoints.begin();
+        for (std::vector<Core::FE::GaussIntegration>::const_iterator i = cutintpoints.begin();
              i != cutintpoints.end(); ++i)
         {
-          const CORE::FE::GaussIntegration& gi = *i;
-          CORE::GEO::CUT::BoundaryCell* bc =
+          const Core::FE::GaussIntegration& gi = *i;
+          Core::Geo::Cut::BoundaryCell* bc =
               bcs[i - cutintpoints.begin()];  // get the corresponding boundary cell
 
           //-------------------------------------------------------------------------------
           // loop gausspoints w.r.t current boundary cell
           //-------------------------------------------------------------------------------
           //-------------------------------------------------------------------------------
-          for (CORE::FE::GaussIntegration::iterator iquad = gi.begin(); iquad != gi.end(); ++iquad)
+          for (Core::FE::GaussIntegration::iterator iquad = gi.begin(); iquad != gi.end(); ++iquad)
           {
             double drs =
                 0.0;  // transformation factor between reference cell and linearized boundary cell
 
-            const CORE::LINALG::Matrix<2, 1> eta(
+            const Core::LinAlg::Matrix<2, 1> eta(
                 iquad.Point());  // xi-coordinates with respect to side
 
 
 
             // compute transformation factor, normal vector and global Gauss point coordinates
-            if (bc->Shape() != CORE::FE::CellType::dis_none)  // Tessellation approach
+            if (bc->Shape() != Core::FE::CellType::dis_none)  // Tessellation approach
             {
               XFEM::UTILS::ComputeSurfaceTransformation(drs, x_gp_lin_, normal_, bc, eta);
             }
@@ -3653,23 +3652,23 @@ namespace DRT
             }
 
             {
-              TEUCHOS_FUNC_TIME_MONITOR("FluidEleCalcXFEM::CORE::GEO::CUT::Position");
+              TEUCHOS_FUNC_TIME_MONITOR("FluidEleCalcXFEM::Core::Geo::Cut::Position");
 
               if (!evaluated_cut)  // compute the local coordiante based on the reference position
                                    // (first time the cut was frozen)
               {
-                CORE::LINALG::Matrix<3, 1> x_ref = x_gp_lin_;
+                Core::LinAlg::Matrix<3, 1> x_ref = x_gp_lin_;
                 double tmp_drs;
-                CORE::LINALG::Matrix<3, 1> tmp_normal;
-                if (bc->Shape() != CORE::FE::CellType::dis_none)  // Tessellation approach
+                Core::LinAlg::Matrix<3, 1> tmp_normal;
+                if (bc->Shape() != Core::FE::CellType::dis_none)  // Tessellation approach
                 {
                   XFEM::UTILS::ComputeSurfaceTransformation(
                       tmp_drs, x_ref, tmp_normal, bc, eta, true);
                 }
 
                 // find element local position of gauss point
-                Teuchos::RCP<CORE::GEO::CUT::Position> pos =
-                    CORE::GEO::CUT::PositionFactory::build_position<nsd_, distype>(
+                Teuchos::RCP<Core::Geo::Cut::Position> pos =
+                    Core::Geo::Cut::PositionFactory::build_position<nsd_, distype>(
                         my::xyze_, x_ref);
                 pos->Compute();
                 pos->local_coordinates(rst_);
@@ -3677,20 +3676,20 @@ namespace DRT
               else  // compute the local coordiante based on the current position
               {
                 // find element local position of gauss point
-                Teuchos::RCP<CORE::GEO::CUT::Position> pos =
-                    CORE::GEO::CUT::PositionFactory::build_position<nsd_, distype>(
+                Teuchos::RCP<Core::Geo::Cut::Position> pos =
+                    Core::Geo::Cut::PositionFactory::build_position<nsd_, distype>(
                         my::xyze_, x_gp_lin_);
                 pos->Compute();
                 pos->local_coordinates(rst_);
               }
             }
 
-            CORE::LINALG::Matrix<3, 1> rst_slave;  // local coordinates of slave element
+            Core::LinAlg::Matrix<3, 1> rst_slave;  // local coordinates of slave element
             if (is_mesh_coupling_side)
             {
               // project gaussian point from linearized interface to warped side (get/set local side
               // coordinates in SideImpl)
-              CORE::LINALG::Matrix<3, 1> xi_side;
+              Core::LinAlg::Matrix<3, 1> xi_side;
 
               // project on boundary element
               si->project_on_side(x_gp_lin_, x_side_, xi_side);
@@ -3765,8 +3764,8 @@ namespace DRT
                 viscaf_master_, viscaf_slave_, rst_slave, eledisp, coupl_ele);
 
             double fulltraction = 0.0;
-            if (cond_type == INPAR::XFEM::CouplingCond_LEVELSET_NEUMANN or
-                cond_type == INPAR::XFEM::CouplingCond_SURF_NEUMANN)
+            if (cond_type == Inpar::XFEM::CouplingCond_LEVELSET_NEUMANN or
+                cond_type == Inpar::XFEM::CouplingCond_SURF_NEUMANN)
             {
               //-----------------------------------------------------------------------------
               // evaluate the Neumann boundary condition term
@@ -3788,7 +3787,7 @@ namespace DRT
               TEUCHOS_FUNC_TIME_MONITOR("FluidEleCalcXFEM::nit_evaluate_coupling");
               if (mc_fsi != Teuchos::null)
               {
-                if (mc_fsi->GetInterfaceLaw() == INPAR::XFEM::navierslip_contact)
+                if (mc_fsi->GetInterfaceLaw() == Inpar::XFEM::navierslip_contact)
                   fulltraction =
                       XFEM::UTILS::Evaluate_Full_Traction(press, my::vderxy_, viscaf_master_,
                           NIT_full_stab_fac, my::velint_, velint_s_, normal_, normal_, velint_s_);
@@ -3797,8 +3796,8 @@ namespace DRT
               {
                 double J = 0;
                 double porosity = mc_fpi->CalcPorosity(side, rst_slave, J);
-                static CORE::LINALG::Matrix<3, 1> vel_s(true);
-                static CORE::LINALG::Matrix<3, 1> velpf_s(true);
+                static Core::LinAlg::Matrix<3, 1> vel_s(true);
+                static Core::LinAlg::Matrix<3, 1> velpf_s(true);
                 XFEM::UTILS::EvaluteStateatGP(side, rst_slave,
                     *cond_manager->GetMeshCoupling("XFEMSurfFPIMono_ps_ps")->GetCutterDis(),
                     "ivelnp", vel_s);
@@ -3811,7 +3810,7 @@ namespace DRT
               }
 
               // Get Configuration Map
-              std::map<INPAR::XFEM::CoupTerm, std::pair<bool, double>>& configmap =
+              std::map<Inpar::XFEM::CoupTerm, std::pair<bool, double>>& configmap =
                   coupling->GetConfigurationmap(kappa_m, viscaf_master_, viscaf_slave_, my::densaf_,
                       NIT_visc_stab_fac_tang, NIT_full_stab_fac, x_gp_lin_, coupcond.second, ele,
                       side, my::funct_.A(), my::derxy_.A(), rst_slave, normal_, my::velint_,
@@ -3865,9 +3864,9 @@ namespace DRT
                 itractionn_jump_.Clear();
 
                 // Safety check
-                if (cond_type == INPAR::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP or
-                    cond_type == INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP or
-                    cond_type == INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP_TWOPHASE)
+                if (cond_type == Inpar::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP or
+                    cond_type == Inpar::XFEM::CouplingCond_SURF_NAVIER_SLIP or
+                    cond_type == Inpar::XFEM::CouplingCond_SURF_NAVIER_SLIP_TWOPHASE)
                 {
                   if (my::fldparatimint_->is_new_ost_implementation())
                   {
@@ -3877,8 +3876,8 @@ namespace DRT
                   }
                 }
 
-                if (cond_type != INPAR::XFEM::CouplingCond_LEVELSET_TWOPHASE and
-                    cond_type != INPAR::XFEM::CouplingCond_LEVELSET_COMBUSTION)
+                if (cond_type != Inpar::XFEM::CouplingCond_LEVELSET_TWOPHASE and
+                    cond_type != Inpar::XFEM::CouplingCond_LEVELSET_COMBUSTION)
                 {
                   get_interface_jump_vectors_old_state(coupcond, coupling, ivelintn_jump_,
                       itractionn_jump_, x_gp_lin_, normal_, si,
@@ -3903,7 +3902,7 @@ namespace DRT
 
                 double NIT_full_stab_fac_n = 0.0;
                 if (fldparaxfem_->interface_terms_previous_state() ==
-                    INPAR::XFEM::PreviousState_full)
+                    Inpar::XFEM::PreviousState_full)
                 {
                   velintn_s_.Clear();
                   ci->GetInterfaceVeln(velintn_s_);
@@ -3924,7 +3923,7 @@ namespace DRT
                 }
 
                 // Get Configuration Map
-                std::map<INPAR::XFEM::CoupTerm, std::pair<bool, double>> configmap_n =
+                std::map<Inpar::XFEM::CoupTerm, std::pair<bool, double>> configmap_n =
                     coupling->GetConfigurationmap(kappa_m, viscaf_master_, viscaf_slave_,
                         my::densaf_, NIT_visc_stab_fac_tang, NIT_full_stab_fac, x_gp_lin_,
                         coupcond.second, ele, side, my::funct_.A(), my::derxy_.A(), rst_slave,
@@ -3957,7 +3956,7 @@ namespace DRT
             //-------------------------------
             // traction vector w.r.t fluid domain, resulting stresses acting on the fluid surface
             // t= (-p*I + 2mu*eps(u))*n^f
-            CORE::LINALG::Matrix<nsd_, 1> traction;
+            Core::LinAlg::Matrix<nsd_, 1> traction;
 
             build_traction_vector(traction, press, normal_);
             ci->compute_interface_force(iforce, traction, surf_fac);
@@ -3984,41 +3983,41 @@ namespace DRT
     /*--------------------------------------------------------------------------------
      * get the interface jump vectors for velocity and traction at the Gaussian point
      *--------------------------------------------------------------------------------*/
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::get_interface_jump_vectors(
         const XFEM::EleCoupCond& coupcond,          ///< coupling condition for given interface side
         Teuchos::RCP<XFEM::CouplingBase> coupling,  ///< coupling object
-        CORE::LINALG::Matrix<nsd_, 1>&
+        Core::LinAlg::Matrix<nsd_, 1>&
             ivelint_jump,  ///< prescribed interface jump vector for velocity
-        CORE::LINALG::Matrix<nsd_, 1>&
+        Core::LinAlg::Matrix<nsd_, 1>&
             itraction_jump,  ///< prescribed interface jump vector for traction
-        CORE::LINALG::Matrix<nsd_, nsd_>& proj_tangential,  ///< tangential projection matrix
-        CORE::LINALG::Matrix<nsd_, nsd_>&
+        Core::LinAlg::Matrix<nsd_, nsd_>& proj_tangential,  ///< tangential projection matrix
+        Core::LinAlg::Matrix<nsd_, nsd_>&
             LB_proj_matrix,  ///< prescribed projection matrix for laplace-beltrami problems
-        const CORE::LINALG::Matrix<nsd_, 1>& x,       ///< global coordinates of Gaussian point
-        const CORE::LINALG::Matrix<nsd_, 1>& normal,  ///< normal vector at Gaussian point
-        Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype>>
+        const Core::LinAlg::Matrix<nsd_, 1>& x,       ///< global coordinates of Gaussian point
+        const Core::LinAlg::Matrix<nsd_, 1>& normal,  ///< normal vector at Gaussian point
+        Teuchos::RCP<Discret::ELEMENTS::XFLUID::SlaveElementInterface<distype>>
             si,                                 ///< side implementation for cutter element
-        CORE::LINALG::Matrix<3, 1>& rst,        ///< local coordinates of GP for bg element
+        Core::LinAlg::Matrix<3, 1>& rst,        ///< local coordinates of GP for bg element
         double& kappa_m,                        ///< fluid sided weighting
         double& visc_m,                         ///< fluid sided weighting
         double& visc_s,                         ///< slave sided dynamic viscosity
-        CORE::LINALG::Matrix<3, 1>& rst_slave,  ///< local coord of gp in slave element
+        Core::LinAlg::Matrix<3, 1>& rst_slave,  ///< local coord of gp in slave element
         std::vector<double>& eledisp,           ///< slave element displacement vector
-        CORE::Elements::Element* coupl_ele      ///< slave coupling element
+        Core::Elements::Element* coupl_ele      ///< slave coupling element
     )
     {
       TEUCHOS_FUNC_TIME_MONITOR("FluidEleCalcXFEM::get_interface_jump_vectors");
 
       // [| v |] := vm - vs
 
-      const INPAR::XFEM::EleCouplingCondType& cond_type =
+      const Inpar::XFEM::EleCouplingCondType& cond_type =
           coupcond.first;  ///< condition type for given interface side
-      const CORE::Conditions::Condition* cond = coupcond.second;  ///< condition to be evaluated
+      const Core::Conditions::Condition* cond = coupcond.second;  ///< condition to be evaluated
 
       switch (cond_type)
       {
-        case INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET:
+        case Inpar::XFEM::CouplingCond_SURF_WEAK_DIRICHLET:
         {
           const std::string& evaltype = cond->parameters().Get<std::string>("evaltype");
 
@@ -4036,19 +4035,19 @@ namespace DRT
 
           break;
         }
-        case INPAR::XFEM::CouplingCond_LEVELSET_WEAK_DIRICHLET:
+        case Inpar::XFEM::CouplingCond_LEVELSET_WEAK_DIRICHLET:
         {
           // evaluate condition function at Gaussian point
           coupling->evaluate_coupling_conditions(ivelint_jump, itraction_jump, x, cond);
           break;
         }
-        case INPAR::XFEM::CouplingCond_SURF_NEUMANN:
-        case INPAR::XFEM::CouplingCond_LEVELSET_NEUMANN:
+        case Inpar::XFEM::CouplingCond_SURF_NEUMANN:
+        case Inpar::XFEM::CouplingCond_LEVELSET_NEUMANN:
         {
           // evaluate condition function at Gaussian point
           if (cond->parameters().Get<int>("numdof") == 6)
           {
-            CORE::LINALG::Matrix<6, 1> fulltraction(
+            Core::LinAlg::Matrix<6, 1> fulltraction(
                 true);  // sigma_xx, sigma_yy, sigma_zz, sigma_xy, sigma_yz, sigma_zx
             coupling->evaluate_coupling_conditions(ivelint_jump, fulltraction, x, cond);
             itraction_jump(0, 0) = fulltraction(0, 0) * normal(0, 0) +
@@ -4067,31 +4066,31 @@ namespace DRT
           }
           break;
         }
-        case INPAR::XFEM::CouplingCond_SURF_FSI_PART:
+        case Inpar::XFEM::CouplingCond_SURF_FSI_PART:
         {
           // evaluate function at nodes at current time
           si->get_interface_jump_velnp(ivelint_jump);
           break;
         }
-        case INPAR::XFEM::CouplingCond_SURF_FLUIDFLUID:
+        case Inpar::XFEM::CouplingCond_SURF_FLUIDFLUID:
         {
           // nothing to evaluate as continuity coupling conditions have to be evaluated
           break;
         }
-        case INPAR::XFEM::CouplingCond_SURF_FSI_MONO:
+        case Inpar::XFEM::CouplingCond_SURF_FSI_MONO:
         {
           Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFSI>(coupling)
               ->evaluate_structural_cauchy_stress(
                   coupl_ele, rst_slave, eledisp, normal, solid_stress_);
           break;
         }
-        case INPAR::XFEM::CouplingCond_SURF_FPI_MONO:
+        case Inpar::XFEM::CouplingCond_SURF_FPI_MONO:
         {
           Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFPI>(coupling)
               ->evaluate_coupling_conditions<distype>(proj_tangential, normal);
           break;
         }
-        case INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP:
+        case Inpar::XFEM::CouplingCond_SURF_NAVIER_SLIP:
         {
           bool eval_dirich_at_gp =
               ((cond->parameters().Get<std::string>("evaltype")) == "funct_gausspoint");
@@ -4108,7 +4107,7 @@ namespace DRT
 
           break;
         }
-        case INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP_TWOPHASE:
+        case Inpar::XFEM::CouplingCond_SURF_NAVIER_SLIP_TWOPHASE:
         {
           bool eval_dirich_at_gp =
               ((cond->parameters().Get<std::string>("evaltype")) == "funct_gausspoint");
@@ -4127,7 +4126,7 @@ namespace DRT
 
           break;
         }
-        case INPAR::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP:
+        case Inpar::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP:
         {
           Teuchos::rcp_dynamic_cast<XFEM::LevelSetCouplingNavierSlip>(coupling)
               ->evaluate_coupling_conditions<distype>(ivelint_jump, itraction_jump, x, cond,
@@ -4148,12 +4147,12 @@ namespace DRT
       //  If it is a Navier-Slip coupling, the matrix is provided from the Evaluation.
       //   Furthermore, if it is a Laplace-Beltrami way of calculating the surface tension,
       //   do not fill the matrix as it contains the "projection matrix" for LB implementation.
-      if (cond_type != INPAR::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP and
-          cond_type != INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP and
-          cond_type != INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP_TWOPHASE)
+      if (cond_type != Inpar::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP and
+          cond_type != Inpar::XFEM::CouplingCond_SURF_NAVIER_SLIP and
+          cond_type != Inpar::XFEM::CouplingCond_SURF_NAVIER_SLIP_TWOPHASE)
       {
         // Create normal projection matrix.
-        CORE::LINALG::Matrix<nsd_, nsd_> eye(true);
+        Core::LinAlg::Matrix<nsd_, nsd_> eye(true);
         for (int i = 0; i < nsd_; ++i) eye(i, i) = 1;
         for (int i = 0; i < nsd_; ++i)
         {
@@ -4171,31 +4170,31 @@ namespace DRT
      * get the interface jump vectors for velocity and traction at the Gaussian point
      * for previous time step
      *--------------------------------------------------------------------------------*/
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::get_interface_jump_vectors_old_state(
         const XFEM::EleCoupCond& coupcond,          ///< coupling condition for given interface side
         Teuchos::RCP<XFEM::CouplingBase> coupling,  ///< coupling object
-        CORE::LINALG::Matrix<nsd_, 1>&
+        Core::LinAlg::Matrix<nsd_, 1>&
             ivelintn_jump,  ///< prescribed interface jump vector for velocity
-        CORE::LINALG::Matrix<nsd_, 1>&
+        Core::LinAlg::Matrix<nsd_, 1>&
             itractionn_jump,                     ///< prescribed interface jump vector for traction
-        const CORE::LINALG::Matrix<nsd_, 1>& x,  ///< global coordinates of Gaussian point
-        const CORE::LINALG::Matrix<nsd_, 1>& normal,  ///< normal vector at Gaussian point
-        Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype>>
+        const Core::LinAlg::Matrix<nsd_, 1>& x,  ///< global coordinates of Gaussian point
+        const Core::LinAlg::Matrix<nsd_, 1>& normal,  ///< normal vector at Gaussian point
+        Teuchos::RCP<Discret::ELEMENTS::XFLUID::SlaveElementInterface<distype>>
             si,                          ///< side implementation for cutter element
         const double& presn_m,           ///< coupling master pressure
-        CORE::LINALG::Matrix<3, 1>& rst  ///< local coordinates of GP for bg element
+        Core::LinAlg::Matrix<3, 1>& rst  ///< local coordinates of GP for bg element
     )
     {
       // [| v |] := vm - vs
 
-      const INPAR::XFEM::EleCouplingCondType& cond_type =
+      const Inpar::XFEM::EleCouplingCondType& cond_type =
           coupcond.first;  ///< condition type for given interface side
-      const CORE::Conditions::Condition* cond = coupcond.second;  ///< condition to be evaluated
+      const Core::Conditions::Condition* cond = coupcond.second;  ///< condition to be evaluated
 
       switch (cond_type)
       {
-        case INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET:
+        case Inpar::XFEM::CouplingCond_SURF_WEAK_DIRICHLET:
         {
           const std::string& evaltype = cond->parameters().Get<std::string>("evaltype");
 
@@ -4213,43 +4212,43 @@ namespace DRT
 
           break;
         }
-        case INPAR::XFEM::CouplingCond_SURF_NEUMANN:
-        case INPAR::XFEM::CouplingCond_LEVELSET_WEAK_DIRICHLET:
-        case INPAR::XFEM::CouplingCond_LEVELSET_NEUMANN:
+        case Inpar::XFEM::CouplingCond_SURF_NEUMANN:
+        case Inpar::XFEM::CouplingCond_LEVELSET_WEAK_DIRICHLET:
+        case Inpar::XFEM::CouplingCond_LEVELSET_NEUMANN:
         {
           // evaluate condition function at Gaussian point
           coupling->evaluate_coupling_conditions_old_state(ivelintn_jump, itractionn_jump, x, cond);
           break;
         }
-        case INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP:
-        case INPAR::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP:
-        case INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP_TWOPHASE:
+        case Inpar::XFEM::CouplingCond_SURF_NAVIER_SLIP:
+        case Inpar::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP:
+        case Inpar::XFEM::CouplingCond_SURF_NAVIER_SLIP_TWOPHASE:
         {
           FOUR_C_THROW("Navier Slip Condition not implemented for NEWOst yet!");
           // here you would need the dyn_visc for summing up vel_jump and traction_jump...
           break;
         }
-        case INPAR::XFEM::CouplingCond_SURF_FSI_PART:
+        case Inpar::XFEM::CouplingCond_SURF_FSI_PART:
         {
           // evaluate function at nodes at current time
           si->get_interface_jump_veln(ivelintn_jump);
           break;
         }
-        case INPAR::XFEM::CouplingCond_SURF_FLUIDFLUID:
-        case INPAR::XFEM::CouplingCond_SURF_FSI_MONO:
+        case Inpar::XFEM::CouplingCond_SURF_FLUIDFLUID:
+        case Inpar::XFEM::CouplingCond_SURF_FSI_MONO:
         {
           // nothing to evaluate as continuity coupling conditions have to be evaluated
           break;
         }
-        case INPAR::XFEM::CouplingCond_SURF_FPI_MONO:
+        case Inpar::XFEM::CouplingCond_SURF_FPI_MONO:
         {
           FOUR_C_THROW("Fluid Poro Structure Interaction not implemented for NEWOst yet!");
           break;
         }
-        case INPAR::XFEM::CouplingCond_LEVELSET_TWOPHASE:
+        case Inpar::XFEM::CouplingCond_LEVELSET_TWOPHASE:
         {
           // Spatial velocity gradient for slave side
-          CORE::LINALG::Matrix<nsd_, nsd_> vderxyn_s(true);
+          Core::LinAlg::Matrix<nsd_, nsd_> vderxyn_s(true);
           si->get_interface_vel_gradn(vderxyn_s);
 
 
@@ -4267,11 +4266,11 @@ namespace DRT
 
           // Shear tensor part
           //===================
-          CORE::LINALG::Matrix<nsd_, nsd_> tmp_matrix(true);
+          Core::LinAlg::Matrix<nsd_, nsd_> tmp_matrix(true);
           tmp_matrix.Update(viscaf_master_, my::vderxyn_, -viscaf_slave_, vderxyn_s);
 
           // Initialize dummy variable
-          CORE::LINALG::Matrix<nsd_, 1> tmp_vector(true);
+          Core::LinAlg::Matrix<nsd_, 1> tmp_vector(true);
 
           // Normal
           tmp_vector.Multiply(tmp_matrix, normal);
@@ -4284,7 +4283,7 @@ namespace DRT
 
           break;
         }
-        case INPAR::XFEM::CouplingCond_LEVELSET_COMBUSTION:
+        case Inpar::XFEM::CouplingCond_LEVELSET_COMBUSTION:
         {
           // TODO: evaluate the ivelint_jump and the itraction_jump
           break;
@@ -4305,11 +4304,11 @@ namespace DRT
     /*--------------------------------------------------------------------------------
      * build the patch coupling matrix Cuiui containing Cuiui for all cutting sides
      *--------------------------------------------------------------------------------*/
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::nit_build_patch_cuiui(
-        CORE::LINALG::SerialDenseMatrix&
+        Core::LinAlg::SerialDenseMatrix&
             Cuiui,  ///< ui-ui patch coupling matrix containing Cuiui for all cutting sides
-        std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>&
+        std::map<int, std::vector<Core::LinAlg::SerialDenseMatrix>>&
             Cuiui_coupling  ///< Cuiui matrices for all cutting sides
     )
     {
@@ -4317,12 +4316,12 @@ namespace DRT
 
       // build patch-Cuiui matrix
       int ipatchsizesbefore = 0;
-      for (std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>::const_iterator m =
+      for (std::map<int, std::vector<Core::LinAlg::SerialDenseMatrix>>::const_iterator m =
                Cuiui_coupling.begin();
            m != Cuiui_coupling.end(); ++m)
       {
         int coup_sid = m->first;
-        std::vector<CORE::LINALG::SerialDenseMatrix>& Cuiui_mats = Cuiui_coupling[coup_sid];
+        std::vector<Core::LinAlg::SerialDenseMatrix>& Cuiui_mats = Cuiui_coupling[coup_sid];
 
         // Cuiui matrices in Cuiui_mats[0]
 
@@ -4346,17 +4345,17 @@ namespace DRT
      * prepare coupling matrices, that include contributions from convective stabilization
      * and contributions from previous time steps (rhs)
      *--------------------------------------------------------------------------------*/
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::hybrid_lm_create_special_contribution_matrices(
         const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
         std::set<int>& begids,  ///< ids of intersecting boundary elements
-        std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>&
+        std::map<int, std::vector<Core::LinAlg::SerialDenseMatrix>>&
             side_coupling_extra  ///< contributions to coupling matrices from convective
                                  ///< stabilizations
     )
     {
-      if (fldparaxfem_->GetCouplingMethod() != INPAR::XFEM::Hybrid_LM_Cauchy_stress &&
-          fldparaxfem_->GetCouplingMethod() != INPAR::XFEM::Hybrid_LM_viscous_stress)
+      if (fldparaxfem_->GetCouplingMethod() != Inpar::XFEM::Hybrid_LM_Cauchy_stress &&
+          fldparaxfem_->GetCouplingMethod() != Inpar::XFEM::Hybrid_LM_viscous_stress)
         FOUR_C_THROW("Do not call this method with a non-Lagrange multiplier based approach!");
 
       for (std::set<int>::const_iterator bgid = begids.begin(); bgid != begids.end(); ++bgid)
@@ -4371,11 +4370,11 @@ namespace DRT
               "hybrid_lm_create_special_contribution_matrices for level-set coupling not supported "
               "yet");
 
-        Teuchos::RCP<DRT::Discretization> cutter_dis = Teuchos::null;
+        Teuchos::RCP<Discret::Discretization> cutter_dis = Teuchos::null;
         if (cond_manager->IsMeshCoupling(coup_sid))
           cutter_dis = cond_manager->GetCutterDis(coup_sid);
 
-        CORE::Elements::Element* side = cond_manager->get_side(
+        Core::Elements::Element* side = cond_manager->get_side(
             coup_sid);  // for each boundary element there is one corresponding side
 
         std::vector<int> patchlm;
@@ -4384,7 +4383,7 @@ namespace DRT
         side->LocationVector(*cutter_dis, patchlm, patchlmowner, patchlmstride);
 
         // get coupling matrices for the current side (boundary element)
-        std::vector<CORE::LINALG::SerialDenseMatrix>& side_matrices_extra =
+        std::vector<Core::LinAlg::SerialDenseMatrix>& side_matrices_extra =
             side_coupling_extra[coup_sid];
 
         side_matrices_extra.resize(4);
@@ -4399,14 +4398,14 @@ namespace DRT
     /*----------------------------------------------------------------------*
      | evaluate shape functions and derivatives at given local coordinates  |
      *----------------------------------------------------------------------*/
-    template <CORE::FE::CellType distype>
-    void FluidEleCalcXFEM<distype>::eval_func_and_deriv(CORE::LINALG::Matrix<3, 1>& rst)
+    template <Core::FE::CellType distype>
+    void FluidEleCalcXFEM<distype>::eval_func_and_deriv(Core::LinAlg::Matrix<3, 1>& rst)
     {
       // evaluate shape functions
-      CORE::FE::shape_function<distype>(rst, my::funct_);
+      Core::FE::shape_function<distype>(rst, my::funct_);
 
       // evaluate the derivatives of shape functions
-      CORE::FE::shape_function_deriv1<distype>(rst, my::deriv_);
+      Core::FE::shape_function_deriv1<distype>(rst, my::deriv_);
       my::xjm_.MultiplyNT(my::deriv_, my::xyze_);
       my::det_ = my::xji_.Invert(my::xjm_);
 
@@ -4420,15 +4419,15 @@ namespace DRT
     /*----------------------------------------------------------------------*
      | build traction vector w.r.t fluid domain                             |
      *----------------------------------------------------------------------*/
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::build_traction_vector(
-        CORE::LINALG::Matrix<nsd_, 1>& traction,  ///< traction vector
+        Core::LinAlg::Matrix<nsd_, 1>& traction,  ///< traction vector
         double& press,                            ///< pressure at gaussian point
-        CORE::LINALG::Matrix<nsd_, 1>& normal     ///< normal vector
+        Core::LinAlg::Matrix<nsd_, 1>& normal     ///< normal vector
     )
     {
       // compute the stresses at the current Gaussian point for computing the interface force
-      CORE::LINALG::Matrix<nsd_, nsd_> two_eps;
+      Core::LinAlg::Matrix<nsd_, nsd_> two_eps;
       for (int i = 0; i < nsd_; ++i)
       {
         for (int j = 0; j < nsd_; ++j)
@@ -4450,12 +4449,12 @@ namespace DRT
     /*----------------------------------------------------------------------*
      | assemble side's interface force                                      |
      *----------------------------------------------------------------------*/
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::assemble_interface_force(
         Teuchos::RCP<Epetra_Vector> iforcecol,   ///< interface force column vector
-        DRT::Discretization& cutdis,             ///< cut discretization
+        Discret::Discretization& cutdis,         ///< cut discretization
         std::vector<int>& lm,                    ///< local dof map
-        CORE::LINALG::SerialDenseVector& iforce  ///< interface force vector
+        Core::LinAlg::SerialDenseVector& iforce  ///< interface force vector
     )
     {
       // TEUCHOS_FUNC_TIME_MONITOR("FluidEleCalcXFEM::assemble_interface_force");
@@ -4476,19 +4475,19 @@ namespace DRT
 
     /*----------------------------------------------------------------------*
      *----------------------------------------------------------------------*/
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::evaluate_neumann(const double& timefacfac,  ///< theta*dt
-        const CORE::LINALG::Matrix<nen_, 1>& funct_m,  ///< coupling master shape functions
-        const CORE::LINALG::Matrix<nsd_, 1>&
+        const Core::LinAlg::Matrix<nen_, 1>& funct_m,  ///< coupling master shape functions
+        const Core::LinAlg::Matrix<nsd_, 1>&
             itraction_jump,  ///< prescribed interface traction, jump height for coupled problems
-        CORE::LINALG::SerialDenseMatrix::Base& elevec1_epetra  ///< element vector
+        Core::LinAlg::SerialDenseMatrix::Base& elevec1_epetra  ///< element vector
     )
     {
       const int master_numdof = nsd_ + 1;
-      CORE::LINALG::Matrix<master_numdof * nen_, 1> rhC_um(elevec1_epetra.values(), true);
+      Core::LinAlg::Matrix<master_numdof * nen_, 1> rhC_um(elevec1_epetra.values(), true);
 
       // funct_m * timefac * fac
-      CORE::LINALG::Matrix<nen_, 1> funct_m_timefacfac(funct_m);
+      Core::LinAlg::Matrix<nen_, 1> funct_m_timefacfac(funct_m);
       funct_m_timefacfac.Scale(timefacfac);
 
       //-----------------------------------------------------------------
@@ -4515,27 +4514,27 @@ namespace DRT
 
     /*--------------------------------------------------------------------------------
      *--------------------------------------------------------------------------------*/
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::calculate_continuity_xfem(
-        DRT::ELEMENTS::Fluid* ele,                        ///< fluid element
-        DRT::Discretization& dis,                         ///< discretization
+        Discret::ELEMENTS::Fluid* ele,                    ///< fluid element
+        Discret::Discretization& dis,                     ///< discretization
         const std::vector<int>& lm,                       ///< local map
-        CORE::LINALG::SerialDenseVector& elevec1_epetra,  ///< element vector
-        const CORE::FE::GaussIntegration& intpoints       ///< integration points
+        Core::LinAlg::SerialDenseVector& elevec1_epetra,  ///< element vector
+        const Core::FE::GaussIntegration& intpoints       ///< integration points
     )
     {
-      CORE::LINALG::Matrix<numdofpernode_ * nen_, 1> elevec1(elevec1_epetra, true);
-      CORE::LINALG::Matrix<numdofpernode_, nen_> tmpvel;
+      Core::LinAlg::Matrix<numdofpernode_ * nen_, 1> elevec1(elevec1_epetra, true);
+      Core::LinAlg::Matrix<numdofpernode_, nen_> tmpvel;
       my::eid_ = ele->Id();
 
       // get node coordinates and number of elements per node
-      CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(
+      Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
           ele, my::xyze_);
 
       //------------------------------------------------------------------------
       //  start loop over integration points
       //------------------------------------------------------------------------
-      for (CORE::FE::GaussIntegration::const_iterator iquad = intpoints.begin();
+      for (Core::FE::GaussIntegration::const_iterator iquad = intpoints.begin();
            iquad != intpoints.end(); ++iquad)
       {
         // evaluate shape functions and derivatives at integration point
@@ -4567,12 +4566,12 @@ namespace DRT
 
     /*--------------------------------------------------------------------------------
      *--------------------------------------------------------------------------------*/
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::calculate_continuity_xfem(
-        DRT::ELEMENTS::Fluid* ele,                       ///< fluid element
-        DRT::Discretization& dis,                        ///< discretization
+        Discret::ELEMENTS::Fluid* ele,                   ///< fluid element
+        Discret::Discretization& dis,                    ///< discretization
         const std::vector<int>& lm,                      ///< local map
-        CORE::LINALG::SerialDenseVector& elevec1_epetra  ///< element vector
+        Core::LinAlg::SerialDenseVector& elevec1_epetra  ///< element vector
     )
     {
       calculate_continuity_xfem(ele, dis, lm, elevec1_epetra, my::intpoints_);
@@ -4580,9 +4579,9 @@ namespace DRT
 
 
 
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::get_material_parameters_volume_cell(
-        Teuchos::RCP<const CORE::MAT::Material> material,
+        Teuchos::RCP<const Core::Mat::Material> material,
         double& densaf,  // done
         double& viscaf,  // done
         double& gamma    // done
@@ -4622,16 +4621,16 @@ namespace DRT
     }
 
   }  // end namespace ELEMENTS
-}  // end namespace DRT
+}  // end namespace Discret
 
 // Ursula is responsible for this comment!
-template class DRT::ELEMENTS::FluidEleCalcXFEM<CORE::FE::CellType::hex8>;
-template class DRT::ELEMENTS::FluidEleCalcXFEM<CORE::FE::CellType::hex20>;
-template class DRT::ELEMENTS::FluidEleCalcXFEM<CORE::FE::CellType::hex27>;
-template class DRT::ELEMENTS::FluidEleCalcXFEM<CORE::FE::CellType::tet4>;
-template class DRT::ELEMENTS::FluidEleCalcXFEM<CORE::FE::CellType::tet10>;
-template class DRT::ELEMENTS::FluidEleCalcXFEM<CORE::FE::CellType::wedge6>;
-template class DRT::ELEMENTS::FluidEleCalcXFEM<CORE::FE::CellType::wedge15>;
-// template class DRT::ELEMENTS::FluidEleCalcXFEM<CORE::FE::CellType::pyramid5>;
+template class Discret::ELEMENTS::FluidEleCalcXFEM<Core::FE::CellType::hex8>;
+template class Discret::ELEMENTS::FluidEleCalcXFEM<Core::FE::CellType::hex20>;
+template class Discret::ELEMENTS::FluidEleCalcXFEM<Core::FE::CellType::hex27>;
+template class Discret::ELEMENTS::FluidEleCalcXFEM<Core::FE::CellType::tet4>;
+template class Discret::ELEMENTS::FluidEleCalcXFEM<Core::FE::CellType::tet10>;
+template class Discret::ELEMENTS::FluidEleCalcXFEM<Core::FE::CellType::wedge6>;
+template class Discret::ELEMENTS::FluidEleCalcXFEM<Core::FE::CellType::wedge15>;
+// template class Discret::ELEMENTS::FluidEleCalcXFEM<Core::FE::CellType::pyramid5>;
 
 FOUR_C_NAMESPACE_CLOSE

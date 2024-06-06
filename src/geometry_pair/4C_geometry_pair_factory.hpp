@@ -20,7 +20,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 // Forward declarations.
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
@@ -39,7 +39,7 @@ namespace GEOMETRYPAIR
    */
   template <typename scalar_type, typename line, typename volume>
   Teuchos::RCP<GeometryPair> GeometryPairLineToVolumeFactory(
-      const CORE::Elements::Element* element1, const CORE::Elements::Element* element2,
+      const Core::Elements::Element* element1, const Core::Elements::Element* element2,
       const Teuchos::RCP<GeometryEvaluationDataBase>& geometry_evaluation_data_ptr);
 
   /**
@@ -48,7 +48,7 @@ namespace GEOMETRYPAIR
    */
   template <typename scalar_type, typename line, typename surface>
   Teuchos::RCP<GeometryPair> GeometryPairLineToSurfaceFactory(
-      const CORE::Elements::Element* element1, const CORE::Elements::Element* element2,
+      const Core::Elements::Element* element1, const Core::Elements::Element* element2,
       const Teuchos::RCP<GeometryEvaluationDataBase>& geometry_evaluation_data_ptr);
 
   /**
@@ -61,7 +61,7 @@ namespace GEOMETRYPAIR
    */
   template <typename scalar_type, typename line, typename surface>
   Teuchos::RCP<GeometryPair> GeometryPairLineToSurfaceFactoryFAD(
-      const CORE::Elements::Element* element1, const CORE::Elements::Element* element2,
+      const Core::Elements::Element* element1, const Core::Elements::Element* element2,
       const Teuchos::RCP<GeometryEvaluationDataBase>& geometry_evaluation_data_ptr);
 }  // namespace GEOMETRYPAIR
 

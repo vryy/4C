@@ -14,13 +14,13 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::SoWeg6::ReadElement(
-    const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
+bool Discret::ELEMENTS::SoWeg6::ReadElement(
+    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
   // read number of material model
   int material = 0;
   linedef->ExtractInt("MAT", material);
-  SetMaterial(0, MAT::Factory(material));
+  SetMaterial(0, Mat::Factory(material));
 
   SolidMaterial()->Setup(NUMGPT_WEG6, linedef);
 
@@ -28,12 +28,12 @@ bool DRT::ELEMENTS::SoWeg6::ReadElement(
   linedef->ExtractString("KINEM", buffer);
   if (buffer == "linear")
   {
-    kintype_ = INPAR::STR::KinemType::linear;
+    kintype_ = Inpar::STR::KinemType::linear;
     FOUR_C_THROW("Reading of SO_WEG6 element failed only nonlinear kinematics implemented");
   }
   else if (buffer == "nonlinear")
   {
-    kintype_ = INPAR::STR::KinemType::nonlinearTotLag;
+    kintype_ = Inpar::STR::KinemType::nonlinearTotLag;
   }
   else
     FOUR_C_THROW("Reading SO_WEG6 element failed KINEM unknwon");

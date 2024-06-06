@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
     namespace GROUP
     {
@@ -39,15 +39,15 @@ namespace NOX
 
       /*!
         @brief Functor to process the pre/post operator object in the parameter list for the
-        NOX::NLN::Group objects.
+        NOX::Nln::Group objects.
 
-        This is a wrapper class for a user derived  NOX::NLN::Abstract::PrePostOperator (ppo)
+        This is a wrapper class for a user derived  NOX::Nln::Abstract::PrePostOperator (ppo)
         object. All NOX::NLN groups use this class so we don't have to repeat all parsing code in
         each NOX::NLN group class. This class searches the "Group Options" parameter list passed
         into the constructor and if a ppo is found will wrap the object.
 
         For instructions on how to implement a PrePostOperator, see
-        NOX::NLN::Abstract::PrePostOperator or one of the currently supported implementations (enum
+        NOX::Nln::Abstract::PrePostOperator or one of the currently supported implementations (enum
         list).
 
         \author Michael Hiermeier
@@ -55,7 +55,7 @@ namespace NOX
       class PrePostOperator
       {
        public:
-        typedef std::map<enum PrePostOpType, Teuchos::RCP<NOX::NLN::Abstract::PrePostOperator>> Map;
+        typedef std::map<enum PrePostOpType, Teuchos::RCP<NOX::Nln::Abstract::PrePostOperator>> Map;
 
        private:
         //! Disallow default constructor.
@@ -78,45 +78,45 @@ namespace NOX
         virtual void reset(Teuchos::ParameterList& groupOptionsSublist);
 
         /** User defined method that will be executed at the start of a call to
-         * NOX::NLN::Group::computeF().
+         * NOX::Nln::Group::computeF().
          *
-         * \param F        : full access to the right hand side vector of the NOX::NLN::Group.
-         * \param grp      : read only access to the NOX::NLN::Group object.
+         * \param F        : full access to the right hand side vector of the NOX::Nln::Group.
+         * \param grp      : read only access to the NOX::Nln::Group object.
          */
-        virtual void runPreComputeF(Epetra_Vector& F, const NOX::NLN::Group& grp);
+        virtual void runPreComputeF(Epetra_Vector& F, const NOX::Nln::Group& grp);
 
         /** User defined method that will be executed at the end of a call to
-         * NOX::NLN::Group::computeF().
+         * NOX::Nln::Group::computeF().
          *
-         * \param F        : full access to the right hand side vector of the NOX::NLN::Group.
-         * \param grp      : read only access to the NOX::NLN::Group object.
+         * \param F        : full access to the right hand side vector of the NOX::Nln::Group.
+         * \param grp      : read only access to the NOX::Nln::Group object.
          */
-        virtual void runPostComputeF(Epetra_Vector& F, const NOX::NLN::Group& grp);
+        virtual void runPostComputeF(Epetra_Vector& F, const NOX::Nln::Group& grp);
 
         /** User defined method that will be executed at the start of a call to
-         * NOX::NLN::Group::computeX().
+         * NOX::Nln::Group::computeX().
          *
          * \param input_grp: read only access to the input group (holds the old X).
          * \param dir      : read only access to the direction vector (step length equal 1.0).
          * \param step     : read only access to the current step length (line search).
          * \param curr_grp : read only access to the called/current group (will hold the new X).
          */
-        virtual void runPreComputeX(const NOX::NLN::Group& input_grp, const Epetra_Vector& dir,
-            const double& step, const NOX::NLN::Group& curr_grp);
+        virtual void runPreComputeX(const NOX::Nln::Group& input_grp, const Epetra_Vector& dir,
+            const double& step, const NOX::Nln::Group& curr_grp);
 
         /** User defined method that will be executed at the end of a call to
-         * NOX::NLN::Group::computeX().
+         * NOX::Nln::Group::computeX().
          *
          * \param input_grp: read only access to the input group (holds the old X).
          * \param dir      : read only access to the direction vector (step length equal 1.0).
          * \param step     : read only access to the current step length (line search).
          * \param curr_grp : read only access to the called/current group (holds the new X).
          */
-        virtual void runPostComputeX(const NOX::NLN::Group& input_grp, const Epetra_Vector& dir,
-            const double& step, const NOX::NLN::Group& curr_grp);
+        virtual void runPostComputeX(const NOX::Nln::Group& input_grp, const Epetra_Vector& dir,
+            const double& step, const NOX::Nln::Group& curr_grp);
 
         /*! User defined method that will be executed at the beginning
-         *  of a call to NOX::NLN::Group::applyJacobianInverse().
+         *  of a call to NOX::Nln::Group::applyJacobianInverse().
          *
          *  \param rhs    : read-only access to the rhs vector
          *  \param result : full access to the result vector
@@ -125,10 +125,10 @@ namespace NOX
          */
         virtual void run_pre_apply_jacobian_inverse(const ::NOX::Abstract::Vector& rhs,
             ::NOX::Abstract::Vector& result, const ::NOX::Abstract::Vector& xold,
-            const NOX::NLN::Group& grp);
+            const NOX::Nln::Group& grp);
 
         /*! User defined method that will be executed at the end
-         *  of a call to NOX::NLN::Group::applyJacobianInverse().
+         *  of a call to NOX::Nln::Group::applyJacobianInverse().
          *
          *  \param rhs    : read-only access to the rhs vector
          *  \param result : full access to the result vector
@@ -137,7 +137,7 @@ namespace NOX
          */
         virtual void run_post_apply_jacobian_inverse(const ::NOX::Abstract::Vector& rhs,
             ::NOX::Abstract::Vector& result, const ::NOX::Abstract::Vector& xold,
-            const NOX::NLN::Group& grp);
+            const NOX::Nln::Group& grp);
 
        protected:
         //! Flag that determines if a pre/post operator has been supplied by user.
@@ -152,14 +152,14 @@ namespace NOX
         /*! Returns the inherent pre/post operator std::map of the "Group Options" sublist.
          *  If the corresponding parameter called "User Defined Pre/Post Operator" is not yet
          *  defined, a empty std::map is generated and set into the parameter list first. */
-        NOX::NLN::GROUP::PrePostOperator::Map& GetMap(Teuchos::ParameterList& p_grp_opt);
+        NOX::Nln::GROUP::PrePostOperator::Map& GetMap(Teuchos::ParameterList& p_grp_opt);
       }  // namespace PrePostOp
     }    // namespace GROUP
-  }      // namespace NLN
+  }      // namespace Nln
 }  // namespace NOX
 
-inline void NOX::NLN::GROUP::PrePostOperator::runPreComputeF(
-    Epetra_Vector& F, const NOX::NLN::Group& grp)
+inline void NOX::Nln::GROUP::PrePostOperator::runPreComputeF(
+    Epetra_Vector& F, const NOX::Nln::Group& grp)
 {
   if (havePrePostOperator_)
   {
@@ -169,8 +169,8 @@ inline void NOX::NLN::GROUP::PrePostOperator::runPreComputeF(
   }
 }
 
-inline void NOX::NLN::GROUP::PrePostOperator::runPostComputeF(
-    Epetra_Vector& F, const NOX::NLN::Group& grp)
+inline void NOX::Nln::GROUP::PrePostOperator::runPostComputeF(
+    Epetra_Vector& F, const NOX::Nln::Group& grp)
 {
   if (havePrePostOperator_)
   {
@@ -180,8 +180,8 @@ inline void NOX::NLN::GROUP::PrePostOperator::runPostComputeF(
   }
 }
 
-inline void NOX::NLN::GROUP::PrePostOperator::runPreComputeX(const NOX::NLN::Group& input_grp,
-    const Epetra_Vector& dir, const double& step, const NOX::NLN::Group& curr_grp)
+inline void NOX::Nln::GROUP::PrePostOperator::runPreComputeX(const NOX::Nln::Group& input_grp,
+    const Epetra_Vector& dir, const double& step, const NOX::Nln::Group& curr_grp)
 {
   if (havePrePostOperator_)
   {
@@ -191,8 +191,8 @@ inline void NOX::NLN::GROUP::PrePostOperator::runPreComputeX(const NOX::NLN::Gro
   }
 }
 
-inline void NOX::NLN::GROUP::PrePostOperator::runPostComputeX(const NOX::NLN::Group& input_grp,
-    const Epetra_Vector& dir, const double& step, const NOX::NLN::Group& curr_grp)
+inline void NOX::Nln::GROUP::PrePostOperator::runPostComputeX(const NOX::Nln::Group& input_grp,
+    const Epetra_Vector& dir, const double& step, const NOX::Nln::Group& curr_grp)
 {
   if (havePrePostOperator_)
   {
@@ -202,9 +202,9 @@ inline void NOX::NLN::GROUP::PrePostOperator::runPostComputeX(const NOX::NLN::Gr
   }
 }
 
-inline void NOX::NLN::GROUP::PrePostOperator::run_pre_apply_jacobian_inverse(
+inline void NOX::Nln::GROUP::PrePostOperator::run_pre_apply_jacobian_inverse(
     const ::NOX::Abstract::Vector& rhs, ::NOX::Abstract::Vector& result,
-    const ::NOX::Abstract::Vector& xold, const NOX::NLN::Group& grp)
+    const ::NOX::Abstract::Vector& xold, const NOX::Nln::Group& grp)
 {
   if (havePrePostOperator_)
   {
@@ -214,9 +214,9 @@ inline void NOX::NLN::GROUP::PrePostOperator::run_pre_apply_jacobian_inverse(
   }
 }
 
-inline void NOX::NLN::GROUP::PrePostOperator::run_post_apply_jacobian_inverse(
+inline void NOX::Nln::GROUP::PrePostOperator::run_post_apply_jacobian_inverse(
     const ::NOX::Abstract::Vector& rhs, ::NOX::Abstract::Vector& result,
-    const ::NOX::Abstract::Vector& xold, const NOX::NLN::Group& grp)
+    const ::NOX::Abstract::Vector& xold, const NOX::Nln::Group& grp)
 {
   if (havePrePostOperator_)
   {

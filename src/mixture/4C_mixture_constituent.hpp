@@ -25,7 +25,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
-namespace MAT
+namespace Mat
 {
   class Anisotropy;
 }
@@ -45,16 +45,16 @@ namespace MIXTURE
 
   namespace PAR
   {
-    class MixtureConstituent : public CORE::MAT::PAR::Parameter
+    class MixtureConstituent : public Core::Mat::PAR::Parameter
     {
      public:
-      explicit MixtureConstituent(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
+      explicit MixtureConstituent(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
 
       /// create material instance of matching type with my parameters
       virtual std::unique_ptr<MIXTURE::MixtureConstituent> CreateConstituent(int id) = 0;
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() final;
+      Teuchos::RCP<Core::Mat::Material> create_material() final;
 
       static MIXTURE::PAR::MixtureConstituent* Factory(int matnum);
     };
@@ -65,7 +65,7 @@ namespace MIXTURE
    * holder class
    *
    * This abstract class defines the interface that a constituents needs to implement. It has to be
-   * paired with MAT::Mixture and MIXTURE::MixtureRule.
+   * paired with Mat::Mixture and MIXTURE::MixtureRule.
    *
    * Example input lines:
    * MAT 1 MAT_Mixture NUMCONST 2 MATIDSCONST 11 12 MASSFRAC 0.4 0.6 MATIDMIXTURERULE 10
@@ -98,7 +98,7 @@ namespace MIXTURE
      *
      * @param data (in/put) : vector storing all data to be packed into this instance.
      */
-    virtual void PackConstituent(CORE::COMM::PackBuffer& data) const;
+    virtual void PackConstituent(Core::Communication::PackBuffer& data) const;
 
     /*!
      * \brief Unpack data from a char vector into this class to be called from a derived class
@@ -114,14 +114,14 @@ namespace MIXTURE
         std::vector<char>::size_type& position, const std::vector<char>& data);
 
     /// material type
-    virtual CORE::Materials::MaterialType MaterialType() const = 0;
+    virtual Core::Materials::MaterialType MaterialType() const = 0;
 
     /*!
      * \brief Register anisotropy extensions of all sub-materials of the constituent
      *
      * \param anisotropy Reference to the global anisotropy manager
      */
-    virtual void register_anisotropy_extensions(MAT::Anisotropy& anisotropy)
+    virtual void register_anisotropy_extensions(Mat::Anisotropy& anisotropy)
     {
       // do nothing in the default case
     }
@@ -132,7 +132,7 @@ namespace MIXTURE
      * @param numgp (in) Number of Gauss-points
      * @param params (in/out) Parameter list for exchange of parameters
      */
-    virtual void ReadElement(int numgp, INPUT::LineDefinition* linedef);
+    virtual void ReadElement(int numgp, Input::LineDefinition* linedef);
 
     /*!
      * Returns whether the constituent is already set up
@@ -162,7 +162,7 @@ namespace MIXTURE
      * @param gp Gauss point
      * @param eleGID Global element identifier
      */
-    virtual void Update(CORE::LINALG::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params,
+    virtual void Update(Core::LinAlg::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params,
         const int gp, const int eleGID)
     {
     }
@@ -179,8 +179,8 @@ namespace MIXTURE
      * @param gp Gauss-point
      * @param eleGID Global element id
      */
-    virtual void UpdateElasticPart(const CORE::LINALG::Matrix<3, 3>& F,
-        const CORE::LINALG::Matrix<3, 3>& iFext, Teuchos::ParameterList& params, const double dt,
+    virtual void UpdateElasticPart(const Core::LinAlg::Matrix<3, 3>& F,
+        const Core::LinAlg::Matrix<3, 3>& iFext, Teuchos::ParameterList& params, const double dt,
         const int gp, const int eleGID)
     {
       // do nothing
@@ -216,12 +216,12 @@ namespace MIXTURE
      *
      * @param gp (in) : Gauss point id
      * @param eleGID (in) : Global element id
-     * @return CORE::LINALG::Matrix<1, 6> Derivative of the growth scalar w.r.t. Cauchy-Green
+     * @return Core::LinAlg::Matrix<1, 6> Derivative of the growth scalar w.r.t. Cauchy-Green
      * deformation tensor
      */
-    [[nodiscard]] virtual CORE::LINALG::Matrix<1, 6> GetDGrowthScalarDC(int gp, int eleGID) const
+    [[nodiscard]] virtual Core::LinAlg::Matrix<1, 6> GetDGrowthScalarDC(int gp, int eleGID) const
     {
-      const CORE::LINALG::Matrix<1, 6> dGrowthScalarDC(true);
+      const Core::LinAlg::Matrix<1, 6> dGrowthScalarDC(true);
       return dGrowthScalarDC;
     };
 
@@ -247,9 +247,9 @@ namespace MIXTURE
      * @param gp Gauss-point
      * @param eleGID Global element id
      */
-    virtual void EvaluateElasticPart(const CORE::LINALG::Matrix<3, 3>& F,
-        const CORE::LINALG::Matrix<3, 3>& iF_in, Teuchos::ParameterList& params,
-        CORE::LINALG::Matrix<6, 1>& S_stress, CORE::LINALG::Matrix<6, 6>& cmat, int gp, int eleGID);
+    virtual void EvaluateElasticPart(const Core::LinAlg::Matrix<3, 3>& F,
+        const Core::LinAlg::Matrix<3, 3>& iF_in, Teuchos::ParameterList& params,
+        Core::LinAlg::Matrix<6, 1>& S_stress, Core::LinAlg::Matrix<6, 6>& cmat, int gp, int eleGID);
 
     /*!
      * Evaluates the constituents. Needs to compute the stress contribution of the constituent out
@@ -267,9 +267,9 @@ namespace MIXTURE
      * @param gp (in) : Number of Gauss point
      * @param eleGID (in) : Global element id
      */
-    virtual void Evaluate(const CORE::LINALG::Matrix<3, 3>& F,
-        const CORE::LINALG::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
-        CORE::LINALG::Matrix<6, 1>& S_stress, CORE::LINALG::Matrix<6, 6>& cmat, int gp,
+    virtual void Evaluate(const Core::LinAlg::Matrix<3, 3>& F,
+        const Core::LinAlg::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
+        Core::LinAlg::Matrix<6, 1>& S_stress, Core::LinAlg::Matrix<6, 6>& cmat, int gp,
         int eleGID) = 0;
 
     /// Returns the refenrence mass density. Needs to be implemented by the deriving class.
@@ -295,7 +295,7 @@ namespace MIXTURE
      * \return true if data is set by the material, otherwise false
      */
     virtual bool EvaluateOutputData(
-        const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const
+        const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const
     {
       return false;
     }

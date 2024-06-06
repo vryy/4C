@@ -24,10 +24,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       bk 11/13 |
  *----------------------------------------------------------------------*/
-FLD::TimIntStationary::TimIntStationary(const Teuchos::RCP<DRT::Discretization>& actdis,
-    const Teuchos::RCP<CORE::LINALG::Solver>& solver,
+FLD::TimIntStationary::TimIntStationary(const Teuchos::RCP<Discret::Discretization>& actdis,
+    const Teuchos::RCP<Core::LinAlg::Solver>& solver,
     const Teuchos::RCP<Teuchos::ParameterList>& params,
-    const Teuchos::RCP<CORE::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
+    const Teuchos::RCP<Core::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
     : FluidImplicitTimeInt(actdis, solver, params, output, alefluid)
 {
   return;
@@ -124,7 +124,7 @@ void FLD::TimIntStationary::solve_stationary_problem()
     // -------------------------------------------------------------------
     //           preparation of AVM3-based scale separation
     // -------------------------------------------------------------------
-    if (step_ == 1 and fssgv_ != INPAR::FLUID::no_fssgv) av_m3_preparation();
+    if (step_ == 1 and fssgv_ != Inpar::FLUID::no_fssgv) av_m3_preparation();
 
     // -------------------------------------------------------------------
     //                     solve equation system

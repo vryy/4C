@@ -31,7 +31,7 @@ void STR::MODELEVALUATOR::BaseSSI::determine_stress_strain()
 
   // initialize map for element-wise stresses
   const auto stresses =
-      Teuchos::rcp(new std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>);
+      Teuchos::rcp(new std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>);
 
   // initialize position pointer
   std::vector<char>::size_type position(0);
@@ -40,17 +40,17 @@ void STR::MODELEVALUATOR::BaseSSI::determine_stress_strain()
   for (int i = 0; i < discret().ElementRowMap()->NumMyElements(); ++i)
   {
     // initialize matrix for stresses associated with current element
-    const auto stresses_ele = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+    const auto stresses_ele = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
 
     // extract stresses
-    CORE::COMM::ParObject::ExtractfromPack(position, stressdata, *stresses_ele);
+    Core::Communication::ParObject::ExtractfromPack(position, stressdata, *stresses_ele);
 
     // store stresses
     (*stresses)[discret().ElementRowMap()->GID(i)] = stresses_ele;
   }
 
   // export map to column format
-  CORE::COMM::Exporter exporter(
+  Core::Communication::Exporter exporter(
       *discret().ElementRowMap(), *discret().ElementColMap(), discret().Comm());
   exporter.Export(*stresses);
 
@@ -58,9 +58,9 @@ void STR::MODELEVALUATOR::BaseSSI::determine_stress_strain()
   Epetra_MultiVector nodal_stresses_source(*discret().NodeRowMap(), 6);
 
   discret().Evaluate(
-      [&](CORE::Elements::Element& ele)
+      [&](Core::Elements::Element& ele)
       {
-        CORE::FE::ExtrapolateGaussPointQuantityToNodes(
+        Core::FE::ExtrapolateGaussPointQuantityToNodes(
             ele, *stresses->at(ele.Id()), discret(), nodal_stresses_source);
       });
 
@@ -70,7 +70,7 @@ void STR::MODELEVALUATOR::BaseSSI::determine_stress_strain()
     const int nodegid = nodegids->GID(i);
 
     // extract lid of node as multi-vector is sorted according to the node ids
-    const CORE::Nodes::Node* const node = discret().gNode(nodegid);
+    const Core::Nodes::Node* const node = discret().gNode(nodegid);
     const int nodelid = discret().NodeRowMap()->LID(nodegid);
 
     // extract dof lid of first degree of freedom associated with current node in second nodeset

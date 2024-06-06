@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
-namespace PARTICLEINTERACTION
+namespace ParticleInteraction
 {
   class SPHKernelBase;
   class SPHEquationOfStateBundle;
@@ -39,12 +39,12 @@ namespace PARTICLEINTERACTION
   class SPHVirtualWallParticle;
   class SPHPhaseChangeBase;
   class SPHRigidParticleContactBase;
-}  // namespace PARTICLEINTERACTION
+}  // namespace ParticleInteraction
 
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
  *---------------------------------------------------------------------------*/
-namespace PARTICLEINTERACTION
+namespace ParticleInteraction
 {
   /*!
    * \brief smoothed particle hydrodynamics (SPH) interaction
@@ -79,7 +79,7 @@ namespace PARTICLEINTERACTION
     void write_restart() const override;
 
     //! read restart of particle interaction handler
-    void read_restart(const std::shared_ptr<CORE::IO::DiscretizationReader> reader) override;
+    void read_restart(const std::shared_ptr<Core::IO::DiscretizationReader> reader) override;
 
     //! insert interaction dependent states of all particle types
     void insert_particle_states_of_particle_types(
@@ -161,49 +161,49 @@ namespace PARTICLEINTERACTION
     const Teuchos::ParameterList& params_sph_;
 
     //! kernel handler
-    std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel_;
+    std::shared_ptr<ParticleInteraction::SPHKernelBase> kernel_;
 
     //! equation of state bundle
-    std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle_;
+    std::shared_ptr<ParticleInteraction::SPHEquationOfStateBundle> equationofstatebundle_;
 
     //! neighbor pair handler
-    std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs_;
+    std::shared_ptr<ParticleInteraction::SPHNeighborPairs> neighborpairs_;
 
     //! density handler
-    std::unique_ptr<PARTICLEINTERACTION::SPHDensityBase> density_;
+    std::unique_ptr<ParticleInteraction::SPHDensityBase> density_;
 
     //! pressure handler
-    std::unique_ptr<PARTICLEINTERACTION::SPHPressure> pressure_;
+    std::unique_ptr<ParticleInteraction::SPHPressure> pressure_;
 
     //! temperature handler
-    std::unique_ptr<PARTICLEINTERACTION::SPHTemperature> temperature_;
+    std::unique_ptr<ParticleInteraction::SPHTemperature> temperature_;
 
     //! momentum handler
-    std::unique_ptr<PARTICLEINTERACTION::SPHMomentum> momentum_;
+    std::unique_ptr<ParticleInteraction::SPHMomentum> momentum_;
 
     //! surface tension handler
-    std::unique_ptr<PARTICLEINTERACTION::SPHSurfaceTension> surfacetension_;
+    std::unique_ptr<ParticleInteraction::SPHSurfaceTension> surfacetension_;
 
     //! boundary particle handler
-    std::unique_ptr<PARTICLEINTERACTION::SPHBoundaryParticleBase> boundaryparticle_;
+    std::unique_ptr<ParticleInteraction::SPHBoundaryParticleBase> boundaryparticle_;
 
     //! dirichlet open boundary handler
-    std::unique_ptr<PARTICLEINTERACTION::SPHOpenBoundaryBase> dirichletopenboundary_;
+    std::unique_ptr<ParticleInteraction::SPHOpenBoundaryBase> dirichletopenboundary_;
 
     //! neumann open boundary handler
-    std::unique_ptr<PARTICLEINTERACTION::SPHOpenBoundaryBase> neumannopenboundary_;
+    std::unique_ptr<ParticleInteraction::SPHOpenBoundaryBase> neumannopenboundary_;
 
     //! virtual wall particle handler
-    std::shared_ptr<PARTICLEINTERACTION::SPHVirtualWallParticle> virtualwallparticle_;
+    std::shared_ptr<ParticleInteraction::SPHVirtualWallParticle> virtualwallparticle_;
 
     //! phase change handler
-    std::unique_ptr<PARTICLEINTERACTION::SPHPhaseChangeBase> phasechange_;
+    std::unique_ptr<ParticleInteraction::SPHPhaseChangeBase> phasechange_;
 
     //! rigid particle contact handler
-    std::unique_ptr<PARTICLEINTERACTION::SPHRigidParticleContactBase> rigidparticlecontact_;
+    std::unique_ptr<ParticleInteraction::SPHRigidParticleContactBase> rigidparticlecontact_;
   };
 
-}  // namespace PARTICLEINTERACTION
+}  // namespace ParticleInteraction
 
 /*---------------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

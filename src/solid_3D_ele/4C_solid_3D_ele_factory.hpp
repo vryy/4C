@@ -26,48 +26,48 @@ namespace STR::ELEMENTS
 {
   enum class EasType;
 }
-namespace DRT::ELEMENTS
+namespace Discret::ELEMENTS
 {
-  namespace DETAILS
+  namespace Details
   {
-    using ImplementedSolidCellTypes = CORE::FE::CelltypeSequence<CORE::FE::CellType::hex8,
-        CORE::FE::CellType::hex18, CORE::FE::CellType::hex20, CORE::FE::CellType::hex27,
-        CORE::FE::CellType::nurbs27, CORE::FE::CellType::tet4, CORE::FE::CellType::tet10,
-        CORE::FE::CellType::wedge6, CORE::FE::CellType::pyramid5>;
+    using ImplementedSolidCellTypes = Core::FE::CelltypeSequence<Core::FE::CellType::hex8,
+        Core::FE::CellType::hex18, Core::FE::CellType::hex20, Core::FE::CellType::hex27,
+        Core::FE::CellType::nurbs27, Core::FE::CellType::tet4, Core::FE::CellType::tet10,
+        Core::FE::CellType::wedge6, Core::FE::CellType::pyramid5>;
 
     using DisplacementBasedEvaluators =
-        CORE::FE::apply_celltype_sequence<DisplacementBasedSolidIntegrator,
+        Core::FE::apply_celltype_sequence<DisplacementBasedSolidIntegrator,
             ImplementedSolidCellTypes>;
 
     using DisplacementBasedLinearKinematicsEvaluators =
-        CORE::FE::apply_celltype_sequence<DisplacementBasedLinearKinematicsSolidIntegrator,
+        Core::FE::apply_celltype_sequence<DisplacementBasedLinearKinematicsSolidIntegrator,
             ImplementedSolidCellTypes>;
 
-    using FbarEvaluators = CORE::FE::apply_celltype_sequence<FBarSolidIntegrator,
-        CORE::FE::CelltypeSequence<CORE::FE::CellType::hex8, CORE::FE::CellType::pyramid5>>;
-    using EASEvaluators = CORE::FE::BaseTypeList<
-        SolidEleCalcEas<CORE::FE::CellType::hex8, STR::ELEMENTS::EasType::eastype_h8_9>,
-        SolidEleCalcEas<CORE::FE::CellType::hex8, STR::ELEMENTS::EasType::eastype_h8_21>>;
+    using FbarEvaluators = Core::FE::apply_celltype_sequence<FBarSolidIntegrator,
+        Core::FE::CelltypeSequence<Core::FE::CellType::hex8, Core::FE::CellType::pyramid5>>;
+    using EASEvaluators = Core::FE::BaseTypeList<
+        SolidEleCalcEas<Core::FE::CellType::hex8, STR::ELEMENTS::EasType::eastype_h8_9>,
+        SolidEleCalcEas<Core::FE::CellType::hex8, STR::ELEMENTS::EasType::eastype_h8_21>>;
     using MulfEvaluators =
-        CORE::FE::apply_celltype_sequence<MulfSolidIntegrator, ImplementedSolidCellTypes>;
-    using FBarMulfEvaluators = CORE::FE::apply_celltype_sequence<MulfFBarSolidIntegrator,
-        CORE::FE::CelltypeSequence<CORE::FE::CellType::hex8, CORE::FE::CellType::pyramid5>>;
+        Core::FE::apply_celltype_sequence<MulfSolidIntegrator, ImplementedSolidCellTypes>;
+    using FBarMulfEvaluators = Core::FE::apply_celltype_sequence<MulfFBarSolidIntegrator,
+        Core::FE::CelltypeSequence<Core::FE::CellType::hex8, Core::FE::CellType::pyramid5>>;
 
     using SolidEvaluators =
-        CORE::FE::Join<DisplacementBasedEvaluators, DisplacementBasedLinearKinematicsEvaluators,
+        Core::FE::Join<DisplacementBasedEvaluators, DisplacementBasedLinearKinematicsEvaluators,
             FbarEvaluators, EASEvaluators, MulfEvaluators, FBarMulfEvaluators>;
-  }  // namespace DETAILS
+  }  // namespace Details
 
-  using SolidCalcVariant = CreateVariantType<DETAILS::SolidEvaluators>;
+  using SolidCalcVariant = CreateVariantType<Details::SolidEvaluators>;
 
   // forward declaration
   class SolidEleCalcInterface;
   class Solid;
 
-  SolidCalcVariant CreateSolidCalculationInterface(
-      CORE::FE::CellType celltype, const DRT::ELEMENTS::SolidElementProperties& element_properties);
+  SolidCalcVariant CreateSolidCalculationInterface(Core::FE::CellType celltype,
+      const Discret::ELEMENTS::SolidElementProperties& element_properties);
 
-}  // namespace DRT::ELEMENTS
+}  // namespace Discret::ELEMENTS
 
 
 FOUR_C_NAMESPACE_CLOSE

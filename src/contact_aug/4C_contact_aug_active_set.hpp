@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 namespace CONTACT
 {
   class ParamsInterface;
-  namespace AUG
+  namespace Aug
   {
     class Strategy;
 
@@ -114,7 +114,7 @@ namespace CONTACT
       /// reference to the underlying augmented contact strategy
       Strategy& strategy_;
     };
-  }  // namespace AUG
+  }  // namespace Aug
 }  // namespace CONTACT
 
 

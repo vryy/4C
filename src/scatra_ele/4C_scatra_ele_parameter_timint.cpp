@@ -23,20 +23,20 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ScaTraEleParameterTimInt* DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance(
+Discret::ELEMENTS::ScaTraEleParameterTimInt* Discret::ELEMENTS::ScaTraEleParameterTimInt::Instance(
     const std::string& disname)
 {
   static auto singleton_map =
-      CORE::UTILS::MakeSingletonMap<std::string>([](const std::string& disname)
+      Core::UTILS::MakeSingletonMap<std::string>([](const std::string& disname)
           { return std::unique_ptr<ScaTraEleParameterTimInt>(new ScaTraEleParameterTimInt); });
 
-  return singleton_map[disname].Instance(CORE::UTILS::SingletonAction::create, disname);
+  return singleton_map[disname].Instance(Core::UTILS::SingletonAction::create, disname);
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ScaTraEleParameterTimInt::ScaTraEleParameterTimInt()
+Discret::ELEMENTS::ScaTraEleParameterTimInt::ScaTraEleParameterTimInt()
     : is_genalpha_(false),
       is_stationary_(false),
       is_incremental_(false),
@@ -52,7 +52,7 @@ DRT::ELEMENTS::ScaTraEleParameterTimInt::ScaTraEleParameterTimInt()
 
 //----------------------------------------------------------------------*/
 //----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraEleParameterTimInt::SetParameters(Teuchos::ParameterList& parameters)
+void Discret::ELEMENTS::ScaTraEleParameterTimInt::SetParameters(Teuchos::ParameterList& parameters)
 {
   // get control parameters
   is_stationary_ = parameters.get<bool>("using stationary formulation");

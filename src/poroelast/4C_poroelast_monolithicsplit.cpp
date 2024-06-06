@@ -22,12 +22,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-POROELAST::MonolithicSplit::MonolithicSplit(const Epetra_Comm& comm,
+PoroElast::MonolithicSplit::MonolithicSplit(const Epetra_Comm& comm,
     const Teuchos::ParameterList& timeparams,
-    Teuchos::RCP<CORE::LINALG::MapExtractor> porosity_splitter)
+    Teuchos::RCP<Core::LinAlg::MapExtractor> porosity_splitter)
     : Monolithic(comm, timeparams, porosity_splitter)
 {
-  icoupfs_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
+  icoupfs_ = Teuchos::rcp(new Core::Adapter::Coupling());
 
   evaluateinterface_ = false;
 
@@ -47,10 +47,10 @@ POROELAST::MonolithicSplit::MonolithicSplit(const Epetra_Comm& comm,
   ddi_ = Teuchos::null;
 }
 
-void POROELAST::MonolithicSplit::prepare_time_step()
+void PoroElast::MonolithicSplit::prepare_time_step()
 {
   // call base class
-  POROELAST::Monolithic::prepare_time_step();
+  PoroElast::Monolithic::prepare_time_step();
 
   //  // call the predictor
   //  structure_field()->prepare_time_step();
@@ -99,21 +99,21 @@ void POROELAST::MonolithicSplit::prepare_time_step()
   }
 }
 
-Teuchos::RCP<Epetra_Vector> POROELAST::MonolithicSplit::structure_to_fluid_at_interface(
+Teuchos::RCP<Epetra_Vector> PoroElast::MonolithicSplit::structure_to_fluid_at_interface(
     Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return icoupfs_->MasterToSlave(iv);
 }
 
-Teuchos::RCP<Epetra_Vector> POROELAST::MonolithicSplit::fluid_to_structure_at_interface(
+Teuchos::RCP<Epetra_Vector> PoroElast::MonolithicSplit::fluid_to_structure_at_interface(
     Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return icoupfs_->SlaveToMaster(iv);
 }
 
-Teuchos::RCP<Epetra_Map> POROELAST::MonolithicSplit::fsidbc_map()
+Teuchos::RCP<Epetra_Map> PoroElast::MonolithicSplit::fsidbc_map()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("POROELAST::MonolithicSplit::FSIDBCMap");
+  TEUCHOS_FUNC_TIME_MONITOR("PoroElast::MonolithicSplit::FSIDBCMap");
 
   // get interface map and DBC map of fluid
   std::vector<Teuchos::RCP<const Epetra_Map>> fluidmaps;
@@ -122,7 +122,7 @@ Teuchos::RCP<Epetra_Map> POROELAST::MonolithicSplit::fsidbc_map()
 
   // build vector of dbc and fsi coupling of fluid field
   Teuchos::RCP<Epetra_Map> fluidfsibcmap =
-      CORE::LINALG::MultiMapExtractor::IntersectMaps(fluidmaps);
+      Core::LinAlg::MultiMapExtractor::IntersectMaps(fluidmaps);
 
   if (fluidfsibcmap->NumMyElements())
     FOUR_C_THROW("Dirichlet boundary conditions on fluid and FSI interface not supported!!");
@@ -134,7 +134,7 @@ Teuchos::RCP<Epetra_Map> POROELAST::MonolithicSplit::fsidbc_map()
 
   // vector of dbc and fsi coupling of structure field
   Teuchos::RCP<Epetra_Map> structfsibcmap =
-      CORE::LINALG::MultiMapExtractor::IntersectMaps(structmaps);
+      Core::LinAlg::MultiMapExtractor::IntersectMaps(structmaps);
 
   Teuchos::RCP<Epetra_Vector> gidmarker_struct =
       Teuchos::rcp(new Epetra_Vector(*structure_field()->Interface()->FSICondMap(), true));
@@ -172,9 +172,9 @@ Teuchos::RCP<Epetra_Map> POROELAST::MonolithicSplit::fsidbc_map()
   return structfsidbcmap;
 }
 
-void POROELAST::MonolithicSplit::setup_coupling_and_matrices()
+void PoroElast::MonolithicSplit::setup_coupling_and_matrices()
 {
-  const int ndim = GLOBAL::Problem::Instance()->NDim();
+  const int ndim = Global::Problem::Instance()->NDim();
   icoupfs_->setup_condition_coupling(*structure_field()->discretization(),
       structure_field()->Interface()->FSICondMap(), *fluid_field()->discretization(),
       fluid_field()->Interface()->FSICondMap(), "FSICoupling", ndim);
@@ -187,12 +187,12 @@ void POROELAST::MonolithicSplit::setup_coupling_and_matrices()
   {
     if (fsibcmap_->NumGlobalElements())
     {
-      const Teuchos::RCP<ADAPTER::FluidPoro>& fluidfield =
-          Teuchos::rcp_dynamic_cast<ADAPTER::FluidPoro>(fluid_field());
+      const Teuchos::RCP<Adapter::FluidPoro>& fluidfield =
+          Teuchos::rcp_dynamic_cast<Adapter::FluidPoro>(fluid_field());
       fluidfield->add_dirich_cond(fsibcmap_);
 
       fsibcextractor_ = Teuchos::rcp(
-          new CORE::LINALG::MapExtractor(*fluid_field()->Interface()->FSICondMap(), fsibcmap_));
+          new Core::LinAlg::MapExtractor(*fluid_field()->Interface()->FSICondMap(), fsibcmap_));
     }
 
     Teuchos::RCP<const Epetra_Vector> idispnp =
@@ -202,22 +202,22 @@ void POROELAST::MonolithicSplit::setup_coupling_and_matrices()
 
   // initialize Poroelasticity-systemmatrix_
   systemmatrix_ =
-      Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
+      Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
           *Extractor(), *Extractor(), 81, false, true));
 
   // initialize coupling matrices
   k_fs_ =
-      Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
+      Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
           *(structure_field()->Interface()), *(fluid_field()->Interface()), 81, false, true));
 
   k_sf_ =
-      Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
+      Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
           *(fluid_field()->Interface()), *(structure_field()->Interface()), 81, false, true));
 }
 
-void POROELAST::MonolithicSplit::build_combined_dbc_map()
+void PoroElast::MonolithicSplit::build_combined_dbc_map()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("POROELAST::MonolithicSplit::combined_dbc_map");
+  TEUCHOS_FUNC_TIME_MONITOR("PoroElast::MonolithicSplit::combined_dbc_map");
 
   // first, get DBC-maps from structure and fluid field and merge them to one map
   const Teuchos::RCP<const Epetra_Map> scondmap =
@@ -229,7 +229,7 @@ void POROELAST::MonolithicSplit::build_combined_dbc_map()
   vectoroverallfsimaps.push_back(fcondmap);
 
   Teuchos::RCP<Epetra_Map> overallfsidbcmaps =
-      CORE::LINALG::MultiMapExtractor::MergeMaps(vectoroverallfsimaps);
+      Core::LinAlg::MultiMapExtractor::MergeMaps(vectoroverallfsimaps);
 
   // now we intersect the global dof map with the DBC map to get all dofs with DBS applied, which
   // are in the global
@@ -238,10 +238,10 @@ void POROELAST::MonolithicSplit::build_combined_dbc_map()
   vectordbcmaps.emplace_back(overallfsidbcmaps);
   vectordbcmaps.emplace_back(fullmap_);
 
-  combinedDBCMap_ = CORE::LINALG::MultiMapExtractor::IntersectMaps(vectordbcmaps);
+  combinedDBCMap_ = Core::LinAlg::MultiMapExtractor::IntersectMaps(vectordbcmaps);
 }
 
-void POROELAST::MonolithicSplit::Solve()
+void PoroElast::MonolithicSplit::Solve()
 {
   // solve monolithic system by newton iteration
   Monolithic::Solve();

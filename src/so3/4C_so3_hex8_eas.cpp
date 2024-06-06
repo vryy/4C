@@ -18,24 +18,24 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  initialize EAS data (private)                              maf 05/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex8::soh8_easinit()
+void Discret::ELEMENTS::SoHex8::soh8_easinit()
 {
   // EAS enhanced strain parameters at currently investigated load/time step
-  CORE::LINALG::SerialDenseMatrix alpha(neas_, 1);
+  Core::LinAlg::SerialDenseMatrix alpha(neas_, 1);
   // EAS enhanced strain parameters of last converged load/time step
-  CORE::LINALG::SerialDenseMatrix alphao(neas_, 1);
+  Core::LinAlg::SerialDenseMatrix alphao(neas_, 1);
   // EAS portion of internal forces, also called enhacement vector s or Rtilde
-  CORE::LINALG::SerialDenseMatrix feas(neas_, 1);
+  Core::LinAlg::SerialDenseMatrix feas(neas_, 1);
   // EAS matrix K_{alpha alpha}, also called Dtilde
-  CORE::LINALG::SerialDenseMatrix invKaa(neas_, neas_);
+  Core::LinAlg::SerialDenseMatrix invKaa(neas_, neas_);
   // EAS matrix K_{alpha alpha} of last converged load/time step
-  CORE::LINALG::SerialDenseMatrix invKaao(neas_, neas_);
+  Core::LinAlg::SerialDenseMatrix invKaao(neas_, neas_);
   // EAS matrix K_{d alpha}
-  CORE::LINALG::SerialDenseMatrix Kda(neas_, NUMDOF_SOH8);
+  Core::LinAlg::SerialDenseMatrix Kda(neas_, NUMDOF_SOH8);
   // EAS matrix K_{d alpha} of last converged load/time step
-  CORE::LINALG::SerialDenseMatrix Kdao(neas_, NUMDOF_SOH8);
+  Core::LinAlg::SerialDenseMatrix Kdao(neas_, NUMDOF_SOH8);
   // EAS increment over last Newton step
-  CORE::LINALG::SerialDenseMatrix eas_inc(neas_, 1);
+  Core::LinAlg::SerialDenseMatrix eas_inc(neas_, 1);
 
   // save EAS data into eas data
   easdata_.alpha = alpha;
@@ -51,36 +51,36 @@ void DRT::ELEMENTS::SoHex8::soh8_easinit()
 /*----------------------------------------------------------------------*
  |  re-initialize EAS data (private)                           maf 05/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex8::soh8_reiniteas(const DRT::ELEMENTS::SoHex8::EASType EASType)
+void Discret::ELEMENTS::SoHex8::soh8_reiniteas(const Discret::ELEMENTS::SoHex8::EASType EASType)
 {
   switch (EASType)
   {
-    case DRT::ELEMENTS::SoHex8::soh8_easfull:
+    case Discret::ELEMENTS::SoHex8::soh8_easfull:
       neas_ = 21;
       break;
-    case DRT::ELEMENTS::SoHex8::soh8_easmild:
+    case Discret::ELEMENTS::SoHex8::soh8_easmild:
       neas_ = 9;
       break;
-    case DRT::ELEMENTS::SoHex8::soh8_eassosh8:
+    case Discret::ELEMENTS::SoHex8::soh8_eassosh8:
       neas_ = 7;
       break;
-    case DRT::ELEMENTS::SoHex8::soh8_easa:
-      neas_ = DRT::ELEMENTS::SoSh8p8::NUMEAS_A_;
+    case Discret::ELEMENTS::SoHex8::soh8_easa:
+      neas_ = Discret::ELEMENTS::SoSh8p8::NUMEAS_A_;
       break;
-    case DRT::ELEMENTS::SoHex8::soh8_easnone:
+    case Discret::ELEMENTS::SoHex8::soh8_easnone:
       neas_ = 0;
       break;
   }
   eastype_ = EASType;
-  if (eastype_ == DRT::ELEMENTS::SoHex8::soh8_easnone) return;
-  CORE::LINALG::SerialDenseMatrix* alpha = nullptr;    // EAS alphas
-  CORE::LINALG::SerialDenseMatrix* alphao = nullptr;   // EAS alphas
-  CORE::LINALG::SerialDenseMatrix* feas = nullptr;     // EAS history
-  CORE::LINALG::SerialDenseMatrix* Kaainv = nullptr;   // EAS history
-  CORE::LINALG::SerialDenseMatrix* Kaainvo = nullptr;  // EAS history
-  CORE::LINALG::SerialDenseMatrix* Kda = nullptr;      // EAS history
-  CORE::LINALG::SerialDenseMatrix* Kdao = nullptr;     // EAS history
-  CORE::LINALG::SerialDenseMatrix* eas_inc = nullptr;  // EAS history
+  if (eastype_ == Discret::ELEMENTS::SoHex8::soh8_easnone) return;
+  Core::LinAlg::SerialDenseMatrix* alpha = nullptr;    // EAS alphas
+  Core::LinAlg::SerialDenseMatrix* alphao = nullptr;   // EAS alphas
+  Core::LinAlg::SerialDenseMatrix* feas = nullptr;     // EAS history
+  Core::LinAlg::SerialDenseMatrix* Kaainv = nullptr;   // EAS history
+  Core::LinAlg::SerialDenseMatrix* Kaainvo = nullptr;  // EAS history
+  Core::LinAlg::SerialDenseMatrix* Kda = nullptr;      // EAS history
+  Core::LinAlg::SerialDenseMatrix* Kdao = nullptr;     // EAS history
+  Core::LinAlg::SerialDenseMatrix* eas_inc = nullptr;  // EAS history
   alpha = &easdata_.alpha;                             // get alpha of previous iteration
   alphao = &easdata_.alphao;                           // get alpha of previous iteration
   feas = &easdata_.feas;
@@ -105,22 +105,22 @@ void DRT::ELEMENTS::SoHex8::soh8_reiniteas(const DRT::ELEMENTS::SoHex8::EASType 
 /*----------------------------------------------------------------------*
  |  setup of constant EAS data (private)                       maf 05/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex8::soh8_eassetup(
-    std::vector<CORE::LINALG::SerialDenseMatrix>** M_GP,  // M-matrix evaluated at GPs
+void Discret::ELEMENTS::SoHex8::soh8_eassetup(
+    std::vector<Core::LinAlg::SerialDenseMatrix>** M_GP,  // M-matrix evaluated at GPs
     double& detJ0,                                        // det of Jacobian at origin
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>&
+    Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D>&
         T0invT,  // maps M(origin) local to global
-    const CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xrefe) const  // material element coords
+    const Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xrefe) const  // material element coords
 {
   // vector of df(origin)
   static double df0_vector[NUMDIM_SOH8 * NUMNOD_SOH8] = {-0.125, -0.125, -0.125, +0.125, -0.125,
       -0.125, +0.125, +0.125, -0.125, -0.125, +0.125, -0.125, -0.125, -0.125, +0.125, +0.125,
       -0.125, +0.125, +0.125, +0.125, +0.125, -0.125, +0.125, +0.125};
   // shape function derivatives, evaluated at origin (r=s=t=0.0)
-  CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> df0(df0_vector);  // copy
+  Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> df0(df0_vector);  // copy
 
   // compute Jacobian, evaluated at element origin (r=s=t=0.0)
-  CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> jac0;
+  Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> jac0;
   jac0.Multiply(df0, xrefe);
   // compute determinant of Jacobian at origin
   detJ0 = jac0.Determinant();
@@ -174,7 +174,7 @@ void DRT::ELEMENTS::SoHex8::soh8_eassetup(
   T0invT(5, 5) = jac0(0, 0) * jac0(2, 2) + jac0(2, 0) * jac0(0, 2);
 
   // now evaluate T0^{-T} with solver
-  CORE::LINALG::FixedSizeSerialDenseSolver<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D, 1>
+  Core::LinAlg::FixedSizeSerialDenseSolver<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D, 1>
       solve_for_inverseT0;
   solve_for_inverseT0.SetMatrix(T0invT);
   int err2 = solve_for_inverseT0.Factor();
@@ -186,8 +186,8 @@ void DRT::ELEMENTS::SoHex8::soh8_eassetup(
   // fill up M at each gp
   if (eastype_ == soh8_easmild)
   {
-    // static CORE::LINALG::SerialDenseMatrix M_mild(MAT::NUM_STRESS_3D*NUMGPT_SOH8,neas_);
-    static std::vector<CORE::LINALG::SerialDenseMatrix> M_mild(NUMGPT_SOH8);
+    // static Core::LinAlg::SerialDenseMatrix M_mild(Mat::NUM_STRESS_3D*NUMGPT_SOH8,neas_);
+    static std::vector<Core::LinAlg::SerialDenseMatrix> M_mild(NUMGPT_SOH8);
     static bool M_mild_eval = false;
     /* easmild is the EAS interpolation of 9 modes, based on
     **            r 0 0   0 0 0 0 0 0
@@ -207,7 +207,7 @@ void DRT::ELEMENTS::SoHex8::soh8_eassetup(
       // fill up M at each gp
       for (unsigned i = 0; i < NUMGPT_SOH8; ++i)
       {
-        M_mild[i].shape(MAT::NUM_STRESS_3D, neas_);
+        M_mild[i].shape(Mat::NUM_STRESS_3D, neas_);
         M_mild[i](0, 0) = r[i];
         M_mild[i](1, 1) = s[i];
         M_mild[i](2, 2) = t[i];
@@ -227,7 +227,7 @@ void DRT::ELEMENTS::SoHex8::soh8_eassetup(
   }
   else if (eastype_ == soh8_easfull)
   {
-    static std::vector<CORE::LINALG::SerialDenseMatrix> M_full(NUMGPT_SOH8);
+    static std::vector<Core::LinAlg::SerialDenseMatrix> M_full(NUMGPT_SOH8);
     static bool M_full_eval = false;
     /* easfull is the EAS interpolation of 21 modes, based on
     **            r 0 0   0 0 0 0 0 0   0  0  0  0  0  0   rs rt 0  0  0  0
@@ -247,7 +247,7 @@ void DRT::ELEMENTS::SoHex8::soh8_eassetup(
       // fill up M at each gp
       for (unsigned i = 0; i < NUMGPT_SOH8; ++i)
       {
-        M_full[i].shape(MAT::NUM_STRESS_3D, neas_);
+        M_full[i].shape(Mat::NUM_STRESS_3D, neas_);
         M_full[i](0, 0) = r[i];
         M_full[i](0, 15) = r[i] * s[i];
         M_full[i](0, 16) = r[i] * t[i];
@@ -278,7 +278,7 @@ void DRT::ELEMENTS::SoHex8::soh8_eassetup(
   }
   else if (eastype_ == soh8_eassosh8)
   {
-    static std::vector<CORE::LINALG::SerialDenseMatrix> M_sosh8(NUMGPT_SOH8);
+    static std::vector<Core::LinAlg::SerialDenseMatrix> M_sosh8(NUMGPT_SOH8);
     static bool M_sosh8_eval = false;
     /* eassosh8 is the EAS interpolation for the Solid-Shell with t=thickness dir.
     ** consisting of 7 modes, based on
@@ -299,7 +299,7 @@ void DRT::ELEMENTS::SoHex8::soh8_eassetup(
       // fill up M at each gp
       for (unsigned i = 0; i < NUMGPT_SOH8; ++i)
       {
-        M_sosh8[i].shape(MAT::NUM_STRESS_3D, neas_);
+        M_sosh8[i].shape(Mat::NUM_STRESS_3D, neas_);
         M_sosh8[i](0, 0) = r[i];
         M_sosh8[i](1, 1) = s[i];
         M_sosh8[i](2, 2) = t[i];
@@ -316,7 +316,7 @@ void DRT::ELEMENTS::SoHex8::soh8_eassetup(
   }
   else if (eastype_ == soh8_easa)
   {
-    static std::vector<CORE::LINALG::SerialDenseMatrix> M_sosh8(NUMGPT_SOH8);
+    static std::vector<Core::LinAlg::SerialDenseMatrix> M_sosh8(NUMGPT_SOH8);
     static bool M_sosh8_eval = false;
     /* eassosh8 is the EAS interpolation for the Solid-Shell with t=thickness dir.
     ** consisting of 7 modes, based on
@@ -335,7 +335,7 @@ void DRT::ELEMENTS::SoHex8::soh8_eassetup(
       // fill up M at each gp
       for (unsigned i = 0; i < NUMGPT_SOH8; ++i)
       {
-        M_sosh8[i].shape(MAT::NUM_STRESS_3D, neas_);
+        M_sosh8[i].shape(Mat::NUM_STRESS_3D, neas_);
         int e = 0;
         M_sosh8[i](2, e++) = t[i] * t[i] * t[i];
 
@@ -369,7 +369,7 @@ void DRT::ELEMENTS::SoHex8::soh8_eassetup(
 /*----------------------------------------------------------------------*
  |  Update EAS parameters (private)                                     |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex8::soh8_easupdate()
+void Discret::ELEMENTS::SoHex8::soh8_easupdate()
 {
   const auto* alpha = &easdata_.alpha;    // Alpha_{n+1}
   auto* alphao = &easdata_.alphao;        // Alpha_n
@@ -380,22 +380,22 @@ void DRT::ELEMENTS::SoHex8::soh8_easupdate()
 
   switch (eastype_)
   {
-    case DRT::ELEMENTS::SoHex8::soh8_easfull:
-      CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_easfull, 1>(*alphao, *alpha);
-      CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_easfull, soh8_easfull>(*Kaainvo, *Kaainv);
-      CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_easfull, NUMDOF_SOH8>(*Kdao, *Kda);
+    case Discret::ELEMENTS::SoHex8::soh8_easfull:
+      Core::LinAlg::DenseFunctions::update<double, soh8_easfull, 1>(*alphao, *alpha);
+      Core::LinAlg::DenseFunctions::update<double, soh8_easfull, soh8_easfull>(*Kaainvo, *Kaainv);
+      Core::LinAlg::DenseFunctions::update<double, soh8_easfull, NUMDOF_SOH8>(*Kdao, *Kda);
       break;
-    case DRT::ELEMENTS::SoHex8::soh8_easmild:
-      CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_easmild, 1>(*alphao, *alpha);
-      CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_easmild, soh8_easmild>(*Kaainvo, *Kaainv);
-      CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_easmild, NUMDOF_SOH8>(*Kdao, *Kda);
+    case Discret::ELEMENTS::SoHex8::soh8_easmild:
+      Core::LinAlg::DenseFunctions::update<double, soh8_easmild, 1>(*alphao, *alpha);
+      Core::LinAlg::DenseFunctions::update<double, soh8_easmild, soh8_easmild>(*Kaainvo, *Kaainv);
+      Core::LinAlg::DenseFunctions::update<double, soh8_easmild, NUMDOF_SOH8>(*Kdao, *Kda);
       break;
-    case DRT::ELEMENTS::SoHex8::soh8_eassosh8:
-      CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, 1>(*alphao, *alpha);
-      CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, soh8_eassosh8>(*Kaainvo, *Kaainv);
-      CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, NUMDOF_SOH8>(*Kdao, *Kda);
+    case Discret::ELEMENTS::SoHex8::soh8_eassosh8:
+      Core::LinAlg::DenseFunctions::update<double, soh8_eassosh8, 1>(*alphao, *alpha);
+      Core::LinAlg::DenseFunctions::update<double, soh8_eassosh8, soh8_eassosh8>(*Kaainvo, *Kaainv);
+      Core::LinAlg::DenseFunctions::update<double, soh8_eassosh8, NUMDOF_SOH8>(*Kdao, *Kda);
       break;
-    case DRT::ELEMENTS::SoHex8::soh8_easnone:
+    case Discret::ELEMENTS::SoHex8::soh8_easnone:
       break;
     default:
       FOUR_C_THROW("Don't know what to do with EAS type %d", eastype_);
@@ -406,7 +406,7 @@ void DRT::ELEMENTS::SoHex8::soh8_easupdate()
 /*----------------------------------------------------------------------*
  |  Restore EAS parameters (private)                                     |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex8::soh8_easrestore()
+void Discret::ELEMENTS::SoHex8::soh8_easrestore()
 {
   auto* alpha = &easdata_.alpha;            // Alpha_{n+1}
   const auto* alphao = &easdata_.alphao;    // Alpha_n
@@ -417,22 +417,22 @@ void DRT::ELEMENTS::SoHex8::soh8_easrestore()
 
   switch (eastype_)
   {
-    case DRT::ELEMENTS::SoHex8::soh8_easfull:
-      CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_easfull, 1>(*alpha, *alphao);
-      CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_easfull, soh8_easfull>(*Kaainv, *Kaainvo);
-      CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_easfull, NUMDOF_SOH8>(*Kda, *Kdao);
+    case Discret::ELEMENTS::SoHex8::soh8_easfull:
+      Core::LinAlg::DenseFunctions::update<double, soh8_easfull, 1>(*alpha, *alphao);
+      Core::LinAlg::DenseFunctions::update<double, soh8_easfull, soh8_easfull>(*Kaainv, *Kaainvo);
+      Core::LinAlg::DenseFunctions::update<double, soh8_easfull, NUMDOF_SOH8>(*Kda, *Kdao);
       break;
-    case DRT::ELEMENTS::SoHex8::soh8_easmild:
-      CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_easmild, 1>(*alpha, *alphao);
-      CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_easmild, soh8_easmild>(*Kaainv, *Kaainvo);
-      CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_easmild, NUMDOF_SOH8>(*Kda, *Kdao);
+    case Discret::ELEMENTS::SoHex8::soh8_easmild:
+      Core::LinAlg::DenseFunctions::update<double, soh8_easmild, 1>(*alpha, *alphao);
+      Core::LinAlg::DenseFunctions::update<double, soh8_easmild, soh8_easmild>(*Kaainv, *Kaainvo);
+      Core::LinAlg::DenseFunctions::update<double, soh8_easmild, NUMDOF_SOH8>(*Kda, *Kdao);
       break;
-    case DRT::ELEMENTS::SoHex8::soh8_eassosh8:
-      CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, 1>(*alpha, *alphao);
-      CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, soh8_eassosh8>(*Kaainv, *Kaainvo);
-      CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, NUMDOF_SOH8>(*Kda, *Kdao);
+    case Discret::ELEMENTS::SoHex8::soh8_eassosh8:
+      Core::LinAlg::DenseFunctions::update<double, soh8_eassosh8, 1>(*alpha, *alphao);
+      Core::LinAlg::DenseFunctions::update<double, soh8_eassosh8, soh8_eassosh8>(*Kaainv, *Kaainvo);
+      Core::LinAlg::DenseFunctions::update<double, soh8_eassosh8, NUMDOF_SOH8>(*Kda, *Kdao);
       break;
-    case DRT::ELEMENTS::SoHex8::soh8_easnone:
+    case Discret::ELEMENTS::SoHex8::soh8_easnone:
       break;
     default:
       FOUR_C_THROW("Don't know what to do with EAS type %d", eastype_);

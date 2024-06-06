@@ -20,8 +20,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-CORE::IO::ElementReader::ElementReader(Teuchos::RCP<DRT::Discretization> dis,
-    const CORE::IO::DatFileReader& reader, std::string sectionname)
+Core::IO::ElementReader::ElementReader(Teuchos::RCP<Discret::Discretization> dis,
+    const Core::IO::DatFileReader& reader, std::string sectionname)
     : name_(dis->Name()),
       reader_(reader),
       comm_(reader.Comm()),
@@ -33,8 +33,8 @@ CORE::IO::ElementReader::ElementReader(Teuchos::RCP<DRT::Discretization> dis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-CORE::IO::ElementReader::ElementReader(Teuchos::RCP<DRT::Discretization> dis,
-    const CORE::IO::DatFileReader& reader, std::string sectionname, std::string elementtype)
+Core::IO::ElementReader::ElementReader(Teuchos::RCP<Discret::Discretization> dis,
+    const Core::IO::DatFileReader& reader, std::string sectionname, std::string elementtype)
     : name_(dis->Name()),
       reader_(reader),
       comm_(reader.Comm()),
@@ -47,8 +47,8 @@ CORE::IO::ElementReader::ElementReader(Teuchos::RCP<DRT::Discretization> dis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-CORE::IO::ElementReader::ElementReader(Teuchos::RCP<DRT::Discretization> dis,
-    const CORE::IO::DatFileReader& reader, std::string sectionname,
+Core::IO::ElementReader::ElementReader(Teuchos::RCP<Discret::Discretization> dis,
+    const Core::IO::DatFileReader& reader, std::string sectionname,
     const std::set<std::string>& elementtypes)
     : name_(dis->Name()),
       reader_(reader),
@@ -63,7 +63,7 @@ CORE::IO::ElementReader::ElementReader(Teuchos::RCP<DRT::Discretization> dis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::IO::ElementReader::ReadAndDistribute()
+void Core::IO::ElementReader::ReadAndDistribute()
 {
   const int myrank = comm_->MyPID();
   const int numproc = comm_->NumProc();
@@ -119,7 +119,7 @@ void CORE::IO::ElementReader::ReadAndDistribute()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::pair<int, std::vector<int>> CORE::IO::ElementReader::get_element_size_and_i_ds() const
+std::pair<int, std::vector<int>> Core::IO::ElementReader::get_element_size_and_i_ds() const
 {
   // vector of all global element ids
   std::vector<int> eids;
@@ -172,7 +172,7 @@ std::pair<int, std::vector<int>> CORE::IO::ElementReader::get_element_size_and_i
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::IO::ElementReader::get_and_distribute_elements(const int nblock, const int bsize)
+void Core::IO::ElementReader::get_and_distribute_elements(const int nblock, const int bsize)
 {
   std::ifstream file;
   std::string inputfile_name = reader_.MyInputfileName();
@@ -185,7 +185,7 @@ void CORE::IO::ElementReader::get_and_distribute_elements(const int nblock, cons
   std::string line;
   bool endofsection = false;
 
-  CORE::Elements::ElementDefinition ed;
+  Core::Elements::ElementDefinition ed;
   ed.setup_valid_element_lines();
 
   for (int block = 0; block < nblock; ++block)
@@ -223,14 +223,14 @@ void CORE::IO::ElementReader::get_and_distribute_elements(const int nblock, cons
           if (elementtypes_.size() == 0 or elementtypes_.count(eletype) > 0)
           {
             // let the factory create a matching empty element
-            Teuchos::RCP<CORE::Elements::Element> ele =
-                CORE::COMM::Factory(eletype, distype, elenumber, 0);
+            Teuchos::RCP<Core::Elements::Element> ele =
+                Core::Communication::Factory(eletype, distype, elenumber, 0);
             if (ele.is_null()) FOUR_C_THROW("element creation failed");
 
             // For the time being we support old and new input facilities. To
             // smooth transition.
 
-            INPUT::LineDefinition* linedef = ed.ElementLines(eletype, distype);
+            Input::LineDefinition* linedef = ed.ElementLines(eletype, distype);
             if (linedef != nullptr)
             {
               if (not linedef->Read(t))

@@ -22,15 +22,15 @@
 FOUR_C_NAMESPACE_OPEN
 
 // Forward declarations.
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   template <unsigned int rows, unsigned int cols, class value_type>
   class Matrix;
 }
-namespace CORE::FE
+namespace Core::FE
 {
   struct IntegrationPoints1D;
-}  // namespace CORE::FE
+}  // namespace Core::FE
 namespace GEOMETRYPAIR
 {
   enum class ProjectionResult;
@@ -85,7 +85,7 @@ namespace GEOMETRYPAIR
     static void project_point_on_line_to_other(const pair_type* pair,
         const ElementData<line, scalar_type>& element_data_line,
         const ElementData<other, scalar_type>& element_data_other, const scalar_type& eta,
-        CORE::LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result);
+        Core::LinAlg::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result);
 
     /**
      * \brief Project multiple points on the line to the other geometry. The value of eta and xi in

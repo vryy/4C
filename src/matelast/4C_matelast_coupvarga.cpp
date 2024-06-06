@@ -12,14 +12,14 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-MAT::ELASTIC::PAR::CoupVarga::CoupVarga(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
+Mat::Elastic::PAR::CoupVarga::CoupVarga(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
     : Parameter(matdata), mue_(matdata->Get<double>("MUE")), beta_(matdata->Get<double>("BETA"))
 {
 }
 
-MAT::ELASTIC::CoupVarga::CoupVarga(MAT::ELASTIC::PAR::CoupVarga* params) : params_(params) {}
+Mat::Elastic::CoupVarga::CoupVarga(Mat::Elastic::PAR::CoupVarga* params) : params_(params) {}
 
-void MAT::ELASTIC::CoupVarga::AddShearMod(bool& haveshearmod,  ///< non-zero shear modulus was added
+void Mat::Elastic::CoupVarga::AddShearMod(bool& haveshearmod,  ///< non-zero shear modulus was added
     double& shearmod                                           ///< variable to add upon
 ) const
 {
@@ -30,11 +30,11 @@ void MAT::ELASTIC::CoupVarga::AddShearMod(bool& haveshearmod,  ///< non-zero she
   shearmod += params_->mue_;
 }
 
-void MAT::ELASTIC::CoupVarga::add_coefficients_stretches_principal(
-    CORE::LINALG::Matrix<3, 1>& gamma,  ///< see above, [gamma_1, gamma_2, gamma_3]
-    CORE::LINALG::Matrix<6, 1>&
+void Mat::Elastic::CoupVarga::add_coefficients_stretches_principal(
+    Core::LinAlg::Matrix<3, 1>& gamma,  ///< see above, [gamma_1, gamma_2, gamma_3]
+    Core::LinAlg::Matrix<6, 1>&
         delta,  ///< see above, [delta_11, delta_22, delta_33, delta_12, delta_23, delta_31]
-    const CORE::LINALG::Matrix<3, 1>&
+    const Core::LinAlg::Matrix<3, 1>&
         prstr  ///< principal stretches, [lambda_1, lambda_2, lambda_3]
 )
 {

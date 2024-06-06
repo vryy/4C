@@ -33,10 +33,10 @@ STR::TimIntExpl::TimIntExpl(const Teuchos::ParameterList& timeparams,  //! time 
     const Teuchos::ParameterList& ioparams,                            //!< ioflags
     const Teuchos::ParameterList& sdynparams,                          //!< input parameters
     const Teuchos::ParameterList& xparams,                             //!< extra flags
-    Teuchos::RCP<DRT::Discretization> actdis,                          //!< current discretisation
-    Teuchos::RCP<CORE::LINALG::Solver> solver,                         //!< the solver
-    Teuchos::RCP<CORE::LINALG::Solver> contactsolver,    //!< the solver for contact meshtying
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output  //!< the output
+    Teuchos::RCP<Discret::Discretization> actdis,                      //!< current discretisation
+    Teuchos::RCP<Core::LinAlg::Solver> solver,                         //!< the solver
+    Teuchos::RCP<Core::LinAlg::Solver> contactsolver,    //!< the solver for contact meshtying
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output  //!< the output
     )
     : TimInt(timeparams, ioparams, sdynparams, xparams, actdis, solver, contactsolver, output)
 {
@@ -53,7 +53,7 @@ STR::TimIntExpl::TimIntExpl(const Teuchos::ParameterList& timeparams,  //! time 
  *----------------------------------------------------------------------------------------------*/
 void STR::TimIntExpl::Init(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver)
+    Teuchos::RCP<Discret::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver)
 {
   // call Init() in base class
   STR::TimInt::Init(timeparams, sdynparams, xparams, actdis, solver);
@@ -77,11 +77,11 @@ void STR::TimIntExpl::Setup()
   // explicit time integrators can only handle penalty contact / meshtying
   if (have_contact_meshtying())
   {
-    INPAR::CONTACT::SolvingStrategy soltype =
-        CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+    Inpar::CONTACT::SolvingStrategy soltype =
+        Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(
             cmtbridge_->GetStrategy().Params(), "STRATEGY");
-    if (soltype != INPAR::CONTACT::solution_penalty &&
-        (soltype != INPAR::CONTACT::solution_multiscale))
+    if (soltype != Inpar::CONTACT::solution_penalty &&
+        (soltype != Inpar::CONTACT::solution_multiscale))
       FOUR_C_THROW(
           "Currently, only penalty or multi-scale contact / meshtying can be done with explicit "
           "time integration schemes.");
@@ -116,7 +116,7 @@ void STR::TimIntExpl::apply_force_external(const double time,  //!< evaluation t
   discret_->set_state(0, "displacement", dis);
   discret_->set_state(0, "displacement new", dis);
 
-  if (damping_ == INPAR::STR::damp_material) discret_->set_state(0, "velocity", vel);
+  if (damping_ == Inpar::STR::damp_material) discret_->set_state(0, "velocity", vel);
   // get load vector
   discret_->evaluate_neumann(p, *fext);
 

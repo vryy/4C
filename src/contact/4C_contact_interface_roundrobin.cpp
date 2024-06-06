@@ -27,14 +27,14 @@ void CONTACT::Interface::round_robin_extend_ghosting(bool firstevaluation)
   for (int k = 0; k < SlaveColElements()->NumMyElements(); ++k)
   {
     int gid = SlaveColElements()->GID(k);
-    CORE::Elements::Element* ele = Discret().gElement(gid);
+    Core::Elements::Element* ele = Discret().gElement(gid);
     if (!ele) FOUR_C_THROW("Cannot find ele with gid %i", gid);
     Element* slave_ele = dynamic_cast<Element*>(ele);
 
     for (int j = 0; j < slave_ele->MoData().NumSearchElements(); ++j)
     {
       int gid2 = slave_ele->MoData().SearchElements()[j];
-      CORE::Elements::Element* ele2 = idiscret_->gElement(gid2);
+      Core::Elements::Element* ele2 = idiscret_->gElement(gid2);
       if (!ele2) FOUR_C_THROW("Cannot find master element with gid %", gid2);
       Element* melement = dynamic_cast<Element*>(ele2);
 
@@ -63,8 +63,8 @@ void CONTACT::Interface::round_robin_extend_ghosting(bool firstevaluation)
   else
   {
     eextendedghosting_ =
-        CORE::LINALG::MergeMap(eextendedghosting_, currently_ghosted_elements, true);
-    nextendedghosting_ = CORE::LINALG::MergeMap(nextendedghosting_, currently_ghosted_nodes, true);
+        Core::LinAlg::MergeMap(eextendedghosting_, currently_ghosted_elements, true);
+    nextendedghosting_ = Core::LinAlg::MergeMap(nextendedghosting_, currently_ghosted_nodes, true);
   }
 
   return;
@@ -81,8 +81,8 @@ void CONTACT::Interface::round_robin_change_ownership()
   // interface and exclude the friction node packing from here
 
   // get friction type
-  INPAR::CONTACT::FrictionType ftype =
-      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(interface_params(), "FRICTION");
+  Inpar::CONTACT::FrictionType ftype =
+      Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
 
   // change master-side proc ownership
   // some local variables
@@ -117,23 +117,23 @@ void CONTACT::Interface::round_robin_change_ownership()
   for (int i = 0; i < numproc; ++i) allproc[i] = i;
 
   // get exporter
-  CORE::COMM::Exporter exporter(idiscret_->Comm());
+  Core::Communication::Exporter exporter(idiscret_->Comm());
 
   // create data buffer
-  CORE::COMM::PackBuffer dataeles;
+  Core::Communication::PackBuffer dataeles;
 
   // pack data - first just reserving the mem.
   for (int i = 0; i < (int)MasterColelesdummy->NumMyElements(); ++i)
   {
     int gid = MasterColelesdummy->GID(i);
-    CORE::Elements::Element* ele = Discret().gElement(gid);
+    Core::Elements::Element* ele = Discret().gElement(gid);
     if (!ele) FOUR_C_THROW("Cannot find ele with gid %i", gid);
-    MORTAR::Element* mele = dynamic_cast<MORTAR::Element*>(ele);
+    Mortar::Element* mele = dynamic_cast<Mortar::Element*>(ele);
 
     mele->Pack(dataeles);
 
     int ghost = 0;
-    CORE::COMM::ParObject::AddtoPack(dataeles, ghost);
+    Core::Communication::ParObject::AddtoPack(dataeles, ghost);
   }
 
   dataeles.StartPacking();
@@ -142,9 +142,9 @@ void CONTACT::Interface::round_robin_change_ownership()
   for (int i = 0; i < (int)MasterColelesdummy->NumMyElements(); ++i)
   {
     int gid = MasterColelesdummy->GID(i);
-    CORE::Elements::Element* ele = Discret().gElement(gid);
+    Core::Elements::Element* ele = Discret().gElement(gid);
     if (!ele) FOUR_C_THROW("Cannot find ele with gid %i", gid);
-    MORTAR::Element* mele = dynamic_cast<MORTAR::Element*>(ele);
+    Mortar::Element* mele = dynamic_cast<Mortar::Element*>(ele);
 
     mele->Pack(dataeles);
 
@@ -155,7 +155,7 @@ void CONTACT::Interface::round_robin_change_ownership()
     else
       ghost = 0;
 
-    CORE::COMM::ParObject::AddtoPack(dataeles, ghost);
+    Core::Communication::ParObject::AddtoPack(dataeles, ghost);
   }
   std::swap(sdataeles, dataeles());
 
@@ -163,9 +163,9 @@ void CONTACT::Interface::round_robin_change_ownership()
   for (int i = 0; i < (int)MasterColelesdummy->NumMyElements(); ++i)
   {
     int gid = MasterColelesdummy->GID(i);
-    CORE::Elements::Element* ele = Discret().gElement(gid);
+    Core::Elements::Element* ele = Discret().gElement(gid);
     if (!ele) FOUR_C_THROW("Cannot find ele with gid %i", gid);
-    MORTAR::Element* mele = dynamic_cast<MORTAR::Element*>(ele);
+    Mortar::Element* mele = dynamic_cast<Mortar::Element*>(ele);
 
     // check for ghosting
     if (mele->Owner() == myrank)
@@ -195,13 +195,14 @@ void CONTACT::Interface::round_robin_change_ownership()
     {
       std::vector<char> data;
       int ghost = -1;
-      CORE::COMM::ParObject::ExtractfromPack(index, rdataeles, data);
-      CORE::COMM::ParObject::ExtractfromPack(index, rdataeles, ghost);
+      Core::Communication::ParObject::ExtractfromPack(index, rdataeles, data);
+      Core::Communication::ParObject::ExtractfromPack(index, rdataeles, ghost);
       if (ghost == -1) FOUR_C_THROW("UNPACK ERROR!!!!!!!!!");
 
       // this Teuchos::rcp holds the memory of the ele
-      Teuchos::RCP<CORE::COMM::ParObject> object = Teuchos::rcp(CORE::COMM::Factory(data), true);
-      Teuchos::RCP<MORTAR::Element> ele = Teuchos::rcp_dynamic_cast<MORTAR::Element>(object);
+      Teuchos::RCP<Core::Communication::ParObject> object =
+          Teuchos::rcp(Core::Communication::Factory(data), true);
+      Teuchos::RCP<Mortar::Element> ele = Teuchos::rcp_dynamic_cast<Mortar::Element>(object);
       if (ele == Teuchos::null) FOUR_C_THROW("Received object is not an ele");
 
       // add whether its a row ele
@@ -232,20 +233,20 @@ void CONTACT::Interface::round_robin_change_ownership()
   std::vector<char> rdatanodes;
 
   // get exporter
-  CORE::COMM::Exporter exportern(idiscret_->Comm());
+  Core::Communication::Exporter exportern(idiscret_->Comm());
 
-  CORE::COMM::PackBuffer datanodes;
+  Core::Communication::PackBuffer datanodes;
 
   // pack data -- col map --> should prevent further ghosting!
   for (int i = 0; i < (int)MasterColNodesdummy->NumMyElements(); ++i)
   {
     int gid = MasterColNodesdummy->GID(i);
-    CORE::Nodes::Node* node = Discret().gNode(gid);
+    Core::Nodes::Node* node = Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find ele with gid %i", gid);
 
-    if (ftype == INPAR::CONTACT::friction_none)
+    if (ftype == Inpar::CONTACT::friction_none)
     {
-      MORTAR::Node* cnode = dynamic_cast<MORTAR::Node*>(node);
+      Mortar::Node* cnode = dynamic_cast<Mortar::Node*>(node);
       cnode->Pack(datanodes);
     }
     else
@@ -255,22 +256,22 @@ void CONTACT::Interface::round_robin_change_ownership()
     }
 
     int ghost = 0;
-    CORE::COMM::ParObject::AddtoPack(datanodes, ghost);
+    Core::Communication::ParObject::AddtoPack(datanodes, ghost);
   }
 
   datanodes.StartPacking();
   for (int i = 0; i < (int)MasterColNodesdummy->NumMyElements(); ++i)
   {
     int gid = MasterColNodesdummy->GID(i);
-    CORE::Nodes::Node* node = Discret().gNode(gid);
+    Core::Nodes::Node* node = Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find ele with gid %i", gid);
 
     // check for ghosting
     int ghost;
 
-    if (ftype == INPAR::CONTACT::friction_none)
+    if (ftype == Inpar::CONTACT::friction_none)
     {
-      MORTAR::Node* cnode = dynamic_cast<MORTAR::Node*>(node);
+      Mortar::Node* cnode = dynamic_cast<Mortar::Node*>(node);
       cnode->Pack(datanodes);
 
       if (cnode->Owner() == myrank)
@@ -289,7 +290,7 @@ void CONTACT::Interface::round_robin_change_ownership()
         ghost = 0;
     }
 
-    CORE::COMM::ParObject::AddtoPack(datanodes, ghost);
+    Core::Communication::ParObject::AddtoPack(datanodes, ghost);
   }
   std::swap(sdatanodes, datanodes());
 
@@ -297,12 +298,12 @@ void CONTACT::Interface::round_robin_change_ownership()
   for (int i = 0; i < (int)MasterColNodesdummy->NumMyElements(); ++i)
   {
     int gid = MasterColNodesdummy->GID(i);
-    CORE::Nodes::Node* node = Discret().gNode(gid);
+    Core::Nodes::Node* node = Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find ele with gid %i", gid);
 
-    if (ftype == INPAR::CONTACT::friction_none)
+    if (ftype == Inpar::CONTACT::friction_none)
     {
-      MORTAR::Node* cnode = dynamic_cast<MORTAR::Node*>(node);
+      Mortar::Node* cnode = dynamic_cast<Mortar::Node*>(node);
       if (cnode->Owner() == myrank) idiscret_->DeleteNode(cnode->Id());
     }
     else
@@ -334,16 +335,17 @@ void CONTACT::Interface::round_robin_change_ownership()
       std::vector<char> data;
 
       int ghost = -1;
-      CORE::COMM::ParObject::ExtractfromPack(index, rdatanodes, data);
-      CORE::COMM::ParObject::ExtractfromPack(index, rdatanodes, ghost);
+      Core::Communication::ParObject::ExtractfromPack(index, rdatanodes, data);
+      Core::Communication::ParObject::ExtractfromPack(index, rdatanodes, ghost);
       if (ghost == -1) FOUR_C_THROW("UNPACK ERROR!!!!!!!!!");
 
       // this Teuchos::rcp holds the memory of the node
-      Teuchos::RCP<CORE::COMM::ParObject> object = Teuchos::rcp(CORE::COMM::Factory(data), true);
+      Teuchos::RCP<Core::Communication::ParObject> object =
+          Teuchos::rcp(Core::Communication::Factory(data), true);
 
-      if (ftype == INPAR::CONTACT::friction_none)
+      if (ftype == Inpar::CONTACT::friction_none)
       {
-        Teuchos::RCP<MORTAR::Node> node = Teuchos::rcp_dynamic_cast<MORTAR::Node>(object);
+        Teuchos::RCP<Mortar::Node> node = Teuchos::rcp_dynamic_cast<Mortar::Node>(object);
         if (node == Teuchos::null) FOUR_C_THROW("Received object is not a node");
 
         if (ghost == 1)
@@ -398,12 +400,12 @@ void CONTACT::Interface::round_robin_change_ownership()
       Teuchos::rcp(new Epetra_Map(-1, (int)ecol.size(), ecol.data(), 0, Comm()));
 
   // Merge s/m column maps for eles and nodes
-  Teuchos::RCP<Epetra_Map> colnodesfull = CORE::LINALG::MergeMap(nodecolmap, SCN, true);
-  Teuchos::RCP<Epetra_Map> colelesfull = CORE::LINALG::MergeMap(elecolmap, SCE, true);
+  Teuchos::RCP<Epetra_Map> colnodesfull = Core::LinAlg::MergeMap(nodecolmap, SCN, true);
+  Teuchos::RCP<Epetra_Map> colelesfull = Core::LinAlg::MergeMap(elecolmap, SCE, true);
 
   // Merge s/m row maps for eles and nodes
-  Teuchos::RCP<Epetra_Map> rownodesfull = CORE::LINALG::MergeMap(noderowmap, SRN, false);
-  Teuchos::RCP<Epetra_Map> rowelesfull = CORE::LINALG::MergeMap(elerowmap, SRE, false);
+  Teuchos::RCP<Epetra_Map> rownodesfull = Core::LinAlg::MergeMap(noderowmap, SRN, false);
+  Teuchos::RCP<Epetra_Map> rowelesfull = Core::LinAlg::MergeMap(elerowmap, SRE, false);
 
   // to discretization
   // export nodes and elements to the row map
@@ -430,9 +432,9 @@ void CONTACT::Interface::round_robin_change_ownership()
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::round_robin_detect_ghosting()
 {
-  if (SearchAlg() == INPAR::MORTAR::search_bfele)
+  if (SearchAlg() == Inpar::Mortar::search_bfele)
     evaluate_search_brute_force(SearchParam());
-  else if (SearchAlg() == INPAR::MORTAR::search_binarytree)
+  else if (SearchAlg() == Inpar::Mortar::search_binarytree)
     evaluate_search_binarytree();
   else
     FOUR_C_THROW("Invalid search algorithm");
@@ -465,17 +467,17 @@ void CONTACT::Interface::round_robin_detect_ghosting()
       round_robin_change_ownership();
 
       // build new search tree or do nothing for bruteforce
-      if (SearchAlg() == INPAR::MORTAR::search_binarytree)
+      if (SearchAlg() == Inpar::Mortar::search_binarytree)
         CreateSearchTree();
-      else if (SearchAlg() != INPAR::MORTAR::search_bfele)
+      else if (SearchAlg() != Inpar::Mortar::search_bfele)
         FOUR_C_THROW("Invalid search algorithm");
 
       // evaluate interfaces
       if (proc < (int)(Comm().NumProc() - 1))
       {
-        if (SearchAlg() == INPAR::MORTAR::search_bfele)
+        if (SearchAlg() == Inpar::Mortar::search_bfele)
           evaluate_search_brute_force(SearchParam());
-        else if (SearchAlg() == INPAR::MORTAR::search_binarytree)
+        else if (SearchAlg() == Inpar::Mortar::search_binarytree)
           evaluate_search_binarytree();
         else
           FOUR_C_THROW("Invalid search algorithm");
@@ -491,13 +493,13 @@ void CONTACT::Interface::round_robin_detect_ghosting()
 
   // Append ghost nodes/elements to be ghosted to existing column maps
   eextendedghosting_ =
-      CORE::LINALG::MergeMap(eextendedghosting_, initial_slave_element_column_map, true);
+      Core::LinAlg::MergeMap(eextendedghosting_, initial_slave_element_column_map, true);
   nextendedghosting_ =
-      CORE::LINALG::MergeMap(nextendedghosting_, initial_slave_node_column_map, true);
+      Core::LinAlg::MergeMap(nextendedghosting_, initial_slave_node_column_map, true);
   eextendedghosting_ =
-      CORE::LINALG::MergeMap(eextendedghosting_, initial_master_element_column_map, true);
+      Core::LinAlg::MergeMap(eextendedghosting_, initial_master_element_column_map, true);
   nextendedghosting_ =
-      CORE::LINALG::MergeMap(nextendedghosting_, initial_master_node_column_map, true);
+      Core::LinAlg::MergeMap(nextendedghosting_, initial_master_node_column_map, true);
 
   // finally extend ghosting
   Discret().export_column_elements(*eextendedghosting_);
@@ -509,9 +511,9 @@ void CONTACT::Interface::round_robin_detect_ghosting()
   nextendedghosting_ = Teuchos::null;
 
   // build new search tree or do nothing for bruteforce
-  if (SearchAlg() == INPAR::MORTAR::search_binarytree)
+  if (SearchAlg() == Inpar::Mortar::search_binarytree)
     CreateSearchTree();
-  else if (SearchAlg() != INPAR::MORTAR::search_bfele)
+  else if (SearchAlg() != Inpar::Mortar::search_bfele)
     FOUR_C_THROW("Invalid search algorithm");
 
   // final output for loop

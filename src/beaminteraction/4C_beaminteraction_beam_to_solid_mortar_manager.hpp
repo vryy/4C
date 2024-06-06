@@ -21,13 +21,13 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 namespace STR
 {
-  namespace TIMINT
+  namespace TimeInt
   {
     class BaseDataGlobalState;
   }
@@ -42,10 +42,10 @@ namespace BEAMINTERACTION
   class BeamContactPair;
 }  // namespace BEAMINTERACTION
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 
 namespace BEAMINTERACTION
@@ -92,7 +92,7 @@ namespace BEAMINTERACTION
      * @params params (in) Beam-to-solid parameters.
      * @params start_value_lambda_gid (in) Start value for the Lagrange multiplier global IDs.
      */
-    BeamToSolidMortarManager(const Teuchos::RCP<const DRT::Discretization>& discret,
+    BeamToSolidMortarManager(const Teuchos::RCP<const Discret::Discretization>& discret,
         const Teuchos::RCP<const BEAMINTERACTION::BeamToSolidParamsBase>& params,
         int start_value_lambda_gid);
 
@@ -159,7 +159,7 @@ namespace BEAMINTERACTION
      */
     void add_global_force_stiffness_penalty_contributions(
         const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>& data_state,
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff, Teuchos::RCP<Epetra_FEVector> force) const;
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff, Teuchos::RCP<Epetra_FEVector> force) const;
 
     /**
      * \brief Get the global vector of Lagrange multipliers.
@@ -258,7 +258,7 @@ namespace BEAMINTERACTION
     unsigned int n_lambda_element_rotational_;
 
     //! Pointer to the discretization containing the solid and beam elements.
-    Teuchos::RCP<const DRT::Discretization> discret_;
+    Teuchos::RCP<const Discret::Discretization> discret_;
 
     //! Pointer to the beam contact parameters.
     Teuchos::RCP<const BEAMINTERACTION::BeamToSolidParamsBase> beam_to_solid_params_;
@@ -305,16 +305,16 @@ namespace BEAMINTERACTION
     Teuchos::RCP<Epetra_FEVector> global_constraint_;
 
     //! Derivative of constraint vector w.r.t the beam DOF.
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> global_g_b_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> global_g_b_;
 
     //! Derivative of constraint vector w.r.t the solid DOF.
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> global_g_s_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> global_g_s_;
 
     //! Derivative of the beam coupling forces w.r.t the Lagrange multipliers.
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> global_fb_l_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> global_fb_l_;
 
     //! Derivative of the solid coupling forces w.r.t the Lagrange multipliers.
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> global_fs_l_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> global_fs_l_;
 
     //! Global \f$\kappa\f$ vector. This vector is used to scale the mortar matrices. See Yang et
     //! al: Two dimensional mortar contact methods for large deformation frictional sliding (eq.

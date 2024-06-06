@@ -14,7 +14,7 @@ SLS-model
 
 FOUR_C_NAMESPACE_OPEN
 
-MAT::ELASTIC::PAR::GenMax::GenMax(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
+Mat::Elastic::PAR::GenMax::GenMax(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
     : Parameter(matdata),
       tau_(matdata->Get<double>("TAU")),
       beta_(matdata->Get<double>("BETA")),
@@ -22,9 +22,9 @@ MAT::ELASTIC::PAR::GenMax::GenMax(const Teuchos::RCP<CORE::MAT::PAR::Material>& 
 {
 }
 
-MAT::ELASTIC::GenMax::GenMax(MAT::ELASTIC::PAR::GenMax* params) : params_(params) {}
+Mat::Elastic::GenMax::GenMax(Mat::Elastic::PAR::GenMax* params) : params_(params) {}
 
-void MAT::ELASTIC::GenMax::read_material_parameters_visco(
+void Mat::Elastic::GenMax::read_material_parameters_visco(
     double& tau, double& beta, double& alpha, std::string& solve)
 {
   tau = params_->tau_;

@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::Ion::Ion(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::Ion::Ion(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : Parameter(matdata),
       valence_(matdata->Get<double>("VALENCE")),
       diffusivity_(matdata->Get<double>("DIFFUSIVITY")),
@@ -31,37 +31,37 @@ MAT::PAR::Ion::Ion(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
 }
 
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::Ion::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::Ion::create_material()
 {
-  return Teuchos::rcp(new MAT::Ion(this));
+  return Teuchos::rcp(new Mat::Ion(this));
 }
 
-MAT::IonType MAT::IonType::instance_;
+Mat::IonType Mat::IonType::instance_;
 
 
-CORE::COMM::ParObject* MAT::IonType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::IonType::Create(const std::vector<char>& data)
 {
-  MAT::Ion* ion = new MAT::Ion();
+  Mat::Ion* ion = new Mat::Ion();
   ion->Unpack(data);
   return ion;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::Ion::Ion() : params_(nullptr) {}
+Mat::Ion::Ion() : params_(nullptr) {}
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::Ion::Ion(MAT::PAR::Ion* params) : params_(params) {}
+Mat::Ion::Ion(Mat::PAR::Ion* params) : params_(params) {}
 
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Ion::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::Ion::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -93,24 +93,24 @@ void MAT::Ion::Pack(CORE::COMM::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Ion::Unpack(const std::vector<char>& data)
+void Mat::Ion::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::Ion*>(mat);
+        params_ = static_cast<Mat::PAR::Ion*>(mat);
       else
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());

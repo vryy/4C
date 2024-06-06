@@ -17,7 +17,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::Materials
+namespace Core::Materials
 {
   /// type of material
   enum MaterialType
@@ -295,7 +295,7 @@ namespace CORE::Materials
 
 
   std::string_view to_string(MaterialType material_type);
-}  // namespace CORE::Materials
+}  // namespace Core::Materials
 
 
 FOUR_C_NAMESPACE_CLOSE

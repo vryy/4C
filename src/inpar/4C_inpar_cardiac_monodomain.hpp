@@ -19,9 +19,9 @@ FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
 
-namespace INPAR
+namespace Inpar
 {
-  namespace EP
+  namespace ElectroPhysiology
   {
     /// possible types of evaluation of reaction term
     enum EvalType
@@ -35,9 +35,9 @@ namespace INPAR
 
     /// set specific elch conditions
     void SetValidConditions(
-        std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist);
-  }  // namespace EP
-}  // namespace INPAR
+        std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist);
+  }  // namespace ElectroPhysiology
+}  // namespace Inpar
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

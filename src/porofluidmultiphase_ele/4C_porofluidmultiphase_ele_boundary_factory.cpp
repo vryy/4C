@@ -21,39 +21,39 @@ FOUR_C_NAMESPACE_OPEN
 /*--------------------------------------------------------------------------*
  | provide the implementation of evaluation class      (public) vuong 08/16 |
  *--------------------------------------------------------------------------*/
-DRT::ELEMENTS::PoroFluidMultiPhaseEleInterface*
-DRT::ELEMENTS::PoroFluidMultiPhaseBoundaryFactory::ProvideImpl(
-    const CORE::Elements::Element* ele, const int numdofpernode, const std::string& disname)
+Discret::ELEMENTS::PoroFluidMultiPhaseEleInterface*
+Discret::ELEMENTS::PoroFluidMultiPhaseBoundaryFactory::ProvideImpl(
+    const Core::Elements::Element* ele, const int numdofpernode, const std::string& disname)
 {
   switch (ele->Shape())
   {
-    case CORE::FE::CellType::quad4:
+    case Core::FE::CellType::quad4:
     {
-      return define_problem_type<CORE::FE::CellType::quad4>(numdofpernode, disname);
+      return define_problem_type<Core::FE::CellType::quad4>(numdofpernode, disname);
     }
-    case CORE::FE::CellType::quad8:
+    case Core::FE::CellType::quad8:
     {
-      return define_problem_type<CORE::FE::CellType::quad8>(numdofpernode, disname);
+      return define_problem_type<Core::FE::CellType::quad8>(numdofpernode, disname);
     }
-    case CORE::FE::CellType::quad9:
+    case Core::FE::CellType::quad9:
     {
-      return define_problem_type<CORE::FE::CellType::quad9>(numdofpernode, disname);
+      return define_problem_type<Core::FE::CellType::quad9>(numdofpernode, disname);
     }
-    case CORE::FE::CellType::tri3:
+    case Core::FE::CellType::tri3:
     {
-      return define_problem_type<CORE::FE::CellType::tri3>(numdofpernode, disname);
+      return define_problem_type<Core::FE::CellType::tri3>(numdofpernode, disname);
     }
-    case CORE::FE::CellType::tri6:
+    case Core::FE::CellType::tri6:
     {
-      return define_problem_type<CORE::FE::CellType::tri6>(numdofpernode, disname);
+      return define_problem_type<Core::FE::CellType::tri6>(numdofpernode, disname);
     }
-    case CORE::FE::CellType::line2:
+    case Core::FE::CellType::line2:
     {
-      return define_problem_type<CORE::FE::CellType::line2>(numdofpernode, disname);
+      return define_problem_type<Core::FE::CellType::line2>(numdofpernode, disname);
     }
-    case CORE::FE::CellType::line3:
+    case Core::FE::CellType::line3:
     {
-      return define_problem_type<CORE::FE::CellType::line3>(numdofpernode, disname);
+      return define_problem_type<Core::FE::CellType::line3>(numdofpernode, disname);
     }
     default:
     {
@@ -70,12 +70,12 @@ DRT::ELEMENTS::PoroFluidMultiPhaseBoundaryFactory::ProvideImpl(
 /*--------------------------------------------------------------------------*
  | provide the implementation of evaluation class      (public) vuong 08/16 |
  *--------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::PoroFluidMultiPhaseEleInterface*
-DRT::ELEMENTS::PoroFluidMultiPhaseBoundaryFactory::define_problem_type(
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::PoroFluidMultiPhaseEleInterface*
+Discret::ELEMENTS::PoroFluidMultiPhaseBoundaryFactory::define_problem_type(
     const int numdofpernode, const std::string& disname)
 {
-  return DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::Instance(
+  return Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::Instance(
       numdofpernode, disname);
 }
 

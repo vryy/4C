@@ -23,22 +23,22 @@ FOUR_C_NAMESPACE_OPEN
 
 
 /// MAT: materials
-namespace MAT
+namespace Mat
 {
   const int NUM_STRESS_3D = 6;  ///< 6 stresses for 3D
 
   /// create element material object given the number of a material definition
-  Teuchos::RCP<CORE::MAT::Material> Factory(int matnum  ///< material ID
+  Teuchos::RCP<Core::Mat::Material> Factory(int matnum  ///< material ID
   );
 
   /**
    * Create material parameter object from @p input_data. This function maps the material @p type
    * to a statically known material parameter class.
    */
-  std::unique_ptr<CORE::MAT::PAR::Parameter> make_parameter(int id,
-      CORE::Materials::MaterialType type, const CORE::IO::InputParameterContainer& input_data);
+  std::unique_ptr<Core::Mat::PAR::Parameter> make_parameter(int id,
+      Core::Materials::MaterialType type, const Core::IO::InputParameterContainer& input_data);
 
-}  // namespace MAT
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

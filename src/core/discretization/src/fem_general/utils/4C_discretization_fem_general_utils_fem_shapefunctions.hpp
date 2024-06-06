@@ -23,7 +23,7 @@ the 4C guide in the Convention chapter.
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::FE
+namespace Core::FE
 {
   /*!
    \brief Fill a vector of type VectorType with with 3D shape function
@@ -33,7 +33,7 @@ namespace CORE::FE
       const NumberType& r,                   ///< r coordinate
       const NumberType& s,                   ///< s coordinate
       const NumberType& t,                   ///< t coordinate
-      const CORE::FE::CellType& distype      ///< distinguish between DiscretizationType
+      const Core::FE::CellType& distype      ///< distinguish between DiscretizationType
   )
   {
     // if the given template parameter is of type int, the error occurs during compilation
@@ -45,12 +45,12 @@ namespace CORE::FE
 
     switch (distype)
     {
-      case CORE::FE::CellType::point1:
+      case Core::FE::CellType::point1:
       {
         funct(0) = 1.0;
         break;
       }
-      case CORE::FE::CellType::hex8:
+      case Core::FE::CellType::hex8:
       {
         const NumberType rp = 1.0 + r;
         const NumberType rm = 1.0 - r;
@@ -70,7 +70,7 @@ namespace CORE::FE
 
         break;
       }
-      case CORE::FE::CellType::hex16:
+      case Core::FE::CellType::hex16:
       {
         const NumberType rp = 1.0 + r;
         const NumberType rm = 1.0 - r;
@@ -101,7 +101,7 @@ namespace CORE::FE
 
         break;
       }
-      case CORE::FE::CellType::hex18:
+      case Core::FE::CellType::hex18:
       {
         const NumberType rp = 1.0 + r;
         const NumberType rm = 1.0 - r;
@@ -135,7 +135,7 @@ namespace CORE::FE
 
         break;
       }
-      case CORE::FE::CellType::hex20:
+      case Core::FE::CellType::hex20:
       {
         /* shape functions associated to vertex nodes k=1,...,8
          * N^k = 1/8 (1 + r^k r) (1 + s^k s) (1 + t^k k)
@@ -187,7 +187,7 @@ namespace CORE::FE
 
         break;
       }
-      case CORE::FE::CellType::hex27:
+      case Core::FE::CellType::hex27:
       {
         const NumberType rm1 = 0.5 * r * (r - 1.0);
         const NumberType r00 = (1.0 - r * r);
@@ -228,7 +228,7 @@ namespace CORE::FE
         funct(26) = r00 * s00 * t00;
         break;
       }
-      case CORE::FE::CellType::tet4:
+      case Core::FE::CellType::tet4:
       {
         const NumberType t1 = 1.0 - r - s - t;
         const NumberType t2 = r;
@@ -241,7 +241,7 @@ namespace CORE::FE
         funct(3) = t4;
         break;
       }
-      case CORE::FE::CellType::tet10:
+      case Core::FE::CellType::tet10:
       {
         const NumberType u = 1.0 - r - s - t;
 
@@ -257,7 +257,7 @@ namespace CORE::FE
         funct(9) = 4.0 * s * t;
         break;
       }
-      case CORE::FE::CellType::wedge6:
+      case Core::FE::CellType::wedge6:
       {
         const NumberType t3 = 1.0 - r - s;
 
@@ -269,7 +269,7 @@ namespace CORE::FE
         funct(5) = Q12 * t3 * (1.0 + t);
         break;
       }
-      case CORE::FE::CellType::wedge15:
+      case Core::FE::CellType::wedge15:
       {
         const NumberType t1 = r;
         const NumberType t2 = s;
@@ -309,7 +309,7 @@ namespace CORE::FE
 
         break;
       }
-      case CORE::FE::CellType::pyramid5:
+      case Core::FE::CellType::pyramid5:
       {
         // NOTE: the shape functions for pyramids are a bit unintuitive
         // but since the more natural choice of
@@ -324,7 +324,7 @@ namespace CORE::FE
         NumberType ration;
 
         const NumberType check = t - 1.0;
-        if (CORE::MathOperations<NumberType>::abs(check) > PY5TOL)
+        if (Core::MathOperations<NumberType>::abs(check) > PY5TOL)
         {
           ration = (r * s * t) / (1.0 - t);
         }
@@ -357,7 +357,7 @@ namespace CORE::FE
       const NumberType& r,               ///< r coordinate
       const NumberType& s,               ///< s coordinate
       const NumberType& t,               ///< t coordinate
-      const CORE::FE::CellType& distype  ///< distinguish between DiscretizationType
+      const Core::FE::CellType& distype  ///< distinguish between DiscretizationType
   )
   {
     // if the given template parameter is of type int, the error occurs during compilation
@@ -373,14 +373,14 @@ namespace CORE::FE
 
     switch (distype)
     {
-      case CORE::FE::CellType::point1:
+      case Core::FE::CellType::point1:
       {
         deriv1(dr, 0) = 0.0;
         deriv1(ds, 0) = 0.0;
         deriv1(dt, 0) = 0.0;
         break;
       }
-      case CORE::FE::CellType::hex8:
+      case Core::FE::CellType::hex8:
       {
         const NumberType rp = 1.0 + r;
         const NumberType rm = 1.0 - r;
@@ -422,7 +422,7 @@ namespace CORE::FE
         deriv1(2, 7) = Q18 * rm * sp;
         break;
       }
-      case CORE::FE::CellType::hex16:
+      case Core::FE::CellType::hex16:
       {
         const NumberType rp = 1.0 + r;
         const NumberType rm = 1.0 - r;
@@ -502,7 +502,7 @@ namespace CORE::FE
 
         break;
       }
-      case CORE::FE::CellType::hex18:
+      case Core::FE::CellType::hex18:
       {
         const NumberType rp = 1.0 + r;
         const NumberType rm = 1.0 - r;
@@ -578,7 +578,7 @@ namespace CORE::FE
 
         break;
       }
-      case CORE::FE::CellType::hex20:
+      case Core::FE::CellType::hex20:
       {
         // form basic values
         const NumberType rp = 1.0 + r;
@@ -677,7 +677,7 @@ namespace CORE::FE
 
         break;
       }
-      case CORE::FE::CellType::hex27:
+      case Core::FE::CellType::hex27:
       {
         const NumberType rm1 = 0.5 * r * (r - 1.0);
         const NumberType r00 = (1.0 - r * r);
@@ -784,7 +784,7 @@ namespace CORE::FE
         deriv1(2, 26) = r00 * s00 * dt00;
         break;
       }
-      case CORE::FE::CellType::tet4:
+      case Core::FE::CellType::tet4:
       {
         deriv1(0, 0) = -1.0;
         deriv1(0, 1) = 1.0;
@@ -802,7 +802,7 @@ namespace CORE::FE
         deriv1(2, 3) = 1.0;
         break;
       }
-      case CORE::FE::CellType::tet10:
+      case Core::FE::CellType::tet10:
       {
         const NumberType u = 1.0 - r - s - t;
 
@@ -848,7 +848,7 @@ namespace CORE::FE
 
         break;
       }
-      case CORE::FE::CellType::wedge6:
+      case Core::FE::CellType::wedge6:
       {
         const NumberType p1 = Q12 * (1.0 - t);
         const NumberType p2 = Q12 * (1.0 + t);
@@ -877,7 +877,7 @@ namespace CORE::FE
 
         break;
       }
-      case CORE::FE::CellType::wedge15:
+      case Core::FE::CellType::wedge15:
       {
         const NumberType t1 = r;
         const NumberType t2 = s;
@@ -947,14 +947,14 @@ namespace CORE::FE
 
         break;
       }
-      case CORE::FE::CellType::pyramid5:
+      case Core::FE::CellType::pyramid5:
       {
         NumberType rationdr;
         NumberType rationds;
         NumberType rationdt;
 
         const NumberType check = t - 1.0;
-        if (CORE::MathOperations<NumberType>::abs(check) > PY5TOL)
+        if (Core::MathOperations<NumberType>::abs(check) > PY5TOL)
         {
           rationdr = s * t / (1.0 - t);
           rationds = r * t / (1.0 - t);
@@ -1007,7 +1007,7 @@ namespace CORE::FE
       const NumberType& r,  ///< r coordinate
       const NumberType& s,  ///< s coordinate
       const NumberType& t,  ///< t coordinate
-      const CORE::FE::CellType& distype  ///< distinguish between DiscretizationType
+      const Core::FE::CellType& distype  ///< distinguish between DiscretizationType
   )
   {
     // if the given template parameter is of type int, the error occurs during compilation
@@ -1025,7 +1025,7 @@ namespace CORE::FE
 
     switch (distype)
     {
-      case CORE::FE::CellType::point1:
+      case Core::FE::CellType::point1:
       {
         deriv2(drdr, 0) = 0.0;
         deriv2(dsds, 0) = 0.0;
@@ -1035,7 +1035,7 @@ namespace CORE::FE
         deriv2(dsdt, 0) = 0.0;
         break;
       }
-      case CORE::FE::CellType::hex8:
+      case Core::FE::CellType::hex8:
       {
         const NumberType rp = 1.0 + r;
         const NumberType rm = 1.0 - r;
@@ -1102,7 +1102,7 @@ namespace CORE::FE
 
         break;
       }
-      case CORE::FE::CellType::hex16:
+      case Core::FE::CellType::hex16:
       {
         const NumberType rp = 1.0 + r;
         const NumberType rm = 1.0 - r;
@@ -1241,7 +1241,7 @@ namespace CORE::FE
 
         break;
       }
-      case CORE::FE::CellType::hex18:
+      case Core::FE::CellType::hex18:
       {
         deriv2(drdr, 0) = .25 * s * (s - 1.) * (1. - t);
         deriv2(dsds, 0) = .25 * r * (r - 1.) * (1. - t);
@@ -1385,7 +1385,7 @@ namespace CORE::FE
 
         break;
       }
-      case CORE::FE::CellType::hex20:
+      case Core::FE::CellType::hex20:
       {
         const NumberType rp = 1.0 + r;
         const NumberType rm = 1.0 - r;
@@ -1540,7 +1540,7 @@ namespace CORE::FE
 
         break;
       }
-      case CORE::FE::CellType::hex27:
+      case Core::FE::CellType::hex27:
       {
         const NumberType rm1 = 0.5 * r * (r - 1.0);
         const NumberType r00 = (1.0 - r * r);
@@ -1731,12 +1731,12 @@ namespace CORE::FE
         deriv2(dsdt, 26) = 4.0 * s * t * r00;
         break;
       }
-      case CORE::FE::CellType::tet4:
+      case Core::FE::CellType::tet4:
       {
         deriv2.Clear();
         break;
       }
-      case CORE::FE::CellType::tet10:
+      case Core::FE::CellType::tet10:
       {
         deriv2(drdr, 0) = 4.0;
         deriv2(dsds, 0) = 4.0;
@@ -1810,7 +1810,7 @@ namespace CORE::FE
 
         break;
       }
-      case CORE::FE::CellType::wedge6:
+      case Core::FE::CellType::wedge6:
       {
         deriv2(drdr, 0) = 0.0;
         deriv2(dsds, 0) = 0.0;
@@ -1856,7 +1856,7 @@ namespace CORE::FE
 
         break;
       }
-      case CORE::FE::CellType::wedge15:
+      case Core::FE::CellType::wedge15:
       {
         const NumberType t1 = r;
         const NumberType t2 = s;
@@ -1977,7 +1977,7 @@ namespace CORE::FE
   void shape_function_2D(VectorType& funct,  ///< to be filled with shape function values
       const NumberType& r,                   ///< r coordinate
       const NumberType& s,                   ///< s coordinate
-      const CORE::FE::CellType& distype      ///< distinguish between DiscretizationType
+      const Core::FE::CellType& distype      ///< distinguish between DiscretizationType
   )
   {
     // if the given template parameter is of type int, the error occurs during compilation
@@ -1985,12 +1985,12 @@ namespace CORE::FE
 
     switch (distype)
     {
-      case CORE::FE::CellType::point1:
+      case Core::FE::CellType::point1:
       {
         funct(0) = 1.0;
         break;
       }
-      case CORE::FE::CellType::quad4:
+      case Core::FE::CellType::quad4:
       {
         const NumberType rp = 1.0 + r;
         const NumberType rm = 1.0 - r;
@@ -2003,7 +2003,7 @@ namespace CORE::FE
         funct(3) = 0.25 * rm * sp;
         break;
       }
-      case CORE::FE::CellType::quad6:
+      case Core::FE::CellType::quad6:
       {
         funct(0) = 0.25 * r * (r - 1.) * (1. - s);
         funct(1) = 0.25 * r * (r + 1.) * (1. - s);
@@ -2014,7 +2014,7 @@ namespace CORE::FE
 
         break;
       }
-      case CORE::FE::CellType::quad8:
+      case Core::FE::CellType::quad8:
       {
         const NumberType rp = 1.0 + r;
         const NumberType rm = 1.0 - r;
@@ -2052,7 +2052,7 @@ namespace CORE::FE
         funct(7) = 0.5 * s2 * rm;
         break;
       }
-      case CORE::FE::CellType::quad9:
+      case Core::FE::CellType::quad9:
       {
         const NumberType rp = 1.0 + r;
         const NumberType rm = 1.0 - r;
@@ -2075,7 +2075,7 @@ namespace CORE::FE
         funct(8) = r2 * s2;
         break;
       }
-      case CORE::FE::CellType::tri3:
+      case Core::FE::CellType::tri3:
       {
         const NumberType t1 = 1.0 - r - s;
         const NumberType t2 = r;
@@ -2085,7 +2085,7 @@ namespace CORE::FE
         funct(2) = t3;
         break;
       }
-      case CORE::FE::CellType::tri6:
+      case Core::FE::CellType::tri6:
       {
         const NumberType t1 = 1.0 - r - s;
         const NumberType t2 = r;
@@ -2115,7 +2115,7 @@ namespace CORE::FE
       MatrixType& deriv1,                ///< to be filled with shape function derivative values
       const NumberType& r,               ///< r coordinate
       const NumberType& s,               ///< s coordinate
-      const CORE::FE::CellType& distype  ///< distinguish between DiscretizationType
+      const Core::FE::CellType& distype  ///< distinguish between DiscretizationType
   )
   {
     // if the given template parameter is of type int, the error occurs during compilation
@@ -2126,13 +2126,13 @@ namespace CORE::FE
 
     switch (distype)
     {
-      case CORE::FE::CellType::point1:
+      case Core::FE::CellType::point1:
       {
         deriv1(dr, 0) = 0.0;
         deriv1(ds, 0) = 0.0;
         break;
       }
-      case CORE::FE::CellType::quad4:
+      case Core::FE::CellType::quad4:
       {
         const NumberType rp = 1.0 + r;
         const NumberType rm = 1.0 - r;
@@ -2152,7 +2152,7 @@ namespace CORE::FE
         deriv1(ds, 3) = 0.25 * rm;
         break;
       }
-      case CORE::FE::CellType::quad6:
+      case Core::FE::CellType::quad6:
       {
         deriv1(0, 0) = 0.25 * (2. * r - 1.) * (1. - s);
         deriv1(0, 1) = 0.25 * (2. * r + 1.) * (1. - s);
@@ -2169,7 +2169,7 @@ namespace CORE::FE
         deriv1(1, 5) = -0.5 * (r - 1.) * (r + 1.);
         break;
       }
-      case CORE::FE::CellType::quad8:
+      case Core::FE::CellType::quad8:
       {
         const NumberType rp = 1.0 + r;
         const NumberType rm = 1.0 - r;
@@ -2217,7 +2217,7 @@ namespace CORE::FE
         deriv1(1, 7) = -rm * s;
         break;
       }
-      case CORE::FE::CellType::quad9:
+      case Core::FE::CellType::quad9:
       {
         const NumberType rp = 1.0 + r;
         const NumberType rm = 1.0 - r;
@@ -2260,7 +2260,7 @@ namespace CORE::FE
         deriv1(1, 8) = -2.0 * s * r2;
         break;
       }
-      case CORE::FE::CellType::tri3:
+      case Core::FE::CellType::tri3:
       {
         deriv1(0, 0) = -1.0;
         deriv1(1, 0) = -1.0;
@@ -2272,7 +2272,7 @@ namespace CORE::FE
         deriv1(1, 2) = 1.0;
         break;
       }
-      case CORE::FE::CellType::tri6:
+      case Core::FE::CellType::tri6:
       {
         deriv1(0, 0) = -3.0 + 4.0 * (r + s);
         deriv1(1, 0) = -3.0 + 4.0 * (r + s);
@@ -2294,7 +2294,7 @@ namespace CORE::FE
         break;
       }
       default:
-        std::cout << CORE::FE::CellTypeToString(distype) << std::endl;
+        std::cout << Core::FE::CellTypeToString(distype) << std::endl;
         FOUR_C_THROW("distype unknown\n");
         break;
     } /* end switch(distype) */
@@ -2309,7 +2309,7 @@ namespace CORE::FE
       MatrixType& deriv2,   ///< to be filled with shape function 2-nd derivative values
       const NumberType& r,  ///< r coordinate
       const NumberType& s,  ///< s coordinate
-      const CORE::FE::CellType& distype  ///< distinguish between DiscretizationType
+      const Core::FE::CellType& distype  ///< distinguish between DiscretizationType
   )
   {
     // if the given template parameter is of type int, the error occurs during compilation
@@ -2321,14 +2321,14 @@ namespace CORE::FE
 
     switch (distype)
     {
-      case CORE::FE::CellType::point1:
+      case Core::FE::CellType::point1:
       {
         deriv2(drdr, 0) = 0.0;
         deriv2(dsds, 0) = 0.0;
         deriv2(drds, 0) = 0.0;
         break;
       }
-      case CORE::FE::CellType::quad4:
+      case Core::FE::CellType::quad4:
       {
         deriv2(drdr, 0) = 0.0;
         deriv2(dsds, 0) = 0.0;
@@ -2347,7 +2347,7 @@ namespace CORE::FE
         deriv2(drds, 3) = -0.25;
         break;
       }
-      case CORE::FE::CellType::quad6:
+      case Core::FE::CellType::quad6:
       {
         deriv2(drdr, 0) = .5 * (1. - s);
         deriv2(dsds, 0) = 0.;
@@ -2375,7 +2375,7 @@ namespace CORE::FE
 
         break;
       }
-      case CORE::FE::CellType::quad8:
+      case Core::FE::CellType::quad8:
       {
         const NumberType rp = 1.0 + r;
         const NumberType rm = 1.0 - r;
@@ -2439,7 +2439,7 @@ namespace CORE::FE
         deriv2(drds, 7) = s;
         break;
       }
-      case CORE::FE::CellType::quad9:
+      case Core::FE::CellType::quad9:
       {
         const NumberType rp = 1.0 + r;
         const NumberType rm = 1.0 - r;
@@ -2491,7 +2491,7 @@ namespace CORE::FE
         deriv2(drds, 8) = 2.0 * s * 2.0 * r;
         break;
       }
-      case CORE::FE::CellType::tri3:
+      case Core::FE::CellType::tri3:
       {
         deriv2(drdr, 0) = 0.0;
         deriv2(dsds, 0) = 0.0;
@@ -2506,7 +2506,7 @@ namespace CORE::FE
         deriv2(drds, 2) = 0.0;
         break;
       }
-      case CORE::FE::CellType::tri6:
+      case Core::FE::CellType::tri6:
       {
         deriv2(drdr, 0) = 4.0;
         deriv2(dsds, 0) = 4.0;
@@ -2547,7 +2547,7 @@ namespace CORE::FE
   template <class VectorType, typename NumberType>
   void shape_function_1D(VectorType& funct,  ///< to be filled with shape function values
       const NumberType& r,                   ///< r coordinate
-      const CORE::FE::CellType& distype      ///< distinguish between DiscretizationType
+      const Core::FE::CellType& distype      ///< distinguish between DiscretizationType
   )
   {
     // if the given template parameter is of type int, the error occurs during compilation
@@ -2555,25 +2555,25 @@ namespace CORE::FE
 
     switch (distype)
     {
-      case CORE::FE::CellType::point1:
+      case Core::FE::CellType::point1:
       {
         funct(0) = 1.0;
         break;
       }
-      case CORE::FE::CellType::line2:
+      case Core::FE::CellType::line2:
       {
         funct(0) = 0.5 * (1.0 - r);
         funct(1) = 0.5 * (1.0 + r);
         break;
       }
-      case CORE::FE::CellType::line3:
+      case Core::FE::CellType::line3:
       {
         funct(0) = -0.5 * r * (1.0 - r);
         funct(1) = 0.5 * r * (1.0 + r);
         funct(2) = 1.0 - r * r;
         break;
       }
-      case CORE::FE::CellType::line4:
+      case Core::FE::CellType::line4:
       {
         funct(0) = -(9.0 / 16.0) * (1.0 - r) * ((1.0 / 9.0) - r * r);
         funct(1) = -(9.0 / 16.0) * (1.0 + r) * ((1.0 / 9.0) - r * r);
@@ -2586,7 +2586,7 @@ namespace CORE::FE
          *nodenumbering   1   3   4   2
          */
       }
-      case CORE::FE::CellType::line5:
+      case Core::FE::CellType::line5:
       {
         funct(0) = (2.0 / 3.0) * r * (1.0 - r) * (0.25 - r * r);
         funct(1) = -(2.0 / 3.0) * r * (1.0 + r) * (0.25 - r * r);
@@ -2600,37 +2600,37 @@ namespace CORE::FE
          *nodenumbering   1   3   4   5   2
          */
       }
-      case CORE::FE::CellType::line6:
+      case Core::FE::CellType::line6:
       {
         funct(0) = -625.0 / 768.0 *
-                   (CORE::MathOperations<NumberType>::pow(r, 5) -
-                       CORE::MathOperations<NumberType>::pow(r, 4) -
-                       2.0 / 5.0 * CORE::MathOperations<NumberType>::pow(r, 3) + 2.0 / 5.0 * r * r +
+                   (Core::MathOperations<NumberType>::pow(r, 5) -
+                       Core::MathOperations<NumberType>::pow(r, 4) -
+                       2.0 / 5.0 * Core::MathOperations<NumberType>::pow(r, 3) + 2.0 / 5.0 * r * r +
                        9.0 / 625.0 * r - 9.0 / 625.0);
         funct(1) = 625.0 / 768.0 *
-                   (CORE::MathOperations<NumberType>::pow(r, 5) +
-                       CORE::MathOperations<NumberType>::pow(r, 4) -
-                       2.0 / 5.0 * CORE::MathOperations<NumberType>::pow(r, 3) - 2.0 / 5.0 * r * r +
+                   (Core::MathOperations<NumberType>::pow(r, 5) +
+                       Core::MathOperations<NumberType>::pow(r, 4) -
+                       2.0 / 5.0 * Core::MathOperations<NumberType>::pow(r, 3) - 2.0 / 5.0 * r * r +
                        9.0 / 625.0 * r + 9.0 / 625.0);
         funct(2) = 3125.0 / 768.0 *
-                   (CORE::MathOperations<NumberType>::pow(r, 5) -
-                       3.0 / 5.0 * CORE::MathOperations<NumberType>::pow(r, 4) -
-                       26.0 / 25.0 * CORE::MathOperations<NumberType>::pow(r, 3) +
+                   (Core::MathOperations<NumberType>::pow(r, 5) -
+                       3.0 / 5.0 * Core::MathOperations<NumberType>::pow(r, 4) -
+                       26.0 / 25.0 * Core::MathOperations<NumberType>::pow(r, 3) +
                        78.0 / 125.0 * r * r + 1.0 / 25.0 * r - 3.0 / 125.0);
         funct(3) = -3125.0 / 384.0 *
-                   (CORE::MathOperations<NumberType>::pow(r, 5) -
-                       1.0 / 5.0 * CORE::MathOperations<NumberType>::pow(r, 4) -
-                       34.0 / 25.0 * CORE::MathOperations<NumberType>::pow(r, 3) +
+                   (Core::MathOperations<NumberType>::pow(r, 5) -
+                       1.0 / 5.0 * Core::MathOperations<NumberType>::pow(r, 4) -
+                       34.0 / 25.0 * Core::MathOperations<NumberType>::pow(r, 3) +
                        34.0 / 125.0 * r * r + 9.0 / 25.0 * r - 9.0 / 125.0);
         funct(4) = 3125.0 / 384.0 *
-                   (CORE::MathOperations<NumberType>::pow(r, 5) +
-                       1.0 / 5.0 * CORE::MathOperations<NumberType>::pow(r, 4) -
-                       34.0 / 25.0 * CORE::MathOperations<NumberType>::pow(r, 3) -
+                   (Core::MathOperations<NumberType>::pow(r, 5) +
+                       1.0 / 5.0 * Core::MathOperations<NumberType>::pow(r, 4) -
+                       34.0 / 25.0 * Core::MathOperations<NumberType>::pow(r, 3) -
                        34.0 / 125.0 * r * r + 9.0 / 25.0 * r + 9.0 / 125.0);
         funct(5) = -3125.0 / 768.0 *
-                   (CORE::MathOperations<NumberType>::pow(r, 5) +
-                       3.0 / 5.0 * CORE::MathOperations<NumberType>::pow(r, 4) -
-                       26.0 / 25.0 * CORE::MathOperations<NumberType>::pow(r, 3) -
+                   (Core::MathOperations<NumberType>::pow(r, 5) +
+                       3.0 / 5.0 * Core::MathOperations<NumberType>::pow(r, 4) -
+                       26.0 / 25.0 * Core::MathOperations<NumberType>::pow(r, 3) -
                        78.0 / 125.0 * r * r + 1.0 / 25.0 * r + 3.0 / 125.0);
         break;
         /*
@@ -2654,7 +2654,7 @@ namespace CORE::FE
   void shape_function_1D_deriv1(
       MatrixType& deriv1,                ///< to be filled with shape function derivative values
       const NumberType& r,               ///< r coordinate
-      const CORE::FE::CellType& distype  ///< distinguish between DiscretizationType
+      const Core::FE::CellType& distype  ///< distinguish between DiscretizationType
   )
   {
     // if the given template parameter is of type int, the error occurs during compilation
@@ -2663,25 +2663,25 @@ namespace CORE::FE
     const int dr = 0;
     switch (distype)
     {
-      case CORE::FE::CellType::point1:
+      case Core::FE::CellType::point1:
       {
         deriv1(dr, 0) = 0.0;
         break;
       }
-      case CORE::FE::CellType::line2:
+      case Core::FE::CellType::line2:
       {
         deriv1(dr, 0) = -0.5;
         deriv1(dr, 1) = 0.5;
         break;
       }
-      case CORE::FE::CellType::line3:
+      case Core::FE::CellType::line3:
       {
         deriv1(dr, 0) = r - 0.5;
         deriv1(dr, 1) = r + 0.5;
         deriv1(dr, 2) = -2.0 * r;
         break;
       }
-      case CORE::FE::CellType::line4:
+      case Core::FE::CellType::line4:
       {
         deriv1(dr, 0) = (1.0 / 16.0) + (9.0 / 8.0) * r - (27.0 / 16.0) * r * r;
         deriv1(dr, 1) = (-1.0 / 16.0) + (9.0 / 8.0) * r + (27.0 / 16.0) * r * r;
@@ -2694,17 +2694,17 @@ namespace CORE::FE
          *nodenumbering   1   3   4   2
          */
       }
-      case CORE::FE::CellType::line5:
+      case Core::FE::CellType::line5:
       {
         deriv1(dr, 0) = (1.0 / 6.0) - (1.0 / 3.0) * r - 2.0 * r * r +
-                        (8.0 / 3.0) * CORE::MathOperations<NumberType>::pow(r, 3);
+                        (8.0 / 3.0) * Core::MathOperations<NumberType>::pow(r, 3);
         deriv1(dr, 1) = -(1.0 / 6.0) - (1.0 / 3.0) * r + 2.0 * r * r +
-                        (8.0 / 3.0) * CORE::MathOperations<NumberType>::pow(r, 3);
+                        (8.0 / 3.0) * Core::MathOperations<NumberType>::pow(r, 3);
         deriv1(dr, 2) = -(4.0 / 3.0) + (16.0 / 3.0) * r + 4.0 * r * r -
-                        (32.0 / 3.0) * CORE::MathOperations<NumberType>::pow(r, 3);
-        deriv1(dr, 3) = -10.0 * r + 16.0 * CORE::MathOperations<NumberType>::pow(r, 3);
+                        (32.0 / 3.0) * Core::MathOperations<NumberType>::pow(r, 3);
+        deriv1(dr, 3) = -10.0 * r + 16.0 * Core::MathOperations<NumberType>::pow(r, 3);
         deriv1(dr, 4) = (4.0 / 3.0) + (16.0 / 3.0) * r - 4.0 * r * r -
-                        (32.0 / 3.0) * CORE::MathOperations<NumberType>::pow(r, 3);
+                        (32.0 / 3.0) * Core::MathOperations<NumberType>::pow(r, 3);
         break;
         /*
          *nodegeometry    x-------x-------x-------x-------x-----> xi
@@ -2712,31 +2712,31 @@ namespace CORE::FE
          *nodenumbering   1   3   4   5   2
          */
       }
-      case CORE::FE::CellType::line6:
+      case Core::FE::CellType::line6:
       {
         deriv1(dr, 0) = -625.0 / 768.0 *
-                        (5.0 * CORE::MathOperations<NumberType>::pow(r, 4) -
-                            4.0 * CORE::MathOperations<NumberType>::pow(r, 3) - 6.0 / 5.0 * r * r +
+                        (5.0 * Core::MathOperations<NumberType>::pow(r, 4) -
+                            4.0 * Core::MathOperations<NumberType>::pow(r, 3) - 6.0 / 5.0 * r * r +
                             4.0 / 5.0 * r + 9.0 / 625.0);
         deriv1(dr, 1) = 625.0 / 768.0 *
-                        (5.0 * CORE::MathOperations<NumberType>::pow(r, 4) +
-                            4.0 * CORE::MathOperations<NumberType>::pow(r, 3) - 6.0 / 5.0 * r * r -
+                        (5.0 * Core::MathOperations<NumberType>::pow(r, 4) +
+                            4.0 * Core::MathOperations<NumberType>::pow(r, 3) - 6.0 / 5.0 * r * r -
                             4.0 / 5.0 * r + 9.0 / 625.0);
         deriv1(dr, 2) = 3125.0 / 768.0 *
-                        (5.0 * CORE::MathOperations<NumberType>::pow(r, 4) -
-                            12.0 / 5.0 * CORE::MathOperations<NumberType>::pow(r, 3) -
+                        (5.0 * Core::MathOperations<NumberType>::pow(r, 4) -
+                            12.0 / 5.0 * Core::MathOperations<NumberType>::pow(r, 3) -
                             78.0 / 25.0 * r * r + 156.0 / 125.0 * r + 1.0 / 25.0);
         deriv1(dr, 3) = -3125.0 / 384.0 *
-                        (5.0 * CORE::MathOperations<NumberType>::pow(r, 4) -
-                            4.0 / 5.0 * CORE::MathOperations<NumberType>::pow(r, 3) -
+                        (5.0 * Core::MathOperations<NumberType>::pow(r, 4) -
+                            4.0 / 5.0 * Core::MathOperations<NumberType>::pow(r, 3) -
                             102.0 / 25.0 * r * r + 68.0 / 125.0 * r + 9.0 / 25.0);
         deriv1(dr, 4) = 3125.0 / 384.0 *
-                        (5.0 * CORE::MathOperations<NumberType>::pow(r, 4) +
-                            4.0 / 5.0 * CORE::MathOperations<NumberType>::pow(r, 3) -
+                        (5.0 * Core::MathOperations<NumberType>::pow(r, 4) +
+                            4.0 / 5.0 * Core::MathOperations<NumberType>::pow(r, 3) -
                             102.0 / 25.0 * r * r - 68.0 / 125.0 * r + 9.0 / 25.0);
         deriv1(dr, 5) = -3125.0 / 768.0 *
-                        (5.0 * CORE::MathOperations<NumberType>::pow(r, 4) +
-                            12.0 / 5.0 * CORE::MathOperations<NumberType>::pow(r, 3) -
+                        (5.0 * Core::MathOperations<NumberType>::pow(r, 4) +
+                            12.0 / 5.0 * Core::MathOperations<NumberType>::pow(r, 3) -
                             78.0 / 25.0 * r * r - 156.0 / 125.0 * r + 1.0 / 25.0);
         break;
         /*
@@ -2760,7 +2760,7 @@ namespace CORE::FE
   void shape_function_1D_deriv2(
       MatrixType& deriv2,   ///< to be filled with shape function 2-nd derivative values
       const NumberType& r,  ///< r coordinate
-      const CORE::FE::CellType& distype  ///< distinguish between DiscretizationType
+      const Core::FE::CellType& distype  ///< distinguish between DiscretizationType
   )
   {
     // if the given template parameter is of type int, the error occurs during compilation
@@ -2769,25 +2769,25 @@ namespace CORE::FE
     const int drdr = 0;
     switch (distype)
     {
-      case CORE::FE::CellType::point1:
+      case Core::FE::CellType::point1:
       {
         deriv2(drdr, 0) = 0.0;
         break;
       }
-      case CORE::FE::CellType::line2:
+      case Core::FE::CellType::line2:
       {
         deriv2(drdr, 0) = 0.0;
         deriv2(drdr, 1) = 0.0;
         break;
       }
-      case CORE::FE::CellType::line3:
+      case Core::FE::CellType::line3:
       {
         deriv2(drdr, 0) = 1.0;
         deriv2(drdr, 1) = 1.0;
         deriv2(drdr, 2) = -2.0;
         break;
       }
-      case CORE::FE::CellType::line4:
+      case Core::FE::CellType::line4:
       {
         deriv2(drdr, 0) = +(9.0 / 8.0) - (27.0 / 16.0) * 2 * r;
         deriv2(drdr, 1) = +(9.0 / 8.0) + (27.0 / 16.0) * 2 * r;
@@ -2810,7 +2810,7 @@ namespace CORE::FE
   void shape_function_hermite_1D(VectorType& funct,  ///< to be filled with shape function values
       const NumberType1& r,                          ///< r coordinate
       const NumberType2& l,                          ///< length of element
-      const CORE::FE::CellType& distype              ///< distinguish between DiscretizationType
+      const Core::FE::CellType& distype              ///< distinguish between DiscretizationType
   )
   {
     // if the given template parameter is of type int, the error occurs during compilation
@@ -2818,7 +2818,7 @@ namespace CORE::FE
 
     switch (distype)
     {
-      case CORE::FE::CellType::line2:
+      case Core::FE::CellType::line2:
       {
         const NumberType1 r_p3 = r * r * r;
         funct(0) = 0.25 * (2.0 - 3.0 * r + r_p3);
@@ -2843,7 +2843,7 @@ namespace CORE::FE
       MatrixType& deriv1,    ///< to be filled with hermite shape function first derivative values
       const NumberType1& r,  ///< r coordinate
       const NumberType2& l,  ///< length of element
-      const CORE::FE::CellType& distype  ///< distinguish between DiscretizationType
+      const Core::FE::CellType& distype  ///< distinguish between DiscretizationType
   )
   {
     // if the given template parameter is of type int, the error occurs during compilation
@@ -2851,7 +2851,7 @@ namespace CORE::FE
 
     switch (distype)
     {
-      case CORE::FE::CellType::line2:
+      case Core::FE::CellType::line2:
       {
         deriv1(0, 0) = 0.25 * (-3.0 + 3.0 * r * r);
         deriv1(0, 1) = l / 8.0 * (-1.0 - 2.0 * r + 3.0 * r * r);
@@ -2875,7 +2875,7 @@ namespace CORE::FE
       MatrixType& deriv2,    ///< to be filled with hermite shape function second derivative values
       const NumberType1& r,  ///< r coordinate
       const NumberType2& l,  ///< length of element
-      const CORE::FE::CellType& distype  ///< distinguish between DiscretizationType
+      const Core::FE::CellType& distype  ///< distinguish between DiscretizationType
   )
   {
     // if the given template parameter is of type int, the error occurs during compilation
@@ -2883,7 +2883,7 @@ namespace CORE::FE
 
     switch (distype)
     {
-      case CORE::FE::CellType::line2:
+      case Core::FE::CellType::line2:
       {
         deriv2(0, 0) = 1.5 * r;
         deriv2(0, 1) = l / 8.0 * (-2.0 + 6.0 * r);
@@ -2907,7 +2907,7 @@ namespace CORE::FE
       VectorType deriv3,     ///< to be filled with hermite shape function second derivative values
       const NumberType1& r,  ///< r coordinate
       const NumberType2& l,  ///< length of element
-      const CORE::FE::CellType& distype  ///< distinguish between DiscretizationType
+      const Core::FE::CellType& distype  ///< distinguish between DiscretizationType
   )
   {
     // if the given template parameter is of type int, the error occurs during compilation
@@ -2915,7 +2915,7 @@ namespace CORE::FE
 
     switch (distype)
     {
-      case CORE::FE::CellType::line2:
+      case Core::FE::CellType::line2:
       {
         deriv3(0) = 1.5;
         deriv3(1) = l / 8.0 * 6.0;
@@ -2939,7 +2939,7 @@ namespace CORE::FE
       VectorType& funct,     ///< to be filled with the values hermite shape functions of order five
       const NumberType1& r,  ///< r coordinate
       const NumberType2& l,  ///< length of element
-      const CORE::FE::CellType& distype  ///< distinguish between discretization Type
+      const Core::FE::CellType& distype  ///< distinguish between discretization Type
   )
   {
     // if the given template parameter is of type int, the error occurs during compilation
@@ -2947,7 +2947,7 @@ namespace CORE::FE
 
     switch (distype)
     {
-      case CORE::FE::CellType::line2:
+      case Core::FE::CellType::line2:
       {
         const NumberType1 r_p3 = r * r * r;
         const NumberType1 r_p4 = r_p3 * r;
@@ -2976,7 +2976,7 @@ namespace CORE::FE
       VectorType& funct,     ///< to be filled with the values hermite shape functions of order five
       const NumberType1& r,  ///< r coordinate
       const NumberType2& l,  ///< length of element
-      const CORE::FE::CellType& distype  ///< distinguish between discretization Type
+      const Core::FE::CellType& distype  ///< distinguish between discretization Type
   )
   {
     // if the given template parameter is of type int, the error occurs during compilation
@@ -2984,7 +2984,7 @@ namespace CORE::FE
 
     switch (distype)
     {
-      case CORE::FE::CellType::line2:
+      case Core::FE::CellType::line2:
       {
         const NumberType1 r_p3 = r * r * r;
         const NumberType1 r_p4 = r_p3 * r;
@@ -3012,7 +3012,7 @@ namespace CORE::FE
       VectorType& funct,     ///< to be filled with the values hermite shape functions of order five
       const NumberType1& r,  ///< r coordinate
       const NumberType2& l,  ///< length of element
-      const CORE::FE::CellType& distype  ///< distinguish between discretization Type
+      const Core::FE::CellType& distype  ///< distinguish between discretization Type
   )
   {
     // if the given template parameter is of type int, the error occurs during compilation
@@ -3020,7 +3020,7 @@ namespace CORE::FE
 
     switch (distype)
     {
-      case CORE::FE::CellType::line2:
+      case Core::FE::CellType::line2:
       {
         const NumberType1 r_p3 = r * r * r;
         funct(0) = 0.0625 * (60 * r - 60 * r_p3);
@@ -3047,7 +3047,7 @@ namespace CORE::FE
       VectorType& funct,     ///< to be filled with the values hermite shape functions of order five
       const NumberType1& r,  ///< r coordinate
       const NumberType2& l,  ///< length of element
-      const CORE::FE::CellType& distype  ///< distinguish between discretization Type
+      const Core::FE::CellType& distype  ///< distinguish between discretization Type
   )
   {
     // if the given template parameter is of type int, the error occurs during compilation
@@ -3055,7 +3055,7 @@ namespace CORE::FE
 
     switch (distype)
     {
-      case CORE::FE::CellType::line2:
+      case Core::FE::CellType::line2:
       {
         funct(0) = 0.0625 * (60 - 180 * r * r);
         funct(1) = 0.03125 * l * (60 + 24 * r - 180 * r * r);
@@ -3077,23 +3077,23 @@ namespace CORE::FE
    */
   template <class VectorType1, class VectorType2, unsigned dim>
   constexpr void shape_function_dim(
-      const VectorType1& xsi, VectorType2& f, CORE::FE::CellType distype)
+      const VectorType1& xsi, VectorType2& f, Core::FE::CellType distype)
   {
     switch (dim)
     {
       case 1:
       {
-        CORE::FE::shape_function_1D(f, xsi(0), distype);
+        Core::FE::shape_function_1D(f, xsi(0), distype);
         break;
       }
       case 2:
       {
-        CORE::FE::shape_function_2D(f, xsi(0), xsi(1), distype);
+        Core::FE::shape_function_2D(f, xsi(0), xsi(1), distype);
         break;
       }
       case 3:
       {
-        CORE::FE::shape_function_3D(f, xsi(0), xsi(1), xsi(2), distype);
+        Core::FE::shape_function_3D(f, xsi(0), xsi(1), xsi(2), distype);
         break;
       }
       default:
@@ -3106,33 +3106,33 @@ namespace CORE::FE
   /*!
   \brief Fill vector with the shape function values evaluated at given point
   */
-  template <CORE::FE::CellType distype, class VectorType1, class VectorType2>
+  template <Core::FE::CellType distype, class VectorType1, class VectorType2>
   constexpr void shape_function(const VectorType1& xsi, VectorType2& f)
   {
-    shape_function_dim<VectorType1, VectorType2, CORE::FE::dim<distype>>(xsi, f, distype);
+    shape_function_dim<VectorType1, VectorType2, Core::FE::dim<distype>>(xsi, f, distype);
   }
 
   /*!
    \brief Fill a matrix with first shape function derivatives evaluated at given point
    */
-  template <CORE::FE::CellType distype, class VectorType, class MatrixType>
+  template <Core::FE::CellType distype, class VectorType, class MatrixType>
   static void shape_function_deriv1(const VectorType& xsi, MatrixType& d)
   {
-    switch (CORE::FE::dim<distype>)
+    switch (Core::FE::dim<distype>)
     {
       case 1:
       {
-        CORE::FE::shape_function_1D_deriv1(d, xsi(0), distype);
+        Core::FE::shape_function_1D_deriv1(d, xsi(0), distype);
         break;
       }
       case 2:
       {
-        CORE::FE::shape_function_2D_deriv1(d, xsi(0), xsi(1), distype);
+        Core::FE::shape_function_2D_deriv1(d, xsi(0), xsi(1), distype);
         break;
       }
       case 3:
       {
-        CORE::FE::shape_function_3D_deriv1(d, xsi(0), xsi(1), xsi(2), distype);
+        Core::FE::shape_function_3D_deriv1(d, xsi(0), xsi(1), xsi(2), distype);
         break;
       }
       default:
@@ -3145,24 +3145,24 @@ namespace CORE::FE
   /*!
    \brief Fill a matrix with second shape function derivatives evaluated at given point
    */
-  template <CORE::FE::CellType distype, class VectorType, class MatrixType>
+  template <Core::FE::CellType distype, class VectorType, class MatrixType>
   static void shape_function_deriv2(const VectorType& xsi, MatrixType& d2)
   {
-    switch (CORE::FE::dim<distype>)
+    switch (Core::FE::dim<distype>)
     {
       case 1:
       {
-        CORE::FE::shape_function_1D_deriv2(d2, xsi(0), distype);
+        Core::FE::shape_function_1D_deriv2(d2, xsi(0), distype);
         break;
       }
       case 2:
       {
-        CORE::FE::shape_function_2D_deriv2(d2, xsi(0), xsi(1), distype);
+        Core::FE::shape_function_2D_deriv2(d2, xsi(0), xsi(1), distype);
         break;
       }
       case 3:
       {
-        CORE::FE::shape_function_3D_deriv2(d2, xsi(0), xsi(1), xsi(2), distype);
+        Core::FE::shape_function_3D_deriv2(d2, xsi(0), xsi(1), xsi(2), distype);
         break;
       }
       default:
@@ -3186,13 +3186,13 @@ namespace CORE::FE
    * @param[in] xyze        spatial positions of the element nodes
    * @param[in] normal      normal vector
    */
-  template <CORE::FE::CellType distype, int probdim>
+  template <Core::FE::CellType distype, int probdim>
   void EvaluateShapeFunctionSpatialDerivativeInProbDim(
-      CORE::LINALG::Matrix<probdim, CORE::FE::num_nodes<distype>>& deriv_xyz,
-      const CORE::LINALG::Matrix<CORE::FE::dim<distype>, CORE::FE::num_nodes<distype>>& deriv,
-      const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, probdim>& xyze,
-      const CORE::LINALG::Matrix<probdim, 1>& normal);
-}  // namespace CORE::FE
+      Core::LinAlg::Matrix<probdim, Core::FE::num_nodes<distype>>& deriv_xyz,
+      const Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::num_nodes<distype>>& deriv,
+      const Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, probdim>& xyze,
+      const Core::LinAlg::Matrix<probdim, 1>& normal);
+}  // namespace Core::FE
 
 FOUR_C_NAMESPACE_CLOSE
 

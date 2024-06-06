@@ -36,14 +36,14 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
     class Group;
     namespace LineSearch
     {
       class Generic;
     }  // namespace LineSearch
-    namespace INNER
+    namespace Inner
     {
       namespace StatusTest
       {
@@ -104,7 +104,7 @@ namespace NOX
           bool use_soc_ = false;
 
           /// second order correction strategy
-          NOX::NLN::CorrectionType soc_type_ = NOX::NLN::CorrectionType::vague;
+          NOX::Nln::CorrectionType soc_type_ = NOX::Nln::CorrectionType::vague;
 
           /** If a good iterate is in N consecutive Newton iterates blocked by
            *  the filter set, while it would have been accepted by the remaining
@@ -184,7 +184,7 @@ namespace NOX
           /// reset the internal state at the beginning of a new Newton iteration
           void reset();
 
-          enum NOX::NLN::INNER::StatusTest::FilterStatusType acceptability_check(
+          enum NOX::Nln::Inner::StatusTest::FilterStatusType acceptability_check(
               const Point& trial_fp);
 
           /** \brief Perform a pre-selection to avoid the unnecessary point-by-point
@@ -203,11 +203,11 @@ namespace NOX
               const ::NOX::Abstract::Group& grp, const Interface::Required& interface);
 
           /// execute the sufficient reduction check
-          enum NOX::NLN::INNER::StatusTest::StatusType sufficient_reduction_check(
+          enum NOX::Nln::Inner::StatusTest::StatusType sufficient_reduction_check(
               const Point& trial_fp) const;
 
           /// Is the step still larger than the minimal step length estimate?
-          NOX::NLN::INNER::StatusTest::StatusType is_admissible_step(
+          NOX::Nln::Inner::StatusTest::StatusType is_admissible_step(
               const ::NOX::Solver::Generic& solver, const double& step) const;
 
           /// access the active set status
@@ -287,12 +287,12 @@ namespace NOX
           }
 
           /// executed in the end of the check status test
-          StatusType post_check_status(const NOX::NLN::LineSearch::Generic& linesearch,
+          StatusType post_check_status(const NOX::Nln::LineSearch::Generic& linesearch,
               const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp,
               ::NOX::StatusTest::CheckType checkType);
 
           /// actual test
-          void execute_check_status(const NOX::NLN::LineSearch::Generic& linesearch,
+          void execute_check_status(const NOX::Nln::LineSearch::Generic& linesearch,
               const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp,
               ::NOX::StatusTest::CheckType checkType);
 
@@ -300,12 +300,12 @@ namespace NOX
           void recover_from_backup(::NOX::Abstract::Group& grp) const;
 
           /// throw an error if all strategies fail and the step is too short
-          void throw_if_step_too_short(const NOX::NLN::LineSearch::Generic& linesearch,
+          void throw_if_step_too_short(const NOX::Nln::LineSearch::Generic& linesearch,
               const ::NOX::Solver::Generic& solver) const;
 
          protected:
           //! Status of the inner filter status test
-          NOX::NLN::INNER::StatusTest::StatusType status_;
+          NOX::Nln::Inner::StatusTest::StatusType status_;
 
          private:
           /*------------------------------------------------------------------------*/
@@ -353,11 +353,11 @@ namespace NOX
               if (use_soc)
                 return Teuchos::rcp<SOCBase>(new SecondOrderCorrection(filter, user_type));
               else
-                return Teuchos::rcp<SOCBase>(new SOCBase(filter, NOX::NLN::CorrectionType::vague));
+                return Teuchos::rcp<SOCBase>(new SOCBase(filter, NOX::Nln::CorrectionType::vague));
             }
 
             /// base class constructor
-            SOCBase(Filter& filter, NOX::NLN::CorrectionType user_type)
+            SOCBase(Filter& filter, NOX::Nln::CorrectionType user_type)
                 : filter_(filter), user_type_(user_type){/* empty */};
 
             /// delete default constructor
@@ -367,7 +367,7 @@ namespace NOX
             virtual ~SOCBase() = default;
 
             /// The base class does not perform a SOC step
-            virtual StatusType execute(const NOX::NLN::LineSearch::Generic& linesearch,
+            virtual StatusType execute(const NOX::Nln::LineSearch::Generic& linesearch,
                 const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp,
                 ::NOX::StatusTest::CheckType checkType)
             {
@@ -379,33 +379,33 @@ namespace NOX
             Filter& filter_;
 
             /// user defined SOC tye
-            const NOX::NLN::CorrectionType user_type_;
+            const NOX::Nln::CorrectionType user_type_;
           };
 
           /// \brief Concrete implementation of a Second Order Correction class
           class SecondOrderCorrection : public SOCBase
           {
            public:
-            SecondOrderCorrection(Filter& filter, NOX::NLN::CorrectionType user_type)
+            SecondOrderCorrection(Filter& filter, NOX::Nln::CorrectionType user_type)
                 : SOCBase(filter, user_type){/* empty */};
 
             SecondOrderCorrection() = delete;
 
             /// compute the SOC step
-            StatusType execute(const NOX::NLN::LineSearch::Generic& linesearch,
+            StatusType execute(const NOX::Nln::LineSearch::Generic& linesearch,
                 const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp,
                 ::NOX::StatusTest::CheckType checkType) override;
 
            private:
             /// compute the SOC system
-            void compute_system(NOX::NLN::Group& grp, const ::NOX::Solver::Generic& solver) const;
+            void compute_system(NOX::Nln::Group& grp, const ::NOX::Solver::Generic& solver) const;
 
             /// solve the SOC system
-            void solve(const NOX::NLN::LineSearch::Generic& linesearch,
+            void solve(const NOX::Nln::LineSearch::Generic& linesearch,
                 const ::NOX::Solver::Generic& solver, ::NOX::Abstract::Group& grp) const;
 
             /// postprocess the SOC step
-            void postprocess(const NOX::NLN::LineSearch::Generic& linesearch,
+            void postprocess(const NOX::Nln::LineSearch::Generic& linesearch,
                 const ::NOX::Solver::Generic& solver, ::NOX::Abstract::Group& grp,
                 ::NOX::StatusTest::CheckType checkType);
 
@@ -461,7 +461,7 @@ namespace NOX
              * If the filter rejected the trial point but the inner test would accept it
              * we have an indicator for a blocking filter set. This can happen due to old
              * historic information which is not reliable for the current neighborhood. */
-            void Check(const NOX::NLN::LineSearch::Generic& linesearch,
+            void Check(const NOX::Nln::LineSearch::Generic& linesearch,
                 const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp,
                 const Point& rejected_fp);
 
@@ -669,10 +669,10 @@ namespace NOX
             int max_theta_id_;
 
             /// filter point coordinates
-            CORE::LINALG::SerialDenseVector coords_;
+            Core::LinAlg::SerialDenseVector coords_;
 
             /// margin of each filter point coordinate
-            CORE::LINALG::SerialDenseVector margin_;
+            Core::LinAlg::SerialDenseVector margin_;
 
             /// global number of coordinates per filter point
             static unsigned num_coords_;
@@ -692,13 +692,13 @@ namespace NOX
             static std::vector<bool> isvalid_scaling_;
 
             /// global scaling of each coordinate
-            static CORE::LINALG::SerialDenseVector scale_;
+            static Core::LinAlg::SerialDenseVector scale_;
 
             /// global weights for the filter point scaling
-            static CORE::LINALG::SerialDenseVector weights_;
+            static Core::LinAlg::SerialDenseVector weights_;
 
             /// global maximal infeasibility values
-            static CORE::LINALG::SerialDenseVector global_scaled_max_thetas_;
+            static Core::LinAlg::SerialDenseVector global_scaled_max_thetas_;
 
            private:
             /// this vector contains all registered filter points
@@ -755,10 +755,10 @@ namespace NOX
           const double st_;
 
           /// linear model terms / slopes of the objective and infeasibility merit-functions
-          CORE::LINALG::SerialDenseVector model_lin_terms_;
+          Core::LinAlg::SerialDenseVector model_lin_terms_;
 
           /// mixed 2-nd order terms of the objective and infeasibility merit-functions
-          CORE::LINALG::SerialDenseVector model_mixed_terms_;
+          Core::LinAlg::SerialDenseVector model_mixed_terms_;
 
           /// armijo inner status test object
           Teuchos::RCP<Generic> armijo_test_;
@@ -781,8 +781,8 @@ namespace NOX
           static constexpr int OUTPUT_PRECISION = 15;
         };  // class Filter
       }     // namespace StatusTest
-    }       // namespace INNER
-  }         // namespace NLN
+    }       // namespace Inner
+  }         // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

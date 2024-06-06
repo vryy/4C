@@ -20,7 +20,7 @@ species
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
@@ -30,7 +30,7 @@ namespace MAT
     {
      public:
       /// standard constructor
-      Newman(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      Newman(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -61,19 +61,19 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
     };  // class Newman
 
   }  // namespace PAR
 
-  class NewmanType : public CORE::COMM::ParObjectType
+  class NewmanType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "NewmanType"; }
 
     static NewmanType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static NewmanType instance_;
@@ -88,7 +88,7 @@ namespace MAT
     Newman();
 
     /// construct the material object given material parameters
-    explicit Newman(MAT::PAR::Newman* params);
+    explicit Newman(Mat::PAR::Newman* params);
 
     //! @name Packing and Unpacking
 
@@ -110,7 +110,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -129,13 +129,13 @@ namespace MAT
     //@}
 
     /// material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_newman;
+      return Core::Materials::m_newman;
     }
 
     /// return copy of this material object
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new Newman(*this));
     }
@@ -166,12 +166,12 @@ namespace MAT
     const std::vector<double>& therm_fac_params() const { return params_->thermfacpara_; }
 
     /// Return quick accessible material parameter data
-    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
     /// my material parameters
-    MAT::PAR::Newman* params_;
+    Mat::PAR::Newman* params_;
   };
-}  // namespace MAT
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

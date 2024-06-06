@@ -16,7 +16,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
@@ -25,11 +25,11 @@ namespace MAT
     {
      public:
       //! constructor
-      NewmanMultiScale(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      NewmanMultiScale(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
 
       //! create instance of Newman multi-scale material
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       //! electronic conductivity
       double electronic_cond() const { return electronic_cond_; }
@@ -48,19 +48,19 @@ namespace MAT
       //! the concentration
       const int conc_dep_scale_func_num_;
       //@}
-    };  // class MAT::PAR::NewmanMultiScale
+    };  // class Mat::PAR::NewmanMultiScale
   }     // namespace PAR
 
 
   /*----------------------------------------------------------------------*/
-  class NewmanMultiScaleType : public CORE::COMM::ParObjectType
+  class NewmanMultiScaleType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "NewmanMultiScaleType"; };
 
     static NewmanMultiScaleType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static NewmanMultiScaleType instance_;
@@ -76,7 +76,7 @@ namespace MAT
     NewmanMultiScale();
 
     //! construct Newman multi-scale material with specific material parameters
-    explicit NewmanMultiScale(MAT::PAR::NewmanMultiScale* params);
+    explicit NewmanMultiScale(Mat::PAR::NewmanMultiScale* params);
 
     //! @name packing and unpacking
     /*!
@@ -100,7 +100,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -117,13 +117,13 @@ namespace MAT
     //@}
 
     //! return material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_newman_multiscale;
+      return Core::Materials::m_newman_multiscale;
     };
 
     //! clone Newman multi-scale material
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new NewmanMultiScale(*this));
     };
@@ -133,12 +133,12 @@ namespace MAT
 
    private:
     //! return material parameters
-    const MAT::PAR::ScatraMicroMacroCoupling* params() const override { return params_; };
+    const Mat::PAR::ScatraMicroMacroCoupling* params() const override { return params_; };
 
     //! material parameters
-    MAT::PAR::NewmanMultiScale* params_;
+    Mat::PAR::NewmanMultiScale* params_;
   };  // wrapper for Newman multi-scale material
-}  // namespace MAT
+}  // namespace Mat
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

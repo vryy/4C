@@ -16,17 +16,17 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
-  namespace ELASTIC
+  namespace Elastic
   {
     namespace PAR
     {
-      class IsoOgden : public CORE::MAT::PAR::Parameter
+      class IsoOgden : public Core::Mat::PAR::Parameter
       {
        public:
         /// standard constructor
-        IsoOgden(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+        IsoOgden(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
         //! @name material parameters
         //! @{
@@ -36,11 +36,11 @@ namespace MAT
 
         /// Override this method and throw error, as the material should be created in within the
         /// Factory method of the elastic summand
-        Teuchos::RCP<CORE::MAT::Material> create_material() override
+        Teuchos::RCP<Core::Mat::Material> create_material() override
         {
           FOUR_C_THROW(
               "Cannot create a material from this method, as it should be created in "
-              "MAT::ELASTIC::Summand::Factory.");
+              "Mat::Elastic::Summand::Factory.");
           return Teuchos::null;
         };
       };  // class IsoOgden
@@ -73,12 +73,12 @@ namespace MAT
     {
      public:
       /// constructor with given material parameters
-      IsoOgden(MAT::ELASTIC::PAR::IsoOgden* params);
+      IsoOgden(Mat::Elastic::PAR::IsoOgden* params);
 
       /// Provide the material type
-      CORE::Materials::MaterialType MaterialType() const override
+      Core::Materials::MaterialType MaterialType() const override
       {
-        return CORE::Materials::mes_isoogden;
+        return Core::Materials::mes_isoogden;
       }
 
       /// Answer if coefficients with respect to modified principal stretches are provided
@@ -86,12 +86,12 @@ namespace MAT
 
       /// Add coefficients with respect to modified principal stretches (or zeros)
       void add_coefficients_stretches_modified(
-          CORE::LINALG::Matrix<3, 1>&
+          Core::LinAlg::Matrix<3, 1>&
               modgamma,  ///< [\bar{\gamma}_1, \bar{\gamma}_2, \bar{\gamma}_3]
-          CORE::LINALG::Matrix<6, 1>&
+          Core::LinAlg::Matrix<6, 1>&
               moddelta,  ///< [\bar{\delta}_11, \bar{\delta}_22, \bar{\delta}_33,
                          ///< \bar{\delta}_12,\bar{\delta}_23, \bar{\delta}_31]
-          const CORE::LINALG::Matrix<3, 1>&
+          const Core::LinAlg::Matrix<3, 1>&
               modstr  ///< modified principal stretches, [\bar{\lambda}_1,
                       ///< \bar{\lambda}_2, \bar{\lambda}_3]
           ) override;
@@ -105,11 +105,11 @@ namespace MAT
 
      private:
       /// one-term Ogden material parameters
-      MAT::ELASTIC::PAR::IsoOgden* params_;
+      Mat::Elastic::PAR::IsoOgden* params_;
     };
 
-  }  // namespace ELASTIC
-}  // namespace MAT
+  }  // namespace Elastic
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

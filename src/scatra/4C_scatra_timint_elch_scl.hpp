@@ -28,13 +28,13 @@ namespace FLD
   class Meshtying;
 }
 
-namespace ADAPTER
+namespace Adapter
 {
   class Coupling;
   class ScaTraBaseAlgorithm;
-}  // namespace ADAPTER
+}  // namespace Adapter
 
-namespace SCATRA
+namespace ScaTra
 {
 
   class ScaTraTimIntElchSCL : public virtual ScaTraTimIntElch
@@ -45,17 +45,17 @@ namespace SCATRA
     /*========================================================================*/
 
     //! Standard Constructor
-    ScaTraTimIntElchSCL(Teuchos::RCP<DRT::Discretization> dis,
-        Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+    ScaTraTimIntElchSCL(Teuchos::RCP<Discret::Discretization> dis,
+        Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
-        Teuchos::RCP<CORE::IO::DiscretizationWriter> output);
+        Teuchos::RCP<Core::IO::DiscretizationWriter> output);
 
     //! create result test for micro field
-    Teuchos::RCP<CORE::UTILS::ResultTest> create_micro_field_test();
+    Teuchos::RCP<Core::UTILS::ResultTest> create_micro_field_test();
 
     //! get time integration of micro problem
-    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> MicroScaTraField();
+    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> MicroScaTraField();
 
     void nonlinear_solve() override;
 
@@ -65,7 +65,7 @@ namespace SCATRA
 
     void prepare_time_step() override;
 
-    void read_restart_problem_specific(int step, CORE::IO::DiscretizationReader& reader) override;
+    void read_restart_problem_specific(int step, Core::IO::DiscretizationReader& reader) override;
 
     void Setup() override;
 
@@ -113,10 +113,10 @@ namespace SCATRA
     std::map<int, int> coupled_micro_nodes_;
 
     //! DBC maps for coupled problem
-    Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps_elch_scl_;
+    Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps_elch_scl_;
 
     //! block map of coupled ELCH-SCL problem
-    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> full_block_map_elch_scl_;
+    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> full_block_map_elch_scl_;
 
     //! map of coupled ELCH-SCL problem
     Teuchos::RCP<const Epetra_Map> full_map_elch_scl_;
@@ -126,35 +126,35 @@ namespace SCATRA
 
     //! map extractor to get the coupled dofs from macro discretization (CondMap) out of all macro
     //! dofs
-    Teuchos::RCP<CORE::LINALG::MapExtractor> macro_coupling_dofs_;
+    Teuchos::RCP<Core::LinAlg::MapExtractor> macro_coupling_dofs_;
 
     //! coupling adapter between micro (slave) and macro discretization (master).
-    Teuchos::RCP<CORE::ADAPTER::Coupling> macro_micro_coupling_adapter_;
+    Teuchos::RCP<Core::Adapter::Coupling> macro_micro_coupling_adapter_;
 
     //! map extractor to get micro and macro dofs from global vector
     //! cond. map: micro, other map: macro
-    Teuchos::RCP<CORE::LINALG::MapExtractor> macro_micro_dofs_;
+    Teuchos::RCP<Core::LinAlg::MapExtractor> macro_micro_dofs_;
 
     //! type of system matrix of coupled ELCH-SCL problem
-    const CORE::LINALG::MatrixType matrixtype_elch_scl_;
+    const Core::LinAlg::MatrixType matrixtype_elch_scl_;
 
     //! map extractor to get the coupled dofs from micro discretization (CondMap) out of all micro
     //! dofs
-    Teuchos::RCP<CORE::LINALG::MapExtractor> micro_coupling_dofs_;
+    Teuchos::RCP<Core::LinAlg::MapExtractor> micro_coupling_dofs_;
 
     //! time integrator for micro problem
-    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> micro_timint_;
+    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> micro_timint_;
 
     //! residual of coupled ELCH-SCL problem
     Teuchos::RCP<Epetra_Vector> residual_elch_scl_;
 
     //! solver for coupled ELCH-SCL problem
-    Teuchos::RCP<CORE::LINALG::Solver> solver_elch_scl_;
+    Teuchos::RCP<Core::LinAlg::Solver> solver_elch_scl_;
 
     //! system matrix of coupled ELCH-SCL problem
-    Teuchos::RCP<CORE::LINALG::SparseOperator> system_matrix_elch_scl_;
+    Teuchos::RCP<Core::LinAlg::SparseOperator> system_matrix_elch_scl_;
   };
-}  // namespace SCATRA
+}  // namespace ScaTra
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

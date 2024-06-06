@@ -20,7 +20,7 @@ namespace
   class DEMContactTangentialLinearSpringDampTest : public ::testing::Test
   {
    protected:
-    std::unique_ptr<PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp> contacttangential_;
+    std::unique_ptr<ParticleInteraction::DEMContactTangentialLinearSpringDamp> contacttangential_;
 
     const double e_ = 0.8;
     const double nue_ = 0.4;
@@ -38,7 +38,7 @@ namespace
 
       // create tangential contact handler
       contacttangential_ =
-          std::make_unique<PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp>(params_dem);
+          std::make_unique<ParticleInteraction::DEMContactTangentialLinearSpringDamp>(params_dem);
 
       // init tangential contact handler
       contacttangential_->Init();
@@ -133,7 +133,7 @@ namespace
 
     const double k_tangential = (1.0 - nue_) / (1.0 - 0.5 * nue_) * k_normal_;
     const double tangentialpotentialenergy_ref =
-        0.5 * k_tangential * PARTICLEINTERACTION::UTILS::VecDot(gap_tangential, gap_tangential);
+        0.5 * k_tangential * ParticleInteraction::UTILS::VecDot(gap_tangential, gap_tangential);
 
     double tangentialpotentialenergy = 0.0;
     contacttangential_->tangential_potential_energy(gap_tangential, tangentialpotentialenergy);

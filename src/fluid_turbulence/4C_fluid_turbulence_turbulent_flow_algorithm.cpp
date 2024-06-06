@@ -36,7 +36,7 @@ FLD::TurbulentFlowAlgorithm::TurbulentFlowAlgorithm(
   }
   // initialize fluid algorithm
   // this is the first and main fluid algorithm
-  fluidalgo_ = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(fdyn, fdyn, "fluid", false));
+  fluidalgo_ = Teuchos::rcp(new Adapter::FluidBaseAlgorithm(fdyn, fdyn, "fluid", false));
 
   // get the compete fluid discretization
   fluiddis_ = fluidalgo_->fluid_field()->discretization();
@@ -64,7 +64,7 @@ FLD::TurbulentFlowAlgorithm::TurbulentFlowAlgorithm(
 
   // initialize fluid inflow algorithm
   // this is a second fluid algorithm
-  inflowfluidalgo_ = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(fdyn, inflowdis_));
+  inflowfluidalgo_ = Teuchos::rcp(new Adapter::FluidBaseAlgorithm(fdyn, inflowdis_));
 
   return;
 }
@@ -141,7 +141,7 @@ void FLD::TurbulentFlowAlgorithm::transfer_inflow_velocity()
 
   // velocity/pressure at time n+1 to be transferred to the complete fluid field
   // get a vector layout from the complete discretization
-  velnp_ = CORE::LINALG::CreateVector(*fluiddis_->dof_row_map(), true);
+  velnp_ = Core::LinAlg::CreateVector(*fluiddis_->dof_row_map(), true);
 
   // get exporter for transfer of dofs from inflow discretization to complete fluid discretization
   Epetra_Export exporter(inflowvelnp->Map(), velnp_->Map());
@@ -180,15 +180,15 @@ void FLD::TurbulentFlowAlgorithm::read_restart(const int restart)
   // vectors to be transferred to the inflow field
   // get a vector layout from the inflow discretization
   Teuchos::RCP<Epetra_Vector> velnp;
-  velnp = CORE::LINALG::CreateVector(*inflowdis_->dof_row_map(), true);
+  velnp = Core::LinAlg::CreateVector(*inflowdis_->dof_row_map(), true);
   Teuchos::RCP<Epetra_Vector> veln;
-  veln = CORE::LINALG::CreateVector(*inflowdis_->dof_row_map(), true);
+  veln = Core::LinAlg::CreateVector(*inflowdis_->dof_row_map(), true);
   Teuchos::RCP<Epetra_Vector> velnm;
-  velnm = CORE::LINALG::CreateVector(*inflowdis_->dof_row_map(), true);
+  velnm = Core::LinAlg::CreateVector(*inflowdis_->dof_row_map(), true);
   Teuchos::RCP<Epetra_Vector> accnp;
-  accnp = CORE::LINALG::CreateVector(*inflowdis_->dof_row_map(), true);
+  accnp = Core::LinAlg::CreateVector(*inflowdis_->dof_row_map(), true);
   Teuchos::RCP<Epetra_Vector> accn;
-  accn = CORE::LINALG::CreateVector(*inflowdis_->dof_row_map(), true);
+  accn = Core::LinAlg::CreateVector(*inflowdis_->dof_row_map(), true);
 
   // get all vectors of restart
   Teuchos::RCP<const Epetra_Vector> fluidvelnp = fluidalgo_->fluid_field()->Velnp();

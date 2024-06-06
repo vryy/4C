@@ -24,36 +24,37 @@ FOUR_C_NAMESPACE_OPEN
 //----------------------------------------------------------------------*/
 //    definition of the instance
 //----------------------------------------------------------------------*/
-DRT::ELEMENTS::ScaTraEleParameterLsReinit* DRT::ELEMENTS::ScaTraEleParameterLsReinit::Instance(
+Discret::ELEMENTS::ScaTraEleParameterLsReinit*
+Discret::ELEMENTS::ScaTraEleParameterLsReinit::Instance(
     const std::string& disname  //!< name of discretization
 )
 {
-  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
       [](const std::string& disname) {
         return std::unique_ptr<ScaTraEleParameterLsReinit>(new ScaTraEleParameterLsReinit(disname));
       });
 
-  return singleton_map[disname].Instance(CORE::UTILS::SingletonAction::create, disname);
+  return singleton_map[disname].Instance(Core::UTILS::SingletonAction::create, disname);
 }
 
 //----------------------------------------------------------------------*/
 //    constructor
 //----------------------------------------------------------------------*/
-DRT::ELEMENTS::ScaTraEleParameterLsReinit::ScaTraEleParameterLsReinit(
+Discret::ELEMENTS::ScaTraEleParameterLsReinit::ScaTraEleParameterLsReinit(
     const std::string& disname  //!< name of discretization
     )
-    : reinittype_(INPAR::SCATRA::reinitaction_none),
-      signtype_(INPAR::SCATRA::signtype_nonsmoothed),
-      charelelengthreinit_(INPAR::SCATRA::root_of_volume_reinit),
+    : reinittype_(Inpar::ScaTra::reinitaction_none),
+      signtype_(Inpar::ScaTra::signtype_nonsmoothed),
+      charelelengthreinit_(Inpar::ScaTra::root_of_volume_reinit),
       interfacethicknessfac_(1.0),
       useprojectedreinitvel_(false),
-      linform_(INPAR::SCATRA::fixed_point),
-      artdiff_(INPAR::SCATRA::artdiff_none),
+      linform_(Inpar::ScaTra::fixed_point),
+      artdiff_(Inpar::ScaTra::artdiff_none),
       alphapen_(0.0),
       project_(true),
       projectdiff_(0.0),
       lumping_(false),
-      difffct_(INPAR::SCATRA::hyperbolic)
+      difffct_(Inpar::ScaTra::hyperbolic)
 {
 }
 
@@ -61,7 +62,7 @@ DRT::ELEMENTS::ScaTraEleParameterLsReinit::ScaTraEleParameterLsReinit(
 //----------------------------------------------------------------------*
 //  set parameters                                      rasthofer 12/13 |
 //----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraEleParameterLsReinit::SetParameters(
+void Discret::ELEMENTS::ScaTraEleParameterLsReinit::SetParameters(
     Teuchos::ParameterList& parameters  //!< parameter list
 )
 {
@@ -70,14 +71,14 @@ void DRT::ELEMENTS::ScaTraEleParameterLsReinit::SetParameters(
 
   // reinitialization strategy
   reinittype_ =
-      CORE::UTILS::IntegralValue<INPAR::SCATRA::ReInitialAction>(reinitlist, "REINITIALIZATION");
+      Core::UTILS::IntegralValue<Inpar::ScaTra::ReInitialAction>(reinitlist, "REINITIALIZATION");
 
   // get signum function
   signtype_ =
-      CORE::UTILS::IntegralValue<INPAR::SCATRA::SmoothedSignType>(reinitlist, "SMOOTHED_SIGN_TYPE");
+      Core::UTILS::IntegralValue<Inpar::ScaTra::SmoothedSignType>(reinitlist, "SMOOTHED_SIGN_TYPE");
 
   // characteristic element length for signum function
-  charelelengthreinit_ = CORE::UTILS::IntegralValue<INPAR::SCATRA::CharEleLengthReinit>(
+  charelelengthreinit_ = Core::UTILS::IntegralValue<Inpar::ScaTra::CharEleLengthReinit>(
       reinitlist, "CHARELELENGTHREINIT");
 
   // interface thickness for signum function
@@ -85,35 +86,35 @@ void DRT::ELEMENTS::ScaTraEleParameterLsReinit::SetParameters(
 
   // form of linearization for nonlinear terms
   linform_ =
-      CORE::UTILS::IntegralValue<INPAR::SCATRA::LinReinit>(reinitlist, "LINEARIZATIONREINIT");
+      Core::UTILS::IntegralValue<Inpar::ScaTra::LinReinit>(reinitlist, "LINEARIZATIONREINIT");
 
   // set form of velocity evaluation
-  INPAR::SCATRA::VelReinit velreinit =
-      CORE::UTILS::IntegralValue<INPAR::SCATRA::VelReinit>(reinitlist, "VELREINIT");
-  if (velreinit == INPAR::SCATRA::vel_reinit_node_based) useprojectedreinitvel_ = true;
+  Inpar::ScaTra::VelReinit velreinit =
+      Core::UTILS::IntegralValue<Inpar::ScaTra::VelReinit>(reinitlist, "VELREINIT");
+  if (velreinit == Inpar::ScaTra::vel_reinit_node_based) useprojectedreinitvel_ = true;
 
   // set flag for artificial diffusion term
-  artdiff_ = CORE::UTILS::IntegralValue<INPAR::SCATRA::ArtDiff>(reinitlist, "ARTDIFFREINIT");
+  artdiff_ = Core::UTILS::IntegralValue<Inpar::ScaTra::ArtDiff>(reinitlist, "ARTDIFFREINIT");
 
   // set penalty parameter for elliptic reinitialization
   alphapen_ = reinitlist.get<double>("PENALTY_PARA");
 
   // get diffusivity function
-  difffct_ = CORE::UTILS::IntegralValue<INPAR::SCATRA::DiffFunc>(reinitlist, "DIFF_FUNC");
+  difffct_ = Core::UTILS::IntegralValue<Inpar::ScaTra::DiffFunc>(reinitlist, "DIFF_FUNC");
 
   // L2-projection
-  project_ = CORE::UTILS::IntegralValue<bool>(reinitlist, "PROJECTION");
+  project_ = Core::UTILS::IntegralValue<bool>(reinitlist, "PROJECTION");
 
   // diffusion for L2-projection
   projectdiff_ = reinitlist.get<double>("PROJECTION_DIFF");
   if (projectdiff_ < 0.0) FOUR_C_THROW("Diffusivity has to be positive!");
 
   // lumping for L2-projection
-  lumping_ = CORE::UTILS::IntegralValue<bool>(reinitlist, "LUMPING");
+  lumping_ = Core::UTILS::IntegralValue<bool>(reinitlist, "LUMPING");
 
   // check for illegal combination
   if (projectdiff_ > 0.0 and lumping_ == true) FOUR_C_THROW("Illegal combination!");
-  if (projectdiff_ > 0.0 and reinittype_ == INPAR::SCATRA::reinitaction_sussman)
+  if (projectdiff_ > 0.0 and reinittype_ == Inpar::ScaTra::reinitaction_sussman)
     FOUR_C_THROW("Illegal combination!");
   // The second FOUR_C_THROW is added here for safety reasons. I think that using a diffusive term
   // for the reconstruction of the velocity for reinitialization is possible, but I have not yet

@@ -16,7 +16,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINEAR_SOLVER
+namespace Core::LinearSolver
 {
   /// ml preconditioners
   /*!
@@ -42,7 +42,7 @@ namespace CORE::LINEAR_SOLVER
     /// preconditioner
     Teuchos::RCP<Epetra_Operator> p_;
   };
-}  // namespace CORE::LINEAR_SOLVER
+}  // namespace Core::LinearSolver
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -24,7 +24,7 @@ namespace FPSI
   }
 }  // namespace FPSI
 
-namespace ADAPTER
+namespace Adapter
 {
   /*! \brief Fluid field adapter for fpsi
    *
@@ -35,9 +35,9 @@ namespace ADAPTER
   {
    public:
     /// Constructor
-    FluidFPSI(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<DRT::Discretization> dis,
-        Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-        Teuchos::RCP<CORE::IO::DiscretizationWriter> output, bool isale, bool dirichletcond);
+    FluidFPSI(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<Discret::Discretization> dis,
+        Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+        Teuchos::RCP<Core::IO::DiscretizationWriter> output, bool isale, bool dirichletcond);
 
     /// initialize algorithm
     void Init() override;
@@ -59,7 +59,7 @@ namespace ADAPTER
     Teuchos::RCP<FLD::UTILS::MapExtractor> fpsiinterface_;
 
   };  // class FluidFPSI
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::NLN::SOLVER::Factory::Factory()
+STR::Nln::SOLVER::Factory::Factory()
 {
   // empty
 }
@@ -30,32 +30,32 @@ STR::NLN::SOLVER::Factory::Factory()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::NLN::SOLVER::Generic> STR::NLN::SOLVER::Factory::BuildNlnSolver(
-    const enum INPAR::STR::NonlinSolTech& nlnSolType) const
+Teuchos::RCP<STR::Nln::SOLVER::Generic> STR::Nln::SOLVER::Factory::BuildNlnSolver(
+    const enum Inpar::STR::NonlinSolTech& nlnSolType) const
 {
-  Teuchos::RCP<STR::NLN::SOLVER::Generic> nlnSolver = Teuchos::null;
+  Teuchos::RCP<STR::Nln::SOLVER::Generic> nlnSolver = Teuchos::null;
 
   switch (nlnSolType)
   {
-    case INPAR::STR::soltech_newtonfull:
-      nlnSolver = Teuchos::rcp(new STR::NLN::SOLVER::FullNewton());
+    case Inpar::STR::soltech_newtonfull:
+      nlnSolver = Teuchos::rcp(new STR::Nln::SOLVER::FullNewton());
       break;
-    case INPAR::STR::soltech_nox_nln:
-      nlnSolver = Teuchos::rcp(new STR::NLN::SOLVER::Nox());
+    case Inpar::STR::soltech_nox_nln:
+      nlnSolver = Teuchos::rcp(new STR::Nln::SOLVER::Nox());
       break;
-    case INPAR::STR::soltech_ptc:
-      nlnSolver = Teuchos::rcp(new STR::NLN::SOLVER::PseudoTransient());
+    case Inpar::STR::soltech_ptc:
+      nlnSolver = Teuchos::rcp(new STR::Nln::SOLVER::PseudoTransient());
       break;
-    case INPAR::STR::soltech_singlestep:
-      nlnSolver = Teuchos::rcp(new STR::NLN::SOLVER::SingleStep());
+    case Inpar::STR::soltech_singlestep:
+      nlnSolver = Teuchos::rcp(new STR::Nln::SOLVER::SingleStep());
       break;
-    case INPAR::STR::soltech_newtonuzawanonlin:
-    case INPAR::STR::soltech_newtonuzawalin:
-      //      nlnSolver = Teuchos::rcp(new STR::NLN::SOLVER::Uzawa());
+    case Inpar::STR::soltech_newtonuzawanonlin:
+    case Inpar::STR::soltech_newtonuzawalin:
+      //      nlnSolver = Teuchos::rcp(new STR::Nln::SOLVER::Uzawa());
       //      break;
     default:
       FOUR_C_THROW("Solution technique \"%s\" is not implemented.",
-          INPAR::STR::NonlinSolTechString(nlnSolType).c_str());
+          Inpar::STR::NonlinSolTechString(nlnSolType).c_str());
       break;
   }
 
@@ -65,8 +65,8 @@ Teuchos::RCP<STR::NLN::SOLVER::Generic> STR::NLN::SOLVER::Factory::BuildNlnSolve
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::NLN::SOLVER::Generic> STR::NLN::SOLVER::BuildNlnSolver(
-    const enum INPAR::STR::NonlinSolTech& nlnSolType)
+Teuchos::RCP<STR::Nln::SOLVER::Generic> STR::Nln::SOLVER::BuildNlnSolver(
+    const enum Inpar::STR::NonlinSolTech& nlnSolType)
 {
   Factory factory;
   return factory.BuildNlnSolver(nlnSolType);

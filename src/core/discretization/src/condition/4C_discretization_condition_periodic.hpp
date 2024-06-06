@@ -25,18 +25,18 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace CORE::Dofsets
+namespace Core::DOFSets
 {
   class PBCDofSet;
-}  // namespace CORE::Dofsets
+}  // namespace Core::DOFSets
 
 
-namespace CORE::Conditions
+namespace Core::Conditions
 {
   /*!
   \brief  update dofrowmap and dofsets for periodic boundary conditions
@@ -70,7 +70,7 @@ namespace CORE::Conditions
     \return void
 
     */
-    PeriodicBoundaryConditions(Teuchos::RCP<DRT::Discretization> dis, bool verbose = true);
+    PeriodicBoundaryConditions(Teuchos::RCP<Discret::Discretization> dis, bool verbose = true);
 
     /*!
     \brief Destructor
@@ -126,7 +126,7 @@ namespace CORE::Conditions
 
 
     //! @name method that returns a pointer to the vector of the conditions
-    std::vector<CORE::Conditions::Condition *> *ReturnSurfacePBCs() { return &mysurfpbcs_; }
+    std::vector<Core::Conditions::Condition *> *ReturnSurfacePBCs() { return &mysurfpbcs_; }
     //@}
 
 
@@ -312,20 +312,20 @@ namespace CORE::Conditions
     //@}
 
     //!\brief the discretisation
-    Teuchos::RCP<DRT::Discretization> discret_;
+    Teuchos::RCP<Discret::Discretization> discret_;
 
     //!\brief a flag controlling the verbosity, i.e. the amount of output
     // displayed on the screen
     bool verbose_;
 
     //!\brief the pbc-dofset created by this object
-    Teuchos::RCP<CORE::Dofsets::PBCDofSet> pbcdofset_;
+    Teuchos::RCP<Core::DOFSets::PBCDofSet> pbcdofset_;
 
     //!\brief number of pairs of periodic boundary conditions
     int numpbcpairs_;
 
     //!\brief vector of periodic surface boundary conditions
-    std::vector<CORE::Conditions::Condition *> mysurfpbcs_;
+    std::vector<Core::Conditions::Condition *> mysurfpbcs_;
 
     //!\brief map connecting master to slave nodes owned by this proc
     //       master node -> list of his slave node(s)
@@ -374,7 +374,7 @@ namespace CORE::Conditions
     //!\brief time measurement (discret->Redistribute)
     Teuchos::RCP<Teuchos::TimeMonitor> tm8_ref_;
   };
-}  // namespace CORE::Conditions
+}  // namespace Core::Conditions
 
 FOUR_C_NAMESPACE_CLOSE
 

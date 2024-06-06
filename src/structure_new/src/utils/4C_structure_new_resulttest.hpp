@@ -23,34 +23,34 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class Solver;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationWriter;
-}  // namespace CORE::IO
+}  // namespace Core::IO
 
 namespace STR
 {
-  namespace TIMINT
+  namespace TimeInt
   {
     class BaseDataGlobalState;
-  }  // namespace TIMINT
+  }  // namespace TimeInt
   namespace MODELEVALUATOR
   {
     class Data;
   }  // namespace MODELEVALUATOR
 
   /*! \brief Structure specific result test class */
-  class ResultTest : public CORE::UTILS::ResultTest
+  class ResultTest : public Core::UTILS::ResultTest
   {
     /// possible status flag for the result test
     enum class Status : char
@@ -75,7 +75,7 @@ namespace STR
 
     //! initialization of class variables
     virtual void Init(
-        const STR::TIMINT::BaseDataGlobalState& gstate, const STR::MODELEVALUATOR::Data& data);
+        const STR::TimeInt::BaseDataGlobalState& gstate, const STR::MODELEVALUATOR::Data& data);
 
     //! setup of class variables
     virtual void Setup();
@@ -89,7 +89,7 @@ namespace STR
     //!                             "stress_yz"
     //!
     //! \note The type of stress that is used for testing has to be specified in IO->STRUCT_STRESS
-    void test_node(INPUT::LineDefinition& res, int& nerr, int& test_count) override;
+    void test_node(Input::LineDefinition& res, int& nerr, int& test_count) override;
 
     //! \brief structure version of nodal value tests on geometry
     //!
@@ -100,7 +100,7 @@ namespace STR
     //!                             "stress_yz"
     //!
     //! \note The type of stress that is used for testing has to be specified in IO->STRUCT_STRESS
-    void test_node_on_geometry(INPUT::LineDefinition& res, int& nerr, int& test_count,
+    void test_node_on_geometry(Input::LineDefinition& res, int& nerr, int& test_count,
         const std::vector<std::vector<std::vector<int>>>& nodeset) override;
 
     /*! \brief test special quantity not associated with a particular element or node
@@ -112,7 +112,7 @@ namespace STR
      *
      *  \author hiermeier \date 11/17 */
     void TestSpecial(
-        INPUT::LineDefinition& res, int& nerr, int& test_count, int& uneval_test_count) override;
+        Input::LineDefinition& res, int& nerr, int& test_count, int& uneval_test_count) override;
 
    protected:
     /// get the indicator state
@@ -219,7 +219,7 @@ namespace STR
 
    private:
     //! our discretisation
-    Teuchos::RCP<const DRT::Discretization> strudisc_;
+    Teuchos::RCP<const Discret::Discretization> strudisc_;
     // our solution
     //! global displacement DOFs
     Teuchos::RCP<const Epetra_Vector> disn_;
@@ -236,7 +236,7 @@ namespace STR
      */
 
     //! pointer to the global state object of the structural time integration
-    Teuchos::RCP<const STR::TIMINT::BaseDataGlobalState> gstate_;
+    Teuchos::RCP<const STR::TimeInt::BaseDataGlobalState> gstate_;
     //! pointer to the data container of the structural time integration
     Teuchos::RCP<const STR::MODELEVALUATOR::Data> data_;
   };  // class ResultTest

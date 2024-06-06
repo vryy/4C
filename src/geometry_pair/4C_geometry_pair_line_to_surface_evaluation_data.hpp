@@ -54,7 +54,7 @@ namespace GEOMETRYPAIR
      * \param discret (in) Pointer to the discretization.
      * \param face_elements (in) Map to all face elements in this condition on this rank.
      */
-    void Setup(const Teuchos::RCP<const DRT::Discretization>& discret,
+    void Setup(const Teuchos::RCP<const Discret::Discretization>& discret,
         const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements);
 
     /**
@@ -73,7 +73,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Return the strategy to be used for the surface normals.
      */
-    INPAR::GEOMETRYPAIR::SurfaceNormals get_surface_normal_strategy() const
+    Inpar::GEOMETRYPAIR::SurfaceNormals get_surface_normal_strategy() const
     {
       return surface_normal_strategy_;
     }
@@ -83,7 +83,7 @@ namespace GEOMETRYPAIR
     std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>> face_elements_;
 
     //! Strategy to be used for surface normals.
-    INPAR::GEOMETRYPAIR::SurfaceNormals surface_normal_strategy_;
+    Inpar::GEOMETRYPAIR::SurfaceNormals surface_normal_strategy_;
   };
 }  // namespace GEOMETRYPAIR
 

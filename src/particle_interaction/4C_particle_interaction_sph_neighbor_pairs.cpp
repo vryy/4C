@@ -26,20 +26,20 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-PARTICLEINTERACTION::SPHNeighborPairs::SPHNeighborPairs()
+ParticleInteraction::SPHNeighborPairs::SPHNeighborPairs()
 {
   // empty constructor
 }
 
-void PARTICLEINTERACTION::SPHNeighborPairs::Init()
+void ParticleInteraction::SPHNeighborPairs::Init()
 {
   // nothing to do
 }
 
-void PARTICLEINTERACTION::SPHNeighborPairs::Setup(
+void ParticleInteraction::SPHNeighborPairs::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface,
-    const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel)
+    const std::shared_ptr<ParticleInteraction::SPHKernelBase> kernel)
 {
   // set interface to particle engine
   particleengineinterface_ = particleengineinterface;
@@ -63,7 +63,7 @@ void PARTICLEINTERACTION::SPHNeighborPairs::Setup(
   indexofparticlewallpairs_.resize(typevectorsize);
 }
 
-void PARTICLEINTERACTION::SPHNeighborPairs::
+void ParticleInteraction::SPHNeighborPairs::
     get_relevant_particle_pair_indices_for_disjoint_combination(
         const std::set<PARTICLEENGINE::TypeEnum>& types_a,
         const std::set<PARTICLEENGINE::TypeEnum>& types_b, std::vector<int>& relindices) const
@@ -85,7 +85,7 @@ void PARTICLEINTERACTION::SPHNeighborPairs::
     }
 }
 
-void PARTICLEINTERACTION::SPHNeighborPairs::
+void ParticleInteraction::SPHNeighborPairs::
     get_relevant_particle_pair_indices_for_equal_combination(
         const std::set<PARTICLEENGINE::TypeEnum>& types_a, std::vector<int>& relindices) const
 {
@@ -99,7 +99,7 @@ void PARTICLEINTERACTION::SPHNeighborPairs::
           indexofparticlepairs_[type_i][type_j].end());
 }
 
-void PARTICLEINTERACTION::SPHNeighborPairs::get_relevant_particle_wall_pair_indices(
+void ParticleInteraction::SPHNeighborPairs::get_relevant_particle_wall_pair_indices(
     const std::set<PARTICLEENGINE::TypeEnum>& types_a, std::vector<int>& relindices) const
 {
   // iterate over particle types to consider
@@ -108,7 +108,7 @@ void PARTICLEINTERACTION::SPHNeighborPairs::get_relevant_particle_wall_pair_indi
         indexofparticlewallpairs_[type_i].end());
 }
 
-void PARTICLEINTERACTION::SPHNeighborPairs::evaluate_neighbor_pairs()
+void ParticleInteraction::SPHNeighborPairs::evaluate_neighbor_pairs()
 {
   // evaluate particle pairs
   evaluate_particle_pairs();
@@ -117,9 +117,9 @@ void PARTICLEINTERACTION::SPHNeighborPairs::evaluate_neighbor_pairs()
   if (particlewallinterface_) evaluate_particle_wall_pairs();
 }
 
-void PARTICLEINTERACTION::SPHNeighborPairs::evaluate_particle_pairs()
+void ParticleInteraction::SPHNeighborPairs::evaluate_particle_pairs()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHNeighborPairs::evaluate_particle_pairs");
+  TEUCHOS_FUNC_TIME_MONITOR("ParticleInteraction::SPHNeighborPairs::evaluate_particle_pairs");
 
   // clear particle pair data
   particlepairdata_.clear();
@@ -237,9 +237,9 @@ void PARTICLEINTERACTION::SPHNeighborPairs::evaluate_particle_pairs()
   }
 }
 
-void PARTICLEINTERACTION::SPHNeighborPairs::evaluate_particle_wall_pairs()
+void ParticleInteraction::SPHNeighborPairs::evaluate_particle_wall_pairs()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHNeighborPairs::evaluate_particle_wall_pairs");
+  TEUCHOS_FUNC_TIME_MONITOR("ParticleInteraction::SPHNeighborPairs::evaluate_particle_wall_pairs");
 
   // clear particle-wall pair data
   particlewallpairdata_.clear();
@@ -249,7 +249,7 @@ void PARTICLEINTERACTION::SPHNeighborPairs::evaluate_particle_wall_pairs()
     indexofparticlewallpairs_[type_i].clear();
 
   // relate particles to index of particle-wall pairs (considering object type of contact point)
-  std::unordered_map<int, std::vector<std::pair<CORE::GEO::ObjectType, int>>>
+  std::unordered_map<int, std::vector<std::pair<Core::Geo::ObjectType, int>>>
       particletoindexofparticlewallpairs;
 
   // index of particle-wall pairs
@@ -275,20 +275,20 @@ void PARTICLEINTERACTION::SPHNeighborPairs::evaluate_particle_wall_pairs()
     const double* rad_i = container_i->GetPtrToState(PARTICLEENGINE::Radius, particle_i);
 
     // get position of particle i
-    const CORE::LINALG::Matrix<3, 1> pos_i(
+    const Core::LinAlg::Matrix<3, 1> pos_i(
         container_i->GetPtrToState(PARTICLEENGINE::Position, particle_i));
 
     // get pointer to column wall element
-    CORE::Elements::Element* ele = potentialneighbors.second;
+    Core::Elements::Element* ele = potentialneighbors.second;
 
     // determine nodal positions of column wall element
-    std::map<int, CORE::LINALG::Matrix<3, 1>> colelenodalpos;
+    std::map<int, Core::LinAlg::Matrix<3, 1>> colelenodalpos;
     particlewallinterface_->determine_col_wall_ele_nodal_pos(ele, colelenodalpos);
 
     // get coordinates of closest point on current column wall element to particle
-    CORE::LINALG::Matrix<3, 1> closestpos;
-    CORE::GEO::ObjectType objecttype =
-        CORE::GEO::nearest3DObjectOnElement(ele, colelenodalpos, pos_i, closestpos);
+    Core::LinAlg::Matrix<3, 1> closestpos;
+    Core::Geo::ObjectType objecttype =
+        Core::Geo::nearest3DObjectOnElement(ele, colelenodalpos, pos_i, closestpos);
 
     // vector from particle i to wall contact point j
     double r_ji[3];
@@ -331,10 +331,10 @@ void PARTICLEINTERACTION::SPHNeighborPairs::evaluate_particle_wall_pairs()
       UTILS::VecSetScale(particlewallpair.e_ij_, -1.0 / absdist, r_ji);
 
       // get coordinates of wall contact point in element parameter space
-      CORE::LINALG::Matrix<2, 1> elecoords(true);
-      const CORE::LINALG::SerialDenseMatrix xyze(
-          CORE::GEO::getCurrentNodalPositions(ele, colelenodalpos));
-      CORE::GEO::CurrentToSurfaceElementCoordinates(ele->Shape(), xyze, closestpos, elecoords);
+      Core::LinAlg::Matrix<2, 1> elecoords(true);
+      const Core::LinAlg::SerialDenseMatrix xyze(
+          Core::Geo::getCurrentNodalPositions(ele, colelenodalpos));
+      Core::Geo::CurrentToSurfaceElementCoordinates(ele->Shape(), xyze, closestpos, elecoords);
 
       // set parameter space coordinates of wall contact point
       particlewallpair.elecoords_[0] = elecoords(0, 0);
@@ -349,7 +349,7 @@ void PARTICLEINTERACTION::SPHNeighborPairs::evaluate_particle_wall_pairs()
   for (auto& particleIt : particletoindexofparticlewallpairs)
   {
     // get reference to index of particle-wall pairs for current particle
-    std::vector<std::pair<CORE::GEO::ObjectType, int>>& indexofparticlewallpairs =
+    std::vector<std::pair<Core::Geo::ObjectType, int>>& indexofparticlewallpairs =
         particleIt.second;
 
     // only one particle-wall pair for current particle
@@ -376,7 +376,7 @@ void PARTICLEINTERACTION::SPHNeighborPairs::evaluate_particle_wall_pairs()
     const double adaptedtol = 1.0e-7 * rad_i[0];
 
     // iterate over particle-wall pairs (master)
-    for (std::pair<CORE::GEO::ObjectType, int>& master : indexofparticlewallpairs)
+    for (std::pair<Core::Geo::ObjectType, int>& master : indexofparticlewallpairs)
     {
       // get reference to particle-wall pair (master)
       SPHParticleWallPair& masterpair = particlewallpairdata_[master.second];
@@ -386,7 +386,7 @@ void PARTICLEINTERACTION::SPHNeighborPairs::evaluate_particle_wall_pairs()
           std::sqrt(UTILS::Pow<2>(rad_i[0]) - UTILS::Pow<2>(masterpair.absdist_));
 
       // check with other particle-wall pairs (slave)
-      for (std::pair<CORE::GEO::ObjectType, int>& slave : indexofparticlewallpairs)
+      for (std::pair<Core::Geo::ObjectType, int>& slave : indexofparticlewallpairs)
       {
         // no-self checking
         if (master.second == slave.second) continue;
@@ -414,12 +414,12 @@ void PARTICLEINTERACTION::SPHNeighborPairs::evaluate_particle_wall_pairs()
           }
         }
         // check for line/node contact points within penetration volume of a surface contact point
-        else if (master.first == CORE::GEO::SURFACE_OBJECT)
+        else if (master.first == Core::Geo::SURFACE_OBJECT)
         {
           if (absdist <= intersectionradius) removeslavepair = true;
         }
         // check for node contact points within penetration volume of a line contact point
-        else if (master.first == CORE::GEO::LINE_OBJECT and slave.first == CORE::GEO::NODE_OBJECT)
+        else if (master.first == Core::Geo::LINE_OBJECT and slave.first == Core::Geo::NODE_OBJECT)
         {
           if (absdist <= intersectionradius) removeslavepair = true;
         }

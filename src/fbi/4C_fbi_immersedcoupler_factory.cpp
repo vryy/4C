@@ -23,16 +23,16 @@ FOUR_C_NAMESPACE_OPEN
 Teuchos::RCP<FBI::FBIGeometryCoupler> FBI::GeometryCouplerFactory::create_geometry_coupler(
     const Teuchos::ParameterList& fbidyn)
 {
-  INPAR::FBI::BeamToFluidPreSortStrategy presort_strategy =
-      Teuchos::getIntegralValue<INPAR::FBI::BeamToFluidPreSortStrategy>(fbidyn, "PRESORT_STRATEGY");
+  Inpar::FBI::BeamToFluidPreSortStrategy presort_strategy =
+      Teuchos::getIntegralValue<Inpar::FBI::BeamToFluidPreSortStrategy>(fbidyn, "PRESORT_STRATEGY");
 
   Teuchos::RCP<FBI::FBIGeometryCoupler> coupler;
 
-  if (presort_strategy == INPAR::FBI::BeamToFluidPreSortStrategy::bruteforce)
+  if (presort_strategy == Inpar::FBI::BeamToFluidPreSortStrategy::bruteforce)
   {
     coupler = Teuchos::rcp(new FBI::FBIGeometryCoupler());
   }
-  else if (presort_strategy == INPAR::FBI::BeamToFluidPreSortStrategy::binning)
+  else if (presort_strategy == Inpar::FBI::BeamToFluidPreSortStrategy::binning)
   {
     coupler = Teuchos::rcp(new FBI::FBIBinningGeometryCoupler());
   }

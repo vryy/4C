@@ -16,44 +16,44 @@
 FOUR_C_NAMESPACE_OPEN
 
 /// Initializes Cut Parameters by Parameterlist (typically from *.dat-file section CUT GENERAL)
-void CORE::GEO::CUT::Options::Init_by_Paramlist()
+void Core::Geo::Cut::Options::Init_by_Paramlist()
 {
-  Init_by_Paramlist(GLOBAL::Problem::Instance()->CutGeneralParams());
+  Init_by_Paramlist(Global::Problem::Instance()->CutGeneralParams());
 }
 
 /// Initializes Cut Parameters by Parameterlist (typically from *.dat-file section CUT GENERAL)
-void CORE::GEO::CUT::Options::Init_by_Paramlist(const Teuchos::ParameterList& cutparams)
+void Core::Geo::Cut::Options::Init_by_Paramlist(const Teuchos::ParameterList& cutparams)
 {
-  geomintersect_floattype_ = CORE::UTILS::IntegralValue<INPAR::CUT::CutFloattype>(
+  geomintersect_floattype_ = Core::UTILS::IntegralValue<Inpar::Cut::CutFloattype>(
       cutparams, "KERNEL_INTERSECTION_FLOATTYPE");
   geomdistance_floattype_ =
-      CORE::UTILS::IntegralValue<INPAR::CUT::CutFloattype>(cutparams, "KERNEL_DISTANCE_FLOATTYPE");
-  general_position_dist_floattype_ = CORE::UTILS::IntegralValue<INPAR::CUT::CutFloattype>(
+      Core::UTILS::IntegralValue<Inpar::Cut::CutFloattype>(cutparams, "KERNEL_DISTANCE_FLOATTYPE");
+  general_position_dist_floattype_ = Core::UTILS::IntegralValue<Inpar::Cut::CutFloattype>(
       cutparams, "GENERAL_POSITON_DISTANCE_FLOATTYPE");
-  general_position_pos_floattype_ = CORE::UTILS::IntegralValue<INPAR::CUT::CutFloattype>(
+  general_position_pos_floattype_ = Core::UTILS::IntegralValue<Inpar::Cut::CutFloattype>(
       cutparams, "GENERAL_POSITON_POSITION_FLOATTYPE");
-  direct_divergence_refplane_ = CORE::UTILS::IntegralValue<INPAR::CUT::CutDirectDivergenceRefplane>(
+  direct_divergence_refplane_ = Core::UTILS::IntegralValue<Inpar::Cut::CutDirectDivergenceRefplane>(
       cutparams, "DIRECT_DIVERGENCE_REFPLANE");
-  CORE::GEO::CUT::PositionFactory::specify_general_dist_floattype(general_position_dist_floattype_);
-  CORE::GEO::CUT::PositionFactory::specify_general_pos_floattype(general_position_pos_floattype_);
-  split_cutsides_ = CORE::UTILS::IntegralValue<bool>(cutparams, "SPLIT_CUTSIDES");
-  do_selfcut_ = CORE::UTILS::IntegralValue<bool>(cutparams, "DO_SELFCUT");
+  Core::Geo::Cut::PositionFactory::specify_general_dist_floattype(general_position_dist_floattype_);
+  Core::Geo::Cut::PositionFactory::specify_general_pos_floattype(general_position_pos_floattype_);
+  split_cutsides_ = Core::UTILS::IntegralValue<bool>(cutparams, "SPLIT_CUTSIDES");
+  do_selfcut_ = Core::UTILS::IntegralValue<bool>(cutparams, "DO_SELFCUT");
   selfcut_do_meshcorrection_ =
-      CORE::UTILS::IntegralValue<bool>(cutparams, "SELFCUT_DO_MESHCORRECTION");
+      Core::UTILS::IntegralValue<bool>(cutparams, "SELFCUT_DO_MESHCORRECTION");
   selfcut_island_geom_multiplicator_ = cutparams.get<int>("SELFCUT_MESHCORRECTION_MULTIPLICATOR");
   bc_cubaturedegree_ = cutparams.get<int>("BOUNDARYCELL_CUBATURDEGREE");
 }
 
 /// Initializes Cut Parameters for Cuttests (use full cln) -- slowest option
-void CORE::GEO::CUT::Options::Init_for_Cuttests()
+void Core::Geo::Cut::Options::Init_for_Cuttests()
 {
-  geomintersect_floattype_ = INPAR::CUT::floattype_cln;
-  geomdistance_floattype_ = INPAR::CUT::floattype_cln;
-  general_position_dist_floattype_ = INPAR::CUT::floattype_cln;
-  general_position_pos_floattype_ = INPAR::CUT::floattype_cln;
-  direct_divergence_refplane_ = INPAR::CUT::DirDiv_refplane_all;
-  CORE::GEO::CUT::PositionFactory::specify_general_dist_floattype(general_position_dist_floattype_);
-  CORE::GEO::CUT::PositionFactory::specify_general_pos_floattype(general_position_pos_floattype_);
+  geomintersect_floattype_ = Inpar::Cut::floattype_cln;
+  geomdistance_floattype_ = Inpar::Cut::floattype_cln;
+  general_position_dist_floattype_ = Inpar::Cut::floattype_cln;
+  general_position_pos_floattype_ = Inpar::Cut::floattype_cln;
+  direct_divergence_refplane_ = Inpar::Cut::DirDiv_refplane_all;
+  Core::Geo::Cut::PositionFactory::specify_general_dist_floattype(general_position_dist_floattype_);
+  Core::Geo::Cut::PositionFactory::specify_general_pos_floattype(general_position_pos_floattype_);
   split_cutsides_ = true;
   selfcut_do_meshcorrection_ = false;
   bc_cubaturedegree_ = 20;

@@ -54,14 +54,14 @@ FOUR_C_NAMESPACE_OPEN
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
-ART::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper(
-    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::ParameterList& params)
+Arteries::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper(
+    Teuchos::RCP<Discret::Discretization> actdis, Teuchos::ParameterList& params)
     : discret_(actdis)
 {
   // -------------------------------------------------------------------
   // Get all gnuplot export conditions
   // -------------------------------------------------------------------
-  std::vector<CORE::Conditions::Condition*> myConditions;
+  std::vector<Core::Conditions::Condition*> myConditions;
   discret_->GetCondition("ArtWriteGnuplotCond", myConditions);
   int numofcond = myConditions.size();
 
@@ -87,12 +87,12 @@ ART::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper(
       // ---------------------------------------------------------------
 
       // step (1) find both inlet and outlet nodes
-      CORE::Nodes::Node* ndi = nullptr;  // ith node
-      CORE::Nodes::Node* ndl = nullptr;  // last node
+      Core::Nodes::Node* ndi = nullptr;  // ith node
+      Core::Nodes::Node* ndl = nullptr;  // last node
 
       for (unsigned int n = 0; n < nodes->size(); n++)
       {
-        CORE::Nodes::Node* nd = actdis->gNode((*nodes)[n]);
+        Core::Nodes::Node* nd = actdis->gNode((*nodes)[n]);
         if (nd->GetCondition("ArtInOutCond"))
         {
           std::string TerminalType =
@@ -110,9 +110,9 @@ ART::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper(
 
       // loop over all nodes
       std::vector<int>* sorted_nodes = new std::vector<int>;
-      CORE::Elements::Element** Elements = ndi->Elements();
+      Core::Elements::Element** Elements = ndi->Elements();
 
-      CORE::Elements::Element* Elem_i;
+      Core::Elements::Element* Elem_i;
       if (ndi->NumElement() != 1)
         FOUR_C_THROW("artery %d must have one element connected to the inlet node!", Artery_Number);
 
@@ -184,7 +184,7 @@ ART::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
-void ART::UTILS::ArtWriteGnuplotWrapper::Write(Teuchos::ParameterList& params)
+void Arteries::UTILS::ArtWriteGnuplotWrapper::Write(Teuchos::ParameterList& params)
 {
   //----------------------------------------------------------------------
   // Exit if the function accessed by a non-master processor
@@ -216,7 +216,7 @@ void ART::UTILS::ArtWriteGnuplotWrapper::Write(Teuchos::ParameterList& params)
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-ART::UTILS::ArtWriteGnuplot::ArtWriteGnuplot(int ArteryNum) : artery_num_(ArteryNum)
+Arteries::UTILS::ArtWriteGnuplot::ArtWriteGnuplot(int ArteryNum) : artery_num_(ArteryNum)
 {
   // -------------------------------------------------------------------
   // Create the file with the following name
@@ -250,7 +250,7 @@ ART::UTILS::ArtWriteGnuplot::ArtWriteGnuplot(int ArteryNum) : artery_num_(Artery
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-ART::UTILS::ArtWriteGnuplot::ArtWriteGnuplot() {}
+Arteries::UTILS::ArtWriteGnuplot::ArtWriteGnuplot() {}
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -262,7 +262,7 @@ ART::UTILS::ArtWriteGnuplot::ArtWriteGnuplot() {}
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void ART::UTILS::ArtWriteGnuplot::write(Teuchos::RCP<DRT::Discretization> discret,
+void Arteries::UTILS::ArtWriteGnuplot::write(Teuchos::RCP<Discret::Discretization> discret,
     Teuchos::ParameterList& params, const std::vector<int>* nodes)
 {
   // defining the Length
@@ -280,9 +280,9 @@ void ART::UTILS::ArtWriteGnuplot::write(Teuchos::RCP<DRT::Discretization> discre
       exit(1);
     }
 
-    //    CORE::Nodes::Node * nd = discret->lColNode((*nodes)[i]);
-    CORE::Nodes::Node* nd = discret->gNode((*nodes)[i]);
-    CORE::Elements::Element** ele = nd->Elements();
+    //    Core::Nodes::Node * nd = discret->lColNode((*nodes)[i]);
+    Core::Nodes::Node* nd = discret->gNode((*nodes)[i]);
+    Core::Elements::Element** ele = nd->Elements();
 
     // get element location vector, dirichlet flags and ownerships
     std::vector<int> lm;
@@ -298,7 +298,7 @@ void ART::UTILS::ArtWriteGnuplot::write(Teuchos::RCP<DRT::Discretization> discre
     ele[ElemNum][0].LocationVector(*discret, lm, *lmowner, lmstride);
 
     // get node coordinates and number of elements per node
-    CORE::LINALG::Matrix<3, 2> xyze;
+    Core::LinAlg::Matrix<3, 2> xyze;
     for (int inode = 0; inode < 2; inode++)
     {
       const auto& x = discret->gNode((*nodes)[i + inode])->X();
@@ -313,7 +313,7 @@ void ART::UTILS::ArtWriteGnuplot::write(Teuchos::RCP<DRT::Discretization> discre
     // get the degrees of freedom
     Teuchos::RCP<const Epetra_Vector> qanp = discret->GetState("qanp");
     std::vector<double> myqanp(lm.size());
-    CORE::FE::ExtractMyValues(*qanp, myqanp, lm);
+    Core::FE::ExtractMyValues(*qanp, myqanp, lm);
 
     // get the current simulation time
     time = params.get<double>("total time");

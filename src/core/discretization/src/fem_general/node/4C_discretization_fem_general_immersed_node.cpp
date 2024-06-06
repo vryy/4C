@@ -12,16 +12,16 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-CORE::Nodes::ImmersedNodeType CORE::Nodes::ImmersedNodeType::instance_;
+Core::Nodes::ImmersedNodeType Core::Nodes::ImmersedNodeType::instance_;
 
 
 /*----------------------------------------------------------------------*
  |  kind of ctor (public)                                   rauch 11/14 |
  *----------------------------------------------------------------------*/
-CORE::COMM::ParObject* CORE::Nodes::ImmersedNodeType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Core::Nodes::ImmersedNodeType::Create(const std::vector<char>& data)
 {
   std::vector<double> dummycoord(3, 999.0);
-  Node* object = new CORE::Nodes::ImmersedNode(-1, dummycoord, -1);
+  Node* object = new Core::Nodes::ImmersedNode(-1, dummycoord, -1);
   object->Unpack(data);
   return object;
 }
@@ -30,7 +30,7 @@ CORE::COMM::ParObject* CORE::Nodes::ImmersedNodeType::Create(const std::vector<c
 /*----------------------------------------------------------------------*
  |  ctor (public)                                           rauch 11/14 |
  *----------------------------------------------------------------------*/
-CORE::Nodes::ImmersedNode::ImmersedNode(
+Core::Nodes::ImmersedNode::ImmersedNode(
     const int id, const std::vector<double>& coords, const int owner)
     : Node(id, coords, owner),
       ismatched_(false),
@@ -42,7 +42,7 @@ CORE::Nodes::ImmersedNode::ImmersedNode(
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                      rauch 11/14 |
  *----------------------------------------------------------------------*/
-CORE::Nodes::ImmersedNode::ImmersedNode(const CORE::Nodes::ImmersedNode& old)
+Core::Nodes::ImmersedNode::ImmersedNode(const Core::Nodes::ImmersedNode& old)
     : Node(old),
       ismatched_(old.ismatched_),
       IsBoundaryImmersed_(old.IsBoundaryImmersed_),
@@ -58,16 +58,16 @@ CORE::Nodes::ImmersedNode::ImmersedNode(const CORE::Nodes::ImmersedNode& old)
  |  Deep copy this instance of Node and return pointer to it (public)   |
  |                                                          rauch 11/14 |
  *----------------------------------------------------------------------*/
-CORE::Nodes::ImmersedNode* CORE::Nodes::ImmersedNode::Clone() const
+Core::Nodes::ImmersedNode* Core::Nodes::ImmersedNode::Clone() const
 {
-  CORE::Nodes::ImmersedNode* newnode = new CORE::Nodes::ImmersedNode(*this);
+  Core::Nodes::ImmersedNode* newnode = new Core::Nodes::ImmersedNode(*this);
   return newnode;
 }
 
 /*----------------------------------------------------------------------*
  |  << operator                                             rauch 11/14 |
  *----------------------------------------------------------------------*/
-std::ostream& operator<<(std::ostream& os, const CORE::Nodes::ImmersedNode& immersednode)
+std::ostream& operator<<(std::ostream& os, const Core::Nodes::ImmersedNode& immersednode)
 {
   immersednode.Print(os);
   return os;
@@ -77,7 +77,7 @@ std::ostream& operator<<(std::ostream& os, const CORE::Nodes::ImmersedNode& imme
 /*----------------------------------------------------------------------*
  |  print this element (public)                             rauch 11/14 |
  *----------------------------------------------------------------------*/
-void CORE::Nodes::ImmersedNode::Print(std::ostream& os) const
+void Core::Nodes::ImmersedNode::Print(std::ostream& os) const
 {
   os << "Immersed ";
   Node::Print(os);
@@ -99,16 +99,16 @@ void CORE::Nodes::ImmersedNode::Print(std::ostream& os) const
  |  Pack data                                                  (public) |
  |                                                          rauch 11/14 |
  *----------------------------------------------------------------------*/
-void CORE::Nodes::ImmersedNode::Pack(CORE::COMM::PackBuffer& data) const
+void Core::Nodes::ImmersedNode::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data, type);
 
-  // add base class CORE::Nodes::Node
+  // add base class Core::Nodes::Node
   Node::Pack(data);
 
   // add IsBoundaryImmersed_
@@ -124,13 +124,13 @@ void CORE::Nodes::ImmersedNode::Pack(CORE::COMM::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                          rauch 11/14 |
  *----------------------------------------------------------------------*/
-void CORE::Nodes::ImmersedNode::Unpack(const std::vector<char>& data)
+void Core::Nodes::ImmersedNode::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
-  // extract base class CORE::Nodes::Node
+  // extract base class Core::Nodes::Node
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
   Node::Unpack(basedata);
@@ -150,7 +150,7 @@ void CORE::Nodes::ImmersedNode::Unpack(const std::vector<char>& data)
  |  Visualization Data                                         (public) |
  |                                                          rauch 03/17 |
  *----------------------------------------------------------------------*/
-void CORE::Nodes::ImmersedNode::VisNames(std::map<std::string, int>& names)
+void Core::Nodes::ImmersedNode::VisNames(std::map<std::string, int>& names)
 {
   names.insert(std::pair<std::string, int>("IsBoundaryImmersedNode", 1));
   return;
@@ -161,7 +161,7 @@ void CORE::Nodes::ImmersedNode::VisNames(std::map<std::string, int>& names)
  |  Query data to be visualized by BINIO                       (public) |
  |                                                          rauch 03/17 |
  *----------------------------------------------------------------------*/
-bool CORE::Nodes::ImmersedNode::VisData(const std::string& name, std::vector<double>& data)
+bool Core::Nodes::ImmersedNode::VisData(const std::string& name, std::vector<double>& data)
 {
   if (name == "IsBoundaryImmersedNode")
   {

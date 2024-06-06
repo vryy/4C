@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::StatusTest::Combo::Combo(ComboType t, const ::NOX::Utils* u)
+NOX::Nln::StatusTest::Combo::Combo(ComboType t, const ::NOX::Utils* u)
     : ::NOX::StatusTest::Combo(t, u)
 {
   if (u != nullptr) utils_ = *u;
@@ -24,7 +24,7 @@ NOX::NLN::StatusTest::Combo::Combo(ComboType t, const ::NOX::Utils* u)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::StatusTest::Combo::Combo(
+NOX::Nln::StatusTest::Combo::Combo(
     ComboType t, const Teuchos::RCP<Generic>& a, const ::NOX::Utils* u)
     : ::NOX::StatusTest::Combo(t, a, u)
 {
@@ -35,7 +35,7 @@ NOX::NLN::StatusTest::Combo::Combo(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::StatusTest::Combo::Combo(ComboType t, const Teuchos::RCP<Generic>& a,
+NOX::Nln::StatusTest::Combo::Combo(ComboType t, const Teuchos::RCP<Generic>& a,
     const Teuchos::RCP<Generic>& b, const ::NOX::Utils* u)
     : ::NOX::StatusTest::Combo(t, a, b, u)
 {
@@ -50,7 +50,7 @@ NOX::NLN::StatusTest::Combo::Combo(ComboType t, const Teuchos::RCP<Generic>& a,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::StatusTest::Combo& NOX::NLN::StatusTest::Combo::addStatusTest(
+NOX::Nln::StatusTest::Combo& NOX::Nln::StatusTest::Combo::addStatusTest(
     const Teuchos::RCP<::NOX::StatusTest::Generic>& a)
 {
   return addStatusTest(a, false);
@@ -58,7 +58,7 @@ NOX::NLN::StatusTest::Combo& NOX::NLN::StatusTest::Combo::addStatusTest(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::StatusTest::Combo& NOX::NLN::StatusTest::Combo::addStatusTest(
+NOX::Nln::StatusTest::Combo& NOX::Nln::StatusTest::Combo::addStatusTest(
     const Teuchos::RCP<::NOX::StatusTest::Generic>& a, const bool& init)
 {
   if (isSafe(*(a.get())))
@@ -83,7 +83,7 @@ NOX::NLN::StatusTest::Combo& NOX::NLN::StatusTest::Combo::addStatusTest(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::NLN::StatusTest::Combo::isSafe(::NOX::StatusTest::Generic& a)
+bool NOX::Nln::StatusTest::Combo::isSafe(::NOX::StatusTest::Generic& a)
 {
   // Are we trying to add "this" to "this"? This would result in an infinite recursion.
   if (&a == this) return false;
@@ -93,7 +93,7 @@ bool NOX::NLN::StatusTest::Combo::isSafe(::NOX::StatusTest::Generic& a)
   for (std::vector<Teuchos::RCP<::NOX::StatusTest::Generic>>::iterator i = tests_.begin();
        i != tests_.end(); ++i)
   {
-    NOX::NLN::StatusTest::Combo* ptr = dynamic_cast<NOX::NLN::StatusTest::Combo*>(i->get());
+    NOX::Nln::StatusTest::Combo* ptr = dynamic_cast<NOX::Nln::StatusTest::Combo*>(i->get());
     if (ptr != nullptr)
       if (!ptr->isSafe(a)) return false;
   }
@@ -105,7 +105,7 @@ bool NOX::NLN::StatusTest::Combo::isSafe(::NOX::StatusTest::Generic& a)
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 const std::vector<Teuchos::RCP<::NOX::StatusTest::Generic>>&
-NOX::NLN::StatusTest::Combo::GetTestVector() const
+NOX::Nln::StatusTest::Combo::GetTestVector() const
 {
   return tests_;
 }

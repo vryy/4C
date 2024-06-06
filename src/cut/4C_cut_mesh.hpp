@@ -29,12 +29,12 @@ mesh
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::GEO
+namespace Core::Geo
 {
   // class BVTree;
   class SearchTree;
 
-  namespace CUT
+  namespace Cut
   {
     class Node;
     class Edge;
@@ -91,10 +91,10 @@ namespace CORE::GEO
       /*========================================================================*/
 
       /// creates a new element, dependent on distype
-      Element* create_element(int eid, const std::vector<int>& nids, CORE::FE::CellType distype);
+      Element* create_element(int eid, const std::vector<int>& nids, Core::FE::CellType distype);
 
       /// creates a new side, dependent on distype
-      Side* create_side(int sid, const std::vector<int>& nids, CORE::FE::CellType distype);
+      Side* create_side(int sid, const std::vector<int>& nids, Core::FE::CellType distype);
 
       /*========================================================================*/
       //! @name Create-routines for elements
@@ -188,8 +188,8 @@ namespace CORE::GEO
 
       /// creates a new ??? boundary cell
       ArbitraryBoundaryCell* NewArbitraryCell(VolumeCell* volume, Facet* facet,
-          const std::vector<Point*>& points, const CORE::FE::GaussIntegration& gaussRule,
-          const CORE::LINALG::Matrix<3, 1>& normal);
+          const std::vector<Point*>& points, const Core::FE::GaussIntegration& gaussRule,
+          const Core::LinAlg::Matrix<3, 1>& normal);
 
 
       /*========================================================================*/
@@ -227,7 +227,7 @@ namespace CORE::GEO
 
       /// creates a new hex8 integration cell, based on xyz coordinates
       Tet4IntegrationCell* NewTet4Cell(Point::PointPosition position,
-          const CORE::LINALG::SerialDenseMatrix& xyz, VolumeCell* cell);
+          const Core::LinAlg::SerialDenseMatrix& xyz, VolumeCell* cell);
 
       /// creates a new wedge6 integration cell
       Wedge6IntegrationCell* NewWedge6Cell(
@@ -321,12 +321,12 @@ namespace CORE::GEO
       void create_integration_cells(int count, bool tetcellsonly = false);
 
       /// Call the moment fitting method for each element to generate the Gaussian integration rule
-      void moment_fit_gauss_weights(bool include_inner, INPAR::CUT::BCellGaussPts Bcellgausstype);
+      void moment_fit_gauss_weights(bool include_inner, Inpar::Cut::BCellGaussPts Bcellgausstype);
 
       /// Call the DirectDivergence method for each element to generate the Gaussian integration
       /// rule
       void direct_divergence_gauss_rule(
-          bool include_inner, INPAR::CUT::BCellGaussPts Bcellgausstype);
+          bool include_inner, Inpar::Cut::BCellGaussPts Bcellgausstype);
 
 
       /*========================================================================*/
@@ -339,14 +339,14 @@ namespace CORE::GEO
       /// test if for all elements the element volume is equal to the volume of all integration
       /// cells
       void TestElementVolume(
-          bool fatal, INPAR::CUT::VCellGaussPts VCellGP = INPAR::CUT::VCellGaussPts_Tessellation);
+          bool fatal, Inpar::Cut::VCellGaussPts VCellGP = Inpar::Cut::VCellGaussPts_Tessellation);
 
       /*!
       \brief Find the difference between the volume of background element and the sum of volume of
       all integration cells. There should be no difference between these two
        */
       void TestElementVolume(
-          CORE::FE::CellType shape, Element& e, bool fatal, INPAR::CUT::VCellGaussPts VCellGP);
+          Core::FE::CellType shape, Element& e, bool fatal, Inpar::Cut::VCellGaussPts VCellGP);
 
 
       /*========================================================================*/
@@ -384,7 +384,7 @@ namespace CORE::GEO
       void dump_gmsh_volume_cells(std::string name);
 
       /// DebugDump to call before runtime error!!!
-      void DebugDump(CORE::GEO::CUT::Element* ele, std::string file = "", int line = -1);
+      void DebugDump(Core::Geo::Cut::Element* ele, std::string file = "", int line = -1);
 
 
       /*========================================================================*/
@@ -441,7 +441,7 @@ namespace CORE::GEO
       /*! \brief Create a new element 1D/2D/3D element with given nodes.
        *
        *  All details of the element are in cell topology data. */
-      CORE::GEO::CUT::Element* GetElement(
+      Core::Geo::Cut::Element* GetElement(
           int eid, const std::vector<Node*>& nodes, const CellTopologyData& top_data, bool active);
 
       /*! \brief Create a new element with desired element dimension
@@ -484,7 +484,7 @@ namespace CORE::GEO
       /*========================================================================*/
 
       /// check if xyz-coordinates lie within the mesh's bounding box
-      bool WithinBB(const CORE::LINALG::SerialDenseMatrix& xyz);
+      bool WithinBB(const Core::LinAlg::SerialDenseMatrix& xyz);
 
       /// check if the element lies within the bounding box
       bool WithinBB(Element& element);
@@ -520,10 +520,10 @@ namespace CORE::GEO
       const std::map<plain_int_set, Teuchos::RCP<Side>>& Sides() const { return sides_; }
 
       /// Returns of search tree all sides of the cutmesh
-      const Teuchos::RCP<CORE::GEO::SearchTree>& SelfCutTree() const { return selfcuttree_; }
+      const Teuchos::RCP<Core::Geo::SearchTree>& SelfCutTree() const { return selfcuttree_; }
 
       /// Returns the bounding volumes of all sides of the cutmesh
-      const std::map<int, CORE::LINALG::Matrix<3, 2>>& SelfCutBvs() const { return selfcutbvs_; }
+      const std::map<int, Core::LinAlg::Matrix<3, 2>>& SelfCutBvs() const { return selfcutbvs_; }
 
       /// Returns the map of all sides of the cutmesh
       const std::map<int, Side*>& ShadowSides() const { return shadow_sides_; }
@@ -574,7 +574,7 @@ namespace CORE::GEO
           const std::vector<Edge*>& edges, const CellTopologyData& side_topology);
 
       /// Create new line between the two given cut points that are in given two cut sides
-      CORE::GEO::CUT::Line* new_line_internal(
+      Core::Geo::Cut::Line* new_line_internal(
           Point* p1, Point* p2, Side* cut_side1, Side* cut_side2, Element* cut_element);
 
 
@@ -600,16 +600,16 @@ namespace CORE::GEO
       bool cutmesh_;
 
       /// the spatial partitioning octree for a fast collision detection in the self cut
-      Teuchos::RCP<CORE::GEO::SearchTree> selfcuttree_;
+      Teuchos::RCP<Core::Geo::SearchTree> selfcuttree_;
 
       /// the bounding volumes for a fast collision detection in the self cut
-      std::map<int, CORE::LINALG::Matrix<3, 2>> selfcutbvs_;
+      std::map<int, Core::LinAlg::Matrix<3, 2>> selfcutbvs_;
 
       /// the spatial partitioning octree for a fast collision detection
-      Teuchos::RCP<CORE::GEO::SearchTree> searchtree_;
+      Teuchos::RCP<Core::Geo::SearchTree> searchtree_;
 
       /// the bounding volumes for a fast collision detection
-      std::map<int, CORE::LINALG::Matrix<3, 2>> boundingvolumes_;
+      std::map<int, Core::LinAlg::Matrix<3, 2>> boundingvolumes_;
 
       /*========================================================================*/
       //! @name Containers that hold all those mesh objects
@@ -680,8 +680,8 @@ namespace CORE::GEO
         int eid, const std::vector<Node*>& nodes, const CellTopologyData& top_data, bool active);
 
 
-  }  // namespace CUT
-}  // namespace CORE::GEO
+  }  // namespace Cut
+}  // namespace Core::Geo
 
 FOUR_C_NAMESPACE_CLOSE
 

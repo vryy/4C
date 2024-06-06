@@ -22,12 +22,12 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace MORTAR
+namespace Mortar
 {
   // forward declarations
   class Element;
@@ -58,8 +58,8 @@ namespace MORTAR
      performed in parallel by individual processes.
 
      */
-    Coupling3d(DRT::Discretization& idiscret, int dim, bool quad, Teuchos::ParameterList& params,
-        MORTAR::Element& sele, MORTAR::Element& mele);
+    Coupling3d(Discret::Discretization& idiscret, int dim, bool quad,
+        Teuchos::ParameterList& params, Mortar::Element& sele, Mortar::Element& mele);
 
     /*!
      \brief Destructor
@@ -72,7 +72,7 @@ namespace MORTAR
      \brief Get interface discretization
 
      */
-    virtual DRT::Discretization& Discret() const { return idiscret_; }
+    virtual Discret::Discretization& Discret() const { return idiscret_; }
 
     /*!
      \brief Get communicator
@@ -96,35 +96,35 @@ namespace MORTAR
      \brief Get coupling slave element
 
      */
-    virtual MORTAR::Element& SlaveElement() const { return sele_; }
+    virtual Mortar::Element& SlaveElement() const { return sele_; }
 
     /*!
      \brief Get coupling master element
 
      */
-    virtual MORTAR::Element& MasterElement() const { return mele_; }
+    virtual Mortar::Element& MasterElement() const { return mele_; }
 
     /*!
      \brief Get coupling slave integration element
 
      Note that (here) for linear ansatz functions in 3D, this is IDENTICAL to
-     the SlaveElement() as no splitting of the MORTAR::Elements is performed.
+     the SlaveElement() as no splitting of the Mortar::Elements is performed.
      For the 3D quadratic case with the use of auxiliary planes, this
-     methd is overloaded by the derived class MORTAR::Coupling3dQuad!
+     methd is overloaded by the derived class Mortar::Coupling3dQuad!
 
      */
-    virtual MORTAR::Element& SlaveIntElement() const { return sele_; }
+    virtual Mortar::Element& SlaveIntElement() const { return sele_; }
 
     /*!
      \brief Get coupling master integration element
 
      Note that (here) for linear ansatz functions in 3D, this is IDENTICAL to
-     the SlaveElement() as no splitting of the MORTAR::Elements is performed.
+     the SlaveElement() as no splitting of the Mortar::Elements is performed.
      For the 3D quadratic case with the use of auxiliary planes, this
-     methd is overloaded by the derived class MORTAR::Coupling3dQuad!
+     methd is overloaded by the derived class Mortar::Coupling3dQuad!
 
      */
-    virtual MORTAR::Element& MasterIntElement() const { return mele_; }
+    virtual Mortar::Element& MasterIntElement() const { return mele_; }
 
     /*!
      \brief Return center of auxiliary plane
@@ -172,7 +172,7 @@ namespace MORTAR
      \brief Return the 'DerivAuxn' map (vector) of this coupling pair
 
      */
-    virtual std::vector<CORE::GEN::Pairedvector<int, double>>& get_deriv_auxn()
+    virtual std::vector<Core::Gen::Pairedvector<int, double>>& get_deriv_auxn()
     {
       return derivauxn_;
     }
@@ -181,7 +181,7 @@ namespace MORTAR
      \brief Return the LM interpolation / testing type for quadratic FE
 
      */
-    virtual INPAR::MORTAR::LagMultQuad LagMultQuad() { return lmquadtype_; };
+    virtual Inpar::Mortar::LagMultQuad LagMultQuad() { return lmquadtype_; };
 
     /*!
      \brief Get interface contact parameter list
@@ -193,7 +193,7 @@ namespace MORTAR
      \brief Return the LM shape fcn type
 
      */
-    INPAR::MORTAR::ShapeFcn ShapeFcn() { return shapefcn_; };
+    Inpar::Mortar::ShapeFcn ShapeFcn() { return shapefcn_; };
 
     //@}
 
@@ -236,7 +236,7 @@ namespace MORTAR
      and assembled into the slave element nodes.
 
      */
-    virtual bool IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
+    virtual bool IntegrateCells(const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr);
 
     //@}
 
@@ -257,7 +257,7 @@ namespace MORTAR
 
      */
     virtual bool VertexLinearization(
-        std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& linvertex,
+        std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& linvertex,
         std::map<int, double>& projpar, bool printderiv = false)
     {
       return true;
@@ -268,8 +268,8 @@ namespace MORTAR
 
      */
     virtual bool CenterLinearization(
-        const std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& linvertex,
-        std::vector<CORE::GEN::Pairedvector<int, double>>& lincenter)
+        const std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& linvertex,
+        std::vector<Core::Gen::Pairedvector<int, double>>& lincenter)
     {
       return true;
     }
@@ -310,9 +310,9 @@ namespace MORTAR
      */
     virtual bool triangulation(std::map<int, double>& projpar, double tol);
     virtual bool delaunay_triangulation(
-        std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& linvertex, double tol);
+        std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& linvertex, double tol);
     virtual bool center_triangulation(
-        std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& linvertex, double tol);
+        std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& linvertex, double tol);
 
     /*!
      \brief Check / set projection status of slave nodes (3D)
@@ -441,14 +441,14 @@ namespace MORTAR
     Coupling3d operator=(const Coupling3d& old);
     Coupling3d(const Coupling3d& old);
 
-    DRT::Discretization& idiscret_;          // discretization of the contact interface
+    Discret::Discretization& idiscret_;      // discretization of the contact interface
     int dim_;                                // problem dimension (here: 3D)
-    INPAR::MORTAR::ShapeFcn shapefcn_;       // lm shape function type
+    Inpar::Mortar::ShapeFcn shapefcn_;       // lm shape function type
     bool quad_;                              // flag indicating coupling type (true = quadratic)
-    INPAR::MORTAR::LagMultQuad lmquadtype_;  // type of quadratic lm interpolation
+    Inpar::Mortar::LagMultQuad lmquadtype_;  // type of quadratic lm interpolation
 
-    MORTAR::Element& sele_;            // slave element to perform coupling for
-    MORTAR::Element& mele_;            // master element to perform coupling for
+    Mortar::Element& sele_;            // slave element to perform coupling for
+    Mortar::Element& mele_;            // master element to perform coupling for
     Teuchos::ParameterList& imortar_;  // containing contact input parameters
     double auxc_[3];                   // center of auxiliary plane
     double auxn_[3];                   // normal of auxiliary plane
@@ -458,7 +458,7 @@ namespace MORTAR
     std::vector<Vertex> clip_;         // clipped polygon vertex objects
 
     std::vector<Teuchos::RCP<IntCell>> cells_;  // vector of integration cells
-    std::vector<CORE::GEN::Pairedvector<int, double>>
+    std::vector<Core::Gen::Pairedvector<int, double>>
         derivauxn_;  // derivatives of auxiliary plane normal
   };
   // class Coupling3d
@@ -475,7 +475,7 @@ namespace MORTAR
    "Puso, M.A., Laursen, T.A., Solberg, J., A segment-to-segment
    mortar contact method for quadratic elements and large deformations,
    CMAME, 197, 2008, pp. 555-566". For this type of formulation, a
-   quadratic MORTAR::Element is split into several linear IntElements,
+   quadratic Mortar::Element is split into several linear IntElements,
    on which the geometrical coupling is performed. Thus, we additionally
    hand in in two IntElements to Coupling3dQuad.
 
@@ -492,9 +492,9 @@ namespace MORTAR
      performed in parallel by individual processes.
 
      */
-    Coupling3dQuad(DRT::Discretization& idiscret, int dim, bool quad,
-        Teuchos::ParameterList& params, MORTAR::Element& sele, MORTAR::Element& mele,
-        MORTAR::IntElement& sintele, MORTAR::IntElement& mintele);
+    Coupling3dQuad(Discret::Discretization& idiscret, int dim, bool quad,
+        Teuchos::ParameterList& params, Mortar::Element& sele, Mortar::Element& mele,
+        Mortar::IntElement& sintele, Mortar::IntElement& mintele);
 
 
     //! @name Access methods
@@ -503,21 +503,21 @@ namespace MORTAR
      \brief Get coupling slave integration element
 
      */
-    MORTAR::IntElement& SlaveIntElement() const override { return sintele_; }
+    Mortar::IntElement& SlaveIntElement() const override { return sintele_; }
 
     /*!
      \brief Get coupling master integration element
 
      */
-    MORTAR::IntElement& MasterIntElement() const override { return mintele_; }
+    Mortar::IntElement& MasterIntElement() const override { return mintele_; }
 
    protected:
     // don't want = operator and cctor
     Coupling3dQuad operator=(const Coupling3dQuad& old);
     Coupling3dQuad(const Coupling3dQuad& old);
 
-    MORTAR::IntElement& sintele_;  // slave sub-integration element
-    MORTAR::IntElement& mintele_;  // slave sub-integration element
+    Mortar::IntElement& sintele_;  // slave sub-integration element
+    Mortar::IntElement& mintele_;  // slave sub-integration element
   };
   // class Coupling3dQuad
 
@@ -539,8 +539,8 @@ namespace MORTAR
      performed in parallel by individual processes.
 
      */
-    Coupling3dManager(DRT::Discretization& idiscret, int dim, bool quad,
-        Teuchos::ParameterList& params, MORTAR::Element* sele, std::vector<MORTAR::Element*> mele);
+    Coupling3dManager(Discret::Discretization& idiscret, int dim, bool quad,
+        Teuchos::ParameterList& params, Mortar::Element* sele, std::vector<Mortar::Element*> mele);
 
     /*!
      \brief Destructor
@@ -551,31 +551,31 @@ namespace MORTAR
      \brief Get coupling slave element
 
      */
-    virtual MORTAR::Element& SlaveElement() const { return *sele_; }
+    virtual Mortar::Element& SlaveElement() const { return *sele_; }
 
     /*!
      \brief Get one specific coupling master element
 
      */
-    virtual MORTAR::Element& MasterElement(int k) const { return *(mele_[k]); }
+    virtual Mortar::Element& MasterElement(int k) const { return *(mele_[k]); }
 
     /*!
      \brief Get all coupling master elements
 
      */
-    virtual std::vector<MORTAR::Element*> MasterElements() const { return mele_; }
+    virtual std::vector<Mortar::Element*> MasterElements() const { return mele_; }
 
     /*!
      \brief Get coupling pairs
 
      */
-    virtual std::vector<Teuchos::RCP<MORTAR::Coupling3d>>& Coupling() { return coup_; }
+    virtual std::vector<Teuchos::RCP<Mortar::Coupling3d>>& Coupling() { return coup_; }
 
     /*!
      \brief Get type of integration scheme
 
      */
-    virtual INPAR::MORTAR::IntType IntType() { return integrationtype_; }
+    virtual Inpar::Mortar::IntType IntType() { return integrationtype_; }
 
     /*!
      \brief Get coupling type
@@ -599,19 +599,19 @@ namespace MORTAR
      \brief Evaluate coupling pairs
 
      */
-    virtual bool evaluate_coupling(Teuchos::RCP<MORTAR::ParamsInterface> mparams_ptr);
+    virtual bool evaluate_coupling(Teuchos::RCP<Mortar::ParamsInterface> mparams_ptr);
 
     /*!
      \brief Return the LM interpolation / testing type for quadratic FE
 
      */
-    virtual INPAR::MORTAR::LagMultQuad LagMultQuad() { return lmquadtype_; };
+    virtual Inpar::Mortar::LagMultQuad LagMultQuad() { return lmquadtype_; };
 
     /*!
      \brief Return the LM shape fcn type
 
      */
-    virtual INPAR::MORTAR::ShapeFcn ShapeFcn() { return shapefcn_; }
+    virtual Inpar::Mortar::ShapeFcn ShapeFcn() { return shapefcn_; }
     //@}
 
    protected:
@@ -619,7 +619,7 @@ namespace MORTAR
      \brief Evaluate mortar-coupling pairs
 
      */
-    virtual void integrate_coupling(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
+    virtual void integrate_coupling(const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr);
 
     /*!
      \brief Calculate consistent dual shape functions in boundary elements
@@ -631,17 +631,17 @@ namespace MORTAR
     Coupling3dManager operator=(const Coupling3dManager& old);
     Coupling3dManager(const Coupling3dManager& old);
 
-    DRT::Discretization& idiscret_;                       // discretization of the contact interface
+    Discret::Discretization& idiscret_;                   // discretization of the contact interface
     int dim_;                                             // problem dimension (here: 3D)
-    INPAR::MORTAR::IntType integrationtype_;              // integration type
-    INPAR::MORTAR::ShapeFcn shapefcn_;                    // lm shape function type
-    INPAR::MORTAR::LagMultQuad lmquadtype_;               // type of quadratic lm interpolation
-    INPAR::MORTAR::ConsistentDualType lmdualconsistent_;  // flag indicating dual consistent lm
+    Inpar::Mortar::IntType integrationtype_;              // integration type
+    Inpar::Mortar::ShapeFcn shapefcn_;                    // lm shape function type
+    Inpar::Mortar::LagMultQuad lmquadtype_;               // type of quadratic lm interpolation
+    Inpar::Mortar::ConsistentDualType lmdualconsistent_;  // flag indicating dual consistent lm
     bool quad_;                           // flag indicating coupling type (true = quadratic)
     Teuchos::ParameterList& imortar_;     // containing contact input parameters
-    MORTAR::Element* sele_;               // slave element
-    std::vector<MORTAR::Element*> mele_;  // master elements
-    std::vector<Teuchos::RCP<MORTAR::Coupling3d>> coup_;  // coupling pairs
+    Mortar::Element* sele_;               // slave element
+    std::vector<Mortar::Element*> mele_;  // master elements
+    std::vector<Teuchos::RCP<Mortar::Coupling3d>> coup_;  // coupling pairs
   };
   // class Coupling3dManager
 
@@ -659,38 +659,38 @@ namespace MORTAR
     /*!
      \brief Constructor
      */
-    Coupling3dQuadManager(DRT::Discretization& idiscret, int dim, bool quad,
-        Teuchos::ParameterList& params, MORTAR::Element* sele, std::vector<MORTAR::Element*> mele);
+    Coupling3dQuadManager(Discret::Discretization& idiscret, int dim, bool quad,
+        Teuchos::ParameterList& params, Mortar::Element* sele, std::vector<Mortar::Element*> mele);
 
 
-    INPAR::MORTAR::LagMultQuad LagMultQuad() override
+    Inpar::Mortar::LagMultQuad LagMultQuad() override
     {
-      return CORE::UTILS::IntegralValue<INPAR::MORTAR::LagMultQuad>(imortar_, "LM_QUAD");
+      return Core::UTILS::IntegralValue<Inpar::Mortar::LagMultQuad>(imortar_, "LM_QUAD");
     }
 
     /*!
      \brief Get coupling slave element
 
      */
-    MORTAR::Element& SlaveElement() const override { return *sele_; }
+    Mortar::Element& SlaveElement() const override { return *sele_; }
 
     /*!
      \brief Get one specific coupling master element
 
      */
-    MORTAR::Element& MasterElement(int k) const override { return *(mele_[k]); }
+    Mortar::Element& MasterElement(int k) const override { return *(mele_[k]); }
 
     /*!
      \brief Get all coupling master elements
 
      */
-    std::vector<MORTAR::Element*> MasterElements() const override { return mele_; }
+    std::vector<Mortar::Element*> MasterElements() const override { return mele_; }
 
     /*!
      \brief Get integration type
 
      */
-    INPAR::MORTAR::IntType IntType() override { return integrationtype_; }
+    Inpar::Mortar::IntType IntType() override { return integrationtype_; }
 
     /*!
      \brief Get coupling type
@@ -705,21 +705,21 @@ namespace MORTAR
      \brief Evaluate mortar-coupling pairs
 
      */
-    void integrate_coupling(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) override;
+    void integrate_coupling(const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr) override;
 
     /*!
-     \brief Split MORTAR::Elements into IntElements for 3D quadratic coupling
+     \brief Split Mortar::Elements into IntElements for 3D quadratic coupling
 
      */
     virtual bool split_int_elements(
-        MORTAR::Element& ele, std::vector<Teuchos::RCP<MORTAR::IntElement>>& auxele);
+        Mortar::Element& ele, std::vector<Teuchos::RCP<Mortar::IntElement>>& auxele);
 
     // don't want = operator and cctor
     Coupling3dQuadManager operator=(const Coupling3dQuadManager& old);
     Coupling3dQuadManager(const Coupling3dQuadManager& old);
   };
 
-}  // namespace MORTAR
+}  // namespace Mortar
 
 FOUR_C_NAMESPACE_CLOSE
 

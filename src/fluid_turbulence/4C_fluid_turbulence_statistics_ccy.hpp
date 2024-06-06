@@ -44,7 +44,7 @@ output.
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
@@ -65,7 +65,7 @@ namespace FLD
 
 
     */
-    TurbulenceStatisticsCcy(Teuchos::RCP<DRT::Discretization> actdis, bool alefluid,
+    TurbulenceStatisticsCcy(Teuchos::RCP<Discret::Discretization> actdis, bool alefluid,
         Teuchos::RCP<Epetra_Vector> dispnp, Teuchos::ParameterList& params,
         const std::string& statistics_outfilename, const bool withscatra);
 
@@ -133,7 +133,7 @@ namespace FLD
 
     // Add results from scalar transport field solver to statistics
     void AddScaTraResults(
-        Teuchos::RCP<DRT::Discretization> scatradis, Teuchos::RCP<Epetra_Vector> phinp);
+        Teuchos::RCP<Discret::Discretization> scatradis, Teuchos::RCP<Epetra_Vector> phinp);
 
    protected:
     /*!
@@ -162,10 +162,10 @@ namespace FLD
     int countrecord_;
 
     //! The discretisation (required for nodes, dofs etc;)
-    Teuchos::RCP<DRT::Discretization> discret_;
+    Teuchos::RCP<Discret::Discretization> discret_;
 
     //! the scatra discretization
-    Teuchos::RCP<DRT::Discretization> scatradis_;
+    Teuchos::RCP<Discret::Discretization> scatradis_;
 
     //! node displacements due to mesh motion
     Teuchos::RCP<Epetra_Vector> dispnp_;
@@ -243,9 +243,9 @@ namespace FLD
     Teuchos::RCP<std::vector<double>> pointsumcc_;
 
     //! sum over c (over one plane in each component)
-    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> pointsumphi_;
+    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> pointsumphi_;
     //! sum over c^2 (over one plane in each component)
-    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> pointsumphiphi_;
+    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> pointsumphiphi_;
   };
 
 }  // namespace FLD

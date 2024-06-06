@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-namespace INPAR
+namespace Inpar
 {
   namespace POROFLUIDMULTIPHASE
   {
@@ -93,19 +93,19 @@ namespace INPAR
     {
       switch (norm)
       {
-        case INPAR::POROFLUIDMULTIPHASE::norm_l1:
+        case Inpar::POROFLUIDMULTIPHASE::norm_l1:
           return "L1";
           break;
-        case INPAR::POROFLUIDMULTIPHASE::norm_l1_scaled:
+        case Inpar::POROFLUIDMULTIPHASE::norm_l1_scaled:
           return "L1_scaled";
           break;
-        case INPAR::POROFLUIDMULTIPHASE::norm_l2:
+        case Inpar::POROFLUIDMULTIPHASE::norm_l2:
           return "L2";
           break;
-        case INPAR::POROFLUIDMULTIPHASE::norm_rms:
+        case Inpar::POROFLUIDMULTIPHASE::norm_rms:
           return "Rms";
           break;
-        case INPAR::POROFLUIDMULTIPHASE::norm_inf:
+        case Inpar::POROFLUIDMULTIPHASE::norm_inf:
           return "Inf";
           break;
         default:
@@ -119,7 +119,7 @@ namespace INPAR
 
   }  // namespace POROFLUIDMULTIPHASE
 
-}  // namespace INPAR
+}  // namespace Inpar
 
 
 

@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief A collection of eigenvalue methods for namespace CORE::LINALG
+\brief A collection of eigenvalue methods for namespace Core::LinAlg
 
 \level 0
 */
@@ -22,7 +22,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   /*!
    \brief Compute all eigenvalues of a real symmetric matrix A
@@ -33,7 +33,7 @@ namespace CORE::LINALG
    routine for postprocessing only (in that
    case FOUR_C_THROW is replaced with a warning)
    */
-  void SymmetricEigenValues(CORE::LINALG::SerialDenseMatrix& A, CORE::LINALG::SerialDenseVector& L,
+  void SymmetricEigenValues(Core::LinAlg::SerialDenseMatrix& A, Core::LinAlg::SerialDenseVector& L,
       const bool postproc = false);
 
   /*!
@@ -46,7 +46,7 @@ namespace CORE::LINALG
    routine for postprocessing only (in that
    case FOUR_C_THROW is replaced with a warning)
    */
-  void SymmetricEigenProblem(CORE::LINALG::SerialDenseMatrix& A, CORE::LINALG::SerialDenseVector& L,
+  void SymmetricEigenProblem(Core::LinAlg::SerialDenseMatrix& A, Core::LinAlg::SerialDenseVector& L,
       const bool postproc = false);
 
   /*!
@@ -60,7 +60,7 @@ namespace CORE::LINALG
    routine for postprocessing only (in that
    case FOUR_C_THROW is replaced with a warning)
    */
-  void SymmetricEigen(CORE::LINALG::SerialDenseMatrix& A, CORE::LINALG::SerialDenseVector& L,
+  void SymmetricEigen(Core::LinAlg::SerialDenseMatrix& A, Core::LinAlg::SerialDenseVector& L,
       bool eval_eigenvectors, bool postproc = false);
 
   /*!
@@ -73,7 +73,7 @@ namespace CORE::LINALG
 
    */
   double GeneralizedEigen(
-      CORE::LINALG::SerialDenseMatrix::Base& A, CORE::LINALG::SerialDenseMatrix::Base& B);
+      Core::LinAlg::SerialDenseMatrix::Base& A, Core::LinAlg::SerialDenseMatrix::Base& B);
 
   /*!
    \brief Compute all eigenvalues and eigenvectors of a real symmetric matrix A
@@ -85,8 +85,8 @@ namespace CORE::LINALG
    eigenvalues \param V (out):       M-by-M orthonormal matrix of eigenvectors
    */
   template <unsigned int dim>
-  void SYEV(CORE::LINALG::Matrix<dim, dim>& A, CORE::LINALG::Matrix<dim, dim>& S,
-      CORE::LINALG::Matrix<dim, dim>& V)
+  void SYEV(Core::LinAlg::Matrix<dim, dim>& A, Core::LinAlg::Matrix<dim, dim>& S,
+      Core::LinAlg::Matrix<dim, dim>& V)
   {
     const char jobz = 'V';               // Compute eigenvalues and eigenvectors.
     const char uplo = 'U';               // Upper triangle of A is stored;
@@ -113,7 +113,7 @@ namespace CORE::LINALG
     return;
   }
 
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 FOUR_C_NAMESPACE_CLOSE
 

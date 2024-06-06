@@ -23,9 +23,9 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
-    namespace INNER
+    namespace Inner
     {
       namespace StatusTest
       {
@@ -77,17 +77,17 @@ namespace NOX
           void throw_error(const std::string& functionName, const std::string& errorMsg) const;
         };
 
-        /*! \brief Nonmember helper function for the NOX::NLN::INNER::StatusTest::Factory.
+        /*! \brief Nonmember helper function for the NOX::Nln::Inner::StatusTest::Factory.
 
-        \relates NOX::NLN::INNER::StatusTest::Factory
+        \relates NOX::Nln::Inner::StatusTest::Factory
 
         */
         Teuchos::RCP<Generic> build_inner_status_tests(Teuchos::ParameterList& p,
             const ::NOX::Utils& utils,
             std::map<std::string, Teuchos::RCP<Generic>>* tagged_tests = nullptr);
       }  // namespace StatusTest
-    }    // namespace INNER
-  }      // namespace NLN
+    }    // namespace Inner
+  }      // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

@@ -17,17 +17,17 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-DRT::ELEMENTS::Vele3LineType DRT::ELEMENTS::Vele3LineType::instance_;
+Discret::ELEMENTS::Vele3LineType Discret::ELEMENTS::Vele3LineType::instance_;
 
-DRT::ELEMENTS::Vele3LineType& DRT::ELEMENTS::Vele3LineType::Instance() { return instance_; }
+Discret::ELEMENTS::Vele3LineType& Discret::ELEMENTS::Vele3LineType::Instance() { return instance_; }
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            gammi 04/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Vele3Line::Vele3Line(int id, int owner, int nnode, const int* nodeids,
-    CORE::Nodes::Node** nodes, CORE::Elements::Element* parent, const int lline)
-    : CORE::Elements::FaceElement(id, owner)
+Discret::ELEMENTS::Vele3Line::Vele3Line(int id, int owner, int nnode, const int* nodeids,
+    Core::Nodes::Node** nodes, Core::Elements::Element* parent, const int lline)
+    : Core::Elements::FaceElement(id, owner)
 {
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
@@ -39,8 +39,8 @@ DRT::ELEMENTS::Vele3Line::Vele3Line(int id, int owner, int nnode, const int* nod
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 01/07|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Vele3Line::Vele3Line(const DRT::ELEMENTS::Vele3Line& old)
-    : CORE::Elements::FaceElement(old)
+Discret::ELEMENTS::Vele3Line::Vele3Line(const Discret::ELEMENTS::Vele3Line& old)
+    : Core::Elements::FaceElement(old)
 {
   return;
 }
@@ -50,9 +50,9 @@ DRT::ELEMENTS::Vele3Line::Vele3Line(const DRT::ELEMENTS::Vele3Line& old)
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            gee 01/07 |
  *----------------------------------------------------------------------*/
-CORE::Elements::Element* DRT::ELEMENTS::Vele3Line::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::Vele3Line::Clone() const
 {
-  DRT::ELEMENTS::Vele3Line* newelement = new DRT::ELEMENTS::Vele3Line(*this);
+  Discret::ELEMENTS::Vele3Line* newelement = new Discret::ELEMENTS::Vele3Line(*this);
   return newelement;
 }
 
@@ -61,14 +61,14 @@ CORE::Elements::Element* DRT::ELEMENTS::Vele3Line::Clone() const
  |                                                             (public) |
  |                                                          u.kue 03/07 |
  *----------------------------------------------------------------------*/
-CORE::FE::CellType DRT::ELEMENTS::Vele3Line::Shape() const
+Core::FE::CellType Discret::ELEMENTS::Vele3Line::Shape() const
 {
   switch (num_node())
   {
     case 2:
-      return CORE::FE::CellType::line2;
+      return Core::FE::CellType::line2;
     case 3:
-      return CORE::FE::CellType::line3;
+      return Core::FE::CellType::line3;
     default:
       FOUR_C_THROW("unexpected number of nodes %d", num_node());
   }
@@ -79,7 +79,7 @@ CORE::FE::CellType DRT::ELEMENTS::Vele3Line::Shape() const
  |  Pack data                                                  (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Vele3Line::Pack(CORE::COMM::PackBuffer& data) const
+void Discret::ELEMENTS::Vele3Line::Pack(Core::Communication::PackBuffer& data) const
 {
   FOUR_C_THROW("this Vele3Line element does not support communication");
 
@@ -91,7 +91,7 @@ void DRT::ELEMENTS::Vele3Line::Pack(CORE::COMM::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Vele3Line::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Vele3Line::Unpack(const std::vector<char>& data)
 {
   FOUR_C_THROW("this Vele3Line element does not support communication");
   return;
@@ -102,7 +102,7 @@ void DRT::ELEMENTS::Vele3Line::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mwgee 01/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Vele3Line::Print(std::ostream& os) const
+void Discret::ELEMENTS::Vele3Line::Print(std::ostream& os) const
 {
   os << "Vele3Line ";
   Element::Print(os);

@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------*/
 /*! \file
 
-\brief CORE::LINALG::SOLVER wrapper around Trilinos' IFPACK preconditioner
+\brief Core::LinAlg::SOLVER wrapper around Trilinos' IFPACK preconditioner
 
 \level 0
 
@@ -18,13 +18,13 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINEAR_SOLVER
+namespace Core::LinearSolver
 {
   /*! \brief  IFPACK preconditioners
    *
    *  Set of standard single-matrix preconditioners.
    */
-  class IFPACKPreconditioner : public LINEAR_SOLVER::PreconditionerTypeBase
+  class IFPACKPreconditioner : public LinearSolver::PreconditionerTypeBase
   {
    public:
     //! Constructor (empty)
@@ -51,7 +51,7 @@ namespace CORE::LINEAR_SOLVER
     Teuchos::RCP<Ifpack_Preconditioner> prec_;
 
   };  // class IFPACKPreconditioner
-}  // namespace CORE::LINEAR_SOLVER
+}  // namespace Core::LinearSolver
 
 FOUR_C_NAMESPACE_CLOSE
 

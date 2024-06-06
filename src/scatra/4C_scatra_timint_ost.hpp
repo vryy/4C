@@ -17,18 +17,18 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace SCATRA
+namespace ScaTra
 {
   class TimIntOneStepTheta : public virtual ScaTraTimIntImpl
   {
    public:
     /// Standard Constructor
-    TimIntOneStepTheta(Teuchos::RCP<DRT::Discretization> actdis,  //!< discretization
-        Teuchos::RCP<CORE::LINALG::Solver> solver,                //!< linear solver
-        Teuchos::RCP<Teuchos::ParameterList> params,              //!< parameter list
-        Teuchos::RCP<Teuchos::ParameterList> extraparams,         //!< supplementary parameter list
-        Teuchos::RCP<CORE::IO::DiscretizationWriter> output,      //!< output writer
-        const int probnum = 0                                     //!< global problem number
+    TimIntOneStepTheta(Teuchos::RCP<Discret::Discretization> actdis,  //!< discretization
+        Teuchos::RCP<Core::LinAlg::Solver> solver,                    //!< linear solver
+        Teuchos::RCP<Teuchos::ParameterList> params,                  //!< parameter list
+        Teuchos::RCP<Teuchos::ParameterList> extraparams,     //!< supplementary parameter list
+        Teuchos::RCP<Core::IO::DiscretizationWriter> output,  //!< output writer
+        const int probnum = 0                                 //!< global problem number
     );
 
     /// don't want = operator and cctor
@@ -58,7 +58,7 @@ namespace SCATRA
     void Update() override;
 
     void read_restart(
-        const int step, Teuchos::RCP<CORE::IO::InputControl> input = Teuchos::null) override;
+        const int step, Teuchos::RCP<Core::IO::InputControl> input = Teuchos::null) override;
 
     Teuchos::RCP<Epetra_Vector> Phiaf() override { return Teuchos::null; }
 
@@ -92,7 +92,7 @@ namespace SCATRA
         Teuchos::RCP<Epetra_Vector>
             phidtnp,  //!< time derivative of micro-scale state vector at new time step
         Teuchos::RCP<Epetra_Vector> hist,                     //!< micro-scale history vector
-        Teuchos::RCP<CORE::IO::DiscretizationWriter> output,  //!< micro-scale discretization writer
+        Teuchos::RCP<Core::IO::DiscretizationWriter> output,  //!< micro-scale discretization writer
         const std::vector<double>&
             phinp_macro,   //!< values of state variables at macro-scale Gauss point
         const int step,    //!< time step
@@ -138,7 +138,7 @@ namespace SCATRA
     Teuchos::RCP<Epetra_Vector> fsphinp_;
   };
 
-}  // namespace SCATRA
+}  // namespace ScaTra
 
 FOUR_C_NAMESPACE_CLOSE
 

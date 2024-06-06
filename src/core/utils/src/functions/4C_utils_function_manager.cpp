@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
-  using LineDefinitionVector = std::vector<INPUT::LineDefinition>;
+  using LineDefinitionVector = std::vector<Input::LineDefinition>;
 
   using TypeErasedFunctionCreator = std::function<std::any(const LineDefinitionVector&)>;
 
@@ -46,14 +46,14 @@ namespace
 
 
   template <int dim>
-  std::any CreateBuiltinFunction(const std::vector<INPUT::LineDefinition>& function_line_defs)
+  std::any CreateBuiltinFunction(const std::vector<Input::LineDefinition>& function_line_defs)
   {
     // List all known TryCreate functions in a vector, so they can be called with a unified
     // syntax below. Also, erase their exact return type, since we can only store std::any.
     std::vector<TypeErasedFunctionCreator> try_create_function_vector{
-        WrapFunction(CORE::UTILS::TryCreateSymbolicFunctionOfAnything<dim>),
-        WrapFunction(CORE::UTILS::TryCreateSymbolicFunctionOfSpaceTime<dim>),
-        WrapFunction(CORE::UTILS::TryCreateFunctionOfTime)};
+        WrapFunction(Core::UTILS::TryCreateSymbolicFunctionOfAnything<dim>),
+        WrapFunction(Core::UTILS::TryCreateSymbolicFunctionOfSpaceTime<dim>),
+        WrapFunction(Core::UTILS::TryCreateFunctionOfTime)};
 
     for (const auto& try_create_function : try_create_function_vector)
     {
@@ -66,9 +66,9 @@ namespace
 
   // add one level of indirection to dispatch on the dimension later when the global problem is
   // available.
-  auto CreateBuiltinFunctionDispatch(const std::vector<INPUT::LineDefinition>& function_line_defs)
+  auto CreateBuiltinFunctionDispatch(const std::vector<Input::LineDefinition>& function_line_defs)
   {
-    switch (GLOBAL::Problem::Instance()->NDim())
+    switch (Global::Problem::Instance()->NDim())
     {
       case 1:
         return CreateBuiltinFunction<1>(function_line_defs);
@@ -77,15 +77,15 @@ namespace
       case 3:
         return CreateBuiltinFunction<3>(function_line_defs);
       default:
-        FOUR_C_THROW("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
+        FOUR_C_THROW("Unsupported dimension %d.", Global::Problem::Instance()->NDim());
     }
   }
 }  // namespace
 
 
-void CORE::UTILS::AddValidBuiltinFunctions(CORE::UTILS::FunctionManager& function_manager)
+void Core::UTILS::AddValidBuiltinFunctions(Core::UTILS::FunctionManager& function_manager)
 {
-  using namespace INPUT;
+  using namespace Input;
 
   std::vector<LineDefinition> possible_lines = {
       LineDefinition::Builder().AddNamedString("SYMBOLIC_FUNCTION_OF_SPACE_TIME").Build(),
@@ -108,14 +108,14 @@ void CORE::UTILS::AddValidBuiltinFunctions(CORE::UTILS::FunctionManager& functio
           .add_optional_named_double_vector("VALUES", LengthFromIntNamed("NUMPOINTS"))
           .add_optional_named_string_vector("DESCRIPTION",
               // Special case where only NUMPOINTS-1 are taken
-              [](const CORE::IO::InputParameterContainer& already_read_line)
+              [](const Core::IO::InputParameterContainer& already_read_line)
               {
                 try
                 {
                   int length = already_read_line.Get<int>("NUMPOINTS");
                   return length - 1;
                 }
-                catch (const CORE::Exception& e)
+                catch (const Core::Exception& e)
                 {
                   // When NUMPOINTS is not set, then we still allow for a single DESCRIPTION entry
                   return 1;
@@ -137,9 +137,9 @@ void CORE::UTILS::AddValidBuiltinFunctions(CORE::UTILS::FunctionManager& functio
 }
 
 
-std::vector<INPUT::LineDefinition> CORE::UTILS::FunctionManager::valid_function_lines()
+std::vector<Input::LineDefinition> Core::UTILS::FunctionManager::valid_function_lines()
 {
-  std::vector<INPUT::LineDefinition> lines;
+  std::vector<Input::LineDefinition> lines;
   for (const auto& [possible_lines, _] : attached_function_data_)
   {
     for (const auto& single_line : possible_lines)
@@ -151,14 +151,14 @@ std::vector<INPUT::LineDefinition> CORE::UTILS::FunctionManager::valid_function_
 }
 
 
-void CORE::UTILS::FunctionManager::add_function_definition(
-    std::vector<INPUT::LineDefinition> possible_lines, FunctionFactory function_factory)
+void Core::UTILS::FunctionManager::add_function_definition(
+    std::vector<Input::LineDefinition> possible_lines, FunctionFactory function_factory)
 {
   attached_function_data_.emplace_back(std::move(possible_lines), std::move(function_factory));
 }
 
 
-void CORE::UTILS::FunctionManager::ReadInput(CORE::IO::DatFileReader& reader)
+void Core::UTILS::FunctionManager::ReadInput(Core::IO::DatFileReader& reader)
 {
   functions_.clear();
 
@@ -173,7 +173,7 @@ void CORE::UTILS::FunctionManager::ReadInput(CORE::IO::DatFileReader& reader)
           for (auto& [possible_lines, function_factory] : attached_function_data_)
           {
             auto [parsed_lines, unparsed_lines] =
-                CORE::IO::DatFileUtils::read_matching_lines_in_section(
+                Core::IO::DatFileUtils::read_matching_lines_in_section(
                     reader, "FUNCT" + std::to_string(funct_suffix), possible_lines);
 
             // A convoluted way of saying that there are no lines in the section, thus, stop

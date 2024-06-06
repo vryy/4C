@@ -28,7 +28,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
@@ -38,10 +38,10 @@ namespace MAT
     {
      public:
       /// standard constructor
-      FluidPoroMultiPhase(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      FluidPoroMultiPhase(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       /// initialize the material
       virtual void Initialize();
@@ -60,7 +60,7 @@ namespace MAT
       //@}
 
       //! transformation of degrees of freedom to true pressures
-      Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> dof2pres_;
+      Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> dof2pres_;
 
       //! number of constraint saturation phase
       int constraintphaseID_;
@@ -72,14 +72,14 @@ namespace MAT
 
   }  // namespace PAR
 
-  class FluidPoroMultiPhaseType : public CORE::COMM::ParObjectType
+  class FluidPoroMultiPhaseType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "FluidPoroMultiPhaseType"; }
 
     static FluidPoroMultiPhaseType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static FluidPoroMultiPhaseType instance_;
@@ -94,7 +94,7 @@ namespace MAT
     FluidPoroMultiPhase();
 
     /// construct the material object given material parameters
-    explicit FluidPoroMultiPhase(MAT::PAR::FluidPoroMultiPhase* params);
+    explicit FluidPoroMultiPhase(Mat::PAR::FluidPoroMultiPhase* params);
 
     //! @name Packing and Unpacking
 
@@ -119,7 +119,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -138,13 +138,13 @@ namespace MAT
     //@}
 
     /// material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_fluidporo_multiphase;
+      return Core::Materials::m_fluidporo_multiphase;
     }
 
     /// return copy of this material object
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new FluidPoroMultiPhase(*this));
     }
@@ -159,7 +159,7 @@ namespace MAT
     int NumVolFrac() const { return paramsporo_->numvolfrac_; }
 
     /// Return quick accessible material parameter data
-    MAT::PAR::FluidPoroMultiPhase* Parameter() const override { return paramsporo_; }
+    Mat::PAR::FluidPoroMultiPhase* Parameter() const override { return paramsporo_; }
 
     /// initialize the material
     virtual void Initialize();
@@ -185,15 +185,15 @@ namespace MAT
 
     //! evaluate derivative of degree of freedom with respect to pressure
     void evaluate_deriv_of_dof_wrt_pressure(
-        CORE::LINALG::SerialDenseMatrix& derivs, const std::vector<double>& state) const;
+        Core::LinAlg::SerialDenseMatrix& derivs, const std::vector<double>& state) const;
 
     //! evaluate derivative of saturation with respect to pressure
     void evaluate_deriv_of_saturation_wrt_pressure(
-        CORE::LINALG::SerialDenseMatrix& derivs, const std::vector<double>& pressure) const;
+        Core::LinAlg::SerialDenseMatrix& derivs, const std::vector<double>& pressure) const;
 
     //! evaluate second derivative of saturation with respect to pressure
     void evaluate_second_deriv_of_saturation_wrt_pressure(
-        std::vector<CORE::LINALG::SerialDenseMatrix>& derivs,
+        std::vector<Core::LinAlg::SerialDenseMatrix>& derivs,
         const std::vector<double>& pressure) const;
 
    private:
@@ -201,10 +201,10 @@ namespace MAT
     void clear();
 
     /// my material parameters
-    MAT::PAR::FluidPoroMultiPhase* paramsporo_;
+    Mat::PAR::FluidPoroMultiPhase* paramsporo_;
   };
 
-}  // namespace MAT
+}  // namespace Mat
 
 
 FOUR_C_NAMESPACE_CLOSE

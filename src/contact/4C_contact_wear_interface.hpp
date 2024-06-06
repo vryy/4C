@@ -19,7 +19,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace WEAR
+namespace Wear
 {
   class WearInterface : public CONTACT::Interface
   {
@@ -28,7 +28,7 @@ namespace WEAR
     \brief Constructor
 
     */
-    WearInterface(const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData_ptr,
+    WearInterface(const Teuchos::RCP<Mortar::InterfaceDataContainer>& interfaceData_ptr,
         const int id, const Epetra_Comm& comm, const int dim,
         const Teuchos::ParameterList& icontact, bool selfcontact);
 
@@ -36,57 +36,57 @@ namespace WEAR
     \brief Assemble second mortar D matrix for both-sided wear
 
     */
-    virtual void AssembleD2(CORE::LINALG::SparseMatrix& dglobal);
+    virtual void AssembleD2(Core::LinAlg::SparseMatrix& dglobal);
 
     /*!
     \brief Assemble Mortar wear matrices T and E
 
     */
     virtual void AssembleTE(
-        CORE::LINALG::SparseMatrix& tglobal, CORE::LINALG::SparseMatrix& eglobal);
+        Core::LinAlg::SparseMatrix& tglobal, Core::LinAlg::SparseMatrix& eglobal);
 
     /*!
     \brief Assemble Mortar wear matrices T and E (maser side)
 
     */
     virtual void AssembleTE_Master(
-        CORE::LINALG::SparseMatrix& tglobal, CORE::LINALG::SparseMatrix& eglobal);
+        Core::LinAlg::SparseMatrix& tglobal, Core::LinAlg::SparseMatrix& eglobal);
 
     /*!
     \brief Assemble matrices LinT containing linearizations
            w.r.t. displacements
     */
-    virtual void AssembleLinT_D(CORE::LINALG::SparseMatrix& lintglobal);
+    virtual void AssembleLinT_D(Core::LinAlg::SparseMatrix& lintglobal);
 
     /*!
     \brief Assemble matrices LinT containing linearizations
            w.r.t. displacements (for master side)
     */
-    virtual void assemble_lin_t_d_master(CORE::LINALG::SparseMatrix& lintglobal);
+    virtual void assemble_lin_t_d_master(Core::LinAlg::SparseMatrix& lintglobal);
 
     /*!
     \brief Assemble matrices LinT containing linearizations
            w.r.t. LM
     */
-    virtual void AssembleLinT_LM(CORE::LINALG::SparseMatrix& lintglobal);
+    virtual void AssembleLinT_LM(Core::LinAlg::SparseMatrix& lintglobal);
 
     /*!
     \brief Assemble matrices LinT containing linearizations
            w.r.t. LM
     */
-    virtual void assemble_lin_t_lm_master(CORE::LINALG::SparseMatrix& lintglobal);
+    virtual void assemble_lin_t_lm_master(Core::LinAlg::SparseMatrix& lintglobal);
 
     /*!
     \brief Assemble matrices LinE containing linearizations
            w.r.t. displacements
     */
-    virtual void AssembleLinE_D(CORE::LINALG::SparseMatrix& lineglobal);
+    virtual void AssembleLinE_D(Core::LinAlg::SparseMatrix& lineglobal);
 
     /*!
     \brief Assemble matrices LinE containing linearizations
            w.r.t. displacements (for master side)
     */
-    virtual void assemble_lin_e_d_master(CORE::LINALG::SparseMatrix& lineglobal);
+    virtual void assemble_lin_e_d_master(Core::LinAlg::SparseMatrix& lineglobal);
 
     /*!
     \brief Assemble matrix S containing linearizations
@@ -97,13 +97,13 @@ namespace WEAR
     nodal normals and of the Mortar matrices D  and M.
 
     */
-    void AssembleS(CORE::LINALG::SparseMatrix& sglobal) override;
+    void AssembleS(Core::LinAlg::SparseMatrix& sglobal) override;
 
     /*!
     \brief Assemble matrix S containing linearizations w
 
     */
-    virtual void AssembleLinG_W(CORE::LINALG::SparseMatrix& sglobal);
+    virtual void AssembleLinG_W(Core::LinAlg::SparseMatrix& sglobal);
 
     /*!
     \brief Assemble matrix LinStick containing linearizations
@@ -114,8 +114,8 @@ namespace WEAR
     nodal tangents and of the Mortar matrices D  and M.
 
     */
-    void AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLMglobal,
-        CORE::LINALG::SparseMatrix& linstickDISglobal, Epetra_Vector& linstickRHSglobal) override;
+    void AssembleLinStick(Core::LinAlg::SparseMatrix& linstickLMglobal,
+        Core::LinAlg::SparseMatrix& linstickDISglobal, Epetra_Vector& linstickRHSglobal) override;
     /*!
     \brief Assemble matrix LinSlip containing linearizations
 
@@ -125,14 +125,14 @@ namespace WEAR
     nodal tangents and of the Mortar matrices D  and M.
 
     */
-    void AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMglobal,
-        CORE::LINALG::SparseMatrix& linslipDISglobal, Epetra_Vector& linslipRHSglobal) override;
+    void AssembleLinSlip(Core::LinAlg::SparseMatrix& linslipLMglobal,
+        Core::LinAlg::SparseMatrix& linslipDISglobal, Epetra_Vector& linslipRHSglobal) override;
 
     /*!
     \brief Assemble matrix LinSlip containing w linearizations
 
     */
-    virtual void AssembleLinSlip_W(CORE::LINALG::SparseMatrix& linslipWglobal);
+    virtual void AssembleLinSlip_W(Core::LinAlg::SparseMatrix& linslipWglobal);
 
     /*!
     \brief Assemble matrices W containing linearizations
@@ -142,9 +142,9 @@ namespace WEAR
     --> w.r.t. lagr. mult.
 
     */
-    virtual void AssembleLinWLm(CORE::LINALG::SparseMatrix& sglobal);
-    virtual void AssembleLinWLmSl(CORE::LINALG::SparseMatrix& sglobal);
-    virtual void AssembleLinWLmSt(CORE::LINALG::SparseMatrix& sglobal);
+    virtual void AssembleLinWLm(Core::LinAlg::SparseMatrix& sglobal);
+    virtual void AssembleLinWLmSl(Core::LinAlg::SparseMatrix& sglobal);
+    virtual void AssembleLinWLmSt(Core::LinAlg::SparseMatrix& sglobal);
 
     /*!
     \brief Assemble wear w
@@ -197,28 +197,28 @@ namespace WEAR
       --> for wear condition
 
     */
-    void FDCheckDerivT_D(CORE::LINALG::SparseMatrix& lintdis);
+    void FDCheckDerivT_D(Core::LinAlg::SparseMatrix& lintdis);
 
     /*!
     \brief Check mortar wear T derivatives with finite differences
       --> for wear condition (Master)
 
     */
-    void fd_check_deriv_t_d_master(CORE::LINALG::SparseMatrix& lintdis);
+    void fd_check_deriv_t_d_master(Core::LinAlg::SparseMatrix& lintdis);
 
     /*!
     \brief Check mortar wear E derivatives with finite differences
       --> for wear condition
 
     */
-    void FDCheckDerivE_D(CORE::LINALG::SparseMatrix& linedis);
+    void FDCheckDerivE_D(Core::LinAlg::SparseMatrix& linedis);
 
     /*!
     \brief Check mortar wear E derivatives with finite differences
       --> for wear condition (Master)
 
     */
-    void fd_check_deriv_e_d_master(CORE::LINALG::SparseMatrix& linedis);
+    void fd_check_deriv_e_d_master(Core::LinAlg::SparseMatrix& linedis);
     /*!
     \brief Check weighted gap g derivatives with finite differences
 
@@ -249,8 +249,8 @@ namespace WEAR
     \brief Check slip condition derivatives with finite differences
 
     */
-    virtual void FDCheckSlipDeriv(CORE::LINALG::SparseMatrix& linslipLMglobal,
-        CORE::LINALG::SparseMatrix& linslipDISglobal, CORE::LINALG::SparseMatrix& linslipWglobal);
+    virtual void FDCheckSlipDeriv(Core::LinAlg::SparseMatrix& linslipLMglobal,
+        Core::LinAlg::SparseMatrix& linslipDISglobal, Core::LinAlg::SparseMatrix& linslipWglobal);
 
     /*!
     \brief Assemble inactive rhs (incremental delta_w_)
@@ -424,9 +424,9 @@ namespace WEAR
     \brief Get type of wear shapefnct
 
     */
-    INPAR::WEAR::WearShape wear_shape_fcn()
+    Inpar::Wear::WearShape wear_shape_fcn()
     {
-      return CORE::UTILS::IntegralValue<INPAR::WEAR::WearShape>(imortar_, "WEAR_SHAPEFCN");
+      return Core::UTILS::IntegralValue<Inpar::Wear::WearShape>(imortar_, "WEAR_SHAPEFCN");
     }
 
    private:
@@ -464,7 +464,7 @@ namespace WEAR
   };  // class
 
 
-}  // namespace WEAR
+}  // namespace Wear
 
 FOUR_C_NAMESPACE_CLOSE
 

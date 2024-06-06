@@ -24,12 +24,12 @@ transform matrixes, vectors, ...
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class MultiMapExtractor;
   class SparseMatrix;
@@ -37,13 +37,13 @@ namespace CORE::LINALG
   class MatrixColTransform;
   class MatrixRowColTransform;
   class MatrixLogicalSplitAndTransform;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace CORE::ADAPTER
+namespace Core::Adapter
 {
   class Coupling;
   class CouplingConverter;
-}  // namespace CORE::ADAPTER
+}  // namespace Core::Adapter
 
 namespace XFEM
 {
@@ -69,16 +69,16 @@ namespace XFEM
     };
 
     //! constructor
-    explicit CouplingCommManager(std::map<int, Teuchos::RCP<const DRT::Discretization>> dis,
+    explicit CouplingCommManager(std::map<int, Teuchos::RCP<const Discret::Discretization>> dis,
         std::string cond_name, int startdim = 0, int enddim = 3);
 
     //! constructor
-    explicit CouplingCommManager(Teuchos::RCP<const DRT::Discretization> dis0,
+    explicit CouplingCommManager(Teuchos::RCP<const Discret::Discretization> dis0,
         std::string cond_name, int startdim = 0, int enddim = 3);
 
     //! constructor
-    explicit CouplingCommManager(Teuchos::RCP<const DRT::Discretization> dis0,
-        Teuchos::RCP<const DRT::Discretization> dis1, std::string cond_name, int startdim = 0,
+    explicit CouplingCommManager(Teuchos::RCP<const Discret::Discretization> dis0,
+        Teuchos::RCP<const Discret::Discretization> dis1, std::string cond_name, int startdim = 0,
         int enddim = 3);
 
     //! virtual destructor to support polymorph destruction
@@ -105,54 +105,54 @@ namespace XFEM
     bool InsertMatrix(
         int transform_id,  // Unique Id to be set for this transformation object (to be save use
                            // different one, for different matrix transformation)
-        int idxA, const CORE::LINALG::SparseMatrix& matA, int idxB,
-        CORE::LINALG::SparseMatrix& matB, const CouplingCommManager::MatrixTransferType mttype,
+        int idxA, const Core::LinAlg::SparseMatrix& matA, int idxB,
+        Core::LinAlg::SparseMatrix& matB, const CouplingCommManager::MatrixTransferType mttype,
         double scale = 1.0, bool exactmatch = true, bool addmatrix = false);
 
-    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> GetMapExtractor(int idx);
+    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> GetMapExtractor(int idx);
 
    protected:
-    Teuchos::RCP<CORE::ADAPTER::CouplingConverter> get_coupling_converter(int idxA, int idxB);
+    Teuchos::RCP<Core::Adapter::CouplingConverter> get_coupling_converter(int idxA, int idxB);
 
-    Teuchos::RCP<CORE::ADAPTER::Coupling> get_coupling(int idxA, int idxB);
+    Teuchos::RCP<Core::Adapter::Coupling> get_coupling(int idxA, int idxB);
 
-    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> get_full_map_extractor()
+    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> get_full_map_extractor()
     {
       return fullextractor_;
     }
 
-    Teuchos::RCP<CORE::LINALG::MatrixLogicalSplitAndTransform> get_transform(int transform_id);
+    Teuchos::RCP<Core::LinAlg::MatrixLogicalSplitAndTransform> get_transform(int transform_id);
 
     void debug_out(
         std::string str1, std::string str2 = "", std::string str3 = "", std::string str4 = "");
 
    private:
-    void setup(std::map<int, Teuchos::RCP<const DRT::Discretization>> dis);
+    void setup(std::map<int, Teuchos::RCP<const Discret::Discretization>> dis);
 
-    void setup_multi_map_extractors(std::map<int, Teuchos::RCP<const DRT::Discretization>> dis);
+    void setup_multi_map_extractors(std::map<int, Teuchos::RCP<const Discret::Discretization>> dis);
 
-    void setup_full_map_extractors(std::map<int, Teuchos::RCP<const DRT::Discretization>> dis);
+    void setup_full_map_extractors(std::map<int, Teuchos::RCP<const Discret::Discretization>> dis);
 
-    void setup_couplings(std::map<int, Teuchos::RCP<const DRT::Discretization>> dis);
+    void setup_couplings(std::map<int, Teuchos::RCP<const Discret::Discretization>> dis);
 
-    void setup_full_couplings(std::map<int, Teuchos::RCP<const DRT::Discretization>> dis);
+    void setup_full_couplings(std::map<int, Teuchos::RCP<const Discret::Discretization>> dis);
 
-    void setup_full_extractor(std::map<int, Teuchos::RCP<const DRT::Discretization>> dis);
+    void setup_full_extractor(std::map<int, Teuchos::RCP<const Discret::Discretization>> dis);
 
     std::string cond_name_;
     int startdim_;
     int enddim_;
 
     // All MultiMapExtractors
-    std::map<int, Teuchos::RCP<CORE::LINALG::MultiMapExtractor>> mme_;
+    std::map<int, Teuchos::RCP<Core::LinAlg::MultiMapExtractor>> mme_;
 
     // Couling Objects will just be initizalized in case we have more discretizations!
-    std::map<std::pair<int, int>, Teuchos::RCP<CORE::ADAPTER::Coupling>> coup_;
+    std::map<std::pair<int, int>, Teuchos::RCP<Core::Adapter::Coupling>> coup_;
 
     // Transformation Objects will just be initizalized in case we use matrix transformations!
-    std::map<int, Teuchos::RCP<CORE::LINALG::MatrixLogicalSplitAndTransform>> transform_;
+    std::map<int, Teuchos::RCP<Core::LinAlg::MatrixLogicalSplitAndTransform>> transform_;
 
-    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> fullextractor_;
+    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> fullextractor_;
   };
 }  // namespace XFEM
 

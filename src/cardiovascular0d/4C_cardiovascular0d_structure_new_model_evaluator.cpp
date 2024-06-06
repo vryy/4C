@@ -46,7 +46,7 @@ void STR::MODELEVALUATOR::Cardiovascular0D::Setup()
 {
   check_init();
 
-  Teuchos::RCP<DRT::Discretization> dis = discret_ptr();
+  Teuchos::RCP<Discret::Discretization> dis = discret_ptr();
 
   // setup the displacement pointer
   disnp_ptr_ = g_state().GetDisNp();
@@ -54,21 +54,21 @@ void STR::MODELEVALUATOR::Cardiovascular0D::Setup()
   // contributions of 0D model to structural rhs and stiffness
   fstructcardio_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*g_state().DofRowMapView()));
   stiff_cardio_ptr_ =
-      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*g_state().DofRowMapView(), 81, true, true));
+      Teuchos::rcp(new Core::LinAlg::SparseMatrix(*g_state().DofRowMapView(), 81, true, true));
 
   Teuchos::ParameterList solvparams;
-  CORE::UTILS::AddEnumClassToParameterList<CORE::LINEAR_SOLVER::SolverType>(
-      "SOLVER", CORE::LINEAR_SOLVER::SolverType::umfpack, solvparams);
-  Teuchos::RCP<CORE::LINALG::Solver> dummysolver(
-      new CORE::LINALG::Solver(solvparams, disnp_ptr_->Comm()));
+  Core::UTILS::AddEnumClassToParameterList<Core::LinearSolver::SolverType>(
+      "SOLVER", Core::LinearSolver::SolverType::umfpack, solvparams);
+  Teuchos::RCP<Core::LinAlg::Solver> dummysolver(
+      new Core::LinAlg::Solver(solvparams, disnp_ptr_->Comm()));
 
   // ToDo: we do not want to hand in the structural dynamics parameter list
   // to the manager in the future! -> get rid of it as soon as old
   // time-integration dies ...
   // initialize 0D cardiovascular manager
   cardvasc0dman_ = Teuchos::rcp(new UTILS::Cardiovascular0DManager(dis, disnp_ptr_,
-      GLOBAL::Problem::Instance()->structural_dynamic_params(),
-      GLOBAL::Problem::Instance()->cardiovascular0_d_structural_params(), *dummysolver,
+      Global::Problem::Instance()->structural_dynamic_params(),
+      Global::Problem::Instance()->cardiovascular0_d_structural_params(), *dummysolver,
       Teuchos::null));
 
   // set flag
@@ -152,7 +152,7 @@ bool STR::MODELEVALUATOR::Cardiovascular0D::assemble_force(
   Teuchos::RCP<const Epetra_Vector> block_vec_ptr = Teuchos::null;
 
   // assemble and scale with str time-integrator dependent value
-  CORE::LINALG::AssembleMyVector(1.0, f, timefac_np, *fstructcardio_np_ptr_);
+  Core::LinAlg::AssembleMyVector(1.0, f, timefac_np, *fstructcardio_np_ptr_);
 
   // assemble 0D model rhs - already at the generalized mid-point t_{n+theta} !
   block_vec_ptr = cardvasc0dman_->get_cardiovascular0_drhs();
@@ -167,7 +167,7 @@ bool STR::MODELEVALUATOR::Cardiovascular0D::assemble_force(
   const int max_gid = get_block_dof_row_map_ptr()->MaxAllGID();
   // only call when f is the full rhs of the coupled problem (not for structural
   // equilibriate initial state call)
-  if (elements_f == max_gid + 1) CORE::LINALG::AssembleMyVector(1.0, f, 1.0, *block_vec_ptr);
+  if (elements_f == max_gid + 1) Core::LinAlg::AssembleMyVector(1.0, f, 1.0, *block_vec_ptr);
 
   return true;
 }
@@ -175,12 +175,12 @@ bool STR::MODELEVALUATOR::Cardiovascular0D::assemble_force(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::Cardiovascular0D::assemble_jacobian(
-    CORE::LINALG::SparseOperator& jac, const double& timefac_np) const
+    Core::LinAlg::SparseOperator& jac, const double& timefac_np) const
 {
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> block_ptr = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> block_ptr = Teuchos::null;
 
   // --- Kdd - block - scale with str time-integrator dependent value---
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> jac_dd_ptr = GState().ExtractDisplBlock(jac);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> jac_dd_ptr = GState().ExtractDisplBlock(jac);
   jac_dd_ptr->Add(*stiff_cardio_ptr_, false, timefac_np, 1.0);
   // no need to keep it
   stiff_cardio_ptr_->Zero();
@@ -211,7 +211,7 @@ bool STR::MODELEVALUATOR::Cardiovascular0D::assemble_jacobian(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Cardiovascular0D::write_restart(
-    CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
+    Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   iowriter.WriteVector("cv0d_df_np", cardvasc0dman_->Get0D_df_np());
   iowriter.WriteVector("cv0d_f_np", cardvasc0dman_->Get0D_f_np());
@@ -224,7 +224,7 @@ void STR::MODELEVALUATOR::Cardiovascular0D::write_restart(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Cardiovascular0D::read_restart(CORE::IO::DiscretizationReader& ioreader)
+void STR::MODELEVALUATOR::Cardiovascular0D::read_restart(Core::IO::DiscretizationReader& ioreader)
 {
   double time_n = g_state().GetTimeN();
   cardvasc0dman_->read_restart(ioreader, time_n);
@@ -240,7 +240,7 @@ void STR::MODELEVALUATOR::Cardiovascular0D::run_post_compute_x(
   check_init_setup();
 
   Teuchos::RCP<Epetra_Vector> cv0d_incr =
-      g_state().ExtractModelEntries(INPAR::STR::model_cardiovascular0d, dir);
+      g_state().ExtractModelEntries(Inpar::STR::model_cardiovascular0d, dir);
 
   cardvasc0dman_->UpdateCv0DDof(cv0d_incr);
 
@@ -305,7 +305,7 @@ void STR::MODELEVALUATOR::Cardiovascular0D::determine_optional_quantity()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Cardiovascular0D::OutputStepState(
-    CORE::IO::DiscretizationWriter& iowriter) const
+    Core::IO::DiscretizationWriter& iowriter) const
 {
   // nothing to do
   return;

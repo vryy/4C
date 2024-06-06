@@ -16,7 +16,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
@@ -29,7 +29,7 @@ namespace CONTACT
   \brief 4C implementation of main class to control all meshtying
 
   */
-  class MtManager : public MORTAR::ManagerBase
+  class MtManager : public Mortar::ManagerBase
   {
    public:
     //! @name Construction/Destruction
@@ -42,7 +42,7 @@ namespace CONTACT
     two meshtying boundary conditions. It extracts all meshtying boundary conditions
     and constructs one or multiple meshtying interfaces from them and stores them.
 
-    It calls MORTAR::Interface::fill_complete() on all meshtying interfaces which
+    It calls Mortar::Interface::fill_complete() on all meshtying interfaces which
     makes the nodes and elements of a meshtying interfaces redundant on all
     processors that either own a node or an element on the interfaces in the
     input discretization.
@@ -54,7 +54,7 @@ namespace CONTACT
     \param alphaf (in): Generalized-alpha parameter (set to 0.0 by default)
 
     */
-    MtManager(DRT::Discretization& discret, double alphaf = 0.0);
+    MtManager(Discret::Discretization& discret, double alphaf = 0.0);
 
 
 
@@ -72,7 +72,7 @@ namespace CONTACT
     \brief Read and check input parameters
 
     All specified meshtying-related input parameters are read from the
-    GLOBAL::Problem::Instance() and stored into a local variable of
+    Global::Problem::Instance() and stored into a local variable of
     type Teuchos::ParameterList. Invalid parameter combinations are
     sorted out and throw a FOUR_C_THROW.
 
@@ -80,7 +80,8 @@ namespace CONTACT
     \param[in] discret Underlying problem discretization
 
     */
-    bool read_and_check_input(Teuchos::ParameterList& mtparams, const DRT::Discretization& discret);
+    bool read_and_check_input(
+        Teuchos::ParameterList& mtparams, const Discret::Discretization& discret);
 
     /*!
     \brief Write restart information for meshtying
@@ -92,7 +93,7 @@ namespace CONTACT
     \param forcedrestart
 
     */
-    void write_restart(CORE::IO::DiscretizationWriter& output, bool forcedrestart = false) final;
+    void write_restart(Core::IO::DiscretizationWriter& output, bool forcedrestart = false) final;
 
     /*!
     \brief Read restart information for contact
@@ -107,7 +108,7 @@ namespace CONTACT
     \param zero (in)  : global dof zero vector
 
     */
-    void read_restart(CORE::IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis,
+    void read_restart(Core::IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis,
         Teuchos::RCP<Epetra_Vector> zero) final;
 
     /*!
@@ -116,7 +117,7 @@ namespace CONTACT
     \param output (in): IO::discretization writer for restart
 
     */
-    void postprocess_quantities(CORE::IO::DiscretizationWriter& output) final;
+    void postprocess_quantities(Core::IO::DiscretizationWriter& output) final;
 
     //! [derived]
     void postprocess_quantities_per_interface(

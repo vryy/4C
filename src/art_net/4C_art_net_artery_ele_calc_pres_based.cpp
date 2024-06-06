@@ -27,23 +27,23 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::ArteryEleCalcPresBased(
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::ArteryEleCalcPresBased(
     const int numdofpernode, const std::string& disname)
-    : DRT::ELEMENTS::ArteryEleCalc<distype>(numdofpernode, disname)
+    : Discret::ELEMENTS::ArteryEleCalc<distype>(numdofpernode, disname)
 {
 }
 
 /*----------------------------------------------------------------------*
  | singleton access method                                   vuong 08/16 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::ArteryEleCalcPresBased<distype>*
-DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::Instance(
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::ArteryEleCalcPresBased<distype>*
+Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::Instance(
     const int numdofpernode, const std::string& disname)
 {
   using Key = std::pair<std::string, int>;
-  static auto singleton_map = CORE::UTILS::MakeSingletonMap<Key>(
+  static auto singleton_map = Core::UTILS::MakeSingletonMap<Key>(
       [](const int numdofpernode, const std::string& disname)
       {
         return std::unique_ptr<ArteryEleCalcPresBased<distype>>(
@@ -52,26 +52,26 @@ DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::Instance(
 
   std::pair<std::string, int> key(disname, numdofpernode);
 
-  return singleton_map[key].Instance(CORE::UTILS::SingletonAction::create, numdofpernode, disname);
+  return singleton_map[key].Instance(Core::UTILS::SingletonAction::create, numdofpernode, disname);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::Evaluate(Artery* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    CORE::Elements::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec1_epetra,
-    CORE::LINALG::SerialDenseVector& elevec2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec3_epetra, Teuchos::RCP<CORE::MAT::Material> mat)
+template <Core::FE::CellType distype>
+int Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::Evaluate(Artery* ele,
+    Teuchos::ParameterList& params, Discret::Discretization& discretization,
+    Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+    Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec1_epetra,
+    Core::LinAlg::SerialDenseVector& elevec2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec3_epetra, Teuchos::RCP<Core::Mat::Material> mat)
 {
   // the number of nodes
   const int numnode = my::iel_;
 
   // construct views
-  CORE::LINALG::Matrix<numnode, numnode> elemat1(elemat1_epetra.values(), true);
-  CORE::LINALG::Matrix<numnode, 1> elevec1(elevec1_epetra.values(), true);
+  Core::LinAlg::Matrix<numnode, numnode> elemat1(elemat1_epetra.values(), true);
+  Core::LinAlg::Matrix<numnode, 1> elevec1(elevec1_epetra.values(), true);
 
   // ---------------------------------------------------------------------
   // call routine for calculating element matrix and right hand side
@@ -83,19 +83,19 @@ int DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::Evaluate(Artery* ele,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::EvaluateService(Artery* ele,
-    const ARTERY::Action action, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
-    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec1_epetra,
-    CORE::LINALG::SerialDenseVector& elevec2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec3_epetra, Teuchos::RCP<CORE::MAT::Material> mat)
+template <Core::FE::CellType distype>
+int Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::EvaluateService(Artery* ele,
+    const Arteries::Action action, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+    Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec1_epetra,
+    Core::LinAlg::SerialDenseVector& elevec2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec3_epetra, Teuchos::RCP<Core::Mat::Material> mat)
 {
   switch (action)
   {
-    case ARTERY::calc_flow_pressurebased:
+    case Arteries::calc_flow_pressurebased:
       evaluate_flow(ele, discretization, la, elevec1_epetra, mat);
       break;
     default:
@@ -105,14 +105,14 @@ int DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::EvaluateService(Artery* ele,
   return 0;
 }
 
-template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::ScatraEvaluate(Artery* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec1_epetra,
-    CORE::LINALG::SerialDenseVector& elevec2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec3_epetra, Teuchos::RCP<CORE::MAT::Material> mat)
+template <Core::FE::CellType distype>
+int Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::ScatraEvaluate(Artery* ele,
+    Teuchos::ParameterList& params, Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+    Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec1_epetra,
+    Core::LinAlg::SerialDenseVector& elevec2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec3_epetra, Teuchos::RCP<Core::Mat::Material> mat)
 {
   FOUR_C_THROW(
       "not implemented by pressure-based formulation, should be done by cloned "
@@ -123,11 +123,11 @@ int DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::ScatraEvaluate(Artery* ele,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::sysmat(Artery* ele,
-    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
-    CORE::LINALG::Matrix<my::iel_, my::iel_>& sysmat, CORE::LINALG::Matrix<my::iel_, 1>& rhs,
-    Teuchos::RCP<const CORE::MAT::Material> material)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::sysmat(Artery* ele,
+    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::LinAlg::Matrix<my::iel_, my::iel_>& sysmat, Core::LinAlg::Matrix<my::iel_, 1>& rhs,
+    Teuchos::RCP<const Core::Mat::Material> material)
 {
   // clear
   rhs.Clear();
@@ -141,18 +141,18 @@ void DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::sysmat(Artery* ele,
   if (pressnp == Teuchos::null) FOUR_C_THROW("could not get pressure inside artery element");
 
   // extract local values of pressure field from global state vector
-  CORE::LINALG::Matrix<my::iel_, 1> mypress(true);
-  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<my::iel_, 1>>(*pressnp, mypress, la[0].lm_);
+  Core::LinAlg::Matrix<my::iel_, 1> mypress(true);
+  Core::FE::ExtractMyValues<Core::LinAlg::Matrix<my::iel_, 1>>(*pressnp, mypress, la[0].lm_);
 
   // calculate the element length
   const double L = calculate_ele_length(ele, discretization, la);
 
   // check here, if we really have an artery !!
-  if (material->MaterialType() != CORE::Materials::m_cnst_art)
+  if (material->MaterialType() != Core::Materials::m_cnst_art)
     FOUR_C_THROW("Wrong material type for artery");
 
   // cast the material to artery material material
-  const MAT::Cnst1dArt* actmat = static_cast<const MAT::Cnst1dArt*>(material.get());
+  const Mat::Cnst1dArt* actmat = static_cast<const Mat::Cnst1dArt*>(material.get());
 
   if (actmat->IsCollapsed()) return;
 
@@ -163,7 +163,7 @@ void DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::sysmat(Artery* ele,
 
   const double hag_pois = M_PI * pow(diam, 4) / 128.0 / visc;
   // gaussian points
-  const CORE::FE::IntegrationPoints1D intpoints(ele->GaussRule());
+  const Core::FE::IntegrationPoints1D intpoints(ele->GaussRule());
 
   // get Jacobian matrix and determinant
   // actually compute its transpose....
@@ -188,7 +188,7 @@ void DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::sysmat(Artery* ele,
     const double fac = prefac * wgt;
 
     // shape functions and their derivatives
-    CORE::FE::shape_function_1D_deriv1(my::deriv_, xi, distype);
+    Core::FE::shape_function_1D_deriv1(my::deriv_, xi, distype);
 
     for (int inode = 0; inode < numnode; inode++)
       for (int jnode = 0; jnode < numnode; jnode++)
@@ -196,7 +196,7 @@ void DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::sysmat(Artery* ele,
 
     // note: incremental form since rhs-coupling with poromultielastscatra-framework might be
     //       nonlinear
-    CORE::LINALG::Matrix<1, 1> pressgrad;
+    Core::LinAlg::Matrix<1, 1> pressgrad;
     pressgrad.Multiply(my::deriv_, mypress);
     for (int inode = 0; inode < numnode; inode++)
       rhs(inode) -= my::deriv_(0, inode) * fac * pressgrad(0, 0);
@@ -208,28 +208,28 @@ void DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::sysmat(Artery* ele,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::evaluate_flow(Artery* ele,
-    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
-    CORE::LINALG::SerialDenseVector& flowVec, Teuchos::RCP<const CORE::MAT::Material> material)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::evaluate_flow(Artery* ele,
+    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::LinAlg::SerialDenseVector& flowVec, Teuchos::RCP<const Core::Mat::Material> material)
 {
   // get pressure
   Teuchos::RCP<const Epetra_Vector> pressnp = discretization.GetState(0, "pressurenp");
   if (pressnp == Teuchos::null) FOUR_C_THROW("could not get pressure inside artery element");
 
   // extract local values of pressure field from global state vector
-  CORE::LINALG::Matrix<my::iel_, 1> mypress(true);
-  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<my::iel_, 1>>(*pressnp, mypress, la[0].lm_);
+  Core::LinAlg::Matrix<my::iel_, 1> mypress(true);
+  Core::FE::ExtractMyValues<Core::LinAlg::Matrix<my::iel_, 1>>(*pressnp, mypress, la[0].lm_);
 
   // calculate the element length
   const double L = calculate_ele_length(ele, discretization, la);
 
   // check here, if we really have an artery !!
-  if (material->MaterialType() != CORE::Materials::m_cnst_art)
+  if (material->MaterialType() != Core::Materials::m_cnst_art)
     FOUR_C_THROW("Wrong material type for artery");
 
   // cast the material to artery material material
-  const MAT::Cnst1dArt* actmat = static_cast<const MAT::Cnst1dArt*>(material.get());
+  const Mat::Cnst1dArt* actmat = static_cast<const Mat::Cnst1dArt*>(material.get());
 
   // Read in diameter
   const double diam = actmat->Diam();
@@ -246,9 +246,9 @@ void DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::evaluate_flow(Artery* ele,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-double DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::calculate_ele_length(
-    Artery* ele, DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la)
+template <Core::FE::CellType distype>
+double Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::calculate_ele_length(Artery* ele,
+    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la)
 {
   double length;
   // get current element length
@@ -258,7 +258,7 @@ double DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::calculate_ele_length(
         discretization.GetState(1, "curr_seg_lengths");
     std::vector<double> seglengths(la[1].lm_.size());
 
-    CORE::FE::ExtractMyValues(*curr_seg_lengths, seglengths, la[1].lm_);
+    Core::FE::ExtractMyValues(*curr_seg_lengths, seglengths, la[1].lm_);
 
     length = std::accumulate(seglengths.begin(), seglengths.end(), 0.0);
   }
@@ -273,6 +273,6 @@ double DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::calculate_ele_length(
 // template classes
 
 // 1D elements
-template class DRT::ELEMENTS::ArteryEleCalcPresBased<CORE::FE::CellType::line2>;
+template class Discret::ELEMENTS::ArteryEleCalcPresBased<Core::FE::CellType::line2>;
 
 FOUR_C_NAMESPACE_CLOSE

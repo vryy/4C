@@ -24,7 +24,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   /// Split a row map into a set of partial maps and establish the communication pattern back and
   /// forth
@@ -470,7 +470,7 @@ namespace CORE::LINALG
    private:
   };
 
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 FOUR_C_NAMESPACE_CLOSE
 

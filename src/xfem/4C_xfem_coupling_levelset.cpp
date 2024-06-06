@@ -35,10 +35,10 @@ FOUR_C_NAMESPACE_OPEN
 
 
 XFEM::LevelSetCoupling::LevelSetCoupling(
-    Teuchos::RCP<DRT::Discretization>& bg_dis,  ///< background discretization
+    Teuchos::RCP<Discret::Discretization>& bg_dis,  ///< background discretization
     const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                    ///< discretization is identified
-    Teuchos::RCP<DRT::Discretization>&
+    Teuchos::RCP<Discret::Discretization>&
         cond_dis,           ///< full discretization from which the cutter discretization is derived
     const int coupling_id,  ///< id of composite of coupling conditions
     const double time,      ///< time
@@ -110,11 +110,11 @@ void XFEM::LevelSetCoupling::set_cutter_discretization()
   cutter_nds_phi_ = dofset_coupling_map_[dofset_name];  // dofset id for scalar field
 }
 
-// TODO: shift to DRT::Utils...
+// TODO: shift to Discret::Utils...
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-bool XFEM::LevelSetCoupling::HaveMatchingNodes(
-    const Teuchos::RCP<DRT::Discretization>& dis_A, const Teuchos::RCP<DRT::Discretization>& dis_B)
+bool XFEM::LevelSetCoupling::HaveMatchingNodes(const Teuchos::RCP<Discret::Discretization>& dis_A,
+    const Teuchos::RCP<Discret::Discretization>& dis_B)
 {
   // check for equal node row maps
   const Epetra_Map* noderowmap_A = dis_A->NodeRowMap();
@@ -125,22 +125,22 @@ bool XFEM::LevelSetCoupling::HaveMatchingNodes(
   // check for equal node coordinates
   for (int lid = 0; lid < noderowmap_A->NumMyElements(); ++lid)
   {
-    const CORE::Nodes::Node* node_A = dis_A->lRowNode(lid);
-    const CORE::Nodes::Node* node_B = dis_B->lRowNode(lid);
+    const Core::Nodes::Node* node_A = dis_A->lRowNode(lid);
+    const Core::Nodes::Node* node_B = dis_B->lRowNode(lid);
 
     const int nsd = node_A->Dim();
 
-    CORE::LINALG::SerialDenseVector X_A(nsd);
-    CORE::LINALG::SerialDenseVector X_B(nsd);
+    Core::LinAlg::SerialDenseVector X_A(nsd);
+    Core::LinAlg::SerialDenseVector X_B(nsd);
 
     std::copy(node_A->X().data(), node_A->X().data() + nsd, X_A.values());
     std::copy(node_B->X().data(), node_B->X().data() + nsd, X_B.values());
 
-    CORE::LINALG::SerialDenseVector diff(X_A);
+    Core::LinAlg::SerialDenseVector diff(X_A);
     diff.scale(-1.0);
     diff += X_B;
 
-    if (CORE::LINALG::Norm2(diff) > 1e-14) return false;
+    if (Core::LinAlg::Norm2(diff) > 1e-14) return false;
   }
 
   return true;
@@ -165,7 +165,7 @@ void XFEM::LevelSetCoupling::InitStateVectors_Bg()
   // background-dis (fluid) related state vectors
   const Epetra_Map* bg_dofrowmap = bg_dis_->dof_row_map(bg_nds_phi_);
 
-  phinp_ = CORE::LINALG::CreateVector(*bg_dofrowmap, true);
+  phinp_ = Core::LinAlg::CreateVector(*bg_dofrowmap, true);
 }
 
 
@@ -181,12 +181,12 @@ void XFEM::LevelSetCoupling::init_state_vectors_cutter()
   const Epetra_Map* cutter_dofcolmap =
       cutter_dis_->DofColMap(cutter_nds_phi_);  // used for level set field and its derivatives
 
-  cutter_phinp_ = CORE::LINALG::CreateVector(*cutter_dofrowmap, true);
-  cutter_phinp_col_ = CORE::LINALG::CreateVector(*cutter_dofcolmap, true);
-  gradphinp_smoothed_node_ = CORE::LINALG::CreateMultiVector(*cutter_dofrowmap, nsd_, true);
-  gradphinp_smoothed_node_col_ = CORE::LINALG::CreateMultiVector(*cutter_dofcolmap, nsd_, true);
-  curvaturenp_node_ = CORE::LINALG::CreateVector(*cutter_dofrowmap, true);
-  curvaturenp_node_col_ = CORE::LINALG::CreateVector(*cutter_dofcolmap, true);
+  cutter_phinp_ = Core::LinAlg::CreateVector(*cutter_dofrowmap, true);
+  cutter_phinp_col_ = Core::LinAlg::CreateVector(*cutter_dofcolmap, true);
+  gradphinp_smoothed_node_ = Core::LinAlg::CreateMultiVector(*cutter_dofrowmap, nsd_, true);
+  gradphinp_smoothed_node_col_ = Core::LinAlg::CreateMultiVector(*cutter_dofcolmap, nsd_, true);
+  curvaturenp_node_ = Core::LinAlg::CreateVector(*cutter_dofrowmap, true);
+  curvaturenp_node_col_ = Core::LinAlg::CreateVector(*cutter_dofcolmap, true);
 }
 
 
@@ -202,9 +202,9 @@ void XFEM::LevelSetCoupling::prepare_cutter_output()
 
   if (cutter_output_ == Teuchos::null)
   {
-    cutter_dis_->SetWriter(Teuchos::rcp(new CORE::IO::DiscretizationWriter(cutter_dis_,
-        GLOBAL::Problem::Instance()->OutputControlFile(),
-        GLOBAL::Problem::Instance()->spatial_approximation_type())));
+    cutter_dis_->SetWriter(Teuchos::rcp(new Core::IO::DiscretizationWriter(cutter_dis_,
+        Global::Problem::Instance()->OutputControlFile(),
+        Global::Problem::Instance()->spatial_approximation_type())));
   }
 
   bg_output_ = bg_dis_->Writer();
@@ -232,7 +232,7 @@ void XFEM::LevelSetCoupling::set_level_set_boolean_type()
     FOUR_C_THROW(
         "no element condition for LevelSetCouplingBC set. Not possible to extract BOOLEANTYPE!");
 
-  CORE::Conditions::Condition* cond = (cutterele_conds_[0]).second;
+  Core::Conditions::Condition* cond = (cutterele_conds_[0]).second;
   const std::string& booleantype = cond->parameters().Get<std::string>("booleantype");
 
   if (booleantype == "none")
@@ -258,7 +258,7 @@ bool XFEM::LevelSetCoupling::apply_complementary_operator()
     FOUR_C_THROW(
         "no element condition for LevelSetCouplingBC set. Not possible to extract BOOLEANTYPE!");
 
-  CORE::Conditions::Condition* cond = (cutterele_conds_[0]).second;
+  Core::Conditions::Condition* cond = (cutterele_conds_[0]).second;
   bool complementary = (bool)cond->parameters().Get<int>("complementary");
 
   return complementary;
@@ -315,7 +315,7 @@ void XFEM::LevelSetCoupling::GmshOutput(const std::string& filename_base, const 
   std::ostringstream filename_base_fsi;
   filename_base_fsi << filename_base << "_levelset";
 
-  const std::string filename = CORE::IO::GMSH::GetNewFileNameAndDeleteOldFiles(
+  const std::string filename = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles(
       filename_base_fsi.str(), cutter_output_->Output()->FileName(), step, gmsh_step_diff,
       gmsh_debug_out_screen, myrank_);
 
@@ -326,7 +326,7 @@ void XFEM::LevelSetCoupling::GmshOutput(const std::string& filename_base, const 
     gmshfilecontent << "View \" "
                     << "SOLcutter-phi \" {" << std::endl;
     // draw vector field 'force' for every node
-    CORE::IO::GMSH::ScalarFieldDofBasedToGmsh(
+    Core::IO::Gmsh::ScalarFieldDofBasedToGmsh(
         cutter_dis_, cutter_phinp_, cutter_nds_phi_, gmshfilecontent);
     gmshfilecontent << "};" << std::endl;
   }
@@ -335,7 +335,7 @@ void XFEM::LevelSetCoupling::GmshOutput(const std::string& filename_base, const 
     // add 'View' to Gmsh postprocessing file
     gmshfilecontent << "View \" "
                     << "SOLcutter-smoothedgradphi \" {" << std::endl;
-    CORE::IO::GMSH::VectorFieldMultiVectorDofBasedToGmsh(
+    Core::IO::Gmsh::VectorFieldMultiVectorDofBasedToGmsh(
         cutter_dis_, gradphinp_smoothed_node_, gmshfilecontent, cutter_nds_phi_);
     gmshfilecontent << "};" << std::endl;
   }
@@ -352,18 +352,18 @@ void XFEM::LevelSetCoupling::read_restart(const int step, const int lsc_idx)
   //  FOUR_C_THROW is removed.");
 
   //-------- boundary discretization
-  CORE::IO::DiscretizationReader boundaryreader(
-      cutter_dis_, GLOBAL::Problem::Instance()->InputControlFile(), step);
+  Core::IO::DiscretizationReader boundaryreader(
+      cutter_dis_, Global::Problem::Instance()->InputControlFile(), step);
 
   const double time = boundaryreader.ReadDouble("time");
 
   if (myrank_ == 0)
   {
-    CORE::IO::cout
+    Core::IO::cout
         << "            RESTART IS PERFORMED FROM FUNCTION IN INPUT FILE!                  "
-        << CORE::IO::endl;
-    CORE::IO::cout << "read_restart for Level Set Cut in Xfluid (time=" << time
-                   << " ; step=" << step << ")" << CORE::IO::endl;
+        << Core::IO::endl;
+    Core::IO::cout << "read_restart for Level Set Cut in Xfluid (time=" << time
+                   << " ; step=" << step << ")" << Core::IO::endl;
   }
 
   SetLevelSetField(time);
@@ -380,7 +380,7 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
 
   // make a copy of last time step
 
-  Teuchos::RCP<Epetra_Vector> delta_phi = CORE::LINALG::CreateVector(cutter_phinp_->Map(), true);
+  Teuchos::RCP<Epetra_Vector> delta_phi = Core::LinAlg::CreateVector(cutter_phinp_->Map(), true);
   delta_phi->Update(1.0, *cutter_phinp_, 0.0);
 
   // initializations
@@ -390,22 +390,22 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
 
   // get the function from the first element
   const int lid = 0;
-  CORE::Conditions::Condition* cond = cutterele_conds_[lid].second;
+  Core::Conditions::Condition* cond = cutterele_conds_[lid].second;
   const int func_no = cond->parameters().Get<int>("levelsetfieldno");
 
   // loop all nodes on the processor
   for (int lnodeid = 0; lnodeid < cutter_dis_->NumMyRowNodes(); lnodeid++)
   {
     // get the processor's local scatra node
-    CORE::Nodes::Node* lnode = cutter_dis_->lRowNode(lnodeid);
+    Core::Nodes::Node* lnode = cutter_dis_->lRowNode(lnodeid);
 
     // get value
     if (func_no < 0)
       value = funct_implementation(func_no, lnode->X().data(), time);
     else if (func_no >= 1)
     {
-      value = GLOBAL::Problem::Instance()
-                  ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(func_no - 1)
+      value = Global::Problem::Instance()
+                  ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(func_no - 1)
                   .Evaluate(lnode->X().data(), time, 0);
     }
     else
@@ -425,15 +425,15 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
   // TODO: remove this part from this function!!!
 
   // Might make this available for other condition types!
-  const INPAR::XFEM::EleCouplingCondType cond_type = CondType_stringToEnum(cond_name_);
+  const Inpar::XFEM::EleCouplingCondType cond_type = CondType_stringToEnum(cond_name_);
 
-  if (cond_type == INPAR::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP)
+  if (cond_type == Inpar::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP)
   {
     // Do we need smoothed gradients? I.e. what type is it?
     const int val = cutterele_conds_[lid].second->parameters().Get<int>("SURFACE_PROJECTION");
-    projtosurf_ = static_cast<INPAR::XFEM::ProjToSurface>(val);
+    projtosurf_ = static_cast<Inpar::XFEM::ProjToSurface>(val);
 
-    if (projtosurf_ != INPAR::XFEM::Proj_normal)  // and projtosurf_!=INPAR::XFEM::Proj_normal_phi
+    if (projtosurf_ != Inpar::XFEM::Proj_normal)  // and projtosurf_!=Inpar::XFEM::Proj_normal_phi
     {
       // check for potential L2_Projection smoothing
       const int l2_proj_num = (cond->parameters().Get<int>("l2projsolv") + 1);
@@ -463,7 +463,7 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
       for (int lnodeid = 0; lnodeid < numrows; ++lnodeid)
       {
         // get the processor's local node
-        CORE::Nodes::Node* lsnode = cutter_dis_->lRowNode(lnodeid);
+        Core::Nodes::Node* lsnode = cutter_dis_->lRowNode(lnodeid);
         if (lsnode == nullptr) FOUR_C_THROW("Returned node is null-pointer.");
 
         std::vector<int> initialdof =
@@ -492,9 +492,9 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
           ->SetInitialState(0, "pres", modphinp);
 
       // Lives on NodeRow-map!!!
-      const auto& solverparams = GLOBAL::Problem::Instance()->SolverParams(l2_proj_num);
+      const auto& solverparams = Global::Problem::Instance()->SolverParams(l2_proj_num);
       Teuchos::RCP<Epetra_MultiVector> gradphinp_smoothed_rownode =
-          CORE::FE::compute_nodal_l2_projection(cutter_dis_, "pres", 3, eleparams, solverparams);
+          Core::FE::compute_nodal_l2_projection(cutter_dis_, "pres", 3, eleparams, solverparams);
       if (gradphinp_smoothed_rownode == Teuchos::null)
         FOUR_C_THROW("A smoothed grad phi is required, but an empty one is provided!");
 
@@ -511,7 +511,7 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
           }
         }
         // Bring dof_row_map to DofColMap layout (Attention: name is node but lives on dof)
-        CORE::LINALG::Export(*gradphinp_smoothed_node_, *gradphinp_smoothed_node_col_);
+        Core::LinAlg::Export(*gradphinp_smoothed_node_, *gradphinp_smoothed_node_col_);
       }
 
       //---------------------------------------------- // SMOOTHED GRAD PHI END
@@ -532,13 +532,13 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
 }
 
 
-// TODO: generalization in DRT::UTILS???
+// TODO: generalization in Discret::UTILS???
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
 void XFEM::LevelSetCoupling::MapCutterToBgVector(
-    const Teuchos::RCP<DRT::Discretization>& source_dis,
+    const Teuchos::RCP<Discret::Discretization>& source_dis,
     const Teuchos::RCP<Epetra_Vector>& source_vec_dofbased, const int source_nds,
-    const Teuchos::RCP<DRT::Discretization>& target_dis,
+    const Teuchos::RCP<Discret::Discretization>& target_dis,
     const Teuchos::RCP<Epetra_Vector>& target_vec_dofbased, const int target_nds)
 {
   if (HaveMatchingNodes(source_dis, target_dis))  // check for equal node positions
@@ -548,8 +548,8 @@ void XFEM::LevelSetCoupling::MapCutterToBgVector(
     // loop the nodes
     for (int lnodeid = 0; lnodeid < target_dis->NumMyRowNodes(); ++lnodeid)
     {
-      CORE::Nodes::Node* node_source = source_dis->lRowNode(lnodeid);
-      CORE::Nodes::Node* node_target = target_dis->lRowNode(lnodeid);
+      Core::Nodes::Node* node_source = source_dis->lRowNode(lnodeid);
+      Core::Nodes::Node* node_target = target_dis->lRowNode(lnodeid);
 
       // get the set of source dof IDs for this node
       std::vector<int> lm_source;
@@ -565,7 +565,7 @@ void XFEM::LevelSetCoupling::MapCutterToBgVector(
         FOUR_C_THROW("we expect a unique dof per node here!");
 
       std::vector<double> val_source;
-      CORE::FE::ExtractMyValues(*source_vec_dofbased, val_source, lm_source);
+      Core::FE::ExtractMyValues(*source_vec_dofbased, val_source, lm_source);
 
       // set to a dofrowmap based vector!
       const int lid_target = target_vec_dofbased->Map().LID(lm_target[0]);
@@ -582,17 +582,17 @@ void XFEM::LevelSetCoupling::MapCutterToBgVector(
 Teuchos::RCP<Epetra_Vector> XFEM::LevelSetCoupling::get_level_set_field_as_node_row_vector()
 {
   Teuchos::RCP<Epetra_Vector> bg_phinp_nodemap_ =
-      CORE::LINALG::CreateVector(*bg_dis_->NodeRowMap(), true);
+      Core::LinAlg::CreateVector(*bg_dis_->NodeRowMap(), true);
 
   // loop the nodes
   for (int lnodeid = 0; lnodeid < bg_dis_->NumMyRowNodes(); ++lnodeid)
   {
-    CORE::Nodes::Node* node = bg_dis_->lRowNode(lnodeid);
+    Core::Nodes::Node* node = bg_dis_->lRowNode(lnodeid);
     std::vector<int> lm_source;
     bg_dis_->Dof(bg_nds_phi_, node, lm_source);
 
     std::vector<double> val_source;
-    CORE::FE::ExtractMyValues(*phinp_, val_source, lm_source);
+    Core::FE::ExtractMyValues(*phinp_, val_source, lm_source);
 
     if (val_source.size() != 1) FOUR_C_THROW("we expect only one dof");
 
@@ -987,10 +987,10 @@ double XFEM::LevelSetCoupling::funct_implementation(
 // TODO: has_interface_moved_ checks its functionality and there is another flag in meshcoupling i
 // think
 XFEM::LevelSetCouplingBC::LevelSetCouplingBC(
-    Teuchos::RCP<DRT::Discretization>& bg_dis,  ///< background discretization
+    Teuchos::RCP<Discret::Discretization>& bg_dis,  ///< background discretization
     const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                    ///< discretization is identified
-    Teuchos::RCP<DRT::Discretization>&
+    Teuchos::RCP<Discret::Discretization>&
         cond_dis,           ///< full discretization from which the cutter discretization is derived
     const int coupling_id,  ///< id of composite of coupling conditions
     const double time,      ///< time
@@ -1006,7 +1006,7 @@ XFEM::LevelSetCouplingBC::LevelSetCouplingBC(
  *----------------------------------------------------------------------*/
 void XFEM::LevelSetCouplingBC::PrepareSolve()
 {
-  if (myrank_ == 0) CORE::IO::cout << "\t set level-set field, time " << time_ << CORE::IO::endl;
+  if (myrank_ == 0) Core::IO::cout << "\t set level-set field, time " << time_ << Core::IO::endl;
 
   has_interface_moved_ = SetLevelSetField(time_);
   return;
@@ -1019,8 +1019,8 @@ bool XFEM::LevelSetCouplingBC::HasMovingInterface() { return has_interface_moved
 
 
 void XFEM::LevelSetCouplingWeakDirichlet::evaluate_coupling_conditions(
-    CORE::LINALG::Matrix<3, 1>& ivel, CORE::LINALG::Matrix<3, 1>& itraction,
-    const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond)
+    Core::LinAlg::Matrix<3, 1>& ivel, Core::LinAlg::Matrix<3, 1>& itraction,
+    const Core::LinAlg::Matrix<3, 1>& x, const Core::Conditions::Condition* cond)
 {
   // evaluate interface velocity (given by weak Dirichlet condition)
   evaluate_dirichlet_function(ivel, x, cond, time_);
@@ -1031,8 +1031,8 @@ void XFEM::LevelSetCouplingWeakDirichlet::evaluate_coupling_conditions(
 
 // TODO: remove old state implementation?!
 void XFEM::LevelSetCouplingWeakDirichlet::evaluate_coupling_conditions_old_state(
-    CORE::LINALG::Matrix<3, 1>& ivel, CORE::LINALG::Matrix<3, 1>& itraction,
-    const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond)
+    Core::LinAlg::Matrix<3, 1>& ivel, Core::LinAlg::Matrix<3, 1>& itraction,
+    const Core::LinAlg::Matrix<3, 1>& x, const Core::Conditions::Condition* cond)
 {
   // evaluate interface velocity (given by weak Dirichlet condition)
   evaluate_dirichlet_function(ivel, x, cond, time_ - dt_);
@@ -1046,16 +1046,16 @@ void XFEM::LevelSetCouplingWeakDirichlet::evaluate_coupling_conditions_old_state
 void XFEM::LevelSetCouplingWeakDirichlet::setup_configuration_map()
 {
   // Configuration of Consistency Terms
-  configuration_map_[INPAR::XFEM::F_Con_Row] = std::pair<bool, double>(true, 1.0);
-  configuration_map_[INPAR::XFEM::F_Con_Col] = std::pair<bool, double>(true, 1.0);
+  configuration_map_[Inpar::XFEM::F_Con_Row] = std::pair<bool, double>(true, 1.0);
+  configuration_map_[Inpar::XFEM::F_Con_Col] = std::pair<bool, double>(true, 1.0);
 
   // Configuration of Adjount Consistency Terms
-  configuration_map_[INPAR::XFEM::F_Adj_Row] = std::pair<bool, double>(true, 1.0);
-  configuration_map_[INPAR::XFEM::F_Adj_Col] = std::pair<bool, double>(true, 1.0);
+  configuration_map_[Inpar::XFEM::F_Adj_Row] = std::pair<bool, double>(true, 1.0);
+  configuration_map_[Inpar::XFEM::F_Adj_Col] = std::pair<bool, double>(true, 1.0);
 
   // Configuration of Penalty Terms
-  configuration_map_[INPAR::XFEM::F_Pen_Row] = std::pair<bool, double>(true, 1.0);
-  configuration_map_[INPAR::XFEM::F_Pen_Col] = std::pair<bool, double>(true, 1.0);
+  configuration_map_[Inpar::XFEM::F_Pen_Row] = std::pair<bool, double>(true, 1.0);
+  configuration_map_[Inpar::XFEM::F_Pen_Col] = std::pair<bool, double>(true, 1.0);
   return;
 }
 
@@ -1067,19 +1067,19 @@ void XFEM::LevelSetCouplingWeakDirichlet::update_configuration_map_gp(
     double& visc_s,          //< slave sided dynamic viscosity
     double& density_m,       //< master sided density
     double& visc_stab_tang,  //< viscous tangential NIT Penalty scaling
-    double& full_stab, const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond,
-    CORE::Elements::Element* ele,   //< Element
-    CORE::Elements::Element* bele,  //< Boundary Element
+    double& full_stab, const Core::LinAlg::Matrix<3, 1>& x, const Core::Conditions::Condition* cond,
+    Core::Elements::Element* ele,   //< Element
+    Core::Elements::Element* bele,  //< Boundary Element
     double* funct,                  //< local shape function for Gauss Point (from fluid element)
     double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
-    CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
-    CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
-    CORE::LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+    Core::LinAlg::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+    Core::LinAlg::Matrix<3, 1>& normal,     //< normal at gp
+    Core::LinAlg::Matrix<3, 1>& vel_m,      //< master velocity at gp
     double* fulltraction                    //< precomputed fsi traction (sigmaF n + gamma relvel)
 )
 {
   // Configuration of Penalty Terms
-  configuration_map_[INPAR::XFEM::F_Pen_Row].second = full_stab;
+  configuration_map_[Inpar::XFEM::F_Pen_Row].second = full_stab;
 
   return;
 }
@@ -1094,11 +1094,11 @@ void XFEM::LevelSetCouplingNeumann::do_condition_specific_setup()
 
   // Check if Inflow Stabilisation is active
   if (!cutterele_conds_.size()) FOUR_C_THROW("cutterele_conds_.size = 0!");
-  CORE::Conditions::Condition* cond = (cutterele_conds_[0]).second;
+  Core::Conditions::Condition* cond = (cutterele_conds_[0]).second;
   auto inflow_stab = cond->parameters().Get<bool>("InflowStab");
   for (auto& cutterele_cond : cutterele_conds_)
   {
-    CORE::Conditions::Condition* cond = cutterele_cond.second;
+    Core::Conditions::Condition* cond = cutterele_cond.second;
     auto this_inflow = cond->parameters().Get<bool>("InflowStab");
     if (inflow_stab != this_inflow)
       FOUR_C_THROW(
@@ -1121,8 +1121,8 @@ void XFEM::LevelSetCouplingNeumann::setup_configuration_map()
   if (inflow_stab_)
   {
     // Configuration of Penalty Terms
-    configuration_map_[INPAR::XFEM::F_Pen_Col] = std::pair<bool, double>(true, 1.0);
-    configuration_map_[INPAR::XFEM::F_Adj_Col] =
+    configuration_map_[Inpar::XFEM::F_Pen_Col] = std::pair<bool, double>(true, 1.0);
+    configuration_map_[Inpar::XFEM::F_Adj_Col] =
         std::pair<bool, double>(true, 1.0);  //<-- IMPORTANT!: used for the constraint scaling
   }
 }
@@ -1135,14 +1135,14 @@ void XFEM::LevelSetCouplingNeumann::update_configuration_map_gp(
     double& visc_s,          //< slave sided dynamic viscosity
     double& density_m,       //< master sided density
     double& visc_stab_tang,  //< viscous tangential NIT Penalty scaling
-    double& full_stab, const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond,
-    CORE::Elements::Element* ele,   //< Element
-    CORE::Elements::Element* bele,  //< Boundary Element
+    double& full_stab, const Core::LinAlg::Matrix<3, 1>& x, const Core::Conditions::Condition* cond,
+    Core::Elements::Element* ele,   //< Element
+    Core::Elements::Element* bele,  //< Boundary Element
     double* funct,                  //< local shape function for Gauss Point (from fluid element)
     double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
-    CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
-    CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
-    CORE::LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+    Core::LinAlg::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+    Core::LinAlg::Matrix<3, 1>& normal,     //< normal at gp
+    Core::LinAlg::Matrix<3, 1>& vel_m,      //< master velocity at gp
     double* fulltraction                    //< precomputed fsi traction (sigmaF n + gamma relvel)
 )
 {
@@ -1152,20 +1152,20 @@ void XFEM::LevelSetCouplingNeumann::update_configuration_map_gp(
     double veln = normal.Dot(vel_m);  // as the normal is the structural body, inflow is positive
     if (veln < 0)
     {
-      configuration_map_[INPAR::XFEM::F_Pen_Row] = std::pair<bool, double>(true, -density_m * veln);
-      configuration_map_[INPAR::XFEM::F_Pen_Row_linF1] =
+      configuration_map_[Inpar::XFEM::F_Pen_Row] = std::pair<bool, double>(true, -density_m * veln);
+      configuration_map_[Inpar::XFEM::F_Pen_Row_linF1] =
           std::pair<bool, double>(true, -density_m * normal(0));
-      configuration_map_[INPAR::XFEM::F_Pen_Row_linF2] =
+      configuration_map_[Inpar::XFEM::F_Pen_Row_linF2] =
           std::pair<bool, double>(true, -density_m * normal(1));
-      configuration_map_[INPAR::XFEM::F_Pen_Row_linF3] =
+      configuration_map_[Inpar::XFEM::F_Pen_Row_linF3] =
           std::pair<bool, double>(true, -density_m * normal(2));
     }
     else
     {
-      configuration_map_[INPAR::XFEM::F_Pen_Row] = std::pair<bool, double>(false, 0);
-      configuration_map_[INPAR::XFEM::F_Pen_Row_linF1] = std::pair<bool, double>(false, 0);
-      configuration_map_[INPAR::XFEM::F_Pen_Row_linF2] = std::pair<bool, double>(false, 0);
-      configuration_map_[INPAR::XFEM::F_Pen_Row_linF3] = std::pair<bool, double>(false, 0);
+      configuration_map_[Inpar::XFEM::F_Pen_Row] = std::pair<bool, double>(false, 0);
+      configuration_map_[Inpar::XFEM::F_Pen_Row_linF1] = std::pair<bool, double>(false, 0);
+      configuration_map_[Inpar::XFEM::F_Pen_Row_linF2] = std::pair<bool, double>(false, 0);
+      configuration_map_[Inpar::XFEM::F_Pen_Row_linF3] = std::pair<bool, double>(false, 0);
     }
   }
 
@@ -1174,9 +1174,9 @@ void XFEM::LevelSetCouplingNeumann::update_configuration_map_gp(
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::LevelSetCouplingNeumann::evaluate_coupling_conditions(CORE::LINALG::Matrix<3, 1>& ivel,
-    CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
-    const CORE::Conditions::Condition* cond)
+void XFEM::LevelSetCouplingNeumann::evaluate_coupling_conditions(Core::LinAlg::Matrix<3, 1>& ivel,
+    Core::LinAlg::Matrix<3, 1>& itraction, const Core::LinAlg::Matrix<3, 1>& x,
+    const Core::Conditions::Condition* cond)
 {
   // no interface velocity to be evaluated
   ivel.Clear();
@@ -1187,9 +1187,9 @@ void XFEM::LevelSetCouplingNeumann::evaluate_coupling_conditions(CORE::LINALG::M
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::LevelSetCouplingNeumann::evaluate_coupling_conditions(CORE::LINALG::Matrix<3, 1>& ivel,
-    CORE::LINALG::Matrix<6, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
-    const CORE::Conditions::Condition* cond)
+void XFEM::LevelSetCouplingNeumann::evaluate_coupling_conditions(Core::LinAlg::Matrix<3, 1>& ivel,
+    Core::LinAlg::Matrix<6, 1>& itraction, const Core::LinAlg::Matrix<3, 1>& x,
+    const Core::Conditions::Condition* cond)
 {
   // no interface velocity to be evaluated
   ivel.Clear();
@@ -1202,8 +1202,8 @@ void XFEM::LevelSetCouplingNeumann::evaluate_coupling_conditions(CORE::LINALG::M
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 void XFEM::LevelSetCouplingNeumann::evaluate_coupling_conditions_old_state(
-    CORE::LINALG::Matrix<3, 1>& ivel, CORE::LINALG::Matrix<3, 1>& itraction,
-    const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond)
+    Core::LinAlg::Matrix<3, 1>& ivel, Core::LinAlg::Matrix<3, 1>& itraction,
+    const Core::LinAlg::Matrix<3, 1>& x, const Core::Conditions::Condition* cond)
 {
   // no interface velocity to be evaluated
   ivel.Clear();
@@ -1218,10 +1218,10 @@ void XFEM::LevelSetCouplingNeumann::evaluate_coupling_conditions_old_state(
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 XFEM::LevelSetCouplingNavierSlip::LevelSetCouplingNavierSlip(
-    Teuchos::RCP<DRT::Discretization>& bg_dis,  ///< background discretization
+    Teuchos::RCP<Discret::Discretization>& bg_dis,  ///< background discretization
     const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                    ///< discretization is identified
-    Teuchos::RCP<DRT::Discretization>&
+    Teuchos::RCP<Discret::Discretization>&
         cond_dis,           ///< full discretization from which the cutter discretization is derived
     const int coupling_id,  ///< id of composite of coupling conditions
     const double time,      ///< time
@@ -1239,7 +1239,7 @@ void XFEM::LevelSetCouplingNavierSlip::set_element_conditions()
 
   if (cutterele_conds_.size() == 0) FOUR_C_THROW("call set_element_conditions() first!");
 
-  CORE::Conditions::Condition* cond = cutterele_conds_[0].second;  // get condition of first element
+  Core::Conditions::Condition* cond = cutterele_conds_[0].second;  // get condition of first element
 
   // Get robin coupling IDs
   robin_dirichlet_id_ = cond->parameters().Get<int>("robin_id_dirch");
@@ -1275,7 +1275,7 @@ void XFEM::LevelSetCouplingNavierSlip::set_element_conditions()
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 void XFEM::LevelSetCouplingNavierSlip::set_element_specific_conditions(
-    std::vector<CORE::Conditions::Condition*>& cutterele_cond, const std::string& cond_name,
+    std::vector<Core::Conditions::Condition*>& cutterele_cond, const std::string& cond_name,
     const int& robin_id)
 {
   // TODO: can we combine this function with set_element_conditions in the coupling base routine!
@@ -1287,23 +1287,23 @@ void XFEM::LevelSetCouplingNavierSlip::set_element_specific_conditions(
   cutterele_cond.reserve(nummycolele);
 
   //// initialize the vector invalid coupling-condition type "NONE"
-  // EleCoupCond init_pair = EleCoupCond(INPAR::XFEM::CouplingCond_NONE,nullptr);
+  // EleCoupCond init_pair = EleCoupCond(Inpar::XFEM::CouplingCond_NONE,nullptr);
   for (int lid = 0; lid < nummycolele; ++lid) cutterele_cond.push_back(nullptr);
 
   //-----------------------------------------------------------------------------------
   // loop all column cutting elements on this processor
   for (int lid = 0; lid < nummycolele; ++lid)
   {
-    CORE::Elements::Element* cutele = cutter_dis_->lColElement(lid);
+    Core::Elements::Element* cutele = cutter_dis_->lColElement(lid);
 
     // get all conditions with given condition name
-    std::vector<CORE::Conditions::Condition*> mycond;
-    CORE::Conditions::FindElementConditions(cutele, cond_name, mycond);
+    std::vector<Core::Conditions::Condition*> mycond;
+    Core::Conditions::FindElementConditions(cutele, cond_name, mycond);
 
-    std::vector<CORE::Conditions::Condition*> mynewcond;
+    std::vector<Core::Conditions::Condition*> mynewcond;
     get_condition_by_robin_id(mycond, robin_id, mynewcond);
 
-    CORE::Conditions::Condition* cond_unique = nullptr;
+    Core::Conditions::Condition* cond_unique = nullptr;
 
     // safety checks
     if (mynewcond.size() != 1)
@@ -1334,8 +1334,8 @@ void XFEM::LevelSetCouplingNavierSlip::set_element_specific_conditions(
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 void XFEM::LevelSetCouplingNavierSlip::evaluate_coupling_conditions(
-    CORE::LINALG::Matrix<3, 1>& ivel, CORE::LINALG::Matrix<3, 1>& itraction,
-    const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond)
+    Core::LinAlg::Matrix<3, 1>& ivel, Core::LinAlg::Matrix<3, 1>& itraction,
+    const Core::LinAlg::Matrix<3, 1>& x, const Core::Conditions::Condition* cond)
 {
   if (cutterele_cond_robin_dirichlet_.size() == 0)
     FOUR_C_THROW("initialize cutterele_cond_robin_dirichlet_ first!");
@@ -1356,8 +1356,8 @@ void XFEM::LevelSetCouplingNavierSlip::evaluate_coupling_conditions(
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 void XFEM::LevelSetCouplingNavierSlip::evaluate_coupling_conditions_old_state(
-    CORE::LINALG::Matrix<3, 1>& ivel, CORE::LINALG::Matrix<3, 1>& itraction,
-    const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond)
+    Core::LinAlg::Matrix<3, 1>& ivel, Core::LinAlg::Matrix<3, 1>& itraction,
+    const Core::LinAlg::Matrix<3, 1>& x, const Core::Conditions::Condition* cond)
 {
   if (cutterele_cond_robin_dirichlet_.size() == 0)
     FOUR_C_THROW("initialize cutterele_cond_robin_dirichlet_ first!");
@@ -1378,7 +1378,7 @@ void XFEM::LevelSetCouplingNavierSlip::evaluate_coupling_conditions_old_state(
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 void XFEM::LevelSetCouplingNavierSlip::GetSlipCoefficient(
-    double& slipcoeff, const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond)
+    double& slipcoeff, const Core::LinAlg::Matrix<3, 1>& x, const Core::Conditions::Condition* cond)
 {
   if (is_constant_sliplength_)
     slipcoeff = sliplength_;
@@ -1392,7 +1392,7 @@ void XFEM::LevelSetCouplingNavierSlip::set_condition_specific_parameters()
 {
   if (cutterele_conds_.size() == 0) FOUR_C_THROW("call set_element_conditions() first!");
 
-  CORE::Conditions::Condition* cond = cutterele_conds_[0].second;  // get condition of first element
+  Core::Conditions::Condition* cond = cutterele_conds_[0].second;  // get condition of first element
 
   // Get the scaling factor for the slip length
   sliplength_ = cond->parameters().Get<double>("slipcoeff");
@@ -1413,15 +1413,15 @@ void XFEM::LevelSetCouplingNavierSlip::set_condition_specific_parameters()
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 void XFEM::LevelSetCouplingNavierSlip::get_condition_by_robin_id(
-    const std::vector<CORE::Conditions::Condition*>& mycond, const int coupling_id,
-    std::vector<CORE::Conditions::Condition*>& mynewcond)
+    const std::vector<Core::Conditions::Condition*>& mycond, const int coupling_id,
+    std::vector<Core::Conditions::Condition*>& mynewcond)
 {
   mynewcond.clear();
 
   // select the conditions with specified "couplingID"
   for (size_t i = 0; i < mycond.size(); ++i)
   {
-    CORE::Conditions::Condition* cond = mycond[i];
+    Core::Conditions::Condition* cond = mycond[i];
     const int id = cond->parameters().Get<int>("robin_id");
 
     if (id == coupling_id) mynewcond.push_back(cond);
@@ -1432,28 +1432,28 @@ void XFEM::LevelSetCouplingNavierSlip::get_condition_by_robin_id(
  *--------------------------------------------------------------------------*/
 void XFEM::LevelSetCouplingNavierSlip::setup_configuration_map()
 {
-  if (get_averaging_strategy() == INPAR::XFEM::Xfluid_Sided)
+  if (get_averaging_strategy() == Inpar::XFEM::Xfluid_Sided)
   {
     // Configuration of Consistency Terms
-    configuration_map_[INPAR::XFEM::F_Con_Row] = std::pair<bool, double>(true, 1.0);
-    configuration_map_[INPAR::XFEM::F_Con_Col] = std::pair<bool, double>(true, 1.0);
-    configuration_map_[INPAR::XFEM::F_Con_t_Row] = std::pair<bool, double>(true, 1.0);
-    configuration_map_[INPAR::XFEM::F_Con_t_Col] = std::pair<bool, double>(true, 1.0);
+    configuration_map_[Inpar::XFEM::F_Con_Row] = std::pair<bool, double>(true, 1.0);
+    configuration_map_[Inpar::XFEM::F_Con_Col] = std::pair<bool, double>(true, 1.0);
+    configuration_map_[Inpar::XFEM::F_Con_t_Row] = std::pair<bool, double>(true, 1.0);
+    configuration_map_[Inpar::XFEM::F_Con_t_Col] = std::pair<bool, double>(true, 1.0);
 
     // Configuration of Adjount Consistency Terms
-    configuration_map_[INPAR::XFEM::F_Adj_n_Row] = std::pair<bool, double>(true, 1.0);
-    configuration_map_[INPAR::XFEM::F_Adj_n_Col] = std::pair<bool, double>(true, 1.0);
-    configuration_map_[INPAR::XFEM::F_Adj_t_Row] = std::pair<bool, double>(true, 1.0);
-    configuration_map_[INPAR::XFEM::F_Adj_t_Col] = std::pair<bool, double>(true, 1.0);
-    configuration_map_[INPAR::XFEM::FStr_Adj_t_Col] = std::pair<bool, double>(true, 1.0);
+    configuration_map_[Inpar::XFEM::F_Adj_n_Row] = std::pair<bool, double>(true, 1.0);
+    configuration_map_[Inpar::XFEM::F_Adj_n_Col] = std::pair<bool, double>(true, 1.0);
+    configuration_map_[Inpar::XFEM::F_Adj_t_Row] = std::pair<bool, double>(true, 1.0);
+    configuration_map_[Inpar::XFEM::F_Adj_t_Col] = std::pair<bool, double>(true, 1.0);
+    configuration_map_[Inpar::XFEM::FStr_Adj_t_Col] = std::pair<bool, double>(true, 1.0);
 
     // Configuration of Penalty Terms
-    configuration_map_[INPAR::XFEM::F_Pen_n_Row] = std::pair<bool, double>(true, 1.0);
-    configuration_map_[INPAR::XFEM::F_Pen_n_Col] = std::pair<bool, double>(true, 1.0);
-    configuration_map_[INPAR::XFEM::F_Pen_t_Row] = std::pair<bool, double>(true, 1.0);
-    configuration_map_[INPAR::XFEM::F_Pen_t_Col] = std::pair<bool, double>(true, 1.0);
+    configuration_map_[Inpar::XFEM::F_Pen_n_Row] = std::pair<bool, double>(true, 1.0);
+    configuration_map_[Inpar::XFEM::F_Pen_n_Col] = std::pair<bool, double>(true, 1.0);
+    configuration_map_[Inpar::XFEM::F_Pen_t_Row] = std::pair<bool, double>(true, 1.0);
+    configuration_map_[Inpar::XFEM::F_Pen_t_Col] = std::pair<bool, double>(true, 1.0);
   }
-  else if (get_averaging_strategy() == INPAR::XFEM::invalid)
+  else if (get_averaging_strategy() == Inpar::XFEM::invalid)
     FOUR_C_THROW("XFEM::LevelSetCouplingNavierSlip: Averaging Strategy not set!");
   else
     FOUR_C_THROW(
@@ -1470,14 +1470,14 @@ void XFEM::LevelSetCouplingNavierSlip::update_configuration_map_gp(
     double& visc_s,          //< slave sided dynamic viscosity
     double& density_m,       //< master sided density
     double& visc_stab_tang,  //< viscous tangential NIT Penalty scaling
-    double& full_stab, const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond,
-    CORE::Elements::Element* ele,   //< Element
-    CORE::Elements::Element* bele,  //< Boundary Element
+    double& full_stab, const Core::LinAlg::Matrix<3, 1>& x, const Core::Conditions::Condition* cond,
+    Core::Elements::Element* ele,   //< Element
+    Core::Elements::Element* bele,  //< Boundary Element
     double* funct,                  //< local shape function for Gauss Point (from fluid element)
     double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
-    CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
-    CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
-    CORE::LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+    Core::LinAlg::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+    Core::LinAlg::Matrix<3, 1>& normal,     //< normal at gp
+    Core::LinAlg::Matrix<3, 1>& vel_m,      //< master velocity at gp
     double* fulltraction                    //< precomputed fsi traction (sigmaF n + gamma relvel)
 )
 {
@@ -1493,25 +1493,25 @@ void XFEM::LevelSetCouplingNavierSlip::update_configuration_map_gp(
     double stabadj = 0.0;
     XFEM::UTILS::GetNavierSlipStabilizationParameters(
         visc_stab_tang, dynvisc, sliplength, stabnit, stabadj);
-    configuration_map_[INPAR::XFEM::F_Pen_t_Row].second = stabnit;
-    configuration_map_[INPAR::XFEM::F_Con_t_Row] =
+    configuration_map_[Inpar::XFEM::F_Pen_t_Row].second = stabnit;
+    configuration_map_[Inpar::XFEM::F_Con_t_Row] =
         std::pair<bool, double>(true, -stabnit);  //+sign for penalty!
-    configuration_map_[INPAR::XFEM::F_Con_t_Col] =
+    configuration_map_[Inpar::XFEM::F_Con_t_Col] =
         std::pair<bool, double>(true, sliplength / dynvisc);
-    configuration_map_[INPAR::XFEM::F_Adj_t_Row].second = stabadj;
-    configuration_map_[INPAR::XFEM::FStr_Adj_t_Col] = std::pair<bool, double>(true, sliplength);
+    configuration_map_[Inpar::XFEM::F_Adj_t_Row].second = stabadj;
+    configuration_map_[Inpar::XFEM::FStr_Adj_t_Col] = std::pair<bool, double>(true, sliplength);
   }
   else
   {
-    configuration_map_[INPAR::XFEM::F_Pen_t_Row].second = visc_stab_tang;
-    configuration_map_[INPAR::XFEM::F_Con_t_Row] = std::pair<bool, double>(false, 0.0);
-    configuration_map_[INPAR::XFEM::F_Con_t_Col] = std::pair<bool, double>(false, 0.0);
-    configuration_map_[INPAR::XFEM::F_Adj_t_Row].second = 1.0;
-    configuration_map_[INPAR::XFEM::FStr_Adj_t_Col] = std::pair<bool, double>(false, 0.0);
+    configuration_map_[Inpar::XFEM::F_Pen_t_Row].second = visc_stab_tang;
+    configuration_map_[Inpar::XFEM::F_Con_t_Row] = std::pair<bool, double>(false, 0.0);
+    configuration_map_[Inpar::XFEM::F_Con_t_Col] = std::pair<bool, double>(false, 0.0);
+    configuration_map_[Inpar::XFEM::F_Adj_t_Row].second = 1.0;
+    configuration_map_[Inpar::XFEM::FStr_Adj_t_Col] = std::pair<bool, double>(false, 0.0);
   }
 
   // Configuration of Penalty Terms
-  configuration_map_[INPAR::XFEM::F_Pen_n_Row].second =
+  configuration_map_[Inpar::XFEM::F_Pen_n_Row].second =
       visc_stab_tang;  // full_stab <-- to keep results!
 
   return;

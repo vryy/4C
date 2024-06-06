@@ -29,13 +29,13 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace CORE::GEO
+namespace Core::Geo
 {
-  namespace MESHFREE
+  namespace MeshFree
   {
     class BoundingBox;
   }
-}  // namespace CORE::GEO
+}  // namespace Core::Geo
 // forward declaration
 namespace BROWNIANDYN
 {
@@ -87,7 +87,7 @@ namespace STR
 
     /*! \brief Parameter interface for the structural elements and the STR::Integrator data exchange
      *
-     *  This class is a special case of the CORE::Elements::ParamsInterface class and gives you all
+     *  This class is a special case of the Core::Elements::ParamsInterface class and gives you all
      * the basic function definitions which you can use to get access to the STR::Integrator and
      * many more objects. Please consider to derive a special interface class, if you need special
      * parameters inside of your element. Keep the Evaluate call untouched and cast the interface
@@ -98,14 +98,14 @@ namespace STR
      *
      *  \date 03/2016
      *  \author hiermeier */
-    class ParamsInterface : public CORE::Elements::ParamsInterface
+    class ParamsInterface : public Core::Elements::ParamsInterface
     {
      public:
       //! return the damping type
-      virtual enum INPAR::STR::DampKind GetDampingType() const = 0;
+      virtual enum Inpar::STR::DampKind GetDampingType() const = 0;
 
       //! return the predictor type
-      virtual enum INPAR::STR::PredEnum GetPredictorType() const = 0;
+      virtual enum Inpar::STR::PredEnum GetPredictorType() const = 0;
 
       /// Shall errors during the element evaluation be tolerated?
       virtual bool IsTolerateErrors() const = 0;
@@ -167,16 +167,16 @@ namespace STR
       virtual Teuchos::RCP<std::vector<char>>& OptQuantityDataPtr() = 0;
 
       //! get the current stress type
-      virtual enum INPAR::STR::StressType GetStressOutputType() const = 0;
+      virtual enum Inpar::STR::StressType GetStressOutputType() const = 0;
 
       //! get the current strain type
-      virtual enum INPAR::STR::StrainType GetStrainOutputType() const = 0;
+      virtual enum Inpar::STR::StrainType GetStrainOutputType() const = 0;
 
       //! get the current plastic strain type
-      virtual enum INPAR::STR::StrainType get_plastic_strain_output_type() const = 0;
+      virtual enum Inpar::STR::StrainType get_plastic_strain_output_type() const = 0;
 
       //! get the current coupling stress type
-      virtual enum INPAR::STR::StressType get_coupling_stress_output_type() const = 0;
+      virtual enum Inpar::STR::StressType get_coupling_stress_output_type() const = 0;
 
       virtual Teuchos::RCP<MODELEVALUATOR::GaussPointDataOutputManager>&
       gauss_point_data_output_manager_ptr() = 0;
@@ -185,14 +185,14 @@ namespace STR
       virtual void add_contribution_to_energy_type(double value, enum STR::EnergyType type) = 0;
 
       //! add the current partial update norm of the given quantity
-      virtual void SumIntoMyUpdateNorm(const enum NOX::NLN::StatusTest::QuantityType& qtype,
+      virtual void SumIntoMyUpdateNorm(const enum NOX::Nln::StatusTest::QuantityType& qtype,
           const int& numentries, const double* my_update_values, const double* my_new_sol_values,
           const double& step_length, const int& owner) = 0;
 
       /*! collects and calculates the solution norm of the previous accepted Newton
        *  step on the current proc */
       virtual void sum_into_my_previous_sol_norm(
-          const enum NOX::NLN::StatusTest::QuantityType& qtype, const int& numentries,
+          const enum NOX::Nln::StatusTest::QuantityType& qtype, const int& numentries,
           const double* my_old_values, const int& owner) = 0;
       //! @}
     };  // class ParamsInterface
@@ -233,7 +233,7 @@ namespace BROWNIANDYN
     virtual double const& GetViscosity() const = 0;
 
     /// the way how damping coefficient values for beams are specified
-    virtual INPAR::BROWNIANDYN::BeamDampingCoefficientSpecificationType
+    virtual Inpar::BROWNIANDYN::BeamDampingCoefficientSpecificationType
     how_beam_damping_coefficients_are_specified() const = 0;
 
     /// get prefactors for damping coefficients of beams if they are specified via input file
@@ -241,7 +241,7 @@ namespace BROWNIANDYN
         const = 0;
 
     //! get vector holding periodic bounding box object
-    virtual Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> const& get_periodic_bounding_box()
+    virtual Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> const& get_periodic_bounding_box()
         const = 0;
 
     //! get the current step length

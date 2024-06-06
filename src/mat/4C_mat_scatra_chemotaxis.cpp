@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::ScatraChemotaxisMat::ScatraChemotaxisMat(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::ScatraChemotaxisMat::ScatraChemotaxisMat(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : Parameter(matdata),
       numscal_(matdata->Get<int>("NUMSCAL")),
       pair_(matdata->Get<std::vector<int>>("PAIR")),
@@ -50,18 +50,18 @@ MAT::PAR::ScatraChemotaxisMat::ScatraChemotaxisMat(Teuchos::RCP<CORE::MAT::PAR::
 }
 
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ScatraChemotaxisMat::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::ScatraChemotaxisMat::create_material()
 {
-  return Teuchos::rcp(new MAT::ScatraChemotaxisMat(this));
+  return Teuchos::rcp(new Mat::ScatraChemotaxisMat(this));
 }
 
 
-MAT::ScatraChemotaxisMatType MAT::ScatraChemotaxisMatType::instance_;
+Mat::ScatraChemotaxisMatType Mat::ScatraChemotaxisMatType::instance_;
 
 
-CORE::COMM::ParObject* MAT::ScatraChemotaxisMatType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::ScatraChemotaxisMatType::Create(const std::vector<char>& data)
 {
-  MAT::ScatraChemotaxisMat* scatra_chemotaxis_mat = new MAT::ScatraChemotaxisMat();
+  Mat::ScatraChemotaxisMat* scatra_chemotaxis_mat = new Mat::ScatraChemotaxisMat();
   scatra_chemotaxis_mat->Unpack(data);
   return scatra_chemotaxis_mat;
 }
@@ -69,12 +69,12 @@ CORE::COMM::ParObject* MAT::ScatraChemotaxisMatType::Create(const std::vector<ch
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::ScatraChemotaxisMat::ScatraChemotaxisMat() : params_(nullptr) {}
+Mat::ScatraChemotaxisMat::ScatraChemotaxisMat() : params_(nullptr) {}
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::ScatraChemotaxisMat::ScatraChemotaxisMat(MAT::PAR::ScatraChemotaxisMat* params)
+Mat::ScatraChemotaxisMat::ScatraChemotaxisMat(Mat::PAR::ScatraChemotaxisMat* params)
     : params_(params)
 {
 }
@@ -82,9 +82,9 @@ MAT::ScatraChemotaxisMat::ScatraChemotaxisMat(MAT::PAR::ScatraChemotaxisMat* par
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ScatraChemotaxisMat::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::ScatraChemotaxisMat::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -100,24 +100,24 @@ void MAT::ScatraChemotaxisMat::Pack(CORE::COMM::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ScatraChemotaxisMat::Unpack(const std::vector<char>& data)
+void Mat::ScatraChemotaxisMat::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::ScatraChemotaxisMat*>(mat);
+        params_ = static_cast<Mat::PAR::ScatraChemotaxisMat*>(mat);
       else
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());

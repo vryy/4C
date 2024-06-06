@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 /* belongs to structural dynamics namespace */
 namespace STR
 {
-  namespace AUX
+  namespace Aux
   {
     class MapExtractor;
   }
@@ -50,10 +50,10 @@ namespace STR
         const Teuchos::ParameterList& ioparams,              //!< ioflags
         const Teuchos::ParameterList& sdynparams,            //!< input parameters
         const Teuchos::ParameterList& xparams,               //!< extra flags
-        Teuchos::RCP<DRT::Discretization> actdis,            //!< current discretisation
-        Teuchos::RCP<CORE::LINALG::Solver> solver,           //!< the solver
-        Teuchos::RCP<CORE::LINALG::Solver> contactsolver,    //!< the solver for contact meshtying
-        Teuchos::RCP<CORE::IO::DiscretizationWriter> output  //!< the output
+        Teuchos::RCP<Discret::Discretization> actdis,        //!< current discretisation
+        Teuchos::RCP<Core::LinAlg::Solver> solver,           //!< the solver
+        Teuchos::RCP<Core::LinAlg::Solver> contactsolver,    //!< the solver for contact meshtying
+        Teuchos::RCP<Core::IO::DiscretizationWriter> output  //!< the output
     );
 
 
@@ -82,8 +82,8 @@ namespace STR
     \date 08/16
     \author rauch  */
     void Init(const Teuchos::ParameterList& timeparams, const Teuchos::ParameterList& sdynparams,
-        const Teuchos::ParameterList& xparams, Teuchos::RCP<DRT::Discretization> actdis,
-        Teuchos::RCP<CORE::LINALG::Solver> solver) override;
+        const Teuchos::ParameterList& xparams, Teuchos::RCP<Discret::Discretization> actdis,
+        Teuchos::RCP<Core::LinAlg::Solver> solver) override;
 
     /*! \brief Setup all class internal objects and members
 
@@ -158,7 +158,7 @@ namespace STR
     //@{
 
     //! Return time integrator name
-    enum INPAR::STR::DynamicType MethodName() const override = 0;
+    enum Inpar::STR::DynamicType MethodName() const override = 0;
 
     //! These time integrators are all explicit (mark their name)
     bool MethodImplicit() override { return false; }
@@ -201,7 +201,7 @@ namespace STR
     void ReadRestartForce() override = 0;
 
     //! Write internal and external forces for restart
-    void WriteRestartForce(Teuchos::RCP<CORE::IO::DiscretizationWriter> output) override = 0;
+    void WriteRestartForce(Teuchos::RCP<Core::IO::DiscretizationWriter> output) override = 0;
 
     //! initial_guess is not available for explicit time integrators
     Teuchos::RCP<const Epetra_Vector> initial_guess() override
@@ -341,14 +341,14 @@ namespace STR
     };
 
     //! Get type of thickness scaling for thin shell structures
-    INPAR::STR::StcScale GetSTCAlgo() override
+    Inpar::STR::StcScale GetSTCAlgo() override
     {
       FOUR_C_THROW("GetSTCAlgo() has not been tested for explicit time integrators");
-      return INPAR::STR::stc_none;
+      return Inpar::STR::stc_none;
     };
 
     //! Access to scaling matrix for STC
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> GetSTCMat() override
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> GetSTCMat() override
     {
       FOUR_C_THROW("GetSTCMat() has not been tested for explicit time integrators");
       return Teuchos::null;
@@ -374,10 +374,10 @@ namespace STR
     /// Do the nonlinear solve, i.e. (multiple) corrector,
     /// for the time step. All boundary conditions have
     /// been set.
-    INPAR::STR::ConvergenceStatus Solve() final
+    Inpar::STR::ConvergenceStatus Solve() final
     {
       IntegrateStep();
-      return INPAR::STR::conv_success;
+      return Inpar::STR::conv_success;
     }
 
     //! prepare partiton step
@@ -387,8 +387,8 @@ namespace STR
       return;
     }
 
-    void use_block_matrix(Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
-        Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> rangemaps) override
+    void use_block_matrix(Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> domainmaps,
+        Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> rangemaps) override
     {
       FOUR_C_THROW("use_block_matrix() not implemented");
     }

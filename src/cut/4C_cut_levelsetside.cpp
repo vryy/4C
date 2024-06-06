@@ -21,13 +21,13 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <int probdim>
-bool CORE::GEO::CUT::LevelSetSide<probdim>::Cut(Mesh& mesh, Edge& edge, PointSet& cut_points)
+bool Core::Geo::Cut::LevelSetSide<probdim>::Cut(Mesh& mesh, Edge& edge, PointSet& cut_points)
 {
   return edge.LevelSetCut(mesh, *this, cut_points);
 }
 
 template <int probdim>
-bool CORE::GEO::CUT::LevelSetSide<probdim>::find_cut_points_dispatch(
+bool Core::Geo::Cut::LevelSetSide<probdim>::find_cut_points_dispatch(
     Mesh& mesh, Element* element, Side& side, Edge& e)
 {
   return e.find_cut_points_level_set(mesh, element, side, *this);
@@ -36,13 +36,13 @@ bool CORE::GEO::CUT::LevelSetSide<probdim>::find_cut_points_dispatch(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <int probdim>
-void CORE::GEO::CUT::LevelSetSide<probdim>::MakeInternalFacets(
+void Core::Geo::Cut::LevelSetSide<probdim>::MakeInternalFacets(
     Mesh& mesh, Element* element, plain_facet_set& facets)
 {
-  Teuchos::RCP<IMPL::PointGraph> pg = Teuchos::rcp(IMPL::PointGraph::Create(
-      mesh, element, this, IMPL::PointGraph::cut_side, IMPL::PointGraph::own_lines));
+  Teuchos::RCP<Impl::PointGraph> pg = Teuchos::rcp(Impl::PointGraph::Create(
+      mesh, element, this, Impl::PointGraph::cut_side, Impl::PointGraph::own_lines));
 
-  for (IMPL::PointGraph::facet_iterator i = pg->fbegin(); i != pg->fend(); ++i)
+  for (Impl::PointGraph::facet_iterator i = pg->fbegin(); i != pg->fend(); ++i)
   {
     const Cycle& points = *i;
     Side::MakeInternalFacets(mesh, element, points, facets);
@@ -52,7 +52,7 @@ void CORE::GEO::CUT::LevelSetSide<probdim>::MakeInternalFacets(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <int probdim>
-bool CORE::GEO::CUT::LevelSetSide<probdim>::find_ambiguous_cut_lines(
+bool Core::Geo::Cut::LevelSetSide<probdim>::find_ambiguous_cut_lines(
     Mesh& mesh, Element* element, Side& side, const PointSet& cut)
 {
   // More than two cut points show a touch.
@@ -60,14 +60,14 @@ bool CORE::GEO::CUT::LevelSetSide<probdim>::find_ambiguous_cut_lines(
   // (1) If all nodes are caught and nothing else, the cut surface has hit this
   //     surface exactly. No need to cut anything. However, the surface might be
   //     required for integration.
-  if (CORE::GEO::CUT::Side::find_touching_cut_lines(mesh, element, side, cut)) return true;
+  if (Core::Geo::Cut::Side::find_touching_cut_lines(mesh, element, side, cut)) return true;
 
   switch (side.Shape())
   {
-    case CORE::FE::CellType::line2:
-    case CORE::FE::CellType::tri3:
+    case Core::FE::CellType::line2:
+    case Core::FE::CellType::tri3:
       return false;
-    case CORE::FE::CellType::quad4:
+    case Core::FE::CellType::quad4:
     {
       switch (cut.size())
       {
@@ -148,9 +148,9 @@ bool CORE::GEO::CUT::LevelSetSide<probdim>::find_ambiguous_cut_lines(
           }
 
           // find levelset value at side center
-          CORE::LINALG::Matrix<4, 1> lsv;
-          CORE::LINALG::Matrix<4, 1> funct;
-          CORE::FE::shape_function_2D(funct, 0., 0., CORE::FE::CellType::quad4);
+          Core::LinAlg::Matrix<4, 1> lsv;
+          Core::LinAlg::Matrix<4, 1> funct;
+          Core::FE::shape_function_2D(funct, 0., 0., Core::FE::CellType::quad4);
           const std::vector<Node*>& nodes = side.Nodes();
           std::vector<int> zero_positions;
           for (unsigned i = 0; i < 4; ++i)
@@ -159,7 +159,7 @@ bool CORE::GEO::CUT::LevelSetSide<probdim>::find_ambiguous_cut_lines(
             if (lsv(i) == 0) zero_positions.push_back(i);
           }
 
-          CORE::LINALG::Matrix<1, 1> midlsv;
+          Core::LinAlg::Matrix<1, 1> midlsv;
           midlsv.MultiplyTN(lsv, funct);
 
           for (unsigned i = 1; i < zero_positions.size(); ++i)
@@ -188,24 +188,24 @@ bool CORE::GEO::CUT::LevelSetSide<probdim>::find_ambiguous_cut_lines(
           }
 
 #ifdef USE_PHIDERIV_FOR_CUT_DETERMINATION
-          CORE::LINALG::Matrix<3, 1> coords0;
+          Core::LinAlg::Matrix<3, 1> coords0;
           bool connect01and23;
 
           edge_points[0]->Coordinates(&coords0(0, 0));
           std::vector<double> grad_phi0 = element->get_level_set_gradient(coords0);
 
-          CORE::LINALG::Matrix<3, 1> coords1;
+          Core::LinAlg::Matrix<3, 1> coords1;
           edge_points[1]->Coordinates(&coords1(0, 0));
           std::vector<double> grad_phi1 = element->get_level_set_gradient(coords1);
 
           double dotProduct01 = grad_phi0[0] * grad_phi1[0] + grad_phi0[1] * grad_phi1[1] +
                                 grad_phi0[2] * grad_phi1[2];
 
-          CORE::LINALG::Matrix<3, 1> coords2;
+          Core::LinAlg::Matrix<3, 1> coords2;
           edge_points[2]->Coordinates(&coords2(0, 0));
           std::vector<double> grad_phi2 = element->get_level_set_gradient(coords2);
 
-          CORE::LINALG::Matrix<3, 1> coords3;
+          Core::LinAlg::Matrix<3, 1> coords3;
           edge_points[3]->Coordinates(&coords3(0, 0));
           std::vector<double> grad_phi3 = element->get_level_set_gradient(coords3);
 
@@ -272,16 +272,16 @@ bool CORE::GEO::CUT::LevelSetSide<probdim>::find_ambiguous_cut_lines(
           return false;
       }
       break;
-    }  // case CORE::FE::CellType::quad4:
+    }  // case Core::FE::CellType::quad4:
     default:
       FOUR_C_THROW("Unsupported side shape! (shape = %d | %s )", side.Shape(),
-          CORE::FE::CellTypeToString(side.Shape()).c_str());
+          Core::FE::CellTypeToString(side.Shape()).c_str());
       break;
   }
   return false;
 }
 
-template class CORE::GEO::CUT::LevelSetSide<2>;
-template class CORE::GEO::CUT::LevelSetSide<3>;
+template class Core::Geo::Cut::LevelSetSide<2>;
+template class Core::Geo::Cut::LevelSetSide<3>;
 
 FOUR_C_NAMESPACE_CLOSE

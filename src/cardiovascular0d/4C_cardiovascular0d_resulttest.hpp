@@ -19,7 +19,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
@@ -30,7 +30,7 @@ namespace UTILS
   class Cardiovascular0DManager;
 }  // namespace UTILS
 
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationWriter;
 }
@@ -38,18 +38,18 @@ namespace CORE::IO
 /*!
   \brief Structure specific result test class
 */
-class Cardiovascular0DResultTest : public CORE::UTILS::ResultTest
+class Cardiovascular0DResultTest : public Core::UTILS::ResultTest
 {
  public:
   Cardiovascular0DResultTest(
-      UTILS::Cardiovascular0DManager& cardvasc0dman, Teuchos::RCP<DRT::Discretization> discr);
+      UTILS::Cardiovascular0DManager& cardvasc0dman, Teuchos::RCP<Discret::Discretization> discr);
 
-  void TestSpecial(INPUT::LineDefinition& res, int& nerr, int& test_count) override;
+  void TestSpecial(Input::LineDefinition& res, int& nerr, int& test_count) override;
 
 
 
  private:
-  Teuchos::RCP<DRT::Discretization> actdisc_;  ///< standard discretization
+  Teuchos::RCP<Discret::Discretization> actdisc_;  ///< standard discretization
 
   const Teuchos::RCP<Epetra_Vector> cardvasc0d_dof_;
 

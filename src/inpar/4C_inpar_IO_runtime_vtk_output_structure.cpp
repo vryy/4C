@@ -17,9 +17,9 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace INPAR
+namespace Inpar
 {
-  namespace IO_RUNTIME_OUTPUT
+  namespace IORuntimeOutput
   {
     namespace STRUCTURE
     {
@@ -27,7 +27,7 @@ namespace INPAR
        *----------------------------------------------------------------------*/
       void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       {
-        using namespace INPUT;
+        using namespace Input;
         using Teuchos::setStringToIntegralParameter;
         using Teuchos::tuple;
 
@@ -39,55 +39,55 @@ namespace INPAR
             sublist_IO_VTK.sublist("STRUCTURE", false, "");
 
         // whether to write output for structure
-        CORE::UTILS::BoolParameter(
+        Core::UTILS::BoolParameter(
             "OUTPUT_STRUCTURE", "No", "write structure output", &sublist_IO_VTK_structure);
 
         // whether to write displacement state
-        CORE::UTILS::BoolParameter(
+        Core::UTILS::BoolParameter(
             "DISPLACEMENT", "No", "write displacement output", &sublist_IO_VTK_structure);
 
         // whether to write velocity state
-        CORE::UTILS::BoolParameter(
+        Core::UTILS::BoolParameter(
             "VELOCITY", "No", "write velocity output", &sublist_IO_VTK_structure);
 
         // whether to write element owner
-        CORE::UTILS::BoolParameter(
+        Core::UTILS::BoolParameter(
             "ELEMENT_OWNER", "No", "write element owner", &sublist_IO_VTK_structure);
 
         // whether to write element GIDs
-        CORE::UTILS::BoolParameter(
+        Core::UTILS::BoolParameter(
             "ELEMENT_GID", "No", "write 4C internal element GIDs", &sublist_IO_VTK_structure);
 
         // write element ghosting information
-        CORE::UTILS::BoolParameter("ELEMENT_GHOSTING", "No",
+        Core::UTILS::BoolParameter("ELEMENT_GHOSTING", "No",
             "write which processors ghost the elements", &sublist_IO_VTK_structure);
 
         // whether to write node GIDs
-        CORE::UTILS::BoolParameter(
+        Core::UTILS::BoolParameter(
             "NODE_GID", "No", "write 4C internal node GIDs", &sublist_IO_VTK_structure);
 
         // whether to write stress and / or strain data
-        CORE::UTILS::BoolParameter("STRESS_STRAIN", "No",
+        Core::UTILS::BoolParameter("STRESS_STRAIN", "No",
             "Write element stress and / or strain  data. The type of stress / strain has to be "
             "selected in the --IO input section",
             &sublist_IO_VTK_structure);
 
         // mode to write gauss point data
-        setStringToIntegralParameter<INPAR::STR::GaussPointDataOutputType>(
+        setStringToIntegralParameter<Inpar::STR::GaussPointDataOutputType>(
             "GAUSS_POINT_DATA_OUTPUT_TYPE", "none",
             "Where to write gauss point data. (none, projected to nodes, projected to element "
             "center, raw at gauss points)",
             tuple<std::string>("none", "nodes", "element_center", "gauss_points"),
-            tuple<INPAR::STR::GaussPointDataOutputType>(INPAR::STR::GaussPointDataOutputType::none,
-                INPAR::STR::GaussPointDataOutputType::nodes,
-                INPAR::STR::GaussPointDataOutputType::element_center,
-                INPAR::STR::GaussPointDataOutputType::gauss_points),
+            tuple<Inpar::STR::GaussPointDataOutputType>(Inpar::STR::GaussPointDataOutputType::none,
+                Inpar::STR::GaussPointDataOutputType::nodes,
+                Inpar::STR::GaussPointDataOutputType::element_center,
+                Inpar::STR::GaussPointDataOutputType::gauss_points),
             &sublist_IO_VTK_structure);
       }
 
 
     }  // namespace STRUCTURE
-  }    // namespace IO_RUNTIME_OUTPUT
-}  // namespace INPAR
+  }    // namespace IORuntimeOutput
+}  // namespace Inpar
 
 FOUR_C_NAMESPACE_CLOSE

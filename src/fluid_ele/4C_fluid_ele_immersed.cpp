@@ -15,30 +15,34 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-DRT::ELEMENTS::FluidTypeImmersed DRT::ELEMENTS::FluidTypeImmersed::instance_;
+Discret::ELEMENTS::FluidTypeImmersed Discret::ELEMENTS::FluidTypeImmersed::instance_;
 
-DRT::ELEMENTS::FluidTypeImmersed& DRT::ELEMENTS::FluidTypeImmersed::Instance() { return instance_; }
-
-CORE::COMM::ParObject* DRT::ELEMENTS::FluidTypeImmersed::Create(const std::vector<char>& data)
+Discret::ELEMENTS::FluidTypeImmersed& Discret::ELEMENTS::FluidTypeImmersed::Instance()
 {
-  DRT::ELEMENTS::FluidImmersed* object = new DRT::ELEMENTS::FluidImmersed(-1, -1);
+  return instance_;
+}
+
+Core::Communication::ParObject* Discret::ELEMENTS::FluidTypeImmersed::Create(
+    const std::vector<char>& data)
+{
+  Discret::ELEMENTS::FluidImmersed* object = new Discret::ELEMENTS::FluidImmersed(-1, -1);
   object->Unpack(data);
   return object;
 }
 
 
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::FluidTypeImmersed::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidTypeImmersed::Create(
     const int id, const int owner)
 {
-  return Teuchos::rcp(new DRT::ELEMENTS::FluidImmersed(id, owner));
+  return Teuchos::rcp(new Discret::ELEMENTS::FluidImmersed(id, owner));
 }
 
-void DRT::ELEMENTS::FluidTypeImmersed::setup_element_definition(
-    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+void Discret::ELEMENTS::FluidTypeImmersed::setup_element_definition(
+    std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
-  std::map<std::string, INPUT::LineDefinition>& defsimmersed = definitions["FLUIDIMMERSED"];
+  std::map<std::string, Input::LineDefinition>& defsimmersed = definitions["FLUIDIMMERSED"];
 
-  defsimmersed["HEX8"] = INPUT::LineDefinition::Builder()
+  defsimmersed["HEX8"] = Input::LineDefinition::Builder()
                              .AddIntVector("HEX8", 8)
                              .AddNamedInt("MAT")
                              .AddNamedString("NA")
@@ -49,7 +53,7 @@ void DRT::ELEMENTS::FluidTypeImmersed::setup_element_definition(
  |  ctor (public)                                            rauch 03/14|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::FluidImmersed::FluidImmersed(int id, int owner)
+Discret::ELEMENTS::FluidImmersed::FluidImmersed(int id, int owner)
     : Fluid(id, owner),
       FluidImmersedBase(id, owner),
       is_immersed_(0),
@@ -63,7 +67,7 @@ DRT::ELEMENTS::FluidImmersed::FluidImmersed(int id, int owner)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       rauch 03/14|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::FluidImmersed::FluidImmersed(const DRT::ELEMENTS::FluidImmersed& old)
+Discret::ELEMENTS::FluidImmersed::FluidImmersed(const Discret::ELEMENTS::FluidImmersed& old)
     : Fluid(old),
       FluidImmersedBase(old),
       is_immersed_(old.is_immersed_),
@@ -79,9 +83,9 @@ DRT::ELEMENTS::FluidImmersed::FluidImmersed(const DRT::ELEMENTS::FluidImmersed& 
  |  Deep copy this instance of Fluid and return pointer to it (public)  |
  |                                                          rauch 03/14 |
  *----------------------------------------------------------------------*/
-CORE::Elements::Element* DRT::ELEMENTS::FluidImmersed::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::FluidImmersed::Clone() const
 {
-  DRT::ELEMENTS::FluidImmersed* newelement = new DRT::ELEMENTS::FluidImmersed(*this);
+  Discret::ELEMENTS::FluidImmersed* newelement = new Discret::ELEMENTS::FluidImmersed(*this);
   return newelement;
 }
 
@@ -89,16 +93,16 @@ CORE::Elements::Element* DRT::ELEMENTS::FluidImmersed::Clone() const
  |  Pack data                                                  (public) |
  |                                                          rauch 03/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidImmersed::Pack(CORE::COMM::PackBuffer& data) const
+void Discret::ELEMENTS::FluidImmersed::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data, type);
   // add base class Element
-  DRT::ELEMENTS::Fluid::Pack(data);
+  Discret::ELEMENTS::Fluid::Pack(data);
   // Part of immersion domain?
   AddtoPack(data, is_immersed_);
   // Part of immersion domain for immersed boundary?
@@ -114,16 +118,16 @@ void DRT::ELEMENTS::FluidImmersed::Pack(CORE::COMM::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                          rauch 03/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidImmersed::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::FluidImmersed::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
-  DRT::ELEMENTS::Fluid::Unpack(basedata);
+  Discret::ELEMENTS::Fluid::Unpack(basedata);
   // Part of immersion domain?
   is_immersed_ = ExtractInt(position, data);
   // Part of immersion domain for immersed boundary?

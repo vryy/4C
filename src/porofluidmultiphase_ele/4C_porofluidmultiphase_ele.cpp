@@ -26,12 +26,12 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | instantiate global instance                               vuong 08/16 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::PoroFluidMultiPhaseType DRT::ELEMENTS::PoroFluidMultiPhaseType::instance_;
+Discret::ELEMENTS::PoroFluidMultiPhaseType Discret::ELEMENTS::PoroFluidMultiPhaseType::instance_;
 
 /*----------------------------------------------------------------------*
  | instance access method                                   vuong 08/16 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::PoroFluidMultiPhaseType& DRT::ELEMENTS::PoroFluidMultiPhaseType::Instance()
+Discret::ELEMENTS::PoroFluidMultiPhaseType& Discret::ELEMENTS::PoroFluidMultiPhaseType::Instance()
 {
   return instance_;
 }
@@ -39,9 +39,11 @@ DRT::ELEMENTS::PoroFluidMultiPhaseType& DRT::ELEMENTS::PoroFluidMultiPhaseType::
 /*----------------------------------------------------------------------*
  | create an element from data                              vuong 08/16 |
  *----------------------------------------------------------------------*/
-CORE::COMM::ParObject* DRT::ELEMENTS::PoroFluidMultiPhaseType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Discret::ELEMENTS::PoroFluidMultiPhaseType::Create(
+    const std::vector<char>& data)
 {
-  DRT::ELEMENTS::PoroFluidMultiPhase* object = new DRT::ELEMENTS::PoroFluidMultiPhase(-1, -1);
+  Discret::ELEMENTS::PoroFluidMultiPhase* object =
+      new Discret::ELEMENTS::PoroFluidMultiPhase(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -49,13 +51,13 @@ CORE::COMM::ParObject* DRT::ELEMENTS::PoroFluidMultiPhaseType::Create(const std:
 /*----------------------------------------------------------------------*
  |  create an element from a dat file specifier             vuong 08/16 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::PoroFluidMultiPhaseType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::PoroFluidMultiPhaseType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "POROFLUIDMULTIPHASE")
   {
-    Teuchos::RCP<CORE::Elements::Element> ele =
-        Teuchos::rcp(new DRT::ELEMENTS::PoroFluidMultiPhase(id, owner));
+    Teuchos::RCP<Core::Elements::Element> ele =
+        Teuchos::rcp(new Discret::ELEMENTS::PoroFluidMultiPhase(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -64,19 +66,19 @@ Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::PoroFluidMultiPhaseType::Cr
 /*----------------------------------------------------------------------*
  |  create an empty element                                vuong 08/16 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::PoroFluidMultiPhaseType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::PoroFluidMultiPhaseType::Create(
     const int id, const int owner)
 {
-  Teuchos::RCP<CORE::Elements::Element> ele =
-      Teuchos::rcp(new DRT::ELEMENTS::PoroFluidMultiPhase(id, owner));
+  Teuchos::RCP<Core::Elements::Element> ele =
+      Teuchos::rcp(new Discret::ELEMENTS::PoroFluidMultiPhase(id, owner));
   return ele;
 }
 
 /*----------------------------------------------------------------------------*
  |  nodal block information to create a null space description    vuong 08/16 |
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::PoroFluidMultiPhaseType::nodal_block_information(
-    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+void Discret::ELEMENTS::PoroFluidMultiPhaseType::nodal_block_information(
+    Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = dwele->NumDofPerNode(*(dwele->Nodes()[0]));
   dimns = numdf;
@@ -85,8 +87,8 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseType::nodal_block_information(
 /*----------------------------------------------------------------------*
  |  do the null space computation                            vuong 08/16 |
  *----------------------------------------------------------------------*/
-CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::PoroFluidMultiPhaseType::ComputeNullSpace(
-    CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
+Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::PoroFluidMultiPhaseType::ComputeNullSpace(
+    Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
 }
@@ -95,40 +97,40 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::PoroFluidMultiPhaseType::ComputeN
  |  setup the dat file input line definitions for this type of element   |
  |                                                           vuong 08/16 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::PoroFluidMultiPhaseType::setup_element_definition(
-    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+void Discret::ELEMENTS::PoroFluidMultiPhaseType::setup_element_definition(
+    std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
-  std::map<std::string, INPUT::LineDefinition>& defs = definitions["POROFLUIDMULTIPHASE"];
+  std::map<std::string, Input::LineDefinition>& defs = definitions["POROFLUIDMULTIPHASE"];
 
   defs["QUAD4"] =
-      INPUT::LineDefinition::Builder().AddIntVector("QUAD4", 4).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().AddIntVector("QUAD4", 4).AddNamedInt("MAT").Build();
 
   defs["QUAD8"] =
-      INPUT::LineDefinition::Builder().AddIntVector("QUAD8", 8).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().AddIntVector("QUAD8", 8).AddNamedInt("MAT").Build();
 
   defs["QUAD9"] =
-      INPUT::LineDefinition::Builder().AddIntVector("QUAD9", 9).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().AddIntVector("QUAD9", 9).AddNamedInt("MAT").Build();
 
   defs["TRI3"] =
-      INPUT::LineDefinition::Builder().AddIntVector("TRI3", 3).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().AddIntVector("TRI3", 3).AddNamedInt("MAT").Build();
 
   defs["TRI6"] =
-      INPUT::LineDefinition::Builder().AddIntVector("TRI6", 6).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().AddIntVector("TRI6", 6).AddNamedInt("MAT").Build();
 
   defs["LINE2"] =
-      INPUT::LineDefinition::Builder().AddIntVector("LINE2", 2).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().AddIntVector("LINE2", 2).AddNamedInt("MAT").Build();
 
   defs["LINE3"] =
-      INPUT::LineDefinition::Builder().AddIntVector("LINE3", 3).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().AddIntVector("LINE3", 3).AddNamedInt("MAT").Build();
 
   defs["HEX8"] =
-      INPUT::LineDefinition::Builder().AddIntVector("HEX8", 8).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().AddIntVector("HEX8", 8).AddNamedInt("MAT").Build();
 
   defs["TET4"] =
-      INPUT::LineDefinition::Builder().AddIntVector("TET4", 4).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().AddIntVector("TET4", 4).AddNamedInt("MAT").Build();
 
   defs["TET10"] =
-      INPUT::LineDefinition::Builder().AddIntVector("TET10", 10).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().AddIntVector("TET10", 10).AddNamedInt("MAT").Build();
 }
 
 /*----------------------------------------------------------------------*
@@ -140,14 +142,14 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseType::setup_element_definition(
 /*----------------------------------------------------------------------*
  | instantiate global instance                               vuong 08/16 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::PoroFluidMultiPhaseBoundaryType
-    DRT::ELEMENTS::PoroFluidMultiPhaseBoundaryType::instance_;
+Discret::ELEMENTS::PoroFluidMultiPhaseBoundaryType
+    Discret::ELEMENTS::PoroFluidMultiPhaseBoundaryType::instance_;
 
 /*----------------------------------------------------------------------*
  | instance access method                                   vuong 08/16 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::PoroFluidMultiPhaseBoundaryType&
-DRT::ELEMENTS::PoroFluidMultiPhaseBoundaryType::Instance()
+Discret::ELEMENTS::PoroFluidMultiPhaseBoundaryType&
+Discret::ELEMENTS::PoroFluidMultiPhaseBoundaryType::Instance()
 {
   return instance_;
 }
@@ -155,7 +157,7 @@ DRT::ELEMENTS::PoroFluidMultiPhaseBoundaryType::Instance()
 /*----------------------------------------------------------------------*
  |  create an empty element                                vuong 08/16 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::PoroFluidMultiPhaseBoundaryType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::PoroFluidMultiPhaseBoundaryType::Create(
     const int id, const int owner)
 {
   // boundary elements are not created as stand-alone elements by the element type,
@@ -172,13 +174,13 @@ Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::PoroFluidMultiPhaseBoundary
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::PoroFluidMultiPhaseType::Initialize(DRT::Discretization& dis)
+int Discret::ELEMENTS::PoroFluidMultiPhaseType::Initialize(Discret::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    DRT::ELEMENTS::PoroFluidMultiPhase* actele =
-        dynamic_cast<DRT::ELEMENTS::PoroFluidMultiPhase*>(dis.lColElement(i));
+    Discret::ELEMENTS::PoroFluidMultiPhase* actele =
+        dynamic_cast<Discret::ELEMENTS::PoroFluidMultiPhase*>(dis.lColElement(i));
     if (!actele) FOUR_C_THROW("cast to PoroFluidMultiPhase* failed");
     actele->initialize();
   }
@@ -195,8 +197,8 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseType::Initialize(DRT::Discretization& dis)
 /*----------------------------------------------------------------------*
  |  create an empty element                                vuong 08/16 |
  *------------------------------------------------------ ----------------*/
-DRT::ELEMENTS::PoroFluidMultiPhase::PoroFluidMultiPhase(int id, int owner)
-    : CORE::Elements::Element(id, owner), distype_(CORE::FE::CellType::dis_none), numdofpernode_(-1)
+Discret::ELEMENTS::PoroFluidMultiPhase::PoroFluidMultiPhase(int id, int owner)
+    : Core::Elements::Element(id, owner), distype_(Core::FE::CellType::dis_none), numdofpernode_(-1)
 {
   return;
 }
@@ -204,9 +206,9 @@ DRT::ELEMENTS::PoroFluidMultiPhase::PoroFluidMultiPhase(int id, int owner)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                      vuong 08/16 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::PoroFluidMultiPhase::PoroFluidMultiPhase(
-    const DRT::ELEMENTS::PoroFluidMultiPhase& old)
-    : CORE::Elements::Element(old), distype_(old.distype_), numdofpernode_(old.numdofpernode_)
+Discret::ELEMENTS::PoroFluidMultiPhase::PoroFluidMultiPhase(
+    const Discret::ELEMENTS::PoroFluidMultiPhase& old)
+    : Core::Elements::Element(old), distype_(old.distype_), numdofpernode_(old.numdofpernode_)
 {
   return;
 }
@@ -215,9 +217,10 @@ DRT::ELEMENTS::PoroFluidMultiPhase::PoroFluidMultiPhase(
  |  Deep copy this instance of PoroFluidMultiPhase and return pointer to it  |
  |                                                 (public) vuong 08/16      |
  *---------------------------------------------------------------------------*/
-CORE::Elements::Element* DRT::ELEMENTS::PoroFluidMultiPhase::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::PoroFluidMultiPhase::Clone() const
 {
-  DRT::ELEMENTS::PoroFluidMultiPhase* newelement = new DRT::ELEMENTS::PoroFluidMultiPhase(*this);
+  Discret::ELEMENTS::PoroFluidMultiPhase* newelement =
+      new Discret::ELEMENTS::PoroFluidMultiPhase(*this);
   return newelement;
 }
 
@@ -225,16 +228,16 @@ CORE::Elements::Element* DRT::ELEMENTS::PoroFluidMultiPhase::Clone() const
  |  Return the shape of a PoroFluidMultiPhase element          (public) |
  |                                                          vuong 08/16 |
  *----------------------------------------------------------------------*/
-CORE::FE::CellType DRT::ELEMENTS::PoroFluidMultiPhase::Shape() const { return distype_; }
+Core::FE::CellType Discret::ELEMENTS::PoroFluidMultiPhase::Shape() const { return distype_; }
 
 /*----------------------------------------------------------------------*
  |  Initialize element                                      (protected) |
  |                                                          vuong 08/16 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::PoroFluidMultiPhase::initialize()
+void Discret::ELEMENTS::PoroFluidMultiPhase::initialize()
 {
-  Teuchos::RCP<MAT::FluidPoroMultiPhase> actmat =
-      Teuchos::rcp_dynamic_cast<MAT::FluidPoroMultiPhase>(Material(), true);
+  Teuchos::RCP<Mat::FluidPoroMultiPhase> actmat =
+      Teuchos::rcp_dynamic_cast<Mat::FluidPoroMultiPhase>(Material(), true);
 
   actmat->Initialize();
   return;
@@ -244,9 +247,9 @@ void DRT::ELEMENTS::PoroFluidMultiPhase::initialize()
  |  Pack data                                                  (public) |
  |                                                          vuong 08/16 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::PoroFluidMultiPhase::Pack(CORE::COMM::PackBuffer& data) const
+void Discret::ELEMENTS::PoroFluidMultiPhase::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -268,11 +271,11 @@ void DRT::ELEMENTS::PoroFluidMultiPhase::Pack(CORE::COMM::PackBuffer& data) cons
  |  Unpack data                                                (public) |
  |                                                          vuong 08/16 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::PoroFluidMultiPhase::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::PoroFluidMultiPhase::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -280,7 +283,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhase::Unpack(const std::vector<char>& data)
   Element::Unpack(basedata);
 
   // extract internal data
-  distype_ = static_cast<CORE::FE::CellType>(ExtractInt(position, data));
+  distype_ = static_cast<Core::FE::CellType>(ExtractInt(position, data));
   ExtractfromPack(position, data, numdofpernode_);
 
   if (position != data.size())
@@ -292,27 +295,27 @@ void DRT::ELEMENTS::PoroFluidMultiPhase::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  Return number of lines of this element (public)         vuong 08/16 |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::PoroFluidMultiPhase::NumLine() const
+int Discret::ELEMENTS::PoroFluidMultiPhase::NumLine() const
 {
-  return CORE::FE::getNumberOfElementLines(distype_);
+  return Core::FE::getNumberOfElementLines(distype_);
 }
 
 
 /*----------------------------------------------------------------------*
  |  Return number of surfaces of this element (public)      vuong 08/16 |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::PoroFluidMultiPhase::NumSurface() const
+int Discret::ELEMENTS::PoroFluidMultiPhase::NumSurface() const
 {
-  return CORE::FE::getNumberOfElementSurfaces(distype_);
+  return Core::FE::getNumberOfElementSurfaces(distype_);
 }
 
 
 /*----------------------------------------------------------------------*
  | Return number of volumes of this element (public)        vuong 08/16 |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::PoroFluidMultiPhase::NumVolume() const
+int Discret::ELEMENTS::PoroFluidMultiPhase::NumVolume() const
 {
-  return CORE::FE::getNumberOfElementVolumes(distype_);
+  return Core::FE::getNumberOfElementVolumes(distype_);
 }
 
 
@@ -320,12 +323,12 @@ int DRT::ELEMENTS::PoroFluidMultiPhase::NumVolume() const
 /*----------------------------------------------------------------------*
  |  print this element (public)                             vuong 08/16 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::PoroFluidMultiPhase::Print(std::ostream& os) const
+void Discret::ELEMENTS::PoroFluidMultiPhase::Print(std::ostream& os) const
 {
   os << "PoroFluidMultiPhase element";
   Element::Print(os);
   std::cout << std::endl;
-  std::cout << "DiscretizationType:  " << CORE::FE::CellTypeToString(distype_) << std::endl;
+  std::cout << "DiscretizationType:  " << Core::FE::CellTypeToString(distype_) << std::endl;
   std::cout << std::endl;
   std::cout << "Number DOF per Node: " << numdofpernode_ << std::endl;
 
@@ -336,33 +339,36 @@ void DRT::ELEMENTS::PoroFluidMultiPhase::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines            (public)                 vuong 08/16 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::PoroFluidMultiPhase::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::PoroFluidMultiPhase::Lines()
 {
-  return CORE::COMM::GetElementLines<PoroFluidMultiPhaseBoundary, PoroFluidMultiPhase>(*this);
+  return Core::Communication::GetElementLines<PoroFluidMultiPhaseBoundary, PoroFluidMultiPhase>(
+      *this);
 }
 
 
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                         vuong 08/16 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::PoroFluidMultiPhase::Surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>>
+Discret::ELEMENTS::PoroFluidMultiPhase::Surfaces()
 {
-  return CORE::COMM::GetElementSurfaces<PoroFluidMultiPhaseBoundary, PoroFluidMultiPhase>(*this);
+  return Core::Communication::GetElementSurfaces<PoroFluidMultiPhaseBoundary, PoroFluidMultiPhase>(
+      *this);
 }
 
 /*----------------------------------------------------------------------*
  | read element input                                       vuong 08/16 |
  *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::PoroFluidMultiPhase::ReadElement(
-    const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
+bool Discret::ELEMENTS::PoroFluidMultiPhase::ReadElement(
+    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
   // read number of material model
   int material = 0;
   linedef->ExtractInt("MAT", material);
-  SetMaterial(0, MAT::Factory(material));
+  SetMaterial(0, Mat::Factory(material));
 
   // set discretization type
-  SetDisType(CORE::FE::StringToCellType(distype));
+  SetDisType(Core::FE::StringToCellType(distype));
 
   return true;
 }
@@ -370,19 +376,19 @@ bool DRT::ELEMENTS::PoroFluidMultiPhase::ReadElement(
 /*----------------------------------------------------------------------*
  |  create material class (public)                          vuong 08/16 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::PoroFluidMultiPhase::SetMaterial(
-    const int index, Teuchos::RCP<CORE::MAT::Material> mat)
+void Discret::ELEMENTS::PoroFluidMultiPhase::SetMaterial(
+    const int index, Teuchos::RCP<Core::Mat::Material> mat)
 {
   // the standard part:
-  CORE::Elements::Element::SetMaterial(index, mat);
+  Core::Elements::Element::SetMaterial(index, mat);
 
   // the special part:
   // now the element knows its material, and we can use it to determine numdofpernode
-  if (mat->MaterialType() == CORE::Materials::m_fluidporo_multiphase or
-      mat->MaterialType() == CORE::Materials::m_fluidporo_multiphase_reactions)
+  if (mat->MaterialType() == Core::Materials::m_fluidporo_multiphase or
+      mat->MaterialType() == Core::Materials::m_fluidporo_multiphase_reactions)
   {
-    const MAT::FluidPoroMultiPhase* actmat =
-        dynamic_cast<const MAT::FluidPoroMultiPhase*>(mat.get());
+    const Mat::FluidPoroMultiPhase* actmat =
+        dynamic_cast<const Mat::FluidPoroMultiPhase*>(mat.get());
     if (actmat == nullptr) FOUR_C_THROW("cast failed");
     numdofpernode_ = actmat->NumMat();
   }
@@ -403,10 +409,10 @@ void DRT::ELEMENTS::PoroFluidMultiPhase::SetMaterial(
 /*----------------------------------------------------------------------*
  |  ctor (public)                                           vuong 08/16 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::PoroFluidMultiPhaseBoundary(int id, int owner,
-    int nnode, const int* nodeids, CORE::Nodes::Node** nodes,
-    DRT::ELEMENTS::PoroFluidMultiPhase* parent, const int lsurface)
-    : CORE::Elements::FaceElement(id, owner)
+Discret::ELEMENTS::PoroFluidMultiPhaseBoundary::PoroFluidMultiPhaseBoundary(int id, int owner,
+    int nnode, const int* nodeids, Core::Nodes::Node** nodes,
+    Discret::ELEMENTS::PoroFluidMultiPhase* parent, const int lsurface)
+    : Core::Elements::FaceElement(id, owner)
 {
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
@@ -417,9 +423,9 @@ DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::PoroFluidMultiPhaseBoundary(int id, 
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                      vuong 08/16 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::PoroFluidMultiPhaseBoundary(
-    const DRT::ELEMENTS::PoroFluidMultiPhaseBoundary& old)
-    : CORE::Elements::FaceElement(old)
+Discret::ELEMENTS::PoroFluidMultiPhaseBoundary::PoroFluidMultiPhaseBoundary(
+    const Discret::ELEMENTS::PoroFluidMultiPhaseBoundary& old)
+    : Core::Elements::FaceElement(old)
 {
   return;
 }
@@ -427,25 +433,26 @@ DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::PoroFluidMultiPhaseBoundary(
 /*----------------------------------------------------------------------*
  |  Deep copy this instance return pointer to it   (public) vuong 08/16 |
  *----------------------------------------------------------------------*/
-CORE::Elements::Element* DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::PoroFluidMultiPhaseBoundary::Clone() const
 {
-  DRT::ELEMENTS::PoroFluidMultiPhaseBoundary* newelement =
-      new DRT::ELEMENTS::PoroFluidMultiPhaseBoundary(*this);
+  Discret::ELEMENTS::PoroFluidMultiPhaseBoundary* newelement =
+      new Discret::ELEMENTS::PoroFluidMultiPhaseBoundary(*this);
   return newelement;
 }
 
 /*----------------------------------------------------------------------*
  |  Return shape of this element                   (public) vuong 08/16 |
  *----------------------------------------------------------------------*/
-CORE::FE::CellType DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Shape() const
+Core::FE::CellType Discret::ELEMENTS::PoroFluidMultiPhaseBoundary::Shape() const
 {
-  return CORE::FE::getShapeOfBoundaryElement(num_node(), parent_element()->Shape());
+  return Core::FE::getShapeOfBoundaryElement(num_node(), parent_element()->Shape());
 }
 
 /*----------------------------------------------------------------------*
  |  Pack data (public)                                      vuong 08/16 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Pack(CORE::COMM::PackBuffer& data) const
+void Discret::ELEMENTS::PoroFluidMultiPhaseBoundary::Pack(
+    Core::Communication::PackBuffer& data) const
 {
   // boundary elements are rebuild by their parent element for each condition
   // after redistribution. This way we make sure, that the node ids always match.
@@ -457,7 +464,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Pack(CORE::COMM::PackBuffer& da
 /*----------------------------------------------------------------------*
  |  Unpack data (public)                                    vuong 08/16 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::PoroFluidMultiPhaseBoundary::Unpack(const std::vector<char>& data)
 {
   // boundary elements are rebuild by their parent element for each condition
   // after redistribution. This way we make sure, that the node ids always match.
@@ -471,12 +478,12 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Unpack(const std::vector<char>&
 /*----------------------------------------------------------------------*
  |  print this element (public)                             vuong 08/16 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Print(std::ostream& os) const
+void Discret::ELEMENTS::PoroFluidMultiPhaseBoundary::Print(std::ostream& os) const
 {
   os << "PoroFluidMultiPhaseBoundary element";
   Element::Print(os);
   std::cout << std::endl;
-  std::cout << "DiscretizationType:  " << CORE::FE::CellTypeToString(Shape()) << std::endl;
+  std::cout << "DiscretizationType:  " << Core::FE::CellTypeToString(Shape()) << std::endl;
   std::cout << std::endl;
   return;
 }
@@ -484,24 +491,24 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  | Return number of lines of boundary element (public)      vuong 08/16 |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::NumLine() const
+int Discret::ELEMENTS::PoroFluidMultiPhaseBoundary::NumLine() const
 {
-  return CORE::FE::getNumberOfElementLines(Shape());
+  return Core::FE::getNumberOfElementLines(Shape());
 }
 
 /*----------------------------------------------------------------------*
  |  Return number of surfaces of boundary element (public)  vuong 08/16 |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::NumSurface() const
+int Discret::ELEMENTS::PoroFluidMultiPhaseBoundary::NumSurface() const
 {
-  return CORE::FE::getNumberOfElementSurfaces(Shape());
+  return Core::FE::getNumberOfElementSurfaces(Shape());
 }
 
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                            vuong 08/16 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<CORE::Elements::Element>>
-DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>>
+Discret::ELEMENTS::PoroFluidMultiPhaseBoundary::Lines()
 {
   FOUR_C_THROW("Lines of PoroFluidMultiPhaseBoundary not implemented");
 }
@@ -509,8 +516,8 @@ DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Lines()
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                            vuong 08/16 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<CORE::Elements::Element>>
-DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>>
+Discret::ELEMENTS::PoroFluidMultiPhaseBoundary::Surfaces()
 {
   FOUR_C_THROW("Surfaces of PoroFluidMultiPhaseBoundary not implemented");
 }

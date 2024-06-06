@@ -35,9 +35,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                    ismail 01/10|
  *----------------------------------------------------------------------*/
-AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Discretization> actdis,
-    std::unique_ptr<CORE::LINALG::Solver> solver, Teuchos::ParameterList& params,
-    CORE::IO::DiscretizationWriter& output)
+Airway::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(
+    Teuchos::RCP<Discret::Discretization> actdis, std::unique_ptr<Core::LinAlg::Solver> solver,
+    Teuchos::ParameterList& params,
+    Core::IO::DiscretizationWriter& output)
     :  // Call constructor for "nontrivial" objects
       discret_(actdis),
       solver_(std::move(solver)),
@@ -83,7 +84,7 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Dis
   // ensure that degrees of freedom in the discretization have been set
   if (!discret_->Filled() || !actdis->HaveDofs()) discret_->fill_complete();
 
-  airway_acinus_dep_ = CORE::LINALG::CreateVector(*discret_->ElementColMap(), true);
+  airway_acinus_dep_ = Core::LinAlg::CreateVector(*discret_->ElementColMap(), true);
 
   // extend ghosting of discretization to ensure correct neighbor search
   if (compAwAcInter_)
@@ -108,7 +109,7 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Dis
     }
 
     // make search discret fully overlapping on all procs
-    CORE::REBALANCE::GhostDiscretizationOnAllProcs(discret_);
+    Core::Rebalance::GhostDiscretizationOnAllProcs(discret_);
     discret_->fill_complete(false, false, false);
 
     // Get elements and nodes that need to be ghosted to have correct neighbor search
@@ -131,10 +132,10 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Dis
 
     // fill and inform user (not fully overlapping anymore at this point
     discret_->fill_complete();
-    CORE::REBALANCE::UTILS::print_parallel_distribution(*discret_);
+    Core::Rebalance::UTILS::print_parallel_distribution(*discret_);
 
     // Neighbouring acinus
-    airway_acinus_dep_ = CORE::LINALG::CreateVector(*discret_->ElementColMap(), true);
+    airway_acinus_dep_ = Core::LinAlg::CreateVector(*discret_->ElementColMap(), true);
     compute_nearest_acinus(discret_, nullptr, nullptr, airway_acinus_dep_);
   }
 
@@ -162,120 +163,120 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Dis
   // a 'good' estimate
 
   // initialize standard (stabilized) system matrix
-  sysmat_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*dofrowmap, 3, false, true));
+  sysmat_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dofrowmap, 3, false, true));
 
   // Vectors passed to the element
   // Pressures at time n+1, n and n-1
-  pnp_ = CORE::LINALG::CreateVector(*dofrowmap, true);
-  pn_ = CORE::LINALG::CreateVector(*dofrowmap, true);
-  pnm_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  pnp_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  pn_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  pnm_ = Core::LinAlg::CreateVector(*dofrowmap, true);
 
-  p_nonlin_ = CORE::LINALG::CreateVector(*dofrowmap, true);
-  n_intr_ac_ln_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  p_nonlin_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  n_intr_ac_ln_ = Core::LinAlg::CreateVector(*dofrowmap, true);
 
   // Inlet volumetric flow rates at time n+1, n and n-1
-  qin_np_ = CORE::LINALG::CreateVector(*elementcolmap, true);
-  qin_n_ = CORE::LINALG::CreateVector(*elementcolmap, true);
-  qin_nm_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+  qin_np_ = Core::LinAlg::CreateVector(*elementcolmap, true);
+  qin_n_ = Core::LinAlg::CreateVector(*elementcolmap, true);
+  qin_nm_ = Core::LinAlg::CreateVector(*elementcolmap, true);
 
   // Trajectory vector x at time n+1 and n
-  x_np_ = CORE::LINALG::CreateVector(*elementcolmap, true);
-  x_n_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+  x_np_ = Core::LinAlg::CreateVector(*elementcolmap, true);
+  x_n_ = Core::LinAlg::CreateVector(*elementcolmap, true);
 
   // State of airway
-  open_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+  open_ = Core::LinAlg::CreateVector(*elementcolmap, true);
 
   // External pressure
-  p_extnp_ = CORE::LINALG::CreateVector(*elementcolmap, true);
-  p_extn_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+  p_extnp_ = Core::LinAlg::CreateVector(*elementcolmap, true);
+  p_extn_ = Core::LinAlg::CreateVector(*elementcolmap, true);
 
-  pnp_colmap_ = CORE::LINALG::CreateVector(*elementcolmap, true);
-  pn_colmap_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+  pnp_colmap_ = Core::LinAlg::CreateVector(*elementcolmap, true);
+  pn_colmap_ = Core::LinAlg::CreateVector(*elementcolmap, true);
 
   // Outlet volumetric flow rates at time n+1, n and n-1
-  qout_np_ = CORE::LINALG::CreateVector(*elementcolmap, true);
-  qout_n_ = CORE::LINALG::CreateVector(*elementcolmap, true);
-  qout_nm_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+  qout_np_ = Core::LinAlg::CreateVector(*elementcolmap, true);
+  qout_n_ = Core::LinAlg::CreateVector(*elementcolmap, true);
+  qout_nm_ = Core::LinAlg::CreateVector(*elementcolmap, true);
 
   // This vector will be used for exportation and restart reasons
-  qexp_ = CORE::LINALG::CreateVector(*elementrowmap, true);
-  qexp2_ = CORE::LINALG::CreateVector(*elementrowmap, true);
-  pexp_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  qexp_ = Core::LinAlg::CreateVector(*elementrowmap, true);
+  qexp2_ = Core::LinAlg::CreateVector(*elementrowmap, true);
+  pexp_ = Core::LinAlg::CreateVector(*dofrowmap, true);
 
   // Element volume at time n+1, n and n-1
-  elemVolumenp_ = CORE::LINALG::CreateVector(*elementcolmap, true);
-  elemVolumen_ = CORE::LINALG::CreateVector(*elementcolmap, true);
-  elemVolumenm_ = CORE::LINALG::CreateVector(*elementcolmap, true);
-  elemVolume0_ = CORE::LINALG::CreateVector(*elementcolmap, true);
-  elemArea0_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+  elemVolumenp_ = Core::LinAlg::CreateVector(*elementcolmap, true);
+  elemVolumen_ = Core::LinAlg::CreateVector(*elementcolmap, true);
+  elemVolumenm_ = Core::LinAlg::CreateVector(*elementcolmap, true);
+  elemVolume0_ = Core::LinAlg::CreateVector(*elementcolmap, true);
+  elemArea0_ = Core::LinAlg::CreateVector(*elementcolmap, true);
 
   // Element radius at time n+1
-  elemRadiusnp_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+  elemRadiusnp_ = Core::LinAlg::CreateVector(*elementcolmap, true);
 
   // This vector will be used to test convergence
-  residual_ = CORE::LINALG::CreateVector(*dofrowmap, true);
-  bc_residual_ = CORE::LINALG::CreateVector(*dofcolmap, true);
+  residual_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  bc_residual_ = Core::LinAlg::CreateVector(*dofcolmap, true);
 
   // Volumetric flow rates at time n+1, n and n-1
-  //  qcnp_          = CORE::LINALG::CreateVector(*elementrowmap,true);
-  //  qcn_           = CORE::LINALG::CreateVector(*elementrowmap,true);
-  //  qcnm_          = CORE::LINALG::CreateVector(*elementrowmap,true);
+  //  qcnp_          = Core::LinAlg::CreateVector(*elementrowmap,true);
+  //  qcn_           = Core::LinAlg::CreateVector(*elementrowmap,true);
+  //  qcnm_          = Core::LinAlg::CreateVector(*elementrowmap,true);
 
   // Vectors for postprocessing, Element Node Ids, radii, generations, etc ...
-  nodeIds_ = CORE::LINALG::CreateVector(*dofrowmap, true);
-  radii_ = CORE::LINALG::CreateVector(*dofrowmap, true);
-  generations_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+  nodeIds_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  radii_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  generations_ = Core::LinAlg::CreateVector(*elementcolmap, true);
 
   // A vector of zeros to be used to enforce zero dirichlet boundary conditions
   // This part might be optimized later
-  bcval_ = CORE::LINALG::CreateVector(*dofrowmap, true);
-  dbctog_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  bcval_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  dbctog_ = Core::LinAlg::CreateVector(*dofrowmap, true);
 
-  acini_bc_ = CORE::LINALG::CreateVector(*elementcolmap, true);
-  acini_e_volume0_ = CORE::LINALG::CreateVector(*elementcolmap, true);
-  acini_e_volumenm_ = CORE::LINALG::CreateVector(*elementcolmap, true);
-  acini_e_volumen_ = CORE::LINALG::CreateVector(*elementcolmap, true);
-  acini_e_volumenp_ = CORE::LINALG::CreateVector(*elementcolmap, true);
-  acini_e_volume_strain_ = CORE::LINALG::CreateVector(*elementcolmap, true);
-  acini_max_strain_location_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+  acini_bc_ = Core::LinAlg::CreateVector(*elementcolmap, true);
+  acini_e_volume0_ = Core::LinAlg::CreateVector(*elementcolmap, true);
+  acini_e_volumenm_ = Core::LinAlg::CreateVector(*elementcolmap, true);
+  acini_e_volumen_ = Core::LinAlg::CreateVector(*elementcolmap, true);
+  acini_e_volumenp_ = Core::LinAlg::CreateVector(*elementcolmap, true);
+  acini_e_volume_strain_ = Core::LinAlg::CreateVector(*elementcolmap, true);
+  acini_max_strain_location_ = Core::LinAlg::CreateVector(*elementcolmap, true);
 
   // Initialize "scalar transpor" variables
   if (solveScatra_)
   {
     // Nodal values of the scalar transport
-    scatraO2nm_ = CORE::LINALG::CreateVector(*dofrowmap, true);
-    scatraO2n_ = CORE::LINALG::CreateVector(*dofrowmap, true);
-    scatraO2np_ = CORE::LINALG::CreateVector(*dofrowmap, true);
-    dscatraO2_ = CORE::LINALG::CreateVector(*dofrowmap, true);
-    dVolumeO2_ = CORE::LINALG::CreateVector(*dofrowmap, true);
-    acinarDO2_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+    scatraO2nm_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    scatraO2n_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    scatraO2np_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    dscatraO2_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    dVolumeO2_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    acinarDO2_ = Core::LinAlg::CreateVector(*dofrowmap, true);
 
     // Element values of the scalar transport (Needed to resolve the
     // the transport at the branching parts
-    e1scatraO2nm_ = CORE::LINALG::CreateVector(*elementcolmap, true);
-    e1scatraO2n_ = CORE::LINALG::CreateVector(*elementcolmap, true);
-    e1scatraO2np_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+    e1scatraO2nm_ = Core::LinAlg::CreateVector(*elementcolmap, true);
+    e1scatraO2n_ = Core::LinAlg::CreateVector(*elementcolmap, true);
+    e1scatraO2np_ = Core::LinAlg::CreateVector(*elementcolmap, true);
 
-    e2scatraO2nm_ = CORE::LINALG::CreateVector(*elementcolmap, true);
-    e2scatraO2n_ = CORE::LINALG::CreateVector(*elementcolmap, true);
-    e2scatraO2np_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+    e2scatraO2nm_ = Core::LinAlg::CreateVector(*elementcolmap, true);
+    e2scatraO2n_ = Core::LinAlg::CreateVector(*elementcolmap, true);
+    e2scatraO2np_ = Core::LinAlg::CreateVector(*elementcolmap, true);
 
-    cfls_ = CORE::LINALG::CreateVector(*elementrowmap, true);
+    cfls_ = Core::LinAlg::CreateVector(*elementrowmap, true);
 
-    // junctionVolumeInMix_ = CORE::LINALG::CreateVector(*dofcolmap,true);
-    // junVolMix_Corrector_ = CORE::LINALG::CreateVector(*dofcolmap,true);
-    // jVDofRowMix_         = CORE::LINALG::CreateVector(*dofrowmap,true);
-    // diffusionArea_       = CORE::LINALG::CreateVector(*dofcolmap,true);
+    // junctionVolumeInMix_ = Core::LinAlg::CreateVector(*dofcolmap,true);
+    // junVolMix_Corrector_ = Core::LinAlg::CreateVector(*dofcolmap,true);
+    // jVDofRowMix_         = Core::LinAlg::CreateVector(*dofrowmap,true);
+    // diffusionArea_       = Core::LinAlg::CreateVector(*dofcolmap,true);
 
-    junctionVolumeInMix_ = CORE::LINALG::CreateVector(*dofrowmap, true);
-    junVolMix_Corrector_ = CORE::LINALG::CreateVector(*dofrowmap, true);
-    jVDofRowMix_ = CORE::LINALG::CreateVector(*dofrowmap, true);
-    diffusionArea_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+    junctionVolumeInMix_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    junVolMix_Corrector_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    jVDofRowMix_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    diffusionArea_ = Core::LinAlg::CreateVector(*dofrowmap, true);
   }
 
   // Vectors used for solution process
   // right hand side vector and right hand side corrector
-  rhs_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  rhs_ = Core::LinAlg::CreateVector(*dofrowmap, true);
 
   // ---------------------------------------------------------------------------------------
   // Initialize all the arteries' cross-sectional areas to the initial crossectional area Ao
@@ -286,7 +287,8 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Dis
   // loop all elements and initialize all of the values
 
   // note: We use an RCP because ParameterList wants something printable and comparable
-  DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+  Discret::ReducedLung::EvaluationData& evaluation_data =
+      Discret::ReducedLung::EvaluationData::get();
   evaluation_data.p0np = pnp_;
   evaluation_data.p0n = pn_;
   evaluation_data.p0nm = pnm_;
@@ -306,8 +308,8 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Dis
   evaluation_data.elemArea0 = elemArea0_;
   eleparams.set("action", "get_initial_state");
 
-  Teuchos::RCP<Epetra_Vector> radii_in = CORE::LINALG::CreateVector(*dofrowmap, true);
-  Teuchos::RCP<Epetra_Vector> radii_out = CORE::LINALG::CreateVector(*dofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> radii_in = Core::LinAlg::CreateVector(*dofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> radii_out = Core::LinAlg::CreateVector(*dofrowmap, true);
 
   discret_->Evaluate(eleparams, Teuchos::null, Teuchos::null, radii_in, radii_out, n_intr_ac_ln_);
 
@@ -350,7 +352,7 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Dis
   for (int nele = 0; nele < discret_->NumMyColElements(); ++nele)
   {
     // get the element
-    CORE::Elements::Element* ele = discret_->lColElement(nele);
+    Core::Elements::Element* ele = discret_->lColElement(nele);
 
     // get element location vector, dirichlet flags and ownerships
     std::vector<int> lm;
@@ -382,13 +384,13 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Dis
     if (((*generations_)[j] != -1) and ((*generations_)[j] != -2))
     {
       int GID = discret_->ElementColMap()->GID(j);  // global element ID
-      const CORE::Elements::ElementType& ele_type = discret_->gElement(GID)->ElementType();
-      if (ele_type == DRT::ELEMENTS::RedAirwayType::Instance())
+      const Core::Elements::ElementType& ele_type = discret_->gElement(GID)->ElementType();
+      if (ele_type == Discret::ELEMENTS::RedAirwayType::Instance())
       {
         // dynamic cast to airway element, since Elements base class does not have the functions
         // getParams and setParams
-        DRT::ELEMENTS::RedAirway* ele =
-            dynamic_cast<DRT::ELEMENTS::RedAirway*>(discret_->gElement(GID));
+        Discret::ELEMENTS::RedAirway* ele =
+            dynamic_cast<Discret::ELEMENTS::RedAirway*>(discret_->gElement(GID));
         const auto airway_params = ele->GetAirwayParams();
         // check if airway is collapsible
         const double airwayColl = airway_params.airway_coll;
@@ -407,7 +409,7 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Dis
     }
   }
 
-  std::vector<CORE::Conditions::Condition*> conds;
+  std::vector<Core::Conditions::Condition*> conds;
   discret_->GetCondition("RedAirwayScatraExchangeCond", conds);
 }  // RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt
 
@@ -416,7 +418,7 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Dis
  | Integrate () routine to start the time integration.                  |
  |                                                          ismail 01/10|
  *----------------------------------------------------------------------*/
-void AIRWAY::RedAirwayImplicitTimeInt::Integrate()
+void Airway::RedAirwayImplicitTimeInt::Integrate()
 {
   Teuchos::RCP<Teuchos::ParameterList> param;
   Integrate(false, param);
@@ -427,7 +429,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Integrate()
  | Integrate () routine to start the time integration.                  |
  |                                                          ismail 01/10|
  *----------------------------------------------------------------------*/
-void AIRWAY::RedAirwayImplicitTimeInt::Integrate(
+void Airway::RedAirwayImplicitTimeInt::Integrate(
     bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams)
 {
   // Do prestressing if required
@@ -463,7 +465,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Integrate(
  | volume of each acinus reaches the given volume in the .dat file when p_tp is|
  | applied                                                        roth 05/2015 |
  *-----------------------------------------------------------------------------*/
-void AIRWAY::RedAirwayImplicitTimeInt::compute_vol0_for_pre_stress()
+void Airway::RedAirwayImplicitTimeInt::compute_vol0_for_pre_stress()
 {
   double p = transpulmpress_;
 
@@ -477,11 +479,11 @@ void AIRWAY::RedAirwayImplicitTimeInt::compute_vol0_for_pre_stress()
 
       // check if aciuns is ogden type material
       if (discret_->gElement(GID)->Material(0)->MaterialType() ==
-          CORE::Materials::m_0d_maxwell_acinus_ogden)
+          Core::Materials::m_0d_maxwell_acinus_ogden)
       {
         // get material parameters kappa and beta
-        Teuchos::RCP<MAT::Maxwell0dAcinusOgden> mymat =
-            Teuchos::rcp_dynamic_cast<MAT::Maxwell0dAcinusOgden>(
+        Teuchos::RCP<Mat::Maxwell0dAcinusOgden> mymat =
+            Teuchos::rcp_dynamic_cast<Mat::Maxwell0dAcinusOgden>(
                 discret_->gElement(GID)->Material(0));
         double kappa = mymat->GetParams("kappa");
         double beta = mymat->GetParams("beta");
@@ -503,12 +505,12 @@ void AIRWAY::RedAirwayImplicitTimeInt::compute_vol0_for_pre_stress()
 
         // adjust acinus volume 0 in the elements parameters
         // additional check whether element is RedAcinusType
-        const CORE::Elements::ElementType& ele_type = discret_->gElement(GID)->ElementType();
-        if (ele_type == DRT::ELEMENTS::RedAcinusType::Instance())
+        const Core::Elements::ElementType& ele_type = discret_->gElement(GID)->ElementType();
+        if (ele_type == Discret::ELEMENTS::RedAcinusType::Instance())
         {
           // dynamic cast to aciunus element, since Elements base class does not have the functions
           // getParams and setParams
-          auto* acini_ele = dynamic_cast<DRT::ELEMENTS::RedAcinus*>(discret_->gElement(GID));
+          auto* acini_ele = dynamic_cast<Discret::ELEMENTS::RedAcinus*>(discret_->gElement(GID));
           const auto acinus_params = acini_ele->GetAcinusParams();
           // get original value for aciuns volume (entered in dat file)
           double val = acinus_params.volume_init;
@@ -517,7 +519,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::compute_vol0_for_pre_stress()
           acini_ele->UpdateRelaxedVolume(val);
 
           // adjust acini volumes in the vectors used in this function
-          if (not GLOBAL::Problem::Instance()->Restart())
+          if (not Global::Problem::Instance()->Restart())
           {
             (*acini_e_volumenp_)[i] = val;
             (*acini_e_volumen_)[i] = val;
@@ -538,8 +540,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::compute_vol0_for_pre_stress()
 /*-----------------------------------------------------------------------------*
  |                                                                roth 02/2016 |
  *-----------------------------------------------------------------------------*/
-void AIRWAY::RedAirwayImplicitTimeInt::compute_nearest_acinus(
-    Teuchos::RCP<DRT::Discretization const> search_discret, std::set<int>* elecolset,
+void Airway::RedAirwayImplicitTimeInt::compute_nearest_acinus(
+    Teuchos::RCP<Discret::Discretization const> search_discret, std::set<int>* elecolset,
     std::set<int>* nodecolset, Teuchos::RCP<Epetra_Vector> airway_acinus_dep)
 {
   // Loop over all airways contained on this proc
@@ -549,8 +551,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::compute_nearest_acinus(
     int GID1 = search_discret->ElementColMap()->GID(j);
 
     // check if element is airway element
-    DRT::ELEMENTS::RedAirway* ele_aw =
-        dynamic_cast<DRT::ELEMENTS::RedAirway*>(search_discret->gElement(GID1));
+    Discret::ELEMENTS::RedAirway* ele_aw =
+        dynamic_cast<Discret::ELEMENTS::RedAirway*>(search_discret->gElement(GID1));
 
     // check if element j is an airway
     if (ele_aw != nullptr)
@@ -580,8 +582,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::compute_nearest_acinus(
         // global acinus element ID
         int GID2 = search_discret->ElementColMap()->GID(i);
 
-        DRT::ELEMENTS::RedAcinus* ele_ac =
-            dynamic_cast<DRT::ELEMENTS::RedAcinus*>(search_discret->gElement(GID2));
+        Discret::ELEMENTS::RedAcinus* ele_ac =
+            dynamic_cast<Discret::ELEMENTS::RedAcinus*>(search_discret->gElement(GID2));
 
         // Check if element is an acinus
         if (ele_ac != nullptr)
@@ -611,8 +613,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::compute_nearest_acinus(
       int GID3 = search_discret->ElementColMap()->GID(min_index);
 
       // why cast
-      DRT::ELEMENTS::RedAcinus* ele_acinus =
-          dynamic_cast<DRT::ELEMENTS::RedAcinus*>(search_discret->gElement(GID3));
+      Discret::ELEMENTS::RedAcinus* ele_acinus =
+          dynamic_cast<Discret::ELEMENTS::RedAcinus*>(search_discret->gElement(GID3));
 
       // extend ele and node col map
       if (elecolset != nullptr and nodecolset != nullptr)
@@ -633,7 +635,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::compute_nearest_acinus(
  | Time loop for red_airway problems                                    |
  |                                                          ismail 01/10|
  *----------------------------------------------------------------------*/
-void AIRWAY::RedAirwayImplicitTimeInt::TimeLoop(
+void Airway::RedAirwayImplicitTimeInt::TimeLoop(
     bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams)
 {
   coupledTo3D_ = CoupledTo3D;
@@ -665,7 +667,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::TimeLoop(
  | Contains one timestep: Prepare, Solve, Update, Output                |
  |                                                          ismail 09/12|
  *----------------------------------------------------------------------*/
-void AIRWAY::RedAirwayImplicitTimeInt::TimeStep(
+void Airway::RedAirwayImplicitTimeInt::TimeStep(
     bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams)
 {
   coupledTo3D_ = CoupledTo3D;
@@ -743,7 +745,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::TimeStep(
  | Contains the one step time loop for red_airway_tissue problems       |
  |                                                          ismail 09/12|
  *----------------------------------------------------------------------*/
-void AIRWAY::RedAirwayImplicitTimeInt::IntegrateStep(
+void Airway::RedAirwayImplicitTimeInt::IntegrateStep(
     Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams)
 {
   // Output to screen
@@ -780,7 +782,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::IntegrateStep(
 /*----------------------------------------------------------------------*
  | Setup the variables to do a new time step                ismail 01/10|
  *----------------------------------------------------------------------*/
-void AIRWAY::RedAirwayImplicitTimeInt::prepare_time_step()
+void Airway::RedAirwayImplicitTimeInt::prepare_time_step()
 {
   rhs_->PutScalar(0.0);
   // Set time dependent parameters
@@ -793,7 +795,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::prepare_time_step()
  | Nonlinear iterative solver for reduced-dimensional airway problem    |
  |                                                         ismail 01/11 |
  *----------------------------------------------------------------------*/
-void AIRWAY::RedAirwayImplicitTimeInt::NonLin_Solve(
+void Airway::RedAirwayImplicitTimeInt::NonLin_Solve(
     Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams)
 {
   double error_norm1 = 1.e7;
@@ -887,7 +889,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::NonLin_Solve(
  | Single Newton step for reduced dimensional airways                   |
  |                                                         ismail 01/10 |
  *----------------------------------------------------------------------*/
-void AIRWAY::RedAirwayImplicitTimeInt::Solve(
+void Airway::RedAirwayImplicitTimeInt::Solve(
     Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams)
 {
   // Time measurement:  solving reduced dimensional airways
@@ -924,7 +926,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(
     discret_->set_state("intr_ac_link", n_intr_ac_ln_);
 
     // note: We use an RCP because ParameterList wants something printable and comparable
-    DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+    Discret::ReducedLung::EvaluationData& evaluation_data =
+        Discret::ReducedLung::EvaluationData::get();
 
     evaluation_data.qin_np = qin_np_;
     evaluation_data.qin_n = qin_n_;
@@ -1008,7 +1011,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(
     discret_->set_state("pnm", pnm_);
 
     // note: We use an RCP because ParameterList wants something printable and comparable
-    DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+    Discret::ReducedLung::EvaluationData& evaluation_data =
+        Discret::ReducedLung::EvaluationData::get();
 
     evaluation_data.acinar_vn = acini_e_volumen_;
     evaluation_data.acinar_vnp = acini_e_volumenp_;
@@ -1054,8 +1058,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(
   }  // end of solving terminal BCs
 
   /*std::cout<<"----------------------- My SYSMAT IS
-  ("<<myrank_<<"-----------------------"<<std::endl; Teuchos::RCP<CORE::LINALG::SparseMatrix>
-  A_debug = Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(sysmat_); if (A_debug !=
+  ("<<myrank_<<"-----------------------"<<std::endl; Teuchos::RCP<Core::LinAlg::SparseMatrix>
+  A_debug = Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(sysmat_); if (A_debug !=
   Teuchos::null)
   {
      (A_debug->EpetraMatrix())->Print(std::cout);
@@ -1080,7 +1084,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(
       TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
     }
 
-    CORE::LINALG::apply_dirichlet_to_system(*sysmat_, *pnp_, *rhs_, *bcval_, *dbctog_);
+    Core::LinAlg::apply_dirichlet_to_system(*sysmat_, *pnp_, *rhs_, *bcval_, *dbctog_);
   }
 
   /***
@@ -1095,7 +1099,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(
       TEUCHOS_FUNC_TIME_MONITOR("      + solver calls");
     }
     // Call solver
-    CORE::LINALG::SolverParams solver_params;
+    Core::LinAlg::SolverParams solver_params;
     solver_params.refactor = true;
     solver_params.reset = true;
     solver_->Solve(sysmat_->EpetraOperator(), pnp_, rhs_, solver_params);
@@ -1127,7 +1131,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(
     discret_->set_state("intr_ac_link", n_intr_ac_ln_);
 
     // note: We use an RCP because ParameterList wants something printable and comparable
-    DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+    Discret::ReducedLung::EvaluationData& evaluation_data =
+        Discret::ReducedLung::EvaluationData::get();
 
     evaluation_data.qin_nm = qin_nm_;
     evaluation_data.qout_nm = qout_nm_;
@@ -1172,7 +1177,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(
     discret_->ClearState();
 
     // note: We use an RCP because ParameterList wants something printable and comparable
-    DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+    Discret::ReducedLung::EvaluationData& evaluation_data =
+        Discret::ReducedLung::EvaluationData::get();
 
     evaluation_data.acinar_vn = acini_e_volumen_;
 
@@ -1208,7 +1214,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(
     discret_->set_state("pnp", pnp_);
 
     // note: We use an RCP because ParameterList wants something printable and comparable
-    DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+    Discret::ReducedLung::EvaluationData& evaluation_data =
+        Discret::ReducedLung::EvaluationData::get();
 
     evaluation_data.qin_np = qin_np_;
     evaluation_data.qin_n = qin_n_;
@@ -1245,7 +1252,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(
+void Airway::RedAirwayImplicitTimeInt::SolveScatra(
     Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams)
 {
   //---------------------------------------------------------------------
@@ -1260,7 +1267,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(
     eleparams.set("action", "calc_cfl");
 
     // note: We use an RCP because ParameterList wants something printable and comparable
-    DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+    Discret::ReducedLung::EvaluationData& evaluation_data =
+        Discret::ReducedLung::EvaluationData::get();
 
     evaluation_data.elemVolumenp = elemVolumenp_;
     evaluation_data.qin_np = qin_np_;
@@ -1296,7 +1304,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(
     discret_->ClearState();
 
     // note: We use an RCP because ParameterList wants something printable and comparable
-    DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+    Discret::ReducedLung::EvaluationData& evaluation_data =
+        Discret::ReducedLung::EvaluationData::get();
 
     evaluation_data.qin_n = qin_n_;
     evaluation_data.qout_n = qout_n_;
@@ -1332,7 +1341,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(
     discret_->set_state("scatran", scatraO2n_);
 
     // note: We use an RCP because ParameterList wants something printable and comparable
-    DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+    Discret::ReducedLung::EvaluationData& evaluation_data =
+        Discret::ReducedLung::EvaluationData::get();
 
     evaluation_data.e1scatran = e1scatraO2n_;
     evaluation_data.e1scatranp = e1scatraO2np_;
@@ -1357,7 +1367,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(
     evaluation_data.time = time_;
 
     const Epetra_Map* dofrowmap = discret_->dof_row_map();
-    Teuchos::RCP<Epetra_Vector> dummy = CORE::LINALG::CreateVector(*dofrowmap, true);
+    Teuchos::RCP<Epetra_Vector> dummy = Core::LinAlg::CreateVector(*dofrowmap, true);
     discret_->Evaluate(eleparams, sysmat_, Teuchos::null, scatraO2np_, dummy, Teuchos::null);
     discret_->ClearState();
   }
@@ -1391,7 +1401,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(
     discret_->ClearState();
 
     // note: We use an RCP because ParameterList wants something printable and comparable
-    DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+    Discret::ReducedLung::EvaluationData& evaluation_data =
+        Discret::ReducedLung::EvaluationData::get();
 
     evaluation_data.e1scatranp = e1scatraO2np_;
     evaluation_data.e2scatranp = e2scatraO2np_;
@@ -1420,11 +1431,11 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(
   // define an empty capillary flowrate vector
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
   // Diffusion surface (from the acinar side)
-  Teuchos::RCP<Epetra_Vector> nodal_surfaces = CORE::LINALG::CreateVector(*dofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> nodal_surfaces = Core::LinAlg::CreateVector(*dofrowmap, true);
   // Fluid volume
-  Teuchos::RCP<Epetra_Vector> nodal_volumes = CORE::LINALG::CreateVector(*dofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> nodal_volumes = Core::LinAlg::CreateVector(*dofrowmap, true);
   // Average concentration in Acini and in Capillar
-  Teuchos::RCP<Epetra_Vector> nodal_avg_conc = CORE::LINALG::CreateVector(*dofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> nodal_avg_conc = Core::LinAlg::CreateVector(*dofrowmap, true);
 
   {
     // get the diffusion surfaces at the acini
@@ -1434,7 +1445,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(
     // set vector values of flow rates
     discret_->set_state("scatranp", scatraO2np_);
     // note: We use an RCP because ParameterList wants something printable and comparable
-    DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+    Discret::ReducedLung::EvaluationData& evaluation_data =
+        Discret::ReducedLung::EvaluationData::get();
     evaluation_data.acinar_v = acini_e_volumenp_;
 
     // set vector values of flow rates
@@ -1464,7 +1476,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(
     discret_->set_state("scatranp", nodal_avg_conc);
 
     // note: We use an RCP because ParameterList wants something printable and comparable
-    DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+    Discret::ReducedLung::EvaluationData& evaluation_data =
+        Discret::ReducedLung::EvaluationData::get();
     evaluation_data.elemVolumenp = elemVolumenp_;
     evaluation_data.dt = dta_;
     evaluation_data.time = time_;
@@ -1488,7 +1501,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(
     // set vector values needed to evaluate O2 transport elements
     discret_->ClearState();
     // note: We use an RCP because ParameterList wants something printable and comparable
-    DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+    Discret::ReducedLung::EvaluationData& evaluation_data =
+        Discret::ReducedLung::EvaluationData::get();
 
     evaluation_data.qin_np = qin_np_;
     evaluation_data.qin_n = qin_n_;
@@ -1519,7 +1533,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(
     discret_->ClearState();
 
     // note: We use an RCP because ParameterList wants something printable and comparable
-    DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+    Discret::ReducedLung::EvaluationData& evaluation_data =
+        Discret::ReducedLung::EvaluationData::get();
 
     evaluation_data.qin_np = qin_np_;
     evaluation_data.qin_n = qin_n_;
@@ -1542,7 +1557,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(
  | This function is currently not used but will be kept empty until     |
  | further use.                                            ismail 01/10 |
  *----------------------------------------------------------------------*/
-void AIRWAY::RedAirwayImplicitTimeInt::assemble_mat_and_rhs()
+void Airway::RedAirwayImplicitTimeInt::assemble_mat_and_rhs()
 {
   dtele_ = 0.0;
   dtfilter_ = 0.0;
@@ -1562,7 +1577,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::assemble_mat_and_rhs()
  |  pn_   =  pnp_                                                       |
  |                                                          ismail 06/09|
  *----------------------------------------------------------------------*/
-void AIRWAY::RedAirwayImplicitTimeInt::TimeUpdate()
+void Airway::RedAirwayImplicitTimeInt::TimeUpdate()
 {
   // Volumetric Flow rate and acini volume of this step become most recent
   pnm_->Update(1.0, *pn_, 0.0);
@@ -1606,7 +1621,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::TimeUpdate()
  |                                                                      |
  |                                                          ismail 04/14|
  *----------------------------------------------------------------------*/
-void AIRWAY::RedAirwayImplicitTimeInt::InitSaveState()
+void Airway::RedAirwayImplicitTimeInt::InitSaveState()
 {
   // Get discretizations DOF row map
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
@@ -1615,48 +1630,48 @@ void AIRWAY::RedAirwayImplicitTimeInt::InitSaveState()
   const Epetra_Map* elementcolmap = discret_->ElementColMap();
 
   // saving vector for pressure
-  saved_pnm_ = CORE::LINALG::CreateVector(*dofrowmap, true);
-  saved_pn_ = CORE::LINALG::CreateVector(*dofrowmap, true);
-  saved_pnp_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  saved_pnm_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  saved_pn_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  saved_pnp_ = Core::LinAlg::CreateVector(*dofrowmap, true);
 
   // saving vector for inflow rate
-  saved_qin_nm_ = CORE::LINALG::CreateVector(*elementcolmap, true);
-  saved_qin_n_ = CORE::LINALG::CreateVector(*elementcolmap, true);
-  saved_qin_np_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+  saved_qin_nm_ = Core::LinAlg::CreateVector(*elementcolmap, true);
+  saved_qin_n_ = Core::LinAlg::CreateVector(*elementcolmap, true);
+  saved_qin_np_ = Core::LinAlg::CreateVector(*elementcolmap, true);
 
   // saving vector for outflow rate
-  saved_qout_nm_ = CORE::LINALG::CreateVector(*elementcolmap, true);
-  saved_qout_n_ = CORE::LINALG::CreateVector(*elementcolmap, true);
-  saved_qout_np_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+  saved_qout_nm_ = Core::LinAlg::CreateVector(*elementcolmap, true);
+  saved_qout_n_ = Core::LinAlg::CreateVector(*elementcolmap, true);
+  saved_qout_np_ = Core::LinAlg::CreateVector(*elementcolmap, true);
 
   // saving vector for trajectory
-  saved_x_n_ = CORE::LINALG::CreateVector(*elementcolmap, true);
-  saved_x_np_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+  saved_x_n_ = Core::LinAlg::CreateVector(*elementcolmap, true);
+  saved_x_np_ = Core::LinAlg::CreateVector(*elementcolmap, true);
 
   // saving vector for acinar volume
-  saved_acini_e_volumenm_ = CORE::LINALG::CreateVector(*elementcolmap, true);
-  saved_acini_e_volumen_ = CORE::LINALG::CreateVector(*elementcolmap, true);
-  saved_acini_e_volumenp_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+  saved_acini_e_volumenm_ = Core::LinAlg::CreateVector(*elementcolmap, true);
+  saved_acini_e_volumen_ = Core::LinAlg::CreateVector(*elementcolmap, true);
+  saved_acini_e_volumenp_ = Core::LinAlg::CreateVector(*elementcolmap, true);
 
   // saving vector for element volume
-  saved_elemVolumenm_ = CORE::LINALG::CreateVector(*elementcolmap, true);
-  saved_elemVolumen_ = CORE::LINALG::CreateVector(*elementcolmap, true);
-  saved_elemVolumenp_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+  saved_elemVolumenm_ = Core::LinAlg::CreateVector(*elementcolmap, true);
+  saved_elemVolumen_ = Core::LinAlg::CreateVector(*elementcolmap, true);
+  saved_elemVolumenp_ = Core::LinAlg::CreateVector(*elementcolmap, true);
 
   // saving vector for nodal O2 concentration
-  saved_scatraO2nm_ = CORE::LINALG::CreateVector(*dofrowmap, true);
-  saved_scatraO2n_ = CORE::LINALG::CreateVector(*dofrowmap, true);
-  saved_scatraO2np_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  saved_scatraO2nm_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  saved_scatraO2n_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  saved_scatraO2np_ = Core::LinAlg::CreateVector(*dofrowmap, true);
 
   // saving vector for element inlet O2 concentration
-  saved_e1scatraO2nm_ = CORE::LINALG::CreateVector(*elementcolmap, true);
-  saved_e1scatraO2n_ = CORE::LINALG::CreateVector(*elementcolmap, true);
-  saved_e1scatraO2np_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+  saved_e1scatraO2nm_ = Core::LinAlg::CreateVector(*elementcolmap, true);
+  saved_e1scatraO2n_ = Core::LinAlg::CreateVector(*elementcolmap, true);
+  saved_e1scatraO2np_ = Core::LinAlg::CreateVector(*elementcolmap, true);
 
   // saving vector for element outlet O2 concentration
-  saved_e2scatraO2nm_ = CORE::LINALG::CreateVector(*elementcolmap, true);
-  saved_e2scatraO2n_ = CORE::LINALG::CreateVector(*elementcolmap, true);
-  saved_e2scatraO2np_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+  saved_e2scatraO2nm_ = Core::LinAlg::CreateVector(*elementcolmap, true);
+  saved_e2scatraO2n_ = Core::LinAlg::CreateVector(*elementcolmap, true);
+  saved_e2scatraO2np_ = Core::LinAlg::CreateVector(*elementcolmap, true);
 }  // RedAirwayImplicitTimeInt::InitSaveState()
 
 
@@ -1670,7 +1685,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::InitSaveState()
  |                                                                      |
  |                                                          ismail 04/14|
  *----------------------------------------------------------------------*/
-void AIRWAY::RedAirwayImplicitTimeInt::SaveState()
+void Airway::RedAirwayImplicitTimeInt::SaveState()
 {
   // save pressure vectors
   saved_pnm_->Update(1.0, *pnm_, 0.0);
@@ -1733,7 +1748,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::SaveState()
  |                                                                      |
  |                                                          ismail 04/14|
  *----------------------------------------------------------------------*/
-void AIRWAY::RedAirwayImplicitTimeInt::LoadState()
+void Airway::RedAirwayImplicitTimeInt::LoadState()
 {
   // save pressure vectors
   pnm_->Update(1.0, *saved_pnm_, 0.0);
@@ -1789,7 +1804,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::LoadState()
 /*----------------------------------------------------------------------*
  | Output of solution vector to binio                       ismail 07/09|
  *----------------------------------------------------------------------*/
-void AIRWAY::RedAirwayImplicitTimeInt::Output(
+void Airway::RedAirwayImplicitTimeInt::Output(
     bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams)
 {
   int step = 0;
@@ -1830,13 +1845,14 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(
         Teuchos::ParameterList eleparams;
 
         // note: We use an RCP because ParameterList wants something printable and comparable
-        DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+        Discret::ReducedLung::EvaluationData& evaluation_data =
+            Discret::ReducedLung::EvaluationData::get();
         // action for elements
         evaluation_data.elemVolumenp = elemVolumenp_;
         eleparams.set("action", "eval_PO2_from_concentration");
 
         const Epetra_Map* dofrowmap = discret_->dof_row_map();
-        Teuchos::RCP<Epetra_Vector> po2 = CORE::LINALG::CreateVector(*dofrowmap, true);
+        Teuchos::RCP<Epetra_Vector> po2 = Core::LinAlg::CreateVector(*dofrowmap, true);
         discret_->ClearState();
 
         evaluation_data.po2 = po2;
@@ -1853,13 +1869,14 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(
         // create the parameters for the discretization
         Teuchos::ParameterList eleparams;
         // note: We use an RCP because ParameterList wants something printable and comparable
-        DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+        Discret::ReducedLung::EvaluationData& evaluation_data =
+            Discret::ReducedLung::EvaluationData::get();
         // action for elements
         evaluation_data.elemVolumenp = elemVolumenp_;
         eleparams.set("action", "eval_PO2_from_concentration");
 
         const Epetra_Map* dofrowmap = discret_->dof_row_map();
-        Teuchos::RCP<Epetra_Vector> po2 = CORE::LINALG::CreateVector(*dofrowmap, true);
+        Teuchos::RCP<Epetra_Vector> po2 = Core::LinAlg::CreateVector(*dofrowmap, true);
         discret_->ClearState();
 
         evaluation_data.po2 = po2;
@@ -1917,41 +1934,41 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(
     }
 
     // write the flow values
-    CORE::LINALG::Export(*qin_nm_, *qexp_);
+    Core::LinAlg::Export(*qin_nm_, *qexp_);
     output_.WriteVector("qin_nm", qexp_);
-    CORE::LINALG::Export(*qin_n_, *qexp_);
+    Core::LinAlg::Export(*qin_n_, *qexp_);
     output_.WriteVector("qin_n", qexp_);
-    CORE::LINALG::Export(*qin_np_, *qexp_);
+    Core::LinAlg::Export(*qin_np_, *qexp_);
     output_.WriteVector("qin_np", qexp_);
 
-    CORE::LINALG::Export(*qout_nm_, *qexp_);
+    Core::LinAlg::Export(*qout_nm_, *qexp_);
     output_.WriteVector("qout_nm", qexp_);
-    CORE::LINALG::Export(*qout_n_, *qexp_);
+    Core::LinAlg::Export(*qout_n_, *qexp_);
     output_.WriteVector("qout_n", qexp_);
-    CORE::LINALG::Export(*qout_np_, *qexp_);
+    Core::LinAlg::Export(*qout_np_, *qexp_);
     output_.WriteVector("qout_np", qexp_);
 
-    CORE::LINALG::Export(*x_n_, *qexp_);
+    Core::LinAlg::Export(*x_n_, *qexp_);
     output_.WriteVector("x_n", qexp_);
-    CORE::LINALG::Export(*x_np_, *qexp_);
+    Core::LinAlg::Export(*x_np_, *qexp_);
     output_.WriteVector("x_np", qexp_);
-    CORE::LINALG::Export(*open_, *qexp_);
+    Core::LinAlg::Export(*open_, *qexp_);
     output_.WriteVector("open", qexp_);
-    CORE::LINALG::Export(*p_extnp_, *qexp_);
+    Core::LinAlg::Export(*p_extnp_, *qexp_);
     output_.WriteVector("p_extnp", qexp_);
-    CORE::LINALG::Export(*p_extn_, *qexp_);
+    Core::LinAlg::Export(*p_extn_, *qexp_);
     output_.WriteVector("p_extn", qexp_);
-    CORE::LINALG::Export(*airway_acinus_dep_, *qexp_);
+    Core::LinAlg::Export(*airway_acinus_dep_, *qexp_);
     output_.WriteVector("airway_acinus_dep", qexp_);
 
-    CORE::LINALG::Export(*elemVolumenm_, *qexp_);
+    Core::LinAlg::Export(*elemVolumenm_, *qexp_);
     output_.WriteVector("elemVolumenm", qexp_);
-    CORE::LINALG::Export(*elemVolumen_, *qexp_);
+    Core::LinAlg::Export(*elemVolumen_, *qexp_);
     output_.WriteVector("elemVolumen", qexp_);
-    CORE::LINALG::Export(*elemVolumenp_, *qexp_);
+    Core::LinAlg::Export(*elemVolumenp_, *qexp_);
     output_.WriteVector("elemVolumenp", qexp_);
 
-    CORE::LINALG::Export(*elemRadiusnp_, *qexp_);
+    Core::LinAlg::Export(*elemRadiusnp_, *qexp_);
     output_.WriteVector("elemRadius_current", qexp_);
 
     {
@@ -1987,16 +2004,16 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(
 
     if (step_ == upres_)
     {
-      CORE::LINALG::Export(*elemVolume0_, *qexp_);
+      Core::LinAlg::Export(*elemVolume0_, *qexp_);
       output_.WriteVector("elemVolume0", qexp_);
       output_.WriteVector("NodeIDs", nodeIds_);
       output_.WriteVector("radii", radii_);
-      CORE::LINALG::Export(*generations_, *qexp_);
+      Core::LinAlg::Export(*generations_, *qexp_);
       output_.WriteVector("generations", qexp_);
-      CORE::LINALG::Export(*acini_bc_, *qexp_);
+      Core::LinAlg::Export(*acini_bc_, *qexp_);
       output_.WriteVector("acin_bc", qexp_);
       output_.WriteElementData(true);
-      CORE::LINALG::Export(*elemArea0_, *qexp_);
+      Core::LinAlg::Export(*elemArea0_, *qexp_);
       output_.WriteVector("elemArea0", qexp_);
     }
 
@@ -2072,50 +2089,50 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(
       output_.WriteVector("juncVolMix", jVDofRowMix_);
     }
     // write the flow values
-    CORE::LINALG::Export(*qin_nm_, *qexp_);
+    Core::LinAlg::Export(*qin_nm_, *qexp_);
     output_.WriteVector("qin_nm", qexp_);
-    CORE::LINALG::Export(*qin_n_, *qexp_);
+    Core::LinAlg::Export(*qin_n_, *qexp_);
     output_.WriteVector("qin_n", qexp_);
-    CORE::LINALG::Export(*qin_np_, *qexp_);
+    Core::LinAlg::Export(*qin_np_, *qexp_);
     output_.WriteVector("qin_np", qexp_);
     //
-    CORE::LINALG::Export(*qout_nm_, *qexp_);
+    Core::LinAlg::Export(*qout_nm_, *qexp_);
     output_.WriteVector("qout_nm", qexp_);
-    CORE::LINALG::Export(*qout_n_, *qexp_);
+    Core::LinAlg::Export(*qout_n_, *qexp_);
     output_.WriteVector("qout_n", qexp_);
-    CORE::LINALG::Export(*qout_np_, *qexp_);
+    Core::LinAlg::Export(*qout_np_, *qexp_);
     output_.WriteVector("qout_np", qexp_);
 
-    CORE::LINALG::Export(*x_n_, *qexp_);
+    Core::LinAlg::Export(*x_n_, *qexp_);
     output_.WriteVector("x_n", qexp_);
-    CORE::LINALG::Export(*x_np_, *qexp_);
+    Core::LinAlg::Export(*x_np_, *qexp_);
     output_.WriteVector("x_np", qexp_);
-    CORE::LINALG::Export(*open_, *qexp_);
+    Core::LinAlg::Export(*open_, *qexp_);
     output_.WriteVector("open", qexp_);
-    CORE::LINALG::Export(*p_extnp_, *qexp_);
+    Core::LinAlg::Export(*p_extnp_, *qexp_);
     output_.WriteVector("p_extnp", qexp_);
-    CORE::LINALG::Export(*p_extn_, *qexp_);
+    Core::LinAlg::Export(*p_extn_, *qexp_);
     output_.WriteVector("p_extn", qexp_);
-    CORE::LINALG::Export(*airway_acinus_dep_, *qexp_);
+    Core::LinAlg::Export(*airway_acinus_dep_, *qexp_);
     output_.WriteVector("airway_acinus_dep", qexp_);
 
-    CORE::LINALG::Export(*elemVolumenm_, *qexp_);
+    Core::LinAlg::Export(*elemVolumenm_, *qexp_);
     output_.WriteVector("elemVolumenm", qexp_);
-    CORE::LINALG::Export(*elemVolumen_, *qexp_);
+    Core::LinAlg::Export(*elemVolumen_, *qexp_);
     output_.WriteVector("elemVolumen", qexp_);
-    CORE::LINALG::Export(*elemVolumenp_, *qexp_);
+    Core::LinAlg::Export(*elemVolumenp_, *qexp_);
     output_.WriteVector("elemVolumenp", qexp_);
 
     //
-    CORE::LINALG::Export(*acini_e_volumenm_, *qexp_);
+    Core::LinAlg::Export(*acini_e_volumenm_, *qexp_);
     output_.WriteVector("acini_vnm", qexp_);
-    CORE::LINALG::Export(*acini_e_volumen_, *qexp_);
+    Core::LinAlg::Export(*acini_e_volumen_, *qexp_);
     output_.WriteVector("acini_vn", qexp_);
-    CORE::LINALG::Export(*acini_e_volumenp_, *qexp_);
+    Core::LinAlg::Export(*acini_e_volumenp_, *qexp_);
     output_.WriteVector("acini_vnp", qexp_);
-    CORE::LINALG::Export(*acini_e_volume_strain_, *qexp_);
+    Core::LinAlg::Export(*acini_e_volume_strain_, *qexp_);
     output_.WriteVector("acini_volumetric_strain", qexp_);
-    CORE::LINALG::Export(*acini_e_volume0_, *qexp_);
+    Core::LinAlg::Export(*acini_e_volume0_, *qexp_);
     output_.WriteVector("acini_v0", qexp_);
 
     // write mesh in each restart step --- the elements are required since
@@ -2143,11 +2160,11 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(
 /*----------------------------------------------------------------------*
  | read_restart (public)                                     ismail 01/10|
  -----------------------------------------------------------------------*/
-void AIRWAY::RedAirwayImplicitTimeInt::read_restart(int step, bool coupledTo3D)
+void Airway::RedAirwayImplicitTimeInt::read_restart(int step, bool coupledTo3D)
 {
   coupledTo3D_ = coupledTo3D;
-  CORE::IO::DiscretizationReader reader(
-      discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
+  Core::IO::DiscretizationReader reader(
+      discret_, Global::Problem::Instance()->InputControlFile(), step);
   time_ = reader.ReadDouble("time");
 
   if (coupledTo3D_)
@@ -2165,49 +2182,49 @@ void AIRWAY::RedAirwayImplicitTimeInt::read_restart(int step, bool coupledTo3D)
   reader.ReadVector(p_nonlin_, "p_nonlin");
 
   reader.ReadVector(qexp_, "acini_vnm");
-  CORE::LINALG::Export(*qexp_, *acini_e_volumenm_);
+  Core::LinAlg::Export(*qexp_, *acini_e_volumenm_);
   reader.ReadVector(qexp_, "acini_vn");
-  CORE::LINALG::Export(*qexp_, *acini_e_volumen_);
+  Core::LinAlg::Export(*qexp_, *acini_e_volumen_);
   reader.ReadVector(qexp_, "acini_vnp");
-  CORE::LINALG::Export(*qexp_, *acini_e_volumenp_);
+  Core::LinAlg::Export(*qexp_, *acini_e_volumenp_);
   reader.ReadVector(qexp_, "acini_volumetric_strain");
-  CORE::LINALG::Export(*qexp_, *acini_e_volume_strain_);
+  Core::LinAlg::Export(*qexp_, *acini_e_volume_strain_);
   reader.ReadVector(qexp_, "acini_v0");
-  CORE::LINALG::Export(*qexp_, *acini_e_volume0_);
+  Core::LinAlg::Export(*qexp_, *acini_e_volume0_);
 
   reader.ReadVector(qexp_, "qin_nm");
-  CORE::LINALG::Export(*qexp_, *qin_nm_);
+  Core::LinAlg::Export(*qexp_, *qin_nm_);
   reader.ReadVector(qexp_, "qin_n");
-  CORE::LINALG::Export(*qexp_, *qin_n_);
+  Core::LinAlg::Export(*qexp_, *qin_n_);
   reader.ReadVector(qexp_, "qin_np");
-  CORE::LINALG::Export(*qexp_, *qin_np_);
+  Core::LinAlg::Export(*qexp_, *qin_np_);
 
   reader.ReadVector(qexp_, "qout_nm");
-  CORE::LINALG::Export(*qexp_, *qout_nm_);
+  Core::LinAlg::Export(*qexp_, *qout_nm_);
   reader.ReadVector(qexp_, "qout_n");
-  CORE::LINALG::Export(*qexp_, *qout_n_);
+  Core::LinAlg::Export(*qexp_, *qout_n_);
   reader.ReadVector(qexp_, "qout_np");
-  CORE::LINALG::Export(*qexp_, *qout_np_);
+  Core::LinAlg::Export(*qexp_, *qout_np_);
 
   reader.ReadVector(qexp_, "elemVolumenm");
-  CORE::LINALG::Export(*qexp_, *elemVolumenm_);
+  Core::LinAlg::Export(*qexp_, *elemVolumenm_);
   reader.ReadVector(qexp_, "elemVolumen");
-  CORE::LINALG::Export(*qexp_, *elemVolumen_);
+  Core::LinAlg::Export(*qexp_, *elemVolumen_);
   reader.ReadVector(qexp_, "elemVolumenp");
-  CORE::LINALG::Export(*qexp_, *elemVolumenp_);
+  Core::LinAlg::Export(*qexp_, *elemVolumenp_);
 
   reader.ReadVector(qexp_, "x_n");
-  CORE::LINALG::Export(*qexp_, *x_n_);
+  Core::LinAlg::Export(*qexp_, *x_n_);
   reader.ReadVector(qexp_, "x_np");
-  CORE::LINALG::Export(*qexp_, *x_np_);
+  Core::LinAlg::Export(*qexp_, *x_np_);
   reader.ReadVector(qexp_, "open");
-  CORE::LINALG::Export(*qexp_, *open_);
+  Core::LinAlg::Export(*qexp_, *open_);
   reader.ReadVector(qexp_, "p_extn");
-  CORE::LINALG::Export(*qexp_, *p_extn_);
+  Core::LinAlg::Export(*qexp_, *p_extn_);
   reader.ReadVector(qexp_, "p_extnp");
-  CORE::LINALG::Export(*qexp_, *p_extnp_);
+  Core::LinAlg::Export(*qexp_, *p_extnp_);
   reader.ReadVector(qexp_, "airway_acinus_dep");
-  CORE::LINALG::Export(*qexp_, *airway_acinus_dep_);
+  Core::LinAlg::Export(*qexp_, *airway_acinus_dep_);
 
 
   // read the previously written elements including the history data
@@ -2219,21 +2236,21 @@ void AIRWAY::RedAirwayImplicitTimeInt::read_restart(int step, bool coupledTo3D)
     reader.ReadVector(scatraO2nm_, "scatraO2nm");
 
     reader.ReadVector(qexp_, "e1scatraO2np");
-    CORE::LINALG::Export(*qexp_, *e1scatraO2np_);
+    Core::LinAlg::Export(*qexp_, *e1scatraO2np_);
     reader.ReadVector(qexp_, "e1scatraO2n");
-    CORE::LINALG::Export(*qexp_, *e1scatraO2n_);
+    Core::LinAlg::Export(*qexp_, *e1scatraO2n_);
     reader.ReadVector(qexp_, "e1scatraO2nm");
-    CORE::LINALG::Export(*qexp_, *e1scatraO2nm_);
+    Core::LinAlg::Export(*qexp_, *e1scatraO2nm_);
 
     reader.ReadVector(qexp_, "e2scatraO2np");
-    CORE::LINALG::Export(*qexp_, *e2scatraO2np_);
+    Core::LinAlg::Export(*qexp_, *e2scatraO2np_);
     reader.ReadVector(qexp_, "e2scatraO2n");
-    CORE::LINALG::Export(*qexp_, *e2scatraO2n_);
+    Core::LinAlg::Export(*qexp_, *e2scatraO2n_);
     reader.ReadVector(qexp_, "e2scatraO2nm");
-    CORE::LINALG::Export(*qexp_, *e2scatraO2nm_);
+    Core::LinAlg::Export(*qexp_, *e2scatraO2nm_);
 
     reader.ReadVector(jVDofRowMix_, "juncVolMix");
-    CORE::LINALG::Export(*jVDofRowMix_, *junctionVolumeInMix_);
+    Core::LinAlg::Export(*jVDofRowMix_, *junctionVolumeInMix_);
   }
 
 }  // RedAirwayImplicitTimeInt::read_restart
@@ -2242,7 +2259,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::read_restart(int step, bool coupledTo3D)
 /*----------------------------------------------------------------------*
  | Create the field test for redairway field                 roth 10/13 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::UTILS::ResultTest> AIRWAY::RedAirwayImplicitTimeInt::CreateFieldTest()
+Teuchos::RCP<Core::UTILS::ResultTest> Airway::RedAirwayImplicitTimeInt::CreateFieldTest()
 {
   return Teuchos::rcp(new RedAirwayResultTest(*this));
 }
@@ -2251,7 +2268,7 @@ Teuchos::RCP<CORE::UTILS::ResultTest> AIRWAY::RedAirwayImplicitTimeInt::CreateFi
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual(
+void Airway::RedAirwayImplicitTimeInt::EvalResidual(
     Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams)
 {
   residual_->PutScalar(0.0);
@@ -2276,7 +2293,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual(
     discret_->set_state("intr_ac_link", n_intr_ac_ln_);
 
     // note: We use an RCP because ParameterList wants something printable and comparable
-    DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+    Discret::ReducedLung::EvaluationData& evaluation_data =
+        Discret::ReducedLung::EvaluationData::get();
 
     evaluation_data.acinar_vn = acini_e_volumen_;
     evaluation_data.acinar_vnp = acini_e_volumenp_;
@@ -2358,7 +2376,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual(
     //    discret_->set_state("qcn" ,qcn_ );
     //    discret_->set_state("qcnm",qcnm_);
     // note: We use an RCP because ParameterList wants something printable and comparable
-    DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+    Discret::ReducedLung::EvaluationData& evaluation_data =
+        Discret::ReducedLung::EvaluationData::get();
 
     evaluation_data.acinar_vn = acini_e_volumen_;
     evaluation_data.acinar_vnp = acini_e_volumenp_;
@@ -2401,7 +2420,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual(
 
   // Apply the BCs to the system matrix and rhs
   {
-    CORE::LINALG::apply_dirichlet_to_system(*sysmat_, *pnp_, *rhs_, *bcval_, *dbctog_);
+    Core::LinAlg::apply_dirichlet_to_system(*sysmat_, *pnp_, *rhs_, *bcval_, *dbctog_);
   }
 
   // Evaluate Residual
@@ -2414,7 +2433,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual(
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-void AIRWAY::RedAirwayImplicitTimeInt::set_airway_flux_from_tissue(
+void Airway::RedAirwayImplicitTimeInt::set_airway_flux_from_tissue(
     Teuchos::RCP<Epetra_Vector> coupflux)
 {
   const Epetra_BlockMap& condmap = coupflux->Map();
@@ -2422,7 +2441,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::set_airway_flux_from_tissue(
   for (int i = 0; i < condmap.NumMyElements(); ++i)
   {
     int condID = condmap.GID(i);
-    CORE::Conditions::Condition* cond = coupcond_[condID];
+    Core::Conditions::Condition* cond = coupcond_[condID];
     std::vector<double> newval(1, 0.0);
     newval[0] = (*coupflux)[i];
     cond->parameters().Add("val", newval);
@@ -2433,9 +2452,9 @@ void AIRWAY::RedAirwayImplicitTimeInt::set_airway_flux_from_tissue(
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-void AIRWAY::RedAirwayImplicitTimeInt::SetupForCoupling()
+void Airway::RedAirwayImplicitTimeInt::SetupForCoupling()
 {
-  std::vector<CORE::Conditions::Condition*> nodecond;
+  std::vector<Core::Conditions::Condition*> nodecond;
   discret_->GetCondition("RedAirwayPrescribedCond", nodecond);
   unsigned int numnodecond = nodecond.size();
   if (numnodecond == 0) FOUR_C_THROW("no redairway prescribed conditions");
@@ -2443,8 +2462,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::SetupForCoupling()
   std::vector<int> tmp;
   for (unsigned int i = 0; i < numnodecond; ++i)
   {
-    CORE::Conditions::Condition* actcond = nodecond[i];
-    if (actcond->Type() == CORE::Conditions::RedAirwayNodeTissue)
+    Core::Conditions::Condition* actcond = nodecond[i];
+    if (actcond->Type() == Core::Conditions::RedAirwayNodeTissue)
     {
       auto condID = actcond->parameters().Get<int>("coupling id");
       coupcond_[condID] = actcond;
@@ -2461,12 +2480,12 @@ void AIRWAY::RedAirwayImplicitTimeInt::SetupForCoupling()
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-void AIRWAY::RedAirwayImplicitTimeInt::ExtractPressure(Teuchos::RCP<Epetra_Vector> couppres)
+void Airway::RedAirwayImplicitTimeInt::ExtractPressure(Teuchos::RCP<Epetra_Vector> couppres)
 {
   for (int i = 0; i < coupmap_->NumMyElements(); i++)
   {
     int condgid = coupmap_->GID(i);
-    CORE::Conditions::Condition* cond = coupcond_[condgid];
+    Core::Conditions::Condition* cond = coupcond_[condgid];
     const std::vector<int>* nodes = cond->GetNodes();
     if (nodes->size() != 1)
       FOUR_C_THROW("Too many nodes on coupling with tissue condition ID=[%d]\n", condgid);
@@ -2475,7 +2494,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::ExtractPressure(Teuchos::RCP<Epetra_Vecto
     double pressure = 0.0;
     if (discret_->HaveGlobalNode(gid))
     {
-      CORE::Nodes::Node* node = discret_->gNode(gid);
+      Core::Nodes::Node* node = discret_->gNode(gid);
       if (myrank_ == node->Owner())
       {
         int giddof = discret_->Dof(node, 0);
@@ -2494,7 +2513,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::ExtractPressure(Teuchos::RCP<Epetra_Vecto
  | Sum all ColElement values                                            |
  |                                                          ismail 11/12|
  *----------------------------------------------------------------------*/
-bool AIRWAY::RedAirwayImplicitTimeInt::SumAllColElemVal(
+bool Airway::RedAirwayImplicitTimeInt::SumAllColElemVal(
     Teuchos::RCP<Epetra_Vector> vec, Teuchos::RCP<Epetra_Vector> sumCond, double& sum)
 {
   // Check if the vector is a ColElement vector

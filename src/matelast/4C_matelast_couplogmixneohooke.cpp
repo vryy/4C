@@ -15,8 +15,8 @@ Comput. Methods Appl. Mech. Engrg. 260, 2013"
 FOUR_C_NAMESPACE_OPEN
 
 
-MAT::ELASTIC::PAR::CoupLogMixNeoHooke::CoupLogMixNeoHooke(
-    const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
+Mat::Elastic::PAR::CoupLogMixNeoHooke::CoupLogMixNeoHooke(
+    const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
     : Parameter(matdata)
 {
   std::string parmode = (matdata->Get<std::string>("MODE"));
@@ -44,12 +44,12 @@ MAT::ELASTIC::PAR::CoupLogMixNeoHooke::CoupLogMixNeoHooke(
         "Poisson's ratio) or Lame");
 }
 
-MAT::ELASTIC::CoupLogMixNeoHooke::CoupLogMixNeoHooke(MAT::ELASTIC::PAR::CoupLogMixNeoHooke* params)
+Mat::Elastic::CoupLogMixNeoHooke::CoupLogMixNeoHooke(Mat::Elastic::PAR::CoupLogMixNeoHooke* params)
     : params_(params)
 {
 }
 
-void MAT::ELASTIC::CoupLogMixNeoHooke::AddShearMod(
+void Mat::Elastic::CoupLogMixNeoHooke::AddShearMod(
     bool& haveshearmod,  ///< non-zero shear modulus was added
     double& shearmod     ///< variable to add upon
 ) const
@@ -59,9 +59,9 @@ void MAT::ELASTIC::CoupLogMixNeoHooke::AddShearMod(
   shearmod += params_->mue_;
 }
 
-void MAT::ELASTIC::CoupLogMixNeoHooke::AddStrainEnergy(double& psi,
-    const CORE::LINALG::Matrix<3, 1>& prinv, const CORE::LINALG::Matrix<3, 1>& modinv,
-    const CORE::LINALG::Matrix<6, 1>& glstrain, const int gp, const int eleGID)
+void Mat::Elastic::CoupLogMixNeoHooke::AddStrainEnergy(double& psi,
+    const Core::LinAlg::Matrix<3, 1>& prinv, const Core::LinAlg::Matrix<3, 1>& modinv,
+    const Core::LinAlg::Matrix<6, 1>& glstrain, const int gp, const int eleGID)
 {
   const double lambda = params_->lambda_;
   const double mue = params_->mue_;
@@ -74,8 +74,8 @@ void MAT::ELASTIC::CoupLogMixNeoHooke::AddStrainEnergy(double& psi,
   psi += mue * 0.5 * (prinv(0) - 3.) - mue * log(sq) + lambda * 0.5 * pow((sq - 1.), 2.);
 }
 
-void MAT::ELASTIC::CoupLogMixNeoHooke::add_derivatives_principal(CORE::LINALG::Matrix<3, 1>& dPI,
-    CORE::LINALG::Matrix<6, 1>& ddPII, const CORE::LINALG::Matrix<3, 1>& prinv, const int gp,
+void Mat::Elastic::CoupLogMixNeoHooke::add_derivatives_principal(Core::LinAlg::Matrix<3, 1>& dPI,
+    Core::LinAlg::Matrix<6, 1>& ddPII, const Core::LinAlg::Matrix<3, 1>& prinv, const int gp,
     const int eleGID)
 {
   const double lambda = params_->lambda_;

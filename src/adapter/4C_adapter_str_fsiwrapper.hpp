@@ -29,7 +29,7 @@ namespace STR
 }  // namespace STR
 
 
-namespace ADAPTER
+namespace Adapter
 {
   class FSIStructureWrapper : public StructureWrapper
   {
@@ -105,11 +105,11 @@ namespace ADAPTER
     /// If this method is related to the structural field,
     /// a corresponding method in the model evaluator may be
     /// called, if necessary.
-    /// See e.g. \ref ADAPTER::FSIStructureWrapper::RelaxationSolve()
+    /// See e.g. \ref Adapter::FSIStructureWrapper::RelaxationSolve()
     Teuchos::RCP<STR::MODELEVALUATOR::PartitionedFSI> fsi_model_evaluator_;
 
   };  // class FSIStructureWrapper
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 FOUR_C_NAMESPACE_CLOSE
 

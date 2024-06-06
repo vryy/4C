@@ -17,17 +17,17 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace internal
+namespace Internal
 {
   namespace
   {
     // compute 3D quadrature weights and points from a tensor product of the
     // 1D quadrature formula
-    void fillquadrature(const CORE::FE::GaussRule1D intrule, double (&qxg)[1000][3],
+    void fillquadrature(const Core::FE::GaussRule1D intrule, double (&qxg)[1000][3],
         double (&qwgt)[1000], int &nquad)
     {
       nquad = 0;
-      CORE::FE::IntegrationPoints1D rule1d(intrule);
+      Core::FE::IntegrationPoints1D rule1d(intrule);
       for (int i = 0; i < rule1d.nquad; ++i)
         for (int j = 0; j < rule1d.nquad; ++j)
           for (int k = 0; k < rule1d.nquad; ++k, ++nquad)
@@ -41,11 +41,11 @@ namespace internal
 
     // compute 2D quadrature weights and points from a tensor product of the
     // 1D quadrature formula
-    void fillquadrature(const CORE::FE::GaussRule1D intrule, double (&qxg)[1024][2],
+    void fillquadrature(const Core::FE::GaussRule1D intrule, double (&qxg)[1024][2],
         double (&qwgt)[1024], int &nquad)
     {
       nquad = 0;
-      CORE::FE::IntegrationPoints1D rule1d(intrule);
+      Core::FE::IntegrationPoints1D rule1d(intrule);
       for (int j = 0; j < rule1d.nquad; ++j)
         for (int k = 0; k < rule1d.nquad; ++k, ++nquad)
         {
@@ -55,10 +55,10 @@ namespace internal
         }
     }
   }  // namespace
-}  // namespace internal
+}  // namespace Internal
 
 
-CORE::FE::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D intrule) : intrule_(intrule)
+Core::FE::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D intrule) : intrule_(intrule)
 {
   const double Q12 = 1.0 / 2.0;
   const double Q14 = 1.0 / 4.0;
@@ -69,7 +69,7 @@ CORE::FE::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D intrule) : 
   {
     case GaussRule3D::hex_1point:
     {
-      internal::fillquadrature(GaussRule1D::line_1point, qxg, qwgt, nquad);
+      Internal::fillquadrature(GaussRule1D::line_1point, qxg, qwgt, nquad);
       break;
     }
     case GaussRule3D::hex_8point:
@@ -109,9 +109,9 @@ CORE::FE::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D intrule) : 
     {
       nquad = 18;
       // in plane
-      CORE::FE::IntPointsAndWeights<2> ip_p(CORE::FE::GaussRule2D::quad_9point);
+      Core::FE::IntPointsAndWeights<2> ip_p(Core::FE::GaussRule2D::quad_9point);
       // director
-      CORE::FE::IntPointsAndWeights<1> ip_d(CORE::FE::GaussRule1D::line_2point);
+      Core::FE::IntPointsAndWeights<1> ip_d(Core::FE::GaussRule1D::line_2point);
 
       for (int d = 0; d < ip_d.IP().nquad; ++d)
         for (int p = 0; p < ip_p.IP().nquad; ++p)
@@ -242,37 +242,37 @@ CORE::FE::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D intrule) : 
     }
     case GaussRule3D::hex_64point:
     {
-      internal::fillquadrature(GaussRule1D::line_4point, qxg, qwgt, nquad);
+      Internal::fillquadrature(GaussRule1D::line_4point, qxg, qwgt, nquad);
       break;
     }
     case GaussRule3D::hex_125point:
     {
-      internal::fillquadrature(GaussRule1D::line_5point, qxg, qwgt, nquad);
+      Internal::fillquadrature(GaussRule1D::line_5point, qxg, qwgt, nquad);
       break;
     }
     case GaussRule3D::hex_216point:
     {
-      internal::fillquadrature(GaussRule1D::line_6point, qxg, qwgt, nquad);
+      Internal::fillquadrature(GaussRule1D::line_6point, qxg, qwgt, nquad);
       break;
     }
     case GaussRule3D::hex_343point:
     {
-      internal::fillquadrature(GaussRule1D::line_7point, qxg, qwgt, nquad);
+      Internal::fillquadrature(GaussRule1D::line_7point, qxg, qwgt, nquad);
       break;
     }
     case GaussRule3D::hex_512point:
     {
-      internal::fillquadrature(GaussRule1D::line_8point, qxg, qwgt, nquad);
+      Internal::fillquadrature(GaussRule1D::line_8point, qxg, qwgt, nquad);
       break;
     }
     case GaussRule3D::hex_729point:
     {
-      internal::fillquadrature(GaussRule1D::line_9point, qxg, qwgt, nquad);
+      Internal::fillquadrature(GaussRule1D::line_9point, qxg, qwgt, nquad);
       break;
     }
     case GaussRule3D::hex_1000point:
     {
-      internal::fillquadrature(GaussRule1D::line_10point, qxg, qwgt, nquad);
+      Internal::fillquadrature(GaussRule1D::line_10point, qxg, qwgt, nquad);
       break;
     }
     case GaussRule3D::tet_1point:
@@ -6095,13 +6095,13 @@ CORE::FE::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D intrule) : 
 }
 
 
-CORE::FE::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D intrule) : intrule_(intrule)
+Core::FE::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D intrule) : intrule_(intrule)
 {
   switch (intrule)
   {
     case GaussRule2D::quad_1point:
     {
-      internal::fillquadrature(GaussRule1D::line_1point, qxg, qwgt, nquad);
+      Internal::fillquadrature(GaussRule1D::line_1point, qxg, qwgt, nquad);
       break;
     }
     case GaussRule2D::quad_4point:
@@ -6217,57 +6217,57 @@ CORE::FE::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D intrule) : 
     }
     case GaussRule2D::quad_16point:
     {
-      internal::fillquadrature(GaussRule1D::line_4point, qxg, qwgt, nquad);
+      Internal::fillquadrature(GaussRule1D::line_4point, qxg, qwgt, nquad);
       break;
     }
     case GaussRule2D::quad_25point:
     {
-      internal::fillquadrature(GaussRule1D::line_5point, qxg, qwgt, nquad);
+      Internal::fillquadrature(GaussRule1D::line_5point, qxg, qwgt, nquad);
       break;
     }
     case GaussRule2D::quad_36point:
     {
-      internal::fillquadrature(GaussRule1D::line_6point, qxg, qwgt, nquad);
+      Internal::fillquadrature(GaussRule1D::line_6point, qxg, qwgt, nquad);
       break;
     }
     case GaussRule2D::quad_49point:
     {
-      internal::fillquadrature(GaussRule1D::line_7point, qxg, qwgt, nquad);
+      Internal::fillquadrature(GaussRule1D::line_7point, qxg, qwgt, nquad);
       break;
     }
     case GaussRule2D::quad_64point:
     {
-      internal::fillquadrature(GaussRule1D::line_8point, qxg, qwgt, nquad);
+      Internal::fillquadrature(GaussRule1D::line_8point, qxg, qwgt, nquad);
       break;
     }
     case GaussRule2D::quad_81point:
     {
-      internal::fillquadrature(GaussRule1D::line_9point, qxg, qwgt, nquad);
+      Internal::fillquadrature(GaussRule1D::line_9point, qxg, qwgt, nquad);
       break;
     }
     case GaussRule2D::quad_100point:
     {
-      internal::fillquadrature(GaussRule1D::line_10point, qxg, qwgt, nquad);
+      Internal::fillquadrature(GaussRule1D::line_10point, qxg, qwgt, nquad);
       break;
     }
     case GaussRule2D::quad_256point:
     {
-      internal::fillquadrature(GaussRule1D::line_16point, qxg, qwgt, nquad);
+      Internal::fillquadrature(GaussRule1D::line_16point, qxg, qwgt, nquad);
       break;
     }
     case GaussRule2D::quad_400point:
     {
-      internal::fillquadrature(GaussRule1D::line_20point, qxg, qwgt, nquad);
+      Internal::fillquadrature(GaussRule1D::line_20point, qxg, qwgt, nquad);
       break;
     }
     case GaussRule2D::quad_1024point:
     {
-      internal::fillquadrature(GaussRule1D::line_32point, qxg, qwgt, nquad);
+      Internal::fillquadrature(GaussRule1D::line_32point, qxg, qwgt, nquad);
       break;
     }
     case GaussRule2D::quad_lobatto25point:
     {
-      internal::fillquadrature(GaussRule1D::line_lobatto5point, qxg, qwgt, nquad);
+      Internal::fillquadrature(GaussRule1D::line_lobatto5point, qxg, qwgt, nquad);
       break;
     }
     case GaussRule2D::tri_1point:
@@ -6888,7 +6888,7 @@ CORE::FE::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D intrule) : 
 }
 
 
-CORE::FE::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D intrule) : intrule_(intrule)
+Core::FE::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D intrule) : intrule_(intrule)
 {
   switch (intrule)
   {

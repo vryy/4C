@@ -93,7 +93,7 @@ void PARTICLEENGINE::ParticleContainerBundle::get_packed_particle_objects_of_all
       ParticleObjShrdPtr particleobject = std::make_shared<ParticleObject>(type, globalid, states);
 
       // pack data for writing
-      CORE::COMM::PackBuffer data;
+      Core::Communication::PackBuffer data;
       particleobject->Pack(data);
       data.StartPacking();
       particleobject->Pack(data);

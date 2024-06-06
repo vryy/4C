@@ -21,7 +21,7 @@ class Epetra_IntVector;
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace POROMULTIPHASESCATRA
+namespace PoroMultiPhaseScaTra
 {
   // forward declaration
   class PoroMultiPhaseScatraArteryCouplingPairBase;
@@ -31,18 +31,18 @@ namespace POROMULTIPHASESCATRA
   {
    public:
     //! create using a Epetra_Comm
-    PoroMultiPhaseScaTraArtCouplLineBased(Teuchos::RCP<DRT::Discretization> arterydis,
-        Teuchos::RCP<DRT::Discretization> contdis, const Teuchos::ParameterList& couplingparams,
+    PoroMultiPhaseScaTraArtCouplLineBased(Teuchos::RCP<Discret::Discretization> arterydis,
+        Teuchos::RCP<Discret::Discretization> contdis, const Teuchos::ParameterList& couplingparams,
         const std::string& condname, const std::string& artcoupleddofname,
         const std::string& contcoupleddofname);
 
     //! set-up linear system of equations of coupled problem
-    void SetupSystem(Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat,
-        Teuchos::RCP<Epetra_Vector> rhs, Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat_cont,
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat_art,
+    void SetupSystem(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
+        Teuchos::RCP<Epetra_Vector> rhs, Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_cont,
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_art,
         Teuchos::RCP<const Epetra_Vector> rhs_cont, Teuchos::RCP<const Epetra_Vector> rhs_art,
-        Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmap_cont,
-        Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmap_art) override;
+        Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmap_cont,
+        Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmap_art) override;
 
     //! setup the strategy
     void Setup() override;
@@ -72,7 +72,7 @@ namespace POROMULTIPHASESCATRA
     //! fill the GID to segment vector
     void fill_gid_to_segment_vector(
         const std::vector<Teuchos::RCP<
-            POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase>>& coupl_elepairs,
+            PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPairBase>>& coupl_elepairs,
         std::map<int, std::vector<double>>& gid_to_seglength);
 
     //! set the artery diameter in column based vector
@@ -95,8 +95,8 @@ namespace POROMULTIPHASESCATRA
      * format
      * @param this_connected_comp : current connected component
      */
-    void depth_first_search_util(CORE::Nodes::Node* actnode, Teuchos::RCP<Epetra_IntVector> visited,
-        Teuchos::RCP<DRT::Discretization> artconncompdis,
+    void depth_first_search_util(Core::Nodes::Node* actnode, Teuchos::RCP<Epetra_IntVector> visited,
+        Teuchos::RCP<Discret::Discretization> artconncompdis,
         Teuchos::RCP<const Epetra_Vector> ele_diams_artery_full_overlap,
         std::vector<int>& this_connected_comp);
 
@@ -130,15 +130,15 @@ namespace POROMULTIPHASESCATRA
      * @returns dbcmap, also containing additional boundary condition for collapsed eles
      */
     Teuchos::RCP<Epetra_Map> get_additional_dbc_for_collapsed_eles(
-        Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmap_art,
+        Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmap_art,
         Teuchos::RCP<Epetra_Vector> rhs_art_with_collapsed);
 
     //! FE-assemble into global force and stiffness
     void fe_assemble_ele_force_stiff_into_system_vector_matrix(const int& ele1gid,
         const int& ele2gid, const double& integrated_diam,
-        std::vector<CORE::LINALG::SerialDenseVector> const& elevec,
-        std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> const& elemat,
-        Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat,
+        std::vector<Core::LinAlg::SerialDenseVector> const& elevec,
+        std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> const& elemat,
+        Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
         Teuchos::RCP<Epetra_Vector> rhs) override;
 
     //! get the segment lengths of element 'artelegid'
@@ -147,14 +147,14 @@ namespace POROMULTIPHASESCATRA
     //! check for duplicate segment
     bool is_duplicate_segment(
         const std::vector<Teuchos::RCP<
-            POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase>>& coupl_elepairs,
-        const Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase>
+            PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPairBase>>& coupl_elepairs,
+        const Teuchos::RCP<PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPairBase>
             possible_duplicate);
 
     //! check for identical segment
     bool is_identical_segment(
         const std::vector<Teuchos::RCP<
-            POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase>>& coupl_elepairs,
+            PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPairBase>>& coupl_elepairs,
         const int& ele1gid, const double& etaA, const double& etaB, int& elepairID);
 
     //! set flag if varying diameter has to be calculated
@@ -201,7 +201,7 @@ namespace POROMULTIPHASESCATRA
     //!  porofluid-problems)
     std::map<int, std::vector<double>> gid_to_seglength_;
   };
-}  // namespace POROMULTIPHASESCATRA
+}  // namespace PoroMultiPhaseScaTra
 
 FOUR_C_NAMESPACE_CLOSE
 

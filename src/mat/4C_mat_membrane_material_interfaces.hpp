@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   /*!
    * @brief Base interface for membrane materials in local membrane coordinate system
@@ -46,8 +46,8 @@ namespace MAT
      * @param gp (in) : Gauss point
      * @param eleGID (in) : Global element id
      */
-    virtual void UpdateMembrane(const CORE::LINALG::Matrix<3, 3>& defgrd,
-        Teuchos::ParameterList& params, const CORE::LINALG::Matrix<3, 3>& Q_trafo, int gp,
+    virtual void UpdateMembrane(const Core::LinAlg::Matrix<3, 3>& defgrd,
+        Teuchos::ParameterList& params, const Core::LinAlg::Matrix<3, 3>& Q_trafo, int gp,
         int eleGID) = 0;
 
     /*!
@@ -65,10 +65,10 @@ namespace MAT
      * @param gp (in) : Gauss point
      * @param eleGID (in) : Global element id
      */
-    virtual void EvaluateMembrane(const CORE::LINALG::Matrix<3, 3>& defgrd,
-        const CORE::LINALG::Matrix<3, 3>& cauchygreen, Teuchos::ParameterList& params,
-        const CORE::LINALG::Matrix<3, 3>& Q_trafo, CORE::LINALG::Matrix<3, 1>& stress,
-        CORE::LINALG::Matrix<3, 3>& cmat, int gp, int eleGID) = 0;
+    virtual void EvaluateMembrane(const Core::LinAlg::Matrix<3, 3>& defgrd,
+        const Core::LinAlg::Matrix<3, 3>& cauchygreen, Teuchos::ParameterList& params,
+        const Core::LinAlg::Matrix<3, 3>& Q_trafo, Core::LinAlg::Matrix<3, 1>& stress,
+        Core::LinAlg::Matrix<3, 3>& cmat, int gp, int eleGID) = 0;
   };
 
   /*!
@@ -96,9 +96,9 @@ namespace MAT
      * @param gp (in) : Gauss point
      * @param eleGID (in) : Global element id
      */
-    virtual void EvaluateMembrane(const CORE::LINALG::Matrix<3, 3>& defgrd,
-        Teuchos::ParameterList& params, CORE::LINALG::Matrix<3, 3>& stress,
-        CORE::LINALG::Matrix<6, 6>& cmat, int gp, int eleGID) = 0;
+    virtual void EvaluateMembrane(const Core::LinAlg::Matrix<3, 3>& defgrd,
+        Teuchos::ParameterList& params, Core::LinAlg::Matrix<3, 3>& stress,
+        Core::LinAlg::Matrix<6, 6>& cmat, int gp, int eleGID) = 0;
   };
 
   /*!
@@ -128,11 +128,11 @@ namespace MAT
      *
      * @return Adapted stretch in thickness direction
      */
-    virtual double evaluate_membrane_thickness_stretch(const CORE::LINALG::Matrix<3, 3>& defgrd,
+    virtual double evaluate_membrane_thickness_stretch(const Core::LinAlg::Matrix<3, 3>& defgrd,
         Teuchos::ParameterList& params, int gp, int eleGID) = 0;
   };
 
-}  // namespace MAT
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-CORE::COUPLING::MatchingOctree::MatchingOctree()
+Core::COUPLING::MatchingOctree::MatchingOctree()
     : discret_(nullptr),
       tol_(-1.0),
       masterentityids_(nullptr),
@@ -32,7 +32,7 @@ CORE::COUPLING::MatchingOctree::MatchingOctree()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int CORE::COUPLING::MatchingOctree::Init(const DRT::Discretization& actdis,
+int Core::COUPLING::MatchingOctree::Init(const Discret::Discretization& actdis,
     const std::vector<int>& masternodeids, const int maxnodeperleaf, const double tol)
 {
   set_is_setup(false);
@@ -48,7 +48,7 @@ int CORE::COUPLING::MatchingOctree::Init(const DRT::Discretization& actdis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int CORE::COUPLING::MatchingOctree::Setup()
+int Core::COUPLING::MatchingOctree::Setup()
 {
   check_is_init();
 
@@ -68,7 +68,7 @@ int CORE::COUPLING::MatchingOctree::Setup()
     //                 |  zmin  zmax  |
     //                 +-            -+
     //
-    CORE::LINALG::SerialDenseMatrix initialboundingbox(3, 2);
+    Core::LinAlg::SerialDenseMatrix initialboundingbox(3, 2);
     std::array<double, 3> pointcoord;
     calc_point_coordinate(discret_, masterentityids_->at(0), pointcoord.data());
     for (int dim = 0; dim < 3; dim++)
@@ -116,7 +116,7 @@ int CORE::COUPLING::MatchingOctree::Setup()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool CORE::COUPLING::MatchingOctree::search_closest_entity_on_this_proc(
+bool Core::COUPLING::MatchingOctree::search_closest_entity_on_this_proc(
     const std::vector<double>& x, int& idofclosestpoint, double& distofclosestpoint,
     bool searchsecond)
 {
@@ -157,7 +157,7 @@ bool CORE::COUPLING::MatchingOctree::search_closest_entity_on_this_proc(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::COUPLING::MatchingOctree::create_global_entity_matching(
+void Core::COUPLING::MatchingOctree::create_global_entity_matching(
     const std::vector<int>& slavenodeids, const std::vector<int>& dofsforpbcplane,
     const double rotangle, std::map<int, std::vector<int>>& midtosid)
 {
@@ -187,7 +187,7 @@ void CORE::COUPLING::MatchingOctree::create_global_entity_matching(
   sblockofnodes.clear();
   rblockofnodes.clear();
 
-  CORE::COMM::PackBuffer pack_data;
+  Core::Communication::PackBuffer pack_data;
 
   for (int slavenodeid : slavenodeids)
   {
@@ -217,7 +217,7 @@ void CORE::COUPLING::MatchingOctree::create_global_entity_matching(
   //--------------------------------------------------------------------
   // -> 2) round robin loop
   // create an exporter for point to point comunication
-  CORE::COMM::Exporter exporter(discret_->Comm());
+  Core::Communication::Exporter exporter(discret_->Comm());
 
   for (int np = 0; np < numprocs; np++)
   {
@@ -273,11 +273,12 @@ void CORE::COUPLING::MatchingOctree::create_global_entity_matching(
     {
       // extract node data from blockofnodes
       std::vector<char> data;
-      CORE::COMM::ParObject::ExtractfromPack(index, rblockofnodes, data);
+      Core::Communication::ParObject::ExtractfromPack(index, rblockofnodes, data);
 
       // allocate an "empty node". Fill it with info from
       // extracted node data
-      Teuchos::RCP<CORE::COMM::ParObject> o = Teuchos::rcp(CORE::COMM::Factory(data));
+      Teuchos::RCP<Core::Communication::ParObject> o =
+          Teuchos::rcp(Core::Communication::Factory(data));
 
       // check type of ParObject, and return gid
       const int id = check_valid_entity_type(o);
@@ -413,7 +414,7 @@ void CORE::COUPLING::MatchingOctree::create_global_entity_matching(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::COUPLING::MatchingOctree::FindMatch(const DRT::Discretization& slavedis,
+void Core::COUPLING::MatchingOctree::FindMatch(const Discret::Discretization& slavedis,
     const std::vector<int>& slavenodeids, std::map<int, std::pair<int, double>>& coupling)
 {
   check_is_init();
@@ -438,7 +439,7 @@ void CORE::COUPLING::MatchingOctree::FindMatch(const DRT::Discretization& slaved
   std::vector<char> sblockofnodes;
   std::vector<char> rblockofnodes;
 
-  CORE::COMM::PackBuffer pack_data;
+  Core::Communication::PackBuffer pack_data;
 
   for (int slavenodeid : slavenodeids)
   {
@@ -470,7 +471,7 @@ void CORE::COUPLING::MatchingOctree::FindMatch(const DRT::Discretization& slaved
   // create an exporter for point to point comunication
   // We do all communication with the communicator of the original
   // discretization.
-  CORE::COMM::Exporter exporter(discret_->Comm());
+  Core::Communication::Exporter exporter(discret_->Comm());
 
   for (int np = 0; np < numprocs; np++)
   {
@@ -522,11 +523,12 @@ void CORE::COUPLING::MatchingOctree::FindMatch(const DRT::Discretization& slaved
     {
       // extract node data from blockofnodes
       std::vector<char> data;
-      CORE::COMM::ParObject::ExtractfromPack(index, rblockofnodes, data);
+      Core::Communication::ParObject::ExtractfromPack(index, rblockofnodes, data);
 
       // allocate an "empty node". Fill it with info from
       // extracted node data
-      Teuchos::RCP<CORE::COMM::ParObject> o = Teuchos::rcp(CORE::COMM::Factory(data));
+      Teuchos::RCP<Core::Communication::ParObject> o =
+          Teuchos::rcp(Core::Communication::Factory(data));
 
       // cast ParObject to specific type and return id
       const int id = check_valid_entity_type(o);
@@ -584,8 +586,8 @@ void CORE::COUPLING::MatchingOctree::FindMatch(const DRT::Discretization& slaved
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::COUPLING::MatchingOctree::fill_slave_to_master_gid_mapping(
-    const DRT::Discretization& slavedis, const std::vector<int>& slavenodeids,
+void Core::COUPLING::MatchingOctree::fill_slave_to_master_gid_mapping(
+    const Discret::Discretization& slavedis, const std::vector<int>& slavenodeids,
     std::map<int, std::vector<double>>& coupling)
 {
   check_is_init();
@@ -610,7 +612,7 @@ void CORE::COUPLING::MatchingOctree::fill_slave_to_master_gid_mapping(
   std::vector<char> sblockofnodes;
   std::vector<char> rblockofnodes;
 
-  CORE::COMM::PackBuffer pack_data;
+  Core::Communication::PackBuffer pack_data;
 
   for (int slavenodeid : slavenodeids) pack_entity(pack_data, &slavedis, slavenodeid);
 
@@ -626,7 +628,7 @@ void CORE::COUPLING::MatchingOctree::fill_slave_to_master_gid_mapping(
   // create an exporter for point to point comunication
   // We do all communication with the communicator of the original
   // discretization.
-  CORE::COMM::Exporter exporter(discret_->Comm());
+  Core::Communication::Exporter exporter(discret_->Comm());
 
   for (int np = 0; np < numprocs; np++)
   {
@@ -682,7 +684,8 @@ void CORE::COUPLING::MatchingOctree::fill_slave_to_master_gid_mapping(
 
       // allocate an "empty node". Fill it with info from
       // extracted node data
-      Teuchos::RCP<CORE::COMM::ParObject> o = Teuchos::rcp(CORE::COMM::Factory(data));
+      Teuchos::RCP<Core::Communication::ParObject> o =
+          Teuchos::rcp(Core::Communication::Factory(data));
 
       const int id = check_valid_entity_type(o);
 
@@ -749,15 +752,15 @@ void CORE::COUPLING::MatchingOctree::fill_slave_to_master_gid_mapping(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-CORE::COUPLING::NodeMatchingOctree::NodeMatchingOctree()
+Core::COUPLING::NodeMatchingOctree::NodeMatchingOctree()
     : MatchingOctree() {}  // NodeMatchingOctree::NodeMatchingOctree
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::COUPLING::NodeMatchingOctree::calc_point_coordinate(
-    const DRT::Discretization* dis, const int id, double* coord)
+void Core::COUPLING::NodeMatchingOctree::calc_point_coordinate(
+    const Discret::Discretization* dis, const int id, double* coord)
 {
-  CORE::Nodes::Node* actnode = dis->gNode(id);
+  Core::Nodes::Node* actnode = dis->gNode(id);
 
   const int dim = 3;
 
@@ -767,10 +770,10 @@ void CORE::COUPLING::NodeMatchingOctree::calc_point_coordinate(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 //! calc unique coordinate of entity
-void CORE::COUPLING::NodeMatchingOctree::calc_point_coordinate(
-    CORE::COMM::ParObject* entity, double* coord)
+void Core::COUPLING::NodeMatchingOctree::calc_point_coordinate(
+    Core::Communication::ParObject* entity, double* coord)
 {
-  auto* actnode = dynamic_cast<CORE::Nodes::Node*>(entity);
+  auto* actnode = dynamic_cast<Core::Nodes::Node*>(entity);
   if (actnode == nullptr) FOUR_C_THROW("dynamic_cast failed");
 
   const int dim = 3;
@@ -780,46 +783,46 @@ void CORE::COUPLING::NodeMatchingOctree::calc_point_coordinate(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool CORE::COUPLING::NodeMatchingOctree::check_have_entity(
-    const DRT::Discretization* dis, const int id)
+bool Core::COUPLING::NodeMatchingOctree::check_have_entity(
+    const Discret::Discretization* dis, const int id)
 {
   return dis->HaveGlobalNode(id);
 }  // NodeMatchingOctree::check_have_entity
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool CORE::COUPLING::NodeMatchingOctree::check_entity_owner(
-    const DRT::Discretization* dis, const int id)
+bool Core::COUPLING::NodeMatchingOctree::check_entity_owner(
+    const Discret::Discretization* dis, const int id)
 {
   return (dis->gNode(id)->Owner() == dis->Comm().MyPID());
 }  // NodeMatchingOctree::check_entity_owner
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::COUPLING::NodeMatchingOctree::pack_entity(
-    CORE::COMM::PackBuffer& data, const DRT::Discretization* dis, const int id)
+void Core::COUPLING::NodeMatchingOctree::pack_entity(
+    Core::Communication::PackBuffer& data, const Discret::Discretization* dis, const int id)
 {
   // get the slavenode
-  CORE::Nodes::Node* actnode = dis->gNode(id);
+  Core::Nodes::Node* actnode = dis->gNode(id);
   // Add node to list of nodes which will be sent to the next proc
-  CORE::COMM::ParObject::AddtoPack(data, actnode);
+  Core::Communication::ParObject::AddtoPack(data, actnode);
 }  // NodeMatchingOctree::PackEntity
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::COUPLING::NodeMatchingOctree::un_pack_entity(
+void Core::COUPLING::NodeMatchingOctree::un_pack_entity(
     std::vector<char>::size_type& index, std::vector<char>& rblockofnodes, std::vector<char>& data)
 {
-  CORE::COMM::ParObject::ExtractfromPack(index, rblockofnodes, data);
+  Core::Communication::ParObject::ExtractfromPack(index, rblockofnodes, data);
 }  // NodeMatchingOctree::un_pack_entity
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int CORE::COUPLING::NodeMatchingOctree::check_valid_entity_type(
-    Teuchos::RCP<CORE::COMM::ParObject> o)
+int Core::COUPLING::NodeMatchingOctree::check_valid_entity_type(
+    Teuchos::RCP<Core::Communication::ParObject> o)
 {
   // cast ParObject to Node
-  auto* actnode = dynamic_cast<CORE::Nodes::Node*>(o.get());
+  auto* actnode = dynamic_cast<Core::Nodes::Node*>(o.get());
   if (actnode == nullptr) FOUR_C_THROW("unpack of invalid data");
 
   return actnode->Id();
@@ -827,11 +830,11 @@ int CORE::COUPLING::NodeMatchingOctree::check_valid_entity_type(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::COUPLING::OctreeElement>
-CORE::COUPLING::NodeMatchingOctree::create_octree_element(
-    std::vector<int>& nodeidstoadd, CORE::LINALG::SerialDenseMatrix& boundingboxtoadd, int layer)
+Teuchos::RCP<Core::COUPLING::OctreeElement>
+Core::COUPLING::NodeMatchingOctree::create_octree_element(
+    std::vector<int>& nodeidstoadd, Core::LinAlg::SerialDenseMatrix& boundingboxtoadd, int layer)
 {
-  Teuchos::RCP<CORE::COUPLING::OctreeElement> newtreeelement =
+  Teuchos::RCP<Core::COUPLING::OctreeElement> newtreeelement =
       Teuchos::rcp(new OctreeNodalElement());
 
   newtreeelement->Init(
@@ -845,15 +848,15 @@ CORE::COUPLING::NodeMatchingOctree::create_octree_element(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-CORE::COUPLING::ElementMatchingOctree::ElementMatchingOctree()
+Core::COUPLING::ElementMatchingOctree::ElementMatchingOctree()
     : MatchingOctree() {}  // ElementMatchingOctree::ElementMatchingOctree
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::COUPLING::ElementMatchingOctree::calc_point_coordinate(
-    const DRT::Discretization* dis, const int id, double* coord)
+void Core::COUPLING::ElementMatchingOctree::calc_point_coordinate(
+    const Discret::Discretization* dis, const int id, double* coord)
 {
-  CORE::Elements::Element* actele = dis->gElement(id);
+  Core::Elements::Element* actele = dis->gElement(id);
 
   const int numnode = actele->num_node();
   const int dim = 3;
@@ -866,13 +869,13 @@ void CORE::COUPLING::ElementMatchingOctree::calc_point_coordinate(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::COUPLING::ElementMatchingOctree::calc_point_coordinate(
-    CORE::COMM::ParObject* entity, double* coord)
+void Core::COUPLING::ElementMatchingOctree::calc_point_coordinate(
+    Core::Communication::ParObject* entity, double* coord)
 {
-  auto* actele = dynamic_cast<CORE::Elements::Element*>(entity);
+  auto* actele = dynamic_cast<Core::Elements::Element*>(entity);
   if (actele == nullptr) FOUR_C_THROW("dynamic_cast failed");
 
-  CORE::Nodes::Node** nodes = actele->Nodes();
+  Core::Nodes::Node** nodes = actele->Nodes();
   if (nodes == nullptr) FOUR_C_THROW("could not get pointer to nodes");
 
   const int numnode = actele->num_node();
@@ -886,63 +889,64 @@ void CORE::COUPLING::ElementMatchingOctree::calc_point_coordinate(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool CORE::COUPLING::ElementMatchingOctree::check_have_entity(
-    const DRT::Discretization* dis, const int id)
+bool Core::COUPLING::ElementMatchingOctree::check_have_entity(
+    const Discret::Discretization* dis, const int id)
 {
   return dis->HaveGlobalElement(id);
 }  // ElementMatchingOctree::check_have_entity
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool CORE::COUPLING::ElementMatchingOctree::check_entity_owner(
-    const DRT::Discretization* dis, const int id)
+bool Core::COUPLING::ElementMatchingOctree::check_entity_owner(
+    const Discret::Discretization* dis, const int id)
 {
   return (dis->gElement(id)->Owner() == dis->Comm().MyPID());
 }  // ElementMatchingOctree::check_have_entity
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::COUPLING::ElementMatchingOctree::pack_entity(
-    CORE::COMM::PackBuffer& data, const DRT::Discretization* dis, const int id)
+void Core::COUPLING::ElementMatchingOctree::pack_entity(
+    Core::Communication::PackBuffer& data, const Discret::Discretization* dis, const int id)
 {
   // get the slavenode
-  CORE::Elements::Element* actele = dis->gElement(id);
-  CORE::Nodes::Node** nodes = actele->Nodes();
+  Core::Elements::Element* actele = dis->gElement(id);
+  Core::Nodes::Node** nodes = actele->Nodes();
   // Add node to list of nodes which will be sent to the next proc
-  CORE::COMM::ParObject::AddtoPack(data, actele->num_node());
-  CORE::COMM::ParObject::AddtoPack(data, actele);
+  Core::Communication::ParObject::AddtoPack(data, actele->num_node());
+  Core::Communication::ParObject::AddtoPack(data, actele);
   for (int node = 0; node < actele->num_node(); node++)
-    CORE::COMM::ParObject::AddtoPack(data, nodes[node]);
+    Core::Communication::ParObject::AddtoPack(data, nodes[node]);
 }  // ElementMatchingOctree::PackEntity
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::COUPLING::ElementMatchingOctree::un_pack_entity(
+void Core::COUPLING::ElementMatchingOctree::un_pack_entity(
     std::vector<char>::size_type& index, std::vector<char>& rblockofnodes, std::vector<char>& data)
 {
   nodes_.clear();
-  int numnode = CORE::COMM::ParObject::ExtractInt(index, rblockofnodes);
-  CORE::COMM::ParObject::ExtractfromPack(index, rblockofnodes, data);
+  int numnode = Core::Communication::ParObject::ExtractInt(index, rblockofnodes);
+  Core::Communication::ParObject::ExtractfromPack(index, rblockofnodes, data);
 
   for (int node = 0; node < numnode; node++)
   {
     std::vector<char> nodedata;
-    CORE::COMM::ParObject::ExtractfromPack(index, rblockofnodes, nodedata);
-    Teuchos::RCP<CORE::COMM::ParObject> o = Teuchos::rcp(CORE::COMM::Factory(nodedata));
-    Teuchos::RCP<CORE::Nodes::Node> actnode = Teuchos::rcp_dynamic_cast<CORE::Nodes::Node>(o);
+    Core::Communication::ParObject::ExtractfromPack(index, rblockofnodes, nodedata);
+    Teuchos::RCP<Core::Communication::ParObject> o =
+        Teuchos::rcp(Core::Communication::Factory(nodedata));
+    Teuchos::RCP<Core::Nodes::Node> actnode = Teuchos::rcp_dynamic_cast<Core::Nodes::Node>(o);
     if (actnode == Teuchos::null) FOUR_C_THROW("cast from ParObject to Node failed");
-    nodes_.insert(std::pair<int, Teuchos::RCP<CORE::Nodes::Node>>(actnode->Id(), actnode));
+    nodes_.insert(std::pair<int, Teuchos::RCP<Core::Nodes::Node>>(actnode->Id(), actnode));
   }
 
 }  // ElementMatchingOctree::un_pack_entity
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int CORE::COUPLING::ElementMatchingOctree::check_valid_entity_type(
-    Teuchos::RCP<CORE::COMM::ParObject> o)
+int Core::COUPLING::ElementMatchingOctree::check_valid_entity_type(
+    Teuchos::RCP<Core::Communication::ParObject> o)
 {
   // cast ParObject to element
-  auto* actele = dynamic_cast<CORE::Elements::Element*>(o.get());
+  auto* actele = dynamic_cast<Core::Elements::Element*>(o.get());
   if (actele == nullptr) FOUR_C_THROW("unpack of invalid data");
 
   // set nodal pointers for this element
@@ -953,11 +957,11 @@ int CORE::COUPLING::ElementMatchingOctree::check_valid_entity_type(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::COUPLING::OctreeElement>
-CORE::COUPLING::ElementMatchingOctree::create_octree_element(
-    std::vector<int>& nodeidstoadd, CORE::LINALG::SerialDenseMatrix& boundingboxtoadd, int layer)
+Teuchos::RCP<Core::COUPLING::OctreeElement>
+Core::COUPLING::ElementMatchingOctree::create_octree_element(
+    std::vector<int>& nodeidstoadd, Core::LinAlg::SerialDenseMatrix& boundingboxtoadd, int layer)
 {
-  Teuchos::RCP<CORE::COUPLING::OctreeElement> newtreeelement =
+  Teuchos::RCP<Core::COUPLING::OctreeElement> newtreeelement =
       Teuchos::rcp(new OctreeElementElement());
 
   newtreeelement->Init(
@@ -971,14 +975,14 @@ CORE::COUPLING::ElementMatchingOctree::create_octree_element(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-CORE::COUPLING::OctreeNodalElement::OctreeNodalElement() : OctreeElement() {}  // OctreeElement()
+Core::COUPLING::OctreeNodalElement::OctreeNodalElement() : OctreeElement() {}  // OctreeElement()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::COUPLING::OctreeNodalElement::calc_point_coordinate(
-    const DRT::Discretization* dis, const int id, double* coord)
+void Core::COUPLING::OctreeNodalElement::calc_point_coordinate(
+    const Discret::Discretization* dis, const int id, double* coord)
 {
-  CORE::Nodes::Node* actnode = dis->gNode(id);
+  Core::Nodes::Node* actnode = dis->gNode(id);
 
   const int dim = 3;
 
@@ -987,11 +991,11 @@ void CORE::COUPLING::OctreeNodalElement::calc_point_coordinate(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::COUPLING::OctreeElement>
-CORE::COUPLING::OctreeNodalElement::create_octree_element(
-    std::vector<int>& nodeidstoadd, CORE::LINALG::SerialDenseMatrix& boundingboxtoadd, int layer)
+Teuchos::RCP<Core::COUPLING::OctreeElement>
+Core::COUPLING::OctreeNodalElement::create_octree_element(
+    std::vector<int>& nodeidstoadd, Core::LinAlg::SerialDenseMatrix& boundingboxtoadd, int layer)
 {
-  Teuchos::RCP<CORE::COUPLING::OctreeElement> newtreeelement =
+  Teuchos::RCP<Core::COUPLING::OctreeElement> newtreeelement =
       Teuchos::rcp(new OctreeNodalElement());
 
   newtreeelement->Init(
@@ -1005,15 +1009,15 @@ CORE::COUPLING::OctreeNodalElement::create_octree_element(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-CORE::COUPLING::OctreeElementElement::OctreeElementElement()
+Core::COUPLING::OctreeElementElement::OctreeElementElement()
     : OctreeElement() {}  // OctreeElementElement::OctreeElementElement
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::COUPLING::OctreeElementElement::calc_point_coordinate(
-    const DRT::Discretization* dis, const int id, double* coord)
+void Core::COUPLING::OctreeElementElement::calc_point_coordinate(
+    const Discret::Discretization* dis, const int id, double* coord)
 {
-  CORE::Elements::Element* actele = dis->gElement(id);
+  Core::Elements::Element* actele = dis->gElement(id);
 
   const int numnode = actele->num_node();
   const int dim = 3;
@@ -1026,11 +1030,11 @@ void CORE::COUPLING::OctreeElementElement::calc_point_coordinate(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::COUPLING::OctreeElement>
-CORE::COUPLING::OctreeElementElement::create_octree_element(
-    std::vector<int>& nodeidstoadd, CORE::LINALG::SerialDenseMatrix& boundingboxtoadd, int layer)
+Teuchos::RCP<Core::COUPLING::OctreeElement>
+Core::COUPLING::OctreeElementElement::create_octree_element(
+    std::vector<int>& nodeidstoadd, Core::LinAlg::SerialDenseMatrix& boundingboxtoadd, int layer)
 {
-  Teuchos::RCP<CORE::COUPLING::OctreeElement> newtreeelement =
+  Teuchos::RCP<Core::COUPLING::OctreeElement> newtreeelement =
       Teuchos::rcp(new OctreeElementElement());
 
   newtreeelement->Init(
@@ -1044,7 +1048,7 @@ CORE::COUPLING::OctreeElementElement::create_octree_element(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-CORE::COUPLING::OctreeElement::OctreeElement()
+Core::COUPLING::OctreeElement::OctreeElement()
     : discret_(nullptr),
       layer_(-1),
       maxtreenodesperleaf_(-1),
@@ -1056,8 +1060,8 @@ CORE::COUPLING::OctreeElement::OctreeElement()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int CORE::COUPLING::OctreeElement::Init(const DRT::Discretization& actdis,
-    std::vector<int>& nodeidstoadd, const CORE::LINALG::SerialDenseMatrix& boundingboxtoadd,
+int Core::COUPLING::OctreeElement::Init(const Discret::Discretization& actdis,
+    std::vector<int>& nodeidstoadd, const Core::LinAlg::SerialDenseMatrix& boundingboxtoadd,
     const int layer, const int maxnodeperleaf, const double tol)
 {
   set_is_setup(false);
@@ -1075,7 +1079,7 @@ int CORE::COUPLING::OctreeElement::Init(const DRT::Discretization& actdis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int CORE::COUPLING::OctreeElement::Setup()
+int Core::COUPLING::OctreeElement::Setup()
 {
   check_is_init();
 
@@ -1173,8 +1177,8 @@ int CORE::COUPLING::OctreeElement::Setup()
     // This means an endless loop from the problem (*) ...
 
     // create bounding boxes for the children
-    CORE::LINALG::SerialDenseMatrix childboundingbox1(3, 2);
-    CORE::LINALG::SerialDenseMatrix childboundingbox2(3, 2);
+    Core::LinAlg::SerialDenseMatrix childboundingbox1(3, 2);
+    Core::LinAlg::SerialDenseMatrix childboundingbox2(3, 2);
 
     // initialise the new bounding boxes with the old values
     for (int dim = 0; dim < 3; dim++)
@@ -1249,7 +1253,7 @@ int CORE::COUPLING::OctreeElement::Setup()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::COUPLING::OctreeElement::search_closest_node_in_leaf(const std::vector<double>& x,
+void Core::COUPLING::OctreeElement::search_closest_node_in_leaf(const std::vector<double>& x,
     int& idofclosestpoint, double& distofclosestpoint, const double& elesize, bool searchsecond)
 {
   check_is_init();
@@ -1299,7 +1303,7 @@ void CORE::COUPLING::OctreeElement::search_closest_node_in_leaf(const std::vecto
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool CORE::COUPLING::OctreeElement::is_point_in_bounding_box(const std::vector<double>& x)
+bool Core::COUPLING::OctreeElement::is_point_in_bounding_box(const std::vector<double>& x)
 {
   check_is_init();
   check_is_setup();
@@ -1320,8 +1324,8 @@ bool CORE::COUPLING::OctreeElement::is_point_in_bounding_box(const std::vector<d
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::COUPLING::OctreeElement>
-CORE::COUPLING::OctreeElement::return_child_containing_point(const std::vector<double>& x)
+Teuchos::RCP<Core::COUPLING::OctreeElement>
+Core::COUPLING::OctreeElement::return_child_containing_point(const std::vector<double>& x)
 {
   check_is_init();
   check_is_setup();
@@ -1351,7 +1355,7 @@ CORE::COUPLING::OctreeElement::return_child_containing_point(const std::vector<d
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool CORE::COUPLING::OctreeElement::IsLeaf()
+bool Core::COUPLING::OctreeElement::IsLeaf()
 {
   bool isleaf = true;
 
@@ -1365,7 +1369,7 @@ bool CORE::COUPLING::OctreeElement::IsLeaf()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::COUPLING::OctreeElement::Print(std::ostream& os) const
+void Core::COUPLING::OctreeElement::Print(std::ostream& os) const
 {
   // Print id and coordinates
   os << "Leaf in Layer " << layer_ << " Nodes ";

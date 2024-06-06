@@ -24,12 +24,12 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
 }
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
   class DiscretizationFaces;
@@ -58,23 +58,23 @@ namespace DRT
       virtual ~FluidIntFaceImplInterface() = default;
       //! Assemble internal faces integrals using data from both parent elements
       virtual void assemble_internal_faces_using_neighbor_data(
-          DRT::ELEMENTS::FluidIntFace* intface,         ///< internal face element
-          Teuchos::RCP<CORE::MAT::Material>& material,  ///< material associated with the faces
+          Discret::ELEMENTS::FluidIntFace* intface,     ///< internal face element
+          Teuchos::RCP<Core::Mat::Material>& material,  ///< material associated with the faces
           std::vector<int>& nds_master,                 ///< nodal dofset w.r.t. master element
           std::vector<int>& nds_slave,                  ///< nodal dofset w.r.t. slave element
-          const INPAR::XFEM::FaceType& face_type,  ///< which type of face std, ghost, ghost-penalty
+          const Inpar::XFEM::FaceType& face_type,  ///< which type of face std, ghost, ghost-penalty
           Teuchos::ParameterList& params,          ///< parameter list
-          DRT::DiscretizationFaces& discretization,               ///< faces discretization
-          Teuchos::RCP<CORE::LINALG::SparseMatrix> systemmatrix,  ///< systemmatrix
+          Discret::DiscretizationFaces& discretization,           ///< faces discretization
+          Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,  ///< systemmatrix
           Teuchos::RCP<Epetra_Vector> systemvector                ///< systemvector
           ) = 0;
 
       //! Evaluate internal faces
       virtual int evaluate_internal_faces(
-          DRT::ELEMENTS::FluidIntFace* intface,         ///< internal face element
-          Teuchos::RCP<CORE::MAT::Material>& material,  ///< material associated with the faces
+          Discret::ELEMENTS::FluidIntFace* intface,     ///< internal face element
+          Teuchos::RCP<Core::Mat::Material>& material,  ///< material associated with the faces
           Teuchos::ParameterList& params,               ///< parameter list
-          DRT::Discretization& discretization,          ///< discretization
+          Discret::Discretization& discretization,      ///< discretization
           std::vector<int>& patchlm,                    ///< patch local map
           std::vector<int>& lm_masterToPatch,  ///< local map between master dofs and patchlm
           std::vector<int>& lm_slaveToPatch,   ///< local map between slave dofs and patchlm
@@ -83,14 +83,14 @@ namespace DRT
               lm_masterNodeToPatch,  ///< local map between master nodes and nodes in patch
           std::vector<int>&
               lm_slaveNodeToPatch,  ///< local map between slave nodes and nodes in patch
-          std::vector<CORE::LINALG::SerialDenseMatrix>& elemat_blocks,  ///< element matrix blocks
-          std::vector<CORE::LINALG::SerialDenseVector>& elevec_blocks   ///< element vector blocks
+          std::vector<Core::LinAlg::SerialDenseMatrix>& elemat_blocks,  ///< element matrix blocks
+          std::vector<Core::LinAlg::SerialDenseVector>& elevec_blocks   ///< element vector blocks
           ) = 0;
 
 
       /// Internal implementation class for FluidIntFace elements (the first object is created in
-      /// DRT::ELEMENTS::FluidIntFace::Evaluate)
-      static FluidIntFaceImplInterface* Impl(const CORE::Elements::Element* ele);
+      /// Discret::ELEMENTS::FluidIntFace::Evaluate)
+      static FluidIntFaceImplInterface* Impl(const Core::Elements::Element* ele);
     };
 
     /// Internal FluidIntFace element implementation
@@ -115,13 +115,13 @@ namespace DRT
       \author schott
       \date 04/12
     */
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     class FluidIntFaceImpl : public FluidIntFaceImplInterface
     {
      public:
       /// Singleton access method
       static FluidIntFaceImpl<distype>* Instance(
-          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
+          Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
       /// Constructor
       FluidIntFaceImpl();
@@ -129,22 +129,23 @@ namespace DRT
 
       //! Assemble internal faces integrals using data from both parent elements
       void assemble_internal_faces_using_neighbor_data(
-          DRT::ELEMENTS::FluidIntFace* intface,         ///< internal face element
-          Teuchos::RCP<CORE::MAT::Material>& material,  ///< material associated with the faces
+          Discret::ELEMENTS::FluidIntFace* intface,     ///< internal face element
+          Teuchos::RCP<Core::Mat::Material>& material,  ///< material associated with the faces
           std::vector<int>& nds_master,                 ///< nodal dofset w.r.t. master element
           std::vector<int>& nds_slave,                  ///< nodal dofset w.r.t. slave element
-          const INPAR::XFEM::FaceType& face_type,  ///< which type of face std, ghost, ghost-penalty
+          const Inpar::XFEM::FaceType& face_type,  ///< which type of face std, ghost, ghost-penalty
           Teuchos::ParameterList& params,          ///< parameter list
-          DRT::DiscretizationFaces& discretization,               ///< faces discretization
-          Teuchos::RCP<CORE::LINALG::SparseMatrix> systemmatrix,  ///< systemmatrix
+          Discret::DiscretizationFaces& discretization,           ///< faces discretization
+          Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,  ///< systemmatrix
           Teuchos::RCP<Epetra_Vector> systemvector                ///< systemvector
           ) override;
 
       //! Evaluate internal faces
-      int evaluate_internal_faces(DRT::ELEMENTS::FluidIntFace* intface,  ///< internal face element
-          Teuchos::RCP<CORE::MAT::Material>& material,  ///< material associated with the faces
+      int evaluate_internal_faces(
+          Discret::ELEMENTS::FluidIntFace* intface,     ///< internal face element
+          Teuchos::RCP<Core::Mat::Material>& material,  ///< material associated with the faces
           Teuchos::ParameterList& params,               ///< parameter list
-          DRT::Discretization& discretization,          ///< discretization
+          Discret::Discretization& discretization,      ///< discretization
           std::vector<int>& patchlm,                    ///< patch local map
           std::vector<int>& lm_masterToPatch,  ///< local map between master dofs and patchlm
           std::vector<int>& lm_slaveToPatch,   ///< local map between slave dofs and patchlm
@@ -153,22 +154,22 @@ namespace DRT
               lm_masterNodeToPatch,  ///< local map between master nodes and nodes in patch
           std::vector<int>&
               lm_slaveNodeToPatch,  ///< local map between slave nodes and nodes in patch
-          std::vector<CORE::LINALG::SerialDenseMatrix>& elemat_blocks,  ///< element matrix blocks
-          std::vector<CORE::LINALG::SerialDenseVector>& elevec_blocks   ///< element vector blocks
+          std::vector<Core::LinAlg::SerialDenseMatrix>& elemat_blocks,  ///< element matrix blocks
+          std::vector<Core::LinAlg::SerialDenseVector>& elevec_blocks   ///< element vector blocks
           ) override;
 
 
      private:
       //! pointer to parameter list for time integration
-      DRT::ELEMENTS::FluidEleParameterTimInt* fldparatimint_;
+      Discret::ELEMENTS::FluidEleParameterTimInt* fldparatimint_;
       //! pointer to parameter list for internal faces
-      DRT::ELEMENTS::FluidEleParameterIntFace* fldpara_intface_;
+      Discret::ELEMENTS::FluidEleParameterIntFace* fldpara_intface_;
 
 
     };  // end class FluidIntFaceImpl
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -24,7 +24,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace WEAR
+namespace Wear
 {
   // forward declarations
   class WearInterface;
@@ -47,14 +47,14 @@ namespace WEAR
     \brief Condense discr. wear and lm. for frictional contact
 
     */
-    void CondenseWearDiscr(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
+    void CondenseWearDiscr(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector>& gact);
 
     /*!
     \brief Condense lm. for frictional contact with explicit/implicit wear algorithm
 
     */
-    void condense_wear_impl_expl(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
+    void condense_wear_impl_expl(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector>& gact);
 
     /*!
@@ -62,7 +62,7 @@ namespace WEAR
 
     */
     void prepare_saddle_point_system(
-        Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff);
+        Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff);
 
     /*!
     \brief Recovery method
@@ -103,9 +103,9 @@ namespace WEAR
     \param mergedsol (out): Epetra_Vector for merged solution vector
     \param mergedrhs (out): Epetra_Vector for merged right hand side vector
     */
-    void build_saddle_point_system(Teuchos::RCP<CORE::LINALG::SparseOperator> kdd,
+    void build_saddle_point_system(Teuchos::RCP<Core::LinAlg::SparseOperator> kdd,
         Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
-        Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
+        Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
         Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) override;
 
     /*!
@@ -156,7 +156,7 @@ namespace WEAR
 
     */
     void DoReadRestart(
-        CORE::IO::DiscretizationReader& reader, Teuchos::RCP<const Epetra_Vector> dis) override;
+        Core::IO::DiscretizationReader& reader, Teuchos::RCP<const Epetra_Vector> dis) override;
 
     /*!
     \brief Update active set and check for convergence
@@ -203,7 +203,7 @@ namespace WEAR
     \brief Store wear data into wear data container
 
     */
-    void store_nodal_quantities(MORTAR::StrategyBase::QuantityType type) override;
+    void store_nodal_quantities(Mortar::StrategyBase::QuantityType type) override;
 
     /*!
     \brief Return vector of wear (t_n+1) - D^-1 \times weighted wear!
@@ -220,7 +220,7 @@ namespace WEAR
     \brief Return wear interfaces
 
     */
-    std::vector<Teuchos::RCP<WEAR::WearInterface>> WearInterfaces() { return interface_; }
+    std::vector<Teuchos::RCP<Wear::WearInterface>> WearInterfaces() { return interface_; }
 
     /*!
     \brief Return master map for both sided wear (slip), mapped from slave side
@@ -287,7 +287,7 @@ namespace WEAR
     \brief Evaluate frictional contact
 
     */
-    void EvaluateFriction(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
+    void EvaluateFriction(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff) override;
 
     /*!
@@ -341,7 +341,7 @@ namespace WEAR
     LagrangeStrategyWear operator=(const LagrangeStrategyWear& old) = delete;
     LagrangeStrategyWear(const LagrangeStrategyWear& old) = delete;
 
-    std::vector<Teuchos::RCP<WEAR::WearInterface>> interface_;
+    std::vector<Teuchos::RCP<Wear::WearInterface>> interface_;
 
     // basic data
     bool weightedwear_;              // flag for contact with wear (is) --> weighted wear
@@ -359,15 +359,15 @@ namespace WEAR
     Teuchos::RCP<Epetra_Vector> wearmrhs_;
 
     // implicit wear algorithm
-    Teuchos::RCP<CORE::LINALG::SparseMatrix>
+    Teuchos::RCP<Core::LinAlg::SparseMatrix>
         wlinmatrix_;  // global Matrix Wg containing wear-lm derivatives
-    Teuchos::RCP<CORE::LINALG::SparseMatrix>
+    Teuchos::RCP<Core::LinAlg::SparseMatrix>
         wlinmatrixsl_;  // global Matrix Wsl containing wear-lm slip derivatives
-    Teuchos::RCP<CORE::LINALG::SparseMatrix>
+    Teuchos::RCP<Core::LinAlg::SparseMatrix>
         wlinmatrixst_;  // global Matrix Wst containing wear-lm stick derivatives
 
     // both-sided wear weak dirich cond
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> d2matrix_;  // global Mortar matrix D2
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> d2matrix_;  // global Mortar matrix D2
 
     Teuchos::RCP<Epetra_Map>
         gminvolvednodes_;  // global involved master node row map (of all interfaces)
@@ -406,40 +406,40 @@ namespace WEAR
     bool sswear_;          // bool steady state wear
 
     // discrete wear algorithm (SLAVE)
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> twmatrix_;  // global Mortar wear matrix T
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> ematrix_;   // global Mortar wear matrix E
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> eref_;      // global Mortar wear matrix E
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> lintdis_;   // Lin T w.r.t. displ: Lin(T*n*lm)
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> lintlm_;    // Lin T w.r.t. lm: (T*n)
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> linedis_;   // Lin E w.r.t. displ: Lin(E*w)
-    Teuchos::RCP<CORE::LINALG::SparseMatrix>
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> twmatrix_;  // global Mortar wear matrix T
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> ematrix_;   // global Mortar wear matrix E
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> eref_;      // global Mortar wear matrix E
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> lintdis_;   // Lin T w.r.t. displ: Lin(T*n*lm)
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> lintlm_;    // Lin T w.r.t. lm: (T*n)
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> linedis_;   // Lin E w.r.t. displ: Lin(E*w)
+    Teuchos::RCP<Core::LinAlg::SparseMatrix>
         linslip_w_;  // global matrix containing derivatives (LM) of slip condition
     Teuchos::RCP<Epetra_Vector> inactive_wear_rhs_;  // inactive wear rhs: -w_i
     Teuchos::RCP<Epetra_Vector> wear_cond_rhs_;      // rhs wear condition: -E*w_i + k*T*n*lm_i
 
     // discrete wear algorithm (MASTER)
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> twmatrix_m_;  // global Mortar wear matrix T
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> ematrix_m_;   // global Mortar wear matrix E
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> lintdis_m_;   // Lin T w.r.t. displ: Lin(T*n*lm)
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> lintlm_m_;    // Lin T w.r.t. lm: (T*n)
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> linedis_m_;   // Lin E w.r.t. displ: Lin(E*w)
-    Teuchos::RCP<CORE::LINALG::SparseMatrix>
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> twmatrix_m_;  // global Mortar wear matrix T
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> ematrix_m_;   // global Mortar wear matrix E
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> lintdis_m_;   // Lin T w.r.t. displ: Lin(T*n*lm)
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> lintlm_m_;    // Lin T w.r.t. lm: (T*n)
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> linedis_m_;   // Lin E w.r.t. displ: Lin(E*w)
+    Teuchos::RCP<Core::LinAlg::SparseMatrix>
         linslip_wm_;  // global matrix containing derivatives (LM) of slip condition
     Teuchos::RCP<Epetra_FEVector> inactive_wear_rhs_m_;  // inactive wear rhs: -w_i
     Teuchos::RCP<Epetra_FEVector> wear_cond_rhs_m_;      // rhs wear condition: -E*w_i + k*T*n*lm_i
 
     // matrix blocks for recovering
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> dnblock_;
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> dmblock_;
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> diblock_;
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> dablock_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> dnblock_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> dmblock_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> diblock_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> dablock_;
     Teuchos::RCP<Epetra_Vector> fw_;
 
     Teuchos::RCP<Epetra_Map> gidofs_;
 
   };  // class
 
-}  // namespace WEAR
+}  // namespace Wear
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -26,14 +26,14 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | "timeloop" for supporting procs                          ghamm 05/12 |
  *----------------------------------------------------------------------*/
-void STRUMULTI::np_support_drt()
+void MultiScale::np_support_drt()
 {
   // info:
   // Macro processors run on their macro problem (distributed or not)
   // and during run time supporting processors are available.
   // Dependent on the number of processors on the macro scale that need
   // support, the supporting procs are distributed. The distribution is performed
-  // in GLOBAL::Problem::ReadMicroFields() where a sub communicator is created
+  // in Global::Problem::ReadMicroFields() where a sub communicator is created
   // that contains one master proc and several supporting procs. The master
   // proc has always MyPID() = 0 in the subcomm. That's why all broadcast commands
   // send from proc 0 in subcomm.
@@ -46,17 +46,17 @@ void STRUMULTI::np_support_drt()
   // in this file.
 
   // one dummy micro material is specified in the supporting input file
-  std::map<int, Teuchos::RCP<MAT::MicroMaterial>> dummymaterials;
+  std::map<int, Teuchos::RCP<Mat::MicroMaterial>> dummymaterials;
 
   // this call is needed in order to increment the unique ids that are distributed
-  // by HDF5; the macro procs call output->WriteMesh(0, 0.0) in ADAPTER::Structure
+  // by HDF5; the macro procs call output->WriteMesh(0, 0.0) in Adapter::Structure
   const int someUniqueNumber =
-      GLOBAL::Problem::Instance(0)->GetCommunicators()->GlobalComm()->MyPID();
+      Global::Problem::Instance(0)->GetCommunicators()->GlobalComm()->MyPID();
   std::string uniqueDummyName = &"dummyHDF5file_p"[someUniqueNumber];
   H5Fcreate(uniqueDummyName.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
 
   // get sub communicator including the master proc
-  Teuchos::RCP<Epetra_Comm> subcomm = GLOBAL::Problem::Instance(0)->GetCommunicators()->SubComm();
+  Teuchos::RCP<Epetra_Comm> subcomm = Global::Problem::Instance(0)->GetCommunicators()->SubComm();
 
   // bool for checking whether restart has already been called
   bool restart = false;
@@ -72,7 +72,7 @@ void STRUMULTI::np_support_drt()
 
     // every element needs one micromaterial
     if (dummymaterials[eleID] == Teuchos::null)
-      dummymaterials[eleID] = Teuchos::rcp_static_cast<MAT::MicroMaterial>(MAT::Factory(1));
+      dummymaterials[eleID] = Teuchos::rcp_static_cast<Mat::MicroMaterial>(Mat::Factory(1));
 
     // check what is the next task of the supporting procs
     switch (whattodo)
@@ -84,21 +84,21 @@ void STRUMULTI::np_support_drt()
         Teuchos::RCP<Epetra_Map> oldmap = Teuchos::rcp(new Epetra_Map(1, 0, &tag, 0, *subcomm));
         Teuchos::RCP<Epetra_Map> newmap = Teuchos::rcp(new Epetra_Map(1, 1, &tag, 0, *subcomm));
         // create an exporter object that will figure out the communication pattern
-        CORE::COMM::Exporter exporter(*oldmap, *newmap, *subcomm);
-        std::map<int, Teuchos::RCP<STRUMULTI::MicroStaticParObject>> condnamemap;
-        exporter.Export<STRUMULTI::MicroStaticParObject>(condnamemap);
+        Core::Communication::Exporter exporter(*oldmap, *newmap, *subcomm);
+        std::map<int, Teuchos::RCP<MultiScale::MicroStaticParObject>> condnamemap;
+        exporter.Export<MultiScale::MicroStaticParObject>(condnamemap);
 
         const auto* micro_data = condnamemap[0]->get_micro_static_data_ptr();
         // extract received data from the container
-        const CORE::LINALG::SerialDenseMatrix* defgrdcopy = &micro_data->defgrd_;
-        CORE::LINALG::Matrix<3, 3> defgrd(
-            *(const_cast<CORE::LINALG::SerialDenseMatrix*>(defgrdcopy)), true);
-        const CORE::LINALG::SerialDenseMatrix* cmatcopy = &micro_data->cmat_;
-        CORE::LINALG::Matrix<6, 6> cmat(
-            *(const_cast<CORE::LINALG::SerialDenseMatrix*>(cmatcopy)), true);
-        const CORE::LINALG::SerialDenseMatrix* stresscopy = &micro_data->stress_;
-        CORE::LINALG::Matrix<6, 1> stress(
-            *(const_cast<CORE::LINALG::SerialDenseMatrix*>(stresscopy)), true);
+        const Core::LinAlg::SerialDenseMatrix* defgrdcopy = &micro_data->defgrd_;
+        Core::LinAlg::Matrix<3, 3> defgrd(
+            *(const_cast<Core::LinAlg::SerialDenseMatrix*>(defgrdcopy)), true);
+        const Core::LinAlg::SerialDenseMatrix* cmatcopy = &micro_data->cmat_;
+        Core::LinAlg::Matrix<6, 6> cmat(
+            *(const_cast<Core::LinAlg::SerialDenseMatrix*>(cmatcopy)), true);
+        const Core::LinAlg::SerialDenseMatrix* stresscopy = &micro_data->stress_;
+        Core::LinAlg::Matrix<6, 1> stress(
+            *(const_cast<Core::LinAlg::SerialDenseMatrix*>(stresscopy)), true);
         int gp = micro_data->gp_;
         int microdisnum = micro_data->microdisnum_;
         double V0 = micro_data->V0_;
@@ -134,9 +134,9 @@ void STRUMULTI::np_support_drt()
         Teuchos::RCP<Epetra_Map> oldmap = Teuchos::rcp(new Epetra_Map(1, 0, &tag, 0, *subcomm));
         Teuchos::RCP<Epetra_Map> newmap = Teuchos::rcp(new Epetra_Map(1, 1, &tag, 0, *subcomm));
         // create an exporter object that will figure out the communication pattern
-        CORE::COMM::Exporter exporter(*oldmap, *newmap, *subcomm);
-        std::map<int, Teuchos::RCP<STRUMULTI::MicroStaticParObject>> condnamemap;
-        exporter.Export<STRUMULTI::MicroStaticParObject>(condnamemap);
+        Core::Communication::Exporter exporter(*oldmap, *newmap, *subcomm);
+        std::map<int, Teuchos::RCP<MultiScale::MicroStaticParObject>> condnamemap;
+        exporter.Export<MultiScale::MicroStaticParObject>(condnamemap);
         const auto* micro_data = condnamemap[0]->get_micro_static_data_ptr();
 
         // extract received data from the container
@@ -155,7 +155,7 @@ void STRUMULTI::np_support_drt()
 
         // new dummy material is created if necessary
         if (dummymaterials[eleID] == Teuchos::null)
-          dummymaterials[eleID] = Teuchos::rcp_static_cast<MAT::MicroMaterial>(MAT::Factory(1));
+          dummymaterials[eleID] = Teuchos::rcp_static_cast<Mat::MicroMaterial>(Mat::Factory(1));
 
         // dummy material is used to restart the micro material
         dummymaterials[eleID]->read_restart(gp, eleID, eleowner, microdisnum, V0);

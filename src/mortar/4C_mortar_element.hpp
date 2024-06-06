@@ -22,38 +22,38 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SerialDenseVector;
   class SerialDenseMatrix;
-}  // namespace CORE::LINALG
-namespace MORTAR
+}  // namespace Core::LinAlg
+namespace Mortar
 {
   class ElementNitscheContainer;
 };
 
-namespace MORTAR
+namespace Mortar
 {
   /*!
-  \brief A subclass of CORE::Elements::ElementType that adds mortar element type specific methods
+  \brief A subclass of Core::Elements::ElementType that adds mortar element type specific methods
 
   */
-  class ElementType : public CORE::Elements::ElementType
+  class ElementType : public Core::Elements::ElementType
   {
    public:
-    std::string Name() const override { return "MORTAR::ElementType"; }
+    std::string Name() const override { return "Mortar::ElementType"; }
 
     static ElementType& Instance();
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
-    Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+    Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
     void nodal_block_information(
-        CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+        Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-    CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-        CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
+    Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+        Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
    private:
     static ElementType instance_;
@@ -91,7 +91,7 @@ namespace MORTAR
     class exists.
 
     */
-    virtual void Pack(CORE::COMM::PackBuffer& data) const;
+    virtual void Pack(Core::Communication::PackBuffer& data) const;
 
     /*!
     \brief Unpack data from a vector into this class
@@ -129,19 +129,19 @@ namespace MORTAR
     \brief Return matrix of dual shape function coefficients
 
     */
-    virtual Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& DualShape() { return dualshapecoeff_; }
+    virtual Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>& DualShape() { return dualshapecoeff_; }
 
     /*!
     \brief Return trafo matrix for boundary modification
 
     */
-    virtual Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& Trafo() { return trafocoeff_; }
+    virtual Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>& Trafo() { return trafocoeff_; }
 
     /*!
     \brief Return directional derivative of matrix of dual shape function coefficients
 
     */
-    virtual Teuchos::RCP<CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>>&
+    virtual Teuchos::RCP<Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>>&
     DerivDualShape()
     {
       return derivdualshapecoeff_;
@@ -241,14 +241,14 @@ namespace MORTAR
     std::vector<int> searchelements_;  // global ids of potentially contacting elements
 
     // coefficient matrix for dual shape functions
-    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> dualshapecoeff_;
+    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> dualshapecoeff_;
 
     // derivative of coefficient matrix for dual shape functions
-    Teuchos::RCP<CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>>
+    Teuchos::RCP<Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>>
         derivdualshapecoeff_;
 
     // coefficient matrix for boundary trafo
-    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> trafocoeff_;
+    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> trafocoeff_;
 
     // Displacement of Parent Element
     std::vector<double> parentdisp_;
@@ -289,7 +289,7 @@ namespace MORTAR
   \brief A mortar coupling element
 
   */
-  class Element : public CORE::Elements::FaceElement
+  class Element : public Core::Elements::FaceElement
   {
    public:
     //! @name Enums and Friends
@@ -376,7 +376,7 @@ namespace MORTAR
     \param isslave (in): flag indicating whether element is slave or master side
     \param isnurbs (in): flag indicating whether element is nurbs element or not
     */
-    Element(int id, int owner, const CORE::FE::CellType& shape, const int numnode,
+    Element(int id, int owner, const Core::FE::CellType& shape, const int numnode,
         const int* nodeids, const bool isslave, bool isnurbs = false);
 
     /*!
@@ -385,7 +385,7 @@ namespace MORTAR
     Makes a deep copy of this class
 
     */
-    Element(const MORTAR::Element& old);
+    Element(const Mortar::Element& old);
 
 
 
@@ -393,7 +393,7 @@ namespace MORTAR
     \brief Deep copy the derived class and return pointer to it
 
     */
-    CORE::Elements::Element* Clone() const override;
+    Core::Elements::Element* Clone() const override;
 
     /*!
     \brief Return unique ParObject id
@@ -410,7 +410,7 @@ namespace MORTAR
     \ref Pack and \ref Unpack are used to communicate this element
 
     */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class
@@ -420,7 +420,7 @@ namespace MORTAR
     */
     void Unpack(const std::vector<char>& data) override;
 
-    CORE::Elements::ElementType& ElementType() const override { return ElementType::Instance(); }
+    Core::Elements::ElementType& ElementType() const override { return ElementType::Instance(); }
 
     //@}
 
@@ -430,7 +430,7 @@ namespace MORTAR
     \brief Get shape type of element
 
     */
-    CORE::FE::CellType Shape() const override { return shape_; }
+    Core::FE::CellType Shape() const override { return shape_; }
 
     /*!
     \brief Return number of lines to this element
@@ -448,9 +448,9 @@ namespace MORTAR
     \brief Get vector of Teuchos::RCPs to the lines of this element
 
     */
-    std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override
+    std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override
     {
-      std::vector<Teuchos::RCP<CORE::Elements::Element>> lines(0);
+      std::vector<Teuchos::RCP<Core::Elements::Element>> lines(0);
       return lines;
     }
 
@@ -458,20 +458,20 @@ namespace MORTAR
     \brief Get vector of Teuchos::RCPs to the surfaces of this element
 
     */
-    std::vector<Teuchos::RCP<CORE::Elements::Element>> Surfaces() override
+    std::vector<Teuchos::RCP<Core::Elements::Element>> Surfaces() override
     {
-      std::vector<Teuchos::RCP<CORE::Elements::Element>> surfaces(0);
+      std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces(0);
       return surfaces;
     }
 
     /*!
     \brief Get number of degrees of freedom of a certain node
 
-    This MORTAR::Element is picky: It cooperates only with MORTAR::Node(s),
+    This Mortar::Element is picky: It cooperates only with Mortar::Node(s),
     not with standard Node objects!
 
     */
-    int NumDofPerNode(const CORE::Nodes::Node& node) const override;
+    int NumDofPerNode(const Core::Nodes::Node& node) const override;
 
     /*!
     \brief Get number of degrees of freedom per element
@@ -523,20 +523,20 @@ namespace MORTAR
       bool isquad = false;
       switch (Shape())
       {
-        case CORE::FE::CellType::line2:
-        case CORE::FE::CellType::nurbs2:
-        case CORE::FE::CellType::tri3:
-        case CORE::FE::CellType::quad4:
+        case Core::FE::CellType::line2:
+        case Core::FE::CellType::nurbs2:
+        case Core::FE::CellType::tri3:
+        case Core::FE::CellType::quad4:
         {
           // do nothing
           break;
         }
-        case CORE::FE::CellType::line3:
-        case CORE::FE::CellType::nurbs3:
-        case CORE::FE::CellType::quad8:
-        case CORE::FE::CellType::quad9:
-        case CORE::FE::CellType::nurbs9:
-        case CORE::FE::CellType::tri6:
+        case Core::FE::CellType::line3:
+        case Core::FE::CellType::nurbs3:
+        case Core::FE::CellType::quad8:
+        case Core::FE::CellType::quad9:
+        case Core::FE::CellType::nurbs9:
+        case Core::FE::CellType::tri6:
         {
           isquad = true;
           break;
@@ -555,21 +555,21 @@ namespace MORTAR
     {
       switch (Shape())
       {
-        case CORE::FE::CellType::line2:
-        case CORE::FE::CellType::nurbs2:
-        case CORE::FE::CellType::line3:
-        case CORE::FE::CellType::nurbs3:
+        case Core::FE::CellType::line2:
+        case Core::FE::CellType::nurbs2:
+        case Core::FE::CellType::line3:
+        case Core::FE::CellType::nurbs3:
         {
           // this is a 2-D problem
           return 2;
           break;
         }
-        case CORE::FE::CellType::tri3:
-        case CORE::FE::CellType::quad4:
-        case CORE::FE::CellType::quad8:
-        case CORE::FE::CellType::quad9:
-        case CORE::FE::CellType::nurbs9:
-        case CORE::FE::CellType::tri6:
+        case Core::FE::CellType::tri3:
+        case Core::FE::CellType::quad4:
+        case Core::FE::CellType::quad8:
+        case Core::FE::CellType::quad9:
+        case Core::FE::CellType::nurbs9:
+        case Core::FE::CellType::tri6:
         {
           // this is a 3-D problem
           return 3;
@@ -596,7 +596,7 @@ namespace MORTAR
     mortar specific quantities/information are stored.
 
     */
-    inline MORTAR::MortarEleDataContainer& MoData()
+    inline Mortar::MortarEleDataContainer& MoData()
     {
       FOUR_C_ASSERT(modata_ != Teuchos::null, "Mortar data container not set");
       return *modata_;
@@ -632,11 +632,11 @@ namespace MORTAR
                                 given in params
     \return 0 if successful, negative otherwise
     */
-    int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-        std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
-        CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-        CORE::LINALG::SerialDenseVector& elevec2,
-        CORE::LINALG::SerialDenseVector& elevec3) override;
+    int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+        std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
+        Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
+        Core::LinAlg::SerialDenseVector& elevec2,
+        Core::LinAlg::SerialDenseVector& elevec3) override;
 
     /*!
     \brief Evaluate a Neumann boundary condition dummy
@@ -657,10 +657,10 @@ namespace MORTAR
 
     \return 0 if successful, negative otherwise
     */
-    int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-        CORE::Conditions::Condition& condition, std::vector<int>& lm,
-        CORE::LINALG::SerialDenseVector& elevec1,
-        CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override
+    int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+        Core::Conditions::Condition& condition, std::vector<int>& lm,
+        Core::LinAlg::SerialDenseVector& elevec1,
+        Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override
     {
       return 0;
     }
@@ -678,7 +678,7 @@ namespace MORTAR
     /*!
     \brief Build element normal at node passed in
     */
-    virtual void BuildNormalAtNode(int nid, int& i, CORE::LINALG::SerialDenseMatrix& elens);
+    virtual void BuildNormalAtNode(int nid, int& i, Core::LinAlg::SerialDenseMatrix& elens);
 
     /*!
     \brief Compute element normal at local coordinate xi
@@ -686,7 +686,7 @@ namespace MORTAR
            integrated into the whole nodal normal calculation process.
     */
     virtual void ComputeNormalAtXi(
-        const double* xi, int& i, CORE::LINALG::SerialDenseMatrix& elens);
+        const double* xi, int& i, Core::LinAlg::SerialDenseMatrix& elens);
 
     /*!
     \brief Compute averaged nodal normal at local coordinate xi
@@ -707,21 +707,21 @@ namespace MORTAR
            for a Element in order to compute a unit normal derivative at any point.
     */
     virtual void DerivUnitNormalAtXi(
-        const double* xi, std::vector<CORE::GEN::Pairedvector<int, double>>& derivn);
+        const double* xi, std::vector<Core::Gen::Pairedvector<int, double>>& derivn);
 
     /*!
     \brief Get nodal reference / spatial coords of current element
 
     */
-    virtual void GetNodalCoords(CORE::LINALG::SerialDenseMatrix& coord);
+    virtual void GetNodalCoords(Core::LinAlg::SerialDenseMatrix& coord);
 
     /*! \brief Get nodal reference / spatial coords of current element
      *
      *  \author hiermeier \date 03/17 */
     template <unsigned elenumnode>
-    inline void GetNodalCoords(CORE::LINALG::Matrix<3, elenumnode>& coord)
+    inline void GetNodalCoords(Core::LinAlg::Matrix<3, elenumnode>& coord)
     {
-      CORE::LINALG::SerialDenseMatrix sdm_coord(Teuchos::View, coord.A(), 3, 3, elenumnode);
+      Core::LinAlg::SerialDenseMatrix sdm_coord(Teuchos::View, coord.A(), 3, 3, elenumnode);
       GetNodalCoords(sdm_coord);
     }
 
@@ -741,7 +741,7 @@ namespace MORTAR
 
     \param isinit (in): true if called for reference coords
     */
-    virtual void GetNodalCoordsOld(CORE::LINALG::SerialDenseMatrix& coord, bool isinit = false);
+    virtual void GetNodalCoordsOld(Core::LinAlg::SerialDenseMatrix& coord, bool isinit = false);
 
     double inline GetNodalCoordsOld(const int direction, const int node)
     {
@@ -760,7 +760,7 @@ namespace MORTAR
 
     \param isinit (in): true if called for reference coords
     */
-    virtual void GetNodalLagMult(CORE::LINALG::SerialDenseMatrix& lagmult, bool isinit = false);
+    virtual void GetNodalLagMult(Core::LinAlg::SerialDenseMatrix& lagmult, bool isinit = false);
 
     /*!
     \brief Evaluate element metrics (local basis vectors)
@@ -775,7 +775,7 @@ namespace MORTAR
     /*!
     \brief Compute Jacobian determinant derivative
     */
-    virtual void DerivJacobian(const double* xi, CORE::GEN::Pairedvector<int, double>& derivjac);
+    virtual void DerivJacobian(const double* xi, Core::Gen::Pairedvector<int, double>& derivjac);
 
     /*!
     \brief Compute length/area of the element
@@ -785,13 +785,13 @@ namespace MORTAR
     /*!
     \brief Compute length/area of the element and its derivative
     */
-    virtual double compute_area_deriv(CORE::GEN::Pairedvector<int, double>& area_deriv);
+    virtual double compute_area_deriv(Core::Gen::Pairedvector<int, double>& area_deriv);
 
     /*!
     \brief A repository for all kinds of 1D/2D shape functions
     */
     virtual void ShapeFunctions(Element::ShapeType shape, const double* xi,
-        CORE::LINALG::SerialDenseVector& val, CORE::LINALG::SerialDenseMatrix& deriv);
+        Core::LinAlg::SerialDenseVector& val, Core::LinAlg::SerialDenseMatrix& deriv);
 
     /*!
     \brief A repository for 1D/2D shape function linearizations
@@ -800,24 +800,24 @@ namespace MORTAR
                            (= derivatives of the dual coefficient matrix Ae)
     */
     void shape_function_linearizations(Element::ShapeType shape,
-        CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>& derivdual);
+        Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>& derivdual);
 
     /*!
     \brief Evaluate displacement shape functions and derivatives
     */
-    virtual bool evaluate_shape(const double* xi, CORE::LINALG::SerialDenseVector& val,
-        CORE::LINALG::SerialDenseMatrix& deriv, const int valdim, bool dualquad3d = false);
+    virtual bool evaluate_shape(const double* xi, Core::LinAlg::SerialDenseVector& val,
+        Core::LinAlg::SerialDenseMatrix& deriv, const int valdim, bool dualquad3d = false);
 
     /*! \brief Evaluate displacement shape functions and derivatives
      *
      *  \author hiermeier \date 03/17 */
     template <unsigned elenumnode, unsigned eledim>
-    inline bool evaluate_shape(const double* xi, CORE::LINALG::Matrix<elenumnode, 1>& val,
-        CORE::LINALG::Matrix<elenumnode, eledim>& deriv, unsigned valdim = elenumnode,
+    inline bool evaluate_shape(const double* xi, Core::LinAlg::Matrix<elenumnode, 1>& val,
+        Core::LinAlg::Matrix<elenumnode, eledim>& deriv, unsigned valdim = elenumnode,
         bool dualquad3d = false)
     {
-      CORE::LINALG::SerialDenseVector sdv_val(Teuchos::View, val.A(), elenumnode);
-      CORE::LINALG::SerialDenseMatrix sdm_deriv(
+      Core::LinAlg::SerialDenseVector sdv_val(Teuchos::View, val.A(), elenumnode);
+      Core::LinAlg::SerialDenseMatrix sdm_deriv(
           Teuchos::View, deriv.A(), elenumnode, elenumnode, eledim);
       return evaluate_shape(xi, sdv_val, sdm_deriv, valdim, dualquad3d);
     }
@@ -825,20 +825,20 @@ namespace MORTAR
     /*!
     \brief Evaluate Lagrange multiplier shape functions and derivatives
     */
-    virtual bool evaluate_shape_lag_mult(const INPAR::MORTAR::ShapeFcn& lmtype, const double* xi,
-        CORE::LINALG::SerialDenseVector& val, CORE::LINALG::SerialDenseMatrix& deriv,
+    virtual bool evaluate_shape_lag_mult(const Inpar::Mortar::ShapeFcn& lmtype, const double* xi,
+        Core::LinAlg::SerialDenseVector& val, Core::LinAlg::SerialDenseMatrix& deriv,
         const int valdim, bool boundtrafo = true);
 
     /*! \brief Evaluate Lagrange multiplier shape functions and derivatives
      *
      *  \author hiermeier \date 03/17 */
     template <unsigned elenumnode, unsigned eledim>
-    inline bool evaluate_shape_lag_mult(INPAR::MORTAR::ShapeFcn lmtype, const double* xi,
-        CORE::LINALG::Matrix<elenumnode, 1>& val, CORE::LINALG::Matrix<elenumnode, eledim>& deriv,
+    inline bool evaluate_shape_lag_mult(Inpar::Mortar::ShapeFcn lmtype, const double* xi,
+        Core::LinAlg::Matrix<elenumnode, 1>& val, Core::LinAlg::Matrix<elenumnode, eledim>& deriv,
         unsigned valdim, bool boundtrafo)
     {
-      CORE::LINALG::SerialDenseVector sdv_val(Teuchos::View, val.A(), elenumnode);
-      CORE::LINALG::SerialDenseMatrix sdm_deriv(
+      Core::LinAlg::SerialDenseVector sdv_val(Teuchos::View, val.A(), elenumnode);
+      Core::LinAlg::SerialDenseMatrix sdm_deriv(
           Teuchos::View, deriv.A(), elenumnode, elenumnode, eledim);
       return evaluate_shape_lag_mult(lmtype, xi, sdv_val, sdm_deriv, valdim, boundtrafo);
     }
@@ -847,29 +847,29 @@ namespace MORTAR
     \brief Evaluate Lagrange multiplier shape functions and derivatives
     (special version for 3D quadratic mortar with linear Lagrange multipliers)
     */
-    virtual bool evaluate_shape_lag_mult_lin(const INPAR::MORTAR::ShapeFcn& lmtype,
-        const double* xi, CORE::LINALG::SerialDenseVector& val,
-        CORE::LINALG::SerialDenseMatrix& deriv, const int valdim);
+    virtual bool evaluate_shape_lag_mult_lin(const Inpar::Mortar::ShapeFcn& lmtype,
+        const double* xi, Core::LinAlg::SerialDenseVector& val,
+        Core::LinAlg::SerialDenseMatrix& deriv, const int valdim);
 
     /*!
     \brief Evaluate Lagrange multiplier shape functions and derivatives
     (special version for quadratic mortar with element-wise constant Lagrange multipliers)
     */
-    virtual bool evaluate_shape_lag_mult_const(const INPAR::MORTAR::ShapeFcn& lmtype,
-        const double* xi, CORE::LINALG::SerialDenseVector& val,
-        CORE::LINALG::SerialDenseMatrix& deriv, const int valdim);
+    virtual bool evaluate_shape_lag_mult_const(const Inpar::Mortar::ShapeFcn& lmtype,
+        const double* xi, Core::LinAlg::SerialDenseVector& val,
+        Core::LinAlg::SerialDenseMatrix& deriv, const int valdim);
 
     /*! \brief Evaluate Lagrange multiplier shape functions and derivatives
      *  (special version for 3D quadratic mortar with linear Lagrange multipliers)
      *
      *  \author hiermeier \date 03/17 */
     template <unsigned elenumnode, unsigned eledim>
-    inline bool evaluate_shape_lag_mult_lin(INPAR::MORTAR::ShapeFcn lmtype, const double* xi,
-        CORE::LINALG::Matrix<elenumnode, 1>& val, CORE::LINALG::Matrix<elenumnode, eledim>& deriv,
+    inline bool evaluate_shape_lag_mult_lin(Inpar::Mortar::ShapeFcn lmtype, const double* xi,
+        Core::LinAlg::Matrix<elenumnode, 1>& val, Core::LinAlg::Matrix<elenumnode, eledim>& deriv,
         int valdim)
     {
-      CORE::LINALG::SerialDenseVector sdv_val(Teuchos::View, val.A(), elenumnode);
-      CORE::LINALG::SerialDenseMatrix sdm_deriv(
+      Core::LinAlg::SerialDenseVector sdv_val(Teuchos::View, val.A(), elenumnode);
+      Core::LinAlg::SerialDenseMatrix sdm_deriv(
           Teuchos::View, deriv.A(), elenumnode, elenumnode, eledim);
       return evaluate_shape_lag_mult_lin(lmtype, xi, sdv_val, sdm_deriv, valdim);
     }
@@ -878,13 +878,13 @@ namespace MORTAR
     \brief Evaluate 2nd derivative of shape functions
     */
     virtual bool evaluate2nd_deriv_shape(
-        const double* xi, CORE::LINALG::SerialDenseMatrix& secderiv, const int& valdim);
+        const double* xi, Core::LinAlg::SerialDenseMatrix& secderiv, const int& valdim);
 
     template <unsigned elenumnode>
     inline bool evaluate2nd_deriv_shape(
-        const double* xi, CORE::LINALG::Matrix<elenumnode, 3>& secderiv, const int& valdim)
+        const double* xi, Core::LinAlg::Matrix<elenumnode, 3>& secderiv, const int& valdim)
     {
-      CORE::LINALG::SerialDenseMatrix sdm_secderiv(
+      Core::LinAlg::SerialDenseMatrix sdm_secderiv(
           Teuchos::View, secderiv.A(), elenumnode, elenumnode, 3);
       return evaluate2nd_deriv_shape(xi, sdm_secderiv, valdim);
     }
@@ -896,7 +896,7 @@ namespace MORTAR
                            (= derivatives of the dual coefficient matrix Ae)
     */
     virtual bool DerivShapeDual(
-        CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>& derivdual);
+        Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>& derivdual);
 
     /*!
     \brief Interpolate global coordinates for given local element coordinates
@@ -932,11 +932,11 @@ namespace MORTAR
     virtual double MaxEdgeSize();
 
     /*!
-    \brief Add one MORTAR::Element to this MORTAR::Element's potential contact partners
+    \brief Add one Mortar::Element to this Mortar::Element's potential contact partners
 
     This is for the element-based brute-force search and for the new
     binary search tree. We do NOT have to additionally check, if the
-    given MORTAR::Element has already been added to this MortarCElement's
+    given Mortar::Element has already been added to this MortarCElement's
     potential contact partners before. This cannot happen by construction!
 
     */
@@ -987,7 +987,7 @@ namespace MORTAR
     \brief get knot vectors for this mortar element
 
     */
-    virtual std::vector<CORE::LINALG::SerialDenseVector>& Knots() { return mortarknots_; };
+    virtual std::vector<Core::LinAlg::SerialDenseVector>& Knots() { return mortarknots_; };
 
     /*!
     \brief Get the linearization of the spatial position of the Nodes for this Ele.
@@ -998,7 +998,7 @@ namespace MORTAR
            Needed to be overloaded by IntElement
     */
     virtual void NodeLinearization(
-        std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& nodelin);
+        std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& nodelin);
 
     // h.Willmann return physical type of the mortar element
     PhysicalType& PhysType() { return physicaltype_; };
@@ -1028,19 +1028,19 @@ namespace MORTAR
     /*!
     \brief Get Nitsche data container
       */
-    virtual MORTAR::ElementNitscheContainer& GetNitscheContainer();
+    virtual Mortar::ElementNitscheContainer& GetNitscheContainer();
     //@}
 
    protected:
-    CORE::FE::CellType shape_;  // shape of this element
+    Core::FE::CellType shape_;  // shape of this element
     bool isslave_;              // indicating slave or master side
     bool attached_;             // bool whether an element contributes to M
 
-    Teuchos::RCP<MORTAR::MortarEleDataContainer> modata_;  // additional information
+    Teuchos::RCP<Mortar::MortarEleDataContainer> modata_;  // additional information
 
     // nurbs specific:
     bool nurbs_;
-    std::vector<CORE::LINALG::SerialDenseVector> mortarknots_;  // mortar element knot vector
+    std::vector<Core::LinAlg::SerialDenseVector> mortarknots_;  // mortar element knot vector
     double normalfac_;                                          // factor for normal orientation
     bool zero_sized_;  // zero-sized element: if true: no integration for this element
 
@@ -1053,7 +1053,7 @@ namespace MORTAR
     double traceHCond_;
 
     // data container for element matrices in Nitsche contact
-    Teuchos::RCP<MORTAR::ElementNitscheContainer> nitsche_container_;
+    Teuchos::RCP<Mortar::ElementNitscheContainer> nitsche_container_;
 
     /*!
     \brief Protected constructor for use in derived classes that expect standard element
@@ -1078,7 +1078,7 @@ namespace MORTAR
     \brief Standard constructor
 
     */
-    ElementIntegrator(CORE::FE::CellType eletype);
+    ElementIntegrator(Core::FE::CellType eletype);
 
     /*!
     \brief Destructor
@@ -1113,14 +1113,14 @@ namespace MORTAR
     ElementIntegrator(const ElementIntegrator& old);
 
     int ngp_;                                 // number of Gauss points
-    CORE::LINALG::SerialDenseMatrix coords_;  // Gauss point coordinates
+    Core::LinAlg::SerialDenseMatrix coords_;  // Gauss point coordinates
     std::vector<double> weights_;             // Gauss point weights
 
   };  // class ElementIntegrator
-}  // namespace MORTAR
+}  // namespace Mortar
 
 // << operator
-std::ostream& operator<<(std::ostream& os, const MORTAR::Element& ele);
+std::ostream& operator<<(std::ostream& os, const Mortar::Element& ele);
 
 FOUR_C_NAMESPACE_CLOSE
 

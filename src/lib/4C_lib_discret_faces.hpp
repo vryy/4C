@@ -27,15 +27,15 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class MapExtractor;
   class SparseMatrix;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace DRT
+namespace Discret
 {
-  class DiscretizationFaces : public DRT::Discretization
+  class DiscretizationFaces : public Discret::Discretization
   {
    public:
     /*!
@@ -53,7 +53,7 @@ namespace DRT
       \param lsurface_master (in): local index of surface w.r.t master parent element
       \param nodes (in): vector of nodes building the surface element
       */
-      InternalFacesData(int master_peid, std::vector<CORE::Nodes::Node*> nodes, int lsurface_master)
+      InternalFacesData(int master_peid, std::vector<Core::Nodes::Node*> nodes, int lsurface_master)
       {
         master_peid_ = master_peid;
         slave_peid_ = -1;
@@ -101,7 +101,7 @@ namespace DRT
       const std::vector<int>& get_local_numbering_map() const { return localtrafomap_; }
 
       //! get surface's nodes (unsorted, original)
-      const std::vector<CORE::Nodes::Node*>& GetNodes() const { return nodes_; }
+      const std::vector<Core::Nodes::Node*>& GetNodes() const { return nodes_; }
 
      private:
       int master_peid_;  //!< master parent element id
@@ -110,7 +110,7 @@ namespace DRT
       int lsurface_master_;  //!< local surface number w.r.t master parent element
       int lsurface_slave_;   //!< local surface number w.r.t slave parent element
 
-      std::vector<CORE::Nodes::Node*>
+      std::vector<Core::Nodes::Node*>
           nodes_;  //!< vector of surface nodes, order w.r.t master parent element
 
       /*!
@@ -157,7 +157,7 @@ namespace DRT
       //           (having XFEM dofs seems to render the system non-singular, but it should be
       //           singular so the null space has a non-zero dimension)
       //         - the ML preconditioner also relies on a fixed number of dofs per node
-      DRT::Discretization::compute_null_space_if_necessary(solveparams, recompute);
+      Discret::Discretization::compute_null_space_if_necessary(solveparams, recompute);
     }
 
     /*!
@@ -261,10 +261,10 @@ namespace DRT
 
     \return Adress of internal face element if element is owned by calling proc
     */
-    virtual inline CORE::Elements::Element* lRowFace(int lid) const
+    virtual inline Core::Elements::Element* lRowFace(int lid) const
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-      if (!Filled()) FOUR_C_THROW("DRT::DiscretizationFaces::lRowIntFace: Filled() != true");
+      if (!Filled()) FOUR_C_THROW("Discret::DiscretizationFaces::lRowIntFace: Filled() != true");
 #endif
       return facerowptr_[lid];
     }
@@ -278,10 +278,10 @@ namespace DRT
 
     \return Address of internal face element if element is stored by calling proc
     */
-    virtual inline CORE::Elements::Element* lColFace(int lid) const
+    virtual inline Core::Elements::Element* lColFace(int lid) const
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-      if (!Filled()) FOUR_C_THROW("DRT::DiscretizationFaces::lColIntFace: Filled() != true");
+      if (!Filled()) FOUR_C_THROW("Discret::DiscretizationFaces::lColIntFace: Filled() != true");
 #endif
       return facecolptr_[lid];
     }
@@ -336,19 +336,19 @@ namespace DRT
 
     Teuchos::RCP<Epetra_Map> facerowmap_;  ///< unique distribution of element ownerships
     Teuchos::RCP<Epetra_Map> facecolmap_;  ///< distribution of elements including ghost elements
-    std::vector<CORE::Elements::Element*>
+    std::vector<Core::Elements::Element*>
         facerowptr_;  ///< vector of pointers to row elements for faster access
-    std::vector<CORE::Elements::Element*>
+    std::vector<Core::Elements::Element*>
         facecolptr_;  ///< vector of pointers to column elements for faster access
-    std::map<int, Teuchos::RCP<CORE::Elements::FaceElement>>
+    std::map<int, Teuchos::RCP<Core::Elements::FaceElement>>
         faces_;  ///< map of internal faces elements
 
 
   };  // class DiscretizationXFEM
-}  // namespace DRT
+}  // namespace Discret
 
 /// << operator
-std::ostream& operator<<(std::ostream& os, const DRT::DiscretizationFaces& dis);
+std::ostream& operator<<(std::ostream& os, const Discret::DiscretizationFaces& dis);
 
 
 FOUR_C_NAMESPACE_CLOSE

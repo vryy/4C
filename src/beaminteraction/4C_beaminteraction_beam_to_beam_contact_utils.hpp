@@ -32,22 +32,22 @@ namespace BEAMINTERACTION
   /*!
   \brief Calculate angle encompassed by two lines: returns an angle \in [0;pi/2]
   */
-  double CalcAngle(CORE::LINALG::Matrix<3, 1, double> a, CORE::LINALG::Matrix<3, 1, double> b);
+  double CalcAngle(Core::LinAlg::Matrix<3, 1, double> a, Core::LinAlg::Matrix<3, 1, double> b);
 
   /*!
   \brief Get closest distance between the endpoints of two lines
   */
   template <typename type>
-  type GetClosestEndpointDist(CORE::LINALG::Matrix<3, 1, type> r1_a,
-      CORE::LINALG::Matrix<3, 1, type> r1_b, CORE::LINALG::Matrix<3, 1, type> r2_a,
-      CORE::LINALG::Matrix<3, 1, type> r2_b);
+  type GetClosestEndpointDist(Core::LinAlg::Matrix<3, 1, type> r1_a,
+      Core::LinAlg::Matrix<3, 1, type> r1_b, Core::LinAlg::Matrix<3, 1, type> r2_a,
+      Core::LinAlg::Matrix<3, 1, type> r2_b);
 
   /*!
   \brief Set primary displacement DoFs for automatic differentiation with Sacado
   */
   template <int numnodes, int numnodalvalues>
-  void SetFADDispDofs(CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, FAD>& ele1pos_,
-      CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, FAD>& ele2pos_)
+  void SetFADDispDofs(Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, FAD>& ele1pos_,
+      Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, FAD>& ele2pos_)
   {
     // The 2*3*numnodes*numnodalvalues primary DoFs are the components of the nodal positions /
     // tangents. The two (+2) additional degrees of freedom represent the dependency on the
@@ -65,8 +65,8 @@ namespace BEAMINTERACTION
 \brief BTS-Contact: Set primary displacement DoFs for automatic differentiation with Sacado
 */
   template <int numnodessol, int numnodes, int numnodalvalues>
-  void SetFADDispDofs(CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, FAD>& ele1pos,
-      CORE::LINALG::Matrix<3 * numnodessol, 1, FAD>& ele2pos, const int& numvar)
+  void SetFADDispDofs(Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, FAD>& ele1pos,
+      Core::LinAlg::Matrix<3 * numnodessol, 1, FAD>& ele2pos, const int& numvar)
   {
     for (int i = 0; i < 3 * numnodes * numnodalvalues; i++)
       ele1pos(i).diff(i, 3 * numnodes * numnodalvalues + 3 * numnodessol + numvar);
@@ -132,32 +132,32 @@ namespace BEAMINTERACTION
   /*!
   \brief Check, if current node is a solid contact element
   */
-  bool SolidContactElement(const CORE::Elements::Element& element);
+  bool SolidContactElement(const Core::Elements::Element& element);
 
   /*
   \brief Check, if two elements share a node -> neighbor elements
   */
   bool ElementsShareNode(
-      const CORE::Elements::Element& element1, const CORE::Elements::Element& element2);
+      const Core::Elements::Element& element1, const Core::Elements::Element& element2);
 
   /*
   \brief Calculate beam radius
   */
-  double CalcEleRadius(const CORE::Elements::Element* ele);
+  double CalcEleRadius(const Core::Elements::Element* ele);
 
   /*
   \brief Intersect two parallel cylinders
   */
-  bool IntersectParallelCylinders(CORE::LINALG::Matrix<3, 1, double>& r1_a,
-      CORE::LINALG::Matrix<3, 1, double>& r1_b, CORE::LINALG::Matrix<3, 1, double>& r2_a,
-      CORE::LINALG::Matrix<3, 1, double>& r2_b, double& distancelimit);
+  bool IntersectParallelCylinders(Core::LinAlg::Matrix<3, 1, double>& r1_a,
+      Core::LinAlg::Matrix<3, 1, double>& r1_b, Core::LinAlg::Matrix<3, 1, double>& r2_a,
+      Core::LinAlg::Matrix<3, 1, double>& r2_b, double& distancelimit);
 
   /*
   \brief Intersect two non-parallel, arbitrary oriented cylinders
   */
-  bool IntersectArbitraryCylinders(CORE::LINALG::Matrix<3, 1, double>& r1_a,
-      CORE::LINALG::Matrix<3, 1, double>& r1_b, CORE::LINALG::Matrix<3, 1, double>& r2_a,
-      CORE::LINALG::Matrix<3, 1, double>& r2_b, double& distancelimit,
+  bool IntersectArbitraryCylinders(Core::LinAlg::Matrix<3, 1, double>& r1_a,
+      Core::LinAlg::Matrix<3, 1, double>& r1_b, Core::LinAlg::Matrix<3, 1, double>& r2_a,
+      Core::LinAlg::Matrix<3, 1, double>& r2_b, double& distancelimit,
       std::pair<double, double>&
           closestpoints,  // The closest point are only set, if we have detected an intersection at
                           // a valid closest point with eta1_seg, eta2_seg \in [-1.0;1.0]
@@ -166,8 +166,8 @@ namespace BEAMINTERACTION
   /*
   \brief Calculate closest distance of a point and a line
   */
-  double CalcPointLineDist(CORE::LINALG::Matrix<3, 1, double>& rline_a,
-      CORE::LINALG::Matrix<3, 1, double>& rline_b, CORE::LINALG::Matrix<3, 1, double>& rp,
+  double CalcPointLineDist(Core::LinAlg::Matrix<3, 1, double>& rline_a,
+      Core::LinAlg::Matrix<3, 1, double>& rline_b, Core::LinAlg::Matrix<3, 1, double>& rp,
       double& eta);
 
   /*

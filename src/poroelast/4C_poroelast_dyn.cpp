@@ -21,23 +21,23 @@ FOUR_C_NAMESPACE_OPEN
 
 void poroelast_drt()
 {
-  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
+  Global::Problem* problem = Global::Problem::Instance();
 
   // create a communicator
   const Epetra_Comm& comm = problem->GetDis("structure")->Comm();
 
   // print Logo to screen
-  if (comm.MyPID() == 0) POROELAST::PrintLogo();
+  if (comm.MyPID() == 0) PoroElast::PrintLogo();
 
   // setup of the discretizations, including clone strategy
-  POROELAST::UTILS::SetupPoro<POROELAST::UTILS::PoroelastCloneStrategy>();
+  PoroElast::UTILS::SetupPoro<PoroElast::UTILS::PoroelastCloneStrategy>();
 
   // access the problem-specific parameter list
   const Teuchos::ParameterList& poroelastdyn = problem->poroelast_dynamic_params();
 
   // choose algorithm depending on solution type
-  Teuchos::RCP<POROELAST::PoroBase> poroalgo =
-      POROELAST::UTILS::CreatePoroAlgorithm(poroelastdyn, comm);
+  Teuchos::RCP<PoroElast::PoroBase> poroalgo =
+      PoroElast::UTILS::CreatePoroAlgorithm(poroelastdyn, comm);
 
   // read the restart information, set vectors and variables
   const int restart = problem->Restart();

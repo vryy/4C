@@ -21,11 +21,11 @@ FOUR_C_NAMESPACE_OPEN
 // and use the fluid solver to solve for it
 // #define BLOCKMATRIXMERGE
 
-namespace ADAPTER
+namespace Adapter
 {
   class Structure;
   class Fluid;
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 namespace FSI
 {
@@ -36,8 +36,8 @@ namespace FSI
   {
    public:
     /// construction
-    ConstrOverlappingBlockMatrix(const CORE::LINALG::MultiMapExtractor& maps,
-        ADAPTER::FSIStructureWrapper& structure, ADAPTER::Fluid& fluid, ADAPTER::AleFsiWrapper& ale,
+    ConstrOverlappingBlockMatrix(const Core::LinAlg::MultiMapExtractor& maps,
+        Adapter::FSIStructureWrapper& structure, Adapter::Fluid& fluid, Adapter::AleFsiWrapper& ale,
         bool structuresplit, int symmetric, double omega = 1.0, int iterations = 1,
         double somega = 1.0, int siterations = 0, double fomega = 1.0, int fiterations = 0,
         double aomega = 1.0, int aiterations = 0);
@@ -58,19 +58,19 @@ namespace FSI
     /// symmetric Gauss-Seidel block preconditioner
     void sgs(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
 
-    //     Teuchos::RCP<CORE::LINALG::SparseMatrix> interconA_;
+    //     Teuchos::RCP<Core::LinAlg::SparseMatrix> interconA_;
     //     Teuchos::RCP<Epetra_Vector> interconsol_;
     //     Teuchos::RCP<Epetra_Vector> interconrhs_;
     //     Teuchos::RCP<Epetra_LinearProblem> linprob_
     //     Teuchos::RCP<Amesos_Umfpack> constraintsolver_;
 
     Teuchos::RCP<Epetra_Map> overallfsimap_;
-    CORE::LINALG::MultiMapExtractor fsiextractor_;
-    //     Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> invDiag_;
+    Core::LinAlg::MultiMapExtractor fsiextractor_;
+    //     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> invDiag_;
 
     double alpha_;                 /// "relaxation" parameter in SIMPLE approximation of matrix
     int simpleiter_;               /// number of iterations in SIMPLE preconditioner
-    INPAR::FSI::PrecConstr prec_;  /// preconditioner for constraint system
+    Inpar::FSI::PrecConstr prec_;  /// preconditioner for constraint system
   };
 }  // namespace FSI
 

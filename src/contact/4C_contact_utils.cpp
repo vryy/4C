@@ -44,8 +44,8 @@ std::string CONTACT::VecBlockTypeToStr(const CONTACT::VecBlockType bt)
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 int CONTACT::UTILS::GetContactConditions(
-    std::vector<CORE::Conditions::Condition*>& contact_conditions,
-    const std::vector<CORE::Conditions::Condition*>& beamandsolidcontactconditions,
+    std::vector<Core::Conditions::Condition*>& contact_conditions,
+    const std::vector<Core::Conditions::Condition*>& beamandsolidcontactconditions,
     const bool& throw_error)
 {
   /* Sort out beam-to-solid contact pairs, since these are treated in the
@@ -82,14 +82,14 @@ int CONTACT::UTILS::GetContactConditions(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 int CONTACT::UTILS::GetContactConditionGroups(
-    std::vector<std::vector<CORE::Conditions::Condition*>>& ccond_grps,
-    const DRT::Discretization& discret, const bool& throw_error)
+    std::vector<std::vector<Core::Conditions::Condition*>>& ccond_grps,
+    const Discret::Discretization& discret, const bool& throw_error)
 {
   // vector that contains solid-to-solid and beam-to-solid contact pairs
-  std::vector<CORE::Conditions::Condition*> beamandsolidcontactconditions(0);
+  std::vector<Core::Conditions::Condition*> beamandsolidcontactconditions(0);
   discret.GetCondition("Contact", beamandsolidcontactconditions);
 
-  std::vector<CORE::Conditions::Condition*> cconds(0);
+  std::vector<Core::Conditions::Condition*> cconds(0);
   int err =
       CONTACT::UTILS::GetContactConditions(cconds, beamandsolidcontactconditions, throw_error);
   // direct return, if an error occurred
@@ -101,8 +101,8 @@ int CONTACT::UTILS::GetContactConditionGroups(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::UTILS::GetContactConditionGroups(
-    std::vector<std::vector<CORE::Conditions::Condition*>>& ccond_grps,
-    const std::vector<CORE::Conditions::Condition*>& cconds)
+    std::vector<std::vector<Core::Conditions::Condition*>>& ccond_grps,
+    const std::vector<Core::Conditions::Condition*>& cconds)
 {
   ccond_grps.clear();
   /* find all pairs of matching contact conditions
@@ -111,8 +111,8 @@ void CONTACT::UTILS::GetContactConditionGroups(
 
   for (std::size_t i = 0; i < cconds.size(); ++i)
   {
-    std::vector<CORE::Conditions::Condition*> current_grp(0);
-    CORE::Conditions::Condition* tempcond = nullptr;
+    std::vector<Core::Conditions::Condition*> current_grp(0);
+    Core::Conditions::Condition* tempcond = nullptr;
 
     // try to build contact group around this condition
     current_grp.push_back(cconds[i]);
@@ -164,7 +164,7 @@ void CONTACT::UTILS::GetContactConditionGroups(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::UTILS::GetMasterSlaveSideInfo(std::vector<bool>& isslave, std::vector<bool>& isself,
-    const std::vector<CORE::Conditions::Condition*>& cond_grp)
+    const std::vector<Core::Conditions::Condition*>& cond_grp)
 {
   bool hasslave = false;
   bool hasmaster = false;
@@ -228,7 +228,7 @@ void CONTACT::UTILS::GetMasterSlaveSideInfo(std::vector<bool>& isslave, std::vec
 void CONTACT::UTILS::GetInitializationInfo(bool& Two_half_pass,
     bool& Check_nonsmooth_selfcontactsurface, bool& Searchele_AllProc, std::vector<bool>& isactive,
     std::vector<bool>& isslave, std::vector<bool>& isself,
-    const std::vector<CORE::Conditions::Condition*>& cond_grp)
+    const std::vector<Core::Conditions::Condition*>& cond_grp)
 {
   std::vector<const std::string*> active(cond_grp.size());
   std::vector<int> two_half_pass(cond_grp.size());
@@ -280,12 +280,12 @@ void CONTACT::UTILS::GetInitializationInfo(bool& Two_half_pass,
 
   // SAFETY CHECKS
   // read parameter list and problem type
-  const CORE::ProblemType problemtype = GLOBAL::Problem::Instance()->GetProblemType();
-  const Teuchos::ParameterList& contact = GLOBAL::Problem::Instance()->contact_dynamic_params();
-  const Teuchos::ParameterList& mortar = GLOBAL::Problem::Instance()->mortar_coupling_params();
+  const Core::ProblemType problemtype = Global::Problem::Instance()->GetProblemType();
+  const Teuchos::ParameterList& contact = Global::Problem::Instance()->contact_dynamic_params();
+  const Teuchos::ParameterList& mortar = Global::Problem::Instance()->mortar_coupling_params();
 
   // XFSI is the only reason why you want this option (as the xfluid redistribution is different)
-  if (problemtype == CORE::ProblemType::fsi_xfem || problemtype == CORE::ProblemType::fpsi_xfem)
+  if (problemtype == Core::ProblemType::fsi_xfem || problemtype == Core::ProblemType::fpsi_xfem)
     Searchele_AllProc = true;
   else
     Searchele_AllProc = false;
@@ -322,20 +322,20 @@ void CONTACT::UTILS::GetInitializationInfo(bool& Two_half_pass,
       }
     }
 
-    if ((problemtype != CORE::ProblemType::structure) and
-        (problemtype != CORE::ProblemType::fsi_xfem) and
-        (problemtype != CORE::ProblemType::fpsi_xfem) and (problemtype != CORE::ProblemType::ssi))
+    if ((problemtype != Core::ProblemType::structure) and
+        (problemtype != Core::ProblemType::fsi_xfem) and
+        (problemtype != Core::ProblemType::fpsi_xfem) and (problemtype != Core::ProblemType::ssi))
       FOUR_C_THROW(
           "two half pass algorithm only implemented in structural, fsi/fpsi and ssi problems");
-    if (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") !=
-        INPAR::CONTACT::solution_nitsche)
+    if (Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(contact, "STRATEGY") !=
+        Inpar::CONTACT::solution_nitsche)
       FOUR_C_THROW("two half pass algorithm only with nitsche contact formulation");
-    if (CORE::UTILS::IntegralValue<INPAR::CONTACT::NitscheWeighting>(
-            contact, "NITSCHE_WEIGHTING") != INPAR::CONTACT::NitWgt_harmonic)
+    if (Core::UTILS::IntegralValue<Inpar::CONTACT::NitscheWeighting>(
+            contact, "NITSCHE_WEIGHTING") != Inpar::CONTACT::NitWgt_harmonic)
       FOUR_C_THROW("two half pass algorithm only with harmonic weighting");
   }
 
-  if (!Two_half_pass && problemtype == CORE::ProblemType::fsi_xfem)
+  if (!Two_half_pass && problemtype == Core::ProblemType::fsi_xfem)
     FOUR_C_THROW("Nitsche FSI with Contact requires Two_half_pass which is not set!");
 
   if ((!Two_half_pass) && Check_nonsmooth_selfcontactsurface)
@@ -346,8 +346,8 @@ void CONTACT::UTILS::GetInitializationInfo(bool& Two_half_pass,
         "approach so far!");
   }
 
-  if (Two_half_pass && (CORE::UTILS::IntegralValue<INPAR::MORTAR::AlgorithmType>(
-                            mortar, "ALGORITHM") != INPAR::MORTAR::algorithm_gpts))
+  if (Two_half_pass && (Core::UTILS::IntegralValue<Inpar::Mortar::AlgorithmType>(
+                            mortar, "ALGORITHM") != Inpar::Mortar::algorithm_gpts))
   {
     FOUR_C_THROW(
         "ERROR: You activated the two half pass 'TwoHalfPass' approach, but the 'MORTAR COUPLING' "
@@ -356,7 +356,7 @@ void CONTACT::UTILS::GetInitializationInfo(bool& Two_half_pass,
 
 
   if (Check_nonsmooth_selfcontactsurface &&
-      (!CORE::UTILS::IntegralValue<int>(contact, "NONSMOOTH_CONTACT_SURFACE")))
+      (!Core::UTILS::IntegralValue<int>(contact, "NONSMOOTH_CONTACT_SURFACE")))
   {
     FOUR_C_THROW(
         "ERROR: You activated the self contact condition reference configuration check for "
@@ -368,21 +368,21 @@ void CONTACT::UTILS::GetInitializationInfo(bool& Two_half_pass,
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::UTILS::WriteConservationDataToFile(const int mypid, const int interface_id,
-    const int nln_iter, const CORE::LINALG::SerialDenseMatrix& conservation_data,
+    const int nln_iter, const Core::LinAlg::SerialDenseMatrix& conservation_data,
     const std::string& ofile_path, const std::string& prefix)
 {
   if (mypid != 0) return;
 
   static std::vector<std::string> done_prefixes;
 
-  const std::string path(CORE::IO::ExtractPath(ofile_path));
+  const std::string path(Core::IO::ExtractPath(ofile_path));
   const std::string dir_name(
-      CORE::IO::RemoveRestartStepFromFileName(
-          CORE::IO::ExtractFileName(ofile_path), GLOBAL::Problem::Instance()->Restart()) +
+      Core::IO::RemoveRestartStepFromFileName(
+          Core::IO::ExtractFileName(ofile_path), Global::Problem::Instance()->Restart()) +
       "_conservation");
 
   std::string full_filepath(path + dir_name);
-  CORE::IO::create_directory(full_filepath, mypid);
+  Core::IO::create_directory(full_filepath, mypid);
   full_filepath += "/" + prefix + "_" + "conservation.data";
 
   bool is_done = false;
@@ -429,17 +429,17 @@ void CONTACT::UTILS::WriteConservationDataToFile(const int mypid, const int inte
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::UTILS::DbcHandler::detect_dbc_slave_nodes_and_elements(
-    const DRT::Discretization& str_discret,
-    const std::vector<std::vector<CORE::Conditions::Condition*>>& ccond_grps,
-    std::set<const CORE::Nodes::Node*>& dbc_slave_nodes,
-    std::set<const CORE::Elements::Element*>& dbc_slave_eles)
+    const Discret::Discretization& str_discret,
+    const std::vector<std::vector<Core::Conditions::Condition*>>& ccond_grps,
+    std::set<const Core::Nodes::Node*>& dbc_slave_nodes,
+    std::set<const Core::Elements::Element*>& dbc_slave_eles)
 {
   dbc_slave_nodes.clear();
   dbc_slave_eles.clear();
 
-  std::map<const CORE::Nodes::Node*, int> dbc_slave_node_map;
+  std::map<const Core::Nodes::Node*, int> dbc_slave_node_map;
 
-  std::vector<const CORE::Conditions::Condition*> sl_conds;
+  std::vector<const Core::Conditions::Condition*> sl_conds;
 
   for (const auto& ccond_grp : ccond_grps)
   {
@@ -451,19 +451,19 @@ void CONTACT::UTILS::DbcHandler::detect_dbc_slave_nodes_and_elements(
     {
       if (not isslave[i]) continue;
 
-      const CORE::Conditions::Condition* sl_cond = ccond_grp[i];
+      const Core::Conditions::Condition* sl_cond = ccond_grp[i];
 
       const int dbc_handling_id = sl_cond->parameters().Get<int>("dbc_handling");
-      const auto dbc_handling = static_cast<INPAR::MORTAR::DBCHandling>(dbc_handling_id);
+      const auto dbc_handling = static_cast<Inpar::Mortar::DBCHandling>(dbc_handling_id);
 
       switch (dbc_handling)
       {
-        case INPAR::MORTAR::DBCHandling::remove_dbc_nodes_from_slave_side:
+        case Inpar::Mortar::DBCHandling::remove_dbc_nodes_from_slave_side:
         {
           sl_conds.push_back(sl_cond);
           break;
         }
-        case INPAR::MORTAR::DBCHandling::do_nothing:
+        case Inpar::Mortar::DBCHandling::do_nothing:
         {
           break;
         }
@@ -485,11 +485,11 @@ void CONTACT::UTILS::DbcHandler::detect_dbc_slave_nodes_and_elements(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::UTILS::DbcHandler::detect_dbc_slave_nodes(
-    std::map<const CORE::Nodes::Node*, int>& dbc_slave_node_map,
-    const DRT::Discretization& str_discret,
-    const std::vector<const CORE::Conditions::Condition*>& sl_conds)
+    std::map<const Core::Nodes::Node*, int>& dbc_slave_node_map,
+    const Discret::Discretization& str_discret,
+    const std::vector<const Core::Conditions::Condition*>& sl_conds)
 {
-  std::vector<CORE::Conditions::Condition*> dconds;
+  std::vector<Core::Conditions::Condition*> dconds;
   str_discret.GetCondition("Dirichlet", dconds);
 
   // collect all slave node ids
@@ -507,7 +507,7 @@ void CONTACT::UTILS::DbcHandler::detect_dbc_slave_nodes(
 
     bool found = false;
 
-    for (CORE::Conditions::Condition* dcond : dconds)
+    for (Core::Conditions::Condition* dcond : dconds)
     {
       const auto* dnids = dcond->GetNodes();
       for (int dnid : *dnids)
@@ -527,7 +527,7 @@ void CONTACT::UTILS::DbcHandler::detect_dbc_slave_nodes(
     // skip nullptr ptrs
     if (str_discret.HaveGlobalNode(snid))
     {
-      const CORE::Nodes::Node* node = str_discret.gNode(snid);
+      const Core::Nodes::Node* node = str_discret.gNode(snid);
       dbc_slave_node_map.insert(std::make_pair(node, slpair.second));
     }
   }
@@ -536,9 +536,9 @@ void CONTACT::UTILS::DbcHandler::detect_dbc_slave_nodes(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::UTILS::DbcHandler::detect_dbc_slave_elements(
-    std::set<const CORE::Elements::Element*>& dbc_slave_eles,
-    const std::map<const CORE::Nodes::Node*, int>& dbc_slave_nodes,
-    const std::vector<const CORE::Conditions::Condition*>& sl_conds)
+    std::set<const Core::Elements::Element*>& dbc_slave_eles,
+    const std::map<const Core::Nodes::Node*, int>& dbc_slave_nodes,
+    const std::vector<const Core::Conditions::Condition*>& sl_conds)
 {
   for (const auto& dbc_sl_node : dbc_slave_nodes)
   {
@@ -552,12 +552,12 @@ void CONTACT::UTILS::DbcHandler::detect_dbc_slave_elements(
 
       ++sl_citer;
     }
-    const CORE::Conditions::Condition& slcond = **sl_citer;
+    const Core::Conditions::Condition& slcond = **sl_citer;
 
-    const std::map<int, Teuchos::RCP<CORE::Elements::Element>>& geometry = slcond.Geometry();
+    const std::map<int, Teuchos::RCP<Core::Elements::Element>>& geometry = slcond.Geometry();
     for (const auto& iele_pair : geometry)
     {
-      const CORE::Elements::Element* ele = iele_pair.second.get();
+      const Core::Elements::Element* ele = iele_pair.second.get();
 
       const int* ele_nids = ele->NodeIds();
       for (int i = 0; i < ele->num_node(); ++i)

@@ -14,24 +14,24 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-void DRT::ELEMENTS::SoHex8::soh8_element_center_refe_coords(
-    CORE::LINALG::Matrix<NUMDIM_SOH8, 1>& centercoord,
-    CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> const& xrefe) const
+void Discret::ELEMENTS::SoHex8::soh8_element_center_refe_coords(
+    Core::LinAlg::Matrix<NUMDIM_SOH8, 1>& centercoord,
+    Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> const& xrefe) const
 {
-  const CORE::FE::CellType distype = Shape();
-  CORE::LINALG::Matrix<NUMNOD_SOH8, 1> funct;
-  CORE::FE::shape_function_3D(funct, 0.0, 0.0, 0.0, distype);
+  const Core::FE::CellType distype = Shape();
+  Core::LinAlg::Matrix<NUMNOD_SOH8, 1> funct;
+  Core::FE::shape_function_3D(funct, 0.0, 0.0, 0.0, distype);
   centercoord.MultiplyTN(xrefe, funct);
   return;
 }
 
 
-void DRT::ELEMENTS::SoHex8::soh8_gauss_point_refe_coords(
-    CORE::LINALG::Matrix<NUMDIM_SOH8, 1>& gpcoord,
-    CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> const& xrefe, int const gp) const
+void Discret::ELEMENTS::SoHex8::soh8_gauss_point_refe_coords(
+    Core::LinAlg::Matrix<NUMDIM_SOH8, 1>& gpcoord,
+    Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> const& xrefe, int const gp) const
 {
-  const static std::vector<CORE::LINALG::Matrix<NUMNOD_SOH8, 1>> shapefcts = soh8_shapefcts();
-  CORE::LINALG::Matrix<NUMNOD_SOH8, 1> funct(true);
+  const static std::vector<Core::LinAlg::Matrix<NUMNOD_SOH8, 1>> shapefcts = soh8_shapefcts();
+  Core::LinAlg::Matrix<NUMNOD_SOH8, 1> funct(true);
   funct = shapefcts[gp];
   gpcoord.MultiplyTN(xrefe, funct);
 

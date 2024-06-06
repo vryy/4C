@@ -20,10 +20,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     Thon 12/14 |
  *----------------------------------------------------------------------*/
-FLD::TimIntAC::TimIntAC(const Teuchos::RCP<DRT::Discretization>& actdis,
-    const Teuchos::RCP<CORE::LINALG::Solver>& solver,
+FLD::TimIntAC::TimIntAC(const Teuchos::RCP<Discret::Discretization>& actdis,
+    const Teuchos::RCP<Core::LinAlg::Solver>& solver,
     const Teuchos::RCP<Teuchos::ParameterList>& params,
-    const Teuchos::RCP<CORE::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
+    const Teuchos::RCP<Core::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
     : FluidImplicitTimeInt(actdis, solver, params, output, alefluid)
 {
   return;
@@ -34,13 +34,13 @@ FLD::TimIntAC::TimIntAC(const Teuchos::RCP<DRT::Discretization>& actdis,
  *----------------------------------------------------------------------*/
 void FLD::TimIntAC::read_restart(int step)
 {
-  const Teuchos::ParameterList& fs3idyn = GLOBAL::Problem::Instance()->FS3IDynamicParams();
-  const bool restartfrompartfsi = CORE::UTILS::IntegralValue<int>(fs3idyn, "RESTART_FROM_PART_FSI");
+  const Teuchos::ParameterList& fs3idyn = Global::Problem::Instance()->FS3IDynamicParams();
+  const bool restartfrompartfsi = Core::UTILS::IntegralValue<int>(fs3idyn, "RESTART_FROM_PART_FSI");
 
   if (not restartfrompartfsi)  // standard restart
   {
-    CORE::IO::DiscretizationReader reader(
-        discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
+    Core::IO::DiscretizationReader reader(
+        discret_, Global::Problem::Instance()->InputControlFile(), step);
 
     reader.ReadVector(trueresidual_, "trueresidual");
   }

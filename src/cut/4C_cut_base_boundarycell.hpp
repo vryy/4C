@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 */
 // pt(0,0) --> y
 // pt(1,0) --> z
-double base_func_surfX(const CORE::LINALG::Matrix<2, 1>& pt, int inte_num, std::vector<double> alfa)
+double base_func_surfX(const Core::LinAlg::Matrix<2, 1>& pt, int inte_num, std::vector<double> alfa)
 {
   double basef_surf = 0.0;
   if (inte_num == 1)  // f(x,y,z) = 1
@@ -588,7 +588,7 @@ double base_func_surfX(const CORE::LINALG::Matrix<2, 1>& pt, int inte_num, std::
 */
 // pt(0,0) --> z
 // pt(1,0) --> x
-double base_func_surfY(const CORE::LINALG::Matrix<2, 1>& pt, int inte_num, std::vector<double> alfa)
+double base_func_surfY(const Core::LinAlg::Matrix<2, 1>& pt, int inte_num, std::vector<double> alfa)
 {
   double basef_surf = 0.0;
 
@@ -1157,7 +1157,7 @@ double base_func_surfY(const CORE::LINALG::Matrix<2, 1>& pt, int inte_num, std::
 */
 // pt(0,0) --> x
 // pt(1,0) --> y
-double base_func_surfZ(const CORE::LINALG::Matrix<2, 1>& pt, int inte_num, std::vector<double> alfa)
+double base_func_surfZ(const Core::LinAlg::Matrix<2, 1>& pt, int inte_num, std::vector<double> alfa)
 {
   double basef_surf = 0.0;
   if (inte_num == 1)  // f(x,y,z) = 1

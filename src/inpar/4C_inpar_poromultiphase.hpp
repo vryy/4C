@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-namespace INPAR
+namespace Inpar
 {
   namespace POROMULTIPHASE
   {
@@ -67,19 +67,19 @@ namespace INPAR
     {
       switch (norm)
       {
-        case INPAR::POROMULTIPHASE::norm_l1:
+        case Inpar::POROMULTIPHASE::norm_l1:
           return "L1";
           break;
-        case INPAR::POROMULTIPHASE::norm_l1_scaled:
+        case Inpar::POROMULTIPHASE::norm_l1_scaled:
           return "L1_scaled";
           break;
-        case INPAR::POROMULTIPHASE::norm_l2:
+        case Inpar::POROMULTIPHASE::norm_l2:
           return "L2";
           break;
-        case INPAR::POROMULTIPHASE::norm_rms:
+        case Inpar::POROMULTIPHASE::norm_rms:
           return "Rms";
           break;
-        case INPAR::POROMULTIPHASE::norm_inf:
+        case Inpar::POROMULTIPHASE::norm_inf:
           return "Inf";
           break;
         default:
@@ -94,7 +94,7 @@ namespace INPAR
 
   }  // namespace POROMULTIPHASE
 
-}  // namespace INPAR
+}  // namespace Inpar
 
 
 

@@ -42,16 +42,16 @@ valves with k_p -> 0
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
   class SparseOperator;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 namespace UTILS
 {
@@ -64,7 +64,7 @@ namespace UTILS
     takes care of the Cardiovascular0D IDs.
     */
 
-    Cardiovascular0DArterialProxDist(Teuchos::RCP<DRT::Discretization>
+    Cardiovascular0DArterialProxDist(Teuchos::RCP<Discret::Discretization>
                                          discr,  ///< discretization where Cardiovascular0D lives on
         const std::string& conditionname,  ///< Name of condition to create Cardiovascular0D from
         std::vector<int>& curID            ///< current ID
@@ -88,10 +88,10 @@ namespace UTILS
     void Evaluate(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat1,  ///< Cardiovascular0D stiffness matrix
-        Teuchos::RCP<CORE::LINALG::SparseOperator>
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat1,  ///< Cardiovascular0D stiffness matrix
+        Teuchos::RCP<Core::LinAlg::SparseOperator>
             sysmat2,  ///< Cardiovascular0D offdiagonal matrix dV/dd
-        Teuchos::RCP<CORE::LINALG::SparseOperator>
+        Teuchos::RCP<Core::LinAlg::SparseOperator>
             sysmat3,                          ///< Cardiovascular0D offdiagonal matrix dfext/dp
         Teuchos::RCP<Epetra_Vector> sysvec1,  ///< distributed vectors that may be filled by
                                               ///< assembly of element contributions

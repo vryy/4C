@@ -16,17 +16,17 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
     //! interface class for generic relative permeability law
-    class FluidPoroRelPermeabilityLaw : public CORE::MAT::PAR::Parameter
+    class FluidPoroRelPermeabilityLaw : public Core::Mat::PAR::Parameter
     {
      public:
       /// standard constructor
       explicit FluidPoroRelPermeabilityLaw(
-          Teuchos::RCP<CORE::MAT::PAR::Material> matdata, bool constrelpermeability)
+          Teuchos::RCP<Core::Mat::PAR::Material> matdata, bool constrelpermeability)
           : Parameter(matdata), constrelpermeability_(constrelpermeability){};
 
       // get relative permeability
@@ -40,7 +40,7 @@ namespace MAT
       bool has_constant_rel_permeability() const { return constrelpermeability_; }
 
       /// factory method
-      static MAT::PAR::FluidPoroRelPermeabilityLaw* create_rel_permeability_law(int matID);
+      static Mat::PAR::FluidPoroRelPermeabilityLaw* create_rel_permeability_law(int matID);
 
      private:
       const bool constrelpermeability_;
@@ -51,10 +51,10 @@ namespace MAT
     {
      public:
       /// standard constructor
-      explicit FluidPoroRelPermeabilityLawConstant(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      explicit FluidPoroRelPermeabilityLawConstant(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override { return Teuchos::null; };
+      Teuchos::RCP<Core::Mat::Material> create_material() override { return Teuchos::null; };
 
       // get permeability
       double GetRelPermeability(const double saturation) const override
@@ -84,10 +84,10 @@ namespace MAT
     {
      public:
       /// standard constructor
-      explicit FluidPoroRelPermeabilityLawExponent(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      explicit FluidPoroRelPermeabilityLawExponent(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override { return Teuchos::null; };
+      Teuchos::RCP<Core::Mat::Material> create_material() override { return Teuchos::null; };
 
       // get permeability
       double GetRelPermeability(const double saturation) const override
@@ -120,7 +120,7 @@ namespace MAT
 
 
   }  // namespace PAR
-}  // namespace MAT
+}  // namespace Mat
 
 
 

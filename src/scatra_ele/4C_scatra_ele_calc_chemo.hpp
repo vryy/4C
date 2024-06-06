@@ -17,11 +17,11 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
-    template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype>>
+    template <Core::FE::CellType distype, int probdim = Core::FE::dim<distype>>
     class ScaTraEleCalcChemo : public virtual ScaTraEleCalc<distype, probdim>
     {
      protected:
@@ -41,18 +41,18 @@ namespace DRT
 
      protected:
       //! calculation of chemotactic element matrix
-      void calc_mat_chemo(CORE::LINALG::SerialDenseMatrix& emat, const int k,
+      void calc_mat_chemo(Core::LinAlg::SerialDenseMatrix& emat, const int k,
           const double timefacfac, const double timetaufac, const double densnp,
-          const double scatrares, const CORE::LINALG::Matrix<nen_, 1>& sgconv,
-          const CORE::LINALG::Matrix<nen_, 1>& diff) override;
+          const double scatrares, const Core::LinAlg::Matrix<nen_, 1>& sgconv,
+          const Core::LinAlg::Matrix<nen_, 1>& diff) override;
 
       //! calculation of chemotactic RHS
-      void calc_rhs_chemo(CORE::LINALG::SerialDenseVector& erhs, const int k, const double rhsfac,
+      void calc_rhs_chemo(Core::LinAlg::SerialDenseVector& erhs, const int k, const double rhsfac,
           const double rhstaufac, const double scatrares, const double densnp) override;
 
       //! get the material parameters
       void get_material_params(
-          const CORE::Elements::Element* ele,  //!< the element we are dealing with
+          const Core::Elements::Element* ele,  //!< the element we are dealing with
           std::vector<double>& densn,          //!< density at t_(n)
           std::vector<double>& densnp,         //!< density at t_(n+1) or t_(n+alpha_F)
           std::vector<double>& densam,         //!< density at t_(n+alpha_M)
@@ -65,7 +65,7 @@ namespace DRT
 
       //! Get and save all chemotaxtis related class variable
       virtual void get_chemotaxis_coefficients(
-          const Teuchos::RCP<const CORE::MAT::Material> material  //!< pointer to current material
+          const Teuchos::RCP<const Core::Mat::Material> material  //!< pointer to current material
       );
 
       //! Get ID of attractant (i.e. scalar which gradient the current scalar shall follow)
@@ -90,7 +90,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 
-}  // namespace DRT
+}  // namespace Discret
 
 
 FOUR_C_NAMESPACE_CLOSE

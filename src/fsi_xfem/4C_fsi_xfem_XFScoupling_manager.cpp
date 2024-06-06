@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 | Constructor                                                                 ager 06/2016 |
 *-----------------------------------------------------------------------------------------*/
 XFEM::XfsCouplingManager::XfsCouplingManager(Teuchos::RCP<ConditionManager> condmanager,
-    Teuchos::RCP<ADAPTER::Structure> structure, Teuchos::RCP<FLD::XFluid> xfluid,
+    Teuchos::RCP<Adapter::Structure> structure, Teuchos::RCP<FLD::XFluid> xfluid,
     std::vector<int> idx)
     : CouplingCommManager(structure->discretization(), "XFEMSurfFSIMono", 0, 3),
       struct_(structure),
@@ -34,8 +34,8 @@ XFEM::XfsCouplingManager::XfsCouplingManager(Teuchos::RCP<ConditionManager> cond
   if (idx_.size() != 2)
     FOUR_C_THROW("XFSCoupling_Manager required two block ( 2 != %d)", idx_.size());
 
-  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
-  interface_second_order_ = CORE::UTILS::IntegralValue<int>(fsidyn, "SECONDORDER");
+  const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
+  interface_second_order_ = Core::UTILS::IntegralValue<int>(fsidyn, "SECONDORDER");
 
   // Coupling_Comm_Manager create all Coupling Objects now with Structure has idx = 0, Fluid has idx
   // = 1!
@@ -95,7 +95,7 @@ void XFEM::XfsCouplingManager::SetCouplingStates()
   InsertVector(0, velnp, 0, mcfsi_->IVelnp(), CouplingCommManager::partial_to_partial);
 
   // 4 Set Structural Velocity onto the structural discretization
-  if (mcfsi_->get_averaging_strategy() != INPAR::XFEM::Xfluid_Sided)
+  if (mcfsi_->get_averaging_strategy() != Inpar::XFEM::Xfluid_Sided)
   {
     // Set Dispnp (used to calc local coord of gausspoints)
     struct_->discretization()->set_state("dispnp", struct_->Dispnp());
@@ -112,12 +112,12 @@ void XFEM::XfsCouplingManager::SetCouplingStates()
 | Add the coupling matrixes to the global systemmatrix                        ager 06/2016 |
 *-----------------------------------------------------------------------------------------*/
 void XFEM::XfsCouplingManager::AddCouplingMatrix(
-    CORE::LINALG::BlockSparseMatrixBase& systemmatrix, double scaling)
+    Core::LinAlg::BlockSparseMatrixBase& systemmatrix, double scaling)
 {
   /*----------------------------------------------------------------------*/
   // Coupling blocks C_sf, C_fs and C_ss
   /*----------------------------------------------------------------------*/
-  CORE::LINALG::SparseMatrix& C_ss_block = (systemmatrix)(idx_[0], idx_[0]);
+  Core::LinAlg::SparseMatrix& C_ss_block = (systemmatrix)(idx_[0], idx_[0]);
   /*----------------------------------------------------------------------*/
   // scaling factor for displacement <-> velocity conversion (FSI)
   // inverse of FSI (1st order, 2nd order) scaling
@@ -136,14 +136,14 @@ void XFEM::XfsCouplingManager::AddCouplingMatrix(
   C_ss_block.Add(*xfluid_->C_ss_Matrix(cond_name_), false, scaling * scaling_FSI, 1.0);
 
 
-  CORE::ProblemType probtype = GLOBAL::Problem::Instance()->GetProblemType();
+  Core::ProblemType probtype = Global::Problem::Instance()->GetProblemType();
 
   // Todo: Need to eighter split fluid matrixes in the fsi algo or change the maps of the coupling
   // matrixes(merged)
   bool is_xfluidfluid =
       Teuchos::rcp_dynamic_cast<FLD::XFluidFluid>(xfluid_, false) != Teuchos::null;
 
-  if (probtype == CORE::ProblemType::fsi_xfem &&
+  if (probtype == Core::ProblemType::fsi_xfem &&
       !is_xfluidfluid)  // use assign for off diagonal blocks
   {
     // scale the off diagonal coupling blocks
@@ -153,13 +153,13 @@ void XFEM::XfsCouplingManager::AddCouplingMatrix(
         ->Scale(scaling * scaling_FSI);  //<   1/(theta_f*dt) * 1/(theta_FSI*dt) = 1/weight(t^f_np)
                                          //* 1/weight(t^FSI_np)
 
-    systemmatrix.Assign(idx_[0], idx_[1], CORE::LINALG::View, *xfluid_->C_sx_Matrix(cond_name_));
-    systemmatrix.Assign(idx_[1], idx_[0], CORE::LINALG::View, *xfluid_->C_xs_Matrix(cond_name_));
+    systemmatrix.Assign(idx_[0], idx_[1], Core::LinAlg::View, *xfluid_->C_sx_Matrix(cond_name_));
+    systemmatrix.Assign(idx_[1], idx_[0], Core::LinAlg::View, *xfluid_->C_xs_Matrix(cond_name_));
   }
-  else if (probtype == CORE::ProblemType::fpsi_xfem || is_xfluidfluid)
+  else if (probtype == Core::ProblemType::fpsi_xfem || is_xfluidfluid)
   {
-    CORE::LINALG::SparseMatrix& C_fs_block = (systemmatrix)(idx_[1], idx_[0]);
-    CORE::LINALG::SparseMatrix& C_sf_block = (systemmatrix)(idx_[0], idx_[1]);
+    Core::LinAlg::SparseMatrix& C_fs_block = (systemmatrix)(idx_[1], idx_[0]);
+    Core::LinAlg::SparseMatrix& C_sf_block = (systemmatrix)(idx_[0], idx_[1]);
 
     C_sf_block.Add(*xfluid_->C_sx_Matrix(cond_name_), false, scaling, 1.0);
     C_fs_block.Add(*xfluid_->C_xs_Matrix(cond_name_), false, scaling * scaling_FSI, 1.0);
@@ -174,7 +174,7 @@ void XFEM::XfsCouplingManager::AddCouplingMatrix(
 | Add the coupling rhs                                                        ager 06/2016 |
 *-----------------------------------------------------------------------------------------*/
 void XFEM::XfsCouplingManager::AddCouplingRHS(
-    Teuchos::RCP<Epetra_Vector> rhs, const CORE::LINALG::MultiMapExtractor& me, double scaling)
+    Teuchos::RCP<Epetra_Vector> rhs, const Core::LinAlg::MultiMapExtractor& me, double scaling)
 {
   Teuchos::RCP<Epetra_Vector> coup_rhs_sum = Teuchos::rcp(new Epetra_Vector(*xfluid_->RHS_s_Vec(
       cond_name_)));  // REMARK: Copy this vector to store the correct lambda_ in update!
@@ -205,7 +205,7 @@ void XFEM::XfsCouplingManager::AddCouplingRHS(
   }
 
   Teuchos::RCP<Epetra_Vector> coup_rhs = Teuchos::rcp(new Epetra_Vector(*me.Map(idx_[0]), true));
-  CORE::LINALG::Export(*coup_rhs_sum, *coup_rhs);  // use this command as long as poro ist not split
+  Core::LinAlg::Export(*coup_rhs_sum, *coup_rhs);  // use this command as long as poro ist not split
                                                    // into two bocks in the monolithic algorithm!
   // InsertVector(0,coup_rhs_sum,0,coup_rhs,Coupling_Comm_Manager::partial_to_full);
   me.AddVector(coup_rhs, idx_[0], rhs);
@@ -230,7 +230,7 @@ void XFEM::XfsCouplingManager::Update(double scaling)
 /*----------------------------------------------------------------------*/
 /* Write Output                                             ager 06/2016 |
  *-----------------------------------------------------------------------*/
-void XFEM::XfsCouplingManager::Output(CORE::IO::DiscretizationWriter& writer)
+void XFEM::XfsCouplingManager::Output(Core::IO::DiscretizationWriter& writer)
 {
   //--------------------------------
   // output for Lagrange multiplier field (ie forces onto the structure, Robin-type forces
@@ -245,7 +245,7 @@ void XFEM::XfsCouplingManager::Output(CORE::IO::DiscretizationWriter& writer)
 /*----------------------------------------------------------------------*/
 /* Read Restart on the interface                            ager 06/2016 |
  *-----------------------------------------------------------------------*/
-void XFEM::XfsCouplingManager::read_restart(CORE::IO::DiscretizationReader& reader)
+void XFEM::XfsCouplingManager::read_restart(Core::IO::DiscretizationReader& reader)
 {
   Teuchos::RCP<Epetra_Vector> lambdafull =
       Teuchos::rcp(new Epetra_Vector(*GetMapExtractor(0)->FullMap(), true));

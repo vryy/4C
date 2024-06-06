@@ -140,10 +140,10 @@ namespace STR
         const Teuchos::ParameterList& ioparams,                   //!< ioflags
         const Teuchos::ParameterList& sdynparams,                 //!< input parameters
         const Teuchos::ParameterList& xparams,                    //!< extra flags
-        Teuchos::RCP<DRT::Discretization> actdis,                 //!< current discretisation
-        Teuchos::RCP<CORE::LINALG::Solver> solver,                //!< the solver
-        Teuchos::RCP<CORE::LINALG::Solver> contactsolver,    //!< the solver for contact meshtying
-        Teuchos::RCP<CORE::IO::DiscretizationWriter> output  //!< the output
+        Teuchos::RCP<Discret::Discretization> actdis,             //!< current discretisation
+        Teuchos::RCP<Core::LinAlg::Solver> solver,                //!< the solver
+        Teuchos::RCP<Core::LinAlg::Solver> contactsolver,    //!< the solver for contact meshtying
+        Teuchos::RCP<Core::IO::DiscretizationWriter> output  //!< the output
     );
 
     //! Destructor
@@ -171,8 +171,8 @@ namespace STR
     \date 08/16
     \author rauch  */
     void Init(const Teuchos::ParameterList& timeparams, const Teuchos::ParameterList& sdynparams,
-        const Teuchos::ParameterList& xparams, Teuchos::RCP<DRT::Discretization> actdis,
-        Teuchos::RCP<CORE::LINALG::Solver> solver) override;
+        const Teuchos::ParameterList& xparams, Teuchos::RCP<Discret::Discretization> actdis,
+        Teuchos::RCP<Core::LinAlg::Solver> solver) override;
 
     /*! \brief Setup all class internal objects and members
 
@@ -204,9 +204,9 @@ namespace STR
     //@{
 
     //! Return name
-    enum INPAR::STR::DynamicType MethodName() const override
+    enum Inpar::STR::DynamicType MethodName() const override
     {
-      return INPAR::STR::dyna_onesteptheta;
+      return Inpar::STR::dyna_onesteptheta;
     }
 
     //! Provide number of steps, a single-step method returns 1
@@ -299,7 +299,7 @@ namespace STR
     void ReadRestartForce() override;
 
     //! Write internal and external forces for restart
-    void WriteRestartForce(Teuchos::RCP<CORE::IO::DiscretizationWriter> output) override;
+    void WriteRestartForce(Teuchos::RCP<Core::IO::DiscretizationWriter> output) override;
 
     //@}
 

@@ -29,76 +29,76 @@ FOUR_C_NAMESPACE_OPEN
 /*--------------------------------------------------------------------------*
  |                                                 (public) rasthofer Jan13 |
  *--------------------------------------------------------------------------*/
-DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::ProvideImpl(
-    CORE::FE::CellType distype, std::string problem)
+Discret::ELEMENTS::FluidEleInterface* Discret::ELEMENTS::FluidFactory::ProvideImpl(
+    Core::FE::CellType distype, std::string problem)
 {
   switch (distype)
   {
-    case CORE::FE::CellType::hex8:
+    case Core::FE::CellType::hex8:
     {
-      return define_problem_type<CORE::FE::CellType::hex8>(problem);
+      return define_problem_type<Core::FE::CellType::hex8>(problem);
     }
-    case CORE::FE::CellType::hex20:
+    case Core::FE::CellType::hex20:
     {
-      return define_problem_type<CORE::FE::CellType::hex20>(problem);
+      return define_problem_type<Core::FE::CellType::hex20>(problem);
     }
-    case CORE::FE::CellType::hex27:
+    case Core::FE::CellType::hex27:
     {
-      return define_problem_type<CORE::FE::CellType::hex27>(problem);
+      return define_problem_type<Core::FE::CellType::hex27>(problem);
     }
-    case CORE::FE::CellType::tet4:
+    case Core::FE::CellType::tet4:
     {
-      return define_problem_type<CORE::FE::CellType::tet4>(problem);
+      return define_problem_type<Core::FE::CellType::tet4>(problem);
     }
-    case CORE::FE::CellType::tet10:
+    case Core::FE::CellType::tet10:
     {
-      return define_problem_type<CORE::FE::CellType::tet10>(problem);
+      return define_problem_type<Core::FE::CellType::tet10>(problem);
     }
-    case CORE::FE::CellType::wedge6:
+    case Core::FE::CellType::wedge6:
     {
-      return define_problem_type<CORE::FE::CellType::wedge6>(problem);
+      return define_problem_type<Core::FE::CellType::wedge6>(problem);
     }
-    case CORE::FE::CellType::wedge15:
+    case Core::FE::CellType::wedge15:
     {
-      return define_problem_type<CORE::FE::CellType::wedge15>(problem);
+      return define_problem_type<Core::FE::CellType::wedge15>(problem);
     }
-    case CORE::FE::CellType::pyramid5:
+    case Core::FE::CellType::pyramid5:
     {
-      return define_problem_type<CORE::FE::CellType::pyramid5>(problem);
+      return define_problem_type<Core::FE::CellType::pyramid5>(problem);
     }
-    case CORE::FE::CellType::quad4:
+    case Core::FE::CellType::quad4:
     {
-      return define_problem_type<CORE::FE::CellType::quad4>(problem);
+      return define_problem_type<Core::FE::CellType::quad4>(problem);
     }
-    case CORE::FE::CellType::quad8:
+    case Core::FE::CellType::quad8:
     {
-      return define_problem_type<CORE::FE::CellType::quad8>(problem);
+      return define_problem_type<Core::FE::CellType::quad8>(problem);
     }
-    case CORE::FE::CellType::quad9:
+    case Core::FE::CellType::quad9:
     {
-      return define_problem_type<CORE::FE::CellType::quad9>(problem);
+      return define_problem_type<Core::FE::CellType::quad9>(problem);
     }
-    case CORE::FE::CellType::tri3:
+    case Core::FE::CellType::tri3:
     {
-      return define_problem_type<CORE::FE::CellType::tri3>(problem);
+      return define_problem_type<Core::FE::CellType::tri3>(problem);
     }
-    case CORE::FE::CellType::tri6:
+    case Core::FE::CellType::tri6:
     {
-      return define_problem_type<CORE::FE::CellType::tri6>(problem);
+      return define_problem_type<Core::FE::CellType::tri6>(problem);
     }
     // Nurbs support
-    case CORE::FE::CellType::nurbs9:
+    case Core::FE::CellType::nurbs9:
     {
-      return define_problem_type<CORE::FE::CellType::nurbs9>(problem);
+      return define_problem_type<Core::FE::CellType::nurbs9>(problem);
     }
-    case CORE::FE::CellType::nurbs27:
+    case Core::FE::CellType::nurbs27:
     {
-      return define_problem_type<CORE::FE::CellType::nurbs27>(problem);
+      return define_problem_type<Core::FE::CellType::nurbs27>(problem);
     }
     // no 1D elements
     default:
       FOUR_C_THROW("Element shape %s not activated. Just do it.",
-          CORE::FE::CellTypeToString(distype).c_str());
+          Core::FE::CellTypeToString(distype).c_str());
       break;
   }
   return nullptr;
@@ -107,34 +107,34 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::ProvideImpl(
 /*--------------------------------------------------------------------------*
  |                                                 (public) rasthofer Jan13 |
  *--------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::define_problem_type(
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::FluidEleInterface* Discret::ELEMENTS::FluidFactory::define_problem_type(
     std::string problem)
 {
   if (problem == "std")
-    return DRT::ELEMENTS::FluidEleCalcStd<distype>::Instance();
+    return Discret::ELEMENTS::FluidEleCalcStd<distype>::Instance();
   else if (problem == "loma")
-    return DRT::ELEMENTS::FluidEleCalcLoma<distype>::Instance();
+    return Discret::ELEMENTS::FluidEleCalcLoma<distype>::Instance();
   else if (problem == "std_immersed")
-    return DRT::ELEMENTS::FluidEleCalcImmersed<distype>::Instance();
+    return Discret::ELEMENTS::FluidEleCalcImmersed<distype>::Instance();
   else if (problem == "poro")
-    return DRT::ELEMENTS::FluidEleCalcPoro<distype>::Instance();
+    return Discret::ELEMENTS::FluidEleCalcPoro<distype>::Instance();
   else if (problem == "poro_p1")
-    return DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::Instance();
+    return Discret::ELEMENTS::FluidEleCalcPoroP1<distype>::Instance();
   else if (problem == "hdg")
-    return DRT::ELEMENTS::FluidEleCalcHDG<distype>::Instance();
+    return Discret::ELEMENTS::FluidEleCalcHDG<distype>::Instance();
   else if (problem == "hdgweakcomp")
-    return DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::Instance();
+    return Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::Instance();
   else if (problem == "xw")
   {
     // for now we only build the hex8 and tet4 elements for xwall
     // later we might consider other kinds of elements
-    if (distype == CORE::FE::CellType::hex8)
-      return DRT::ELEMENTS::FluidEleCalcXWall<CORE::FE::CellType::hex8,
-          DRT::ELEMENTS::Fluid::xwall>::Instance();
-    else if (distype == CORE::FE::CellType::tet4)
-      return DRT::ELEMENTS::FluidEleCalcXWall<CORE::FE::CellType::tet4,
-          DRT::ELEMENTS::Fluid::xwall>::Instance();
+    if (distype == Core::FE::CellType::hex8)
+      return Discret::ELEMENTS::FluidEleCalcXWall<Core::FE::CellType::hex8,
+          Discret::ELEMENTS::Fluid::xwall>::Instance();
+    else if (distype == Core::FE::CellType::tet4)
+      return Discret::ELEMENTS::FluidEleCalcXWall<Core::FE::CellType::tet4,
+          Discret::ELEMENTS::Fluid::xwall>::Instance();
     else
       FOUR_C_THROW("only hex8 and tet4 elements compiled for xwall");
   }
@@ -148,49 +148,49 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::define_problem_ty
  |  special implementation of ProvideImpl for XFEM problems                 |
  |  to reduce created template combination         (public) rasthofer Jan13 |
  *--------------------------------------------------------------------------*/
-DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::ProvideImplXFEM(
-    CORE::FE::CellType distype, std::string problem)
+Discret::ELEMENTS::FluidEleInterface* Discret::ELEMENTS::FluidFactory::ProvideImplXFEM(
+    Core::FE::CellType distype, std::string problem)
 {
   if (problem != "xfem") FOUR_C_THROW("Call ProvideImplXFEM just for xfem problems!");
 
   switch (distype)
   {
     // only 3D elements
-    case CORE::FE::CellType::hex8:
+    case Core::FE::CellType::hex8:
     {
-      return define_problem_type_xfem<CORE::FE::CellType::hex8>(problem);
+      return define_problem_type_xfem<Core::FE::CellType::hex8>(problem);
     }
-    case CORE::FE::CellType::hex20:
+    case Core::FE::CellType::hex20:
     {
-      return define_problem_type_xfem<CORE::FE::CellType::hex20>(problem);
+      return define_problem_type_xfem<Core::FE::CellType::hex20>(problem);
     }
-    case CORE::FE::CellType::hex27:
+    case Core::FE::CellType::hex27:
     {
-      return define_problem_type_xfem<CORE::FE::CellType::hex27>(problem);
+      return define_problem_type_xfem<Core::FE::CellType::hex27>(problem);
     }
-    case CORE::FE::CellType::tet4:
+    case Core::FE::CellType::tet4:
     {
-      return define_problem_type_xfem<CORE::FE::CellType::tet4>(problem);
+      return define_problem_type_xfem<Core::FE::CellType::tet4>(problem);
     }
-    case CORE::FE::CellType::tet10:
+    case Core::FE::CellType::tet10:
     {
-      return define_problem_type_xfem<CORE::FE::CellType::tet10>(problem);
+      return define_problem_type_xfem<Core::FE::CellType::tet10>(problem);
     }
-    case CORE::FE::CellType::wedge6:
+    case Core::FE::CellType::wedge6:
     {
-      return define_problem_type_xfem<CORE::FE::CellType::wedge6>(problem);
+      return define_problem_type_xfem<Core::FE::CellType::wedge6>(problem);
     }
-    case CORE::FE::CellType::wedge15:
+    case Core::FE::CellType::wedge15:
     {
-      return define_problem_type_xfem<CORE::FE::CellType::wedge15>(problem);
+      return define_problem_type_xfem<Core::FE::CellType::wedge15>(problem);
     }
-      //    case CORE::FE::CellType::pyramid5:
+      //    case Core::FE::CellType::pyramid5:
       //    {
-      //      return define_problem_type_xfem<CORE::FE::CellType::pyramid5>(problem);
+      //      return define_problem_type_xfem<Core::FE::CellType::pyramid5>(problem);
       //    }
     default:
       FOUR_C_THROW("Element shape %s not activated for XFEM problems. Just do it.",
-          CORE::FE::CellTypeToString(distype).c_str());
+          Core::FE::CellTypeToString(distype).c_str());
       break;
   }
   return nullptr;
@@ -200,12 +200,12 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::ProvideImplXFEM(
  |  special implementation of DefineProblemTypeX for XFEM problems          |
  |  to reduce created template combination         (public) rasthofer Jan13 |
  *--------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::define_problem_type_xfem(
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::FluidEleInterface* Discret::ELEMENTS::FluidFactory::define_problem_type_xfem(
     std::string problem)
 {
   if (problem == "xfem")
-    return DRT::ELEMENTS::FluidEleCalcXFEM<distype>::Instance();
+    return Discret::ELEMENTS::FluidEleCalcXFEM<distype>::Instance();
   else
     FOUR_C_THROW("Defined problem type does not exist!!");
 

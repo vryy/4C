@@ -28,25 +28,25 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                           seitz 03/16 |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::SoTet4av::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec1_epetra,
-    CORE::LINALG::SerialDenseVector& elevec2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec3_epetra)
+int Discret::ELEMENTS::SoTet4av::Evaluate(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+    Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec1_epetra,
+    Core::LinAlg::SerialDenseVector& elevec2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec3_epetra)
 {
   // Check whether the solid material post_setup() routine has already been called and call it if
   // not
   ensure_material_post_setup(params);
 
-  CORE::LINALG::Matrix<NUMDOF_SOTET4av, NUMDOF_SOTET4av> elemat1(elemat1_epetra.values(), true);
-  CORE::LINALG::Matrix<NUMDOF_SOTET4av, NUMDOF_SOTET4av> elemat2(elemat2_epetra.values(), true);
-  CORE::LINALG::Matrix<NUMDOF_SOTET4av, 1> elevec1(elevec1_epetra.values(), true);
-  CORE::LINALG::Matrix<NUMDOF_SOTET4av, 1> elevec2(elevec2_epetra.values(), true);
+  Core::LinAlg::Matrix<NUMDOF_SOTET4av, NUMDOF_SOTET4av> elemat1(elemat1_epetra.values(), true);
+  Core::LinAlg::Matrix<NUMDOF_SOTET4av, NUMDOF_SOTET4av> elemat2(elemat2_epetra.values(), true);
+  Core::LinAlg::Matrix<NUMDOF_SOTET4av, 1> elevec1(elevec1_epetra.values(), true);
+  Core::LinAlg::Matrix<NUMDOF_SOTET4av, 1> elevec2(elevec2_epetra.values(), true);
 
   // start with "none"
-  DRT::ELEMENTS::SoTet4av::ActionType act = SoTet4av::none;
+  Discret::ELEMENTS::SoTet4av::ActionType act = SoTet4av::none;
 
   // get the required action
   std::string action = params.get<std::string>("action", "none");
@@ -86,10 +86,10 @@ int DRT::ELEMENTS::SoTet4av::Evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
-      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::ExtractMyValues(*disp, mydisp, lm);
 
       nlnstiffmass(lm, mydisp, &elemat1, nullptr, &elevec1, nullptr, nullptr, params,
-          INPAR::STR::stress_none, INPAR::STR::strain_none);
+          Inpar::STR::stress_none, Inpar::STR::strain_none);
     }
     break;
 
@@ -102,9 +102,9 @@ int DRT::ELEMENTS::SoTet4av::Evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
-      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::ExtractMyValues(*disp, mydisp, lm);
       nlnstiffmass(lm, mydisp, nullptr, nullptr, &elevec1, nullptr, nullptr, params,
-          INPAR::STR::stress_none, INPAR::STR::strain_none);
+          Inpar::STR::stress_none, Inpar::STR::strain_none);
     }
     break;
 
@@ -117,10 +117,10 @@ int DRT::ELEMENTS::SoTet4av::Evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
-      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::ExtractMyValues(*disp, mydisp, lm);
 
       nlnstiffmass(lm, mydisp, &elemat1, &elemat2, &elevec1, nullptr, nullptr, params,
-          INPAR::STR::stress_none, INPAR::STR::strain_none);
+          Inpar::STR::stress_none, Inpar::STR::strain_none);
     }
     break;
 
@@ -137,26 +137,26 @@ int DRT::ELEMENTS::SoTet4av::Evaluate(Teuchos::ParameterList& params,
       if (stressdata == Teuchos::null) FOUR_C_THROW("Cannot get 'stress' data");
       if (straindata == Teuchos::null) FOUR_C_THROW("Cannot get 'strain' data");
       std::vector<double> mydisp(lm.size());
-      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
-      CORE::LINALG::Matrix<NUMGPT_SOTET4av, MAT::NUM_STRESS_3D> stress(true);  // set to zero
-      CORE::LINALG::Matrix<NUMGPT_SOTET4av, MAT::NUM_STRESS_3D> strain(true);
-      auto iostress = CORE::UTILS::GetAsEnum<INPAR::STR::StressType>(
-          params, "iostress", INPAR::STR::stress_none);
-      auto iostrain = CORE::UTILS::GetAsEnum<INPAR::STR::StrainType>(
-          params, "iostrain", INPAR::STR::strain_none);
+      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::LinAlg::Matrix<NUMGPT_SOTET4av, Mat::NUM_STRESS_3D> stress(true);  // set to zero
+      Core::LinAlg::Matrix<NUMGPT_SOTET4av, Mat::NUM_STRESS_3D> strain(true);
+      auto iostress = Core::UTILS::GetAsEnum<Inpar::STR::StressType>(
+          params, "iostress", Inpar::STR::stress_none);
+      auto iostrain = Core::UTILS::GetAsEnum<Inpar::STR::StrainType>(
+          params, "iostrain", Inpar::STR::strain_none);
 
       nlnstiffmass(
           lm, mydisp, nullptr, nullptr, nullptr, &stress, &strain, params, iostress, iostrain);
 
       {
-        CORE::COMM::PackBuffer data;
+        Core::Communication::PackBuffer data;
         AddtoPack(data, stress);
         data.StartPacking();
         AddtoPack(data, stress);
         std::copy(data().begin(), data().end(), std::back_inserter(*stressdata));
       }
       {
-        CORE::COMM::PackBuffer data;
+        Core::Communication::PackBuffer data;
         AddtoPack(data, strain);
         data.StartPacking();
         AddtoPack(data, strain);
@@ -193,10 +193,10 @@ int DRT::ELEMENTS::SoTet4av::Evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  Integrate a Volume Neumann boundary condition (public)  seitz 03/16 |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::SoTet4av::evaluate_neumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
-    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
-    CORE::LINALG::SerialDenseMatrix* elemat1)
+int Discret::ELEMENTS::SoTet4av::evaluate_neumann(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
+    Core::LinAlg::SerialDenseMatrix* elemat1)
 {
   // get values and switches from the condition
   const auto* onoff = &condition.parameters().Get<std::vector<int>>("onoff");
@@ -229,7 +229,7 @@ int DRT::ELEMENTS::SoTet4av::evaluate_neumann(Teuchos::ParameterList& params,
   // (SPATIAL) FUNCTION BUSINESS
   static_assert(NUMGPT_SOTET4av == 1);
   const auto* funct = &condition.parameters().Get<std::vector<int>>("funct");
-  CORE::LINALG::Matrix<NUMDIM_SOTET4av, 1> xrefegp(false);
+  Core::LinAlg::Matrix<NUMDIM_SOTET4av, 1> xrefegp(false);
   bool havefunct = false;
   if (funct)
     for (int dim = 0; dim < NUMDIM_SOTET4av; dim++)
@@ -241,8 +241,8 @@ int DRT::ELEMENTS::SoTet4av::evaluate_neumann(Teuchos::ParameterList& params,
   /* ============================================================================*/
 
   // update element geometry
-  CORE::LINALG::Matrix<NUMNOD_SOTET4av, NUMDIM_SOTET4av> xrefe;
-  CORE::Nodes::Node** nodes = Nodes();
+  Core::LinAlg::Matrix<NUMNOD_SOTET4av, NUMDIM_SOTET4av> xrefe;
+  Core::Nodes::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_SOTET4av; ++i)
   {
     const auto& x = nodes[i]->X();
@@ -251,15 +251,15 @@ int DRT::ELEMENTS::SoTet4av::evaluate_neumann(Teuchos::ParameterList& params,
     xrefe(i, 2) = x[2];
   }
 
-  CORE::LINALG::Matrix<NUMDIM_SOTET4av, NUMDIM_SOTET4av> jac;
-  CORE::LINALG::Matrix<NUMNOD_SOTET4av, 1> shapefct;
-  CORE::LINALG::Matrix<NUMDIM_SOTET4av, NUMNOD_SOTET4av> deriv;
+  Core::LinAlg::Matrix<NUMDIM_SOTET4av, NUMDIM_SOTET4av> jac;
+  Core::LinAlg::Matrix<NUMNOD_SOTET4av, 1> shapefct;
+  Core::LinAlg::Matrix<NUMDIM_SOTET4av, NUMNOD_SOTET4av> deriv;
 
   /* ================================================= Loop over Gauss Points */
   for (int gp = 0; gp < NUMGPT_SOTET4av; gp++)
   {
-    CORE::FE::shape_function<CORE::FE::CellType::tet4>(xsi_[gp], shapefct);
-    CORE::FE::shape_function_deriv1<CORE::FE::CellType::tet4>(xsi_[gp], deriv);
+    Core::FE::shape_function<Core::FE::CellType::tet4>(xsi_[gp], shapefct);
+    Core::FE::shape_function_deriv1<Core::FE::CellType::tet4>(xsi_[gp], deriv);
     jac.Multiply(deriv, xrefe);
 
     // material/reference co-ordinates of Gauss point
@@ -283,8 +283,8 @@ int DRT::ELEMENTS::SoTet4av::evaluate_neumann(Teuchos::ParameterList& params,
         // function evaluation
         const int functnum = (funct) ? (*funct)[dim] : -1;
         const double functfac =
-            (functnum > 0) ? GLOBAL::Problem::Instance()
-                                 ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
+            (functnum > 0) ? Global::Problem::Instance()
+                                 ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
                                  .Evaluate(xrefegp.A(), time, dim)
                            : 1.0;
         const double dim_fac = (*val)[dim] * fac * functfac;
@@ -299,16 +299,16 @@ int DRT::ELEMENTS::SoTet4av::evaluate_neumann(Teuchos::ParameterList& params,
   } /* ==================================================== end of Loop over GP */
 
   return 0;
-}  // DRT::ELEMENTS::So_tet4av::evaluate_neumann
+}  // Discret::ELEMENTS::So_tet4av::evaluate_neumann
 
 
 /*----------------------------------------------------------------------*
  |  init the element jacobian mapping and integration       seitz 03/16 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoTet4av::init_jacobian_mapping()
+void Discret::ELEMENTS::SoTet4av::init_jacobian_mapping()
 {
-  CORE::LINALG::Matrix<NUMNOD_SOTET4av, NUMDIM_SOTET4av> xrefe;
-  CORE::Nodes::Node** nodes = Nodes();
+  Core::LinAlg::Matrix<NUMNOD_SOTET4av, NUMDIM_SOTET4av> xrefe;
+  Core::Nodes::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_SOTET4av; ++i)
   {
     const auto& x = nodes[i]->X();
@@ -316,9 +316,9 @@ void DRT::ELEMENTS::SoTet4av::init_jacobian_mapping()
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
   }
-  CORE::LINALG::Matrix<NUMDIM_SOTET4av, NUMNOD_SOTET4av> deriv;
+  Core::LinAlg::Matrix<NUMDIM_SOTET4av, NUMNOD_SOTET4av> deriv;
 
-  CORE::FE::IntPointsAndWeights<3> intpoints(CORE::FE::GaussRule3D::tet_1point);
+  Core::FE::IntPointsAndWeights<3> intpoints(Core::FE::GaussRule3D::tet_1point);
   numgpt_ = intpoints.IP().nquad;
   xsi_.resize(numgpt_);
   wgt_.resize(numgpt_);
@@ -330,7 +330,7 @@ void DRT::ELEMENTS::SoTet4av::init_jacobian_mapping()
     const double* gpcoord = (intpoints.IP().qxg)[gp];
     for (int idim = 0; idim < 3; idim++) xsi_[gp](idim) = gpcoord[idim];
 
-    CORE::FE::shape_function_deriv1<CORE::FE::CellType::tet4>(xsi_[gp], deriv);
+    Core::FE::shape_function_deriv1<Core::FE::CellType::tet4>(xsi_[gp], deriv);
 
     invJ_[gp].Multiply(deriv, xrefe);
 
@@ -346,24 +346,24 @@ void DRT::ELEMENTS::SoTet4av::init_jacobian_mapping()
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                          seitz 03/16 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoTet4av::nlnstiffmass(std::vector<int>& lm,  // location matrix
-    std::vector<double>& disp,                                    // current displacements
-    CORE::LINALG::Matrix<NUMDOF_SOTET4av, NUMDOF_SOTET4av>*
+void Discret::ELEMENTS::SoTet4av::nlnstiffmass(std::vector<int>& lm,  // location matrix
+    std::vector<double>& disp,                                        // current displacements
+    Core::LinAlg::Matrix<NUMDOF_SOTET4av, NUMDOF_SOTET4av>*
         stiffmatrix,                                                     // element stiffness matrix
-    CORE::LINALG::Matrix<NUMDOF_SOTET4av, NUMDOF_SOTET4av>* massmatrix,  // element mass matrix
-    CORE::LINALG::Matrix<NUMDOF_SOTET4av, 1>* force,  // element internal force vector
-    CORE::LINALG::Matrix<NUMGPT_SOTET4av, MAT::NUM_STRESS_3D>* elestress,  // stresses at GP
-    CORE::LINALG::Matrix<NUMGPT_SOTET4av, MAT::NUM_STRESS_3D>* elestrain,  // strains at GP
+    Core::LinAlg::Matrix<NUMDOF_SOTET4av, NUMDOF_SOTET4av>* massmatrix,  // element mass matrix
+    Core::LinAlg::Matrix<NUMDOF_SOTET4av, 1>* force,  // element internal force vector
+    Core::LinAlg::Matrix<NUMGPT_SOTET4av, Mat::NUM_STRESS_3D>* elestress,  // stresses at GP
+    Core::LinAlg::Matrix<NUMGPT_SOTET4av, Mat::NUM_STRESS_3D>* elestrain,  // strains at GP
     Teuchos::ParameterList& params,         // algorithmic parameters e.g. time
-    const INPAR::STR::StressType iostress,  // stress output option
-    const INPAR::STR::StrainType iostrain   // strain output option
+    const Inpar::STR::StressType iostress,  // stress output option
+    const Inpar::STR::StrainType iostrain   // strain output option
 )
 {
   // current  displacements of element
-  CORE::LINALG::Matrix<NUMNOD_SOTET4av, NUMDIM_SOTET4av> xrefe;
-  CORE::LINALG::Matrix<NUMNOD_SOTET4av, NUMDIM_SOTET4av> xcurr;
-  CORE::Nodes::Node** nodes = Nodes();
-  CORE::LINALG::Matrix<NUMNOD_SOTET4av, 1> nodalVol;
+  Core::LinAlg::Matrix<NUMNOD_SOTET4av, NUMDIM_SOTET4av> xrefe;
+  Core::LinAlg::Matrix<NUMNOD_SOTET4av, NUMDIM_SOTET4av> xcurr;
+  Core::Nodes::Node** nodes = Nodes();
+  Core::LinAlg::Matrix<NUMNOD_SOTET4av, 1> nodalVol;
   for (int i = 0; i < NUMNOD_SOTET4av; ++i)
   {
     const auto& x = nodes[i]->X();
@@ -377,14 +377,14 @@ void DRT::ELEMENTS::SoTet4av::nlnstiffmass(std::vector<int>& lm,  // location ma
     nodalVol(i) = 1. + disp[i * NODDOF_SOTET4av + 3];
   }
 
-  CORE::LINALG::Matrix<NUMNOD_SOTET4av, 1> shapefct;
-  CORE::LINALG::Matrix<NUMDIM_SOTET4av, NUMNOD_SOTET4av> deriv;
-  CORE::LINALG::Matrix<NUMDIM_SOTET4av, NUMNOD_SOTET4av> N_XYZ;
-  CORE::LINALG::Matrix<NUMDIM_SOTET4av, NUMDIM_SOTET4av> defgrd;
-  CORE::LINALG::Matrix<NUMDIM_SOTET4av, NUMDIM_SOTET4av> defgrd_bar;
-  CORE::LINALG::Matrix<NUMDIM_SOTET4av, NUMDIM_SOTET4av> rcg_bar;
-  CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> gl_bar;
-  CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDOF_SOTET4av> bop;
+  Core::LinAlg::Matrix<NUMNOD_SOTET4av, 1> shapefct;
+  Core::LinAlg::Matrix<NUMDIM_SOTET4av, NUMNOD_SOTET4av> deriv;
+  Core::LinAlg::Matrix<NUMDIM_SOTET4av, NUMNOD_SOTET4av> N_XYZ;
+  Core::LinAlg::Matrix<NUMDIM_SOTET4av, NUMDIM_SOTET4av> defgrd;
+  Core::LinAlg::Matrix<NUMDIM_SOTET4av, NUMDIM_SOTET4av> defgrd_bar;
+  Core::LinAlg::Matrix<NUMDIM_SOTET4av, NUMDIM_SOTET4av> rcg_bar;
+  Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> gl_bar;
+  Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, NUMDOF_SOTET4av> bop;
 
   /* =========================================================================*/
   /* ============================================== Loop over Gauss Points ===*/
@@ -392,8 +392,8 @@ void DRT::ELEMENTS::SoTet4av::nlnstiffmass(std::vector<int>& lm,  // location ma
   for (int gp = 0; gp < numgpt_; gp++)
   {
     // shape functions (shapefunct) and their first derivatives (deriv)
-    CORE::FE::shape_function<CORE::FE::CellType::tet4>(xsi_[gp], shapefct);
-    CORE::FE::shape_function_deriv1<CORE::FE::CellType::tet4>(xsi_[gp], deriv);
+    Core::FE::shape_function<Core::FE::CellType::tet4>(xsi_[gp], shapefct);
+    Core::FE::shape_function_deriv1<Core::FE::CellType::tet4>(xsi_[gp], deriv);
 
 
     /* get the inverse of the Jacobian matrix which looks like:
@@ -406,7 +406,7 @@ void DRT::ELEMENTS::SoTet4av::nlnstiffmass(std::vector<int>& lm,  // location ma
     N_XYZ.Multiply(invJ_[gp], deriv);
     const double detJ = detJ_[gp];
     defgrd.MultiplyTT(xcurr, N_XYZ);
-    CORE::LINALG::Matrix<NUMDIM_SOTET4av, NUMDIM_SOTET4av> invdefgrd;
+    Core::LinAlg::Matrix<NUMDIM_SOTET4av, NUMDIM_SOTET4av> invdefgrd;
     const double detF = invdefgrd.Invert(defgrd);
     const double intNodalVol = shapefct.Dot(nodalVol);
     if (intNodalVol < 0.) FOUR_C_THROW("intNodalVol < 0");
@@ -419,25 +419,25 @@ void DRT::ELEMENTS::SoTet4av::nlnstiffmass(std::vector<int>& lm,  // location ma
     gl_bar(4) = rcg_bar(1, 2);
     gl_bar(5) = rcg_bar(0, 2);
 
-    CORE::LINALG::Matrix<6, 1> pk2;
-    CORE::LINALG::Matrix<6, 6> cmat;
+    Core::LinAlg::Matrix<6, 1> pk2;
+    Core::LinAlg::Matrix<6, 6> cmat;
     SolidMaterial()->Evaluate(&defgrd_bar, &gl_bar, params, &pk2, &cmat, gp, Id());
 
     // return gp stresses
     switch (iostress)
     {
-      case INPAR::STR::stress_2pk:
+      case Inpar::STR::stress_2pk:
       {
         if (elestress == nullptr) FOUR_C_THROW("stress data not available");
-        for (int i = 0; i < MAT::NUM_STRESS_3D; ++i) (*elestress)(gp, i) = pk2(i);
+        for (int i = 0; i < Mat::NUM_STRESS_3D; ++i) (*elestress)(gp, i) = pk2(i);
       }
       break;
-      case INPAR::STR::stress_cauchy:
+      case Inpar::STR::stress_cauchy:
       {
         if (elestress == nullptr) FOUR_C_THROW("stress data not available");
         const double detF_bar = defgrd_bar.Determinant();
 
-        CORE::LINALG::Matrix<3, 3> pkstress_bar;
+        Core::LinAlg::Matrix<3, 3> pkstress_bar;
         pkstress_bar(0, 0) = pk2(0);
         pkstress_bar(0, 1) = pk2(3);
         pkstress_bar(0, 2) = pk2(5);
@@ -448,8 +448,8 @@ void DRT::ELEMENTS::SoTet4av::nlnstiffmass(std::vector<int>& lm,  // location ma
         pkstress_bar(2, 1) = pkstress_bar(1, 2);
         pkstress_bar(2, 2) = pk2(2);
 
-        CORE::LINALG::Matrix<3, 3> temp;
-        CORE::LINALG::Matrix<3, 3> cauchystress_bar;
+        Core::LinAlg::Matrix<3, 3> temp;
+        Core::LinAlg::Matrix<3, 3> cauchystress_bar;
         temp.Multiply(1.0 / detF_bar, defgrd_bar, pkstress_bar);
         cauchystress_bar.MultiplyNT(temp, defgrd_bar);
 
@@ -461,7 +461,7 @@ void DRT::ELEMENTS::SoTet4av::nlnstiffmass(std::vector<int>& lm,  // location ma
         (*elestress)(gp, 5) = cauchystress_bar(0, 2);
       }
       break;
-      case INPAR::STR::stress_none:
+      case Inpar::STR::stress_none:
         break;
       default:
         FOUR_C_THROW("requested stress type not available");
@@ -500,12 +500,12 @@ void DRT::ELEMENTS::SoTet4av::nlnstiffmass(std::vector<int>& lm,  // location ma
     {
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
-      CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDOF_SOTET4av> cb;
+      Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, NUMDOF_SOTET4av> cb;
       cb.Multiply(cmat, bop);
       stiffmatrix->MultiplyTN(detJ_w * fbar_fac, bop, cb, 1.0);
 
       // integrate `geometric' stiffness matrix and add to keu *****************
-      CORE::LINALG::Matrix<6, 1> sfac(pk2);  // auxiliary integrated stress
+      Core::LinAlg::Matrix<6, 1> sfac(pk2);  // auxiliary integrated stress
       sfac.Scale(detJ_w / fbar_fac);         // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
       std::vector<double> SmB_L(3);          // intermediate Sm.B_L
       // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
@@ -526,9 +526,9 @@ void DRT::ELEMENTS::SoTet4av::nlnstiffmass(std::vector<int>& lm,  // location ma
       }  // end of integrate `geometric' stiffness******************************
 
       // integrate additional fbar matrix
-      CORE::LINALG::Matrix<NUMDIM_SOTET4av, NUMDIM_SOTET4av> cauchygreen;
+      Core::LinAlg::Matrix<NUMDIM_SOTET4av, NUMDIM_SOTET4av> cauchygreen;
       cauchygreen.MultiplyTN(defgrd, defgrd);
-      CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> cauchygreenvector;
+      Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> cauchygreenvector;
       cauchygreenvector(0) = cauchygreen(0, 0);
       cauchygreenvector(1) = cauchygreen(1, 1);
       cauchygreenvector(2) = cauchygreen(2, 2);
@@ -536,19 +536,19 @@ void DRT::ELEMENTS::SoTet4av::nlnstiffmass(std::vector<int>& lm,  // location ma
       cauchygreenvector(4) = 2 * cauchygreen(1, 2);
       cauchygreenvector(5) = 2 * cauchygreen(2, 0);
 
-      CORE::LINALG::Matrix<4 * 4, 1> htensor;
+      Core::LinAlg::Matrix<4 * 4, 1> htensor;
       for (int n = 0; n < 4 * 3; n++)
         for (int i = 0; i < 3; i++)
           htensor(n + n / 3) -= invdefgrd(i, n % 3) * N_XYZ(i, n / 3) / detF * intNodalVol;
       for (int i = 0; i < 4; ++i) htensor(i * 4 + 3) += shapefct(i) / detF;
 
-      CORE::LINALG::Matrix<4 * 4, 1> bops;
+      Core::LinAlg::Matrix<4 * 4, 1> bops;
       bops.MultiplyTN(bop, pk2);
       stiffmatrix->MultiplyNT(-1. / 3. * std::pow(fbar_fac, -4.) * detJ_w, bops, htensor, 1.);
 
-      CORE::LINALG::Matrix<6, 1> ccg;
+      Core::LinAlg::Matrix<6, 1> ccg;
       ccg.Multiply(cmat, cauchygreenvector);
-      CORE::LINALG::Matrix<4 * 4, 1> bopccg;
+      Core::LinAlg::Matrix<4 * 4, 1> bopccg;
       bopccg.MultiplyTN(bop, ccg);
       stiffmatrix->MultiplyNT(detJ_w * std::pow(fbar_fac, -2.) / 3., bopccg, htensor, 1.);
 
@@ -571,13 +571,13 @@ void DRT::ELEMENTS::SoTet4av::nlnstiffmass(std::vector<int>& lm,  // location ma
     // jacobian is constatnt
     double ifactor, massfactor;
     // needs more than one gauss point
-    CORE::FE::IntPointsAndWeights<3> intpoints(CORE::FE::GaussRule3D::tet_4point);
-    CORE::LINALG::Matrix<3, 1> xsi;
+    Core::FE::IntPointsAndWeights<3> intpoints(Core::FE::GaussRule3D::tet_4point);
+    Core::LinAlg::Matrix<3, 1> xsi;
 
     for (int gp = 0; gp < intpoints.IP().nquad; gp++)
     {
       for (int i = 0; i < NUMDIM_SOTET4av; ++i) xsi(i) = (intpoints.IP().qxg)[gp][i];
-      CORE::FE::shape_function<CORE::FE::CellType::tet4>(xsi_[gp], shapefct);
+      Core::FE::shape_function<Core::FE::CellType::tet4>(xsi_[gp], shapefct);
       const double factor = detJ_[0] * density * (intpoints.IP().qwgt)[gp];
       for (int inod = 0; inod < 4; ++inod)
       {
@@ -594,18 +594,18 @@ void DRT::ELEMENTS::SoTet4av::nlnstiffmass(std::vector<int>& lm,  // location ma
   }  // end of mass matrix +++++++++++++++++++++++++++++++++++++++++++++++++++
 
   return;
-}  // DRT::ELEMENTS::So_tet4av::nlnstiffmass
+}  // Discret::ELEMENTS::So_tet4av::nlnstiffmass
 
 
 /*----------------------------------------------------------------------*
  |  init the element (public)                               seitz 03/16 |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::SoTet4avType::Initialize(DRT::Discretization& dis)
+int Discret::ELEMENTS::SoTet4avType::Initialize(Discret::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    auto* actele = dynamic_cast<DRT::ELEMENTS::SoTet4av*>(dis.lColElement(i));
+    auto* actele = dynamic_cast<Discret::ELEMENTS::SoTet4av*>(dis.lColElement(i));
     if (!actele) FOUR_C_THROW("cast to So_tet4av* failed");
     actele->init_jacobian_mapping();
   }

@@ -23,10 +23,10 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
-  std::vector<Teuchos::RCP<DRT::Discretization>> FindDisNode(
-      const std::vector<CORE::IO::ElementReader>& element_readers, int global_node_id)
+  std::vector<Teuchos::RCP<Discret::Discretization>> FindDisNode(
+      const std::vector<Core::IO::ElementReader>& element_readers, int global_node_id)
   {
-    std::vector<Teuchos::RCP<DRT::Discretization>> list_of_discretizations;
+    std::vector<Teuchos::RCP<Discret::Discretization>> list_of_discretizations;
     for (const auto& element_reader : element_readers)
       if (element_reader.HasNode(global_node_id))
         list_of_discretizations.emplace_back(element_reader.GetDis());
@@ -37,7 +37,7 @@ namespace
 }  // namespace
 
 
-void CORE::IO::ReadNodes(const CORE::IO::DatFileReader& reader,
+void Core::IO::ReadNodes(const Core::IO::DatFileReader& reader,
     const std::string& node_section_name, std::vector<ElementReader>& element_readers,
     int& max_node_id)
 {
@@ -99,13 +99,14 @@ void CORE::IO::ReadNodes(const CORE::IO::DatFileReader& reader,
 
           nodeid--;
           max_node_id = std::max(max_node_id, nodeid) + 1;
-          std::vector<Teuchos::RCP<DRT::Discretization>> dis = FindDisNode(element_readers, nodeid);
+          std::vector<Teuchos::RCP<Discret::Discretization>> dis =
+              FindDisNode(element_readers, nodeid);
 
           for (const auto& di : dis)
           {
             // create node and add to discretization
-            Teuchos::RCP<CORE::Nodes::Node> node =
-                Teuchos::rcp(new CORE::Nodes::Node(nodeid, coords, myrank));
+            Teuchos::RCP<Core::Nodes::Node> node =
+                Teuchos::rcp(new Core::Nodes::Node(nodeid, coords, myrank));
             di->AddNode(node);
           }
 
@@ -127,14 +128,14 @@ void CORE::IO::ReadNodes(const CORE::IO::DatFileReader& reader,
 
           nodeid--;
           max_node_id = std::max(max_node_id, nodeid) + 1;
-          std::vector<Teuchos::RCP<DRT::Discretization>> diss =
+          std::vector<Teuchos::RCP<Discret::Discretization>> diss =
               FindDisNode(element_readers, nodeid);
 
           for (const auto& dis : diss)
           {
             // create node and add to discretization
-            Teuchos::RCP<CORE::Nodes::Node> node =
-                Teuchos::rcp(new CORE::Nodes::ImmersedNode(nodeid, coords, myrank));
+            Teuchos::RCP<Core::Nodes::Node> node =
+                Teuchos::rcp(new Core::Nodes::ImmersedNode(nodeid, coords, myrank));
             dis->AddNode(node);
           }
 
@@ -160,13 +161,14 @@ void CORE::IO::ReadNodes(const CORE::IO::DatFileReader& reader,
           if (cpid != filecount)
             FOUR_C_THROW("Reading of control points failed: They must be numbered consecutive!!");
           if (tmp != "COORD") FOUR_C_THROW("failed to read control point %d", cpid);
-          std::vector<Teuchos::RCP<DRT::Discretization>> diss = FindDisNode(element_readers, cpid);
+          std::vector<Teuchos::RCP<Discret::Discretization>> diss =
+              FindDisNode(element_readers, cpid);
 
           for (auto& dis : diss)
           {
             // create node/control point and add to discretization
-            Teuchos::RCP<DRT::NURBS::ControlPoint> node =
-                Teuchos::rcp(new DRT::NURBS::ControlPoint(cpid, coords, weight, myrank));
+            Teuchos::RCP<Discret::Nurbs::ControlPoint> node =
+                Teuchos::rcp(new Discret::Nurbs::ControlPoint(cpid, coords, weight, myrank));
             dis->AddNode(node);
           }
 
@@ -191,9 +193,9 @@ void CORE::IO::ReadNodes(const CORE::IO::DatFileReader& reader,
 
           // read fiber node
           std::vector<double> coords(3, 0.0);
-          std::map<CORE::Nodes::CoordinateSystemDirection, std::array<double, 3>> cosyDirections;
+          std::map<Core::Nodes::CoordinateSystemDirection, std::array<double, 3>> cosyDirections;
           std::vector<std::array<double, 3>> fibers;
-          std::map<CORE::Nodes::AngleType, double> angles;
+          std::map<Core::Nodes::AngleType, double> angles;
 
           int nodeid;
           // read in the node coordinates and fiber direction
@@ -208,8 +210,8 @@ void CORE::IO::ReadNodes(const CORE::IO::DatFileReader& reader,
             // try to read new fiber direction or coordinate system
             file >> tmp2;
 
-            CORE::Nodes::CoordinateSystemDirection coordinateSystemDirection;
-            CORE::Nodes::AngleType angleType;
+            Core::Nodes::CoordinateSystemDirection coordinateSystemDirection;
+            Core::Nodes::AngleType angleType;
             FiberType type = FiberType::Unknown;
 
             if (tmp2 == "FIBER" + std::to_string(1 + fibers.size()))
@@ -218,27 +220,27 @@ void CORE::IO::ReadNodes(const CORE::IO::DatFileReader& reader,
             }
             else if (tmp2 == "CIR")
             {
-              coordinateSystemDirection = CORE::Nodes::CoordinateSystemDirection::Circular;
+              coordinateSystemDirection = Core::Nodes::CoordinateSystemDirection::Circular;
               type = FiberType::CosyDirection;
             }
             else if (tmp2 == "TAN")
             {
-              coordinateSystemDirection = CORE::Nodes::CoordinateSystemDirection::Tangential;
+              coordinateSystemDirection = Core::Nodes::CoordinateSystemDirection::Tangential;
               type = FiberType::CosyDirection;
             }
             else if (tmp2 == "RAD")
             {
-              coordinateSystemDirection = CORE::Nodes::CoordinateSystemDirection::Radial;
+              coordinateSystemDirection = Core::Nodes::CoordinateSystemDirection::Radial;
               type = FiberType::CosyDirection;
             }
             else if (tmp2 == "HELIX")
             {
-              angleType = CORE::Nodes::AngleType::Helix;
+              angleType = Core::Nodes::AngleType::Helix;
               type = FiberType::Angle;
             }
             else if (tmp2 == "TRANS")
             {
-              angleType = CORE::Nodes::AngleType::Transverse;
+              angleType = Core::Nodes::AngleType::Transverse;
               type = FiberType::Angle;
             }
             else
@@ -282,12 +284,12 @@ void CORE::IO::ReadNodes(const CORE::IO::DatFileReader& reader,
           }
 
           // add fiber information to node
-          std::vector<Teuchos::RCP<DRT::Discretization>> discretizations =
+          std::vector<Teuchos::RCP<Discret::Discretization>> discretizations =
               FindDisNode(element_readers, nodeid);
           for (auto& dis : discretizations)
           {
             auto node = Teuchos::rcp(
-                new CORE::Nodes::FiberNode(nodeid, coords, cosyDirections, fibers, angles, myrank));
+                new Core::Nodes::FiberNode(nodeid, coords, cosyDirections, fibers, angles, myrank));
             dis->AddNode(node);
           }
 

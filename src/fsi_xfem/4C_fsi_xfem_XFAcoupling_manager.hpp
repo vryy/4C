@@ -22,11 +22,11 @@ namespace FLD
   class XFluid;
 }
 
-namespace ADAPTER
+namespace Adapter
 {
   class AleFpsiWrapper;
   class Structure;
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 namespace XFEM
 {
@@ -37,8 +37,8 @@ namespace XFEM
     // in idx ... idx[0] structureal discretization index , idx[1] fluid discretization index in the
     // blockmatrix
     explicit XfaCouplingManager(Teuchos::RCP<FLD::XFluid> xfluid,
-        Teuchos::RCP<ADAPTER::AleFpsiWrapper> ale, std::vector<int> idx,
-        Teuchos::RCP<ADAPTER::Structure> structure = Teuchos::null);
+        Teuchos::RCP<Adapter::AleFpsiWrapper> ale, std::vector<int> idx,
+        Teuchos::RCP<Adapter::Structure> structure = Teuchos::null);
     //! @name Destruction
     //@{
 
@@ -55,27 +55,27 @@ namespace XFEM
     //! Add the coupling matrixes to the global systemmatrix
     // in ... scaling between xfluid evaluated coupling matrixes and coupled systemmatrix
     void AddCouplingMatrix(
-        CORE::LINALG::BlockSparseMatrixBase& systemmatrix, double scaling) override;
+        Core::LinAlg::BlockSparseMatrixBase& systemmatrix, double scaling) override;
 
     //! Add the coupling rhs
 
     // in scaling ... scaling between xfluid evaluated coupling rhs and coupled rhs
     // in me ... global map extractor of coupled problem (same index used as for idx)
-    void AddCouplingRHS(Teuchos::RCP<Epetra_Vector> rhs, const CORE::LINALG::MultiMapExtractor& me,
+    void AddCouplingRHS(Teuchos::RCP<Epetra_Vector> rhs, const Core::LinAlg::MultiMapExtractor& me,
         double scaling) override;
 
     //! Update (Perform after Each Timestep) -- nothing to do here
     void Update(double scaling) override { return; }
 
     //! Write Output -- nothing to do here
-    void Output(CORE::IO::DiscretizationWriter& writer) override { return; }
+    void Output(Core::IO::DiscretizationWriter& writer) override { return; }
 
     //! Read Restart -- nothing to do here
-    void read_restart(CORE::IO::DiscretizationReader& reader) override { return; }
+    void read_restart(Core::IO::DiscretizationReader& reader) override { return; }
 
    private:
     //! Ale Object
-    Teuchos::RCP<ADAPTER::AleFpsiWrapper> ale_;
+    Teuchos::RCP<Adapter::AleFpsiWrapper> ale_;
     //! eXtendedFluid
     Teuchos::RCP<FLD::XFluid> xfluid_;
 
@@ -84,7 +84,7 @@ namespace XFEM
     std::vector<int> idx_;
 
     //! Structural Object (just set if Ale is coupled to a structure)
-    Teuchos::RCP<ADAPTER::Structure> structure_;
+    Teuchos::RCP<Adapter::Structure> structure_;
 
     //! ALE-Structure coupling object on the matching interface
     Teuchos::RCP<XFEM::CouplingCommManager> ale_struct_coupling_;

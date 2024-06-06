@@ -17,7 +17,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
@@ -27,7 +27,7 @@ namespace DRT
     class ScaTraEleDiffManagerElchDiffCond;
 
     // class implementation
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     class ScaTraEleUtilsElchDiffCond : public ScaTraEleUtilsElchElectrode<distype>
     {
       //! abbreviations
@@ -43,27 +43,27 @@ namespace DRT
       );
 
       //! evaluate electrolyte material
-      void MatElchMat(Teuchos::RCP<const CORE::MAT::Material> material,  //!< electrolyte material
+      void MatElchMat(Teuchos::RCP<const Core::Mat::Material> material,  //!< electrolyte material
           const std::vector<double>& concentrations,  //!< local concentration values
           double temperature,                         //!< temperature
-          INPAR::ELCH::EquPot equpot,  //!< type of closing equation for electric potential
+          Inpar::ElCh::EquPot equpot,  //!< type of closing equation for electric potential
           double ffrt,                 //!< factor F^2/RT
           Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> diffmanager,  //!< diffusion manager
-          INPAR::ELCH::DiffCondMat& diffcondmat                        //!< ion type
+          Inpar::ElCh::DiffCondMat& diffcondmat                        //!< ion type
       );
 
       //! evaluate electrolyte phase
-      void MatElchPhase(Teuchos::RCP<const CORE::MAT::Material> material,  //!< electrolyte phase
+      void MatElchPhase(Teuchos::RCP<const Core::Mat::Material> material,  //!< electrolyte phase
           const std::vector<double>& concentrations,  //!< local concentration values
           double temperature,                         //!< temperature
-          const INPAR::ELCH::EquPot& equpot,  //!< type of closing equation for electric potential
+          const Inpar::ElCh::EquPot& equpot,  //!< type of closing equation for electric potential
           const double& ffrt,                 //!< factor F^2/RT
           Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> diffmanager,  //!< diffusion manager
-          INPAR::ELCH::DiffCondMat& diffcondmat                        //!< ion type
+          Inpar::ElCh::DiffCondMat& diffcondmat                        //!< ion type
       );
 
       //! evaluate standard Newman material
-      void MatNewman(Teuchos::RCP<const CORE::MAT::Material> material,  //!< Newman material
+      void MatNewman(Teuchos::RCP<const Core::Mat::Material> material,  //!< Newman material
           double concentration,                                       //!< local concentration value
           double temperature,                                         //!< temperature
           Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> diffmanager  //!< diffusion manager
@@ -79,7 +79,7 @@ namespace DRT
 
     };  // class ScaTraEleUtilsElchDiffCond
   }     // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

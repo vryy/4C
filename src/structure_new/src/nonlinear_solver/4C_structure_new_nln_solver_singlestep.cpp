@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::NLN::SOLVER::SingleStep::Setup()
+void STR::Nln::SOLVER::SingleStep::Setup()
 {
   check_init();
 
@@ -40,7 +40,7 @@ void STR::NLN::SOLVER::SingleStep::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::NLN::SOLVER::SingleStep::set_single_step_params()
+void STR::Nln::SOLVER::SingleStep::set_single_step_params()
 {
   check_init();
 
@@ -57,7 +57,7 @@ void STR::NLN::SOLVER::SingleStep::set_single_step_params()
    */
   if (not IsXMLStatusTestFile(data_s_dyn().GetNoxParams().sublist("Status Test")))
   {
-    std::set<enum NOX::NLN::StatusTest::QuantityType> qtypes;
+    std::set<enum NOX::Nln::StatusTest::QuantityType> qtypes;
     CreateQuantityTypes(qtypes, data_s_dyn());
     SetStatusTestParams(data_s_dyn().GetNoxParams().sublist("Status Test"), data_s_dyn(), qtypes);
   }
@@ -66,7 +66,7 @@ void STR::NLN::SOLVER::SingleStep::set_single_step_params()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::NLN::SOLVER::SingleStep::set_single_step_params(Teuchos::ParameterList& p)
+void STR::Nln::SOLVER::SingleStep::set_single_step_params(Teuchos::ParameterList& p)
 {
   // ---------------------------------------------------------------------------
   // Set-up the single step method
@@ -98,7 +98,7 @@ void STR::NLN::SOLVER::SingleStep::set_single_step_params(Teuchos::ParameterList
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::NLN::SOLVER::SingleStep::reset_params()
+void STR::Nln::SOLVER::SingleStep::reset_params()
 {
   set_single_step_params(nlnglobaldata_->GetNlnParameterList());
 }
@@ -106,11 +106,11 @@ void STR::NLN::SOLVER::SingleStep::reset_params()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum INPAR::STR::ConvergenceStatus STR::NLN::SOLVER::SingleStep::Solve()
+enum Inpar::STR::ConvergenceStatus STR::Nln::SOLVER::SingleStep::Solve()
 {
   check_init_setup();
 
-  auto& nln_group = dynamic_cast<NOX::NLN::Group&>(group());
+  auto& nln_group = dynamic_cast<NOX::Nln::Group&>(group());
 
   const auto& x_epetra = dynamic_cast<const ::NOX::Epetra::Vector&>(group().getX());
 

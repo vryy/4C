@@ -19,11 +19,11 @@ void test_unit_intersection_touch()
   for (int i = 0; i < 7; ++i)
   {
     double x = std::pow(0.1, i);
-    CORE::GEO::CUT::Options options;
+    Core::Geo::Cut::Options options;
     options.Init_for_Cuttests();  // use cln
-    CORE::GEO::CUT::Mesh mesh(options, x);
+    Core::Geo::Cut::Mesh mesh(options, x);
 
-    CORE::LINALG::SerialDenseMatrix xyze(3, 4);
+    Core::LinAlg::SerialDenseMatrix xyze(3, 4);
 
     xyze(0, 0) = 0;
     xyze(1, 0) = 0;
@@ -41,7 +41,7 @@ void test_unit_intersection_touch()
     xyze(1, 3) = 0;
     xyze(2, 3) = x;
 
-    CORE::GEO::CUT::Side* s1 = create_quad4(mesh, xyze);
+    Core::Geo::Cut::Side* s1 = create_quad4(mesh, xyze);
 
     xyze(0, 0) = 0;
     xyze(1, 0) = -scale * x;
@@ -59,11 +59,11 @@ void test_unit_intersection_touch()
     xyze(1, 3) = scale * x;
     xyze(2, 3) = x;
 
-    CORE::GEO::CUT::Side* s2 = create_quad4(mesh, xyze);
+    Core::Geo::Cut::Side* s2 = create_quad4(mesh, xyze);
 
-    const std::vector<CORE::GEO::CUT::Edge*>& edges = s2->Edges();
+    const std::vector<Core::Geo::Cut::Edge*>& edges = s2->Edges();
 
-    CORE::GEO::CUT::Edge* e = edges[3];
+    Core::Geo::Cut::Edge* e = edges[3];
 
     if (e->Nodes()[0]->point()->Id() != 7 or e->Nodes()[1]->point()->Id() != 4)
     {
@@ -71,17 +71,17 @@ void test_unit_intersection_touch()
     }
 
 
-    Teuchos::RCP<CORE::GEO::CUT::IntersectionBase> intersection =
-        CORE::GEO::CUT::IntersectionBase::Create(
-            CORE::FE::CellType::line2, CORE::FE::CellType::quad4);
+    Teuchos::RCP<Core::Geo::Cut::IntersectionBase> intersection =
+        Core::Geo::Cut::IntersectionBase::Create(
+            Core::FE::CellType::line2, Core::FE::CellType::quad4);
     intersection->Init(&mesh, e, s1, false, false, false);
 
-    CORE::GEO::CUT::PointSet cuts;
+    Core::Geo::Cut::PointSet cuts;
     intersection->Intersect(cuts);
 
-    for (CORE::GEO::CUT::PointSet::iterator i = cuts.begin(); i != cuts.end(); ++i)
+    for (Core::Geo::Cut::PointSet::iterator i = cuts.begin(); i != cuts.end(); ++i)
     {
-      CORE::GEO::CUT::Point* p = *i;
+      Core::Geo::Cut::Point* p = *i;
       if (p->Id() != 8)
       {
         FOUR_C_THROW("unexpected nodal id");

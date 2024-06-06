@@ -21,9 +21,9 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::FADUTILS
+namespace Core::FADUtils
 {
-  namespace DETAILS
+  namespace Details
   {
     template <typename T, typename AlwaysVoid = void>
     constexpr bool is_double_convertible = false;
@@ -31,13 +31,13 @@ namespace CORE::FADUTILS
     template <typename T>
     constexpr bool is_double_convertible<T,
         std::void_t<decltype(static_cast<double>(std::declval<std::remove_cv_t<T>>()))>> = true;
-  }  // namespace DETAILS
+  }  // namespace Details
 
   /*!
    * \brief Overload of CastToDouble() for any type that is convertible to double.
    */
   template <typename ScalarType,
-      std::enable_if_t<DETAILS::is_double_convertible<ScalarType>, bool> = true>
+      std::enable_if_t<Details::is_double_convertible<ScalarType>, bool> = true>
   inline double CastToDouble(ScalarType a)
   {
     return static_cast<double>(a);
@@ -65,9 +65,9 @@ namespace CORE::FADUTILS
   \brief Cast of a FAD matrix to a double matrix
   */
   template <typename type, unsigned int dim1, unsigned int dim2>
-  CORE::LINALG::Matrix<dim1, dim2, double> CastToDouble(CORE::LINALG::Matrix<dim1, dim2, type> a)
+  Core::LinAlg::Matrix<dim1, dim2, double> CastToDouble(Core::LinAlg::Matrix<dim1, dim2, type> a)
   {
-    CORE::LINALG::Matrix<dim1, dim2, double> b(true);
+    Core::LinAlg::Matrix<dim1, dim2, double> b(true);
 
     for (unsigned int i = 0; i < dim1; i++)
     {
@@ -94,7 +94,7 @@ namespace CORE::FADUTILS
   /*!
   \brief Calculate square root of a scalar FAD quantity. If a compiler Error is thrown when calling
   this function, check if the template argument is explicitly stated in the function call, i.e.
-  CORE::FADUTILS::sqrt<my_AD_type>(...)
+  Core::FADUtils::sqrt<my_AD_type>(...)
   */
   template <typename scalar_type>
   inline scalar_type sqrt(scalar_type a)
@@ -115,19 +115,19 @@ namespace CORE::FADUTILS
   /*!
   \brief Calculate Norm of a scalar FAD quantity. If a compiler Error is thrown when calling this
   function, check if the template argument is explicitly stated in the function call, i.e.
-  CORE::FADUTILS::Norm<my_AD_type>(...)
+  Core::FADUtils::Norm<my_AD_type>(...)
   */
   template <typename scalar_type>
   inline scalar_type Norm(scalar_type a)
   {
-    return CORE::FADUTILS::sqrt<scalar_type>(a * a);
+    return Core::FADUtils::sqrt<scalar_type>(a * a);
   }
 
   /*!
   \brief Calculate Norm of a FAD vector
   */
   template <typename scalar_type, unsigned int length>
-  scalar_type VectorNorm(CORE::LINALG::Matrix<length, 1, scalar_type> v)
+  scalar_type VectorNorm(Core::LinAlg::Matrix<length, 1, scalar_type> v)
   {
     scalar_type norm_squared = 0.0;
     for (unsigned int i = 0; i < length; i++)
@@ -135,14 +135,14 @@ namespace CORE::FADUTILS
       norm_squared += v(i) * v(i);
     }
 
-    return CORE::FADUTILS::sqrt<scalar_type>(norm_squared);
+    return Core::FADUtils::sqrt<scalar_type>(norm_squared);
   }
 
   /*!
   \brief Template specialization for double
   */
   template <unsigned int length>
-  double VectorNorm(CORE::LINALG::Matrix<length, 1, double> v)
+  double VectorNorm(Core::LinAlg::Matrix<length, 1, double> v)
   {
     return v.Norm2();
   }
@@ -150,7 +150,7 @@ namespace CORE::FADUTILS
   //! Calculates the Norm of a FAD vector, since .Norm2() is not available for FAD vectors
   // Todo this function is obsolete
   template <typename T>
-  T Norm(CORE::LINALG::Matrix<3, 1, T> v)
+  T Norm(Core::LinAlg::Matrix<3, 1, T> v)
   {
     T norm_squared = 0.0;
     for (int i = 0; i < 3; i++)
@@ -158,15 +158,15 @@ namespace CORE::FADUTILS
       norm_squared += v(i) * v(i);
     }
 
-    return CORE::FADUTILS::sqrt(norm_squared);
+    return Core::FADUtils::sqrt(norm_squared);
   }
 
   /*!
   \brief Calculate inner product of two FAD or double vectors
   */
-  // Todo this function is obsolete, use Dot of CORE::LINALG::Matrix instead
+  // Todo this function is obsolete, use Dot of Core::LinAlg::Matrix instead
   template <typename type>
-  type ScalarProduct(CORE::LINALG::Matrix<3, 1, type> a, CORE::LINALG::Matrix<3, 1, type> b)
+  type ScalarProduct(Core::LinAlg::Matrix<3, 1, type> a, Core::LinAlg::Matrix<3, 1, type> b)
   {
     return a(0) * b(0) + a(1) * b(1) + a(2) * b(2);
   }
@@ -174,12 +174,12 @@ namespace CORE::FADUTILS
   /*!
   \brief Calculate difference of two FAD or double vectors
   */
-  // Todo this function is obsolete, use Update of CORE::LINALG::Matrix instead
+  // Todo this function is obsolete, use Update of Core::LinAlg::Matrix instead
   template <typename type>
-  CORE::LINALG::Matrix<3, 1, type> DiffVector(
-      CORE::LINALG::Matrix<3, 1, type> a, CORE::LINALG::Matrix<3, 1, type> b)
+  Core::LinAlg::Matrix<3, 1, type> DiffVector(
+      Core::LinAlg::Matrix<3, 1, type> a, Core::LinAlg::Matrix<3, 1, type> b)
   {
-    CORE::LINALG::Matrix<3, 1, type> c(true);
+    Core::LinAlg::Matrix<3, 1, type> c(true);
     for (int i = 0; i < 3; i++) c(i) = a(i) - b(i);
 
     return c;
@@ -188,14 +188,14 @@ namespace CORE::FADUTILS
   /*!
   \brief Calculate vector product of two FAD or double vectors
   */
-  // Todo this function is obsolete, use CrossProduct of CORE::LINALG::Matrix instead
+  // Todo this function is obsolete, use CrossProduct of Core::LinAlg::Matrix instead
   template <typename type>
-  CORE::LINALG::Matrix<3, 1, type> VectorProduct(
-      CORE::LINALG::Matrix<3, 1, type> first_vector, CORE::LINALG::Matrix<3, 1, type> second_vector)
+  Core::LinAlg::Matrix<3, 1, type> VectorProduct(
+      Core::LinAlg::Matrix<3, 1, type> first_vector, Core::LinAlg::Matrix<3, 1, type> second_vector)
   {
-    CORE::LINALG::Matrix<3, 1, type> result_vector;
+    Core::LinAlg::Matrix<3, 1, type> result_vector;
     result_vector.Clear();
-    CORE::LINALG::Matrix<3, 3, type> S_first_vector;
+    Core::LinAlg::Matrix<3, 3, type> S_first_vector;
     S_first_vector.Clear();
 
     S_first_vector(0, 0) = 0.0;
@@ -279,7 +279,7 @@ namespace CORE::FADUTILS
     static double apply(const int n, const int i, const double x) { return x; }
   };
 
-}  // namespace CORE::FADUTILS
+}  // namespace Core::FADUtils
 
 FOUR_C_NAMESPACE_CLOSE
 

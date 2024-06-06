@@ -24,31 +24,31 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | evaluate action                                           fang 02/15 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::evaluate_action(CORE::Elements::Element* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    const SCATRA::Action& action, CORE::Elements::Element::LocationArray& la,
-    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec1_epetra,
-    CORE::LINALG::SerialDenseVector& elevec2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec3_epetra)
+template <Core::FE::CellType distype>
+int Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::evaluate_action(Core::Elements::Element* ele,
+    Teuchos::ParameterList& params, Discret::Discretization& discretization,
+    const ScaTra::Action& action, Core::Elements::Element::LocationArray& la,
+    Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+    Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec1_epetra,
+    Core::LinAlg::SerialDenseVector& elevec2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec3_epetra)
 {
   const std::vector<int>& lm = la[0].lm_;
 
   // determine and evaluate action
-  if (action == SCATRA::Action::calc_dissipation or action == SCATRA::Action::calc_mean_Cai)
+  if (action == ScaTra::Action::calc_dissipation or action == ScaTra::Action::calc_mean_Cai)
   {
     if (my::scatraparatimint_->IsGenAlpha())
     {
       // extract additional local values from global vector
       Teuchos::RCP<const Epetra_Vector> phiam = discretization.GetState("phiam");
       if (phiam == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phiam'");
-      CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phiam, ephiam_, lm);
+      Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phiam, ephiam_, lm);
     }
   }
 
-  if (action == SCATRA::Action::calc_dissipation or action == SCATRA::Action::calc_mean_Cai)
+  if (action == ScaTra::Action::calc_dissipation or action == ScaTra::Action::calc_mean_Cai)
   {
     // get thermodynamic pressure (for calc_dissipation)
     thermpressnp_ = params.get<double>("thermodynamic pressure");
@@ -59,7 +59,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::evaluate_action(CORE::Elements::E
 
   switch (action)
   {
-    case SCATRA::Action::calc_domain_and_bodyforce:
+    case ScaTra::Action::calc_domain_and_bodyforce:
     {
       // NOTE: add integral values only for elements which are NOT ghosted!
       if (ele->Owner() == discretization.Comm().MyPID())
@@ -83,9 +83,9 @@ int DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::evaluate_action(CORE::Elements::E
 /*----------------------------------------------------------------------*
  |  calculate domain integral                                   vg 01/09|
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::calculate_domain_and_bodyforce(
-    CORE::LINALG::SerialDenseVector& scalars, const CORE::Elements::Element* ele)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::calculate_domain_and_bodyforce(
+    Core::LinAlg::SerialDenseVector& scalars, const Core::Elements::Element* ele)
 {
   // ---------------------------------------------------------------------
   // call routine for calculation of body force in element nodes
@@ -94,7 +94,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::calculate_domain_and_bodyforce(
   my::body_force(ele);
 
   // integration points and weights
-  const CORE::FE::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  const Core::FE::IntPointsAndWeights<nsd_> intpoints(ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
   // integration loop
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -120,10 +120,10 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::calculate_domain_and_bodyforce(
 /*-----------------------------------------------------------------------------------------*
  | extract element based or nodal values and return extracted values of phinp   fang 02/15 |
  *-----------------------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::extract_element_and_node_values(
-    CORE::Elements::Element* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::extract_element_and_node_values(
+    Core::Elements::Element* ele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la)
 {
   // add loma-specific values
   if (my::scatraparatimint_->IsGenAlpha())
@@ -131,7 +131,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::extract_element_and_node_values(
     // extract local values from global vector
     Teuchos::RCP<const Epetra_Vector> phiam = discretization.GetState("phiam");
     if (phiam == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phiam'");
-    CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phiam, ephiam_, la[0].lm_);
+    Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phiam, ephiam_, la[0].lm_);
   }
 
   // get thermodynamic pressure
@@ -150,10 +150,10 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::extract_element_and_node_values(
 /*-----------------------------------------------------------------------------*
  | get density at integration point                                 fang 02/15 |
  *-----------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-double DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::get_density(const CORE::Elements::Element* ele,
-    Teuchos::RCP<const CORE::MAT::Material> material, Teuchos::ParameterList& params,
-    const double tempnp)
+template <Core::FE::CellType distype>
+double Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::get_density(
+    const Core::Elements::Element* ele, Teuchos::RCP<const Core::Mat::Material> material,
+    Teuchos::ParameterList& params, const double tempnp)
 {
   // initialization
   double density(0.);
@@ -162,27 +162,27 @@ double DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::get_density(const CORE::Elemen
   if (tempnp < 0.0)
     FOUR_C_THROW("Negative temperature in ScaTra low-Mach-number routine 'GetDensity'!");
 
-  if (material->MaterialType() == CORE::Materials::m_sutherland)
+  if (material->MaterialType() == Core::Materials::m_sutherland)
   {
     // get thermodynamic pressure
     const double thermpress = params.get<double>("thermpress");
 
-    density = Teuchos::rcp_dynamic_cast<const MAT::Sutherland>(material)->ComputeDensity(
+    density = Teuchos::rcp_dynamic_cast<const Mat::Sutherland>(material)->ComputeDensity(
         tempnp, thermpress);
   }
   else
     FOUR_C_THROW("Invalid material type!");
 
   return density;
-}  // DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::GetDensity
+}  // Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::GetDensity
 
 
 /*-----------------------------------------------------------------------------*
  | calculate viscous part of subgrid-scale velocity                 fang 02/15 |
  *-----------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::calc_subgr_velocity_visc(
-    CORE::LINALG::Matrix<nsd_, 1>& epsilonvel)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::calc_subgr_velocity_visc(
+    Core::LinAlg::Matrix<nsd_, 1>& epsilonvel)
 {
   double prefac = 1.0 / 3.0;
   my::derxy2_.Scale(prefac);
@@ -229,31 +229,31 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::calc_subgr_velocity_visc(
   my::derxy2_.Scale(1.0 / prefac);
 
   return;
-}  // DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::calc_subgr_velocity_visc
+}  // Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::calc_subgr_velocity_visc
 
 
 // template classes
 
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::line2>;
-template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::line3>;
+template class Discret::ELEMENTS::ScaTraEleCalcLoma<Core::FE::CellType::line2>;
+template class Discret::ELEMENTS::ScaTraEleCalcLoma<Core::FE::CellType::line3>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::tri3>;
-template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::tri6>;
-template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::quad4>;
-// template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::quad9>;
-template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::nurbs9>;
+template class Discret::ELEMENTS::ScaTraEleCalcLoma<Core::FE::CellType::tri3>;
+template class Discret::ELEMENTS::ScaTraEleCalcLoma<Core::FE::CellType::tri6>;
+template class Discret::ELEMENTS::ScaTraEleCalcLoma<Core::FE::CellType::quad4>;
+// template class Discret::ELEMENTS::ScaTraEleCalcLoma<Core::FE::CellType::quad8>;
+template class Discret::ELEMENTS::ScaTraEleCalcLoma<Core::FE::CellType::quad9>;
+template class Discret::ELEMENTS::ScaTraEleCalcLoma<Core::FE::CellType::nurbs9>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::hex8>;
-// template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::hex27>;
-template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::tet4>;
-template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::tet10>;
-// template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::pyramid5>;
-// template class DRT::ELEMENTS::ScaTraEleCalcLoma<CORE::FE::CellType::nurbs27>;
+template class Discret::ELEMENTS::ScaTraEleCalcLoma<Core::FE::CellType::hex8>;
+// template class Discret::ELEMENTS::ScaTraEleCalcLoma<Core::FE::CellType::hex20>;
+template class Discret::ELEMENTS::ScaTraEleCalcLoma<Core::FE::CellType::hex27>;
+template class Discret::ELEMENTS::ScaTraEleCalcLoma<Core::FE::CellType::tet4>;
+template class Discret::ELEMENTS::ScaTraEleCalcLoma<Core::FE::CellType::tet10>;
+// template class Discret::ELEMENTS::ScaTraEleCalcLoma<Core::FE::CellType::wedge6>;
+template class Discret::ELEMENTS::ScaTraEleCalcLoma<Core::FE::CellType::pyramid5>;
+// template class Discret::ELEMENTS::ScaTraEleCalcLoma<Core::FE::CellType::nurbs27>;
 
 FOUR_C_NAMESPACE_CLOSE

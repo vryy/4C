@@ -22,14 +22,14 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void FLD::UTILS::DbcHdgFluid::read_dirichlet_condition(
-    const CORE::UTILS::FunctionManager& function_manager, const DRT::Discretization& discret,
-    const CORE::Conditions::Condition& cond, double time, DRT::UTILS::Dbc::DbcInfo& info,
+    const Core::UTILS::FunctionManager& function_manager, const Discret::Discretization& discret,
+    const Core::Conditions::Condition& cond, double time, Discret::UTILS::Dbc::DbcInfo& info,
     const Teuchos::RCP<std::set<int>>* dbcgids, int hierarchical_order) const
 {
   // no need to check the cast, because it has been done during
   // the build process (see BuildDbc())
-  const DRT::DiscretizationFaces& face_discret =
-      static_cast<const DRT::DiscretizationFaces&>(discret);
+  const Discret::DiscretizationFaces& face_discret =
+      static_cast<const Discret::DiscretizationFaces&>(discret);
 
   read_dirichlet_condition(
       function_manager, face_discret, cond, time, info, dbcgids, hierarchical_order);
@@ -38,13 +38,14 @@ void FLD::UTILS::DbcHdgFluid::read_dirichlet_condition(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void FLD::UTILS::DbcHdgFluid::read_dirichlet_condition(
-    const CORE::UTILS::FunctionManager& function_manager, const DRT::DiscretizationFaces& discret,
-    const CORE::Conditions::Condition& cond, double time, DRT::UTILS::Dbc::DbcInfo& info,
-    const Teuchos::RCP<std::set<int>>* dbcgids, int hierarchical_order) const
+    const Core::UTILS::FunctionManager& function_manager,
+    const Discret::DiscretizationFaces& discret, const Core::Conditions::Condition& cond,
+    double time, Discret::UTILS::Dbc::DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids,
+    int hierarchical_order) const
 
 {
   // call to corresponding method in base class; safety checks inside
-  DRT::UTILS::Dbc::read_dirichlet_condition(
+  Discret::UTILS::Dbc::read_dirichlet_condition(
       function_manager, discret, cond, time, info, dbcgids, hierarchical_order);
 
   // say good bye if there are no face elements
@@ -61,8 +62,8 @@ void FLD::UTILS::DbcHdgFluid::read_dirichlet_condition(
     // loop over all faces
     for (int i = 0; i < discret.NumMyRowFaces(); ++i)
     {
-      const CORE::Elements::FaceElement* faceele =
-          dynamic_cast<const CORE::Elements::FaceElement*>(discret.lRowFace(i));
+      const Core::Elements::FaceElement* faceele =
+          dynamic_cast<const Core::Elements::FaceElement*>(discret.lRowFace(i));
       const unsigned int dofperface =
           faceele->ParentMasterElement()->num_dof_per_face(faceele->FaceMasterNumber());
       const unsigned int dofpercomponent =
@@ -70,7 +71,7 @@ void FLD::UTILS::DbcHdgFluid::read_dirichlet_condition(
       const unsigned int component = dofperface / dofpercomponent;
 
       if (onoff.size() <= component || onoff[component] == 0 ||
-          GLOBAL::Problem::Instance(0)->GetProblemType() != CORE::ProblemType::fluid)
+          Global::Problem::Instance(0)->GetProblemType() != Core::ProblemType::fluid)
         pressureDone = true;
       if (!pressureDone)
       {
@@ -142,15 +143,15 @@ void FLD::UTILS::DbcHdgFluid::read_dirichlet_condition(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(
-    const CORE::UTILS::FunctionManager& function_manager, const DRT::Discretization& discret,
-    const CORE::Conditions::Condition& cond, double time,
+    const Core::UTILS::FunctionManager& function_manager, const Discret::Discretization& discret,
+    const Core::Conditions::Condition& cond, double time,
     const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
     const Teuchos::RCP<std::set<int>>* dbcgids) const
 {
   // no need to check the cast, because it has been done during
   // the build process (see BuildDbc())
-  const DRT::DiscretizationFaces& face_discret =
-      static_cast<const DRT::DiscretizationFaces&>(discret);
+  const Discret::DiscretizationFaces& face_discret =
+      static_cast<const Discret::DiscretizationFaces&>(discret);
 
   do_dirichlet_condition(function_manager, face_discret, cond, time, systemvectors, toggle);
 }
@@ -158,12 +159,13 @@ void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(
-    const CORE::UTILS::FunctionManager& function_manager, const DRT::DiscretizationFaces& discret,
-    const CORE::Conditions::Condition& cond, double time,
-    const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle) const
+    const Core::UTILS::FunctionManager& function_manager,
+    const Discret::DiscretizationFaces& discret, const Core::Conditions::Condition& cond,
+    double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
+    const Epetra_IntVector& toggle) const
 {
   // call corresponding method from base class; safety checks inside
-  DRT::UTILS::Dbc::do_dirichlet_condition(
+  Discret::UTILS::Dbc::do_dirichlet_condition(
       function_manager, discret, cond, time, systemvectors, toggle, nullptr);
 
   // say good bye if there are no face elements
@@ -201,14 +203,14 @@ void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(
   // do we have faces?
   if (discret.NumMyRowFaces() > 0)
   {
-    CORE::LINALG::SerialDenseVector elevec1, elevec2, elevec3;
-    CORE::LINALG::SerialDenseMatrix elemat1, elemat2;
-    CORE::Elements::Element::LocationArray dummy(1);
+    Core::LinAlg::SerialDenseVector elevec1, elevec2, elevec3;
+    Core::LinAlg::SerialDenseMatrix elemat1, elemat2;
+    Core::Elements::Element::LocationArray dummy(1);
     Teuchos::ParameterList initParams;
-    if (GLOBAL::Problem::Instance(0)->GetProblemType() == CORE::ProblemType::elemag or
-        GLOBAL::Problem::Instance(0)->GetProblemType() == CORE::ProblemType::scatra)
-      CORE::UTILS::AddEnumClassToParameterList<DRT::HDGAction>(
-          "action", DRT::HDGAction::project_dirich_field, initParams);
+    if (Global::Problem::Instance(0)->GetProblemType() == Core::ProblemType::elemag or
+        Global::Problem::Instance(0)->GetProblemType() == Core::ProblemType::scatra)
+      Core::UTILS::AddEnumClassToParameterList<Discret::HDGAction>(
+          "action", Discret::HDGAction::project_dirich_field, initParams);
     else
       initParams.set<int>(
           "action", FLD::project_fluid_field);  // TODO: Introduce a general action type that is
@@ -228,8 +230,8 @@ void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(
     // loop over all faces
     for (int i = 0; i < discret.NumMyRowFaces(); ++i)
     {
-      const CORE::Elements::FaceElement* faceele =
-          dynamic_cast<const CORE::Elements::FaceElement*>(discret.lRowFace(i));
+      const Core::Elements::FaceElement* faceele =
+          dynamic_cast<const Core::Elements::FaceElement*>(discret.lRowFace(i));
       const unsigned int dofperface =
           faceele->ParentMasterElement()->num_dof_per_face(faceele->FaceMasterNumber());
       const unsigned int dofpercomponent =
@@ -237,7 +239,7 @@ void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(
       const unsigned int component = dofperface / dofpercomponent;
 
       if (onoff->size() <= component || (*onoff)[component] == 0 ||
-          GLOBAL::Problem::Instance(0)->GetProblemType() != CORE::ProblemType::fluid)
+          Global::Problem::Instance(0)->GetProblemType() != Core::ProblemType::fluid)
         pressureDone = true;
       if (!pressureDone)
       {
@@ -254,42 +256,42 @@ void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(
 
           // --------------------------------------------------------------------------------------
           // get parameters
-          Teuchos::ParameterList params = GLOBAL::Problem::Instance()->FluidDynamicParams();
+          Teuchos::ParameterList params = Global::Problem::Instance()->FluidDynamicParams();
 
           // check whether the imposition of the average pressure is requested
           const int dopressavgbc =
-              CORE::UTILS::IntegralValue<INPAR::FLUID::PressAvgBc>(params, "PRESSAVGBC");
+              Core::UTILS::IntegralValue<Inpar::FLUID::PressAvgBc>(params, "PRESSAVGBC");
 
-          if (dopressavgbc == INPAR::FLUID::yes_pressure_average_bc)
+          if (dopressavgbc == Inpar::FLUID::yes_pressure_average_bc)
           {
             double pressureavgBC = 0.0;
 
             // get 1st element
-            CORE::Elements::Element* ele = discret.lRowElement(0);
-            DRT::ELEMENTS::Fluid* fluidele = dynamic_cast<DRT::ELEMENTS::Fluid*>(ele);
+            Core::Elements::Element* ele = discret.lRowElement(0);
+            Discret::ELEMENTS::Fluid* fluidele = dynamic_cast<Discret::ELEMENTS::Fluid*>(ele);
 
             // get material
-            Teuchos::RCP<CORE::MAT::Material> mat = ele->Material();
+            Teuchos::RCP<Core::Mat::Material> mat = ele->Material();
 
             // get discretization type
-            const CORE::FE::CellType distype = ele->Shape();
+            const Core::FE::CellType distype = ele->Shape();
 
             // evaluate pressure average     //TODO als make it valid for every discretization type
-            CORE::LINALG::SerialDenseVector elevec = CORE::LINALG::SerialDenseVector(1);
-            if (distype == CORE::FE::CellType::quad4)
-              DRT::ELEMENTS::FluidEleCalcHDG<CORE::FE::CellType::quad4>::Instance()
+            Core::LinAlg::SerialDenseVector elevec = Core::LinAlg::SerialDenseVector(1);
+            if (distype == Core::FE::CellType::quad4)
+              Discret::ELEMENTS::FluidEleCalcHDG<Core::FE::CellType::quad4>::Instance()
                   ->evaluate_pressure_average(fluidele, params, mat, elevec);
-            else if (distype == CORE::FE::CellType::quad8)
-              DRT::ELEMENTS::FluidEleCalcHDG<CORE::FE::CellType::quad8>::Instance()
+            else if (distype == Core::FE::CellType::quad8)
+              Discret::ELEMENTS::FluidEleCalcHDG<Core::FE::CellType::quad8>::Instance()
                   ->evaluate_pressure_average(fluidele, params, mat, elevec);
-            else if (distype == CORE::FE::CellType::quad9)
-              DRT::ELEMENTS::FluidEleCalcHDG<CORE::FE::CellType::quad9>::Instance()
+            else if (distype == Core::FE::CellType::quad9)
+              Discret::ELEMENTS::FluidEleCalcHDG<Core::FE::CellType::quad9>::Instance()
                   ->evaluate_pressure_average(fluidele, params, mat, elevec);
-            else if (distype == CORE::FE::CellType::tri3)
-              DRT::ELEMENTS::FluidEleCalcHDG<CORE::FE::CellType::tri3>::Instance()
+            else if (distype == Core::FE::CellType::tri3)
+              Discret::ELEMENTS::FluidEleCalcHDG<Core::FE::CellType::tri3>::Instance()
                   ->evaluate_pressure_average(fluidele, params, mat, elevec);
-            else if (distype == CORE::FE::CellType::tri6)
-              DRT::ELEMENTS::FluidEleCalcHDG<CORE::FE::CellType::tri6>::Instance()
+            else if (distype == Core::FE::CellType::tri6)
+              Discret::ELEMENTS::FluidEleCalcHDG<Core::FE::CellType::tri6>::Instance()
                   ->evaluate_pressure_average(fluidele, params, mat, elevec);
             else
               FOUR_C_THROW("Given distype currently not implemented.");
@@ -337,7 +339,8 @@ void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(
       if (do_evaluate)
       {
         // cast the const qualifier away, thus the Evaluate routine can be called.
-        DRT::DiscretizationFaces& non_const_dis = const_cast<DRT::DiscretizationFaces&>(discret);
+        Discret::DiscretizationFaces& non_const_dis =
+            const_cast<Discret::DiscretizationFaces&>(discret);
         faceele->ParentMasterElement()->Evaluate(
             initParams, non_const_dis, dummy, elemat1, elemat2, elevec1, elevec2, elevec3);
       }

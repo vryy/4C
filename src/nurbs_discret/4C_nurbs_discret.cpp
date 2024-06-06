@@ -33,9 +33,9 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            gammi 05/08|
  *----------------------------------------------------------------------*/
-DRT::NURBS::NurbsDiscretization::NurbsDiscretization(
+Discret::Nurbs::NurbsDiscretization::NurbsDiscretization(
     const std::string name, Teuchos::RCP<Epetra_Comm> comm, const unsigned int n_dim)
-    : DRT::Discretization::Discretization(name, comm, n_dim), knots_(Teuchos::null)
+    : Discret::Discretization::Discretization(name, comm, n_dim), knots_(Teuchos::null)
 {
   return;
 }
@@ -44,12 +44,13 @@ DRT::NURBS::NurbsDiscretization::NurbsDiscretization(
 /*----------------------------------------------------------------------*
  |  add a knotvector to the discretization (public)          gammi 05/08|
  *----------------------------------------------------------------------*/
-void DRT::NURBS::NurbsDiscretization::SetKnotVector(Teuchos::RCP<DRT::NURBS::Knotvector> knots)
+void Discret::Nurbs::NurbsDiscretization::SetKnotVector(
+    Teuchos::RCP<Discret::Nurbs::Knotvector> knots)
 {
   if (knots == Teuchos::null)
   {
     FOUR_C_THROW(
-        "You're trying to set an invalid knotvector in the DRT::NURBS::NurbsDiscretization "
+        "You're trying to set an invalid knotvector in the Discret::Nurbs::NurbsDiscretization "
         "'%s'. The given know vector is a null vector and can't be set as such.",
         (this->Name()).c_str());
   }
@@ -62,12 +63,12 @@ void DRT::NURBS::NurbsDiscretization::SetKnotVector(Teuchos::RCP<DRT::NURBS::Kno
  |  get a pointer to knotvector from the discretization         (public)|
  |                                                           gammi 05/08|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::NURBS::Knotvector> DRT::NURBS::NurbsDiscretization::GetKnotVector()
+Teuchos::RCP<Discret::Nurbs::Knotvector> Discret::Nurbs::NurbsDiscretization::GetKnotVector()
 {
   if (knots_ == Teuchos::null)
   {
     FOUR_C_THROW(
-        "You're trying to access the NURBS knot vector in the DRT::NURBS::NurbsDiscretization "
+        "You're trying to access the NURBS knot vector in the Discret::Nurbs::NurbsDiscretization "
         "'%s'. The required knot vector is a null vector and can't be accessed as such.",
         (this->Name()).c_str());
   }
@@ -79,12 +80,13 @@ Teuchos::RCP<DRT::NURBS::Knotvector> DRT::NURBS::NurbsDiscretization::GetKnotVec
  |  get a pointer to knotvector from the discretization         (public)|
  |  (const version, read-only)                               gammi 05/08|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const DRT::NURBS::Knotvector> DRT::NURBS::NurbsDiscretization::GetKnotVector() const
+Teuchos::RCP<const Discret::Nurbs::Knotvector> Discret::Nurbs::NurbsDiscretization::GetKnotVector()
+    const
 {
   if (knots_ == Teuchos::null)
   {
     FOUR_C_THROW(
-        "You're trying to access the NURBS knot vector in the DRT::NURBS::NurbsDiscretization "
+        "You're trying to access the NURBS knot vector in the Discret::Nurbs::NurbsDiscretization "
         "'%s'. The required knot vector is a null vector and can't be accessed as such.",
         (this->Name()).c_str());
   }
@@ -93,21 +95,21 @@ Teuchos::RCP<const DRT::NURBS::Knotvector> DRT::NURBS::NurbsDiscretization::GetK
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::UTILS::DbcNurbs::evaluate(const CORE::UTILS::FunctionManager& function_manager,
-    const DRT::Discretization& discret, double time,
-    const Teuchos::RCP<Epetra_Vector>* systemvectors, DRT::UTILS::Dbc::DbcInfo& info,
+void Discret::UTILS::DbcNurbs::evaluate(const Core::UTILS::FunctionManager& function_manager,
+    const Discret::Discretization& discret, double time,
+    const Teuchos::RCP<Epetra_Vector>* systemvectors, Discret::UTILS::Dbc::DbcInfo& info,
     Teuchos::RCP<std::set<int>>* dbcgids) const
 {
   // --------------------------- Step 1 ---------------------------------------
-  DRT::UTILS::Dbc::evaluate(function_manager, discret, time, systemvectors, info, dbcgids);
+  Discret::UTILS::Dbc::evaluate(function_manager, discret, time, systemvectors, info, dbcgids);
 
   // --------------------------- Step 2 ---------------------------------------
   std::vector<std::string> dbc_cond_names(2, "");
   dbc_cond_names[0] = "Dirichlet";
   dbc_cond_names[1] = "NurbsLSDirichlet";
 
-  std::vector<Teuchos::RCP<CORE::Conditions::Condition>> conds(0);
-  std::vector<Teuchos::RCP<CORE::Conditions::Condition>> curr_conds(0);
+  std::vector<Teuchos::RCP<Core::Conditions::Condition>> conds(0);
+  std::vector<Teuchos::RCP<Core::Conditions::Condition>> curr_conds(0);
   for (std::vector<std::string>::const_iterator cit_name = dbc_cond_names.begin();
        cit_name != dbc_cond_names.end(); ++cit_name)
   {
@@ -117,7 +119,7 @@ void DRT::UTILS::DbcNurbs::evaluate(const CORE::UTILS::FunctionManager& function
     std::copy(curr_conds.begin(), curr_conds.end(), std::back_inserter(conds));
   }
 
-  DRT::UTILS::Dbc::DbcInfo info2(info.toggle.Map());
+  Discret::UTILS::Dbc::DbcInfo info2(info.toggle.Map());
   read_dirichlet_condition(function_manager, discret, conds, time, info2, dbcgids);
 
   // --------------------------- Step 3 ---------------------------------------
@@ -129,12 +131,12 @@ void DRT::UTILS::DbcNurbs::evaluate(const CORE::UTILS::FunctionManager& function
   dbcgids_nurbs[set_col] = Teuchos::rcp<std::set<int>>(new std::set<int>());
 
   // create a new toggle vector with column layout
-  const DRT::NURBS::NurbsDiscretization* discret_nurbs =
-      dynamic_cast<const DRT::NURBS::NurbsDiscretization*>(&discret);
+  const Discret::Nurbs::NurbsDiscretization* discret_nurbs =
+      dynamic_cast<const Discret::Nurbs::NurbsDiscretization*>(&discret);
   if (not discret_nurbs) FOUR_C_THROW("Dynamic cast failed!");
 
   // build dummy column toggle vector and auxiliary vectors
-  DRT::UTILS::Dbc::DbcInfo info_col(*discret_nurbs->DofColMap());
+  Discret::UTILS::Dbc::DbcInfo info_col(*discret_nurbs->DofColMap());
   read_dirichlet_condition(function_manager, discret, conds, time, info_col, dbcgids_nurbs);
 
   // --------------------------- Step 4 ---------------------------------------
@@ -144,16 +146,16 @@ void DRT::UTILS::DbcNurbs::evaluate(const CORE::UTILS::FunctionManager& function
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::UTILS::DbcNurbs::do_dirichlet_condition(
-    const CORE::UTILS::FunctionManager& function_manager, const DRT::Discretization& discret,
-    const CORE::Conditions::Condition& cond, double time,
+void Discret::UTILS::DbcNurbs::do_dirichlet_condition(
+    const Core::UTILS::FunctionManager& function_manager, const Discret::Discretization& discret,
+    const Core::Conditions::Condition& cond, double time,
     const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
     const Teuchos::RCP<std::set<int>>* dbcgids) const
 {
   // default call
   if (dbcgids[set_col].is_null())
   {
-    DRT::UTILS::Dbc::do_dirichlet_condition(
+    Discret::UTILS::Dbc::do_dirichlet_condition(
         function_manager, discret, cond, time, systemvectors, toggle, dbcgids);
     return;
   }
@@ -164,12 +166,12 @@ void DRT::UTILS::DbcNurbs::do_dirichlet_condition(
   const int myrank = discret.Comm().MyPID();
   if (myrank == 0) std::cout << "calculating least squares Dirichlet condition in ... ";
 
-  const DRT::NURBS::NurbsDiscretization& nurbs_dis =
-      static_cast<const DRT::NURBS::NurbsDiscretization&>(discret);
+  const Discret::Nurbs::NurbsDiscretization& nurbs_dis =
+      static_cast<const Discret::Nurbs::NurbsDiscretization&>(discret);
 
   // create map extractor to always (re)build dbcmapextractor which is needed later
-  Teuchos::RCP<CORE::LINALG::MapExtractor> auxdbcmapextractor =
-      Teuchos::rcp(new CORE::LINALG::MapExtractor());
+  Teuchos::RCP<Core::LinAlg::MapExtractor> auxdbcmapextractor =
+      Teuchos::rcp(new Core::LinAlg::MapExtractor());
   {
     // build map of Dirichlet DOFs
     int nummyelements = 0;
@@ -185,7 +187,7 @@ void DRT::UTILS::DbcNurbs::do_dirichlet_condition(
     Teuchos::RCP<Epetra_Map> dbcmap = Teuchos::rcp(new Epetra_Map(-1, nummyelements,
         myglobalelements, discret.dof_row_map()->IndexBase(), discret.dof_row_map()->Comm()));
     // build the map extractor of Dirichlet-conditioned and free DOFs
-    *auxdbcmapextractor = CORE::LINALG::MapExtractor(*(discret.dof_row_map()), dbcmap);
+    *auxdbcmapextractor = Core::LinAlg::MapExtractor(*(discret.dof_row_map()), dbcmap);
   }
 
   // column map of all DOFs subjected to a least squares Dirichlet condition
@@ -248,29 +250,29 @@ void DRT::UTILS::DbcNurbs::do_dirichlet_condition(
   // -------------------------------------------------------------------
   // create empty mass matrix
   // -------------------------------------------------------------------
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> massmatrix =
-      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*dofrowmap, 108, false, true));
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> massmatrix =
+      Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dofrowmap, 108, false, true));
 
   // -------------------------------------------------------------------
   // create empty right hand side vector
   // -------------------------------------------------------------------
-  Teuchos::RCP<Epetra_Vector> rhs = CORE::LINALG::CreateVector(*dofrowmap, true);
-  Teuchos::RCP<Epetra_Vector> dbcvector = CORE::LINALG::CreateVector(*dofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> rhs = Core::LinAlg::CreateVector(*dofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> dbcvector = Core::LinAlg::CreateVector(*dofrowmap, true);
 
   Teuchos::RCP<Epetra_Vector> rhsd = Teuchos::null;
   Teuchos::RCP<Epetra_Vector> dbcvectord = Teuchos::null;
   if (systemvectors[1] != Teuchos::null)
   {
-    rhsd = CORE::LINALG::CreateVector(*dofrowmap, true);
-    dbcvectord = CORE::LINALG::CreateVector(*dofrowmap, true);
+    rhsd = Core::LinAlg::CreateVector(*dofrowmap, true);
+    dbcvectord = Core::LinAlg::CreateVector(*dofrowmap, true);
   }
 
   Teuchos::RCP<Epetra_Vector> rhsdd = Teuchos::null;
   Teuchos::RCP<Epetra_Vector> dbcvectordd = Teuchos::null;
   if (systemvectors[2] != Teuchos::null)
   {
-    rhsdd = CORE::LINALG::CreateVector(*dofrowmap, true);
-    dbcvectordd = CORE::LINALG::CreateVector(*dofrowmap, true);
+    rhsdd = Core::LinAlg::CreateVector(*dofrowmap, true);
+    dbcvectordd = Core::LinAlg::CreateVector(*dofrowmap, true);
   }
 
   const bool assemblevecd = rhsd != Teuchos::null;
@@ -289,8 +291,8 @@ void DRT::UTILS::DbcNurbs::do_dirichlet_condition(
     bool assemblevec = rhs != Teuchos::null;
 
     // define element matrices and vectors
-    CORE::LINALG::SerialDenseMatrix elemass;
-    std::vector<CORE::LINALG::SerialDenseVector> elerhs(deg + 1);
+    Core::LinAlg::SerialDenseMatrix elemass;
+    std::vector<Core::LinAlg::SerialDenseVector> elerhs(deg + 1);
 
     std::vector<int> lm;
     std::vector<int> lmowner;
@@ -299,35 +301,36 @@ void DRT::UTILS::DbcNurbs::do_dirichlet_condition(
     std::vector<int> lmowner_full;
     std::vector<int> lmstride_full;
 
-    const std::map<int, Teuchos::RCP<CORE::Elements::Element>>& geom = cond.Geometry();
-    std::map<int, Teuchos::RCP<CORE::Elements::Element>>::const_iterator curr;
+    const std::map<int, Teuchos::RCP<Core::Elements::Element>>& geom = cond.Geometry();
+    std::map<int, Teuchos::RCP<Core::Elements::Element>>::const_iterator curr;
     for (curr = geom.begin(); curr != geom.end(); ++curr)
     {
-      Teuchos::RCP<CORE::Elements::Element> actele = curr->second;
+      Teuchos::RCP<Core::Elements::Element> actele = curr->second;
 
-      static const int probdim = GLOBAL::Problem::Instance()->NDim();
-      const CORE::FE::CellType distype = actele->Shape();
-      const int dim = CORE::FE::getDimension(distype);
+      static const int probdim = Global::Problem::Instance()->NDim();
+      const Core::FE::CellType distype = actele->Shape();
+      const int dim = Core::FE::getDimension(distype);
       const bool isboundary = (dim != probdim);
-      const int nen = CORE::FE::getNumberOfElementNodes(distype);
+      const int nen = Core::FE::getNumberOfElementNodes(distype);
 
       // access elements knot span
-      std::vector<CORE::LINALG::SerialDenseVector> eleknots(dim);
-      CORE::LINALG::SerialDenseVector weights(nen);
+      std::vector<Core::LinAlg::SerialDenseVector> eleknots(dim);
+      Core::LinAlg::SerialDenseVector weights(nen);
 
       bool zero_size = false;
       if (isboundary)
       {
-        Teuchos::RCP<CORE::Elements::FaceElement> faceele =
-            Teuchos::rcp_dynamic_cast<CORE::Elements::FaceElement>(actele, true);
+        Teuchos::RCP<Core::Elements::FaceElement> faceele =
+            Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(actele, true);
         double normalfac = 0.0;
-        std::vector<CORE::LINALG::SerialDenseVector> pknots(probdim);
-        zero_size = DRT::NURBS::GetKnotVectorAndWeightsForNurbsBoundary(actele.get(),
+        std::vector<Core::LinAlg::SerialDenseVector> pknots(probdim);
+        zero_size = Discret::Nurbs::GetKnotVectorAndWeightsForNurbsBoundary(actele.get(),
             faceele->FaceMasterNumber(), faceele->parent_element()->Id(), discret, pknots, eleknots,
             weights, normalfac);
       }
       else
-        zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(discret, actele.get(), eleknots, weights);
+        zero_size =
+            Discret::Nurbs::GetMyNurbsKnotsAndWeights(discret, actele.get(), eleknots, weights);
 
       // nothing to be done for a zero sized element
       if (zero_size)
@@ -380,73 +383,73 @@ void DRT::UTILS::DbcNurbs::do_dirichlet_condition(
 
       if (isboundary) switch (distype)
         {
-          case CORE::FE::CellType::nurbs2:
-            fill_matrix_and_rhs_for_ls_dirichlet_boundary<CORE::FE::CellType::nurbs2>(
+          case Core::FE::CellType::nurbs2:
+            fill_matrix_and_rhs_for_ls_dirichlet_boundary<Core::FE::CellType::nurbs2>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
-          case CORE::FE::CellType::nurbs3:
-            fill_matrix_and_rhs_for_ls_dirichlet_boundary<CORE::FE::CellType::nurbs3>(
+          case Core::FE::CellType::nurbs3:
+            fill_matrix_and_rhs_for_ls_dirichlet_boundary<Core::FE::CellType::nurbs3>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
-          case CORE::FE::CellType::nurbs4:
-            fill_matrix_and_rhs_for_ls_dirichlet_boundary<CORE::FE::CellType::nurbs4>(
+          case Core::FE::CellType::nurbs4:
+            fill_matrix_and_rhs_for_ls_dirichlet_boundary<Core::FE::CellType::nurbs4>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
-          case CORE::FE::CellType::nurbs9:
-            fill_matrix_and_rhs_for_ls_dirichlet_boundary<CORE::FE::CellType::nurbs9>(
+          case Core::FE::CellType::nurbs9:
+            fill_matrix_and_rhs_for_ls_dirichlet_boundary<Core::FE::CellType::nurbs9>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
-          case CORE::FE::CellType::nurbs8:
-            fill_matrix_and_rhs_for_ls_dirichlet_boundary<CORE::FE::CellType::nurbs8>(
+          case Core::FE::CellType::nurbs8:
+            fill_matrix_and_rhs_for_ls_dirichlet_boundary<Core::FE::CellType::nurbs8>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
-          case CORE::FE::CellType::nurbs27:
-            fill_matrix_and_rhs_for_ls_dirichlet_boundary<CORE::FE::CellType::nurbs27>(
+          case Core::FE::CellType::nurbs27:
+            fill_matrix_and_rhs_for_ls_dirichlet_boundary<Core::FE::CellType::nurbs27>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
           default:
             FOUR_C_THROW("invalid element shape for least squares dirichlet evaluation: %s",
-                CORE::FE::CellTypeToString(distype).c_str());
+                Core::FE::CellTypeToString(distype).c_str());
             break;
         }
       else
         switch (distype)
         {
-          case CORE::FE::CellType::nurbs2:
-            fill_matrix_and_rhs_for_ls_dirichlet_domain<CORE::FE::CellType::nurbs2>(
+          case Core::FE::CellType::nurbs2:
+            fill_matrix_and_rhs_for_ls_dirichlet_domain<Core::FE::CellType::nurbs2>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
-          case CORE::FE::CellType::nurbs3:
-            fill_matrix_and_rhs_for_ls_dirichlet_domain<CORE::FE::CellType::nurbs3>(
+          case Core::FE::CellType::nurbs3:
+            fill_matrix_and_rhs_for_ls_dirichlet_domain<Core::FE::CellType::nurbs3>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
-          case CORE::FE::CellType::nurbs4:
-            fill_matrix_and_rhs_for_ls_dirichlet_domain<CORE::FE::CellType::nurbs4>(
+          case Core::FE::CellType::nurbs4:
+            fill_matrix_and_rhs_for_ls_dirichlet_domain<Core::FE::CellType::nurbs4>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
-          case CORE::FE::CellType::nurbs9:
-            fill_matrix_and_rhs_for_ls_dirichlet_domain<CORE::FE::CellType::nurbs9>(
+          case Core::FE::CellType::nurbs9:
+            fill_matrix_and_rhs_for_ls_dirichlet_domain<Core::FE::CellType::nurbs9>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
-          case CORE::FE::CellType::nurbs8:
-            fill_matrix_and_rhs_for_ls_dirichlet_domain<CORE::FE::CellType::nurbs8>(
+          case Core::FE::CellType::nurbs8:
+            fill_matrix_and_rhs_for_ls_dirichlet_domain<Core::FE::CellType::nurbs8>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
-          case CORE::FE::CellType::nurbs27:
-            fill_matrix_and_rhs_for_ls_dirichlet_domain<CORE::FE::CellType::nurbs27>(
+          case Core::FE::CellType::nurbs27:
+            fill_matrix_and_rhs_for_ls_dirichlet_domain<Core::FE::CellType::nurbs27>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
           default:
             FOUR_C_THROW("invalid element shape for least squares dirichlet evaluation: %s",
-                CORE::FE::CellTypeToString(distype).c_str());
+                Core::FE::CellTypeToString(distype).c_str());
             break;
         }
 
       int eid = actele->Id();
       if (assemblemat) massmatrix->Assemble(eid, elemass, lm, lmowner);
-      if (assemblevec) CORE::LINALG::Assemble(*rhs, elerhs[0], lm, lmowner);
-      if (assemblevecd) CORE::LINALG::Assemble(*rhsd, elerhs[1], lm, lmowner);
-      if (assemblevecdd) CORE::LINALG::Assemble(*rhsdd, elerhs[2], lm, lmowner);
+      if (assemblevec) Core::LinAlg::Assemble(*rhs, elerhs[0], lm, lmowner);
+      if (assemblevecd) Core::LinAlg::Assemble(*rhsd, elerhs[1], lm, lmowner);
+      if (assemblevecdd) Core::LinAlg::Assemble(*rhsdd, elerhs[2], lm, lmowner);
     }
   }
   // -------------------------------------------------------------------
@@ -460,7 +463,7 @@ void DRT::UTILS::DbcNurbs::do_dirichlet_condition(
   // Owing to experience a very accurate solution has to be enforced here!
   // Thus, we allocate an own solver with VERY strict tolerance!
   // One could think of verifiying an extra solver in the input file...
-  Teuchos::ParameterList p = GLOBAL::Problem::Instance()->UMFPACKSolverParams();
+  Teuchos::ParameterList p = Global::Problem::Instance()->UMFPACKSolverParams();
   //  const double origtol = p.get<double>("AZTOL");
   //  const double newtol  = 1.0e-11;
   //  p.set("AZTOL",newtol);
@@ -468,15 +471,15 @@ void DRT::UTILS::DbcNurbs::do_dirichlet_condition(
   //  if(myrank==0)
   //    cout<<"\nSolver tolerance for least squares problem set to "<<newtol<<"\n";
 
-  Teuchos::RCP<CORE::LINALG::Solver> solver =
-      Teuchos::rcp(new CORE::LINALG::Solver(p, discret.Comm()));
+  Teuchos::RCP<Core::LinAlg::Solver> solver =
+      Teuchos::rcp(new Core::LinAlg::Solver(p, discret.Comm()));
   // FixMe actually the const qualifier could stay, if someone adds to each single
   // related ComputeNullSpace routine a "const"....
-  const_cast<DRT::Discretization&>(discret).compute_null_space_if_necessary(solver->Params());
+  const_cast<Discret::Discretization&>(discret).compute_null_space_if_necessary(solver->Params());
 
   // solve for control point values
   // always refactor and reset the matrix before a single new solver call
-  CORE::LINALG::SolverParams solver_params;
+  Core::LinAlg::SolverParams solver_params;
   solver_params.refactor = true;
   solver_params.reset = true;
   solver->Solve(massmatrix->EpetraOperator(), dbcvector, rhs, solver_params);
@@ -504,30 +507,30 @@ void DRT::UTILS::DbcNurbs::do_dirichlet_condition(
 /*----------------------------------------------------------------------*
  |  evaluate Dirichlet conditions (public)                   vuong 08/14|
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::UTILS::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_boundary(
-    Teuchos::RCP<CORE::Elements::Element> actele,
-    const std::vector<CORE::LINALG::SerialDenseVector>* knots, const std::vector<int>& lm,
+template <Core::FE::CellType distype>
+void Discret::UTILS::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_boundary(
+    Teuchos::RCP<Core::Elements::Element> actele,
+    const std::vector<Core::LinAlg::SerialDenseVector>* knots, const std::vector<int>& lm,
     const std::vector<int>* funct, const std::vector<double>* val, const unsigned deg,
-    const double time, CORE::LINALG::SerialDenseMatrix& elemass,
-    std::vector<CORE::LINALG::SerialDenseVector>& elerhs) const
+    const double time, Core::LinAlg::SerialDenseMatrix& elemass,
+    std::vector<Core::LinAlg::SerialDenseVector>& elerhs) const
 {
   if (deg + 1 != elerhs.size())
     FOUR_C_THROW("given degree of time derivative does not match number or rhs vectors!");
 
-  static const int dim = CORE::FE::dim<distype>;
+  static const int dim = Core::FE::dim<distype>;
 
   const int ndbcdofs = (int)lm.size();
 
   // set element data
-  static const int nen = CORE::FE::num_nodes<distype>;
+  static const int nen = Core::FE::num_nodes<distype>;
 
   // dofblocks (number of DOFs with Dirichlet condition per node)
   const int dofblock = ndbcdofs / nen;
 
   // get node coordinates of element
-  CORE::LINALG::Matrix<dim + 1, nen> xyze;
-  CORE::Nodes::Node** nodes = actele->Nodes();
+  Core::LinAlg::Matrix<dim + 1, nen> xyze;
+  Core::Nodes::Node** nodes = actele->Nodes();
 
   for (int inode = 0; inode < nen; inode++)
   {
@@ -539,32 +542,32 @@ void DRT::UTILS::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_boundary(
   }
 
   // aquire weights from nodes
-  CORE::LINALG::SerialDenseVector weights(nen);
+  Core::LinAlg::SerialDenseVector weights(nen);
 
   for (int inode = 0; inode < nen; ++inode)
   {
-    DRT::NURBS::ControlPoint* cp = dynamic_cast<DRT::NURBS::ControlPoint*>(nodes[inode]);
+    Discret::Nurbs::ControlPoint* cp = dynamic_cast<Discret::Nurbs::ControlPoint*>(nodes[inode]);
 
     weights(inode) = cp->W();
   }
 
   // shape functions
-  CORE::LINALG::Matrix<nen, 1> shpfunct;
+  Core::LinAlg::Matrix<nen, 1> shpfunct;
   // coordinates of integration points in parameter space
-  CORE::LINALG::Matrix<dim, 1> xsi;
+  Core::LinAlg::Matrix<dim, 1> xsi;
   // first derivative of shape functions
-  CORE::LINALG::Matrix<dim, nen> deriv;
+  Core::LinAlg::Matrix<dim, nen> deriv;
   // coordinates of integration point in physical space
-  CORE::LINALG::SerialDenseVector position(
+  Core::LinAlg::SerialDenseVector position(
       3);  // always three-dimensional coordinates for function evaluation!
   // auxiliary date container for dirichlet evaluation
-  std::vector<CORE::LINALG::SerialDenseVector> value(deg + 1, dofblock);
+  std::vector<Core::LinAlg::SerialDenseVector> value(deg + 1, dofblock);
   // unit normal on boundary element
-  CORE::LINALG::Matrix<dim + 1, 1> unitnormal;
+  Core::LinAlg::Matrix<dim + 1, 1> unitnormal;
 
   // gaussian points
-  const CORE::FE::IntPointsAndWeights<dim> intpoints(
-      DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+  const Core::FE::IntPointsAndWeights<dim> intpoints(
+      Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
@@ -572,7 +575,7 @@ void DRT::UTILS::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_boundary(
     double fac = 0.0;
     double drs = 0.0;
 
-    CORE::FE::EvalShapeFuncAtBouIntPoint<distype>(
+    Core::FE::EvalShapeFuncAtBouIntPoint<distype>(
         shpfunct, deriv, fac, unitnormal, drs, xsi, xyze, intpoints, iquad, knots, &weights, true);
 
     // get real physical coordinates of integration point
@@ -605,8 +608,8 @@ void DRT::UTILS::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_boundary(
       if (funct_num > 0)
       {
         // important: position has to have always three components!!
-        functimederivfac = GLOBAL::Problem::Instance()
-                               ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>((*funct)[rr] - 1)
+        functimederivfac = Global::Problem::Instance()
+                               ->FunctionById<Core::UTILS::FunctionOfSpaceTime>((*funct)[rr] - 1)
                                .evaluate_time_derivative(position.values(), time, deg, rr);
       }
 
@@ -646,29 +649,29 @@ void DRT::UTILS::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_boundary(
 /*----------------------------------------------------------------------*
  |  evaluate Dirichlet conditions (public)                   vuong 08/14|
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::UTILS::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_domain(
-    Teuchos::RCP<CORE::Elements::Element> actele,
-    const std::vector<CORE::LINALG::SerialDenseVector>* knots, const std::vector<int>& lm,
+template <Core::FE::CellType distype>
+void Discret::UTILS::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_domain(
+    Teuchos::RCP<Core::Elements::Element> actele,
+    const std::vector<Core::LinAlg::SerialDenseVector>* knots, const std::vector<int>& lm,
     const std::vector<int>* funct, const std::vector<double>* val, const unsigned deg,
-    const double time, CORE::LINALG::SerialDenseMatrix& elemass,
-    std::vector<CORE::LINALG::SerialDenseVector>& elerhs) const
+    const double time, Core::LinAlg::SerialDenseMatrix& elemass,
+    std::vector<Core::LinAlg::SerialDenseVector>& elerhs) const
 {
   if (deg + 1 != elerhs.size())
     FOUR_C_THROW("given degree of time derivative does not match number or rhs vectors!");
 
-  static const int dim = CORE::FE::dim<distype>;
+  static const int dim = Core::FE::dim<distype>;
   const int ndbcdofs = (int)lm.size();
 
   // set element data
-  static const int nen = CORE::FE::num_nodes<distype>;
+  static const int nen = Core::FE::num_nodes<distype>;
 
   // dofblocks (number of DOFs with Dirichlet condition per node)
   const int dofblock = ndbcdofs / nen;
 
   // get node coordinates of element
-  CORE::LINALG::Matrix<dim, nen> xyze;
-  CORE::Nodes::Node** nodes = actele->Nodes();
+  Core::LinAlg::Matrix<dim, nen> xyze;
+  Core::Nodes::Node** nodes = actele->Nodes();
 
   for (int inode = 0; inode < nen; inode++)
   {
@@ -680,32 +683,32 @@ void DRT::UTILS::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_domain(
   }
 
   // aquire weights from nodes
-  CORE::LINALG::SerialDenseVector weights(nen);
+  Core::LinAlg::SerialDenseVector weights(nen);
 
   for (int inode = 0; inode < nen; ++inode)
   {
-    DRT::NURBS::ControlPoint* cp = dynamic_cast<DRT::NURBS::ControlPoint*>(nodes[inode]);
+    Discret::Nurbs::ControlPoint* cp = dynamic_cast<Discret::Nurbs::ControlPoint*>(nodes[inode]);
 
     weights(inode) = cp->W();
   }
 
   // shape functions
-  CORE::LINALG::Matrix<nen, 1> shpfunct;
+  Core::LinAlg::Matrix<nen, 1> shpfunct;
   // coordinates of integration points in parameter space
-  CORE::LINALG::Matrix<dim, 1> xsi;
+  Core::LinAlg::Matrix<dim, 1> xsi;
   // transposed jacobian "dx/ds"
-  CORE::LINALG::Matrix<dim, dim> xjm;
+  Core::LinAlg::Matrix<dim, dim> xjm;
   // first derivative of shape functions
-  CORE::LINALG::Matrix<dim, nen> deriv;
+  Core::LinAlg::Matrix<dim, nen> deriv;
   // coordinates of integration point in physical space
-  CORE::LINALG::SerialDenseVector position(
+  Core::LinAlg::SerialDenseVector position(
       3);  // always three-dimensional coordinates for function evaluation!
   // auxiliary date container for dirichlet evaluation
-  std::vector<CORE::LINALG::SerialDenseVector> value(deg + 1, dofblock);
+  std::vector<Core::LinAlg::SerialDenseVector> value(deg + 1, dofblock);
 
   // gaussian points
-  const CORE::FE::IntPointsAndWeights<dim> intpoints(
-      DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+  const Core::FE::IntPointsAndWeights<dim> intpoints(
+      Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
@@ -715,7 +718,7 @@ void DRT::UTILS::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_domain(
     }
 
     // evaluate shape function and derivatevs at integration point
-    CORE::FE::NURBS::nurbs_get_funct_deriv(shpfunct, deriv, xsi, *knots, weights, distype);
+    Core::FE::Nurbs::nurbs_get_funct_deriv(shpfunct, deriv, xsi, *knots, weights, distype);
 
     xjm.MultiplyNT(deriv, xyze);
     double det = xjm.Determinant();
@@ -757,12 +760,12 @@ void DRT::UTILS::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_domain(
       if (funct_num > 0)
       {
         // important: position has to have always three components!!
-        functimederivfac = GLOBAL::Problem::Instance()
-                               ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>((*funct)[rr] - 1)
+        functimederivfac = Global::Problem::Instance()
+                               ->FunctionById<Core::UTILS::FunctionOfSpaceTime>((*funct)[rr] - 1)
                                .evaluate_time_derivative(position.values(), time, deg, rr);
 
-        functfac = GLOBAL::Problem::Instance()
-                       ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>((*funct)[rr] - 1)
+        functfac = Global::Problem::Instance()
+                       ->FunctionById<Core::UTILS::FunctionOfSpaceTime>((*funct)[rr] - 1)
                        .Evaluate(position.values(), time, rr);
       }
 

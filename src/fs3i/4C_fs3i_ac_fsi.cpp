@@ -47,9 +47,9 @@ FS3I::ACFSI::ACFSI(const Epetra_Comm& comm)
       structurephinp_blts_(Teuchos::null),
       growth_updates_counter_(0),
       wall_shear_stress_lp_(Teuchos::null),
-      fsiperiod_(GLOBAL::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<double>(
+      fsiperiod_(Global::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<double>(
           "PERIODICITY")),
-      dt_large_(GLOBAL::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<double>(
+      dt_large_(Global::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<double>(
           "LARGE_TIMESCALE_TIMESTEP")),
       fsiisperiodic_(false),
       scatraisperiodic_(false),
@@ -67,7 +67,7 @@ void FS3I::ACFSI::Init()
 
   // Some AC FSI specific testings:
 
-  const Teuchos::ParameterList& fs3idyn = GLOBAL::Problem::Instance()->FS3IDynamicParams();
+  const Teuchos::ParameterList& fs3idyn = Global::Problem::Instance()->FS3IDynamicParams();
   const Teuchos::ParameterList& fs3idynpart = fs3idyn.sublist("PARTITIONED");
   const Teuchos::ParameterList& fs3idynac = fs3idyn.sublist("AC");
 
@@ -88,8 +88,8 @@ void FS3I::ACFSI::Init()
         "You need to specify a LARGE_TIMESCALE_TIMESTEP and it must be larger than the 'normal' "
         "fs3i TIMESTEP!");
 
-  std::vector<CORE::Conditions::Condition*> ImpCond;
-  GLOBAL::Problem::Instance()->GetDis("fluid")->GetCondition("ImpedanceCond", ImpCond);
+  std::vector<Core::Conditions::Condition*> ImpCond;
+  Global::Problem::Instance()->GetDis("fluid")->GetCondition("ImpedanceCond", ImpCond);
   for (auto& i : ImpCond)
   {
     const double thisperiod = i->parameters().Get<double>("TIMEPERIOD");
@@ -110,14 +110,14 @@ void FS3I::ACFSI::Init()
     FOUR_C_THROW("AC-FS3I does have a finite interface permeability. So set INF_PERM to NO!");
 
   const int fsiperssisteps = fs3idynac.get<int>("FSI_STEPS_PER_SCATRA_STEP");
-  const INPAR::FS3I::SolutionSchemeOverFields couplingalgo =
-      CORE::UTILS::IntegralValue<INPAR::FS3I::SolutionSchemeOverFields>(fs3idynpart, "COUPALGO");
+  const Inpar::FS3I::SolutionSchemeOverFields couplingalgo =
+      Core::UTILS::IntegralValue<Inpar::FS3I::SolutionSchemeOverFields>(fs3idynpart, "COUPALGO");
   const double wk_rel_tol = fs3idynac.get<double>("WINDKESSEL_REL_TOL");
 
-  if (couplingalgo == INPAR::FS3I::fs3i_IterStagg and fsiperssisteps != 1)
+  if (couplingalgo == Inpar::FS3I::fs3i_IterStagg and fsiperssisteps != 1)
     FOUR_C_THROW("In an iteratively staggered FS3I scheme subcycling is not supported!");
 
-  if (couplingalgo == INPAR::FS3I::fs3i_IterStagg and not IsRealtiveEqualTo(wk_rel_tol, -1.0, 1.0))
+  if (couplingalgo == Inpar::FS3I::fs3i_IterStagg and not IsRealtiveEqualTo(wk_rel_tol, -1.0, 1.0))
     FOUR_C_THROW(
         "In an iteratively staggered FS3I scheme periodical repetition of the fsi problem is not "
         "supported!");
@@ -133,9 +133,9 @@ void FS3I::ACFSI::Init()
   if (not IsRealtiveEqualTo(dt_, scatravec_[1]->ScaTraField()->Dt(), 1.0))
     FOUR_C_THROW("Your structure scatra time step does not match!");
 
-  if (not(INPAR::FLUID::wss_standard ==
-          CORE::UTILS::IntegralValue<INPAR::FLUID::WSSType>(
-              GLOBAL::Problem::Instance()->FluidDynamicParams(), "WSS_TYPE")))
+  if (not(Inpar::FLUID::wss_standard ==
+          Core::UTILS::IntegralValue<Inpar::FLUID::WSSType>(
+              Global::Problem::Instance()->FluidDynamicParams(), "WSS_TYPE")))
     FOUR_C_THROW(
         "WSS_TYPE must be 'Standard', we will mean the WSS by using the fs3i mean manager!");
 
@@ -152,13 +152,13 @@ void FS3I::ACFSI::Setup()
   meanmanager_ = Teuchos::rcp(new FS3I::MeanManager(*fsi_->fluid_field()->dof_row_map(0),
       *scatravec_[0]->ScaTraField()->dof_row_map(), *fsi_->fluid_field()->PressureRowMap()));
 
-  structureincrement_ = CORE::LINALG::CreateVector(*fsi_->structure_field()->dof_row_map(0), true);
-  fluidincrement_ = CORE::LINALG::CreateVector(*fsi_->fluid_field()->dof_row_map(0), true);
-  aleincrement_ = CORE::LINALG::CreateVector(*fsi_->ale_field()->dof_row_map(), true);
-  fluidphinp_lp_ = CORE::LINALG::CreateVector(*scatravec_[0]->ScaTraField()->dof_row_map(), true);
+  structureincrement_ = Core::LinAlg::CreateVector(*fsi_->structure_field()->dof_row_map(0), true);
+  fluidincrement_ = Core::LinAlg::CreateVector(*fsi_->fluid_field()->dof_row_map(0), true);
+  aleincrement_ = Core::LinAlg::CreateVector(*fsi_->ale_field()->dof_row_map(), true);
+  fluidphinp_lp_ = Core::LinAlg::CreateVector(*scatravec_[0]->ScaTraField()->dof_row_map(), true);
   structurephinp_blts_ =
-      CORE::LINALG::CreateVector(*scatravec_[1]->ScaTraField()->dof_row_map(), true);
-  wall_shear_stress_lp_ = CORE::LINALG::CreateVector(*fsi_->fluid_field()->dof_row_map(0), true);
+      Core::LinAlg::CreateVector(*scatravec_[1]->ScaTraField()->dof_row_map(), true);
+  wall_shear_stress_lp_ = Core::LinAlg::CreateVector(*fsi_->fluid_field()->dof_row_map(0), true);
 
   extractjthstructscalar_ = BuildMapExtractor();
 
@@ -174,19 +174,19 @@ void FS3I::ACFSI::read_restart()
   PartFS3I::read_restart();
 
   // AC specific restart stuff
-  const int restart = GLOBAL::Problem::Instance()->Restart();
+  const int restart = Global::Problem::Instance()->Restart();
 
   if (restart)
   {
-    const Teuchos::ParameterList& fs3idynac = GLOBAL::Problem::Instance()->FS3IDynamicParams();
+    const Teuchos::ParameterList& fs3idynac = Global::Problem::Instance()->FS3IDynamicParams();
     const bool restartfrompartfsi =
-        CORE::UTILS::IntegralValue<int>(fs3idynac, "RESTART_FROM_PART_FSI");
+        Core::UTILS::IntegralValue<int>(fs3idynac, "RESTART_FROM_PART_FSI");
 
-    auto input_control_file = GLOBAL::Problem::Instance()->InputControlFile();
+    auto input_control_file = Global::Problem::Instance()->InputControlFile();
 
     if (not restartfrompartfsi)  // standard restart
     {
-      CORE::IO::DiscretizationReader fluidreader = CORE::IO::DiscretizationReader(
+      Core::IO::DiscretizationReader fluidreader = Core::IO::DiscretizationReader(
           fsi_->fluid_field()->discretization(), input_control_file, restart);
       meanmanager_->read_restart(fluidreader);
 
@@ -200,12 +200,12 @@ void FS3I::ACFSI::read_restart()
         // reconstruct WallShearStress_lp_
         const int beginnperiodstep = get_step_of_beginn_of_this_period_and_prepare_reading(
             fsi_->fluid_field()->Step(), fsi_->fluid_field()->Time(), fsi_->fluid_field()->Dt());
-        CORE::IO::DiscretizationReader fluidreaderbeginnperiod = CORE::IO::DiscretizationReader(
+        Core::IO::DiscretizationReader fluidreaderbeginnperiod = Core::IO::DiscretizationReader(
             fsi_->fluid_field()->discretization(), input_control_file, beginnperiodstep);
 
         // some safety check:
         Teuchos::RCP<Epetra_Vector> WallShearStress_lp_new =
-            CORE::LINALG::CreateVector(*fsi_->fluid_field()->dof_row_map(0), true);
+            Core::LinAlg::CreateVector(*fsi_->fluid_field()->dof_row_map(0), true);
 
         fluidreaderbeginnperiod.ReadVector(WallShearStress_lp_new, "SumWss");
         const double SumDtWss = fluidreaderbeginnperiod.ReadDouble("SumDtWss");
@@ -232,7 +232,7 @@ void FS3I::ACFSI::read_restart()
           // from a partitioned FSI
     {
       // AC-FSI specific input
-      CORE::IO::DiscretizationReader reader = CORE::IO::DiscretizationReader(
+      Core::IO::DiscretizationReader reader = Core::IO::DiscretizationReader(
           fsi_->fluid_field()->discretization(), input_control_file, restart);
       reader.ReadVector(wall_shear_stress_lp_, "wss");
     }
@@ -255,9 +255,9 @@ void FS3I::ACFSI::Timeloop()
   SetFSISolution();
 
   // calculate inital time derivative, when restart was done from a part. FSI simulation
-  if (GLOBAL::Problem::Instance()->Restart() and
-      CORE::UTILS::IntegralValue<int>(
-          GLOBAL::Problem::Instance()->FS3IDynamicParams(), "RESTART_FROM_PART_FSI"))
+  if (Global::Problem::Instance()->Restart() and
+      Core::UTILS::IntegralValue<int>(
+          Global::Problem::Instance()->FS3IDynamicParams(), "RESTART_FROM_PART_FSI"))
   {
     scatravec_[0]->ScaTraField()->prepare_first_time_step();
     scatravec_[1]->ScaTraField()->prepare_first_time_step();
@@ -361,17 +361,17 @@ void FS3I::ACFSI::small_time_scale_prepare_time_step()
 void FS3I::ACFSI::small_time_scale_outer_loop()
 {
   const Teuchos::ParameterList& fs3idynpart =
-      GLOBAL::Problem::Instance()->FS3IDynamicParams().sublist("PARTITIONED");
+      Global::Problem::Instance()->FS3IDynamicParams().sublist("PARTITIONED");
   // get coupling algorithm from input file
-  const INPAR::FS3I::SolutionSchemeOverFields couplingalgo =
-      CORE::UTILS::IntegralValue<INPAR::FS3I::SolutionSchemeOverFields>(fs3idynpart, "COUPALGO");
+  const Inpar::FS3I::SolutionSchemeOverFields couplingalgo =
+      Core::UTILS::IntegralValue<Inpar::FS3I::SolutionSchemeOverFields>(fs3idynpart, "COUPALGO");
 
   switch (couplingalgo)
   {
-    case INPAR::FS3I::fs3i_SequStagg:
+    case Inpar::FS3I::fs3i_SequStagg:
       small_time_scale_outer_loop_sequ_stagg();
       break;
-    case INPAR::FS3I::fs3i_IterStagg:
+    case Inpar::FS3I::fs3i_IterStagg:
       small_time_scale_outer_loop_iter_stagg();
       break;
     default:
@@ -440,7 +440,7 @@ void FS3I::ACFSI::DoFSIStep()
   if (not fsiisperiodic_)
   {
     const int fsiperssisteps =
-        GLOBAL::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<int>(
+        Global::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<int>(
             "FSI_STEPS_PER_SCATRA_STEP");
     if (fsiperssisteps == 1)  // no subcycling
     {
@@ -485,12 +485,12 @@ void FS3I::ACFSI::IsFsiPeriodic()
 
   //------------- first check convergence of Windkessels ------------------------------
   {
-    Teuchos::RCP<ADAPTER::FluidACFSI> fluid =
-        Teuchos::rcp_dynamic_cast<ADAPTER::FluidACFSI>(fsi_->fluid_field());
+    Teuchos::RCP<Adapter::FluidACFSI> fluid =
+        Teuchos::rcp_dynamic_cast<Adapter::FluidACFSI>(fsi_->fluid_field());
     std::vector<double> wk_rel_errors = fluid->GetWindkesselErrors();
 
     const double wk_rel_tol =
-        GLOBAL::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<double>(
+        Global::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<double>(
             "WINDKESSEL_REL_TOL");
 
     if (Comm().MyPID() == 0) std::cout << std::endl;
@@ -509,7 +509,7 @@ void FS3I::ACFSI::IsFsiPeriodic()
   //------------- second check convergence of WSS ------------------------------
   {
     const double wss_rel_tol =
-        GLOBAL::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<double>("WSS_REL_TOL");
+        Global::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<double>("WSS_REL_TOL");
 
     // Note: we compare the difference of mean wssnp and mean wssn only on the FS3I interface, since
     // this is the interesting part for the multiscale problem Therefore we have to do nothing
@@ -517,7 +517,7 @@ void FS3I::ACFSI::IsFsiPeriodic()
     const Teuchos::RCP<const Epetra_Vector> wss_bar_boundary =
         meanmanager_->GetMeanValue("mean_wss");  // mean wall shear stresses at fs3i interface
     const Teuchos::RCP<Epetra_Vector> wssdiff_bar_boundary =
-        CORE::LINALG::CreateVector(*(fsi_->fluid_field()->dof_row_map()));
+        Core::LinAlg::CreateVector(*(fsi_->fluid_field()->dof_row_map()));
     wssdiff_bar_boundary->Update(1.0, *wss_bar_boundary, -1.0, *wall_shear_stress_lp_, 0.0);
 
     double wss_bar_boundary_norm(0.0);
@@ -568,7 +568,7 @@ void FS3I::ACFSI::IsScatraPeriodic()
   scatraisperiodic_ = true;
 
   const double fluid_scatra_rel_tol =
-      GLOBAL::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<double>(
+      Global::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<double>(
           "FLUID_SCATRA_REL_TOL");
   const int numscal = scatravec_[0]->ScaTraField()->NumScal();  // numscal of fluid scatra field
 
@@ -602,7 +602,7 @@ void FS3I::ACFSI::IsScatraPeriodic()
     // calculate the difference vector
     const Teuchos::RCP<Epetra_Vector> ith_phi_diff_bar_boundary =
         extractjthstructscalar_[i]->ExtractCondVector(
-            CORE::LINALG::CreateVector(*scatravec_[1]->ScaTraField()->dof_row_map(0), true));
+            Core::LinAlg::CreateVector(*scatravec_[1]->ScaTraField()->dof_row_map(0), true));
     ith_phi_diff_bar_boundary->Update(
         1.0, *ith_phinp_bar_boundary_on_struct, -1.0, *ith_phin_bar_boundary_on_struct, 0.0);
 
@@ -721,7 +721,7 @@ void FS3I::ACFSI::DoFSIStepPeriodic()
   fsi_->read_restart(previousperiodstep);  // ReadRestartfromTime()
 
   // we first fix the grid velocity of the fluid. This calculation is normally done
-  // in ADAPTER::FluidFSI::apply_mesh_displacement(), but since we never call this function
+  // in Adapter::FluidFSI::apply_mesh_displacement(), but since we never call this function
   // we have to call it ourself
   fsi_->fluid_field()->UpdateGridv();  // calculate grid velocity via FD approximation
 
@@ -744,21 +744,21 @@ double FS3I::ACFSI::get_step_of_one_period_ago_and_prepare_reading(
   // Is this the right step? Let's check:
   {
     // we have to clean the mapstack, otherwise it would fill with each iteration
-    GLOBAL::Problem::Instance()->GetDis("structure")->Writer()->ClearMapCache();
+    Global::Problem::Instance()->GetDis("structure")->Writer()->ClearMapCache();
 
     // get filename in which the equivalent step of the last period is written
     std::string filename = GetFileName(previousperiodstep);
     // we always have to recreate the InputControl() since our Inputfile (=Outputfile) has changed
     // in since the last reading (new timestep written)
-    Teuchos::RCP<CORE::IO::InputControl> inputreader =
-        Teuchos::rcp(new CORE::IO::InputControl(filename, Comm()));
+    Teuchos::RCP<Core::IO::InputControl> inputreader =
+        Teuchos::rcp(new Core::IO::InputControl(filename, Comm()));
     // overwrite existing InputControl()
-    GLOBAL::Problem::Instance()->SetInputControlFile(inputreader);
+    Global::Problem::Instance()->SetInputControlFile(inputreader);
 
     // AC-FSI specific input
-    CORE::IO::DiscretizationReader reader =
-        CORE::IO::DiscretizationReader(fsi_->fluid_field()->discretization(),
-            GLOBAL::Problem::Instance()->InputControlFile(), previousperiodstep);
+    Core::IO::DiscretizationReader reader =
+        Core::IO::DiscretizationReader(fsi_->fluid_field()->discretization(),
+            Global::Problem::Instance()->InputControlFile(), previousperiodstep);
 
     double previousperiodtime = reader.ReadDouble("time");
 
@@ -787,21 +787,21 @@ double FS3I::ACFSI::get_step_of_beginn_of_this_period_and_prepare_reading(
   // Is this the right step? Let's check:
   {
     // we have to clean the mapstack, otherwise it would fill with each iteration
-    GLOBAL::Problem::Instance()->GetDis("structure")->Writer()->ClearMapCache();
+    Global::Problem::Instance()->GetDis("structure")->Writer()->ClearMapCache();
 
     // get filename in which the equivalent step of the last period is written
     std::string filename = GetFileName(teststep);
     // we always have to recreate the InputControl() since our Inputfile (=Outputfile) has changed
     // in since the last reading (new timestep written)
-    Teuchos::RCP<CORE::IO::InputControl> inputreader =
-        Teuchos::rcp(new CORE::IO::InputControl(filename, Comm()));
+    Teuchos::RCP<Core::IO::InputControl> inputreader =
+        Teuchos::rcp(new Core::IO::InputControl(filename, Comm()));
     // overwrite existing InputControl()
-    GLOBAL::Problem::Instance()->SetInputControlFile(inputreader);
+    Global::Problem::Instance()->SetInputControlFile(inputreader);
 
     // AC-FSI specific input
-    CORE::IO::DiscretizationReader reader =
-        CORE::IO::DiscretizationReader(fsi_->fluid_field()->discretization(),
-            GLOBAL::Problem::Instance()->InputControlFile(), teststep);
+    Core::IO::DiscretizationReader reader =
+        Core::IO::DiscretizationReader(fsi_->fluid_field()->discretization(),
+            Global::Problem::Instance()->InputControlFile(), teststep);
 
     double testtime = reader.ReadDouble("time");
 
@@ -832,23 +832,23 @@ std::string FS3I::ACFSI::GetFileName(const int step)
 
   std::string filename;
 
-  const int restart = GLOBAL::Problem::Instance()->Restart();
+  const int restart = Global::Problem::Instance()->Restart();
   if (restart)
   {
     const int crit_step = (int)(restart + fsiperiod_ / dt_ + 1e-14);
 
     if (step <= crit_step)  // the last period is written in the file we have restarted from
     {
-      filename = GLOBAL::Problem::Instance()->InputControlFile()->FileName();
+      filename = Global::Problem::Instance()->InputControlFile()->FileName();
     }
     else  // the last period is written in the newly written output file
     {
-      filename = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
+      filename = Global::Problem::Instance()->OutputControlFile()->FileName();
     }
   }
   else
   {
-    filename = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
+    filename = Global::Problem::Instance()->OutputControlFile()->FileName();
   }
   return filename;
 }
@@ -950,9 +950,9 @@ void FS3I::ACFSI::small_time_scale_update_and_output()
 void FS3I::ACFSI::FsiOutput()
 {
   int coupling =
-      Teuchos::getIntegralValue<int>(GLOBAL::Problem::Instance()->FSIDynamicParams(), "COUPALGO");
+      Teuchos::getIntegralValue<int>(Global::Problem::Instance()->FSIDynamicParams(), "COUPALGO");
 
-  const Teuchos::ParameterList& fs3idyn = GLOBAL::Problem::Instance()->FS3IDynamicParams();
+  const Teuchos::ParameterList& fs3idyn = Global::Problem::Instance()->FS3IDynamicParams();
   const int uprestart = fs3idyn.get<int>("RESTARTEVRY");
   const int upresults = fs3idyn.get<int>("RESULTSEVRY");
 
@@ -972,7 +972,7 @@ void FS3I::ACFSI::FsiOutput()
   if ((step_ % upresults == 0) or (uprestart != 0 && step_ % uprestart == 0) or
       modulo_is_realtive_zero(time_, fsiperiod_, time_))
   {
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> fluiddiskwriter =
+    Teuchos::RCP<Core::IO::DiscretizationWriter> fluiddiskwriter =
         fsi_->fluid_field()->DiscWriter();
     fluiddiskwriter->WriteVector("wss_mean", wall_shear_stress_lp_);
   }
@@ -980,7 +980,7 @@ void FS3I::ACFSI::FsiOutput()
   if ((uprestart != 0 && step_ % uprestart == 0) or
       modulo_is_realtive_zero(time_, fsiperiod_, time_))
   {
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> fluiddiskwriter =
+    Teuchos::RCP<Core::IO::DiscretizationWriter> fluiddiskwriter =
         fsi_->fluid_field()->DiscWriter();
 
     // fluiddiskwriter->WriteVector("wss", fsi_->fluid_field()->calculate_wall_shear_stresses());
@@ -1001,7 +1001,7 @@ bool FS3I::ACFSI::scatra_convergence_check(const int itnum)
 {
   // some input parameters for the scatra fields
   const Teuchos::ParameterList& scatradyn =
-      GLOBAL::Problem::Instance()->scalar_transport_dynamic_params();
+      Global::Problem::Instance()->scalar_transport_dynamic_params();
   const int scatraitemax = scatradyn.sublist("NONLINEAR").get<int>("ITEMAX");
   const double scatraittol = scatradyn.sublist("NONLINEAR").get<double>("CONVTOL");
   const double scatraabstolres = scatradyn.sublist("NONLINEAR").get<double>("ABSTOLRES");
@@ -1067,7 +1067,7 @@ bool FS3I::ACFSI::scatra_convergence_check(const int itnum)
 bool FS3I::ACFSI::part_fs3i_convergence_ckeck(const int itnum)
 {
   const Teuchos::ParameterList& fs3idynpart =
-      GLOBAL::Problem::Instance()->FS3IDynamicParams().sublist("PARTITIONED");
+      Global::Problem::Instance()->FS3IDynamicParams().sublist("PARTITIONED");
   // get control parameters from input file
   double ittol = fs3idynpart.get<double>("CONVTOL");
   int itmax = fs3idynpart.get<int>("ITEMAX");
@@ -1221,7 +1221,7 @@ void FS3I::ACFSI::check_if_times_and_steps_and_dts_match()
 
   // check dts
   const double fsiperssisteps =
-      (double)(GLOBAL::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<int>(
+      (double)(Global::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<int>(
           "FSI_STEPS_PER_SCATRA_STEP"));
   const double fluiddt = fsi_->fluid_field()->Dt() * fsiperssisteps;
   const double structuredt = fsi_->structure_field()->Dt() * fsiperssisteps;

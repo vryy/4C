@@ -18,55 +18,55 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-MAT::PAR::StructPoro::StructPoro(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::StructPoro::StructPoro(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : Parameter(matdata),
       matid_(matdata->Get<int>("MATID")),
       poro_law_ID_(matdata->Get<int>("POROLAWID")),
       init_porosity_(matdata->Get<double>("INITPOROSITY"))
 {
   // retrieve problem instance to read from
-  const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
+  const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
 
   // for the sake of safety
-  if (GLOBAL::Problem::Instance(probinst)->Materials() == Teuchos::null)
+  if (Global::Problem::Instance(probinst)->Materials() == Teuchos::null)
     FOUR_C_THROW("List of materials cannot be accessed in the global problem instance.");
   // yet another safety check
-  if (GLOBAL::Problem::Instance(probinst)->Materials()->Num() == 0)
+  if (Global::Problem::Instance(probinst)->Materials()->Num() == 0)
     FOUR_C_THROW("List of materials in the global problem instance is empty.");
 
   // retrieve validated input line of material ID in question
-  auto* curmat = GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(poro_law_ID_);
+  auto* curmat = Global::Problem::Instance(probinst)->Materials()->ParameterById(poro_law_ID_);
 
   switch (curmat->Type())
   {
-    case CORE::Materials::m_poro_law_linear:
+    case Core::Materials::m_poro_law_linear:
     {
-      poro_law_ = static_cast<MAT::PAR::PoroLaw*>(curmat);
+      poro_law_ = static_cast<Mat::PAR::PoroLaw*>(curmat);
       break;
     }
-    case CORE::Materials::m_poro_law_constant:
+    case Core::Materials::m_poro_law_constant:
     {
-      poro_law_ = static_cast<MAT::PAR::PoroLaw*>(curmat);
+      poro_law_ = static_cast<Mat::PAR::PoroLaw*>(curmat);
       break;
     }
-    case CORE::Materials::m_poro_law_logNeoHooke_Penalty:
+    case Core::Materials::m_poro_law_logNeoHooke_Penalty:
     {
-      poro_law_ = static_cast<MAT::PAR::PoroLaw*>(curmat);
+      poro_law_ = static_cast<Mat::PAR::PoroLaw*>(curmat);
       break;
     }
-    case CORE::Materials::m_poro_law_incompr_skeleton:
+    case Core::Materials::m_poro_law_incompr_skeleton:
     {
-      poro_law_ = static_cast<MAT::PAR::PoroLawIncompSkeleton*>(curmat);
+      poro_law_ = static_cast<Mat::PAR::PoroLawIncompSkeleton*>(curmat);
       break;
     }
-    case CORE::Materials::m_poro_law_linear_biot:
+    case Core::Materials::m_poro_law_linear_biot:
     {
-      poro_law_ = static_cast<MAT::PAR::PoroLawLinBiot*>(curmat);
+      poro_law_ = static_cast<Mat::PAR::PoroLawLinBiot*>(curmat);
       break;
     }
-    case CORE::Materials::m_poro_law_density_dependent:
+    case Core::Materials::m_poro_law_density_dependent:
     {
-      poro_law_ = static_cast<MAT::PAR::PoroLawDensityDependent*>(curmat);
+      poro_law_ = static_cast<Mat::PAR::PoroLawDensityDependent*>(curmat);
       break;
     }
     default:
@@ -75,21 +75,21 @@ MAT::PAR::StructPoro::StructPoro(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
   }
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::StructPoro::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::StructPoro::create_material()
 {
-  return Teuchos::rcp(new MAT::StructPoro(this));
+  return Teuchos::rcp(new Mat::StructPoro(this));
 }
 
-MAT::StructPoroType MAT::StructPoroType::instance_;
+Mat::StructPoroType Mat::StructPoroType::instance_;
 
-CORE::COMM::ParObject* MAT::StructPoroType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::StructPoroType::Create(const std::vector<char>& data)
 {
-  auto* struct_poro = new MAT::StructPoro();
+  auto* struct_poro = new Mat::StructPoro();
   struct_poro->Unpack(data);
   return struct_poro;
 }
 
-MAT::StructPoro::StructPoro()
+Mat::StructPoro::StructPoro()
     : params_(nullptr),
       mat_(Teuchos::null),
       porosity_(Teuchos::null),
@@ -98,18 +98,18 @@ MAT::StructPoro::StructPoro()
 {
 }
 
-MAT::StructPoro::StructPoro(MAT::PAR::StructPoro* params)
+Mat::StructPoro::StructPoro(Mat::PAR::StructPoro* params)
     : params_(params),
       porosity_(Teuchos::null),
       surf_porosity_(Teuchos::null),
       is_initialized_(false)
 {
-  mat_ = Teuchos::rcp_dynamic_cast<MAT::So3Material>(MAT::Factory(params_->matid_));
+  mat_ = Teuchos::rcp_dynamic_cast<Mat::So3Material>(Mat::Factory(params_->matid_));
   if (mat_ == Teuchos::null)
-    FOUR_C_THROW("MAT::StructPoro: underlying material should be of type MAT::So3Material");
+    FOUR_C_THROW("Mat::StructPoro: underlying material should be of type Mat::So3Material");
 }
 
-void MAT::StructPoro::PoroSetup(int numgp, INPUT::LineDefinition* linedef)
+void Mat::StructPoro::PoroSetup(int numgp, Input::LineDefinition* linedef)
 {
   porosity_ = Teuchos::rcp(new std::vector<double>(numgp, params_->init_porosity_));
   surf_porosity_ = Teuchos::rcp(new std::map<int, std::vector<double>>);
@@ -117,14 +117,14 @@ void MAT::StructPoro::PoroSetup(int numgp, INPUT::LineDefinition* linedef)
   is_initialized_ = true;
 }
 
-inline CORE::Materials::MaterialType MAT::StructPoro::PoroLawType() const
+inline Core::Materials::MaterialType Mat::StructPoro::PoroLawType() const
 {
   return params_->poro_law_->Type();
 }
 
-double MAT::StructPoro::InvBulkModulus() const { return params_->poro_law_->InvBulkModulus(); }
+double Mat::StructPoro::InvBulkModulus() const { return params_->poro_law_->InvBulkModulus(); }
 
-double MAT::StructPoro::Density() const
+double Mat::StructPoro::Density() const
 {
   if (params_->init_porosity_ == 1.0)
     return mat_->Density();
@@ -132,13 +132,13 @@ double MAT::StructPoro::Density() const
     return ((1.0 - params_->init_porosity_) * mat_->Density());
 }
 
-double MAT::StructPoro::DensitySolidPhase() const { return mat_->Density(); }
+double Mat::StructPoro::DensitySolidPhase() const { return mat_->Density(); }
 
-void MAT::StructPoro::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::StructPoro::Pack(Core::Communication::PackBuffer& data) const
 {
   if (not is_initialized_) FOUR_C_THROW("poro material not initialized. Not a poro element?");
 
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -173,25 +173,25 @@ void MAT::StructPoro::Pack(CORE::COMM::PackBuffer& data) const
   if (mat_ != Teuchos::null) mat_->Pack(data);
 }
 
-void MAT::StructPoro::Unpack(const std::vector<char>& data)
+void Mat::StructPoro::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
   {
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::StructPoro*>(mat);
+        params_ = static_cast<Mat::PAR::StructPoro*>(mat);
       else
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
@@ -228,8 +228,9 @@ void MAT::StructPoro::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, datamat);
   if (datamat.size() > 0)
   {
-    CORE::COMM::ParObject* o = CORE::COMM::Factory(datamat);  // Unpack is done here
-    auto* mat = dynamic_cast<MAT::So3Material*>(o);
+    Core::Communication::ParObject* o =
+        Core::Communication::Factory(datamat);  // Unpack is done here
+    auto* mat = dynamic_cast<Mat::So3Material*>(o);
     if (mat == nullptr) FOUR_C_THROW("failed to unpack elastic material");
     mat_ = Teuchos::rcp(mat);
   }
@@ -239,7 +240,7 @@ void MAT::StructPoro::Unpack(const std::vector<char>& data)
   is_initialized_ = true;
 }
 
-void MAT::StructPoro::compute_porosity(const double& refporosity, const double& press,
+void Mat::StructPoro::compute_porosity(const double& refporosity, const double& press,
     const double& J, const int& gp, double& porosity, double* dphi_dp, double* dphi_dJ,
     double* dphi_dJdp, double* dphi_dJJ, double* dphi_dpp, double* dphi_dphiref, bool save)
 {
@@ -264,7 +265,7 @@ void MAT::StructPoro::compute_porosity(const double& refporosity, const double& 
   if (save) porosity_->at(gp) = porosity;
 }
 
-void MAT::StructPoro::compute_porosity(Teuchos::ParameterList& params, double press, double J,
+void Mat::StructPoro::compute_porosity(Teuchos::ParameterList& params, double press, double J,
     int gp, double& porosity, double* dphi_dp, double* dphi_dJ, double* dphi_dJdp, double* dphi_dJJ,
     double* dphi_dpp, bool save)
 {
@@ -276,14 +277,14 @@ void MAT::StructPoro::compute_porosity(Teuchos::ParameterList& params, double pr
       save);
 }
 
-void MAT::StructPoro::compute_porosity(
+void Mat::StructPoro::compute_porosity(
     Teuchos::ParameterList& params, double press, double J, int gp, double& porosity, bool save)
 {
   compute_porosity(
       params, press, J, gp, porosity, nullptr, nullptr, nullptr, nullptr, nullptr, save);
 }
 
-void MAT::StructPoro::ComputeSurfPorosity(Teuchos::ParameterList& params, double press, double J,
+void Mat::StructPoro::ComputeSurfPorosity(Teuchos::ParameterList& params, double press, double J,
     const int surfnum, int gp, double& porosity, double* dphi_dp, double* dphi_dJ,
     double* dphi_dJdp, double* dphi_dJJ, double* dphi_dpp, bool save)
 {
@@ -299,7 +300,7 @@ void MAT::StructPoro::ComputeSurfPorosity(Teuchos::ParameterList& params, double
   }
 }
 
-void MAT::StructPoro::ComputeSurfPorosity(Teuchos::ParameterList& params, double press, double J,
+void Mat::StructPoro::ComputeSurfPorosity(Teuchos::ParameterList& params, double press, double J,
     const int surfnum, int gp, double& porosity, bool save)
 {
   ComputeSurfPorosity(
@@ -307,7 +308,7 @@ void MAT::StructPoro::ComputeSurfPorosity(Teuchos::ParameterList& params, double
 }
 
 
-double MAT::StructPoro::PorosityAv() const
+double Mat::StructPoro::PorosityAv() const
 {
   double porosityav = 0.0;
 
@@ -321,42 +322,42 @@ double MAT::StructPoro::PorosityAv() const
   return porosityav;
 }
 
-void MAT::StructPoro::CouplStress(const CORE::LINALG::Matrix<3, 3>& defgrd, const double& press,
-    CORE::LINALG::Matrix<6, 1>& couplstress) const
+void Mat::StructPoro::CouplStress(const Core::LinAlg::Matrix<3, 3>& defgrd, const double& press,
+    Core::LinAlg::Matrix<6, 1>& couplstress) const
 {
   const double J = defgrd.Determinant();
 
   // Right Cauchy-Green tensor = F^T * F
-  CORE::LINALG::Matrix<3, 3> cauchygreen;
+  Core::LinAlg::Matrix<3, 3> cauchygreen;
   cauchygreen.MultiplyTN(defgrd, defgrd);
 
   // inverse Right Cauchy-Green tensor
-  CORE::LINALG::Matrix<3, 3> C_inv;
+  Core::LinAlg::Matrix<3, 3> C_inv;
   C_inv.Invert(cauchygreen);
 
   // inverse Right Cauchy-Green tensor as vector
-  CORE::LINALG::Matrix<6, 1> C_inv_vec;
+  Core::LinAlg::Matrix<6, 1> C_inv_vec;
   for (int i = 0, k = 0; i < 3; i++)
     for (int j = 0; j < 3 - i; j++, k++) C_inv_vec(k) = C_inv(i + j, j);
 
   for (int i = 0; i < 6; i++) couplstress(i) = -1.0 * J * press * C_inv_vec(i);
 }
 
-void MAT::StructPoro::CouplStress(const CORE::LINALG::Matrix<2, 2>& defgrd, const double& press,
-    CORE::LINALG::Matrix<4, 1>& couplstress) const
+void Mat::StructPoro::CouplStress(const Core::LinAlg::Matrix<2, 2>& defgrd, const double& press,
+    Core::LinAlg::Matrix<4, 1>& couplstress) const
 {
   const double J = defgrd.Determinant();
 
   // Right Cauchy-Green tensor = F^T * F
-  CORE::LINALG::Matrix<2, 2> cauchygreen;
+  Core::LinAlg::Matrix<2, 2> cauchygreen;
   cauchygreen.MultiplyTN(defgrd, defgrd);
 
   // inverse Right Cauchy-Green tensor
-  CORE::LINALG::Matrix<2, 2> C_inv;
+  Core::LinAlg::Matrix<2, 2> C_inv;
   C_inv.Invert(cauchygreen);
 
   // inverse Right Cauchy-Green tensor as vector
-  CORE::LINALG::Matrix<3, 1> C_inv_vec;
+  Core::LinAlg::Matrix<3, 1> C_inv_vec;
   for (int i = 0, k = 0; i < 2; i++)
     for (int j = 0; j < 2 - i; j++, k++) C_inv_vec(k) = C_inv(i + j, j);
 
@@ -367,7 +368,7 @@ void MAT::StructPoro::CouplStress(const CORE::LINALG::Matrix<2, 2>& defgrd, cons
   couplstress(3) = -1.0 * J * press * C_inv_vec(2);
 }
 
-void MAT::StructPoro::constitutive_derivatives(Teuchos::ParameterList& params, double press,
+void Mat::StructPoro::constitutive_derivatives(Teuchos::ParameterList& params, double press,
     double J, double porosity, double* dW_dp, double* dW_dphi, double* dW_dJ, double* dW_dphiref,
     double* W)
 {
@@ -377,7 +378,7 @@ void MAT::StructPoro::constitutive_derivatives(Teuchos::ParameterList& params, d
       params, press, J, porosity, params_->init_porosity_, dW_dp, dW_dphi, dW_dJ, dW_dphiref, W);
 }
 
-void MAT::StructPoro::constitutive_derivatives(Teuchos::ParameterList& params, double press,
+void Mat::StructPoro::constitutive_derivatives(Teuchos::ParameterList& params, double press,
     double J, double porosity, double refporosity, double* dW_dp, double* dW_dphi, double* dW_dJ,
     double* dW_dphiref, double* W)
 {
@@ -385,14 +386,14 @@ void MAT::StructPoro::constitutive_derivatives(Teuchos::ParameterList& params, d
       params, press, J, porosity, refporosity, dW_dp, dW_dphi, dW_dJ, dW_dphiref, W);
 }
 
-void MAT::StructPoro::VisNames(std::map<std::string, int>& names)
+void Mat::StructPoro::VisNames(std::map<std::string, int>& names)
 {
   mat_->VisNames(names);
   std::string porosity = "porosity";
   names[porosity] = 1;  // scalar
 }
 
-bool MAT::StructPoro::VisData(
+bool Mat::StructPoro::VisData(
     const std::string& name, std::vector<double>& data, int numgp, int eleID)
 {
   if (mat_->VisData(name, data, numgp)) return true;

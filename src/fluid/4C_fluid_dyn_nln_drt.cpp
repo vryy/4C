@@ -43,11 +43,11 @@ FOUR_C_NAMESPACE_OPEN
 void dyn_fluid_drt(const int restart)
 {
   // create a communicator
-  const Epetra_Comm& comm = GLOBAL::Problem::Instance()->GetDis("fluid")->Comm();
+  const Epetra_Comm& comm = Global::Problem::Instance()->GetDis("fluid")->Comm();
 
   // access to some parameter lists
-  // const Teuchos::ParameterList& probtype = GLOBAL::Problem::Instance()->ProblemTypeParams();
-  const Teuchos::ParameterList& fdyn = GLOBAL::Problem::Instance()->FluidDynamicParams();
+  // const Teuchos::ParameterList& probtype = Global::Problem::Instance()->ProblemTypeParams();
+  const Teuchos::ParameterList& fdyn = Global::Problem::Instance()->FluidDynamicParams();
 
   // prepares a turbulent flow simulation with generation of turbulent inflow during the
   // actual simulation
@@ -55,7 +55,7 @@ void dyn_fluid_drt(const int restart)
   // 1. computation of inflow until it reaches a fully turbulent state
   // 2. computation of the main problem after restart
   // Remark: we restart the simulation to save procs!
-  if ((CORE::UTILS::IntegralValue<int>(fdyn.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW") ==
+  if ((Core::UTILS::IntegralValue<int>(fdyn.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW") ==
           true) and
       (restart < fdyn.sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP")))
   {
@@ -81,15 +81,15 @@ void dyn_fluid_drt(const int restart)
     turbfluidalgo->TimeLoop();
 
     // perform result tests if required
-    GLOBAL::Problem::Instance()->AddFieldTest(turbfluidalgo->DoResultCheck());
-    GLOBAL::Problem::Instance()->TestAll(comm);
+    Global::Problem::Instance()->AddFieldTest(turbfluidalgo->DoResultCheck());
+    Global::Problem::Instance()->TestAll(comm);
   }
   // solve a simple fluid problem
   else
   {
     // create instance of fluid basis algorithm
-    Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluidalgo =
-        Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(fdyn, fdyn, "fluid", false));
+    Teuchos::RCP<Adapter::FluidBaseAlgorithm> fluidalgo =
+        Teuchos::rcp(new Adapter::FluidBaseAlgorithm(fdyn, fdyn, "fluid", false));
 
     // read the restart information, set vectors and variables
     if (restart) fluidalgo->fluid_field()->read_restart(restart);
@@ -99,8 +99,8 @@ void dyn_fluid_drt(const int restart)
     fluidalgo->fluid_field()->Integrate();
 
     // perform result tests if required
-    GLOBAL::Problem::Instance()->AddFieldTest(fluidalgo->fluid_field()->CreateFieldTest());
-    GLOBAL::Problem::Instance()->TestAll(comm);
+    Global::Problem::Instance()->AddFieldTest(fluidalgo->fluid_field()->CreateFieldTest());
+    Global::Problem::Instance()->TestAll(comm);
   }
 
   // have fun with your results!

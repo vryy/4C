@@ -17,8 +17,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | ctor (public)                                             dano 08/12 |
  *----------------------------------------------------------------------*/
-template <class so3_ele, CORE::FE::CellType distype>
-DRT::ELEMENTS::So3Thermo<so3_ele, distype>::So3Thermo(int id, int owner)
+template <class so3_ele, Core::FE::CellType distype>
+Discret::ELEMENTS::So3Thermo<so3_ele, distype>::So3Thermo(int id, int owner)
     : so3_ele(id, owner), intpoints_(distype)
 {
   numgpt_ = intpoints_.NumPoints();
@@ -29,9 +29,9 @@ DRT::ELEMENTS::So3Thermo<so3_ele, distype>::So3Thermo(int id, int owner)
 /*----------------------------------------------------------------------*
  | copy-ctor (public)                                        dano 08/12 |
  *----------------------------------------------------------------------*/
-template <class so3_ele, CORE::FE::CellType distype>
-DRT::ELEMENTS::So3Thermo<so3_ele, distype>::So3Thermo(
-    const DRT::ELEMENTS::So3Thermo<so3_ele, distype>& old)
+template <class so3_ele, Core::FE::CellType distype>
+Discret::ELEMENTS::So3Thermo<so3_ele, distype>::So3Thermo(
+    const Discret::ELEMENTS::So3Thermo<so3_ele, distype>& old)
     : so3_ele(old), intpoints_(distype)
 {
   numgpt_ = intpoints_.NumPoints();
@@ -43,10 +43,10 @@ DRT::ELEMENTS::So3Thermo<so3_ele, distype>::So3Thermo(
  | deep copy this instance of Solid3 and return pointer to   dano 08/12 |
  | it (public)                                                          |
  *----------------------------------------------------------------------*/
-template <class so3_ele, CORE::FE::CellType distype>
-CORE::Elements::Element* DRT::ELEMENTS::So3Thermo<so3_ele, distype>::Clone() const
+template <class so3_ele, Core::FE::CellType distype>
+Core::Elements::Element* Discret::ELEMENTS::So3Thermo<so3_ele, distype>::Clone() const
 {
-  auto* newelement = new DRT::ELEMENTS::So3Thermo<so3_ele, distype>(*this);
+  auto* newelement = new Discret::ELEMENTS::So3Thermo<so3_ele, distype>(*this);
 
   return newelement;
 }
@@ -55,10 +55,11 @@ CORE::Elements::Element* DRT::ELEMENTS::So3Thermo<so3_ele, distype>::Clone() con
 /*----------------------------------------------------------------------*
  | pack data (public)                                        dano 08/12 |
  *----------------------------------------------------------------------*/
-template <class so3_ele, CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::Pack(CORE::COMM::PackBuffer& data) const
+template <class so3_ele, Core::FE::CellType distype>
+void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::Pack(
+    Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -83,19 +84,19 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::Pack(CORE::COMM::PackBuffer& da
 /*----------------------------------------------------------------------*
  | unpack data (public)                                      dano 08/12 |
  *----------------------------------------------------------------------*/
-template <class so3_ele, CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::Unpack(const std::vector<char>& data)
+template <class so3_ele, Core::FE::CellType distype>
+void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // detJ_
   so3_ele::ExtractfromPack(position, data, detJ_);
   // invJ_
   int size = 0;
   so3_ele::ExtractfromPack(position, data, size);
-  invJ_.resize(size, CORE::LINALG::Matrix<nsd_, nsd_>(true));
+  invJ_.resize(size, Core::LinAlg::Matrix<nsd_, nsd_>(true));
   for (int i = 0; i < size; ++i) so3_ele::ExtractfromPack(position, data, invJ_[i]);
 
   // extract base class Element
@@ -113,11 +114,11 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::Unpack(const std::vector<char>&
 /*----------------------------------------------------------------------*
  | print this element (public)                               dano 08/12 |
  *----------------------------------------------------------------------*/
-template <class so3_ele, CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::Print(std::ostream& os) const
+template <class so3_ele, Core::FE::CellType distype>
+void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::Print(std::ostream& os) const
 {
   os << "So3_Thermo ";
-  CORE::Elements::Element::Print(os);
+  Core::Elements::Element::Print(os);
   return;
 }
 
@@ -125,9 +126,9 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  | read this element, get the material (public)              dano 08/12 |
  *----------------------------------------------------------------------*/
-template <class so3_ele, CORE::FE::CellType distype>
-bool DRT::ELEMENTS::So3Thermo<so3_ele, distype>::ReadElement(
-    const std::string& eletype, const std::string& eledistype, INPUT::LineDefinition* linedef)
+template <class so3_ele, Core::FE::CellType distype>
+bool Discret::ELEMENTS::So3Thermo<so3_ele, distype>::ReadElement(
+    const std::string& eletype, const std::string& eledistype, Input::LineDefinition* linedef)
 {
   so3_ele::ReadElement(eletype, eledistype, linedef);
 
@@ -138,35 +139,35 @@ bool DRT::ELEMENTS::So3Thermo<so3_ele, distype>::ReadElement(
 /*----------------------------------------------------------------------*
  | get the nodes from so3 (public)                           dano 05/13 |
  *----------------------------------------------------------------------*/
-template <class so3_ele, CORE::FE::CellType distype>
-int DRT::ELEMENTS::So3Thermo<so3_ele, distype>::UniqueParObjectId() const
+template <class so3_ele, Core::FE::CellType distype>
+int Discret::ELEMENTS::So3Thermo<so3_ele, distype>::UniqueParObjectId() const
 {
   switch (distype)
   {
-    case CORE::FE::CellType::hex8:
+    case Core::FE::CellType::hex8:
     {
       // cast the most specialised element
       // otherwise cast fails, because hex8fbar == hex8
-      const auto* ele = dynamic_cast<const DRT::ELEMENTS::SoHex8fbar*>(this);
+      const auto* ele = dynamic_cast<const Discret::ELEMENTS::SoHex8fbar*>(this);
       if (ele != nullptr)
         return SoHex8fbarThermoType::Instance().UniqueParObjectId();
       else
         return SoHex8ThermoType::Instance().UniqueParObjectId();
       break;
     }  // hex8
-    case CORE::FE::CellType::tet4:
+    case Core::FE::CellType::tet4:
       return SoTet4ThermoType::Instance().UniqueParObjectId();
       break;
-    case CORE::FE::CellType::tet10:
+    case Core::FE::CellType::tet10:
       return SoTet10ThermoType::Instance().UniqueParObjectId();
       break;
-    case CORE::FE::CellType::hex27:
+    case Core::FE::CellType::hex27:
       return SoHex27ThermoType::Instance().UniqueParObjectId();
       break;
-    case CORE::FE::CellType::hex20:
+    case Core::FE::CellType::hex20:
       return SoHex20ThermoType::Instance().UniqueParObjectId();
       break;
-    case CORE::FE::CellType::nurbs27:
+    case Core::FE::CellType::nurbs27:
       return SoNurbs27ThermoType::Instance().UniqueParObjectId();
       break;
     default:
@@ -182,35 +183,35 @@ int DRT::ELEMENTS::So3Thermo<so3_ele, distype>::UniqueParObjectId() const
 /*----------------------------------------------------------------------*
  | get the nodes from so3 (public)                           dano 05/13 |
  *----------------------------------------------------------------------*/
-template <class so3_ele, CORE::FE::CellType distype>
-CORE::Elements::ElementType& DRT::ELEMENTS::So3Thermo<so3_ele, distype>::ElementType() const
+template <class so3_ele, Core::FE::CellType distype>
+Core::Elements::ElementType& Discret::ELEMENTS::So3Thermo<so3_ele, distype>::ElementType() const
 {
   switch (distype)
   {
-    case CORE::FE::CellType::hex8:
+    case Core::FE::CellType::hex8:
     {
       // cast the most specialised element
       // caution: otherwise does not work, because hex8fbar == hex8
-      const auto* ele = dynamic_cast<const DRT::ELEMENTS::SoHex8fbar*>(this);
+      const auto* ele = dynamic_cast<const Discret::ELEMENTS::SoHex8fbar*>(this);
       if (ele != nullptr)
         return SoHex8fbarThermoType::Instance();
       else
         return SoHex8ThermoType::Instance();
       break;
     }
-    case CORE::FE::CellType::tet4:
+    case Core::FE::CellType::tet4:
       return SoTet4ThermoType::Instance();
       break;
-    case CORE::FE::CellType::tet10:
+    case Core::FE::CellType::tet10:
       return SoTet10ThermoType::Instance();
       break;
-    case CORE::FE::CellType::hex27:
+    case Core::FE::CellType::hex27:
       return SoHex27ThermoType::Instance();
       break;
-    case CORE::FE::CellType::hex20:
+    case Core::FE::CellType::hex20:
       return SoHex20ThermoType::Instance();
       break;
-    case CORE::FE::CellType::nurbs27:
+    case Core::FE::CellType::nurbs27:
       return SoNurbs27ThermoType::Instance();
       break;
     default:
@@ -226,8 +227,8 @@ CORE::Elements::ElementType& DRT::ELEMENTS::So3Thermo<so3_ele, distype>::Element
 /*----------------------------------------------------------------------*
  | get the nodes from so3 (public)                           dano 08/12 |
  *----------------------------------------------------------------------*/
-template <class so3_ele, CORE::FE::CellType distype>
-inline CORE::Nodes::Node** DRT::ELEMENTS::So3Thermo<so3_ele, distype>::Nodes()
+template <class so3_ele, Core::FE::CellType distype>
+inline Core::Nodes::Node** Discret::ELEMENTS::So3Thermo<so3_ele, distype>::Nodes()
 {
   return so3_ele::Nodes();
 }
@@ -236,8 +237,8 @@ inline CORE::Nodes::Node** DRT::ELEMENTS::So3Thermo<so3_ele, distype>::Nodes()
 /*----------------------------------------------------------------------*
  | get the material from so3 (public)                        dano 08/12 |
  *----------------------------------------------------------------------*/
-template <class so3_ele, CORE::FE::CellType distype>
-inline Teuchos::RCP<CORE::MAT::Material> DRT::ELEMENTS::So3Thermo<so3_ele, distype>::material()
+template <class so3_ele, Core::FE::CellType distype>
+inline Teuchos::RCP<Core::Mat::Material> Discret::ELEMENTS::So3Thermo<so3_ele, distype>::material()
     const
 {
   return so3_ele::Material();
@@ -247,8 +248,8 @@ inline Teuchos::RCP<CORE::MAT::Material> DRT::ELEMENTS::So3Thermo<so3_ele, disty
 /*----------------------------------------------------------------------*
  | get the node Ids from so3 (public)                        dano 08/12 |
  *----------------------------------------------------------------------*/
-template <class so3_ele, CORE::FE::CellType distype>
-inline int DRT::ELEMENTS::So3Thermo<so3_ele, distype>::id() const
+template <class so3_ele, Core::FE::CellType distype>
+inline int Discret::ELEMENTS::So3Thermo<so3_ele, distype>::id() const
 {
   return so3_ele::Id();
 }
@@ -257,8 +258,8 @@ inline int DRT::ELEMENTS::So3Thermo<so3_ele, distype>::id() const
 /*----------------------------------------------------------------------*
  | return names of visualization data (public)               dano 04/13 |
  *----------------------------------------------------------------------*/
-template <class so3_ele, CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::VisNames(std::map<std::string, int>& names)
+template <class so3_ele, Core::FE::CellType distype>
+void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::VisNames(std::map<std::string, int>& names)
 {
   so3_ele::VisNames(names);
 
@@ -268,8 +269,8 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::VisNames(std::map<std::string, 
 /*----------------------------------------------------------------------*
  | return visualization data (public)                        dano 04/13 |
  *----------------------------------------------------------------------*/
-template <class so3_ele, CORE::FE::CellType distype>
-bool DRT::ELEMENTS::So3Thermo<so3_ele, distype>::VisData(
+template <class so3_ele, Core::FE::CellType distype>
+bool Discret::ELEMENTS::So3Thermo<so3_ele, distype>::VisData(
     const std::string& name, std::vector<double>& data)
 {
   return so3_ele::VisData(name, data);

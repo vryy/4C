@@ -31,24 +31,24 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | forward declarations                                     farah 11/13 |
  *----------------------------------------------------------------------*/
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace ADAPTER
+namespace Adapter
 {
   class Structure;
   class FSIStructureWrapper;
   class AleWearWrapper;
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 namespace ALE
 {
   class Ale;
 }
 
-namespace MORTAR
+namespace Mortar
 {
   class ManagerBase;
 }
@@ -61,9 +61,9 @@ namespace CONTACT
 /*----------------------------------------------------------------------*
  |                                                          farah 11/13 |
  *----------------------------------------------------------------------*/
-namespace WEAR
+namespace Wear
 {
-  class Algorithm : public ADAPTER::AlgorithmBase
+  class Algorithm : public Adapter::AlgorithmBase
   {
    public:
     //! create using a Epetra_Comm
@@ -78,10 +78,10 @@ namespace WEAR
         ) override = 0;
 
     //! access to structural field
-    Teuchos::RCP<ADAPTER::FSIStructureWrapper> structure_field() { return structure_; }
+    Teuchos::RCP<Adapter::FSIStructureWrapper> structure_field() { return structure_; }
 
     //! access to ALE field
-    ADAPTER::AleWearWrapper& ale_field() { return *ale_; }
+    Adapter::AleWearWrapper& ale_field() { return *ale_; }
 
    private:
     //! check compatibility if input parameters
@@ -91,19 +91,19 @@ namespace WEAR
     void create_material_interface();
 
     //! @name Underlying fields
-    Teuchos::RCP<ADAPTER::FSIStructureWrapper> structure_;  //! underlying structure
-    Teuchos::RCP<ADAPTER::AleWearWrapper> ale_;             //! underlying ALE
+    Teuchos::RCP<Adapter::FSIStructureWrapper> structure_;  //! underlying structure
+    Teuchos::RCP<Adapter::AleWearWrapper> ale_;             //! underlying ALE
 
    protected:
     int dim_;  //! problem dimension
     //@}
 
-    Teuchos::RCP<MORTAR::ManagerBase> cmtman_;                     // contact manager
+    Teuchos::RCP<Mortar::ManagerBase> cmtman_;                     // contact manager
     std::vector<Teuchos::RCP<CONTACT::Interface>> interfaces_;     // contact/wear interfaces
     std::vector<Teuchos::RCP<CONTACT::Interface>> interfacesMat_;  // contact interfaces in Mat.
 
   };  // Algorithm
-}  // namespace WEAR
+}  // namespace Wear
 
 
 /*----------------------------------------------------------------------*/

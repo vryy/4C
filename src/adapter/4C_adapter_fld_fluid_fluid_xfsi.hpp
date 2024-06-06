@@ -24,7 +24,7 @@ namespace FLD
   class XFluidFluid;
 }
 
-namespace ADAPTER
+namespace Adapter
 {
   class FluidFluidXFSI : public XFluidFSI
   {
@@ -32,8 +32,8 @@ namespace ADAPTER
     /// Constructor
     FluidFluidXFSI(Teuchos::RCP<Fluid> fluid,
         const std::string coupling_name_xfsi,  // name of the FSI coupling condition
-        Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-        Teuchos::RCP<CORE::IO::DiscretizationWriter> output);
+        Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+        Teuchos::RCP<Core::IO::DiscretizationWriter> output);
 
     /// initialize algorithm
     void Init() override;
@@ -42,7 +42,7 @@ namespace ADAPTER
     /// A casted pointer to a fluid with multiple discretizations
     Teuchos::RCP<FLD::XFluidFluid> xfluidfluid_;
   };
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 
 FOUR_C_NAMESPACE_CLOSE

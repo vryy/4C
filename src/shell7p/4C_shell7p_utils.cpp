@@ -325,8 +325,8 @@ namespace
 
 }  // namespace
 
-Teuchos::SerialDenseMatrix<int, double> STR::UTILS::SHELL::ComputeShellNullSpace(
-    CORE::Nodes::Node& node, const double* x0, const CORE::LINALG::Matrix<3, 1>& dir)
+Teuchos::SerialDenseMatrix<int, double> STR::UTILS::Shell::ComputeShellNullSpace(
+    Core::Nodes::Node& node, const double* x0, const Core::LinAlg::Matrix<3, 1>& dir)
 {
   const auto& x = node.X();
 
@@ -377,33 +377,33 @@ Teuchos::SerialDenseMatrix<int, double> STR::UTILS::SHELL::ComputeShellNullSpace
   return nullspace;
 }
 
-void STR::UTILS::SHELL::NodalBlockInformationShell(
-    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+void STR::UTILS::Shell::NodalBlockInformationShell(
+    Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 6;
   dimns = 6;
   nv = 3;
 }
 
-void STR::UTILS::SHELL::DIRECTOR::SetupDirectorForElement(
-    const CORE::Elements::Element& ele, CORE::LINALG::SerialDenseMatrix& nodal_directors)
+void STR::UTILS::Shell::Director::SetupDirectorForElement(
+    const Core::Elements::Element& ele, Core::LinAlg::SerialDenseMatrix& nodal_directors)
 {
-  constexpr auto num_dim = DRT::ELEMENTS::SHELL::DETAIL::num_dim;
+  constexpr auto num_dim = Discret::ELEMENTS::Shell::DETAIL::num_dim;
   const int num_node = ele.num_node();
-  CORE::LINALG::SerialDenseMatrix xrefe(num_node, num_dim);
+  Core::LinAlg::SerialDenseMatrix xrefe(num_node, num_dim);
   for (int i = 0; i < num_node; ++i)
   {
     for (int dim = 0; dim < num_dim; ++dim) xrefe(i, dim) = ele.Nodes()[i]->X()[dim];
   }
   // allocate matrix for kovariant metric vectors
-  CORE::LINALG::SerialDenseMatrix metrics_kovariant(num_dim, num_dim);
+  Core::LinAlg::SerialDenseMatrix metrics_kovariant(num_dim, num_dim);
   for (int i = 0; i < num_node; ++i)
   {
     // get shape functions and derivatives at nodes
-    CORE::LINALG::Matrix<num_dim, 1> nodal_coordinates =
-        CORE::FE::GetNodeCoordinates(i, ele.Shape());
-    CORE::LINALG::SerialDenseMatrix derivatives(num_dim, num_node);
-    CORE::FE::shape_function_2D_deriv1(
+    Core::LinAlg::Matrix<num_dim, 1> nodal_coordinates =
+        Core::FE::GetNodeCoordinates(i, ele.Shape());
+    Core::LinAlg::SerialDenseMatrix derivatives(num_dim, num_node);
+    Core::FE::shape_function_2D_deriv1(
         derivatives, nodal_coordinates(0), nodal_coordinates(1), ele.Shape());
 
     // get a1, a2 direction derivatives in r and s direction
@@ -411,7 +411,7 @@ void STR::UTILS::SHELL::DIRECTOR::SetupDirectorForElement(
 
     // get thickness direction derivative perpendicular to a1 and a2
     // -> a3 = (a1 x a2) / (|a1 x a2 |)
-    CORE::LINALG::Matrix<num_dim, 1> a1a2crossprod(true);
+    Core::LinAlg::Matrix<num_dim, 1> a1a2crossprod(true);
     a1a2crossprod(0) = metrics_kovariant(0, 1) * metrics_kovariant(1, 2) -
                        metrics_kovariant(0, 2) * metrics_kovariant(1, 1);
     a1a2crossprod(1) = metrics_kovariant(0, 2) * metrics_kovariant(1, 0) -
@@ -426,18 +426,18 @@ void STR::UTILS::SHELL::DIRECTOR::SetupDirectorForElement(
   }
 }
 
-void STR::UTILS::SHELL::DIRECTOR::AverageDirector(const CORE::LINALG::Matrix<3, 8>& dir_list,
-    const int num_directors, CORE::LINALG::Matrix<3, 1>& nodal_director)
+void STR::UTILS::Shell::Director::AverageDirector(const Core::LinAlg::Matrix<3, 8>& dir_list,
+    const int num_directors, Core::LinAlg::Matrix<3, 1>& nodal_director)
 {
-  CORE::LINALG::Matrix<3, 1> davn(true);
-  CORE::LINALG::Matrix<3, 1> averdir(true);
-  for (int dim = 0; dim < DRT::ELEMENTS::SHELL::DETAIL::num_dim; ++dim)
+  Core::LinAlg::Matrix<3, 1> davn(true);
+  Core::LinAlg::Matrix<3, 1> averdir(true);
+  for (int dim = 0; dim < Discret::ELEMENTS::Shell::DETAIL::num_dim; ++dim)
     averdir(dim) = dir_list(dim, 0);
 
   for (int i = 1; i < num_directors; ++i)
   {
     // make cross product of two directors
-    CORE::LINALG::Matrix<3, 1> normal(true);
+    Core::LinAlg::Matrix<3, 1> normal(true);
     normal(0) = averdir(1) * dir_list(2, i) - averdir(2) * dir_list(1, i);
     normal(1) = averdir(2) * dir_list(0, i) - averdir(0) * dir_list(2, i);
     normal(2) = averdir(0) * dir_list(1, i) - averdir(1) * dir_list(0, i);
@@ -446,7 +446,7 @@ void STR::UTILS::SHELL::DIRECTOR::AverageDirector(const CORE::LINALG::Matrix<3, 
     // if the length is small, both directors point nearly in the same direction
     if (length <= 1.e-12)
     {
-      for (int dim = 0; dim < DRT::ELEMENTS::SHELL::DETAIL::num_dim; ++dim)
+      for (int dim = 0; dim < Discret::ELEMENTS::Shell::DETAIL::num_dim; ++dim)
         davn(dim) = 0.5 * (averdir(dim) + dir_list(dim, i));
     }
     // if not average the nodal directors
@@ -483,7 +483,7 @@ void STR::UTILS::SHELL::DIRECTOR::AverageDirector(const CORE::LINALG::Matrix<3, 
                    alpha * SquareValue(averdir(0)) * dir_list(2, i) +
                    alpha * averdir(0) * averdir(2) * dir_list(0, i) + averdir(2);
     }
-    for (int dim = 0; dim < DRT::ELEMENTS::SHELL::DETAIL::num_dim; ++dim)
+    for (int dim = 0; dim < Discret::ELEMENTS::Shell::DETAIL::num_dim; ++dim)
     {
       averdir(dim) = davn(dim);
       nodal_director(dim) = davn(dim);
@@ -491,14 +491,14 @@ void STR::UTILS::SHELL::DIRECTOR::AverageDirector(const CORE::LINALG::Matrix<3, 
   }
 }
 
-void STR::UTILS::SHELL::DIRECTOR::ExportDirectorMapFromRowToColMap(
-    const CORE::Elements::ElementType& eletype, const DRT::Discretization& dis,
+void STR::UTILS::Shell::Director::ExportDirectorMapFromRowToColMap(
+    const Core::Elements::ElementType& eletype, const Discret::Discretization& dis,
     std::map<int, std::vector<double>>& director_map)
 {
   // export this map from nodal row map to nodal col map
   const Epetra_Map* noderowmap = dis.NodeRowMap();
   const Epetra_Map* nodecolmap = dis.NodeColMap();
-  CORE::COMM::Exporter exporter(*noderowmap, *nodecolmap, dis.Comm());
+  Core::Communication::Exporter exporter(*noderowmap, *nodecolmap, dis.Comm());
   exporter.Export(director_map);
 
   // loop through column nodes and put directors back into discretization
@@ -508,10 +508,10 @@ void STR::UTILS::SHELL::DIRECTOR::ExportDirectorMapFromRowToColMap(
     FOUR_C_ASSERT(curr != director_map.end(), "Cannot find director map entry");
     for (int j = 0; j < actnode->NumElement(); ++j)
     {
-      CORE::Elements::Element* tmpele = actnode->Elements()[j];
+      Core::Elements::Element* tmpele = actnode->Elements()[j];
       if (!tmpele) continue;
       if (tmpele->ElementType() != eletype) continue;
-      if (auto* scatra_ele = dynamic_cast<DRT::ELEMENTS::Shell7pScatra*>(tmpele))
+      if (auto* scatra_ele = dynamic_cast<Discret::ELEMENTS::Shell7pScatra*>(tmpele))
       {
         for (int k = 0; k < scatra_ele->num_node(); ++k)
         {
@@ -522,7 +522,7 @@ void STR::UTILS::SHELL::DIRECTOR::ExportDirectorMapFromRowToColMap(
           }
         }
       }
-      else if (auto* shell_ele = dynamic_cast<DRT::ELEMENTS::Shell7p*>(tmpele))
+      else if (auto* shell_ele = dynamic_cast<Discret::ELEMENTS::Shell7p*>(tmpele))
       {
         for (int k = 0; k < shell_ele->num_node(); ++k)
         {
@@ -540,13 +540,13 @@ void STR::UTILS::SHELL::DIRECTOR::ExportDirectorMapFromRowToColMap(
 }
 
 
-void STR::UTILS::SHELL::DIRECTOR::AverageDirectorsAtNodes(
-    const CORE::Elements::ElementType& eletype, const DRT::Discretization& dis,
+void STR::UTILS::Shell::Director::AverageDirectorsAtNodes(
+    const Core::Elements::ElementType& eletype, const Discret::Discretization& dis,
     std::map<int, std::vector<double>>& director_map)
 {
   const int max_ele = 8;
-  static constexpr int num_dim = DRT::ELEMENTS::SHELL::DETAIL::num_dim;
-  CORE::LINALG::Matrix<num_dim, max_ele> collaverdir(true);
+  static constexpr int num_dim = Discret::ELEMENTS::Shell::DETAIL::num_dim;
+  Core::LinAlg::Matrix<num_dim, max_ele> collaverdir(true);
 
   // loop through all row nodes and build director map
   for (const auto& act_node : dis.MyRowNodeRange())
@@ -554,9 +554,9 @@ void STR::UTILS::SHELL::DIRECTOR::AverageDirectorsAtNodes(
     int num_directors = 0;
     for (int j = 0; j < act_node->NumElement(); ++j)
     {
-      CORE::Elements::Element* tmpele = act_node->Elements()[j];
+      Core::Elements::Element* tmpele = act_node->Elements()[j];
       if (tmpele->ElementType() != eletype) continue;
-      if (auto* scatra_ele = dynamic_cast<DRT::ELEMENTS::Shell7pScatra*>(tmpele))
+      if (auto* scatra_ele = dynamic_cast<Discret::ELEMENTS::Shell7pScatra*>(tmpele))
       {
         for (int k = 0; k < scatra_ele->num_node(); ++k)
         {
@@ -571,7 +571,7 @@ void STR::UTILS::SHELL::DIRECTOR::AverageDirectorsAtNodes(
           }
         }
       }
-      else if (auto* shell_ele = dynamic_cast<DRT::ELEMENTS::Shell7p*>(tmpele))
+      else if (auto* shell_ele = dynamic_cast<Discret::ELEMENTS::Shell7p*>(tmpele))
       {
         for (int k = 0; k < shell_ele->num_node(); ++k)
         {
@@ -599,7 +599,7 @@ void STR::UTILS::SHELL::DIRECTOR::AverageDirectorsAtNodes(
     }
     else  // average director at node actnode
     {
-      CORE::LINALG::Matrix<num_dim, 1> nodal_director(true);
+      Core::LinAlg::Matrix<num_dim, 1> nodal_director(true);
       AverageDirector(collaverdir, num_directors, nodal_director);
       director_map[act_node->Id()].resize(num_dim);
       for (int dim = 0; dim < num_dim; ++dim)
@@ -608,29 +608,29 @@ void STR::UTILS::SHELL::DIRECTOR::AverageDirectorsAtNodes(
   }
 }
 
-void STR::UTILS::SHELL::DIRECTOR::SetupShellElementDirectors(
-    const CORE::Elements::ElementType& eletype, const DRT::Discretization& dis)
+void STR::UTILS::Shell::Director::SetupShellElementDirectors(
+    const Core::Elements::ElementType& eletype, const Discret::Discretization& dis)
 {
   for (const auto& actele : dis.MyColElementRange())
   {
     if (actele->ElementType() != eletype) return;
-    if (auto* scatra_ele = dynamic_cast<DRT::ELEMENTS::Shell7pScatra*>(actele))
+    if (auto* scatra_ele = dynamic_cast<Discret::ELEMENTS::Shell7pScatra*>(actele))
     {
       // create matrix nodal_directors for nodal basis vector in thickness direction in material
       // configuration
       const int num_node = scatra_ele->num_node();
-      CORE::LINALG::SerialDenseMatrix nodal_directors(
-          num_node, DRT::ELEMENTS::SHELL::DETAIL::num_dim);
+      Core::LinAlg::SerialDenseMatrix nodal_directors(
+          num_node, Discret::ELEMENTS::Shell::DETAIL::num_dim);
       SetupDirectorForElement(*scatra_ele, nodal_directors);
       scatra_ele->set_all_nodal_directors(nodal_directors);
     }
-    else if (auto* shell_ele = dynamic_cast<DRT::ELEMENTS::Shell7p*>(actele))
+    else if (auto* shell_ele = dynamic_cast<Discret::ELEMENTS::Shell7p*>(actele))
     {
       // create matrix nodal_directors for nodal basis vector in thickness direction in material
       // configuration
       const int num_node = shell_ele->num_node();
-      CORE::LINALG::SerialDenseMatrix nodal_directors(
-          num_node, DRT::ELEMENTS::SHELL::DETAIL::num_dim);
+      Core::LinAlg::SerialDenseMatrix nodal_directors(
+          num_node, Discret::ELEMENTS::Shell::DETAIL::num_dim);
       SetupDirectorForElement(*shell_ele, nodal_directors);
       shell_ele->set_all_nodal_directors(nodal_directors);
     }
@@ -646,7 +646,7 @@ void STR::UTILS::SHELL::DIRECTOR::SetupShellElementDirectors(
 
 
 
-void STR::UTILS::SHELL::LumpMassMatrix(CORE::LINALG::SerialDenseMatrix& mass_matrix)
+void STR::UTILS::Shell::LumpMassMatrix(Core::LinAlg::SerialDenseMatrix& mass_matrix)
 {
   // lump mass matrix
   FOUR_C_ASSERT(mass_matrix.numRows() == mass_matrix.numCols(),
@@ -666,13 +666,13 @@ void STR::UTILS::SHELL::LumpMassMatrix(CORE::LINALG::SerialDenseMatrix& mass_mat
 }
 
 
-void STR::UTILS::SHELL::READELEMENT::ReadAndSetLockingTypes(const CORE::FE::CellType& distype,
-    INPUT::LineDefinition* linedef, STR::ELEMENTS::ShellLockingTypes& locking_types)
+void STR::UTILS::Shell::ReadElement::ReadAndSetLockingTypes(const Core::FE::CellType& distype,
+    Input::LineDefinition* linedef, STR::ELEMENTS::ShellLockingTypes& locking_types)
 {
   std::string type;
   switch (distype)
   {
-    case CORE::FE::CellType::quad4:
+    case Core::FE::CellType::quad4:
     {
       linedef->ExtractString("EAS", type);
       SetMembraneLockingSizeQuad4(locking_types.membrane, type);
@@ -686,7 +686,7 @@ void STR::UTILS::SHELL::READELEMENT::ReadAndSetLockingTypes(const CORE::FE::Cell
       SetShearStrainLockingSizeQuad4(locking_types.transverse_shear_strain_lin, type);
       break;
     }
-    case CORE::FE::CellType::quad9:
+    case Core::FE::CellType::quad9:
     {
       linedef->ExtractString("EAS", type);
       SetMembraneLockingSizeQuad9(locking_types.membrane, type);
@@ -708,22 +708,22 @@ void STR::UTILS::SHELL::READELEMENT::ReadAndSetLockingTypes(const CORE::FE::Cell
                         locking_types.transverse_shear_strain_lin;
 }
 
-int STR::UTILS::SHELL::READELEMENT::ReadAndSetElementMaterial(INPUT::LineDefinition* linedef)
+int STR::UTILS::Shell::ReadElement::ReadAndSetElementMaterial(Input::LineDefinition* linedef)
 {
   int material = 0;
   linedef->ExtractInt("MAT", material);
   return material;
 }
 
-int STR::UTILS::SHELL::READELEMENT::ReadAndSetNumANS(const CORE::FE::CellType& distype)
+int STR::UTILS::Shell::ReadElement::ReadAndSetNumANS(const Core::FE::CellType& distype)
 {
   switch (distype)
   {
-    case CORE::FE::CellType::quad4:
+    case Core::FE::CellType::quad4:
     {
       return 2;
     }
-    case CORE::FE::CellType::quad9:
+    case Core::FE::CellType::quad9:
     {
       return 6;
     }

@@ -20,9 +20,9 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::GEO
+namespace Core::Geo
 {
-  namespace CUT
+  namespace Cut
   {
     class Point;
     class Facet;
@@ -130,8 +130,8 @@ namespace CORE::GEO
       //! Holds the split Tri and Quad cells
       std::vector<std::vector<Point *>> split_;
     };
-  }  // namespace CUT
-}  // namespace CORE::GEO
+  }  // namespace Cut
+}  // namespace Core::Geo
 
 FOUR_C_NAMESPACE_CLOSE
 

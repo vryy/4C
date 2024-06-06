@@ -28,29 +28,30 @@ FOUR_C_NAMESPACE_OPEN
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-DRT::ELEMENTS::Beam3rType DRT::ELEMENTS::Beam3rType::instance_;
+Discret::ELEMENTS::Beam3rType Discret::ELEMENTS::Beam3rType::instance_;
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-DRT::ELEMENTS::Beam3rType& DRT::ELEMENTS::Beam3rType::Instance() { return instance_; }
+Discret::ELEMENTS::Beam3rType& Discret::ELEMENTS::Beam3rType::Instance() { return instance_; }
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-CORE::COMM::ParObject* DRT::ELEMENTS::Beam3rType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Discret::ELEMENTS::Beam3rType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::Beam3r* object = new DRT::ELEMENTS::Beam3r(-1, -1);
+  Discret::ELEMENTS::Beam3r* object = new Discret::ELEMENTS::Beam3r(-1, -1);
   object->Unpack(data);
   return object;
 }
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Beam3rType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Beam3rType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "BEAM3R")
   {
-    Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(id, owner));
+    Teuchos::RCP<Core::Elements::Element> ele =
+        Teuchos::rcp(new Discret::ELEMENTS::Beam3r(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -58,19 +59,20 @@ Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Beam3rType::Create(
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Beam3rType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Beam3rType::Create(
     const int id, const int owner)
 {
-  Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(id, owner));
+  Teuchos::RCP<Core::Elements::Element> ele =
+      Teuchos::rcp(new Discret::ELEMENTS::Beam3r(id, owner));
   return ele;
 }
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3rType::nodal_block_information(
-    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+void Discret::ELEMENTS::Beam3rType::nodal_block_information(
+    Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
-  DRT::ELEMENTS::Beam3r* currele = dynamic_cast<DRT::ELEMENTS::Beam3r*>(dwele);
+  Discret::ELEMENTS::Beam3r* currele = dynamic_cast<Discret::ELEMENTS::Beam3r*>(dwele);
   if (!currele) FOUR_C_THROW("cast to Beam3r* failed");
 
   if (currele->hermite_centerline_interpolation() or currele->num_node() > 2)
@@ -89,23 +91,23 @@ void DRT::ELEMENTS::Beam3rType::nodal_block_information(
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Beam3rType::ComputeNullSpace(
-    CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
+Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::Beam3rType::ComputeNullSpace(
+    Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  CORE::LINALG::SerialDenseMatrix nullspace;
+  Core::LinAlg::SerialDenseMatrix nullspace;
   FOUR_C_THROW("method ComputeNullSpace not implemented for element type beam3r!");
   return nullspace;
 }
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3rType::setup_element_definition(
-    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+void Discret::ELEMENTS::Beam3rType::setup_element_definition(
+    std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
-  std::map<std::string, INPUT::LineDefinition>& defs = definitions["BEAM3R"];
+  std::map<std::string, Input::LineDefinition>& defs = definitions["BEAM3R"];
 
   // note: LINE2 refers to linear Lagrange interpolation of centerline AND triad field
-  defs["LINE2"] = INPUT::LineDefinition::Builder()
+  defs["LINE2"] = Input::LineDefinition::Builder()
                       .AddIntVector("LINE2", 2)
                       .AddNamedInt("MAT")
                       .add_named_double_vector("TRIADS", 6)
@@ -113,7 +115,7 @@ void DRT::ELEMENTS::Beam3rType::setup_element_definition(
                       .Build();
 
   // note: LINE3 refers to quadratic Lagrange interpolation of centerline AND triad field
-  defs["LINE3"] = INPUT::LineDefinition::Builder()
+  defs["LINE3"] = Input::LineDefinition::Builder()
                       .AddIntVector("LINE3", 3)
                       .AddNamedInt("MAT")
                       .add_named_double_vector("TRIADS", 9)
@@ -121,7 +123,7 @@ void DRT::ELEMENTS::Beam3rType::setup_element_definition(
                       .Build();
 
   // note: LINE4 refers to cubic Lagrange interpolation of centerline AND triad field
-  defs["LINE4"] = INPUT::LineDefinition::Builder()
+  defs["LINE4"] = Input::LineDefinition::Builder()
                       .AddIntVector("LINE4", 4)
                       .AddNamedInt("MAT")
                       .add_named_double_vector("TRIADS", 12)
@@ -129,7 +131,7 @@ void DRT::ELEMENTS::Beam3rType::setup_element_definition(
                       .Build();
 
   // note: LINE5 refers to quartic Lagrange interpolation of centerline AND triad field
-  defs["LINE5"] = INPUT::LineDefinition::Builder()
+  defs["LINE5"] = Input::LineDefinition::Builder()
                       .AddIntVector("LINE5", 5)
                       .AddNamedInt("MAT")
                       .add_named_double_vector("TRIADS", 15)
@@ -138,7 +140,7 @@ void DRT::ELEMENTS::Beam3rType::setup_element_definition(
 
   /* note: HERM2 refers to cubic Hermite interpolation of centerline (2 nodes)
    *       LINE2 refers to linear Lagrange interpolation of the triad field*/
-  defs["HERM2LINE2"] = INPUT::LineDefinition::Builder()
+  defs["HERM2LINE2"] = Input::LineDefinition::Builder()
                            .AddIntVector("HERM2LINE2", 2)
                            .AddNamedInt("MAT")
                            .add_named_double_vector("TRIADS", 6)
@@ -147,7 +149,7 @@ void DRT::ELEMENTS::Beam3rType::setup_element_definition(
 
   /* note: HERM2 refers to cubic order Hermite interpolation of centerline (2 nodes)
    *       LINE3 refers to quadratic Lagrange interpolation of the triad field*/
-  defs["HERM2LINE3"] = INPUT::LineDefinition::Builder()
+  defs["HERM2LINE3"] = Input::LineDefinition::Builder()
                            .AddIntVector("HERM2LINE3", 3)
                            .AddNamedInt("MAT")
                            .add_named_double_vector("TRIADS", 9)
@@ -156,7 +158,7 @@ void DRT::ELEMENTS::Beam3rType::setup_element_definition(
 
   /* note: HERM2 refers to cubic Hermite interpolation of centerline (2 nodes)
    *       LINE4 refers to cubic Lagrange interpolation of the triad field*/
-  defs["HERM2LINE4"] = INPUT::LineDefinition::Builder()
+  defs["HERM2LINE4"] = Input::LineDefinition::Builder()
                            .AddIntVector("HERM2LINE4", 4)
                            .AddNamedInt("MAT")
                            .add_named_double_vector("TRIADS", 12)
@@ -165,7 +167,7 @@ void DRT::ELEMENTS::Beam3rType::setup_element_definition(
 
   /* note: HERM2 refers to cubic Hermite interpolation of centerline (2 nodes)
    *       LINE5 refers to quartic Lagrange interpolation of the triad field*/
-  defs["HERM2LINE5"] = INPUT::LineDefinition::Builder()
+  defs["HERM2LINE5"] = Input::LineDefinition::Builder()
                            .AddIntVector("HERM2LINE5", 5)
                            .AddNamedInt("MAT")
                            .add_named_double_vector("TRIADS", 15)
@@ -176,7 +178,7 @@ void DRT::ELEMENTS::Beam3rType::setup_element_definition(
 /*----------------------------------------------------------------------*
  |  Initialize (public)                                      cyron 01/08|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Beam3rType::Initialize(DRT::Discretization& dis)
+int Discret::ELEMENTS::Beam3rType::Initialize(Discret::Discretization& dis)
 {
   // setting up geometric variables for beam3r elements
   for (int num = 0; num < dis.NumMyColElements(); ++num)
@@ -186,7 +188,8 @@ int DRT::ELEMENTS::Beam3rType::Initialize(DRT::Discretization& dis)
     if (dis.lColElement(num)->ElementType() != *this) continue;
 
     // if we get so far current element is a beam3r element and we get a pointer at it
-    DRT::ELEMENTS::Beam3r* currele = dynamic_cast<DRT::ELEMENTS::Beam3r*>(dis.lColElement(num));
+    Discret::ELEMENTS::Beam3r* currele =
+        dynamic_cast<Discret::ELEMENTS::Beam3r*>(dis.lColElement(num));
     if (!currele) FOUR_C_THROW("cast to Beam3r* failed");
 
     // reference node position
@@ -219,8 +222,8 @@ int DRT::ELEMENTS::Beam3rType::Initialize(DRT::Discretization& dis)
 
     // the next section is needed in case of periodic boundary conditions and a shifted
     // configuration (i.e. elements cut by the periodic boundary) in the input file
-    Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> periodic_boundingbox =
-        Teuchos::rcp(new CORE::GEO::MESHFREE::BoundingBox());
+    Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> periodic_boundingbox =
+        Teuchos::rcp(new Core::Geo::MeshFree::BoundingBox());
     periodic_boundingbox->Init();  // no Setup() call needed here
 
     std::vector<double> disp_shift;
@@ -288,8 +291,8 @@ int DRT::ELEMENTS::Beam3rType::Initialize(DRT::Discretization& dis)
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            cyron 01/08|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Beam3r::Beam3r(int id, int owner)
-    : DRT::ELEMENTS::Beam3Base(id, owner),
+Discret::ELEMENTS::Beam3r::Beam3r(int id, int owner)
+    : Discret::ELEMENTS::Beam3Base(id, owner),
       stiff_ptc_(),
       use_fad_(false),
       isinit_(false),
@@ -311,8 +314,8 @@ DRT::ELEMENTS::Beam3r::Beam3r(int id, int owner)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       cyron 01/08|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Beam3r::Beam3r(const DRT::ELEMENTS::Beam3r& old)
-    : DRT::ELEMENTS::Beam3Base(old),
+Discret::ELEMENTS::Beam3r::Beam3r(const Discret::ELEMENTS::Beam3r& old)
+    : Discret::ELEMENTS::Beam3Base(old),
       use_fad_(old.use_fad_),
       isinit_(old.isinit_),
       reflength_(old.reflength_),
@@ -371,9 +374,9 @@ DRT::ELEMENTS::Beam3r::Beam3r(const DRT::ELEMENTS::Beam3r& old)
  |  Deep copy this instance of Beam3r and return pointer to it (public) |
  |                                                            cyron 01/08 |
  *----------------------------------------------------------------------*/
-CORE::Elements::Element* DRT::ELEMENTS::Beam3r::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::Beam3r::Clone() const
 {
-  DRT::ELEMENTS::Beam3r* newelement = new DRT::ELEMENTS::Beam3r(*this);
+  Discret::ELEMENTS::Beam3r* newelement = new Discret::ELEMENTS::Beam3r(*this);
   return newelement;
 }
 
@@ -382,7 +385,7 @@ CORE::Elements::Element* DRT::ELEMENTS::Beam3r::Clone() const
 /*----------------------------------------------------------------------*
  |  print this element (public)                              cyron 01/08
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3r::Print(std::ostream& os) const
+void Discret::ELEMENTS::Beam3r::Print(std::ostream& os) const
 {
   os << "beam3r ";
   Element::Print(os);
@@ -393,22 +396,22 @@ void DRT::ELEMENTS::Beam3r::Print(std::ostream& os) const
  |                                                             (public) |
  |                                                          cyron 01/08 |
  *----------------------------------------------------------------------*/
-CORE::FE::CellType DRT::ELEMENTS::Beam3r::Shape() const
+Core::FE::CellType Discret::ELEMENTS::Beam3r::Shape() const
 {
   int numnodes = num_node();
   switch (numnodes)
   {
     case 2:
-      return CORE::FE::CellType::line2;
+      return Core::FE::CellType::line2;
       break;
     case 3:
-      return CORE::FE::CellType::line3;
+      return Core::FE::CellType::line3;
       break;
     case 4:
-      return CORE::FE::CellType::line4;
+      return Core::FE::CellType::line4;
       break;
     case 5:
-      return CORE::FE::CellType::line5;
+      return Core::FE::CellType::line5;
       break;
     default:
       FOUR_C_THROW("Only Line2, Line3, Line4 and Line5 elements are implemented.");
@@ -420,9 +423,9 @@ CORE::FE::CellType DRT::ELEMENTS::Beam3r::Shape() const
  |  Pack data                                                  (public) |
  |                                                           cyron 01/08/
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3r::Pack(CORE::COMM::PackBuffer& data) const
+void Discret::ELEMENTS::Beam3r::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -473,11 +476,11 @@ void DRT::ELEMENTS::Beam3r::Pack(CORE::COMM::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                           cyron 01/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3r::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Beam3r::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -556,7 +559,7 @@ void DRT::ELEMENTS::Beam3r::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                          cyron 01/08|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Beam3r::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Beam3r::Lines()
 {
   return {Teuchos::rcpFromRef(*this)};
 }
@@ -564,9 +567,10 @@ std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Beam3r::Lines(
 /*----------------------------------------------------------------------*
  | determine Gauss rule from purpose and interpolation scheme grill 03/16|
  *----------------------------------------------------------------------*/
-CORE::FE::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(const IntegrationPurpose intpurpose) const
+Core::FE::GaussRule1D Discret::ELEMENTS::Beam3r::MyGaussRule(
+    const IntegrationPurpose intpurpose) const
 {
-  const CORE::FE::CellType distype = this->Shape();
+  const Core::FE::CellType distype = this->Shape();
 
   switch (intpurpose)
   {
@@ -576,33 +580,33 @@ CORE::FE::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(const IntegrationPurpos
     {
       switch (distype)
       {
-        case CORE::FE::CellType::line2:
+        case Core::FE::CellType::line2:
         {
           if (!centerline_hermite_)
-            return CORE::FE::GaussRule1D::line_1point;
+            return Core::FE::GaussRule1D::line_1point;
           else
-            return CORE::FE::GaussRule1D::line_lobatto3point;
+            return Core::FE::GaussRule1D::line_lobatto3point;
         }
-        case CORE::FE::CellType::line3:
+        case Core::FE::CellType::line3:
         {
           if (!centerline_hermite_)
-            return CORE::FE::GaussRule1D::line_2point;
+            return Core::FE::GaussRule1D::line_2point;
           else
-            return CORE::FE::GaussRule1D::line_lobatto3point;
+            return Core::FE::GaussRule1D::line_lobatto3point;
         }
-        case CORE::FE::CellType::line4:
+        case Core::FE::CellType::line4:
         {
           if (!centerline_hermite_)
-            return CORE::FE::GaussRule1D::line_3point;
+            return Core::FE::GaussRule1D::line_3point;
           else
-            return CORE::FE::GaussRule1D::line_lobatto3point;
+            return Core::FE::GaussRule1D::line_lobatto3point;
         }
-        case CORE::FE::CellType::line5:
+        case Core::FE::CellType::line5:
         {
           if (!centerline_hermite_)
-            return CORE::FE::GaussRule1D::line_4point;
+            return Core::FE::GaussRule1D::line_4point;
           else
-            return CORE::FE::GaussRule1D::line_lobatto3point;
+            return Core::FE::GaussRule1D::line_lobatto3point;
         }
         default:
         {
@@ -620,33 +624,33 @@ CORE::FE::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(const IntegrationPurpos
     {
       switch (distype)
       {
-        case CORE::FE::CellType::line2:
+        case Core::FE::CellType::line2:
         {
           if (!centerline_hermite_)
-            return CORE::FE::GaussRule1D::line_1point;
+            return Core::FE::GaussRule1D::line_1point;
           else
-            return CORE::FE::GaussRule1D::line_2point;
+            return Core::FE::GaussRule1D::line_2point;
         }
-        case CORE::FE::CellType::line3:
+        case Core::FE::CellType::line3:
         {
           if (!centerline_hermite_)
-            return CORE::FE::GaussRule1D::line_2point;
+            return Core::FE::GaussRule1D::line_2point;
           else
-            return CORE::FE::GaussRule1D::line_3point;
+            return Core::FE::GaussRule1D::line_3point;
         }
-        case CORE::FE::CellType::line4:
+        case Core::FE::CellType::line4:
         {
           if (!centerline_hermite_)
-            return CORE::FE::GaussRule1D::line_3point;
+            return Core::FE::GaussRule1D::line_3point;
           else
-            return CORE::FE::GaussRule1D::line_4point;
+            return Core::FE::GaussRule1D::line_4point;
         }
-        case CORE::FE::CellType::line5:
+        case Core::FE::CellType::line5:
         {
           if (!centerline_hermite_)
-            return CORE::FE::GaussRule1D::line_4point;
+            return Core::FE::GaussRule1D::line_4point;
           else
-            return CORE::FE::GaussRule1D::line_5point;
+            return Core::FE::GaussRule1D::line_5point;
         }
         default:
         {
@@ -662,21 +666,21 @@ CORE::FE::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(const IntegrationPurpos
     {
       switch (distype)
       {
-        case CORE::FE::CellType::line2:
+        case Core::FE::CellType::line2:
         {
-          return CORE::FE::GaussRule1D::line_2point;
+          return Core::FE::GaussRule1D::line_2point;
         }
-        case CORE::FE::CellType::line3:
+        case Core::FE::CellType::line3:
         {
-          return CORE::FE::GaussRule1D::line_3point;
+          return Core::FE::GaussRule1D::line_3point;
         }
-        case CORE::FE::CellType::line4:
+        case Core::FE::CellType::line4:
         {
-          return CORE::FE::GaussRule1D::line_4point;
+          return Core::FE::GaussRule1D::line_4point;
         }
-        case CORE::FE::CellType::line5:
+        case Core::FE::CellType::line5:
         {
-          return CORE::FE::GaussRule1D::line_5point;
+          return Core::FE::GaussRule1D::line_5point;
         }
         default:
         {
@@ -690,7 +694,7 @@ CORE::FE::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(const IntegrationPurpos
     // 'full' integration of damping and stochastic contributions
     case res_damp_stoch:
     {
-      return CORE::FE::GaussRule1D::line_4point;
+      return Core::FE::GaussRule1D::line_4point;
     }
 
     /* 'full' integration of Neumann line loads
@@ -700,24 +704,24 @@ CORE::FE::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(const IntegrationPurpos
     {
       switch (distype)
       {
-        case CORE::FE::CellType::line2:
+        case Core::FE::CellType::line2:
         {
           if (!centerline_hermite_)
-            return CORE::FE::GaussRule1D::line_1point;
+            return Core::FE::GaussRule1D::line_1point;
           else
-            return CORE::FE::GaussRule1D::line_2point;
+            return Core::FE::GaussRule1D::line_2point;
         }
-        case CORE::FE::CellType::line3:
+        case Core::FE::CellType::line3:
         {
-          return CORE::FE::GaussRule1D::line_2point;
+          return Core::FE::GaussRule1D::line_2point;
         }
-        case CORE::FE::CellType::line4:
+        case Core::FE::CellType::line4:
         {
-          return CORE::FE::GaussRule1D::line_3point;
+          return Core::FE::GaussRule1D::line_3point;
         }
-        case CORE::FE::CellType::line5:
+        case Core::FE::CellType::line5:
         {
-          return CORE::FE::GaussRule1D::line_4point;
+          return Core::FE::GaussRule1D::line_4point;
         }
         default:
         {
@@ -735,13 +739,13 @@ CORE::FE::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(const IntegrationPurpos
     }
   }
 
-  return CORE::FE::GaussRule1D::undefined;
+  return Core::FE::GaussRule1D::undefined;
 }
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
 template <unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
-void DRT::ELEMENTS::Beam3r::set_up_reference_geometry(
+void Discret::ELEMENTS::Beam3r::set_up_reference_geometry(
     const std::vector<double>& xrefe, const std::vector<double>& rotrefe)
 {
   // nnodetriad: number of nodes used for interpolation of triad field
@@ -788,39 +792,39 @@ void DRT::ELEMENTS::Beam3r::set_up_reference_geometry(
      *****************************************************************************************************/
 
     // create object of triad interpolation scheme
-    Teuchos::RCP<LARGEROTATIONS::TriadInterpolationLocalRotationVectors<nnodetriad, double>>
+    Teuchos::RCP<LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, double>>
         triad_interpolation_scheme_ptr = Teuchos::rcp(
-            new LARGEROTATIONS::TriadInterpolationLocalRotationVectors<nnodetriad, double>());
+            new LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, double>());
 
     // Get DiscretizationType
-    CORE::FE::CellType distype = Shape();
+    Core::FE::CellType distype = Shape();
 
     /* Note: index i refers to the i-th shape function (i = 0 ... nnode*vpernode-1)
      * the vectors store individual shape functions, NOT an assembled matrix of shape functions) */
     /* vector whose numgp-th element is a 1xnnode-matrix with all Lagrange shape functions evaluated
      * at the numgp-th GP these shape functions are used for the interpolation of the triad field*/
-    std::vector<CORE::LINALG::Matrix<1, nnodetriad, double>> I_i;
+    std::vector<Core::LinAlg::Matrix<1, nnodetriad, double>> I_i;
     // same for derivatives
-    std::vector<CORE::LINALG::Matrix<1, nnodetriad, double>> I_i_xi;
+    std::vector<Core::LinAlg::Matrix<1, nnodetriad, double>> I_i_xi;
 
     /* vector whose numgp-th element is a 1x(vpernode*nnode)-matrix with all (Lagrange/Hermite)
      * shape functions evaluated at the numgp-th GP these shape functions are used for the
      * interpolation of the beam centerline*/
-    std::vector<CORE::LINALG::Matrix<1, vpernode * nnodecl, double>> H_i;
+    std::vector<Core::LinAlg::Matrix<1, vpernode * nnodecl, double>> H_i;
     // same for the derivatives
-    std::vector<CORE::LINALG::Matrix<1, vpernode * nnodecl, double>> H_i_xi;
+    std::vector<Core::LinAlg::Matrix<1, vpernode * nnodecl, double>> H_i_xi;
 
     // beside the nodal reference positions from xrefe, this vector also holds the reference
     // tangents in case of Hermite interpolation of the beam centerline
-    CORE::LINALG::Matrix<3 * vpernode * nnodecl, 1> pos_ref_centerline;
+    Core::LinAlg::Matrix<3 * vpernode * nnodecl, 1> pos_ref_centerline;
 
     // initial curve in physical space and derivative with respect to curve parameter xi \in [-1;1]
     // on element level
-    CORE::LINALG::Matrix<3, 1> r0;
-    CORE::LINALG::Matrix<3, 1> dr0dxi;
+    Core::LinAlg::Matrix<3, 1> r0;
+    Core::LinAlg::Matrix<3, 1> dr0dxi;
 
     // dummy 3x1 vector
-    CORE::LINALG::Matrix<3, 1> dummy(true);
+    Core::LinAlg::Matrix<3, 1> dummy(true);
 
 
     /********************************** Compute nodal quantities
@@ -835,21 +839,21 @@ void DRT::ELEMENTS::Beam3r::set_up_reference_geometry(
     // nodal triads in stress-free configuration
     for (unsigned int node = 0; node < nnodetriad; node++)
     {
-      CORE::LINALG::Matrix<3, 1> rotvec(&rotrefe[3 * node]);
-      CORE::LARGEROTATIONS::angletoquaternion(rotvec, qnewnode_[node]);
+      Core::LinAlg::Matrix<3, 1> rotvec(&rotrefe[3 * node]);
+      Core::LargeRotations::angletoquaternion(rotvec, qnewnode_[node]);
     }
 
     qconvnode_ = qnewnode_;
 
-    std::vector<CORE::LINALG::Matrix<4, 1, double>> Qnewnode;
+    std::vector<Core::LinAlg::Matrix<4, 1, double>> Qnewnode;
 
     for (unsigned int inode = 0; inode < nnodetriad; ++inode)
-      Qnewnode.push_back(CORE::LINALG::Matrix<4, 1, double>(qnewnode_[inode], true));
+      Qnewnode.push_back(Core::LinAlg::Matrix<4, 1, double>(qnewnode_[inode], true));
 
     // reset triad interpolation with nodal quaternions
     triad_interpolation_scheme_ptr->Reset(Qnewnode);
 
-    CORE::LINALG::Matrix<3, 3> Gref;
+    Core::LinAlg::Matrix<3, 3> Gref;
     Tref_.resize(nnodecl);
 
     for (unsigned int node = 0; node < nnodecl; node++)
@@ -859,7 +863,7 @@ void DRT::ELEMENTS::Beam3r::set_up_reference_geometry(
        * i.e. material coordinate system and reference system in the reference configuration
        * coincidence (only at the nodes)*/
       Gref.Clear();
-      CORE::LARGEROTATIONS::quaterniontotriad(qnewnode_[node], Gref);
+      Core::LargeRotations::quaterniontotriad(qnewnode_[node], Gref);
       // store initial nodal tangents in class variable
       for (int i = 0; i < 3; i++) (Tref_[node])(i) = (Gref)(i, 0);
 
@@ -880,18 +884,18 @@ void DRT::ELEMENTS::Beam3r::set_up_reference_geometry(
 
     // interpolated local relative rotation \Psi^l at a certain Gauss point according to (3.11),
     // Jelenic 1999
-    CORE::LINALG::Matrix<3, 1> Psi_l;
+    Core::LinAlg::Matrix<3, 1> Psi_l;
     /* derivative of interpolated local relative rotation \Psi^l with respect to arc-length
      * parameter at a certain Gauss point according to (3.11), Jelenic 1999*/
-    CORE::LINALG::Matrix<3, 1> Psi_l_s;
+    Core::LinAlg::Matrix<3, 1> Psi_l_s;
     // triad at GP
-    CORE::LINALG::Matrix<3, 3> Lambda;
+    Core::LinAlg::Matrix<3, 3> Lambda;
 
     //*********************** preparation for residual contributions from forces
     //***************************
 
     // Get the applied integration scheme
-    CORE::FE::IntegrationPoints1D gausspoints_elast_force(MyGaussRule(res_elastic_force));
+    Core::FE::IntegrationPoints1D gausspoints_elast_force(MyGaussRule(res_elastic_force));
 
     jacobi_gp_elastf_.resize(gausspoints_elast_force.nquad);
     gammaref_gp_.resize(gausspoints_elast_force.nquad);
@@ -901,7 +905,7 @@ void DRT::ELEMENTS::Beam3r::set_up_reference_geometry(
 
     // evaluate all shape functions and derivatives with respect to element parameter xi at all
     // specified Gauss points
-    DRT::UTILS::BEAM::EvaluateShapeFunctionDerivsAllGPs<nnodecl, vpernode>(
+    Discret::UTILS::Beam::EvaluateShapeFunctionDerivsAllGPs<nnodecl, vpernode>(
         gausspoints_elast_force, H_i_xi, distype, this->RefLength());
 
 
@@ -955,7 +959,7 @@ void DRT::ELEMENTS::Beam3r::set_up_reference_geometry(
     //***************************
 
     // Get the applied integration scheme
-    CORE::FE::IntegrationPoints1D gausspoints_elast_moment(MyGaussRule(res_elastic_moment));
+    Core::FE::IntegrationPoints1D gausspoints_elast_moment(MyGaussRule(res_elastic_moment));
 
     jacobi_gp_elastm_.resize(gausspoints_elast_moment.nquad);
     kref_gp_.resize(gausspoints_elast_moment.nquad);
@@ -967,9 +971,9 @@ void DRT::ELEMENTS::Beam3r::set_up_reference_geometry(
 
     // evaluate all shape functions and derivatives with respect to element parameter xi at all
     // specified Gauss points
-    DRT::UTILS::BEAM::EvaluateShapeFunctionsAndDerivsAllGPs<nnodetriad, 1>(
+    Discret::UTILS::Beam::EvaluateShapeFunctionsAndDerivsAllGPs<nnodetriad, 1>(
         gausspoints_elast_moment, I_i, I_i_xi, distype);
-    DRT::UTILS::BEAM::EvaluateShapeFunctionDerivsAllGPs<nnodecl, vpernode>(
+    Discret::UTILS::Beam::EvaluateShapeFunctionDerivsAllGPs<nnodecl, vpernode>(
         gausspoints_elast_moment, H_i_xi, distype, this->RefLength());
 
     // assure correct size of strain and stress resultant class variables and fill them
@@ -1027,8 +1031,8 @@ void DRT::ELEMENTS::Beam3r::set_up_reference_geometry(
      *****************************************************************************************************/
 
     // Get the applied integration scheme
-    CORE::FE::GaussRule1D gaussrule_inertia = MyGaussRule(res_inertia);
-    CORE::FE::IntegrationPoints1D gausspoints_inertia(gaussrule_inertia);
+    Core::FE::GaussRule1D gaussrule_inertia = MyGaussRule(res_inertia);
+    Core::FE::IntegrationPoints1D gausspoints_inertia(gaussrule_inertia);
 
     // these quantities will later be used mainly for calculation of inertia terms -> named 'mass'
     jacobi_gp_mass_.resize(gausspoints_inertia.nquad);
@@ -1055,7 +1059,7 @@ void DRT::ELEMENTS::Beam3r::set_up_reference_geometry(
 
     // evaluate all shape functions and derivatives with respect to element parameter xi at all
     // specified Gauss points
-    DRT::UTILS::BEAM::EvaluateShapeFunctionsAndDerivsAllGPs<nnodecl, vpernode>(
+    Discret::UTILS::Beam::EvaluateShapeFunctionsAndDerivsAllGPs<nnodecl, vpernode>(
         gausspoints_inertia, H_i, H_i_xi, distype, this->RefLength());
 
     // Loop through all GPs for exact integration and compute initial jacobi determinant
@@ -1097,10 +1101,10 @@ void DRT::ELEMENTS::Beam3r::set_up_reference_geometry(
     // compute Jacobi determinant at GPs for integration of damping/stochastic forces
 
     // Get the applied integration scheme
-    CORE::FE::GaussRule1D gaussrule_damp_stoch =
+    Core::FE::GaussRule1D gaussrule_damp_stoch =
         MyGaussRule(res_damp_stoch);  // TODO reuse/copy quantities if same integration scheme has
                                       // been applied above
-    CORE::FE::IntegrationPoints1D gausspoints_damp_stoch(gaussrule_damp_stoch);
+    Core::FE::IntegrationPoints1D gausspoints_damp_stoch(gaussrule_damp_stoch);
 
     // these quantities will later be used mainly for calculation of damping/stochastic terms ->
     // named 'dampstoch'
@@ -1113,7 +1117,7 @@ void DRT::ELEMENTS::Beam3r::set_up_reference_geometry(
 
     // evaluate all shape functions and derivatives with respect to element parameter xi at all
     // specified Gauss points
-    DRT::UTILS::BEAM::EvaluateShapeFunctionDerivsAllGPs<nnodecl, vpernode>(
+    Discret::UTILS::Beam::EvaluateShapeFunctionDerivsAllGPs<nnodecl, vpernode>(
         gausspoints_damp_stoch, H_i_xi, distype, this->RefLength());
 
     // Loop through all GPs
@@ -1137,8 +1141,8 @@ void DRT::ELEMENTS::Beam3r::set_up_reference_geometry(
      *****************************************************************************************************/
 
     // Get the applied integration scheme
-    CORE::FE::GaussRule1D gaussrule_neumann = MyGaussRule(neumann_lineload);
-    CORE::FE::IntegrationPoints1D gausspoints_neumann(gaussrule_neumann);
+    Core::FE::GaussRule1D gaussrule_neumann = MyGaussRule(neumann_lineload);
+    Core::FE::IntegrationPoints1D gausspoints_neumann(gaussrule_neumann);
 
     // these quantities will later be used for calculation of Neumann lineloads
     jacobi_gp_neumannline_.resize(gausspoints_neumann.nquad);
@@ -1148,7 +1152,7 @@ void DRT::ELEMENTS::Beam3r::set_up_reference_geometry(
 
     // evaluate all shape functions and derivatives with respect to element parameter xi at all
     // specified Gauss points
-    DRT::UTILS::BEAM::EvaluateShapeFunctionDerivsAllGPs<nnodecl, vpernode>(
+    Discret::UTILS::Beam::EvaluateShapeFunctionDerivsAllGPs<nnodecl, vpernode>(
         gausspoints_neumann, H_i_xi, distype, this->RefLength());
 
     // Loop through all GPs
@@ -1166,8 +1170,8 @@ void DRT::ELEMENTS::Beam3r::set_up_reference_geometry(
 
 /*--------------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3r::GetPosAtXi(
-    CORE::LINALG::Matrix<3, 1>& pos, const double& xi, const std::vector<double>& disp) const
+void Discret::ELEMENTS::Beam3r::GetPosAtXi(
+    Core::LinAlg::Matrix<3, 1>& pos, const double& xi, const std::vector<double>& disp) const
 {
   const unsigned int numnodalvalues = this->hermite_centerline_interpolation() ? 2 : 1;
   const unsigned int nnodecl = this->NumCenterlineNodes();
@@ -1193,13 +1197,13 @@ void DRT::ELEMENTS::Beam3r::GetPosAtXi(
     {
       if (this->hermite_centerline_interpolation())
       {
-        CORE::LINALG::Matrix<12, 1> disp_totlag_centerline_fixedsize(disp_centerline.data());
+        Core::LinAlg::Matrix<12, 1> disp_totlag_centerline_fixedsize(disp_centerline.data());
         add_ref_values_disp_centerline<2, 2, double>(disp_totlag_centerline_fixedsize);
         Beam3Base::get_pos_at_xi<2, 2, double>(pos, xi, disp_totlag_centerline_fixedsize);
       }
       else
       {
-        CORE::LINALG::Matrix<6, 1> disp_totlag_centerline_fixedsize(disp_centerline.data());
+        Core::LinAlg::Matrix<6, 1> disp_totlag_centerline_fixedsize(disp_centerline.data());
         add_ref_values_disp_centerline<2, 1, double>(disp_totlag_centerline_fixedsize);
         Beam3Base::get_pos_at_xi<2, 1, double>(pos, xi, disp_totlag_centerline_fixedsize);
       }
@@ -1207,21 +1211,21 @@ void DRT::ELEMENTS::Beam3r::GetPosAtXi(
     }
     case 3:
     {
-      CORE::LINALG::Matrix<9, 1> disp_totlag_centerline_fixedsize(disp_centerline.data());
+      Core::LinAlg::Matrix<9, 1> disp_totlag_centerline_fixedsize(disp_centerline.data());
       add_ref_values_disp_centerline<3, 1, double>(disp_totlag_centerline_fixedsize);
       Beam3Base::get_pos_at_xi<3, 1, double>(pos, xi, disp_totlag_centerline_fixedsize);
       break;
     }
     case 4:
     {
-      CORE::LINALG::Matrix<12, 1> disp_totlag_centerline_fixedsize(disp_centerline.data());
+      Core::LinAlg::Matrix<12, 1> disp_totlag_centerline_fixedsize(disp_centerline.data());
       add_ref_values_disp_centerline<4, 1, double>(disp_totlag_centerline_fixedsize);
       Beam3Base::get_pos_at_xi<4, 1, double>(pos, xi, disp_totlag_centerline_fixedsize);
       break;
     }
     case 5:
     {
-      CORE::LINALG::Matrix<15, 1> disp_totlag_centerline_fixedsize(disp_centerline.data());
+      Core::LinAlg::Matrix<15, 1> disp_totlag_centerline_fixedsize(disp_centerline.data());
       add_ref_values_disp_centerline<5, 1, double>(disp_totlag_centerline_fixedsize);
       Beam3Base::get_pos_at_xi<5, 1, double>(pos, xi, disp_totlag_centerline_fixedsize);
       break;
@@ -1233,7 +1237,7 @@ void DRT::ELEMENTS::Beam3r::GetPosAtXi(
   return;
 }
 
-double DRT::ELEMENTS::Beam3r::GetJacobiFacAtXi(const double& xi) const
+double Discret::ELEMENTS::Beam3r::GetJacobiFacAtXi(const double& xi) const
 {
   double jacfac = 0.0;
 
@@ -1269,14 +1273,14 @@ double DRT::ELEMENTS::Beam3r::GetJacobiFacAtXi(const double& xi) const
   return jacfac;
 }
 
-void DRT::ELEMENTS::Beam3r::GetTriadAtXi(
-    CORE::LINALG::Matrix<3, 3>& triad, const double& xi, const std::vector<double>& disp) const
+void Discret::ELEMENTS::Beam3r::GetTriadAtXi(
+    Core::LinAlg::Matrix<3, 3>& triad, const double& xi, const std::vector<double>& disp) const
 {
   const unsigned int numnodalvalues = this->hermite_centerline_interpolation() ? 2 : 1;
   const unsigned int nnodecl = this->NumCenterlineNodes();
   const unsigned int nnodetriad = this->num_node();
 
-  std::vector<CORE::LINALG::Matrix<3, 1, double>> nodal_rotvecs(nnodetriad);
+  std::vector<Core::LinAlg::Matrix<3, 1, double>> nodal_rotvecs(nnodetriad);
 
   /* we assume that either the full disp vector of this element or only
    * values for nodal rotation vectors are passed in this function call */
@@ -1298,7 +1302,7 @@ void DRT::ELEMENTS::Beam3r::GetTriadAtXi(
   }
 
   // nodal triads
-  std::vector<CORE::LINALG::Matrix<4, 1, double>> Qnode(nnodetriad);
+  std::vector<Core::LinAlg::Matrix<4, 1, double>> Qnode(nnodetriad);
 
   switch (nnodetriad)
   {
@@ -1334,8 +1338,8 @@ void DRT::ELEMENTS::Beam3r::GetTriadAtXi(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3r::get_generalized_interpolation_matrix_variations_at_xi(
-    CORE::LINALG::SerialDenseMatrix& Ivar, const double& xi, const std::vector<double>& disp) const
+void Discret::ELEMENTS::Beam3r::get_generalized_interpolation_matrix_variations_at_xi(
+    Core::LinAlg::SerialDenseMatrix& Ivar, const double& xi, const std::vector<double>& disp) const
 {
   const unsigned int vpernode = this->hermite_centerline_interpolation() ? 2 : 1;
   const unsigned int nnodecl = this->NumCenterlineNodes();
@@ -1353,12 +1357,12 @@ void DRT::ELEMENTS::Beam3r::get_generalized_interpolation_matrix_variations_at_x
     {
       if (vpernode == 1)
       {
-        CORE::LINALG::Matrix<6, 12, double> Ivar_fixedsize(&Ivar(0, 0), true);
+        Core::LinAlg::Matrix<6, 12, double> Ivar_fixedsize(&Ivar(0, 0), true);
         get_generalized_interpolation_matrix_variations_at_xi<2, 2, 1>(Ivar_fixedsize, xi);
       }
       else
       {
-        CORE::LINALG::Matrix<6, 18, double> Ivar_fixedsize(&Ivar(0, 0), true);
+        Core::LinAlg::Matrix<6, 18, double> Ivar_fixedsize(&Ivar(0, 0), true);
         get_generalized_interpolation_matrix_variations_at_xi<2, 2, 2>(Ivar_fixedsize, xi);
       }
       break;
@@ -1367,12 +1371,12 @@ void DRT::ELEMENTS::Beam3r::get_generalized_interpolation_matrix_variations_at_x
     {
       if (vpernode == 1)
       {
-        CORE::LINALG::Matrix<6, 18, double> Ivar_fixedsize(&Ivar(0, 0), true);
+        Core::LinAlg::Matrix<6, 18, double> Ivar_fixedsize(&Ivar(0, 0), true);
         get_generalized_interpolation_matrix_variations_at_xi<3, 3, 1>(Ivar_fixedsize, xi);
       }
       else
       {
-        CORE::LINALG::Matrix<6, 21, double> Ivar_fixedsize(&Ivar(0, 0), true);
+        Core::LinAlg::Matrix<6, 21, double> Ivar_fixedsize(&Ivar(0, 0), true);
         get_generalized_interpolation_matrix_variations_at_xi<3, 2, 2>(Ivar_fixedsize, xi);
       }
       break;
@@ -1381,12 +1385,12 @@ void DRT::ELEMENTS::Beam3r::get_generalized_interpolation_matrix_variations_at_x
     {
       if (vpernode == 1)
       {
-        CORE::LINALG::Matrix<6, 24, double> Ivar_fixedsize(&Ivar(0, 0), true);
+        Core::LinAlg::Matrix<6, 24, double> Ivar_fixedsize(&Ivar(0, 0), true);
         get_generalized_interpolation_matrix_variations_at_xi<4, 4, 1>(Ivar_fixedsize, xi);
       }
       else
       {
-        CORE::LINALG::Matrix<6, 24, double> Ivar_fixedsize(&Ivar(0, 0), true);
+        Core::LinAlg::Matrix<6, 24, double> Ivar_fixedsize(&Ivar(0, 0), true);
         get_generalized_interpolation_matrix_variations_at_xi<4, 2, 2>(Ivar_fixedsize, xi);
       }
       break;
@@ -1395,12 +1399,12 @@ void DRT::ELEMENTS::Beam3r::get_generalized_interpolation_matrix_variations_at_x
     {
       if (vpernode == 1)
       {
-        CORE::LINALG::Matrix<6, 30, double> Ivar_fixedsize(&Ivar(0, 0), true);
+        Core::LinAlg::Matrix<6, 30, double> Ivar_fixedsize(&Ivar(0, 0), true);
         get_generalized_interpolation_matrix_variations_at_xi<5, 5, 1>(Ivar_fixedsize, xi);
       }
       else
       {
-        CORE::LINALG::Matrix<6, 27, double> Ivar_fixedsize(&Ivar(0, 0), true);
+        Core::LinAlg::Matrix<6, 27, double> Ivar_fixedsize(&Ivar(0, 0), true);
         get_generalized_interpolation_matrix_variations_at_xi<5, 2, 2>(Ivar_fixedsize, xi);
       }
       break;
@@ -1413,8 +1417,8 @@ void DRT::ELEMENTS::Beam3r::get_generalized_interpolation_matrix_variations_at_x
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
-void DRT::ELEMENTS::Beam3r::get_generalized_interpolation_matrix_variations_at_xi(
-    CORE::LINALG::Matrix<6, 3 * vpernode * nnodecl + 3 * nnodetriad, double>& Ivar,
+void Discret::ELEMENTS::Beam3r::get_generalized_interpolation_matrix_variations_at_xi(
+    Core::LinAlg::Matrix<6, 3 * vpernode * nnodecl + 3 * nnodetriad, double>& Ivar,
     const double& xi) const
 {
   const unsigned int dofperclnode = 3 * vpernode;
@@ -1423,13 +1427,13 @@ void DRT::ELEMENTS::Beam3r::get_generalized_interpolation_matrix_variations_at_x
 
   // these shape functions are used for the interpolation of the triad field
   // (so far always Lagrange polynomials of order 1...5)
-  CORE::LINALG::Matrix<1, nnodetriad, double> I_i;
+  Core::LinAlg::Matrix<1, nnodetriad, double> I_i;
   // these shape functions are used for the interpolation of the beam centerline
   // (either cubic Hermite or Lagrange polynomials of order 1...5)
-  CORE::LINALG::Matrix<1, vpernode * nnodecl, double> H_i;
+  Core::LinAlg::Matrix<1, vpernode * nnodecl, double> H_i;
 
-  DRT::UTILS::BEAM::EvaluateShapeFunctionsAtXi<nnodetriad, 1>(xi, I_i, this->Shape());
-  DRT::UTILS::BEAM::EvaluateShapeFunctionsAtXi<nnodecl, vpernode>(
+  Discret::UTILS::Beam::EvaluateShapeFunctionsAtXi<nnodetriad, 1>(xi, I_i, this->Shape());
+  Discret::UTILS::Beam::EvaluateShapeFunctionsAtXi<nnodecl, vpernode>(
       xi, H_i, this->Shape(), this->RefLength());
 
   Ivar.Clear();
@@ -1452,8 +1456,8 @@ void DRT::ELEMENTS::Beam3r::get_generalized_interpolation_matrix_variations_at_x
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3r::get_generalized_interpolation_matrix_increments_at_xi(
-    CORE::LINALG::SerialDenseMatrix& Iinc, const double& xi, const std::vector<double>& disp) const
+void Discret::ELEMENTS::Beam3r::get_generalized_interpolation_matrix_increments_at_xi(
+    Core::LinAlg::SerialDenseMatrix& Iinc, const double& xi, const std::vector<double>& disp) const
 {
   const unsigned int vpernode = this->hermite_centerline_interpolation() ? 2 : 1;
   const unsigned int nnodecl = this->NumCenterlineNodes();
@@ -1471,12 +1475,12 @@ void DRT::ELEMENTS::Beam3r::get_generalized_interpolation_matrix_increments_at_x
     {
       if (vpernode == 1)
       {
-        CORE::LINALG::Matrix<6, 12, double> Iinc_fixedsize(&Iinc(0, 0), true);
+        Core::LinAlg::Matrix<6, 12, double> Iinc_fixedsize(&Iinc(0, 0), true);
         get_generalized_interpolation_matrix_increments_at_xi<2, 2, 1>(Iinc_fixedsize, xi, disp);
       }
       else
       {
-        CORE::LINALG::Matrix<6, 18, double> Iinc_fixedsize(&Iinc(0, 0), true);
+        Core::LinAlg::Matrix<6, 18, double> Iinc_fixedsize(&Iinc(0, 0), true);
         get_generalized_interpolation_matrix_increments_at_xi<2, 2, 2>(Iinc_fixedsize, xi, disp);
       }
       break;
@@ -1485,12 +1489,12 @@ void DRT::ELEMENTS::Beam3r::get_generalized_interpolation_matrix_increments_at_x
     {
       if (vpernode == 1)
       {
-        CORE::LINALG::Matrix<6, 18, double> Iinc_fixedsize(&Iinc(0, 0), true);
+        Core::LinAlg::Matrix<6, 18, double> Iinc_fixedsize(&Iinc(0, 0), true);
         get_generalized_interpolation_matrix_increments_at_xi<3, 3, 1>(Iinc_fixedsize, xi, disp);
       }
       else
       {
-        CORE::LINALG::Matrix<6, 21, double> Iinc_fixedsize(&Iinc(0, 0), true);
+        Core::LinAlg::Matrix<6, 21, double> Iinc_fixedsize(&Iinc(0, 0), true);
         get_generalized_interpolation_matrix_increments_at_xi<3, 2, 2>(Iinc_fixedsize, xi, disp);
       }
       break;
@@ -1499,12 +1503,12 @@ void DRT::ELEMENTS::Beam3r::get_generalized_interpolation_matrix_increments_at_x
     {
       if (vpernode == 1)
       {
-        CORE::LINALG::Matrix<6, 24, double> Iinc_fixedsize(&Iinc(0, 0), true);
+        Core::LinAlg::Matrix<6, 24, double> Iinc_fixedsize(&Iinc(0, 0), true);
         get_generalized_interpolation_matrix_increments_at_xi<4, 4, 1>(Iinc_fixedsize, xi, disp);
       }
       else
       {
-        CORE::LINALG::Matrix<6, 24, double> Iinc_fixedsize(&Iinc(0, 0), true);
+        Core::LinAlg::Matrix<6, 24, double> Iinc_fixedsize(&Iinc(0, 0), true);
         get_generalized_interpolation_matrix_increments_at_xi<4, 2, 2>(Iinc_fixedsize, xi, disp);
       }
       break;
@@ -1513,12 +1517,12 @@ void DRT::ELEMENTS::Beam3r::get_generalized_interpolation_matrix_increments_at_x
     {
       if (vpernode == 1)
       {
-        CORE::LINALG::Matrix<6, 30, double> Iinc_fixedsize(&Iinc(0, 0), true);
+        Core::LinAlg::Matrix<6, 30, double> Iinc_fixedsize(&Iinc(0, 0), true);
         get_generalized_interpolation_matrix_increments_at_xi<5, 5, 1>(Iinc_fixedsize, xi, disp);
       }
       else
       {
-        CORE::LINALG::Matrix<6, 27, double> Iinc_fixedsize(&Iinc(0, 0), true);
+        Core::LinAlg::Matrix<6, 27, double> Iinc_fixedsize(&Iinc(0, 0), true);
         get_generalized_interpolation_matrix_increments_at_xi<5, 2, 2>(Iinc_fixedsize, xi, disp);
       }
       break;
@@ -1531,8 +1535,8 @@ void DRT::ELEMENTS::Beam3r::get_generalized_interpolation_matrix_increments_at_x
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
-void DRT::ELEMENTS::Beam3r::get_generalized_interpolation_matrix_increments_at_xi(
-    CORE::LINALG::Matrix<6, 3 * vpernode * nnodecl + 3 * nnodetriad, double>& Iinc,
+void Discret::ELEMENTS::Beam3r::get_generalized_interpolation_matrix_increments_at_xi(
+    Core::LinAlg::Matrix<6, 3 * vpernode * nnodecl + 3 * nnodetriad, double>& Iinc,
     const double& xi, const std::vector<double>& disp) const
 {
   const unsigned int dofperclnode = 3 * vpernode;
@@ -1541,19 +1545,19 @@ void DRT::ELEMENTS::Beam3r::get_generalized_interpolation_matrix_increments_at_x
 
   // these shape functions are used for the interpolation of the beam centerline
   // (either cubic Hermite or Lagrange polynomials of order 1...5)
-  CORE::LINALG::Matrix<1, vpernode * nnodecl, double> H_i;
+  Core::LinAlg::Matrix<1, vpernode * nnodecl, double> H_i;
 
-  DRT::UTILS::BEAM::EvaluateShapeFunctionsAtXi<nnodecl, vpernode>(
+  Discret::UTILS::Beam::EvaluateShapeFunctionsAtXi<nnodecl, vpernode>(
       xi, H_i, this->Shape(), this->RefLength());
 
   // nodal triads in form of quaternions
-  std::vector<CORE::LINALG::Matrix<4, 1, double>> Qnode(nnodetriad);
+  std::vector<Core::LinAlg::Matrix<4, 1, double>> Qnode(nnodetriad);
 
   get_nodal_triads_from_full_disp_vec_or_from_disp_theta<nnodetriad, double>(disp, Qnode);
 
   // vector with nnodetriad elements, who represent the 3x3-matrix-shaped interpolation
   // function \tilde{I}^nnode at a certain point xi according to (3.18), Jelenic 1999
-  std::vector<CORE::LINALG::Matrix<3, 3, double>> Itilde(nnodetriad);
+  std::vector<Core::LinAlg::Matrix<3, 3, double>> Itilde(nnodetriad);
   compute_generalized_nodal_rotation_interpolation_matrix_from_nodal_triads<nnodetriad, double>(
       Qnode, xi, Itilde);
 
@@ -1584,9 +1588,10 @@ void DRT::ELEMENTS::Beam3r::get_generalized_interpolation_matrix_increments_at_x
  | update (total) displacement vector and set nodal triads (as quaternions) grill 03/16|
  *------------------------------------------------------------------------------------------------------------*/
 template <unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode, typename T>
-void DRT::ELEMENTS::Beam3r::update_disp_tot_lag_and_nodal_triads(const std::vector<double>& disp,
-    CORE::LINALG::Matrix<3 * vpernode * nnodecl, 1, T>& disp_totlag_centerline,
-    std::vector<CORE::LINALG::Matrix<4, 1, T>>& Q_i)
+void Discret::ELEMENTS::Beam3r::update_disp_tot_lag_and_nodal_triads(
+    const std::vector<double>& disp,
+    Core::LinAlg::Matrix<3 * vpernode * nnodecl, 1, T>& disp_totlag_centerline,
+    std::vector<Core::LinAlg::Matrix<4, 1, T>>& Q_i)
 {
   // nnodetriad: number of nodes used for interpolation of triad field
   // nnodecl: number of nodes used for interpolation of centerline
@@ -1603,7 +1608,7 @@ void DRT::ELEMENTS::Beam3r::update_disp_tot_lag_and_nodal_triads(const std::vect
 
   // get current displacement values of rotational DOFs (i.e. relative rotation with respect to
   // reference config)
-  std::vector<CORE::LINALG::Matrix<3, 1, double>> disptheta;
+  std::vector<Core::LinAlg::Matrix<3, 1, double>> disptheta;
   disptheta.resize(nnodetriad);
   extract_rot_vec_dof_values<nnodetriad, nnodecl, vpernode, double>(disp, disptheta);
 
@@ -1614,16 +1619,16 @@ void DRT::ELEMENTS::Beam3r::update_disp_tot_lag_and_nodal_triads(const std::vect
   {
     // copy quaternions of nodal triads to class variable
     for (unsigned int i = 0; i < 4; ++i)
-      qnewnode_[node](i) = CORE::FADUTILS::CastToDouble(Q_i[node](i));
+      qnewnode_[node](i) = Core::FADUtils::CastToDouble(Q_i[node](i));
   }
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
-void DRT::ELEMENTS::Beam3r::set_automatic_differentiation_variables(
-    CORE::LINALG::Matrix<3 * vpernode * nnodecl, 1, FAD>& disp_totlag_centerline,
-    std::vector<CORE::LINALG::Matrix<4, 1, FAD>>& Q_i) const
+void Discret::ELEMENTS::Beam3r::set_automatic_differentiation_variables(
+    Core::LinAlg::Matrix<3 * vpernode * nnodecl, 1, FAD>& disp_totlag_centerline,
+    std::vector<Core::LinAlg::Matrix<4, 1, FAD>>& Q_i) const
 {
   const int dofperclnode = 3 * vpernode;
   const int dofpertriadnode = 3;
@@ -1648,13 +1653,13 @@ void DRT::ELEMENTS::Beam3r::set_automatic_differentiation_variables(
 
   // rotation vector theta at a specific node in a total Lagrangean manner (with respect to global
   // reference coordinate system)
-  std::vector<CORE::LINALG::Matrix<3, 1, FAD>> theta_totlag_i(nnodetriad);
+  std::vector<Core::LinAlg::Matrix<3, 1, FAD>> theta_totlag_i(nnodetriad);
 
   // compute nodal quaternions based on multiplicative increments of rotational DOFs
   for (unsigned int node = 0; node < nnodetriad; ++node)
   {
     // compute physical total angle theta_totlag
-    CORE::LARGEROTATIONS::quaterniontoangle(Q_i[node], theta_totlag_i[node]);
+    Core::LargeRotations::quaterniontoangle(Q_i[node], theta_totlag_i[node]);
   }
 
   // set differentiation variables for FAD: rotational DOFs
@@ -1675,16 +1680,16 @@ void DRT::ELEMENTS::Beam3r::set_automatic_differentiation_variables(
   for (unsigned int node = 0; node < nnodetriad; ++node)
   {
     Q_i[node].PutScalar(0.0);
-    CORE::LARGEROTATIONS::angletoquaternion(theta_totlag_i[node], Q_i[node]);
+    Core::LargeRotations::angletoquaternion(theta_totlag_i[node], Q_i[node]);
   }
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int nnodecl, unsigned int vpernode, typename T>
-void DRT::ELEMENTS::Beam3r::extract_centerline_dof_values_from_element_state_vector(
+void Discret::ELEMENTS::Beam3r::extract_centerline_dof_values_from_element_state_vector(
     const std::vector<double>& dofvec,
-    CORE::LINALG::Matrix<3 * vpernode * nnodecl, 1, T>& dofvec_centerline,
+    Core::LinAlg::Matrix<3 * vpernode * nnodecl, 1, T>& dofvec_centerline,
     bool add_reference_values) const
 {
   // nnodecl: number of nodes used for interpolation of centerline
@@ -1717,7 +1722,7 @@ void DRT::ELEMENTS::Beam3r::extract_centerline_dof_values_from_element_state_vec
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3r::extract_centerline_dof_values_from_element_state_vector(
+void Discret::ELEMENTS::Beam3r::extract_centerline_dof_values_from_element_state_vector(
     const std::vector<double>& dofvec, std::vector<double>& dofvec_centerline,
     bool add_reference_values) const
 {
@@ -1732,15 +1737,15 @@ void DRT::ELEMENTS::Beam3r::extract_centerline_dof_values_from_element_state_vec
     {
       if (vpernode == 2)
       {
-        // we use the method for CORE::LINALG fixed size matrix and create it as a view on the STL
+        // we use the method for Core::LINALG fixed size matrix and create it as a view on the STL
         // vector
-        CORE::LINALG::Matrix<12, 1> dofvec_centerline_fixedsize(dofvec_centerline.data(), true);
+        Core::LinAlg::Matrix<12, 1> dofvec_centerline_fixedsize(dofvec_centerline.data(), true);
         this->extract_centerline_dof_values_from_element_state_vector<2, 2, double>(
             dofvec, dofvec_centerline_fixedsize, add_reference_values);
       }
       else
       {
-        CORE::LINALG::Matrix<6, 1> dofvec_centerline_fixedsize(dofvec_centerline.data(), true);
+        Core::LinAlg::Matrix<6, 1> dofvec_centerline_fixedsize(dofvec_centerline.data(), true);
         this->extract_centerline_dof_values_from_element_state_vector<2, 1, double>(
             dofvec, dofvec_centerline_fixedsize, add_reference_values);
       }
@@ -1748,21 +1753,21 @@ void DRT::ELEMENTS::Beam3r::extract_centerline_dof_values_from_element_state_vec
     }
     case 3:
     {
-      CORE::LINALG::Matrix<9, 1> dofvec_centerline_fixedsize(dofvec_centerline.data(), true);
+      Core::LinAlg::Matrix<9, 1> dofvec_centerline_fixedsize(dofvec_centerline.data(), true);
       this->extract_centerline_dof_values_from_element_state_vector<3, 1, double>(
           dofvec, dofvec_centerline_fixedsize, add_reference_values);
       break;
     }
     case 4:
     {
-      CORE::LINALG::Matrix<12, 1> dofvec_centerline_fixedsize(dofvec_centerline.data(), true);
+      Core::LinAlg::Matrix<12, 1> dofvec_centerline_fixedsize(dofvec_centerline.data(), true);
       this->extract_centerline_dof_values_from_element_state_vector<4, 1, double>(
           dofvec, dofvec_centerline_fixedsize, add_reference_values);
       break;
     }
     case 5:
     {
-      CORE::LINALG::Matrix<15, 1> dofvec_centerline_fixedsize(dofvec_centerline.data(), true);
+      Core::LinAlg::Matrix<15, 1> dofvec_centerline_fixedsize(dofvec_centerline.data(), true);
       this->extract_centerline_dof_values_from_element_state_vector<5, 1, double>(
           dofvec, dofvec_centerline_fixedsize, add_reference_values);
       break;
@@ -1775,8 +1780,8 @@ void DRT::ELEMENTS::Beam3r::extract_centerline_dof_values_from_element_state_vec
 /*------------------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------------------*/
 template <unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode, typename T>
-void DRT::ELEMENTS::Beam3r::extract_rot_vec_dof_values(const std::vector<double>& dofvec,
-    std::vector<CORE::LINALG::Matrix<3, 1, T>>& dofvec_rotvec) const
+void Discret::ELEMENTS::Beam3r::extract_rot_vec_dof_values(const std::vector<double>& dofvec,
+    std::vector<Core::LinAlg::Matrix<3, 1, T>>& dofvec_rotvec) const
 {
   // nnodetriad: number of nodes used for triad interpolation
   // nnodecl: number of nodes used for interpolation of centerline
@@ -1807,8 +1812,8 @@ void DRT::ELEMENTS::Beam3r::extract_rot_vec_dof_values(const std::vector<double>
 
 /*------------------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3r::extract_rot_vec_dof_values(const std::vector<double>& dofvec,
-    std::vector<CORE::LINALG::Matrix<3, 1, double>>& dofvec_rotvec) const
+void Discret::ELEMENTS::Beam3r::extract_rot_vec_dof_values(const std::vector<double>& dofvec,
+    std::vector<Core::LinAlg::Matrix<3, 1, double>>& dofvec_rotvec) const
 {
   switch (this->num_node())
   {
@@ -1868,42 +1873,42 @@ void DRT::ELEMENTS::Beam3r::extract_rot_vec_dof_values(const std::vector<double>
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int nnodetriad, typename T>
-void DRT::ELEMENTS::Beam3r::get_nodal_triads_from_disp_theta(
-    const std::vector<CORE::LINALG::Matrix<3, 1, double>>& disptheta,
-    std::vector<CORE::LINALG::Matrix<4, 1, T>>& Qnode) const
+void Discret::ELEMENTS::Beam3r::get_nodal_triads_from_disp_theta(
+    const std::vector<Core::LinAlg::Matrix<3, 1, double>>& disptheta,
+    std::vector<Core::LinAlg::Matrix<4, 1, T>>& Qnode) const
 {
   // initial nodal rotation vector in quaternion form
-  CORE::LINALG::Matrix<4, 1> Q0;
+  Core::LinAlg::Matrix<4, 1> Q0;
   // rotational displacement at a certain node in quaternion form
-  CORE::LINALG::Matrix<4, 1> deltaQ;
+  Core::LinAlg::Matrix<4, 1> deltaQ;
 
   // Compute nodal triads in quaternion form
   for (unsigned int node = 0; node < nnodetriad; ++node)
   {
     // get initial nodal rotation vectors and transform to quaternions
-    CORE::LARGEROTATIONS::angletoquaternion(theta0node_[node], Q0);
+    Core::LargeRotations::angletoquaternion(theta0node_[node], Q0);
 
     // rotate initial triads by relative rotation vector from displacement vector (via quaternion
     // product)
-    CORE::LARGEROTATIONS::angletoquaternion(disptheta[node], deltaQ);
-    CORE::LARGEROTATIONS::quaternionproduct(Q0, deltaQ, Qnode[node]);
+    Core::LargeRotations::angletoquaternion(disptheta[node], deltaQ);
+    Core::LargeRotations::quaternionproduct(Q0, deltaQ, Qnode[node]);
 
     // renormalize quaternion to keep its absolute value one even in case of long simulations and
     // intricate calculations
-    Qnode[node].Scale(1.0 / CORE::FADUTILS::VectorNorm(Qnode[node]));
+    Qnode[node].Scale(1.0 / Core::FADUtils::VectorNorm(Qnode[node]));
   }
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int nnodetriad, typename T>
-void DRT::ELEMENTS::Beam3r::get_nodal_triads_from_full_disp_vec_or_from_disp_theta(
-    const std::vector<T>& dispvec, std::vector<CORE::LINALG::Matrix<4, 1, T>>& Qnode) const
+void Discret::ELEMENTS::Beam3r::get_nodal_triads_from_full_disp_vec_or_from_disp_theta(
+    const std::vector<T>& dispvec, std::vector<Core::LinAlg::Matrix<4, 1, T>>& Qnode) const
 {
   const unsigned int vpernode = this->hermite_centerline_interpolation() ? 2 : 1;
   const unsigned int nnodecl = this->NumCenterlineNodes();
 
-  std::vector<CORE::LINALG::Matrix<3, 1, double>> nodal_rotvecs(nnodetriad);
+  std::vector<Core::LinAlg::Matrix<3, 1, double>> nodal_rotvecs(nnodetriad);
 
   /* we assume that either the full disp vector of this element or only
    * values for nodal rotation vectors are passed in this function call */
@@ -1930,15 +1935,15 @@ void DRT::ELEMENTS::Beam3r::get_nodal_triads_from_full_disp_vec_or_from_disp_the
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int nnodetriad, typename T>
-void DRT::ELEMENTS::Beam3r::
+void Discret::ELEMENTS::Beam3r::
     compute_generalized_nodal_rotation_interpolation_matrix_from_nodal_triads(
-        const std::vector<CORE::LINALG::Matrix<4, 1, T>>& Qnode, const double xi,
-        std::vector<CORE::LINALG::Matrix<3, 3, T>>& Itilde) const
+        const std::vector<Core::LinAlg::Matrix<4, 1, T>>& Qnode, const double xi,
+        std::vector<Core::LinAlg::Matrix<3, 3, T>>& Itilde) const
 {
   // create object of triad interpolation scheme
-  Teuchos::RCP<LARGEROTATIONS::TriadInterpolationLocalRotationVectors<nnodetriad, T>>
+  Teuchos::RCP<LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, T>>
       triad_interpolation_scheme_ptr =
-          Teuchos::rcp(new LARGEROTATIONS::TriadInterpolationLocalRotationVectors<nnodetriad, T>());
+          Teuchos::rcp(new LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, T>());
 
   // reset triad interpolation scheme with nodal quaternions
   triad_interpolation_scheme_ptr->Reset(Qnode);
@@ -1948,155 +1953,155 @@ void DRT::ELEMENTS::Beam3r::
 }
 
 // explicit template instantations (some compilers do not export symboles defined above)
-template void DRT::ELEMENTS::Beam3r::set_up_reference_geometry<2, 2, 1>(
+template void Discret::ELEMENTS::Beam3r::set_up_reference_geometry<2, 2, 1>(
     const std::vector<double>&, const std::vector<double>&);
-template void DRT::ELEMENTS::Beam3r::set_up_reference_geometry<2, 2, 2>(
+template void Discret::ELEMENTS::Beam3r::set_up_reference_geometry<2, 2, 2>(
     const std::vector<double>&, const std::vector<double>&);
-template void DRT::ELEMENTS::Beam3r::set_up_reference_geometry<3, 3, 1>(
+template void Discret::ELEMENTS::Beam3r::set_up_reference_geometry<3, 3, 1>(
     const std::vector<double>&, const std::vector<double>&);
-template void DRT::ELEMENTS::Beam3r::set_up_reference_geometry<3, 2, 2>(
+template void Discret::ELEMENTS::Beam3r::set_up_reference_geometry<3, 2, 2>(
     const std::vector<double>&, const std::vector<double>&);
-template void DRT::ELEMENTS::Beam3r::set_up_reference_geometry<4, 4, 1>(
+template void Discret::ELEMENTS::Beam3r::set_up_reference_geometry<4, 4, 1>(
     const std::vector<double>&, const std::vector<double>&);
-template void DRT::ELEMENTS::Beam3r::set_up_reference_geometry<4, 2, 2>(
+template void Discret::ELEMENTS::Beam3r::set_up_reference_geometry<4, 2, 2>(
     const std::vector<double>&, const std::vector<double>&);
-template void DRT::ELEMENTS::Beam3r::set_up_reference_geometry<5, 5, 1>(
+template void Discret::ELEMENTS::Beam3r::set_up_reference_geometry<5, 5, 1>(
     const std::vector<double>&, const std::vector<double>&);
-template void DRT::ELEMENTS::Beam3r::set_up_reference_geometry<5, 2, 2>(
+template void Discret::ELEMENTS::Beam3r::set_up_reference_geometry<5, 2, 2>(
     const std::vector<double>&, const std::vector<double>&);
-template void DRT::ELEMENTS::Beam3r::update_disp_tot_lag_and_nodal_triads<2, 2, 1, double>(
-    const std::vector<double>&, CORE::LINALG::Matrix<6, 1, double>&,
-    std::vector<CORE::LINALG::Matrix<4, 1, double>>&);
-template void DRT::ELEMENTS::Beam3r::update_disp_tot_lag_and_nodal_triads<3, 3, 1, double>(
-    const std::vector<double>&, CORE::LINALG::Matrix<9, 1, double>&,
-    std::vector<CORE::LINALG::Matrix<4, 1, double>>&);
-template void DRT::ELEMENTS::Beam3r::update_disp_tot_lag_and_nodal_triads<4, 4, 1, double>(
-    const std::vector<double>&, CORE::LINALG::Matrix<12, 1, double>&,
-    std::vector<CORE::LINALG::Matrix<4, 1, double>>&);
-template void DRT::ELEMENTS::Beam3r::update_disp_tot_lag_and_nodal_triads<5, 5, 1, double>(
-    const std::vector<double>&, CORE::LINALG::Matrix<15, 1, double>&,
-    std::vector<CORE::LINALG::Matrix<4, 1, double>>&);
-template void DRT::ELEMENTS::Beam3r::update_disp_tot_lag_and_nodal_triads<2, 2, 2, double>(
-    const std::vector<double>&, CORE::LINALG::Matrix<12, 1, double>&,
-    std::vector<CORE::LINALG::Matrix<4, 1, double>>&);
-template void DRT::ELEMENTS::Beam3r::update_disp_tot_lag_and_nodal_triads<3, 2, 2, double>(
-    const std::vector<double>&, CORE::LINALG::Matrix<12, 1, double>&,
-    std::vector<CORE::LINALG::Matrix<4, 1, double>>&);
-template void DRT::ELEMENTS::Beam3r::update_disp_tot_lag_and_nodal_triads<4, 2, 2, double>(
-    const std::vector<double>&, CORE::LINALG::Matrix<12, 1, double>&,
-    std::vector<CORE::LINALG::Matrix<4, 1, double>>&);
-template void DRT::ELEMENTS::Beam3r::update_disp_tot_lag_and_nodal_triads<5, 2, 2, double>(
-    const std::vector<double>&, CORE::LINALG::Matrix<12, 1, double>&,
-    std::vector<CORE::LINALG::Matrix<4, 1, double>>&);
+template void Discret::ELEMENTS::Beam3r::update_disp_tot_lag_and_nodal_triads<2, 2, 1, double>(
+    const std::vector<double>&, Core::LinAlg::Matrix<6, 1, double>&,
+    std::vector<Core::LinAlg::Matrix<4, 1, double>>&);
+template void Discret::ELEMENTS::Beam3r::update_disp_tot_lag_and_nodal_triads<3, 3, 1, double>(
+    const std::vector<double>&, Core::LinAlg::Matrix<9, 1, double>&,
+    std::vector<Core::LinAlg::Matrix<4, 1, double>>&);
+template void Discret::ELEMENTS::Beam3r::update_disp_tot_lag_and_nodal_triads<4, 4, 1, double>(
+    const std::vector<double>&, Core::LinAlg::Matrix<12, 1, double>&,
+    std::vector<Core::LinAlg::Matrix<4, 1, double>>&);
+template void Discret::ELEMENTS::Beam3r::update_disp_tot_lag_and_nodal_triads<5, 5, 1, double>(
+    const std::vector<double>&, Core::LinAlg::Matrix<15, 1, double>&,
+    std::vector<Core::LinAlg::Matrix<4, 1, double>>&);
+template void Discret::ELEMENTS::Beam3r::update_disp_tot_lag_and_nodal_triads<2, 2, 2, double>(
+    const std::vector<double>&, Core::LinAlg::Matrix<12, 1, double>&,
+    std::vector<Core::LinAlg::Matrix<4, 1, double>>&);
+template void Discret::ELEMENTS::Beam3r::update_disp_tot_lag_and_nodal_triads<3, 2, 2, double>(
+    const std::vector<double>&, Core::LinAlg::Matrix<12, 1, double>&,
+    std::vector<Core::LinAlg::Matrix<4, 1, double>>&);
+template void Discret::ELEMENTS::Beam3r::update_disp_tot_lag_and_nodal_triads<4, 2, 2, double>(
+    const std::vector<double>&, Core::LinAlg::Matrix<12, 1, double>&,
+    std::vector<Core::LinAlg::Matrix<4, 1, double>>&);
+template void Discret::ELEMENTS::Beam3r::update_disp_tot_lag_and_nodal_triads<5, 2, 2, double>(
+    const std::vector<double>&, Core::LinAlg::Matrix<12, 1, double>&,
+    std::vector<Core::LinAlg::Matrix<4, 1, double>>&);
 template void
-DRT::ELEMENTS::Beam3r::update_disp_tot_lag_and_nodal_triads<2, 2, 1, Sacado::Fad::DFad<double>>(
-    const std::vector<double>&, CORE::LINALG::Matrix<6, 1, Sacado::Fad::DFad<double>>&,
-    std::vector<CORE::LINALG::Matrix<4, 1, Sacado::Fad::DFad<double>>>&);
+Discret::ELEMENTS::Beam3r::update_disp_tot_lag_and_nodal_triads<2, 2, 1, Sacado::Fad::DFad<double>>(
+    const std::vector<double>&, Core::LinAlg::Matrix<6, 1, Sacado::Fad::DFad<double>>&,
+    std::vector<Core::LinAlg::Matrix<4, 1, Sacado::Fad::DFad<double>>>&);
 template void
-DRT::ELEMENTS::Beam3r::update_disp_tot_lag_and_nodal_triads<3, 3, 1, Sacado::Fad::DFad<double>>(
-    const std::vector<double>&, CORE::LINALG::Matrix<9, 1, Sacado::Fad::DFad<double>>&,
-    std::vector<CORE::LINALG::Matrix<4, 1, Sacado::Fad::DFad<double>>>&);
+Discret::ELEMENTS::Beam3r::update_disp_tot_lag_and_nodal_triads<3, 3, 1, Sacado::Fad::DFad<double>>(
+    const std::vector<double>&, Core::LinAlg::Matrix<9, 1, Sacado::Fad::DFad<double>>&,
+    std::vector<Core::LinAlg::Matrix<4, 1, Sacado::Fad::DFad<double>>>&);
 template void
-DRT::ELEMENTS::Beam3r::update_disp_tot_lag_and_nodal_triads<4, 4, 1, Sacado::Fad::DFad<double>>(
-    const std::vector<double>&, CORE::LINALG::Matrix<12, 1, Sacado::Fad::DFad<double>>&,
-    std::vector<CORE::LINALG::Matrix<4, 1, Sacado::Fad::DFad<double>>>&);
+Discret::ELEMENTS::Beam3r::update_disp_tot_lag_and_nodal_triads<4, 4, 1, Sacado::Fad::DFad<double>>(
+    const std::vector<double>&, Core::LinAlg::Matrix<12, 1, Sacado::Fad::DFad<double>>&,
+    std::vector<Core::LinAlg::Matrix<4, 1, Sacado::Fad::DFad<double>>>&);
 template void
-DRT::ELEMENTS::Beam3r::update_disp_tot_lag_and_nodal_triads<5, 5, 1, Sacado::Fad::DFad<double>>(
-    const std::vector<double>&, CORE::LINALG::Matrix<15, 1, Sacado::Fad::DFad<double>>&,
-    std::vector<CORE::LINALG::Matrix<4, 1, Sacado::Fad::DFad<double>>>&);
+Discret::ELEMENTS::Beam3r::update_disp_tot_lag_and_nodal_triads<5, 5, 1, Sacado::Fad::DFad<double>>(
+    const std::vector<double>&, Core::LinAlg::Matrix<15, 1, Sacado::Fad::DFad<double>>&,
+    std::vector<Core::LinAlg::Matrix<4, 1, Sacado::Fad::DFad<double>>>&);
 template void
-DRT::ELEMENTS::Beam3r::update_disp_tot_lag_and_nodal_triads<2, 2, 2, Sacado::Fad::DFad<double>>(
-    const std::vector<double>&, CORE::LINALG::Matrix<12, 1, Sacado::Fad::DFad<double>>&,
-    std::vector<CORE::LINALG::Matrix<4, 1, Sacado::Fad::DFad<double>>>&);
+Discret::ELEMENTS::Beam3r::update_disp_tot_lag_and_nodal_triads<2, 2, 2, Sacado::Fad::DFad<double>>(
+    const std::vector<double>&, Core::LinAlg::Matrix<12, 1, Sacado::Fad::DFad<double>>&,
+    std::vector<Core::LinAlg::Matrix<4, 1, Sacado::Fad::DFad<double>>>&);
 template void
-DRT::ELEMENTS::Beam3r::update_disp_tot_lag_and_nodal_triads<3, 2, 2, Sacado::Fad::DFad<double>>(
-    const std::vector<double>&, CORE::LINALG::Matrix<12, 1, Sacado::Fad::DFad<double>>&,
-    std::vector<CORE::LINALG::Matrix<4, 1, Sacado::Fad::DFad<double>>>&);
+Discret::ELEMENTS::Beam3r::update_disp_tot_lag_and_nodal_triads<3, 2, 2, Sacado::Fad::DFad<double>>(
+    const std::vector<double>&, Core::LinAlg::Matrix<12, 1, Sacado::Fad::DFad<double>>&,
+    std::vector<Core::LinAlg::Matrix<4, 1, Sacado::Fad::DFad<double>>>&);
 template void
-DRT::ELEMENTS::Beam3r::update_disp_tot_lag_and_nodal_triads<4, 2, 2, Sacado::Fad::DFad<double>>(
-    const std::vector<double>&, CORE::LINALG::Matrix<12, 1, Sacado::Fad::DFad<double>>&,
-    std::vector<CORE::LINALG::Matrix<4, 1, Sacado::Fad::DFad<double>>>&);
+Discret::ELEMENTS::Beam3r::update_disp_tot_lag_and_nodal_triads<4, 2, 2, Sacado::Fad::DFad<double>>(
+    const std::vector<double>&, Core::LinAlg::Matrix<12, 1, Sacado::Fad::DFad<double>>&,
+    std::vector<Core::LinAlg::Matrix<4, 1, Sacado::Fad::DFad<double>>>&);
 template void
-DRT::ELEMENTS::Beam3r::update_disp_tot_lag_and_nodal_triads<5, 2, 2, Sacado::Fad::DFad<double>>(
-    const std::vector<double>&, CORE::LINALG::Matrix<12, 1, Sacado::Fad::DFad<double>>&,
-    std::vector<CORE::LINALG::Matrix<4, 1, Sacado::Fad::DFad<double>>>&);
-template void DRT::ELEMENTS::Beam3r::set_automatic_differentiation_variables<2, 2, 1>(
-    CORE::LINALG::Matrix<6, 1, FAD>&, std::vector<CORE::LINALG::Matrix<4, 1, FAD>>&) const;
-template void DRT::ELEMENTS::Beam3r::set_automatic_differentiation_variables<3, 3, 1>(
-    CORE::LINALG::Matrix<9, 1, FAD>&, std::vector<CORE::LINALG::Matrix<4, 1, FAD>>&) const;
-template void DRT::ELEMENTS::Beam3r::set_automatic_differentiation_variables<4, 4, 1>(
-    CORE::LINALG::Matrix<12, 1, FAD>&, std::vector<CORE::LINALG::Matrix<4, 1, FAD>>&) const;
-template void DRT::ELEMENTS::Beam3r::set_automatic_differentiation_variables<5, 5, 1>(
-    CORE::LINALG::Matrix<15, 1, FAD>&, std::vector<CORE::LINALG::Matrix<4, 1, FAD>>&) const;
-template void DRT::ELEMENTS::Beam3r::set_automatic_differentiation_variables<2, 2, 2>(
-    CORE::LINALG::Matrix<12, 1, FAD>&, std::vector<CORE::LINALG::Matrix<4, 1, FAD>>&) const;
-template void DRT::ELEMENTS::Beam3r::set_automatic_differentiation_variables<3, 2, 2>(
-    CORE::LINALG::Matrix<12, 1, FAD>&, std::vector<CORE::LINALG::Matrix<4, 1, FAD>>&) const;
-template void DRT::ELEMENTS::Beam3r::set_automatic_differentiation_variables<4, 2, 2>(
-    CORE::LINALG::Matrix<12, 1, FAD>&, std::vector<CORE::LINALG::Matrix<4, 1, FAD>>&) const;
-template void DRT::ELEMENTS::Beam3r::set_automatic_differentiation_variables<5, 2, 2>(
-    CORE::LINALG::Matrix<12, 1, FAD>&, std::vector<CORE::LINALG::Matrix<4, 1, FAD>>&) const;
-template void DRT::ELEMENTS::Beam3r::extract_centerline_dof_values_from_element_state_vector<2, 1,
-    double>(const std::vector<double>&, CORE::LINALG::Matrix<6, 1, double>&, bool) const;
-template void DRT::ELEMENTS::Beam3r::extract_centerline_dof_values_from_element_state_vector<3, 1,
-    double>(const std::vector<double>&, CORE::LINALG::Matrix<9, 1, double>&, bool) const;
-template void DRT::ELEMENTS::Beam3r::extract_centerline_dof_values_from_element_state_vector<4, 1,
-    double>(const std::vector<double>&, CORE::LINALG::Matrix<12, 1, double>&, bool) const;
-template void DRT::ELEMENTS::Beam3r::extract_centerline_dof_values_from_element_state_vector<5, 1,
-    double>(const std::vector<double>&, CORE::LINALG::Matrix<15, 1, double>&, bool) const;
-template void DRT::ELEMENTS::Beam3r::extract_centerline_dof_values_from_element_state_vector<2, 2,
-    double>(const std::vector<double>&, CORE::LINALG::Matrix<12, 1, double>&, bool) const;
-template void DRT::ELEMENTS::Beam3r::extract_rot_vec_dof_values<2, 2, 1, double>(
-    const std::vector<double>&, std::vector<CORE::LINALG::Matrix<3, 1, double>>&) const;
-template void DRT::ELEMENTS::Beam3r::extract_rot_vec_dof_values<2, 2, 2, double>(
-    const std::vector<double>&, std::vector<CORE::LINALG::Matrix<3, 1, double>>&) const;
-template void DRT::ELEMENTS::Beam3r::extract_rot_vec_dof_values<3, 3, 1, double>(
-    const std::vector<double>&, std::vector<CORE::LINALG::Matrix<3, 1, double>>&) const;
-template void DRT::ELEMENTS::Beam3r::extract_rot_vec_dof_values<3, 2, 2, double>(
-    const std::vector<double>&, std::vector<CORE::LINALG::Matrix<3, 1, double>>&) const;
-template void DRT::ELEMENTS::Beam3r::extract_rot_vec_dof_values<4, 4, 1, double>(
-    const std::vector<double>&, std::vector<CORE::LINALG::Matrix<3, 1, double>>&) const;
-template void DRT::ELEMENTS::Beam3r::extract_rot_vec_dof_values<4, 2, 2, double>(
-    const std::vector<double>&, std::vector<CORE::LINALG::Matrix<3, 1, double>>&) const;
-template void DRT::ELEMENTS::Beam3r::extract_rot_vec_dof_values<5, 5, 1, double>(
-    const std::vector<double>&, std::vector<CORE::LINALG::Matrix<3, 1, double>>&) const;
-template void DRT::ELEMENTS::Beam3r::extract_rot_vec_dof_values<5, 2, 2, double>(
-    const std::vector<double>&, std::vector<CORE::LINALG::Matrix<3, 1, double>>&) const;
-template void DRT::ELEMENTS::Beam3r::get_nodal_triads_from_disp_theta<2, double>(
-    const std::vector<CORE::LINALG::Matrix<3, 1, double>>&,
-    std::vector<CORE::LINALG::Matrix<4, 1, double>>&) const;
-template void DRT::ELEMENTS::Beam3r::get_nodal_triads_from_disp_theta<3, double>(
-    const std::vector<CORE::LINALG::Matrix<3, 1, double>>&,
-    std::vector<CORE::LINALG::Matrix<4, 1, double>>&) const;
-template void DRT::ELEMENTS::Beam3r::get_nodal_triads_from_disp_theta<4, double>(
-    const std::vector<CORE::LINALG::Matrix<3, 1, double>>&,
-    std::vector<CORE::LINALG::Matrix<4, 1, double>>&) const;
-template void DRT::ELEMENTS::Beam3r::get_nodal_triads_from_disp_theta<5, double>(
-    const std::vector<CORE::LINALG::Matrix<3, 1, double>>&,
-    std::vector<CORE::LINALG::Matrix<4, 1, double>>&) const;
-template void DRT::ELEMENTS::Beam3r::get_nodal_triads_from_full_disp_vec_or_from_disp_theta<2,
-    double>(const std::vector<double>&, std::vector<CORE::LINALG::Matrix<4, 1, double>>&) const;
-template void DRT::ELEMENTS::Beam3r::get_nodal_triads_from_full_disp_vec_or_from_disp_theta<3,
-    double>(const std::vector<double>&, std::vector<CORE::LINALG::Matrix<4, 1, double>>&) const;
-template void DRT::ELEMENTS::Beam3r::get_nodal_triads_from_full_disp_vec_or_from_disp_theta<4,
-    double>(const std::vector<double>&, std::vector<CORE::LINALG::Matrix<4, 1, double>>&) const;
-template void DRT::ELEMENTS::Beam3r::get_nodal_triads_from_full_disp_vec_or_from_disp_theta<5,
-    double>(const std::vector<double>&, std::vector<CORE::LINALG::Matrix<4, 1, double>>&) const;
-template void
-DRT::ELEMENTS::Beam3r::compute_generalized_nodal_rotation_interpolation_matrix_from_nodal_triads<2,
-    double>(const std::vector<CORE::LINALG::Matrix<4, 1, double>>&, const double,
-    std::vector<CORE::LINALG::Matrix<3, 3, double>>&) const;
-template void
-DRT::ELEMENTS::Beam3r::compute_generalized_nodal_rotation_interpolation_matrix_from_nodal_triads<3,
-    double>(const std::vector<CORE::LINALG::Matrix<4, 1, double>>&, const double,
-    std::vector<CORE::LINALG::Matrix<3, 3, double>>&) const;
-template void
-DRT::ELEMENTS::Beam3r::compute_generalized_nodal_rotation_interpolation_matrix_from_nodal_triads<4,
-    double>(const std::vector<CORE::LINALG::Matrix<4, 1, double>>&, const double,
-    std::vector<CORE::LINALG::Matrix<3, 3, double>>&) const;
-template void
-DRT::ELEMENTS::Beam3r::compute_generalized_nodal_rotation_interpolation_matrix_from_nodal_triads<5,
-    double>(const std::vector<CORE::LINALG::Matrix<4, 1, double>>&, const double,
-    std::vector<CORE::LINALG::Matrix<3, 3, double>>&) const;
+Discret::ELEMENTS::Beam3r::update_disp_tot_lag_and_nodal_triads<5, 2, 2, Sacado::Fad::DFad<double>>(
+    const std::vector<double>&, Core::LinAlg::Matrix<12, 1, Sacado::Fad::DFad<double>>&,
+    std::vector<Core::LinAlg::Matrix<4, 1, Sacado::Fad::DFad<double>>>&);
+template void Discret::ELEMENTS::Beam3r::set_automatic_differentiation_variables<2, 2, 1>(
+    Core::LinAlg::Matrix<6, 1, FAD>&, std::vector<Core::LinAlg::Matrix<4, 1, FAD>>&) const;
+template void Discret::ELEMENTS::Beam3r::set_automatic_differentiation_variables<3, 3, 1>(
+    Core::LinAlg::Matrix<9, 1, FAD>&, std::vector<Core::LinAlg::Matrix<4, 1, FAD>>&) const;
+template void Discret::ELEMENTS::Beam3r::set_automatic_differentiation_variables<4, 4, 1>(
+    Core::LinAlg::Matrix<12, 1, FAD>&, std::vector<Core::LinAlg::Matrix<4, 1, FAD>>&) const;
+template void Discret::ELEMENTS::Beam3r::set_automatic_differentiation_variables<5, 5, 1>(
+    Core::LinAlg::Matrix<15, 1, FAD>&, std::vector<Core::LinAlg::Matrix<4, 1, FAD>>&) const;
+template void Discret::ELEMENTS::Beam3r::set_automatic_differentiation_variables<2, 2, 2>(
+    Core::LinAlg::Matrix<12, 1, FAD>&, std::vector<Core::LinAlg::Matrix<4, 1, FAD>>&) const;
+template void Discret::ELEMENTS::Beam3r::set_automatic_differentiation_variables<3, 2, 2>(
+    Core::LinAlg::Matrix<12, 1, FAD>&, std::vector<Core::LinAlg::Matrix<4, 1, FAD>>&) const;
+template void Discret::ELEMENTS::Beam3r::set_automatic_differentiation_variables<4, 2, 2>(
+    Core::LinAlg::Matrix<12, 1, FAD>&, std::vector<Core::LinAlg::Matrix<4, 1, FAD>>&) const;
+template void Discret::ELEMENTS::Beam3r::set_automatic_differentiation_variables<5, 2, 2>(
+    Core::LinAlg::Matrix<12, 1, FAD>&, std::vector<Core::LinAlg::Matrix<4, 1, FAD>>&) const;
+template void Discret::ELEMENTS::Beam3r::extract_centerline_dof_values_from_element_state_vector<2,
+    1, double>(const std::vector<double>&, Core::LinAlg::Matrix<6, 1, double>&, bool) const;
+template void Discret::ELEMENTS::Beam3r::extract_centerline_dof_values_from_element_state_vector<3,
+    1, double>(const std::vector<double>&, Core::LinAlg::Matrix<9, 1, double>&, bool) const;
+template void Discret::ELEMENTS::Beam3r::extract_centerline_dof_values_from_element_state_vector<4,
+    1, double>(const std::vector<double>&, Core::LinAlg::Matrix<12, 1, double>&, bool) const;
+template void Discret::ELEMENTS::Beam3r::extract_centerline_dof_values_from_element_state_vector<5,
+    1, double>(const std::vector<double>&, Core::LinAlg::Matrix<15, 1, double>&, bool) const;
+template void Discret::ELEMENTS::Beam3r::extract_centerline_dof_values_from_element_state_vector<2,
+    2, double>(const std::vector<double>&, Core::LinAlg::Matrix<12, 1, double>&, bool) const;
+template void Discret::ELEMENTS::Beam3r::extract_rot_vec_dof_values<2, 2, 1, double>(
+    const std::vector<double>&, std::vector<Core::LinAlg::Matrix<3, 1, double>>&) const;
+template void Discret::ELEMENTS::Beam3r::extract_rot_vec_dof_values<2, 2, 2, double>(
+    const std::vector<double>&, std::vector<Core::LinAlg::Matrix<3, 1, double>>&) const;
+template void Discret::ELEMENTS::Beam3r::extract_rot_vec_dof_values<3, 3, 1, double>(
+    const std::vector<double>&, std::vector<Core::LinAlg::Matrix<3, 1, double>>&) const;
+template void Discret::ELEMENTS::Beam3r::extract_rot_vec_dof_values<3, 2, 2, double>(
+    const std::vector<double>&, std::vector<Core::LinAlg::Matrix<3, 1, double>>&) const;
+template void Discret::ELEMENTS::Beam3r::extract_rot_vec_dof_values<4, 4, 1, double>(
+    const std::vector<double>&, std::vector<Core::LinAlg::Matrix<3, 1, double>>&) const;
+template void Discret::ELEMENTS::Beam3r::extract_rot_vec_dof_values<4, 2, 2, double>(
+    const std::vector<double>&, std::vector<Core::LinAlg::Matrix<3, 1, double>>&) const;
+template void Discret::ELEMENTS::Beam3r::extract_rot_vec_dof_values<5, 5, 1, double>(
+    const std::vector<double>&, std::vector<Core::LinAlg::Matrix<3, 1, double>>&) const;
+template void Discret::ELEMENTS::Beam3r::extract_rot_vec_dof_values<5, 2, 2, double>(
+    const std::vector<double>&, std::vector<Core::LinAlg::Matrix<3, 1, double>>&) const;
+template void Discret::ELEMENTS::Beam3r::get_nodal_triads_from_disp_theta<2, double>(
+    const std::vector<Core::LinAlg::Matrix<3, 1, double>>&,
+    std::vector<Core::LinAlg::Matrix<4, 1, double>>&) const;
+template void Discret::ELEMENTS::Beam3r::get_nodal_triads_from_disp_theta<3, double>(
+    const std::vector<Core::LinAlg::Matrix<3, 1, double>>&,
+    std::vector<Core::LinAlg::Matrix<4, 1, double>>&) const;
+template void Discret::ELEMENTS::Beam3r::get_nodal_triads_from_disp_theta<4, double>(
+    const std::vector<Core::LinAlg::Matrix<3, 1, double>>&,
+    std::vector<Core::LinAlg::Matrix<4, 1, double>>&) const;
+template void Discret::ELEMENTS::Beam3r::get_nodal_triads_from_disp_theta<5, double>(
+    const std::vector<Core::LinAlg::Matrix<3, 1, double>>&,
+    std::vector<Core::LinAlg::Matrix<4, 1, double>>&) const;
+template void Discret::ELEMENTS::Beam3r::get_nodal_triads_from_full_disp_vec_or_from_disp_theta<2,
+    double>(const std::vector<double>&, std::vector<Core::LinAlg::Matrix<4, 1, double>>&) const;
+template void Discret::ELEMENTS::Beam3r::get_nodal_triads_from_full_disp_vec_or_from_disp_theta<3,
+    double>(const std::vector<double>&, std::vector<Core::LinAlg::Matrix<4, 1, double>>&) const;
+template void Discret::ELEMENTS::Beam3r::get_nodal_triads_from_full_disp_vec_or_from_disp_theta<4,
+    double>(const std::vector<double>&, std::vector<Core::LinAlg::Matrix<4, 1, double>>&) const;
+template void Discret::ELEMENTS::Beam3r::get_nodal_triads_from_full_disp_vec_or_from_disp_theta<5,
+    double>(const std::vector<double>&, std::vector<Core::LinAlg::Matrix<4, 1, double>>&) const;
+template void Discret::ELEMENTS::Beam3r::
+    compute_generalized_nodal_rotation_interpolation_matrix_from_nodal_triads<2, double>(
+        const std::vector<Core::LinAlg::Matrix<4, 1, double>>&, const double,
+        std::vector<Core::LinAlg::Matrix<3, 3, double>>&) const;
+template void Discret::ELEMENTS::Beam3r::
+    compute_generalized_nodal_rotation_interpolation_matrix_from_nodal_triads<3, double>(
+        const std::vector<Core::LinAlg::Matrix<4, 1, double>>&, const double,
+        std::vector<Core::LinAlg::Matrix<3, 3, double>>&) const;
+template void Discret::ELEMENTS::Beam3r::
+    compute_generalized_nodal_rotation_interpolation_matrix_from_nodal_triads<4, double>(
+        const std::vector<Core::LinAlg::Matrix<4, 1, double>>&, const double,
+        std::vector<Core::LinAlg::Matrix<3, 3, double>>&) const;
+template void Discret::ELEMENTS::Beam3r::
+    compute_generalized_nodal_rotation_interpolation_matrix_from_nodal_triads<5, double>(
+        const std::vector<Core::LinAlg::Matrix<4, 1, double>>&, const double,
+        std::vector<Core::LinAlg::Matrix<3, 3, double>>&) const;
 
 FOUR_C_NAMESPACE_CLOSE

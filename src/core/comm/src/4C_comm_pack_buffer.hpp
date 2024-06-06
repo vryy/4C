@@ -19,7 +19,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::COMM
+namespace Core::Communication
 {
   class PackBuffer
   {
@@ -112,7 +112,7 @@ namespace CORE::COMM
     std::size_t size_;
     bool grow_;
   };
-}  // namespace CORE::COMM
+}  // namespace Core::Communication
 
 FOUR_C_NAMESPACE_CLOSE
 

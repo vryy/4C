@@ -16,16 +16,16 @@ FOUR_C_NAMESPACE_OPEN
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-CORE::LINEAR_SOLVER::KrylovProjectionPreconditioner::KrylovProjectionPreconditioner(
-    Teuchos::RCP<CORE::LINEAR_SOLVER::PreconditionerTypeBase> preconditioner,
-    Teuchos::RCP<CORE::LINALG::KrylovProjector> projector)
+Core::LinearSolver::KrylovProjectionPreconditioner::KrylovProjectionPreconditioner(
+    Teuchos::RCP<Core::LinearSolver::PreconditionerTypeBase> preconditioner,
+    Teuchos::RCP<Core::LinAlg::KrylovProjector> projector)
     : preconditioner_(preconditioner), projector_(projector)
 {
 }
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void CORE::LINEAR_SOLVER::KrylovProjectionPreconditioner::Setup(
+void Core::LinearSolver::KrylovProjectionPreconditioner::Setup(
     bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
 {
   projector_->ApplyPT(*b);
@@ -37,10 +37,10 @@ void CORE::LINEAR_SOLVER::KrylovProjectionPreconditioner::Setup(
   // actual preconditioner is called first and the projection is done
   // afterwards.
   a_ = Teuchos::rcp(
-      new CORE::LINALG::LinalgProjectedOperator(Teuchos::rcp(matrix, false), true, projector_));
+      new Core::LinAlg::LinalgProjectedOperator(Teuchos::rcp(matrix, false), true, projector_));
 
   p_ = Teuchos::rcp(
-      new CORE::LINALG::LinalgPrecondOperator(preconditioner_->PrecOperator(), true, projector_));
+      new Core::LinAlg::LinalgPrecondOperator(preconditioner_->PrecOperator(), true, projector_));
 }
 
 FOUR_C_NAMESPACE_CLOSE

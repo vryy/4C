@@ -24,7 +24,7 @@ is just a "control instance".
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
@@ -34,10 +34,10 @@ namespace MAT
     {
      public:
       /// standard constructor
-      MatListChemotaxis(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      MatListChemotaxis(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       /// @name material parameters
       //@{
@@ -57,14 +57,14 @@ namespace MAT
 
   }  // namespace PAR
 
-  class MatListChemotaxisType : public CORE::COMM::ParObjectType
+  class MatListChemotaxisType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "MatListChemotaxisType"; }
 
     static MatListChemotaxisType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static MatListChemotaxisType instance_;
@@ -79,7 +79,7 @@ namespace MAT
     MatListChemotaxis();
 
     /// construct the material object given material parameters
-    explicit MatListChemotaxis(MAT::PAR::MatListChemotaxis* params);
+    explicit MatListChemotaxis(Mat::PAR::MatListChemotaxis* params);
 
     //! @name Packing and Unpacking
 
@@ -104,7 +104,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -123,13 +123,13 @@ namespace MAT
     //@}
 
     /// material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_matlist_chemotaxis;
+      return Core::Materials::m_matlist_chemotaxis;
     }
 
     /// return copy of this material object
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new MatListChemotaxis(*this));
     }
@@ -141,7 +141,7 @@ namespace MAT
     int PairID(const unsigned index) const;
 
     /// Return quick accessible material parameter data
-    MAT::PAR::MatListChemotaxis* Parameter() const override { return paramschemo_; }
+    Mat::PAR::MatListChemotaxis* Parameter() const override { return paramschemo_; }
 
    protected:
     /// setup of material map
@@ -152,10 +152,10 @@ namespace MAT
     void clear();
 
     /// my material parameters
-    MAT::PAR::MatListChemotaxis* paramschemo_;
+    Mat::PAR::MatListChemotaxis* paramschemo_;
   };
 
-}  // namespace MAT
+}  // namespace Mat
 
 
 FOUR_C_NAMESPACE_CLOSE

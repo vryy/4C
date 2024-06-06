@@ -24,15 +24,15 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
-    namespace INNER
+    namespace Inner
     {
       namespace StatusTest
       {
         class Generic;
       }  // namespace StatusTest
-    }    // namespace INNER
+    }    // namespace Inner
     namespace LineSearch
     {
       class Factory
@@ -53,27 +53,27 @@ namespace NOX
         Teuchos::RCP<::NOX::LineSearch::Generic> BuildLineSearch(
             const Teuchos::RCP<::NOX::GlobalData>& gd,
             const Teuchos::RCP<::NOX::StatusTest::Generic> outerTests,
-            const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic> innerTests,
+            const Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic> innerTests,
             Teuchos::ParameterList& params);
 
        private:
         // checks if the inner status test pointer is initialized
         void inner_status_test_is_required(
-            const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTests) const;
+            const Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic>& innerTests) const;
       };
       /*! Nonmember function to build a line search object.
 
-      \relates NOX::NLNSOL::Constraint::LineSearch::Factory
+      \relates NOX::NlnSol::Constraint::LineSearch::Factory
 
       */
       Teuchos::RCP<::NOX::LineSearch::Generic> BuildLineSearch(
           const Teuchos::RCP<::NOX::GlobalData>& gd,
           const Teuchos::RCP<::NOX::StatusTest::Generic> outerTests,
-          const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic> innerTests,
+          const Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic> innerTests,
           Teuchos::ParameterList& params);
 
     }  // namespace LineSearch
-  }    // namespace NLN
+  }    // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

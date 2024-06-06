@@ -27,11 +27,11 @@ namespace MIXTURE
   namespace PAR
   {
     template <typename T>
-    class RemodelFiberMaterial : public CORE::MAT::PAR::Parameter
+    class RemodelFiberMaterial : public Core::Mat::PAR::Parameter
     {
      public:
-      RemodelFiberMaterial(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
-      Teuchos::RCP<CORE::MAT::Material> create_material() override
+      RemodelFiberMaterial(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
+      Teuchos::RCP<Core::Mat::Material> create_material() override
       {
         FOUR_C_THROW("This type of material is not created with create_material()");
         std::exit(1);

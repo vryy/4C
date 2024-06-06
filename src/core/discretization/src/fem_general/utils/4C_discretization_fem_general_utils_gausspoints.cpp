@@ -21,7 +21,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::FE
+namespace Core::FE
 {
   namespace
   {
@@ -156,86 +156,86 @@ namespace CORE::FE
     };
 
   }  // namespace
-}  // namespace CORE::FE
+}  // namespace Core::FE
 
-CORE::FE::GaussIntegration::GaussIntegration(CORE::FE::CellType distype)
+Core::FE::GaussIntegration::GaussIntegration(Core::FE::CellType distype)
 {
   switch (distype)
   {
-    case CORE::FE::CellType::quad4:
-      gp_ = GaussPointCache::Instance().Create(CORE::FE::CellType::quad4, 3);
+    case Core::FE::CellType::quad4:
+      gp_ = GaussPointCache::Instance().Create(Core::FE::CellType::quad4, 3);
       break;
-    case CORE::FE::CellType::quad8:
-      gp_ = GaussPointCache::Instance().Create(CORE::FE::CellType::quad8, 4);
+    case Core::FE::CellType::quad8:
+      gp_ = GaussPointCache::Instance().Create(Core::FE::CellType::quad8, 4);
       break;
-    case CORE::FE::CellType::quad9:
-      gp_ = GaussPointCache::Instance().Create(CORE::FE::CellType::quad9, 4);
+    case Core::FE::CellType::quad9:
+      gp_ = GaussPointCache::Instance().Create(Core::FE::CellType::quad9, 4);
       break;
-    case CORE::FE::CellType::tri3:
-      gp_ = GaussPointCache::Instance().Create(CORE::FE::CellType::tri3, 3);
+    case Core::FE::CellType::tri3:
+      gp_ = GaussPointCache::Instance().Create(Core::FE::CellType::tri3, 3);
       break;
-    case CORE::FE::CellType::tri6:
-      gp_ = GaussPointCache::Instance().Create(CORE::FE::CellType::tri6, 4);
+    case Core::FE::CellType::tri6:
+      gp_ = GaussPointCache::Instance().Create(Core::FE::CellType::tri6, 4);
       break;
-    case CORE::FE::CellType::hex8:
-      gp_ = GaussPointCache::Instance().Create(CORE::FE::CellType::hex8, 3);
+    case Core::FE::CellType::hex8:
+      gp_ = GaussPointCache::Instance().Create(Core::FE::CellType::hex8, 3);
       break;
-    case CORE::FE::CellType::hex20:
-      gp_ = GaussPointCache::Instance().Create(CORE::FE::CellType::hex20, 4);
+    case Core::FE::CellType::hex20:
+      gp_ = GaussPointCache::Instance().Create(Core::FE::CellType::hex20, 4);
       break;
-    case CORE::FE::CellType::hex27:
-      gp_ = GaussPointCache::Instance().Create(CORE::FE::CellType::hex27, 4);
+    case Core::FE::CellType::hex27:
+      gp_ = GaussPointCache::Instance().Create(Core::FE::CellType::hex27, 4);
       break;
-    case CORE::FE::CellType::tet4:
-      gp_ = GaussPointCache::Instance().Create(CORE::FE::CellType::tet4, 3);
+    case Core::FE::CellType::tet4:
+      gp_ = GaussPointCache::Instance().Create(Core::FE::CellType::tet4, 3);
       break;
-    case CORE::FE::CellType::tet10:
-      gp_ = GaussPointCache::Instance().Create(CORE::FE::CellType::tet10, 4);
+    case Core::FE::CellType::tet10:
+      gp_ = GaussPointCache::Instance().Create(Core::FE::CellType::tet10, 4);
       break;
-    case CORE::FE::CellType::wedge6:
-      gp_ = GaussPointCache::Instance().Create(CORE::FE::CellType::wedge6, 3);
+    case Core::FE::CellType::wedge6:
+      gp_ = GaussPointCache::Instance().Create(Core::FE::CellType::wedge6, 3);
       break;
-    case CORE::FE::CellType::wedge15:
-      gp_ = GaussPointCache::Instance().Create(CORE::FE::CellType::wedge15, 4);
+    case Core::FE::CellType::wedge15:
+      gp_ = GaussPointCache::Instance().Create(Core::FE::CellType::wedge15, 4);
       break;
-    case CORE::FE::CellType::pyramid5:
-      gp_ = GaussPointCache::Instance().Create(CORE::FE::CellType::pyramid5, 3);
+    case Core::FE::CellType::pyramid5:
+      gp_ = GaussPointCache::Instance().Create(Core::FE::CellType::pyramid5, 3);
       break;
-    case CORE::FE::CellType::line2:
-      gp_ = GaussPointCache::Instance().Create(CORE::FE::CellType::line2, 3);
+    case Core::FE::CellType::line2:
+      gp_ = GaussPointCache::Instance().Create(Core::FE::CellType::line2, 3);
       break;
-    case CORE::FE::CellType::line3:
-      gp_ = GaussPointCache::Instance().Create(CORE::FE::CellType::line3, 4);
+    case Core::FE::CellType::line3:
+      gp_ = GaussPointCache::Instance().Create(Core::FE::CellType::line3, 4);
       break;
-    case CORE::FE::CellType::nurbs2:
-      gp_ = GaussPointCache::Instance().Create(CORE::FE::CellType::line2, 3);
+    case Core::FE::CellType::nurbs2:
+      gp_ = GaussPointCache::Instance().Create(Core::FE::CellType::line2, 3);
       break;
-    case CORE::FE::CellType::nurbs3:
-      gp_ = GaussPointCache::Instance().Create(CORE::FE::CellType::line3, 4);
+    case Core::FE::CellType::nurbs3:
+      gp_ = GaussPointCache::Instance().Create(Core::FE::CellType::line3, 4);
       break;
-    case CORE::FE::CellType::nurbs4:
-      gp_ = GaussPointCache::Instance().Create(CORE::FE::CellType::quad4, 3);
+    case Core::FE::CellType::nurbs4:
+      gp_ = GaussPointCache::Instance().Create(Core::FE::CellType::quad4, 3);
       break;
-    case CORE::FE::CellType::nurbs8:
-      gp_ = GaussPointCache::Instance().Create(CORE::FE::CellType::hex8, 3);
+    case Core::FE::CellType::nurbs8:
+      gp_ = GaussPointCache::Instance().Create(Core::FE::CellType::hex8, 3);
       break;
-    case CORE::FE::CellType::nurbs9:
-      gp_ = GaussPointCache::Instance().Create(CORE::FE::CellType::quad9, 4);
+    case Core::FE::CellType::nurbs9:
+      gp_ = GaussPointCache::Instance().Create(Core::FE::CellType::quad9, 4);
       break;
-    case CORE::FE::CellType::nurbs27:
-      gp_ = GaussPointCache::Instance().Create(CORE::FE::CellType::hex27, 4);
+    case Core::FE::CellType::nurbs27:
+      gp_ = GaussPointCache::Instance().Create(Core::FE::CellType::hex27, 4);
       break;
     default:
       FOUR_C_THROW("unsupported element shape");
   }
 }
 
-CORE::FE::GaussIntegration::GaussIntegration(CORE::FE::CellType distype, int degree)
+Core::FE::GaussIntegration::GaussIntegration(Core::FE::CellType distype, int degree)
 {
   gp_ = GaussPointCache::Instance().Create(distype, degree);
 }
 
-CORE::FE::GaussPointCache& CORE::FE::GaussPointCache::Instance()
+Core::FE::GaussPointCache& Core::FE::GaussPointCache::Instance()
 {
   static std::unique_ptr<GaussPointCache> instance;
   if (instance == nullptr)
@@ -246,10 +246,10 @@ CORE::FE::GaussPointCache& CORE::FE::GaussPointCache::Instance()
 }
 
 
-Teuchos::RCP<CORE::FE::GaussPoints> CORE::FE::GaussPointCache::Create(
-    CORE::FE::CellType distype, int degree)
+Teuchos::RCP<Core::FE::GaussPoints> Core::FE::GaussPointCache::Create(
+    Core::FE::CellType distype, int degree)
 {
-  std::map<std::pair<CORE::FE::CellType, int>, Teuchos::RCP<GaussPoints>>::iterator i =
+  std::map<std::pair<Core::FE::CellType, int>, Teuchos::RCP<GaussPoints>>::iterator i =
       gp_cache_.find(std::make_pair(distype, degree));
   if (i != gp_cache_.end())
   {
@@ -261,49 +261,49 @@ Teuchos::RCP<CORE::FE::GaussPoints> CORE::FE::GaussPointCache::Create(
 
   switch (distype)
   {
-    case CORE::FE::CellType::quad4:
+    case Core::FE::CellType::quad4:
       gp = Teuchos::rcp(new IntrepidGaussPoints<shards::Quadrilateral<4>>(degree));
       break;
-    case CORE::FE::CellType::quad8:
+    case Core::FE::CellType::quad8:
       gp = Teuchos::rcp(new IntrepidGaussPoints<shards::Quadrilateral<8>>(degree));
       break;
-    case CORE::FE::CellType::quad9:
+    case Core::FE::CellType::quad9:
       gp = Teuchos::rcp(new IntrepidGaussPoints<shards::Quadrilateral<9>>(degree));
       break;
-    case CORE::FE::CellType::tri3:
+    case Core::FE::CellType::tri3:
       gp = Teuchos::rcp(new IntrepidGaussPoints<shards::Triangle<3>>(degree));
       break;
-    case CORE::FE::CellType::tri6:
+    case Core::FE::CellType::tri6:
       gp = Teuchos::rcp(new IntrepidGaussPoints<shards::Triangle<6>>(degree));
       break;
-    case CORE::FE::CellType::hex8:
+    case Core::FE::CellType::hex8:
       gp = Teuchos::rcp(new IntrepidGaussPoints<shards::Hexahedron<8>>(degree));
       break;
-    case CORE::FE::CellType::hex20:
+    case Core::FE::CellType::hex20:
       gp = Teuchos::rcp(new IntrepidGaussPoints<shards::Hexahedron<20>>(degree));
       break;
-    case CORE::FE::CellType::hex27:
+    case Core::FE::CellType::hex27:
       gp = Teuchos::rcp(new IntrepidGaussPoints<shards::Hexahedron<27>>(degree));
       break;
-    case CORE::FE::CellType::tet4:
+    case Core::FE::CellType::tet4:
       gp = Teuchos::rcp(new IntrepidGaussPoints<shards::Tetrahedron<4>>(degree));
       break;
-    case CORE::FE::CellType::tet10:
+    case Core::FE::CellType::tet10:
       gp = Teuchos::rcp(new IntrepidGaussPoints<shards::Tetrahedron<10>>(degree));
       break;
-    case CORE::FE::CellType::wedge6:
+    case Core::FE::CellType::wedge6:
       gp = Teuchos::rcp(new IntrepidGaussPoints<shards::Wedge<6>>(degree));
       break;
-    case CORE::FE::CellType::wedge15:
+    case Core::FE::CellType::wedge15:
       gp = Teuchos::rcp(new IntrepidGaussPoints<shards::Wedge<15>>(degree));
       break;
-    case CORE::FE::CellType::pyramid5:
+    case Core::FE::CellType::pyramid5:
       gp = Teuchos::rcp(new IntrepidGaussPoints<shards::Pyramid<5>>(degree));
       break;
-    case CORE::FE::CellType::line2:
+    case Core::FE::CellType::line2:
       gp = Teuchos::rcp(new IntrepidGaussPoints<shards::Line<2>>(degree));
       break;
-    case CORE::FE::CellType::line3:
+    case Core::FE::CellType::line3:
       gp = Teuchos::rcp(new IntrepidGaussPoints<shards::Line<3>>(degree));
       break;
     default:

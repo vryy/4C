@@ -51,7 +51,7 @@ namespace UTILS
 
 
   \author tk     */
-  class Cardiovascular0DDofSet : public CORE::Dofsets::DofSet
+  class Cardiovascular0DDofSet : public Core::DOFSets::DofSet
   {
    public:
     /*!
@@ -78,9 +78,9 @@ namespace UTILS
     //! @name Construction
 
     /// Assign dof numbers using all elements and nodes of the discretization.
-    virtual int assign_degrees_of_freedom(const Teuchos::RCP<DRT::Discretization> dis,
+    virtual int assign_degrees_of_freedom(const Teuchos::RCP<Discret::Discretization> dis,
         const int ndofs, const int start,
-        const Teuchos::RCP<MOR::ProperOrthogonalDecomposition> mor);
+        const Teuchos::RCP<ModelOrderRed::ProperOrthogonalDecomposition> mor);
 
     /// reset all internal variables
     void Reset() override;

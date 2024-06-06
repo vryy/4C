@@ -51,7 +51,7 @@ namespace FLD
       /*!
       \brief Standard Constructor
       */
-      FluidVolumetricSurfaceFlowWrapper(Teuchos::RCP<DRT::Discretization> actdis, double dta);
+      FluidVolumetricSurfaceFlowWrapper(Teuchos::RCP<Discret::Discretization> actdis, double dta);
 
       /*!
       \brief Destructor
@@ -76,12 +76,12 @@ namespace FLD
       /*!
       \brief Wrapper for FluidVolumetricSurfaceFlowBc::Output
       */
-      void Output(CORE::IO::DiscretizationWriter& output);
+      void Output(Core::IO::DiscretizationWriter& output);
 
       /*!
       \brief Wrapper for FluidVolumetricSurfaceFlowBc::read_restart
       */
-      void read_restart(CORE::IO::DiscretizationReader& reader);
+      void read_restart(Core::IO::DiscretizationReader& reader);
 
 
      private:
@@ -91,7 +91,7 @@ namespace FLD
       std::map<const int, Teuchos::RCP<class FluidVolumetricSurfaceFlowBc>> fvsf_map_;
 
       //! fluid discretization
-      Teuchos::RCP<DRT::Discretization> discret_;
+      Teuchos::RCP<Discret::Discretization> discret_;
 
     };  // class FluidWomersleyWrapper
 
@@ -105,7 +105,7 @@ namespace FLD
       \brief Standard Constructor
       */
 
-      TotalTractionCorrector(Teuchos::RCP<DRT::Discretization> actdis, double dta);
+      TotalTractionCorrector(Teuchos::RCP<Discret::Discretization> actdis, double dta);
 
       /*!
       \brief Destructor
@@ -134,12 +134,12 @@ namespace FLD
       /*!
       \brief Wrapper for FluidVolumetricSurfaceFlowBc::Output
       */
-      void Output(CORE::IO::DiscretizationWriter& output);
+      void Output(Core::IO::DiscretizationWriter& output);
 
       /*!
       \brief Wrapper for FluidVolumetricSurfaceFlowBc::read_restart
       */
-      void read_restart(CORE::IO::DiscretizationReader& reader);
+      void read_restart(Core::IO::DiscretizationReader& reader);
 
 
      private:
@@ -149,7 +149,7 @@ namespace FLD
       std::map<const int, Teuchos::RCP<class FluidVolumetricSurfaceFlowBc>> fvsf_map_;
 
       //! fluid discretization
-      Teuchos::RCP<DRT::Discretization> discret_;
+      Teuchos::RCP<Discret::Discretization> discret_;
 
     };  // class TotalTractionCorrector
 
@@ -172,7 +172,7 @@ namespace FLD
       /*!
       \brief Standard Constructor
       */
-      FluidVolumetricSurfaceFlowBc(Teuchos::RCP<DRT::Discretization> actdis, double dta,
+      FluidVolumetricSurfaceFlowBc(Teuchos::RCP<Discret::Discretization> actdis, double dta,
           std::string ds_condname, std::string dl_condname, int condid, int surf_numcond,
           int line_numcond);
 
@@ -201,13 +201,13 @@ namespace FLD
       /*!
       \brief get the node row map of the womersley condition
       */
-      void build_condition_node_row_map(Teuchos::RCP<DRT::Discretization> dis, std::string condname,
-          int condid, int condnum, Teuchos::RCP<Epetra_Map>& cond_noderowmap);
+      void build_condition_node_row_map(Teuchos::RCP<Discret::Discretization> dis,
+          std::string condname, int condid, int condnum, Teuchos::RCP<Epetra_Map>& cond_noderowmap);
 
       /*!
       \brief get the dof row map of the womersley condition
       */
-      void build_condition_dof_row_map(Teuchos::RCP<DRT::Discretization> dis,
+      void build_condition_dof_row_map(Teuchos::RCP<Discret::Discretization> dis,
           const std::string condname, int condid, int condnum,
           Teuchos::RCP<Epetra_Map>& cond_dofrowmap);
 
@@ -232,7 +232,7 @@ namespace FLD
       /*!
       \brief Evaluate velocities
       */
-      void Velocities(Teuchos::RCP<DRT::Discretization> disc, Teuchos::RCP<Epetra_Vector> bcdof,
+      void Velocities(Teuchos::RCP<Discret::Discretization> disc, Teuchos::RCP<Epetra_Vector> bcdof,
           Teuchos::RCP<Epetra_Map> cond_noderowmap, Teuchos::RCP<Epetra_Vector> local_radii,
           Teuchos::RCP<Epetra_Vector> border_radii, Teuchos::RCP<std::vector<double>> normal,
           Teuchos::RCP<Teuchos::ParameterList> params);
@@ -309,13 +309,13 @@ namespace FLD
       /*!
       \brief output
       */
-      void output(CORE::IO::DiscretizationWriter& output, std::string ds_condname, int condnum);
+      void output(Core::IO::DiscretizationWriter& output, std::string ds_condname, int condnum);
 
       /*!
       \brief Read restart
       */
       void read_restart(
-          CORE::IO::DiscretizationReader& reader, std::string ds_condname, int condnum);
+          Core::IO::DiscretizationReader& reader, std::string ds_condname, int condnum);
 
       /*!
       \brief Bessel function of orders 0 and 1
@@ -360,7 +360,7 @@ namespace FLD
       int myrank_;
 
       //! fluid discretization
-      Teuchos::RCP<DRT::Discretization> discret_;
+      Teuchos::RCP<Discret::Discretization> discret_;
 
       //! Flowrate array for Womersley conditions
       Teuchos::RCP<std::vector<double>> flowrates_;

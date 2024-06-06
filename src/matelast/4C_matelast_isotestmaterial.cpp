@@ -13,20 +13,20 @@ Elasthyper-Toolbox.
 
 FOUR_C_NAMESPACE_OPEN
 
-MAT::ELASTIC::PAR::IsoTestMaterial::IsoTestMaterial(
-    const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
+Mat::Elastic::PAR::IsoTestMaterial::IsoTestMaterial(
+    const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
     : Parameter(matdata), c1_(matdata->Get<double>("C1")), c2_(matdata->Get<double>("C2"))
 {
 }
 
-MAT::ELASTIC::IsoTestMaterial::IsoTestMaterial(MAT::ELASTIC::PAR::IsoTestMaterial* params)
+Mat::Elastic::IsoTestMaterial::IsoTestMaterial(Mat::Elastic::PAR::IsoTestMaterial* params)
     : params_(params)
 {
 }
 
-void MAT::ELASTIC::IsoTestMaterial::AddStrainEnergy(double& psi,
-    const CORE::LINALG::Matrix<3, 1>& prinv, const CORE::LINALG::Matrix<3, 1>& modinv,
-    const CORE::LINALG::Matrix<6, 1>& glstrain, const int gp, const int eleGID)
+void Mat::Elastic::IsoTestMaterial::AddStrainEnergy(double& psi,
+    const Core::LinAlg::Matrix<3, 1>& prinv, const Core::LinAlg::Matrix<3, 1>& modinv,
+    const Core::LinAlg::Matrix<6, 1>& glstrain, const int gp, const int eleGID)
 {
   const double c1 = params_->c1_;
   const double c2 = params_->c2_;
@@ -43,8 +43,8 @@ void MAT::ELASTIC::IsoTestMaterial::AddStrainEnergy(double& psi,
          d * (modinv(0) - 3) * (modinv(1) - 3);
 }
 
-void MAT::ELASTIC::IsoTestMaterial::add_derivatives_modified(CORE::LINALG::Matrix<3, 1>& dPmodI,
-    CORE::LINALG::Matrix<6, 1>& ddPmodII, const CORE::LINALG::Matrix<3, 1>& modinv, const int gp,
+void Mat::Elastic::IsoTestMaterial::add_derivatives_modified(Core::LinAlg::Matrix<3, 1>& dPmodI,
+    Core::LinAlg::Matrix<6, 1>& ddPmodII, const Core::LinAlg::Matrix<3, 1>& modinv, const int gp,
     const int eleGID)
 {
   const double c1 = params_->c1_;

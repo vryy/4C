@@ -11,54 +11,55 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-DRT::ELEMENTS::ConstraintElement2Type DRT::ELEMENTS::ConstraintElement2Type::instance_;
+Discret::ELEMENTS::ConstraintElement2Type Discret::ELEMENTS::ConstraintElement2Type::instance_;
 
 
-DRT::ELEMENTS::ConstraintElement2Type& DRT::ELEMENTS::ConstraintElement2Type::Instance()
+Discret::ELEMENTS::ConstraintElement2Type& Discret::ELEMENTS::ConstraintElement2Type::Instance()
 {
   return instance_;
 }
 
 
-CORE::COMM::ParObject* DRT::ELEMENTS::ConstraintElement2Type::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Discret::ELEMENTS::ConstraintElement2Type::Create(
+    const std::vector<char>& data)
 {
-  DRT::ELEMENTS::ConstraintElement2* object = new DRT::ELEMENTS::ConstraintElement2(-1, -1);
+  Discret::ELEMENTS::ConstraintElement2* object = new Discret::ELEMENTS::ConstraintElement2(-1, -1);
   object->Unpack(data);
   return object;
 }
 
 
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::ConstraintElement2Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ConstraintElement2Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "CONSTRELE2")
   {
-    Teuchos::RCP<CORE::Elements::Element> ele =
-        Teuchos::rcp(new DRT::ELEMENTS::ConstraintElement2(id, owner));
+    Teuchos::RCP<Core::Elements::Element> ele =
+        Teuchos::rcp(new Discret::ELEMENTS::ConstraintElement2(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::ConstraintElement2Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ConstraintElement2Type::Create(
     const int id, const int owner)
 {
-  Teuchos::RCP<CORE::Elements::Element> ele =
-      Teuchos::rcp(new DRT::ELEMENTS::ConstraintElement2(id, owner));
+  Teuchos::RCP<Core::Elements::Element> ele =
+      Teuchos::rcp(new Discret::ELEMENTS::ConstraintElement2(id, owner));
   return ele;
 }
 
 
-void DRT::ELEMENTS::ConstraintElement2Type::nodal_block_information(
-    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+void Discret::ELEMENTS::ConstraintElement2Type::nodal_block_information(
+    Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
 }
 
-CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::ConstraintElement2Type::ComputeNullSpace(
-    CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
+Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::ConstraintElement2Type::ComputeNullSpace(
+    Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  CORE::LINALG::SerialDenseMatrix nullspace;
+  Core::LinAlg::SerialDenseMatrix nullspace;
   FOUR_C_THROW("method ComputeNullSpace not implemented!");
   return nullspace;
 }
@@ -66,33 +67,35 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::ConstraintElement2Type::ComputeNu
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ConstraintElement2::ConstraintElement2(int id, int owner)
-    : CORE::Elements::Element(id, owner)
+Discret::ELEMENTS::ConstraintElement2::ConstraintElement2(int id, int owner)
+    : Core::Elements::Element(id, owner)
 {
   return;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ConstraintElement2::ConstraintElement2(const DRT::ELEMENTS::ConstraintElement2& old)
-    : CORE::Elements::Element(old)
+Discret::ELEMENTS::ConstraintElement2::ConstraintElement2(
+    const Discret::ELEMENTS::ConstraintElement2& old)
+    : Core::Elements::Element(old)
 {
   return;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::Elements::Element* DRT::ELEMENTS::ConstraintElement2::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::ConstraintElement2::Clone() const
 {
-  DRT::ELEMENTS::ConstraintElement2* newelement = new DRT::ELEMENTS::ConstraintElement2(*this);
+  Discret::ELEMENTS::ConstraintElement2* newelement =
+      new Discret::ELEMENTS::ConstraintElement2(*this);
   return newelement;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ConstraintElement2::Pack(CORE::COMM::PackBuffer& data) const
+void Discret::ELEMENTS::ConstraintElement2::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -107,11 +110,11 @@ void DRT::ELEMENTS::ConstraintElement2::Pack(CORE::COMM::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ConstraintElement2::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::ConstraintElement2::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract base class Element
   std::vector<char> basedata(0);

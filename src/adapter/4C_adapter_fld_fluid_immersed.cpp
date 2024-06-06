@@ -18,10 +18,10 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ADAPTER::FluidImmersed::FluidImmersed(const Teuchos::ParameterList& prbdyn, std::string condname)
+Adapter::FluidImmersed::FluidImmersed(const Teuchos::ParameterList& prbdyn, std::string condname)
 {
   fluid_ = Teuchos::rcp(new FluidBaseAlgorithm(
-      prbdyn, GLOBAL::Problem::Instance()->FluidDynamicParams(), "fluid", false));
+      prbdyn, Global::Problem::Instance()->FluidDynamicParams(), "fluid", false));
   fluidadapter_ = fluid_->fluid_field();
 
   return;
@@ -30,7 +30,7 @@ ADAPTER::FluidImmersed::FluidImmersed(const Teuchos::ParameterList& prbdyn, std:
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Discretization> ADAPTER::FluidImmersed::discretization()
+Teuchos::RCP<Discret::Discretization> Adapter::FluidImmersed::discretization()
 {
   return fluid_field()->discretization();
 }
@@ -38,7 +38,7 @@ Teuchos::RCP<DRT::Discretization> ADAPTER::FluidImmersed::discretization()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<FLD::UTILS::MapExtractor> const& ADAPTER::FluidImmersed::Interface() const
+Teuchos::RCP<FLD::UTILS::MapExtractor> const& Adapter::FluidImmersed::Interface() const
 {
   return fluidadapter_->Interface();
 }
@@ -46,22 +46,22 @@ Teuchos::RCP<FLD::UTILS::MapExtractor> const& ADAPTER::FluidImmersed::Interface(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidImmersed::prepare_time_step() { fluid_field()->prepare_time_step(); }
+void Adapter::FluidImmersed::prepare_time_step() { fluid_field()->prepare_time_step(); }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidImmersed::Update() { fluid_field()->Update(); }
+void Adapter::FluidImmersed::Update() { fluid_field()->Update(); }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidImmersed::Output() { fluid_field()->StatisticsAndOutput(); }
+void Adapter::FluidImmersed::Output() { fluid_field()->StatisticsAndOutput(); }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double ADAPTER::FluidImmersed::read_restart(int step)
+double Adapter::FluidImmersed::read_restart(int step)
 {
   fluid_field()->read_restart(step);
   return fluid_field()->Time();
@@ -70,7 +70,7 @@ double ADAPTER::FluidImmersed::read_restart(int step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidImmersed::nonlinear_solve(
+void Adapter::FluidImmersed::nonlinear_solve(
     Teuchos::RCP<Epetra_Vector> idisp, Teuchos::RCP<Epetra_Vector> ivel)
 {
   fluid_field()->Solve();
@@ -79,7 +79,7 @@ void ADAPTER::FluidImmersed::nonlinear_solve(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImmersed::RelaxationSolve(
+Teuchos::RCP<Epetra_Vector> Adapter::FluidImmersed::RelaxationSolve(
     Teuchos::RCP<Epetra_Vector> idisp, double dt)
 {
   // the displacement -> velocity conversion at the interface
@@ -91,7 +91,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImmersed::RelaxationSolve(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImmersed::extract_interface_forces()
+Teuchos::RCP<Epetra_Vector> Adapter::FluidImmersed::extract_interface_forces()
 {
   return fluid_field()->extract_interface_forces();
 }
@@ -99,7 +99,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImmersed::extract_interface_forces()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImmersed::extract_interface_velnp()
+Teuchos::RCP<Epetra_Vector> Adapter::FluidImmersed::extract_interface_velnp()
 {
   FOUR_C_THROW("Robin stuff");
   return fluid_field()->extract_interface_velnp();
@@ -108,7 +108,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImmersed::extract_interface_velnp()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImmersed::extract_interface_veln()
+Teuchos::RCP<Epetra_Vector> Adapter::FluidImmersed::extract_interface_veln()
 {
   return fluid_field()->extract_interface_veln();
 }
@@ -116,7 +116,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImmersed::extract_interface_veln()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImmersed::integrate_interface_shape()
+Teuchos::RCP<Epetra_Vector> Adapter::FluidImmersed::integrate_interface_shape()
 {
   return fluid_field()->integrate_interface_shape();
 }
@@ -124,7 +124,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImmersed::integrate_interface_shape()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::UTILS::ResultTest> ADAPTER::FluidImmersed::CreateFieldTest()
+Teuchos::RCP<Core::UTILS::ResultTest> Adapter::FluidImmersed::CreateFieldTest()
 {
   return fluid_field()->CreateFieldTest();
 }
@@ -132,14 +132,14 @@ Teuchos::RCP<CORE::UTILS::ResultTest> ADAPTER::FluidImmersed::CreateFieldTest()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidImmersed::add_dirich_cond(const Teuchos::RCP<const Epetra_Map> maptoadd)
+void Adapter::FluidImmersed::add_dirich_cond(const Teuchos::RCP<const Epetra_Map> maptoadd)
 {
   fluid_field()->add_dirich_cond(maptoadd);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidImmersed::remove_dirich_cond(const Teuchos::RCP<const Epetra_Map> maptoremove)
+void Adapter::FluidImmersed::remove_dirich_cond(const Teuchos::RCP<const Epetra_Map> maptoremove)
 {
   fluid_field()->remove_dirich_cond(maptoremove);
 }

@@ -24,36 +24,36 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
 
-namespace CORE::Dofsets
+namespace Core::DOFSets
 {
   class IndependentDofSet;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class MapExtractor;
 }
 
-namespace CORE::GEO
+namespace Core::Geo
 {
   class CutWizard;
 
-  namespace CUT
+  namespace Cut
   {
     class ElementHandle;
     class VolumeCell;
-  }  // namespace CUT
-}  // namespace CORE::GEO
+  }  // namespace Cut
+}  // namespace Core::Geo
 
 namespace XFEM
 {
@@ -125,14 +125,14 @@ namespace FLD
 
     /// Gmsh output of discretization
     virtual void gmsh_output_discretization(bool print_faces, int step,
-        std::map<int, CORE::LINALG::Matrix<3, 1>>* curr_pos = nullptr){};
+        std::map<int, Core::LinAlg::Matrix<3, 1>>* curr_pos = nullptr){};
 
     /// Main output routine for gmsh output
     virtual void GmshOutput(const std::string& filename_base,  ///< name for output file
         const std::string& prefix,                             ///< data prefix
         int step,                                              ///< step number
         int count,  ///< counter for iterations within a global time step
-        const Teuchos::RCP<CORE::GEO::CutWizard>& wizard,  ///< cut wizard
+        const Teuchos::RCP<Core::Geo::CutWizard>& wizard,  ///< cut wizard
         Teuchos::RCP<const Epetra_Vector> vel,  ///< vector holding velocity and pressure dofs
         Teuchos::RCP<const Epetra_Vector> acc = Teuchos::null  ///< vector holding acceleration
     ){};
@@ -152,13 +152,13 @@ namespace FLD
     const Teuchos::RCP<XFEM::ConditionManager> cond_manager_;
 
     //! dofset for fluid output
-    Teuchos::RCP<CORE::Dofsets::IndependentDofSet> dofset_out_;
+    Teuchos::RCP<Core::DOFSets::IndependentDofSet> dofset_out_;
 
     //! output vector (mapped to initial fluid dofrowmap)
     Teuchos::RCP<Epetra_Vector> outvec_fluid_;
 
     //! vel-pres splitter for output purpose
-    Teuchos::RCP<CORE::LINALG::MapExtractor> velpressplitter_out_;
+    Teuchos::RCP<Core::LinAlg::MapExtractor> velpressplitter_out_;
 
     bool firstoutputofrun_;
 
@@ -211,14 +211,14 @@ namespace FLD
 
     /// Gmsh output of discretization
     void gmsh_output_discretization(bool print_faces, int step,
-        std::map<int, CORE::LINALG::Matrix<3, 1>>* curr_pos = nullptr) override;
+        std::map<int, Core::LinAlg::Matrix<3, 1>>* curr_pos = nullptr) override;
 
     /// Main output routine for gmsh output
     void GmshOutput(const std::string& filename_base,  ///< name for output file
         const std::string& prefix,                     ///< data prefix (e.g. "SOL")
         int step,                                      ///< step number
         int count,  ///< counter for iterations within a global time step
-        const Teuchos::RCP<CORE::GEO::CutWizard>& wizard,  ///< cut wizard
+        const Teuchos::RCP<Core::Geo::CutWizard>& wizard,  ///< cut wizard
         Teuchos::RCP<const Epetra_Vector> vel,  ///< vector holding velocity and pressure dofs
         Teuchos::RCP<const Epetra_Vector> acc = Teuchos::null,  ///< vector holding acceleration
         Teuchos::RCP<const Epetra_Vector> dispnp =
@@ -231,13 +231,13 @@ namespace FLD
         ) override;
 
    private:
-    /// Gmsh output function for elements without an CORE::GEO::CUT::ElementHandle
-    void gmsh_output_element(DRT::Discretization& discret,  ///< background fluid discretization
-        std::ofstream& vel_f,                               ///< output file stream for velocity
-        std::ofstream& press_f,                             ///< output file stream for pressure
-        std::ofstream& acc_f,                               ///< output file stream for acceleration
-        CORE::Elements::Element* actele,                    ///< element
-        std::vector<int>& nds,                              ///< vector holding the nodal dofsets
+    /// Gmsh output function for elements without an Core::Geo::Cut::ElementHandle
+    void gmsh_output_element(Discret::Discretization& discret,  ///< background fluid discretization
+        std::ofstream& vel_f,                                   ///< output file stream for velocity
+        std::ofstream& press_f,                                 ///< output file stream for pressure
+        std::ofstream& acc_f,                   ///< output file stream for acceleration
+        Core::Elements::Element* actele,        ///< element
+        std::vector<int>& nds,                  ///< vector holding the nodal dofsets
         Teuchos::RCP<const Epetra_Vector> vel,  ///< vector holding velocity and pressure dofs
         Teuchos::RCP<const Epetra_Vector> acc = Teuchos::null,  ///< vector holding acceleration
         Teuchos::RCP<const Epetra_Vector> dispnp =
@@ -245,13 +245,14 @@ namespace FLD
     );
 
     /// Gmsh output function for volumecells
-    void gmsh_output_volume_cell(DRT::Discretization& discret,  ///< background fluid discretization
-        std::ofstream& vel_f,                                   ///< output file stream for velocity
-        std::ofstream& press_f,                                 ///< output file stream for pressure
+    void gmsh_output_volume_cell(
+        Discret::Discretization& discret,          ///< background fluid discretization
+        std::ofstream& vel_f,                      ///< output file stream for velocity
+        std::ofstream& press_f,                    ///< output file stream for pressure
         std::ofstream& acc_f,                      ///< output file stream for acceleration
-        CORE::Elements::Element* actele,           ///< element
-        CORE::GEO::CUT::ElementHandle* e,          ///< elementhandle
-        CORE::GEO::CUT::VolumeCell* vc,            ///< volumecell
+        Core::Elements::Element* actele,           ///< element
+        Core::Geo::Cut::ElementHandle* e,          ///< elementhandle
+        Core::Geo::Cut::VolumeCell* vc,            ///< volumecell
         const std::vector<int>& nds,               ///< vector holding the nodal dofsets
         Teuchos::RCP<const Epetra_Vector> velvec,  ///< vector holding velocity and pressure dofs
         Teuchos::RCP<const Epetra_Vector> accvec = Teuchos::null  ///< vector holding acceleration
@@ -259,10 +260,10 @@ namespace FLD
 
     /// Gmsh output function for boundarycells
     void gmsh_output_boundary_cell(
-        DRT::Discretization& discret,                     ///< background fluid discretization
+        Discret::Discretization& discret,                 ///< background fluid discretization
         std::ofstream& bound_f,                           ///< output file stream for boundary mesh
-        CORE::GEO::CUT::VolumeCell* vc,                   ///< volumecell
-        const Teuchos::RCP<CORE::GEO::CutWizard>& wizard  ///< cut wizard
+        Core::Geo::Cut::VolumeCell* vc,                   ///< volumecell
+        const Teuchos::RCP<Core::Geo::CutWizard>& wizard  ///< cut wizard
     );
 
     //! @name flags for detailed gmsh output
@@ -277,7 +278,7 @@ namespace FLD
     //@}
 
     //! integration approach
-    const INPAR::CUT::VCellGaussPts volume_cell_gauss_point_by_;
+    const Inpar::Cut::VCellGaussPts volume_cell_gauss_point_by_;
 
     //! include elements with inside position?
     const bool include_inner_;

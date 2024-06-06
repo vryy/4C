@@ -34,23 +34,23 @@ class Epetra_Comm;
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::GEO
+namespace Core::Geo
 {
-  namespace MESHFREE
+  namespace MeshFree
   {
     class BoundingBox;
   }
-}  // namespace CORE::GEO
+}  // namespace Core::Geo
 
 namespace STR
 {
-  namespace TIMINT
+  namespace TimeInt
   {
     class BaseDataGlobalState;
     class MeshFreeData;
     class BaseDataIO;
     class Base;
-  }  // namespace TIMINT
+  }  // namespace TimeInt
   namespace MODELEVALUATOR
   {
     class BeamData;
@@ -82,7 +82,7 @@ namespace STR
      */
     class Data : public STR::ELEMENTS::ParamsInterface
     {
-      typedef std::map<enum NOX::NLN::StatusTest::QuantityType,
+      typedef std::map<enum NOX::Nln::StatusTest::QuantityType,
           enum ::NOX::Abstract::Vector::NormType>
           quantity_norm_type_map;
 
@@ -92,7 +92,7 @@ namespace STR
 
 
       //! initialize the stuff coming from outside
-      void Init(const Teuchos::RCP<const STR::TIMINT::Base>& timint_ptr);
+      void Init(const Teuchos::RCP<const STR::TimeInt::Base>& timint_ptr);
 
       //! setup member variables
       void Setup();
@@ -101,7 +101,7 @@ namespace STR
       //!@{
 
       //! get the desired action type [derived]
-      [[nodiscard]] inline enum CORE::Elements::ActionType GetActionType() const override
+      [[nodiscard]] inline enum Core::Elements::ActionType GetActionType() const override
       {
         check_init_setup();
         return ele_action_;
@@ -122,7 +122,7 @@ namespace STR
       }
 
       //! get function manager
-      const CORE::UTILS::FunctionManager* get_function_manager() const override
+      const Core::UTILS::FunctionManager* get_function_manager() const override
       {
         return function_manager_;
       }
@@ -142,7 +142,7 @@ namespace STR
       }
 
       //! get the current damping type [derived]
-      [[nodiscard]] enum INPAR::STR::DampKind GetDampingType() const override;
+      [[nodiscard]] enum Inpar::STR::DampKind GetDampingType() const override;
 
       //! get the tolerate errors indicator [derived]
       [[nodiscard]] inline bool IsTolerateErrors() const override
@@ -166,7 +166,7 @@ namespace STR
       }
 
       //! get the predictor type of the structural time integration
-      [[nodiscard]] enum INPAR::STR::PredEnum GetPredictorType() const override
+      [[nodiscard]] enum Inpar::STR::PredEnum GetPredictorType() const override
       {
         check_init_setup();
         return predict_type_;
@@ -193,19 +193,19 @@ namespace STR
       Teuchos::RCP<std::vector<char>>& OptQuantityDataPtr() override;
 
       //! get the current stress type [derived]
-      [[nodiscard]] enum INPAR::STR::StressType GetStressOutputType() const override;
+      [[nodiscard]] enum Inpar::STR::StressType GetStressOutputType() const override;
 
       //! get the current strain type [derived]
-      [[nodiscard]] enum INPAR::STR::StrainType GetStrainOutputType() const override;
+      [[nodiscard]] enum Inpar::STR::StrainType GetStrainOutputType() const override;
 
       //! get the current plastic strain type [derived]
-      [[nodiscard]] enum INPAR::STR::StrainType get_plastic_strain_output_type() const override;
+      [[nodiscard]] enum Inpar::STR::StrainType get_plastic_strain_output_type() const override;
 
       //! get the current coupling stress type [derived]
-      [[nodiscard]] enum INPAR::STR::StressType get_coupling_stress_output_type() const override;
+      [[nodiscard]] enum Inpar::STR::StressType get_coupling_stress_output_type() const override;
 
       //! get the current strain type [derived]
-      virtual enum INPAR::STR::OptQuantityType get_opt_quantity_output_type() const;
+      virtual enum Inpar::STR::OptQuantityType get_opt_quantity_output_type() const;
 
       //< get the manager of Gauss point data output
       Teuchos::RCP<GaussPointDataOutputManager>& gauss_point_data_output_manager_ptr() override;
@@ -226,7 +226,7 @@ namespace STR
       void set_value_for_energy_type(double value, enum STR::EnergyType type);
 
       //! set function manager
-      void set_function_manager(const CORE::UTILS::FunctionManager& function_manager)
+      void set_function_manager(const Core::UTILS::FunctionManager& function_manager)
       {
         function_manager_ = &function_manager;
       }
@@ -270,7 +270,7 @@ namespace STR
       }
 
       /// get the current non-linear solver correction type
-      NOX::NLN::CorrectionType GetCorrectionType() const
+      NOX::Nln::CorrectionType GetCorrectionType() const
       {
         check_init_setup();
         return corr_type_;
@@ -315,7 +315,7 @@ namespace STR
        *
        * \sa sum_into_my_previous_sol_norm
        */
-      void SumIntoMyUpdateNorm(const enum NOX::NLN::StatusTest::QuantityType& qtype,
+      void SumIntoMyUpdateNorm(const enum NOX::Nln::StatusTest::QuantityType& qtype,
           const int& numentries, const double* my_update_values, const double* my_new_sol_values,
           const double& step_length, const int& owner) override;
 
@@ -329,7 +329,7 @@ namespace STR
        *
        * \sa SumIntoMyUpdateNorm
        */
-      void sum_into_my_previous_sol_norm(const enum NOX::NLN::StatusTest::QuantityType& qtype,
+      void sum_into_my_previous_sol_norm(const enum NOX::Nln::StatusTest::QuantityType& qtype,
           const int& numentries, const double* my_old_sol_values, const int& owner) override;
 
       //!@}
@@ -341,10 +341,10 @@ namespace STR
        * @param[in] qtype Quantity type which is tested
        * @return
        */
-      inline double GetMyUpdateNorm(const enum NOX::NLN::StatusTest::QuantityType& qtype) const
+      inline double GetMyUpdateNorm(const enum NOX::Nln::StatusTest::QuantityType& qtype) const
       {
         check_init_setup();
-        std::map<enum NOX::NLN::StatusTest::QuantityType, double>::const_iterator c_it;
+        std::map<enum NOX::Nln::StatusTest::QuantityType, double>::const_iterator c_it;
         c_it = my_update_norm_.find(qtype);
         // not on this proc
         if (c_it == my_update_norm_.end()) return 0.0;
@@ -358,10 +358,10 @@ namespace STR
        * @param[in] qtype Quantity type which is tested
        * @return
        */
-      inline double GetMyRMSNorm(const enum NOX::NLN::StatusTest::QuantityType& qtype) const
+      inline double GetMyRMSNorm(const enum NOX::Nln::StatusTest::QuantityType& qtype) const
       {
         check_init_setup();
-        std::map<enum NOX::NLN::StatusTest::QuantityType, double>::const_iterator c_it;
+        std::map<enum NOX::Nln::StatusTest::QuantityType, double>::const_iterator c_it;
         c_it = my_rms_norm_.find(qtype);
         // not on this proc
         if (c_it == my_rms_norm_.end()) return 0.0;
@@ -377,10 +377,10 @@ namespace STR
        * @return
        */
       inline double get_my_previous_sol_norm(
-          const enum NOX::NLN::StatusTest::QuantityType& qtype) const
+          const enum NOX::Nln::StatusTest::QuantityType& qtype) const
       {
         check_init_setup();
-        std::map<enum NOX::NLN::StatusTest::QuantityType, double>::const_iterator c_it;
+        std::map<enum NOX::Nln::StatusTest::QuantityType, double>::const_iterator c_it;
         c_it = my_prev_sol_norm_.find(qtype);
         // not on this proc
         if (c_it == my_prev_sol_norm_.end()) return 0.0;
@@ -395,7 +395,7 @@ namespace STR
        * @return
        */
       inline enum ::NOX::Abstract::Vector::NormType get_update_norm_type(
-          const enum NOX::NLN::StatusTest::QuantityType& qtype) const
+          const enum NOX::Nln::StatusTest::QuantityType& qtype) const
       {
         check_init_setup();
         // collect the norm types only once
@@ -406,12 +406,12 @@ namespace STR
           iscollected = true;
         }
 
-        std::map<enum NOX::NLN::StatusTest::QuantityType,
+        std::map<enum NOX::Nln::StatusTest::QuantityType,
             enum ::NOX::Abstract::Vector::NormType>::const_iterator c_it;
         c_it = normtype_update_.find(qtype);
         if (c_it == normtype_update_.end())
           FOUR_C_THROW("The corresponding norm type could not be found! (quantity: %s)",
-              NOX::NLN::StatusTest::QuantityType2String(qtype).c_str());
+              NOX::Nln::StatusTest::QuantityType2String(qtype).c_str());
         return c_it->second;
       }
 
@@ -422,10 +422,10 @@ namespace STR
        * @param[in] qtype Quantity type which is tested
        * @return
        */
-      inline int GetMyDofNumber(const enum NOX::NLN::StatusTest::QuantityType& qtype) const
+      inline int GetMyDofNumber(const enum NOX::Nln::StatusTest::QuantityType& qtype) const
       {
         check_init_setup();
-        std::map<enum NOX::NLN::StatusTest::QuantityType, std::size_t>::const_iterator c_it;
+        std::map<enum NOX::Nln::StatusTest::QuantityType, std::size_t>::const_iterator c_it;
         c_it = my_dof_number_.find(qtype);
         // not on this proc
         if (c_it == my_dof_number_.end()) return 0;
@@ -457,7 +457,7 @@ namespace STR
        *
        * @param[in] actiontype Action type
        */
-      inline void SetActionType(const enum CORE::Elements::ActionType& actiontype)
+      inline void SetActionType(const enum Core::Elements::ActionType& actiontype)
       {
         ele_action_ = actiontype;
       }
@@ -490,7 +490,7 @@ namespace STR
       }
 
       /// set the current system correction type of the non-linear solver
-      inline void SetCorrectionType(const NOX::NLN::CorrectionType corr_type)
+      inline void SetCorrectionType(const NOX::Nln::CorrectionType corr_type)
       {
         corr_type_ = corr_type;
       }
@@ -514,7 +514,7 @@ namespace STR
       }
 
       //! set the predictor type of the structural time integration
-      inline void SetPredictorType(const INPAR::STR::PredEnum& predictor_type)
+      inline void SetPredictorType(const Inpar::STR::PredEnum& predictor_type)
       {
         predict_type_ = predictor_type;
       }
@@ -710,28 +710,28 @@ namespace STR
       //!@{
 
       //! Time integration strategy
-      inline const STR::TIMINT::Base& TimInt() const
+      inline const STR::TimeInt::Base& TimInt() const
       {
         check_init();
         return *timint_ptr_;
       }
 
       //! Structural dynamic data
-      inline const STR::TIMINT::BaseDataSDyn& SDyn() const
+      inline const STR::TimeInt::BaseDataSDyn& SDyn() const
       {
         check_init();
         return *sdyn_ptr_;
       }
 
       //! input/ouput parameters
-      inline const STR::TIMINT::BaseDataIO& InOutput() const
+      inline const STR::TimeInt::BaseDataIO& InOutput() const
       {
         check_init();
         return *io_ptr_;
       }
 
       //! global state variables
-      inline const STR::TIMINT::BaseDataGlobalState& GState() const
+      inline const STR::TimeInt::BaseDataGlobalState& GState() const
       {
         check_init();
         return *gstate_ptr_;
@@ -779,7 +779,7 @@ namespace STR
        *
        *  If the norm type can be found, the function returns true,
        *  otherwise false. */
-      bool get_update_norm_type(const enum NOX::NLN::StatusTest::QuantityType& qtype,
+      bool get_update_norm_type(const enum NOX::Nln::StatusTest::QuantityType& qtype,
           enum ::NOX::Abstract::Vector::NormType& normtype);
 
       /*! \brief Get the WRMS absolute and relative tolerances of the desired quantity.
@@ -787,7 +787,7 @@ namespace STR
        *  If the tolerances can be found, the function returns true,
        *  otherwise false. */
       bool get_wrms_tolerances(
-          const enum NOX::NLN::StatusTest::QuantityType& qtype, double& atol, double& rtol);
+          const enum NOX::Nln::StatusTest::QuantityType& qtype, double& atol, double& rtol);
 
       /*! \brief Sum locally values into a norm of the desired type
        *
@@ -843,10 +843,10 @@ namespace STR
       //!@{
 
       //! Current action type
-      enum CORE::Elements::ActionType ele_action_;
+      enum Core::Elements::ActionType ele_action_;
 
       //! Current predictor type
-      enum INPAR::STR::PredEnum predict_type_;
+      enum Inpar::STR::PredEnum predict_type_;
 
       //! element evaluation error flag
       enum STR::ELEMENTS::EvalErrorFlag ele_eval_error_flag_;
@@ -858,7 +858,7 @@ namespace STR
       double total_time_;
 
       //! function manager
-      const CORE::UTILS::FunctionManager* function_manager_;
+      const Core::UTILS::FunctionManager* function_manager_;
 
       //! current time step for the evaluation
       double delta_time_;
@@ -879,8 +879,8 @@ namespace STR
       int num_corr_mod_newton_;
 
       /// system correction type (e.g. in case of a SOC step, see the
-      /// NOX::NLN::INNER::StatusTest::Filter method)
-      NOX::NLN::CorrectionType corr_type_;
+      /// NOX::Nln::Inner::StatusTest::Filter method)
+      NOX::Nln::CorrectionType corr_type_;
 
       //!@}
 
@@ -944,36 +944,36 @@ namespace STR
       quantity_norm_type_map normtype_update_;
 
       //! map holding the dof number of the the active quantities on the current processor
-      std::map<enum NOX::NLN::StatusTest::QuantityType, std::size_t> my_dof_number_;
+      std::map<enum NOX::Nln::StatusTest::QuantityType, std::size_t> my_dof_number_;
 
       /*! map holding the absolute tolerance for the wrms status test of the active
        *  quantities on the current processor */
-      std::map<enum NOX::NLN::StatusTest::QuantityType, double> atol_wrms_;
+      std::map<enum NOX::Nln::StatusTest::QuantityType, double> atol_wrms_;
 
       /*! map holding the relative tolerance for the wrms status test of the active
        *  quantities on the current processor */
-      std::map<enum NOX::NLN::StatusTest::QuantityType, double> rtol_wrms_;
+      std::map<enum NOX::Nln::StatusTest::QuantityType, double> rtol_wrms_;
 
       //! partial update norm of the current processor
-      std::map<enum NOX::NLN::StatusTest::QuantityType, double> my_update_norm_;
+      std::map<enum NOX::Nln::StatusTest::QuantityType, double> my_update_norm_;
 
       //! partial relative mean square norm of the current processor
-      std::map<enum NOX::NLN::StatusTest::QuantityType, double> my_rms_norm_;
+      std::map<enum NOX::Nln::StatusTest::QuantityType, double> my_rms_norm_;
 
       //! global partial solution norm of the previous step
-      std::map<enum NOX::NLN::StatusTest::QuantityType, double> my_prev_sol_norm_;
+      std::map<enum NOX::Nln::StatusTest::QuantityType, double> my_prev_sol_norm_;
 
       //! read-only access to the structural dynamic parameters
-      Teuchos::RCP<const STR::TIMINT::BaseDataSDyn> sdyn_ptr_;
+      Teuchos::RCP<const STR::TimeInt::BaseDataSDyn> sdyn_ptr_;
 
       //! read-only access to the input/output parameters
-      Teuchos::RCP<const STR::TIMINT::BaseDataIO> io_ptr_;
+      Teuchos::RCP<const STR::TimeInt::BaseDataIO> io_ptr_;
 
       //! read-only access to the global state data container
-      Teuchos::RCP<const STR::TIMINT::BaseDataGlobalState> gstate_ptr_;
+      Teuchos::RCP<const STR::TimeInt::BaseDataGlobalState> gstate_ptr_;
 
       //! read-only access to the timint object
-      Teuchos::RCP<const STR::TIMINT::Base> timint_ptr_;
+      Teuchos::RCP<const STR::TimeInt::Base> timint_ptr_;
 
       //! read-only access to the epetra communicator
       Teuchos::RCP<const Epetra_Comm> comm_ptr_;
@@ -1115,7 +1115,7 @@ namespace STR
       void Setup();
 
       //! returns the mortar/contact action type
-      [[nodiscard]] inline enum MORTAR::ActionType GetActionType() const override
+      [[nodiscard]] inline enum Mortar::ActionType GetActionType() const override
       {
         check_init_setup();
         return mortar_action_;
@@ -1142,7 +1142,7 @@ namespace STR
       };
 
       /// derived
-      NOX::NLN::CorrectionType GetCorrectionType() const override
+      NOX::Nln::CorrectionType GetCorrectionType() const override
       {
         check_init();
         return str_data_ptr_->GetCorrectionType();
@@ -1162,7 +1162,7 @@ namespace STR
        * @return Type of predictor
        *
        * \author hiermeier \date 02/18 */
-      [[nodiscard]] enum INPAR::STR::PredEnum GetPredictorType() const override
+      [[nodiscard]] enum Inpar::STR::PredEnum GetPredictorType() const override
       {
         check_init();
         return str_data_ptr_->GetPredictorType();
@@ -1207,7 +1207,7 @@ namespace STR
       [[nodiscard]] std::string GetOutputFilePath() const override;
 
       //! get variational approach enumerator
-      [[nodiscard]] enum INPAR::CONTACT::VariationalApproach get_variational_approach_type()
+      [[nodiscard]] enum Inpar::CONTACT::VariationalApproach get_variational_approach_type()
           const override
       {
         return var_type_;
@@ -1215,19 +1215,19 @@ namespace STR
 
       //! set variational approach enumerator
       void set_variational_approach_type(
-          const enum INPAR::CONTACT::VariationalApproach var_type) override
+          const enum Inpar::CONTACT::VariationalApproach var_type) override
       {
         var_type_ = var_type;
       }
 
       //! set coupling mode enumerator
-      [[nodiscard]] enum INPAR::CONTACT::CouplingScheme GetCouplingScheme() const override
+      [[nodiscard]] enum Inpar::CONTACT::CouplingScheme GetCouplingScheme() const override
       {
         return coupling_scheme_;
       }
 
       //! set coupling mode enumerator
-      void SetCouplingScheme(const enum INPAR::CONTACT::CouplingScheme scheme) override
+      void SetCouplingScheme(const enum Inpar::CONTACT::CouplingScheme scheme) override
       {
         coupling_scheme_ = scheme;
       }
@@ -1248,7 +1248,7 @@ namespace STR
       //! @{
 
       //! set the action type
-      inline void SetActionType(const enum MORTAR::ActionType& actiontype)
+      inline void SetActionType(const enum Mortar::ActionType& actiontype)
       {
         mortar_action_ = actiontype;
       }
@@ -1275,28 +1275,28 @@ namespace STR
       }
 
       //! Time integration strategy
-      inline const STR::TIMINT::Base& tim_int() const
+      inline const STR::TimeInt::Base& tim_int() const
       {
         check_init();
         return str_data_ptr_->TimInt();
       }
 
       //! Structural dynamic data
-      inline const STR::TIMINT::BaseDataSDyn& s_dyn() const
+      inline const STR::TimeInt::BaseDataSDyn& s_dyn() const
       {
         check_init();
         return str_data_ptr_->SDyn();
       }
 
       //! input/ouput parameters
-      inline const STR::TIMINT::BaseDataIO& in_output() const
+      inline const STR::TimeInt::BaseDataIO& in_output() const
       {
         check_init();
         return str_data_ptr_->InOutput();
       }
 
       //! global state variables
-      inline const STR::TIMINT::BaseDataGlobalState& g_state() const
+      inline const STR::TimeInt::BaseDataGlobalState& g_state() const
       {
         check_init();
         return str_data_ptr_->GState();
@@ -1307,11 +1307,11 @@ namespace STR
 
       bool issetup_;
 
-      enum MORTAR::ActionType mortar_action_;
+      enum Mortar::ActionType mortar_action_;
 
-      enum INPAR::CONTACT::VariationalApproach var_type_;
+      enum Inpar::CONTACT::VariationalApproach var_type_;
 
-      enum INPAR::CONTACT::CouplingScheme coupling_scheme_;
+      enum Inpar::CONTACT::CouplingScheme coupling_scheme_;
 
       Teuchos::RCP<const STR::MODELEVALUATOR::Data> str_data_ptr_;
 
@@ -1334,7 +1334,7 @@ namespace STR
       void Setup();
 
       //! Structural dynamic data
-      inline STR::TIMINT::BaseDataSDyn const& SDyn() const
+      inline STR::TimeInt::BaseDataSDyn const& SDyn() const
       {
         check_init();
         return str_data_ptr_->SDyn();
@@ -1349,7 +1349,7 @@ namespace STR
 
       //! get specified time curve number of imposed Dirichlet BCs
       void resize_random_force_m_vector(
-          Teuchos::RCP<DRT::Discretization> discret_ptr, int maxrandnumelement);
+          Teuchos::RCP<Discret::Discretization> discret_ptr, int maxrandnumelement);
 
       //! get mutable random force vector
       Teuchos::RCP<Epetra_MultiVector>& GetRandomForces()
@@ -1390,7 +1390,7 @@ namespace STR
       };
 
       /// the way how damping coefficient values for beams are specified
-      [[nodiscard]] INPAR::BROWNIANDYN::BeamDampingCoefficientSpecificationType
+      [[nodiscard]] Inpar::BROWNIANDYN::BeamDampingCoefficientSpecificationType
       how_beam_damping_coefficients_are_specified() const override
       {
         check_init_setup();
@@ -1406,7 +1406,7 @@ namespace STR
       };
 
       //! get vector holding periodic bounding box object
-      [[nodiscard]] Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> const&
+      [[nodiscard]] Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> const&
       get_periodic_bounding_box() const override
       {
         check_init_setup();
@@ -1452,7 +1452,7 @@ namespace STR
       double timeintconstrandnumb_;
 
       /// the way how damping coefficient values for beams are specified
-      INPAR::BROWNIANDYN::BeamDampingCoefficientSpecificationType beam_damping_coeff_specified_via_;
+      Inpar::BROWNIANDYN::BeamDampingCoefficientSpecificationType beam_damping_coeff_specified_via_;
 
       /// prefactors for damping coefficients of beams if they are specified via input file
       /// (per unit length, NOT yet multiplied by viscosity)

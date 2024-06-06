@@ -26,17 +26,17 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
-    class MuscleGiantesio : public CORE::MAT::PAR::Parameter
+    class MuscleGiantesio : public Core::Mat::PAR::Parameter
     {
      public:
       /// constructor
-      MuscleGiantesio(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      MuscleGiantesio(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       /// @name material parameters
       //@{
@@ -101,14 +101,14 @@ namespace MAT
   }     // end namespace PAR
 
 
-  class MuscleGiantesioType : public CORE::COMM::ParObjectType
+  class MuscleGiantesioType : public Core::Communication::ParObjectType
   {
    public:
     [[nodiscard]] std::string Name() const override { return "Muscle_GiantesioType"; }
 
     static MuscleGiantesioType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static MuscleGiantesioType instance_;
@@ -131,30 +131,30 @@ namespace MAT
    * International journal for numerical methods in biomedical engineering, vol. 30, no. 5, pp.
    * 545-562, 2014, doi: 10.1002/cnm.2618.
    */
-  class MuscleGiantesio : public MAT::So3Material
+  class MuscleGiantesio : public Mat::So3Material
   {
    public:
     // Constructor for empty material object
     MuscleGiantesio();
 
     // Constructor for the material given the material parameters
-    explicit MuscleGiantesio(MAT::PAR::MuscleGiantesio* params);
+    explicit MuscleGiantesio(Mat::PAR::MuscleGiantesio* params);
 
-    [[nodiscard]] Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    [[nodiscard]] Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new MuscleGiantesio(*this));
     }
 
-    [[nodiscard]] CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
+    [[nodiscard]] Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
-    [[nodiscard]] CORE::Materials::MaterialType MaterialType() const override
+    [[nodiscard]] Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_muscle_giantesio;
+      return Core::Materials::m_muscle_giantesio;
     };
 
-    void ValidKinematics(INPAR::STR::KinemType kinem) override
+    void ValidKinematics(Inpar::STR::KinemType kinem) override
     {
-      if (kinem != INPAR::STR::KinemType::linear && kinem != INPAR::STR::KinemType::nonlinearTotLag)
+      if (kinem != Inpar::STR::KinemType::linear && kinem != Inpar::STR::KinemType::nonlinearTotLag)
         FOUR_C_THROW("element and material kinematics are not compatible");
     }
 
@@ -165,20 +165,20 @@ namespace MAT
       return MuscleGiantesioType::Instance().UniqueParObjectId();
     }
 
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     void Unpack(const std::vector<char>& data) override;
 
-    void Setup(int numgp, INPUT::LineDefinition* linedef) override;
+    void Setup(int numgp, Input::LineDefinition* linedef) override;
 
     bool UsesExtendedUpdate() override { return true; };
 
-    void Update(CORE::LINALG::Matrix<3, 3> const& defgrd, int const gp,
+    void Update(Core::LinAlg::Matrix<3, 3> const& defgrd, int const gp,
         Teuchos::ParameterList& params, int const eleGID) override;
 
-    void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
-        const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-        CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, int gp,
+    void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+        const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+        Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, int gp,
         int eleGID) override;
 
    private:
@@ -195,7 +195,7 @@ namespace MAT
      * @param[in] currentTime Current time t_n
      * @param[out] omegaaAndDerivs Activation level and derivatives
      */
-    CORE::UTILS::ValuesFunctAndFunctDerivs evaluate_activation_level_and_derivatives(
+    Core::UTILS::ValuesFunctAndFunctDerivs evaluate_activation_level_and_derivatives(
         const double& lambdaM, const double& dotLambdaM, const double& currentTime);
 
     /*!
@@ -264,8 +264,8 @@ namespace MAT
      * @param[in] M Structural tensor of fiber directions
      * @return Fa Active deformation gradient
      */
-    CORE::LINALG::Matrix<3, 3> act_def_grad(
-        const double omegaa, const CORE::LINALG::Matrix<3, 3>& M);
+    Core::LinAlg::Matrix<3, 3> act_def_grad(
+        const double omegaa, const Core::LinAlg::Matrix<3, 3>& M);
 
     /*!
      * @brief Returns the first derivative of the active deformation gradient Fa w.r.t. omegaa
@@ -274,8 +274,8 @@ namespace MAT
      * @param[in] M Structural tensor of fiber directions
      * @return dFadomegaa First derivative of the active deformation gradient
      */
-    CORE::LINALG::Matrix<3, 3> d_act_def_grad_d_act_level(
-        const double omegaa, const CORE::LINALG::Matrix<3, 3>& M);
+    Core::LinAlg::Matrix<3, 3> d_act_def_grad_d_act_level(
+        const double omegaa, const Core::LinAlg::Matrix<3, 3>& M);
 
     /*!
      * @brief Returns the second derivative of the active deformation gradient Fa w.r.t. omegaa
@@ -284,8 +284,8 @@ namespace MAT
      * @param[in] M Structural tensor of fiber directions
      * @return ddFaddomegaa Second derivative of the active deformation gradient
      */
-    CORE::LINALG::Matrix<3, 3> dd_act_def_grad_dd_act_level(
-        const double omegaa, const CORE::LINALG::Matrix<3, 3>& M);
+    Core::LinAlg::Matrix<3, 3> dd_act_def_grad_dd_act_level(
+        const double omegaa, const Core::LinAlg::Matrix<3, 3>& M);
 
     /*!
      * @brief Returns the inverse of the active deformation gradient Fa
@@ -293,7 +293,7 @@ namespace MAT
      * @param[in] Fa Active deformation gradient
      * @return invFa Inverse of the active deformation gradient
      */
-    CORE::LINALG::Matrix<3, 3> inv_act_def_grad(const CORE::LINALG::Matrix<3, 3>& Fa);
+    Core::LinAlg::Matrix<3, 3> inv_act_def_grad(const Core::LinAlg::Matrix<3, 3>& Fa);
 
     /*!
      * @brief Returns the first derivative of the inverse of the active deformation gradient Fa
@@ -303,8 +303,8 @@ namespace MAT
      * @param[in] dFadomegaa First derivative of the active deformation gradient
      * @return dinvFadomegaa First derivative of the inverse of the active deformation gradient
      */
-    CORE::LINALG::Matrix<3, 3> d_inv_act_def_grad_d_act_level(
-        const CORE::LINALG::Matrix<3, 3>& Fa, const CORE::LINALG::Matrix<3, 3>& dFadomegaa);
+    Core::LinAlg::Matrix<3, 3> d_inv_act_def_grad_d_act_level(
+        const Core::LinAlg::Matrix<3, 3>& Fa, const Core::LinAlg::Matrix<3, 3>& dFadomegaa);
 
     /*!
      * @brief Check if material is active at current time and fiber stretch lambdaM
@@ -315,7 +315,7 @@ namespace MAT
     bool is_active(const double& currentTime);
 
     /// Giantesio material parameters
-    MAT::PAR::MuscleGiantesio* params_{};
+    Mat::PAR::MuscleGiantesio* params_{};
 
     /// Fibre stretch of the previous timestep
     double lambda_m_old_;
@@ -324,13 +324,13 @@ namespace MAT
     double omegaa_old_;
 
     /// Holder for anisotropic behavior
-    MAT::Anisotropy anisotropy_;
+    Mat::Anisotropy anisotropy_;
 
     /// Anisotropy extension holder
-    MAT::DefaultAnisotropyExtension<1> anisotropy_extension_;
+    Mat::DefaultAnisotropyExtension<1> anisotropy_extension_;
   };  // end class Muscle_Giantesio
 
-}  // end namespace MAT
+}  // end namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

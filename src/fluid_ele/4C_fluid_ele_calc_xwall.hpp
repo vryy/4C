@@ -20,16 +20,16 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
     class FluidXWall;
 
-    template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+    template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
     class FluidEleCalcXWall : public FluidEleCalc<distype, enrtype>
     {
-      typedef DRT::ELEMENTS::FluidEleCalc<distype, enrtype> my;
+      typedef Discret::ELEMENTS::FluidEleCalc<distype, enrtype> my;
 
       using my::nen_;
       using my::nsd_;
@@ -38,83 +38,84 @@ namespace DRT
      public:
       /// Singleton access method
       static FluidEleCalcXWall<distype, enrtype>* Instance(
-          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
+          Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
-      int EvaluateService(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-          Teuchos::RCP<CORE::MAT::Material>& mat, DRT::Discretization& discretization,
-          std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
-          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2,
-          CORE::LINALG::SerialDenseVector& elevec3) override;
+      int EvaluateService(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+          Teuchos::RCP<Core::Mat::Material>& mat, Discret::Discretization& discretization,
+          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
+          Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseVector& elevec2,
+          Core::LinAlg::SerialDenseVector& elevec3) override;
 
       /// Evaluate supporting methods of the element for xwall
       /*!
         Interface function for supporting methods of the element
        */
-      virtual int evaluate_service_x_wall(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-          Teuchos::RCP<CORE::MAT::Material>& mat, DRT::Discretization& discretization,
-          std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
-          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3);
+      virtual int evaluate_service_x_wall(Discret::ELEMENTS::Fluid* ele,
+          Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
+          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
+          Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
+          Core::LinAlg::SerialDenseVector& elevec3);
 
-      int Evaluate(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
+      int Evaluate(Discret::ELEMENTS::Fluid* ele, Discret::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra,
-          CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra, bool offdiag = false) override;
+          Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec1_epetra,
+          Core::LinAlg::SerialDenseVector& elevec2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec3_epetra, bool offdiag = false) override;
 
-      void sysmat(const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf,
-          const CORE::LINALG::Matrix<nsd_, nen_>& eprescpgaf,
-          const CORE::LINALG::Matrix<nsd_, nen_>& ebofon,
-          const CORE::LINALG::Matrix<nsd_, nen_>& eprescpgn,
-          const CORE::LINALG::Matrix<nsd_, nen_>& evelaf,
-          const CORE::LINALG::Matrix<nsd_, nen_>& evelam,
-          const CORE::LINALG::Matrix<nsd_, nen_>& eveln,
-          const CORE::LINALG::Matrix<nsd_, nen_>& evelnp,
-          const CORE::LINALG::Matrix<nsd_, nen_>& fsevelaf,
-          const CORE::LINALG::Matrix<nen_, 1>& fsescaaf,
-          const CORE::LINALG::Matrix<nsd_, nen_>& evel_hat,
-          const CORE::LINALG::Matrix<nsd_ * nsd_, nen_>& ereynoldsstress_hat,
-          const CORE::LINALG::Matrix<nen_, 1>& epreaf, const CORE::LINALG::Matrix<nen_, 1>& epream,
-          const CORE::LINALG::Matrix<nen_, 1>& epren, const CORE::LINALG::Matrix<nen_, 1>& eprenp,
-          const CORE::LINALG::Matrix<nsd_, nen_>& eaccam,
-          const CORE::LINALG::Matrix<nen_, 1>& escaaf, const CORE::LINALG::Matrix<nen_, 1>& escaam,
-          const CORE::LINALG::Matrix<nen_, 1>& escadtam,
-          const CORE::LINALG::Matrix<nsd_, nen_>& eveldtam,
-          const CORE::LINALG::Matrix<nen_, 1>& epredtam,
-          const CORE::LINALG::Matrix<nen_, 1>& escabofoaf,
-          const CORE::LINALG::Matrix<nen_, 1>& escabofon,
-          const CORE::LINALG::Matrix<nsd_, nen_>& emhist,
-          const CORE::LINALG::Matrix<nsd_, nen_>& edispnp,
-          const CORE::LINALG::Matrix<nsd_, nen_>& egridv,
-          CORE::LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& estif,
-          CORE::LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& emesh,
-          CORE::LINALG::Matrix<(nsd_ + 1) * nen_, 1>& eforce,
-          const CORE::LINALG::Matrix<nen_, 1>& eporo,
-          const CORE::LINALG::Matrix<nsd_, 2 * nen_>& egradphi,
-          const CORE::LINALG::Matrix<nen_, 2 * 1>& ecurvature, const double thermpressaf,
+      void sysmat(const Core::LinAlg::Matrix<nsd_, nen_>& ebofoaf,
+          const Core::LinAlg::Matrix<nsd_, nen_>& eprescpgaf,
+          const Core::LinAlg::Matrix<nsd_, nen_>& ebofon,
+          const Core::LinAlg::Matrix<nsd_, nen_>& eprescpgn,
+          const Core::LinAlg::Matrix<nsd_, nen_>& evelaf,
+          const Core::LinAlg::Matrix<nsd_, nen_>& evelam,
+          const Core::LinAlg::Matrix<nsd_, nen_>& eveln,
+          const Core::LinAlg::Matrix<nsd_, nen_>& evelnp,
+          const Core::LinAlg::Matrix<nsd_, nen_>& fsevelaf,
+          const Core::LinAlg::Matrix<nen_, 1>& fsescaaf,
+          const Core::LinAlg::Matrix<nsd_, nen_>& evel_hat,
+          const Core::LinAlg::Matrix<nsd_ * nsd_, nen_>& ereynoldsstress_hat,
+          const Core::LinAlg::Matrix<nen_, 1>& epreaf, const Core::LinAlg::Matrix<nen_, 1>& epream,
+          const Core::LinAlg::Matrix<nen_, 1>& epren, const Core::LinAlg::Matrix<nen_, 1>& eprenp,
+          const Core::LinAlg::Matrix<nsd_, nen_>& eaccam,
+          const Core::LinAlg::Matrix<nen_, 1>& escaaf, const Core::LinAlg::Matrix<nen_, 1>& escaam,
+          const Core::LinAlg::Matrix<nen_, 1>& escadtam,
+          const Core::LinAlg::Matrix<nsd_, nen_>& eveldtam,
+          const Core::LinAlg::Matrix<nen_, 1>& epredtam,
+          const Core::LinAlg::Matrix<nen_, 1>& escabofoaf,
+          const Core::LinAlg::Matrix<nen_, 1>& escabofon,
+          const Core::LinAlg::Matrix<nsd_, nen_>& emhist,
+          const Core::LinAlg::Matrix<nsd_, nen_>& edispnp,
+          const Core::LinAlg::Matrix<nsd_, nen_>& egridv,
+          Core::LinAlg::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& estif,
+          Core::LinAlg::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& emesh,
+          Core::LinAlg::Matrix<(nsd_ + 1) * nen_, 1>& eforce,
+          const Core::LinAlg::Matrix<nen_, 1>& eporo,
+          const Core::LinAlg::Matrix<nsd_, 2 * nen_>& egradphi,
+          const Core::LinAlg::Matrix<nen_, 2 * 1>& ecurvature, const double thermpressaf,
           const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
-          Teuchos::RCP<const CORE::MAT::Material> material, double& Cs_delta_sq,
+          Teuchos::RCP<const Core::Mat::Material> material, double& Cs_delta_sq,
           double& Ci_delta_sq, double& Cv, bool isale, double* saccn, double* sveln, double* svelnp,
-          const CORE::FE::GaussIntegration& intpoints) override;
+          const Core::FE::GaussIntegration& intpoints) override;
 
       //! get ALE grid displacements and grid velocity for element
-      void get_grid_disp_ale(DRT::Discretization& discretization, const std::vector<int>& lm,
-          CORE::LINALG::Matrix<nsd_, nen_>& edispnp) override;
+      void get_grid_disp_ale(Discret::Discretization& discretization, const std::vector<int>& lm,
+          Core::LinAlg::Matrix<nsd_, nen_>& edispnp) override;
 
       //! linearisation in the case of mesh motion 3-D
       void lin_mesh_motion_3_d(
-          CORE::LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& emesh,  ///< mesh motion
-          const CORE::LINALG::Matrix<nsd_, nen_>& evelaf,  ///< velocity at time n+alpha_f / n+1
+          Core::LinAlg::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& emesh,  ///< mesh motion
+          const Core::LinAlg::Matrix<nsd_, nen_>& evelaf,  ///< velocity at time n+alpha_f / n+1
           const double& press,                             ///< pressure at integration point
           const double& timefac,                           ///< time factor
           const double& timefacfac                         ///< = timefac x fac
           ) override;
 
      private:
-      const static int enren_ = CORE::FE::num_nodes<distype>;
+      const static int enren_ = Core::FE::num_nodes<distype>;
 
       /// private Constructor since we are a Singleton.
       FluidEleCalcXWall();
@@ -135,9 +136,9 @@ namespace DRT
       virtual void prepare_gauss_rule();
 
       //! get properties of xwall element
-      virtual void get_ele_properties(DRT::ELEMENTS::Fluid* ele,
-          DRT::Discretization& discretization, const std::vector<int>& lm,
-          Teuchos::ParameterList& params, Teuchos::RCP<CORE::MAT::Material>& mat);
+      virtual void get_ele_properties(Discret::ELEMENTS::Fluid* ele,
+          Discret::Discretization& discretization, const std::vector<int>& lm,
+          Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat);
 
       //! brief get enrichment function
       virtual double spaldings_law(double dist, double utau);
@@ -153,7 +154,7 @@ namespace DRT
 
       //! evaluate enrichment (2)
       virtual double enrichment_shape_der(
-          CORE::LINALG::Matrix<nsd_, 1>& derpsigp, CORE::LINALG::Matrix<numderiv2_, 1>& der2psigp);
+          Core::LinAlg::Matrix<nsd_, 1>& derpsigp, Core::LinAlg::Matrix<numderiv2_, 1>& der2psigp);
 
       //! go increment of tauw for projection matrix
       virtual void x_wall_tau_w_inc_forward();
@@ -166,10 +167,10 @@ namespace DRT
        *  \author bk \date 06/2014
        */
 
-      virtual int tau_w_via_gradient(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, const std::vector<int>& lm,
-          Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2);
+      virtual int tau_w_via_gradient(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+          Discret::Discretization& discretization, const std::vector<int>& lm,
+          Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseVector& elevec2);
 
       //! Get MK
       double get_mk() override;
@@ -179,10 +180,10 @@ namespace DRT
        *  \author bk \date 06/2014
        */
 
-      virtual int calc_mk(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, const std::vector<int>& lm,
-          Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2);
+      virtual int calc_mk(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+          Discret::Discretization& discretization, const std::vector<int>& lm,
+          Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseVector& elevec2);
 
       /*! \brief Calculate statilization parameter mk
        *
@@ -194,38 +195,38 @@ namespace DRT
        *
        *  \author bk \date 06/2014
        */
-      virtual int x_wall_projection(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, const std::vector<int>& lm,
-          Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1,
-          CORE::LINALG::SerialDenseMatrix& elemat2);
+      virtual int x_wall_projection(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+          Discret::Discretization& discretization, const std::vector<int>& lm,
+          Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1,
+          Core::LinAlg::SerialDenseMatrix& elemat2);
 
 
       //! nodal values of wall distance
-      CORE::LINALG::Matrix<enren_, 1> ewdist_;
+      Core::LinAlg::Matrix<enren_, 1> ewdist_;
 
       //! nodal values of tauw
-      CORE::LINALG::Matrix<enren_, 1> etauw_;
+      Core::LinAlg::Matrix<enren_, 1> etauw_;
 
       //! nodal values of inctauw
-      CORE::LINALG::Matrix<enren_, 1> einctauw_;
+      Core::LinAlg::Matrix<enren_, 1> einctauw_;
 
       //! nodal values of ramp function
-      CORE::LINALG::Matrix<enren_, 1> eramp_;
+      Core::LinAlg::Matrix<enren_, 1> eramp_;
 
       //! nodal values of toggle vector
-      CORE::LINALG::Matrix<enren_, 1> etoggle_;
+      Core::LinAlg::Matrix<enren_, 1> etoggle_;
 
       //! nodal values of psi
-      CORE::LINALG::Matrix<enren_, 1> epsi_;
+      Core::LinAlg::Matrix<enren_, 1> epsi_;
 
       //! nodal values of new psi
-      CORE::LINALG::Matrix<enren_, 1> epsinew_;
+      Core::LinAlg::Matrix<enren_, 1> epsinew_;
 
       //! nodal values of old psi
-      CORE::LINALG::Matrix<enren_, 1> epsiold_;
+      Core::LinAlg::Matrix<enren_, 1> epsiold_;
 
       //! nodal values of inctauw
-      CORE::LINALG::Matrix<enren_, 1> eincwdist_;
+      Core::LinAlg::Matrix<enren_, 1> eincwdist_;
 
       //! kinematic viscosity
       double visc_;
@@ -247,29 +248,29 @@ namespace DRT
       bool evaluate_sysmat_;
 
       //! node coordinates
-      CORE::LINALG::Matrix<nsd_, enren_> xyze_;
+      Core::LinAlg::Matrix<nsd_, enren_> xyze_;
 
       //! array for enr shape functions
-      CORE::LINALG::Matrix<enren_, 1> functenr_;
+      Core::LinAlg::Matrix<enren_, 1> functenr_;
       //! array for enr shape functions
-      CORE::LINALG::Matrix<enren_, 1> funct_;
+      Core::LinAlg::Matrix<enren_, 1> funct_;
 
       //! global derivatives of shape functions w.r.t x,y,z
-      CORE::LINALG::Matrix<nsd_, enren_> derxyenr_;
+      Core::LinAlg::Matrix<nsd_, enren_> derxyenr_;
       //! global derivatives of shape functions w.r.t x,y,z
-      CORE::LINALG::Matrix<nsd_, enren_> derxy_;
+      Core::LinAlg::Matrix<nsd_, enren_> derxy_;
 
       //! global second derivatives of shape functions w.r.t x,y,z
-      CORE::LINALG::Matrix<numderiv2_, enren_> derxyenr2_;
+      Core::LinAlg::Matrix<numderiv2_, enren_> derxyenr2_;
 
       //! global second derivatives of shape functions w.r.t x,y,z
-      CORE::LINALG::Matrix<numderiv2_, enren_> derxy2_;
+      Core::LinAlg::Matrix<numderiv2_, enren_> derxy2_;
 
       //! array for shape function derivatives w.r.t r,s,t
-      CORE::LINALG::Matrix<nsd_, enren_> deriv_;
+      Core::LinAlg::Matrix<nsd_, enren_> deriv_;
 
       //! array for second derivatives of shape function w.r.t r,s,t
-      CORE::LINALG::Matrix<numderiv2_, enren_> deriv2_;
+      Core::LinAlg::Matrix<numderiv2_, enren_> deriv2_;
 
 
       // find a definition of k and B in:
@@ -291,10 +292,10 @@ namespace DRT
       int numgpplane_;
 
       //! object to construct gauss points in several dimensions
-      Teuchos::RCP<CORE::FE::CollectedGaussPoints> cgp_;
+      Teuchos::RCP<Core::FE::CollectedGaussPoints> cgp_;
     };
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -29,10 +29,10 @@ namespace FLD
   {
    public:
     //! Standard Constructor
-    TimIntPoroGenAlpha(const Teuchos::RCP<DRT::Discretization>& actdis,
-        const Teuchos::RCP<CORE::LINALG::Solver>& solver,
+    TimIntPoroGenAlpha(const Teuchos::RCP<Discret::Discretization>& actdis,
+        const Teuchos::RCP<Core::LinAlg::Solver>& solver,
         const Teuchos::RCP<Teuchos::ParameterList>& params,
-        const Teuchos::RCP<CORE::IO::DiscretizationWriter>& output, bool alefluid = false);
+        const Teuchos::RCP<Core::IO::DiscretizationWriter>& output, bool alefluid = false);
 
     /*!
     \brief initialization

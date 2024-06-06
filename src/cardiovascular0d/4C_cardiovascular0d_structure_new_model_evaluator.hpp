@@ -22,10 +22,10 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 namespace STR
 {
@@ -41,7 +41,7 @@ namespace STR
       void Setup() override;
 
       //! derived
-      INPAR::STR::ModelType Type() const override { return INPAR::STR::model_cardiovascular0d; }
+      Inpar::STR::ModelType Type() const override { return Inpar::STR::model_cardiovascular0d; }
 
       //! derived
       void Reset(const Epetra_Vector& x) override;
@@ -66,21 +66,21 @@ namespace STR
 
       //! derived
       bool assemble_jacobian(
-          CORE::LINALG::SparseOperator& jac, const double& timefac_np) const override;
+          Core::LinAlg::SparseOperator& jac, const double& timefac_np) const override;
 
       //! derived
       void write_restart(
-          CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
+          Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
 
       //! derived
-      void read_restart(CORE::IO::DiscretizationReader& ioreader) override;
+      void read_restart(Core::IO::DiscretizationReader& ioreader) override;
 
       //! [derived]
-      void Predict(const INPAR::STR::PredEnum& pred_type) override { return; };
+      void Predict(const Inpar::STR::PredEnum& pred_type) override { return; };
 
       //! derived
       void run_pre_compute_x(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
-          const NOX::NLN::Group& curr_grp) override
+          const NOX::Nln::Group& curr_grp) override
       {
         return;
       };
@@ -108,7 +108,7 @@ namespace STR
       void determine_optional_quantity() override;
 
       //! derived
-      void OutputStepState(CORE::IO::DiscretizationWriter& iowriter) const override;
+      void OutputStepState(Core::IO::DiscretizationWriter& iowriter) const override;
 
       //! derived
       void ResetStepState() override;
@@ -132,7 +132,7 @@ namespace STR
       Teuchos::RCP<const Epetra_Vector> disnp_ptr_;
 
       //! cardio contributions to the structural stiffness matrix
-      Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_cardio_ptr_;
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_cardio_ptr_;
 
       //! structural rhs contributions of the cardio model at \f$t_{n+1}\f$
       Teuchos::RCP<Epetra_Vector> fstructcardio_np_ptr_;

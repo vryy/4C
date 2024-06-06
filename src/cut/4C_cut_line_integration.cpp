@@ -25,9 +25,9 @@ FOUR_C_NAMESPACE_OPEN
  *      Compute normal vector for the line. if normal(0)==0, the line need not be integrated
  *(Divergence theorem)       *
  *----------------------------------------------------------------------------------------------------------------------*/
-CORE::LINALG::Matrix<2, 1> LineIntegration::compute_normal()
+Core::LinAlg::Matrix<2, 1> LineIntegration::compute_normal()
 {
-  CORE::LINALG::Matrix<2, 1> normal;
+  Core::LinAlg::Matrix<2, 1> normal;
   double dy = end_pts_(1, 1) - end_pts_(1, 0);
   double dx = -end_pts_(0, 1) + end_pts_(0, 0);
   double modd = sqrt(dx * dx + dy * dy);
@@ -43,7 +43,7 @@ CORE::LINALG::Matrix<2, 1> LineIntegration::compute_normal()
  *------------------------------------------------------------------------------*/
 double LineIntegration::integrate_line()
 {
-  CORE::LINALG::Matrix<2, 1> normal;
+  Core::LinAlg::Matrix<2, 1> normal;
   normal = compute_normal();
 
   if (fabs(normal(0, 0)) < TOL_LINE_NORMAL) return 0.0;
@@ -52,13 +52,13 @@ double LineIntegration::integrate_line()
 
   // 8 is the order of Gauss integration used in the line integration
   // since we integrate 6th order polynomial in volume, 8th order must be used for line
-  CORE::FE::GaussIntegration gi(CORE::FE::CellType::line2, (DIRECTDIV_GAUSSRULE + 1));
+  Core::FE::GaussIntegration gi(Core::FE::CellType::line2, (DIRECTDIV_GAUSSRULE + 1));
 
-  for (CORE::FE::GaussIntegration::iterator iquad = gi.begin(); iquad != gi.end(); ++iquad)
+  for (Core::FE::GaussIntegration::iterator iquad = gi.begin(); iquad != gi.end(); ++iquad)
   {
-    const CORE::LINALG::Matrix<1, 1> eta(iquad.Point());
+    const Core::LinAlg::Matrix<1, 1> eta(iquad.Point());
     double weight = iquad.Weight();
-    CORE::LINALG::Matrix<2, 1> normaltemp, actCoord;
+    Core::LinAlg::Matrix<2, 1> normaltemp, actCoord;
     double drs = 0.0;
     Transform(end_pts_, eta(0, 0), actCoord, normaltemp, drs);
 
@@ -70,11 +70,11 @@ double LineIntegration::integrate_line()
     else  // integration over boundarycell
     {
       double linein = 0.0;
-      if (int_type_ == CORE::GEO::CUT::proj_x)
+      if (int_type_ == Core::Geo::Cut::proj_x)
         linein = base_func_surfX(actCoord, inte_num_, alpha_);
-      else if (int_type_ == CORE::GEO::CUT::proj_y)
+      else if (int_type_ == Core::Geo::Cut::proj_y)
         linein = base_func_surfY(actCoord, inte_num_, alpha_);
-      else if (int_type_ == CORE::GEO::CUT::proj_z)
+      else if (int_type_ == Core::Geo::Cut::proj_z)
         linein = base_func_surfZ(actCoord, inte_num_, alpha_);
       else
         FOUR_C_THROW("Integration type unspecified");
@@ -90,17 +90,17 @@ double LineIntegration::integrate_line()
  *     Transform the Gaussian point coordinates and weight from (-1,1) interval to actual coordinate
  *of the lines       *
  *----------------------------------------------------------------------------------------------------------------------*/
-void LineIntegration::Transform(const CORE::LINALG::Matrix<2, 2> &xyze, const double &eta,
-    CORE::LINALG::Matrix<2, 1> &x_gp_lin, CORE::LINALG::Matrix<2, 1> &normal, double &drs)
+void LineIntegration::Transform(const Core::LinAlg::Matrix<2, 2> &xyze, const double &eta,
+    Core::LinAlg::Matrix<2, 1> &x_gp_lin, Core::LinAlg::Matrix<2, 1> &normal, double &drs)
 {
-  const int numnodes = CORE::FE::num_nodes<CORE::FE::CellType::line2>;
-  CORE::LINALG::Matrix<numnodes, 1> funct;
-  CORE::LINALG::Matrix<1, numnodes> deriv;
-  CORE::LINALG::Matrix<1, 1> metrictensor;
+  const int numnodes = Core::FE::num_nodes<Core::FE::CellType::line2>;
+  Core::LinAlg::Matrix<numnodes, 1> funct;
+  Core::LinAlg::Matrix<1, numnodes> deriv;
+  Core::LinAlg::Matrix<1, 1> metrictensor;
 
-  CORE::FE::shape_function_1D(funct, eta, CORE::FE::CellType::line2);
-  CORE::FE::shape_function_1D_deriv1(deriv, eta, CORE::FE::CellType::line2);
-  CORE::FE::ComputeMetricTensorForBoundaryEle<CORE::FE::CellType::line2>(
+  Core::FE::shape_function_1D(funct, eta, Core::FE::CellType::line2);
+  Core::FE::shape_function_1D_deriv1(deriv, eta, Core::FE::CellType::line2);
+  Core::FE::ComputeMetricTensorForBoundaryEle<Core::FE::CellType::line2>(
       xyze, deriv, metrictensor, drs, &normal);
 
   x_gp_lin.Multiply(xyze, funct);

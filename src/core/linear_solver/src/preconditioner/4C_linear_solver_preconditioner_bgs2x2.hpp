@@ -23,7 +23,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   /// Block Gauss-Seidel preconditioner for a 2x2 system
   class BgS2x2Operator : public Epetra_Operator
@@ -46,7 +46,7 @@ namespace CORE::LINALG
     }
 
     /// Llabel of this class.
-    const char* Label() const override { return "CORE::LINALG::BGS2x2_Operator"; }
+    const char* Label() const override { return "Core::LinAlg::BGS2x2_Operator"; }
 
     /// Comm of this class
     const Epetra_Comm& Comm() const override { return (a_->Comm()); }
@@ -67,7 +67,7 @@ namespace CORE::LINALG
     /// not implemented
     int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override
     {
-      FOUR_C_THROW("Apply does not make sense for CORE::LINALG::BGS2x2_Operator");
+      FOUR_C_THROW("Apply does not make sense for Core::LinAlg::BGS2x2_Operator");
       return (-1);
     }
 
@@ -127,7 +127,7 @@ namespace CORE::LINALG
     int firstind_;  /// index of block "0" in Gauss-Seidel procedure
     int secind_;    /// index of block "1" in Gauss-Seidel procedure
   };
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 
 FOUR_C_NAMESPACE_CLOSE

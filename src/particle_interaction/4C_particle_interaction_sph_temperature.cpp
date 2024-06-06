@@ -27,18 +27,18 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-PARTICLEINTERACTION::SPHTemperature::SPHTemperature(const Teuchos::ParameterList& params)
+ParticleInteraction::SPHTemperature::SPHTemperature(const Teuchos::ParameterList& params)
     : params_sph_(params),
       time_(0.0),
       dt_(0.0),
-      temperaturegradient_(CORE::UTILS::IntegralValue<int>(params_sph_, "TEMPERATUREGRADIENT"))
+      temperaturegradient_(Core::UTILS::IntegralValue<int>(params_sph_, "TEMPERATUREGRADIENT"))
 {
   // empty constructor
 }
 
-PARTICLEINTERACTION::SPHTemperature::~SPHTemperature() = default;
+ParticleInteraction::SPHTemperature::~SPHTemperature() = default;
 
-void PARTICLEINTERACTION::SPHTemperature::Init()
+void ParticleInteraction::SPHTemperature::Init()
 {
   // init heat source handler
   init_heat_source_handler();
@@ -50,10 +50,10 @@ void PARTICLEINTERACTION::SPHTemperature::Init()
   intthermotypes_ = {PARTICLEENGINE::Phase1, PARTICLEENGINE::Phase2, PARTICLEENGINE::RigidPhase};
 }
 
-void PARTICLEINTERACTION::SPHTemperature::Setup(
+void ParticleInteraction::SPHTemperature::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-    const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
-    const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs)
+    const std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial,
+    const std::shared_ptr<ParticleInteraction::SPHNeighborPairs> neighborpairs)
 {
   // set interface to particle engine
   particleengineinterface_ = particleengineinterface;
@@ -90,7 +90,7 @@ void PARTICLEINTERACTION::SPHTemperature::Setup(
   // iterate over particle types
   for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
   {
-    thermomaterial_[type_i] = dynamic_cast<const MAT::PAR::ParticleMaterialThermo*>(
+    thermomaterial_[type_i] = dynamic_cast<const Mat::PAR::ParticleMaterialThermo*>(
         particlematerial_->get_ptr_to_particle_mat_parameter(type_i));
 
     // safety check
@@ -106,17 +106,17 @@ void PARTICLEINTERACTION::SPHTemperature::Setup(
   if (heatlossevaporation_) heatlossevaporation_->Setup(particleengineinterface, particlematerial);
 }
 
-void PARTICLEINTERACTION::SPHTemperature::set_current_time(const double currenttime)
+void ParticleInteraction::SPHTemperature::set_current_time(const double currenttime)
 {
   time_ = currenttime;
 }
 
-void PARTICLEINTERACTION::SPHTemperature::set_current_step_size(const double currentstepsize)
+void ParticleInteraction::SPHTemperature::set_current_step_size(const double currentstepsize)
 {
   dt_ = currentstepsize;
 }
 
-void PARTICLEINTERACTION::SPHTemperature::insert_particle_states_of_particle_types(
+void ParticleInteraction::SPHTemperature::insert_particle_states_of_particle_types(
     std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>& particlestatestotypes)
     const
 {
@@ -143,9 +143,9 @@ void PARTICLEINTERACTION::SPHTemperature::insert_particle_states_of_particle_typ
   }
 }
 
-void PARTICLEINTERACTION::SPHTemperature::ComputeTemperature() const
+void ParticleInteraction::SPHTemperature::ComputeTemperature() const
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHTemperature::ComputeTemperature");
+  TEUCHOS_FUNC_TIME_MONITOR("ParticleInteraction::SPHTemperature::ComputeTemperature");
 
   // evaluate energy equation
   energy_equation();
@@ -174,30 +174,30 @@ void PARTICLEINTERACTION::SPHTemperature::ComputeTemperature() const
   if (temperaturegradient_) temperature_gradient();
 }
 
-void PARTICLEINTERACTION::SPHTemperature::init_heat_source_handler()
+void ParticleInteraction::SPHTemperature::init_heat_source_handler()
 {
   // get type of heat source
-  INPAR::PARTICLE::HeatSourceType heatsourcetype =
-      CORE::UTILS::IntegralValue<INPAR::PARTICLE::HeatSourceType>(params_sph_, "HEATSOURCETYPE");
+  Inpar::PARTICLE::HeatSourceType heatsourcetype =
+      Core::UTILS::IntegralValue<Inpar::PARTICLE::HeatSourceType>(params_sph_, "HEATSOURCETYPE");
 
   // create heat source handler
   switch (heatsourcetype)
   {
-    case INPAR::PARTICLE::NoHeatSource:
+    case Inpar::PARTICLE::NoHeatSource:
     {
-      heatsource_ = std::unique_ptr<PARTICLEINTERACTION::SPHHeatSourceBase>(nullptr);
+      heatsource_ = std::unique_ptr<ParticleInteraction::SPHHeatSourceBase>(nullptr);
       break;
     }
-    case INPAR::PARTICLE::VolumeHeatSource:
+    case Inpar::PARTICLE::VolumeHeatSource:
     {
-      heatsource_ = std::unique_ptr<PARTICLEINTERACTION::SPHHeatSourceVolume>(
-          new PARTICLEINTERACTION::SPHHeatSourceVolume(params_sph_));
+      heatsource_ = std::unique_ptr<ParticleInteraction::SPHHeatSourceVolume>(
+          new ParticleInteraction::SPHHeatSourceVolume(params_sph_));
       break;
     }
-    case INPAR::PARTICLE::SurfaceHeatSource:
+    case Inpar::PARTICLE::SurfaceHeatSource:
     {
-      heatsource_ = std::unique_ptr<PARTICLEINTERACTION::SPHHeatSourceSurface>(
-          new PARTICLEINTERACTION::SPHHeatSourceSurface(params_sph_));
+      heatsource_ = std::unique_ptr<ParticleInteraction::SPHHeatSourceSurface>(
+          new ParticleInteraction::SPHHeatSourceSurface(params_sph_));
       break;
     }
     default:
@@ -211,17 +211,17 @@ void PARTICLEINTERACTION::SPHTemperature::init_heat_source_handler()
   if (heatsource_) heatsource_->Init();
 }
 
-void PARTICLEINTERACTION::SPHTemperature::init_heat_loss_evaporation_handler()
+void ParticleInteraction::SPHTemperature::init_heat_loss_evaporation_handler()
 {
-  if (CORE::UTILS::IntegralValue<int>(params_sph_, "VAPOR_HEATLOSS"))
-    heatlossevaporation_ = std::unique_ptr<PARTICLEINTERACTION::SPHHeatLossEvaporation>(
-        new PARTICLEINTERACTION::SPHHeatLossEvaporation(params_sph_));
+  if (Core::UTILS::IntegralValue<int>(params_sph_, "VAPOR_HEATLOSS"))
+    heatlossevaporation_ = std::unique_ptr<ParticleInteraction::SPHHeatLossEvaporation>(
+        new ParticleInteraction::SPHHeatLossEvaporation(params_sph_));
 
   // init evaporation induced heat loss handler
   if (heatlossevaporation_) heatlossevaporation_->Init();
 }
 
-void PARTICLEINTERACTION::SPHTemperature::energy_equation() const
+void ParticleInteraction::SPHTemperature::energy_equation() const
 {
   // iterate over integrated thermo particle types
   for (const auto& type_i : intthermotypes_)
@@ -256,13 +256,13 @@ void PARTICLEINTERACTION::SPHTemperature::energy_equation() const
         particlecontainerbundle_->get_specific_container(type_j, status_j);
 
     // get material for particle types
-    const MAT::PAR::ParticleMaterialBase* basematerial_i =
+    const Mat::PAR::ParticleMaterialBase* basematerial_i =
         particlematerial_->get_ptr_to_particle_mat_parameter(type_i);
-    const MAT::PAR::ParticleMaterialBase* basematerial_j =
+    const Mat::PAR::ParticleMaterialBase* basematerial_j =
         particlematerial_->get_ptr_to_particle_mat_parameter(type_j);
 
-    const MAT::PAR::ParticleMaterialThermo* thermomaterial_i = thermomaterial_[type_i];
-    const MAT::PAR::ParticleMaterialThermo* thermomaterial_j = thermomaterial_[type_j];
+    const Mat::PAR::ParticleMaterialThermo* thermomaterial_i = thermomaterial_[type_i];
+    const Mat::PAR::ParticleMaterialThermo* thermomaterial_j = thermomaterial_[type_j];
 
     // get pointer to particle states
     const double* mass_i = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
@@ -303,9 +303,9 @@ void PARTICLEINTERACTION::SPHTemperature::energy_equation() const
   }
 }
 
-void PARTICLEINTERACTION::SPHTemperature::temperature_gradient() const
+void ParticleInteraction::SPHTemperature::temperature_gradient() const
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHTemperature::temperature_gradient");
+  TEUCHOS_FUNC_TIME_MONITOR("ParticleInteraction::SPHTemperature::temperature_gradient");
 
   // iterate over integrated thermo particle types
   for (const auto& type_i : intthermotypes_)
@@ -340,9 +340,9 @@ void PARTICLEINTERACTION::SPHTemperature::temperature_gradient() const
         particlecontainerbundle_->get_specific_container(type_j, status_j);
 
     // get material for particle types
-    const MAT::PAR::ParticleMaterialBase* basematerial_i =
+    const Mat::PAR::ParticleMaterialBase* basematerial_i =
         particlematerial_->get_ptr_to_particle_mat_parameter(type_i);
-    const MAT::PAR::ParticleMaterialBase* basematerial_j =
+    const Mat::PAR::ParticleMaterialBase* basematerial_j =
         particlematerial_->get_ptr_to_particle_mat_parameter(type_j);
 
     // get pointer to particle states

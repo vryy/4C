@@ -29,23 +29,23 @@ namespace Teuchos
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationWriter;
   class DiscretizationReader;
-}  // namespace CORE::IO
+}  // namespace Core::IO
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseOperator;
   class SparseMatrix;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationWriter;
   class DiscretizationReader;
-}  // namespace CORE::IO
+}  // namespace Core::IO
 
 namespace STR
 {
@@ -59,13 +59,13 @@ namespace STR
     class Generic;
   }  // namespace MODELEVALUATOR
 
-  namespace TIMINT
+  namespace TimeInt
   {
     class Base;
     class BaseDataSDyn;
     class BaseDataGlobalState;
     class BaseDataIO;
-  }  // namespace TIMINT
+  }  // namespace TimeInt
 
   /*! \brief Base class for all structural time integrators
    *
@@ -87,10 +87,11 @@ namespace STR
      * \param[in] dpc_ptr Pointer to the dirichlet boundary condition object
      * \param[in] timint_ptr Pointer to the underlying time integrator (read-only)
      */
-    virtual void Init(const Teuchos::RCP<STR::TIMINT::BaseDataSDyn>& sdyn_ptr,
-        const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& gstate_ptr,
-        const Teuchos::RCP<STR::TIMINT::BaseDataIO>& gio_ptr, const Teuchos::RCP<STR::Dbc>& dbc_ptr,
-        const Teuchos::RCP<const STR::TIMINT::Base>& timint_ptr);
+    virtual void Init(const Teuchos::RCP<STR::TimeInt::BaseDataSDyn>& sdyn_ptr,
+        const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr,
+        const Teuchos::RCP<STR::TimeInt::BaseDataIO>& gio_ptr,
+        const Teuchos::RCP<STR::Dbc>& dbc_ptr,
+        const Teuchos::RCP<const STR::TimeInt::Base>& timint_ptr);
 
     //! Setup (has to be implemented by the derived classes)
     virtual void Setup();
@@ -104,7 +105,7 @@ namespace STR
 
     //! Set initial displacement field
     virtual void set_initial_displacement(
-        const INPAR::STR::InitialDisp init, const int startfuncno);
+        const Inpar::STR::InitialDisp init, const int startfuncno);
 
     /*! \brief Reset state variables of all models
      *  (incl. the structural dynamic state variables)
@@ -127,7 +128,7 @@ namespace STR
      *         time integration scheme for their terms (e.g. GenAlpha for the structure
      *         and OST for the remaining things). Furthermore, constraint/Lagrange
      *         multiplier blocks need no scaling anyway. */
-    virtual void add_visco_mass_contributions(CORE::LINALG::SparseOperator& jac) const = 0;
+    virtual void add_visco_mass_contributions(Core::LinAlg::SparseOperator& jac) const = 0;
 
     //! Apply the right hand side only
     virtual bool ApplyForce(const Epetra_Vector& x, Epetra_Vector& f) = 0;
@@ -137,7 +138,7 @@ namespace STR
      * Normally this one is unnecessary, since it makes more sense
      * to evaluate the stiffness and right hand side at once, because of
      * the lower computational overhead. */
-    virtual bool ApplyStiff(const Epetra_Vector& x, CORE::LINALG::SparseOperator& jac) = 0;
+    virtual bool ApplyStiff(const Epetra_Vector& x, Core::LinAlg::SparseOperator& jac) = 0;
 
     /*! \brief Apply force and stiff at once
      *
@@ -145,14 +146,14 @@ namespace STR
      *  the difference between this call and first call ApplyForce and
      *  then ApplyStiff is mentionable because of the projection operations. */
     virtual bool ApplyForceStiff(
-        const Epetra_Vector& x, Epetra_Vector& f, CORE::LINALG::SparseOperator& jac) = 0;
+        const Epetra_Vector& x, Epetra_Vector& f, Core::LinAlg::SparseOperator& jac) = 0;
 
     /*! \brief Modify the right hand side and Jacobian corresponding to the requested correction
      * action of one (or several) second order constraint (SOC) model(s)
      */
-    virtual bool apply_correction_system(const enum NOX::NLN::CorrectionType type,
-        const std::vector<INPAR::STR::ModelType>& constraint_models, const Epetra_Vector& x,
-        Epetra_Vector& f, CORE::LINALG::SparseOperator& jac) = 0;
+    virtual bool apply_correction_system(const enum NOX::Nln::CorrectionType type,
+        const std::vector<Inpar::STR::ModelType>& constraint_models, const Epetra_Vector& x,
+        Epetra_Vector& f, Core::LinAlg::SparseOperator& jac) = 0;
 
     /*! \brief Remove contributions from the structural right-hand side stemming
      *  from any condensation operations (typical example is contact)
@@ -170,15 +171,15 @@ namespace STR
 
     //! compute the scaling operator for element based scaling using PTC
     virtual void compute_jacobian_contributions_from_element_level_for_ptc(
-        Teuchos::RCP<CORE::LINALG::SparseMatrix>& scalingMatrixOpPtr) = 0;
+        Teuchos::RCP<Core::LinAlg::SparseMatrix>& scalingMatrixOpPtr) = 0;
 
     //! Assemble the right hand side
     virtual bool assemble_force(Epetra_Vector& f,
-        const std::vector<INPAR::STR::ModelType>* without_these_models = nullptr) const = 0;
+        const std::vector<Inpar::STR::ModelType>* without_these_models = nullptr) const = 0;
 
     //! Assemble Jacobian
-    virtual bool AssembleJac(CORE::LINALG::SparseOperator& jac,
-        const std::vector<INPAR::STR::ModelType>* without_these_models = nullptr) const
+    virtual bool AssembleJac(Core::LinAlg::SparseOperator& jac,
+        const std::vector<Inpar::STR::ModelType>* without_these_models = nullptr) const
     {
       return false;
     };
@@ -206,16 +207,16 @@ namespace STR
 
     /*! write restart information of the different time integration schemes
      *  and model evaluators */
-    void write_restart(CORE::IO::DiscretizationWriter& iowriter) const
+    void write_restart(Core::IO::DiscretizationWriter& iowriter) const
     {
       write_restart(iowriter, false);
     };
     virtual void write_restart(
-        CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const = 0;
+        Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const = 0;
 
     /*! read restart information of the different time integration schemes
      *  and model evaluators */
-    virtual void read_restart(CORE::IO::DiscretizationReader& ioreader) = 0;
+    virtual void read_restart(Core::IO::DiscretizationReader& ioreader) = 0;
 
     //!@}
 
@@ -268,7 +269,7 @@ namespace STR
      *  upon object prior to writing stuff here.
      *
      *  \author mwgee (originally)                         \date 03/07 */
-    void OutputStepState(CORE::IO::DiscretizationWriter& iowriter) const;
+    void OutputStepState(Core::IO::DiscretizationWriter& iowriter) const;
 
     /**
      * \brief Do stuff that has to be done before runtime output is written.
@@ -303,21 +304,21 @@ namespace STR
     //! things that should be done after output
     virtual void PostOutput();
 
-    void MonitorDbc(CORE::IO::DiscretizationWriter& writer) const;
+    void MonitorDbc(Core::IO::DiscretizationWriter& writer) const;
     //!@}
 
     //! @name Accessors
     //!@{
 
-    double get_condensed_update_norm(const enum NOX::NLN::StatusTest::QuantityType& qtype) const;
+    double get_condensed_update_norm(const enum NOX::Nln::StatusTest::QuantityType& qtype) const;
 
     double get_condensed_previous_sol_norm(
-        const enum NOX::NLN::StatusTest::QuantityType& qtype) const;
+        const enum NOX::Nln::StatusTest::QuantityType& qtype) const;
 
     double get_condensed_solution_update_rms(
-        const enum NOX::NLN::StatusTest::QuantityType& qtype) const;
+        const enum NOX::Nln::StatusTest::QuantityType& qtype) const;
 
-    int get_condensed_dof_number(const enum NOX::NLN::StatusTest::QuantityType& qtype) const;
+    int get_condensed_dof_number(const enum NOX::Nln::StatusTest::QuantityType& qtype) const;
 
     //! Return the model evaluator control object (read and write)
     STR::ModelEvaluator& ModelEval();
@@ -327,10 +328,10 @@ namespace STR
     Teuchos::RCP<const STR::ModelEvaluator> ModelEvalPtr() const;
 
     //! Return the model evaluator object for the given model type
-    STR::MODELEVALUATOR::Generic& Evaluator(const INPAR::STR::ModelType& mt);
+    STR::MODELEVALUATOR::Generic& Evaluator(const Inpar::STR::ModelType& mt);
 
     //! Return the model evaluator object for the given model type
-    const STR::MODELEVALUATOR::Generic& Evaluator(const INPAR::STR::ModelType& mt) const;
+    const STR::MODELEVALUATOR::Generic& Evaluator(const Inpar::STR::ModelType& mt) const;
 
     //! Return the model evaluator data object (read-only)
     const STR::MODELEVALUATOR::Data& EvalData() const;
@@ -370,27 +371,27 @@ namespace STR
     bool current_state_is_equilibrium(const double& tol);
 
     //! Return the structural dynamic data container
-    STR::TIMINT::BaseDataSDyn& s_dyn();
+    STR::TimeInt::BaseDataSDyn& s_dyn();
 
     //! Return the structural dynamic data container (read-only)
-    const STR::TIMINT::BaseDataSDyn& s_dyn() const;
+    const STR::TimeInt::BaseDataSDyn& s_dyn() const;
 
     //! Return the global state data container
-    STR::TIMINT::BaseDataGlobalState& global_state();
+    STR::TimeInt::BaseDataGlobalState& global_state();
 
     //! Return the global state data container (read-only)
-    const STR::TIMINT::BaseDataGlobalState& global_state() const;
+    const STR::TimeInt::BaseDataGlobalState& global_state() const;
 
     //! Return the Dirichlet boundary condition object
     STR::Dbc& dbc();
 
     //! Return the time integration strategy object (read-only)
-    const STR::TIMINT::Base& tim_int() const;
+    const STR::TimeInt::Base& tim_int() const;
 
     //! reset the time step dependent parameters for the element evaluation
     virtual void reset_eval_params(){};
 
-    double get_condensed_global_norm(const enum NOX::NLN::StatusTest::QuantityType& qtype,
+    double get_condensed_global_norm(const enum NOX::Nln::StatusTest::QuantityType& qtype,
         const enum ::NOX::Abstract::Vector::NormType& normtype, double& mynorm) const;
 
    protected:
@@ -450,7 +451,7 @@ namespace STR
       const Integrator& integrator_;
 
       /// mid-time energy averaging type
-      enum INPAR::STR::MidAverageEnum avg_type_;
+      enum Inpar::STR::MidAverageEnum avg_type_;
 
       /// setup flag
       bool issetup_ = false;
@@ -465,19 +466,19 @@ namespace STR
     Teuchos::RCP<STR::MODELEVALUATOR::Data> eval_data_ptr_;
 
     //! pointer to the structural dynamic data container
-    Teuchos::RCP<STR::TIMINT::BaseDataSDyn> sdyn_ptr_;
+    Teuchos::RCP<STR::TimeInt::BaseDataSDyn> sdyn_ptr_;
 
     //! pointer to the global state data container
-    Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> gstate_ptr_;
+    Teuchos::RCP<STR::TimeInt::BaseDataGlobalState> gstate_ptr_;
 
     //! pointer to the input/output data container
-    Teuchos::RCP<STR::TIMINT::BaseDataIO> io_ptr_;
+    Teuchos::RCP<STR::TimeInt::BaseDataIO> io_ptr_;
 
     //! pointer to the dirichlet boundary condition object
     Teuchos::RCP<STR::Dbc> dbc_ptr_;
 
     //! pointer to the underlying time integrator (read-only)
-    Teuchos::RCP<const STR::TIMINT::Base> timint_ptr_;
+    Teuchos::RCP<const STR::TimeInt::Base> timint_ptr_;
 
     //! pointer to the dirichlet boundary condition monitor
     Teuchos::RCP<STR::MonitorDbc> monitor_dbc_ptr_ = Teuchos::null;

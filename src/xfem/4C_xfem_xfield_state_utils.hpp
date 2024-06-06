@@ -25,12 +25,12 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace XFEM
 {
-  /** \brief Destroy the CORE::LINALG::SparseOperator object and it's date
+  /** \brief Destroy the Core::LinAlg::SparseOperator object and it's date
    *
    *  \author hiermeier
    *  \date 07/16 */
   inline void DestroyMatrix(
-      Teuchos::RCP<CORE::LINALG::SparseOperator>& mat, bool throw_exception = true)
+      Teuchos::RCP<Core::LinAlg::SparseOperator>& mat, bool throw_exception = true)
   {
     // reference-counted object can be deleted by setting RCP = Teuchos::null when strong_count() ==
     // 1 given a weak RCP we do not have the permission to delete the reference-counted object given
@@ -41,20 +41,20 @@ namespace XFEM
       if (mat.strong_count() == 1)
       {
         // which operator type do we have?
-        NOX::NLN::LinSystem::OperatorType optype = NOX::NLN::AUX::GetOperatorType(*mat);
+        NOX::Nln::LinSystem::OperatorType optype = NOX::Nln::Aux::GetOperatorType(*mat);
         // destroy underlying Epetra objects of the reference-counted object
         switch (optype)
         {
-          case NOX::NLN::LinSystem::LinalgSparseMatrix:
+          case NOX::Nln::LinSystem::LinalgSparseMatrix:
           {
-            Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(mat)->Destroy();
+            Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(mat)->Destroy();
             break;
           }
-          case NOX::NLN::LinSystem::LinalgBlockSparseMatrix:
+          case NOX::Nln::LinSystem::LinalgBlockSparseMatrix:
           {
-            Teuchos::RCP<CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>>
+            Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>
                 block_mat = Teuchos::rcp_dynamic_cast<
-                    CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>>(
+                    Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
                     mat, true);
             block_mat->Destroy(false);
             break;
@@ -62,8 +62,8 @@ namespace XFEM
           default:
           {
             std::stringstream msg;
-            msg << "The given CORE::LINALG::SparseOperator type is not supported! ( "
-                << NOX::NLN::LinSystem::OperatorType2String(optype) << " )";
+            msg << "The given Core::LinAlg::SparseOperator type is not supported! ( "
+                << NOX::Nln::LinSystem::OperatorType2String(optype) << " )";
             FOUR_C_THROW(msg.str());
             break;
           }
@@ -96,12 +96,12 @@ namespace XFEM
     }
   }
 
-  /** \brief Destroy the CORE::LINALG::SparseMatrix object and it's date
+  /** \brief Destroy the Core::LinAlg::SparseMatrix object and it's date
    *
    *  \author schott
    *  \date 01/15 */
   inline void DestroyMatrix(
-      Teuchos::RCP<CORE::LINALG::SparseMatrix>& mat, bool throw_exception = true)
+      Teuchos::RCP<Core::LinAlg::SparseMatrix>& mat, bool throw_exception = true)
   {
     // reference-counted object can be deleted by setting RCP = Teuchos::null when strong_count() ==
     // 1 given a weak RCP we do not have the permission to delete the reference-counted object given
@@ -182,7 +182,7 @@ namespace XFEM
    *
    *  \author schott
    *  \date 01/15 */
-  inline void ZeroMatrix(const Teuchos::RCP<CORE::LINALG::SparseMatrix>& mat)
+  inline void ZeroMatrix(const Teuchos::RCP<Core::LinAlg::SparseMatrix>& mat)
   {
     if (mat->ExplicitDirichlet())
     {

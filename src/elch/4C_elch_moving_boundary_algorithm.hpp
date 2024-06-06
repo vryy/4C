@@ -17,7 +17,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace ELCH
+namespace ElCh
 {
   /// ELCH algorithm with support for deforming meshes
   /*!
@@ -27,7 +27,7 @@ namespace ELCH
     \author gjb
     \date 05/09
    */
-  class MovingBoundaryAlgorithm : public ADAPTER::ScaTraFluidAleCouplingAlgorithm
+  class MovingBoundaryAlgorithm : public Adapter::ScaTraFluidAleCouplingAlgorithm
   {
    public:
     /// constructor
@@ -106,7 +106,7 @@ namespace ELCH
     const Teuchos::ParameterList& elch_params_;
   };
 
-}  // namespace ELCH
+}  // namespace ElCh
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -20,10 +20,10 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace CORE::GEO
+namespace Core::Geo
 {
-  std::map<int, CORE::LINALG::Matrix<3, 2>> getCurrentXAABBs(const DRT::Discretization& dis,
-      const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions);
+  std::map<int, Core::LinAlg::Matrix<3, 2>> getCurrentXAABBs(const Discret::Discretization& dis,
+      const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions);
 
   /*!
   \brief checks if two 18 Dops are intersecting (note : for efficiency it only checks slabs
@@ -34,7 +34,7 @@ namespace CORE::GEO
   \return true if the DOP's intersect or false otherwise
    */
   bool intersectionOfKDOPs(
-      const CORE::LINALG::Matrix<9, 2>& cutterDOP, const CORE::LINALG::Matrix<9, 2>& xfemDOP);
+      const Core::LinAlg::Matrix<9, 2>& cutterDOP, const Core::LinAlg::Matrix<9, 2>& xfemDOP);
 
   /*!
   \brief checks the intersection between two bounding volumes (AABB)
@@ -43,7 +43,7 @@ namespace CORE::GEO
   \return true if the AABB's intersect or false otherwise
    */
   bool intersectionOfBVs(
-      const CORE::LINALG::Matrix<3, 2>& currentBV, const CORE::LINALG::Matrix<3, 2>& queryBV);
+      const Core::LinAlg::Matrix<3, 2>& currentBV, const Core::LinAlg::Matrix<3, 2>& queryBV);
 
   /*!
   \brief checks the overlap of two intervals in one coordinate
@@ -62,10 +62,10 @@ namespace CORE::GEO
   \param xyze_element   (in)         : coordinates of the element
   \param eleGeoType     (out)        : element geometric type CARTESIAN LINEAR or HIGHERORDER
    */
-  void checkGeoType(const CORE::Elements::Element* element,
-      const CORE::LINALG::SerialDenseMatrix& xyze_element, EleGeoType& eleGeoType);
+  void checkGeoType(const Core::Elements::Element* element,
+      const Core::LinAlg::SerialDenseMatrix& xyze_element, EleGeoType& eleGeoType);
 
-}  // namespace CORE::GEO
+}  // namespace Core::Geo
 
 
 FOUR_C_NAMESPACE_CLOSE

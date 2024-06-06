@@ -19,12 +19,12 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::ScaTraEleUtilsElchScl<distype>*
-DRT::ELEMENTS::ScaTraEleUtilsElchScl<distype>::Instance(
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::ScaTraEleUtilsElchScl<distype>*
+Discret::ELEMENTS::ScaTraEleUtilsElchScl<distype>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
       [](const int numdofpernode, const int numscal, const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleUtilsElchScl<distype>>(
@@ -32,14 +32,14 @@ DRT::ELEMENTS::ScaTraEleUtilsElchScl<distype>::Instance(
       });
 
   return singleton_map[disname].Instance(
-      CORE::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
+      Core::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::ScaTraEleUtilsElchScl<distype>::ScaTraEleUtilsElchScl(
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::ScaTraEleUtilsElchScl<distype>::ScaTraEleUtilsElchScl(
     const int numdofpernode, const int numscal, const std::string& disname)
     : mydiffcond::ScaTraEleUtilsElchDiffCond(numdofpernode, numscal, disname)
 {
@@ -47,14 +47,14 @@ DRT::ELEMENTS::ScaTraEleUtilsElchScl<distype>::ScaTraEleUtilsElchScl(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleUtilsElchScl<distype>::MatElchMat(
-    Teuchos::RCP<const CORE::MAT::Material> material, const std::vector<double>& concentrations,
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::ScaTraEleUtilsElchScl<distype>::MatElchMat(
+    Teuchos::RCP<const Core::Mat::Material> material, const std::vector<double>& concentrations,
     const double temperature, Teuchos::RCP<ScaTraEleDiffManagerElchScl> diffmanager,
-    INPAR::ELCH::DiffCondMat& diffcondmat)
+    Inpar::ElCh::DiffCondMat& diffcondmat)
 {
   // cast material to electrolyte material
-  const auto elchmat = Teuchos::rcp_static_cast<const MAT::ElchMat>(material);
+  const auto elchmat = Teuchos::rcp_static_cast<const Mat::ElchMat>(material);
 
   // safety check
   if (elchmat->NumPhase() != 1)
@@ -63,7 +63,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchScl<distype>::MatElchMat(
   // extract electrolyte phase
   const auto elchphase = elchmat->PhaseById(elchmat->PhaseID(0));
 
-  if (elchphase->MaterialType() == CORE::Materials::m_elchphase)
+  if (elchphase->MaterialType() == Core::Materials::m_elchphase)
   {
     // evaluate electrolyte phase
     MatElchPhase(elchphase, concentrations, temperature, diffmanager, diffcondmat);
@@ -71,13 +71,13 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchScl<distype>::MatElchMat(
   else
     FOUR_C_THROW("Invalid material type!");
 }
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleUtilsElchScl<distype>::MatScl(
-    Teuchos::RCP<const CORE::MAT::Material> material, const double concentration,
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::ScaTraEleUtilsElchScl<distype>::MatScl(
+    Teuchos::RCP<const Core::Mat::Material> material, const double concentration,
     const double temperature, Teuchos::RCP<ScaTraEleDiffManagerElchScl> diffmanager)
 {
   // cast material to Scl material
-  const auto matscl = Teuchos::rcp_static_cast<const MAT::Scl>(material);
+  const auto matscl = Teuchos::rcp_static_cast<const Mat::Scl>(material);
 
   // valence of ionic species
   diffmanager->SetValence(matscl->Valence(), 0);
@@ -124,14 +124,14 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchScl<distype>::MatScl(
 }
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleUtilsElchScl<distype>::MatElchPhase(
-    Teuchos::RCP<const CORE::MAT::Material> material, const std::vector<double>& concentrations,
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::ScaTraEleUtilsElchScl<distype>::MatElchPhase(
+    Teuchos::RCP<const Core::Mat::Material> material, const std::vector<double>& concentrations,
     const double temperature, Teuchos::RCP<ScaTraEleDiffManagerElchScl> diffmanager,
-    INPAR::ELCH::DiffCondMat& diffcondmat)
+    Inpar::ElCh::DiffCondMat& diffcondmat)
 {
   // cast material to electrolyte phase
-  const auto matelchphase = Teuchos::rcp_static_cast<const MAT::ElchPhase>(material);
+  const auto matelchphase = Teuchos::rcp_static_cast<const Mat::ElchPhase>(material);
 
   // set porosity
   diffmanager->SetPhasePoro(matelchphase->Epsilon(), 0);
@@ -146,9 +146,9 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchScl<distype>::MatElchPhase(
 
     switch (elchPhaseMaterial->MaterialType())
     {
-      case CORE::Materials::m_scl:
+      case Core::Materials::m_scl:
       {
-        diffcondmat = INPAR::ELCH::diffcondmat_scl;
+        diffcondmat = Inpar::ElCh::diffcondmat_scl;
         MatScl(elchPhaseMaterial, concentrations[0], temperature, diffmanager);
         break;
       }
@@ -166,26 +166,26 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchScl<distype>::MatElchPhase(
 
 // template classes
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleUtilsElchScl<CORE::FE::CellType::line2>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElchScl<CORE::FE::CellType::line3>;
+template class Discret::ELEMENTS::ScaTraEleUtilsElchScl<Core::FE::CellType::line2>;
+template class Discret::ELEMENTS::ScaTraEleUtilsElchScl<Core::FE::CellType::line3>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleUtilsElchScl<CORE::FE::CellType::quad4>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElchScl<CORE::FE::CellType::quad8>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElchScl<CORE::FE::CellType::quad9>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElchScl<CORE::FE::CellType::tri3>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElchScl<CORE::FE::CellType::tri6>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElchScl<CORE::FE::CellType::nurbs3>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElchScl<CORE::FE::CellType::nurbs9>;
+template class Discret::ELEMENTS::ScaTraEleUtilsElchScl<Core::FE::CellType::quad4>;
+template class Discret::ELEMENTS::ScaTraEleUtilsElchScl<Core::FE::CellType::quad8>;
+template class Discret::ELEMENTS::ScaTraEleUtilsElchScl<Core::FE::CellType::quad9>;
+template class Discret::ELEMENTS::ScaTraEleUtilsElchScl<Core::FE::CellType::tri3>;
+template class Discret::ELEMENTS::ScaTraEleUtilsElchScl<Core::FE::CellType::tri6>;
+template class Discret::ELEMENTS::ScaTraEleUtilsElchScl<Core::FE::CellType::nurbs3>;
+template class Discret::ELEMENTS::ScaTraEleUtilsElchScl<Core::FE::CellType::nurbs9>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleUtilsElchScl<CORE::FE::CellType::hex8>;
-// template class DRT::ELEMENTS::ScaTraEleUtilsElchScl<CORE::FE::CellType::hex20>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElchScl<CORE::FE::CellType::hex27>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElchScl<CORE::FE::CellType::tet4>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElchScl<CORE::FE::CellType::tet10>;
-// template class DRT::ELEMENTS::ScaTraEleUtilsElchScl<CORE::FE::CellType::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElchScl<CORE::FE::CellType::pyramid5>;
-// template class DRT::ELEMENTS::ScaTraEleUtilsElchScl<CORE::FE::CellType::nurbs27>;
+template class Discret::ELEMENTS::ScaTraEleUtilsElchScl<Core::FE::CellType::hex8>;
+// template class Discret::ELEMENTS::ScaTraEleUtilsElchScl<Core::FE::CellType::hex20>;
+template class Discret::ELEMENTS::ScaTraEleUtilsElchScl<Core::FE::CellType::hex27>;
+template class Discret::ELEMENTS::ScaTraEleUtilsElchScl<Core::FE::CellType::tet4>;
+template class Discret::ELEMENTS::ScaTraEleUtilsElchScl<Core::FE::CellType::tet10>;
+// template class Discret::ELEMENTS::ScaTraEleUtilsElchScl<Core::FE::CellType::wedge6>;
+template class Discret::ELEMENTS::ScaTraEleUtilsElchScl<Core::FE::CellType::pyramid5>;
+// template class Discret::ELEMENTS::ScaTraEleUtilsElchScl<Core::FE::CellType::nurbs27>;
 
 FOUR_C_NAMESPACE_CLOSE

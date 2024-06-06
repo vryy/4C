@@ -19,9 +19,9 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-namespace INPAR
+namespace Inpar
 {
-  namespace POROELAST
+  namespace PoroElast
   {
     /// Type of coupling strategy for poroelasticity problems
     enum SolutionSchemeOverFields
@@ -91,19 +91,19 @@ namespace INPAR
     {
       switch (norm)
       {
-        case INPAR::POROELAST::norm_l1:
+        case Inpar::PoroElast::norm_l1:
           return "L1";
           break;
-        case INPAR::POROELAST::norm_l1_scaled:
+        case Inpar::PoroElast::norm_l1_scaled:
           return "L1_scaled";
           break;
-        case INPAR::POROELAST::norm_l2:
+        case Inpar::PoroElast::norm_l2:
           return "L2";
           break;
-        case INPAR::POROELAST::norm_rms:
+        case Inpar::PoroElast::norm_rms:
           return "Rms";
           break;
-        case INPAR::POROELAST::norm_inf:
+        case Inpar::PoroElast::norm_inf:
           return "Inf";
           break;
         default:
@@ -118,9 +118,9 @@ namespace INPAR
     /// set the poroelast parameters
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
-  }  // namespace POROELAST
+  }  // namespace PoroElast
 
-}  // namespace INPAR
+}  // namespace Inpar
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

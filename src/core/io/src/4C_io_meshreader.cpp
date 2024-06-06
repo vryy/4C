@@ -30,8 +30,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-CORE::IO::MeshReader::MeshReader(
-    CORE::IO::DatFileReader& reader, std::string node_section_name, MeshReaderParameters parameters)
+Core::IO::MeshReader::MeshReader(
+    Core::IO::DatFileReader& reader, std::string node_section_name, MeshReaderParameters parameters)
     : comm_(reader.Comm()),
       reader_(reader),
       node_section_name_(std::move(node_section_name)),
@@ -43,28 +43,28 @@ CORE::IO::MeshReader::MeshReader(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::IO::MeshReader::AddAdvancedReader(Teuchos::RCP<DRT::Discretization> dis,
-    const CORE::IO::DatFileReader& reader, const std::string& sectionname,
-    const CORE::IO::GeometryType geometrysource, const std::string* geofilepath)
+void Core::IO::MeshReader::AddAdvancedReader(Teuchos::RCP<Discret::Discretization> dis,
+    const Core::IO::DatFileReader& reader, const std::string& sectionname,
+    const Core::IO::GeometryType geometrysource, const std::string* geofilepath)
 {
   std::set<std::string> elementtypes;
   switch (geometrysource)
   {
-    case CORE::IO::geometry_full:
+    case Core::IO::geometry_full:
     {
       std::string fullsectionname("--" + sectionname + " ELEMENTS");
       ElementReader er = ElementReader(dis, reader, fullsectionname, elementtypes);
       element_readers_.emplace_back(er);
       break;
     }
-    case CORE::IO::geometry_box:
+    case Core::IO::geometry_box:
     {
       std::string fullsectionname("--" + sectionname + " DOMAIN");
       DomainReader dr = DomainReader(dis, reader, fullsectionname);
       domain_readers_.emplace_back(dr);
       break;
     }
-    case CORE::IO::geometry_file:
+    case Core::IO::geometry_file:
     {
       FOUR_C_THROW("Unfortunately not yet implemented, but feel free ...");
       break;
@@ -77,7 +77,7 @@ void CORE::IO::MeshReader::AddAdvancedReader(Teuchos::RCP<DRT::Discretization> d
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::IO::MeshReader::ReadAndPartition()
+void Core::IO::MeshReader::ReadAndPartition()
 {
   // We need to track the max global node ID to offset node numbering and for sanity checks
   int max_node_id = 0;
@@ -101,9 +101,9 @@ void CORE::IO::MeshReader::ReadAndPartition()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::IO::MeshReader::read_mesh_from_dat_file(int& max_node_id)
+void Core::IO::MeshReader::read_mesh_from_dat_file(int& max_node_id)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("CORE::IO::MeshReader::read_mesh_from_dat_file");
+  TEUCHOS_FUNC_TIME_MONITOR("Core::IO::MeshReader::read_mesh_from_dat_file");
 
   // read element information
   for (auto& element_reader : element_readers_) element_reader.ReadAndDistribute();
@@ -114,9 +114,9 @@ void CORE::IO::MeshReader::read_mesh_from_dat_file(int& max_node_id)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::IO::MeshReader::rebalance()
+void Core::IO::MeshReader::rebalance()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("CORE::IO::MeshReader::Rebalance");
+  TEUCHOS_FUNC_TIME_MONITOR("Core::IO::MeshReader::Rebalance");
 
   // do the real partitioning and distribute maps
   for (size_t i = 0; i < element_readers_.size(); i++)
@@ -130,7 +130,7 @@ void CORE::IO::MeshReader::rebalance()
     // We want to be able to read empty fields. If we have such a beast
     // just skip the building of the node  graph and do a proper initialization
     if (numnodes)
-      graph_[i] = CORE::REBALANCE::BuildGraph(discret, element_readers_[i].GetRowElements());
+      graph_[i] = Core::Rebalance::BuildGraph(discret, element_readers_[i].GetRowElements());
     else
       graph_[i] = Teuchos::null;
 
@@ -142,7 +142,7 @@ void CORE::IO::MeshReader::rebalance()
         Teuchos::rcp(new Teuchos::ParameterList());
     rebalanceParams->set<std::string>("imbalance tol", std::to_string(imbalance_tol));
 
-    const auto rebalanceMethod = Teuchos::getIntegralValue<CORE::REBALANCE::RebalanceType>(
+    const auto rebalanceMethod = Teuchos::getIntegralValue<Core::Rebalance::RebalanceType>(
         parameters_.mesh_paritioning_parameters, "METHOD");
 
     Teuchos::RCP<Epetra_Map> rowmap, colmap;
@@ -151,17 +151,17 @@ void CORE::IO::MeshReader::rebalance()
     {
       switch (rebalanceMethod)
       {
-        case CORE::REBALANCE::RebalanceType::hypergraph:
+        case Core::Rebalance::RebalanceType::hypergraph:
         {
           rebalanceParams->set("partitioning method", "HYPERGRAPH");
 
           // here we can reuse the graph, which was calculated before, this saves us some time
           std::tie(rowmap, colmap) =
-              CORE::REBALANCE::RebalanceNodeMaps(graph_[i], *rebalanceParams);
+              Core::Rebalance::RebalanceNodeMaps(graph_[i], *rebalanceParams);
 
           break;
         }
-        case CORE::REBALANCE::RebalanceType::recursive_coordinate_bisection:
+        case Core::Rebalance::RebalanceType::recursive_coordinate_bisection:
         {
           rebalanceParams->set("partitioning method", "RCB");
 
@@ -177,12 +177,12 @@ void CORE::IO::MeshReader::rebalance()
 
           Teuchos::RCP<Epetra_MultiVector> coordinates = discret->build_node_coordinates();
 
-          std::tie(rowmap, colmap) = CORE::REBALANCE::RebalanceNodeMaps(
+          std::tie(rowmap, colmap) = Core::Rebalance::RebalanceNodeMaps(
               graph_[i], *rebalanceParams, Teuchos::null, Teuchos::null, coordinates);
 
           break;
         }
-        case CORE::REBALANCE::RebalanceType::monolithic:
+        case Core::Rebalance::RebalanceType::monolithic:
         {
           rebalanceParams->set("partitioning method", "HYPERGRAPH");
 
@@ -194,12 +194,12 @@ void CORE::IO::MeshReader::rebalance()
           discret->Redistribute(*rowmap, *colmap, true, true, false);
 
           Teuchos::RCP<const Epetra_CrsGraph> enriched_graph =
-              CORE::REBALANCE::BuildMonolithicNodeGraph(*discret,
-                  CORE::GEOMETRICSEARCH::GeometricSearchParams(
+              Core::Rebalance::BuildMonolithicNodeGraph(*discret,
+                  Core::GeometricSearch::GeometricSearchParams(
                       parameters_.geometric_search_parameters, parameters_.io_parameters));
 
           std::tie(rowmap, colmap) =
-              CORE::REBALANCE::RebalanceNodeMaps(enriched_graph, *rebalanceParams);
+              Core::Rebalance::RebalanceNodeMaps(enriched_graph, *rebalanceParams);
 
           break;
         }
@@ -214,13 +214,13 @@ void CORE::IO::MeshReader::rebalance()
 
     discret->Redistribute(*rowmap, *colmap, false, false, false);
 
-    CORE::REBALANCE::UTILS::print_parallel_distribution(*discret);
+    Core::Rebalance::UTILS::print_parallel_distribution(*discret);
   }
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::IO::MeshReader::create_inline_mesh(int& max_node_id)
+void Core::IO::MeshReader::create_inline_mesh(int& max_node_id)
 {
   for (const auto& domain_reader : domain_readers_)
   {

@@ -17,9 +17,9 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::GEO
+namespace Core::Geo
 {
-  namespace CUT
+  namespace Cut
   {
     class VolumeCell;
 
@@ -61,7 +61,7 @@ namespace CORE::GEO
           std::set<plain_volumecell_set, Cmp>& connected_volumecells, bool is_std_dofset);
 
       /// constructor for CompositeNodalDofSet
-      explicit NodalDofSet(bool is_std_dofset, CORE::GEO::CUT::Point::PointPosition pos);
+      explicit NodalDofSet(bool is_std_dofset, Core::Geo::Cut::Point::PointPosition pos);
 
       virtual ~NodalDofSet() = default;
 
@@ -79,10 +79,10 @@ namespace CORE::GEO
       bool Is_Standard_DofSet() const { return is_std_dofset_; }
 
       /// get the position of the nodal dofset which is the same for all its contained volumecells
-      CORE::GEO::CUT::Point::PointPosition Position() const { return position_; };
+      Core::Geo::Cut::Point::PointPosition Position() const { return position_; };
 
       /// does the nodal dofset's composite of volumecells contain the point?
-      virtual bool Contains(CORE::GEO::CUT::Point* p);
+      virtual bool Contains(Core::Geo::Cut::Point* p);
 
       virtual void Print();
 
@@ -96,7 +96,7 @@ namespace CORE::GEO
       /// is the dofset a standard physical dofset or a ghost dofset?
       bool is_std_dofset_;
 
-      CORE::GEO::CUT::Point::PointPosition position_;
+      Core::Geo::Cut::Point::PointPosition position_;
     };
 
     /*----------------------------------------------------------------------------*/
@@ -104,7 +104,7 @@ namespace CORE::GEO
     {
      public:
       /// constructor
-      CompositeNodalDofSet(bool is_std_dofset, CORE::GEO::CUT::Point::PointPosition pos)
+      CompositeNodalDofSet(bool is_std_dofset, Core::Geo::Cut::Point::PointPosition pos)
           : NodalDofSet(is_std_dofset, pos)
       {
         nodal_dofsets_.clear();
@@ -135,7 +135,7 @@ namespace CORE::GEO
       }
 
       /// does one of the nodal dofset's contain the point?
-      bool Contains(CORE::GEO::CUT::Point* p) override
+      bool Contains(Core::Geo::Cut::Point* p) override
       {
         for (unsigned int i = 0; i < nodal_dofsets_.size(); i++)
           if (nodal_dofsets_[i]->Contains(p)) return true;
@@ -323,8 +323,8 @@ namespace CORE::GEO
       //! @name private class variables
       /*========================================================================*/
 
-      int nid_;       ///< node's id (the same as in  DRT::Discretization)
-      Point* point_;  ///< pointer to the CORE::GEO::CUT::Point which defines the node
+      int nid_;       ///< node's id (the same as in  Discret::Discretization)
+      Point* point_;  ///< pointer to the Core::Geo::Cut::Point which defines the node
       double lsv_;    ///< levelset value if it is a levelset cut
 
       plain_edge_set edges_;  ///< all adjacent edges
@@ -360,8 +360,8 @@ namespace CORE::GEO
     void FindCommonElements(const std::vector<Node*>& nelement, plain_element_set& elements);
 
 
-  }  // namespace CUT
-}  // namespace CORE::GEO
+  }  // namespace Cut
+}  // namespace Core::Geo
 
 FOUR_C_NAMESPACE_CLOSE
 

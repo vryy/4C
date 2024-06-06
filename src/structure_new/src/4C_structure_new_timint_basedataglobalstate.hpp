@@ -42,20 +42,20 @@ namespace NOX
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
-namespace DRT
+namespace Discret
 {
   class Discretization;
   namespace ELEMENTS
   {
     class Beam3Base;
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseOperator;
   class SparseMatrix;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 namespace STR
 {
@@ -64,7 +64,7 @@ namespace STR
   {
     class Generic;
   }  // namespace MODELEVALUATOR
-  namespace TIMINT
+  namespace TimeInt
   {
     class BaseDataSDyn;
 
@@ -105,7 +105,7 @@ namespace STR
        * @param sdynparams Parameter list for structural dynamics from input file
        * @param datasdyn Structural dynamics data container
        */
-      void Init(const Teuchos::RCP<DRT::Discretization> discret,
+      void Init(const Teuchos::RCP<Discret::Discretization> discret,
           const Teuchos::ParameterList& sdynparams,
           const Teuchos::RCP<const BaseDataSDyn> datasdyn);
 
@@ -128,7 +128,7 @@ namespace STR
        * @return Max GID in the entire problem
        */
       int setup_block_information(
-          const STR::MODELEVALUATOR::Generic& me, const INPAR::STR::ModelType& mt);
+          const STR::MODELEVALUATOR::Generic& me, const Inpar::STR::ModelType& mt);
 
       /// setup the multi map extractor for saddle point problems
       void setup_multi_map_extractor();
@@ -142,14 +142,14 @@ namespace STR
        *
        * @return MultiMapExtractor for the required type of element technology
        */
-      const CORE::LINALG::MultiMapExtractor& get_element_technology_map_extractor(
-          const INPAR::STR::EleTech etech) const;
+      const Core::LinAlg::MultiMapExtractor& get_element_technology_map_extractor(
+          const Inpar::STR::EleTech etech) const;
 
       /** setup the map extractor for translational <-> rotation pseudo-vector DoFs
        *                              (additive)    <->  (non-additive)      */
-      void setup_rot_vec_map_extractor(CORE::LINALG::MultiMapExtractor& multimapext);
+      void setup_rot_vec_map_extractor(Core::LinAlg::MultiMapExtractor& multimapext);
 
-      void SetupPressExtractor(CORE::LINALG::MultiMapExtractor& multimapext);
+      void SetupPressExtractor(Core::LinAlg::MultiMapExtractor& multimapext);
 
       /*! \brief Extract the part of a vector which belongs to the displacement dofs.
        *
@@ -164,18 +164,18 @@ namespace STR
        * \param mt (in)     : model type of the desired block.
        * \param source (in) : full vector to extract from. */
       Teuchos::RCP<Epetra_Vector> ExtractModelEntries(
-          const INPAR::STR::ModelType& mt, const Epetra_Vector& source) const;
+          const Inpar::STR::ModelType& mt, const Epetra_Vector& source) const;
 
       //! Remove DOFs that are specific to element technologies (e.g. pressure DOFs)
       void remove_element_technologies(Teuchos::RCP<Epetra_Vector>& rhs_ptr) const;
 
       //! Get DOFs that are specific to element technologies (e.g. pressure DOFs)
-      void extract_element_technologies(const NOX::NLN::StatusTest::QuantityType checkquantity,
+      void extract_element_technologies(const NOX::Nln::StatusTest::QuantityType checkquantity,
           Teuchos::RCP<Epetra_Vector>& rhs_ptr) const;
 
       //! Modify mass matrix and rhs according to element technologies
       void apply_element_technology_to_acceleration_system(
-          CORE::LINALG::SparseOperator& mass, Epetra_Vector& rhs) const;
+          Core::LinAlg::SparseOperator& mass, Epetra_Vector& rhs) const;
 
       /* \brief Extract the part of a vector which belongs to the additive dofs.
        *
@@ -195,28 +195,28 @@ namespace STR
        *  \param bt (in)  : Desired matrix block type.
        *
        *  \author hiermeier \date 04/17 */
-      Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetJacobianBlock(
-          const INPAR::STR::ModelType mt, const MatBlockType bt) const;
+      Teuchos::RCP<const Core::LinAlg::SparseMatrix> GetJacobianBlock(
+          const Inpar::STR::ModelType mt, const MatBlockType bt) const;
 
       /// Get the block of the stiffness matrix which belongs to the displacement dofs.
-      Teuchos::RCP<CORE::LINALG::SparseMatrix> ExtractDisplBlock(
-          CORE::LINALG::SparseOperator& jac) const;
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> ExtractDisplBlock(
+          Core::LinAlg::SparseOperator& jac) const;
 
       /* \brief Get the block of the desired model which belongs to the given block type.
        *
        * \param jac (in) : Full jacobian to extract from.
        * \param mt (in)  : Model type of the desired block.
        * \param bt (in)  : Desired matrix block type.  */
-      Teuchos::RCP<CORE::LINALG::SparseMatrix> ExtractModelBlock(CORE::LINALG::SparseOperator& jac,
-          const INPAR::STR::ModelType& mt, const MatBlockType& bt) const;
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> ExtractModelBlock(Core::LinAlg::SparseOperator& jac,
+          const Inpar::STR::ModelType& mt, const MatBlockType& bt) const;
 
-      Teuchos::RCP<std::vector<CORE::LINALG::SparseMatrix*>> extract_displ_row_of_blocks(
-          CORE::LINALG::SparseOperator& jac) const;
+      Teuchos::RCP<std::vector<Core::LinAlg::SparseMatrix*>> extract_displ_row_of_blocks(
+          Core::LinAlg::SparseOperator& jac) const;
 
-      Teuchos::RCP<std::vector<CORE::LINALG::SparseMatrix*>> ExtractRowOfBlocks(
-          CORE::LINALG::SparseOperator& jac, const INPAR::STR::ModelType& mt) const;
+      Teuchos::RCP<std::vector<Core::LinAlg::SparseMatrix*>> ExtractRowOfBlocks(
+          Core::LinAlg::SparseOperator& jac, const Inpar::STR::ModelType& mt) const;
 
-      /** \brief Assign a CORE::LINALG::SparseMatrix to one of the blocks of the corresponding
+      /** \brief Assign a Core::LinAlg::SparseMatrix to one of the blocks of the corresponding
        * model
        *
        *  You can choose between one of the following blocks
@@ -226,23 +226,23 @@ namespace STR
        *         |             |
        *         | LmD    LmLm |
        *          ===       ===     */
-      void AssignModelBlock(CORE::LINALG::SparseOperator& jac,
-          const CORE::LINALG::SparseMatrix& matrix, const INPAR::STR::ModelType& mt,
+      void AssignModelBlock(Core::LinAlg::SparseOperator& jac,
+          const Core::LinAlg::SparseMatrix& matrix, const Inpar::STR::ModelType& mt,
           const MatBlockType& bt) const
       {
-        AssignModelBlock(jac, matrix, mt, bt, CORE::LINALG::View);
+        AssignModelBlock(jac, matrix, mt, bt, Core::LinAlg::View);
       };
-      void AssignModelBlock(CORE::LINALG::SparseOperator& jac,
-          const CORE::LINALG::SparseMatrix& matrix, const INPAR::STR::ModelType& mt,
-          const MatBlockType& bt, const CORE::LINALG::DataAccess& access) const;
+      void AssignModelBlock(Core::LinAlg::SparseOperator& jac,
+          const Core::LinAlg::SparseMatrix& matrix, const Inpar::STR::ModelType& mt,
+          const MatBlockType& bt, const Core::LinAlg::DataAccess& access) const;
 
       /// Get the displacement block of the global jacobian matrix in the global
       /// state data container.
-      Teuchos::RCP<const CORE::LINALG::SparseMatrix> get_jacobian_displ_block() const;
+      Teuchos::RCP<const Core::LinAlg::SparseMatrix> get_jacobian_displ_block() const;
 
       /// Get the displacement block of the global jacobian matrix in the global
       /// state data container.
-      Teuchos::RCP<CORE::LINALG::SparseMatrix> JacobianDisplBlock();
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> JacobianDisplBlock();
 
       /// Create the global solution vector
       Teuchos::RCP<::NOX::Epetra::Vector> CreateGlobalVector() const;
@@ -250,12 +250,12 @@ namespace STR
           const Teuchos::RCP<const STR::ModelEvaluator>& modeleval) const;
 
       /// Create the structural stiffness matrix block
-      CORE::LINALG::SparseOperator* create_structural_stiffness_matrix_block();
+      Core::LinAlg::SparseOperator* create_structural_stiffness_matrix_block();
 
       /// Create the jacobian matrix
-      Teuchos::RCP<CORE::LINALG::SparseOperator>& CreateJacobian();
+      Teuchos::RCP<Core::LinAlg::SparseOperator>& CreateJacobian();
 
-      Teuchos::RCP<CORE::LINALG::SparseOperator> CreateAuxJacobian() const;
+      Teuchos::RCP<Core::LinAlg::SparseOperator> CreateAuxJacobian() const;
 
      protected:
       inline const bool& is_init() const { return isinit_; };
@@ -278,7 +278,7 @@ namespace STR
       ///@{
 
       /// attached discretisation
-      Teuchos::RCP<const DRT::Discretization> GetDiscret() const
+      Teuchos::RCP<const Discret::Discretization> GetDiscret() const
       {
         check_init();
         return discret_;
@@ -348,7 +348,7 @@ namespace STR
       };
 
       /// Return time vector \f$t_{n}, t_{n-1}, ...\f$ of last converged steps
-      Teuchos::RCP<const TIMESTEPPING::TimIntMStep<double>> GetMultiTime() const
+      Teuchos::RCP<const TimeStepping::TimIntMStep<double>> GetMultiTime() const
       {
         check_init();
         return timen_;
@@ -396,7 +396,7 @@ namespace STR
       };
 
       /// Return time step size \f$\Delta t\f$
-      Teuchos::RCP<const TIMESTEPPING::TimIntMStep<double>> GetDeltaTime() const
+      Teuchos::RCP<const TimeStepping::TimIntMStep<double>> GetDeltaTime() const
       {
         check_init();
         return dt_;
@@ -554,21 +554,21 @@ namespace STR
       /// @name Get system matrices (read only access)
       ///@{
       /// returns the entire structural jacobian
-      Teuchos::RCP<const CORE::LINALG::SparseOperator> GetJacobian() const
+      Teuchos::RCP<const Core::LinAlg::SparseOperator> GetJacobian() const
       {
         check_init_setup();
         return jac_;
       }
 
       /// mass matrix (constant)
-      Teuchos::RCP<const CORE::LINALG::SparseOperator> GetMassMatrix() const
+      Teuchos::RCP<const Core::LinAlg::SparseOperator> GetMassMatrix() const
       {
         check_init_setup();
         return mass_;
       }
 
       /// damping matrix
-      Teuchos::RCP<const CORE::LINALG::SparseOperator> GetDampMatrix() const
+      Teuchos::RCP<const Core::LinAlg::SparseOperator> GetDampMatrix() const
       {
         check_init_setup();
         return damp_;
@@ -578,7 +578,7 @@ namespace STR
       /// @name Get general purpose algorithm members (read only access)
       ///@{
       /// attached discretization
-      Teuchos::RCP<DRT::Discretization> GetDiscret()
+      Teuchos::RCP<Discret::Discretization> GetDiscret()
       {
         check_init();
         return discret_;
@@ -592,7 +592,7 @@ namespace STR
       /** \brief Returns Epetra_Map pointer of the given model
        *
        *  If the given model is not found, Teuchos::null is returned. */
-      Teuchos::RCP<const Epetra_Map> BlockMapPtr(const INPAR::STR::ModelType& mt) const
+      Teuchos::RCP<const Epetra_Map> BlockMapPtr(const Inpar::STR::ModelType& mt) const
       {
         if (model_maps_.find(mt) != model_maps_.end()) return model_maps_.at(mt);
 
@@ -600,13 +600,13 @@ namespace STR
       };
 
       /// Returns Epetra_Map of the given model
-      Epetra_Map BlockMap(const INPAR::STR::ModelType& mt) const
+      Epetra_Map BlockMap(const Inpar::STR::ModelType& mt) const
       {
         if (model_maps_.find(mt) == model_maps_.end())
           FOUR_C_THROW(
               "There is no block map for the given "
               "modeltype \"%s\".",
-              INPAR::STR::ModelTypeString(mt).c_str());
+              Inpar::STR::ModelTypeString(mt).c_str());
 
         return *(model_maps_.at(mt));
       };
@@ -614,7 +614,7 @@ namespace STR
       /** \brief Returns the Block id of the given model type.
        *
        *  If the block is not found, -1 is returned. */
-      int BlockId(const enum INPAR::STR::ModelType& mt) const
+      int BlockId(const enum Inpar::STR::ModelType& mt) const
       {
         if (model_block_id_.find(mt) != model_block_id_.end()) return model_block_id_.at(mt);
 
@@ -638,7 +638,7 @@ namespace STR
         return *gproblem_map_ptr_;
       };
 
-      const CORE::LINALG::MultiMapExtractor& BlockExtractor() const;
+      const Core::LinAlg::MultiMapExtractor& BlockExtractor() const;
 
       /// @}
 
@@ -660,7 +660,7 @@ namespace STR
       };
 
       /// Return time \f$t_{n}, t_{n-1}, ...\f$ of last converged steps
-      Teuchos::RCP<TIMESTEPPING::TimIntMStep<double>>& GetMultiTime()
+      Teuchos::RCP<TimeStepping::TimIntMStep<double>>& GetMultiTime()
       {
         check_init();
         return timen_;
@@ -698,7 +698,7 @@ namespace STR
       };
 
       /// Return time step size \f$\Delta t\f$
-      Teuchos::RCP<TIMESTEPPING::TimIntMStep<double>>& GetDeltaTime()
+      Teuchos::RCP<TimeStepping::TimIntMStep<double>>& GetDeltaTime()
       {
         check_init();
         return dt_;
@@ -737,7 +737,7 @@ namespace STR
       }
 
       /// Return multi-displacement vector \f$D_{n}, D_{n-1}, ...\f$
-      Teuchos::RCP<TIMESTEPPING::TimIntMStep<Epetra_Vector>>& GetMultiDis()
+      Teuchos::RCP<TimeStepping::TimIntMStep<Epetra_Vector>>& GetMultiDis()
       {
         check_init_setup();
         return dis_;
@@ -758,14 +758,14 @@ namespace STR
       }
 
       /// Return multi-velocity vector \f$V_{n}, V_{n-1}, ...\f$
-      Teuchos::RCP<TIMESTEPPING::TimIntMStep<Epetra_Vector>>& GetMultiVel()
+      Teuchos::RCP<TimeStepping::TimIntMStep<Epetra_Vector>>& GetMultiVel()
       {
         check_init_setup();
         return vel_;
       }
 
       /// Return multi-velocity vector \f$V_{n}, V_{n-1}, ...\f$
-      const Teuchos::RCP<TIMESTEPPING::TimIntMStep<Epetra_Vector>>& GetMultiVel() const
+      const Teuchos::RCP<TimeStepping::TimIntMStep<Epetra_Vector>>& GetMultiVel() const
       {
         check_init_setup();
         return vel_;
@@ -786,14 +786,14 @@ namespace STR
       }
 
       /// Return multi-acceleration vector \f$A_{n}, A_{n-1}, ...\f$
-      Teuchos::RCP<TIMESTEPPING::TimIntMStep<Epetra_Vector>>& GetMultiAcc()
+      Teuchos::RCP<TimeStepping::TimIntMStep<Epetra_Vector>>& GetMultiAcc()
       {
         check_init_setup();
         return acc_;
       }
 
       /// Return multi-acceleration vector \f$A_{n}, A_{n-1}, ...\f$
-      const Teuchos::RCP<TIMESTEPPING::TimIntMStep<Epetra_Vector>>& GetMultiAcc() const
+      const Teuchos::RCP<TimeStepping::TimIntMStep<Epetra_Vector>>& GetMultiAcc() const
       {
         check_init_setup();
         return acc_;
@@ -884,21 +884,21 @@ namespace STR
       /// @name Get mutable system matrices
       ///@{
       /// returns the entire structural jacobian
-      Teuchos::RCP<CORE::LINALG::SparseOperator>& GetJacobian()
+      Teuchos::RCP<Core::LinAlg::SparseOperator>& GetJacobian()
       {
         check_init_setup();
         return jac_;
       }
 
       /// mass matrix (constant)
-      Teuchos::RCP<CORE::LINALG::SparseOperator>& GetMassMatrix()
+      Teuchos::RCP<Core::LinAlg::SparseOperator>& GetMassMatrix()
       {
         check_init_setup();
         return mass_;
       }
 
       /// damping matrix
-      Teuchos::RCP<CORE::LINALG::SparseOperator>& GetDampMatrix()
+      Teuchos::RCP<Core::LinAlg::SparseOperator>& GetDampMatrix()
       {
         check_init_setup();
         return damp_;
@@ -916,7 +916,7 @@ namespace STR
        *
        *  \date 02/17
        *  \author hiermier */
-      Teuchos::RCP<CORE::LINALG::SparseOperator>& stiff_ptr() { return stiff_; }
+      Teuchos::RCP<Core::LinAlg::SparseOperator>& stiff_ptr() { return stiff_; }
 
      protected:
       /// @name variables for internal use only
@@ -936,7 +936,7 @@ namespace STR
       ///@{
 
       /// attached discretisation
-      Teuchos::RCP<DRT::Discretization> discret_;
+      Teuchos::RCP<Discret::Discretization> discret_;
 
       /// communicator
       Teuchos::RCP<const Epetra_Comm> comm_;
@@ -952,10 +952,10 @@ namespace STR
       double timenp_;
 
       /// time \f$t_{n}\f$ of last converged step
-      Teuchos::RCP<TIMESTEPPING::TimIntMStep<double>> timen_;
+      Teuchos::RCP<TimeStepping::TimIntMStep<double>> timen_;
 
       /// time step size \f$\Delta t\f$
-      Teuchos::RCP<TIMESTEPPING::TimIntMStep<double>> dt_;
+      Teuchos::RCP<TimeStepping::TimIntMStep<double>> dt_;
 
       /// time step index \f$n\f$
       int stepn_;
@@ -978,13 +978,13 @@ namespace STR
       ///@{
 
       /// global displacements \f${D}_{n}, D_{n-1}, ...\f$
-      Teuchos::RCP<TIMESTEPPING::TimIntMStep<Epetra_Vector>> dis_;
+      Teuchos::RCP<TimeStepping::TimIntMStep<Epetra_Vector>> dis_;
 
       /// global velocities \f${V}_{n}, V_{n-1}, ...\f$
-      Teuchos::RCP<TIMESTEPPING::TimIntMStep<Epetra_Vector>> vel_;
+      Teuchos::RCP<TimeStepping::TimIntMStep<Epetra_Vector>> vel_;
 
       /// global accelerations \f${A}_{n}, A_{n-1}, ...\f$
-      Teuchos::RCP<TIMESTEPPING::TimIntMStep<Epetra_Vector>> acc_;
+      Teuchos::RCP<TimeStepping::TimIntMStep<Epetra_Vector>> acc_;
 
       /// global displacements \f${D}_{n+1}\f$ at \f$t_{n+1}\f$
       Teuchos::RCP<Epetra_Vector> disnp_;
@@ -1039,7 +1039,7 @@ namespace STR
       /// @name System matrices
       ///@{
       /// supposed to hold the entire jacobian (saddle point system if desired)
-      Teuchos::RCP<CORE::LINALG::SparseOperator> jac_;
+      Teuchos::RCP<Core::LinAlg::SparseOperator> jac_;
 
       /** \brief structural stiffness matrix block
        *
@@ -1049,13 +1049,13 @@ namespace STR
        *
        *  \date 02/17
        *  \author hiermeier */
-      Teuchos::RCP<CORE::LINALG::SparseOperator> stiff_;
+      Teuchos::RCP<Core::LinAlg::SparseOperator> stiff_;
 
       /// mass matrix (constant)
-      Teuchos::RCP<CORE::LINALG::SparseOperator> mass_;
+      Teuchos::RCP<Core::LinAlg::SparseOperator> mass_;
 
       /// damping matrix
-      Teuchos::RCP<CORE::LINALG::SparseOperator> damp_;
+      Teuchos::RCP<Core::LinAlg::SparseOperator> damp_;
       ///@}
 
       /// @name Time measurement
@@ -1075,10 +1075,10 @@ namespace STR
       /// @{
 
       /// Epetra_Map s of the different models
-      std::map<INPAR::STR::ModelType, Teuchos::RCP<const Epetra_Map>> model_maps_;
+      std::map<Inpar::STR::ModelType, Teuchos::RCP<const Epetra_Map>> model_maps_;
 
       /// block information for the different models
-      std::map<INPAR::STR::ModelType, int> model_block_id_;
+      std::map<Inpar::STR::ModelType, int> model_block_id_;
 
       int max_block_num_;
 
@@ -1086,63 +1086,63 @@ namespace STR
       Teuchos::RCP<Epetra_Map> gproblem_map_ptr_;
 
       /// multi map extractor
-      CORE::LINALG::MultiMapExtractor blockextractor_;
+      Core::LinAlg::MultiMapExtractor blockextractor_;
 
       // all active element technology map extractors
-      std::map<INPAR::STR::EleTech, CORE::LINALG::MultiMapExtractor> mapextractors_;
+      std::map<Inpar::STR::EleTech, Core::LinAlg::MultiMapExtractor> mapextractors_;
 
       /// map extractor for split of translational <-> rotational pseudo-vector DoFs
-      CORE::LINALG::MultiMapExtractor rotvecextractor_;
+      Core::LinAlg::MultiMapExtractor rotvecextractor_;
 
       /// map extractor for structure/pressure coupled problems
-      Teuchos::RCP<CORE::LINALG::MapExtractor> pressextractor_;
+      Teuchos::RCP<Core::LinAlg::MapExtractor> pressextractor_;
       /// @}
     };  // class BaseDataGlobalState
-  }     // namespace TIMINT
+  }     // namespace TimeInt
 }  // namespace STR
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
     namespace GROUP
     {
       namespace PrePostOp
       {
-        namespace TIMINT
+        namespace TimeInt
         {
           /*! \brief helper class
            *
-           *  This class is an implementation of the NOX::NLN::Abstract::PrePostOperator
-           *  and is used to modify the computeX() routine of the given NOX::NLN::Group.
-           *  It's called by the wrapper class NOX::NLN::GROUP::PrePostOperator. We use it
+           *  This class is an implementation of the NOX::Nln::Abstract::PrePostOperator
+           *  and is used to modify the computeX() routine of the given NOX::Nln::Group.
+           *  It's called by the wrapper class NOX::Nln::GROUP::PrePostOperator. We use it
            *  to update the non-additive rotation (pseudo-)vector DOFs in a consistent
            *  (multiplicative) manner.
            *
            *  \author Maximilian Grill */
-          class RotVecUpdater : public NOX::NLN::Abstract::PrePostOperator
+          class RotVecUpdater : public NOX::Nln::Abstract::PrePostOperator
           {
            public:
             //! constructor
             RotVecUpdater(
-                const Teuchos::RCP<const FourC::STR::TIMINT::BaseDataGlobalState>& gstate_ptr);
+                const Teuchos::RCP<const FourC::STR::TimeInt::BaseDataGlobalState>& gstate_ptr);
 
             /*! \brief Derived function, which is called before a call to
-             * NOX::NLN::Group::computeX()
+             * NOX::Nln::Group::computeX()
              *
              *  This method is used to update non-additive rotation vector DoFs */
-            void runPreComputeX(const NOX::NLN::Group& input_grp, const Epetra_Vector& dir,
-                const double& step, const NOX::NLN::Group& curr_grp) override;
+            void runPreComputeX(const NOX::Nln::Group& input_grp, const Epetra_Vector& dir,
+                const double& step, const NOX::Nln::Group& curr_grp) override;
 
            private:
-            //! pointer to the FourC::STR::TIMINT::BaseDataGlobalState object (read-only)
-            Teuchos::RCP<const FourC::STR::TIMINT::BaseDataGlobalState> gstate_ptr_;
+            //! pointer to the FourC::STR::TimeInt::BaseDataGlobalState object (read-only)
+            Teuchos::RCP<const FourC::STR::TimeInt::BaseDataGlobalState> gstate_ptr_;
 
           };  // class RotVecUpdater
-        }     // namespace TIMINT
+        }     // namespace TimeInt
       }       // namespace PrePostOp
     }         // namespace GROUP
-  }           // namespace NLN
+  }           // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

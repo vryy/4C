@@ -31,26 +31,26 @@ namespace PARTICLEENGINE
   class ParticleContainerBundle;
 }  // namespace PARTICLEENGINE
 
-namespace PARTICLEINTERACTION
+namespace ParticleInteraction
 {
   class MaterialHandler;
   class SPHNeighborPairs;
   class SPHHeatSourceBase;
   class SPHHeatLossEvaporation;
-}  // namespace PARTICLEINTERACTION
+}  // namespace ParticleInteraction
 
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
     class ParticleMaterialThermo;
   }
-}  // namespace MAT
+}  // namespace Mat
 
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
  *---------------------------------------------------------------------------*/
-namespace PARTICLEINTERACTION
+namespace ParticleInteraction
 {
   class SPHTemperature final
   {
@@ -74,8 +74,8 @@ namespace PARTICLEINTERACTION
     //! setup temperature handler
     void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-        const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
-        const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs);
+        const std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial,
+        const std::shared_ptr<ParticleInteraction::SPHNeighborPairs> neighborpairs);
 
     //! set current time
     void set_current_time(const double currenttime);
@@ -114,16 +114,16 @@ namespace PARTICLEINTERACTION
     PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle_;
 
     //! particle material handler
-    std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial_;
+    std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial_;
 
     //! neighbor pair handler
-    std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs_;
+    std::shared_ptr<ParticleInteraction::SPHNeighborPairs> neighborpairs_;
 
     //! heat source handler
-    std::unique_ptr<PARTICLEINTERACTION::SPHHeatSourceBase> heatsource_;
+    std::unique_ptr<ParticleInteraction::SPHHeatSourceBase> heatsource_;
 
     //! evaporation induced heat loss handler
-    std::unique_ptr<PARTICLEINTERACTION::SPHHeatLossEvaporation> heatlossevaporation_;
+    std::unique_ptr<ParticleInteraction::SPHHeatLossEvaporation> heatlossevaporation_;
 
     //! temperature of ghosted particles to refresh
     PARTICLEENGINE::StatesOfTypesToRefresh temptorefresh_;
@@ -138,13 +138,13 @@ namespace PARTICLEINTERACTION
     bool temperaturegradient_;
 
     //! pointer to thermo material of particle types
-    std::vector<const MAT::PAR::ParticleMaterialThermo*> thermomaterial_;
+    std::vector<const Mat::PAR::ParticleMaterialThermo*> thermomaterial_;
 
     //! set of integrated thermo particle types
     std::set<PARTICLEENGINE::TypeEnum> intthermotypes_;
   };
 
-}  // namespace PARTICLEINTERACTION
+}  // namespace ParticleInteraction
 
 /*---------------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

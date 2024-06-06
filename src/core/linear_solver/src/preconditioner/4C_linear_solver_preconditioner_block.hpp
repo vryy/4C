@@ -16,12 +16,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINEAR_SOLVER
+namespace Core::LinearSolver
 {
   /// SIMPLE(R) block preconditioner
   /*!
     Block preconditioners assume the Epetra_Operator to be a
-    CORE::LINALG::BlockSparseMatrix.
+    Core::LinAlg::BlockSparseMatrix.
    */
   class SimplePreconditioner : public PreconditionerTypeBase
   {
@@ -59,7 +59,7 @@ namespace CORE::LINEAR_SOLVER
     Teuchos::ParameterList& bgslist_;
     Teuchos::RCP<Epetra_Operator> p_;
   };
-}  // namespace CORE::LINEAR_SOLVER
+}  // namespace Core::LinearSolver
 
 FOUR_C_NAMESPACE_CLOSE
 

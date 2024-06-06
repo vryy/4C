@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------*/
 /*! \file
-\brief Some important enums used in conjunction with GLOBAL::Problem
+\brief Some important enums used in conjunction with Global::Problem
 \level 1
 */
 /*--------------------------------------------------------------------*/
@@ -12,7 +12,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE
+namespace Core
 {
   /**
    * A global definition of available problem types.
@@ -69,7 +69,7 @@ namespace CORE
     thermo_fsi,            // thermo-fluid-structure-interaction problem
     tsi,                   // thermal structure interaction
   };
-}  // namespace CORE
+}  // namespace Core
 
 FOUR_C_NAMESPACE_CLOSE
 

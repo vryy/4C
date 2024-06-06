@@ -17,8 +17,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONSTRAINTS::SUBMODELEVALUATOR::LinearCoupledEquation::EvaluateEquation(
-    CORE::LINALG::SparseMatrix& Q_dd, CORE::LINALG::SparseMatrix& Q_dL,
-    CORE::LINALG::SparseMatrix& Q_Ld, Epetra_Vector& constraint_vector, const Epetra_Vector& D_np1)
+    Core::LinAlg::SparseMatrix& Q_dd, Core::LinAlg::SparseMatrix& Q_dL,
+    Core::LinAlg::SparseMatrix& Q_Ld, Epetra_Vector& constraint_vector, const Epetra_Vector& D_np1)
 {
   double constraintViolation = 0.;
 
@@ -61,8 +61,8 @@ void CONSTRAINTS::SUBMODELEVALUATOR::MultiPointConstraintEquationBase::SetFirstR
 CONSTRAINTS::SUBMODELEVALUATOR::LinearCoupledEquation::LinearCoupledEquation(
     int id, const std::vector<int>& dofs, std::vector<double> coefficients)
 {
-  CORE::IO::cout(CORE::IO::debug) << "\nLinear coupled equation saved (ID: " << id << ")\n ";
-  CORE::IO::cout(CORE::IO::debug) << " 0 = ";  // #Todo
+  Core::IO::cout(Core::IO::debug) << "\nLinear coupled equation saved (ID: " << id << ")\n ";
+  Core::IO::cout(Core::IO::debug) << " 0 = ";  // #Todo
 
   SetFirstRowId(id);
 
@@ -71,9 +71,9 @@ CONSTRAINTS::SUBMODELEVALUATOR::LinearCoupledEquation::LinearCoupledEquation(
     TermData term = {coefficients[i], id, dofs[i]};
     equation_data_.emplace_back(term);
 
-    CORE::IO::cout(CORE::IO::debug) << " + " << coefficients[i] << " * d" << dofs[i];
+    Core::IO::cout(Core::IO::debug) << " + " << coefficients[i] << " * d" << dofs[i];
   }
-  CORE::IO::cout(CORE::IO::debug) << CORE::IO::endl;
+  Core::IO::cout(Core::IO::debug) << Core::IO::endl;
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

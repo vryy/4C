@@ -18,8 +18,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::LinearDensityViscosity::LinearDensityViscosity(
-    Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::LinearDensityViscosity::LinearDensityViscosity(
+    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : Parameter(matdata),
       refdensity_(matdata->Get<double>("REFDENSITY")),
       refviscosity_(matdata->Get<double>("REFVISCOSITY")),
@@ -33,18 +33,19 @@ MAT::PAR::LinearDensityViscosity::LinearDensityViscosity(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::LinearDensityViscosity::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::LinearDensityViscosity::create_material()
 {
-  return Teuchos::rcp(new MAT::LinearDensityViscosity(this));
+  return Teuchos::rcp(new Mat::LinearDensityViscosity(this));
 }
 
 
-MAT::LinearDensityViscosityType MAT::LinearDensityViscosityType::instance_;
+Mat::LinearDensityViscosityType Mat::LinearDensityViscosityType::instance_;
 
 
-CORE::COMM::ParObject* MAT::LinearDensityViscosityType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::LinearDensityViscosityType::Create(
+    const std::vector<char>& data)
 {
-  MAT::LinearDensityViscosity* fluid = new MAT::LinearDensityViscosity();
+  Mat::LinearDensityViscosity* fluid = new Mat::LinearDensityViscosity();
   fluid->Unpack(data);
   return fluid;
 }
@@ -52,12 +53,12 @@ CORE::COMM::ParObject* MAT::LinearDensityViscosityType::Create(const std::vector
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::LinearDensityViscosity::LinearDensityViscosity() : params_(nullptr) {}
+Mat::LinearDensityViscosity::LinearDensityViscosity() : params_(nullptr) {}
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::LinearDensityViscosity::LinearDensityViscosity(MAT::PAR::LinearDensityViscosity* params)
+Mat::LinearDensityViscosity::LinearDensityViscosity(Mat::PAR::LinearDensityViscosity* params)
     : params_(params)
 {
 }
@@ -65,9 +66,9 @@ MAT::LinearDensityViscosity::LinearDensityViscosity(MAT::PAR::LinearDensityVisco
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::LinearDensityViscosity::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::LinearDensityViscosity::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -83,24 +84,24 @@ void MAT::LinearDensityViscosity::Pack(CORE::COMM::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::LinearDensityViscosity::Unpack(const std::vector<char>& data)
+void Mat::LinearDensityViscosity::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::LinearDensityViscosity*>(mat);
+        params_ = static_cast<Mat::PAR::LinearDensityViscosity*>(mat);
       else
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
@@ -113,7 +114,7 @@ void MAT::LinearDensityViscosity::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::LinearDensityViscosity::ComputeDensity(const double press) const
+double Mat::LinearDensityViscosity::ComputeDensity(const double press) const
 {
   const double density = RefDensity() * (1.0 + CoeffDensity() * (press - RefPressure()));
 
@@ -123,7 +124,7 @@ double MAT::LinearDensityViscosity::ComputeDensity(const double press) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::LinearDensityViscosity::ComputeViscosity(const double press) const
+double Mat::LinearDensityViscosity::ComputeViscosity(const double press) const
 {
   const double viscosity = RefViscosity() * (1.0 + CoeffViscosity() * (press - RefPressure()));
 

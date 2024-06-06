@@ -34,66 +34,66 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-bool POROELASTSCATRA::UTILS::IsPoroScatraElement(const CORE::Elements::Element* actele)
+bool PoroElastScaTra::UTILS::IsPoroScatraElement(const Core::Elements::Element* actele)
 {
   // checks if element is a poro scatra element (new elements need to be listed here)
-  return actele->ElementType() == DRT::ELEMENTS::SoHex8PoroScatraType::Instance() or
-         actele->ElementType() == DRT::ELEMENTS::SolidPoroType::Instance() or
-         actele->ElementType() == DRT::ELEMENTS::SoTet4PoroScatraType::Instance() or
-         actele->ElementType() == DRT::ELEMENTS::SoTet10PoroScatraType::Instance() or
-         actele->ElementType() == DRT::ELEMENTS::SoHex27PoroScatraType::Instance() or
-         actele->ElementType() == DRT::ELEMENTS::SoNurbs27PoroScatraType::Instance() or
-         actele->ElementType() == DRT::ELEMENTS::WallTri3PoroScatraType::Instance() or
-         actele->ElementType() == DRT::ELEMENTS::WallQuad4PoroScatraType::Instance() or
-         actele->ElementType() == DRT::ELEMENTS::WallQuad9PoroScatraType::Instance() or
-         actele->ElementType() == DRT::ELEMENTS::WallNurbs4PoroScatraType::Instance() or
-         actele->ElementType() == DRT::ELEMENTS::WallNurbs9PoroScatraType::Instance() or
+  return actele->ElementType() == Discret::ELEMENTS::SoHex8PoroScatraType::Instance() or
+         actele->ElementType() == Discret::ELEMENTS::SolidPoroType::Instance() or
+         actele->ElementType() == Discret::ELEMENTS::SoTet4PoroScatraType::Instance() or
+         actele->ElementType() == Discret::ELEMENTS::SoTet10PoroScatraType::Instance() or
+         actele->ElementType() == Discret::ELEMENTS::SoHex27PoroScatraType::Instance() or
+         actele->ElementType() == Discret::ELEMENTS::SoNurbs27PoroScatraType::Instance() or
+         actele->ElementType() == Discret::ELEMENTS::WallTri3PoroScatraType::Instance() or
+         actele->ElementType() == Discret::ELEMENTS::WallQuad4PoroScatraType::Instance() or
+         actele->ElementType() == Discret::ELEMENTS::WallQuad9PoroScatraType::Instance() or
+         actele->ElementType() == Discret::ELEMENTS::WallNurbs4PoroScatraType::Instance() or
+         actele->ElementType() == Discret::ELEMENTS::WallNurbs9PoroScatraType::Instance() or
          IsPoroP1ScatraElement(actele);
 }
 
-bool POROELASTSCATRA::UTILS::IsPoroP1ScatraElement(const CORE::Elements::Element* actele)
+bool PoroElastScaTra::UTILS::IsPoroP1ScatraElement(const Core::Elements::Element* actele)
 {
   // checks if element is a porop1 scatra element (new elements need to be listed here)
-  return actele->ElementType() == DRT::ELEMENTS::SoHex8PoroP1ScatraType::Instance() or
-         actele->ElementType() == DRT::ELEMENTS::SoTet4PoroP1ScatraType::Instance() or
-         actele->ElementType() == DRT::ELEMENTS::WallQuad4PoroP1ScatraType::Instance() or
-         actele->ElementType() == DRT::ELEMENTS::WallTri3PoroP1ScatraType::Instance() or
-         actele->ElementType() == DRT::ELEMENTS::WallQuad9PoroP1ScatraType::Instance();
+  return actele->ElementType() == Discret::ELEMENTS::SoHex8PoroP1ScatraType::Instance() or
+         actele->ElementType() == Discret::ELEMENTS::SoTet4PoroP1ScatraType::Instance() or
+         actele->ElementType() == Discret::ELEMENTS::WallQuad4PoroP1ScatraType::Instance() or
+         actele->ElementType() == Discret::ELEMENTS::WallTri3PoroP1ScatraType::Instance() or
+         actele->ElementType() == Discret::ELEMENTS::WallQuad9PoroP1ScatraType::Instance();
 }
 
-Teuchos::RCP<POROELASTSCATRA::PoroScatraBase> POROELASTSCATRA::UTILS::CreatePoroScatraAlgorithm(
+Teuchos::RCP<PoroElastScaTra::PoroScatraBase> PoroElastScaTra::UTILS::CreatePoroScatraAlgorithm(
     const Teuchos::ParameterList& timeparams, const Epetra_Comm& comm)
 {
-  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
+  Global::Problem* problem = Global::Problem::Instance();
 
   // create an empty PoroScatraBase instance
-  Teuchos::RCP<POROELASTSCATRA::PoroScatraBase> algo = Teuchos::null;
+  Teuchos::RCP<PoroElastScaTra::PoroScatraBase> algo = Teuchos::null;
 
   // Parameter reading
   const Teuchos::ParameterList& params = problem->poro_scatra_control_params();
   const auto coupling =
-      CORE::UTILS::IntegralValue<INPAR::PORO_SCATRA::SolutionSchemeOverFields>(params, "COUPALGO");
+      Core::UTILS::IntegralValue<Inpar::PoroScaTra::SolutionSchemeOverFields>(params, "COUPALGO");
 
   switch (coupling)
   {
-    case INPAR::PORO_SCATRA::Monolithic:
+    case Inpar::PoroScaTra::Monolithic:
     {
-      algo = Teuchos::rcp(new POROELASTSCATRA::PoroScatraMono(comm, timeparams));
+      algo = Teuchos::rcp(new PoroElastScaTra::PoroScatraMono(comm, timeparams));
       break;
     }
-    case INPAR::PORO_SCATRA::Part_ScatraToPoro:
+    case Inpar::PoroScaTra::Part_ScatraToPoro:
     {
-      algo = Teuchos::rcp(new POROELASTSCATRA::PoroScatraPart1WCScatraToPoro(comm, timeparams));
+      algo = Teuchos::rcp(new PoroElastScaTra::PoroScatraPart1WCScatraToPoro(comm, timeparams));
       break;
     }
-    case INPAR::PORO_SCATRA::Part_PoroToScatra:
+    case Inpar::PoroScaTra::Part_PoroToScatra:
     {
-      algo = Teuchos::rcp(new POROELASTSCATRA::PoroScatraPart1WCPoroToScatra(comm, timeparams));
+      algo = Teuchos::rcp(new PoroElastScaTra::PoroScatraPart1WCPoroToScatra(comm, timeparams));
       break;
     }
-    case INPAR::PORO_SCATRA::Part_TwoWay:
+    case Inpar::PoroScaTra::Part_TwoWay:
     {
-      algo = Teuchos::rcp(new POROELASTSCATRA::PoroScatraPart2WC(comm, timeparams));
+      algo = Teuchos::rcp(new PoroElastScaTra::PoroScatraPart2WC(comm, timeparams));
       break;
     }
     default:
@@ -111,10 +111,10 @@ Teuchos::RCP<POROELASTSCATRA::PoroScatraBase> POROELASTSCATRA::UTILS::CreatePoro
   return algo;
 }
 
-Teuchos::RCP<CORE::LINALG::MapExtractor> POROELASTSCATRA::UTILS::BuildPoroScatraSplitter(
-    Teuchos::RCP<DRT::Discretization> dis)
+Teuchos::RCP<Core::LinAlg::MapExtractor> PoroElastScaTra::UTILS::BuildPoroScatraSplitter(
+    Teuchos::RCP<Discret::Discretization> dis)
 {
-  Teuchos::RCP<CORE::LINALG::MapExtractor> porositysplitter = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::MapExtractor> porositysplitter = Teuchos::null;
 
   // Loop through all elements on processor
   int locporop1 = std::count_if(
@@ -126,22 +126,22 @@ Teuchos::RCP<CORE::LINALG::MapExtractor> POROELASTSCATRA::UTILS::BuildPoroScatra
   // Yes, it was. Go ahead for all processors (even if they do not carry any PoroP1 elements)
   if (glonumporop1 > 0)
   {
-    porositysplitter = Teuchos::rcp(new CORE::LINALG::MapExtractor());
-    const int ndim = GLOBAL::Problem::Instance()->NDim();
-    CORE::LINALG::CreateMapExtractorFromDiscretization(*dis, ndim, *porositysplitter);
+    porositysplitter = Teuchos::rcp(new Core::LinAlg::MapExtractor());
+    const int ndim = Global::Problem::Instance()->NDim();
+    Core::LinAlg::CreateMapExtractorFromDiscretization(*dis, ndim, *porositysplitter);
   }
 
   return porositysplitter;
 }
 
-void POROELASTSCATRA::UTILS::create_volume_ghosting(DRT::Discretization& idiscret)
+void PoroElastScaTra::UTILS::create_volume_ghosting(Discret::Discretization& idiscret)
 {
   // We get the discretizations from the global problem, as the contact does not have
   // both structural and porofluid discretization, but we should guarantee consistent ghosting!
 
-  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
+  Global::Problem* problem = Global::Problem::Instance();
 
-  std::vector<Teuchos::RCP<DRT::Discretization>> voldis;
+  std::vector<Teuchos::RCP<Discret::Discretization>> voldis;
   voldis.push_back(problem->GetDis("structure"));
   voldis.push_back(problem->GetDis("porofluid"));
   voldis.push_back(problem->GetDis("scatra"));
@@ -157,7 +157,7 @@ void POROELASTSCATRA::UTILS::create_volume_ghosting(DRT::Discretization& idiscre
 
     const Epetra_Map* elecolmap = voldi->ElementColMap();
     const Teuchos::RCP<Epetra_Map> allredelecolmap =
-        CORE::LINALG::AllreduceEMap(*voldi->ElementRowMap());
+        Core::LinAlg::AllreduceEMap(*voldi->ElementRowMap());
 
     for (int i = 0; i < elecolmap->NumMyElements(); ++i)
     {
@@ -170,9 +170,9 @@ void POROELASTSCATRA::UTILS::create_volume_ghosting(DRT::Discretization& idiscre
     {
       int gid = ielecolmap->GID(i);
 
-      CORE::Elements::Element* ele = idiscret.gElement(gid);
+      Core::Elements::Element* ele = idiscret.gElement(gid);
       if (!ele) FOUR_C_THROW("ERROR: Cannot find element with gid %", gid);
-      auto* faceele = dynamic_cast<CORE::Elements::FaceElement*>(ele);
+      auto* faceele = dynamic_cast<Core::Elements::FaceElement*>(ele);
 
       int volgid = 0;
       if (!faceele)
@@ -198,16 +198,16 @@ void POROELASTSCATRA::UTILS::create_volume_ghosting(DRT::Discretization& idiscre
   }
 
   // 2 Material pointers need to be reset after redistribution.
-  POROELAST::UTILS::SetMaterialPointersMatchingGrid(voldis[0], voldis[1]);
-  POROELAST::UTILS::SetMaterialPointersMatchingGrid(voldis[0], voldis[2]);
-  POROELAST::UTILS::SetMaterialPointersMatchingGrid(voldis[1], voldis[2]);
+  PoroElast::UTILS::SetMaterialPointersMatchingGrid(voldis[0], voldis[1]);
+  PoroElast::UTILS::SetMaterialPointersMatchingGrid(voldis[0], voldis[2]);
+  PoroElast::UTILS::SetMaterialPointersMatchingGrid(voldis[1], voldis[2]);
 
   // 3 Reconnect Face Element -- Porostructural Parent Element Pointers!
-  POROELAST::UTILS::reconnect_parent_pointers(idiscret, *voldis[0], &(*voldis[1]));
+  PoroElast::UTILS::reconnect_parent_pointers(idiscret, *voldis[0], &(*voldis[1]));
 
   // 4 In case we use
-  Teuchos::RCP<DRT::DiscretizationFaces> facediscret =
-      Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(voldis[1]);
+  Teuchos::RCP<Discret::DiscretizationFaces> facediscret =
+      Teuchos::rcp_dynamic_cast<Discret::DiscretizationFaces>(voldis[1]);
   if (facediscret != Teuchos::null) facediscret->FillCompleteFaces(true, true, true, true);
 }
 

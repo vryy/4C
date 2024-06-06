@@ -24,11 +24,11 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 void ssti_drt()
 {
-  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
+  Global::Problem* problem = Global::Problem::Instance();
 
   const Epetra_Comm& comm = problem->GetDis("structure")->Comm();
 
-  auto ssti = SSTI::BuildSSTI(Teuchos::getIntegralValue<INPAR::SSTI::SolutionScheme>(
+  auto ssti = SSTI::BuildSSTI(Teuchos::getIntegralValue<Inpar::SSTI::SolutionScheme>(
                                   problem->SSTIControlParams(), "COUPALGO"),
       comm, problem->SSTIControlParams());
 

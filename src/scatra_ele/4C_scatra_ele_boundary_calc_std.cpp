@@ -27,12 +27,12 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<distype, probdim>*
-DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<distype, probdim>::Instance(
+template <Core::FE::CellType distype, int probdim>
+Discret::ELEMENTS::ScaTraEleBoundaryCalcStd<distype, probdim>*
+Discret::ELEMENTS::ScaTraEleBoundaryCalcStd<distype, probdim>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
       [](const int numdofpernode, const int numscal, const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleBoundaryCalcStd<distype, probdim>>(
@@ -40,14 +40,14 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<distype, probdim>::Instance(
       });
 
   return singleton_map[disname].Instance(
-      CORE::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
+      Core::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<distype, probdim>::ScaTraEleBoundaryCalcStd(
+template <Core::FE::CellType distype, int probdim>
+Discret::ELEMENTS::ScaTraEleBoundaryCalcStd<distype, probdim>::ScaTraEleBoundaryCalcStd(
     const int numdofpernode, const int numscal, const std::string& disname)
     : my::ScaTraEleBoundaryCalc(numdofpernode, numscal, disname)
 {
@@ -58,15 +58,15 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<distype, probdim>::ScaTraEleBoundaryCalc
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 // template classes
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<CORE::FE::CellType::quad4, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<CORE::FE::CellType::quad8, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<CORE::FE::CellType::quad9, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<CORE::FE::CellType::tri3, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<CORE::FE::CellType::tri6, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<CORE::FE::CellType::line2, 2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<CORE::FE::CellType::line2, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<CORE::FE::CellType::line3, 2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<CORE::FE::CellType::nurbs3, 2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<CORE::FE::CellType::nurbs9, 3>;
+template class Discret::ELEMENTS::ScaTraEleBoundaryCalcStd<Core::FE::CellType::quad4, 3>;
+template class Discret::ELEMENTS::ScaTraEleBoundaryCalcStd<Core::FE::CellType::quad8, 3>;
+template class Discret::ELEMENTS::ScaTraEleBoundaryCalcStd<Core::FE::CellType::quad9, 3>;
+template class Discret::ELEMENTS::ScaTraEleBoundaryCalcStd<Core::FE::CellType::tri3, 3>;
+template class Discret::ELEMENTS::ScaTraEleBoundaryCalcStd<Core::FE::CellType::tri6, 3>;
+template class Discret::ELEMENTS::ScaTraEleBoundaryCalcStd<Core::FE::CellType::line2, 2>;
+template class Discret::ELEMENTS::ScaTraEleBoundaryCalcStd<Core::FE::CellType::line2, 3>;
+template class Discret::ELEMENTS::ScaTraEleBoundaryCalcStd<Core::FE::CellType::line3, 2>;
+template class Discret::ELEMENTS::ScaTraEleBoundaryCalcStd<Core::FE::CellType::nurbs3, 2>;
+template class Discret::ELEMENTS::ScaTraEleBoundaryCalcStd<Core::FE::CellType::nurbs9, 3>;
 
 FOUR_C_NAMESPACE_CLOSE

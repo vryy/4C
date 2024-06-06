@@ -19,17 +19,17 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-PASI::PasiPartOneWayCoup::PasiPartOneWayCoup(
+PaSI::PasiPartOneWayCoup::PasiPartOneWayCoup(
     const Epetra_Comm& comm, const Teuchos::ParameterList& params)
     : PartitionedAlgo(comm, params)
 {
   // empty constructor
 }
 
-void PASI::PasiPartOneWayCoup::Setup()
+void PaSI::PasiPartOneWayCoup::Setup()
 {
   // call base class setup
-  PASI::PartitionedAlgo::Setup();
+  PaSI::PartitionedAlgo::Setup();
 
   // safety check
   {
@@ -51,7 +51,7 @@ void PASI::PasiPartOneWayCoup::Setup()
   }
 }
 
-void PASI::PasiPartOneWayCoup::Timeloop()
+void PaSI::PasiPartOneWayCoup::Timeloop()
 {
   // safety checks
   check_is_init();
@@ -86,7 +86,7 @@ void PASI::PasiPartOneWayCoup::Timeloop()
   }
 }
 
-void PASI::PasiPartOneWayCoup::output()
+void PaSI::PasiPartOneWayCoup::output()
 {
   // output of structure field
   struct_output();

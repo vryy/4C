@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace CONTACT
 {
-  namespace AUG
+  namespace Aug
   {
     class Strategy;
     class DataContainer;
@@ -67,7 +67,7 @@ namespace CONTACT
     {
      public:
       /// constructor
-      Potential(const CONTACT::AUG::Strategy& strategy, const CONTACT::AUG::DataContainer& data);
+      Potential(const CONTACT::Aug::Strategy& strategy, const CONTACT::Aug::DataContainer& data);
 
       /// destructor
       virtual ~Potential() = default;
@@ -236,10 +236,10 @@ namespace CONTACT
       bool issetup_;
 
       /// call-back to the wrapping contact strategy
-      const CONTACT::AUG::Strategy& strategy_;
+      const CONTACT::Aug::Strategy& strategy_;
 
       /// call-back to the data container of the surrounding contact strategy
-      const CONTACT::AUG::DataContainer& data_;
+      const CONTACT::Aug::DataContainer& data_;
 
       /// active Lagrange multiplier vector in normal direction
       Teuchos::RCP<Epetra_Vector> zn_active_;
@@ -346,7 +346,7 @@ namespace CONTACT
       /// instance of the linear model data container
       LinData lindata_;
     };
-  }  // namespace AUG
+  }  // namespace Aug
 }  // namespace CONTACT
 
 

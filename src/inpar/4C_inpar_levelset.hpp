@@ -20,9 +20,9 @@ FOUR_C_NAMESPACE_OPEN
 // forward declaration
 
 /*----------------------------------------------------------------------*/
-namespace INPAR
+namespace Inpar
 {
-  namespace SCATRA
+  namespace ScaTra
   {
     /// type of reinitialization for level set function
     enum ReInitialAction
@@ -104,18 +104,18 @@ namespace INPAR
       hyperbolic_clipped_1
     };
 
-  }  // namespace SCATRA
+  }  // namespace ScaTra
 
-  namespace LEVELSET
+  namespace LevelSet
   {
     /// set the levelset parameters
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
     /// set specific level set conditions
     void SetValidConditions(
-        std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist);
-  }  // namespace LEVELSET
-}  // namespace INPAR
+        std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist);
+  }  // namespace LevelSet
+}  // namespace Inpar
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

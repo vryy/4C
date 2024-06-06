@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief A collection of algebraic creation methods for namespace CORE::LINALG
+\brief A collection of algebraic creation methods for namespace Core::LinAlg
 
 \level 0
 */
@@ -27,7 +27,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   /*!
    \brief Create a new Epetra_CrsMatrix and return RefcountPtr to it
@@ -102,7 +102,7 @@ namespace CORE::LINALG
       \date 02/08
      */
   void CreateMapExtractorFromDiscretization(
-      const DRT::Discretization& dis, int ndim, CORE::LINALG::MultiMapExtractor& extractor);
+      const Discret::Discretization& dis, int ndim, Core::LinAlg::MultiMapExtractor& extractor);
 
   /*!
     \brief Creates MapExtractor to split dofs at certain position
@@ -123,9 +123,9 @@ namespace CORE::LINALG
     \author u.kue
     \date 02/08
    */
-  void CreateMapExtractorFromDiscretization(const DRT::Discretization& dis,
-      const CORE::Dofsets::DofSetInterface& dofset, int ndim,
-      CORE::LINALG::MapExtractor& extractor);
+  void CreateMapExtractorFromDiscretization(const Discret::Discretization& dis,
+      const Core::DOFSets::DofSetInterface& dofset, int ndim,
+      Core::LinAlg::MapExtractor& extractor);
 
 
   /*!
@@ -145,10 +145,10 @@ namespace CORE::LINALG
     \author schott
     \date 12/11
    */
-  void CreateMapExtractorFromDiscretization(const DRT::Discretization& dis, int ndim_field1,
-      int ndim_field2, CORE::LINALG::MultiMapExtractor& extractor);
+  void CreateMapExtractorFromDiscretization(const Discret::Discretization& dis, int ndim_field1,
+      int ndim_field2, Core::LinAlg::MultiMapExtractor& extractor);
 
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 FOUR_C_NAMESPACE_CLOSE
 

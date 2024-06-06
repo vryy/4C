@@ -19,18 +19,19 @@ FOUR_C_NAMESPACE_OPEN
 
 
 // initialize static variable
-DRT::ELEMENTS::FluidHDGWeakCompType DRT::ELEMENTS::FluidHDGWeakCompType::instance_;
+Discret::ELEMENTS::FluidHDGWeakCompType Discret::ELEMENTS::FluidHDGWeakCompType::instance_;
 
-DRT::ELEMENTS::FluidHDGWeakCompType& DRT::ELEMENTS::FluidHDGWeakCompType::Instance()
+Discret::ELEMENTS::FluidHDGWeakCompType& Discret::ELEMENTS::FluidHDGWeakCompType::Instance()
 {
   return instance_;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::COMM::ParObject* DRT::ELEMENTS::FluidHDGWeakCompType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Discret::ELEMENTS::FluidHDGWeakCompType::Create(
+    const std::vector<char>& data)
 {
-  DRT::ELEMENTS::FluidHDGWeakComp* object = new DRT::ELEMENTS::FluidHDGWeakComp(-1, -1);
+  Discret::ELEMENTS::FluidHDGWeakComp* object = new Discret::ELEMENTS::FluidHDGWeakComp(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -39,12 +40,12 @@ CORE::COMM::ParObject* DRT::ELEMENTS::FluidHDGWeakCompType::Create(const std::ve
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::FluidHDGWeakCompType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidHDGWeakCompType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "FLUIDHDGWEAKCOMP")
   {
-    return Teuchos::rcp(new DRT::ELEMENTS::FluidHDGWeakComp(id, owner));
+    return Teuchos::rcp(new Discret::ELEMENTS::FluidHDGWeakComp(id, owner));
   }
   return Teuchos::null;
 }
@@ -53,18 +54,18 @@ Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::FluidHDGWeakCompType::Creat
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::FluidHDGWeakCompType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidHDGWeakCompType::Create(
     const int id, const int owner)
 {
-  return Teuchos::rcp(new DRT::ELEMENTS::FluidHDGWeakComp(id, owner));
+  return Teuchos::rcp(new Discret::ELEMENTS::FluidHDGWeakComp(id, owner));
 }
 
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidHDGWeakCompType::nodal_block_information(
-    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+void Discret::ELEMENTS::FluidHDGWeakCompType::nodal_block_information(
+    Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
 }
 
@@ -72,8 +73,8 @@ void DRT::ELEMENTS::FluidHDGWeakCompType::nodal_block_information(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidHDGWeakCompType::ComputeNullSpace(
-    DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+void Discret::ELEMENTS::FluidHDGWeakCompType::ComputeNullSpace(
+    Discret::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
 {
 }
 
@@ -81,19 +82,19 @@ void DRT::ELEMENTS::FluidHDGWeakCompType::ComputeNullSpace(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidHDGWeakCompType ::setup_element_definition(
-    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+void Discret::ELEMENTS::FluidHDGWeakCompType ::setup_element_definition(
+    std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
-  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_fluid;
+  std::map<std::string, std::map<std::string, Input::LineDefinition>> definitions_fluid;
   FluidType::setup_element_definition(definitions_fluid);
 
-  std::map<std::string, INPUT::LineDefinition>& defs_fluid = definitions_fluid["FLUID"];
+  std::map<std::string, Input::LineDefinition>& defs_fluid = definitions_fluid["FLUID"];
 
-  std::map<std::string, INPUT::LineDefinition>& defs_hdg = definitions["FLUIDHDGWEAKCOMP"];
+  std::map<std::string, Input::LineDefinition>& defs_hdg = definitions["FLUIDHDGWEAKCOMP"];
 
   for (const auto& [key, fluid_line_def] : defs_fluid)
   {
-    defs_hdg[key] = INPUT::LineDefinition::Builder(fluid_line_def)
+    defs_hdg[key] = Input::LineDefinition::Builder(fluid_line_def)
                         .AddNamedInt("DEG")
                         .AddOptionalNamedInt("SPC")
                         .Build();
@@ -104,7 +105,7 @@ void DRT::ELEMENTS::FluidHDGWeakCompType ::setup_element_definition(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::FluidHDGWeakComp::FluidHDGWeakComp(int id, int owner)
+Discret::ELEMENTS::FluidHDGWeakComp::FluidHDGWeakComp(int id, int owner)
     : Fluid(id, owner), degree_(1), completepol_(true)
 {
 }
@@ -113,7 +114,8 @@ DRT::ELEMENTS::FluidHDGWeakComp::FluidHDGWeakComp(int id, int owner)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::FluidHDGWeakComp::FluidHDGWeakComp(const DRT::ELEMENTS::FluidHDGWeakComp& old)
+Discret::ELEMENTS::FluidHDGWeakComp::FluidHDGWeakComp(
+    const Discret::ELEMENTS::FluidHDGWeakComp& old)
     : Fluid(old), degree_(old.degree_), completepol_(old.completepol_)
 {
 }
@@ -122,18 +124,18 @@ DRT::ELEMENTS::FluidHDGWeakComp::FluidHDGWeakComp(const DRT::ELEMENTS::FluidHDGW
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::Elements::Element* DRT::ELEMENTS::FluidHDGWeakComp::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::FluidHDGWeakComp::Clone() const
 {
-  DRT::ELEMENTS::FluidHDGWeakComp* newelement = new DRT::ELEMENTS::FluidHDGWeakComp(*this);
+  Discret::ELEMENTS::FluidHDGWeakComp* newelement = new Discret::ELEMENTS::FluidHDGWeakComp(*this);
   return newelement;
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidHDGWeakComp::Pack(CORE::COMM::PackBuffer& data) const
+void Discret::ELEMENTS::FluidHDGWeakComp::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -153,11 +155,11 @@ void DRT::ELEMENTS::FluidHDGWeakComp::Pack(CORE::COMM::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidHDGWeakComp::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::FluidHDGWeakComp::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -178,8 +180,8 @@ void DRT::ELEMENTS::FluidHDGWeakComp::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::FluidHDGWeakComp::ReadElement(
-    const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
+bool Discret::ELEMENTS::FluidHDGWeakComp::ReadElement(
+    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
   bool success = Fluid::ReadElement(eletype, distype, linedef);
   int degree;
@@ -201,17 +203,17 @@ bool DRT::ELEMENTS::FluidHDGWeakComp::ReadElement(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::FluidHDGWeakComp::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
-    CORE::LINALG::SerialDenseVector& elevec3)
+int Discret::ELEMENTS::FluidHDGWeakComp::Evaluate(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
+    Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
+    Core::LinAlg::SerialDenseVector& elevec3)
 {
   // get the action required
-  const FLD::Action act = CORE::UTILS::GetAsEnum<FLD::Action>(params, "action");
+  const FLD::Action act = Core::UTILS::GetAsEnum<FLD::Action>(params, "action");
 
   // get material
-  Teuchos::RCP<CORE::MAT::Material> mat = Material();
+  Teuchos::RCP<Core::Mat::Material> mat = Material();
 
   // switch between different physical types as used below
   std::string impltype = "hdgweakcomp";
@@ -224,7 +226,7 @@ int DRT::ELEMENTS::FluidHDGWeakComp::Evaluate(Teuchos::ParameterList& params,
     //-----------------------------------------------------------------------
     case FLD::calc_fluid_systemmat_and_residual:
     {
-      return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), impltype)
+      return Discret::ELEMENTS::FluidFactory::ProvideImpl(Shape(), impltype)
           ->Evaluate(
               this, discretization, lm, params, mat, elemat1, elemat2, elevec1, elevec2, elevec3);
     }
@@ -237,7 +239,7 @@ int DRT::ELEMENTS::FluidHDGWeakComp::Evaluate(Teuchos::ParameterList& params,
     case FLD::project_fluid_field:
     case FLD::update_local_solution:
     {
-      return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), impltype)
+      return Discret::ELEMENTS::FluidFactory::ProvideImpl(Shape(), impltype)
           ->EvaluateService(
               this, params, mat, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3);
       break;
@@ -260,7 +262,7 @@ int DRT::ELEMENTS::FluidHDGWeakComp::Evaluate(Teuchos::ParameterList& params,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidHDGWeakComp::Print(std::ostream& os) const
+void Discret::ELEMENTS::FluidHDGWeakComp::Print(std::ostream& os) const
 {
   os << "FluidHDGWeakComp ";
   Element::Print(os);

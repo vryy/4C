@@ -23,9 +23,9 @@ extern "C"
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::GEO
+namespace Core::Geo
 {
-  namespace CUT
+  namespace Cut
   {
     namespace
     {
@@ -49,11 +49,11 @@ namespace CORE::GEO
         FILE* f_;
       };
     }  // namespace
-  }    // namespace CUT
-}  // namespace CORE::GEO
+  }    // namespace Cut
+}  // namespace Core::Geo
 
 
-CORE::GEO::CUT::TetMesh::TetMesh(
+Core::Geo::Cut::TetMesh::TetMesh(
     const std::vector<Point*>& points, const plain_facet_set& facets, bool project)
     : points_(points), facets_(facets)
 {
@@ -91,7 +91,7 @@ CORE::GEO::CUT::TetMesh::TetMesh(
    triangulated point is added to the cut information. Might have to look into this....
 
 */
-bool CORE::GEO::CUT::TetMesh::fill_facet_mesh()
+bool Core::Geo::Cut::TetMesh::fill_facet_mesh()
 {
   for (plain_facet_set::const_iterator i = facets_.begin(); i != facets_.end(); ++i)
   {
@@ -128,7 +128,7 @@ bool CORE::GEO::CUT::TetMesh::fill_facet_mesh()
    tesselation for this element.
 
 */
-void CORE::GEO::CUT::TetMesh::CreateElementTets(Mesh& mesh, Element* element,
+void Core::Geo::Cut::TetMesh::CreateElementTets(Mesh& mesh, Element* element,
     const plain_volumecell_set& cells,
     const plain_side_set& cut_sides,  //<- cut_facets_ of parent ele.
     int count, bool tetcellsonly)
@@ -294,7 +294,7 @@ void CORE::GEO::CUT::TetMesh::CreateElementTets(Mesh& mesh, Element* element,
 /* Initialize the data-structures needed for the TetMesh. The call to Qhull has to be performed
  * before.
  */
-void CORE::GEO::CUT::TetMesh::init()
+void Core::Geo::Cut::TetMesh::init()
 {
   unsigned numtets = tets_.size();
 
@@ -331,7 +331,7 @@ void CORE::GEO::CUT::TetMesh::init()
 
    One might want to take a look at the call to Qhull to improve it for non-local coordinate cuts.
 */
-void CORE::GEO::CUT::TetMesh::call_q_hull(
+void Core::Geo::Cut::TetMesh::call_q_hull(
     const std::vector<Point*>& points, std::vector<std::vector<int>>& tets, bool project)
 {
   const int dim = 3;
@@ -351,22 +351,22 @@ void CORE::GEO::CUT::TetMesh::call_q_hull(
 
   if (project)  // Never used... Not working properly either, I think...
   {
-    CORE::LINALG::Matrix<3, 1> m;
+    Core::LinAlg::Matrix<3, 1> m;
     m = 0;
     double scale = 1. / n;
     for (int i = 0; i < n; ++i)  // Find mid-point (m)
     {
       Point* p = points[i];
-      CORE::LINALG::Matrix<3, 1> x(p->X());
+      Core::LinAlg::Matrix<3, 1> x(p->X());
       m.Update(scale, x, 1);
     }
     double length = 0;
-    CORE::LINALG::Matrix<3, 1> l;
+    Core::LinAlg::Matrix<3, 1> l;
     for (int i = 0; i < n;
          ++i)  // Find the distance to the point furthest away from the mid-point (length)
     {
       Point* p = points[i];
-      CORE::LINALG::Matrix<3, 1> x(p->X());
+      Core::LinAlg::Matrix<3, 1> x(p->X());
       l = m;
       l.Update(1, x, -1);
       double n = l.Norm2();
@@ -376,7 +376,7 @@ void CORE::GEO::CUT::TetMesh::call_q_hull(
     for (int i = 0; i < n; ++i)
     {
       Point* p = points[i];
-      CORE::LINALG::Matrix<3, 1> x(p->X());
+      Core::LinAlg::Matrix<3, 1> x(p->X());
       l = m;
       l.Update(1, x, -1);
       double n = l.Norm2();
@@ -561,7 +561,7 @@ void CORE::GEO::CUT::TetMesh::call_q_hull(
  exact...
 
 */
-bool CORE::GEO::CUT::TetMesh::is_valid_tet(const std::vector<Point*>& t)
+bool Core::Geo::Cut::TetMesh::is_valid_tet(const std::vector<Point*>& t)
 {
   plain_side_set sides;
   // Find if the points of the tet share a common side.
@@ -681,7 +681,7 @@ bool CORE::GEO::CUT::TetMesh::is_valid_tet(const std::vector<Point*>& t)
 
 /* This function is unused....
  */
-void CORE::GEO::CUT::TetMesh::test_used_points(const std::vector<std::vector<int>>& tets)
+void Core::Geo::Cut::TetMesh::test_used_points(const std::vector<std::vector<int>>& tets)
 {
   plain_int_set used_points;
   for (std::vector<std::vector<int>>::const_iterator i = tets.begin(); i != tets.end(); ++i)
@@ -698,28 +698,28 @@ void CORE::GEO::CUT::TetMesh::test_used_points(const std::vector<std::vector<int
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::TetMesh::fix_broken_tets()
+void Core::Geo::Cut::TetMesh::fix_broken_tets()
 {
   for (std::vector<std::vector<int>>::iterator i = tets_.begin(); i != tets_.end(); ++i)
   {
     std::vector<int>& t = *i;
 
     // create planes consisting of 3 nodes each
-    CORE::LINALG::Matrix<3, 1> p0(points_[t[0]]->X());
-    CORE::LINALG::Matrix<3, 1> p1(points_[t[1]]->X());
-    CORE::LINALG::Matrix<3, 1> p2(points_[t[2]]->X());
-    CORE::LINALG::Matrix<3, 1> p3(points_[t[3]]->X());
+    Core::LinAlg::Matrix<3, 1> p0(points_[t[0]]->X());
+    Core::LinAlg::Matrix<3, 1> p1(points_[t[1]]->X());
+    Core::LinAlg::Matrix<3, 1> p2(points_[t[2]]->X());
+    Core::LinAlg::Matrix<3, 1> p3(points_[t[3]]->X());
 
-    CORE::LINALG::Matrix<3, 1> v01;
-    CORE::LINALG::Matrix<3, 1> v02;
-    CORE::LINALG::Matrix<3, 1> v03;
+    Core::LinAlg::Matrix<3, 1> v01;
+    Core::LinAlg::Matrix<3, 1> v02;
+    Core::LinAlg::Matrix<3, 1> v03;
 
     v01.Update(1, p1, -1, p0, 0);
     v02.Update(1, p2, -1, p0, 0);
     v03.Update(1, p3, -1, p0, 0);
 
     // create 4 normal vectors to each tet surface plane
-    CORE::LINALG::Matrix<3, 1> nplane012;
+    Core::LinAlg::Matrix<3, 1> nplane012;
 
     // cross product
     nplane012(0) = v01(1) * v02(2) - v01(2) * v02(1);
@@ -732,7 +732,7 @@ void CORE::GEO::CUT::TetMesh::fix_broken_tets()
     // compute norm (area) of plane
     // double norm012 = nplane012.Norm2();
 
-    CORE::LINALG::Matrix<4, 1> temp(true);
+    Core::LinAlg::Matrix<4, 1> temp(true);
     temp(0, 0) = p0.Norm2();  // Distance of points to origin
     temp(1, 0) = p1.Norm2();
     temp(2, 0) = p2.Norm2();
@@ -741,7 +741,7 @@ void CORE::GEO::CUT::TetMesh::fix_broken_tets()
     // This is to scale the tolerance, it determines our maximum precision (i.e. machine precision)
     double max_dist_to_orgin = temp.NormInf();
 
-    CORE::LINALG::Matrix<3, 1> v04;
+    Core::LinAlg::Matrix<3, 1> v04;
     v04.Update(1, p1, -1, p2, 0);
 
     temp(0, 0) = v01.Norm2();  // Distance between points in "base" triangle
@@ -788,7 +788,7 @@ void CORE::GEO::CUT::TetMesh::fix_broken_tets()
 /* Take the tri from the facet and test whether it belongs to more than one tet,
    if not add the tri as a side with an error check.
  */
-void CORE::GEO::CUT::TetMesh::find_proper_sides(const PlainEntitySet<3>& tris,
+void Core::Geo::Cut::TetMesh::find_proper_sides(const PlainEntitySet<3>& tris,
     std::vector<std::vector<int>>& sides, const PlainEntitySet<4>* members)
 {
   sides.reserve(tris.size());
@@ -828,7 +828,7 @@ void CORE::GEO::CUT::TetMesh::find_proper_sides(const PlainEntitySet<3>& tris,
           std::vector<int> side(3);
           for (int j = 0; j < 3; ++j)
           {
-            side[j] = original_tet[CORE::FE::eleNodeNumbering_tet10_surfaces[i][j]];
+            side[j] = original_tet[Core::FE::eleNodeNumbering_tet10_surfaces[i][j]];
           }
           if (tri->Equals(side))
           {
@@ -852,7 +852,7 @@ void CORE::GEO::CUT::TetMesh::find_proper_sides(const PlainEntitySet<3>& tris,
 }
 
 /// Collects the coordinates for the tri3 sides of the facet if all its points are on cut surface
-void CORE::GEO::CUT::TetMesh::collect_coordinates(
+void Core::Geo::Cut::TetMesh::collect_coordinates(
     const std::vector<std::vector<int>>& sides, std::vector<Point*>& side_coords)
 {
   for (std::vector<std::vector<int>>::const_iterator i = sides.begin(); i != sides.end(); ++i)

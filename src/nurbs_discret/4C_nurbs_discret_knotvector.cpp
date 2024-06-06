@@ -13,10 +13,11 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-DRT::NURBS::KnotvectorObjectType DRT::NURBS::KnotvectorObjectType::instance_;
+Discret::Nurbs::KnotvectorObjectType Discret::Nurbs::KnotvectorObjectType::instance_;
 
 
-CORE::COMM::ParObject* DRT::NURBS::KnotvectorObjectType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Discret::Nurbs::KnotvectorObjectType::Create(
+    const std::vector<char>& data)
 {
   return nullptr;
 }
@@ -25,7 +26,7 @@ CORE::COMM::ParObject* DRT::NURBS::KnotvectorObjectType::Create(const std::vecto
 /*----------------------------------------------------------------------*
  |  empty ctor (public)                                      gammi 05/08|
  *----------------------------------------------------------------------*/
-DRT::NURBS::Knotvector::Knotvector()
+Discret::Nurbs::Knotvector::Knotvector()
     : ParObject(),
       dim_(0),
       npatches_(0),
@@ -38,12 +39,12 @@ DRT::NURBS::Knotvector::Knotvector()
       knot_values_(0)
 {
   return;
-}  // DRT::NURBS::Knotvector::Knotvector (empty)
+}  // Discret::Nurbs::Knotvector::Knotvector (empty)
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            gammi 05/08|
  *----------------------------------------------------------------------*/
-DRT::NURBS::Knotvector::Knotvector(const int dim, const int npatches)
+Discret::Nurbs::Knotvector::Knotvector(const int dim, const int npatches)
     : ParObject(),
       dim_(dim),
       npatches_(npatches),
@@ -77,12 +78,12 @@ DRT::NURBS::Knotvector::Knotvector(const int dim, const int npatches)
   }
 
   return;
-}  // DRT::NURBS::Knotvector::Knotvector (standard)
+}  // Discret::Nurbs::Knotvector::Knotvector (standard)
 
 /*----------------------------------------------------------------------*
  |  copy ctor (public)                                       gammi 05/08|
  *----------------------------------------------------------------------*/
-DRT::NURBS::Knotvector::Knotvector(const DRT::NURBS::Knotvector& old)
+Discret::Nurbs::Knotvector::Knotvector(const Discret::Nurbs::Knotvector& old)
     : ParObject(old),
       dim_(old.dim_),
       npatches_(old.npatches_),
@@ -106,14 +107,14 @@ DRT::NURBS::Knotvector::Knotvector(const DRT::NURBS::Knotvector& old)
     }
   }
   return;
-}  // DRT::NURBS::Knotvector::Knotvector (copy)
+}  // Discret::Nurbs::Knotvector::Knotvector (copy)
 
 
 /*----------------------------------------------------------------------*
  | convert an element gid to its corresponding triple knot index        |
  |                                                  (public) gammi 05/08|
  *----------------------------------------------------------------------*/
-void DRT::NURBS::Knotvector::convert_ele_gid_to_knot_ids(
+void Discret::Nurbs::Knotvector::convert_ele_gid_to_knot_ids(
     const int gid, int& npatch, std::vector<int>& loc_cart_id) const
 {
   if ((int)loc_cart_id.size() != dim_)
@@ -170,8 +171,8 @@ void DRT::NURBS::Knotvector::convert_ele_gid_to_knot_ids(
 /*----------------------------------------------------------------------*
  | get element knot vectors to a given element id   (public) gammi 05/08|
  *----------------------------------------------------------------------*/
-bool DRT::NURBS::Knotvector::GetEleKnots(
-    std::vector<CORE::LINALG::SerialDenseVector>& eleknots, int gid) const
+bool Discret::Nurbs::Knotvector::GetEleKnots(
+    std::vector<Core::LinAlg::SerialDenseVector>& eleknots, int gid) const
 {
   //------------------------------------------------
   // determine the segments knot values
@@ -240,7 +241,7 @@ bool DRT::NURBS::Knotvector::GetEleKnots(
   }
 
   return (zero_size);
-}  // DRT::NURBS::Knotvector::GetEleKnots
+}  // Discret::Nurbs::Knotvector::GetEleKnots
 
 
 /*----------------------------------------------------------------------*
@@ -248,9 +249,9 @@ bool DRT::NURBS::Knotvector::GetEleKnots(
  | parent element. On the fly, get orientation of normal vector.        |
  |                                                  (public) gammi 05/09|
  *----------------------------------------------------------------------*/
-bool DRT::NURBS::Knotvector::get_boundary_ele_and_parent_knots(
-    std::vector<CORE::LINALG::SerialDenseVector>& eleknots,
-    std::vector<CORE::LINALG::SerialDenseVector>& surfknots, double& normalfac, int pgid,
+bool Discret::Nurbs::Knotvector::get_boundary_ele_and_parent_knots(
+    std::vector<Core::LinAlg::SerialDenseVector>& eleknots,
+    std::vector<Core::LinAlg::SerialDenseVector>& surfknots, double& normalfac, int pgid,
     const int surfaceid) const
 {
   // get parent element local knotspan to extract the surface's knotspan
@@ -517,14 +518,14 @@ bool DRT::NURBS::Knotvector::get_boundary_ele_and_parent_knots(
   }
 
   return (zero_size);
-}  // DRT::NURBS::Knotvector::get_boundary_ele_and_parent_knots
+}  // Discret::Nurbs::Knotvector::get_boundary_ele_and_parent_knots
 
 
 /*----------------------------------------------------------------------*
  | set knots in one direction                       (public) gammi 05/08|
  *----------------------------------------------------------------------*/
-void DRT::NURBS::Knotvector::SetKnots(const int& direction, const int& npatch, const int& degree,
-    const int& numknots, const std::string& knotvectortype,
+void Discret::Nurbs::Knotvector::SetKnots(const int& direction, const int& npatch,
+    const int& degree, const int& numknots, const std::string& knotvectortype,
     Teuchos::RCP<std::vector<double>> directions_knots)
 {
   // filled is false now since new add new knots
@@ -564,12 +565,12 @@ void DRT::NURBS::Knotvector::SetKnots(const int& direction, const int& npatch, c
   (knot_values_[npatch])[direction] = directions_knots;
 
   return;
-}  // DRT::NURBS::Knotvector::SetKnots
+}  // Discret::Nurbs::Knotvector::SetKnots
 
 /*----------------------------------------------------------------------*
  | finish                                           (public) gammi 05/08|
  *----------------------------------------------------------------------*/
-void DRT::NURBS::Knotvector::FinishKnots(const int smallest_gid_in_dis)
+void Discret::Nurbs::Knotvector::FinishKnots(const int smallest_gid_in_dis)
 {
   //--------------------------------------------------
   // plausibility checks
@@ -722,16 +723,16 @@ void DRT::NURBS::Knotvector::FinishKnots(const int smallest_gid_in_dis)
   filled_ = true;
 
   return;
-}  // DRT::NURBS::Knotvector::FinishKnots
+}  // Discret::Nurbs::Knotvector::FinishKnots
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  |                                                          gammi 05/08 |
  *----------------------------------------------------------------------*/
-void DRT::NURBS::Knotvector::Pack(CORE::COMM::PackBuffer& data) const
+void Discret::Nurbs::Knotvector::Pack(Core::Communication::PackBuffer& data) const
 {
   // we don't need the PackBuffer for the knotvector (at the moment)
-  // CORE::COMM::PackBuffer::SizeMarker sm( data );
+  // Core::Communication::PackBuffer::SizeMarker sm( data );
   // sm.Insert();
 
   // pack type of this instance of ParObject
@@ -785,19 +786,19 @@ void DRT::NURBS::Knotvector::Pack(CORE::COMM::PackBuffer& data) const
   }
 
   return;
-}  // DRT::NURBS::Knotvector::Pack
+}  // Discret::Nurbs::Knotvector::Pack
 
 /*----------------------------------------------------------------------*
  |  Unpack Knotvectors data                                    (public) |
  |                                                          gammi 05/08 |
  *----------------------------------------------------------------------*/
-void DRT::NURBS::Knotvector::Unpack(const std::vector<char>& data)
+void Discret::Nurbs::Knotvector::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
   filled_ = false;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract number of patches
   ExtractfromPack(position, data, npatches_);
@@ -846,7 +847,7 @@ void DRT::NURBS::Knotvector::Unpack(const std::vector<char>& data)
     for (int rr = 0; rr < dim_; ++rr)
     {
       (interpolation_[np])[rr] =
-          static_cast<DRT::NURBS::Knotvector::KnotvectorType>(ExtractInt(position, data));
+          static_cast<Discret::Nurbs::Knotvector::KnotvectorType>(ExtractInt(position, data));
     }
   }
 
@@ -865,14 +866,14 @@ void DRT::NURBS::Knotvector::Unpack(const std::vector<char>& data)
   }
 
   return;
-}  // DRT::NURBS::Knotvector::Unpack
+}  // Discret::Nurbs::Knotvector::Unpack
 
 
 /*----------------------------------------------------------------------*
  |  Return number of zero sized elements in knotspan of this patch      |
  |  (public)                                                gammi 05/08 |
  *----------------------------------------------------------------------*/
-std::vector<int> DRT::NURBS::Knotvector::return_n_zerosize_ele(const int npatch)
+std::vector<int> Discret::Nurbs::Knotvector::return_n_zerosize_ele(const int npatch)
 {
   if (!filled_)
   {
@@ -966,7 +967,7 @@ std::vector<int> DRT::NURBS::Knotvector::return_n_zerosize_ele(const int npatch)
   }
 
   return (num_zero_sized);
-}  // DRT::NURBS::Knotvector::return_n_zerosize_ele(const int npatch)
+}  // Discret::Nurbs::Knotvector::return_n_zerosize_ele(const int npatch)
 
 
 
@@ -974,7 +975,7 @@ std::vector<int> DRT::NURBS::Knotvector::return_n_zerosize_ele(const int npatch)
  |  Return the global id of the next nonzero sized element in the       |
  |  knotspan                  (public)                      gammi 04/09 |
  *----------------------------------------------------------------------*/
-int DRT::NURBS::Knotvector::return_next_nonzero_ele_gid(const int zero_ele_gid)
+int Discret::Nurbs::Knotvector::return_next_nonzero_ele_gid(const int zero_ele_gid)
 {
   std::vector<int> zero_ele_cart_id(dim_);
   std::vector<int> nonzero_ele_cart_id(dim_);
@@ -1007,13 +1008,13 @@ int DRT::NURBS::Knotvector::return_next_nonzero_ele_gid(const int zero_ele_gid)
   int nextnonzero_gid = convert_ele_knot_ids_to_gid(npatch, nonzero_ele_cart_id);
 
   return (nextnonzero_gid);
-}  // DRT::NURBS::Knotvector::return_next_nonzero_ele_gid
+}  // Discret::Nurbs::Knotvector::return_next_nonzero_ele_gid
 
 /*----------------------------------------------------------------------*
  | convert an element local id + patch number to its corresponding gid  |
  |                                                  (public) gammi 04/09|
  *----------------------------------------------------------------------*/
-int DRT::NURBS::Knotvector::convert_ele_knot_ids_to_gid(
+int Discret::Nurbs::Knotvector::convert_ele_knot_ids_to_gid(
     const int& npatch, const std::vector<int>& loc_cart_id)
 {
   if (!filled_)
@@ -1067,12 +1068,12 @@ int DRT::NURBS::Knotvector::convert_ele_knot_ids_to_gid(
   }
 
   return (gid);
-}  // DRT::NURBS::Knotvector::convert_ele_knot_ids_to_gid
+}  // Discret::Nurbs::Knotvector::convert_ele_knot_ids_to_gid
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::NURBS::Knotvector::Print(std::ostream& os) const
+void Discret::Nurbs::Knotvector::Print(std::ostream& os) const
 {
   os << "\nPrinting a Knotvector: " << std::endl;
   for (int patch = 0; patch < npatches_; ++patch)

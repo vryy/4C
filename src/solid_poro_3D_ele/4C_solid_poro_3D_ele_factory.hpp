@@ -22,7 +22,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT::ELEMENTS
+namespace Discret::ELEMENTS
 {
   /*!
    *  @brief struct for managing solidporo element properties
@@ -30,23 +30,23 @@ namespace DRT::ELEMENTS
   struct SolidPoroElementProperties
   {
     //! porosity implementation type (physics)
-    INPAR::PORO::PoroType porotype{INPAR::PORO::PoroType::undefined};
+    Inpar::Poro::PoroType porotype{Inpar::Poro::PoroType::undefined};
 
     //! scalar transport implementation type (physics)
-    INPAR::SCATRA::ImplType impltype{INPAR::SCATRA::ImplType::impltype_undefined};
+    Inpar::ScaTra::ImplType impltype{Inpar::ScaTra::ImplType::impltype_undefined};
   };
 
-  namespace DETAILS
+  namespace Details
   {
-    using ImplementedSolidPoroCellTypes = CORE::FE::CelltypeSequence<CORE::FE::CellType::hex8,
-        CORE::FE::CellType::hex27, CORE::FE::CellType::tet4, CORE::FE::CellType::tet10>;
+    using ImplementedSolidPoroCellTypes = Core::FE::CelltypeSequence<Core::FE::CellType::hex8,
+        Core::FE::CellType::hex27, Core::FE::CellType::tet4, Core::FE::CellType::tet10>;
     using PoroPressureBasedEvaluators =
-        CORE::FE::apply_celltype_sequence<SolidPoroPressureBasedEleCalc,
+        Core::FE::apply_celltype_sequence<SolidPoroPressureBasedEleCalc,
             ImplementedSolidPoroCellTypes>;
 
-    using SolidPoroEvaluators = CORE::FE::Join<PoroPressureBasedEvaluators>;
-  }  // namespace DETAILS
-  using SolidPoroCalcVariant = CreateVariantType<DETAILS::SolidPoroEvaluators>;
+    using SolidPoroEvaluators = Core::FE::Join<PoroPressureBasedEvaluators>;
+  }  // namespace Details
+  using SolidPoroCalcVariant = CreateVariantType<Details::SolidPoroEvaluators>;
 
   // forward declaration
   class SolidPoroEleCalcInterface;
@@ -54,11 +54,11 @@ namespace DRT::ELEMENTS
 
 
   SolidPoroCalcVariant CreateSolidPoroCalculationInterface(
-      CORE::Elements::Element& ele, INPAR::PORO::PoroType porotype);
+      Core::Elements::Element& ele, Inpar::Poro::PoroType porotype);
 
-  template <CORE::FE::CellType celltype>
-  SolidPoroCalcVariant CreateSolidPoroCalculationInterface(INPAR::PORO::PoroType porotype);
-}  // namespace DRT::ELEMENTS
+  template <Core::FE::CellType celltype>
+  SolidPoroCalcVariant CreateSolidPoroCalculationInterface(Inpar::Poro::PoroType porotype);
+}  // namespace Discret::ELEMENTS
 
 
 FOUR_C_NAMESPACE_CLOSE

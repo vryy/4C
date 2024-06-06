@@ -21,7 +21,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT::ELEMENTS
+namespace Discret::ELEMENTS
 {
 
   /*!
@@ -32,46 +32,46 @@ namespace DRT::ELEMENTS
     SolidElementProperties solid{};
 
     //! scalar transport implementation type (physics)
-    INPAR::SCATRA::ImplType impltype{INPAR::SCATRA::ImplType::impltype_undefined};
+    Inpar::ScaTra::ImplType impltype{Inpar::ScaTra::ImplType::impltype_undefined};
   };
 
 
-  void AddToPack(
-      CORE::COMM::PackBuffer& data, const DRT::ELEMENTS::SolidScatraElementProperties& properties);
+  void AddToPack(Core::Communication::PackBuffer& data,
+      const Discret::ELEMENTS::SolidScatraElementProperties& properties);
 
   void ExtractFromPack(std::size_t& position, const std::vector<char>& data,
-      DRT::ELEMENTS::SolidScatraElementProperties& properties);
+      Discret::ELEMENTS::SolidScatraElementProperties& properties);
 
-  namespace DETAILS
+  namespace Details
   {
 
-    using ImplementedSolidScatraCellTypes = CORE::FE::CelltypeSequence<CORE::FE::CellType::hex8,
-        CORE::FE::CellType::hex27, CORE::FE::CellType::tet4, CORE::FE::CellType::tet10>;
+    using ImplementedSolidScatraCellTypes = Core::FE::CelltypeSequence<Core::FE::CellType::hex8,
+        Core::FE::CellType::hex27, Core::FE::CellType::tet4, Core::FE::CellType::tet10>;
 
     // Displacement based integrators
-    template <CORE::FE::CellType celltype>
+    template <Core::FE::CellType celltype>
     using DisplacementBasedSolidScatraIntegrator =
         SolidScatraEleCalc<celltype, DisplacementBasedFormulation<celltype>>;
     using DisplacementBasedSolidScatraEvaluator =
-        CORE::FE::apply_celltype_sequence<DisplacementBasedSolidScatraIntegrator,
+        Core::FE::apply_celltype_sequence<DisplacementBasedSolidScatraIntegrator,
             ImplementedSolidScatraCellTypes>;
 
     // FBar evaluators
-    template <CORE::FE::CellType celltype>
+    template <Core::FE::CellType celltype>
     using FBarSolidScatraIntegrator = SolidScatraEleCalc<celltype, FBarFormulation<celltype>>;
-    using FbarScatraEvaluators = CORE::FE::apply_celltype_sequence<FBarSolidScatraIntegrator,
-        CORE::FE::CelltypeSequence<CORE::FE::CellType::hex8>>;
+    using FbarScatraEvaluators = Core::FE::apply_celltype_sequence<FBarSolidScatraIntegrator,
+        Core::FE::CelltypeSequence<Core::FE::CellType::hex8>>;
 
     using SolidScatraEvaluators =
-        CORE::FE::Join<DisplacementBasedSolidScatraEvaluator, FbarScatraEvaluators>;
-  }  // namespace DETAILS
+        Core::FE::Join<DisplacementBasedSolidScatraEvaluator, FbarScatraEvaluators>;
+  }  // namespace Details
 
   /// Variant holding the different implementations for the solid-scatra element
-  using SolidScatraCalcVariant = CreateVariantType<DETAILS::SolidScatraEvaluators>;
+  using SolidScatraCalcVariant = CreateVariantType<Details::SolidScatraEvaluators>;
 
-  SolidScatraCalcVariant CreateSolidScatraCalculationInterface(
-      CORE::FE::CellType celltype, const DRT::ELEMENTS::SolidElementProperties& element_properties);
-}  // namespace DRT::ELEMENTS
+  SolidScatraCalcVariant CreateSolidScatraCalculationInterface(Core::FE::CellType celltype,
+      const Discret::ELEMENTS::SolidElementProperties& element_properties);
+}  // namespace Discret::ELEMENTS
 
 FOUR_C_NAMESPACE_CLOSE
 

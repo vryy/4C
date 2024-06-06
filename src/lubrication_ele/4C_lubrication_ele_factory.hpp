@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
@@ -35,11 +35,11 @@ namespace DRT
       virtual ~LubricationFactory() = default;
       //! ProvideImpl
       static LubricationEleInterface* ProvideImpl(
-          CORE::FE::CellType distype, const std::string& disname);
+          Core::FE::CellType distype, const std::string& disname);
 
      private:
       //! define LubricationEle instances dependent on problem
-      template <CORE::FE::CellType distype, int probdim>
+      template <Core::FE::CellType distype, int probdim>
       static LubricationEleInterface* define_problem_type(const std::string& disname);
 
 
@@ -47,7 +47,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 
-}  // namespace DRT
+}  // namespace Discret
 
 
 FOUR_C_NAMESPACE_CLOSE

@@ -37,31 +37,31 @@ Teuchos::RCP<STR::TimAda> STR::TimAdaCreate(
   Teuchos::RCP<STR::TimAda> sta = Teuchos::null;
 
   // auxiliary time integrator
-  switch (CORE::UTILS::IntegralValue<INPAR::STR::TimAdaKind>(tap, "KIND"))
+  switch (Core::UTILS::IntegralValue<Inpar::STR::TimAdaKind>(tap, "KIND"))
   {
-    case INPAR::STR::timada_kind_none:
+    case Inpar::STR::timada_kind_none:
       // No adaptivity in time
       sta = Teuchos::null;
       break;
 
-    case INPAR::STR::timada_kind_zienxie:
+    case Inpar::STR::timada_kind_zienxie:
       // Zienkiewicz-Xie error indicator for generalised-alpha
       sta = Teuchos::rcp(new STR::TimAdaZienXie(timeparams, tap, tis));
       break;
 
-    case INPAR::STR::timada_kind_ab2:
+    case Inpar::STR::timada_kind_ab2:
       // Adams-Bashforth 2nd order
       sta = Teuchos::rcp(
           new STR::TimAdaJoint<STR::TimIntAB2>(ioflags, timeparams, sdyn, xparams, tap, tis));
       break;
 
-    case INPAR::STR::timada_kind_expleuler:
+    case Inpar::STR::timada_kind_expleuler:
       // Adams-Bashforth 2nd order
       sta = Teuchos::rcp(
           new STR::TimAdaJoint<STR::TimIntExplEuler>(ioflags, timeparams, sdyn, xparams, tap, tis));
       break;
 
-    case INPAR::STR::timada_kind_centraldiff:
+    case Inpar::STR::timada_kind_centraldiff:
       // Adams-Bashforth 2nd order
       sta = Teuchos::rcp(
           new STR::TimAdaJoint<STR::TimIntCentrDiff>(ioflags, timeparams, sdyn, xparams, tap, tis));

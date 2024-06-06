@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::FloatingPointException::disable() const
+void NOX::Nln::FloatingPointException::disable() const
 {
   if (not shall_be_caught_) return;
 #ifdef FOUR_C_ENABLE_FE_TRAPPING
@@ -31,7 +31,7 @@ void NOX::NLN::FloatingPointException::disable() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::FloatingPointException::clear() const
+void NOX::Nln::FloatingPointException::clear() const
 {
   if (not shall_be_caught_) return;
 #ifdef FOUR_C_ENABLE_FE_TRAPPING
@@ -41,7 +41,7 @@ void NOX::NLN::FloatingPointException::clear() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int NOX::NLN::FloatingPointException::checkAndPrint(std::ostream& os)
+int NOX::Nln::FloatingPointException::checkAndPrint(std::ostream& os)
 {
   int exception_occurred = 0;
 #ifdef FOUR_C_ENABLE_FE_TRAPPING
@@ -66,7 +66,7 @@ int NOX::NLN::FloatingPointException::checkAndPrint(std::ostream& os)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::FloatingPointException::enable() const
+void NOX::Nln::FloatingPointException::enable() const
 {
   if (not shall_be_caught_) return;
 #ifdef FOUR_C_ENABLE_FE_TRAPPING
@@ -76,11 +76,11 @@ void NOX::NLN::FloatingPointException::enable() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::FloatingPointException::precompute() const { disable(); }
+void NOX::Nln::FloatingPointException::precompute() const { disable(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int NOX::NLN::FloatingPointException::postcompute(std::ostream& os) const
+int NOX::Nln::FloatingPointException::postcompute(std::ostream& os) const
 {
   const int err = checkAndPrint(os);
   if (err)

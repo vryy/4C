@@ -28,14 +28,14 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 FLD::XFluidFluidState::XFluidFluidState(
     const Teuchos::RCP<XFEM::ConditionManager>& condition_manager,
-    const Teuchos::RCP<CORE::GEO::CutWizard>& wizard, const Teuchos::RCP<XFEM::XFEMDofSet>& dofset,
+    const Teuchos::RCP<Core::Geo::CutWizard>& wizard, const Teuchos::RCP<XFEM::XFEMDofSet>& dofset,
     const Teuchos::RCP<const Epetra_Map>& xfluiddofrowmap,
     const Teuchos::RCP<const Epetra_Map>& xfluiddofcolmap,
     const Teuchos::RCP<const Epetra_Map>& embfluiddofrowmap)
     : XFluidState(condition_manager, wizard, dofset, xfluiddofrowmap, xfluiddofcolmap),
-      xffluiddofrowmap_(CORE::LINALG::MergeMap(xfluiddofrowmap, embfluiddofrowmap, false)),
+      xffluiddofrowmap_(Core::LinAlg::MergeMap(xfluiddofrowmap, embfluiddofrowmap, false)),
       xffluidsplitter_(Teuchos::rcp(new FLD::UTILS::XFluidFluidMapExtractor())),
-      xffluidvelpressplitter_(Teuchos::rcp(new CORE::LINALG::MapExtractor())),
+      xffluidvelpressplitter_(Teuchos::rcp(new Core::LinAlg::MapExtractor())),
       embfluiddofrowmap_(embfluiddofrowmap)
 {
   xffluidsplitter_->Setup(*xffluiddofrowmap_, xfluiddofrowmap, embfluiddofrowmap);
@@ -52,7 +52,7 @@ void FLD::XFluidFluidState::init_system_matrix()
   // the combined fluid system matrix is not of FECrs-type - it is solely composed out of
   // fully assembled submatrices
   xffluidsysmat_ =
-      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*xffluiddofrowmap_, 108, false, true));
+      Teuchos::rcp(new Core::LinAlg::SparseMatrix(*xffluiddofrowmap_, 108, false, true));
 }
 
 /*----------------------------------------------------------------------*
@@ -61,19 +61,19 @@ void FLD::XFluidFluidState::init_system_matrix()
 void FLD::XFluidFluidState::init_state_vectors()
 {
   // matrices & vectors for merged background & embedded fluid
-  xffluidresidual_ = CORE::LINALG::CreateVector(*xffluiddofrowmap_, true);
-  xffluidincvel_ = CORE::LINALG::CreateVector(*xffluiddofrowmap_, true);
-  xffluidvelnp_ = CORE::LINALG::CreateVector(*xffluiddofrowmap_, true);
-  xffluidveln_ = CORE::LINALG::CreateVector(*xffluiddofrowmap_, true);
-  xffluidzeros_ = CORE::LINALG::CreateVector(*xffluiddofrowmap_, true);
+  xffluidresidual_ = Core::LinAlg::CreateVector(*xffluiddofrowmap_, true);
+  xffluidincvel_ = Core::LinAlg::CreateVector(*xffluiddofrowmap_, true);
+  xffluidvelnp_ = Core::LinAlg::CreateVector(*xffluiddofrowmap_, true);
+  xffluidveln_ = Core::LinAlg::CreateVector(*xffluiddofrowmap_, true);
+  xffluidzeros_ = Core::LinAlg::CreateVector(*xffluiddofrowmap_, true);
 }
 
 /*----------------------------------------------------------------------*
  |  Access system matrix                                    kruse 01/15 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::SparseMatrix> FLD::XFluidFluidState::SystemMatrix()
+Teuchos::RCP<Core::LinAlg::SparseMatrix> FLD::XFluidFluidState::SystemMatrix()
 {
-  return Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(xffluidsysmat_);
+  return Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(xffluidsysmat_);
 }
 
 /*----------------------------------------------------------------------*
@@ -81,8 +81,8 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> FLD::XFluidFluidState::SystemMatrix()
  *----------------------------------------------------------------------*/
 void FLD::XFluidFluidState::complete_coupling_matrices_and_rhs()
 {
-  Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat_block =
-      Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(xffluidsysmat_, false);
+  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat_block =
+      Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(xffluidsysmat_, false);
 
   // in case that fluid-fluid sysmat is merged (no block matrix), we have to complete the coupling
   // blocks (e.g. fluid-structure) w.r.t. xff sysmat instead of just the xfluid block
@@ -101,7 +101,7 @@ void FLD::XFluidFluidState::complete_coupling_matrices_and_rhs()
  |  Create merged DBC map extractor                         kruse 01/15 |
  *----------------------------------------------------------------------*/
 void FLD::XFluidFluidState::create_merged_dbc_map_extractor(
-    Teuchos::RCP<const CORE::LINALG::MapExtractor> embfluiddbcmaps)
+    Teuchos::RCP<const Core::LinAlg::MapExtractor> embfluiddbcmaps)
 {
   // create merged dbc map from both fluids
   std::vector<Teuchos::RCP<const Epetra_Map>> dbcmaps;
@@ -109,30 +109,30 @@ void FLD::XFluidFluidState::create_merged_dbc_map_extractor(
   dbcmaps.push_back(embfluiddbcmaps->CondMap());
 
   Teuchos::RCP<const Epetra_Map> xffluiddbcmap =
-      CORE::LINALG::MultiMapExtractor::MergeMaps(dbcmaps);
+      Core::LinAlg::MultiMapExtractor::MergeMaps(dbcmaps);
 
   std::vector<Teuchos::RCP<const Epetra_Map>> othermaps;
   othermaps.push_back(XFluidState::dbcmaps_->OtherMap());
   othermaps.push_back(embfluiddbcmaps->OtherMap());
   Teuchos::RCP<const Epetra_Map> xffluidothermap =
-      CORE::LINALG::MultiMapExtractor::MergeMaps(othermaps);
+      Core::LinAlg::MultiMapExtractor::MergeMaps(othermaps);
 
   xffluiddbcmaps_ = Teuchos::rcp(
-      new CORE::LINALG::MapExtractor(*xffluiddofrowmap_, xffluiddbcmap, xffluidothermap));
+      new Core::LinAlg::MapExtractor(*xffluiddofrowmap_, xffluiddbcmap, xffluidothermap));
 }
 
 /*----------------------------------------------------------------------*
  |  Set dirichlet- and velocity/pressure-map extractor      kruse 01/15 |
  *----------------------------------------------------------------------*/
 void FLD::XFluidFluidState::SetupMapExtractors(
-    const Teuchos::RCP<DRT::Discretization>& xfluiddiscret,
-    const Teuchos::RCP<DRT::Discretization>& embfluiddiscret, const double& time)
+    const Teuchos::RCP<Discret::Discretization>& xfluiddiscret,
+    const Teuchos::RCP<Discret::Discretization>& embfluiddiscret, const double& time)
 {
   // create merged dirichlet map extractor
   XFluidState::SetupMapExtractors(xfluiddiscret, time);
   xffluidsplitter_->Setup(*xffluiddofrowmap_, embfluiddofrowmap_, XFluidState::xfluiddofrowmap_);
 
-  FLD::UTILS::SetupFluidFluidVelPresSplit(*xfluiddiscret, GLOBAL::Problem::Instance()->NDim(),
+  FLD::UTILS::SetupFluidFluidVelPresSplit(*xfluiddiscret, Global::Problem::Instance()->NDim(),
       *embfluiddiscret, *xffluidvelpressplitter_, xffluiddofrowmap_);
 }
 

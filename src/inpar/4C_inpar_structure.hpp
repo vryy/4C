@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 // forward declaration
 
 /*----------------------------------------------------------------------*/
-namespace INPAR
+namespace Inpar
 {
   namespace STR
   {
@@ -171,7 +171,7 @@ namespace INPAR
       else if (name == "Constraints")
         type = model_constraints;
       else
-        FOUR_C_THROW("Unkonwn INPAR::STR::ModelType with name '%s'.", name.c_str());
+        FOUR_C_THROW("Unkonwn Inpar::STR::ModelType with name '%s'.", name.c_str());
 
       return type;
     };
@@ -687,19 +687,19 @@ namespace INPAR
     {
       switch (norm)
       {
-        case INPAR::STR::norm_vague:
+        case Inpar::STR::norm_vague:
           return "Vague";
           break;
-        case INPAR::STR::norm_l1:
+        case Inpar::STR::norm_l1:
           return "L1";
           break;
-        case INPAR::STR::norm_l2:
+        case Inpar::STR::norm_l2:
           return "L2";
           break;
-        case INPAR::STR::norm_rms:
+        case Inpar::STR::norm_rms:
           return "Rms";
           break;
-        case INPAR::STR::norm_inf:
+        case Inpar::STR::norm_inf:
           return "Inf";
           break;
         default:
@@ -720,11 +720,11 @@ namespace INPAR
     {
       switch (kinem_type)
       {
-        case INPAR::STR::KinemType::vague:
+        case Inpar::STR::KinemType::vague:
           return "vague";
-        case INPAR::STR::KinemType::linear:
+        case Inpar::STR::KinemType::linear:
           return "linear";
-        case INPAR::STR::KinemType::nonlinearTotLag:
+        case Inpar::STR::KinemType::nonlinearTotLag:
           return "nonlinear_total_lagrange";
       }
 
@@ -737,11 +737,11 @@ namespace INPAR
 
     /// set structure-specific conditions
     void SetValidConditions(
-        std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist);
+        std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist);
 
   }  // namespace STR
 
-}  // namespace INPAR
+}  // namespace Inpar
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

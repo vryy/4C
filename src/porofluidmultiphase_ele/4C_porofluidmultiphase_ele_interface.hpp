@@ -24,12 +24,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 
@@ -54,13 +54,13 @@ namespace DRT
         This class does not provide a definition for this function; it
         must be defined in PoroFluidMultiPhaseEleCalc.
        */
-      virtual int Evaluate(CORE::Elements::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
-          std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
-          std::vector<CORE::LINALG::SerialDenseVector*>& elevec) = 0;
+      virtual int Evaluate(Core::Elements::Element* ele, Teuchos::ParameterList& params,
+          Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+          std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
+          std::vector<Core::LinAlg::SerialDenseVector*>& elevec) = 0;
     };
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 
 FOUR_C_NAMESPACE_CLOSE

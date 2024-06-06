@@ -19,11 +19,11 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
-  template <CORE::FE::CellType celltype>
-  INPUT::LineDefinition::Builder GetDefaultLineDefinitionBuilder()
+  template <Core::FE::CellType celltype>
+  Input::LineDefinition::Builder GetDefaultLineDefinitionBuilder()
   {
-    return INPUT::LineDefinition::Builder()
-        .AddIntVector(CORE::FE::CellTypeToString(celltype), CORE::FE::num_nodes<celltype>)
+    return Input::LineDefinition::Builder()
+        .AddIntVector(Core::FE::CellTypeToString(celltype), Core::FE::num_nodes<celltype>)
         .AddNamedInt("MAT")
         .AddNamedString("KINEM")
         .AddNamedString("TYPE")
@@ -37,120 +37,126 @@ namespace
   }
 }  // namespace
 
-DRT::ELEMENTS::SolidScatraType DRT::ELEMENTS::SolidScatraType::instance_;
+Discret::ELEMENTS::SolidScatraType Discret::ELEMENTS::SolidScatraType::instance_;
 
-DRT::ELEMENTS::SolidScatraType& DRT::ELEMENTS::SolidScatraType::Instance() { return instance_; }
-
-void DRT::ELEMENTS::SolidScatraType::setup_element_definition(
-    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+Discret::ELEMENTS::SolidScatraType& Discret::ELEMENTS::SolidScatraType::Instance()
 {
-  std::map<std::string, INPUT::LineDefinition>& defsgeneral = definitions["SOLIDSCATRA"];
+  return instance_;
+}
 
-  defsgeneral[CORE::FE::CellTypeToString(CORE::FE::CellType::hex8)] =
-      GetDefaultLineDefinitionBuilder<CORE::FE::CellType::hex8>()
+void Discret::ELEMENTS::SolidScatraType::setup_element_definition(
+    std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
+{
+  std::map<std::string, Input::LineDefinition>& defsgeneral = definitions["SOLIDSCATRA"];
+
+  defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::hex8)] =
+      GetDefaultLineDefinitionBuilder<Core::FE::CellType::hex8>()
           .add_optional_named_string("TECH")
           .Build();
 
-  defsgeneral[CORE::FE::CellTypeToString(CORE::FE::CellType::hex27)] =
-      GetDefaultLineDefinitionBuilder<CORE::FE::CellType::hex27>().Build();
+  defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::hex27)] =
+      GetDefaultLineDefinitionBuilder<Core::FE::CellType::hex27>().Build();
 
-  defsgeneral[CORE::FE::CellTypeToString(CORE::FE::CellType::tet4)] =
-      GetDefaultLineDefinitionBuilder<CORE::FE::CellType::tet4>().Build();
+  defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::tet4)] =
+      GetDefaultLineDefinitionBuilder<Core::FE::CellType::tet4>().Build();
 
-  defsgeneral[CORE::FE::CellTypeToString(CORE::FE::CellType::tet10)] =
-      GetDefaultLineDefinitionBuilder<CORE::FE::CellType::tet10>().Build();
+  defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::tet10)] =
+      GetDefaultLineDefinitionBuilder<Core::FE::CellType::tet10>().Build();
 }
 
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SolidScatraType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SolidScatraType::Create(
     const std::string eletype, const std::string elecelltype, const int id, const int owner)
 {
   if (eletype == "SOLIDSCATRA") return Create(id, owner);
   return Teuchos::null;
 }
 
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SolidScatraType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SolidScatraType::Create(
     const int id, const int owner)
 {
-  return Teuchos::rcp(new DRT::ELEMENTS::SolidScatra(id, owner));
+  return Teuchos::rcp(new Discret::ELEMENTS::SolidScatra(id, owner));
 }
 
-CORE::COMM::ParObject* DRT::ELEMENTS::SolidScatraType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Discret::ELEMENTS::SolidScatraType::Create(
+    const std::vector<char>& data)
 {
-  auto* object = new DRT::ELEMENTS::SolidScatra(-1, -1);
+  auto* object = new Discret::ELEMENTS::SolidScatra(-1, -1);
   object->Unpack(data);
   return object;
 }
 
-void DRT::ELEMENTS::SolidScatraType::nodal_block_information(
-    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+void Discret::ELEMENTS::SolidScatraType::nodal_block_information(
+    Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   STR::UTILS::NodalBlockInformationSolid(dwele, numdf, dimns, nv, np);
 }
 
-CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::SolidScatraType::ComputeNullSpace(
-    CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
+Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SolidScatraType::ComputeNullSpace(
+    Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid3DNullSpace(node, x0);
 }
 
-DRT::ELEMENTS::SolidScatra::SolidScatra(int id, int owner) : CORE::Elements::Element(id, owner) {}
-
-CORE::Elements::Element* DRT::ELEMENTS::SolidScatra::Clone() const
+Discret::ELEMENTS::SolidScatra::SolidScatra(int id, int owner) : Core::Elements::Element(id, owner)
 {
-  return new DRT::ELEMENTS::SolidScatra(*this);
 }
 
-int DRT::ELEMENTS::SolidScatra::NumLine() const
+Core::Elements::Element* Discret::ELEMENTS::SolidScatra::Clone() const
 {
-  return CORE::FE::getNumberOfElementLines(celltype_);
+  return new Discret::ELEMENTS::SolidScatra(*this);
 }
 
-int DRT::ELEMENTS::SolidScatra::NumSurface() const
+int Discret::ELEMENTS::SolidScatra::NumLine() const
 {
-  return CORE::FE::getNumberOfElementSurfaces(celltype_);
+  return Core::FE::getNumberOfElementLines(celltype_);
 }
 
-int DRT::ELEMENTS::SolidScatra::NumVolume() const
+int Discret::ELEMENTS::SolidScatra::NumSurface() const
 {
-  return CORE::FE::getNumberOfElementVolumes(celltype_);
+  return Core::FE::getNumberOfElementSurfaces(celltype_);
 }
 
-std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::SolidScatra::Lines()
+int Discret::ELEMENTS::SolidScatra::NumVolume() const
 {
-  return CORE::COMM::GetElementLines<StructuralLine, SolidScatra>(*this);
+  return Core::FE::getNumberOfElementVolumes(celltype_);
 }
 
-std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::SolidScatra::Surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SolidScatra::Lines()
 {
-  return CORE::COMM::GetElementSurfaces<StructuralSurface, SolidScatra>(*this);
+  return Core::Communication::GetElementLines<StructuralLine, SolidScatra>(*this);
 }
 
-void DRT::ELEMENTS::SolidScatra::set_params_interface_ptr(const Teuchos::ParameterList& p)
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SolidScatra::Surfaces()
+{
+  return Core::Communication::GetElementSurfaces<StructuralSurface, SolidScatra>(*this);
+}
+
+void Discret::ELEMENTS::SolidScatra::set_params_interface_ptr(const Teuchos::ParameterList& p)
 {
   if (p.isParameter("interface"))
   {
     interface_ptr_ = Teuchos::rcp_dynamic_cast<STR::ELEMENTS::ParamsInterface>(
-        p.get<Teuchos::RCP<CORE::Elements::ParamsInterface>>("interface"));
+        p.get<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface"));
   }
   else
     interface_ptr_ = Teuchos::null;
 }
 
-bool DRT::ELEMENTS::SolidScatra::ReadElement(
-    const std::string& eletype, const std::string& celltype, INPUT::LineDefinition* linedef)
+bool Discret::ELEMENTS::SolidScatra::ReadElement(
+    const std::string& eletype, const std::string& celltype, Input::LineDefinition* linedef)
 {
   // read base element
   // set cell type
-  celltype_ = CORE::FE::StringToCellType(celltype);
+  celltype_ = Core::FE::StringToCellType(celltype);
 
   // read number of material model
-  SetMaterial(0, MAT::Factory(STR::UTILS::READELEMENT::ReadElementMaterial(linedef)));
+  SetMaterial(0, Mat::Factory(STR::UTILS::ReadElement::ReadElementMaterial(linedef)));
 
   // read scalar transport implementation type
   properties_.impltype = ReadScatraImplType(*linedef);
 
 
-  properties_.solid = STR::UTILS::READELEMENT::ReadSolidElementProperties(linedef);
+  properties_.solid = STR::UTILS::ReadElement::ReadSolidElementProperties(linedef);
 
   solid_scatra_calc_variant_ = CreateSolidScatraCalculationInterface(celltype_, properties_.solid);
 
@@ -161,15 +167,15 @@ bool DRT::ELEMENTS::SolidScatra::ReadElement(
   return true;
 }
 
-void DRT::ELEMENTS::SolidScatra::Pack(CORE::COMM::PackBuffer& data) const
+void Discret::ELEMENTS::SolidScatra::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   AddtoPack(data, UniqueParObjectId());
 
   // add base class Element
-  CORE::Elements::Element::Pack(data);
+  Core::Elements::Element::Pack(data);
 
   AddtoPack(data, (int)celltype_);
   AddToPack(data, properties_);
@@ -177,10 +183,10 @@ void DRT::ELEMENTS::SolidScatra::Pack(CORE::COMM::PackBuffer& data) const
   data.AddtoPack(material_post_setup_);
 
   // optional data, e.g., EAS data
-  DRT::ELEMENTS::Pack(solid_scatra_calc_variant_, data);
+  Discret::ELEMENTS::Pack(solid_scatra_calc_variant_, data);
 }
 
-void DRT::ELEMENTS::SolidScatra::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::SolidScatra::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -189,41 +195,41 @@ void DRT::ELEMENTS::SolidScatra::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
-  CORE::Elements::Element::Unpack(basedata);
+  Core::Elements::Element::Unpack(basedata);
 
-  celltype_ = static_cast<CORE::FE::CellType>(ExtractInt(position, data));
+  celltype_ = static_cast<Core::FE::CellType>(ExtractInt(position, data));
 
   ExtractFromPack(position, data, properties_);
 
-  CORE::COMM::ParObject::ExtractfromPack(position, data, material_post_setup_);
+  Core::Communication::ParObject::ExtractfromPack(position, data, material_post_setup_);
 
   // reset solid and scatra interfaces
   solid_scatra_calc_variant_ = CreateSolidScatraCalculationInterface(celltype_, properties_.solid);
 
-  DRT::ELEMENTS::Unpack(solid_scatra_calc_variant_, position, data);
+  Discret::ELEMENTS::Unpack(solid_scatra_calc_variant_, position, data);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
 }
 
-void DRT::ELEMENTS::SolidScatra::VisNames(std::map<std::string, int>& names)
+void Discret::ELEMENTS::SolidScatra::VisNames(std::map<std::string, int>& names)
 {
-  CORE::Elements::Element::VisNames(names);
+  Core::Elements::Element::VisNames(names);
   SolidMaterial().VisNames(names);
 }
 
-bool DRT::ELEMENTS::SolidScatra::VisData(const std::string& name, std::vector<double>& data)
+bool Discret::ELEMENTS::SolidScatra::VisData(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
-  if (CORE::Elements::Element::VisData(name, data)) return true;
+  if (Core::Elements::Element::VisData(name, data)) return true;
 
   return SolidMaterial().VisData(name, data, Id());
 }
 
-MAT::So3Material& DRT::ELEMENTS::SolidScatra::SolidMaterial(int nummat) const
+Mat::So3Material& Discret::ELEMENTS::SolidScatra::SolidMaterial(int nummat) const
 {
-  return *Teuchos::rcp_dynamic_cast<MAT::So3Material>(
-      CORE::Elements::Element::Material(nummat), true);
+  return *Teuchos::rcp_dynamic_cast<Mat::So3Material>(
+      Core::Elements::Element::Material(nummat), true);
 }
 
 FOUR_C_NAMESPACE_CLOSE

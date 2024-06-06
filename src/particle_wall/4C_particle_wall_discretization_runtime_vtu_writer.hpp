@@ -25,18 +25,18 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationVisualizationWriterMesh;
   class DiscretizationReader;
-}  // namespace CORE::IO
+}  // namespace Core::IO
 
 namespace PARTICLEWALL
 {
   class WallDataState;
 }
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
@@ -68,7 +68,7 @@ namespace PARTICLEWALL
      *
      */
     explicit WallDiscretizationRuntimeVtuWriter(
-        const Teuchos::RCP<DRT::Discretization> walldiscretization,
+        const Teuchos::RCP<Discret::Discretization> walldiscretization,
         const std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate, double restart_time);
 
     /*!
@@ -93,13 +93,13 @@ namespace PARTICLEWALL
 
    private:
     //! wall discretization
-    Teuchos::RCP<DRT::Discretization> walldiscretization_;
+    Teuchos::RCP<Discret::Discretization> walldiscretization_;
 
     //! wall data state container
     std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate_;
 
     //! vtu writer object
-    std::unique_ptr<CORE::IO::DiscretizationVisualizationWriterMesh> runtime_vtuwriter_;
+    std::unique_ptr<Core::IO::DiscretizationVisualizationWriterMesh> runtime_vtuwriter_;
   };
 
 }  // namespace PARTICLEWALL

@@ -5,7 +5,7 @@
  \brief coupling adapter for porous meshtying
 
 // Masterthesis of h.Willmann under supervision of Anh-Tu Vuong and Johannes Kremheller
-// Originates from ADAPTER::CouplingNonLinMortar
+// Originates from Adapter::CouplingNonLinMortar
 
 \level 3
 
@@ -32,22 +32,22 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------*
  | forward declarations                                     ager 10/15 |
  *---------------------------------------------------------------------*/
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
 namespace CONTACT
 {
   class Interface;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
 }
 
-namespace ADAPTER
+namespace Adapter
 {
   class CouplingPoroMortar : public CouplingNonLinMortar
   {
@@ -58,14 +58,15 @@ namespace ADAPTER
     */
     CouplingPoroMortar(int spatial_dimension, Teuchos::ParameterList mortar_coupling_params,
         Teuchos::ParameterList contact_dynamic_params,
-        CORE::FE::ShapeFunctionType shape_function_type);
+        Core::FE::ShapeFunctionType shape_function_type);
 
 
     virtual void EvaluatePoroMt(Teuchos::RCP<Epetra_Vector> fvel, Teuchos::RCP<Epetra_Vector> svel,
         Teuchos::RCP<Epetra_Vector> fpres, Teuchos::RCP<Epetra_Vector> sdisp,
-        const Teuchos::RCP<DRT::Discretization> sdis, Teuchos::RCP<CORE::LINALG::SparseMatrix>& f,
-        Teuchos::RCP<CORE::LINALG::SparseMatrix>& k_fs, Teuchos::RCP<Epetra_Vector>& frhs,
-        CORE::ADAPTER::Coupling& coupfs, Teuchos::RCP<const Epetra_Map> fdofrowmap);
+        const Teuchos::RCP<Discret::Discretization> sdis,
+        Teuchos::RCP<Core::LinAlg::SparseMatrix>& f, Teuchos::RCP<Core::LinAlg::SparseMatrix>& k_fs,
+        Teuchos::RCP<Epetra_Vector>& frhs, Core::Adapter::Coupling& coupfs,
+        Teuchos::RCP<const Epetra_Map> fdofrowmap);
 
     void UpdatePoroMt();
 
@@ -84,22 +85,22 @@ namespace ADAPTER
     \brief Read Mortar Condition
 
     */
-    void read_mortar_condition(Teuchos::RCP<DRT::Discretization> masterdis,
-        Teuchos::RCP<DRT::Discretization> slavedis, std::vector<int> coupleddof,
+    void read_mortar_condition(Teuchos::RCP<Discret::Discretization> masterdis,
+        Teuchos::RCP<Discret::Discretization> slavedis, std::vector<int> coupleddof,
         const std::string& couplingcond, Teuchos::ParameterList& input,
-        std::map<int, CORE::Nodes::Node*>& mastergnodes,
-        std::map<int, CORE::Nodes::Node*>& slavegnodes,
-        std::map<int, Teuchos::RCP<CORE::Elements::Element>>& masterelements,
-        std::map<int, Teuchos::RCP<CORE::Elements::Element>>& slaveelements) override;
+        std::map<int, Core::Nodes::Node*>& mastergnodes,
+        std::map<int, Core::Nodes::Node*>& slavegnodes,
+        std::map<int, Teuchos::RCP<Core::Elements::Element>>& masterelements,
+        std::map<int, Teuchos::RCP<Core::Elements::Element>>& slaveelements) override;
 
     /*!
     \brief Add Mortar Elments
 
     */
-    void add_mortar_elements(Teuchos::RCP<DRT::Discretization> masterdis,
-        Teuchos::RCP<DRT::Discretization> slavedis, Teuchos::ParameterList& input,
-        std::map<int, Teuchos::RCP<CORE::Elements::Element>>& masterelements,
-        std::map<int, Teuchos::RCP<CORE::Elements::Element>>& slaveelements,
+    void add_mortar_elements(Teuchos::RCP<Discret::Discretization> masterdis,
+        Teuchos::RCP<Discret::Discretization> slavedis, Teuchos::ParameterList& input,
+        std::map<int, Teuchos::RCP<Core::Elements::Element>>& masterelements,
+        std::map<int, Teuchos::RCP<Core::Elements::Element>>& slaveelements,
         Teuchos::RCP<CONTACT::Interface>& interface, int numcoupleddof) override;
 
     /*!
@@ -107,15 +108,15 @@ namespace ADAPTER
            store maps as internal variable and do parallel redist.
 
     */
-    void complete_interface(Teuchos::RCP<DRT::Discretization> masterdis,
+    void complete_interface(Teuchos::RCP<Discret::Discretization> masterdis,
         Teuchos::RCP<CONTACT::Interface>& interface) override;
 
     /*!
     \brief create strategy object if required
 
     */
-    void create_strategy(Teuchos::RCP<DRT::Discretization> masterdis,
-        Teuchos::RCP<DRT::Discretization> slavedis, Teuchos::ParameterList& input,
+    void create_strategy(Teuchos::RCP<Discret::Discretization> masterdis,
+        Teuchos::RCP<Discret::Discretization> slavedis, Teuchos::ParameterList& input,
         int numcoupleddof) override;
 
    private:
@@ -128,7 +129,7 @@ namespace ADAPTER
     int slavetype_;   // 1 poro, 0 struct, -1 default
     int mastertype_;  // 1 poro, 0 struct, -1 default
   };
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::Conditions
+namespace Core::Conditions
 {
   enum ConditionType
   {
@@ -263,7 +263,7 @@ namespace CORE::Conditions
     geometry_type_volume,
     geometry_type_no_geom
   };
-}  // namespace CORE::Conditions
+}  // namespace Core::Conditions
 
 FOUR_C_NAMESPACE_CLOSE
 

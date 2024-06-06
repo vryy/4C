@@ -38,7 +38,7 @@ namespace
     {
       // Set up the evaluation data container for the geometry pairs.
       Teuchos::ParameterList line_to_volume_params_list;
-      INPAR::GEOMETRYPAIR::SetValidParametersLineTo3D(line_to_volume_params_list);
+      Inpar::GEOMETRYPAIR::SetValidParametersLineTo3D(line_to_volume_params_list);
       evaluation_data_ =
           Teuchos::rcp(new GEOMETRYPAIR::LineTo3DEvaluationData(line_to_volume_params_list));
     }
@@ -51,19 +51,19 @@ namespace
         BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type, lambda_type>&
             contact_pair,
         const GEOMETRYPAIR::ElementData<beam_type, double>& q_beam,
-        const CORE::LINALG::Matrix<9, 1, double>& q_beam_rot,
+        const Core::LinAlg::Matrix<9, 1, double>& q_beam_rot,
         const GEOMETRYPAIR::ElementData<solid_type, double>& q_solid,
-        const CORE::LINALG::Matrix<lambda_type::n_dof_, beam_type::n_dof_, double>& result_local_D,
-        const CORE::LINALG::Matrix<lambda_type::n_dof_, solid_type::n_dof_, double>& result_local_M,
-        const CORE::LINALG::Matrix<lambda_type::n_dof_, 1, double>& result_local_kappa)
+        const Core::LinAlg::Matrix<lambda_type::n_dof_, beam_type::n_dof_, double>& result_local_D,
+        const Core::LinAlg::Matrix<lambda_type::n_dof_, solid_type::n_dof_, double>& result_local_M,
+        const Core::LinAlg::Matrix<lambda_type::n_dof_, 1, double>& result_local_kappa)
     {
       // Create the elements.
       const int dummy_node_ids[2] = {0, 1};
-      Teuchos::RCP<CORE::Elements::Element> beam_element =
-          Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
+      Teuchos::RCP<Core::Elements::Element> beam_element =
+          Teuchos::rcp(new Discret::ELEMENTS::Beam3r(0, 0));
       beam_element->SetNodeIds(2, dummy_node_ids);
-      Teuchos::RCP<CORE::Elements::Element> solid_element =
-          Teuchos::rcp(new DRT::ELEMENTS::SoHex8(1, 0));
+      Teuchos::RCP<Core::Elements::Element> solid_element =
+          Teuchos::rcp(new Discret::ELEMENTS::SoHex8(1, 0));
 
       // Set up the beam element.
       std::vector<double> xrefe(6);
@@ -75,23 +75,23 @@ namespace
       for (unsigned int i = 0; i < 9; i++) rotrefe[i] = q_beam_rot(i);
 
       // Cast beam element and set the hermitian interpolation.
-      Teuchos::RCP<DRT::ELEMENTS::Beam3r> beam_element_cast =
-          Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::Beam3r>(beam_element, true);
+      Teuchos::RCP<Discret::ELEMENTS::Beam3r> beam_element_cast =
+          Teuchos::rcp_dynamic_cast<Discret::ELEMENTS::Beam3r>(beam_element, true);
       beam_element_cast->set_centerline_hermite(true);
       beam_element_cast->set_up_reference_geometry<3, 2, 2>(xrefe, rotrefe);
 
       // Call Init on the beam contact pair.
-      std::vector<const CORE::Elements::Element*> pair_elements;
+      std::vector<const Core::Elements::Element*> pair_elements;
       pair_elements.push_back(&(*beam_element));
       pair_elements.push_back(&(*solid_element));
       contact_pair.CreateGeometryPair(pair_elements[0], pair_elements[1], evaluation_data_);
       contact_pair.Init(Teuchos::null, pair_elements);
 
       // Evaluate the local matrices.
-      CORE::LINALG::Matrix<lambda_type::n_dof_, beam_type::n_dof_, double> local_D(false);
-      CORE::LINALG::Matrix<lambda_type::n_dof_, solid_type::n_dof_, double> local_M(false);
-      CORE::LINALG::Matrix<lambda_type::n_dof_, 1, double> local_kappa(false);
-      CORE::LINALG::Matrix<lambda_type::n_dof_, 1, double> local_constraint(false);
+      Core::LinAlg::Matrix<lambda_type::n_dof_, beam_type::n_dof_, double> local_D(false);
+      Core::LinAlg::Matrix<lambda_type::n_dof_, solid_type::n_dof_, double> local_M(false);
+      Core::LinAlg::Matrix<lambda_type::n_dof_, 1, double> local_kappa(false);
+      Core::LinAlg::Matrix<lambda_type::n_dof_, 1, double> local_constraint(false);
       contact_pair.ele1posref_ = q_beam;
       contact_pair.ele1pos_.shape_function_data_ = q_beam.shape_function_data_;
       contact_pair.ele2posref_ = q_solid;
@@ -142,15 +142,15 @@ namespace
     // Definition of variables for this test case.
     GEOMETRYPAIR::ElementData<beam_type, double> q_beam;
     GEOMETRYPAIR::ElementData<solid_type, double> q_solid;
-    CORE::LINALG::Matrix<9, 1> q_beam_rot;
-    CORE::LINALG::SerialDenseMatrix local_D;
-    CORE::LINALG::SerialDenseMatrix local_M;
-    CORE::LINALG::SerialDenseVector local_kappa;
+    Core::LinAlg::Matrix<9, 1> q_beam_rot;
+    Core::LinAlg::SerialDenseMatrix local_D;
+    Core::LinAlg::SerialDenseMatrix local_M;
+    Core::LinAlg::SerialDenseVector local_kappa;
 
     // Matrices for the results.
-    CORE::LINALG::Matrix<lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
-    CORE::LINALG::Matrix<lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
-    CORE::LINALG::Matrix<lambda_type::n_dof_, 1> result_local_kappa(true);
+    Core::LinAlg::Matrix<lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
+    Core::LinAlg::Matrix<lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
+    Core::LinAlg::Matrix<lambda_type::n_dof_, 1> result_local_kappa(true);
 
     // Define the geometry of the two elements.
     q_beam.shape_function_data_.ref_length_ = 0.6192043571449604711;
@@ -310,15 +310,15 @@ namespace
     // Definition of variables for this test case.
     GEOMETRYPAIR::ElementData<beam_type, double> q_beam;
     GEOMETRYPAIR::ElementData<solid_type, double> q_solid;
-    CORE::LINALG::Matrix<9, 1> q_beam_rot;
-    CORE::LINALG::SerialDenseMatrix local_D;
-    CORE::LINALG::SerialDenseMatrix local_M;
-    CORE::LINALG::SerialDenseVector local_kappa;
+    Core::LinAlg::Matrix<9, 1> q_beam_rot;
+    Core::LinAlg::SerialDenseMatrix local_D;
+    Core::LinAlg::SerialDenseMatrix local_M;
+    Core::LinAlg::SerialDenseVector local_kappa;
 
     // Matrices for the results.
-    CORE::LINALG::Matrix<lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
-    CORE::LINALG::Matrix<lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
-    CORE::LINALG::Matrix<lambda_type::n_dof_, 1> result_local_kappa(true);
+    Core::LinAlg::Matrix<lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
+    Core::LinAlg::Matrix<lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
+    Core::LinAlg::Matrix<lambda_type::n_dof_, 1> result_local_kappa(true);
 
     // Define the geometry of the two elements.
     q_beam.shape_function_data_.ref_length_ = 0.6192043571449604711;
@@ -517,15 +517,15 @@ namespace
     // Definition of variables for this test case.
     GEOMETRYPAIR::ElementData<beam_type, double> q_beam;
     GEOMETRYPAIR::ElementData<solid_type, double> q_solid;
-    CORE::LINALG::Matrix<9, 1> q_beam_rot;
-    CORE::LINALG::SerialDenseMatrix local_D;
-    CORE::LINALG::SerialDenseMatrix local_M;
-    CORE::LINALG::SerialDenseVector local_kappa;
+    Core::LinAlg::Matrix<9, 1> q_beam_rot;
+    Core::LinAlg::SerialDenseMatrix local_D;
+    Core::LinAlg::SerialDenseMatrix local_M;
+    Core::LinAlg::SerialDenseVector local_kappa;
 
     // Matrices for the results.
-    CORE::LINALG::Matrix<lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
-    CORE::LINALG::Matrix<lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
-    CORE::LINALG::Matrix<lambda_type::n_dof_, 1> result_local_kappa(true);
+    Core::LinAlg::Matrix<lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
+    Core::LinAlg::Matrix<lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
+    Core::LinAlg::Matrix<lambda_type::n_dof_, 1> result_local_kappa(true);
 
     // Define the geometry of the two elements.
     q_beam.shape_function_data_.ref_length_ = 0.6192043571449604711;
@@ -763,15 +763,15 @@ namespace
     // Definition of variables for this test case.
     GEOMETRYPAIR::ElementData<beam_type, double> q_beam;
     GEOMETRYPAIR::ElementData<solid_type, double> q_solid;
-    CORE::LINALG::Matrix<9, 1> q_beam_rot;
-    CORE::LINALG::SerialDenseMatrix local_D;
-    CORE::LINALG::SerialDenseMatrix local_M;
-    CORE::LINALG::SerialDenseVector local_kappa;
+    Core::LinAlg::Matrix<9, 1> q_beam_rot;
+    Core::LinAlg::SerialDenseMatrix local_D;
+    Core::LinAlg::SerialDenseMatrix local_M;
+    Core::LinAlg::SerialDenseVector local_kappa;
 
     // Matrices for the results.
-    CORE::LINALG::Matrix<lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
-    CORE::LINALG::Matrix<lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
-    CORE::LINALG::Matrix<lambda_type::n_dof_, 1> result_local_kappa(true);
+    Core::LinAlg::Matrix<lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
+    Core::LinAlg::Matrix<lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
+    Core::LinAlg::Matrix<lambda_type::n_dof_, 1> result_local_kappa(true);
 
     // Define the geometry of the two elements.
     q_beam.shape_function_data_.ref_length_ = 0.6192043571449604711;
@@ -1039,15 +1039,15 @@ namespace
     // Definition of variables for this test case.
     GEOMETRYPAIR::ElementData<beam_type, double> q_beam;
     GEOMETRYPAIR::ElementData<solid_type, double> q_solid;
-    CORE::LINALG::Matrix<9, 1> q_beam_rot;
-    CORE::LINALG::SerialDenseMatrix local_D;
-    CORE::LINALG::SerialDenseMatrix local_M;
-    CORE::LINALG::SerialDenseVector local_kappa;
+    Core::LinAlg::Matrix<9, 1> q_beam_rot;
+    Core::LinAlg::SerialDenseMatrix local_D;
+    Core::LinAlg::SerialDenseMatrix local_M;
+    Core::LinAlg::SerialDenseVector local_kappa;
 
     // Matrices for the results.
-    CORE::LINALG::Matrix<lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
-    CORE::LINALG::Matrix<lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
-    CORE::LINALG::Matrix<lambda_type::n_dof_, 1> result_local_kappa(true);
+    Core::LinAlg::Matrix<lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
+    Core::LinAlg::Matrix<lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
+    Core::LinAlg::Matrix<lambda_type::n_dof_, 1> result_local_kappa(true);
 
     // Define the geometry of the two elements.
     q_beam.shape_function_data_.ref_length_ = 0.6192043571449604711;
@@ -1390,15 +1390,15 @@ namespace
     // Definition of variables for this test case.
     GEOMETRYPAIR::ElementData<beam_type, double> q_beam;
     GEOMETRYPAIR::ElementData<solid_type, double> q_solid;
-    CORE::LINALG::Matrix<9, 1> q_beam_rot;
-    CORE::LINALG::SerialDenseMatrix local_D;
-    CORE::LINALG::SerialDenseMatrix local_M;
-    CORE::LINALG::SerialDenseVector local_kappa;
+    Core::LinAlg::Matrix<9, 1> q_beam_rot;
+    Core::LinAlg::SerialDenseMatrix local_D;
+    Core::LinAlg::SerialDenseMatrix local_M;
+    Core::LinAlg::SerialDenseVector local_kappa;
 
     // Matrices for the results.
-    CORE::LINALG::Matrix<lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
-    CORE::LINALG::Matrix<lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
-    CORE::LINALG::Matrix<lambda_type::n_dof_, 1> result_local_kappa(true);
+    Core::LinAlg::Matrix<lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
+    Core::LinAlg::Matrix<lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
+    Core::LinAlg::Matrix<lambda_type::n_dof_, 1> result_local_kappa(true);
 
     // Define the geometry of the two elements.
     q_beam.shape_function_data_.ref_length_ = 0.6192043571449604711;
@@ -1816,15 +1816,15 @@ namespace
     // Definition of variables for this test case.
     GEOMETRYPAIR::ElementData<beam_type, double> q_beam;
     GEOMETRYPAIR::ElementData<solid_type, double> q_solid;
-    CORE::LINALG::Matrix<9, 1> q_beam_rot;
-    CORE::LINALG::SerialDenseMatrix local_D;
-    CORE::LINALG::SerialDenseMatrix local_M;
-    CORE::LINALG::SerialDenseVector local_kappa;
+    Core::LinAlg::Matrix<9, 1> q_beam_rot;
+    Core::LinAlg::SerialDenseMatrix local_D;
+    Core::LinAlg::SerialDenseMatrix local_M;
+    Core::LinAlg::SerialDenseVector local_kappa;
 
     // Matrices for the results.
-    CORE::LINALG::Matrix<lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
-    CORE::LINALG::Matrix<lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
-    CORE::LINALG::Matrix<lambda_type::n_dof_, 1> result_local_kappa(true);
+    Core::LinAlg::Matrix<lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
+    Core::LinAlg::Matrix<lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
+    Core::LinAlg::Matrix<lambda_type::n_dof_, 1> result_local_kappa(true);
 
     // Define the geometry of the two elements.
     q_beam.shape_function_data_.ref_length_ = 0.6192043571449604711;
@@ -2155,15 +2155,15 @@ namespace
     // Definition of variables for this test case.
     GEOMETRYPAIR::ElementData<beam_type, double> q_beam;
     GEOMETRYPAIR::ElementData<solid_type, double> q_solid;
-    CORE::LINALG::Matrix<9, 1> q_beam_rot;
-    CORE::LINALG::SerialDenseMatrix local_D;
-    CORE::LINALG::SerialDenseMatrix local_M;
-    CORE::LINALG::SerialDenseVector local_kappa;
+    Core::LinAlg::Matrix<9, 1> q_beam_rot;
+    Core::LinAlg::SerialDenseMatrix local_D;
+    Core::LinAlg::SerialDenseMatrix local_M;
+    Core::LinAlg::SerialDenseVector local_kappa;
 
     // Matrices for the results.
-    CORE::LINALG::Matrix<lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
-    CORE::LINALG::Matrix<lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
-    CORE::LINALG::Matrix<lambda_type::n_dof_, 1> result_local_kappa(true);
+    Core::LinAlg::Matrix<lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
+    Core::LinAlg::Matrix<lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
+    Core::LinAlg::Matrix<lambda_type::n_dof_, 1> result_local_kappa(true);
 
     // Define the geometry of the two elements.
     q_beam.shape_function_data_.ref_length_ = 0.6192043571449604711;
@@ -2590,15 +2590,15 @@ namespace
     // Definition of variables for this test case.
     GEOMETRYPAIR::ElementData<beam_type, double> q_beam;
     GEOMETRYPAIR::ElementData<solid_type, double> q_solid;
-    CORE::LINALG::Matrix<9, 1> q_beam_rot;
-    CORE::LINALG::SerialDenseMatrix local_D;
-    CORE::LINALG::SerialDenseMatrix local_M;
-    CORE::LINALG::SerialDenseVector local_kappa;
+    Core::LinAlg::Matrix<9, 1> q_beam_rot;
+    Core::LinAlg::SerialDenseMatrix local_D;
+    Core::LinAlg::SerialDenseMatrix local_M;
+    Core::LinAlg::SerialDenseVector local_kappa;
 
     // Matrices for the results.
-    CORE::LINALG::Matrix<lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
-    CORE::LINALG::Matrix<lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
-    CORE::LINALG::Matrix<lambda_type::n_dof_, 1> result_local_kappa(true);
+    Core::LinAlg::Matrix<lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
+    Core::LinAlg::Matrix<lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
+    Core::LinAlg::Matrix<lambda_type::n_dof_, 1> result_local_kappa(true);
 
     // Define the geometry of the two elements.
     q_beam.shape_function_data_.ref_length_ = 0.6192043571449604711;
@@ -3121,15 +3121,15 @@ namespace
     // Definition of variables for this test case.
     GEOMETRYPAIR::ElementData<beam_type, double> q_beam;
     GEOMETRYPAIR::ElementData<solid_type, double> q_solid;
-    CORE::LINALG::Matrix<9, 1> q_beam_rot;
-    CORE::LINALG::SerialDenseMatrix local_D;
-    CORE::LINALG::SerialDenseMatrix local_M;
-    CORE::LINALG::SerialDenseVector local_kappa;
+    Core::LinAlg::Matrix<9, 1> q_beam_rot;
+    Core::LinAlg::SerialDenseMatrix local_D;
+    Core::LinAlg::SerialDenseMatrix local_M;
+    Core::LinAlg::SerialDenseVector local_kappa;
 
     // Matrices for the results.
-    CORE::LINALG::Matrix<lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
-    CORE::LINALG::Matrix<lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
-    CORE::LINALG::Matrix<lambda_type::n_dof_, 1> result_local_kappa(true);
+    Core::LinAlg::Matrix<lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
+    Core::LinAlg::Matrix<lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
+    Core::LinAlg::Matrix<lambda_type::n_dof_, 1> result_local_kappa(true);
 
     // Define the geometry of the two elements.
     q_beam.shape_function_data_.ref_length_ = 0.6192043571449604711;
@@ -3253,15 +3253,15 @@ namespace
     // Definition of variables for this test case.
     GEOMETRYPAIR::ElementData<beam_type, double> q_beam;
     GEOMETRYPAIR::ElementData<solid_type, double> q_solid;
-    CORE::LINALG::Matrix<9, 1> q_beam_rot;
-    CORE::LINALG::SerialDenseMatrix local_D;
-    CORE::LINALG::SerialDenseMatrix local_M;
-    CORE::LINALG::SerialDenseVector local_kappa;
+    Core::LinAlg::Matrix<9, 1> q_beam_rot;
+    Core::LinAlg::SerialDenseMatrix local_D;
+    Core::LinAlg::SerialDenseMatrix local_M;
+    Core::LinAlg::SerialDenseVector local_kappa;
 
     // Matrices for the results.
-    CORE::LINALG::Matrix<lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
-    CORE::LINALG::Matrix<lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
-    CORE::LINALG::Matrix<lambda_type::n_dof_, 1> result_local_kappa(true);
+    Core::LinAlg::Matrix<lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
+    Core::LinAlg::Matrix<lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
+    Core::LinAlg::Matrix<lambda_type::n_dof_, 1> result_local_kappa(true);
 
     // Define the geometry of the two elements.
     q_beam.shape_function_data_.ref_length_ = 0.6192043571449604711;
@@ -3412,15 +3412,15 @@ namespace
     // Definition of variables for this test case.
     GEOMETRYPAIR::ElementData<beam_type, double> q_beam;
     GEOMETRYPAIR::ElementData<solid_type, double> q_solid;
-    CORE::LINALG::Matrix<9, 1> q_beam_rot;
-    CORE::LINALG::SerialDenseMatrix local_D;
-    CORE::LINALG::SerialDenseMatrix local_M;
-    CORE::LINALG::SerialDenseVector local_kappa;
+    Core::LinAlg::Matrix<9, 1> q_beam_rot;
+    Core::LinAlg::SerialDenseMatrix local_D;
+    Core::LinAlg::SerialDenseMatrix local_M;
+    Core::LinAlg::SerialDenseVector local_kappa;
 
     // Matrices for the results.
-    CORE::LINALG::Matrix<lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
-    CORE::LINALG::Matrix<lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
-    CORE::LINALG::Matrix<lambda_type::n_dof_, 1> result_local_kappa(true);
+    Core::LinAlg::Matrix<lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
+    Core::LinAlg::Matrix<lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
+    Core::LinAlg::Matrix<lambda_type::n_dof_, 1> result_local_kappa(true);
 
     // Define the geometry of the two elements.
     q_beam.shape_function_data_.ref_length_ = 0.6192043571449604711;
@@ -3598,15 +3598,15 @@ namespace
     // Definition of variables for this test case.
     GEOMETRYPAIR::ElementData<beam_type, double> q_beam;
     GEOMETRYPAIR::ElementData<solid_type, double> q_solid;
-    CORE::LINALG::Matrix<9, 1> q_beam_rot;
-    CORE::LINALG::SerialDenseMatrix local_D;
-    CORE::LINALG::SerialDenseMatrix local_M;
-    CORE::LINALG::SerialDenseVector local_kappa;
+    Core::LinAlg::Matrix<9, 1> q_beam_rot;
+    Core::LinAlg::SerialDenseMatrix local_D;
+    Core::LinAlg::SerialDenseMatrix local_M;
+    Core::LinAlg::SerialDenseVector local_kappa;
 
     // Matrices for the results.
-    CORE::LINALG::Matrix<lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
-    CORE::LINALG::Matrix<lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
-    CORE::LINALG::Matrix<lambda_type::n_dof_, 1> result_local_kappa(true);
+    Core::LinAlg::Matrix<lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
+    Core::LinAlg::Matrix<lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
+    Core::LinAlg::Matrix<lambda_type::n_dof_, 1> result_local_kappa(true);
 
     // Define the geometry of the two elements.
     q_beam.shape_function_data_.ref_length_ = 0.6192043571449604711;
@@ -3784,15 +3784,15 @@ namespace
     // Definition of variables for this test case.
     GEOMETRYPAIR::ElementData<beam_type, double> q_beam;
     GEOMETRYPAIR::ElementData<solid_type, double> q_solid;
-    CORE::LINALG::Matrix<9, 1> q_beam_rot;
-    CORE::LINALG::SerialDenseMatrix local_D;
-    CORE::LINALG::SerialDenseMatrix local_M;
-    CORE::LINALG::SerialDenseVector local_kappa;
+    Core::LinAlg::Matrix<9, 1> q_beam_rot;
+    Core::LinAlg::SerialDenseMatrix local_D;
+    Core::LinAlg::SerialDenseMatrix local_M;
+    Core::LinAlg::SerialDenseVector local_kappa;
 
     // Matrices for the results.
-    CORE::LINALG::Matrix<lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
-    CORE::LINALG::Matrix<lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
-    CORE::LINALG::Matrix<lambda_type::n_dof_, 1> result_local_kappa(true);
+    Core::LinAlg::Matrix<lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
+    Core::LinAlg::Matrix<lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
+    Core::LinAlg::Matrix<lambda_type::n_dof_, 1> result_local_kappa(true);
 
     // Define the geometry of the two elements.
     q_beam.shape_function_data_.ref_length_ = 0.6192043571449604711;
@@ -4015,15 +4015,15 @@ namespace
     // Definition of variables for this test case.
     GEOMETRYPAIR::ElementData<beam_type, double> q_beam;
     GEOMETRYPAIR::ElementData<solid_type, double> q_solid;
-    CORE::LINALG::Matrix<9, 1> q_beam_rot;
-    CORE::LINALG::SerialDenseMatrix local_D;
-    CORE::LINALG::SerialDenseMatrix local_M;
-    CORE::LINALG::SerialDenseVector local_kappa;
+    Core::LinAlg::Matrix<9, 1> q_beam_rot;
+    Core::LinAlg::SerialDenseMatrix local_D;
+    Core::LinAlg::SerialDenseMatrix local_M;
+    Core::LinAlg::SerialDenseVector local_kappa;
 
     // Matrices for the results.
-    CORE::LINALG::Matrix<lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
-    CORE::LINALG::Matrix<lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
-    CORE::LINALG::Matrix<lambda_type::n_dof_, 1> result_local_kappa(true);
+    Core::LinAlg::Matrix<lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
+    Core::LinAlg::Matrix<lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
+    Core::LinAlg::Matrix<lambda_type::n_dof_, 1> result_local_kappa(true);
 
     // Define the geometry of the two elements.
     q_beam.shape_function_data_.ref_length_ = 0.6192043571449604711;

@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-ADAPTER::AleWearWrapper::AleWearWrapper(Teuchos::RCP<Ale> ale) : AleWrapper(ale)
+Adapter::AleWearWrapper::AleWearWrapper(Teuchos::RCP<Ale> ale) : AleWrapper(ale)
 {
   // create the Wear interface
   interface_ = Teuchos::rcp(new ALE::UTILS::MapExtractor);
@@ -32,7 +32,7 @@ ADAPTER::AleWearWrapper::AleWearWrapper(Teuchos::RCP<Ale> ale) : AleWrapper(ale)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<const ALE::UTILS::MapExtractor> ADAPTER::AleWearWrapper::Interface() const
+Teuchos::RCP<const ALE::UTILS::MapExtractor> Adapter::AleWearWrapper::Interface() const
 {
   return interface_;
 }

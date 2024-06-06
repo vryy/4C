@@ -20,10 +20,10 @@ FOUR_C_NAMESPACE_OPEN
 void STI::ScatraThermoCloneStrategy::check_material_type(const int matid)
 {
   // check whether material with specified ID is compatible with cloned element or not
-  switch (GLOBAL::Problem::Instance()->Materials()->ParameterById(matid)->Type())
+  switch (Global::Problem::Instance()->Materials()->ParameterById(matid)->Type())
   {
-    case CORE::Materials::m_soret:
-    case CORE::Materials::m_th_fourier_iso:
+    case Core::Materials::m_soret:
+    case Core::Materials::m_th_fourier_iso:
       // do nothing in case of compatible material
       break;
 
@@ -51,7 +51,7 @@ std::map<std::string, std::string> STI::ScatraThermoCloneStrategy::conditions_to
 /*--------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------*/
 bool STI::ScatraThermoCloneStrategy::determine_ele_type(
-    CORE::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
+    Core::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
 {
   // set type of cloned element to transport type
   eletype.emplace_back("TRANSP");
@@ -62,14 +62,14 @@ bool STI::ScatraThermoCloneStrategy::determine_ele_type(
 
 /*--------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------*/
-void STI::ScatraThermoCloneStrategy::set_element_data(Teuchos::RCP<CORE::Elements::Element> newele,
-    CORE::Elements::Element* oldele, const int matid, const bool isnurbs)
+void STI::ScatraThermoCloneStrategy::set_element_data(Teuchos::RCP<Core::Elements::Element> newele,
+    Core::Elements::Element* oldele, const int matid, const bool isnurbs)
 {
   // cast pointers to current element on source discretization and to current cloned element on
   // target discretization
-  auto* oldele_transport = dynamic_cast<DRT::ELEMENTS::Transport*>(oldele);
-  Teuchos::RCP<DRT::ELEMENTS::Transport> newele_transport =
-      Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::Transport>(newele);
+  auto* oldele_transport = dynamic_cast<Discret::ELEMENTS::Transport*>(oldele);
+  Teuchos::RCP<Discret::ELEMENTS::Transport> newele_transport =
+      Teuchos::rcp_dynamic_cast<Discret::ELEMENTS::Transport>(newele);
 
   // safety check
   if (oldele_transport == nullptr or newele_transport == Teuchos::null)
@@ -85,16 +85,16 @@ void STI::ScatraThermoCloneStrategy::set_element_data(Teuchos::RCP<CORE::Element
   // provide cloned element with physical implementation type
   switch (oldele_transport->ImplType())
   {
-    case INPAR::SCATRA::impltype_elch_diffcond_thermo:
-    case INPAR::SCATRA::impltype_elch_diffcond:
+    case Inpar::ScaTra::impltype_elch_diffcond_thermo:
+    case Inpar::ScaTra::impltype_elch_diffcond:
     {
-      newele_transport->SetImplType(INPAR::SCATRA::impltype_thermo_elch_diffcond);
+      newele_transport->SetImplType(Inpar::ScaTra::impltype_thermo_elch_diffcond);
       break;
     }
-    case INPAR::SCATRA::impltype_elch_electrode_thermo:
-    case INPAR::SCATRA::impltype_elch_electrode:
+    case Inpar::ScaTra::impltype_elch_electrode_thermo:
+    case Inpar::ScaTra::impltype_elch_electrode:
     {
-      newele_transport->SetImplType(INPAR::SCATRA::impltype_thermo_elch_electrode);
+      newele_transport->SetImplType(Inpar::ScaTra::impltype_thermo_elch_electrode);
       break;
     }
     default:

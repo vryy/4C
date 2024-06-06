@@ -24,7 +24,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace ART
+namespace Arteries
 {
   namespace UTILS
   {
@@ -46,7 +46,7 @@ namespace ART
       \brief Standard Constructor
       */
       ArtWriteGnuplotWrapper(
-          Teuchos::RCP<DRT::Discretization> actdis, Teuchos::ParameterList& params);
+          Teuchos::RCP<Discret::Discretization> actdis, Teuchos::ParameterList& params);
 
       /*!
       \brief Destructor
@@ -68,7 +68,7 @@ namespace ART
 
 
       //! 1d artery discretization
-      Teuchos::RCP<DRT::Discretization> discret_;
+      Teuchos::RCP<Discret::Discretization> discret_;
 
     };  // class ArtWriteGnuplotWrapper
 
@@ -106,7 +106,7 @@ namespace ART
       /*!
       \Solve the write the results of an artery
       */
-      void write(Teuchos::RCP<DRT::Discretization> discret, Teuchos::ParameterList& params,
+      void write(Teuchos::RCP<Discret::Discretization> discret, Teuchos::ParameterList& params,
           const std::vector<int>* nodes);
 
 
@@ -120,7 +120,7 @@ namespace ART
 
     };  // class ArtWriteGnuplot
   }     // namespace UTILS
-}  // namespace ART
+}  // namespace Arteries
 
 
 FOUR_C_NAMESPACE_CLOSE

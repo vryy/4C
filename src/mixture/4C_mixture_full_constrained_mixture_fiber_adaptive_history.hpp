@@ -22,13 +22,13 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::COMM
+namespace Core::Communication
 {
   class PackBuffer;
 }
 namespace MIXTURE
 {
-  namespace DETAILS
+  namespace Details
   {
     template <typename integer>
     [[nodiscard]] integer IntegerPower(integer x, unsigned int p)
@@ -42,7 +42,7 @@ namespace MIXTURE
       else
         return x * tmp * tmp;
     }
-  }  // namespace DETAILS
+  }  // namespace Details
   /*!
    * @brief Container for tracking adapted history integration intervals with providing some
    * convenience functions.
@@ -80,7 +80,7 @@ namespace MIXTURE
       }
     };
 
-    void Pack(CORE::COMM::PackBuffer& data) const;
+    void Pack(Core::Communication::PackBuffer& data) const;
 
     void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
 
@@ -121,7 +121,7 @@ namespace MIXTURE
         {
           current_index += 1;
           current_base_index =
-              level_begin_index + level_step * DETAILS::IntegerPower(2, item.level_);
+              level_begin_index + level_step * Details::IntegerPower(2, item.level_);
 
           for (; current_item_index < indices.size(); ++current_item_index)
           {
@@ -180,7 +180,7 @@ namespace MIXTURE
         {
           current_index += 1;
           current_base_index =
-              level_begin_index + level_step * DETAILS::IntegerPower(2, item.level_);
+              level_begin_index + level_step * Details::IntegerPower(2, item.level_);
 
           for (; current_item_index < indices.size(); ++current_item_index)
           {
@@ -244,7 +244,7 @@ namespace MIXTURE
     std::vector<TimestepAdaptivityInfoItem> list_;
   };
 
-  namespace DETAILS
+  namespace Details
   {
     void AdaptTimestepAdaptivityInfo(MIXTURE::TimestepAdaptivityInfo& timestep_adaptivity_info,
         unsigned int level, unsigned int num_coarsened_intervals);
@@ -273,7 +273,7 @@ namespace MIXTURE
 
       return num_coarsening_level;
     }
-  }  // namespace DETAILS
+  }  // namespace Details
 
   /*!
    * @brief Method to optimize the history size for Simpson Integration
@@ -331,14 +331,14 @@ namespace MIXTURE
           });
 
       unsigned int num_coarsenable_intervals =
-          DETAILS::GetNumberCoarsenableIntervals<CoarsenableEvaluator>(base_adaptivity_info,
+          Details::GetNumberCoarsenableIntervals<CoarsenableEvaluator>(base_adaptivity_info,
               current_adaptivity_info, begin_index, max_simpson_intervals, coarsenable_evaluator);
 
       if (num_coarsenable_intervals > 0)
       {
-        DETAILS::AdaptTimestepAdaptivityInfo(
+        Details::AdaptTimestepAdaptivityInfo(
             current_adaptivity_info, check_level, num_coarsenable_intervals);
-        DETAILS::MarkCoarsenedTimestepAsToBeDeleted(
+        Details::MarkCoarsenedTimestepAsToBeDeleted(
             items_to_delete, num_coarsenable_intervals, begin_index);
       }
     }
@@ -364,7 +364,7 @@ namespace MIXTURE
   {
     const double dt = (end_time - begin_time) / 2;
     const Number numerical_integration =
-        CORE::UTILS::IntegrateSimpsonStep(dt,
+        Core::UTILS::IntegrateSimpsonStep(dt,
             growth_evolution.evaluate_survival_function(time - begin_time),
             growth_evolution.evaluate_survival_function(time - (begin_time + end_time) / 2),
             growth_evolution.evaluate_survival_function(time - end_time)) /
@@ -373,9 +373,9 @@ namespace MIXTURE
         growth_evolution.evaluate_survival_function_integration(time, begin_time, end_time) /
         growth_evolution.decay_time_;
 
-    return CORE::FADUTILS::Norm<Number>(numerical_integration - exact_integration) <= tolerance ||
-           (CORE::FADUTILS::Norm<Number>(numerical_integration) <= tolerance &&
-               CORE::FADUTILS::Norm<Number>(exact_integration) <= tolerance);
+    return Core::FADUtils::Norm<Number>(numerical_integration - exact_integration) <= tolerance ||
+           (Core::FADUtils::Norm<Number>(numerical_integration) <= tolerance &&
+               Core::FADUtils::Norm<Number>(exact_integration) <= tolerance);
   }
 }  // namespace MIXTURE
 

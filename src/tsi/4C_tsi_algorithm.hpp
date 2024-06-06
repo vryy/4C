@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | forward declarations                                      dano 02/12 |
  *----------------------------------------------------------------------*/
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
@@ -41,15 +41,15 @@ namespace CONTACT
   class NitscheStrategyTsi;
 }  // namespace CONTACT
 
-namespace ADAPTER
+namespace Adapter
 {
   class Thermo;
   class Structure;
   class MortarVolCoupl;
   class Coupling;
-}  // namespace ADAPTER
+}  // namespace Adapter
 
-namespace MORTAR
+namespace Mortar
 {
   class MultiFieldCoupling;
 }
@@ -77,7 +77,7 @@ namespace TSI
   //!
   //!  \author u.kue
   //!  \date 02/08
-  class Algorithm : public ADAPTER::AlgorithmBase
+  class Algorithm : public Adapter::AlgorithmBase
   {
    public:
     //! create using a Epetra_Comm
@@ -98,10 +98,10 @@ namespace TSI
         ) override = 0;
 
     //! access to structural field
-    const Teuchos::RCP<ADAPTER::Structure>& structure_field() { return structure_; }
+    const Teuchos::RCP<Adapter::Structure>& structure_field() { return structure_; }
 
     //! access to thermal field
-    const Teuchos::RCP<ADAPTER::Thermo>& ThermoField() { return thermo_; }
+    const Teuchos::RCP<Adapter::Thermo>& ThermoField() { return thermo_; }
 
    protected:
     //! @name Time loop building blocks
@@ -121,7 +121,7 @@ namespace TSI
     //! communicate displacement vector to thermal field to enable their
     //! visualisation on the deformed body
     void output_deformation_in_thr(
-        Teuchos::RCP<const Epetra_Vector> dispnp, Teuchos::RCP<DRT::Discretization> structdis);
+        Teuchos::RCP<const Epetra_Vector> dispnp, Teuchos::RCP<Discret::Discretization> structdis);
 
     //@}
 
@@ -140,7 +140,7 @@ namespace TSI
     virtual void prepare_contact_strategy();
 
     //! Access to the dof coupling for matching grid TSI
-    CORE::ADAPTER::Coupling& structure_thermo_coupling() { return *coupST_; }
+    Core::Adapter::Coupling& structure_thermo_coupling() { return *coupST_; }
     //@}
 
     //! @name Access methods
@@ -161,10 +161,10 @@ namespace TSI
     //! @name Underlying fields
 
     //! underlying structure of the FSI problem
-    Teuchos::RCP<ADAPTER::Structure> structure_;
+    Teuchos::RCP<Adapter::Structure> structure_;
 
     //! underlying fluid of the FSI problem
-    Teuchos::RCP<ADAPTER::Thermo> thermo_;
+    Teuchos::RCP<Adapter::Thermo> thermo_;
 
     //! contact strategies
     Teuchos::RCP<CONTACT::LagrangeStrategyTsi> contact_strategy_lagrange_;
@@ -177,14 +177,14 @@ namespace TSI
     //! flag for matchinggrid
     const bool matchinggrid_;
     //! volume coupling (using mortar) adapter
-    Teuchos::RCP<CORE::ADAPTER::MortarVolCoupl> volcoupl_;
+    Teuchos::RCP<Core::Adapter::MortarVolCoupl> volcoupl_;
 
-    Teuchos::RCP<CORE::ADAPTER::Coupling> coupST_;  // S: master, T: slave
+    Teuchos::RCP<Core::Adapter::Coupling> coupST_;  // S: master, T: slave
     //@}
 
 
     //! @name Surface Mortar stuff
-    Teuchos::RCP<MORTAR::MultiFieldCoupling> mortar_coupling_;
+    Teuchos::RCP<Mortar::MultiFieldCoupling> mortar_coupling_;
 
     //@}
   };  // Algorithm

@@ -19,27 +19,27 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-MAT::CylinderCoordinateSystemManager::CylinderCoordinateSystemManager() = default;
+Mat::CylinderCoordinateSystemManager::CylinderCoordinateSystemManager() = default;
 
-void MAT::CylinderCoordinateSystemManager::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::CylinderCoordinateSystemManager::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::ParObject::AddtoPack(data, radial_);
-  CORE::COMM::ParObject::AddtoPack(data, axial_);
-  CORE::COMM::ParObject::AddtoPack(data, circumferential_);
-  CORE::COMM::ParObject::AddtoPack(data, static_cast<int>(is_defined_));
+  Core::Communication::ParObject::AddtoPack(data, radial_);
+  Core::Communication::ParObject::AddtoPack(data, axial_);
+  Core::Communication::ParObject::AddtoPack(data, circumferential_);
+  Core::Communication::ParObject::AddtoPack(data, static_cast<int>(is_defined_));
 }
 
-void MAT::CylinderCoordinateSystemManager::Unpack(
+void Mat::CylinderCoordinateSystemManager::Unpack(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
-  CORE::COMM::ParObject::ExtractfromPack(position, data, radial_);
-  CORE::COMM::ParObject::ExtractfromPack(position, data, axial_);
-  CORE::COMM::ParObject::ExtractfromPack(position, data, circumferential_);
-  is_defined_ = static_cast<bool>(CORE::COMM::ParObject::ExtractInt(position, data));
+  Core::Communication::ParObject::ExtractfromPack(position, data, radial_);
+  Core::Communication::ParObject::ExtractfromPack(position, data, axial_);
+  Core::Communication::ParObject::ExtractfromPack(position, data, circumferential_);
+  is_defined_ = static_cast<bool>(Core::Communication::ParObject::ExtractInt(position, data));
 }
 
-void MAT::CylinderCoordinateSystemManager::read_from_element_line_definition(
-    INPUT::LineDefinition* linedef)
+void Mat::CylinderCoordinateSystemManager::read_from_element_line_definition(
+    Input::LineDefinition* linedef)
 {
   if (linedef->HaveNamed("RAD") and linedef->HaveNamed("AXI") and linedef->HaveNamed("CIR"))
   {
@@ -50,8 +50,8 @@ void MAT::CylinderCoordinateSystemManager::read_from_element_line_definition(
   }
 }
 
-void MAT::CylinderCoordinateSystemManager::evaluate_local_coordinate_system(
-    CORE::LINALG::Matrix<3, 3>& cosy) const
+void Mat::CylinderCoordinateSystemManager::evaluate_local_coordinate_system(
+    Core::LinAlg::Matrix<3, 3>& cosy) const
 {
   for (int i = 0; i < 3; ++i)
   {
@@ -61,13 +61,13 @@ void MAT::CylinderCoordinateSystemManager::evaluate_local_coordinate_system(
   }
 }
 
-const MAT::CylinderCoordinateSystemManager&
-MAT::Anisotropy::get_element_cylinder_coordinate_system() const
+const Mat::CylinderCoordinateSystemManager&
+Mat::Anisotropy::get_element_cylinder_coordinate_system() const
 {
   return element_cylinder_coordinate_system_manager_.value();
 }
 
-const MAT::CylinderCoordinateSystemManager& MAT::Anisotropy::get_gp_cylinder_coordinate_system(
+const Mat::CylinderCoordinateSystemManager& Mat::Anisotropy::get_gp_cylinder_coordinate_system(
     const int gp) const
 {
   return gp_cylinder_coordinate_system_managers_[gp];

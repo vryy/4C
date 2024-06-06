@@ -18,17 +18,17 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace SCATRA
+namespace ScaTra
 {
   class ScaTraTimIntLoma : public virtual ScaTraTimIntImpl
   {
    public:
     /// Standard Constructor
-    ScaTraTimIntLoma(Teuchos::RCP<DRT::Discretization> dis,
-        Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+    ScaTraTimIntLoma(Teuchos::RCP<Discret::Discretization> dis,
+        Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
-        Teuchos::RCP<CORE::IO::DiscretizationWriter> output);
+        Teuchos::RCP<Core::IO::DiscretizationWriter> output);
 
     /*========================================================================*/
     //! @name Preconditioning
@@ -120,7 +120,7 @@ namespace SCATRA
     //! time deriv. of thermodynamic pressure at n+1
     double thermpressdtnp_;
   };
-}  // namespace SCATRA
+}  // namespace ScaTra
 
 FOUR_C_NAMESPACE_CLOSE
 

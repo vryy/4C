@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief A collection of dense matrix printing methods for namespace CORE::LINALG
+\brief A collection of dense matrix printing methods for namespace Core::LinAlg
 
 \level 0
 */
@@ -15,8 +15,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::LINALG::PrintSerialDenseMatrixInMatlabFormat(
-    std::string filename, const CORE::LINALG::SerialDenseMatrix& A, const bool newfile)
+void Core::LinAlg::PrintSerialDenseMatrixInMatlabFormat(
+    std::string filename, const Core::LinAlg::SerialDenseMatrix& A, const bool newfile)
 {
   std::ofstream os;
 

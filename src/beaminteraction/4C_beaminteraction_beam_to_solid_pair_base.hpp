@@ -57,10 +57,10 @@ namespace BEAMINTERACTION
      * @param stiffmat22 (out) Stiffness contributions on element 2 - element 2.
      * @return True if pair is in contact.
      */
-    bool Evaluate(CORE::LINALG::SerialDenseVector* forcevec1,
-        CORE::LINALG::SerialDenseVector* forcevec2, CORE::LINALG::SerialDenseMatrix* stiffmat11,
-        CORE::LINALG::SerialDenseMatrix* stiffmat12, CORE::LINALG::SerialDenseMatrix* stiffmat21,
-        CORE::LINALG::SerialDenseMatrix* stiffmat22) override
+    bool Evaluate(Core::LinAlg::SerialDenseVector* forcevec1,
+        Core::LinAlg::SerialDenseVector* forcevec2, Core::LinAlg::SerialDenseMatrix* stiffmat11,
+        Core::LinAlg::SerialDenseMatrix* stiffmat12, Core::LinAlg::SerialDenseMatrix* stiffmat21,
+        Core::LinAlg::SerialDenseMatrix* stiffmat22) override
     {
       return false;
     };
@@ -123,7 +123,7 @@ namespace BEAMINTERACTION
      * \brief Get coordinates of all active contact points on element1. Not yet implemented.
      */
     void get_all_active_contact_point_coords_element1(
-        std::vector<CORE::LINALG::Matrix<3, 1, double>>& coords) const override
+        std::vector<Core::LinAlg::Matrix<3, 1, double>>& coords) const override
     {
       FOUR_C_THROW("get_all_active_contact_point_coords_element1 not yet implemented!");
     }
@@ -132,7 +132,7 @@ namespace BEAMINTERACTION
      * \brief Get coordinates of all active contact points on element2. Not yet implemented.
      */
     void get_all_active_contact_point_coords_element2(
-        std::vector<CORE::LINALG::Matrix<3, 1, double>>& coords) const override
+        std::vector<Core::LinAlg::Matrix<3, 1, double>>& coords) const override
     {
       FOUR_C_THROW("get_all_active_contact_point_coords_element2 not yet implemented!");
     }
@@ -176,7 +176,7 @@ namespace BEAMINTERACTION
      */
     virtual void evaluate_beam_position_double(
         const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& integration_point,
-        CORE::LINALG::Matrix<3, 1, double>& r_beam, bool reference) const;
+        Core::LinAlg::Matrix<3, 1, double>& r_beam, bool reference) const;
 
    protected:
     //! Vector with the segments of the line to 3D pair.

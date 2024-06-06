@@ -15,7 +15,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-CORE::GEO::CUT::Line::Line(
+Core::Geo::Cut::Line::Line(
     Point* p1, Point* p2, Side* cut_side1, Side* cut_side2, Element* cut_element)
     : p1_(p1), p2_(p2)
 {
@@ -59,7 +59,7 @@ CORE::GEO::CUT::Line::Line(
   }
 }
 
-void CORE::GEO::CUT::Line::add_side(Side* cut_side)
+void Core::Geo::Cut::Line::add_side(Side* cut_side)
 {
   p1_->add_side(cut_side);
   p2_->add_side(cut_side);
@@ -67,7 +67,7 @@ void CORE::GEO::CUT::Line::add_side(Side* cut_side)
   cut_side->AddLine(this);
 }
 
-void CORE::GEO::CUT::Line::add_element(Element* cut_element)
+void Core::Geo::Cut::Line::add_element(Element* cut_element)
 {
   if (cut_element != nullptr)
   {
@@ -83,7 +83,7 @@ void CORE::GEO::CUT::Line::add_element(Element* cut_element)
   }
 }
 
-bool CORE::GEO::CUT::Line::IsInternalCut(Side* side)
+bool Core::Geo::Cut::Line::IsInternalCut(Side* side)
 {
   return cut_sides_.count(side) > 0 and not side->OnEdge(this);
 }

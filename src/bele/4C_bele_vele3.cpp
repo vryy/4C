@@ -17,60 +17,61 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-DRT::ELEMENTS::Vele3Type DRT::ELEMENTS::Vele3Type::instance_;
+Discret::ELEMENTS::Vele3Type Discret::ELEMENTS::Vele3Type::instance_;
 
-DRT::ELEMENTS::Vele3Type& DRT::ELEMENTS::Vele3Type::Instance() { return instance_; }
+Discret::ELEMENTS::Vele3Type& Discret::ELEMENTS::Vele3Type::Instance() { return instance_; }
 
-CORE::COMM::ParObject* DRT::ELEMENTS::Vele3Type::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Discret::ELEMENTS::Vele3Type::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::Vele3* object = new DRT::ELEMENTS::Vele3(-1, -1);
+  Discret::ELEMENTS::Vele3* object = new Discret::ELEMENTS::Vele3(-1, -1);
   object->Unpack(data);
   return object;
 }
 
 
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Vele3Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Vele3Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "VELE3")
   {
-    Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Vele3(id, owner));
+    Teuchos::RCP<Core::Elements::Element> ele =
+        Teuchos::rcp(new Discret::ELEMENTS::Vele3(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Vele3Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Vele3Type::Create(
     const int id, const int owner)
 {
-  Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Vele3(id, owner));
+  Teuchos::RCP<Core::Elements::Element> ele = Teuchos::rcp(new Discret::ELEMENTS::Vele3(id, owner));
   return ele;
 }
 
 
-void DRT::ELEMENTS::Vele3Type::nodal_block_information(
-    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+void Discret::ELEMENTS::Vele3Type::nodal_block_information(
+    Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
 }
 
-CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Vele3Type::ComputeNullSpace(
-    CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
+Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::Vele3Type::ComputeNullSpace(
+    Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  CORE::LINALG::SerialDenseMatrix nullspace;
+  Core::LinAlg::SerialDenseMatrix nullspace;
   FOUR_C_THROW("method ComputeNullSpace not implemented for element type vele3!");
   return nullspace;
 }
 
-void DRT::ELEMENTS::Vele3Type::setup_element_definition(
-    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+void Discret::ELEMENTS::Vele3Type::setup_element_definition(
+    std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
-  std::map<std::string, INPUT::LineDefinition>& defs = definitions["VELE3"];
+  std::map<std::string, Input::LineDefinition>& defs = definitions["VELE3"];
 
-  defs["HEX8"] = INPUT::LineDefinition::Builder().AddIntVector("HEX8", 8).Build();
+  defs["HEX8"] = Input::LineDefinition::Builder().AddIntVector("HEX8", 8).Build();
 }
 
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Vele3SurfaceType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Vele3SurfaceType::Create(
     const int id, const int owner)
 {
   // return Teuchos::rcp( new Vele3Surface( id, owner ) );
@@ -78,7 +79,7 @@ Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Vele3SurfaceType::Create(
 }
 
 
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Vele3LineType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Vele3LineType::Create(
     const int id, const int owner)
 {
   // return Teuchos::rcp( new Vele3Line( id, owner ) );
@@ -88,12 +89,12 @@ Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Vele3LineType::Create(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Vele3::Vele3(int id, int owner) : CORE::Elements::Element(id, owner) { return; }
+Discret::ELEMENTS::Vele3::Vele3(int id, int owner) : Core::Elements::Element(id, owner) { return; }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Vele3::Vele3(const DRT::ELEMENTS::Vele3& old) : CORE::Elements::Element(old)
+Discret::ELEMENTS::Vele3::Vele3(const Discret::ELEMENTS::Vele3& old) : Core::Elements::Element(old)
 {
   return;
 }
@@ -101,35 +102,35 @@ DRT::ELEMENTS::Vele3::Vele3(const DRT::ELEMENTS::Vele3& old) : CORE::Elements::E
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::Elements::Element* DRT::ELEMENTS::Vele3::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::Vele3::Clone() const
 {
-  DRT::ELEMENTS::Vele3* newelement = new DRT::ELEMENTS::Vele3(*this);
+  Discret::ELEMENTS::Vele3* newelement = new Discret::ELEMENTS::Vele3(*this);
   return newelement;
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::FE::CellType DRT::ELEMENTS::Vele3::Shape() const
+Core::FE::CellType Discret::ELEMENTS::Vele3::Shape() const
 {
   switch (num_node())
   {
     case 4:
-      return CORE::FE::CellType::tet4;
+      return Core::FE::CellType::tet4;
     case 5:
-      return CORE::FE::CellType::pyramid5;
+      return Core::FE::CellType::pyramid5;
     case 6:
-      return CORE::FE::CellType::wedge6;
+      return Core::FE::CellType::wedge6;
     case 8:
-      return CORE::FE::CellType::hex8;
+      return Core::FE::CellType::hex8;
     case 10:
-      return CORE::FE::CellType::tet10;
+      return Core::FE::CellType::tet10;
     case 15:
-      return CORE::FE::CellType::wedge15;
+      return Core::FE::CellType::wedge15;
     case 20:
-      return CORE::FE::CellType::hex20;
+      return Core::FE::CellType::hex20;
     case 27:
-      return CORE::FE::CellType::hex27;
+      return Core::FE::CellType::hex27;
     default:
       FOUR_C_THROW("unexpected number of nodes %d", num_node());
   }
@@ -138,9 +139,9 @@ CORE::FE::CellType DRT::ELEMENTS::Vele3::Shape() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Vele3::Pack(CORE::COMM::PackBuffer& data) const
+void Discret::ELEMENTS::Vele3::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -155,11 +156,11 @@ void DRT::ELEMENTS::Vele3::Pack(CORE::COMM::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Vele3::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Vele3::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -175,9 +176,9 @@ void DRT::ELEMENTS::Vele3::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Vele3::Print(std::ostream& os) const
+void Discret::ELEMENTS::Vele3::Print(std::ostream& os) const
 {
-  os << "Vele3 " << CORE::FE::CellTypeToString(Shape());
+  os << "Vele3 " << Core::FE::CellTypeToString(Shape());
   Element::Print(os);
   return;
 }
@@ -185,18 +186,20 @@ void DRT::ELEMENTS::Vele3::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                               gjb 05/08|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Vele3::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Vele3::Lines()
 {
-  return CORE::COMM::ElementBoundaryFactory<Vele3Line, Vele3>(CORE::COMM::buildLines, *this);
+  return Core::Communication::ElementBoundaryFactory<Vele3Line, Vele3>(
+      Core::Communication::buildLines, *this);
 }
 
 
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                            gjb 05/08|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Vele3::Surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Vele3::Surfaces()
 {
-  return CORE::COMM::ElementBoundaryFactory<Vele3Surface, Vele3>(CORE::COMM::buildSurfaces, *this);
+  return Core::Communication::ElementBoundaryFactory<Vele3Surface, Vele3>(
+      Core::Communication::buildSurfaces, *this);
 }
 
 
@@ -204,24 +207,24 @@ std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Vele3::Surface
 /*----------------------------------------------------------------------*
  |  get optimal gauss rule (public)                          u.may 05/09|
  *----------------------------------------------------------------------*/
-CORE::FE::GaussRule3D DRT::ELEMENTS::Vele3::get_optimal_gaussrule(
-    const CORE::FE::CellType& distype) const
+Core::FE::GaussRule3D Discret::ELEMENTS::Vele3::get_optimal_gaussrule(
+    const Core::FE::CellType& distype) const
 {
-  CORE::FE::GaussRule3D rule = CORE::FE::GaussRule3D::undefined;
+  Core::FE::GaussRule3D rule = Core::FE::GaussRule3D::undefined;
   switch (distype)
   {
-    case CORE::FE::CellType::hex8:
-      rule = CORE::FE::GaussRule3D::hex_8point;
+    case Core::FE::CellType::hex8:
+      rule = Core::FE::GaussRule3D::hex_8point;
       break;
-    case CORE::FE::CellType::hex20:
-    case CORE::FE::CellType::hex27:
-      rule = CORE::FE::GaussRule3D::hex_27point;
+    case Core::FE::CellType::hex20:
+    case Core::FE::CellType::hex27:
+      rule = Core::FE::GaussRule3D::hex_27point;
       break;
-    case CORE::FE::CellType::tet4:
-      rule = CORE::FE::GaussRule3D::tet_4point;
+    case Core::FE::CellType::tet4:
+      rule = Core::FE::GaussRule3D::tet_4point;
       break;
-    case CORE::FE::CellType::tet10:
-      rule = CORE::FE::GaussRule3D::tet_10point;
+    case Core::FE::CellType::tet10:
+      rule = Core::FE::GaussRule3D::tet_10point;
       break;
     default:
       FOUR_C_THROW("unknown number of nodes for gaussrule initialization");
@@ -231,8 +234,8 @@ CORE::FE::GaussRule3D DRT::ELEMENTS::Vele3::get_optimal_gaussrule(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::Vele3::ReadElement(
-    const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
+bool Discret::ELEMENTS::Vele3::ReadElement(
+    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
   return true;
 }

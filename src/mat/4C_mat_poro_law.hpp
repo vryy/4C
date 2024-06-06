@@ -18,16 +18,16 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
     //! interface class for generic porosity law
-    class PoroLaw : public CORE::MAT::PAR::Parameter
+    class PoroLaw : public Core::Mat::PAR::Parameter
     {
      public:
       //! standard constructor
-      explicit PoroLaw(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      explicit PoroLaw(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       //! evaluate constitutive relation for porosity and compute derivatives
       virtual void constitutive_derivatives(
@@ -70,10 +70,10 @@ namespace MAT
     {
      public:
       //! standard constructor
-      explicit PoroLawLinear(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      explicit PoroLawLinear(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       //! create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
 
       //! evaluate constitutive relation for porosity and compute derivatives using reference
@@ -128,10 +128,10 @@ namespace MAT
     {
      public:
       //! standard constructor
-      explicit PoroLawNeoHooke(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      explicit PoroLawNeoHooke(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       //! create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       //! evaluate constitutive relation for porosity and compute derivatives
       void constitutive_derivatives(const Teuchos::ParameterList& params,  //!< (i) parameter list
@@ -182,10 +182,10 @@ namespace MAT
     {
      public:
       //! standard constructor
-      explicit PoroLawConstant(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      explicit PoroLawConstant(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       //! create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       //! evaluate constitutive relation for porosity and compute derivatives
       void constitutive_derivatives(const Teuchos::ParameterList& params,  //!< (i) parameter list
@@ -227,10 +227,10 @@ namespace MAT
     {
      public:
       //! standard constructor
-      explicit PoroLawIncompSkeleton(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      explicit PoroLawIncompSkeleton(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       //! create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       //! evaluate constitutive relation for porosity and compute derivatives
       void constitutive_derivatives(const Teuchos::ParameterList& params,  //!< (i) parameter list
@@ -272,10 +272,10 @@ namespace MAT
     {
      public:
       //! standard constructor
-      explicit PoroLawLinBiot(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      explicit PoroLawLinBiot(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       //! create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       //! evaluate constitutive relation for porosity and compute derivatives
       void constitutive_derivatives(const Teuchos::ParameterList& params,  //!< (i) parameter list
@@ -327,10 +327,10 @@ namespace MAT
     {
      public:
       //! standard constructor
-      explicit PoroLawDensityDependent(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      explicit PoroLawDensityDependent(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       //! create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       //! evaluate constitutive relation for porosity and compute derivatives
       void constitutive_derivatives(const Teuchos::ParameterList& params,  //!< (i) parameter list
@@ -369,11 +369,11 @@ namespace MAT
       //! @name material parameters
       //!@{
       //! density law
-      MAT::PAR::PoroDensityLaw* density_law_;
+      Mat::PAR::PoroDensityLaw* density_law_;
       //!@}
     };
   }  // namespace PAR
-}  // namespace MAT
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -22,9 +22,9 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Check, if current element is a solid contact element      popp 05/16|
  *----------------------------------------------------------------------*/
-bool BEAMINTERACTION::SolidContactElement(const CORE::Elements::Element& element)
+bool BEAMINTERACTION::SolidContactElement(const Core::Elements::Element& element)
 {
-  const CORE::Elements::ElementType& ele_type = element.ElementType();
+  const Core::Elements::ElementType& ele_type = element.ElementType();
 
   if (ele_type == CONTACT::ElementType::Instance())
     return true;
@@ -36,7 +36,7 @@ bool BEAMINTERACTION::SolidContactElement(const CORE::Elements::Element& element
  |  Check, if two elements share a node -> neighbor elements meier 05/14|
  *----------------------------------------------------------------------*/
 bool BEAMINTERACTION::ElementsShareNode(
-    const CORE::Elements::Element& element1, const CORE::Elements::Element& element2)
+    const Core::Elements::Element& element1, const Core::Elements::Element& element2)
 {
   bool sharenode = false;
 
@@ -56,13 +56,14 @@ bool BEAMINTERACTION::ElementsShareNode(
 /*----------------------------------------------------------------------*
  |  Calculate beam radius                                    meier 10/14|
  *----------------------------------------------------------------------*/
-double BEAMINTERACTION::CalcEleRadius(const CORE::Elements::Element* ele)
+double BEAMINTERACTION::CalcEleRadius(const Core::Elements::Element* ele)
 {
   double eleradius = 0.0;
 
-  const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
-  const DRT::ELEMENTS::Rigidsphere* thissphere =
-      dynamic_cast<const DRT::ELEMENTS::Rigidsphere*>(ele);
+  const Discret::ELEMENTS::Beam3Base* beamele =
+      dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
+  const Discret::ELEMENTS::Rigidsphere* thissphere =
+      dynamic_cast<const Discret::ELEMENTS::Rigidsphere*>(ele);
 
   if (beamele != nullptr)
     eleradius = MANIPULATERADIUS * beamele->get_circular_cross_section_radius_for_interactions();
@@ -78,9 +79,9 @@ double BEAMINTERACTION::CalcEleRadius(const CORE::Elements::Element* ele)
 /*----------------------------------------------------------------------*
  |  Test intersection of two parallel cylinders              meier 10/14|
  *----------------------------------------------------------------------*/
-bool BEAMINTERACTION::IntersectParallelCylinders(CORE::LINALG::Matrix<3, 1, double>& r1_a,
-    CORE::LINALG::Matrix<3, 1, double>& r1_b, CORE::LINALG::Matrix<3, 1, double>& r2_a,
-    CORE::LINALG::Matrix<3, 1, double>& r2_b, double& distancelimit)
+bool BEAMINTERACTION::IntersectParallelCylinders(Core::LinAlg::Matrix<3, 1, double>& r1_a,
+    Core::LinAlg::Matrix<3, 1, double>& r1_b, Core::LinAlg::Matrix<3, 1, double>& r2_a,
+    Core::LinAlg::Matrix<3, 1, double>& r2_b, double& distancelimit)
 {
   double parallellinedist = 0.0;
   double etapoint = 0.0;
@@ -111,26 +112,26 @@ bool BEAMINTERACTION::IntersectParallelCylinders(CORE::LINALG::Matrix<3, 1, doub
 /*-----------------------------------------------------------------------------------*
  |  Test intersection of two non-parallel, arbitrary oriented cylinders   meier 10/14|
  *-----------------------------------------------------------------------------------*/
-bool BEAMINTERACTION::IntersectArbitraryCylinders(CORE::LINALG::Matrix<3, 1, double>& r1_a,
-    CORE::LINALG::Matrix<3, 1, double>& r1_b, CORE::LINALG::Matrix<3, 1, double>& r2_a,
-    CORE::LINALG::Matrix<3, 1, double>& r2_b, double& distancelimit,
+bool BEAMINTERACTION::IntersectArbitraryCylinders(Core::LinAlg::Matrix<3, 1, double>& r1_a,
+    Core::LinAlg::Matrix<3, 1, double>& r1_b, Core::LinAlg::Matrix<3, 1, double>& r2_a,
+    Core::LinAlg::Matrix<3, 1, double>& r2_b, double& distancelimit,
     std::pair<double, double>& closestpoints, bool& etaset)
 {
-  CORE::LINALG::Matrix<3, 1, double> t1(true);
-  CORE::LINALG::Matrix<3, 1, double> t2(true);
+  Core::LinAlg::Matrix<3, 1, double> t1(true);
+  Core::LinAlg::Matrix<3, 1, double> t2(true);
   double closestnodetolinedist(0.0);
   double closestlinedist(0.0);
   double closestnodaldist(0.0);
-  CORE::LINALG::Matrix<3, 1, double> vec1(true);
-  CORE::LINALG::Matrix<3, 1, double> vec2(true);
+  Core::LinAlg::Matrix<3, 1, double> vec1(true);
+  Core::LinAlg::Matrix<3, 1, double> vec2(true);
 
-  t1 = CORE::FADUTILS::DiffVector(r1_b, r1_a);
-  t2 = CORE::FADUTILS::DiffVector(r2_b, r2_a);
+  t1 = Core::FADUtils::DiffVector(r1_b, r1_a);
+  t2 = Core::FADUtils::DiffVector(r2_b, r2_a);
 
-  vec1 = CORE::FADUTILS::DiffVector(r1_a, r2_a);
-  vec2 = CORE::FADUTILS::VectorProduct(t1, t2);
-  closestlinedist = CORE::FADUTILS::Norm(CORE::FADUTILS::ScalarProduct(vec1, vec2)) /
-                    CORE::FADUTILS::VectorNorm<3>(vec2);
+  vec1 = Core::FADUtils::DiffVector(r1_a, r2_a);
+  vec2 = Core::FADUtils::VectorProduct(t1, t2);
+  closestlinedist = Core::FADUtils::Norm(Core::FADUtils::ScalarProduct(vec1, vec2)) /
+                    Core::FADUtils::VectorNorm<3>(vec2);
 
   // 1)Check, if a solution for the Closest-Point-Projection of the two lines exists in eta1_seg,
   // eta2_seg \in [-1.0;1.0] (existence of local minimum in the 2D domain eta1_seg, eta2_seg \in
@@ -145,29 +146,29 @@ bool BEAMINTERACTION::IntersectArbitraryCylinders(CORE::LINALG::Matrix<3, 1, dou
     // Calculate values eta1_seg and eta2_seg of closest point coordinates. The definitions of b_1,
     // b_2, t_1 and t_2 are according to the paper "ON CONTACT BETWEEN THREE-DIMENSIONAL BEAMS
     // UNDERGOING LARGE DEFLECTIONS" of Wriggers and Zavarise (1997)
-    CORE::LINALG::Matrix<3, 1, double> b_1(r1_a);
-    CORE::LINALG::Matrix<3, 1, double> b_2(r2_a);
+    Core::LinAlg::Matrix<3, 1, double> b_1(r1_a);
+    Core::LinAlg::Matrix<3, 1, double> b_2(r2_a);
     b_1.Update(1.0, r1_b, 1.0);
     b_2.Update(1.0, r2_b, 1.0);
     double eta1_seg(0.0);
     double eta2_seg(0.0);
 
     // local variables for element coordinates
-    double aux1 = CORE::FADUTILS::ScalarProduct(CORE::FADUTILS::DiffVector(b_1, b_2), t2);
-    aux1 = aux1 * CORE::FADUTILS::ScalarProduct(t1, t2);
-    double aux2 = CORE::FADUTILS::ScalarProduct(CORE::FADUTILS::DiffVector(b_2, b_1), t1);
-    aux2 = aux2 * CORE::FADUTILS::ScalarProduct(t2, t2);
+    double aux1 = Core::FADUtils::ScalarProduct(Core::FADUtils::DiffVector(b_1, b_2), t2);
+    aux1 = aux1 * Core::FADUtils::ScalarProduct(t1, t2);
+    double aux2 = Core::FADUtils::ScalarProduct(Core::FADUtils::DiffVector(b_2, b_1), t1);
+    aux2 = aux2 * Core::FADUtils::ScalarProduct(t2, t2);
     eta1_seg = (aux1 + aux2) /
-               (CORE::FADUTILS::ScalarProduct(t2, t2) * CORE::FADUTILS::ScalarProduct(t1, t1) -
-                   CORE::FADUTILS::ScalarProduct(t2, t1) * CORE::FADUTILS::ScalarProduct(t2, t1));
+               (Core::FADUtils::ScalarProduct(t2, t2) * Core::FADUtils::ScalarProduct(t1, t1) -
+                   Core::FADUtils::ScalarProduct(t2, t1) * Core::FADUtils::ScalarProduct(t2, t1));
 
-    aux1 = CORE::FADUTILS::ScalarProduct(CORE::FADUTILS::DiffVector(b_2, b_1), t1);
-    aux1 = aux1 * CORE::FADUTILS::ScalarProduct(t1, t2);
-    aux2 = CORE::FADUTILS::ScalarProduct(CORE::FADUTILS::DiffVector(b_1, b_2), t2);
-    aux2 = aux2 * CORE::FADUTILS::ScalarProduct(t1, t1);
+    aux1 = Core::FADUtils::ScalarProduct(Core::FADUtils::DiffVector(b_2, b_1), t1);
+    aux1 = aux1 * Core::FADUtils::ScalarProduct(t1, t2);
+    aux2 = Core::FADUtils::ScalarProduct(Core::FADUtils::DiffVector(b_1, b_2), t2);
+    aux2 = aux2 * Core::FADUtils::ScalarProduct(t1, t1);
     eta2_seg = (aux1 + aux2) /
-               (CORE::FADUTILS::ScalarProduct(t2, t2) * CORE::FADUTILS::ScalarProduct(t1, t1) -
-                   CORE::FADUTILS::ScalarProduct(t2, t1) * CORE::FADUTILS::ScalarProduct(t2, t1));
+               (Core::FADUtils::ScalarProduct(t2, t2) * Core::FADUtils::ScalarProduct(t1, t1) -
+                   Core::FADUtils::ScalarProduct(t2, t1) * Core::FADUtils::ScalarProduct(t2, t1));
 
     if (fabs(eta1_seg) < 1.0 and fabs(eta2_seg) < 1.0)
     {
@@ -222,26 +223,26 @@ bool BEAMINTERACTION::IntersectArbitraryCylinders(CORE::LINALG::Matrix<3, 1, dou
  |  Calculate closest distance of a point and a line         meier 10/14|
  *----------------------------------------------------------------------*/
 double BEAMINTERACTION::CalcPointLineDist(
-    CORE::LINALG::Matrix<3, 1, double>& rline_a,  // at eta=-1.0
-    CORE::LINALG::Matrix<3, 1, double>& rline_b,  // at eta=1.0
-    CORE::LINALG::Matrix<3, 1, double>& rp, double& eta)
+    Core::LinAlg::Matrix<3, 1, double>& rline_a,  // at eta=-1.0
+    Core::LinAlg::Matrix<3, 1, double>& rline_b,  // at eta=1.0
+    Core::LinAlg::Matrix<3, 1, double>& rp, double& eta)
 {
   double closestpointlinedist = 0.0;
 
-  CORE::LINALG::Matrix<3, 1, double> tline(true);
-  tline = CORE::FADUTILS::DiffVector(rline_b, rline_a);
-  CORE::LINALG::Matrix<3, 1, double> vec1(true);
-  vec1 = CORE::FADUTILS::DiffVector(rline_a, rp);
+  Core::LinAlg::Matrix<3, 1, double> tline(true);
+  tline = Core::FADUtils::DiffVector(rline_b, rline_a);
+  Core::LinAlg::Matrix<3, 1, double> vec1(true);
+  vec1 = Core::FADUtils::DiffVector(rline_a, rp);
   closestpointlinedist =
-      fabs(CORE::FADUTILS::VectorNorm<3>(CORE::FADUTILS::VectorProduct(vec1, tline)) /
-           CORE::FADUTILS::VectorNorm<3>(tline));
+      fabs(Core::FADUtils::VectorNorm<3>(Core::FADUtils::VectorProduct(vec1, tline)) /
+           Core::FADUtils::VectorNorm<3>(tline));
 
   vec1.Clear();
   vec1.Update(-1.0, rline_a, 0.0);
   vec1.Update(-1.0, rline_b, 1.0);
   vec1.Update(2.0, rp, 1.0);
 
-  eta = CORE::FADUTILS::ScalarProduct(tline, vec1) / CORE::FADUTILS::ScalarProduct(tline, tline);
+  eta = Core::FADUtils::ScalarProduct(tline, vec1) / Core::FADUtils::ScalarProduct(tline, tline);
 
   return closestpointlinedist;
 }
@@ -250,14 +251,14 @@ double BEAMINTERACTION::CalcPointLineDist(
  |  Calculate angle enclosed by two vectors a and b          meier 10/14|
  *----------------------------------------------------------------------*/
 double BEAMINTERACTION::CalcAngle(
-    CORE::LINALG::Matrix<3, 1, double> a, CORE::LINALG::Matrix<3, 1, double> b)
+    Core::LinAlg::Matrix<3, 1, double> a, Core::LinAlg::Matrix<3, 1, double> b)
 {
-  if (CORE::FADUTILS::VectorNorm<3>(a) < 1.0e-12 or CORE::FADUTILS::VectorNorm<3>(b) < 1.0e-12)
+  if (Core::FADUtils::VectorNorm<3>(a) < 1.0e-12 or Core::FADUtils::VectorNorm<3>(b) < 1.0e-12)
     FOUR_C_THROW("Can not determine angle for zero vector!");
 
   double scalarproduct =
-      std::fabs(CORE::FADUTILS::ScalarProduct(a, b) /
-                (CORE::FADUTILS::VectorNorm<3>(a) * CORE::FADUTILS::VectorNorm<3>(b)));
+      std::fabs(Core::FADUtils::ScalarProduct(a, b) /
+                (Core::FADUtils::VectorNorm<3>(a) * Core::FADUtils::VectorNorm<3>(b)));
   double angle = 0.0;
 
   if (scalarproduct < 1.0)
@@ -278,22 +279,22 @@ double BEAMINTERACTION::CalcAngle(
  |  Get closest distance between the endpoints of two lines   meier 10/14|
  *----------------------------------------------------------------------*/
 template <typename type>
-type BEAMINTERACTION::GetClosestEndpointDist(CORE::LINALG::Matrix<3, 1, type> r1_a,
-    CORE::LINALG::Matrix<3, 1, type> r1_b, CORE::LINALG::Matrix<3, 1, type> r2_a,
-    CORE::LINALG::Matrix<3, 1, type> r2_b)
+type BEAMINTERACTION::GetClosestEndpointDist(Core::LinAlg::Matrix<3, 1, type> r1_a,
+    Core::LinAlg::Matrix<3, 1, type> r1_b, Core::LinAlg::Matrix<3, 1, type> r2_a,
+    Core::LinAlg::Matrix<3, 1, type> r2_b)
 {
   type minnodaldist = 0.0;
   type nodaldist = 0.0;
 
-  minnodaldist = CORE::FADUTILS::VectorNorm<3>(CORE::FADUTILS::DiffVector(r1_a, r2_a));
+  minnodaldist = Core::FADUtils::VectorNorm<3>(Core::FADUtils::DiffVector(r1_a, r2_a));
 
-  nodaldist = CORE::FADUTILS::VectorNorm<3>(CORE::FADUTILS::DiffVector(r1_a, r2_b));
+  nodaldist = Core::FADUtils::VectorNorm<3>(Core::FADUtils::DiffVector(r1_a, r2_b));
   if (nodaldist < minnodaldist) minnodaldist = nodaldist;
 
-  nodaldist = CORE::FADUTILS::VectorNorm<3>(CORE::FADUTILS::DiffVector(r1_b, r2_a));
+  nodaldist = Core::FADUtils::VectorNorm<3>(Core::FADUtils::DiffVector(r1_b, r2_a));
   if (nodaldist < minnodaldist) minnodaldist = nodaldist;
 
-  nodaldist = CORE::FADUTILS::VectorNorm<3>(CORE::FADUTILS::DiffVector(r1_b, r2_b));
+  nodaldist = Core::FADUtils::VectorNorm<3>(Core::FADUtils::DiffVector(r1_b, r2_b));
   if (nodaldist < minnodaldist) minnodaldist = nodaldist;
 
   return minnodaldist;

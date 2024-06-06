@@ -16,16 +16,16 @@
 FOUR_C_NAMESPACE_OPEN
 
 // Forward declarations.
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SerialDenseVector;
   class SerialDenseMatrix;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 namespace GEOMETRYPAIR
 {
@@ -109,8 +109,8 @@ namespace BEAMINTERACTION
      * @param element2 Pointer to the second element
      * @param geometry_evaluation_data_ptr Evaluation data that will be linked to the pair.
      */
-    void CreateGeometryPair(const CORE::Elements::Element* element1,
-        const CORE::Elements::Element* element2,
+    void CreateGeometryPair(const Core::Elements::Element* element1,
+        const Core::Elements::Element* element2,
         const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
         override;
 
@@ -122,7 +122,7 @@ namespace BEAMINTERACTION
 
     void evaluate_beam_position(
         const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& integration_point,
-        CORE::LINALG::Matrix<3, 1, scalar_type>& r_beam, bool reference) const;
+        Core::LinAlg::Matrix<3, 1, scalar_type>& r_beam, bool reference) const;
 
     //! Current nodal velocities of the two elements.
     GEOMETRYPAIR::ElementData<beam, scalar_type> ele1vel_;

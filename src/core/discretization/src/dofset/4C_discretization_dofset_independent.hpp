@@ -26,12 +26,12 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace CORE::Dofsets
+namespace Core::DOFSets
 {
 
   /*!
@@ -70,17 +70,17 @@ namespace CORE::Dofsets
 
    protected:
     /// get first number to be used as Dof GID in assign_degrees_of_freedom
-    int get_first_gid_number_to_be_used(const DRT::Discretization& dis) const override;
+    int get_first_gid_number_to_be_used(const Discret::Discretization& dis) const override;
 
     /// get minimal node GID to be used in assign_degrees_of_freedom
-    int get_minimal_node_gid_if_relevant(const DRT::Discretization& dis) const override;
+    int get_minimal_node_gid_if_relevant(const Discret::Discretization& dis) const override;
 
     bool ignoreminnodegid_;  //< bool whether minnodegid is taken from the discretization or ignored
 
    private:
   };
 
-}  // namespace CORE::Dofsets
+}  // namespace Core::DOFSets
 
 FOUR_C_NAMESPACE_CLOSE
 

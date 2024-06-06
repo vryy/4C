@@ -23,19 +23,19 @@ distributions
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
-}  // namespace CORE::LINALG
-namespace MORTAR
+}  // namespace Core::LinAlg
+namespace Mortar
 {
   class MatrixRowColTransformer
   {
-    typedef CORE::GEN::Pairedvector<CONTACT::MatBlockType, Teuchos::RCP<Epetra_Export>>
+    typedef Core::Gen::Pairedvector<CONTACT::MatBlockType, Teuchos::RCP<Epetra_Export>>
         plain_block_export_pairs;
 
    public:
-    typedef CORE::GEN::Pairedvector<CONTACT::MatBlockType, Teuchos::RCP<Epetra_Map>*>
+    typedef Core::Gen::Pairedvector<CONTACT::MatBlockType, Teuchos::RCP<Epetra_Map>*>
         plain_block_map_pairs;
 
    public:
@@ -50,17 +50,17 @@ namespace MORTAR
 
     void Setup();
 
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> redistributed_to_unredistributed(
-        const CONTACT::MatBlockType bt, const CORE::LINALG::SparseMatrix& src_mat);
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> redistributed_to_unredistributed(
+        const CONTACT::MatBlockType bt, const Core::LinAlg::SparseMatrix& src_mat);
 
     void redistributed_to_unredistributed(const CONTACT::MatBlockType bt,
-        const CORE::LINALG::SparseMatrix& src_mat, CORE::LINALG::SparseMatrix& dst_mat);
+        const Core::LinAlg::SparseMatrix& src_mat, Core::LinAlg::SparseMatrix& dst_mat);
 
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> unredistributed_to_redistributed(
-        const CONTACT::MatBlockType bt, const CORE::LINALG::SparseMatrix& src_mat);
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> unredistributed_to_redistributed(
+        const CONTACT::MatBlockType bt, const Core::LinAlg::SparseMatrix& src_mat);
 
     void unredistributed_to_redistributed(const CONTACT::MatBlockType bt,
-        const CORE::LINALG::SparseMatrix& src_mat, CORE::LINALG::SparseMatrix& dst_mat);
+        const Core::LinAlg::SparseMatrix& src_mat, Core::LinAlg::SparseMatrix& dst_mat);
 
    private:
     void set_slave_map_pairs(const plain_block_map_pairs& redistributed_row,
@@ -100,7 +100,7 @@ namespace MORTAR
 
   };  // class MatrixTransform
 
-}  // namespace MORTAR
+}  // namespace Mortar
 
 
 

@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
-namespace CORE::LINEAR_SOLVER
+namespace Core::LinearSolver
 {
   class IFPACKPreconditioner;
 }
@@ -53,19 +53,19 @@ namespace FSI
   {
    public:
     //! Constructor
-    OverlappingBlockMatrixHybridSchwarz(const CORE::LINALG::MultiMapExtractor& maps,
-        ADAPTER::FSIStructureWrapper& structure,  ///< structure field
-        ADAPTER::Fluid& fluid,                    ///< fluid field
-        ADAPTER::AleFsiWrapper& ale,              ///< ale field
+    OverlappingBlockMatrixHybridSchwarz(const Core::LinAlg::MultiMapExtractor& maps,
+        Adapter::FSIStructureWrapper& structure,  ///< structure field
+        Adapter::Fluid& fluid,                    ///< fluid field
+        Adapter::AleFsiWrapper& ale,              ///< ale field
         bool structuresplit,                      ///< structure split or fluid split?
         int symmetric, std::vector<std::string>& blocksmoother, std::vector<double>& schuromega,
         std::vector<double>& omega, std::vector<int>& iterations, std::vector<double>& somega,
         std::vector<int>& siterations, std::vector<double>& fomega, std::vector<int>& fiterations,
         std::vector<double>& aomega, std::vector<int>& aiterations,
         int analyze,                             ///< Run FSIAMG anaylzer?
-        INPAR::FSI::LinearBlockSolver strategy,  ///< type of linear preconditioner
+        Inpar::FSI::LinearBlockSolver strategy,  ///< type of linear preconditioner
         std::list<int> interfaceprocs,           ///< IDs of processors that own interface nodes
-        INPAR::FSI::Verbosity verbosity          ///< verbosity of FSI algorithm
+        Inpar::FSI::Verbosity verbosity          ///< verbosity of FSI algorithm
     );
 
     //! @name Setup
@@ -109,10 +109,10 @@ namespace FSI
    protected:
    private:
     //! type of preconditioner
-    INPAR::FSI::LinearBlockSolver strategy_;
+    Inpar::FSI::LinearBlockSolver strategy_;
 
     //! IFPACK preconditioner (additive Schwarz)
-    Teuchos::RCP<CORE::LINEAR_SOLVER::IFPACKPreconditioner> ifpackprec_;
+    Teuchos::RCP<Core::LinearSolver::IFPACKPreconditioner> ifpackprec_;
 
     //! IFPACK preconditioner (additive Schwarz)
     Teuchos::RCP<Ifpack_Preconditioner> directifpackprec_;

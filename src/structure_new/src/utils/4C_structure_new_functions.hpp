@@ -19,11 +19,11 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
-namespace CORE::UTILS
+}  // namespace Discret
+namespace Core::UTILS
 {
   class FunctionManager;
 }
@@ -32,13 +32,13 @@ namespace CORE::UTILS
 namespace STR
 {
   /// add valid structure-specific function lines
-  void AddValidStructureFunctions(CORE::UTILS::FunctionManager& function_manager);
+  void AddValidStructureFunctions(Core::UTILS::FunctionManager& function_manager);
 
   /// special implementation for weakly compressible flow - Etienne FSI problem
-  class WeaklyCompressibleEtienneFSIStructureFunction : public CORE::UTILS::FunctionOfSpaceTime
+  class WeaklyCompressibleEtienneFSIStructureFunction : public Core::UTILS::FunctionOfSpaceTime
   {
    public:
-    WeaklyCompressibleEtienneFSIStructureFunction(const MAT::PAR::StVenantKirchhoff& fparams);
+    WeaklyCompressibleEtienneFSIStructureFunction(const Mat::PAR::StVenantKirchhoff& fparams);
 
     double Evaluate(const double* x, double t, std::size_t component) const override;
 
@@ -49,10 +49,10 @@ namespace STR
   };
 
   /// special implementation for weakly compressible flow - Etienne FSI problem (force)
-  class WeaklyCompressibleEtienneFSIStructureForceFunction : public CORE::UTILS::FunctionOfSpaceTime
+  class WeaklyCompressibleEtienneFSIStructureForceFunction : public Core::UTILS::FunctionOfSpaceTime
   {
    public:
-    WeaklyCompressibleEtienneFSIStructureForceFunction(const MAT::PAR::StVenantKirchhoff& fparams);
+    WeaklyCompressibleEtienneFSIStructureForceFunction(const Mat::PAR::StVenantKirchhoff& fparams);
 
     double Evaluate(const double* x, double t, std::size_t component) const override;
 

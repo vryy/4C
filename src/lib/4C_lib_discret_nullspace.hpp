@@ -13,12 +13,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace DRT
+namespace Discret
 {
   /*!
    \brief Calculate the nullspace based on a given discretization
@@ -31,9 +31,9 @@ namespace DRT
      \param dimns (in): nullspace dimension
      \param map (in): nullspace map
       */
-  Teuchos::RCP<Epetra_MultiVector> ComputeNullSpace(const DRT::Discretization& dis, const int numdf,
-      const int dimns, const Teuchos::RCP<Epetra_Map> dofmap);
-}  // namespace DRT
+  Teuchos::RCP<Epetra_MultiVector> ComputeNullSpace(const Discret::Discretization& dis,
+      const int numdf, const int dimns, const Teuchos::RCP<Epetra_Map> dofmap);
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

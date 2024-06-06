@@ -10,7 +10,7 @@
 
 
 (* ::Section:: *)
-(*Matrix to CORE::LINALG::TMatrix*)
+(*Matrix to Core::LinAlg::TMatrix*)
 
 
 matrixToFourC[var_,name_]:=Module[{allStringsWithZeros, stringList},  
@@ -204,15 +204,15 @@ functionStringPre="  /**
     // Definition of variables for this test case.
     GEOMETRYPAIR::ElementData<beam_type, double> q_beam;
     GEOMETRYPAIR::ElementData<solid_type, double> q_solid;
-    CORE::LINALG::Matrix<9, 1> q_beam_rot;
-    CORE::LINALG::SerialDenseMatrix local_D;
-    CORE::LINALG::SerialDenseMatrix local_M;
-    CORE::LINALG::SerialDenseVector local_kappa;
+    Core::LinAlg::Matrix<9, 1> q_beam_rot;
+    Core::LinAlg::SerialDenseMatrix local_D;
+    Core::LinAlg::SerialDenseMatrix local_M;
+    Core::LinAlg::SerialDenseVector local_kappa;
 
     // Matrices for the results.
-    CORE::LINALG::Matrix<lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
-    CORE::LINALG::Matrix<lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
-    CORE::LINALG::Matrix<lambda_type::n_dof_, 1> result_local_kappa(true);
+    Core::LinAlg::Matrix<lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
+    Core::LinAlg::Matrix<lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
+    Core::LinAlg::Matrix<lambda_type::n_dof_, 1> result_local_kappa(true);
 
     // Define the geometry of the two elements.
     q_beam.shape_function_data_.ref_length_ = 0.6192043571449604711;

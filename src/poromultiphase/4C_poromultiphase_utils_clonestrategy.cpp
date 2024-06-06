@@ -40,10 +40,10 @@ void POROMULTIPHASE::UTILS::PoroFluidMultiPhaseCloneStrategy::check_material_typ
 {
   // We take the material with the ID specified by the user
   // Here we check first, whether this material is of admissible type
-  CORE::Materials::MaterialType mtype =
-      GLOBAL::Problem::Instance()->Materials()->ParameterById(matid)->Type();
-  if ((mtype != CORE::Materials::m_fluidporo_multiphase) and
-      (mtype != CORE::Materials::m_fluidporo_multiphase_reactions))
+  Core::Materials::MaterialType mtype =
+      Global::Problem::Instance()->Materials()->ParameterById(matid)->Type();
+  if ((mtype != Core::Materials::m_fluidporo_multiphase) and
+      (mtype != Core::Materials::m_fluidporo_multiphase_reactions))
     FOUR_C_THROW("Material with ID %d is not admissible for porofluid multiphase elements", matid);
 }
 
@@ -52,7 +52,7 @@ void POROMULTIPHASE::UTILS::PoroFluidMultiPhaseCloneStrategy::check_material_typ
  | set element-specific data (material etc.)                 vuong 08/16 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::UTILS::PoroFluidMultiPhaseCloneStrategy::set_element_data(
-    Teuchos::RCP<CORE::Elements::Element> newele, CORE::Elements::Element* oldele, const int matid,
+    Teuchos::RCP<Core::Elements::Element> newele, Core::Elements::Element* oldele, const int matid,
     const bool isnurbsdis)
 {
   // We need to set material and possibly other things to complete element setup.
@@ -60,11 +60,11 @@ void POROMULTIPHASE::UTILS::PoroFluidMultiPhaseCloneStrategy::set_element_data(
   // element type in order to access the material property
 
   // note: SetMaterial() was reimplemented by the PoroFluidMultiPhase element!
-  DRT::ELEMENTS::PoroFluidMultiPhase* porofluidele =
-      dynamic_cast<DRT::ELEMENTS::PoroFluidMultiPhase*>(newele.get());
+  Discret::ELEMENTS::PoroFluidMultiPhase* porofluidele =
+      dynamic_cast<Discret::ELEMENTS::PoroFluidMultiPhase*>(newele.get());
   if (porofluidele != nullptr)
   {
-    porofluidele->SetMaterial(0, MAT::Factory(matid));
+    porofluidele->SetMaterial(0, Mat::Factory(matid));
     porofluidele->SetDisType(oldele->Shape());  // set distype as well!
   }
   else
@@ -79,7 +79,7 @@ void POROMULTIPHASE::UTILS::PoroFluidMultiPhaseCloneStrategy::set_element_data(
  | determine whether element is copied or not               vuong 08/16 |
  *----------------------------------------------------------------------*/
 bool POROMULTIPHASE::UTILS::PoroFluidMultiPhaseCloneStrategy::determine_ele_type(
-    CORE::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
+    Core::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
 {
   // note: ismyele, actele remain unused here! Used only for ALE creation
 

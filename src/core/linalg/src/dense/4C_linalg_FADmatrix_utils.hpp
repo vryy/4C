@@ -22,7 +22,7 @@ typedef Sacado::Fad::DFad<double> FAD;
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   /// Serial dense matrix with FAD (automatic differentiation data type) numbers and templated
   /// dimensions
@@ -40,7 +40,7 @@ namespace CORE::LINALG
     explicit FADMatrix(const double* d, bool view = false) : Matrix<rows, cols, FAD>(d, view) {}
 
     /// Constructor
-    explicit FADMatrix(CORE::LINALG::SerialDenseMatrix& d, bool view = false)
+    explicit FADMatrix(Core::LinAlg::SerialDenseMatrix& d, bool view = false)
         : Matrix<rows, cols, FAD>(d, view)
     {
     }
@@ -91,20 +91,20 @@ namespace CORE::LINALG
     /// Convert FADMatrix to Matrix<rows,cols,double>
     inline Matrix<rows, cols> ConverttoDouble() const
     {
-      CORE::LINALG::Matrix<rows, cols> tmp(true);
+      Core::LinAlg::Matrix<rows, cols> tmp(true);
       for (unsigned i = 0; i < rows; ++i)
         for (unsigned j = 0; j < cols; ++j) tmp(i, j) = (*this)(i, j).val();
 
       return tmp;
     };
   };
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 
 /// Save first derivatives in a 3x3 double matrix
 template <typename T>
 inline void FirstDerivToMatrix(FAD const& r_fad,  ///< FAD function
-    CORE::LINALG::Matrix<3, 3, T>& out)           ///< First derivatives
+    Core::LinAlg::Matrix<3, 3, T>& out)           ///< First derivatives
 {
   for (int i = 0; i < 3; ++i) out(i, i) = r_fad.dx(i);
   out(0, 1) = r_fad.dx(3);

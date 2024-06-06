@@ -32,25 +32,25 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::NURBS::SoNurbs27::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec1_epetra,
-    CORE::LINALG::SerialDenseVector& elevec2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec3_epetra)
+int Discret::ELEMENTS::Nurbs::SoNurbs27::Evaluate(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+    Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec1_epetra,
+    Core::LinAlg::SerialDenseVector& elevec2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec3_epetra)
 {
   // Check whether the solid material post_setup() routine has already been called and call it if
   // not
   ensure_material_post_setup(params);
 
-  CORE::LINALG::Matrix<81, 81> elemat1(elemat1_epetra.values(), true);
-  CORE::LINALG::Matrix<81, 81> elemat2(elemat2_epetra.values(), true);
-  CORE::LINALG::Matrix<81, 1> elevec1(elevec1_epetra.values(), true);
-  CORE::LINALG::Matrix<81, 1> elevec2(elevec2_epetra.values(), true);
+  Core::LinAlg::Matrix<81, 81> elemat1(elemat1_epetra.values(), true);
+  Core::LinAlg::Matrix<81, 81> elemat2(elemat2_epetra.values(), true);
+  Core::LinAlg::Matrix<81, 1> elevec1(elevec1_epetra.values(), true);
+  Core::LinAlg::Matrix<81, 1> elevec2(elevec2_epetra.values(), true);
 
   // start with "none"
-  DRT::ELEMENTS::NURBS::SoNurbs27::ActionType act = SoNurbs27::none;
+  Discret::ELEMENTS::Nurbs::SoNurbs27::ActionType act = SoNurbs27::none;
 
   // get the required action
   std::string action = params.get<std::string>("action", "none");
@@ -113,10 +113,10 @@ int DRT::ELEMENTS::NURBS::SoNurbs27::Evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
-      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      CORE::FE::ExtractMyValues(*res, myres, lm);
-      CORE::LINALG::Matrix<81, 81>* matptr = nullptr;
+      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::LinAlg::Matrix<81, 81>* matptr = nullptr;
       if (elemat1.IsInitialized()) matptr = &elemat1;
 
       sonurbs27_nlnstiffmass(lm, discretization, mydisp, myres, matptr, nullptr, &elevec1, params);
@@ -132,11 +132,11 @@ int DRT::ELEMENTS::NURBS::SoNurbs27::Evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
-      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      CORE::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::ExtractMyValues(*res, myres, lm);
       // create a dummy element matrix to apply linearised EAS-stuff onto
-      CORE::LINALG::Matrix<81, 81> myemat(true);
+      Core::LinAlg::Matrix<81, 81> myemat(true);
       sonurbs27_nlnstiffmass(lm, discretization, mydisp, myres, &myemat, nullptr, &elevec1, params);
     }
     break;
@@ -151,9 +151,9 @@ int DRT::ELEMENTS::NURBS::SoNurbs27::Evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
-      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      CORE::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::ExtractMyValues(*res, myres, lm);
 
       sonurbs27_nlnstiffmass(
           lm, discretization, mydisp, myres, &elemat1, &elemat2, &elevec1, params);
@@ -186,8 +186,8 @@ int DRT::ELEMENTS::NURBS::SoNurbs27::Evaluate(Teuchos::ParameterList& params,
 
     case calc_stc_matrix_inverse:
     {
-      const auto stc_scaling = CORE::UTILS::GetAsEnum<INPAR::STR::StcScale>(params, "stc_scaling");
-      if (stc_scaling == INPAR::STR::stc_none)
+      const auto stc_scaling = Core::UTILS::GetAsEnum<Inpar::STR::StcScale>(params, "stc_scaling");
+      if (stc_scaling == Inpar::STR::stc_none)
         FOUR_C_THROW("To scale or not to scale, that's the query!");
       else
       {
@@ -199,8 +199,8 @@ int DRT::ELEMENTS::NURBS::SoNurbs27::Evaluate(Teuchos::ParameterList& params,
 
     case calc_stc_matrix:
     {
-      const auto stc_scaling = CORE::UTILS::GetAsEnum<INPAR::STR::StcScale>(params, "stc_scaling");
-      if (stc_scaling == INPAR::STR::stc_none)
+      const auto stc_scaling = Core::UTILS::GetAsEnum<Inpar::STR::StcScale>(params, "stc_scaling");
+      if (stc_scaling == Inpar::STR::stc_none)
         FOUR_C_THROW("To scale or not to scale, that's the query!");
       else
       {
@@ -217,7 +217,7 @@ int DRT::ELEMENTS::NURBS::SoNurbs27::Evaluate(Teuchos::ParameterList& params,
       // need current displacement
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       std::vector<double> mydisp(lm.size());
-      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::ExtractMyValues(*disp, mydisp, lm);
 
       elevec1_epetra(0) = calc_int_energy(discretization, mydisp, params);
       break;
@@ -227,24 +227,24 @@ int DRT::ELEMENTS::NURBS::SoNurbs27::Evaluate(Teuchos::ParameterList& params,
       FOUR_C_THROW("Unknown type of action for So_nurbs27");
   }
   return 0;
-}  // DRT::ELEMENTS::So_nurbs27::Evaluate
+}  // Discret::ELEMENTS::So_nurbs27::Evaluate
 
 
 /*----------------------------------------------------------------------*
  | calc. scaled thickness matrix for thin shell-like structs   (public) |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NURBS::SoNurbs27::do_calc_stc_matrix(CORE::LINALG::Matrix<81, 81>& elemat1,
-    const INPAR::STR::StcScale stc_scaling, const int stc_layer, std::vector<int>& lm,
-    DRT::Discretization& discretization, bool do_inverse)
+void Discret::ELEMENTS::Nurbs::SoNurbs27::do_calc_stc_matrix(Core::LinAlg::Matrix<81, 81>& elemat1,
+    const Inpar::STR::StcScale stc_scaling, const int stc_layer, std::vector<int>& lm,
+    Discret::Discretization& discretization, bool do_inverse)
 {
   // --------------------------------------------------
   // Initialisation of nurbs specific stuff
-  std::vector<CORE::LINALG::SerialDenseVector> myknots(3);
+  std::vector<Core::LinAlg::SerialDenseVector> myknots(3);
 
   // for isogeometric elements:
   //     o get knots
   //     o get weights
-  auto* nurbsdis = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+  auto* nurbsdis = dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(discretization));
 
   if (nurbsdis == nullptr)
   {
@@ -259,11 +259,11 @@ void DRT::ELEMENTS::NURBS::SoNurbs27::do_calc_stc_matrix(CORE::LINALG::Matrix<81
     return;
   }
 
-  CORE::LINALG::Matrix<27, 1> weights;
-  CORE::Nodes::Node** nodes = Nodes();
+  Core::LinAlg::Matrix<27, 1> weights;
+  Core::Nodes::Node** nodes = Nodes();
   for (int inode = 0; inode < 27; inode++)
   {
-    auto* cp = dynamic_cast<DRT::NURBS::ControlPoint*>(nodes[inode]);
+    auto* cp = dynamic_cast<Discret::Nurbs::ControlPoint*>(nodes[inode]);
 
     weights(inode) = cp->W();
   }
@@ -274,20 +274,20 @@ void DRT::ELEMENTS::NURBS::SoNurbs27::do_calc_stc_matrix(CORE::LINALG::Matrix<81
 
   // compute coordinates  of corners 0,2,6,18
 
-  CORE::LINALG::Matrix<27, 1> funct;
+  Core::LinAlg::Matrix<27, 1> funct;
 
-  CORE::LINALG::Matrix<3, 1> x0;
-  CORE::LINALG::Matrix<3, 1> x2;
-  CORE::LINALG::Matrix<3, 1> x6;
-  CORE::LINALG::Matrix<3, 1> x18;
+  Core::LinAlg::Matrix<3, 1> x0;
+  Core::LinAlg::Matrix<3, 1> x2;
+  Core::LinAlg::Matrix<3, 1> x6;
+  Core::LinAlg::Matrix<3, 1> x18;
 
   {
-    CORE::LINALG::Matrix<3, 1> gpa;
+    Core::LinAlg::Matrix<3, 1> gpa;
     gpa(0) = -1.0;
     gpa(1) = -1.0;
     gpa(2) = -1.0;
 
-    CORE::FE::NURBS::nurbs_get_3D_funct(funct, gpa, myknots, weights, CORE::FE::CellType::nurbs27);
+    Core::FE::Nurbs::nurbs_get_3D_funct(funct, gpa, myknots, weights, Core::FE::CellType::nurbs27);
 
     for (int isd = 0; isd < 3; ++isd)
     {
@@ -301,12 +301,12 @@ void DRT::ELEMENTS::NURBS::SoNurbs27::do_calc_stc_matrix(CORE::LINALG::Matrix<81
   }
 
   {
-    CORE::LINALG::Matrix<3, 1> gpa;
+    Core::LinAlg::Matrix<3, 1> gpa;
     gpa(0) = 1.0;
     gpa(1) = -1.0;
     gpa(2) = -1.0;
 
-    CORE::FE::NURBS::nurbs_get_3D_funct(funct, gpa, myknots, weights, CORE::FE::CellType::nurbs27);
+    Core::FE::Nurbs::nurbs_get_3D_funct(funct, gpa, myknots, weights, Core::FE::CellType::nurbs27);
 
     for (int isd = 0; isd < 3; ++isd)
     {
@@ -319,12 +319,12 @@ void DRT::ELEMENTS::NURBS::SoNurbs27::do_calc_stc_matrix(CORE::LINALG::Matrix<81
     }
   }
   {
-    CORE::LINALG::Matrix<3, 1> gpa;
+    Core::LinAlg::Matrix<3, 1> gpa;
     gpa(0) = 1.0;
     gpa(1) = 1.0;
     gpa(2) = -1.0;
 
-    CORE::FE::NURBS::nurbs_get_3D_funct(funct, gpa, myknots, weights, CORE::FE::CellType::nurbs27);
+    Core::FE::Nurbs::nurbs_get_3D_funct(funct, gpa, myknots, weights, Core::FE::CellType::nurbs27);
 
     for (int isd = 0; isd < 3; ++isd)
     {
@@ -337,12 +337,12 @@ void DRT::ELEMENTS::NURBS::SoNurbs27::do_calc_stc_matrix(CORE::LINALG::Matrix<81
     }
   }
   {
-    CORE::LINALG::Matrix<3, 1> gpa;
+    Core::LinAlg::Matrix<3, 1> gpa;
     gpa(0) = -1.0;
     gpa(1) = -1.0;
     gpa(2) = 1.0;
 
-    CORE::FE::NURBS::nurbs_get_3D_funct(funct, gpa, myknots, weights, CORE::FE::CellType::nurbs27);
+    Core::FE::Nurbs::nurbs_get_3D_funct(funct, gpa, myknots, weights, Core::FE::CellType::nurbs27);
 
     for (int isd = 0; isd < 3; ++isd)
     {
@@ -355,7 +355,7 @@ void DRT::ELEMENTS::NURBS::SoNurbs27::do_calc_stc_matrix(CORE::LINALG::Matrix<81
     }
   }
 
-  CORE::LINALG::Matrix<3, 1> deltaX;
+  Core::LinAlg::Matrix<3, 1> deltaX;
 
   deltaX.Update(1.0, x2, -1.0, x0);
   const double length_r = deltaX.Norm2();
@@ -425,7 +425,7 @@ void DRT::ELEMENTS::NURBS::SoNurbs27::do_calc_stc_matrix(CORE::LINALG::Matrix<81
 
 
   double C = 1.0;
-  if (stc_scaling == INPAR::STR::stc_currsym)
+  if (stc_scaling == Inpar::STR::stc_currsym)
   {
     C = ratio;
   }
@@ -449,7 +449,7 @@ void DRT::ELEMENTS::NURBS::SoNurbs27::do_calc_stc_matrix(CORE::LINALG::Matrix<81
     fac2 = 1.0 / C;
   }
 
-  CORE::LINALG::Matrix<27, 1> adjele(true);
+  Core::LinAlg::Matrix<27, 1> adjele(true);
 
   for (int i = 0; i < 27; i++)
   {
@@ -537,10 +537,10 @@ void DRT::ELEMENTS::NURBS::SoNurbs27::do_calc_stc_matrix(CORE::LINALG::Matrix<81
 /*----------------------------------------------------------------------*
  |  Integrate a Volume Neumann boundary condition (public)              |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::NURBS::SoNurbs27::evaluate_neumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
-    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
-    CORE::LINALG::SerialDenseMatrix* elemat1)
+int Discret::ELEMENTS::Nurbs::SoNurbs27::evaluate_neumann(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
+    Core::LinAlg::SerialDenseMatrix* elemat1)
 {
   set_params_interface_ptr(params);
   // get values and switches from the condition
@@ -570,7 +570,7 @@ int DRT::ELEMENTS::NURBS::SoNurbs27::evaluate_neumann(Teuchos::ParameterList& pa
 
   // (SPATIAL) FUNCTION BUSINESS
   const auto* funct = &condition.parameters().Get<std::vector<int>>("funct");
-  CORE::LINALG::Matrix<NUMDIM_SONURBS27, 1> xrefegp(false);
+  Core::LinAlg::Matrix<NUMDIM_SONURBS27, 1> xrefegp(false);
   bool havefunct = false;
   if (funct)
     for (int dim = 0; dim < NUMDIM_SONURBS27; dim++)
@@ -578,29 +578,29 @@ int DRT::ELEMENTS::NURBS::SoNurbs27::evaluate_neumann(Teuchos::ParameterList& pa
 
   // --------------------------------------------------
   // Initialisation of nurbs specific stuff
-  std::vector<CORE::LINALG::SerialDenseVector> myknots(3);
+  std::vector<Core::LinAlg::SerialDenseVector> myknots(3);
 
   // for isogeometric elements:
   //     o get knots
   //     o get weights
-  auto* nurbsdis = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+  auto* nurbsdis = dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(discretization));
 
   if (nurbsdis == nullptr) FOUR_C_THROW("So_nurbs27 appeared in non-nurbs discretisation\n");
 
   // there is nothing to be done for zero sized elements in knotspan
   if ((*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, Id())) return (0);
 
-  CORE::LINALG::Matrix<27, 1> weights;
-  CORE::Nodes::Node** nodes = Nodes();
+  Core::LinAlg::Matrix<27, 1> weights;
+  Core::Nodes::Node** nodes = Nodes();
   for (int inode = 0; inode < 27; inode++)
-    weights(inode) = dynamic_cast<DRT::NURBS::ControlPoint*>(nodes[inode])->W();
+    weights(inode) = dynamic_cast<Discret::Nurbs::ControlPoint*>(nodes[inode])->W();
 
   /*------------------------------------------------------------------*/
   /*                   update element geometry                        */
   /*------------------------------------------------------------------*/
 
   // material coord. of element
-  CORE::LINALG::Matrix<27, 3> xrefe;
+  Core::LinAlg::Matrix<27, 3> xrefe;
   for (int i = 0; i < 27; ++i)
   {
     const auto& x = nodes[i]->X();
@@ -610,12 +610,12 @@ int DRT::ELEMENTS::NURBS::SoNurbs27::evaluate_neumann(Teuchos::ParameterList& pa
   }
   /* ================================================= Loop over Gauss Points */
   const int numgp = 27;
-  const CORE::FE::GaussRule3D gaussrule = CORE::FE::GaussRule3D::hex_27point;
-  const CORE::FE::IntegrationPoints3D intpoints(gaussrule);
-  CORE::LINALG::Matrix<3, 1> gpa;
+  const Core::FE::GaussRule3D gaussrule = Core::FE::GaussRule3D::hex_27point;
+  const Core::FE::IntegrationPoints3D intpoints(gaussrule);
+  Core::LinAlg::Matrix<3, 1> gpa;
 
-  CORE::LINALG::Matrix<27, 1> shape;
-  CORE::LINALG::Matrix<3, 27> deriv;
+  Core::LinAlg::Matrix<27, 1> shape;
+  Core::LinAlg::Matrix<3, 27> deriv;
 
   for (int gp = 0; gp < numgp; ++gp)
   {
@@ -623,11 +623,11 @@ int DRT::ELEMENTS::NURBS::SoNurbs27::evaluate_neumann(Teuchos::ParameterList& pa
     gpa(1) = intpoints.qxg[gp][1];
     gpa(2) = intpoints.qxg[gp][2];
 
-    CORE::FE::NURBS::nurbs_get_3D_funct_deriv(
-        shape, deriv, gpa, myknots, weights, CORE::FE::CellType::nurbs27);
+    Core::FE::Nurbs::nurbs_get_3D_funct_deriv(
+        shape, deriv, gpa, myknots, weights, Core::FE::CellType::nurbs27);
 
     // compute the Jacobian matrix
-    CORE::LINALG::Matrix<NUMDIM_SONURBS27, NUMDIM_SONURBS27> jac;
+    Core::LinAlg::Matrix<NUMDIM_SONURBS27, NUMDIM_SONURBS27> jac;
     jac.Multiply(deriv, xrefe);
 
     // compute determinant of Jacobian
@@ -658,8 +658,8 @@ int DRT::ELEMENTS::NURBS::SoNurbs27::evaluate_neumann(Teuchos::ParameterList& pa
         // function evaluation
         const int functnum = (funct) ? (*funct)[dim] : -1;
         const double functfac =
-            (functnum > 0) ? GLOBAL::Problem::Instance()
-                                 ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
+            (functnum > 0) ? Global::Problem::Instance()
+                                 ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
                                  .Evaluate(xrefegp.A(), time, dim)
                            : 1.0;
         const double dim_fac = (*val)[dim] * fac * functfac;
@@ -673,22 +673,22 @@ int DRT::ELEMENTS::NURBS::SoNurbs27::evaluate_neumann(Teuchos::ParameterList& pa
   } /* end of Loop over GP */
 
   return 0;
-}  // DRT::ELEMENTS::So_nurbs27::evaluate_neumann
+}  // Discret::ELEMENTS::So_nurbs27::evaluate_neumann
 
 
 /*----------------------------------------------------------------------*
  |  init the element jacobian mapping (protected)                       |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NURBS::SoNurbs27::init_jacobian_mapping(DRT::Discretization& dis)
+void Discret::ELEMENTS::Nurbs::SoNurbs27::init_jacobian_mapping(Discret::Discretization& dis)
 {
   // --------------------------------------------------
   // Initialisation of nurbs specific stuff
-  std::vector<CORE::LINALG::SerialDenseVector> myknots(3);
+  std::vector<Core::LinAlg::SerialDenseVector> myknots(3);
 
   // for isogeometric elements:
   //     o get knots
   //     o get weights
-  auto* nurbsdis = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(dis));
+  auto* nurbsdis = dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(dis));
 
   if (nurbsdis == nullptr)
   {
@@ -703,17 +703,17 @@ void DRT::ELEMENTS::NURBS::SoNurbs27::init_jacobian_mapping(DRT::Discretization&
     return;
   }
 
-  CORE::LINALG::Matrix<27, 1> weights;
-  CORE::Nodes::Node** nodes = Nodes();
+  Core::LinAlg::Matrix<27, 1> weights;
+  Core::Nodes::Node** nodes = Nodes();
   for (int inode = 0; inode < 27; inode++)
   {
-    auto* cp = dynamic_cast<DRT::NURBS::ControlPoint*>(nodes[inode]);
+    auto* cp = dynamic_cast<Discret::Nurbs::ControlPoint*>(nodes[inode]);
 
     weights(inode) = cp->W();
   }
 
-  const static std::vector<CORE::LINALG::Matrix<3, 27>> derivs = sonurbs27_derivs(myknots, weights);
-  CORE::LINALG::Matrix<27, 3> xrefe;
+  const static std::vector<Core::LinAlg::Matrix<3, 27>> derivs = sonurbs27_derivs(myknots, weights);
+  Core::LinAlg::Matrix<27, 3> xrefe;
   for (int i = 0; i < 27; ++i)
   {
     xrefe(i, 0) = Nodes()[i]->X()[0];
@@ -736,29 +736,29 @@ void DRT::ELEMENTS::NURBS::SoNurbs27::init_jacobian_mapping(DRT::Discretization&
           detJ_[gp], Id(), gp);
   }
   return;
-}  // DRT::ELEMENTS::So_nurbs27::init_jacobian_mapping()
+}  // Discret::ELEMENTS::So_nurbs27::init_jacobian_mapping()
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                                      |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NURBS::SoNurbs27::sonurbs27_nlnstiffmass(
+void Discret::ELEMENTS::Nurbs::SoNurbs27::sonurbs27_nlnstiffmass(
     std::vector<int>& lm,                       // location matrix
-    DRT::Discretization& discretization,        // discretisation to extract knot vector
+    Discret::Discretization& discretization,    // discretisation to extract knot vector
     std::vector<double>& disp,                  // current displacements
     std::vector<double>& residual,              // current residual displ
-    CORE::LINALG::Matrix<81, 81>* stiffmatrix,  // element stiffness matrix
-    CORE::LINALG::Matrix<81, 81>* massmatrix,   // element mass matrix
-    CORE::LINALG::Matrix<81, 1>* force,         // element internal force vector
+    Core::LinAlg::Matrix<81, 81>* stiffmatrix,  // element stiffness matrix
+    Core::LinAlg::Matrix<81, 81>* massmatrix,   // element mass matrix
+    Core::LinAlg::Matrix<81, 1>* force,         // element internal force vector
     Teuchos::ParameterList& params)             // strain output option
 {
   // --------------------------------------------------
   // Initialisation of nurbs specific stuff
-  std::vector<CORE::LINALG::SerialDenseVector> myknots(3);
+  std::vector<Core::LinAlg::SerialDenseVector> myknots(3);
 
   // for isogeometric elements:
   //     o get knots
   //     o get weights
-  auto* nurbsdis = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+  auto* nurbsdis = dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(discretization));
 
   if (nurbsdis == nullptr)
   {
@@ -773,18 +773,18 @@ void DRT::ELEMENTS::NURBS::SoNurbs27::sonurbs27_nlnstiffmass(
     return;
   }
 
-  CORE::LINALG::Matrix<27, 1> weights;
-  CORE::Nodes::Node** nodes = Nodes();
+  Core::LinAlg::Matrix<27, 1> weights;
+  Core::Nodes::Node** nodes = Nodes();
   for (int inode = 0; inode < 27; inode++)
   {
-    auto* cp = dynamic_cast<DRT::NURBS::ControlPoint*>(nodes[inode]);
+    auto* cp = dynamic_cast<Discret::Nurbs::ControlPoint*>(nodes[inode]);
 
     weights(inode) = cp->W();
   }
 
   // update element geometry
-  CORE::LINALG::Matrix<27, 3> xrefe;  // material coord. of element
-  CORE::LINALG::Matrix<27, 3> xcurr;  // current  coord. of element
+  Core::LinAlg::Matrix<27, 3> xrefe;  // material coord. of element
+  Core::LinAlg::Matrix<27, 3> xcurr;  // current  coord. of element
   for (int i = 0; i < 27; ++i)
   {
     const auto& x = nodes[i]->X();
@@ -802,35 +802,35 @@ void DRT::ELEMENTS::NURBS::SoNurbs27::sonurbs27_nlnstiffmass(
   /*------------------------------------------------------------------*/
   const int numgp = 27;
 
-  const CORE::FE::GaussRule3D gaussrule = CORE::FE::GaussRule3D::hex_27point;
-  const CORE::FE::IntegrationPoints3D intpoints(gaussrule);
+  const Core::FE::GaussRule3D gaussrule = Core::FE::GaussRule3D::hex_27point;
+  const Core::FE::IntegrationPoints3D intpoints(gaussrule);
 
   invJ_.resize(numgp);
   detJ_.resize(numgp);
 
-  CORE::LINALG::Matrix<27, 1> funct;
-  CORE::LINALG::Matrix<3, 27> deriv;
+  Core::LinAlg::Matrix<27, 1> funct;
+  Core::LinAlg::Matrix<3, 27> deriv;
 
-  CORE::LINALG::Matrix<3, 27> N_XYZ;
+  Core::LinAlg::Matrix<3, 27> N_XYZ;
   // build deformation gradient wrt to material configuration
   // in case of prestressing, build defgrd wrt to last stored configuration
-  CORE::LINALG::Matrix<3, 3> defgrd(true);
+  Core::LinAlg::Matrix<3, 3> defgrd(true);
   for (int gp = 0; gp < numgp; ++gp)
   {
-    CORE::LINALG::Matrix<3, 1> gpa;
+    Core::LinAlg::Matrix<3, 1> gpa;
     gpa(0) = intpoints.qxg[gp][0];
     gpa(1) = intpoints.qxg[gp][1];
     gpa(2) = intpoints.qxg[gp][2];
 
-    CORE::FE::NURBS::nurbs_get_3D_funct_deriv(
-        funct, deriv, gpa, myknots, weights, CORE::FE::CellType::nurbs27);
+    Core::FE::Nurbs::nurbs_get_3D_funct_deriv(
+        funct, deriv, gpa, myknots, weights, Core::FE::CellType::nurbs27);
 
     /* get the inverse of the Jacobian matrix which looks like:
     **            [ x_,r  y_,r  z_,r ]^-1
     **     J^-1 = [ x_,s  y_,s  z_,s ]
     **            [ x_,t  y_,t  z_,t ]
     */
-    CORE::LINALG::Matrix<3, 3> invJac(true);
+    Core::LinAlg::Matrix<3, 3> invJac(true);
 
     invJac.Multiply(deriv, xrefe);
     double detJ = invJac.Invert();
@@ -849,13 +849,13 @@ void DRT::ELEMENTS::NURBS::SoNurbs27::sonurbs27_nlnstiffmass(
     defgrd.MultiplyTT(xcurr, N_XYZ);
 
     // Right Cauchy-Green tensor = F^T * F
-    CORE::LINALG::Matrix<3, 3> cauchygreen;
+    Core::LinAlg::Matrix<3, 3> cauchygreen;
     cauchygreen.MultiplyTN(defgrd, defgrd);
 
     // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-    CORE::LINALG::SerialDenseVector glstrain_epetra(6);
-    CORE::LINALG::Matrix<6, 1> glstrain(glstrain_epetra.values(), true);
+    Core::LinAlg::SerialDenseVector glstrain_epetra(6);
+    Core::LinAlg::Matrix<6, 1> glstrain(glstrain_epetra.values(), true);
     glstrain(0) = 0.5 * (cauchygreen(0, 0) - 1.0);
     glstrain(1) = 0.5 * (cauchygreen(1, 1) - 1.0);
     glstrain(2) = 0.5 * (cauchygreen(2, 2) - 1.0);
@@ -883,7 +883,7 @@ void DRT::ELEMENTS::NURBS::SoNurbs27::sonurbs27_nlnstiffmass(
     **      [ ... |          F_23*N_{,1}^k+F_21*N_{,3}^k        | ... ]
     **      [                       F_33*N_{,1}^k+F_31*N_{,3}^k       ]
     */
-    CORE::LINALG::Matrix<6, 81> bop;
+    Core::LinAlg::Matrix<6, 81> bop;
     for (int i = 0; i < 27; ++i)
     {
       bop(0, 3 * i) = defgrd(0, 0) * N_XYZ(0, i);
@@ -908,9 +908,9 @@ void DRT::ELEMENTS::NURBS::SoNurbs27::sonurbs27_nlnstiffmass(
     }
 
     // call material law
-    CORE::LINALG::Matrix<6, 6> cmat(true);
-    CORE::LINALG::Matrix<6, 1> stress(true);
-    UTILS::get_temperature_for_structural_material<CORE::FE::CellType::nurbs27>(funct, params);
+    Core::LinAlg::Matrix<6, 6> cmat(true);
+    Core::LinAlg::Matrix<6, 1> stress(true);
+    UTILS::get_temperature_for_structural_material<Core::FE::CellType::nurbs27>(funct, params);
     SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
     // end of call material law
 
@@ -927,12 +927,12 @@ void DRT::ELEMENTS::NURBS::SoNurbs27::sonurbs27_nlnstiffmass(
     {
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
-      CORE::LINALG::Matrix<6, 81> cb;
+      Core::LinAlg::Matrix<6, 81> cb;
       cb.Multiply(cmat, bop);
       stiffmatrix->MultiplyTN(detJ_w, bop, cb, 1.0);
 
       // integrate `geometric' stiffness matrix and add to keu *****************
-      CORE::LINALG::Matrix<6, 1> sfac(stress);  // auxiliary integrated stress
+      Core::LinAlg::Matrix<6, 1> sfac(stress);  // auxiliary integrated stress
       sfac.Scale(detJ_w);                       // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
       std::vector<double> SmB_L(3);             // intermediate Sm.B_L
       // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
@@ -978,31 +978,31 @@ void DRT::ELEMENTS::NURBS::SoNurbs27::sonurbs27_nlnstiffmass(
   } /* end of Loop over GP */
 
   return;
-}  // DRT::ELEMENTS::So_nurbs27::sonurbs27_nlnstiffmass
+}  // Discret::ELEMENTS::So_nurbs27::sonurbs27_nlnstiffmass
 
 /*----------------------------------------------------------------------*
  |  Evaluate nurbs27 Shape fcts at all 27 Gauss Points                     |
  *----------------------------------------------------------------------*/
-std::vector<CORE::LINALG::Matrix<27, 1>> DRT::ELEMENTS::NURBS::SoNurbs27::sonurbs27_shapefcts(
-    const std::vector<CORE::LINALG::SerialDenseVector>& myknots,
-    const CORE::LINALG::Matrix<27, 1>& weights)
+std::vector<Core::LinAlg::Matrix<27, 1>> Discret::ELEMENTS::Nurbs::SoNurbs27::sonurbs27_shapefcts(
+    const std::vector<Core::LinAlg::SerialDenseVector>& myknots,
+    const Core::LinAlg::Matrix<27, 1>& weights)
 {
   const int numgp = 27;
 
-  std::vector<CORE::LINALG::Matrix<27, 1>> shapefcts(numgp);
+  std::vector<Core::LinAlg::Matrix<27, 1>> shapefcts(numgp);
   // (r,s,t) gp-locations of fully integrated quadratic Nurbs 27
   // fill up nodal f at each gp
-  const CORE::FE::GaussRule3D gaussrule = CORE::FE::GaussRule3D::hex_27point;
-  const CORE::FE::IntegrationPoints3D intpoints(gaussrule);
+  const Core::FE::GaussRule3D gaussrule = Core::FE::GaussRule3D::hex_27point;
+  const Core::FE::IntegrationPoints3D intpoints(gaussrule);
   for (int igp = 0; igp < intpoints.nquad; ++igp)
   {
-    CORE::LINALG::Matrix<3, 1> gp;
+    Core::LinAlg::Matrix<3, 1> gp;
     gp(0) = intpoints.qxg[igp][0];
     gp(1) = intpoints.qxg[igp][1];
     gp(2) = intpoints.qxg[igp][2];
 
-    CORE::FE::NURBS::nurbs_get_3D_funct(
-        shapefcts[igp], gp, myknots, weights, CORE::FE::CellType::nurbs27);
+    Core::FE::Nurbs::nurbs_get_3D_funct(
+        shapefcts[igp], gp, myknots, weights, Core::FE::CellType::nurbs27);
   }
   return shapefcts;
 }
@@ -1011,28 +1011,28 @@ std::vector<CORE::LINALG::Matrix<27, 1>> DRT::ELEMENTS::NURBS::SoNurbs27::sonurb
 /*----------------------------------------------------------------------*
  |  Evaluate nurbs27 Shape fct derivs at all 27 Gauss Points              |
  *----------------------------------------------------------------------*/
-std::vector<CORE::LINALG::Matrix<3, 27>> DRT::ELEMENTS::NURBS::SoNurbs27::sonurbs27_derivs(
-    const std::vector<CORE::LINALG::SerialDenseVector>& myknots,
-    const CORE::LINALG::Matrix<27, 1>& weights)
+std::vector<Core::LinAlg::Matrix<3, 27>> Discret::ELEMENTS::Nurbs::SoNurbs27::sonurbs27_derivs(
+    const std::vector<Core::LinAlg::SerialDenseVector>& myknots,
+    const Core::LinAlg::Matrix<27, 1>& weights)
 {
   const int numgp = 27;
 
-  std::vector<CORE::LINALG::Matrix<3, 27>> derivs(numgp);
+  std::vector<Core::LinAlg::Matrix<3, 27>> derivs(numgp);
   // (r,s,t) gp-locations of fully integrated quadratic Nurbs 27
   // fill up df w.r.t. rst directions (NUMDIM) at each gp
-  const CORE::FE::GaussRule3D gaussrule = CORE::FE::GaussRule3D::hex_27point;
-  const CORE::FE::IntegrationPoints3D intpoints(gaussrule);
+  const Core::FE::GaussRule3D gaussrule = Core::FE::GaussRule3D::hex_27point;
+  const Core::FE::IntegrationPoints3D intpoints(gaussrule);
   for (int igp = 0; igp < intpoints.nquad; ++igp)
   {
-    CORE::LINALG::Matrix<3, 1> gp;
+    Core::LinAlg::Matrix<3, 1> gp;
     gp(0) = intpoints.qxg[igp][0];
     gp(1) = intpoints.qxg[igp][1];
     gp(2) = intpoints.qxg[igp][2];
 
-    CORE::LINALG::Matrix<27, 1> dummyfct;
+    Core::LinAlg::Matrix<27, 1> dummyfct;
 
-    CORE::FE::NURBS::nurbs_get_3D_funct_deriv(
-        dummyfct, derivs[igp], gp, myknots, weights, CORE::FE::CellType::nurbs27);
+    Core::FE::Nurbs::nurbs_get_3D_funct_deriv(
+        dummyfct, derivs[igp], gp, myknots, weights, Core::FE::CellType::nurbs27);
   }
   return derivs;
 }
@@ -1040,13 +1040,13 @@ std::vector<CORE::LINALG::Matrix<3, 27>> DRT::ELEMENTS::NURBS::SoNurbs27::sonurb
 /*----------------------------------------------------------------------*
  |  Evaluate nurbs27 Weights at all 27 Gauss Points                     |
  *----------------------------------------------------------------------*/
-std::vector<double> DRT::ELEMENTS::NURBS::SoNurbs27::sonurbs27_gpweights()
+std::vector<double> Discret::ELEMENTS::Nurbs::SoNurbs27::sonurbs27_gpweights()
 {
   const int numgp = 27;
 
   std::vector<double> gpweights(numgp);
-  const CORE::FE::GaussRule3D gaussrule = CORE::FE::GaussRule3D::hex_27point;
-  const CORE::FE::IntegrationPoints3D intpoints(gaussrule);
+  const Core::FE::GaussRule3D gaussrule = Core::FE::GaussRule3D::hex_27point;
+  const Core::FE::IntegrationPoints3D intpoints(gaussrule);
   for (int i = 0; i < numgp; ++i)
   {
     gpweights[i] = intpoints.qwgt[i];
@@ -1058,12 +1058,12 @@ std::vector<double> DRT::ELEMENTS::NURBS::SoNurbs27::sonurbs27_gpweights()
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::NURBS::SoNurbs27Type::Initialize(DRT::Discretization& dis)
+int Discret::ELEMENTS::Nurbs::SoNurbs27Type::Initialize(Discret::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    auto* actele = dynamic_cast<DRT::ELEMENTS::NURBS::SoNurbs27*>(dis.lColElement(i));
+    auto* actele = dynamic_cast<Discret::ELEMENTS::Nurbs::SoNurbs27*>(dis.lColElement(i));
     if (!actele) FOUR_C_THROW("cast to So_nurbs27* failed");
     actele->init_jacobian_mapping(dis);
   }
@@ -1074,21 +1074,21 @@ int DRT::ELEMENTS::NURBS::SoNurbs27Type::Initialize(DRT::Discretization& dis)
 /*----------------------------------------------------------------------*
  |  calculate internal energy of the element (private)                  |
  *----------------------------------------------------------------------*/
-double DRT::ELEMENTS::NURBS::SoNurbs27::calc_int_energy(
-    DRT::Discretization& discretization,  // discretisation to extract knot vector
-    std::vector<double>& disp,            // current displacements
-    Teuchos::ParameterList& params)       // strain output option
+double Discret::ELEMENTS::Nurbs::SoNurbs27::calc_int_energy(
+    Discret::Discretization& discretization,  // discretisation to extract knot vector
+    std::vector<double>& disp,                // current displacements
+    Teuchos::ParameterList& params)           // strain output option
 {
   double energy = 0.;
 
   // --------------------------------------------------
   // Initialisation of nurbs specific stuff
-  std::vector<CORE::LINALG::SerialDenseVector> myknots(3);
+  std::vector<Core::LinAlg::SerialDenseVector> myknots(3);
 
   // for isogeometric elements:
   //     o get knots
   //     o get weights
-  auto* nurbsdis = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+  auto* nurbsdis = dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(discretization));
   if (nurbsdis == nullptr) FOUR_C_THROW("So_nurbs27 appeared in non-nurbs discretisation\n");
 
   bool zero_ele = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, Id());
@@ -1096,18 +1096,18 @@ double DRT::ELEMENTS::NURBS::SoNurbs27::calc_int_energy(
   // there is nothing to be done for zero sized elements in knotspan
   if (zero_ele) return 0.;
 
-  CORE::LINALG::Matrix<27, 1> weights;
-  CORE::Nodes::Node** nodes = Nodes();
+  Core::LinAlg::Matrix<27, 1> weights;
+  Core::Nodes::Node** nodes = Nodes();
   for (int inode = 0; inode < 27; inode++)
   {
-    auto* cp = dynamic_cast<DRT::NURBS::ControlPoint*>(nodes[inode]);
+    auto* cp = dynamic_cast<Discret::Nurbs::ControlPoint*>(nodes[inode]);
 
     weights(inode) = cp->W();
   }
 
   // update element geometry
-  CORE::LINALG::Matrix<27, 3> xrefe;  // material coord. of element
-  CORE::LINALG::Matrix<27, 3> xcurr;  // current  coord. of element
+  Core::LinAlg::Matrix<27, 3> xrefe;  // material coord. of element
+  Core::LinAlg::Matrix<27, 3> xcurr;  // current  coord. of element
   for (int i = 0; i < 27; ++i)
   {
     const auto& x = nodes[i]->X();
@@ -1124,35 +1124,35 @@ double DRT::ELEMENTS::NURBS::SoNurbs27::calc_int_energy(
   /*------------------------------------------------------------------*/
   const int numgp = 27;
 
-  const CORE::FE::GaussRule3D gaussrule = CORE::FE::GaussRule3D::hex_27point;
-  const CORE::FE::IntegrationPoints3D intpoints(gaussrule);
+  const Core::FE::GaussRule3D gaussrule = Core::FE::GaussRule3D::hex_27point;
+  const Core::FE::IntegrationPoints3D intpoints(gaussrule);
 
   invJ_.resize(numgp);
   detJ_.resize(numgp);
 
-  CORE::LINALG::Matrix<27, 1> funct;
-  CORE::LINALG::Matrix<3, 27> deriv;
+  Core::LinAlg::Matrix<27, 1> funct;
+  Core::LinAlg::Matrix<3, 27> deriv;
 
-  CORE::LINALG::Matrix<3, 27> N_XYZ;
+  Core::LinAlg::Matrix<3, 27> N_XYZ;
   // build deformation gradient wrt to material configuration
   // in case of prestressing, build defgrd wrt to last stored configuration
-  CORE::LINALG::Matrix<3, 3> defgrd(true);
+  Core::LinAlg::Matrix<3, 3> defgrd(true);
   for (int gp = 0; gp < numgp; ++gp)
   {
-    CORE::LINALG::Matrix<3, 1> gpa;
+    Core::LinAlg::Matrix<3, 1> gpa;
     gpa(0) = intpoints.qxg[gp][0];
     gpa(1) = intpoints.qxg[gp][1];
     gpa(2) = intpoints.qxg[gp][2];
 
-    CORE::FE::NURBS::nurbs_get_3D_funct_deriv(
-        funct, deriv, gpa, myknots, weights, CORE::FE::CellType::nurbs27);
+    Core::FE::Nurbs::nurbs_get_3D_funct_deriv(
+        funct, deriv, gpa, myknots, weights, Core::FE::CellType::nurbs27);
 
     /* get the inverse of the Jacobian matrix which looks like:
     **            [ x_,r  y_,r  z_,r ]^-1
     **     J^-1 = [ x_,s  y_,s  z_,s ]
     **            [ x_,t  y_,t  z_,t ]
     */
-    CORE::LINALG::Matrix<3, 3> invJac(true);
+    Core::LinAlg::Matrix<3, 3> invJac(true);
 
     invJac.Multiply(deriv, xrefe);
     double detJ = invJac.Invert();
@@ -1171,13 +1171,13 @@ double DRT::ELEMENTS::NURBS::SoNurbs27::calc_int_energy(
     defgrd.MultiplyTT(xcurr, N_XYZ);
 
     // Right Cauchy-Green tensor = F^T * F
-    CORE::LINALG::Matrix<3, 3> cauchygreen;
+    Core::LinAlg::Matrix<3, 3> cauchygreen;
     cauchygreen.MultiplyTN(defgrd, defgrd);
 
     // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-    CORE::LINALG::SerialDenseVector glstrain_epetra(6);
-    CORE::LINALG::Matrix<6, 1> glstrain(glstrain_epetra.values(), true);
+    Core::LinAlg::SerialDenseVector glstrain_epetra(6);
+    Core::LinAlg::Matrix<6, 1> glstrain(glstrain_epetra.values(), true);
     glstrain(0) = 0.5 * (cauchygreen(0, 0) - 1.0);
     glstrain(1) = 0.5 * (cauchygreen(1, 1) - 1.0);
     glstrain(2) = 0.5 * (cauchygreen(2, 2) - 1.0);
@@ -1198,8 +1198,8 @@ double DRT::ELEMENTS::NURBS::SoNurbs27::calc_int_energy(
 /*----------------------------------------------------------------------*
  |  lump mass matrix (private)                               bborn 07/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NURBS::SoNurbs27::lumpmass(
-    CORE::LINALG::Matrix<NUMDOF_SONURBS27, NUMDOF_SONURBS27>* emass)
+void Discret::ELEMENTS::Nurbs::SoNurbs27::lumpmass(
+    Core::LinAlg::Matrix<NUMDOF_SONURBS27, NUMDOF_SONURBS27>* emass)
 {
   // lump mass matrix
   if (emass != nullptr)
@@ -1222,15 +1222,15 @@ void DRT::ELEMENTS::NURBS::SoNurbs27::lumpmass(
  * \brief Helper function to evaluate the NURBS interpolation inside the element.
  */
 template <unsigned int n_points, unsigned int n_val>
-void EvalNurbs3DInterpolation(CORE::LINALG::Matrix<n_val, 1, double>& r,
-    const CORE::LINALG::Matrix<n_points * n_val, 1, double>& q,
-    const CORE::LINALG::Matrix<3, 1, double>& xi,
-    const CORE::LINALG::Matrix<n_points, 1, double>& weights,
-    const std::vector<CORE::LINALG::SerialDenseVector>& myknots, const CORE::FE::CellType& distype)
+void EvalNurbs3DInterpolation(Core::LinAlg::Matrix<n_val, 1, double>& r,
+    const Core::LinAlg::Matrix<n_points * n_val, 1, double>& q,
+    const Core::LinAlg::Matrix<3, 1, double>& xi,
+    const Core::LinAlg::Matrix<n_points, 1, double>& weights,
+    const std::vector<Core::LinAlg::SerialDenseVector>& myknots, const Core::FE::CellType& distype)
 {
   // Get the shape functions.
-  CORE::LINALG::Matrix<n_points, 1, double> N;
-  CORE::FE::NURBS::nurbs_get_3D_funct(N, xi, myknots, weights, distype);
+  Core::LinAlg::Matrix<n_points, 1, double> N;
+  Core::FE::Nurbs::nurbs_get_3D_funct(N, xi, myknots, weights, distype);
 
   // Multiply the shape functions with the control point values.
   r.Clear();

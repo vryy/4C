@@ -30,20 +30,20 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  setup of constant EAS data (private)                       mgit 01/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1::w1_eassetup(CORE::LINALG::SerialDenseMatrix& boplin0,
-    CORE::LINALG::SerialDenseVector& F0,           // deformation gradient at origin
-    CORE::LINALG::SerialDenseMatrix& xjm0,         // jacobian matrix at origin
+void Discret::ELEMENTS::Wall1::w1_eassetup(Core::LinAlg::SerialDenseMatrix& boplin0,
+    Core::LinAlg::SerialDenseVector& F0,           // deformation gradient at origin
+    Core::LinAlg::SerialDenseMatrix& xjm0,         // jacobian matrix at origin
     double& detJ0,                                 // det of Jacobian at origin
-    const CORE::LINALG::SerialDenseMatrix& xrefe,  // material element coords
-    const CORE::LINALG::SerialDenseMatrix& xcure,  // current element coords
-    const CORE::FE::CellType& distype)
+    const Core::LinAlg::SerialDenseMatrix& xrefe,  // material element coords
+    const Core::LinAlg::SerialDenseMatrix& xcure,  // current element coords
+    const Core::FE::CellType& distype)
 
 {
   // derivatives at origin
-  CORE::LINALG::SerialDenseMatrix deriv0;
+  Core::LinAlg::SerialDenseMatrix deriv0;
   deriv0.shape(2, num_node());
 
-  CORE::FE::shape_function_2D_deriv1(deriv0, 0.0, 0.0, distype);
+  Core::FE::shape_function_2D_deriv1(deriv0, 0.0, 0.0, distype);
 
   // compute jacobian matrix at origin
   xjm0.putScalar(0.0);
@@ -122,12 +122,12 @@ void DRT::ELEMENTS::Wall1::w1_eassetup(CORE::LINALG::SerialDenseMatrix& boplin0,
  | get the enhanced deformation gradient and                            |
  | also the operators G, W0 and Z                   (private) mgit 01/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1::w1_call_defgrad_enh(CORE::LINALG::SerialDenseMatrix& F_enh,
-    const CORE::LINALG::SerialDenseMatrix xjm0, const CORE::LINALG::SerialDenseMatrix xjm,
-    const double detJ0, const double det, const CORE::LINALG::SerialDenseVector F0,
-    const CORE::LINALG::SerialDenseMatrix alpha, const double e1, const double e2,
-    CORE::LINALG::SerialDenseMatrix& G, CORE::LINALG::SerialDenseMatrix& W0,
-    const CORE::LINALG::SerialDenseMatrix boplin0, CORE::LINALG::SerialDenseMatrix& Z)
+void Discret::ELEMENTS::Wall1::w1_call_defgrad_enh(Core::LinAlg::SerialDenseMatrix& F_enh,
+    const Core::LinAlg::SerialDenseMatrix xjm0, const Core::LinAlg::SerialDenseMatrix xjm,
+    const double detJ0, const double det, const Core::LinAlg::SerialDenseVector F0,
+    const Core::LinAlg::SerialDenseMatrix alpha, const double e1, const double e2,
+    Core::LinAlg::SerialDenseMatrix& G, Core::LinAlg::SerialDenseMatrix& W0,
+    const Core::LinAlg::SerialDenseMatrix boplin0, Core::LinAlg::SerialDenseMatrix& Z)
 {
   // EAS
 
@@ -144,10 +144,10 @@ void DRT::ELEMENTS::Wall1::w1_call_defgrad_enh(CORE::LINALG::SerialDenseMatrix& 
   //     M = M1*alpha1 + M2*alpha2 + M3*alpha3 + M4*alpha4
   //
 
-  CORE::LINALG::SerialDenseMatrix M;
+  Core::LinAlg::SerialDenseMatrix M;
   M.shape(2, 2);
 
-  CORE::LINALG::SerialDenseMatrix M_temp;
+  Core::LinAlg::SerialDenseMatrix M_temp;
   M_temp.shape(2, 2);
 
   // fill up 4 EAS matrices at each GP
@@ -171,7 +171,7 @@ void DRT::ELEMENTS::Wall1::w1_call_defgrad_enh(CORE::LINALG::SerialDenseMatrix& 
   }
 
   // inverse of jacobian matrix at element origin
-  CORE::LINALG::SerialDenseMatrix xjm_inv0;
+  Core::LinAlg::SerialDenseMatrix xjm_inv0;
   xjm_inv0.shape(2, 2);
 
   xjm_inv0(0, 0) = xjm0(1, 1) / detJ0;
@@ -185,12 +185,12 @@ void DRT::ELEMENTS::Wall1::w1_call_defgrad_enh(CORE::LINALG::SerialDenseMatrix& 
   //    A = det(J_o)/det(J) * J_o^T . sum_i^neas ( M_i alpha_i ) . J_o^{-T}
   // Q1ET4
   //    A = det(J_o)/det(J) * J_o . sum_i^neas ( M_i alpha_i ) . J_o^{-T}
-  CORE::LINALG::SerialDenseMatrix A(2, 2);  // A operator
-  CORE::LINALG::multiplyNT(M_temp, M, xjm_inv0);
+  Core::LinAlg::SerialDenseMatrix A(2, 2);  // A operator
+  Core::LinAlg::multiplyNT(M_temp, M, xjm_inv0);
   if (eastype_ == eas_q1e4)
-    CORE::LINALG::multiplyTN(0.0, A, detJ0 / det, xjm0, M_temp);
+    Core::LinAlg::multiplyTN(0.0, A, detJ0 / det, xjm0, M_temp);
   else if (eastype_ == eas_q1et4)
-    CORE::LINALG::multiply(0.0, A, detJ0 / det, xjm0, M_temp);
+    Core::LinAlg::multiply(0.0, A, detJ0 / det, xjm0, M_temp);
   else
     FOUR_C_THROW("Cannot handle EAS type=%d", eastype_);
 
@@ -205,7 +205,7 @@ void DRT::ELEMENTS::Wall1::w1_call_defgrad_enh(CORE::LINALG::SerialDenseMatrix& 
 
   // write matrix A in a different way (matrix 4x4)
 
-  CORE::LINALG::SerialDenseMatrix A_big;
+  Core::LinAlg::SerialDenseMatrix A_big;
   A_big.shape(4, 4);  // entries are zero
 
   A_big(0, 0) = A(0, 0);
@@ -219,16 +219,16 @@ void DRT::ELEMENTS::Wall1::w1_call_defgrad_enh(CORE::LINALG::SerialDenseMatrix& 
 
   // multiplication A_big x boplin0
 
-  CORE::LINALG::multiply(W0, A_big, boplin0);
+  Core::LinAlg::multiply(W0, A_big, boplin0);
 
   // calculation operators G and Z, therfore matrices A are needed
   // without alphas
 
   // vector M_ges, includes the matrices M1 to M4
-  std::vector<CORE::LINALG::SerialDenseMatrix> M_ges(Wall1::neas_);
+  std::vector<Core::LinAlg::SerialDenseMatrix> M_ges(Wall1::neas_);
 
   // vector A_ges, includes the matrices A1 to A4
-  std::vector<CORE::LINALG::SerialDenseMatrix> A_ges(4);
+  std::vector<Core::LinAlg::SerialDenseMatrix> A_ges(4);
 
   for (int ieas = 0; ieas < Wall1::neas_; ieas++)
   {
@@ -259,22 +259,22 @@ void DRT::ELEMENTS::Wall1::w1_call_defgrad_enh(CORE::LINALG::SerialDenseMatrix& 
 
   // declaration of matrix (4x4) without eas-parameter alpha
 
-  CORE::LINALG::SerialDenseMatrix Awa_big;
+  Core::LinAlg::SerialDenseMatrix Awa_big;
   Awa_big.shape(4, 4);
 
   // declaration of matrix WO without eas-parameter alpha
 
-  CORE::LINALG::SerialDenseMatrix W0wa;
+  Core::LinAlg::SerialDenseMatrix W0wa;
   W0wa.shape(4, 2 * num_node());
 
 
   for (int i = 0; i < Wall1::neas_; i++)  // loop over eas-parameter
   {
-    CORE::LINALG::multiplyNT(M_temp, M_ges[i], xjm_inv0);
+    Core::LinAlg::multiplyNT(M_temp, M_ges[i], xjm_inv0);
     if (eastype_ == eas_q1e4)
-      CORE::LINALG::multiplyTN(0.0, A_ges[i], detJ0 / det, xjm0, M_temp);
+      Core::LinAlg::multiplyTN(0.0, A_ges[i], detJ0 / det, xjm0, M_temp);
     else if (eastype_ == eas_q1et4)
-      CORE::LINALG::multiply(0.0, A_ges[i], detJ0 / det, xjm0, M_temp);
+      Core::LinAlg::multiply(0.0, A_ges[i], detJ0 / det, xjm0, M_temp);
     else
       FOUR_C_THROW("Cannot handle EAS type=%d", eastype_);
 
@@ -299,7 +299,7 @@ void DRT::ELEMENTS::Wall1::w1_call_defgrad_enh(CORE::LINALG::SerialDenseMatrix& 
 
     // calculate operator W0wa without eas-parameters alpha
 
-    CORE::LINALG::multiply(W0wa, Awa_big, boplin0);
+    Core::LinAlg::multiply(W0wa, Awa_big, boplin0);
 
     // fill Z-operator
 
@@ -319,9 +319,9 @@ void DRT::ELEMENTS::Wall1::w1_call_defgrad_enh(CORE::LINALG::SerialDenseMatrix& 
 /*----------------------------------------------------------------------*
  |total deformation gradient and green lagrange strain (private)mgit 01/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1::w1_call_defgrad_tot(const CORE::LINALG::SerialDenseMatrix& F_enh,
-    CORE::LINALG::SerialDenseMatrix& F_tot, const CORE::LINALG::SerialDenseVector& F,
-    CORE::LINALG::SerialDenseVector& strain)
+void Discret::ELEMENTS::Wall1::w1_call_defgrad_tot(const Core::LinAlg::SerialDenseMatrix& F_enh,
+    Core::LinAlg::SerialDenseMatrix& F_tot, const Core::LinAlg::SerialDenseVector& F,
+    Core::LinAlg::SerialDenseVector& strain)
 {
   // total deformation gradient in matrix notation
   F_tot(0, 0) = F(0) + F_enh(0, 0);
@@ -346,19 +346,19 @@ void DRT::ELEMENTS::Wall1::w1_call_defgrad_tot(const CORE::LINALG::SerialDenseMa
 /*-----------------------------------------------------------------------------*
  |first piola-kirchhoff stress vector                       (private)mgit 02/08|
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1::w1_stress_eas(const CORE::LINALG::SerialDenseMatrix& stress,
-    const CORE::LINALG::SerialDenseMatrix& F_tot, CORE::LINALG::SerialDenseMatrix& p_stress)
+void Discret::ELEMENTS::Wall1::w1_stress_eas(const Core::LinAlg::SerialDenseMatrix& stress,
+    const Core::LinAlg::SerialDenseMatrix& F_tot, Core::LinAlg::SerialDenseMatrix& p_stress)
 {
   /*-------------reduce stress matrix-----------------------------------------*/
 
-  CORE::LINALG::SerialDenseMatrix stress_red(3, 1, false);  // 2. piola-krichhoff (vector (3-dim))
+  Core::LinAlg::SerialDenseMatrix stress_red(3, 1, false);  // 2. piola-krichhoff (vector (3-dim))
 
   stress_red(0, 0) = stress(0, 0);  // S_11
   stress_red(1, 0) = stress(1, 1);  // S_22
   stress_red(2, 0) = stress(0, 2);  // S_12 (=S_21)
 
   /*-first piola-kirchhoff stress vector--------------------------------------*/
-  CORE::LINALG::multiply(p_stress, F_tot, stress_red);
+  Core::LinAlg::multiply(p_stress, F_tot, stress_red);
 
   return;
 }  // end of w1_p_stress
@@ -367,13 +367,13 @@ void DRT::ELEMENTS::Wall1::w1_stress_eas(const CORE::LINALG::SerialDenseMatrix& 
 /*-----------------------------------------------------------------------------*
 | calculate stiffness matrix kdd                                     mgit 03/08|
 *-----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1::w1_kdd(const CORE::LINALG::SerialDenseMatrix& boplin,
-    const CORE::LINALG::SerialDenseMatrix& W0, const CORE::LINALG::SerialDenseMatrix& F_tot,
-    const CORE::LINALG::SerialDenseMatrix& C, const CORE::LINALG::SerialDenseMatrix& stress,
-    CORE::LINALG::SerialDenseMatrix& FCF, CORE::LINALG::SerialDenseMatrix& estif, const double fac)
+void Discret::ELEMENTS::Wall1::w1_kdd(const Core::LinAlg::SerialDenseMatrix& boplin,
+    const Core::LinAlg::SerialDenseMatrix& W0, const Core::LinAlg::SerialDenseMatrix& F_tot,
+    const Core::LinAlg::SerialDenseMatrix& C, const Core::LinAlg::SerialDenseMatrix& stress,
+    Core::LinAlg::SerialDenseMatrix& FCF, Core::LinAlg::SerialDenseMatrix& estif, const double fac)
 {
   // contitutive matrix (3x3)
-  CORE::LINALG::SerialDenseMatrix C_red(3, 3, false);
+  Core::LinAlg::SerialDenseMatrix C_red(3, 3, false);
   C_red(0, 0) = C(0, 0);
   C_red(0, 1) = C(0, 1);
   C_red(0, 2) = C(0, 2);
@@ -385,59 +385,59 @@ void DRT::ELEMENTS::Wall1::w1_kdd(const CORE::LINALG::SerialDenseMatrix& boplin,
   C_red(2, 2) = C(2, 2);
 
   // BplusW = B+W0
-  CORE::LINALG::SerialDenseMatrix BplusW(4, 2 * num_node(), false);
+  Core::LinAlg::SerialDenseMatrix BplusW(4, 2 * num_node(), false);
   for (int i = 0; i < 4; i++)
     for (int j = 0; j < 2 * num_node(); j++) BplusW(i, j) = boplin(i, j) + W0(i, j);
 
   // Temp (4x3) = F*C
-  CORE::LINALG::SerialDenseMatrix Temp(4, 3, true);
-  CORE::LINALG::multiply(Temp, F_tot, C_red);
+  Core::LinAlg::SerialDenseMatrix Temp(4, 3, true);
+  Core::LinAlg::multiply(Temp, F_tot, C_red);
 
   // FCF^T (4x4) = Temp*F^T
   FCF.putScalar(0.0);
-  CORE::LINALG::multiplyNT(FCF, Temp, F_tot);
+  Core::LinAlg::multiplyNT(FCF, Temp, F_tot);
 
   // Temp1 (4x8) = FCF^T * (B+W0)
-  CORE::LINALG::SerialDenseMatrix Temp1(4, 2 * num_node(), true);
-  CORE::LINALG::multiply(Temp1, FCF, BplusW);
+  Core::LinAlg::SerialDenseMatrix Temp1(4, 2 * num_node(), true);
+  Core::LinAlg::multiply(Temp1, FCF, BplusW);
 
   // Temp3 (4x8) = S*(B+W0)
-  CORE::LINALG::SerialDenseMatrix Temp3(4, 2 * num_node(), true);
-  CORE::LINALG::multiply(Temp3, stress, BplusW);
+  Core::LinAlg::SerialDenseMatrix Temp3(4, 2 * num_node(), true);
+  Core::LinAlg::multiply(Temp3, stress, BplusW);
 
   // Kdd = (B+W0)^T*FCF^T*(B+W0) + (B+W0)^T*S*(B+W0)
-  CORE::LINALG::multiplyTN(1.0, estif, fac, BplusW, Temp1);
-  CORE::LINALG::multiplyTN(1.0, estif, fac, BplusW, Temp3);
+  Core::LinAlg::multiplyTN(1.0, estif, fac, BplusW, Temp1);
+  Core::LinAlg::multiplyTN(1.0, estif, fac, BplusW, Temp3);
 
   return;
-}  // DRT::ELEMENTS::Wall1::w1_kdd
+}  // Discret::ELEMENTS::Wall1::w1_kdd
 
 
 /*-----------------------------------------------------------------------------*
 | calculate matrix kda                                               mgit 03/08|
 *-----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1::w1_kda(const CORE::LINALG::SerialDenseMatrix& FCF,
-    const CORE::LINALG::SerialDenseMatrix& W0, const CORE::LINALG::SerialDenseMatrix& boplin,
-    const CORE::LINALG::SerialDenseMatrix& stress, const CORE::LINALG::SerialDenseMatrix& G,
-    const CORE::LINALG::SerialDenseMatrix& Z, CORE::LINALG::SerialDenseMatrix& Kda,
-    const CORE::LINALG::SerialDenseMatrix& p_stress, const double fac)
+void Discret::ELEMENTS::Wall1::w1_kda(const Core::LinAlg::SerialDenseMatrix& FCF,
+    const Core::LinAlg::SerialDenseMatrix& W0, const Core::LinAlg::SerialDenseMatrix& boplin,
+    const Core::LinAlg::SerialDenseMatrix& stress, const Core::LinAlg::SerialDenseMatrix& G,
+    const Core::LinAlg::SerialDenseMatrix& Z, Core::LinAlg::SerialDenseMatrix& Kda,
+    const Core::LinAlg::SerialDenseMatrix& p_stress, const double fac)
 {
   // BplusW = B+W0
-  CORE::LINALG::SerialDenseMatrix BplusW(4, 2 * num_node(), false);
+  Core::LinAlg::SerialDenseMatrix BplusW(4, 2 * num_node(), false);
   for (int i = 0; i < 4; i++)
     for (int j = 0; j < 2 * num_node(); j++) BplusW(i, j) = boplin(i, j) + W0(i, j);
 
   // Temp1 = FCF^T*G
-  CORE::LINALG::SerialDenseMatrix Temp1(4, Wall1::neas_, true);
-  CORE::LINALG::multiply(Temp1, FCF, G);
+  Core::LinAlg::SerialDenseMatrix Temp1(4, Wall1::neas_, true);
+  Core::LinAlg::multiply(Temp1, FCF, G);
 
   // Temp3 = S*(G)
-  CORE::LINALG::SerialDenseMatrix Temp3(4, Wall1::neas_, true);
-  CORE::LINALG::multiply(Temp3, stress, G);
+  Core::LinAlg::SerialDenseMatrix Temp3(4, Wall1::neas_, true);
+  Core::LinAlg::multiply(Temp3, stress, G);
 
   // Kda (8x4) = (B+W0)^T*FCF^T*G) + (B+W0)^T*S*G + PZ
-  CORE::LINALG::multiplyTN(1.0, Kda, fac, BplusW, Temp1);
-  CORE::LINALG::multiplyTN(1.0, Kda, fac, BplusW, Temp3);
+  Core::LinAlg::multiplyTN(1.0, Kda, fac, BplusW, Temp1);
+  Core::LinAlg::multiplyTN(1.0, Kda, fac, BplusW, Temp3);
   // Temp5 = fac * P*Z
   for (int i = 0; i < num_node(); i++)
   {
@@ -451,60 +451,60 @@ void DRT::ELEMENTS::Wall1::w1_kda(const CORE::LINALG::SerialDenseMatrix& FCF,
   }
 
   return;
-}  // DRT::ELEMENTS::Wall1::w1_kda
+}  // Discret::ELEMENTS::Wall1::w1_kda
 
 
 /*-----------------------------------------------------------------------------*
 | calculate matrix kaa                                               mgit 03/08|
 *-----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1::w1_kaa(const CORE::LINALG::SerialDenseMatrix& FCF,
-    const CORE::LINALG::SerialDenseMatrix& stress, const CORE::LINALG::SerialDenseMatrix& G,
-    CORE::LINALG::SerialDenseMatrix& Kaa, const double fac)
+void Discret::ELEMENTS::Wall1::w1_kaa(const Core::LinAlg::SerialDenseMatrix& FCF,
+    const Core::LinAlg::SerialDenseMatrix& stress, const Core::LinAlg::SerialDenseMatrix& G,
+    Core::LinAlg::SerialDenseMatrix& Kaa, const double fac)
 {
   // Temp1 = FCF*G
-  CORE::LINALG::SerialDenseMatrix Temp1(4, Wall1::neas_, true);
-  CORE::LINALG::multiply(Temp1, FCF, G);
+  Core::LinAlg::SerialDenseMatrix Temp1(4, Wall1::neas_, true);
+  Core::LinAlg::multiply(Temp1, FCF, G);
 
   // Temp3 = S*G
-  CORE::LINALG::SerialDenseMatrix Temp3(4, Wall1::neas_, true);
-  CORE::LINALG::multiply(Temp3, stress, G);
+  Core::LinAlg::SerialDenseMatrix Temp3(4, Wall1::neas_, true);
+  Core::LinAlg::multiply(Temp3, stress, G);
 
   // Kaa = G^T*FCF^T*G + G^T*S*G
-  CORE::LINALG::multiplyTN(1.0, Kaa, fac, G, Temp1);
-  CORE::LINALG::multiplyTN(1.0, Kaa, fac, G, Temp3);
+  Core::LinAlg::multiplyTN(1.0, Kaa, fac, G, Temp1);
+  Core::LinAlg::multiplyTN(1.0, Kaa, fac, G, Temp3);
 
   return;
-}  // DRT::ELEMENTS::Wall1::w1_kaa
+}  // Discret::ELEMENTS::Wall1::w1_kaa
 
 
 /*-----------------------------------------------------------------------------*
 | calculate internal forces fint(displacements u) and feas           mgit 03/08|
 *-----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1::w1_fint_eas(const CORE::LINALG::SerialDenseMatrix& W0,
-    const CORE::LINALG::SerialDenseMatrix& boplin, const CORE::LINALG::SerialDenseMatrix& G,
-    const CORE::LINALG::SerialDenseMatrix& p_stress, CORE::LINALG::SerialDenseVector& intforce,
-    CORE::LINALG::SerialDenseVector& feas, const double fac)
+void Discret::ELEMENTS::Wall1::w1_fint_eas(const Core::LinAlg::SerialDenseMatrix& W0,
+    const Core::LinAlg::SerialDenseMatrix& boplin, const Core::LinAlg::SerialDenseMatrix& G,
+    const Core::LinAlg::SerialDenseMatrix& p_stress, Core::LinAlg::SerialDenseVector& intforce,
+    Core::LinAlg::SerialDenseVector& feas, const double fac)
 
 {
   // BplusW = B+W0
-  CORE::LINALG::SerialDenseMatrix BplusW(4, 2 * num_node(), false);
+  Core::LinAlg::SerialDenseMatrix BplusW(4, 2 * num_node(), false);
   for (int i = 0; i < 4; i++)
     for (int j = 0; j < 2 * num_node(); j++) BplusW(i, j) = boplin(i, j) + W0(i, j);
 
   // Temp1 (8x1) = (BL+W0)^T*p_stress
-  CORE::LINALG::SerialDenseMatrix Temp1(2 * num_node(), 1, true);
-  CORE::LINALG::multiplyTN(Temp1, BplusW, p_stress);
+  Core::LinAlg::SerialDenseMatrix Temp1(2 * num_node(), 1, true);
+  Core::LinAlg::multiplyTN(Temp1, BplusW, p_stress);
 
   for (int i = 0; i < 2 * num_node(); i++) intforce(i) += fac * Temp1(i, 0);
 
   // Temp2 = G^T*p_stress
-  CORE::LINALG::SerialDenseMatrix Temp2(Wall1::neas_, 1, true);
-  CORE::LINALG::multiplyTN(Temp2, G, p_stress);
+  Core::LinAlg::SerialDenseMatrix Temp2(Wall1::neas_, 1, true);
+  Core::LinAlg::multiplyTN(Temp2, G, p_stress);
 
   for (int i = 0; i < Wall1::neas_; i++) feas(i) += fac * Temp2(i, 0);
 
   return;
-}  // DRT::ELEMENTS::Wall1::w1_fint_eas
+}  // Discret::ELEMENTS::Wall1::w1_fint_eas
 
 
 /*----------------------------------------------------------------------*/

@@ -37,9 +37,9 @@ EnsightWriter::EnsightWriter(PostField* field, const std::string& filename)
   using namespace FourC;
 
   // initialize proc0map_ correctly
-  const Teuchos::RCP<DRT::Discretization> dis = field_->discretization();
+  const Teuchos::RCP<Discret::Discretization> dis = field_->discretization();
   const Epetra_Map* noderowmap = dis->NodeRowMap();
-  proc0map_ = CORE::LINALG::AllreduceEMap(*noderowmap, 0);
+  proc0map_ = Core::LinAlg::AllreduceEMap(*noderowmap, 0);
 
   // sort proc0map_ so that we can loop it and get nodes in ascending order.
   std::vector<int> sortmap;
@@ -60,24 +60,24 @@ EnsightWriter::EnsightWriter(PostField* field, const std::string& filename)
   // it includes only strings for cell types known in ensight
   // you need to manually switch to other types distypes before querying this map
   distype2ensightstring_.clear();
-  distype2ensightstring_[CORE::FE::CellType::point1] = "point";
-  distype2ensightstring_[CORE::FE::CellType::line2] = "bar2";
-  distype2ensightstring_[CORE::FE::CellType::line3] = "bar2";  //"bar3";
-  distype2ensightstring_[CORE::FE::CellType::hex8] = "hexa8";
-  distype2ensightstring_[CORE::FE::CellType::hex20] = "hexa20";
-  distype2ensightstring_[CORE::FE::CellType::tet4] = "tetra4";
-  distype2ensightstring_[CORE::FE::CellType::tet10] = "tetra10";
-  distype2ensightstring_[CORE::FE::CellType::nurbs8] = "hexa8";
-  distype2ensightstring_[CORE::FE::CellType::nurbs27] = "hexa8";
-  distype2ensightstring_[CORE::FE::CellType::nurbs4] = "quad4";
-  distype2ensightstring_[CORE::FE::CellType::nurbs9] = "quad4";
-  distype2ensightstring_[CORE::FE::CellType::quad4] = "quad4";
-  distype2ensightstring_[CORE::FE::CellType::quad8] = "quad8";
-  distype2ensightstring_[CORE::FE::CellType::tri3] = "tria3";
-  distype2ensightstring_[CORE::FE::CellType::tri6] = "tria6";
-  distype2ensightstring_[CORE::FE::CellType::wedge6] = "penta6";
-  distype2ensightstring_[CORE::FE::CellType::wedge15] = "penta15";
-  distype2ensightstring_[CORE::FE::CellType::pyramid5] = "pyramid5";
+  distype2ensightstring_[Core::FE::CellType::point1] = "point";
+  distype2ensightstring_[Core::FE::CellType::line2] = "bar2";
+  distype2ensightstring_[Core::FE::CellType::line3] = "bar2";  //"bar3";
+  distype2ensightstring_[Core::FE::CellType::hex8] = "hexa8";
+  distype2ensightstring_[Core::FE::CellType::hex20] = "hexa20";
+  distype2ensightstring_[Core::FE::CellType::tet4] = "tetra4";
+  distype2ensightstring_[Core::FE::CellType::tet10] = "tetra10";
+  distype2ensightstring_[Core::FE::CellType::nurbs8] = "hexa8";
+  distype2ensightstring_[Core::FE::CellType::nurbs27] = "hexa8";
+  distype2ensightstring_[Core::FE::CellType::nurbs4] = "quad4";
+  distype2ensightstring_[Core::FE::CellType::nurbs9] = "quad4";
+  distype2ensightstring_[Core::FE::CellType::quad4] = "quad4";
+  distype2ensightstring_[Core::FE::CellType::quad8] = "quad8";
+  distype2ensightstring_[Core::FE::CellType::tri3] = "tria3";
+  distype2ensightstring_[Core::FE::CellType::tri6] = "tria6";
+  distype2ensightstring_[Core::FE::CellType::wedge6] = "penta6";
+  distype2ensightstring_[Core::FE::CellType::wedge15] = "penta15";
+  distype2ensightstring_[Core::FE::CellType::pyramid5] = "pyramid5";
 }
 
 
@@ -97,7 +97,7 @@ void EnsightWriter::WriteFiles(PostFilterBase& filter)
   // for the control points. Here, a new .case file is created which
   // ends with "_cp".
   int iter = 1;
-  if (field_->problem()->spatial_approximation_type() == CORE::FE::ShapeFunctionType::nurbs) iter++;
+  if (field_->problem()->spatial_approximation_type() == Core::FE::ShapeFunctionType::nurbs) iter++;
 
   // For none-NURBS cases, this loop is just passed through once!
   for (int i = 0; i < iter; ++i)
@@ -279,12 +279,12 @@ void EnsightWriter::write_geo_file_one_time_step(std::ofstream& file,
 
 
   // switch between nurbs an others
-  if (field_->problem()->spatial_approximation_type() == CORE::FE::ShapeFunctionType::nurbs &&
+  if (field_->problem()->spatial_approximation_type() == Core::FE::ShapeFunctionType::nurbs &&
       !writecp_)
   {
     // cast dis to NurbsDiscretisation
-    DRT::NURBS::NurbsDiscretization* nurbsdis =
-        dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*(field_->discretization())));
+    Discret::Nurbs::NurbsDiscretization* nurbsdis =
+        dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(*(field_->discretization())));
 
     if (nurbsdis == nullptr)
     {
@@ -336,15 +336,15 @@ void EnsightWriter::write_geo_file_one_time_step(std::ofstream& file,
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> EnsightWriter::write_coordinates(
-    std::ofstream& geofile, const Teuchos::RCP<DRT::Discretization> dis)
+    std::ofstream& geofile, const Teuchos::RCP<Discret::Discretization> dis)
 {
   using namespace FourC;
 
-  CORE::FE::ShapeFunctionType distype = field_->problem()->spatial_approximation_type();
+  Core::FE::ShapeFunctionType distype = field_->problem()->spatial_approximation_type();
   if (myrank_ == 0)
   {
     std::cout << "(computing) coordinates for a ";
-    std::cout << CORE::FE::ShapeFunctionTypeToString(distype);
+    std::cout << Core::FE::ShapeFunctionTypeToString(distype);
     std::cout << " approximation\n";
   }
 
@@ -354,13 +354,13 @@ Teuchos::RCP<Epetra_Map> EnsightWriter::write_coordinates(
 
   switch (distype)
   {
-    case CORE::FE::ShapeFunctionType::polynomial:
-    case CORE::FE::ShapeFunctionType::hdg:
+    case Core::FE::ShapeFunctionType::polynomial:
+    case Core::FE::ShapeFunctionType::hdg:
     {
       write_coordinates_for_polynomial_shapefunctions(geofile, dis, proc0map);
       break;
     }
-    case CORE::FE::ShapeFunctionType::nurbs:
+    case Core::FE::ShapeFunctionType::nurbs:
     {
       // write real geometry coordinates
       if (!writecp_) write_coordinates_for_nurbs_shapefunctions(geofile, dis, proc0map);
@@ -382,8 +382,8 @@ Teuchos::RCP<Epetra_Map> EnsightWriter::write_coordinates(
 /*----------------------------------------------------------------------*
   | write node connectivity for every element                  gjb 12/07 |
   *----------------------------------------------------------------------*/
-void EnsightWriter::write_cells(std::ofstream& geofile, const Teuchos::RCP<DRT::Discretization> dis,
-    const Teuchos::RCP<Epetra_Map>& proc0map) const
+void EnsightWriter::write_cells(std::ofstream& geofile,
+    const Teuchos::RCP<Discret::Discretization> dis, const Teuchos::RCP<Epetra_Map>& proc0map) const
 {
   using namespace FourC;
 
@@ -401,13 +401,13 @@ void EnsightWriter::write_cells(std::ofstream& geofile, const Teuchos::RCP<DRT::
   NumElePerDisType::const_iterator iter;
   for (iter = numElePerDisType_.begin(); iter != numElePerDisType_.end(); ++iter)
   {
-    const CORE::FE::CellType distypeiter = iter->first;
+    const Core::FE::CellType distypeiter = iter->first;
     const int ne = get_num_ele_output(distypeiter, iter->second);
     const std::string ensightCellType = get_ensight_string(distypeiter);
 
     if (myrank_ == 0)
     {
-      std::cout << "writing " << iter->second << " " << CORE::FE::CellTypeToString(distypeiter)
+      std::cout << "writing " << iter->second << " " << Core::FE::CellTypeToString(distypeiter)
                 << " element(s) as " << ne << " " << ensightCellType << " ensight cell(s)..."
                 << std::endl;
       write(geofile, ensightCellType);
@@ -419,26 +419,26 @@ void EnsightWriter::write_cells(std::ofstream& geofile, const Teuchos::RCP<DRT::
     // loop all available elements
     for (int iele = 0; iele < elementmap->NumMyElements(); ++iele)
     {
-      CORE::Elements::Element* const actele = dis->gElement(elementmap->GID(iele));
+      Core::Elements::Element* const actele = dis->gElement(elementmap->GID(iele));
       if (actele->Shape() == distypeiter)
       {
-        CORE::Nodes::Node** const nodes = actele->Nodes();
+        Core::Nodes::Node** const nodes = actele->Nodes();
         switch (actele->Shape())
         {
-          case CORE::FE::CellType::point1:
-          case CORE::FE::CellType::line2:
-            // case CORE::FE::CellType::line3: // Ensight format supports line3,
+          case Core::FE::CellType::point1:
+          case Core::FE::CellType::line2:
+            // case Core::FE::CellType::line3: // Ensight format supports line3,
             // Paraview does not.
-          case CORE::FE::CellType::hex8:
-          case CORE::FE::CellType::quad4:
-          case CORE::FE::CellType::quad8:
-          case CORE::FE::CellType::tet4:
-          case CORE::FE::CellType::tet10:
-          case CORE::FE::CellType::tri3:
-          case CORE::FE::CellType::tri6:
-          case CORE::FE::CellType::wedge6:
-          case CORE::FE::CellType::wedge15:
-          case CORE::FE::CellType::pyramid5:
+          case Core::FE::CellType::hex8:
+          case Core::FE::CellType::quad4:
+          case Core::FE::CellType::quad8:
+          case Core::FE::CellType::tet4:
+          case Core::FE::CellType::tet10:
+          case Core::FE::CellType::tri3:
+          case Core::FE::CellType::tri6:
+          case Core::FE::CellType::wedge6:
+          case Core::FE::CellType::wedge15:
+          case Core::FE::CellType::pyramid5:
           {
             // standard case with direct support
             const int numnp = actele->num_node();
@@ -451,7 +451,7 @@ void EnsightWriter::write_cells(std::ofstream& geofile, const Teuchos::RCP<DRT::
             }
             break;
           }
-          case CORE::FE::CellType::hex20:
+          case Core::FE::CellType::hex20:
           {
             // standard case with direct support
             const int numnp = actele->num_node();
@@ -464,10 +464,10 @@ void EnsightWriter::write_cells(std::ofstream& geofile, const Teuchos::RCP<DRT::
             }
             break;
           }
-          case CORE::FE::CellType::hex16:
+          case Core::FE::CellType::hex16:
           {
             // write subelements
-            for (int isubele = 0; isubele < get_num_sub_ele(CORE::FE::CellType::hex16); ++isubele)
+            for (int isubele = 0; isubele < get_num_sub_ele(Core::FE::CellType::hex16); ++isubele)
               for (int isubnode = 0; isubnode < 8; ++isubnode)
                 if (myrank_ == 0)  // proc0 can write its elements immidiately
                   write(geofile, proc0map->LID(nodes[subhex16map[isubele][isubnode]]->Id()) + 1);
@@ -475,10 +475,10 @@ void EnsightWriter::write_cells(std::ofstream& geofile, const Teuchos::RCP<DRT::
                   nodevector.push_back(nodes[subhex16map[isubele][isubnode]]->Id());
             break;
           }
-          case CORE::FE::CellType::hex18:
+          case Core::FE::CellType::hex18:
           {
             // write subelements
-            for (int isubele = 0; isubele < get_num_sub_ele(CORE::FE::CellType::hex18); ++isubele)
+            for (int isubele = 0; isubele < get_num_sub_ele(Core::FE::CellType::hex18); ++isubele)
               for (int isubnode = 0; isubnode < 8; ++isubnode)
                 if (myrank_ == 0)  // proc0 can write its elements immidiately
                   write(geofile, proc0map->LID(nodes[subhex18map[isubele][isubnode]]->Id()) + 1);
@@ -486,10 +486,10 @@ void EnsightWriter::write_cells(std::ofstream& geofile, const Teuchos::RCP<DRT::
                   nodevector.push_back(nodes[subhex18map[isubele][isubnode]]->Id());
             break;
           }
-          case CORE::FE::CellType::hex27:
+          case Core::FE::CellType::hex27:
           {
             // write subelements
-            for (int isubele = 0; isubele < get_num_sub_ele(CORE::FE::CellType::hex27); ++isubele)
+            for (int isubele = 0; isubele < get_num_sub_ele(Core::FE::CellType::hex27); ++isubele)
               for (int isubnode = 0; isubnode < 8; ++isubnode)
                 if (myrank_ == 0)  // proc0 can write its elements immidiately
                   write(geofile, proc0map->LID(nodes[subhexmap[isubele][isubnode]]->Id()) + 1);
@@ -497,10 +497,10 @@ void EnsightWriter::write_cells(std::ofstream& geofile, const Teuchos::RCP<DRT::
                   nodevector.push_back(nodes[subhexmap[isubele][isubnode]]->Id());
             break;
           }
-          case CORE::FE::CellType::quad9:
+          case Core::FE::CellType::quad9:
           {
             // write subelements
-            for (int isubele = 0; isubele < get_num_sub_ele(CORE::FE::CellType::quad9); ++isubele)
+            for (int isubele = 0; isubele < get_num_sub_ele(Core::FE::CellType::quad9); ++isubele)
               for (int isubnode = 0; isubnode < 4; ++isubnode)
                 if (myrank_ == 0)  // proc0 can write its elements immidiately
                   write(geofile, proc0map->LID(nodes[subquadmap[isubele][isubnode]]->Id()) + 1);
@@ -508,10 +508,10 @@ void EnsightWriter::write_cells(std::ofstream& geofile, const Teuchos::RCP<DRT::
                   nodevector.push_back(nodes[subquadmap[isubele][isubnode]]->Id());
             break;
           }
-          case CORE::FE::CellType::line3:
+          case Core::FE::CellType::line3:
           {
             // write subelements
-            for (int isubele = 0; isubele < get_num_sub_ele(CORE::FE::CellType::line3); ++isubele)
+            for (int isubele = 0; isubele < get_num_sub_ele(Core::FE::CellType::line3); ++isubele)
               for (int isubnode = 0; isubnode < 2; ++isubnode)
                 if (myrank_ == 0)  // proc0 can write its elements immidiately
                   write(geofile, proc0map->LID(nodes[sublinemap[isubele][isubnode]]->Id()) + 1);
@@ -519,7 +519,7 @@ void EnsightWriter::write_cells(std::ofstream& geofile, const Teuchos::RCP<DRT::
                   nodevector.push_back(nodes[sublinemap[isubele][isubnode]]->Id());
             break;
           }
-          case CORE::FE::CellType::nurbs4:
+          case Core::FE::CellType::nurbs4:
           {
             if (!writecp_)
               write_nurbs_cell(actele->Shape(), actele->Id(), geofile, nodevector, dis, proc0map);
@@ -537,14 +537,14 @@ void EnsightWriter::write_cells(std::ofstream& geofile, const Teuchos::RCP<DRT::
             }
             break;
           }
-          case CORE::FE::CellType::nurbs9:
+          case Core::FE::CellType::nurbs9:
           {
             if (!writecp_)
               write_nurbs_cell(actele->Shape(), actele->Id(), geofile, nodevector, dis, proc0map);
             else
             {
               // write subelements
-              for (int isubele = 0; isubele < get_num_sub_ele(CORE::FE::CellType::quad9); ++isubele)
+              for (int isubele = 0; isubele < get_num_sub_ele(Core::FE::CellType::quad9); ++isubele)
                 for (int isubnode = 0; isubnode < 4; ++isubnode)
                   if (myrank_ == 0)  // proc0 can write its elements immidiately
                     write(geofile, proc0map->LID(nodes[subquadmap[isubele][isubnode]]->Id()) + 1);
@@ -553,14 +553,14 @@ void EnsightWriter::write_cells(std::ofstream& geofile, const Teuchos::RCP<DRT::
             }
             break;
           }
-          case CORE::FE::CellType::nurbs27:
+          case Core::FE::CellType::nurbs27:
           {
             if (!writecp_)
               write_nurbs_cell(actele->Shape(), actele->Id(), geofile, nodevector, dis, proc0map);
             else
             {
               // write subelements
-              for (int isubele = 0; isubele < get_num_sub_ele(CORE::FE::CellType::hex27); ++isubele)
+              for (int isubele = 0; isubele < get_num_sub_ele(Core::FE::CellType::hex27); ++isubele)
                 for (int isubnode = 0; isubnode < 8; ++isubnode)
                   if (myrank_ == 0)  // proc0 can write its elements immidiately
                     write(geofile, proc0map->LID(nodes[subhexmap[isubele][isubnode]]->Id()) + 1);
@@ -593,7 +593,7 @@ void EnsightWriter::write_cells(std::ofstream& geofile, const Teuchos::RCP<DRT::
  \date 12/07
 */
 void EnsightWriter::write_node_connectivity_par(std::ofstream& geofile,
-    const Teuchos::RCP<DRT::Discretization> dis, const std::vector<int>& nodevector,
+    const Teuchos::RCP<Discret::Discretization> dis, const std::vector<int>& nodevector,
     const Teuchos::RCP<Epetra_Map> proc0map) const
 {
   using namespace FourC;
@@ -604,15 +604,15 @@ void EnsightWriter::write_node_connectivity_par(std::ofstream& geofile,
   std::vector<char> rblock;  // recieving block
 
   // create an exporter for communication
-  CORE::COMM::Exporter exporter(dis->Comm());
+  Core::Communication::Exporter exporter(dis->Comm());
 
   // pack my node ids into sendbuffer
   sblock.clear();
 
-  CORE::COMM::PackBuffer data;
-  CORE::COMM::ParObject::AddtoPack(data, nodevector);
+  Core::Communication::PackBuffer data;
+  Core::Communication::ParObject::AddtoPack(data, nodevector);
   data.StartPacking();
-  CORE::COMM::ParObject::AddtoPack(data, nodevector);
+  Core::Communication::ParObject::AddtoPack(data, nodevector);
   swap(sblock, data());
 
   // now we start the communication
@@ -656,7 +656,7 @@ void EnsightWriter::write_node_connectivity_par(std::ofstream& geofile,
       // extract data from recieved package
       while (index < rblock.size())
       {
-        CORE::COMM::ParObject::ExtractfromPack(index, rblock, nodeids);
+        Core::Communication::ParObject::ExtractfromPack(index, rblock, nodeids);
       }
       // compute node lid based on proc0map and write it to file
       for (int i = 0; i < (int)nodeids.size(); ++i)
@@ -683,7 +683,7 @@ void EnsightWriter::write_node_connectivity_par(std::ofstream& geofile,
  * \date 01/08
  */
 EnsightWriter::NumElePerDisType EnsightWriter::get_num_ele_per_dis_type(
-    const Teuchos::RCP<DRT::Discretization> dis) const
+    const Teuchos::RCP<Discret::Discretization> dis) const
 {
   using namespace FourC;
 
@@ -692,8 +692,8 @@ EnsightWriter::NumElePerDisType EnsightWriter::get_num_ele_per_dis_type(
   NumElePerDisType numElePerDisType;
   for (int iele = 0; iele < elementmap->NumMyElements(); ++iele)
   {
-    CORE::Elements::Element* actele = dis->gElement(elementmap->GID(iele));
-    const CORE::FE::CellType distype = actele->Shape();
+    Core::Elements::Element* actele = dis->gElement(elementmap->GID(iele));
+    const Core::FE::CellType distype = actele->Shape();
     // update counter for current distype
     numElePerDisType[distype]++;
   }
@@ -701,14 +701,14 @@ EnsightWriter::NumElePerDisType EnsightWriter::get_num_ele_per_dis_type(
   // in parallel case we have to sum up the local element distype numbers
 
   // determine maximum number of possible element discretization types
-  auto numeledistypes = static_cast<int>(CORE::FE::CellType::max_distype);
+  auto numeledistypes = static_cast<int>(Core::FE::CellType::max_distype);
 
   // write the final local numbers into a vector
   std::vector<int> myNumElePerDisType(numeledistypes);
   NumElePerDisType::const_iterator iter;
   for (iter = numElePerDisType.begin(); iter != numElePerDisType.end(); ++iter)
   {
-    const CORE::FE::CellType distypeiter = iter->first;
+    const Core::FE::CellType distypeiter = iter->first;
     const int ne = iter->second;
     myNumElePerDisType[static_cast<int>(distypeiter)] += ne;
   }
@@ -725,7 +725,7 @@ EnsightWriter::NumElePerDisType EnsightWriter::get_num_ele_per_dis_type(
   for (int i = 0; i < numeledistypes; ++i)
   {
     if (globalnumeleperdistype[i] > 0)  // no entry when we have no element of this type
-      globalNumElePerDisType[CORE::FE::CellType(i)] = globalnumeleperdistype[i];
+      globalNumElePerDisType[Core::FE::CellType(i)] = globalnumeleperdistype[i];
   }
 
   return globalNumElePerDisType;
@@ -734,7 +734,7 @@ EnsightWriter::NumElePerDisType EnsightWriter::get_num_ele_per_dis_type(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int EnsightWriter::get_num_ele_output(const CORE::FE::CellType distype, const int numele) const
+int EnsightWriter::get_num_ele_output(const Core::FE::CellType distype, const int numele) const
 {
   return get_num_sub_ele(distype) * numele;
 }
@@ -742,28 +742,28 @@ int EnsightWriter::get_num_ele_output(const CORE::FE::CellType distype, const in
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int EnsightWriter::get_num_sub_ele(const CORE::FE::CellType distype) const
+int EnsightWriter::get_num_sub_ele(const Core::FE::CellType distype) const
 {
   using namespace FourC;
 
   switch (distype)
   {
-    case CORE::FE::CellType::hex18:
+    case Core::FE::CellType::hex18:
       return 4;
       break;
-    case CORE::FE::CellType::hex27:
+    case Core::FE::CellType::hex27:
       return 8;
       break;
-    case CORE::FE::CellType::nurbs27:
+    case Core::FE::CellType::nurbs27:
       return 8;
       break;
-    case CORE::FE::CellType::quad9:
+    case Core::FE::CellType::quad9:
       return 4;
       break;
-    case CORE::FE::CellType::nurbs9:
+    case Core::FE::CellType::nurbs9:
       return 4;
       break;
-    case CORE::FE::CellType::line3:
+    case Core::FE::CellType::line3:
       return 2;
       break;
     default:
@@ -775,7 +775,7 @@ int EnsightWriter::get_num_sub_ele(const CORE::FE::CellType distype) const
  * \brief parse all elements and get the global ids of the elements for each distype
  */
 EnsightWriter::EleGidPerDisType EnsightWriter::get_ele_gid_per_dis_type(
-    const Teuchos::RCP<DRT::Discretization> dis, NumElePerDisType numeleperdistype) const
+    const Teuchos::RCP<Discret::Discretization> dis, NumElePerDisType numeleperdistype) const
 {
   using namespace FourC;
 
@@ -793,8 +793,8 @@ EnsightWriter::EleGidPerDisType EnsightWriter::get_ele_gid_per_dis_type(
   for (int iele = 0; iele < elementmap->NumMyElements(); ++iele)
   {
     const int gid = elementmap->GID(iele);
-    CORE::Elements::Element* actele = dis->gElement(gid);
-    const CORE::FE::CellType distype = actele->Shape();
+    Core::Elements::Element* actele = dis->gElement(gid);
+    const Core::FE::CellType distype = actele->Shape();
     // update counter for current distype
     eleGidPerDisType[distype].push_back(gid);
   }
@@ -813,15 +813,15 @@ EnsightWriter::EleGidPerDisType EnsightWriter::get_ele_gid_per_dis_type(
     std::vector<char> rblock;  // recieving block
 
     // create an exporter for communication
-    CORE::COMM::Exporter exporter(dis->Comm());
+    Core::Communication::Exporter exporter(dis->Comm());
 
     // pack my element gids of this discretization type into sendbuffer
     sblock.clear();
 
-    CORE::COMM::PackBuffer data;
-    CORE::COMM::ParObject::AddtoPack(data, eleGidPerDisType[iterator->first]);
+    Core::Communication::PackBuffer data;
+    Core::Communication::ParObject::AddtoPack(data, eleGidPerDisType[iterator->first]);
     data.StartPacking();
-    CORE::COMM::ParObject::AddtoPack(data, eleGidPerDisType[iterator->first]);
+    Core::Communication::ParObject::AddtoPack(data, eleGidPerDisType[iterator->first]);
     swap(sblock, data());
 
     // now we start the communication
@@ -865,7 +865,7 @@ EnsightWriter::EleGidPerDisType EnsightWriter::get_ele_gid_per_dis_type(
         // extract data from recieved package
         while (index < rblock.size())
         {
-          CORE::COMM::ParObject::ExtractfromPack(index, rblock, elegids);
+          Core::Communication::ParObject::ExtractfromPack(index, rblock, elegids);
         }
         for (int i = 0; i < (int)elegids.size(); ++i)
         {
@@ -883,22 +883,22 @@ EnsightWriter::EleGidPerDisType EnsightWriter::get_ele_gid_per_dis_type(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::string EnsightWriter::get_ensight_string(const CORE::FE::CellType distype) const
+std::string EnsightWriter::get_ensight_string(const Core::FE::CellType distype) const
 {
   using namespace FourC;
 
-  std::map<CORE::FE::CellType, std::string>::const_iterator entry;
+  std::map<Core::FE::CellType, std::string>::const_iterator entry;
   switch (distype)
   {
-    case CORE::FE::CellType::hex18:
-    case CORE::FE::CellType::hex27:
-      entry = distype2ensightstring_.find(CORE::FE::CellType::hex8);
+    case Core::FE::CellType::hex18:
+    case Core::FE::CellType::hex27:
+      entry = distype2ensightstring_.find(Core::FE::CellType::hex8);
       break;
-    case CORE::FE::CellType::quad9:
-      entry = distype2ensightstring_.find(CORE::FE::CellType::quad4);
+    case Core::FE::CellType::quad9:
+      entry = distype2ensightstring_.find(Core::FE::CellType::quad4);
       break;
-    case CORE::FE::CellType::tet10:
-      entry = distype2ensightstring_.find(CORE::FE::CellType::tet10);
+    case Core::FE::CellType::tet10:
+      entry = distype2ensightstring_.find(Core::FE::CellType::tet10);
       break;
     default:
       entry = distype2ensightstring_.find(distype);
@@ -906,7 +906,7 @@ std::string EnsightWriter::get_ensight_string(const CORE::FE::CellType distype) 
   }
   if (entry == distype2ensightstring_.end())
     FOUR_C_THROW(
-        "No entry in distype2ensightstring_ found for CORE::FE::CellType = '%d'.", distype);
+        "No entry in distype2ensightstring_ found for Core::FE::CellType = '%d'.", distype);
   return entry->second;
 }
 
@@ -1506,7 +1506,7 @@ void EnsightWriter::write_dof_result_step(std::ofstream& file, PostResult& resul
   write(file, field_->field_pos() + 1);
   write(file, "coordinates");
 
-  const Teuchos::RCP<DRT::Discretization> dis = field_->discretization();
+  const Teuchos::RCP<Discret::Discretization> dis = field_->discretization();
   const Epetra_Map* nodemap = dis->NodeRowMap();  // local node row map
   const int numnp = nodemap->NumGlobalElements();
 
@@ -1547,15 +1547,15 @@ void EnsightWriter::write_dof_result_step(std::ofstream& file, PostResult& resul
   const int offset = min_gid_glob_epetradatamap - min_gid_glob_dofrowmap;
 
   // switch between nurbs an others
-  if (field_->problem()->spatial_approximation_type() == CORE::FE::ShapeFunctionType::nurbs &&
+  if (field_->problem()->spatial_approximation_type() == Core::FE::ShapeFunctionType::nurbs &&
       !writecp_)
   {
     write_dof_result_step_for_nurbs(file, numdf, data, name, offset);
   }
   else if (field_->problem()->spatial_approximation_type() ==
-               CORE::FE::ShapeFunctionType::polynomial or
-           field_->problem()->spatial_approximation_type() == CORE::FE::ShapeFunctionType::hdg or
-           (field_->problem()->spatial_approximation_type() == CORE::FE::ShapeFunctionType::nurbs &&
+               Core::FE::ShapeFunctionType::polynomial or
+           field_->problem()->spatial_approximation_type() == Core::FE::ShapeFunctionType::hdg or
+           (field_->problem()->spatial_approximation_type() == Core::FE::ShapeFunctionType::nurbs &&
                writecp_))
   {
     //------------------------------------------------------
@@ -1563,7 +1563,7 @@ void EnsightWriter::write_dof_result_step(std::ofstream& file, PostResult& resul
     //------------------------------------------------------
 
     Teuchos::RCP<Epetra_Map> proc0datamap;
-    proc0datamap = CORE::LINALG::AllreduceEMap(*epetradatamap, 0);
+    proc0datamap = Core::LinAlg::AllreduceEMap(*epetradatamap, 0);
 
     // contract result values on proc0 (proc0 gets everything, other procs empty)
     Epetra_Import proc0dataimporter(*proc0datamap, *epetradatamap);
@@ -1587,7 +1587,7 @@ void EnsightWriter::write_dof_result_step(std::ofstream& file, PostResult& resul
     {
       for (int inode = 0; inode < mynumnp; inode++)
       {
-        CORE::Nodes::Node* n = dis->lRowNode(inode);
+        Core::Nodes::Node* n = dis->lRowNode(inode);
 
         const double dofgid = (double)dis->Dof(n, frompid + idf) + offset;
         if (dofgid > -1.0)
@@ -1725,15 +1725,15 @@ void EnsightWriter::write_nodal_result_step(std::ofstream& file,
   const Epetra_BlockMap& datamap = data->Map();
 
   // switch between nurbs an others
-  if (field_->problem()->spatial_approximation_type() == CORE::FE::ShapeFunctionType::nurbs &&
+  if (field_->problem()->spatial_approximation_type() == Core::FE::ShapeFunctionType::nurbs &&
       !writecp_)
   {
     write_nodal_result_step_for_nurbs(file, numdf, data, name, 0);
   }
   else if (field_->problem()->spatial_approximation_type() ==
-               CORE::FE::ShapeFunctionType::polynomial or
-           field_->problem()->spatial_approximation_type() == CORE::FE::ShapeFunctionType::hdg or
-           (field_->problem()->spatial_approximation_type() == CORE::FE::ShapeFunctionType::nurbs &&
+               Core::FE::ShapeFunctionType::polynomial or
+           field_->problem()->spatial_approximation_type() == Core::FE::ShapeFunctionType::hdg or
+           (field_->problem()->spatial_approximation_type() == Core::FE::ShapeFunctionType::nurbs &&
                writecp_))
   {
     // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
@@ -1814,7 +1814,7 @@ void EnsightWriter::write_element_dof_result_step(std::ofstream& file, PostResul
   write(file, "part");
   write(file, field_->field_pos() + 1);
 
-  const Teuchos::RCP<DRT::Discretization> dis = field_->discretization();
+  const Teuchos::RCP<Discret::Discretization> dis = field_->discretization();
   const Epetra_Map* elementmap = dis->ElementRowMap();  // local node row map
 
   const Teuchos::RCP<Epetra_Vector> data = result.read_result(groupname);
@@ -1830,7 +1830,7 @@ void EnsightWriter::write_element_dof_result_step(std::ofstream& file, PostResul
   //------------------------------------------------------
 
   Teuchos::RCP<Epetra_Map> proc0datamap;
-  proc0datamap = CORE::LINALG::AllreduceEMap(*epetradatamap, 0);
+  proc0datamap = Core::LinAlg::AllreduceEMap(*epetradatamap, 0);
 
   // contract result values on proc0 (proc0 gets everything, other procs empty)
   Epetra_Import proc0dataimporter(*proc0datamap, *epetradatamap);
@@ -1853,7 +1853,7 @@ void EnsightWriter::write_element_dof_result_step(std::ofstream& file, PostResul
   {
     for (int ielem = 0; ielem < nummyelem; ielem++)
     {
-      CORE::Elements::Element* n = dis->lRowElement(ielem);
+      Core::Elements::Element* n = dis->lRowElement(ielem);
       const double dofgid = (double)dis->Dof(n, from + idof);
       if (dofgid > -1.0)
       {
@@ -1999,7 +1999,7 @@ void EnsightWriter::write_element_result_step(std::ofstream& file,
   //------------------------------------------------------
 
   Teuchos::RCP<Epetra_Map> proc0datamap;
-  proc0datamap = CORE::LINALG::AllreduceEMap(*epetradatamap, 0);
+  proc0datamap = Core::LinAlg::AllreduceEMap(*epetradatamap, 0);
 
   // contract result values on proc0 (proc0 gets everything, other procs empty)
   Epetra_Import proc0dataimporter(*proc0datamap, *epetradatamap);
@@ -2338,7 +2338,7 @@ std::string EnsightWriter::get_file_section_string_from_filesets(
 */
 /*----------------------------------------------------------------------*/
 void EnsightWriter::write_coordinates_for_polynomial_shapefunctions(std::ofstream& geofile,
-    const Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<Epetra_Map>& proc0map)
+    const Teuchos::RCP<Discret::Discretization> dis, Teuchos::RCP<Epetra_Map>& proc0map)
 {
   using namespace FourC;
 
@@ -2356,7 +2356,7 @@ void EnsightWriter::write_coordinates_for_polynomial_shapefunctions(std::ofstrea
   for (int inode = 0; inode < numnp; inode++)
   {
     int gid = nodemap->GID(inode);
-    const CORE::Nodes::Node* actnode = dis->gNode(gid);
+    const Core::Nodes::Node* actnode = dis->gNode(gid);
     for (int isd = 0; isd < NSD; ++isd)
     {
       double val = ((actnode->X())[isd]);
@@ -2365,7 +2365,7 @@ void EnsightWriter::write_coordinates_for_polynomial_shapefunctions(std::ofstrea
   }
 
   // put all coordinate information on proc 0
-  proc0map = CORE::LINALG::AllreduceEMap(*nodemap, 0);
+  proc0map = Core::LinAlg::AllreduceEMap(*nodemap, 0);
 
   // import my new values (proc0 gets everything, other procs empty)
   Epetra_Import proc0importer(*proc0map, *nodemap);

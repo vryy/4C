@@ -24,7 +24,7 @@ general static parameters required for scalar transport element evaluation.
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
@@ -46,7 +46,7 @@ namespace DRT
           ) override;
 
       //! return type of closing equation for electric potential
-      INPAR::ELCH::EquPot EquPot() const { return equpot_; };
+      Inpar::ElCh::EquPot EquPot() const { return equpot_; };
 
       //! return Faraday constant
       double Faraday() const { return faraday_; };
@@ -73,7 +73,7 @@ namespace DRT
       bool boundaryfluxcoupling_;
 
       //! equation used for closing of the elch-system
-      enum INPAR::ELCH::EquPot equpot_;
+      enum Inpar::ElCh::EquPot equpot_;
 
       //! Faraday constant
       double faraday_;
@@ -92,7 +92,7 @@ namespace DRT
       double temperature_;
     };
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

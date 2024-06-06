@@ -27,16 +27,16 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
   class SparseOperator;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 namespace UTILS
 {
@@ -59,7 +59,7 @@ namespace UTILS
     takes care of the Cardiovascular0D IDs.
     */
 
-    Cardiovascular0D(Teuchos::RCP<DRT::Discretization>
+    Cardiovascular0D(Teuchos::RCP<Discret::Discretization>
                          discr,            ///< discretization where Cardiovascular0D lives on
         const std::string& conditionname,  ///< Name of condition to create Cardiovascular0D from
         std::vector<int>& curID            ///< current ID
@@ -69,7 +69,7 @@ namespace UTILS
     \brief Constructor of a Cardiovascular0D based on a conditions with a given name.
     */
 
-    Cardiovascular0D(Teuchos::RCP<DRT::Discretization>
+    Cardiovascular0D(Teuchos::RCP<Discret::Discretization>
                          discr,  ///< discretization where Cardiovascular0D funtion lives on
         const std::string&
             CondName  ///< Name of condition to create Cardiovascular0D functions from
@@ -108,10 +108,10 @@ namespace UTILS
     virtual void Evaluate(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat1,  ///< Cardiovascular0D stiffness matrix
-        Teuchos::RCP<CORE::LINALG::SparseOperator>
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat1,  ///< Cardiovascular0D stiffness matrix
+        Teuchos::RCP<Core::LinAlg::SparseOperator>
             sysmat2,  ///< Cardiovascular0D offdiagonal matrix dV/dd
-        Teuchos::RCP<CORE::LINALG::SparseOperator>
+        Teuchos::RCP<Core::LinAlg::SparseOperator>
             sysmat3,                          ///< Cardiovascular0D offdiagonal matrix dfext/dp
         Teuchos::RCP<Epetra_Vector> sysvec1,  ///< distributed vectors that may be filled by
                                               ///< assembly of element contributions
@@ -121,16 +121,16 @@ namespace UTILS
     /// Return type of Cardiovascular0D function
     Cardiovascular0DType Type() { return cardiovascular0dtype_; }
 
-    std::vector<CORE::Conditions::Condition*> get_cardiovascular0_d_condition()
+    std::vector<Core::Conditions::Condition*> get_cardiovascular0_d_condition()
     {
       return cardiovascular0dcond_;
     }
-    std::vector<CORE::Conditions::Condition*> get_cardiovascular0_d_structure_coupling_condition()
+    std::vector<Core::Conditions::Condition*> get_cardiovascular0_d_structure_coupling_condition()
     {
       return cardiovascular0dstructcoupcond_;
     }
 
-    INPAR::CARDIOVASCULAR0D::Cardvasc0DRespiratoryModel GetRespiratoryModel()
+    Inpar::CARDIOVASCULAR0D::Cardvasc0DRespiratoryModel GetRespiratoryModel()
     {
       return respiratory_model_;
     }
@@ -139,22 +139,22 @@ namespace UTILS
     void EvaluateDStructDp(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<CORE::LINALG::SparseOperator>
+        Teuchos::RCP<Core::LinAlg::SparseOperator>
             sysmat  ///< Cardiovascular0D offdiagonal matrix dfext/dp
     );
 
    protected:
-    Teuchos::RCP<DRT::Discretization> actdisc_;  ///< standard discretization
-    std::vector<CORE::Conditions::Condition*>
+    Teuchos::RCP<Discret::Discretization> actdisc_;  ///< standard discretization
+    std::vector<Core::Conditions::Condition*>
         cardiovascular0dcond_;  ///< 0D cardiovascular conditions
-    std::vector<CORE::Conditions::Condition*>
+    std::vector<Core::Conditions::Condition*>
         cardiovascular0dstructcoupcond_;  ///< 0D cardiovascular structure coupling conditions
     Cardiovascular0DType cardiovascular0dtype_;  ///< Cardiovascular0D type
-    const INPAR::CARDIOVASCULAR0D::Cardvasc0DAtriumModel atrium_model_;
-    const INPAR::CARDIOVASCULAR0D::Cardvasc0DVentricleModel ventricle_model_;
-    const INPAR::CARDIOVASCULAR0D::Cardvasc0DRespiratoryModel respiratory_model_;
+    const Inpar::CARDIOVASCULAR0D::Cardvasc0DAtriumModel atrium_model_;
+    const Inpar::CARDIOVASCULAR0D::Cardvasc0DVentricleModel ventricle_model_;
+    const Inpar::CARDIOVASCULAR0D::Cardvasc0DRespiratoryModel respiratory_model_;
     //! gaussian integration to be used
-    CORE::FE::GaussRule2D gaussrule_;
+    Core::FE::GaussRule2D gaussrule_;
 
    private:
     // don't want = operator, cctor and destructor

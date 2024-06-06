@@ -29,9 +29,9 @@ FOUR_C_NAMESPACE_OPEN
  *------------------------------------------------------------------------------------------------*/
 XFEM::XfluidSemiLagrange::XfluidSemiLagrange(
     XFEM::XfluidTimeintBase& timeInt,  /// time integration base class object
-    const std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt>>&
+    const std::map<int, std::vector<Inpar::XFEM::XFluidTimeInt>>&
         reconstr_method,                      /// reconstruction map for nodes and its dofsets
-    INPAR::XFEM::XFluidTimeInt& timeIntType,  /// type of time integration
+    Inpar::XFEM::XFluidTimeInt& timeIntType,  /// type of time integration
     const Teuchos::RCP<Epetra_Vector> veln,   /// velocity at time t^n in col map
     const double& dt,                         /// time step size
     const double& theta,                      /// OST theta
@@ -68,22 +68,22 @@ void XFEM::XfluidSemiLagrange::compute(
     case FRS1FGI1_:
     {
       if (myrank_ == 0)
-        CORE::IO::cout << "\nXFLUID_SemiLagrange::compute: case FRS1FGI1_ ..." << CORE::IO::flush;
+        Core::IO::cout << "\nXFLUID_SemiLagrange::compute: case FRS1FGI1_ ..." << Core::IO::flush;
       reset_state(TimeIntData::basicStd_, TimeIntData::currSL_);
       break;
     }
     case FRSNot1_:
     {
       if (myrank_ == 0)
-        CORE::IO::cout << "\nXFLUID_SemiLagrange::compute: case FRSNot1_ ..." << CORE::IO::flush;
+        Core::IO::cout << "\nXFLUID_SemiLagrange::compute: case FRSNot1_ ..." << Core::IO::flush;
       reset_state(TimeIntData::doneStd_, TimeIntData::currSL_);
       break;
     }
     case FRS1FGINot1_:
     {
       if (myrank_ == 0)
-        CORE::IO::cout << "\nXFLUID_SemiLagrange::compute: case FRS1FGINot1_ ..."
-                       << CORE::IO::flush;
+        Core::IO::cout << "\nXFLUID_SemiLagrange::compute: case FRS1FGINot1_ ..."
+                       << Core::IO::flush;
       reinitialize_data();
       reset_state(TimeIntData::basicStd_, TimeIntData::currSL_);
       reset_state(TimeIntData::doneStd_, TimeIntData::currSL_);
@@ -96,15 +96,15 @@ void XFEM::XfluidSemiLagrange::compute(
 
 
 #ifdef DEBUG_SEMILAGRANGE
-  CORE::IO::cout
+  Core::IO::cout
       << "\n----------------------------------------------------------------------------------"
          "------- ";
-  CORE::IO::cout << "\nReconstruct data with SEMILAGRANGEAN algorithm for " << timeIntData_->size()
+  Core::IO::cout << "\nReconstruct data with SEMILAGRANGEAN algorithm for " << timeIntData_->size()
                  << " dofsets ";
-  CORE::IO::cout
+  Core::IO::cout
       << "\n----------------------------------------------------------------------------------"
          "------- "
-      << CORE::IO::endl;
+      << Core::IO::endl;
 #endif
 
   /*----------------------------------------------------*
@@ -123,9 +123,9 @@ void XFEM::XfluidSemiLagrange::compute(
     if (!global_newton_finished(counter))
     {
 #ifdef DEBUG_SEMILAGRANGE
-      CORE::IO::cout << "\n==============================================";
-      CORE::IO::cout << "\n CONTINUE GLOBAL NEWTON (" << counter << ") on proc " << myrank_;
-      CORE::IO::cout << "\n==============================================" << CORE::IO::endl;
+      Core::IO::cout << "\n==============================================";
+      Core::IO::cout << "\n CONTINUE GLOBAL NEWTON (" << counter << ") on proc " << myrank_;
+      Core::IO::cout << "\n==============================================" << Core::IO::endl;
 #endif
 
       // loop over all nodes (their std-dofsets) that have been chosen for SEMI-Lagrangean
@@ -134,7 +134,7 @@ void XFEM::XfluidSemiLagrange::compute(
            data != timeIntData_->end(); data++)
       {
 #ifdef DEBUG_SEMILAGRANGE
-        CORE::IO::cout << "\n\t * STD-SL algorithm for node " << data->node_.Id();
+        Core::IO::cout << "\n\t * STD-SL algorithm for node " << data->node_.Id();
 #endif
 
         //------------------------------------
@@ -144,9 +144,9 @@ void XFEM::XfluidSemiLagrange::compute(
         {
           bool initial_elefound =
               false;  // true if the element for a point was found on the processor
-          CORE::Elements::Element* initial_ele =
+          Core::Elements::Element* initial_ele =
               nullptr;  // pointer to the element where start point lies in
-          CORE::LINALG::Matrix<nsd, 1> initial_xi(
+          Core::LinAlg::Matrix<nsd, 1> initial_xi(
               true);  // local transformed coordinates of x w.r.t found ele
 
           // set the element pointer where the initial point lies in!
@@ -183,7 +183,7 @@ void XFEM::XfluidSemiLagrange::compute(
 
             if (nds_curr.size() == 0) FOUR_C_THROW("no valid nds-vector for initial point found");
             if (data->last_valid_vc_ != nullptr and  // not an uncut element
-                data->last_valid_vc_->Position() != CORE::GEO::CUT::Point::outside)
+                data->last_valid_vc_->Position() != Core::Geo::Cut::Point::outside)
             {
               FOUR_C_THROW("initial point does not lie in the fluid");
             }
@@ -194,13 +194,13 @@ void XFEM::XfluidSemiLagrange::compute(
             data->initial_ele_owner_ = myrank_;
 
 #ifdef DEBUG_SEMILAGRANGE
-            CORE::IO::cout << "\n\t\t -> Initial point found in element " << data->initial_eid_;
+            Core::IO::cout << "\n\t\t -> Initial point found in element " << data->initial_eid_;
 #endif
           }
         }
 
 #ifdef DEBUG_SEMILAGRANGE
-        CORE::IO::cout << "\n\t\t -> start with start point approximation: " << data->startpoint_;
+        Core::IO::cout << "\n\t\t -> start with start point approximation: " << data->startpoint_;
 #endif
 
         if (data->state_ ==
@@ -213,11 +213,11 @@ void XFEM::XfluidSemiLagrange::compute(
 
           // Initialization
           bool elefound = false;  // true if the element for a point was found on the processor
-          CORE::Elements::Element* ele =
+          Core::Elements::Element* ele =
               nullptr;  // pointer to the element where start point lies in
-          CORE::LINALG::Matrix<nsd, 1> xi(
+          Core::LinAlg::Matrix<nsd, 1> xi(
               true);  // local transformed coordinates of x w.r.t found ele
-          CORE::LINALG::Matrix<nsd, 1> vel(true);  // velocity of the start point approximation
+          Core::LinAlg::Matrix<nsd, 1> vel(true);  // velocity of the start point approximation
 
           // search for an element where the current startpoint lies in
           elementSearch(ele, data->startpoint_, xi, elefound);
@@ -229,11 +229,11 @@ void XFEM::XfluidSemiLagrange::compute(
           if (elefound)
           {
 #ifdef DEBUG_SEMILAGRANGE
-            CORE::IO::cout << "\n\t\t\t ... start point approximation found in element: "
+            Core::IO::cout << "\n\t\t\t ... start point approximation found in element: "
                            << ele->Id();
 #endif
             //----------------------------------------------
-            CORE::Elements::Element* initial_ele = nullptr;
+            Core::Elements::Element* initial_ele = nullptr;
 
             if (!discret_->HaveGlobalElement(data->initial_eid_))
             {
@@ -289,17 +289,17 @@ void XFEM::XfluidSemiLagrange::compute(
 
             //----------------------------------------------
             // compute the velocity at startpoint
-            CORE::LINALG::Matrix<nsd, nsd> vel_deriv(
+            Core::LinAlg::Matrix<nsd, nsd> vel_deriv(
                 true);          // dummy matrix for velocity derivatives
             double pres = 0.0;  // dummy variable for pressure
-            CORE::LINALG::Matrix<1, nsd> pres_deriv(
+            Core::LinAlg::Matrix<1, nsd> pres_deriv(
                 true);  // dummy matrix for the pressure derivatives
 
             getGPValues(
                 ele, xi, nds_curr, *dofset_old_, vel, vel_deriv, pres, pres_deriv, veln_, false);
 
 #ifdef DEBUG_SEMILAGRANGE
-            CORE::IO::cout << "\n\t\t\t ... computed velocity at start point approximation: "
+            Core::IO::cout << "\n\t\t\t ... computed velocity at start point approximation: "
                            << vel;
 #endif
 
@@ -338,7 +338,7 @@ void XFEM::XfluidSemiLagrange::compute(
                   // a Lagrangean origin has been found but it does not lie in the fluid
                   //----------------------------------------------------------------------
 
-                  CORE::LINALG::Matrix<nsd, 1> proj_x(true);
+                  Core::LinAlg::Matrix<nsd, 1> proj_x(true);
 
                   find_nearest_surf_point(
                       data->startpoint_, proj_x, data->last_valid_vc_, "idispn");
@@ -381,9 +381,9 @@ void XFEM::XfluidSemiLagrange::compute(
               data->state_ = TimeIntData::failedSL_;
 
 #ifdef DEBUG_SEMILAGRANGE
-              CORE::IO::cout
+              Core::IO::cout
                   << " <<< WARNING: newton iteration to find start value did not converge! >>>"
-                  << CORE::IO::endl;
+                  << Core::IO::endl;
 #endif
             }  // not converged in max_iter
           }    // if(elefound)
@@ -399,8 +399,8 @@ void XFEM::XfluidSemiLagrange::compute(
             else  // all procs searched -> point not in domain
             {
               data->state_ = TimeIntData::failedSL_;
-              CORE::IO::cout << " <<< WARNING! Lagrangian start point not in domain! >>>"
-                             << CORE::IO::endl;
+              Core::IO::cout << " <<< WARNING! Lagrangian start point not in domain! >>>"
+                             << Core::IO::endl;
             }
           }  // end if elefound
         }
@@ -422,9 +422,9 @@ void XFEM::XfluidSemiLagrange::compute(
 #ifdef DEBUG_SEMILAGRANGE
     if (procDone)
     {
-      CORE::IO::cout << "\n==============================================";
-      CORE::IO::cout << "\n FINISHED GLOBAL NEWTON on proc " << myrank_;
-      CORE::IO::cout << "\n==============================================" << CORE::IO::endl;
+      Core::IO::cout << "\n==============================================";
+      Core::IO::cout << "\n FINISHED GLOBAL NEWTON on proc " << myrank_;
+      Core::IO::cout << "\n==============================================" << Core::IO::endl;
     }
 #endif
 
@@ -434,9 +434,9 @@ void XFEM::XfluidSemiLagrange::compute(
     if (procDone)
     {
 #ifdef DEBUG_SEMILAGRANGE
-      CORE::IO::cout << "\n-------------------------------------------------";
-      CORE::IO::cout << "\n\t\t\t !!!!!!!!!! procDone!!!!!!!!";
-      CORE::IO::cout << "\n-------------------------------------------------" << CORE::IO::endl;
+      Core::IO::cout << "\n-------------------------------------------------";
+      Core::IO::cout << "\n\t\t\t !!!!!!!!!! procDone!!!!!!!!";
+      Core::IO::cout << "\n-------------------------------------------------" << Core::IO::endl;
 #endif
       break;
     }
@@ -486,25 +486,25 @@ void XFEM::XfluidSemiLagrange::compute(
 /*------------------------------------------------------------------------------------------------*
  * Main Newton loop of the Semi-Lagrangian Back-Tracking algorithm                   schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
-void XFEM::XfluidSemiLagrange::newton_loop(CORE::Elements::Element*& ele,  /// pointer to element
+void XFEM::XfluidSemiLagrange::newton_loop(Core::Elements::Element*& ele,  /// pointer to element
     TimeIntData* data,                                                     /// current data
-    CORE::LINALG::Matrix<3, 1>& xi,   /// local coordinates of point
-    CORE::LINALG::Matrix<3, 1>& vel,  /// velocity at current point
+    Core::LinAlg::Matrix<3, 1>& xi,   /// local coordinates of point
+    Core::LinAlg::Matrix<3, 1>& vel,  /// velocity at current point
     bool& elefound                    /// is element found ?
 )
 {
 #ifdef DEBUG_SEMILAGRANGE
-  CORE::IO::cout << "\n\t\t -> XFLUID_SemiLagrange::newton_loop" << CORE::IO::endl;
+  Core::IO::cout << "\n\t\t -> XFLUID_SemiLagrange::newton_loop" << Core::IO::endl;
 #endif
 
   const int nsd = 3;  // 3 dimensions for a 3d fluid element
 
   // Initialization
-  CORE::LINALG::Matrix<nsd, 1> residuum(true);  // residuum of the newton iteration
-  CORE::LINALG::Matrix<nsd, 1> incr(true);      // increment of the newton system
+  Core::LinAlg::Matrix<nsd, 1> residuum(true);  // residuum of the newton iteration
+  Core::LinAlg::Matrix<nsd, 1> incr(true);      // increment of the newton system
 
   // coordinates of endpoint of Lagrangian characteristics
-  CORE::LINALG::Matrix<nsd, 1> origNodeCoords(true);
+  Core::LinAlg::Matrix<nsd, 1> origNodeCoords(true);
   for (int i = 0; i < nsd; i++) origNodeCoords(i) = data->node_.X()[i] + data->dispnp_(i);
 
   //-------------------------------------------------------
@@ -522,8 +522,8 @@ void XFEM::XfluidSemiLagrange::newton_loop(CORE::Elements::Element*& ele,  /// p
   while (data->counter_ < newton_max_iter_)  // newton loop
   {
 #ifdef DEBUG_SEMILAGRANGE
-    CORE::IO::cout << "\n\t\t\t newton_loop(" << data->counter_ << "): residuum " << residuum
-                   << CORE::IO::endl;
+    Core::IO::cout << "\n\t\t\t newton_loop(" << data->counter_ << "): residuum " << residuum
+                   << Core::IO::endl;
 #endif
 
     data->counter_ += 1;
@@ -540,10 +540,10 @@ void XFEM::XfluidSemiLagrange::newton_loop(CORE::Elements::Element*& ele,  /// p
     if (elefound)  // element of data->startpoint_ at this processor
     {
 #ifdef DEBUG_SEMILAGRANGE
-      CORE::IO::cout << "\n\t\t\t\t ... elefound " << ele->Id();
+      Core::IO::cout << "\n\t\t\t\t ... elefound " << ele->Id();
 #endif
 
-      CORE::Elements::Element* initial_ele = nullptr;
+      Core::Elements::Element* initial_ele = nullptr;
 
       if (!discret_->HaveGlobalElement(data->initial_eid_))
       {
@@ -587,15 +587,15 @@ void XFEM::XfluidSemiLagrange::newton_loop(CORE::Elements::Element*& ele,  /// p
 
       //-------------------------------------------------------
       // compute the velocity at startpoint
-      CORE::LINALG::Matrix<nsd, nsd> vel_deriv(true);  // dummy matrix
+      Core::LinAlg::Matrix<nsd, nsd> vel_deriv(true);  // dummy matrix
       double pres = 0.0;                               // dummy variable for pressure
-      CORE::LINALG::Matrix<1, nsd> pres_deriv(true);   // dummy matrix for the pressure derivatives
+      Core::LinAlg::Matrix<1, nsd> pres_deriv(true);   // dummy matrix for the pressure derivatives
 
       getGPValues(ele, xi, nds_curr, *dofset_old_, vel, vel_deriv, pres, pres_deriv, veln_, false);
 
 
 #ifdef DEBUG_SEMILAGRANGE
-      CORE::IO::cout << "\n\t\t\t ... computed velocity at start point approximation: " << vel;
+      Core::IO::cout << "\n\t\t\t ... computed velocity at start point approximation: " << vel;
 #endif
 
       //-------------------------------------------------------
@@ -618,10 +618,10 @@ void XFEM::XfluidSemiLagrange::newton_loop(CORE::Elements::Element*& ele,  /// p
             data->accepted_ = true;
 
 #ifdef DEBUG_SEMILAGRANGE
-            CORE::IO::cout << "\n\t*******************************";
-            CORE::IO::cout << "\n\t    newton_loop: converged!";
-            CORE::IO::cout << "\n\t  LAGRANGEAN ORIGIN ACCEPTED";
-            CORE::IO::cout << "\n\t*******************************" << CORE::IO::endl;
+            Core::IO::cout << "\n\t*******************************";
+            Core::IO::cout << "\n\t    newton_loop: converged!";
+            Core::IO::cout << "\n\t  LAGRANGEAN ORIGIN ACCEPTED";
+            Core::IO::cout << "\n\t*******************************" << Core::IO::endl;
 #endif
           }
           else
@@ -629,10 +629,10 @@ void XFEM::XfluidSemiLagrange::newton_loop(CORE::Elements::Element*& ele,  /// p
             data->accepted_ = false;
 
 #ifdef DEBUG_SEMILAGRANGE
-            CORE::IO::cout << "\n\t*******************************";
-            CORE::IO::cout << "\n\t    newton_loop: converged!";
-            CORE::IO::cout << "\n\t  LAGRANGEAN ORIGIN NOT (!!!) ACCEPTED";
-            CORE::IO::cout << "\n\t*******************************" << CORE::IO::endl;
+            Core::IO::cout << "\n\t*******************************";
+            Core::IO::cout << "\n\t    newton_loop: converged!";
+            Core::IO::cout << "\n\t  LAGRANGEAN ORIGIN NOT (!!!) ACCEPTED";
+            Core::IO::cout << "\n\t*******************************" << Core::IO::endl;
 #endif
           }
 
@@ -648,10 +648,10 @@ void XFEM::XfluidSemiLagrange::newton_loop(CORE::Elements::Element*& ele,  /// p
             data->accepted_ = true;
 
 #ifdef DEBUG_SEMILAGRANGE
-            CORE::IO::cout << "\n\t*******************************";
-            CORE::IO::cout << "\n\t    newton_loop: converged!";
-            CORE::IO::cout << "\n\t  LAGRANGEAN ORIGIN ACCEPTED";
-            CORE::IO::cout << "\n\t*******************************" << CORE::IO::endl;
+            Core::IO::cout << "\n\t*******************************";
+            Core::IO::cout << "\n\t    newton_loop: converged!";
+            Core::IO::cout << "\n\t  LAGRANGEAN ORIGIN ACCEPTED";
+            Core::IO::cout << "\n\t*******************************" << Core::IO::endl;
 #endif
           }
           else
@@ -659,10 +659,10 @@ void XFEM::XfluidSemiLagrange::newton_loop(CORE::Elements::Element*& ele,  /// p
             data->accepted_ = false;
 
 #ifdef DEBUG_SEMILAGRANGE
-            CORE::IO::cout << "\n\t*******************************";
-            CORE::IO::cout << "\n\t    newton_loop: converged!";
-            CORE::IO::cout << "\n\t  LAGRANGEAN ORIGIN NOT (!!!) ACCEPTED";
-            CORE::IO::cout << "\n\t*******************************" << CORE::IO::endl;
+            Core::IO::cout << "\n\t*******************************";
+            Core::IO::cout << "\n\t    newton_loop: converged!";
+            Core::IO::cout << "\n\t  LAGRANGEAN ORIGIN NOT (!!!) ACCEPTED";
+            Core::IO::cout << "\n\t*******************************" << Core::IO::endl;
 #endif
           }
 
@@ -677,9 +677,9 @@ void XFEM::XfluidSemiLagrange::newton_loop(CORE::Elements::Element*& ele,  /// p
     else  // element of data->startpoint_ not at this processor
     {
 #ifdef DEBUG_SEMILAGRANGE
-      CORE::IO::cout
+      Core::IO::cout
           << "\t <<< !!! element not found on this proc -> stop Newton loop on this proc !!! >>>"
-          << CORE::IO::endl;
+          << Core::IO::endl;
 #endif
       break;  // stop newton loop on this proc
     }
@@ -691,10 +691,10 @@ void XFEM::XfluidSemiLagrange::newton_loop(CORE::Elements::Element*& ele,  /// p
   // did newton iteration converge?
   if (data->counter_ == newton_max_iter_)
   {
-    CORE::IO::cout
+    Core::IO::cout
         << "\t <<< WARNING: newton iteration for finding start value not converged for point "
            "!!! >>>"
-        << CORE::IO::endl;
+        << Core::IO::endl;
   }
 #endif
 
@@ -707,27 +707,27 @@ void XFEM::XfluidSemiLagrange::newton_loop(CORE::Elements::Element*& ele,  /// p
  * One Newton iteration of the Semi-Lagrangian Back-Tracking algorithm               schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XfluidSemiLagrange::newton_iter(
-    CORE::Elements::Element*& ele,         /// pointer to element to be updated
+    Core::Elements::Element*& ele,         /// pointer to element to be updated
     TimeIntData* data,                     /// current data to be updated
-    CORE::LINALG::Matrix<3, 1>& xi,        /// local coordinates w.r.t ele to be updated
-    CORE::LINALG::Matrix<3, 1>& residuum,  /// residual for semilagrangean backtracking
-    CORE::LINALG::Matrix<3, 1>& incr,  /// computed increment for lagrangean origin to be updated
+    Core::LinAlg::Matrix<3, 1>& xi,        /// local coordinates w.r.t ele to be updated
+    Core::LinAlg::Matrix<3, 1>& residuum,  /// residual for semilagrangean backtracking
+    Core::LinAlg::Matrix<3, 1>& incr,  /// computed increment for lagrangean origin to be updated
     bool& elefound                     /// element found ?
 )
 {
 #ifdef DEBUG_SEMILAGRANGE
-  CORE::IO::cout << "\n\t\t\t\t ... new iteration";
+  Core::IO::cout << "\n\t\t\t\t ... new iteration";
 #endif
 
   const int nsd = 3;  // 3 dimensions for a 3d fluid element
 
   // Initialization
-  CORE::LINALG::Matrix<nsd, 1> vel_dummy(true);    // dummy matrix for the velocity
-  CORE::LINALG::Matrix<nsd, nsd> vel_deriv(true);  // matrix for the velocity derivatives
+  Core::LinAlg::Matrix<nsd, 1> vel_dummy(true);    // dummy matrix for the velocity
+  Core::LinAlg::Matrix<nsd, nsd> vel_deriv(true);  // matrix for the velocity derivatives
   double pres_dummy = 0.0;                         // dummy variable for pressure
-  CORE::LINALG::Matrix<1, nsd> pres_deriv(true);   // dummy matrix for the pressure derivatives
+  Core::LinAlg::Matrix<1, nsd> pres_deriv(true);   // dummy matrix for the pressure derivatives
 
-  CORE::LINALG::Matrix<nsd, nsd> sysmat(true);  // matrix for the newton system
+  Core::LinAlg::Matrix<nsd, nsd> sysmat(true);  // matrix for the newton system
 
   // compute the velocity derivatives at startpoint
   getGPValues(
@@ -751,8 +751,8 @@ void XFEM::XfluidSemiLagrange::newton_iter(
   for (int i = 0; i < nsd; i++) data->startpoint_(i) += incr(i);
 
 #ifdef DEBUG_SEMILAGRANGE
-  CORE::IO::cout << "\n\t\t\t\t ... new approximate startvalue is " << data->startpoint_(0) << " "
-                 << data->startpoint_(1) << " " << data->startpoint_(2) << CORE::IO::endl;
+  Core::IO::cout << "\n\t\t\t\t ... new approximate startvalue is " << data->startpoint_(0) << " "
+                 << data->startpoint_(1) << " " << data->startpoint_(2) << Core::IO::endl;
 #endif
 
   // find the element the new approximation lies in
@@ -786,7 +786,7 @@ bool XFEM::XfluidSemiLagrange::global_newton_finished(int counter) const
  *------------------------------------------------------------------------------------------------*/
 bool XFEM::XfluidSemiLagrange::continue_for_changing_side(
     TimeIntData* data,             ///< current data to be updated
-    CORE::Elements::Element* ele,  ///< pointer to element the current point lies in
+    Core::Elements::Element* ele,  ///< pointer to element the current point lies in
     std::vector<int>&
         nds_curr  ///< nds-vector of current volumecell the current startpoint approximation lies in
 )
@@ -801,21 +801,21 @@ bool XFEM::XfluidSemiLagrange::continue_for_changing_side(
     // the new newton step is within the same element and has the same nds-vector(same cell set)
     // but changed the side, then we are at the tip of a thin structure -> failed
 #ifdef DEBUG_SEMILAGRANGE
-    CORE::IO::cout
+    Core::IO::cout
         << "\n "
            "----------------------------------------------------------------------------------"
            "-------------";
-    CORE::IO::cout
+    Core::IO::cout
         << "\n <<< Startpoint approximation moved within one fld-vc, but the trace intersects "
            "the side >>>";
-    CORE::IO::cout << "\n                          CHANGED SIDE ";
-    CORE::IO::cout
+    Core::IO::cout << "\n                          CHANGED SIDE ";
+    Core::IO::cout
         << "\n Newton stopped! We are at the tip of a thin structure! -> leave newton loop >>>";
-    CORE::IO::cout
+    Core::IO::cout
         << "\n "
            "----------------------------------------------------------------------------------"
            "-------------"
-        << CORE::IO::endl;
+        << Core::IO::endl;
 #endif
     data->state_ = TimeIntData::failedSL_;
 
@@ -836,10 +836,10 @@ bool XFEM::XfluidSemiLagrange::continue_for_changing_side(
   {
     // within the newton the element and the side have changed
 #ifdef DEBUG_SEMILAGRANGE
-    CORE::IO::cout
+    Core::IO::cout
         << " <<< Newton for lagrangian origin can not be continued, iteration changed the "
            "side and the element! -> leave newton loop >>>"
-        << CORE::IO::endl;
+        << Core::IO::endl;
 #endif
     data->state_ = TimeIntData::failedSL_;
 
@@ -867,18 +867,18 @@ void XFEM::XfluidSemiLagrange::get_data_for_not_converged_nodes()
     if (data->state_ == TimeIntData::failedSL_)
     {
 #ifdef DEBUG_SEMILAGRANGE
-      CORE::IO::cout << "P " << myrank_ << " WARNING: failedSL -> alternative algo!"
-                     << CORE::IO::endl;
-      CORE::IO::cout << "P " << myrank_ << " node " << data->node_.Id() << CORE::IO::endl;
-      CORE::IO::cout << "P " << myrank_ << " use initial point: " << data->initialpoint_
-                     << CORE::IO::endl;
+      Core::IO::cout << "P " << myrank_ << " WARNING: failedSL -> alternative algo!"
+                     << Core::IO::endl;
+      Core::IO::cout << "P " << myrank_ << " node " << data->node_.Id() << Core::IO::endl;
+      Core::IO::cout << "P " << myrank_ << " use initial point: " << data->initialpoint_
+                     << Core::IO::endl;
 #endif
 
       // Initialization
-      CORE::Elements::Element* ele =
+      Core::Elements::Element* ele =
           nullptr;  // pointer to the element where pseudo-Lagrangian origin lies in
-      CORE::LINALG::Matrix<nsd, 1> xi(true);   // local coordinates of pseudo-Lagrangian origin
-      CORE::LINALG::Matrix<nsd, 1> vel(true);  // velocity at pseudo-Lagrangian origin
+      Core::LinAlg::Matrix<nsd, 1> xi(true);   // local coordinates of pseudo-Lagrangian origin
+      Core::LinAlg::Matrix<nsd, 1> vel(true);  // velocity at pseudo-Lagrangian origin
       bool elefound = false;  // true if an element for a point was found on the processor
 
       // search for an element where the current startpoint lies in
@@ -945,7 +945,7 @@ void XFEM::XfluidSemiLagrange::new_iteration_nodal_data(
 
     Teuchos::RCP<Epetra_Vector> tmpColVector = Teuchos::rcp(new Epetra_Vector(*newdofcolmap, true));
     newColVectors.push_back(tmpColVector);
-    CORE::LINALG::Export(*newRowVectors[index], *newColVectors[index]);
+    Core::LinAlg::Export(*newRowVectors[index], *newColVectors[index]);
   }
 
   for (std::vector<TimeIntData>::iterator data = timeIntData_->begin(); data != timeIntData_->end();
@@ -959,51 +959,51 @@ void XFEM::XfluidSemiLagrange::new_iteration_nodal_data(
           "this function is used for the first time here, check the compute gradient "
           "functionality, check also the parallel export!");
 
-    CORE::Nodes::Node* node = &data->node_;
+    Core::Nodes::Node* node = &data->node_;
 
     //----------------------------------------------------------
     // Reconstruct nodal gradients for all vectors
     //----------------------------------------------------------
 
     // node velocities of the element nodes for the fields that should be changed
-    std::vector<CORE::LINALG::Matrix<nsd, nsd>> avg_nodevelgraddata(
-        newColVectors.size(), CORE::LINALG::Matrix<nsd, nsd>(true));
+    std::vector<Core::LinAlg::Matrix<nsd, nsd>> avg_nodevelgraddata(
+        newColVectors.size(), Core::LinAlg::Matrix<nsd, nsd>(true));
 
     // node pressures of the element nodes for the data that should be changed
-    std::vector<CORE::LINALG::Matrix<1, nsd>> avg_nodepresgraddata(
-        newColVectors.size(), CORE::LINALG::Matrix<1, nsd>(true));
+    std::vector<Core::LinAlg::Matrix<1, nsd>> avg_nodepresgraddata(
+        newColVectors.size(), Core::LinAlg::Matrix<1, nsd>(true));
 
 
     // determine the elements used for the nodal gradient computation
     // determine the corresponding nodal dofset vectors used for averaging the nodal gradients
-    std::vector<CORE::Elements::Element*> eles_avg;
+    std::vector<Core::Elements::Element*> eles_avg;
     std::vector<std::vector<int>> eles_avg_nds;
 
 
-    CORE::GEO::CUT::Node* n = wizard_new_->GetNode(node->Id());
+    Core::Geo::Cut::Node* n = wizard_new_->GetNode(node->Id());
 
     if (n != nullptr)
     {
       // get the nodal dofset w.r.t the Lagrangean origin
-      const std::set<CORE::GEO::CUT::plain_volumecell_set, CORE::GEO::CUT::Cmp>& cellset =
+      const std::set<Core::Geo::Cut::plain_volumecell_set, Core::Geo::Cut::Cmp>& cellset =
           n->GetNodalDofSet(0)->VolumeCellComposite();  // always the standard dofset
 
       // get for each adjacent element contained in the nodal dofset the first vc, its parent
       // element is used for the reconstruction REMARK: adjacent elements for that no elementhandle
       // exists in the cut won't be found here
-      for (std::set<CORE::GEO::CUT::plain_volumecell_set, CORE::GEO::CUT::Cmp>::const_iterator
+      for (std::set<Core::Geo::Cut::plain_volumecell_set, Core::Geo::Cut::Cmp>::const_iterator
                cellset_it = cellset.begin();
            cellset_it != cellset.end(); cellset_it++)
       {
         // the first vc representing the set
-        CORE::GEO::CUT::VolumeCell* vc = *((*cellset_it).begin());
+        Core::Geo::Cut::VolumeCell* vc = *((*cellset_it).begin());
         int peid = vc->parent_element()->GetParentId();
 
         if (!discret_->HaveGlobalElement(peid))
           FOUR_C_THROW("element %d for averaging not on proc %d", peid, myrank_);
 
         // get the element
-        CORE::Elements::Element* e = discret_->gElement(peid);
+        Core::Elements::Element* e = discret_->gElement(peid);
         // get the vc's nds vector
         const std::vector<int> e_nds = vc->NodalDofSet();
 
@@ -1015,12 +1015,12 @@ void XFEM::XfluidSemiLagrange::new_iteration_nodal_data(
 
     // check all surrounding elements
     int numele = node->NumElement();
-    CORE::Elements::Element** eles = node->Elements();
+    Core::Elements::Element** eles = node->Elements();
 
     // add surrounding std uncut elements for that no elementhandle is available
     for (int i = 0; i < numele; i++)
     {
-      CORE::GEO::CUT::ElementHandle* eh = wizard_new_->GetElement(eles[i]);
+      Core::Geo::Cut::ElementHandle* eh = wizard_new_->GetElement(eles[i]);
 
       if (eh != nullptr)
         continue;  // element and the right nds-vec should have been found using the for-loop before
@@ -1061,19 +1061,19 @@ void XFEM::XfluidSemiLagrange::new_iteration_nodal_data(
 
     //-------------------------------------------------------
     // the first vector contains the velocity information
-    CORE::LINALG::Matrix<3, 1> nodevel(true);
-    CORE::LINALG::Matrix<1, 1> nodepre(true);
+    Core::LinAlg::Matrix<3, 1> nodevel(true);
+    Core::LinAlg::Matrix<1, 1> nodepre(true);
     extract_nodal_values_from_vector<1>(nodevel, nodepre, newColVectors[0], lm);
 
     data->vel_ = nodevel;
 
-    CORE::LINALG::Matrix<3, 1> nodedispnp(true);
+    Core::LinAlg::Matrix<3, 1> nodedispnp(true);
     if (dispnp_ != Teuchos::null)  // is alefluid
     {
       //------------------------------------------------------- add ale disp
       // get node location vector, dirichlet flags and ownerships (discret, nds, la, doDirichlet)
 
-      CORE::LINALG::Matrix<1, 1> nodepredummy(true);
+      Core::LinAlg::Matrix<1, 1> nodepredummy(true);
       extract_nodal_values_from_vector<1>(nodedispnp, nodepredummy, dispnp_, lm);
     }
 
@@ -1096,14 +1096,14 @@ void XFEM::XfluidSemiLagrange::reinitialize_data()
   //
   //  std::cout << "in SemiLagrange::reinitialize_data" << std::endl;
   //  const int nsd = 3; // dimension
-  //  CORE::LINALG::Matrix<nsd,1> dummyStartpoint; // dummy startpoint for comparison
+  //  Core::LinAlg::Matrix<nsd,1> dummyStartpoint; // dummy startpoint for comparison
   //  for (int i=0;i<nsd;i++) dummyStartpoint(i) = 777.777;
   //
   //  // fill curr_ structure with the data for the nodes which changed interface side
   //  for (int lnodeid=0; lnodeid<discret_->NumMyColNodes(); lnodeid++)  // loop over processor
   //  nodes
   //  {
-  //    CORE::Nodes::Node* currnode = discret_->lColNode(lnodeid);
+  //    Core::Nodes::Node* currnode = discret_->lColNode(lnodeid);
   //    // node on current processor which changed interface side
   //    if ((currnode->Owner() == myrank_) &&
   //        (interfaceSideCompare((*phinp_)[lnodeid],(*phinpi_)[lnodeid])==false))
@@ -1112,11 +1112,11 @@ void XFEM::XfluidSemiLagrange::reinitialize_data()
   //        timeIntData_->push_back(TimeIntData(
   //            *currnode,
   //            nds_np,
-  //            CORE::LINALG::Matrix<nsd,1>(true),
-  //            std::vector<CORE::LINALG::Matrix<nsd,nsd>
-  //            >(oldVectors_.size(),CORE::LINALG::Matrix<nsd,nsd>(true)),
-  //            std::vector<CORE::LINALG::Matrix<1,nsd>
-  //            >(oldVectors_.size(),CORE::LINALG::Matrix<1,nsd>(true)), dummyStartpoint,
+  //            Core::LinAlg::Matrix<nsd,1>(true),
+  //            std::vector<Core::LinAlg::Matrix<nsd,nsd>
+  //            >(oldVectors_.size(),Core::LinAlg::Matrix<nsd,nsd>(true)),
+  //            std::vector<Core::LinAlg::Matrix<1,nsd>
+  //            >(oldVectors_.size(),Core::LinAlg::Matrix<1,nsd>(true)), dummyStartpoint,
   ////            (*phinp_)[lnodeid],
   //            1,
   //            0,
@@ -1188,24 +1188,24 @@ void XFEM::XfluidSemiLagrange::reinitialize_data()
  * call back-tracking of data at final Lagrangian origin of a point                  schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XfluidSemiLagrange::call_back_tracking(
-    CORE::Elements::Element*& ele,   /// pointer to element
+    Core::Elements::Element*& ele,   /// pointer to element
     TimeIntData* data,               /// data
-    CORE::LINALG::Matrix<3, 1>& xi,  /// local coordinates
+    Core::LinAlg::Matrix<3, 1>& xi,  /// local coordinates
     const char* backTrackingType     /// type of back_tracking
 )
 {
   switch (ele->Shape())
   {
-    case CORE::FE::CellType::hex8:
+    case Core::FE::CellType::hex8:
     {
-      const int numnode = CORE::FE::num_nodes<CORE::FE::CellType::hex8>;
-      back_tracking<numnode, CORE::FE::CellType::hex8>(ele, data, xi, backTrackingType);
+      const int numnode = Core::FE::num_nodes<Core::FE::CellType::hex8>;
+      back_tracking<numnode, Core::FE::CellType::hex8>(ele, data, xi, backTrackingType);
     }
     break;
-    case CORE::FE::CellType::hex20:
+    case Core::FE::CellType::hex20:
     {
-      const int numnode = CORE::FE::num_nodes<CORE::FE::CellType::hex20>;
-      back_tracking<numnode, CORE::FE::CellType::hex20>(ele, data, xi, backTrackingType);
+      const int numnode = Core::FE::num_nodes<Core::FE::CellType::hex20>;
+      back_tracking<numnode, Core::FE::CellType::hex20>(ele, data, xi, backTrackingType);
     }
     break;
     default:
@@ -1218,18 +1218,18 @@ void XFEM::XfluidSemiLagrange::call_back_tracking(
 /*------------------------------------------------------------------------------------------------*
  * back-tracking of data at final Lagrangian origin of a point                       schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
-template <const int numnode, CORE::FE::CellType DISTYPE>
+template <const int numnode, Core::FE::CellType DISTYPE>
 void XFEM::XfluidSemiLagrange::back_tracking(
-    CORE::Elements::Element*& fittingele,  /// pointer to element
+    Core::Elements::Element*& fittingele,  /// pointer to element
     TimeIntData* data,                     /// data
-    CORE::LINALG::Matrix<3, 1>& xi,        /// local coordinates
+    Core::LinAlg::Matrix<3, 1>& xi,        /// local coordinates
     const char* backTrackingType           /// type of back_tracking
 )
 {
 #ifdef DEBUG_SEMILAGRANGE
-  CORE::IO::cout << "\n==============================================";
-  CORE::IO::cout << "\n BACK-TRACKING on proc " << myrank_;
-  CORE::IO::cout << "\n==============================================" << CORE::IO::endl;
+  Core::IO::cout << "\n==============================================";
+  Core::IO::cout << "\n BACK-TRACKING on proc " << myrank_;
+  Core::IO::cout << "\n==============================================" << Core::IO::endl;
 #endif
 
 
@@ -1260,7 +1260,7 @@ void XFEM::XfluidSemiLagrange::back_tracking(
   //---------------------------------------------------------------------------------
   // Initialization
 
-  CORE::LINALG::Matrix<3, 1> lagrangeanOrigin(
+  Core::LinAlg::Matrix<3, 1> lagrangeanOrigin(
       true);  // the applied Lagrangean origin (the real computed or an approximated)
 
   if (strcmp(backTrackingType, static_cast<const char*>("standard")) == 0)
@@ -1272,34 +1272,34 @@ void XFEM::XfluidSemiLagrange::back_tracking(
   {
     lagrangeanOrigin = data->initialpoint_;  // use the initial guess for the Lagrangean origin
 
-    CORE::IO::cout << "\n\tWARNING: Proc " << myrank_
+    Core::IO::cout << "\n\tWARNING: Proc " << myrank_
                    << ": SEMI-LAGRANGEAN algorithm: used the initial-guess instead of the real "
                       "Lagrangean origin for node "
-                   << data->node_.Id() << CORE::IO::endl;
+                   << data->node_.Id() << Core::IO::endl;
   }
   else
     FOUR_C_THROW("backTrackingType not implemented");
 
 
-  CORE::LINALG::Matrix<numnode, 1> shapeFcn(true);       // shape function
-  CORE::LINALG::Matrix<3, numnode> shapeFcnDeriv(true);  // shape function derivatives w.r.t xyz
-  CORE::LINALG::Matrix<nsd, nsd> xji(true);              // invers of jacobian
+  Core::LinAlg::Matrix<numnode, 1> shapeFcn(true);       // shape function
+  Core::LinAlg::Matrix<3, numnode> shapeFcnDeriv(true);  // shape function derivatives w.r.t xyz
+  Core::LinAlg::Matrix<nsd, nsd> xji(true);              // invers of jacobian
 
   double deltaT = 0;  // pseudo time-step size, used when the initial point is used instead of the
                       // computed lagrangean startpoint
 
   // data for the final back-tracking
-  CORE::LINALG::Matrix<nsd, 1> vel(true);  // velocity data
-  std::vector<CORE::LINALG::Matrix<nsd, nsd>> velnDeriv1(oldVectors_.size(),
-      CORE::LINALG::Matrix<nsd, nsd>(true));  // first derivation of velocity data
+  Core::LinAlg::Matrix<nsd, 1> vel(true);  // velocity data
+  std::vector<Core::LinAlg::Matrix<nsd, nsd>> velnDeriv1(oldVectors_.size(),
+      Core::LinAlg::Matrix<nsd, nsd>(true));  // first derivation of velocity data
 
-  CORE::LINALG::Matrix<1, 1> pres(true);  // pressure data
-  std::vector<CORE::LINALG::Matrix<1, nsd>> presnDeriv1(
-      oldVectors_.size(), CORE::LINALG::Matrix<1, nsd>(true));  // first derivation of pressure data
+  Core::LinAlg::Matrix<1, 1> pres(true);  // pressure data
+  std::vector<Core::LinAlg::Matrix<1, nsd>> presnDeriv1(
+      oldVectors_.size(), Core::LinAlg::Matrix<1, nsd>(true));  // first derivation of pressure data
 
-  std::vector<CORE::LINALG::Matrix<nsd, 1>> veln(
-      oldVectors_.size(), CORE::LINALG::Matrix<nsd, 1>(true));  // velocity at t^n
-  CORE::LINALG::Matrix<nsd, 1> transportVeln(
+  std::vector<Core::LinAlg::Matrix<nsd, 1>> veln(
+      oldVectors_.size(), Core::LinAlg::Matrix<nsd, 1>(true));  // velocity at t^n
+  Core::LinAlg::Matrix<nsd, 1> transportVeln(
       true);  // transport velocity at Lagrangian origin (x_Lagr(t^n))
 
 
@@ -1307,19 +1307,19 @@ void XFEM::XfluidSemiLagrange::back_tracking(
   // fill velocity and pressure data at nodes of element ...
 
   // node velocities of the element nodes for transport velocity
-  CORE::LINALG::Matrix<nsd, numnode> nodevel(true);
-  CORE::LINALG::Matrix<numnode, 1> nodepre(true);
+  Core::LinAlg::Matrix<nsd, numnode> nodevel(true);
+  Core::LinAlg::Matrix<numnode, 1> nodepre(true);
 
   // node velocities of the element nodes for the data that should be changed
-  std::vector<CORE::LINALG::Matrix<nsd, numnode>> nodeveldata(
-      oldVectors_.size(), CORE::LINALG::Matrix<nsd, numnode>(true));
+  std::vector<Core::LinAlg::Matrix<nsd, numnode>> nodeveldata(
+      oldVectors_.size(), Core::LinAlg::Matrix<nsd, numnode>(true));
   // node pressures of the element nodes for the data that should be changed
-  std::vector<CORE::LINALG::Matrix<numnode, 1>> nodepresdata(
-      oldVectors_.size(), CORE::LINALG::Matrix<numnode, 1>(true));
+  std::vector<Core::LinAlg::Matrix<numnode, 1>> nodepresdata(
+      oldVectors_.size(), Core::LinAlg::Matrix<numnode, 1>(true));
 
   // velocity of the data that shall be changed
-  std::vector<CORE::LINALG::Matrix<nsd, 1>> velValues(
-      oldVectors_.size(), CORE::LINALG::Matrix<nsd, 1>(true));
+  std::vector<Core::LinAlg::Matrix<nsd, 1>> velValues(
+      oldVectors_.size(), Core::LinAlg::Matrix<nsd, 1>(true));
   // pressures of the data that shall be changed
   std::vector<double> presValues(oldVectors_.size(), 0);
 
@@ -1330,7 +1330,7 @@ void XFEM::XfluidSemiLagrange::back_tracking(
     nodepresdata[index].Clear();
   }
 
-  CORE::Elements::Element* ele = fittingele;  // current element
+  Core::Elements::Element* ele = fittingele;  // current element
 
   //---------------------------------------------------------------------------------
   // get shape functions and derivatives at local coordinates
@@ -1345,7 +1345,7 @@ void XFEM::XfluidSemiLagrange::back_tracking(
 
   for (int inode = 0; inode < numnode; inode++)
   {
-    CORE::Nodes::Node* node = ele->Nodes()[inode];
+    Core::Nodes::Node* node = ele->Nodes()[inode];
     std::vector<int> dofs;
     dofset_old_->Dof(dofs, node, data->nds_[inode]);
 
@@ -1370,60 +1370,60 @@ void XFEM::XfluidSemiLagrange::back_tracking(
   //----------------------------------------------------------------------------------
 
   // node velocities of the element nodes for the fields that should be changed
-  std::vector<std::vector<CORE::LINALG::Matrix<nsd, nsd>>> avg_nodevelgraddata;
+  std::vector<std::vector<Core::LinAlg::Matrix<nsd, nsd>>> avg_nodevelgraddata;
   avg_nodevelgraddata.reserve(numnode);
 
   // node pressures of the element nodes for the data that should be changed
-  std::vector<std::vector<CORE::LINALG::Matrix<1, nsd>>> avg_nodepresgraddata;
+  std::vector<std::vector<Core::LinAlg::Matrix<1, nsd>>> avg_nodepresgraddata;
   avg_nodepresgraddata.reserve(numnode);
 
   for (size_t i = 0; i < numnode; i++)
   {
-    std::vector<CORE::LINALG::Matrix<nsd, nsd>> tmp_vec(
-        oldVectors_.size(), CORE::LINALG::Matrix<nsd, nsd>(true));
+    std::vector<Core::LinAlg::Matrix<nsd, nsd>> tmp_vec(
+        oldVectors_.size(), Core::LinAlg::Matrix<nsd, nsd>(true));
     avg_nodevelgraddata.push_back(tmp_vec);
 
-    std::vector<CORE::LINALG::Matrix<1, nsd>> tmp_vec2(
-        oldVectors_.size(), CORE::LINALG::Matrix<1, nsd>(true));
+    std::vector<Core::LinAlg::Matrix<1, nsd>> tmp_vec2(
+        oldVectors_.size(), Core::LinAlg::Matrix<1, nsd>(true));
     avg_nodepresgraddata.push_back(tmp_vec2);
   }
 
   // Reconstruct nodal gradients
   for (int inode = 0; inode < numnode; inode++)
   {
-    CORE::Nodes::Node* node = (ele->Nodes())[inode];
+    Core::Nodes::Node* node = (ele->Nodes())[inode];
 
     // determine the elements used for the nodal gradient computation
     // determine the corresponding nodal dofset vectors used for averaging the nodal gradients
-    std::vector<CORE::Elements::Element*> eles_avg;
+    std::vector<Core::Elements::Element*> eles_avg;
     std::vector<std::vector<int>> eles_avg_nds;
 
 
-    CORE::GEO::CUT::Node* n = wizard_old_->GetNode(node->Id());
+    Core::Geo::Cut::Node* n = wizard_old_->GetNode(node->Id());
 
     if (n != nullptr)
     {
       // get the nodal dofset w.r.t the Lagrangean origin
-      const std::set<CORE::GEO::CUT::plain_volumecell_set, CORE::GEO::CUT::Cmp>& cellset =
+      const std::set<Core::Geo::Cut::plain_volumecell_set, Core::Geo::Cut::Cmp>& cellset =
           n->GetNodalDofSet(data->nds_[inode])->VolumeCellComposite();
 
 
       // get for each adjacent element contained in the nodal dofset the first vc, its parent
       // element is used for the reconstruction REMARK: adjacent elements for that no elementhandle
       // exists in the cut won't be found here
-      for (std::set<CORE::GEO::CUT::plain_volumecell_set, CORE::GEO::CUT::Cmp>::const_iterator
+      for (std::set<Core::Geo::Cut::plain_volumecell_set, Core::Geo::Cut::Cmp>::const_iterator
                cellset_it = cellset.begin();
            cellset_it != cellset.end(); cellset_it++)
       {
         // the first vc representing the set
-        CORE::GEO::CUT::VolumeCell* vc = *((*cellset_it).begin());
+        Core::Geo::Cut::VolumeCell* vc = *((*cellset_it).begin());
         int peid = vc->parent_element()->GetParentId();
 
         if (!discret_->HaveGlobalElement(peid))
           FOUR_C_THROW("element %d for averaging not on proc %d", peid, myrank_);
 
         // get the element
-        CORE::Elements::Element* e = discret_->gElement(peid);
+        Core::Elements::Element* e = discret_->gElement(peid);
         // get the vc's nds vector
         const std::vector<int> e_nds = vc->NodalDofSet();
 
@@ -1435,12 +1435,12 @@ void XFEM::XfluidSemiLagrange::back_tracking(
 
     // check all surrounding elements
     int numele = node->NumElement();
-    CORE::Elements::Element** eles = node->Elements();
+    Core::Elements::Element** eles = node->Elements();
 
     // add surrounding std uncut elements for that no elementhandle is available
     for (int i = 0; i < numele; i++)
     {
-      CORE::GEO::CUT::ElementHandle* eh = wizard_old_->GetElement(eles[i]);
+      Core::Geo::Cut::ElementHandle* eh = wizard_old_->GetElement(eles[i]);
 
       if (eh != nullptr)
         continue;  // element and the right nds-vec should have been found using the for-loop before
@@ -1467,7 +1467,7 @@ void XFEM::XfluidSemiLagrange::back_tracking(
   transportVeln.Multiply(nodevel, shapeFcn);
 
 #ifdef DEBUG_SEMILAGRANGE
-  CORE::IO::cout << "\t transportVeln\t" << transportVeln << CORE::IO::endl;
+  Core::IO::cout << "\t transportVeln\t" << transportVeln << Core::IO::endl;
 #endif
 
   //---------------------------------------------------------------------------------
@@ -1476,7 +1476,7 @@ void XFEM::XfluidSemiLagrange::back_tracking(
   // if it is not, deltaT estimates the time x needs to move to node)
   if (data->type_ == TimeIntData::predictor_)
   {
-    CORE::LINALG::Matrix<nsd, 1> diff(data->node_.X().data());
+    Core::LinAlg::Matrix<nsd, 1> diff(data->node_.X().data());
     for (int i = 0; i < nsd; ++i) diff(i) += data->dispnp_(i);
     diff -= lagrangeanOrigin;  // diff = x_Node - x_Appr
 
@@ -1486,7 +1486,7 @@ void XFEM::XfluidSemiLagrange::back_tracking(
     if (denominator > 1e-15) deltaT = numerator / denominator;  // else deltaT = 0 as initialized
 
 #ifdef DEBUG_SEMILAGRANGE
-    CORE::IO::cout << " \t recomputed modified pseudo time-step size: " << deltaT << CORE::IO::endl;
+    Core::IO::cout << " \t recomputed modified pseudo time-step size: " << deltaT << Core::IO::endl;
 #endif
   }
   else
@@ -1527,11 +1527,11 @@ void XFEM::XfluidSemiLagrange::back_tracking(
     presValues[index] = pres(0);
 
 #ifdef DEBUG_SEMILAGRANGE
-    CORE::IO::cout << "\n***********************************************";
-    CORE::IO::cout << "\n           RECONSTRUCTED VALUES for node " << (data->node_).Id();
-    CORE::IO::cout << "\nvelocity entry in vector \t" << index << "\t " << vel;
-    CORE::IO::cout << "pressure entry in vector \t" << index << "\t " << pres(0);
-    CORE::IO::cout << "\n***********************************************" << CORE::IO::endl;
+    Core::IO::cout << "\n***********************************************";
+    Core::IO::cout << "\n           RECONSTRUCTED VALUES for node " << (data->node_).Id();
+    Core::IO::cout << "\nvelocity entry in vector \t" << index << "\t " << vel;
+    Core::IO::cout << "pressure entry in vector \t" << index << "\t " << pres(0);
+    Core::IO::cout << "\n***********************************************" << Core::IO::endl;
 #endif
   }  // loop over vectors to be set
 
@@ -1548,10 +1548,10 @@ void XFEM::XfluidSemiLagrange::back_tracking(
  * determine point's dofset in element ele w.r.t old or new interface position       schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XfluidSemiLagrange::get_nodal_dof_set(
-    CORE::Elements::Element* ele,   /// pointer to element
-    CORE::LINALG::Matrix<3, 1>& x,  /// global coordinates of point
+    Core::Elements::Element* ele,   /// pointer to element
+    Core::LinAlg::Matrix<3, 1>& x,  /// global coordinates of point
     std::vector<int>& nds,          /// determine the points dofset w.r.t old/new interface position
-    CORE::GEO::CUT::VolumeCell*& vc,  /// valid fluid volumecell the point x lies in
+    Core::Geo::Cut::VolumeCell*& vc,  /// valid fluid volumecell the point x lies in
     bool step_np                      /// computation w.r.t old or new interface position?
 )
 {
@@ -1559,39 +1559,39 @@ void XFEM::XfluidSemiLagrange::get_nodal_dof_set(
 
 
 #ifdef DEBUG_SEMILAGRANGE
-  CORE::IO::cout << "\n\t\t\t ... get_nodal_dof_set";
+  Core::IO::cout << "\n\t\t\t ... get_nodal_dof_set";
 #endif
 
 
-  Teuchos::RCP<CORE::GEO::CutWizard> wizard = step_np ? wizard_new_ : wizard_old_;
+  Teuchos::RCP<Core::Geo::CutWizard> wizard = step_np ? wizard_new_ : wizard_old_;
 
-  CORE::GEO::CUT::ElementHandle* e = wizard->GetElement(ele);
+  Core::Geo::Cut::ElementHandle* e = wizard->GetElement(ele);
 
   bool inside_structure = false;
 
   if (e != nullptr)  // element in cut involved
   {
-    CORE::GEO::CUT::plain_volumecell_set cells;
+    Core::Geo::Cut::plain_volumecell_set cells;
     e->GetVolumeCells(cells);
 
     if (cells.size() == 0)
-      FOUR_C_THROW("CORE::GEO::CUT::Element %d does not contain any volume cell", ele->Id());
+      FOUR_C_THROW("Core::Geo::Cut::Element %d does not contain any volume cell", ele->Id());
 
-    for (CORE::GEO::CUT::plain_volumecell_set::iterator cell_it = cells.begin();
+    for (Core::Geo::Cut::plain_volumecell_set::iterator cell_it = cells.begin();
          cell_it != cells.end(); cell_it++)
     {
-      CORE::GEO::CUT::VolumeCell* cell = *cell_it;
+      Core::Geo::Cut::VolumeCell* cell = *cell_it;
       //      if(cell->Contains(x))
       // cell contains the point inside or on one of its boundaries and the cell is an outside
       // (fluid) cell
       if (((cell->IsThisPointInside(x) == "inside") or
               (cell->IsThisPointInside(x) == "onBoundary")) and
-          cell->Position() == CORE::GEO::CUT::Point::outside)
+          cell->Position() == Core::Geo::Cut::Point::outside)
       {
 #ifdef DEBUG_SEMILAGRANGE
-        CORE::IO::cout << "\n\t\t\t -> Position of point w.r.t volumecell is "
+        Core::IO::cout << "\n\t\t\t -> Position of point w.r.t volumecell is "
                        << cell->IsThisPointInside(x) << " \t cell pos = " << cell->Position()
-                       << CORE::IO::endl;
+                       << Core::IO::endl;
 #endif
         nds = cell->NodalDofSet();
 
@@ -1603,12 +1603,12 @@ void XFEM::XfluidSemiLagrange::get_nodal_dof_set(
         vc = cell;
 
 #ifdef DEBUG_SEMILAGRANGE
-        CORE::IO::cout << "nds-vector ";
+        Core::IO::cout << "nds-vector ";
         for (int i = 0; i < (int)nds.size(); i++)
         {
-          CORE::IO::cout << " " << nds[i];
+          Core::IO::cout << " " << nds[i];
         }
-        CORE::IO::cout << "\n";
+        Core::IO::cout << "\n";
 #endif
 
         return;
@@ -1616,12 +1616,12 @@ void XFEM::XfluidSemiLagrange::get_nodal_dof_set(
       // point lies within the structure or on Boundary
       else if ((cell->IsThisPointInside(x) == "inside" or
                    cell->IsThisPointInside(x) == "onBoundary") and
-               (cell->Position() == CORE::GEO::CUT::Point::inside))
+               (cell->Position() == Core::Geo::Cut::Point::inside))
       {
 #ifdef DEBUG_SEMILAGRANGE
-        CORE::IO::cout << "\n\t\t\t -> Position of point w.r.t volumecell is "
+        Core::IO::cout << "\n\t\t\t -> Position of point w.r.t volumecell is "
                        << cell->IsThisPointInside(x) << " \t cell pos = " << cell->Position()
-                       << CORE::IO::endl;
+                       << Core::IO::endl;
 #endif
         // do not return before all the other vcs have been tested, maybe a fluid-cell with
         // onBoundary can be found
@@ -1631,23 +1631,23 @@ void XFEM::XfluidSemiLagrange::get_nodal_dof_set(
       {
         // the point does not lie inside this vc !
         // #ifdef DEBUG_SEMILAGRANGE
-        //        CORE::IO::cout << "\n\t\t\t -> Position of cell " << cell->Position() << " and
-        //        IsThisPointInside "<< cell->IsThisPointInside(x) << CORE::IO::endl;
+        //        Core::IO::cout << "\n\t\t\t -> Position of cell " << cell->Position() << " and
+        //        IsThisPointInside "<< cell->IsThisPointInside(x) << Core::IO::endl;
         // #endif
       }
     }
 
     if (!inside_structure and (int)(nds.size()) != ele->num_node())
     {
-      CORE::GEO::CUT::plain_volumecell_set cells;
+      Core::Geo::Cut::plain_volumecell_set cells;
       e->GetVolumeCells(cells);
 
-      CORE::IO::cout << "point: " << x << CORE::IO::endl;
-      for (CORE::GEO::CUT::plain_volumecell_set::iterator cell_it = cells.begin();
+      Core::IO::cout << "point: " << x << Core::IO::endl;
+      for (Core::Geo::Cut::plain_volumecell_set::iterator cell_it = cells.begin();
            cell_it != cells.end(); cell_it++)
       {
-        CORE::GEO::CUT::VolumeCell* cell = *cell_it;
-        CORE::IO::cout << "vc-pos: " << cell->Position() << CORE::IO::endl;
+        Core::Geo::Cut::VolumeCell* cell = *cell_it;
+        Core::IO::cout << "vc-pos: " << cell->Position() << Core::IO::endl;
       }
 
       FOUR_C_THROW(
@@ -1659,17 +1659,17 @@ void XFEM::XfluidSemiLagrange::get_nodal_dof_set(
     {
       nds.clear();
 #ifdef DEBUG_SEMILAGRANGE
-      CORE::IO::cout
+      Core::IO::cout
           << "\n\t\t\t -> Position of point inside structure and not onBoundary of other "
              "fluid-vcs -> reset nds to empty vector"
-          << CORE::IO::endl;
+          << Core::IO::endl;
 #endif
 
       return;
     }
 
-    CORE::IO::cout << "error: coordinates of point x " << x
-                   << " number of volumecells: " << cells.size() << CORE::IO::endl;
+    Core::IO::cout << "error: coordinates of point x " << x
+                   << " number of volumecells: " << cells.size() << Core::IO::endl;
     FOUR_C_THROW(
         "there is no volume cell in element %d which contains point with coordinates (%f,%f,%f) -> "
         "void element???",
@@ -1695,14 +1695,14 @@ void XFEM::XfluidSemiLagrange::get_nodal_dof_set(
 void XFEM::XfluidSemiLagrange::compute_nodal_gradient(
     const std::vector<Teuchos::RCP<Epetra_Vector>>&
         colVectors,           ///< all vectors for that we reconstruct the their gradients
-    CORE::Nodes::Node* node,  ///< node at which we reconstruct the gradients
-    std::vector<CORE::Elements::Element*>&
+    Core::Nodes::Node* node,  ///< node at which we reconstruct the gradients
+    std::vector<Core::Elements::Element*>&
         eles,                                ///< elements around node used for the reconstruction
     std::vector<std::vector<int>>& ele_nds,  ///< corresonding elements nodal dofset information
     XFEM::XFEMDofSet& dofset,                ///< XFEM dofset
-    std::vector<CORE::LINALG::Matrix<3, 3>>&
+    std::vector<Core::LinAlg::Matrix<3, 3>>&
         velDeriv_avg,  ///< velocity/acc component derivatives for several vectors
-    std::vector<CORE::LINALG::Matrix<1, 3>>&
+    std::vector<Core::LinAlg::Matrix<1, 3>>&
         preDeriv_avg  ///< pressure-component derivatives for several vectors
 ) const
 {
@@ -1721,14 +1721,14 @@ void XFEM::XfluidSemiLagrange::compute_nodal_gradient(
 
   for (int iele = 0; iele < numele; iele++)
   {
-    CORE::Elements::Element* e = eles[iele];
+    Core::Elements::Element* e = eles[iele];
 
     // xi coordinates of node w.r.t this element
-    CORE::LINALG::Matrix<nsd, 1> tmp_xi(true);
+    Core::LinAlg::Matrix<nsd, 1> tmp_xi(true);
     bool indomain = false;  // dummy variable
 
     // xyz coordinates of the node
-    CORE::LINALG::Matrix<nsd, 1> x_node(node->X().data());
+    Core::LinAlg::Matrix<nsd, 1> x_node(node->X().data());
 
     // get the local coordinates of the node w.r.t current element
     // Comment to the configuration:
@@ -1739,10 +1739,10 @@ void XFEM::XfluidSemiLagrange::compute_nodal_gradient(
 
     for (size_t tmp_index = 0; tmp_index < colVectors.size(); tmp_index++)
     {
-      CORE::LINALG::Matrix<nsd, 1> vel(true);
-      CORE::LINALG::Matrix<nsd, nsd> vel_deriv(true);
+      Core::LinAlg::Matrix<nsd, 1> vel(true);
+      Core::LinAlg::Matrix<nsd, nsd> vel_deriv(true);
       double pres = 0.0;
-      CORE::LINALG::Matrix<1, nsd> pres_deriv(true);
+      Core::LinAlg::Matrix<1, nsd> pres_deriv(true);
 
       getGPValues(e, tmp_xi, ele_nds[iele], dofset, vel, vel_deriv, pres, pres_deriv,
           colVectors[tmp_index], true);
@@ -1822,7 +1822,8 @@ void XFEM::XfluidSemiLagrange::export_alternativ_algo_data()
        dest = (dest + 1) % numproc_)  // dest is the target processor
   {
     // Initialization of sending
-    CORE::COMM::PackBuffer dataSend;  // vector including all data that has to be send to dest proc
+    Core::Communication::PackBuffer
+        dataSend;  // vector including all data that has to be send to dest proc
 
     // Initialization
     int source = myrank_ - (dest - myrank_);  // source proc (sends (dest-myrank_) far and gets from
@@ -1839,15 +1840,15 @@ void XFEM::XfluidSemiLagrange::export_alternativ_algo_data()
       if (data->state_ == TimeIntData::failedSL_)
       {
         pack_node(dataSend, data->node_);
-        CORE::COMM::ParObject::AddtoPack(dataSend, data->nds_np_);
-        CORE::COMM::ParObject::AddtoPack(dataSend, data->vel_);
-        CORE::COMM::ParObject::AddtoPack(dataSend, data->velDeriv_);
-        CORE::COMM::ParObject::AddtoPack(dataSend, data->presDeriv_);
-        CORE::COMM::ParObject::AddtoPack(dataSend, data->dispnp_);
-        CORE::COMM::ParObject::AddtoPack(dataSend, data->initialpoint_);
-        CORE::COMM::ParObject::AddtoPack(dataSend, data->initial_eid_);
-        CORE::COMM::ParObject::AddtoPack(dataSend, data->initial_ele_owner_);
-        CORE::COMM::ParObject::AddtoPack(dataSend, (int)data->type_);
+        Core::Communication::ParObject::AddtoPack(dataSend, data->nds_np_);
+        Core::Communication::ParObject::AddtoPack(dataSend, data->vel_);
+        Core::Communication::ParObject::AddtoPack(dataSend, data->velDeriv_);
+        Core::Communication::ParObject::AddtoPack(dataSend, data->presDeriv_);
+        Core::Communication::ParObject::AddtoPack(dataSend, data->dispnp_);
+        Core::Communication::ParObject::AddtoPack(dataSend, data->initialpoint_);
+        Core::Communication::ParObject::AddtoPack(dataSend, data->initial_eid_);
+        Core::Communication::ParObject::AddtoPack(dataSend, data->initial_ele_owner_);
+        Core::Communication::ParObject::AddtoPack(dataSend, (int)data->type_);
       }
     }
 
@@ -1859,15 +1860,15 @@ void XFEM::XfluidSemiLagrange::export_alternativ_algo_data()
       if (data->state_ == TimeIntData::failedSL_)
       {
         pack_node(dataSend, data->node_);
-        CORE::COMM::ParObject::AddtoPack(dataSend, data->nds_np_);
-        CORE::COMM::ParObject::AddtoPack(dataSend, data->vel_);
-        CORE::COMM::ParObject::AddtoPack(dataSend, data->velDeriv_);
-        CORE::COMM::ParObject::AddtoPack(dataSend, data->presDeriv_);
-        CORE::COMM::ParObject::AddtoPack(dataSend, data->dispnp_);
-        CORE::COMM::ParObject::AddtoPack(dataSend, data->initialpoint_);
-        CORE::COMM::ParObject::AddtoPack(dataSend, data->initial_eid_);
-        CORE::COMM::ParObject::AddtoPack(dataSend, data->initial_ele_owner_);
-        CORE::COMM::ParObject::AddtoPack(dataSend, (int)data->type_);
+        Core::Communication::ParObject::AddtoPack(dataSend, data->nds_np_);
+        Core::Communication::ParObject::AddtoPack(dataSend, data->vel_);
+        Core::Communication::ParObject::AddtoPack(dataSend, data->velDeriv_);
+        Core::Communication::ParObject::AddtoPack(dataSend, data->presDeriv_);
+        Core::Communication::ParObject::AddtoPack(dataSend, data->dispnp_);
+        Core::Communication::ParObject::AddtoPack(dataSend, data->initialpoint_);
+        Core::Communication::ParObject::AddtoPack(dataSend, data->initial_eid_);
+        Core::Communication::ParObject::AddtoPack(dataSend, data->initial_ele_owner_);
+        Core::Communication::ParObject::AddtoPack(dataSend, (int)data->type_);
       }
     }
 
@@ -1884,27 +1885,27 @@ void XFEM::XfluidSemiLagrange::export_alternativ_algo_data()
     while (posinData < dataRecv.size())
     {
       std::vector<double> coords(nsd, 0.0);
-      CORE::Nodes::Node node(0, coords, 0);
+      Core::Nodes::Node node(0, coords, 0);
       int nds_np;
-      CORE::LINALG::Matrix<nsd, 1> vel;
-      std::vector<CORE::LINALG::Matrix<nsd, nsd>> velDeriv;
-      std::vector<CORE::LINALG::Matrix<1, nsd>> presDeriv;
-      CORE::LINALG::Matrix<nsd, 1> dispnp;
-      CORE::LINALG::Matrix<nsd, 1> initialpoint;
+      Core::LinAlg::Matrix<nsd, 1> vel;
+      std::vector<Core::LinAlg::Matrix<nsd, nsd>> velDeriv;
+      std::vector<Core::LinAlg::Matrix<1, nsd>> presDeriv;
+      Core::LinAlg::Matrix<nsd, 1> dispnp;
+      Core::LinAlg::Matrix<nsd, 1> initialpoint;
       int initial_eid;
       int initial_ele_owner;
       int newtype;
 
       unpack_node(posinData, dataRecv, node);
-      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, nds_np);
-      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, vel);
-      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, velDeriv);
-      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, presDeriv);
-      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, dispnp);
-      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, initialpoint);
-      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, initial_eid);
-      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, initial_ele_owner);
-      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, newtype);
+      Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, nds_np);
+      Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, vel);
+      Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, velDeriv);
+      Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, presDeriv);
+      Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, dispnp);
+      Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, initialpoint);
+      Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, initial_eid);
+      Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, initial_ele_owner);
+      Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, newtype);
 
       timeIntData_->push_back(TimeIntData(node, nds_np, vel, velDeriv, presDeriv, dispnp,
           initialpoint, initial_eid, initial_ele_owner,
@@ -1924,9 +1925,9 @@ void XFEM::XfluidSemiLagrange::export_alternativ_algo_data()
 void XFEM::XfluidSemiLagrange::export_iter_data(bool& procDone)
 {
 #ifdef DEBUG_SEMILAGRANGE
-  CORE::IO::cout << "\n\t=============================";
-  CORE::IO::cout << "\n\t  export Iteration Data  ";
-  CORE::IO::cout << "\n\t=============================" << CORE::IO::endl;
+  Core::IO::cout << "\n\t=============================";
+  Core::IO::cout << "\n\t  export Iteration Data  ";
+  Core::IO::cout << "\n\t=============================" << Core::IO::endl;
 #endif
 
   const int nsd = 3;  // 3 dimensions for a 3d fluid element
@@ -1945,11 +1946,11 @@ void XFEM::XfluidSemiLagrange::export_iter_data(bool& procDone)
    *-------------------------------------------*/
   for (int iproc = 0; iproc < numproc_ - 1; iproc++)
   {
-    CORE::COMM::PackBuffer dataSend;
+    Core::Communication::PackBuffer dataSend;
 
-    CORE::COMM::ParObject::AddtoPack(dataSend, static_cast<int>(procDone));
+    Core::Communication::ParObject::AddtoPack(dataSend, static_cast<int>(procDone));
     dataSend.StartPacking();
-    CORE::COMM::ParObject::AddtoPack(dataSend, static_cast<int>(procDone));
+    Core::Communication::ParObject::AddtoPack(dataSend, static_cast<int>(procDone));
 
     std::vector<char> dataRecv;
     send_data(dataSend, dest, source, dataRecv);
@@ -1959,7 +1960,7 @@ void XFEM::XfluidSemiLagrange::export_iter_data(bool& procDone)
     int allProcsDone;
 
     // unpack received data
-    CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, allProcsDone);
+    Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, allProcsDone);
 
     if (allProcsDone == 0) procDone = 0;
 
@@ -1973,7 +1974,7 @@ void XFEM::XfluidSemiLagrange::export_iter_data(bool& procDone)
    *--------------------------------------*/
   if (!procDone)
   {
-    CORE::COMM::PackBuffer dataSend;
+    Core::Communication::PackBuffer dataSend;
 
     // fill vectors with the data
     for (std::vector<TimeIntData>::iterator data = timeIntData_->begin();
@@ -1982,18 +1983,18 @@ void XFEM::XfluidSemiLagrange::export_iter_data(bool& procDone)
       if (data->state_ == TimeIntData::nextSL_)
       {
         pack_node(dataSend, data->node_);
-        CORE::COMM::ParObject::AddtoPack(dataSend, data->nds_np_);
-        CORE::COMM::ParObject::AddtoPack(dataSend, data->vel_);
-        CORE::COMM::ParObject::AddtoPack(dataSend, data->velDeriv_);
-        CORE::COMM::ParObject::AddtoPack(dataSend, data->presDeriv_);
-        CORE::COMM::ParObject::AddtoPack(dataSend, data->dispnp_);
-        CORE::COMM::ParObject::AddtoPack(dataSend, data->initialpoint_);
-        CORE::COMM::ParObject::AddtoPack(dataSend, data->initial_eid_);
-        CORE::COMM::ParObject::AddtoPack(dataSend, data->initial_ele_owner_);
-        CORE::COMM::ParObject::AddtoPack(dataSend, data->startpoint_);
-        CORE::COMM::ParObject::AddtoPack(dataSend, data->searchedProcs_);
-        CORE::COMM::ParObject::AddtoPack(dataSend, data->counter_);
-        CORE::COMM::ParObject::AddtoPack(dataSend, (int)data->type_);
+        Core::Communication::ParObject::AddtoPack(dataSend, data->nds_np_);
+        Core::Communication::ParObject::AddtoPack(dataSend, data->vel_);
+        Core::Communication::ParObject::AddtoPack(dataSend, data->velDeriv_);
+        Core::Communication::ParObject::AddtoPack(dataSend, data->presDeriv_);
+        Core::Communication::ParObject::AddtoPack(dataSend, data->dispnp_);
+        Core::Communication::ParObject::AddtoPack(dataSend, data->initialpoint_);
+        Core::Communication::ParObject::AddtoPack(dataSend, data->initial_eid_);
+        Core::Communication::ParObject::AddtoPack(dataSend, data->initial_ele_owner_);
+        Core::Communication::ParObject::AddtoPack(dataSend, data->startpoint_);
+        Core::Communication::ParObject::AddtoPack(dataSend, data->searchedProcs_);
+        Core::Communication::ParObject::AddtoPack(dataSend, data->counter_);
+        Core::Communication::ParObject::AddtoPack(dataSend, (int)data->type_);
       }
     }
 
@@ -2005,18 +2006,18 @@ void XFEM::XfluidSemiLagrange::export_iter_data(bool& procDone)
       if (data->state_ == TimeIntData::nextSL_)
       {
         pack_node(dataSend, data->node_);
-        CORE::COMM::ParObject::AddtoPack(dataSend, data->nds_np_);
-        CORE::COMM::ParObject::AddtoPack(dataSend, data->vel_);
-        CORE::COMM::ParObject::AddtoPack(dataSend, data->velDeriv_);
-        CORE::COMM::ParObject::AddtoPack(dataSend, data->presDeriv_);
-        CORE::COMM::ParObject::AddtoPack(dataSend, data->dispnp_);
-        CORE::COMM::ParObject::AddtoPack(dataSend, data->initialpoint_);
-        CORE::COMM::ParObject::AddtoPack(dataSend, data->initial_eid_);
-        CORE::COMM::ParObject::AddtoPack(dataSend, data->initial_ele_owner_);
-        CORE::COMM::ParObject::AddtoPack(dataSend, data->startpoint_);
-        CORE::COMM::ParObject::AddtoPack(dataSend, data->searchedProcs_);
-        CORE::COMM::ParObject::AddtoPack(dataSend, data->counter_);
-        CORE::COMM::ParObject::AddtoPack(dataSend, (int)data->type_);
+        Core::Communication::ParObject::AddtoPack(dataSend, data->nds_np_);
+        Core::Communication::ParObject::AddtoPack(dataSend, data->vel_);
+        Core::Communication::ParObject::AddtoPack(dataSend, data->velDeriv_);
+        Core::Communication::ParObject::AddtoPack(dataSend, data->presDeriv_);
+        Core::Communication::ParObject::AddtoPack(dataSend, data->dispnp_);
+        Core::Communication::ParObject::AddtoPack(dataSend, data->initialpoint_);
+        Core::Communication::ParObject::AddtoPack(dataSend, data->initial_eid_);
+        Core::Communication::ParObject::AddtoPack(dataSend, data->initial_ele_owner_);
+        Core::Communication::ParObject::AddtoPack(dataSend, data->startpoint_);
+        Core::Communication::ParObject::AddtoPack(dataSend, data->searchedProcs_);
+        Core::Communication::ParObject::AddtoPack(dataSend, data->counter_);
+        Core::Communication::ParObject::AddtoPack(dataSend, (int)data->type_);
       }
     }
 
@@ -2032,33 +2033,33 @@ void XFEM::XfluidSemiLagrange::export_iter_data(bool& procDone)
     while (posinData < dataRecv.size())
     {
       std::vector<double> coords(nsd, 0.0);
-      CORE::Nodes::Node node(0, coords, 0);
+      Core::Nodes::Node node(0, coords, 0);
       int nds_np;
-      CORE::LINALG::Matrix<nsd, 1> vel;
-      std::vector<CORE::LINALG::Matrix<nsd, nsd>> velDeriv;
-      std::vector<CORE::LINALG::Matrix<1, nsd>> presDeriv;
-      CORE::LINALG::Matrix<nsd, 1> dispnp;
-      CORE::LINALG::Matrix<nsd, 1> initialpoint;
+      Core::LinAlg::Matrix<nsd, 1> vel;
+      std::vector<Core::LinAlg::Matrix<nsd, nsd>> velDeriv;
+      std::vector<Core::LinAlg::Matrix<1, nsd>> presDeriv;
+      Core::LinAlg::Matrix<nsd, 1> dispnp;
+      Core::LinAlg::Matrix<nsd, 1> initialpoint;
       int initial_eid;
       int initial_ele_owner;
-      CORE::LINALG::Matrix<nsd, 1> startpoint;
+      Core::LinAlg::Matrix<nsd, 1> startpoint;
       int searchedProcs;
       int iter;
       int newtype;
 
       unpack_node(posinData, dataRecv, node);
-      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, nds_np);
-      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, vel);
-      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, velDeriv);
-      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, presDeriv);
-      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, dispnp);
-      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, initialpoint);
-      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, initial_eid);
-      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, initial_ele_owner);
-      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, startpoint);
-      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, searchedProcs);
-      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, iter);
-      CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, newtype);
+      Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, nds_np);
+      Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, vel);
+      Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, velDeriv);
+      Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, presDeriv);
+      Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, dispnp);
+      Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, initialpoint);
+      Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, initial_eid);
+      Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, initial_ele_owner);
+      Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, startpoint);
+      Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, searchedProcs);
+      Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, iter);
+      Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, newtype);
 
       timeIntData_->push_back(
           TimeIntData(node, nds_np, vel, velDeriv, presDeriv, dispnp, initialpoint, initial_eid,

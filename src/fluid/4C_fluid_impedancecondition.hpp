@@ -24,20 +24,20 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
-namespace CORE::IO
+}  // namespace Discret
+namespace Core::IO
 {
   class DiscretizationReader;
   class DiscretizationWriter;
-}  // namespace CORE::IO
-namespace CORE::LINALG
+}  // namespace Core::IO
+namespace Core::LinAlg
 {
   class MultiMapExtractor;
   class SparseOperator;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 
 namespace FLD
@@ -52,7 +52,7 @@ namespace FLD
       /*!
       \brief Standard Constructor
       */
-      FluidImpedanceWrapper(const Teuchos::RCP<DRT::Discretization> actdis);
+      FluidImpedanceWrapper(const Teuchos::RCP<Discret::Discretization> actdis);
 
       /*!
       \brief Destructor
@@ -63,15 +63,15 @@ namespace FLD
         \brief Wrapper for FluidImpedacnceBc::use_block_matrix
       */
       void use_block_matrix(Teuchos::RCP<std::set<int>> condelements,
-          const CORE::LINALG::MultiMapExtractor& domainmaps,
-          const CORE::LINALG::MultiMapExtractor& rangemaps, bool splitmatrix);
+          const Core::LinAlg::MultiMapExtractor& domainmaps,
+          const Core::LinAlg::MultiMapExtractor& rangemaps, bool splitmatrix);
 
       /*!
       \brief Calculate impedance tractions and add it to fluid residual and linearisation
       */
       void add_impedance_bc_to_residual_and_sysmat(const double dta, const double time,
           Teuchos::RCP<Epetra_Vector>& residual,
-          Teuchos::RCP<CORE::LINALG::SparseOperator>& sysmat);
+          Teuchos::RCP<Core::LinAlg::SparseOperator>& sysmat);
 
       /*!
       \brief Wrap for time update of impedance conditions
@@ -81,12 +81,12 @@ namespace FLD
       /*!
       \brief Wrapper for FluidImpedacnceBc::write_restart
       */
-      void write_restart(CORE::IO::DiscretizationWriter& output);
+      void write_restart(Core::IO::DiscretizationWriter& output);
 
       /*!
       \brief Wrapper for FluidImpedacnceBc::read_restart
       */
-      void read_restart(CORE::IO::DiscretizationReader& reader);
+      void read_restart(Core::IO::DiscretizationReader& reader);
 
       /*!
       \brief return vector of relative pressure errors of last cycle
@@ -118,8 +118,8 @@ namespace FLD
       /*!
       \brief Standard Constructor
       */
-      FluidImpedanceBc(const Teuchos::RCP<DRT::Discretization> actdis, const int condid,
-          CORE::Conditions::Condition* impedancecond);
+      FluidImpedanceBc(const Teuchos::RCP<Discret::Discretization> actdis, const int condid,
+          Core::Conditions::Condition* impedancecond);
 
       /*!
       \brief Empty Constructor
@@ -136,8 +136,8 @@ namespace FLD
       \brief Split linearization matrix to a BlockSparseMatrixBase
       */
       void use_block_matrix(Teuchos::RCP<std::set<int>> condelements,
-          const CORE::LINALG::MultiMapExtractor& domainmaps,
-          const CORE::LINALG::MultiMapExtractor& rangemaps, bool splitmatrix);
+          const Core::LinAlg::MultiMapExtractor& domainmaps,
+          const Core::LinAlg::MultiMapExtractor& rangemaps, bool splitmatrix);
 
       /*!
         \brief compute and store flow rate of all previous
@@ -150,7 +150,7 @@ namespace FLD
         to elements
       */
       void calculate_impedance_tractions_and_update_residual_and_sysmat(
-          Teuchos::RCP<Epetra_Vector>& residual, Teuchos::RCP<CORE::LINALG::SparseOperator>& sysmat,
+          Teuchos::RCP<Epetra_Vector>& residual, Teuchos::RCP<Core::LinAlg::SparseOperator>& sysmat,
           const double dta, const double time, const int condid);
 
       /*!
@@ -161,12 +161,12 @@ namespace FLD
       /*!
       \brief write flowrates_ and flowratespos_ to result files
       */
-      void write_restart(CORE::IO::DiscretizationWriter& output, const int condnum);
+      void write_restart(Core::IO::DiscretizationWriter& output, const int condnum);
 
       /*!
       \brief read flowrates_ and flowratespos_
       */
-      void read_restart(CORE::IO::DiscretizationReader& reader, const int condnum);
+      void read_restart(Core::IO::DiscretizationReader& reader, const int condnum);
 
      private:
       /*!
@@ -181,7 +181,7 @@ namespace FLD
 
      private:
       //! fluid discretization
-      const Teuchos::RCP<DRT::Discretization> discret_;
+      const Teuchos::RCP<Discret::Discretization> discret_;
 
       //! the processor ID from the communicator
       const int myrank_;
@@ -205,7 +205,7 @@ namespace FLD
       Teuchos::RCP<Epetra_Vector> impedancetbc_;
 
       //! linearisation of traction vector
-      Teuchos::RCP<CORE::LINALG::SparseOperator> impedancetbcsysmat_;
+      Teuchos::RCP<Core::LinAlg::SparseOperator> impedancetbcsysmat_;
 
       //! Pressure at time step n+1
       double p_np_;

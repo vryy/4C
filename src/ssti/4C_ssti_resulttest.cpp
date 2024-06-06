@@ -18,13 +18,13 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 SSTI::SSTIResultTest::SSTIResultTest(const SSTI::SSTIAlgorithm& ssti_algorithm)
-    : CORE::UTILS::ResultTest("SSTI"), ssti_algorithm_(ssti_algorithm)
+    : Core::UTILS::ResultTest("SSTI"), ssti_algorithm_(ssti_algorithm)
 {
 }
 
 /*-------------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------------*/
-void SSTI::SSTIResultTest::TestSpecial(INPUT::LineDefinition& res, int& nerr, int& test_count)
+void SSTI::SSTIResultTest::TestSpecial(Input::LineDefinition& res, int& nerr, int& test_count)
 {
   // make sure that quantity is tested only by one processor
   if (ssti_algorithm_.Comm().MyPID() == 0)

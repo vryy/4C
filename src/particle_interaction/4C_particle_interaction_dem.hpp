@@ -24,18 +24,18 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
-namespace PARTICLEINTERACTION
+namespace ParticleInteraction
 {
   class DEMNeighborPairs;
   class DEMHistoryPairs;
   class DEMContact;
   class DEMAdhesion;
-}  // namespace PARTICLEINTERACTION
+}  // namespace ParticleInteraction
 
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
  *---------------------------------------------------------------------------*/
-namespace PARTICLEINTERACTION
+namespace ParticleInteraction
 {
   /*!
    * \brief discrete element method (DEM) interaction
@@ -71,7 +71,7 @@ namespace PARTICLEINTERACTION
     void write_restart() const override;
 
     //! read restart of particle interaction handler
-    void read_restart(const std::shared_ptr<CORE::IO::DiscretizationReader> reader) override;
+    void read_restart(const std::shared_ptr<Core::IO::DiscretizationReader> reader) override;
 
     //! insert interaction dependent states of all particle types
     void insert_particle_states_of_particle_types(
@@ -148,22 +148,22 @@ namespace PARTICLEINTERACTION
     const Teuchos::ParameterList& params_dem_;
 
     //! neighbor pair handler
-    std::shared_ptr<PARTICLEINTERACTION::DEMNeighborPairs> neighborpairs_;
+    std::shared_ptr<ParticleInteraction::DEMNeighborPairs> neighborpairs_;
 
     //! history pair handler
-    std::shared_ptr<PARTICLEINTERACTION::DEMHistoryPairs> historypairs_;
+    std::shared_ptr<ParticleInteraction::DEMHistoryPairs> historypairs_;
 
     //! contact handler
-    std::unique_ptr<PARTICLEINTERACTION::DEMContact> contact_;
+    std::unique_ptr<ParticleInteraction::DEMContact> contact_;
 
     //! adhesion handler
-    std::unique_ptr<PARTICLEINTERACTION::DEMAdhesion> adhesion_;
+    std::unique_ptr<ParticleInteraction::DEMAdhesion> adhesion_;
 
     //! write particle energy output
     const bool writeparticleenergy_;
   };
 
-}  // namespace PARTICLEINTERACTION
+}  // namespace ParticleInteraction
 
 /*---------------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

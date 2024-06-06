@@ -16,10 +16,10 @@ FOUR_C_NAMESPACE_OPEN
 
 /*======================================================================*/
 /* constructor */
-ADAPTER::FluidFSIMsht::FluidFSIMsht(Teuchos::RCP<Fluid> fluid,
-    Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<CORE::LINALG::Solver> solver,
+Adapter::FluidFSIMsht::FluidFSIMsht(Teuchos::RCP<Fluid> fluid,
+    Teuchos::RCP<Discret::Discretization> dis, Teuchos::RCP<Core::LinAlg::Solver> solver,
     Teuchos::RCP<Teuchos::ParameterList> params,
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output, bool isale, bool dirichletcond)
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output, bool isale, bool dirichletcond)
     : FluidFSI(fluid, dis, solver, params, output, isale, dirichletcond),
       fsiinterface_(Teuchos::rcp(new FLD::UTILS::FsiMapExtractor()))
 {
@@ -28,7 +28,7 @@ ADAPTER::FluidFSIMsht::FluidFSIMsht(Teuchos::RCP<Fluid> fluid,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidFSIMsht::Init()
+void Adapter::FluidFSIMsht::Init()
 {
   // call base class init
   FluidFSI::Init();
@@ -40,6 +40,6 @@ void ADAPTER::FluidFSIMsht::Init()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::FluidFSIMsht::setup_fsi_interface() { fsiinterface_->Setup(*dis_); }
+void Adapter::FluidFSIMsht::setup_fsi_interface() { fsiinterface_->Setup(*dis_); }
 
 FOUR_C_NAMESPACE_CLOSE

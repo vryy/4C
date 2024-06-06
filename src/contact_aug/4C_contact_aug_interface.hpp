@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace CONTACT
 {
-  namespace AUG
+  namespace Aug
   {
     // forward declaration
     class NodeDataContainer;
@@ -82,23 +82,23 @@ namespace CONTACT
       }
 
       inline void set_assemble_strat_type(
-          const enum INPAR::CONTACT::AssembleStrategy assemble_strat)
+          const enum Inpar::CONTACT::AssembleStrategy assemble_strat)
       {
         assemble_strat_ = assemble_strat;
       }
 
-      inline enum INPAR::CONTACT::AssembleStrategy AssembleStratType() const
+      inline enum Inpar::CONTACT::AssembleStrategy AssembleStratType() const
       {
         return assemble_strat_;
       }
 
       inline void set_variational_approach_type(
-          const enum INPAR::CONTACT::VariationalApproach var_type)
+          const enum Inpar::CONTACT::VariationalApproach var_type)
       {
         var_type_ = var_type;
       }
 
-      inline enum INPAR::CONTACT::VariationalApproach variational_approach_type() const
+      inline enum Inpar::CONTACT::VariationalApproach variational_approach_type() const
       {
         return var_type_;
       }
@@ -165,13 +165,13 @@ namespace CONTACT
       bool issetup_;
 
       /// type of the used assemble strategy
-      enum INPAR::CONTACT::AssembleStrategy assemble_strat_;
+      enum Inpar::CONTACT::AssembleStrategy assemble_strat_;
 
       /// assemble strategy for the different matrices and vectors
       Teuchos::RCP<INTERFACE::AssembleStrategy> assemble_strategy_;
 
       /// varitional approach. Either complete or incomplete.
-      enum INPAR::CONTACT::VariationalApproach var_type_;
+      enum Inpar::CONTACT::VariationalApproach var_type_;
 
       //! slave dofs in normal direction
       Teuchos::RCP<Epetra_Map> sndofrowmap_;
@@ -187,7 +187,7 @@ namespace CONTACT
 
       EleEvaluateTimes eletimes_;
 
-    };  // class CONTACT::AUG::InterfaceDataContainer
+    };  // class CONTACT::Aug::InterfaceDataContainer
 
     /*--------------------------------------------------------------------------*/
     /** \brief Augmented contact interface class
@@ -205,10 +205,10 @@ namespace CONTACT
        *                          data container object
        *
        *  \author hiermeier \date 03/17 */
-      Interface(const Teuchos::RCP<CONTACT::AUG::InterfaceDataContainer>& interfaceData_ptr);
+      Interface(const Teuchos::RCP<CONTACT::Aug::InterfaceDataContainer>& interfaceData_ptr);
 
       //! Constructor
-      Interface(const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData_ptr, int id,
+      Interface(const Teuchos::RCP<Mortar::InterfaceDataContainer>& interfaceData_ptr, int id,
           const Epetra_Comm& comm, int dim, const Teuchos::ParameterList& icontact,
           bool selfcontact);
 
@@ -216,7 +216,7 @@ namespace CONTACT
       //! @{
 
       /// share the data with other derived interfaces via copy constructor
-      Teuchos::RCP<AUG::InterfaceDataContainer> shared_interface_data_ptr() const
+      Teuchos::RCP<Aug::InterfaceDataContainer> shared_interface_data_ptr() const
       {
         return interface_data_ptr_;
       }
@@ -257,7 +257,7 @@ namespace CONTACT
 
       /*! \brief Reduced evaluate of the contact interface. We don't need any
        *  search algorithm and we don't have to build the nodal normals again. */
-      void RedEvaluate(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
+      void RedEvaluate(const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr);
 
       void eval_active_contributions(
           const int rriter, const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr);
@@ -288,7 +288,7 @@ namespace CONTACT
       //! @{
 
       /// assemble the B-matrix (i.e. D+M)
-      void AssembleBMatrix(CORE::LINALG::SparseMatrix& BMatrix) const;
+      void AssembleBMatrix(Core::LinAlg::SparseMatrix& BMatrix) const;
 
       /*! Assemble the averaged weighted gap vector and the weighted gap
        *  vector of all active nodes */
@@ -307,7 +307,7 @@ namespace CONTACT
           const Epetra_Vector& cnVec, const double inactive_scale) const;
 
       /// assemble the inactive second order derivative matrix w.r.t. the displ.
-      void assemble_inactive_dd_matrix(CORE::LINALG::SparseMatrix& inactive_dd_matrix,
+      void assemble_inactive_dd_matrix(Core::LinAlg::SparseMatrix& inactive_dd_matrix,
           const Epetra_Vector& cnVec, const double inactive_scale) const;
 
       /*! Assemble the normal Lagrange multiplier vector */
@@ -328,29 +328,29 @@ namespace CONTACT
       /*! \brief Assemble DGLmLinMatrix
        *
        *  Linearization w.r.t. the displacements */
-      void assemble_dg_lm_lin_matrix(CORE::LINALG::SparseMatrix& dGLmLinMatrix) const;
+      void assemble_dg_lm_lin_matrix(Core::LinAlg::SparseMatrix& dGLmLinMatrix) const;
 
       /*! \brief Assemble DGGLinMatrix
        *
        *  Linearization w.r.t. the displacements */
       virtual void assemble_dgg_lin_matrix(
-          CORE::LINALG::SparseMatrix& dGGLinMatrix, const Epetra_Vector& cnVec) const;
+          Core::LinAlg::SparseMatrix& dGGLinMatrix, const Epetra_Vector& cnVec) const;
 
       /*! \brief Assemble DLmNWGapLinMatrix
        *
        *  Linearization w.r.t. the displ. */
-      void assemble_d_lm_nw_gap_lin_matrix(CORE::LINALG::SparseMatrix& dLmNWGapLinMatrix,
+      void assemble_d_lm_nw_gap_lin_matrix(Core::LinAlg::SparseMatrix& dLmNWGapLinMatrix,
           const enum MapType map_type = MapType::active_slave_nodes) const;
 
       /*! \brief Assemble DLmTLmTMatrix
        *
        *  Linearization w.r.t. the LM */
-      void assemble_d_lm_t_lm_t_matrix(CORE::LINALG::SparseMatrix& dLmTLmTMatrix) const;
+      void assemble_d_lm_t_lm_t_matrix(Core::LinAlg::SparseMatrix& dLmTLmTMatrix) const;
 
       /*! \brief Assemble DLmTLmTLinMatrix
        *
        *  Linearization w.r.t. the displ. */
-      void assemble_d_lm_t_lm_t_lin_matrix(CORE::LINALG::SparseMatrix& dLmTLmTLinMatrix) const;
+      void assemble_d_lm_t_lm_t_lin_matrix(Core::LinAlg::SparseMatrix& dLmTLmTLinMatrix) const;
 
       /*! \brief Assemble AugInactiveMatrix
        *
@@ -361,12 +361,12 @@ namespace CONTACT
       /*! \brief Assemble AugInactiveLinMatrix
        *
        *  Linearization w.r.t. the displ. */
-      void assemble_aug_inactive_lin_matrix(CORE::LINALG::SparseMatrix& augInactiveLinMatrix,
+      void assemble_aug_inactive_lin_matrix(Core::LinAlg::SparseMatrix& augInactiveLinMatrix,
           const Epetra_Vector& cnVec, const double inactive_scale) const;
 
       /// collect the owner of each interface node
       Teuchos::RCP<Epetra_Vector> collect_row_node_owners(
-          const DRT::Discretization& structure_dis) const;
+          const Discret::Discretization& structure_dis) const;
 
       //! @}
 
@@ -397,7 +397,7 @@ namespace CONTACT
       //! @}
 
       /// return my characteristic element length of the interface elements
-      double my_characteristic_element_length(const enum CONTACT::AUG::SideType stype) const;
+      double my_characteristic_element_length(const enum CONTACT::Aug::SideType stype) const;
 
       /** \brief compute and return a measure for the weighted gap gradient error
        *
@@ -418,7 +418,7 @@ namespace CONTACT
           std::vector<int>& local_close_nodes, std::vector<int>& local_far_nodes) const override;
 
       /// return the variational approach type (complete, incomplete, etc.)
-      INPAR::CONTACT::VariationalApproach get_variational_approach_type() const
+      Inpar::CONTACT::VariationalApproach get_variational_approach_type() const
       {
         return interface_data_.variational_approach_type();
       }
@@ -465,7 +465,7 @@ namespace CONTACT
 
      public:
       /** @name Assemble routines for the Lagrange multiplier function
-       *  see CONTACT::AUG::LagrangeMultiplierFunction for more information */
+       *  see CONTACT::Aug::LagrangeMultiplierFunction for more information */
       /// @{
 
       /// assemble the gradient of the B-matrix
@@ -490,22 +490,22 @@ namespace CONTACT
           const double* const str_grad_vals, const double* const dincr_vals,
           double& lmincr_j) const;
 
-      template <enum CONTACT::AUG::SideType side>
+      template <enum CONTACT::Aug::SideType side>
       void assemble_gradient_bb_matrix_contribution_of_side(const int nummynodes,
           const int* const mynodegids, const Epetra_BlockMap& dincr_block_map,
           const Epetra_BlockMap& lm_block_map, const Node& cnode_k, const double scalar,
           const double lk, const double* const dincr_vals, const double* const lm_vals,
           double* const lmincr_vals, double& lmincr_k) const;
 
-      template <enum CONTACT::AUG::SideType side>
+      template <enum CONTACT::Aug::SideType side>
       const Deriv1stMap& get_var_w_gap_of_side(const Node& cnode) const;
 
-      template <enum CONTACT::AUG::SideType side>
+      template <enum CONTACT::Aug::SideType side>
       const Deriv2ndMap& get_var_w_gap_lin_of_side(const Node& cnode) const;
 
      protected:
       // don't want = operator and cctor
-      Interface(const CONTACT::AUG::Interface& source);
+      Interface(const CONTACT::Aug::Interface& source);
       Interface operator=(const Interface& old);
 
      private:
@@ -515,10 +515,10 @@ namespace CONTACT
        *                                                        hiermeier 03/17 */
 
       /// pointer to the interface data object
-      Teuchos::RCP<AUG::InterfaceDataContainer> interface_data_ptr_;
+      Teuchos::RCP<Aug::InterfaceDataContainer> interface_data_ptr_;
 
       /// reference to the interface data object
-      AUG::InterfaceDataContainer& interface_data_;
+      Aug::InterfaceDataContainer& interface_data_;
 
     };  // class Interface
 
@@ -538,7 +538,7 @@ namespace CONTACT
      *  \author hiermeier \date 03/17 */
     template <class T>
     void AssembleMapIntoMatrix(int row, double scal, const T& values,
-        CORE::LINALG::SparseMatrix& mat, double threshold = 0.0);
+        Core::LinAlg::SparseMatrix& mat, double threshold = 0.0);
 
     namespace INTERFACE
     {
@@ -560,23 +560,23 @@ namespace CONTACT
          *  If a variational consistent formulation is used, the Dn and Mn matrices
          *  will be equivalent to the transpose of the gradient of the weighted gap
          *  vector. Otherwise, Dn and Mn represent an estimate of these derivatives. */
-        virtual void AssembleBMatrix(CORE::LINALG::SparseMatrix& BMatrix) const = 0;
+        virtual void AssembleBMatrix(Core::LinAlg::SparseMatrix& BMatrix) const = 0;
 
         virtual void Add_Var_A_GG(Epetra_Vector& sl_force_g, const Epetra_Vector& cnVec) const = 0;
 
         virtual void assemble_sl_force_lm_inactive(Epetra_Vector& sl_force_lm_inactive,
             const Epetra_Vector& cnVec, const double inactive_scale) const = 0;
 
-        virtual void assemble_inactive_dd_matrix(CORE::LINALG::SparseMatrix& inactive_dd_matrix,
+        virtual void assemble_inactive_dd_matrix(Core::LinAlg::SparseMatrix& inactive_dd_matrix,
             const Epetra_Vector& cnVec, const double inactive_scale) const = 0;
 
-        virtual void assemble_dg_lm_lin_matrix(CORE::LINALG::SparseMatrix& dGLmLinMatrix) const = 0;
+        virtual void assemble_dg_lm_lin_matrix(Core::LinAlg::SparseMatrix& dGLmLinMatrix) const = 0;
 
         virtual void assemble_dgg_lin_matrix(
-            CORE::LINALG::SparseMatrix& dGGLinMatrix, const Epetra_Vector& cnVec) const = 0;
+            Core::LinAlg::SparseMatrix& dGGLinMatrix, const Epetra_Vector& cnVec) const = 0;
 
         virtual void assemble_d_lm_nw_gap_lin_matrix(
-            CORE::LINALG::SparseMatrix& dLmNWGapLinMatrix, const enum MapType map_type) const = 0;
+            Core::LinAlg::SparseMatrix& dLmNWGapLinMatrix, const enum MapType map_type) const = 0;
 
        protected:
         /// return a reference to the parent interface
@@ -610,7 +610,7 @@ namespace CONTACT
         InterfaceDataContainer* interface_data_ptr_;
 
        protected:
-        DRT::Discretization& idiscret_;
+        Discret::Discretization& idiscret_;
       };
 
       /*--------------------------------------------------------------------------*/
@@ -630,7 +630,7 @@ namespace CONTACT
         explicit NodeBasedAssembleStrategy(Interface* inter);
 
         /// derived
-        void AssembleBMatrix(CORE::LINALG::SparseMatrix& BMatrix) const override;
+        void AssembleBMatrix(Core::LinAlg::SparseMatrix& BMatrix) const override;
 
         /// derived
         void Add_Var_A_GG(Epetra_Vector& sl_force_g, const Epetra_Vector& cnVec) const override;
@@ -640,18 +640,18 @@ namespace CONTACT
             const Epetra_Vector& cnVec, const double inactive_scale) const override;
 
         /// derived
-        void assemble_inactive_dd_matrix(CORE::LINALG::SparseMatrix& inactive_dd_matrix,
+        void assemble_inactive_dd_matrix(Core::LinAlg::SparseMatrix& inactive_dd_matrix,
             const Epetra_Vector& cnVec, const double inactive_scale) const override;
 
         /// derived
-        void assemble_dg_lm_lin_matrix(CORE::LINALG::SparseMatrix& dGLmLinMatrix) const override;
+        void assemble_dg_lm_lin_matrix(Core::LinAlg::SparseMatrix& dGLmLinMatrix) const override;
 
         /// derived
         void assemble_dgg_lin_matrix(
-            CORE::LINALG::SparseMatrix& dGGLinMatrix, const Epetra_Vector& cnVec) const override;
+            Core::LinAlg::SparseMatrix& dGGLinMatrix, const Epetra_Vector& cnVec) const override;
 
         /// derived
-        void assemble_d_lm_nw_gap_lin_matrix(CORE::LINALG::SparseMatrix& dLmNWGapLinMatrix,
+        void assemble_d_lm_nw_gap_lin_matrix(Core::LinAlg::SparseMatrix& dLmNWGapLinMatrix,
             const enum MapType map_type) const override;
       };
 
@@ -663,14 +663,14 @@ namespace CONTACT
 
         inline void Add_Var_A_Lin_GG(const double scale, const double a_inv,
             const NodeDataContainer& augdata,
-            CORE::LINALG::SparseMatrix& dGGLinMatrix) const {/* empty */};
+            Core::LinAlg::SparseMatrix& dGGLinMatrix) const {/* empty */};
 
         inline void Add_DD_A_GG(const double scale, const NodeDataContainer& augdata,
-            CORE::LINALG::SparseMatrix& dGGLinMatrix) const {/* empty */};
+            Core::LinAlg::SparseMatrix& dGGLinMatrix) const {/* empty */};
 
         inline void assemble_inactive_dd_matrix(const double scale,
             const NodeDataContainer& augdata,
-            CORE::LINALG::SparseMatrix& inactive_dd_matrix) const {/* empty */};
+            Core::LinAlg::SparseMatrix& inactive_dd_matrix) const {/* empty */};
 
         inline bool Add_Var_A_GG(
             const double cn, const NodeDataContainer& augdata, Epetra_Vector& sl_force_g_col) const
@@ -701,13 +701,13 @@ namespace CONTACT
         CompleteAssemblePolicy() = default;
 
         inline void Add_Var_A_Lin_GG(const double cn_awgap_ainv, const double awgap,
-            const NodeDataContainer& augdata, CORE::LINALG::SparseMatrix& dGGLinMatrix) const;
+            const NodeDataContainer& augdata, Core::LinAlg::SparseMatrix& dGGLinMatrix) const;
 
         inline void Add_DD_A_GG(const double cn_awgap_awgap, const NodeDataContainer& augdata,
-            CORE::LINALG::SparseMatrix& dGGLinMatrix) const;
+            Core::LinAlg::SparseMatrix& dGGLinMatrix) const;
 
         void assemble_inactive_dd_matrix(const double scale, const NodeDataContainer& augdata,
-            CORE::LINALG::SparseMatrix& inactive_dd_matrix) const;
+            Core::LinAlg::SparseMatrix& inactive_dd_matrix) const;
 
         bool Add_Var_A_GG(
             const double cn, const NodeDataContainer& augdata, Epetra_Vector& sl_force_g_col) const;
@@ -732,19 +732,19 @@ namespace CONTACT
 
     /// Interface class member function specializations
     template <>
-    const CONTACT::AUG::Deriv1stMap& Interface::get_var_w_gap_of_side<SideType::master>(
+    const CONTACT::Aug::Deriv1stMap& Interface::get_var_w_gap_of_side<SideType::master>(
         const Node& cnode) const;
     template <>
-    const CONTACT::AUG::Deriv1stMap& Interface::get_var_w_gap_of_side<SideType::slave>(
+    const CONTACT::Aug::Deriv1stMap& Interface::get_var_w_gap_of_side<SideType::slave>(
         const Node& cnode) const;
     template <>
-    const CONTACT::AUG::Deriv2ndMap& Interface::get_var_w_gap_lin_of_side<SideType::master>(
+    const CONTACT::Aug::Deriv2ndMap& Interface::get_var_w_gap_lin_of_side<SideType::master>(
         const Node& cnode) const;
     template <>
-    const CONTACT::AUG::Deriv2ndMap& Interface::get_var_w_gap_lin_of_side<SideType::slave>(
+    const CONTACT::Aug::Deriv2ndMap& Interface::get_var_w_gap_lin_of_side<SideType::slave>(
         const Node& cnode) const;
 
-  }  // namespace AUG
+  }  // namespace Aug
 }  // namespace CONTACT
 
 

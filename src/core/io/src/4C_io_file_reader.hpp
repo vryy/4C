@@ -19,7 +19,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::IO
+namespace Core::IO
 {
   /*!
    * @brief Reads and processes csv file such that a vector of column vectors is returned
@@ -43,7 +43,7 @@ namespace CORE::IO
 
   /*!
    * @brief Read a @p input_stream line by line and parse each line into an object of type @p T
-   * using `CORE::IO::StringConverter<T>::Parse(line_string)`. Return a vector containing all those
+   * using `Core::IO::StringConverter<T>::Parse(line_string)`. Return a vector containing all those
    * objects.
    *
    * @param[in] input_stream input stream
@@ -54,7 +54,7 @@ namespace CORE::IO
 
   /*!
    * @brief Read an @p input_stream line by line and parse each line into an object of type @p T
-   * using `CORE::IO::StringConverter<T>::Parse(line_string)`. The parsed objects are then reduced
+   * using `Core::IO::StringConverter<T>::Parse(line_string)`. The parsed objects are then reduced
    * into another object of @p ReturnType. This process is also known as a `fold` over the data. You
    * can specify which @p operation should be performed by supplying a callable that takes the
    * already accumulated data of type @p ReturnType and the result of parsing a single line into a
@@ -83,7 +83,7 @@ namespace CORE::IO
    * @code {.cpp}
    * using ReducedType = std::map<int, int>;
    * using T = std::map<int, std::array<int, 3>>;
-   * ReducedType converted_data = CORE::IO::convert_lines<T, ReducedType>(input_stream, operator);
+   * ReducedType converted_data = Core::IO::convert_lines<T, ReducedType>(input_stream, operator);
    * @endcode
    *
    * @param[in] input_stream input stream
@@ -124,7 +124,7 @@ namespace CORE::IO
       try
       {
         // parse line string and apply the specified operation on the parsed data
-        T parsed_data = CORE::IO::StringConverter<T>::Parse(line_str);
+        T parsed_data = Core::IO::StringConverter<T>::Parse(line_str);
         operated_data = operation(std::forward<ReturnType>(operated_data), std::move(parsed_data));
       }
       catch (...)
@@ -132,12 +132,12 @@ namespace CORE::IO
         FOUR_C_THROW(
             "Could not read line '%s' from input stream. Likely the string's pattern is not "
             "convertible to an object of type %s",
-            line_str.c_str(), CORE::UTILS::TryDemangle(typeid(T).name()).c_str());
+            line_str.c_str(), Core::UTILS::TryDemangle(typeid(T).name()).c_str());
       }
     }
     return operated_data;
   }
-}  // namespace CORE::IO
+}  // namespace Core::IO
 
 FOUR_C_NAMESPACE_CLOSE
 

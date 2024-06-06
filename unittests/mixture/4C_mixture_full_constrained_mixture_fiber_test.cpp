@@ -30,7 +30,7 @@ namespace
     template <typename Number>
     const MIXTURE::PAR::RemodelFiberMaterialExponential<Number>* create_material()
     {
-      const auto container = Teuchos::rcp(new CORE::MAT::PAR::Material());
+      const auto container = Teuchos::rcp(new Core::Mat::PAR::Material());
       container->Add("K1", 1.3);
       container->Add("K2", 1.3);
       container->Add("COMPRESSION", true);
@@ -52,7 +52,7 @@ namespace
           {growth_constant, decay_time}, lambda_pre, adaptive_strategy, growth_enabled};
     }
 
-    MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<2, double> generate_remodel_fiber(
+    MIXTURE::Implementation::RemodelFiberImplementation<2, double> generate_remodel_fiber(
         const double decay_time = 12.0, const double growth_constant = 0.1,
         const double lambda_pre = 1.1)
     {
@@ -187,7 +187,7 @@ namespace
     // compare the results of the full constrained mixture model with the homogenized constrained
     // mixture model
     MIXTURE::FullConstrainedMixtureFiber cm_fiber = generate_fiber<double>();
-    MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<2, double> remodel_fiber =
+    MIXTURE::Implementation::RemodelFiberImplementation<2, double> remodel_fiber =
         generate_remodel_fiber();
 
     const double lambda_f = 1.05;
@@ -222,7 +222,7 @@ namespace
     // compare the results of the full constrained mixture model with the homogenized constrained
     // mixture model
     MIXTURE::FullConstrainedMixtureFiber cm_fiber = generate_fiber<double>();
-    MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<2, double> remodel_fiber =
+    MIXTURE::Implementation::RemodelFiberImplementation<2, double> remodel_fiber =
         generate_remodel_fiber();
 
     const double lambda_f = 1.05;
@@ -353,7 +353,7 @@ namespace
     // evaluate local newton
     const auto local_newton_evaluator = cm_fiber.get_local_newton_evaluator();
 
-    CORE::LINALG::Matrix<2, 1, FADdouble> x;
+    Core::LinAlg::Matrix<2, 1, FADdouble> x;
     x(0) = FADdouble(2, 0, 1.5);
     x(1) = FADdouble(2, 1, 0.453);
 
@@ -380,7 +380,7 @@ namespace
       // evaluate local newton
       const auto local_newton_evaluator = cm_fiber.get_local_newton_evaluator();
 
-      CORE::LINALG::Matrix<2, 1, FADdouble> x;
+      Core::LinAlg::Matrix<2, 1, FADdouble> x;
       x(0) = FADdouble(2, 0, cm_fiber.computed_growth_scalar_.val());
       x(1) = FADdouble(2, 1, cm_fiber.computed_sigma_.val());
 
@@ -434,7 +434,7 @@ namespace
     cm_fiber.computed_growth_scalar_ = cm_fiber.computed_growth_scalar_.val();
     cm_fiber.computed_sigma_ = cm_fiber.computed_sigma_.val();
 
-    CORE::LINALG::Matrix<2, 1, FADdouble> x;
+    Core::LinAlg::Matrix<2, 1, FADdouble> x;
     x(0) = cm_fiber.computed_growth_scalar_;
     x(1) = cm_fiber.computed_sigma_;
 
@@ -613,7 +613,7 @@ namespace
     // compare the results of the full constrained mixture model with the homogenized constrained
     // mixture model
     MIXTURE::FullConstrainedMixtureFiber cm_fiber = generate_fiber<double>();
-    MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<2, double> remodel_fiber =
+    MIXTURE::Implementation::RemodelFiberImplementation<2, double> remodel_fiber =
         generate_remodel_fiber();
 
     const std::array lambda_f = {1.05, 1.1, 1.09999};

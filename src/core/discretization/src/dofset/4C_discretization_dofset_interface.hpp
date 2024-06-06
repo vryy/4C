@@ -22,22 +22,22 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
 
-namespace CORE::Nodes
+namespace Core::Nodes
 {
   class Node;
 }
 
-namespace CORE::Dofsets
+namespace Core::DOFSets
 {
 
   /*! \brief Common interface class for all sets of degrees of freedom.
@@ -65,60 +65,60 @@ namespace CORE::Dofsets
 
     /// Get number of dofs for given node
     virtual int NumDof(
-        const CORE::Nodes::Node* node  ///< node, for which you want to know the number of dofs
+        const Core::Nodes::Node* node  ///< node, for which you want to know the number of dofs
     ) const = 0;
 
     /// Get number of dofs for given element
-    virtual int NumDof(const CORE::Elements::Element*
+    virtual int NumDof(const Core::Elements::Element*
             element  ///< element, for which you want to know the number of dofs
     ) const = 0;
 
     /// get number of nodal dofs
     virtual int NumDofPerNode(
-        const CORE::Nodes::Node& node  ///< node, for which you want to know the number of dofs
+        const Core::Nodes::Node& node  ///< node, for which you want to know the number of dofs
     ) const = 0;
 
     /// Get the gid of a dof for given node
-    virtual int Dof(const CORE::Nodes::Node* node,  ///< node, for which you want the dof positions
+    virtual int Dof(const Core::Nodes::Node* node,  ///< node, for which you want the dof positions
         int dof  ///< number of dof for which you want the dof position
     ) const = 0;
 
     /// Get the gid of a dof for given element
     virtual int Dof(
-        const CORE::Elements::Element* element,  ///< element, for which you want the dof positions
+        const Core::Elements::Element* element,  ///< element, for which you want the dof positions
         int dof                                  ///< number dof for which you want the dof position
     ) const = 0;
 
     /// Get the gid of all dofs of a node
     virtual std::vector<int> Dof(
-        const CORE::Nodes::Node* node  ///< node, for which you want the dof positions
+        const Core::Nodes::Node* node  ///< node, for which you want the dof positions
     ) const = 0;
 
     /// Get the gid of all dofs of a node
     virtual void Dof(std::vector<int>& dof,  ///< vector of dof gids (to be filled)
-        const CORE::Nodes::Node* node,       ///< node, for which you want the dof positions
+        const Core::Nodes::Node* node,       ///< node, for which you want the dof positions
         unsigned nodaldofset  ///< number of nodal dof set of the node (currently !=0 only for XFEM)
     ) const = 0;
 
     /// Get the gid of all dofs of a element
-    virtual std::vector<int> Dof(const CORE::Elements::Element* element) const = 0;
+    virtual std::vector<int> Dof(const Core::Elements::Element* element) const = 0;
 
     /// Get the gid of all dofs of a node and the location matrix
-    virtual void Dof(const CORE::Nodes::Node* node, std::vector<int>& lm) const = 0;
+    virtual void Dof(const Core::Nodes::Node* node, std::vector<int>& lm) const = 0;
 
     /// Get the gid of all dofs of a node
-    virtual void Dof(const CORE::Nodes::Node* node,  ///< node, for which you want the dof positions
+    virtual void Dof(const Core::Nodes::Node* node,  ///< node, for which you want the dof positions
         const unsigned startindex,  ///< first index of vector at which will be written to end
         std::vector<int>& lm        ///< already allocated vector to be filled with dof positions
     ) const = 0;
 
     /// Get the gid of all dofs of a element and the location matrix
-    virtual void Dof(const CORE::Elements::Element* element, std::vector<int>& lm) const = 0;
+    virtual void Dof(const Core::Elements::Element* element, std::vector<int>& lm) const = 0;
 
     /// Get the GIDs of the first DOFs of a node of which the associated element is interested in
-    virtual void Dof(const CORE::Elements::Element*
+    virtual void Dof(const Core::Elements::Element*
                          element,  ///< element which provides its expected number of DOFs per node
-        const CORE::Nodes::Node* node,  ///< node, for which you want the DOF positions
+        const Core::Nodes::Node* node,  ///< node, for which you want the DOF positions
         std::vector<int>& lm  ///< already allocated vector to be filled with DOF positions
     ) const = 0;
 
@@ -172,7 +172,7 @@ namespace CORE::Dofsets
 
     /// Assign dof numbers using all elements and nodes of the discretization.
     virtual int assign_degrees_of_freedom(
-        const DRT::Discretization& dis, const unsigned dspos, const int start) = 0;
+        const Discret::Discretization& dis, const unsigned dspos, const int start) = 0;
 
     /// reset all internal variables
     virtual void Reset() = 0;
@@ -202,7 +202,7 @@ namespace CORE::Dofsets
 
   };  // class DofSetInterface
 
-}  // namespace CORE::Dofsets
+}  // namespace Core::DOFSets
 
 
 FOUR_C_NAMESPACE_CLOSE

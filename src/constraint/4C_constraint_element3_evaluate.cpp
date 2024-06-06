@@ -15,11 +15,11 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::ConstraintElement3::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
-    CORE::LINALG::SerialDenseVector& elevec3)
+int Discret::ELEMENTS::ConstraintElement3::Evaluate(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
+    Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
+    Core::LinAlg::SerialDenseVector& elevec3)
 {
   ActionType act = none;
 
@@ -50,15 +50,15 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
-      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::ExtractMyValues(*disp, mydisp, lm);
       const int numnod = num_node();
 
       if (numnod == 4)
       {
         const int numdim = 3;
-        CORE::LINALG::Matrix<4, numdim> xscurr;  // material coord. of element
+        Core::LinAlg::Matrix<4, numdim> xscurr;  // material coord. of element
         spatial_configuration(xscurr, mydisp);
-        CORE::LINALG::Matrix<numdim, 1> elementnormal;
+        Core::LinAlg::Matrix<numdim, 1> elementnormal;
 
         compute_normal(xscurr, elementnormal);
         if (abs(elementnormal.Norm2()) < 1E-6)
@@ -70,15 +70,15 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(Teuchos::ParameterList& params,
       }
       else if (numnod == 2)
       {
-        Teuchos::RCP<CORE::Conditions::Condition> condition =
-            params.get<Teuchos::RCP<CORE::Conditions::Condition>>("condition");
+        Teuchos::RCP<Core::Conditions::Condition> condition =
+            params.get<Teuchos::RCP<Core::Conditions::Condition>>("condition");
         const auto& direct = condition->parameters().Get<std::vector<double>>("direction");
         const auto& value = condition->parameters().Get<std::string>("value");
         if (value == "disp")
           elevec3[0] = compute_weighted_distance(mydisp, direct);
         else if (value == "x")
         {
-          CORE::LINALG::Matrix<2, 3> xscurr;  // material coord. of element
+          Core::LinAlg::Matrix<2, 3> xscurr;  // material coord. of element
           spatial_configuration(xscurr, mydisp);
           elevec3[0] = compute_weighted_distance(xscurr, direct);
         }
@@ -92,7 +92,7 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
-      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::ExtractMyValues(*disp, mydisp, lm);
       const int numnod = num_node();
 
       if (numnod == 4)
@@ -100,10 +100,10 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(Teuchos::ParameterList& params,
         const int numdim = 3;
         const int numnode = 4;
 
-        CORE::LINALG::Matrix<numnode, numdim> xscurr;  // material coord. of element
+        Core::LinAlg::Matrix<numnode, numdim> xscurr;  // material coord. of element
         spatial_configuration(xscurr, mydisp);
 
-        CORE::LINALG::Matrix<numdim, 1> elementnormal;
+        Core::LinAlg::Matrix<numdim, 1> elementnormal;
         compute_normal(xscurr, elementnormal);
         if (abs(elementnormal.Norm2()) < 1E-6)
         {
@@ -120,8 +120,8 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(Teuchos::ParameterList& params,
       }
       else if (numnod == 2)
       {
-        Teuchos::RCP<CORE::Conditions::Condition> condition =
-            params.get<Teuchos::RCP<CORE::Conditions::Condition>>("condition");
+        Teuchos::RCP<Core::Conditions::Condition> condition =
+            params.get<Teuchos::RCP<Core::Conditions::Condition>>("condition");
         const std::vector<double>& direct =
             condition->parameters().Get<std::vector<double>>("direction");
 
@@ -134,7 +134,7 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(Teuchos::ParameterList& params,
           elevec3[0] = compute_weighted_distance(mydisp, direct);
         else if (value == "x")
         {
-          CORE::LINALG::Matrix<2, 3> xscurr;  // spatial coord. of element
+          Core::LinAlg::Matrix<2, 3> xscurr;  // spatial coord. of element
           spatial_configuration(xscurr, mydisp);
           elevec3[0] = compute_weighted_distance(xscurr, direct);
         }
@@ -149,14 +149,14 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(Teuchos::ParameterList& params,
   return 0;
 
 
-}  // end of DRT::ELEMENTS::ConstraintElement3::Evaluate
+}  // end of Discret::ELEMENTS::ConstraintElement3::Evaluate
 
 /*----------------------------------------------------------------------*
  * Evaluate Neumann (->FOUR_C_THROW) */
-int DRT::ELEMENTS::ConstraintElement3::evaluate_neumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
-    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
-    CORE::LINALG::SerialDenseMatrix* elemat1)
+int Discret::ELEMENTS::ConstraintElement3::evaluate_neumann(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
+    Core::LinAlg::SerialDenseMatrix* elemat1)
 {
   FOUR_C_THROW("You called Evaluate Neumann of constraint element.");
   return 0;
@@ -164,8 +164,8 @@ int DRT::ELEMENTS::ConstraintElement3::evaluate_neumann(Teuchos::ParameterList& 
 
 /*----------------------------------------------------------------------*
  * compute 3d normal */
-void DRT::ELEMENTS::ConstraintElement3::compute_normal(
-    const CORE::LINALG::Matrix<4, 3>& xc, CORE::LINALG::Matrix<3, 1>& elenorm)
+void Discret::ELEMENTS::ConstraintElement3::compute_normal(
+    const Core::LinAlg::Matrix<4, 3>& xc, Core::LinAlg::Matrix<3, 1>& elenorm)
 {
   elenorm(0, 0) = -(xc(0, 2) * xc(1, 1)) + xc(0, 1) * xc(1, 2) + xc(0, 2) * xc(2, 1) -
                   xc(1, 2) * xc(2, 1) - xc(0, 1) * xc(2, 2) + xc(1, 1) * xc(2, 2);
@@ -178,8 +178,8 @@ void DRT::ELEMENTS::ConstraintElement3::compute_normal(
 
 /*----------------------------------------------------------------------*
  * normal distance between fourth point and plane */
-double DRT::ELEMENTS::ConstraintElement3::compute_normal_dist(
-    const CORE::LINALG::Matrix<4, 3>& xc, const CORE::LINALG::Matrix<3, 1>& normal)
+double Discret::ELEMENTS::ConstraintElement3::compute_normal_dist(
+    const Core::LinAlg::Matrix<4, 3>& xc, const Core::LinAlg::Matrix<3, 1>& normal)
 {
   return (-(normal(0, 0) * (xc(0, 0) - xc(3, 0))) + normal(1, 0) * (-xc(0, 1) + xc(3, 1)) -
              normal(2, 0) * (xc(0, 2) - xc(3, 2))) /
@@ -188,8 +188,9 @@ double DRT::ELEMENTS::ConstraintElement3::compute_normal_dist(
 
 /*----------------------------------------------------------------------*
  * first derivatives */
-void DRT::ELEMENTS::ConstraintElement3::compute_first_deriv(const CORE::LINALG::Matrix<4, 3>& xc,
-    CORE::LINALG::SerialDenseVector& elevector, const CORE::LINALG::Matrix<3, 1>& normal)
+void Discret::ELEMENTS::ConstraintElement3::compute_first_deriv(
+    const Core::LinAlg::Matrix<4, 3>& xc, Core::LinAlg::SerialDenseVector& elevector,
+    const Core::LinAlg::Matrix<3, 1>& normal)
 {
   double normsquare = pow(normal.Norm2(), 2);
   double normcube = pow(normal.Norm2(), 3);
@@ -290,8 +291,9 @@ void DRT::ELEMENTS::ConstraintElement3::compute_first_deriv(const CORE::LINALG::
 
 /*----------------------------------------------------------------------*
  * second derivatives */
-void DRT::ELEMENTS::ConstraintElement3::compute_second_deriv(const CORE::LINALG::Matrix<4, 3>& xc,
-    CORE::LINALG::SerialDenseMatrix& elematrix, const CORE::LINALG::Matrix<3, 1>& normal)
+void Discret::ELEMENTS::ConstraintElement3::compute_second_deriv(
+    const Core::LinAlg::Matrix<4, 3>& xc, Core::LinAlg::SerialDenseMatrix& elematrix,
+    const Core::LinAlg::Matrix<3, 1>& normal)
 {
   double normsquare = pow(normal.Norm2(), 2);
   double normcube = pow(normal.Norm2(), 3);
@@ -2847,7 +2849,7 @@ void DRT::ELEMENTS::ConstraintElement3::compute_second_deriv(const CORE::LINALG:
   return;
 }
 
-double DRT::ELEMENTS::ConstraintElement3::compute_weighted_distance(
+double Discret::ELEMENTS::ConstraintElement3::compute_weighted_distance(
     const std::vector<double> disp, const std::vector<double> direct)
 {
   // norm of direct
@@ -2862,8 +2864,8 @@ double DRT::ELEMENTS::ConstraintElement3::compute_weighted_distance(
   return result;
 }
 
-double DRT::ELEMENTS::ConstraintElement3::compute_weighted_distance(
-    const CORE::LINALG::Matrix<2, 3> disp, const std::vector<double> direct)
+double Discret::ELEMENTS::ConstraintElement3::compute_weighted_distance(
+    const Core::LinAlg::Matrix<2, 3> disp, const std::vector<double> direct)
 {
   // norm of direct
   double norm = sqrt(pow(direct.at(0), 2) + pow(direct.at(1), 2) + pow(direct.at(2), 2));
@@ -2877,8 +2879,8 @@ double DRT::ELEMENTS::ConstraintElement3::compute_weighted_distance(
   return result;
 }
 
-void DRT::ELEMENTS::ConstraintElement3::compute_first_deriv_weighted_distance(
-    CORE::LINALG::SerialDenseVector& elevector, const std::vector<double> direct)
+void Discret::ELEMENTS::ConstraintElement3::compute_first_deriv_weighted_distance(
+    Core::LinAlg::SerialDenseVector& elevector, const std::vector<double> direct)
 {
   // norm of direct
   double norm = sqrt(pow(direct.at(0), 2) + pow(direct.at(1), 2) + pow(direct.at(2), 2));

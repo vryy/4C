@@ -47,7 +47,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Returns the coupling type for beam-to-surface coupling.
      */
-    inline INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling GetCouplingType() const
+    inline Inpar::BeamToSolid::BeamToSolidSurfaceCoupling GetCouplingType() const
     {
       return coupling_type_;
     }
@@ -59,14 +59,14 @@ namespace BEAMINTERACTION
     {
       switch (coupling_type_)
       {
-        case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::reference_configuration_forced_to_zero:
-        case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::displacement:
+        case Inpar::BeamToSolid::BeamToSolidSurfaceCoupling::reference_configuration_forced_to_zero:
+        case Inpar::BeamToSolid::BeamToSolidSurfaceCoupling::displacement:
           return false;
           break;
-        case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::
+        case Inpar::BeamToSolid::BeamToSolidSurfaceCoupling::
             reference_configuration_forced_to_zero_fad:
-        case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::displacement_fad:
-        case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::consistent_fad:
+        case Inpar::BeamToSolid::BeamToSolidSurfaceCoupling::displacement_fad:
+        case Inpar::BeamToSolid::BeamToSolidSurfaceCoupling::consistent_fad:
           return true;
           break;
         default:
@@ -103,7 +103,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Returns the type of surface triad construction for rotational coupling.
      */
-    inline INPAR::BEAMTOSOLID::BeamToSolidSurfaceRotationCoupling get_surface_triad_construction()
+    inline Inpar::BeamToSolid::BeamToSolidSurfaceRotationCoupling get_surface_triad_construction()
         const
     {
       return rotational_coupling_triad_construction_;
@@ -117,7 +117,7 @@ namespace BEAMINTERACTION
 
    private:
     //! How the coupling should be evaluated.
-    INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling coupling_type_;
+    Inpar::BeamToSolid::BeamToSolidSurfaceCoupling coupling_type_;
 
     //! Pointer to the visualization output parameters for beam to solid volume meshtying.
     Teuchos::RCP<BeamToSolidSurfaceVisualizationOutputParams> output_params_ptr_;
@@ -126,7 +126,7 @@ namespace BEAMINTERACTION
     double rotational_coupling_penalty_parameter_;
 
     //! Type of surface triad construction.
-    INPAR::BEAMTOSOLID::BeamToSolidSurfaceRotationCoupling rotational_coupling_triad_construction_;
+    Inpar::BeamToSolid::BeamToSolidSurfaceRotationCoupling rotational_coupling_triad_construction_;
   };
 
 }  // namespace BEAMINTERACTION

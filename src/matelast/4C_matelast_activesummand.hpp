@@ -14,9 +14,9 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
-  namespace ELASTIC
+  namespace Elastic
   {
     /*!
      * \brief This is a pure abstract extension of the Summand class to be used for active
@@ -36,9 +36,9 @@ namespace MAT
        * \param eleGID global element id
        */
       virtual void add_active_stress_cmat_aniso(
-          const CORE::LINALG::Matrix<3, 3>& CM,  ///< right Cauchy Green tensor
-          CORE::LINALG::Matrix<6, 6>& cmat,      ///< material stiffness matrix
-          CORE::LINALG::Matrix<6, 1>& stress,    ///< 2nd PK-stress
+          const Core::LinAlg::Matrix<3, 3>& CM,  ///< right Cauchy Green tensor
+          Core::LinAlg::Matrix<6, 6>& cmat,      ///< material stiffness matrix
+          Core::LinAlg::Matrix<6, 1>& stress,    ///< 2nd PK-stress
           int gp,                                ///< Gauss point
           int eleGID) const = 0;                 ///< element GID
 
@@ -50,9 +50,9 @@ namespace MAT
        */
       virtual double get_derivative_aniso_active() const = 0;
     };
-  }  // namespace ELASTIC
+  }  // namespace Elastic
 
-}  // namespace MAT
+}  // namespace Mat
 
 
 FOUR_C_NAMESPACE_CLOSE

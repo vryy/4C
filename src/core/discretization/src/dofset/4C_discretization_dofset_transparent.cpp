@@ -15,15 +15,15 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-CORE::Dofsets::TransparentDofSet::TransparentDofSet(
-    Teuchos::RCP<DRT::Discretization> sourcedis, bool parallel)
-    : CORE::Dofsets::DofSet(), sourcedis_(sourcedis), parallel_(parallel)
+Core::DOFSets::TransparentDofSet::TransparentDofSet(
+    Teuchos::RCP<Discret::Discretization> sourcedis, bool parallel)
+    : Core::DOFSets::DofSet(), sourcedis_(sourcedis), parallel_(parallel)
 {
   return;
 }
 
-int CORE::Dofsets::TransparentDofSet::assign_degrees_of_freedom(
-    const DRT::Discretization& dis, const unsigned dspos, const int start)
+int Core::DOFSets::TransparentDofSet::assign_degrees_of_freedom(
+    const Discret::Discretization& dis, const unsigned dspos, const int start)
 {
   // first, we call the standard assign_degrees_of_freedom from the base class
   int count = DofSet::assign_degrees_of_freedom(dis, dspos, start);
@@ -46,8 +46,9 @@ int CORE::Dofsets::TransparentDofSet::assign_degrees_of_freedom(
 }
 
 /// Assign dof numbers for new discretization using dof numbering from source discretization.
-void CORE::Dofsets::TransparentDofSet::transfer_degrees_of_freedom(
-    const DRT::Discretization& sourcedis, const DRT::Discretization& newdis, const int start)
+void Core::DOFSets::TransparentDofSet::transfer_degrees_of_freedom(
+    const Discret::Discretization& sourcedis, const Discret::Discretization& newdis,
+    const int start)
 {
   if (!sourcedis.dof_row_map()->UniqueGIDs()) FOUR_C_THROW("dof_row_map is not unique");
   if (!sourcedis.NodeRowMap()->UniqueGIDs()) FOUR_C_THROW("NodeRowMap is not unique");
@@ -63,8 +64,8 @@ void CORE::Dofsets::TransparentDofSet::transfer_degrees_of_freedom(
   dofrowvec.reserve(dofrowmap_->NumMyElements());
   for (int inode = 0; inode != newdis.NumMyRowNodes(); ++inode)
   {
-    const CORE::Nodes::Node* newnode = newdis.lRowNode(inode);
-    const CORE::Nodes::Node* sourcenode = sourcedis.gNode(newnode->Id());
+    const Core::Nodes::Node* newnode = newdis.lRowNode(inode);
+    const Core::Nodes::Node* sourcenode = sourcedis.gNode(newnode->Id());
 
     const std::vector<int> dofs = sourcedis.Dof(0, sourcenode);
 
@@ -94,8 +95,8 @@ void CORE::Dofsets::TransparentDofSet::transfer_degrees_of_freedom(
   dofcolvec.reserve(dofcolmap_->NumMyElements());
   for (int inode = 0; inode != newdis.NumMyColNodes(); ++inode)
   {
-    const CORE::Nodes::Node* newnode = newdis.lColNode(inode);
-    const CORE::Nodes::Node* sourcenode = sourcedis.gNode(newnode->Id());
+    const Core::Nodes::Node* newnode = newdis.lColNode(inode);
+    const Core::Nodes::Node* sourcenode = sourcedis.gNode(newnode->Id());
 
     const int lid = sourcenode->LID();
     if (lid == -1)
@@ -129,8 +130,9 @@ void CORE::Dofsets::TransparentDofSet::transfer_degrees_of_freedom(
 }
 
 /// Assign dof numbers for new discretization using dof numbering from source discretization.
-void CORE::Dofsets::TransparentDofSet::parallel_transfer_degrees_of_freedom(
-    const DRT::Discretization& sourcedis, const DRT::Discretization& newdis, const int start)
+void Core::DOFSets::TransparentDofSet::parallel_transfer_degrees_of_freedom(
+    const Discret::Discretization& sourcedis, const Discret::Discretization& newdis,
+    const int start)
 {
   if (!sourcedis.dof_row_map()->UniqueGIDs()) FOUR_C_THROW("dof_row_map is not unique");
   if (!sourcedis.NodeRowMap()->UniqueGIDs()) FOUR_C_THROW("NodeRowMap is not unique");
@@ -156,7 +158,7 @@ void CORE::Dofsets::TransparentDofSet::parallel_transfer_degrees_of_freedom(
 
   for (int inode = 0; inode != newdis.NumMyColNodes(); ++inode)
   {
-    const CORE::Nodes::Node* newnode = newdis.lColNode(inode);
+    const Core::Nodes::Node* newnode = newdis.lColNode(inode);
     int gid = newnode->Id();
     std::vector<int> emptyvec;
     gid_to_dofs.insert(std::pair<int, std::vector<int>>(gid, emptyvec));
@@ -164,7 +166,7 @@ void CORE::Dofsets::TransparentDofSet::parallel_transfer_degrees_of_freedom(
 
   {
     // create an exporter for point to point comunication
-    CORE::COMM::Exporter exporter(sourcedis.Comm());
+    Core::Communication::Exporter exporter(sourcedis.Comm());
 
     // necessary variables
     MPI_Request request;
@@ -199,7 +201,7 @@ void CORE::Dofsets::TransparentDofSet::parallel_transfer_degrees_of_freedom(
         set_source_dofs_available_on_this_proc(gid_to_dofs);
 
         // Pack info into block to send
-        CORE::COMM::PackBuffer data;
+        Core::Communication::PackBuffer data;
         PackLocalSourceDofs(gid_to_dofs, data);
         data.StartPacking();
         PackLocalSourceDofs(gid_to_dofs, data);
@@ -212,7 +214,7 @@ void CORE::Dofsets::TransparentDofSet::parallel_transfer_degrees_of_freedom(
   }
 
   std::set<int> slaveset;
-  std::vector<CORE::Conditions::Condition*> mypbcs;
+  std::vector<Core::Conditions::Condition*> mypbcs;
 
   // get periodic surface boundary conditions
   sourcedis_->GetCondition("SurfacePeriodic", mypbcs);
@@ -224,7 +226,7 @@ void CORE::Dofsets::TransparentDofSet::parallel_transfer_degrees_of_freedom(
 
   for (unsigned numcond = 0; numcond < mypbcs.size(); ++numcond)
   {
-    CORE::Conditions::Condition* thiscond = mypbcs[numcond];
+    Core::Conditions::Condition* thiscond = mypbcs[numcond];
 
     // see whether we have a slave condition
     const std::string& mymasterslavetoggle =
@@ -248,7 +250,7 @@ void CORE::Dofsets::TransparentDofSet::parallel_transfer_degrees_of_freedom(
   dofrowvec.reserve(dofrowmap_->NumMyElements());
   for (int inode = 0; inode != newdis.NumMyRowNodes(); ++inode)
   {
-    const CORE::Nodes::Node* newnode = newdis.lRowNode(inode);
+    const Core::Nodes::Node* newnode = newdis.lRowNode(inode);
 
     const std::vector<int> dofs = gid_to_dofs[newnode->Id()];
 
@@ -295,7 +297,7 @@ void CORE::Dofsets::TransparentDofSet::parallel_transfer_degrees_of_freedom(
   dofcolvec.reserve(dofcolmap_->NumMyElements());
   for (int inode = 0; inode != newdis.NumMyColNodes(); ++inode)
   {
-    const CORE::Nodes::Node* newnode = newdis.lColNode(inode);
+    const Core::Nodes::Node* newnode = newdis.lColNode(inode);
 
     const std::vector<int> dofs = gid_to_dofs[newnode->Id()];
 
@@ -337,7 +339,7 @@ void CORE::Dofsets::TransparentDofSet::parallel_transfer_degrees_of_freedom(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void CORE::Dofsets::TransparentDofSet::set_source_dofs_available_on_this_proc(
+void Core::DOFSets::TransparentDofSet::set_source_dofs_available_on_this_proc(
     std::map<int, std::vector<int>>& gid_to_dofs)
 {
   for (std::map<int, std::vector<int>>::iterator curr = gid_to_dofs.begin();
@@ -349,7 +351,7 @@ void CORE::Dofsets::TransparentDofSet::set_source_dofs_available_on_this_proc(
     {
       curr->second.clear();
 
-      const CORE::Nodes::Node* sourcenode = sourcedis_->gNode(curr->first);
+      const Core::Nodes::Node* sourcenode = sourcedis_->gNode(curr->first);
 
       const std::vector<int> dofs = sourcedis_->Dof(0, sourcenode);
 
@@ -381,13 +383,13 @@ void CORE::Dofsets::TransparentDofSet::set_source_dofs_available_on_this_proc(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void CORE::Dofsets::TransparentDofSet::PackLocalSourceDofs(
-    std::map<int, std::vector<int>>& gid_to_dofs, CORE::COMM::PackBuffer& sblock)
+void Core::DOFSets::TransparentDofSet::PackLocalSourceDofs(
+    std::map<int, std::vector<int>>& gid_to_dofs, Core::Communication::PackBuffer& sblock)
 {
   int size = gid_to_dofs.size();
 
   // add size  to sendblock
-  CORE::COMM::ParObject::AddtoPack(sblock, size);
+  Core::Communication::ParObject::AddtoPack(sblock, size);
 
   for (std::map<int, std::vector<int>>::iterator curr = gid_to_dofs.begin();
        curr != gid_to_dofs.end(); ++curr)
@@ -396,11 +398,11 @@ void CORE::Dofsets::TransparentDofSet::PackLocalSourceDofs(
     std::vector<int> mydofs = curr->second;
     int numdofs = (int)mydofs.size();
 
-    CORE::COMM::ParObject::AddtoPack(sblock, gid);
-    CORE::COMM::ParObject::AddtoPack(sblock, numdofs);
+    Core::Communication::ParObject::AddtoPack(sblock, gid);
+    Core::Communication::ParObject::AddtoPack(sblock, numdofs);
     for (int ll = 0; ll < numdofs; ++ll)
     {
-      CORE::COMM::ParObject::AddtoPack(sblock, mydofs[ll]);
+      Core::Communication::ParObject::AddtoPack(sblock, mydofs[ll]);
     }
   }
 
@@ -417,7 +419,7 @@ void CORE::Dofsets::TransparentDofSet::PackLocalSourceDofs(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void CORE::Dofsets::TransparentDofSet::unpack_local_source_dofs(
+void Core::DOFSets::TransparentDofSet::unpack_local_source_dofs(
     std::map<int, std::vector<int>>& gid_to_dofs, std::vector<char>& rblock)
 {
   gid_to_dofs.clear();
@@ -427,7 +429,7 @@ void CORE::Dofsets::TransparentDofSet::unpack_local_source_dofs(
 
   // extract size
   int size = 0;
-  CORE::COMM::ParObject::ExtractfromPack(position, rblock, size);
+  Core::Communication::ParObject::ExtractfromPack(position, rblock, size);
 
   for (int rr = 0; rr < size; ++rr)
   {
@@ -435,14 +437,14 @@ void CORE::Dofsets::TransparentDofSet::unpack_local_source_dofs(
     std::vector<int> mydofs;
     int numdofs = 0;
 
-    CORE::COMM::ParObject::ExtractfromPack(position, rblock, gid);
-    CORE::COMM::ParObject::ExtractfromPack(position, rblock, numdofs);
+    Core::Communication::ParObject::ExtractfromPack(position, rblock, gid);
+    Core::Communication::ParObject::ExtractfromPack(position, rblock, numdofs);
 
     for (int ll = 0; ll < numdofs; ++ll)
     {
       int thisdof = 0;
 
-      CORE::COMM::ParObject::ExtractfromPack(position, rblock, thisdof);
+      Core::Communication::ParObject::ExtractfromPack(position, rblock, thisdof);
       mydofs.push_back(thisdof);
     }
 
@@ -462,8 +464,8 @@ void CORE::Dofsets::TransparentDofSet::unpack_local_source_dofs(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void CORE::Dofsets::TransparentDofSet::receive_block(int numproc, int myrank,
-    std::vector<char>& rblock, CORE::COMM::Exporter& exporter, MPI_Request& request)
+void Core::DOFSets::TransparentDofSet::receive_block(int numproc, int myrank,
+    std::vector<char>& rblock, Core::Communication::Exporter& exporter, MPI_Request& request)
 {
   // necessary variables
 
@@ -504,8 +506,8 @@ void CORE::Dofsets::TransparentDofSet::receive_block(int numproc, int myrank,
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void CORE::Dofsets::TransparentDofSet::send_block(int numproc, int myrank,
-    std::vector<char>& sblock, CORE::COMM::Exporter& exporter, MPI_Request& request)
+void Core::DOFSets::TransparentDofSet::send_block(int numproc, int myrank,
+    std::vector<char>& sblock, Core::Communication::Exporter& exporter, MPI_Request& request)
 {
   // Send block to next proc.
   int tag = myrank;

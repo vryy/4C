@@ -27,10 +27,10 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationReader;
-}  // namespace CORE::IO
+}  // namespace Core::IO
 
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
@@ -83,7 +83,7 @@ namespace PARTICLEENGINE
      *
      * \param[in] reader discretization reader
      */
-    void read_restart(const std::shared_ptr<CORE::IO::DiscretizationReader> reader);
+    void read_restart(const std::shared_ptr<Core::IO::DiscretizationReader> reader);
 
     /*!
      * \brief set positions and states of particles
@@ -105,7 +105,7 @@ namespace PARTICLEENGINE
     ParticleContainerBundleShrdPtr particlecontainerbundle_;
 
     //! collection of vtu writer objects indexed by particle type enum and particle status enum
-    std::vector<std::vector<std::shared_ptr<CORE::IO::VisualizationManager>>>
+    std::vector<std::vector<std::shared_ptr<Core::IO::VisualizationManager>>>
         runtime_visualization_managers_;
 
     //! setup time of runtime vtp writer

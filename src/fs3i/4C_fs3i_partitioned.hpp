@@ -28,16 +28,16 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
-namespace ADAPTER
+namespace Adapter
 {
   class Coupling;
   class MortarVolCoupl;
   class ScaTraBaseAlgorithm;
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 namespace FSI
 {
@@ -51,13 +51,13 @@ namespace FSI
   }  // namespace UTILS
 }  // namespace FSI
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class MultiMapExtractor;
   class BlockSparseMatrixBase;
   class SparseMatrix;
   class Solver;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 
 namespace FS3I
@@ -91,8 +91,9 @@ namespace FS3I
     void redistribute_interface() override { return; };
 
     /// create a volmortar object
-    Teuchos::RCP<CORE::ADAPTER::MortarVolCoupl> create_vol_mortar_object(
-        Teuchos::RCP<DRT::Discretization> masterdis, Teuchos::RCP<DRT::Discretization> slavedis);
+    Teuchos::RCP<Core::Adapter::MortarVolCoupl> create_vol_mortar_object(
+        Teuchos::RCP<Discret::Discretization> masterdis,
+        Teuchos::RCP<Discret::Discretization> slavedis);
 
     //! set-up of FSI and ScaTra systems
     void SetupSystem() override;
@@ -166,18 +167,18 @@ namespace FS3I
 
     /// vector of scatra volume couplings (i.e. fluid to fluid-scalar and structure to
     /// structure-scalar)
-    std::vector<INPAR::FS3I::VolumeCoupling> volume_fieldcouplings_;
+    std::vector<Inpar::FS3I::VolumeCoupling> volume_fieldcouplings_;
 
    private:
     //! volume coupling (using mortar) adapter
-    std::vector<Teuchos::RCP<CORE::ADAPTER::MortarVolCoupl>> volume_coupling_objects_;
+    std::vector<Teuchos::RCP<Core::Adapter::MortarVolCoupl>> volume_coupling_objects_;
 
     /// communication (mainly for screen output)
     const Epetra_Comm& comm_;
 
-    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> fluidscatra_;
+    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> fluidscatra_;
 
-    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> structscatra_;
+    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> structscatra_;
   };
 }  // namespace FS3I
 

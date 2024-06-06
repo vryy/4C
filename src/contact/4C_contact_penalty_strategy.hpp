@@ -146,7 +146,7 @@ namespace CONTACT
     stiffness contributions to kteff and extra contact forces to feff.
 
     */
-    void EvaluateContact(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
+    void EvaluateContact(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff) override;
 
     /*!
@@ -155,7 +155,7 @@ namespace CONTACT
     This includes the evaluation of of the frictional contact forces.
 
     */
-    void EvaluateFriction(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
+    void EvaluateFriction(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff) override;
 
     /*!
@@ -186,7 +186,7 @@ namespace CONTACT
     and finally Evaluate().
 
     */
-    void InitializeUzawa(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
+    void InitializeUzawa(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff) override;
 
     /*!
@@ -256,7 +256,7 @@ namespace CONTACT
      *
      *  \param bt (in): Desired matrix block type, e.g. displ_displ, displ_lm, ...
      *  \param cparams (in): contact parameter interface (read-only) */
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrixBlockPtr(const enum CONTACT::MatBlockType& bt,
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> GetMatrixBlockPtr(const enum CONTACT::MatBlockType& bt,
         const CONTACT::ParamsInterface* cparams = nullptr) const override;
 
     //@}
@@ -275,9 +275,9 @@ namespace CONTACT
     int ActiveSetSteps() override { return 0; }
     void ResetActiveSet() override {}
     void Recover(Teuchos::RCP<Epetra_Vector> disi) override { return; };
-    void build_saddle_point_system(Teuchos::RCP<CORE::LINALG::SparseOperator> kdd,
+    void build_saddle_point_system(Teuchos::RCP<Core::LinAlg::SparseOperator> kdd,
         Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
-        Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
+        Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
         Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) override
     {
       FOUR_C_THROW(
@@ -343,7 +343,7 @@ namespace CONTACT
     PenaltyStrategy(const PenaltyStrategy& old) = delete;
 
     std::vector<Teuchos::RCP<Interface>> interface_;  // contact interfaces
-    Teuchos::RCP<CORE::LINALG::SparseMatrix>
+    Teuchos::RCP<Core::LinAlg::SparseMatrix>
         linzmatrix_;            // global matrix LinZ with derivatives of LM
     double constrnorm_;         // L2-norm of normal contact constraints
     double constrnormtan_;      // L2-norm of tangential contact constraints
@@ -352,7 +352,7 @@ namespace CONTACT
     bool evalForceCalled_;      //< flag for evaluate force call
 
     Teuchos::RCP<Epetra_Vector> fc_;               //< contact penalty force
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> kc_;  //< contact penalty stiffness
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> kc_;  //< contact penalty stiffness
 
   };  // class PenaltyStrategy
 }  // namespace CONTACT

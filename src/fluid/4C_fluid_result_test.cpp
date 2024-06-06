@@ -23,14 +23,14 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FLD::FluidResultTest::FluidResultTest(FluidImplicitTimeInt& fluid)
-    : CORE::UTILS::ResultTest("FLUID")
+    : Core::UTILS::ResultTest("FLUID")
 {
   fluiddis_ = fluid.discret_;
   myerror_ = fluid.evaluate_error_compared_to_analytical_sol();
   mysol_ = fluid.velnp_;
 
   // quantities not implemented in the HDG formulation
-  if (GLOBAL::Problem::Instance()->spatial_approximation_type() != CORE::FE::ShapeFunctionType::hdg)
+  if (Global::Problem::Instance()->spatial_approximation_type() != Core::FE::ShapeFunctionType::hdg)
   {
     mytraction_ = fluid.stressmanager_->GetPreCalcStresses(fluid.trueresidual_);
     mywss_ = fluid.stressmanager_->get_pre_calc_wall_shear_stresses(fluid.trueresidual_);
@@ -41,7 +41,7 @@ FLD::FluidResultTest::FluidResultTest(FluidImplicitTimeInt& fluid)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FLD::FluidResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int& test_count)
+void FLD::FluidResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;
@@ -65,7 +65,7 @@ void FLD::FluidResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int&
   {
     if (fluiddis_->HaveGlobalNode(node))
     {
-      const CORE::Nodes::Node* actnode = fluiddis_->gNode(node);
+      const Core::Nodes::Node* actnode = fluiddis_->gNode(node);
 
       // Here we are just interested in the nodes that we own (i.e. a row node)!
       if (actnode->Owner() != fluiddis_->Comm().MyPID()) return;
@@ -74,7 +74,7 @@ void FLD::FluidResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int&
 
       const Epetra_BlockMap& velnpmap = mysol_->Map();
 
-      const int numdim = GLOBAL::Problem::Instance()->NDim();
+      const int numdim = Global::Problem::Instance()->NDim();
 
       std::string position;
       res.ExtractString("QUANTITY", position);

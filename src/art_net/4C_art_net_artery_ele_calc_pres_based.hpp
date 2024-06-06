@@ -22,7 +22,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
@@ -38,7 +38,7 @@ namespace DRT
       \date 03/18
     */
 
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     class ArteryEleCalcPresBased : public ArteryEleCalc<distype>
     {
      private:
@@ -52,32 +52,33 @@ namespace DRT
       static ArteryEleCalcPresBased<distype>* Instance(
           const int numdofpernode, const std::string& disname);
 
-      int Evaluate(Artery* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          CORE::Elements::Element::LocationArray& la,
-          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra,
-          CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra,
-          Teuchos::RCP<CORE::MAT::Material> mat) override;
+      int Evaluate(Artery* ele, Teuchos::ParameterList& params,
+          Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec1_epetra,
+          Core::LinAlg::SerialDenseVector& elevec2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec3_epetra,
+          Teuchos::RCP<Core::Mat::Material> mat) override;
 
       int ScatraEvaluate(Artery* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra,
-          CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra,
-          Teuchos::RCP<CORE::MAT::Material> mat) override;
+          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec1_epetra,
+          Core::LinAlg::SerialDenseVector& elevec2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec3_epetra,
+          Teuchos::RCP<Core::Mat::Material> mat) override;
 
-      int EvaluateService(Artery* ele, const ARTERY::Action action, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
-          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra,
-          CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra,
-          Teuchos::RCP<CORE::MAT::Material> mat) override;
+      int EvaluateService(Artery* ele, const Arteries::Action action,
+          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Core::Elements::Element::LocationArray& la,
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec1_epetra,
+          Core::LinAlg::SerialDenseVector& elevec2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec3_epetra,
+          Teuchos::RCP<Core::Mat::Material> mat) override;
 
 
      protected:
@@ -91,10 +92,10 @@ namespace DRT
         \param rhs[in,out]        element rhs to calculate
         \param material[in]       artery material
         */
-      void sysmat(Artery* ele, DRT::Discretization& discretization,
-          CORE::Elements::Element::LocationArray& la,
-          CORE::LINALG::Matrix<my::iel_, my::iel_>& sysmat, CORE::LINALG::Matrix<my::iel_, 1>& rhs,
-          Teuchos::RCP<const CORE::MAT::Material> material);
+      void sysmat(Artery* ele, Discret::Discretization& discretization,
+          Core::Elements::Element::LocationArray& la,
+          Core::LinAlg::Matrix<my::iel_, my::iel_>& sysmat, Core::LinAlg::Matrix<my::iel_, 1>& rhs,
+          Teuchos::RCP<const Core::Mat::Material> material);
 
       /*!
         \brief Evaluate volumetric flow inside the element (for post-processing)
@@ -107,9 +108,9 @@ namespace DRT
 
         \note  only checked for line2 elements
         */
-      void evaluate_flow(Artery* ele, DRT::Discretization& discretization,
-          CORE::Elements::Element::LocationArray& la, CORE::LINALG::SerialDenseVector& flowVec,
-          Teuchos::RCP<const CORE::MAT::Material> material);
+      void evaluate_flow(Artery* ele, Discret::Discretization& discretization,
+          Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseVector& flowVec,
+          Teuchos::RCP<const Core::Mat::Material> material);
 
       /*!
         \brief Calculate element length (either in current or deformed configuration)
@@ -118,13 +119,13 @@ namespace DRT
         \param la[in]             element location array
         \return                   element length (either in current or deformed configuration)
        */
-      double calculate_ele_length(Artery* ele, DRT::Discretization& discretization,
-          CORE::Elements::Element::LocationArray& la);
+      double calculate_ele_length(Artery* ele, Discret::Discretization& discretization,
+          Core::Elements::Element::LocationArray& la);
     };
 
   }  // namespace ELEMENTS
 
-}  // namespace DRT
+}  // namespace Discret
 
 
 

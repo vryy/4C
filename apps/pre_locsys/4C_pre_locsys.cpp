@@ -20,9 +20,9 @@ int main(int argc, char** argv)
   using namespace FourC;
 
   // base vectors
-  CORE::LINALG::Matrix<3, 1> vector1;
-  CORE::LINALG::Matrix<3, 1> vector2;
-  CORE::LINALG::Matrix<3, 1> vector3;
+  Core::LinAlg::Matrix<3, 1> vector1;
+  Core::LinAlg::Matrix<3, 1> vector2;
+  Core::LinAlg::Matrix<3, 1> vector3;
   vector1.Clear();
   vector2.Clear();
   vector3.Clear();
@@ -58,12 +58,12 @@ int main(int argc, char** argv)
   vector2.Scale(1.0 / normvec2);
 
   // Compute third base vector
-  CORE::LINALG::Matrix<3, 3> S_vector1;
-  CORE::LARGEROTATIONS::computespin(S_vector1, vector1);
+  Core::LinAlg::Matrix<3, 3> S_vector1;
+  Core::LargeRotations::computespin(S_vector1, vector1);
   vector3.Multiply(S_vector1, vector2);
 
   // Compute rotation matrix
-  CORE::LINALG::Matrix<3, 3> rotmatrix;
+  Core::LinAlg::Matrix<3, 3> rotmatrix;
   for (int i = 0; i < 3; i++)
   {
     rotmatrix(i, 0) = vector1(i);
@@ -72,16 +72,16 @@ int main(int argc, char** argv)
   }
 
   // Compute rotation angle via quaterion
-  CORE::LINALG::Matrix<4, 1> quaterion;
-  CORE::LARGEROTATIONS::triadtoquaternion(rotmatrix, quaterion);
-  CORE::LINALG::Matrix<3, 1> rotangle;
-  CORE::LARGEROTATIONS::quaterniontoangle(quaterion, rotangle);
+  Core::LinAlg::Matrix<4, 1> quaterion;
+  Core::LargeRotations::triadtoquaternion(rotmatrix, quaterion);
+  Core::LinAlg::Matrix<3, 1> rotangle;
+  Core::LargeRotations::quaterniontoangle(quaterion, rotangle);
 
   std::cout << std::endl << std::setprecision(10) << "Rotation vector: " << rotangle << std::endl;
 
   //  //Check via inverse mapping
-  //  CORE::LINALG::Matrix<3,3> rotmatrix_test;
-  //  CORE::LARGEROTATIONS::angletotriad(rotangle, rotmatrix_test);
+  //  Core::LinAlg::Matrix<3,3> rotmatrix_test;
+  //  Core::LargeRotations::angletotriad(rotangle, rotmatrix_test);
   //
   //  std::cout << endl << std::setprecision(10)<<  "rotmatrix_test: " << rotmatrix_test <<  endl;
 

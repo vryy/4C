@@ -22,19 +22,19 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
     namespace StatusTest
     {
       enum QuantityType : int;
     }  // namespace StatusTest
-    namespace INNER
+    namespace Inner
     {
       namespace StatusTest
       {
         class Generic;
       }  // namespace StatusTest
-    }    // namespace INNER
+    }    // namespace Inner
     namespace Solver
     {
       class SingleStep : public ::NOX::Solver::SingleStep
@@ -46,7 +46,7 @@ namespace NOX
           for description
          */
         SingleStep(const Teuchos::RCP<::NOX::Abstract::Group>& grp,
-            const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTests,
+            const Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic>& innerTests,
             const Teuchos::RCP<Teuchos::ParameterList>& params);
 
 
@@ -57,12 +57,12 @@ namespace NOX
 
        protected:
         //! initialize additional variables after base class initialization
-        void init(const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTests);
+        void init(const Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic>& innerTests);
 
         void printUpdate() override;
       };  // class SingleStep
     }     // namespace Solver
-  }       // namespace NLN
+  }       // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

@@ -16,7 +16,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MORTAR
+namespace Mortar
 {
   //! Actions to be performed by mortar/contact framework
   enum ActionType : int
@@ -44,13 +44,13 @@ namespace MORTAR
     eval_static_constraint_rhs, /*!< Evaluate only the contributions to the constraint rhs. The
                                    active set is not updated during the evaluation. */
     eval_run_post_apply_jacobian_inverse,       /*!< run in the end of a
-                                                   NOX::NLN::LinearSystem::applyJacobianInverse call */
+                                                   NOX::Nln::LinearSystem::applyJacobianInverse call */
     eval_correct_parameters,                    /*!< correct or adapt contact parameters */
     remove_condensed_contributions_from_str_rhs /*!< remove any condensed contact contributions from
                                                    the structural rhs */
   };
 
-  /*! \brief Convert MORTAR::ActionType enum to string
+  /*! \brief Convert Mortar::ActionType enum to string
    *
    * @param[in] act ActionType encoded as enum
    * @return String describing the action type
@@ -69,23 +69,23 @@ namespace MORTAR
         return "eval_run_pre_evaluate";
       case eval_run_post_evaluate:
         return "eval_run_post_evaluate";
-      case MORTAR::eval_reset:
+      case Mortar::eval_reset:
         return "eval_reset";
-      case MORTAR::eval_run_post_compute_x:
+      case Mortar::eval_run_post_compute_x:
         return "eval_run_post_compute_x";
-      case MORTAR::eval_run_pre_compute_x:
+      case Mortar::eval_run_pre_compute_x:
         return "eval_run_pre_compute_x";
-      case MORTAR::eval_run_post_iterate:
+      case Mortar::eval_run_post_iterate:
         return "eval_run_post_iterate";
-      case MORTAR::eval_contact_potential:
+      case Mortar::eval_contact_potential:
         return "eval_contact_potential";
-      case MORTAR::eval_wgap_gradient_error:
+      case Mortar::eval_wgap_gradient_error:
         return "eval_wgap_gradient_error";
-      case MORTAR::eval_static_constraint_rhs:
+      case Mortar::eval_static_constraint_rhs:
         return "eval_static_constraint_rhs";
-      case MORTAR::eval_run_post_apply_jacobian_inverse:
+      case Mortar::eval_run_post_apply_jacobian_inverse:
         return "eval_run_post_apply_jacobian_inverse";
-      case MORTAR::eval_correct_parameters:
+      case Mortar::eval_correct_parameters:
         return "eval_correct_parameters";
       case remove_condensed_contributions_from_str_rhs:
         return "remove_condensed_contributions_from_str_rhs";
@@ -102,7 +102,7 @@ namespace MORTAR
    * Necessary for the communication between the structural time integration framework and the
    * mortar strategies.
    */
-  class ParamsInterface : public CORE::GEN::AnyDataContainer
+  class ParamsInterface : public Core::Gen::AnyDataContainer
   {
    public:
     //! destructor
@@ -124,7 +124,7 @@ namespace MORTAR
     virtual int GetRestartStep() const = 0;
 
   };  // class ParamsInterface
-}  // namespace MORTAR
+}  // namespace Mortar
 
 
 FOUR_C_NAMESPACE_CLOSE

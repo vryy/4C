@@ -20,8 +20,8 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-MAT::PAR::ParticleMaterialThermo::ParticleMaterialThermo(
-    Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::ParticleMaterialThermo::ParticleMaterialThermo(
+    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : Parameter(matdata),
       initTemperature_(matdata->Get<double>("INITTEMPERATURE")),
       thermalCapacity_(matdata->Get<double>("THERMALCAPACITY")),

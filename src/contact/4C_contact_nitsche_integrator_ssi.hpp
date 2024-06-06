@@ -16,14 +16,14 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
     class ScaTraEleParameterTimInt;
     class ScaTraEleParameterBoundary;
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 namespace CONTACT
 {
@@ -43,7 +43,7 @@ namespace CONTACT
      * Constructs an instance of this class using a specific type of shape functions.<br> Note that
      * this is \b not a collective call as overlaps are integrated in parallel by individual
      * processes.<br> Note also that this constructor relies heavily on the
-     * CORE::FE::IntegrationPoints structs to get Gauss points and corresponding weights.
+     * Core::FE::IntegrationPoints structs to get Gauss points and corresponding weights.
      *
      * @param[in] params   interface contact parameter list
      * @param[in] eletype  shape of integration cell for segment based integration or slave side
@@ -51,17 +51,17 @@ namespace CONTACT
      * @param[in] comm     contact interface communicator
      */
     IntegratorNitscheSsi(
-        Teuchos::ParameterList& params, CORE::FE::CellType eletype, const Epetra_Comm& comm);
+        Teuchos::ParameterList& params, Core::FE::CellType eletype, const Epetra_Comm& comm);
 
    protected:
     //! access method to scatra time integration factors
-    const DRT::ELEMENTS::ScaTraEleParameterTimInt* get_sca_tra_ele_parameter_tim_int() const
+    const Discret::ELEMENTS::ScaTraEleParameterTimInt* get_sca_tra_ele_parameter_tim_int() const
     {
       return scatraparamstimint_;
     }
 
     //! access method to scatra-scatra coupling specific parameters
-    const DRT::ELEMENTS::ScaTraEleParameterBoundary* get_sca_tra_ele_parameter_boundary() const
+    const Discret::ELEMENTS::ScaTraEleParameterBoundary* get_sca_tra_ele_parameter_boundary() const
     {
       return scatraparamsboundary_;
     }
@@ -90,37 +90,37 @@ namespace CONTACT
      *                             \boldsymbol{t}}{\mathrm{d} s} \f]
      */
     template <int dim>
-    void so_ele_cauchy_struct(MORTAR::Element& mortar_ele, double* gp_coord,
-        const std::vector<CORE::GEN::Pairedvector<int, double>>& d_gp_coord_dd, double gp_wgt,
-        const CORE::LINALG::Matrix<dim, 1>& gp_normal,
-        const std::vector<CORE::GEN::Pairedvector<int, double>>& d_gp_normal_dd,
-        const CORE::LINALG::Matrix<dim, 1>& test_dir,
-        const std::vector<CORE::GEN::Pairedvector<int, double>>& d_test_dir_dd, double nitsche_wgt,
-        double& cauchy_nt_wgt, CORE::GEN::Pairedvector<int, double>& d_cauchy_nt_dd,
-        CORE::LINALG::SerialDenseMatrix* d_sigma_nt_ds);
+    void so_ele_cauchy_struct(Mortar::Element& mortar_ele, double* gp_coord,
+        const std::vector<Core::Gen::Pairedvector<int, double>>& d_gp_coord_dd, double gp_wgt,
+        const Core::LinAlg::Matrix<dim, 1>& gp_normal,
+        const std::vector<Core::Gen::Pairedvector<int, double>>& d_gp_normal_dd,
+        const Core::LinAlg::Matrix<dim, 1>& test_dir,
+        const std::vector<Core::Gen::Pairedvector<int, double>>& d_test_dir_dd, double nitsche_wgt,
+        double& cauchy_nt_wgt, Core::Gen::Pairedvector<int, double>& d_cauchy_nt_dd,
+        Core::LinAlg::SerialDenseMatrix* d_sigma_nt_ds);
 
    private:
-    void integrate_gp_2_d(MORTAR::Element& sele, MORTAR::Element& mele,
-        CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
-        CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
-        CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
-        CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap, double& wgt,
-        double& jac, CORE::GEN::Pairedvector<int, double>& derivjac, double* normal,
-        std::vector<CORE::GEN::Pairedvector<int, double>>& dnmap_unit, double& gap,
-        CORE::GEN::Pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
-        std::vector<CORE::GEN::Pairedvector<int, double>>& derivsxi,
-        std::vector<CORE::GEN::Pairedvector<int, double>>& derivmxi) override;
+    void integrate_gp_2_d(Mortar::Element& sele, Mortar::Element& mele,
+        Core::LinAlg::SerialDenseVector& sval, Core::LinAlg::SerialDenseVector& lmval,
+        Core::LinAlg::SerialDenseVector& mval, Core::LinAlg::SerialDenseMatrix& sderiv,
+        Core::LinAlg::SerialDenseMatrix& mderiv, Core::LinAlg::SerialDenseMatrix& lmderiv,
+        Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>& dualmap, double& wgt,
+        double& jac, Core::Gen::Pairedvector<int, double>& derivjac, double* normal,
+        std::vector<Core::Gen::Pairedvector<int, double>>& dnmap_unit, double& gap,
+        Core::Gen::Pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
+        std::vector<Core::Gen::Pairedvector<int, double>>& derivsxi,
+        std::vector<Core::Gen::Pairedvector<int, double>>& derivmxi) override;
 
-    void integrate_gp_3_d(MORTAR::Element& sele, MORTAR::Element& mele,
-        CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
-        CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
-        CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
-        CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap, double& wgt,
-        double& jac, CORE::GEN::Pairedvector<int, double>& derivjac, double* normal,
-        std::vector<CORE::GEN::Pairedvector<int, double>>& dnmap_unit, double& gap,
-        CORE::GEN::Pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
-        std::vector<CORE::GEN::Pairedvector<int, double>>& derivsxi,
-        std::vector<CORE::GEN::Pairedvector<int, double>>& derivmxi) override;
+    void integrate_gp_3_d(Mortar::Element& sele, Mortar::Element& mele,
+        Core::LinAlg::SerialDenseVector& sval, Core::LinAlg::SerialDenseVector& lmval,
+        Core::LinAlg::SerialDenseVector& mval, Core::LinAlg::SerialDenseMatrix& sderiv,
+        Core::LinAlg::SerialDenseMatrix& mderiv, Core::LinAlg::SerialDenseMatrix& lmderiv,
+        Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>& dualmap, double& wgt,
+        double& jac, Core::Gen::Pairedvector<int, double>& derivjac, double* normal,
+        std::vector<Core::Gen::Pairedvector<int, double>>& dnmap_unit, double& gap,
+        Core::Gen::Pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
+        std::vector<Core::Gen::Pairedvector<int, double>>& derivsxi,
+        std::vector<Core::Gen::Pairedvector<int, double>>& derivmxi) override;
 
     /*!
      * @brief evaluate GPTS forces and linearization at this gp
@@ -145,16 +145,16 @@ namespace CONTACT
      * @param[in] master_xi       master side Gauss point coordinates
      */
     template <int dim>
-    void gpts_forces(MORTAR::Element& slave_ele, MORTAR::Element& master_ele,
-        const CORE::LINALG::SerialDenseVector& slave_shape,
-        const CORE::LINALG::SerialDenseMatrix& slave_shape_deriv,
-        const std::vector<CORE::GEN::Pairedvector<int, double>>& d_slave_xi_dd,
-        const CORE::LINALG::SerialDenseVector& master_shape,
-        const CORE::LINALG::SerialDenseMatrix& master_shape_deriv,
-        const std::vector<CORE::GEN::Pairedvector<int, double>>& d_master_xi_dd, double jac,
-        const CORE::GEN::Pairedvector<int, double>& d_jac_dd, double gp_wgt, double gap,
-        const CORE::GEN::Pairedvector<int, double>& d_gap_dd, const double* gp_normal,
-        const std::vector<CORE::GEN::Pairedvector<int, double>>& d_gp_normal_dd, double* slave_xi,
+    void gpts_forces(Mortar::Element& slave_ele, Mortar::Element& master_ele,
+        const Core::LinAlg::SerialDenseVector& slave_shape,
+        const Core::LinAlg::SerialDenseMatrix& slave_shape_deriv,
+        const std::vector<Core::Gen::Pairedvector<int, double>>& d_slave_xi_dd,
+        const Core::LinAlg::SerialDenseVector& master_shape,
+        const Core::LinAlg::SerialDenseMatrix& master_shape_deriv,
+        const std::vector<Core::Gen::Pairedvector<int, double>>& d_master_xi_dd, double jac,
+        const Core::Gen::Pairedvector<int, double>& d_jac_dd, double gp_wgt, double gap,
+        const Core::Gen::Pairedvector<int, double>& d_gap_dd, const double* gp_normal,
+        const std::vector<Core::Gen::Pairedvector<int, double>>& d_gp_normal_dd, double* slave_xi,
         double* master_xi);
 
     /*!
@@ -181,14 +181,14 @@ namespace CONTACT
      *                             \boldsymbol{t}}{\mathrm{d} s} \f]
      */
     template <int dim>
-    void so_ele_cauchy(MORTAR::Element& mortar_ele, double* gp_coord,
-        const std::vector<CORE::GEN::Pairedvector<int, double>>& d_gp_coord_dd, double gp_wgt,
-        const CORE::LINALG::Matrix<dim, 1>& gp_normal,
-        const std::vector<CORE::GEN::Pairedvector<int, double>>& d_gp_normal_dd,
-        const CORE::LINALG::Matrix<dim, 1>& test_dir,
-        const std::vector<CORE::GEN::Pairedvector<int, double>>& d_test_dir_dd, double nitsche_wgt,
-        double& cauchy_nt_wgt, CORE::GEN::Pairedvector<int, double>& d_cauchy_nt_dd,
-        CORE::GEN::Pairedvector<int, double>& d_cauchy_nt_ds);
+    void so_ele_cauchy(Mortar::Element& mortar_ele, double* gp_coord,
+        const std::vector<Core::Gen::Pairedvector<int, double>>& d_gp_coord_dd, double gp_wgt,
+        const Core::LinAlg::Matrix<dim, 1>& gp_normal,
+        const std::vector<Core::Gen::Pairedvector<int, double>>& d_gp_normal_dd,
+        const Core::LinAlg::Matrix<dim, 1>& test_dir,
+        const std::vector<Core::Gen::Pairedvector<int, double>>& d_test_dir_dd, double nitsche_wgt,
+        double& cauchy_nt_wgt, Core::Gen::Pairedvector<int, double>& d_cauchy_nt_dd,
+        Core::Gen::Pairedvector<int, double>& d_cauchy_nt_ds);
 
     /*!
      * @brief  integrate the structure residual and linearizations
@@ -210,15 +210,15 @@ namespace CONTACT
      * @param[in] d_normal_dd    directional derivative of normal
      */
     template <int dim>
-    void integrate_test(double fac, MORTAR::Element& ele,
-        const CORE::LINALG::SerialDenseVector& shape,
-        const CORE::LINALG::SerialDenseMatrix& shape_deriv,
-        const std::vector<CORE::GEN::Pairedvector<int, double>>& d_xi_dd, double jac,
-        const CORE::GEN::Pairedvector<int, double>& d_jac_dd, double wgt, double test_val,
-        const CORE::GEN::Pairedvector<int, double>& d_test_val_dd,
-        const CORE::GEN::Pairedvector<int, double>& d_test_val_ds,
-        const CORE::LINALG::Matrix<dim, 1>& normal,
-        const std::vector<CORE::GEN::Pairedvector<int, double>>& d_normal_dd);
+    void integrate_test(double fac, Mortar::Element& ele,
+        const Core::LinAlg::SerialDenseVector& shape,
+        const Core::LinAlg::SerialDenseMatrix& shape_deriv,
+        const std::vector<Core::Gen::Pairedvector<int, double>>& d_xi_dd, double jac,
+        const Core::Gen::Pairedvector<int, double>& d_jac_dd, double wgt, double test_val,
+        const Core::Gen::Pairedvector<int, double>& d_test_val_dd,
+        const Core::Gen::Pairedvector<int, double>& d_test_val_ds,
+        const Core::LinAlg::Matrix<dim, 1>& normal,
+        const std::vector<Core::Gen::Pairedvector<int, double>>& d_normal_dd);
 
     /*!
      * @brief  integrate the ScaTra residual and linearizations
@@ -238,13 +238,13 @@ namespace CONTACT
      * @param[in] d_test_val_ds  derivative of test_val w.r.t. scalar
      */
     template <int dim>
-    void integrate_sca_tra_test(double fac, MORTAR::Element& ele,
-        const CORE::LINALG::SerialDenseVector& shape_func,
-        const CORE::LINALG::SerialDenseMatrix& shape_deriv,
-        const std::vector<CORE::GEN::Pairedvector<int, double>>& d_xi_dd, double jac,
-        const CORE::GEN::Pairedvector<int, double>& d_jac_dd, double wgt, double test_val,
-        const CORE::GEN::Pairedvector<int, double>& d_test_val_dd,
-        const CORE::GEN::Pairedvector<int, double>& d_test_val_ds);
+    void integrate_sca_tra_test(double fac, Mortar::Element& ele,
+        const Core::LinAlg::SerialDenseVector& shape_func,
+        const Core::LinAlg::SerialDenseMatrix& shape_deriv,
+        const std::vector<Core::Gen::Pairedvector<int, double>>& d_xi_dd, double jac,
+        const Core::Gen::Pairedvector<int, double>& d_jac_dd, double wgt, double test_val,
+        const Core::Gen::Pairedvector<int, double>& d_test_val_dd,
+        const Core::Gen::Pairedvector<int, double>& d_test_val_ds);
 
     /*!
      * @brief integrate the scatra-structure interaction interface condition
@@ -268,17 +268,17 @@ namespace CONTACT
      * @param[in] wgt                 Gauss point weight
      */
     template <int dim>
-    void integrate_ssi_interface_condition(MORTAR::Element& slave_ele,
-        const CORE::LINALG::SerialDenseVector& slave_shape,
-        const CORE::LINALG::SerialDenseMatrix& slave_shape_deriv,
-        const std::vector<CORE::GEN::Pairedvector<int, double>>& d_slave_xi_dd,
-        MORTAR::Element& master_ele, const CORE::LINALG::SerialDenseVector& master_shape,
-        const CORE::LINALG::SerialDenseMatrix& master_shape_deriv,
-        const std::vector<CORE::GEN::Pairedvector<int, double>>& d_master_xi_dd,
+    void integrate_ssi_interface_condition(Mortar::Element& slave_ele,
+        const Core::LinAlg::SerialDenseVector& slave_shape,
+        const Core::LinAlg::SerialDenseMatrix& slave_shape_deriv,
+        const std::vector<Core::Gen::Pairedvector<int, double>>& d_slave_xi_dd,
+        Mortar::Element& master_ele, const Core::LinAlg::SerialDenseVector& master_shape,
+        const Core::LinAlg::SerialDenseMatrix& master_shape_deriv,
+        const std::vector<Core::Gen::Pairedvector<int, double>>& d_master_xi_dd,
         const double cauchy_nn_average_pen_gap,
-        const CORE::GEN::Pairedvector<int, double>& d_cauchy_nn_weighted_average_dd,
-        const CORE::GEN::Pairedvector<int, double>& d_cauchy_nn_weighted_average_dc, double jac,
-        const CORE::GEN::Pairedvector<int, double>& d_jac_dd, double wgt);
+        const Core::Gen::Pairedvector<int, double>& d_cauchy_nn_weighted_average_dd,
+        const Core::Gen::Pairedvector<int, double>& d_cauchy_nn_weighted_average_dc, double jac,
+        const Core::Gen::Pairedvector<int, double>& d_jac_dd, double wgt);
 
     /*!
      * @brief calculate the concentrations and derivatives at the current Gauss point
@@ -293,17 +293,17 @@ namespace CONTACT
      * @param[out] d_conc_dd  directional derivative of concentration
      */
     template <int dim>
-    void setup_gp_concentrations(MORTAR::Element& ele,
-        const CORE::LINALG::SerialDenseVector& shape_func,
-        const CORE::LINALG::SerialDenseMatrix& shape_deriv,
-        const std::vector<CORE::GEN::Pairedvector<int, double>>& d_xi_dd, double& gp_conc,
-        CORE::GEN::Pairedvector<int, double>& d_conc_dc,
-        CORE::GEN::Pairedvector<int, double>& d_conc_dd);
+    void setup_gp_concentrations(Mortar::Element& ele,
+        const Core::LinAlg::SerialDenseVector& shape_func,
+        const Core::LinAlg::SerialDenseMatrix& shape_deriv,
+        const std::vector<Core::Gen::Pairedvector<int, double>>& d_xi_dd, double& gp_conc,
+        Core::Gen::Pairedvector<int, double>& d_conc_dc,
+        Core::Gen::Pairedvector<int, double>& d_conc_dd);
 
     //! scatra time integration factors
-    const DRT::ELEMENTS::ScaTraEleParameterTimInt* scatraparamstimint_;
+    const Discret::ELEMENTS::ScaTraEleParameterTimInt* scatraparamstimint_;
     //! scatra-scatra coupling specific parameters
-    const DRT::ELEMENTS::ScaTraEleParameterBoundary* scatraparamsboundary_;
+    const Discret::ELEMENTS::ScaTraEleParameterBoundary* scatraparamsboundary_;
   };
 }  // namespace CONTACT
 FOUR_C_NAMESPACE_CLOSE

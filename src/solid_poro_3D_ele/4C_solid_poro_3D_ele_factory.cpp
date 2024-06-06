@@ -15,22 +15,22 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-DRT::ELEMENTS::SolidPoroCalcVariant DRT::ELEMENTS::CreateSolidPoroCalculationInterface(
-    CORE::Elements::Element& ele, INPAR::PORO::PoroType porotype)
+Discret::ELEMENTS::SolidPoroCalcVariant Discret::ELEMENTS::CreateSolidPoroCalculationInterface(
+    Core::Elements::Element& ele, Inpar::Poro::PoroType porotype)
 {
   switch (ele.Shape())
   {
-    case CORE::FE::CellType::hex8:
-      return CreateSolidPoroCalculationInterface<CORE::FE::CellType::hex8>(porotype);
+    case Core::FE::CellType::hex8:
+      return CreateSolidPoroCalculationInterface<Core::FE::CellType::hex8>(porotype);
       break;
-    case CORE::FE::CellType::hex27:
-      return CreateSolidPoroCalculationInterface<CORE::FE::CellType::hex27>(porotype);
+    case Core::FE::CellType::hex27:
+      return CreateSolidPoroCalculationInterface<Core::FE::CellType::hex27>(porotype);
       break;
-    case CORE::FE::CellType::tet4:
-      return CreateSolidPoroCalculationInterface<CORE::FE::CellType::tet4>(porotype);
+    case Core::FE::CellType::tet4:
+      return CreateSolidPoroCalculationInterface<Core::FE::CellType::tet4>(porotype);
       break;
-    case CORE::FE::CellType::tet10:
-      return CreateSolidPoroCalculationInterface<CORE::FE::CellType::tet10>(porotype);
+    case Core::FE::CellType::tet10:
+      return CreateSolidPoroCalculationInterface<Core::FE::CellType::tet10>(porotype);
       break;
     default:
       FOUR_C_THROW("unknown celltype provided");
@@ -39,20 +39,20 @@ DRT::ELEMENTS::SolidPoroCalcVariant DRT::ELEMENTS::CreateSolidPoroCalculationInt
   return {};
 }
 
-template <CORE::FE::CellType celltype>
-DRT::ELEMENTS::SolidPoroCalcVariant DRT::ELEMENTS::CreateSolidPoroCalculationInterface(
-    INPAR::PORO::PoroType porotype)
+template <Core::FE::CellType celltype>
+Discret::ELEMENTS::SolidPoroCalcVariant Discret::ELEMENTS::CreateSolidPoroCalculationInterface(
+    Inpar::Poro::PoroType porotype)
 {
   // here we go into the different cases for poro type
   switch (porotype)
   {
-    case INPAR::PORO::PoroType::pressure_velocity_based:
+    case Inpar::Poro::PoroType::pressure_velocity_based:
       FOUR_C_THROW("POROTYPE: 'pressure_velocity_based' not yet implemented!");
       return {};
       break;
-    case INPAR::PORO::PoroType::pressure_based:
+    case Inpar::Poro::PoroType::pressure_based:
     {
-      return DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>();
+      return Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>();
       break;
     }
     default:

@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 XFEM::XFieldField::Coupling::Coupling()
-    : CORE::ADAPTER::Coupling(), isinit_(false), min_dof_dis_(min_dof_unknown)
+    : Core::Adapter::Coupling(), isinit_(false), min_dof_dis_(min_dof_unknown)
 {
   // intentionally left blank
 }
@@ -46,7 +46,7 @@ Teuchos::RCP<Epetra_Vector> XFEM::XFieldField::Coupling::MasterToSlave(
   switch (map_type)
   {
     case XFEM::map_dofs:
-      return CORE::ADAPTER::Coupling::MasterToSlave(mv);
+      return Core::Adapter::Coupling::MasterToSlave(mv);
       break;
     case XFEM::map_nodes:
       sv = Teuchos::rcp(new Epetra_Vector(*slavenodemap_));
@@ -66,7 +66,7 @@ Teuchos::RCP<Epetra_Vector> XFEM::XFieldField::Coupling::SlaveToMaster(
   switch (map_type)
   {
     case XFEM::map_dofs:
-      return CORE::ADAPTER::Coupling::SlaveToMaster(sv);
+      return Core::Adapter::Coupling::SlaveToMaster(sv);
       break;
     case XFEM::map_nodes:
       mv = Teuchos::rcp(new Epetra_Vector(*masternodemap_));
@@ -86,7 +86,7 @@ Teuchos::RCP<Epetra_MultiVector> XFEM::XFieldField::Coupling::MasterToSlave(
   switch (map_type)
   {
     case XFEM::map_dofs:
-      return CORE::ADAPTER::Coupling::MasterToSlave(mv);
+      return Core::Adapter::Coupling::MasterToSlave(mv);
       break;
     case XFEM::map_nodes:
       sv = Teuchos::rcp(new Epetra_MultiVector(*slavenodemap_, mv->NumVectors()));
@@ -106,7 +106,7 @@ Teuchos::RCP<Epetra_MultiVector> XFEM::XFieldField::Coupling::SlaveToMaster(
   switch (map_type)
   {
     case XFEM::map_dofs:
-      return CORE::ADAPTER::Coupling::SlaveToMaster(sv);
+      return Core::Adapter::Coupling::SlaveToMaster(sv);
       break;
     case XFEM::map_nodes:
       mv = Teuchos::rcp(new Epetra_MultiVector(*masternodemap_, sv->NumVectors()));
@@ -126,7 +126,7 @@ void XFEM::XFieldField::Coupling::MasterToSlave(const Teuchos::RCP<const Epetra_
   {
     case XFEM::map_dofs:
     {
-      return CORE::ADAPTER::Coupling::MasterToSlave(mv, sv);
+      return Core::Adapter::Coupling::MasterToSlave(mv, sv);
       break;
     }
     case XFEM::map_nodes:
@@ -157,7 +157,7 @@ void XFEM::XFieldField::Coupling::SlaveToMaster(const Teuchos::RCP<const Epetra_
   {
     case XFEM::map_dofs:
     {
-      return CORE::ADAPTER::Coupling::SlaveToMaster(sv, mv);
+      return Core::Adapter::Coupling::SlaveToMaster(sv, mv);
       break;
     }
     case XFEM::map_nodes:
@@ -181,8 +181,8 @@ void XFEM::XFieldField::Coupling::SlaveToMaster(const Teuchos::RCP<const Epetra_
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XFEM::XFieldField::Coupling::build_dof_maps(const DRT::Discretization& masterdis,
-    const DRT::Discretization& slavedis, const Teuchos::RCP<const Epetra_Map>& masternodemap,
+void XFEM::XFieldField::Coupling::build_dof_maps(const Discret::Discretization& masterdis,
+    const Discret::Discretization& slavedis, const Teuchos::RCP<const Epetra_Map>& masternodemap,
     const Teuchos::RCP<const Epetra_Map>& slavenodemap,
     const Teuchos::RCP<const Epetra_Map>& permmasternodemap,
     const Teuchos::RCP<const Epetra_Map>& permslavenodemap, const std::vector<int>& masterdofs,
@@ -193,7 +193,7 @@ void XFEM::XFieldField::Coupling::build_dof_maps(const DRT::Discretization& mast
   // call base class implementation
   if (masterdofs[0] != -1)
   {
-    CORE::ADAPTER::Coupling::build_dof_maps(masterdis, slavedis, masternodemap, slavenodemap,
+    Core::Adapter::Coupling::build_dof_maps(masterdis, slavedis, masternodemap, slavenodemap,
         permmasternodemap, permslavenodemap, masterdofs, slavedofs, nds_master, nds_slave);
     return;
   }
@@ -254,7 +254,7 @@ void XFEM::XFieldField::Coupling::save_node_maps(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XFEM::XFieldField::Coupling::build_min_dof_maps(const DRT::Discretization& min_dis,
+void XFEM::XFieldField::Coupling::build_min_dof_maps(const Discret::Discretization& min_dis,
     const Epetra_Map& min_nodemap, const Epetra_Map& min_permnodemap,
     Teuchos::RCP<const Epetra_Map>& min_dofmap, Teuchos::RCP<const Epetra_Map>& min_permdofmap,
     Teuchos::RCP<Epetra_Export>& min_exporter, const Epetra_Map& max_nodemap,
@@ -268,7 +268,7 @@ void XFEM::XFieldField::Coupling::build_min_dof_maps(const DRT::Discretization& 
 
   for (int i = 0; i < numnode; ++i)
   {
-    const CORE::Nodes::Node* actnode = min_dis.gNode(ngids[i]);
+    const Core::Nodes::Node* actnode = min_dis.gNode(ngids[i]);
 
     const int numdof = min_dis.NumDof(actnode);
     const std::vector<int> dof = min_dis.Dof(0, actnode);
@@ -285,7 +285,7 @@ void XFEM::XFieldField::Coupling::build_min_dof_maps(const DRT::Discretization& 
 
   dofmapvec.clear();
 
-  CORE::COMM::Exporter exportdofs(min_nodemap, min_permnodemap, min_dis.Comm());
+  Core::Communication::Exporter exportdofs(min_nodemap, min_permnodemap, min_dis.Comm());
   exportdofs.Export(dofs);
 
   const int* permngids = min_permnodemap.MyGlobalElements();
@@ -321,7 +321,7 @@ void XFEM::XFieldField::Coupling::build_min_dof_maps(const DRT::Discretization& 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XFEM::XFieldField::Coupling::build_max_dof_maps(const DRT::Discretization& max_dis,
+void XFEM::XFieldField::Coupling::build_max_dof_maps(const Discret::Discretization& max_dis,
     const Epetra_Map& max_nodemap, const Epetra_Map& max_permnodemap,
     Teuchos::RCP<const Epetra_Map>& max_dofmap, Teuchos::RCP<const Epetra_Map>& max_permdofmap,
     Teuchos::RCP<Epetra_Export>& max_exporter,
@@ -335,7 +335,7 @@ void XFEM::XFieldField::Coupling::build_max_dof_maps(const DRT::Discretization& 
 
   for (int i = 0; i < numnode; ++i)
   {
-    const CORE::Nodes::Node* actnode = max_dis.gNode(ngids[i]);
+    const Core::Nodes::Node* actnode = max_dis.gNode(ngids[i]);
 
     // check if the nodal GID is part of the mindofmap
     std::map<int, unsigned>::const_iterator pos = my_mindofpernode.find(ngids[i]);
@@ -363,7 +363,7 @@ void XFEM::XFieldField::Coupling::build_max_dof_maps(const DRT::Discretization& 
 
   dofmapvec.clear();
 
-  CORE::COMM::Exporter exportdofs(max_nodemap, max_permnodemap, max_dis.Comm());
+  Core::Communication::Exporter exportdofs(max_nodemap, max_permnodemap, max_dis.Comm());
   exportdofs.Export(dofs);
 
   const int* permngids = max_permnodemap.MyGlobalElements();

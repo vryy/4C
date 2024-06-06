@@ -23,15 +23,15 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | forward declarations                                                  |
  *----------------------------------------------------------------------*/
-namespace ADAPTER
+namespace Adapter
 {
   class ScaTraBaseAlgorithm;
   class MortarVolCoupl;
   class FluidPoro;
   class FPSIStructureWrapper;
-}  // namespace ADAPTER
+}  // namespace Adapter
 
-// namespace POROELAST
+// namespace PoroElast
 //{
 //  class PoroBase;
 //}
@@ -39,10 +39,10 @@ namespace ADAPTER
 /*----------------------------------------------------------------------*
  |                                                                       |
  *----------------------------------------------------------------------*/
-namespace POROELASTSCATRA
+namespace PoroElastScaTra
 {
   /// base class of algorithms for scalar transport in porous media
-  class PoroScatraBase : public ADAPTER::AlgorithmBase
+  class PoroScatraBase : public Adapter::AlgorithmBase
   {
    public:
     /// create using a Epetra_Comm
@@ -98,39 +98,41 @@ namespace POROELASTSCATRA
     void SetScatraSolution();
 
     //! return pointer to porous medium problem
-    const Teuchos::RCP<POROELAST::PoroBase>& poro_field() { return poro_; };
+    const Teuchos::RCP<PoroElast::PoroBase>& poro_field() { return poro_; };
 
     //! return pointer to interstitial fluid
-    const Teuchos::RCP<ADAPTER::FluidPoro>& fluid_field() { return poro_->fluid_field(); };
+    const Teuchos::RCP<Adapter::FluidPoro>& fluid_field() { return poro_->fluid_field(); };
 
     //! return pointer to porous structure
-    const Teuchos::RCP<ADAPTER::FPSIStructureWrapper>& structure_field()
+    const Teuchos::RCP<Adapter::FPSIStructureWrapper>& structure_field()
     {
       return poro_->structure_field();
     };
 
     //! return pointer to scalar transport problem
-    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ScaTraField() { return scatra_->ScaTraField(); };
+    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> ScaTraField() { return scatra_->ScaTraField(); };
 
     //! return pointer to scalar problem adapter base class
-    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> ScaTraFieldBase() { return scatra_; };
+    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> ScaTraFieldBase() { return scatra_; };
 
     //! setup solver (for monolithic only)
     virtual bool SetupSolver() { return true; };
 
    protected:
     //! setup up of dofsets for two way coupling
-    void replace_dof_sets(Teuchos::RCP<DRT::Discretization> structdis,
-        Teuchos::RCP<DRT::Discretization> fluiddis, Teuchos::RCP<DRT::Discretization> scatradis);
+    void replace_dof_sets(Teuchos::RCP<Discret::Discretization> structdis,
+        Teuchos::RCP<Discret::Discretization> fluiddis,
+        Teuchos::RCP<Discret::Discretization> scatradis);
 
     //! setup up coupling objects if necessary
-    void setup_coupling(Teuchos::RCP<DRT::Discretization> structdis,
-        Teuchos::RCP<DRT::Discretization> fluiddis, Teuchos::RCP<DRT::Discretization> scatradis);
+    void setup_coupling(Teuchos::RCP<Discret::Discretization> structdis,
+        Teuchos::RCP<Discret::Discretization> fluiddis,
+        Teuchos::RCP<Discret::Discretization> scatradis);
 
     //! Pointer to the porous media problem. (poroelastic)
-    Teuchos::RCP<POROELAST::PoroBase> poro_;
+    Teuchos::RCP<PoroElast::PoroBase> poro_;
     //! Pointer to the ScaTra problem.     (scatra)
-    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_;
+    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra_;
 
     //! @name Volume Mortar stuff
 
@@ -138,8 +140,8 @@ namespace POROELASTSCATRA
     const bool matchinggrid_;
 
     //! volume coupling (using mortar) adapter
-    Teuchos::RCP<CORE::ADAPTER::MortarVolCoupl> volcoupl_structurescatra_;
-    Teuchos::RCP<CORE::ADAPTER::MortarVolCoupl> volcoupl_fluidscatra_;
+    Teuchos::RCP<Core::Adapter::MortarVolCoupl> volcoupl_structurescatra_;
+    Teuchos::RCP<Core::Adapter::MortarVolCoupl> volcoupl_fluidscatra_;
     //@}
 
    private:
@@ -148,7 +150,7 @@ namespace POROELASTSCATRA
     //! apply velocity fields to scatra
     void set_velocity_fields();
   };
-}  // namespace POROELASTSCATRA
+}  // namespace PoroElastScaTra
 
 
 FOUR_C_NAMESPACE_CLOSE

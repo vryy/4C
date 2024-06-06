@@ -52,9 +52,9 @@ void TSI::UTILS::ThermoStructureCloneStrategy::check_material_type(const int mat
 {
   // We take the material with the ID specified by the user
   // Here we check first, whether this material is of admissible type
-  //  CORE::Materials::MaterialType mtype =
-  //  GLOBAL::Problem::Instance()->Materials()->ParameterById(matid)->Type(); if ((mtype !=
-  //  CORE::Materials::m_th_fourier_iso))
+  //  Core::Materials::MaterialType mtype =
+  //  Global::Problem::Instance()->Materials()->ParameterById(matid)->Type(); if ((mtype !=
+  //  Core::Materials::m_th_fourier_iso))
   //    FOUR_C_THROW("Material with ID %d is not admissible for thermo elements",matid);
 
 }  // check_material_type()
@@ -64,7 +64,7 @@ void TSI::UTILS::ThermoStructureCloneStrategy::check_material_type(const int mat
  | set element data for cloned element                       dano 12/11 |
  *----------------------------------------------------------------------*/
 void TSI::UTILS::ThermoStructureCloneStrategy::set_element_data(
-    Teuchos::RCP<CORE::Elements::Element> newele, CORE::Elements::Element* oldele, const int matid,
+    Teuchos::RCP<Core::Elements::Element> newele, Core::Elements::Element* oldele, const int matid,
     const bool isnurbs)
 {
   // We need to set material and possibly other things to complete element setup.
@@ -73,9 +73,9 @@ void TSI::UTILS::ThermoStructureCloneStrategy::set_element_data(
 
   // initialise kinematic type to geo_linear.
   // kintype is passed to the cloned thermo element
-  INPAR::STR::KinemType kintype = INPAR::STR::KinemType::linear;
+  Inpar::STR::KinemType kintype = Inpar::STR::KinemType::linear;
   // if oldele is a so3_base element or a so3_Plast element
-  DRT::ELEMENTS::SoBase* so_base = dynamic_cast<DRT::ELEMENTS::SoBase*>(oldele);
+  Discret::ELEMENTS::SoBase* so_base = dynamic_cast<Discret::ELEMENTS::SoBase*>(oldele);
   if (so_base != nullptr)
     kintype = so_base->KinematicType();
   else
@@ -83,15 +83,15 @@ void TSI::UTILS::ThermoStructureCloneStrategy::set_element_data(
 
   // note: SetMaterial() was reimplemented by the thermo element!
 
-  Teuchos::RCP<DRT::ELEMENTS::Thermo> therm =
-      Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::Thermo>(newele);
+  Teuchos::RCP<Discret::ELEMENTS::Thermo> therm =
+      Teuchos::rcp_dynamic_cast<Discret::ELEMENTS::Thermo>(newele);
   if (therm != Teuchos::null)
   {
     // cloning to same material id -> use the same material instance
     if (so_base->Material()->Parameter()->Id() == matid)
       therm->SetMaterial(0, so_base->Material());
     else
-      therm->SetMaterial(0, MAT::Factory(matid));
+      therm->SetMaterial(0, Mat::Factory(matid));
     therm->SetDisType(oldele->Shape());  // set distype as well!
     therm->SetKinematicType(kintype);    // set kintype in cloned thermal element
   }
@@ -107,7 +107,7 @@ void TSI::UTILS::ThermoStructureCloneStrategy::set_element_data(
  | cloned element has to be a THERMO element                 dano 12/11 |
  *----------------------------------------------------------------------*/
 bool TSI::UTILS::ThermoStructureCloneStrategy::determine_ele_type(
-    CORE::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
+    Core::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
 {
   // we only support thermo elements here
   eletype.push_back("THERMO");
@@ -122,8 +122,8 @@ bool TSI::UTILS::ThermoStructureCloneStrategy::determine_ele_type(
 void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
 {
   // access the structure discretization, make sure it is filled
-  Teuchos::RCP<DRT::Discretization> structdis;
-  structdis = GLOBAL::Problem::Instance()->GetDis("structure");
+  Teuchos::RCP<Discret::Discretization> structdis;
+  structdis = Global::Problem::Instance()->GetDis("structure");
   // set degrees of freedom in the discretization
   if (!structdis->Filled() or !structdis->HaveDofs())
   {
@@ -134,14 +134,14 @@ void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
   }
 
   // access the thermo discretization
-  Teuchos::RCP<DRT::Discretization> thermdis;
-  thermdis = GLOBAL::Problem::Instance()->GetDis("thermo");
+  Teuchos::RCP<Discret::Discretization> thermdis;
+  thermdis = Global::Problem::Instance()->GetDis("thermo");
   if (!thermdis->Filled()) thermdis->fill_complete();
 
   // access the problem-specific parameter list
-  const Teuchos::ParameterList& tsidyn = GLOBAL::Problem::Instance()->TSIDynamicParams();
+  const Teuchos::ParameterList& tsidyn = Global::Problem::Instance()->TSIDynamicParams();
 
-  bool matchinggrid = CORE::UTILS::IntegralValue<bool>(tsidyn, "MATCHINGGRID");
+  bool matchinggrid = Core::UTILS::IntegralValue<bool>(tsidyn, "MATCHINGGRID");
 
   // we use the structure discretization as layout for the temperature discretization
   if (structdis->NumGlobalNodes() == 0) FOUR_C_THROW("Structure discretization is empty!");
@@ -154,13 +154,13 @@ void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
           "MATCHINGGRID is set to 'no' in TSI DYNAMIC section, but thermo discretization is "
           "empty!");
 
-    CORE::FE::CloneDiscretization<TSI::UTILS::ThermoStructureCloneStrategy>(
-        structdis, thermdis, GLOBAL::Problem::Instance()->CloningMaterialMap());
+    Core::FE::CloneDiscretization<TSI::UTILS::ThermoStructureCloneStrategy>(
+        structdis, thermdis, Global::Problem::Instance()->CloningMaterialMap());
     thermdis->fill_complete();
 
     // connect degrees of freedom for periodic boundary conditions
     {
-      CORE::Conditions::PeriodicBoundaryConditions pbc_struct(structdis);
+      Core::Conditions::PeriodicBoundaryConditions pbc_struct(structdis);
 
       if (pbc_struct.HasPBC())
       {
@@ -170,7 +170,7 @@ void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
 
     // connect degrees of freedom for periodic boundary conditions
     {
-      CORE::Conditions::PeriodicBoundaryConditions pbc(thermdis);
+      Core::Conditions::PeriodicBoundaryConditions pbc(thermdis);
 
       if (pbc.HasPBC())
       {
@@ -180,9 +180,9 @@ void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
 
     // TSI must know the other discretization
     // build a proxy of the structure discretization for the temperature field
-    Teuchos::RCP<CORE::Dofsets::DofSetInterface> structdofset = structdis->GetDofSetProxy();
+    Teuchos::RCP<Core::DOFSets::DofSetInterface> structdofset = structdis->GetDofSetProxy();
     // build a proxy of the temperature discretization for the structure field
-    Teuchos::RCP<CORE::Dofsets::DofSetInterface> thermodofset = thermdis->GetDofSetProxy();
+    Teuchos::RCP<Core::DOFSets::DofSetInterface> thermodofset = thermdis->GetDofSetProxy();
 
     // check if ThermoField has 2 discretizations, so that coupling is possible
     if (thermdis->AddDofSet(structdofset) != 1) FOUR_C_THROW("unexpected dof sets in thermo field");
@@ -209,14 +209,14 @@ void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
     // build auxiliary dofsets, i.e. pseudo dofs on each discretization
     const int ndofpernode_thermo = 1;
     const int ndofperelement_thermo = 0;
-    const int ndofpernode_struct = GLOBAL::Problem::Instance()->NDim();
+    const int ndofpernode_struct = Global::Problem::Instance()->NDim();
     const int ndofperelement_struct = 0;
-    Teuchos::RCP<CORE::Dofsets::DofSetInterface> dofsetaux;
-    dofsetaux = Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(
+    Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux;
+    dofsetaux = Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(
         ndofpernode_thermo, ndofperelement_thermo, 0, true));
     if (structdis->AddDofSet(dofsetaux) != 1)
       FOUR_C_THROW("unexpected dof sets in structure field");
-    dofsetaux = Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(
+    dofsetaux = Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(
         ndofpernode_struct, ndofperelement_struct, 0, true));
     if (thermdis->AddDofSet(dofsetaux) != 1) FOUR_C_THROW("unexpected dof sets in thermo field");
 
@@ -236,17 +236,18 @@ void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
 /*----------------------------------------------------------------------*
  | print TSI-logo                                            dano 03/10 |
  *----------------------------------------------------------------------*/
-void TSI::UTILS::SetMaterialPointersMatchingGrid(Teuchos::RCP<const DRT::Discretization> sourcedis,
-    Teuchos::RCP<const DRT::Discretization> targetdis)
+void TSI::UTILS::SetMaterialPointersMatchingGrid(
+    Teuchos::RCP<const Discret::Discretization> sourcedis,
+    Teuchos::RCP<const Discret::Discretization> targetdis)
 {
   const int numelements = targetdis->NumMyColElements();
 
   for (int i = 0; i < numelements; ++i)
   {
-    CORE::Elements::Element* targetele = targetdis->lColElement(i);
+    Core::Elements::Element* targetele = targetdis->lColElement(i);
     const int gid = targetele->Id();
 
-    CORE::Elements::Element* sourceele = sourcedis->gElement(gid);
+    Core::Elements::Element* sourceele = sourcedis->gElement(gid);
 
     // for coupling we add the source material to the target element and vice versa
     targetele->AddMaterial(sourceele->Material());
@@ -258,12 +259,12 @@ void TSI::UTILS::SetMaterialPointersMatchingGrid(Teuchos::RCP<const DRT::Discret
  |  assign material to discretization A                       vuong 09/14|
  *----------------------------------------------------------------------*/
 void TSI::UTILS::TSIMaterialStrategy::AssignMaterial2To1(
-    const CORE::VOLMORTAR::VolMortarCoupl* volmortar, CORE::Elements::Element* ele1,
-    const std::vector<int>& ids_2, Teuchos::RCP<DRT::Discretization> dis1,
-    Teuchos::RCP<DRT::Discretization> dis2)
+    const Core::VolMortar::VolMortarCoupl* volmortar, Core::Elements::Element* ele1,
+    const std::vector<int>& ids_2, Teuchos::RCP<Discret::Discretization> dis1,
+    Teuchos::RCP<Discret::Discretization> dis2)
 {
   // call default assignment
-  CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterial2To1(
+  Core::VolMortar::UTILS::DefaultMaterialStrategy::AssignMaterial2To1(
       volmortar, ele1, ids_2, dis1, dis2);
 
   // done
@@ -275,33 +276,33 @@ void TSI::UTILS::TSIMaterialStrategy::AssignMaterial2To1(
 |  assign material to discretization B                       vuong 09/14|
  *----------------------------------------------------------------------*/
 void TSI::UTILS::TSIMaterialStrategy::AssignMaterial1To2(
-    const CORE::VOLMORTAR::VolMortarCoupl* volmortar, CORE::Elements::Element* ele2,
-    const std::vector<int>& ids_1, Teuchos::RCP<DRT::Discretization> dis1,
-    Teuchos::RCP<DRT::Discretization> dis2)
+    const Core::VolMortar::VolMortarCoupl* volmortar, Core::Elements::Element* ele2,
+    const std::vector<int>& ids_1, Teuchos::RCP<Discret::Discretization> dis1,
+    Teuchos::RCP<Discret::Discretization> dis2)
 {
   // if no corresponding element found -> leave
   if (ids_1.empty()) return;
 
   // call default assignment
-  CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterial1To2(
+  Core::VolMortar::UTILS::DefaultMaterialStrategy::AssignMaterial1To2(
       volmortar, ele2, ids_1, dis1, dis2);
 
   // initialise kinematic type to geo_linear.
   // kintype is passed to the corresponding thermo element
-  INPAR::STR::KinemType kintype = INPAR::STR::KinemType::linear;
+  Inpar::STR::KinemType kintype = Inpar::STR::KinemType::linear;
 
   // default strategy: take material of element with closest center in reference coordinates
-  CORE::Elements::Element* ele1 = nullptr;
+  Core::Elements::Element* ele1 = nullptr;
   double mindistance = 1e10;
   {
-    std::vector<double> centercoords2 = CORE::FE::element_center_refe_coords(*ele2);
+    std::vector<double> centercoords2 = Core::FE::element_center_refe_coords(*ele2);
 
     for (unsigned i = 0; i < ids_1.size(); ++i)
     {
-      CORE::Elements::Element* actele1 = dis1->gElement(ids_1[i]);
-      std::vector<double> centercoords1 = CORE::FE::element_center_refe_coords(*actele1);
+      Core::Elements::Element* actele1 = dis1->gElement(ids_1[i]);
+      std::vector<double> centercoords1 = Core::FE::element_center_refe_coords(*actele1);
 
-      CORE::LINALG::Matrix<3, 1> diffcoords(true);
+      Core::LinAlg::Matrix<3, 1> diffcoords(true);
 
       for (int j = 0; j < 3; ++j) diffcoords(j, 0) = centercoords1[j] - centercoords2[j];
 
@@ -314,13 +315,13 @@ void TSI::UTILS::TSIMaterialStrategy::AssignMaterial1To2(
   }
 
   // if Aele is a so3_base element
-  DRT::ELEMENTS::SoBase* so_base = dynamic_cast<DRT::ELEMENTS::SoBase*>(ele1);
+  Discret::ELEMENTS::SoBase* so_base = dynamic_cast<Discret::ELEMENTS::SoBase*>(ele1);
   if (so_base != nullptr)
     kintype = so_base->KinematicType();
   else
     FOUR_C_THROW("ele1 is not a so3_thermo element!");
 
-  DRT::ELEMENTS::Thermo* therm = dynamic_cast<DRT::ELEMENTS::Thermo*>(ele2);
+  Discret::ELEMENTS::Thermo* therm = dynamic_cast<Discret::ELEMENTS::Thermo*>(ele2);
   if (therm != nullptr)
   {
     therm->SetKinematicType(kintype);  // set kintype in cloned thermal element

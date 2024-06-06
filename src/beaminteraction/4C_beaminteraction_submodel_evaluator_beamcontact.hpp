@@ -22,16 +22,16 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
 
-namespace CORE::GEOMETRICSEARCH
+namespace Core::GeometricSearch
 {
   class geometric_search_params;
   class GeometricSearchVisualization;
-}  // namespace CORE::GEOMETRICSEARCH
+}  // namespace Core::GeometricSearch
 namespace BEAMINTERACTION
 {
   class BeamContactParams;
@@ -57,9 +57,9 @@ namespace BEAMINTERACTION
       void post_setup() override;
 
       //! Returns the type of the current submodel evaluator
-      INPAR::BEAMINTERACTION::SubModelType Type() const override
+      Inpar::BEAMINTERACTION::SubModelType Type() const override
       {
-        return INPAR::BEAMINTERACTION::submodel_beamcontact;
+        return Inpar::BEAMINTERACTION::submodel_beamcontact;
       }
 
       //! @name Derived public BEAMINTERACTION::SUBMODELEVALUATOR::Generic methods
@@ -102,7 +102,7 @@ namespace BEAMINTERACTION
       std::map<STR::EnergyType, double> get_energy() const override;
 
       //! derived
-      void OutputStepState(CORE::IO::DiscretizationWriter& iowriter) const override;
+      void OutputStepState(Core::IO::DiscretizationWriter& iowriter) const override;
 
       //! derived
       void runtime_output_step_state() const override;
@@ -111,15 +111,15 @@ namespace BEAMINTERACTION
       void ResetStepState() override;
 
       //! derived
-      void write_restart(CORE::IO::DiscretizationWriter& ia_writer,
-          CORE::IO::DiscretizationWriter& bin_writer) const override;
+      void write_restart(Core::IO::DiscretizationWriter& ia_writer,
+          Core::IO::DiscretizationWriter& bin_writer) const override;
 
       //! derived
       void PreReadRestart() override;
 
       //! derived
-      void read_restart(CORE::IO::DiscretizationReader& ia_reader,
-          CORE::IO::DiscretizationReader& bin_reader) override;
+      void read_restart(Core::IO::DiscretizationReader& ia_reader,
+          Core::IO::DiscretizationReader& bin_reader) override;
 
       //! derived
       void PostReadRestart() override;
@@ -241,7 +241,7 @@ namespace BEAMINTERACTION
        * - elements sharing nodes don't interact
        */
       void select_eles_to_be_considered_for_contact_evaluation(
-          CORE::Elements::Element* currele, std::set<CORE::Elements::Element*>& neighbors) const;
+          Core::Elements::Element* currele, std::set<Core::Elements::Element*>& neighbors) const;
 
       /// create instances of class BeamContactPair that will be evaluated
       //  to get force and stiffness contributions from beam interactions
@@ -263,7 +263,7 @@ namespace BEAMINTERACTION
       Teuchos::RCP<BEAMINTERACTION::BeamInteractionConditions> beam_interaction_conditions_ptr_;
 
       //! data container holding all geometric search related parameters
-      Teuchos::RCP<CORE::GEOMETRICSEARCH::GeometricSearchParams> geometric_search_params_ptr_;
+      Teuchos::RCP<Core::GeometricSearch::GeometricSearchParams> geometric_search_params_ptr_;
 
       //! element types considered for beam to ? contact
       std::vector<BINSTRATEGY::UTILS::BinContentType> contactelementtypes_;
@@ -276,10 +276,10 @@ namespace BEAMINTERACTION
           assembly_managers_;
 
       //! mapping beam ele (elegid) to set of spatially proximal eles (pointer to elements)
-      std::map<int, std::set<CORE::Elements::Element*>> nearby_elements_map_;
+      std::map<int, std::set<Core::Elements::Element*>> nearby_elements_map_;
 
       //! runtime visualization writer for visualization of contact forces
-      Teuchos::RCP<CORE::IO::VisualizationManager> visualization_manager_ptr_;
+      Teuchos::RCP<Core::IO::VisualizationManager> visualization_manager_ptr_;
 
       //! This object handles all beam to solid volume related visualization output.
       Teuchos::RCP<BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter>
@@ -290,7 +290,7 @@ namespace BEAMINTERACTION
           beam_to_solid_surface_visualization_output_writer_ptr_;
 
       //! This object handles all geometric search related visualization output.
-      Teuchos::RCP<CORE::GEOMETRICSEARCH::GeometricSearchVisualization>
+      Teuchos::RCP<Core::GeometricSearch::GeometricSearchVisualization>
           geometric_search_visualization_ptr_;
     };
 

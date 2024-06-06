@@ -28,13 +28,13 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace CORE::COMM
+namespace Core::Communication
 {
   class PackBuffer;
 }
 
 MIXTURE::PAR::GrowthRemodelMixtureRule::GrowthRemodelMixtureRule(
-    const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
+    const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
     : MixtureRule(matdata),
       growth_strategy_matid_(matdata->Get<int>("GROWTH_STRATEGY")),
       initial_reference_density_(matdata->Get<double>("DENS")),
@@ -62,7 +62,7 @@ MIXTURE::GrowthRemodelMixtureRule::GrowthRemodelMixtureRule(
                          ->create_growth_strategy();
 }
 
-void MIXTURE::GrowthRemodelMixtureRule::PackMixtureRule(CORE::COMM::PackBuffer& data) const
+void MIXTURE::GrowthRemodelMixtureRule::PackMixtureRule(Core::Communication::PackBuffer& data) const
 {
   MixtureRule::PackMixtureRule(data);
 
@@ -77,7 +77,7 @@ void MIXTURE::GrowthRemodelMixtureRule::UnpackMixtureRule(
   growth_strategy_->unpack_mixture_growth_strategy(position, data);
 }
 
-void MIXTURE::GrowthRemodelMixtureRule::register_anisotropy_extensions(MAT::Anisotropy& anisotropy)
+void MIXTURE::GrowthRemodelMixtureRule::register_anisotropy_extensions(Mat::Anisotropy& anisotropy)
 {
   growth_strategy_->register_anisotropy_extensions(anisotropy);
 }
@@ -87,7 +87,7 @@ void MIXTURE::GrowthRemodelMixtureRule::Setup(Teuchos::ParameterList& params, co
   MixtureRule::Setup(params, 0);
 }
 
-void MIXTURE::GrowthRemodelMixtureRule::Update(CORE::LINALG::Matrix<3, 3> const& F,
+void MIXTURE::GrowthRemodelMixtureRule::Update(Core::LinAlg::Matrix<3, 3> const& F,
     Teuchos::ParameterList& params, const int gp, const int eleGID)
 {
   // Update base mixture rule, which also updates the constituents.
@@ -104,7 +104,7 @@ void MIXTURE::GrowthRemodelMixtureRule::Update(CORE::LINALG::Matrix<3, 3> const&
     }
 
     // Evaluate inverse growth deformation gradient
-    static CORE::LINALG::Matrix<3, 3> iFg;
+    static Core::LinAlg::Matrix<3, 3> iFg;
     growth_strategy_->evaluate_inverse_growth_deformation_gradient(
         iFg, *this, compute_current_reference_growth_scalar(gp), gp);
 
@@ -115,12 +115,12 @@ void MIXTURE::GrowthRemodelMixtureRule::Update(CORE::LINALG::Matrix<3, 3> const&
   }
 }
 
-void MIXTURE::GrowthRemodelMixtureRule::Evaluate(const CORE::LINALG::Matrix<3, 3>& F,
-    const CORE::LINALG::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
-    CORE::LINALG::Matrix<6, 1>& S_stress, CORE::LINALG::Matrix<6, 6>& cmat, const int gp,
+void MIXTURE::GrowthRemodelMixtureRule::Evaluate(const Core::LinAlg::Matrix<3, 3>& F,
+    const Core::LinAlg::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
+    Core::LinAlg::Matrix<6, 1>& S_stress, Core::LinAlg::Matrix<6, 6>& cmat, const int gp,
     const int eleGID)
 {
-  CORE::LINALG::Matrix<3, 3> iF_gM;  // growth deformation gradient
+  Core::LinAlg::Matrix<3, 3> iF_gM;  // growth deformation gradient
 
   if (growth_strategy_->has_inelastic_growth_deformation_gradient())
   {
@@ -132,8 +132,8 @@ void MIXTURE::GrowthRemodelMixtureRule::Evaluate(const CORE::LINALG::Matrix<3, 3
   }
 
   // define temporary matrices
-  CORE::LINALG::Matrix<6, 1> cstress;
-  CORE::LINALG::Matrix<6, 6> ccmat;
+  Core::LinAlg::Matrix<6, 1> cstress;
+  Core::LinAlg::Matrix<6, 6> ccmat;
 
   // Iterate over all constituents and apply their contributions to the stress and linearization
   for (std::size_t i = 0; i < constituents().size(); ++i)
@@ -152,7 +152,7 @@ void MIXTURE::GrowthRemodelMixtureRule::Evaluate(const CORE::LINALG::Matrix<3, 3
                                                    params_->mass_fractions_[i] *
                                                    constituent.GetGrowthScalar(gp);
 
-    const CORE::LINALG::Matrix<1, 6> dGrowthScalarDC = constituent.GetDGrowthScalarDC(gp, eleGID);
+    const Core::LinAlg::Matrix<1, 6> dGrowthScalarDC = constituent.GetDGrowthScalarDC(gp, eleGID);
 
     S_stress.Update(current_ref_constituent_density, cstress, 1.0);
     cmat.Update(current_ref_constituent_density, ccmat, 1.0);
@@ -169,7 +169,7 @@ void MIXTURE::GrowthRemodelMixtureRule::Evaluate(const CORE::LINALG::Matrix<3, 3
       [&]()
       {
         double growthScalar = 0.0;
-        CORE::LINALG::Matrix<1, 6> dGrowthScalarDC(true);
+        Core::LinAlg::Matrix<1, 6> dGrowthScalarDC(true);
 
         for (std::size_t i = 0; i < constituents().size(); ++i)
         {
@@ -224,7 +224,7 @@ void MIXTURE::GrowthRemodelMixtureRule::register_output_data_names(
 }
 
 bool MIXTURE::GrowthRemodelMixtureRule::EvaluateOutputData(
-    const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const
+    const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const
 {
   if (name == OUTPUT_CURRENT_REFERENCE_DENSITY)
   {

@@ -22,7 +22,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
@@ -42,11 +42,11 @@ namespace MAT
     /// material parameters for constant 1D_Artery
     ///
     // This object exists only once for each read Newton fluid. ???
-    class Cnst1dArt : public CORE::MAT::PAR::Parameter
+    class Cnst1dArt : public Core::Mat::PAR::Parameter
     {
      public:
       /// standard constructor
-      Cnst1dArt(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      Cnst1dArt(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -79,20 +79,20 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
     };  // class NewtonianFluid
 
   }  // namespace PAR
 
-  class Cnst1dArtType : public CORE::COMM::ParObjectType
+  class Cnst1dArtType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "Cnst_1d_artType"; }
 
     static Cnst1dArtType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static Cnst1dArtType instance_;
@@ -102,14 +102,14 @@ namespace MAT
   /// Wrapper for constant 1D_Artery material
   ///
   /// This object exists (several times) at every element
-  class Cnst1dArt : public CORE::MAT::Material
+  class Cnst1dArt : public Core::Mat::Material
   {
    public:
     /// construct empty material object
     Cnst1dArt();
 
     /// construct the material object given material parameters
-    explicit Cnst1dArt(MAT::PAR::Cnst1dArt* params);
+    explicit Cnst1dArt(Mat::PAR::Cnst1dArt* params);
 
     //! @name Packing and Unpacking
 
@@ -131,7 +131,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -150,13 +150,13 @@ namespace MAT
     //@}
 
     /// material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_cnst_art;
+      return Core::Materials::m_cnst_art;
     }
 
     /// return copy of this material object
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new Cnst1dArt(*this));
     }
@@ -168,7 +168,7 @@ namespace MAT
     double Density() const override { return params_->density_; }
 
     /// return DiameterLaw
-    virtual MAT::PAR::ArteryDiameterLaw DiameterLaw() const { return params_->diameterlaw_; }
+    virtual Mat::PAR::ArteryDiameterLaw DiameterLaw() const { return params_->diameterlaw_; }
 
     /// return DiameterFunction
     virtual int DiameterFunction() const { return params_->diameter_law_funct_; }
@@ -222,7 +222,7 @@ namespace MAT
     }
 
     /// Return quick accessible material parameter data
-    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
    private:
     /*! \brief Calculate blood viscosity based on empirical law for blood fully saturated with
@@ -249,7 +249,7 @@ namespace MAT
     double calculate_blood_viscosity(const double diam, const double plasmavisc) const;
 
     /// my material parameters
-    MAT::PAR::Cnst1dArt* params_;
+    Mat::PAR::Cnst1dArt* params_;
     /// Artery initial diameter
     double diam_init_;
     /// Artery current diameter
@@ -258,7 +258,7 @@ namespace MAT
     double diam_previous_time_step_;
   };
 
-}  // namespace MAT
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

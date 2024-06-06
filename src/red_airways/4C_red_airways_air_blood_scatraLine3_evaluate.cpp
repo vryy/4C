@@ -29,13 +29,13 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------*
  |evaluate the element (public)                            ismail 09/12|
  *---------------------------------------------------------------------*/
-int DRT::ELEMENTS::RedAirBloodScatraLine3::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
-    CORE::LINALG::SerialDenseVector& elevec3)
+int Discret::ELEMENTS::RedAirBloodScatraLine3::Evaluate(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
+    Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
+    Core::LinAlg::SerialDenseVector& elevec3)
 {
-  DRT::ELEMENTS::RedAirBloodScatraLine3::ActionType act = RedAirBloodScatraLine3::none;
+  Discret::ELEMENTS::RedAirBloodScatraLine3::ActionType act = RedAirBloodScatraLine3::none;
 
   // get the action required
   std::string action = params.get<std::string>("action", "none");
@@ -84,7 +84,7 @@ int DRT::ELEMENTS::RedAirBloodScatraLine3::Evaluate(Teuchos::ParameterList& para
   /*
   Here must add the steps for evaluating an element
   */
-  Teuchos::RCP<CORE::MAT::Material> mat = Material();
+  Teuchos::RCP<Core::Mat::Material> mat = Material();
 
   switch (act)
   {
@@ -158,7 +158,7 @@ int DRT::ELEMENTS::RedAirBloodScatraLine3::Evaluate(Teuchos::ParameterList& para
     break;
     case solve_blood_air_transport:
     {
-      DRT::ELEMENTS::RedAirBloodScatraLine3ImplInterface::Impl(this)->solve_blood_air_transport(
+      Discret::ELEMENTS::RedAirBloodScatraLine3ImplInterface::Impl(this)->solve_blood_air_transport(
           this, elevec1, elevec2, params, discretization, lm, mat);
     }
     break;
@@ -167,13 +167,13 @@ int DRT::ELEMENTS::RedAirBloodScatraLine3::Evaluate(Teuchos::ParameterList& para
   }  // end of switch(act)
 
   return 0;
-}  // end of DRT::ELEMENTS::RedAirBloodScatraLine3::Evaluate
+}  // end of Discret::ELEMENTS::RedAirBloodScatraLine3::Evaluate
 
 
-int DRT::ELEMENTS::RedAirBloodScatraLine3::evaluate_neumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
-    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
-    CORE::LINALG::SerialDenseMatrix* elemat1)
+int Discret::ELEMENTS::RedAirBloodScatraLine3::evaluate_neumann(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
+    Core::LinAlg::SerialDenseMatrix* elemat1)
 {
   return 0;
 }
@@ -183,26 +183,26 @@ int DRT::ELEMENTS::RedAirBloodScatraLine3::evaluate_neumann(Teuchos::ParameterLi
  |                                                                      |
  |  The function is just a dummy.                                       |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::RedAirBloodScatraLine3::evaluate_dirichlet(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
-    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1)
+int Discret::ELEMENTS::RedAirBloodScatraLine3::evaluate_dirichlet(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1)
 {
   return 0;
 }
 
 
 // get optimal gaussrule for discretization type
-CORE::FE::GaussRule1D DRT::ELEMENTS::RedAirBloodScatraLine3::get_optimal_gaussrule(
-    const CORE::FE::CellType& distype)
+Core::FE::GaussRule1D Discret::ELEMENTS::RedAirBloodScatraLine3::get_optimal_gaussrule(
+    const Core::FE::CellType& distype)
 {
-  CORE::FE::GaussRule1D rule = CORE::FE::GaussRule1D::undefined;
+  Core::FE::GaussRule1D rule = Core::FE::GaussRule1D::undefined;
   switch (distype)
   {
-    case CORE::FE::CellType::line2:
-      rule = CORE::FE::GaussRule1D::line_2point;
+    case Core::FE::CellType::line2:
+      rule = Core::FE::GaussRule1D::line_2point;
       break;
-    case CORE::FE::CellType::line3:
-      rule = CORE::FE::GaussRule1D::line_3point;
+    case Core::FE::CellType::line3:
+      rule = Core::FE::GaussRule1D::line_3point;
       break;
     default:
       FOUR_C_THROW("unknown number of nodes for gaussrule initialization");
@@ -212,16 +212,16 @@ CORE::FE::GaussRule1D DRT::ELEMENTS::RedAirBloodScatraLine3::get_optimal_gaussru
 
 
 // check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are necessary
-bool DRT::ELEMENTS::RedAirBloodScatraLine3::is_higher_order_element(
-    const CORE::FE::CellType distype) const
+bool Discret::ELEMENTS::RedAirBloodScatraLine3::is_higher_order_element(
+    const Core::FE::CellType distype) const
 {
   bool hoel = true;
   switch (distype)
   {
-    case CORE::FE::CellType::line3:
+    case Core::FE::CellType::line3:
       hoel = true;
       break;
-    case CORE::FE::CellType::line2:
+    case Core::FE::CellType::line2:
       hoel = false;
       break;
     default:

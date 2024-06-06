@@ -35,7 +35,7 @@ FOUR_C_NAMESPACE_OPEN
  *--------------------------------------------------------------------*/
 struct NextSideAlongRay
 {
-  NextSideAlongRay(CORE::GEO::CUT::Point* startpoint, CORE::GEO::CUT::Point* cutpoint)
+  NextSideAlongRay(Core::Geo::Cut::Point* startpoint, Core::Geo::Cut::Point* cutpoint)
       : startpoint_(startpoint), cutpoint_(cutpoint)
   {
     startpoint_->Coordinates(startpoint_xyz_.A());
@@ -45,11 +45,11 @@ struct NextSideAlongRay
   /*--------------------------------------------------------------------*
    * check if both sides have the same normal vector
    *--------------------------------------------------------------------*/
-  bool SameNormal(CORE::GEO::CUT::Side* s1, CORE::GEO::CUT::Side* s2,
-      const CORE::LINALG::Matrix<3, 1>& cutpoint_xyz)
+  bool SameNormal(Core::Geo::Cut::Side* s1, Core::Geo::Cut::Side* s2,
+      const Core::LinAlg::Matrix<3, 1>& cutpoint_xyz)
   {
-    CORE::LINALG::Matrix<3, 1> rst(true);
-    CORE::LINALG::Matrix<2, 1> rs(true);
+    Core::LinAlg::Matrix<3, 1> rst(true);
+    Core::LinAlg::Matrix<2, 1> rs(true);
 
     //-------------
     // first side
@@ -58,7 +58,7 @@ struct NextSideAlongRay
     rs(0) = rst(0);
     rs(1) = rst(1);
 
-    CORE::LINALG::Matrix<3, 1> normal_1(true);
+    Core::LinAlg::Matrix<3, 1> normal_1(true);
     s1->Normal(rs, normal_1);
 
     //-------------
@@ -68,7 +68,7 @@ struct NextSideAlongRay
     rs(0) = rst(0);
     rs(1) = rst(1);
 
-    CORE::LINALG::Matrix<3, 1> normal_2(true);
+    Core::LinAlg::Matrix<3, 1> normal_2(true);
     s2->Normal(rs, normal_2);
 
     //-------------
@@ -80,7 +80,7 @@ struct NextSideAlongRay
   /*--------------------------------------------------------------------*
    * comparator function to sort two sides, which side lies in front of the other along the ray
    *--------------------------------------------------------------------*/
-  bool operator()(CORE::GEO::CUT::Side* s1, CORE::GEO::CUT::Side* s2)
+  bool operator()(Core::Geo::Cut::Side* s1, Core::Geo::Cut::Side* s2)
   {
     // REMARK:
     // shoot a ray through the first side s1 starting from startpoint and find intersection with
@@ -125,24 +125,24 @@ struct NextSideAlongRay
     return false;
   }
 
-  CORE::GEO::CUT::Point* startpoint_;
-  CORE::GEO::CUT::Point* cutpoint_;
+  Core::Geo::Cut::Point* startpoint_;
+  Core::Geo::Cut::Point* cutpoint_;
 
-  CORE::LINALG::Matrix<3, 1> startpoint_xyz_;
-  CORE::LINALG::Matrix<3, 1> cutpoint_xyz_;
+  Core::LinAlg::Matrix<3, 1> startpoint_xyz_;
+  Core::LinAlg::Matrix<3, 1> cutpoint_xyz_;
 };
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::GEO::CUT::Element::Element(
+Core::Geo::Cut::Element::Element(
     int eid, const std::vector<Side*>& sides, const std::vector<Node*>& nodes, bool active)
     : eid_(eid),
       active_(active),
       sides_(sides),
       nodes_(nodes),
-      quadshape_(CORE::FE::CellType::dis_none),
-      eleinttype_(INPAR::CUT::EleIntType_Undecided)
+      quadshape_(Core::FE::CellType::dis_none),
+      eleinttype_(Inpar::Cut::EleIntType_Undecided)
 {
   for (std::vector<Side*>::const_iterator i = sides.begin(); i != sides.end(); ++i)
   {
@@ -166,7 +166,7 @@ CORE::GEO::CUT::Element::Element(
 /*-----------------------------------------------------------------------------------*
  *  For this shadow element, set corner nodes of parent Quad element      sudhakar 11/13
  *-----------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Element::setQuadCorners(Mesh& mesh, const std::vector<int>& nodeids)
+void Core::Geo::Cut::Element::setQuadCorners(Mesh& mesh, const std::vector<int>& nodeids)
 {
   if (not is_shadow_) FOUR_C_THROW("You can't set Quad-corners for non-shadow element\n");
 
@@ -181,7 +181,7 @@ void CORE::GEO::CUT::Element::setQuadCorners(Mesh& mesh, const std::vector<int>&
  *  Get corner nodes of parent Quad element from which this shadow element is derived       sudhakar
  *11/13
  *----------------------------------------------------------------------------------------------------*/
-std::vector<CORE::GEO::CUT::Node*> CORE::GEO::CUT::Element::getQuadCorners()
+std::vector<Core::Geo::Cut::Node*> Core::Geo::Cut::Element::getQuadCorners()
 {
   if ((not is_shadow_) or quad_corners_.size() == 0)
     FOUR_C_THROW("what?! you want Quadratic element corners for linear element?\n");
@@ -193,7 +193,7 @@ std::vector<CORE::GEO::CUT::Node*> CORE::GEO::CUT::Element::getQuadCorners()
  *            Called by Tetmeshintersection and LS!!!!!!
  *            but not for normal meshintersection!!!
  *--------------------------------------------------------------------*/
-bool CORE::GEO::CUT::Element::Cut(Mesh& mesh, Side& cut_side)
+bool Core::Geo::Cut::Element::Cut(Mesh& mesh, Side& cut_side)
 {
   bool cut = false;
 
@@ -247,7 +247,7 @@ bool CORE::GEO::CUT::Element::Cut(Mesh& mesh, Side& cut_side)
 /*--------------------------------------------------------------------*
  * cut this element with its cut faces                    wirtz 08/14 *
  *--------------------------------------------------------------------*/
-void CORE::GEO::CUT::Element::find_cut_points(Mesh& mesh)
+void Core::Geo::Cut::Element::find_cut_points(Mesh& mesh)
 {
   for (plain_side_set::iterator i = cut_faces_.begin(); i != cut_faces_.end();
       /* do not increment */)
@@ -271,7 +271,7 @@ void CORE::GEO::CUT::Element::find_cut_points(Mesh& mesh)
 /*--------------------------------------------------------------------*
  * cut this element with given cut_side                   wirtz 08/14 *
  *--------------------------------------------------------------------*/
-bool CORE::GEO::CUT::Element::find_cut_points(Mesh& mesh, Side& cut_side)
+bool Core::Geo::Cut::Element::find_cut_points(Mesh& mesh, Side& cut_side)
 {
   bool cut = false;
 
@@ -316,7 +316,7 @@ bool CORE::GEO::CUT::Element::find_cut_points(Mesh& mesh, Side& cut_side)
  * After all cut points are found, create cut lines for this element by
  * connecting appropriate cut points
  *---------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Element::MakeCutLines(Mesh& mesh)
+void Core::Geo::Cut::Element::MakeCutLines(Mesh& mesh)
 {
   for (plain_side_set::iterator i = cut_faces_.begin(); i != cut_faces_.end(); ++i)
   {
@@ -336,10 +336,10 @@ void CORE::GEO::CUT::Element::MakeCutLines(Mesh& mesh)
  * Find cut points between a background element side and a cut side
  * Cut points are stored correspondingly
  *-----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::Element::find_cut_points(Mesh& mesh, Side& ele_side, Side& cut_side)
+bool Core::Geo::Cut::Element::find_cut_points(Mesh& mesh, Side& ele_side, Side& cut_side)
 {
   TEUCHOS_FUNC_TIME_MONITOR(
-      "CORE::GEO::CUT --- 4/6 --- cut_mesh_intersection --- find_cut_points(ele)");
+      "Core::Geo::CUT --- 4/6 --- cut_mesh_intersection --- find_cut_points(ele)");
 
   // edges of element side cuts through cut side
   bool cut = ele_side.find_cut_points(mesh, this, cut_side);
@@ -353,9 +353,9 @@ bool CORE::GEO::CUT::Element::find_cut_points(Mesh& mesh, Side& ele_side, Side& 
  *  Returns true if cut lines exist between the cut points produced by the two
  *  sides
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::Element::find_cut_lines(Mesh& mesh, Side& ele_side, Side& cut_side)
+bool Core::Geo::Cut::Element::find_cut_lines(Mesh& mesh, Side& ele_side, Side& cut_side)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 4/6 --- cut_mesh_intersection --- find_cut_lines");
+  TEUCHOS_FUNC_TIME_MONITOR("Core::Geo::CUT --- 4/6 --- cut_mesh_intersection --- find_cut_lines");
 
   return ele_side.find_cut_lines(mesh, this, cut_side);
 }
@@ -363,7 +363,7 @@ bool CORE::GEO::CUT::Element::find_cut_lines(Mesh& mesh, Side& ele_side, Side& c
 /*----------------------------------------------------------------------------*
  * Create facets
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Element::MakeFacets(Mesh& mesh)
+void Core::Geo::Cut::Element::MakeFacets(Mesh& mesh)
 {
   if (facets_.size() == 0)
   {
@@ -385,7 +385,7 @@ void CORE::GEO::CUT::Element::MakeFacets(Mesh& mesh)
 /*------------------------------------------------------------------------------------------*
  *     Determine the inside/outside/oncutsurface position for the element's nodes
  *------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Element::FindNodePositions()
+void Core::Geo::Cut::Element::FindNodePositions()
 {
   // DEBUG flag for FindNodePositions
   // compute positions for nodes again, also if already set by other nodes, facets, vcs (safety
@@ -544,7 +544,7 @@ void CORE::GEO::CUT::Element::FindNodePositions()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::Element::ComputePosition(Point* p, Point* cutpoint, Facet* f, Side* s)
+bool Core::Geo::Cut::Element::ComputePosition(Point* p, Point* cutpoint, Facet* f, Side* s)
 {
   //---------------------------
   // find the element's volume-cell the cut-side and the line has to be adjacent to
@@ -636,10 +636,10 @@ bool CORE::GEO::CUT::Element::ComputePosition(Point* p, Point* cutpoint, Facet* 
  *  determine the position of point p based on the angle between the line (p-c) and the
  *  side's normal vector, return if successful
  *------------------------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::Element::PositionByAngle(Point* p, Point* cutpoint, Side* s)
+bool Core::Geo::Cut::Element::PositionByAngle(Point* p, Point* cutpoint, Side* s)
 {
-  CORE::LINALG::Matrix<3, 1> xyz(true);
-  CORE::LINALG::Matrix<3, 1> cut_point_xyz(true);
+  Core::LinAlg::Matrix<3, 1> xyz(true);
+  Core::LinAlg::Matrix<3, 1> cut_point_xyz(true);
 
   p->Coordinates(xyz.A());
   cutpoint->Coordinates(cut_point_xyz.A());
@@ -648,12 +648,12 @@ bool CORE::GEO::CUT::Element::PositionByAngle(Point* p, Point* cutpoint, Side* s
   // determine the inside/outside position w.r.t the chosen cut-side
   // in case of the right side the "angle-criterion" leads to the right decision (position)
 
-  CORE::LINALG::Matrix<2, 1> rs(true);  // local coordinates of the cut-point w.r.t side
+  Core::LinAlg::Matrix<2, 1> rs(true);  // local coordinates of the cut-point w.r.t side
 
-  CORE::LINALG::Matrix<3, 1> normal(true);
+  Core::LinAlg::Matrix<3, 1> normal(true);
   s->Normal(rs, normal);  // outward pointing normal at cut-point
 
-  CORE::LINALG::Matrix<3, 1> line_vec(true);
+  Core::LinAlg::Matrix<3, 1> line_vec(true);
   line_vec.Update(
       1.0, xyz, -1.0, cut_point_xyz);  // vector representing the line between p and the cut-point
 
@@ -662,7 +662,7 @@ bool CORE::GEO::CUT::Element::PositionByAngle(Point* p, Point* cutpoint, Side* s
   double l_norm = line_vec.Norm2();
   if (n_norm < MERGING_TOLERANCE or l_norm < MERGING_TOLERANCE)
   {
-    double distance_between = CORE::GEO::CUT::DistanceBetweenPoints(p, cutpoint);
+    double distance_between = Core::Geo::Cut::DistanceBetweenPoints(p, cutpoint);
     FOUR_C_THROW(
         " the norm of line_vec or n_norm is smaller than %lf, should these "
         "points be one point in pointpool?, lnorm=%lf, nnorm=%lf, distance between them = %lf",
@@ -699,14 +699,14 @@ bool CORE::GEO::CUT::Element::PositionByAngle(Point* p, Point* cutpoint, Side* s
 /*------------------------------------------------------------------------------------------*
  *  check if the side's normal vector is orthogonal to the line between p and the cutpoint
  *------------------------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::Element::IsOrthogonalSide(Side* s, Point* p, Point* cutpoint)
+bool Core::Geo::Cut::Element::IsOrthogonalSide(Side* s, Point* p, Point* cutpoint)
 {
   if (s->OnEdge(cutpoint))  // check if the point lies on at least one edge of the side, otherwise
                             // it cannot be orthogonal
   {
-    CORE::LINALG::Matrix<3, 1> line(true);
-    CORE::LINALG::Matrix<3, 1> p_xyz(true);
-    CORE::LINALG::Matrix<3, 1> cut_point_xyz(true);
+    Core::LinAlg::Matrix<3, 1> line(true);
+    Core::LinAlg::Matrix<3, 1> p_xyz(true);
+    Core::LinAlg::Matrix<3, 1> cut_point_xyz(true);
 
     p->Coordinates(p_xyz.A());
     cutpoint->Coordinates(cut_point_xyz.A());
@@ -725,27 +725,27 @@ bool CORE::GEO::CUT::Element::IsOrthogonalSide(Side* s, Point* p, Point* cutpoin
       FOUR_C_THROW("the line has nearly zero length: %d", line_norm);
     }
 
-    if (s->Shape() != CORE::FE::CellType::tri3)
+    if (s->Shape() != Core::FE::CellType::tri3)
     {
       std::cout << "HERE !tri3 cutsides are used!!!" << std::endl;
       //      FOUR_C_THROW("expect only tri3 cutsides!");
     }
 
     // tri3/quad4 element center
-    CORE::LINALG::Matrix<2, 1> rs(true);
+    Core::LinAlg::Matrix<2, 1> rs(true);
 
-    if (s->Shape() == CORE::FE::CellType::tri3)
+    if (s->Shape() == Core::FE::CellType::tri3)
     {
-      rs = CORE::FE::getLocalCenterPosition<2>(CORE::FE::CellType::tri3);
+      rs = Core::FE::getLocalCenterPosition<2>(Core::FE::CellType::tri3);
     }
-    else if (s->Shape() == CORE::FE::CellType::quad4)
+    else if (s->Shape() == Core::FE::CellType::quad4)
     {
-      rs = CORE::FE::getLocalCenterPosition<2>(CORE::FE::CellType::quad4);
+      rs = Core::FE::getLocalCenterPosition<2>(Core::FE::CellType::quad4);
     }
     else
       FOUR_C_THROW("unsupported side-shape");
 
-    CORE::LINALG::Matrix<3, 1> normal(true);
+    Core::LinAlg::Matrix<3, 1> normal(true);
     s->Normal(rs, normal);
 
     // check for angle=+-90 between line and normal
@@ -757,7 +757,7 @@ bool CORE::GEO::CUT::Element::IsOrthogonalSide(Side* s, Point* p, Point* cutpoin
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::Element::IsCut()
+bool Core::Geo::Cut::Element::IsCut()
 {
   /* count the number cut-sides for which the intersection of the side with the
    * element finds cut points note that also elements which are just touched by
@@ -784,7 +784,7 @@ bool CORE::GEO::CUT::Element::IsCut()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool CORE::GEO::CUT::Element::OnSide(Facet* f)
+bool Core::Geo::Cut::Element::OnSide(Facet* f)
 {
   if (not f->HasHoles())
   {
@@ -795,7 +795,7 @@ bool CORE::GEO::CUT::Element::OnSide(Facet* f)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool CORE::GEO::CUT::Element::OnSide(const std::vector<Point*>& facet_points)
+bool Core::Geo::Cut::Element::OnSide(const std::vector<Point*>& facet_points)
 {
   const std::vector<Node*>& nodes = Nodes();
   for (std::vector<Point*>::const_iterator i = facet_points.begin(); i != facet_points.end(); ++i)
@@ -824,7 +824,7 @@ bool CORE::GEO::CUT::Element::OnSide(const std::vector<Point*>& facet_points)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::GEO::CUT::Element::GetIntegrationCells(plain_integrationcell_set& cells)
+void Core::Geo::Cut::Element::GetIntegrationCells(plain_integrationcell_set& cells)
 {
   FOUR_C_THROW("be aware of using this function! Read comment!");
 
@@ -839,7 +839,7 @@ void CORE::GEO::CUT::Element::GetIntegrationCells(plain_integrationcell_set& cel
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::GEO::CUT::Element::GetBoundaryCells(plain_boundarycell_set& bcells)
+void Core::Geo::Cut::Element::GetBoundaryCells(plain_boundarycell_set& bcells)
 {
   FOUR_C_THROW(
       "Be aware of using this function! \n\n"
@@ -869,7 +869,7 @@ void CORE::GEO::CUT::Element::GetBoundaryCells(plain_boundarycell_set& bcells)
  * (Remark: be aware of the fact, that you will just get cut_points, which lie on an edge of
  * this element!!!)
  *------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Element::GetCutPoints(PointSet& cut_points)
+void Core::Geo::Cut::Element::GetCutPoints(PointSet& cut_points)
 {
   for (std::vector<Side*>::const_iterator i = Sides().begin(); i != Sides().end(); ++i)
   {
@@ -886,7 +886,7 @@ void CORE::GEO::CUT::Element::GetCutPoints(PointSet& cut_points)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::GEO::CUT::Element::create_integration_cells(Mesh& mesh, int count, bool tetcellsonly)
+void Core::Geo::Cut::Element::create_integration_cells(Mesh& mesh, int count, bool tetcellsonly)
 {
   /* Is volume cell active? ( i.e. in recursive call, has this vc already
    * been removed in fix_broken_tets() ) */
@@ -908,7 +908,7 @@ void CORE::GEO::CUT::Element::create_integration_cells(Mesh& mesh, int count, bo
     // return if this was possible
   }
 
-  eleinttype_ = INPAR::CUT::EleIntType_Tessellation;
+  eleinttype_ = Inpar::Cut::EleIntType_Tessellation;
 
   if (not tetcellsonly)
   {
@@ -958,9 +958,9 @@ void CORE::GEO::CUT::Element::create_integration_cells(Mesh& mesh, int count, bo
  */
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool CORE::GEO::CUT::Element::create_simple_shaped_integration_cells(Mesh& mesh)
+bool Core::Geo::Cut::Element::create_simple_shaped_integration_cells(Mesh& mesh)
 {
-  // TEUCHOS_FUNC_TIME_MONITOR( "CORE::GEO::CUT::Element::create_simple_shaped_integration_cells" );
+  // TEUCHOS_FUNC_TIME_MONITOR( "Core::Geo::Cut::Element::create_simple_shaped_integration_cells" );
 
 
   if (cells_.size() == 1)  // in case there is only one volumecell, check if a simple shaped
@@ -977,20 +977,20 @@ bool CORE::GEO::CUT::Element::create_simple_shaped_integration_cells(Mesh& mesh)
       //      if(intcells.size() != 1) FOUR_C_THROW("there is not a unique integration cell");
       //      if(this->Shape() == intcells[0]->Shape())
       //      {
-      //        CORE::LINALG::SerialDenseMatrix xyze(3, intcells[0]->Points().size());
+      //        Core::LinAlg::SerialDenseMatrix xyze(3, intcells[0]->Points().size());
       //        this->Coordinates(xyze.A());
       //
-      //        double vol_diff = vc->Volume() - CORE::GEO::ElementVolume( this->Shape(), xyze );
+      //        double vol_diff = vc->Volume() - Core::Geo::ElementVolume( this->Shape(), xyze );
       //
       //        if(fabs(vol_diff)<1e-14)
       //        {
-      //          eleinttype_ = INPAR::CUT::EleIntType_StandardUncut;
+      //          eleinttype_ = Inpar::Cut::EleIntType_StandardUncut;
       //          return true;
       //        }
       //      }
 
       // simple integration cells could be created, however, does not equal the element itself
-      eleinttype_ = INPAR::CUT::EleIntType_Tessellation;
+      eleinttype_ = Inpar::Cut::EleIntType_Tessellation;
       return true;  // return if this was possible
     }
   }
@@ -1002,7 +1002,7 @@ bool CORE::GEO::CUT::Element::create_simple_shaped_integration_cells(Mesh& mesh)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Element::remove_empty_volume_cells()
+void Core::Geo::Cut::Element::remove_empty_volume_cells()
 {
   for (plain_volumecell_set::iterator i = cells_.begin(); i != cells_.end();)
   {
@@ -1022,7 +1022,7 @@ void CORE::GEO::CUT::Element::remove_empty_volume_cells()
 /*----------------------------------------------------------------------------*
  * Create volumecells
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Element::MakeVolumeCells(Mesh& mesh)
+void Core::Geo::Cut::Element::MakeVolumeCells(Mesh& mesh)
 {
   Teuchos::RCP<FacetGraph> fg = FacetGraph::Create(sides_, facets_);
   fg->CreateVolumeCells(mesh, this, cells_);
@@ -1030,8 +1030,8 @@ void CORE::GEO::CUT::Element::MakeVolumeCells(Mesh& mesh)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType elementtype, unsigned numNodesElement, unsigned dim>
-bool CORE::GEO::CUT::ConcreteElement<probdim, elementtype, numNodesElement, dim>::PointInside(
+template <unsigned probdim, Core::FE::CellType elementtype, unsigned numNodesElement, unsigned dim>
+bool Core::Geo::Cut::ConcreteElement<probdim, elementtype, numNodesElement, dim>::PointInside(
     Point* p)
 {
   Teuchos::RCP<Position> pos = Position::Create(*this, *p);
@@ -1040,9 +1040,9 @@ bool CORE::GEO::CUT::ConcreteElement<probdim, elementtype, numNodesElement, dim>
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType elementtype, unsigned numNodesElement, unsigned dim>
-bool CORE::GEO::CUT::ConcreteElement<probdim, elementtype, numNodesElement, dim>::local_coordinates(
-    const CORE::LINALG::Matrix<probdim, 1>& xyz, CORE::LINALG::Matrix<dim, 1>& rst)
+template <unsigned probdim, Core::FE::CellType elementtype, unsigned numNodesElement, unsigned dim>
+bool Core::Geo::Cut::ConcreteElement<probdim, elementtype, numNodesElement, dim>::local_coordinates(
+    const Core::LinAlg::Matrix<probdim, 1>& xyz, Core::LinAlg::Matrix<dim, 1>& rst)
 {
   Teuchos::RCP<Position> pos = PositionFactory::build_position<probdim, elementtype>(*this, xyz);
   bool success = pos->Compute();
@@ -1055,8 +1055,8 @@ bool CORE::GEO::CUT::ConcreteElement<probdim, elementtype, numNodesElement, dim>
  * Find local coodinates of given point w.r. to the parent Quad element
  *                                                      sudhakar 11/13
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Element::local_coordinates_quad(
-    const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<3, 1>& rst)
+void Core::Geo::Cut::Element::local_coordinates_quad(
+    const Core::LinAlg::Matrix<3, 1>& xyz, Core::LinAlg::Matrix<3, 1>& rst)
 {
   if (not is_shadow_) FOUR_C_THROW("This is not a shadow elemenet\n");
 
@@ -1072,7 +1072,7 @@ void CORE::GEO::CUT::Element::local_coordinates_quad(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int CORE::GEO::CUT::Element::NumGaussPoints(CORE::FE::CellType shape)
+int Core::Geo::Cut::Element::NumGaussPoints(Core::FE::CellType shape)
 {
   int numgp = 0;
   for (plain_volumecell_set::iterator i = cells_.begin(); i != cells_.end(); ++i)
@@ -1085,9 +1085,9 @@ int CORE::GEO::CUT::Element::NumGaussPoints(CORE::FE::CellType shape)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Element::DebugDump()
+void Core::Geo::Cut::Element::DebugDump()
 {
-  std::cout << "Problem in element " << Id() << " of shape " << CORE::FE::CellTypeToString(Shape())
+  std::cout << "Problem in element " << Id() << " of shape " << Core::FE::CellTypeToString(Shape())
             << ":\n";
   bool haslevelsetside = false;
   const std::vector<Node*>& nodes = Nodes();
@@ -1120,7 +1120,7 @@ void CORE::GEO::CUT::Element::DebugDump()
     std::stringstream str;
     str << "cut_test_generated_" << Id() << ".cpp";
     std::ofstream file(str.str().c_str());
-    CORE::GEO::CUT::OUTPUT::GmshElementCutTest(file, this, haslevelsetside);
+    Core::Geo::Cut::Output::GmshElementCutTest(file, this, haslevelsetside);
   }
 }
 
@@ -1128,20 +1128,20 @@ void CORE::GEO::CUT::Element::DebugDump()
  * When cut library is broken, write complete cut        sudhakar 06/14
  * configuration in to gmsh output file
  *----------------------------------------------------------------------*/
-void CORE::GEO::CUT::Element::gmsh_failure_element_dump()
+void Core::Geo::Cut::Element::gmsh_failure_element_dump()
 {
   std::stringstream str;
   str << ".cut_element" << Id() << "_CUTFAIL.pos";
-  std::string filename(CORE::GEO::CUT::OUTPUT::GenerateGmshOutputFilename(str.str()));
+  std::string filename(Core::Geo::Cut::Output::GenerateGmshOutputFilename(str.str()));
   std::ofstream file(filename.c_str());
 
-  CORE::GEO::CUT::OUTPUT::GmshCompleteCutElement(file, this);
+  Core::Geo::Cut::Output::GmshCompleteCutElement(file, this);
   file.close();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Element::GnuplotDump()
+void Core::Geo::Cut::Element::GnuplotDump()
 {
   std::stringstream str;
   str << "element" << Id() << ".plot";
@@ -1169,7 +1169,7 @@ void CORE::GEO::CUT::Element::GnuplotDump()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Element::DumpFacets()
+void Core::Geo::Cut::Element::DumpFacets()
 {
   std::stringstream str;
   str << "facets" << Id() << ".plot";
@@ -1188,7 +1188,7 @@ void CORE::GEO::CUT::Element::DumpFacets()
 /*----------------------------------------------------------------------*
  * Calculate volume of all volumecells when Tessellation is used
  *----------------------------------------------------------------------*/
-void CORE::GEO::CUT::Element::calculate_volume_of_cells_tessellation()
+void Core::Geo::Cut::Element::calculate_volume_of_cells_tessellation()
 {
   const plain_volumecell_set& volcells = VolumeCells();
   for (plain_volumecell_set::const_iterator i = volcells.begin(); i != volcells.end(); i++)
@@ -1211,7 +1211,7 @@ void CORE::GEO::CUT::Element::calculate_volume_of_cells_tessellation()
  * Integrate pre-defined functions over each volumecell created from this
  * element when using Tessellation
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Element::integrate_specific_functions_tessellation()
+void Core::Geo::Cut::Element::integrate_specific_functions_tessellation()
 {
   for (plain_volumecell_set::iterator i = cells_.begin(); i != cells_.end(); i++)
   {
@@ -1225,8 +1225,8 @@ void CORE::GEO::CUT::Element::integrate_specific_functions_tessellation()
  * fitting for each volumecells. Unless specified moment fitting is performed
  * only for cells placed in the fluid region
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Element::moment_fit_gauss_weights(
-    Mesh& mesh, bool include_inner, INPAR::CUT::BCellGaussPts Bcellgausstype)
+void Core::Geo::Cut::Element::moment_fit_gauss_weights(
+    Mesh& mesh, bool include_inner, Inpar::Cut::BCellGaussPts Bcellgausstype)
 {
   if (not active_) return;
 
@@ -1252,7 +1252,7 @@ void CORE::GEO::CUT::Element::moment_fit_gauss_weights(
    }
    }*/
 
-  eleinttype_ = INPAR::CUT::EleIntType_MomentFitting;
+  eleinttype_ = Inpar::Cut::EleIntType_MomentFitting;
 
   for (plain_volumecell_set::iterator i = cells_.begin(); i != cells_.end(); i++)
   {
@@ -1266,8 +1266,8 @@ void CORE::GEO::CUT::Element::moment_fit_gauss_weights(
  * facets and applying divergence theorem. Unless specified moment fitting is
  * performed only for cells placed in the fluid region
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Element::direct_divergence_gauss_rule(
-    Mesh& mesh, bool include_inner, INPAR::CUT::BCellGaussPts Bcellgausstype)
+void Core::Geo::Cut::Element::direct_divergence_gauss_rule(
+    Mesh& mesh, bool include_inner, Inpar::Cut::BCellGaussPts Bcellgausstype)
 {
   if (not active_) return;
 
@@ -1275,7 +1275,7 @@ void CORE::GEO::CUT::Element::direct_divergence_gauss_rule(
   if (create_simple_shaped_integration_cells(mesh)) return;
   // return if this was possible
 
-  eleinttype_ = INPAR::CUT::EleIntType_DirectDivergence;
+  eleinttype_ = Inpar::Cut::EleIntType_DirectDivergence;
 
   for (plain_volumecell_set::iterator i = cells_.begin(); i != cells_.end(); i++)
   {
@@ -1286,7 +1286,7 @@ void CORE::GEO::CUT::Element::direct_divergence_gauss_rule(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::Element::HasLevelSetSide()
+bool Core::Geo::Cut::Element::HasLevelSetSide()
 {
   const plain_facet_set facets = this->Facets();
   for (plain_facet_set::const_iterator j = facets.begin(); j != facets.end(); j++)
@@ -1302,46 +1302,46 @@ bool CORE::GEO::CUT::Element::HasLevelSetSide()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::GEO::CUT::Element> CORE::GEO::CUT::ElementFactory::create_element(
-    CORE::FE::CellType elementtype, int eid, const std::vector<Side*>& sides,
+Teuchos::RCP<Core::Geo::Cut::Element> Core::Geo::Cut::ElementFactory::create_element(
+    Core::FE::CellType elementtype, int eid, const std::vector<Side*>& sides,
     const std::vector<Node*>& nodes, bool active) const
 {
   Teuchos::RCP<Element> e = Teuchos::null;
-  const int probdim = GLOBAL::Problem::Instance()->NDim();
+  const int probdim = Global::Problem::Instance()->NDim();
   switch (elementtype)
   {
-    case CORE::FE::CellType::line2:
+    case Core::FE::CellType::line2:
       e = Teuchos::rcp<Element>(
-          create_concrete_element<CORE::FE::CellType::line2>(eid, sides, nodes, active, probdim));
+          create_concrete_element<Core::FE::CellType::line2>(eid, sides, nodes, active, probdim));
       break;
-    case CORE::FE::CellType::tri3:
+    case Core::FE::CellType::tri3:
       e = Teuchos::rcp<Element>(
-          create_concrete_element<CORE::FE::CellType::tri3>(eid, sides, nodes, active, probdim));
+          create_concrete_element<Core::FE::CellType::tri3>(eid, sides, nodes, active, probdim));
       break;
-    case CORE::FE::CellType::quad4:
+    case Core::FE::CellType::quad4:
       e = Teuchos::rcp<Element>(
-          create_concrete_element<CORE::FE::CellType::quad4>(eid, sides, nodes, active, probdim));
+          create_concrete_element<Core::FE::CellType::quad4>(eid, sides, nodes, active, probdim));
       break;
-    case CORE::FE::CellType::tet4:
+    case Core::FE::CellType::tet4:
       e = Teuchos::rcp<Element>(
-          create_concrete_element<CORE::FE::CellType::tet4>(eid, sides, nodes, active, probdim));
+          create_concrete_element<Core::FE::CellType::tet4>(eid, sides, nodes, active, probdim));
       break;
-    case CORE::FE::CellType::hex8:
+    case Core::FE::CellType::hex8:
       e = Teuchos::rcp<Element>(
-          create_concrete_element<CORE::FE::CellType::hex8>(eid, sides, nodes, active, probdim));
+          create_concrete_element<Core::FE::CellType::hex8>(eid, sides, nodes, active, probdim));
       break;
-    case CORE::FE::CellType::pyramid5:
-      e = Teuchos::rcp<Element>(create_concrete_element<CORE::FE::CellType::pyramid5>(
+    case Core::FE::CellType::pyramid5:
+      e = Teuchos::rcp<Element>(create_concrete_element<Core::FE::CellType::pyramid5>(
           eid, sides, nodes, active, probdim));
       break;
-    case CORE::FE::CellType::wedge6:
+    case Core::FE::CellType::wedge6:
       e = Teuchos::rcp<Element>(
-          create_concrete_element<CORE::FE::CellType::wedge6>(eid, sides, nodes, active, probdim));
+          create_concrete_element<Core::FE::CellType::wedge6>(eid, sides, nodes, active, probdim));
       break;
     default:
     {
       FOUR_C_THROW("Unsupported element type! ( %d | %s )", elementtype,
-          CORE::FE::CellTypeToString(elementtype).c_str());
+          Core::FE::CellTypeToString(elementtype).c_str());
       break;
     }
   }
@@ -1350,8 +1350,8 @@ Teuchos::RCP<CORE::GEO::CUT::Element> CORE::GEO::CUT::ElementFactory::create_ele
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::GEO::CUT::Element> CORE::GEO::CUT::Element::Create(
-    const CORE::FE::CellType& elementtype, const int& eid, const std::vector<Side*>& sides,
+Teuchos::RCP<Core::Geo::Cut::Element> Core::Geo::Cut::Element::Create(
+    const Core::FE::CellType& elementtype, const int& eid, const std::vector<Side*>& sides,
     const std::vector<Node*>& nodes, const bool& active)
 {
   ElementFactory factory;
@@ -1360,21 +1360,21 @@ Teuchos::RCP<CORE::GEO::CUT::Element> CORE::GEO::CUT::Element::Create(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::GEO::CUT::Element> CORE::GEO::CUT::Element::Create(const unsigned& shardskey,
+Teuchos::RCP<Core::Geo::Cut::Element> Core::Geo::Cut::Element::Create(const unsigned& shardskey,
     const int& eid, const std::vector<Side*>& sides, const std::vector<Node*>& nodes,
     const bool& active)
 {
-  return Create(CORE::Elements::ShardsKeyToDisType(shardskey), eid, sides, nodes, active);
+  return Create(Core::Elements::ShardsKeyToDisType(shardskey), eid, sides, nodes, active);
 }
 
-template class CORE::GEO::CUT::ConcreteElement<2, CORE::FE::CellType::line2>;
-template class CORE::GEO::CUT::ConcreteElement<3, CORE::FE::CellType::line2>;
-template class CORE::GEO::CUT::ConcreteElement<2, CORE::FE::CellType::tri3>;
-template class CORE::GEO::CUT::ConcreteElement<3, CORE::FE::CellType::tri3>;
-template class CORE::GEO::CUT::ConcreteElement<2, CORE::FE::CellType::quad4>;
-template class CORE::GEO::CUT::ConcreteElement<3, CORE::FE::CellType::quad4>;
-template class CORE::GEO::CUT::ConcreteElement<3, CORE::FE::CellType::hex8>;
-template class CORE::GEO::CUT::ConcreteElement<3, CORE::FE::CellType::pyramid5>;
-template class CORE::GEO::CUT::ConcreteElement<3, CORE::FE::CellType::wedge6>;
+template class Core::Geo::Cut::ConcreteElement<2, Core::FE::CellType::line2>;
+template class Core::Geo::Cut::ConcreteElement<3, Core::FE::CellType::line2>;
+template class Core::Geo::Cut::ConcreteElement<2, Core::FE::CellType::tri3>;
+template class Core::Geo::Cut::ConcreteElement<3, Core::FE::CellType::tri3>;
+template class Core::Geo::Cut::ConcreteElement<2, Core::FE::CellType::quad4>;
+template class Core::Geo::Cut::ConcreteElement<3, Core::FE::CellType::quad4>;
+template class Core::Geo::Cut::ConcreteElement<3, Core::FE::CellType::hex8>;
+template class Core::Geo::Cut::ConcreteElement<3, Core::FE::CellType::pyramid5>;
+template class Core::Geo::Cut::ConcreteElement<3, Core::FE::CellType::wedge6>;
 
 FOUR_C_NAMESPACE_CLOSE

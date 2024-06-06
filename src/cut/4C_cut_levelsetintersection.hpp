@@ -17,14 +17,14 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace LINALG
+namespace LinAlg
 {
   class SerialDenseMatrix;
 }
 
-namespace CORE::GEO
+namespace Core::Geo
 {
-  namespace CUT
+  namespace Cut
   {
     class Node;
     class Edge;
@@ -77,7 +77,7 @@ namespace CORE::GEO
        *  \author winter
        *  \date 08/14  */
       void Cut(bool include_inner = true, bool screenoutput = false,
-          INPAR::CUT::VCellGaussPts VCellGP = INPAR::CUT::VCellGaussPts_Tessellation);
+          Inpar::Cut::VCellGaussPts VCellGP = Inpar::Cut::VCellGaussPts_Tessellation);
 
       //! @}
       /*========================================================================*/
@@ -89,8 +89,8 @@ namespace CORE::GEO
        *
        * Which implies that the level set function of the element has values which
        * are positive and negative. */
-      CORE::GEO::CUT::ElementHandle* add_element(int eid, const std::vector<int>& nids,
-          const CORE::LINALG::SerialDenseMatrix& xyz, CORE::FE::CellType distype, const double* lsv,
+      Core::Geo::Cut::ElementHandle* add_element(int eid, const std::vector<int>& nids,
+          const Core::LinAlg::SerialDenseMatrix& xyz, Core::FE::CellType distype, const double* lsv,
           const bool lsv_only_plus_domain = false, const bool& check_lsv = false);
 
       //! @}
@@ -115,8 +115,8 @@ namespace CORE::GEO
       //! @}
     };
 
-  }  // namespace CUT
-}  // namespace CORE::GEO
+  }  // namespace Cut
+}  // namespace Core::Geo
 
 FOUR_C_NAMESPACE_CLOSE
 

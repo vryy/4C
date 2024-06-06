@@ -65,11 +65,11 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<scalar_type, bea
       visualization_nodal_forces != Teuchos::null)
   {
     // Setup variables.
-    CORE::LINALG::Matrix<3, 1, scalar_type> X;
-    CORE::LINALG::Matrix<3, 1, scalar_type> r;
-    CORE::LINALG::Matrix<3, 1, scalar_type> u;
-    CORE::LINALG::Matrix<3, 1, double> lambda_discret;
-    CORE::LINALG::Matrix<3, 1, double> xi_mortar_node;
+    Core::LinAlg::Matrix<3, 1, scalar_type> X;
+    Core::LinAlg::Matrix<3, 1, scalar_type> r;
+    Core::LinAlg::Matrix<3, 1, scalar_type> u;
+    Core::LinAlg::Matrix<3, 1, double> lambda_discret;
+    Core::LinAlg::Matrix<3, 1, double> xi_mortar_node;
 
     // Get the mortar manager and the global lambda vector, those objects will be used to get the
     // discrete Lagrange multiplier values for this pair.
@@ -83,7 +83,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<scalar_type, bea
     auto q_lambda = GEOMETRYPAIR::InitializeElementData<mortar, double>::Initialize(nullptr);
     const auto& [lambda_row_pos, _] = mortar_manager->LocationVector(*this);
     std::vector<double> lambda_pair;
-    CORE::FE::ExtractMyValues(*lambda, lambda_pair, lambda_row_pos);
+    Core::FE::ExtractMyValues(*lambda, lambda_pair, lambda_row_pos);
     for (unsigned int i_dof = 0; i_dof < mortar::n_dof_; i_dof++)
       q_lambda.element_position_(i_dof) = lambda_pair[i_dof];
 
@@ -119,7 +119,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<scalar_type, bea
         for (unsigned int i_node = 0; i_node < mortar::n_nodes_; i_node++)
         {
           // Get the local coordinate of this node.
-          xi_mortar_node = CORE::FE::GetNodeCoordinates(i_node, mortar::discretization_);
+          xi_mortar_node = Core::FE::GetNodeCoordinates(i_node, mortar::discretization_);
 
           // Get position and displacement of the mortar node.
           GEOMETRYPAIR::EvaluatePosition<beam>(xi_mortar_node(0), this->ele1pos_, r);
@@ -133,9 +133,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<scalar_type, bea
           // Add to output data.
           for (unsigned int dim = 0; dim < 3; dim++)
           {
-            point_coordinates.push_back(CORE::FADUTILS::CastToDouble(X(dim)));
-            displacement.push_back(CORE::FADUTILS::CastToDouble(u(dim)));
-            lambda_vis.push_back(CORE::FADUTILS::CastToDouble(lambda_discret(dim)));
+            point_coordinates.push_back(Core::FADUtils::CastToDouble(X(dim)));
+            displacement.push_back(Core::FADUtils::CastToDouble(u(dim)));
+            lambda_vis.push_back(Core::FADUtils::CastToDouble(lambda_discret(dim)));
           }
 
           if (write_unique_ids)
@@ -196,9 +196,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<scalar_type, bea
           // Add to output data.
           for (unsigned int dim = 0; dim < 3; dim++)
           {
-            point_coordinates.push_back(CORE::FADUTILS::CastToDouble(X(dim)));
-            displacement.push_back(CORE::FADUTILS::CastToDouble(u(dim)));
-            lambda_vis.push_back(CORE::FADUTILS::CastToDouble(lambda_discret(dim)));
+            point_coordinates.push_back(Core::FADUtils::CastToDouble(X(dim)));
+            displacement.push_back(Core::FADUtils::CastToDouble(u(dim)));
+            lambda_vis.push_back(Core::FADUtils::CastToDouble(lambda_discret(dim)));
           }
         }
 
@@ -226,14 +226,14 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<scalar_type, bea
     {
       // Get the global moment vector.
       auto line_load_moment_origin =
-          visualization_params.get<Teuchos::RCP<CORE::LINALG::Matrix<3, 1, double>>>(
+          visualization_params.get<Teuchos::RCP<Core::LinAlg::Matrix<3, 1, double>>>(
               "global_coupling_moment_origin");
 
       // Initialize variables for local values.
-      CORE::LINALG::Matrix<3, 1, double> dr_beam_ref(true);
-      CORE::LINALG::Matrix<3, 1, double> lambda_gauss_point(true);
-      CORE::LINALG::Matrix<3, 1, double> r_gauss_point(true);
-      CORE::LINALG::Matrix<3, 1, double> temp_moment(true);
+      Core::LinAlg::Matrix<3, 1, double> dr_beam_ref(true);
+      Core::LinAlg::Matrix<3, 1, double> lambda_gauss_point(true);
+      Core::LinAlg::Matrix<3, 1, double> r_gauss_point(true);
+      Core::LinAlg::Matrix<3, 1, double> temp_moment(true);
 
       // Initialize scalar variables.
       double segment_jacobian = 0.0;

@@ -35,7 +35,7 @@ namespace CONTACT::CONSTITUTIVELAW
 
 
 
-namespace INPAR::CONTACT
+namespace Inpar::CONTACT
 {
   /// Type of contact constitutive law
   enum class ConstitutiveLawType
@@ -47,7 +47,7 @@ namespace INPAR::CONTACT
     colaw_power,           ///< simple power law as constitutive law
     colaw_mirco            ///< mirco constitutive law
   };
-}  // namespace INPAR::CONTACT
+}  // namespace Inpar::CONTACT
 
 
 /*----------------------------------------------------------------------*/
@@ -92,7 +92,7 @@ namespace CONTACT::CONSTITUTIVELAW
    * \brief Container to pass Contact Constitutive Law parameters around
    */
 
-  class Container : public CORE::IO::InputParameterContainer
+  class Container : public Core::IO::InputParameterContainer
   {
    public:
     /// @name life span
@@ -100,7 +100,7 @@ namespace CONTACT::CONSTITUTIVELAW
 
     /// standard constructor
     Container(const int id,                              ///< unique contact constitutivelaw ID
-        const INPAR::CONTACT::ConstitutiveLawType type,  ///< type of contact constitutivelaw
+        const Inpar::CONTACT::ConstitutiveLawType type,  ///< type of contact constitutivelaw
         const std::string name                           ///< name of contact constitutivelaw
     );
 
@@ -126,13 +126,13 @@ namespace CONTACT::CONSTITUTIVELAW
     void Print(std::ostream& os) const override;
 
     /// Return type of constitutivelaw
-    [[nodiscard]] inline virtual INPAR::CONTACT::ConstitutiveLawType Type() const { return type_; }
+    [[nodiscard]] inline virtual Inpar::CONTACT::ConstitutiveLawType Type() const { return type_; }
 
     /**
      * \brief Return quickly accessible material parameter data
      *
      * These quick access parameters are stored in separate member #params_;
-     * whereas the originally read ones are stored in CORE::IO::InputParameterContainer base
+     * whereas the originally read ones are stored in Core::IO::InputParameterContainer base
      */
     [[nodiscard]] inline CONTACT::CONSTITUTIVELAW::Parameter* Parameter() const
     {
@@ -146,7 +146,7 @@ namespace CONTACT::CONSTITUTIVELAW
     int id_{};
 
     /// Type of this condition
-    INPAR::CONTACT::ConstitutiveLawType type_{};
+    Inpar::CONTACT::ConstitutiveLawType type_{};
 
     /// Name
     std::string name_{};

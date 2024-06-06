@@ -17,23 +17,24 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::COMM::AddOwnedNodeGID(
-    const DRT::Discretization& dis, const int nodegid, std::vector<int>& my_gid_vec)
+void Core::Communication::AddOwnedNodeGID(
+    const Discret::Discretization& dis, const int nodegid, std::vector<int>& my_gid_vec)
 {
   if (IsNodeGIDOnThisProc(dis, nodegid)) my_gid_vec.push_back(nodegid);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::COMM::AddOwnedNodeGID(
-    const DRT::Discretization& dis, const int nodegid, std::set<int>& my_gid_set)
+void Core::Communication::AddOwnedNodeGID(
+    const Discret::Discretization& dis, const int nodegid, std::set<int>& my_gid_set)
 {
   if (IsNodeGIDOnThisProc(dis, nodegid)) my_gid_set.emplace(nodegid);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool CORE::COMM::IsNodeGIDOnThisProc(const DRT::Discretization& dis, const int node_gid)
+bool Core::Communication::IsNodeGIDOnThisProc(
+    const Discret::Discretization& dis, const int node_gid)
 {
   return (dis.HaveGlobalNode(node_gid) and dis.gNode(node_gid)->Owner() == dis.Comm().MyPID());
 }

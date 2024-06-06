@@ -23,19 +23,19 @@ namespace Teuchos
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
     class StructureRuntimeOutputParams;
     class BeamRuntimeOutputParams;
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 
 namespace STR
 {
-  namespace TIMINT
+  namespace TimeInt
   {
     /** \brief Input data container for output at runtime for the structural (time) integration
      *
@@ -87,14 +87,14 @@ namespace STR
       };
 
       /// get the data container for parameters regarding beams
-      Teuchos::RCP<const DRT::ELEMENTS::StructureRuntimeOutputParams> GetStructureParams() const
+      Teuchos::RCP<const Discret::ELEMENTS::StructureRuntimeOutputParams> GetStructureParams() const
       {
         check_init_setup();
         return params_runtime_output_structure_;
       };
 
       /// get the data container for parameters regarding beams
-      Teuchos::RCP<const DRT::ELEMENTS::BeamRuntimeOutputParams> GetBeamParams() const
+      Teuchos::RCP<const Discret::ELEMENTS::BeamRuntimeOutputParams> GetBeamParams() const
       {
         check_init_setup();
         return params_runtime_output_beams_;
@@ -140,18 +140,18 @@ namespace STR
       bool output_beams_ = false;
 
       /// data container for input parameters related to output of structure at runtime
-      Teuchos::RCP<DRT::ELEMENTS::StructureRuntimeOutputParams> params_runtime_output_structure_ =
-          Teuchos::null;
+      Teuchos::RCP<Discret::ELEMENTS::StructureRuntimeOutputParams>
+          params_runtime_output_structure_ = Teuchos::null;
 
       /// data container for input parameters related to output of beams at runtime
-      Teuchos::RCP<DRT::ELEMENTS::BeamRuntimeOutputParams> params_runtime_output_beams_ =
+      Teuchos::RCP<Discret::ELEMENTS::BeamRuntimeOutputParams> params_runtime_output_beams_ =
           Teuchos::null;
 
 
       //@}
     };
 
-  }  // namespace TIMINT
+  }  // namespace TimeInt
 }  // namespace STR
 
 

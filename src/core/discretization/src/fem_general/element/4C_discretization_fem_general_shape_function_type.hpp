@@ -15,7 +15,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::FE
+namespace Core::FE
 {
   /// Type of shape functions used in spatial discretization
   enum class ShapeFunctionType
@@ -27,14 +27,14 @@ namespace CORE::FE
   };
 
   /// Return shape function type enum for a given shape function name
-  CORE::FE::ShapeFunctionType StringToShapeFunctionType(std::string name);
+  Core::FE::ShapeFunctionType StringToShapeFunctionType(std::string name);
 
   /// Return shape function name for a given shape function type
-  std::string ShapeFunctionTypeToString(CORE::FE::ShapeFunctionType shapefunctiontype);
+  std::string ShapeFunctionTypeToString(Core::FE::ShapeFunctionType shapefunctiontype);
 
   const std::map<std::string, ShapeFunctionType>& StringToShapeFunctionTypeMap();
 
-}  // namespace CORE::FE
+}  // namespace Core::FE
 
 FOUR_C_NAMESPACE_CLOSE
 

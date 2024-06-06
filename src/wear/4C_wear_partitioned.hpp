@@ -34,21 +34,21 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | forward declarations                                     farah 11/13 |
  *----------------------------------------------------------------------*/
-namespace MORTAR
+namespace Mortar
 {
   class ManagerBase;
 }
-namespace ADAPTER
+namespace Adapter
 {
   class CouplingBase;
   class Coupling;
-}  // namespace ADAPTER
-namespace DRT
+}  // namespace Adapter
+namespace Discret
 {
   class LocationArray;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
@@ -62,7 +62,7 @@ namespace ALE
  |                                                          farah 11/13 |
  *----------------------------------------------------------------------*/
 /// STRUE_ALE: Structure with ale
-namespace WEAR
+namespace Wear
 {
   /// WEAR stru_ale partitioned algorithm
 
@@ -116,7 +116,7 @@ namespace WEAR
      */
     void advection_map(double* Xtarget,        // out
         double* Xsource,                       // in
-        CORE::Elements::Element** ElementPtr,  // in
+        Core::Elements::Element** ElementPtr,  // in
         int numelements,                       // in
         bool spatialtomaterial);               // in
 
@@ -182,14 +182,14 @@ namespace WEAR
     Teuchos::RCP<Epetra_Vector> delta_ale_;
     Teuchos::RCP<Epetra_Vector> ale_i_;
 
-    Teuchos::RCP<CORE::ADAPTER::Coupling> coupstrualei_;     // ale struct coupling on ale interface
-    Teuchos::RCP<CORE::ADAPTER::CouplingBase> coupalestru_;  // ale struct cpupling
+    Teuchos::RCP<Core::Adapter::Coupling> coupstrualei_;     // ale struct coupling on ale interface
+    Teuchos::RCP<Core::Adapter::CouplingBase> coupalestru_;  // ale struct cpupling
 
     Teuchos::ParameterList alepara_;  // ale parameter list
 
   };  // Algorithm
 
-}  // namespace WEAR
+}  // namespace Wear
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

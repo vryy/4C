@@ -63,21 +63,21 @@ CONTACT::CONSTITUTIVELAW::MircoConstitutiveLaw::MircoConstitutiveLaw(
 void CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams::SetParameters()
 {
   // retrieve problem instance to read from
-  const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
+  const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
 
   // for the sake of safety
-  if (GLOBAL::Problem::Instance(probinst)->Materials() == Teuchos::null)
+  if (Global::Problem::Instance(probinst)->Materials() == Teuchos::null)
     FOUR_C_THROW("List of materials cannot be accessed in the global problem instance.");
   // yet another safety check
-  if (GLOBAL::Problem::Instance(probinst)->Materials()->Num() == 0)
+  if (Global::Problem::Instance(probinst)->Materials()->Num() == 0)
     FOUR_C_THROW("List of materials in the global problem instance is empty.");
 
   // retrieve validated input line of material ID in question
-  const auto& firstmat = GLOBAL::Problem::Instance(probinst)
+  const auto& firstmat = Global::Problem::Instance(probinst)
                              ->Materials()
                              ->ParameterById(GetFirstMatID())
                              ->raw_parameters();
-  const auto& secondmat = GLOBAL::Problem::Instance(probinst)
+  const auto& secondmat = Global::Problem::Instance(probinst)
                               ->Materials()
                               ->ParameterById(GetSecondMatID())
                               ->raw_parameters();

@@ -22,13 +22,13 @@
 
 void test_benedikt1()
 {
-  CORE::GEO::CUT::MeshIntersection intersection;
+  Core::Geo::Cut::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
   int sidecount = 0;
   {
-    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
+    Core::LinAlg::SerialDenseMatrix tri3_xyze(3, 3);
 
     tri3_xyze(0, 0) = 0.05030222279960472;
     tri3_xyze(1, 0) = 0.5164896689179502;
@@ -43,10 +43,10 @@ void test_benedikt1()
     nids.push_back(1781);
     nids.push_back(1784);
     nids.push_back(1786);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
   }
   {
-    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
+    Core::LinAlg::SerialDenseMatrix tri3_xyze(3, 3);
 
     tri3_xyze(0, 0) = 0.05022204783542078;
     tri3_xyze(1, 0) = 0.5141348415851575;
@@ -61,10 +61,10 @@ void test_benedikt1()
     nids.push_back(1784);
     nids.push_back(1785);
     nids.push_back(1786);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
   }
   {
-    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
+    Core::LinAlg::SerialDenseMatrix tri3_xyze(3, 3);
 
     tri3_xyze(0, 0) = 0.05022204783542078;
     tri3_xyze(1, 0) = 0.5141348415851579;
@@ -79,12 +79,12 @@ void test_benedikt1()
     nids.push_back(1785);
     nids.push_back(1782);
     nids.push_back(1786);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
   }
 
   sidecount = 595;
   {
-    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
+    Core::LinAlg::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.05022204783542078;
     quad4_xyze(1, 0) = 0.5141348415851575;
@@ -105,11 +105,11 @@ void test_benedikt1()
     nids.push_back(1788);
     nids.push_back(1785);
 
-    intersection.AddCutSide(595, nids, quad4_xyze, CORE::FE::CellType::quad4);
+    intersection.AddCutSide(595, nids, quad4_xyze, Core::FE::CellType::quad4);
   }
 
 
-  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
+  Core::LinAlg::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 0.049219426993576;
   hex8_xyze(1, 0) = 0.5159099025766973;
@@ -183,6 +183,6 @@ void test_benedikt1()
 
   int eid = 192551;
 
-  intersection.add_element(eid, nids, hex8_xyze, CORE::FE::CellType::hex8);
-  intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
+  intersection.add_element(eid, nids, hex8_xyze, Core::FE::CellType::hex8);
+  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
 }

@@ -18,18 +18,18 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace SCATRA
+namespace ScaTra
 {
   class MeshtyingStrategyBase;
 }
 
 
-namespace ADAPTER
+namespace Adapter
 {
   /*! \brief General pure virtual interface for all scatra time integrators and scatra adapters.
    *
@@ -51,7 +51,7 @@ namespace ADAPTER
     virtual ~ScatraInterface() = default;
 
     //! return discretization
-    virtual Teuchos::RCP<DRT::Discretization> discretization() const = 0;
+    virtual Teuchos::RCP<Discret::Discretization> discretization() const = 0;
 
     //! add parameters specific for time-integration scheme
     virtual void add_time_integration_specific_vectors(bool forcedincrementalsolver = false) = 0;
@@ -63,13 +63,13 @@ namespace ADAPTER
     virtual Teuchos::RCP<Epetra_Vector> GetNeumannLoadsPtr() = 0;
 
     //! return meshtying strategy (includes standard case without meshtying)
-    virtual const Teuchos::RCP<SCATRA::MeshtyingStrategyBase>& Strategy() const = 0;
+    virtual const Teuchos::RCP<ScaTra::MeshtyingStrategyBase>& Strategy() const = 0;
 
     //! return scalar field phi at time n
     virtual Teuchos::RCP<Epetra_Vector> Phin() = 0;
 
   };  // class ScatraInterface
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 
 FOUR_C_NAMESPACE_CLOSE

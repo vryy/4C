@@ -20,7 +20,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 /// constructor
-ADAPTER::StructurePoroWrapper::StructurePoroWrapper(
+Adapter::StructurePoroWrapper::StructurePoroWrapper(
     Teuchos::RCP<Field> field, FieldWrapper::Fieldtype type, bool NOXCorrection)
     : FieldWrapper(field, type, NOXCorrection)
 {
@@ -33,7 +33,7 @@ ADAPTER::StructurePoroWrapper::StructurePoroWrapper(
       poro_ = Teuchos::null;
       break;
     case FieldWrapper::type_PoroField:
-      poro_ = Teuchos::rcp_dynamic_cast<POROELAST::Monolithic>(field_);
+      poro_ = Teuchos::rcp_dynamic_cast<PoroElast::Monolithic>(field_);
       if (poro_ == Teuchos::null)
         FOUR_C_THROW("StructurePoroWrapper: Cast from Field to PoroBase failed!");
       structure_ = poro_->structure_field();
@@ -46,7 +46,7 @@ ADAPTER::StructurePoroWrapper::StructurePoroWrapper(
 }
 
 /// setup
-void ADAPTER::StructurePoroWrapper::Setup()
+void Adapter::StructurePoroWrapper::Setup()
 {
   structure_->Setup();
   if (type_ == FieldWrapper::type_PoroField)
@@ -57,7 +57,7 @@ void ADAPTER::StructurePoroWrapper::Setup()
 }
 
 //! unique map of all dofs that should be constrained with DBC
-Teuchos::RCP<const Epetra_Map> ADAPTER::StructurePoroWrapper::combined_dbc_map()
+Teuchos::RCP<const Epetra_Map> Adapter::StructurePoroWrapper::combined_dbc_map()
 {
   switch (type_)
   {
@@ -75,7 +75,7 @@ Teuchos::RCP<const Epetra_Map> ADAPTER::StructurePoroWrapper::combined_dbc_map()
 }
 
 //   //! perform result test
-void ADAPTER::StructurePoroWrapper::TestResults(GLOBAL::Problem* problem)
+void Adapter::StructurePoroWrapper::TestResults(Global::Problem* problem)
 {
   problem->AddFieldTest(structure_->CreateFieldTest());
 
@@ -83,16 +83,16 @@ void ADAPTER::StructurePoroWrapper::TestResults(GLOBAL::Problem* problem)
     problem->AddFieldTest(poro_->fluid_field()->CreateFieldTest());
 }
 
-const Teuchos::RCP<POROELAST::Monolithic>& ADAPTER::StructurePoroWrapper::poro_field()
+const Teuchos::RCP<PoroElast::Monolithic>& Adapter::StructurePoroWrapper::poro_field()
 {
-  if (type_ == ADAPTER::FieldWrapper::type_PoroField)
+  if (type_ == Adapter::FieldWrapper::type_PoroField)
     return poro_;
   else
     FOUR_C_THROW("StructurePoroWrapper - Field not a poro_field!");
   return poro_;  // do not remove FOUR_C_THROW!!! - return just to make complier happy :-)
 }
 
-const Teuchos::RCP<ADAPTER::FSIStructureWrapper>& ADAPTER::StructurePoroWrapper::structure_field()
+const Teuchos::RCP<Adapter::FSIStructureWrapper>& Adapter::StructurePoroWrapper::structure_field()
 {
   if (type_ == FieldWrapper::type_PoroField || type_ == FieldWrapper::type_StructureField)
     return structure_;
@@ -102,7 +102,7 @@ const Teuchos::RCP<ADAPTER::FSIStructureWrapper>& ADAPTER::StructurePoroWrapper:
 }
 
 //! return poro fluid_field
-const Teuchos::RCP<ADAPTER::FluidPoro>& ADAPTER::StructurePoroWrapper::fluid_field()
+const Teuchos::RCP<Adapter::FluidPoro>& Adapter::StructurePoroWrapper::fluid_field()
 {
   if (type_ == FieldWrapper::type_PoroField)
     return poro_->fluid_field();
@@ -113,7 +113,7 @@ const Teuchos::RCP<ADAPTER::FluidPoro>& ADAPTER::StructurePoroWrapper::fluid_fie
 }
 
 //! Insert FSI Condition Vector
-Teuchos::RCP<Epetra_Vector> ADAPTER::StructurePoroWrapper::InsertFSICondVector(
+Teuchos::RCP<Epetra_Vector> Adapter::StructurePoroWrapper::InsertFSICondVector(
     Teuchos::RCP<const Epetra_Vector> cond)
 {
   Teuchos::RCP<Epetra_Vector> tmpcond;
@@ -134,7 +134,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructurePoroWrapper::InsertFSICondVector(
 }
 
 //! Recover Lagrange Multiplier during iteration (does nothing for structure)
-void ADAPTER::StructurePoroWrapper::recover_lagrange_multiplier_after_newton_step(
+void Adapter::StructurePoroWrapper::recover_lagrange_multiplier_after_newton_step(
     Teuchos::RCP<Epetra_Vector> iterinc)
 {
   if (type_ == FieldWrapper::type_PoroField)

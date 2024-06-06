@@ -17,14 +17,14 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::MembraneLine2Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneLine2Type::Create(
     const int id, const int owner)
 {
   // return Teuchos::rcp( new MembraneLine( id, owner ) );
   return Teuchos::null;
 }
 
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::MembraneLine3Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneLine3Type::Create(
     const int id, const int owner)
 {
   // return Teuchos::rcp( new MembraneLine( id, owner ) );
@@ -35,42 +35,42 @@ Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::MembraneLine3Type::Create(
  |  constructor (public)                                          fbraeu 06/16 |
  |  id          (in)  this element's global id                                 |
  *-----------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::Membrane<distype>::Membrane(int id, int owner)
-    : CORE::Elements::Element(id, owner),
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::Membrane<distype>::Membrane(int id, int owner)
+    : Core::Elements::Element(id, owner),
       thickness_(0.0),
       cur_thickness_(0),
       planetype_(plane_stress),
-      intpoints_(CORE::FE::GaussRule2D::tri_3point)
+      intpoints_(Core::FE::GaussRule2D::tri_3point)
 {
   switch (distype)
   {
-    case CORE::FE::CellType::tri3:
+    case Core::FE::CellType::tri3:
     {
-      CORE::FE::GaussRule2D gaussrule = CORE::FE::GaussRule2D::tri_3point;
+      Core::FE::GaussRule2D gaussrule = Core::FE::GaussRule2D::tri_3point;
       // get gauss integration points
-      intpoints_ = CORE::FE::IntegrationPoints2D(gaussrule);
+      intpoints_ = Core::FE::IntegrationPoints2D(gaussrule);
       break;
     }
-    case CORE::FE::CellType::tri6:
+    case Core::FE::CellType::tri6:
     {
-      CORE::FE::GaussRule2D gaussrule = CORE::FE::GaussRule2D::tri_6point;
+      Core::FE::GaussRule2D gaussrule = Core::FE::GaussRule2D::tri_6point;
       // get gauss integration points
-      intpoints_ = CORE::FE::IntegrationPoints2D(gaussrule);
+      intpoints_ = Core::FE::IntegrationPoints2D(gaussrule);
       break;
     }
-    case CORE::FE::CellType::quad4:
+    case Core::FE::CellType::quad4:
     {
-      CORE::FE::GaussRule2D gaussrule = CORE::FE::GaussRule2D::quad_4point;
+      Core::FE::GaussRule2D gaussrule = Core::FE::GaussRule2D::quad_4point;
       // get gauss integration points
-      intpoints_ = CORE::FE::IntegrationPoints2D(gaussrule);
+      intpoints_ = Core::FE::IntegrationPoints2D(gaussrule);
       break;
     }
-    case CORE::FE::CellType::quad9:
+    case Core::FE::CellType::quad9:
     {
-      CORE::FE::GaussRule2D gaussrule = CORE::FE::GaussRule2D::quad_9point;
+      Core::FE::GaussRule2D gaussrule = Core::FE::GaussRule2D::quad_9point;
       // get gauss integration points
-      intpoints_ = CORE::FE::IntegrationPoints2D(gaussrule);
+      intpoints_ = Core::FE::IntegrationPoints2D(gaussrule);
       break;
     }
     default:
@@ -85,9 +85,9 @@ DRT::ELEMENTS::Membrane<distype>::Membrane(int id, int owner)
  |  copy-constructor (public)                                     fbraeu 06/16 |
  |  id               (in)  this element's global id                            |
  *-----------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::Membrane<distype>::Membrane(const DRT::ELEMENTS::Membrane<distype>& old)
-    : CORE::Elements::Element(old),
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::Membrane<distype>::Membrane(const Discret::ELEMENTS::Membrane<distype>& old)
+    : Core::Elements::Element(old),
       thickness_(old.thickness_),
       cur_thickness_(old.cur_thickness_),
       planetype_(old.planetype_),
@@ -101,10 +101,11 @@ DRT::ELEMENTS::Membrane<distype>::Membrane(const DRT::ELEMENTS::Membrane<distype
  |  Deep copy this instance of Membrane and return pointer to it (public) |
  |                                                           fbraeu 06/16 |
  *------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-CORE::Elements::Element* DRT::ELEMENTS::Membrane<distype>::Clone() const
+template <Core::FE::CellType distype>
+Core::Elements::Element* Discret::ELEMENTS::Membrane<distype>::Clone() const
 {
-  DRT::ELEMENTS::Membrane<distype>* newelement = new DRT::ELEMENTS::Membrane<distype>(*this);
+  Discret::ELEMENTS::Membrane<distype>* newelement =
+      new Discret::ELEMENTS::Membrane<distype>(*this);
   return newelement;
 }
 
@@ -112,8 +113,8 @@ CORE::Elements::Element* DRT::ELEMENTS::Membrane<distype>::Clone() const
  |                                                             (public) |
  |                                                         fbraeu 06/16 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-CORE::FE::CellType DRT::ELEMENTS::Membrane<distype>::Shape() const
+template <Core::FE::CellType distype>
+Core::FE::CellType Discret::ELEMENTS::Membrane<distype>::Shape() const
 {
   return distype;
 }
@@ -122,20 +123,20 @@ CORE::FE::CellType DRT::ELEMENTS::Membrane<distype>::Shape() const
  |  Return number of lines of this element                     (public) |
  |                                                         fbraeu 06/16 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::Membrane<distype>::NumLine() const
+template <Core::FE::CellType distype>
+int Discret::ELEMENTS::Membrane<distype>::NumLine() const
 {
-  return CORE::FE::getNumberOfElementLines(distype);
+  return Core::FE::getNumberOfElementLines(distype);
 }
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  |                                                         fbraeu 06/16 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Membrane<distype>::Pack(CORE::COMM::PackBuffer& data) const
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::Membrane<distype>::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -158,12 +159,12 @@ void DRT::ELEMENTS::Membrane<distype>::Pack(CORE::COMM::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                         fbraeu 06/16 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Membrane<distype>::Unpack(const std::vector<char>& data)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::Membrane<distype>::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -183,36 +184,37 @@ void DRT::ELEMENTS::Membrane<distype>::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  return solid material (public)                         sfuchs 05/17 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-Teuchos::RCP<MAT::So3Material> DRT::ELEMENTS::Membrane<distype>::SolidMaterial(int nummat) const
+template <Core::FE::CellType distype>
+Teuchos::RCP<Mat::So3Material> Discret::ELEMENTS::Membrane<distype>::SolidMaterial(int nummat) const
 {
-  return Teuchos::rcp_dynamic_cast<MAT::So3Material>(
-      CORE::Elements::Element::Material(nummat), true);
+  return Teuchos::rcp_dynamic_cast<Mat::So3Material>(
+      Core::Elements::Element::Material(nummat), true);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Membrane<distype>::set_params_interface_ptr(const Teuchos::ParameterList& p)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::Membrane<distype>::set_params_interface_ptr(const Teuchos::ParameterList& p)
 {
   if (p.isParameter("interface"))
-    interface_ptr_ = p.get<Teuchos::RCP<CORE::Elements::ParamsInterface>>("interface");
+    interface_ptr_ = p.get<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface");
   else
     interface_ptr_ = Teuchos::null;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-Teuchos::RCP<CORE::Elements::ParamsInterface> DRT::ELEMENTS::Membrane<distype>::ParamsInterfacePtr()
+template <Core::FE::CellType distype>
+Teuchos::RCP<Core::Elements::ParamsInterface>
+Discret::ELEMENTS::Membrane<distype>::ParamsInterfacePtr()
 {
   return interface_ptr_;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-STR::ELEMENTS::ParamsInterface& DRT::ELEMENTS::Membrane<distype>::str_params_interface()
+template <Core::FE::CellType distype>
+STR::ELEMENTS::ParamsInterface& Discret::ELEMENTS::Membrane<distype>::str_params_interface()
 {
   if (not IsParamsInterface()) FOUR_C_THROW("The interface ptr is not set!");
   return *(Teuchos::rcp_dynamic_cast<STR::ELEMENTS::ParamsInterface>(interface_ptr_, true));
@@ -221,11 +223,11 @@ STR::ELEMENTS::ParamsInterface& DRT::ELEMENTS::Membrane<distype>::str_params_int
 /*----------------------------------------------------------------------*
  |  print this element (public)                            fbraeu 06/16 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Membrane<distype>::Print(std::ostream& os) const
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::Membrane<distype>::Print(std::ostream& os) const
 {
   os << "Membrane ";
-  os << " discretization type: " << CORE::FE::CellTypeToString(distype).c_str();
+  os << " discretization type: " << Core::FE::CellTypeToString(distype).c_str();
   Element::Print(os);
   std::cout << std::endl;
   return;
@@ -234,25 +236,25 @@ void DRT::ELEMENTS::Membrane<distype>::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                           fbraeu 06/16 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Membrane<distype>::Lines()
+template <Core::FE::CellType distype>
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Membrane<distype>::Lines()
 {
-  return CORE::COMM::ElementBoundaryFactory<MembraneLine<distype>, Membrane<distype>>(
-      CORE::COMM::buildLines, *this);
+  return Core::Communication::ElementBoundaryFactory<MembraneLine<distype>, Membrane<distype>>(
+      Core::Communication::buildLines, *this);
 }
 
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                        fbraeu 06/16 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Membrane<distype>::Surfaces()
+template <Core::FE::CellType distype>
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Membrane<distype>::Surfaces()
 {
   return {Teuchos::rcpFromRef(*this)};
 }
 
-template class DRT::ELEMENTS::Membrane<CORE::FE::CellType::tri3>;
-template class DRT::ELEMENTS::Membrane<CORE::FE::CellType::tri6>;
-template class DRT::ELEMENTS::Membrane<CORE::FE::CellType::quad4>;
-template class DRT::ELEMENTS::Membrane<CORE::FE::CellType::quad9>;
+template class Discret::ELEMENTS::Membrane<Core::FE::CellType::tri3>;
+template class Discret::ELEMENTS::Membrane<Core::FE::CellType::tri6>;
+template class Discret::ELEMENTS::Membrane<Core::FE::CellType::quad4>;
+template class Discret::ELEMENTS::Membrane<Core::FE::CellType::quad9>;
 
 FOUR_C_NAMESPACE_CLOSE

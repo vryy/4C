@@ -23,14 +23,14 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace CORE::GEO
+namespace Core::Geo
 {
   //! template of extended aligned bounding boxes
-  template <int ndim, CORE::FE::CellType distype, class M>
-  static inline CORE::LINALG::Matrix<3, 2> computeFastXAABBT(
-      const M& xyze, const CORE::GEO::EleGeoType eleGeoType)
+  template <int ndim, Core::FE::CellType distype, class M>
+  static inline Core::LinAlg::Matrix<3, 2> computeFastXAABBT(
+      const M& xyze, const Core::Geo::EleGeoType eleGeoType)
   {
-    CORE::LINALG::Matrix<3, 2> XAABB;
+    Core::LinAlg::Matrix<3, 2> XAABB;
 
     // first node
     for (int dim = 0; dim < 3; ++dim)
@@ -39,7 +39,7 @@ namespace CORE::GEO
       XAABB(dim, 1) = xyze(dim, 0) + TOL7;
     }
     // remaining nodes
-    const int numNodes = CORE::FE::num_nodes<distype>;
+    const int numNodes = Core::FE::num_nodes<distype>;
     for (int i = 1; i < numNodes; ++i)
       for (int dim = 0; dim < ndim; dim++)
       {
@@ -59,46 +59,46 @@ namespace CORE::GEO
   \return extended axis-aligned bounding box  (XAABB) for an element
    */
   template <class M>
-  CORE::LINALG::Matrix<3, 2> computeFastXAABB(
-      CORE::FE::CellType distype, const M& xyze, const CORE::GEO::EleGeoType eleGeoType)
+  Core::LinAlg::Matrix<3, 2> computeFastXAABB(
+      Core::FE::CellType distype, const M& xyze, const Core::Geo::EleGeoType eleGeoType)
   {
     switch (distype)
     {
-      case CORE::FE::CellType::hex8:
-        return computeFastXAABBT<3, CORE::FE::CellType::hex8>(xyze, eleGeoType);
-      case CORE::FE::CellType::quad4:
-        return computeFastXAABBT<3, CORE::FE::CellType::quad4>(xyze, eleGeoType);
-      case CORE::FE::CellType::hex20:
-        return computeFastXAABBT<3, CORE::FE::CellType::hex20>(xyze, eleGeoType);
-      case CORE::FE::CellType::hex27:
-        return computeFastXAABBT<3, CORE::FE::CellType::hex27>(xyze, eleGeoType);
-      case CORE::FE::CellType::tet4:
-        return computeFastXAABBT<3, CORE::FE::CellType::tet4>(xyze, eleGeoType);
-      case CORE::FE::CellType::tet10:
-        return computeFastXAABBT<3, CORE::FE::CellType::tet10>(xyze, eleGeoType);
-      case CORE::FE::CellType::line2:
-        return computeFastXAABBT<3, CORE::FE::CellType::line2>(xyze, eleGeoType);
-      case CORE::FE::CellType::line3:
-        return computeFastXAABBT<3, CORE::FE::CellType::line3>(xyze, eleGeoType);
-      case CORE::FE::CellType::tri3:
-        return computeFastXAABBT<3, CORE::FE::CellType::tri3>(xyze, eleGeoType);
-      case CORE::FE::CellType::tri6:
-        return computeFastXAABBT<3, CORE::FE::CellType::tri6>(xyze, eleGeoType);
-      case CORE::FE::CellType::quad8:
-        return computeFastXAABBT<3, CORE::FE::CellType::quad8>(xyze, eleGeoType);
-      case CORE::FE::CellType::quad9:
-        return computeFastXAABBT<3, CORE::FE::CellType::quad9>(xyze, eleGeoType);
-      case CORE::FE::CellType::pyramid5:
-        return computeFastXAABBT<3, CORE::FE::CellType::pyramid5>(xyze, eleGeoType);
+      case Core::FE::CellType::hex8:
+        return computeFastXAABBT<3, Core::FE::CellType::hex8>(xyze, eleGeoType);
+      case Core::FE::CellType::quad4:
+        return computeFastXAABBT<3, Core::FE::CellType::quad4>(xyze, eleGeoType);
+      case Core::FE::CellType::hex20:
+        return computeFastXAABBT<3, Core::FE::CellType::hex20>(xyze, eleGeoType);
+      case Core::FE::CellType::hex27:
+        return computeFastXAABBT<3, Core::FE::CellType::hex27>(xyze, eleGeoType);
+      case Core::FE::CellType::tet4:
+        return computeFastXAABBT<3, Core::FE::CellType::tet4>(xyze, eleGeoType);
+      case Core::FE::CellType::tet10:
+        return computeFastXAABBT<3, Core::FE::CellType::tet10>(xyze, eleGeoType);
+      case Core::FE::CellType::line2:
+        return computeFastXAABBT<3, Core::FE::CellType::line2>(xyze, eleGeoType);
+      case Core::FE::CellType::line3:
+        return computeFastXAABBT<3, Core::FE::CellType::line3>(xyze, eleGeoType);
+      case Core::FE::CellType::tri3:
+        return computeFastXAABBT<3, Core::FE::CellType::tri3>(xyze, eleGeoType);
+      case Core::FE::CellType::tri6:
+        return computeFastXAABBT<3, Core::FE::CellType::tri6>(xyze, eleGeoType);
+      case Core::FE::CellType::quad8:
+        return computeFastXAABBT<3, Core::FE::CellType::quad8>(xyze, eleGeoType);
+      case Core::FE::CellType::quad9:
+        return computeFastXAABBT<3, Core::FE::CellType::quad9>(xyze, eleGeoType);
+      case Core::FE::CellType::pyramid5:
+        return computeFastXAABBT<3, Core::FE::CellType::pyramid5>(xyze, eleGeoType);
       default:
-        std::cout << CORE::FE::CellTypeToString(distype) << std::endl;
+        std::cout << Core::FE::CellTypeToString(distype) << std::endl;
         FOUR_C_THROW("add your distype to this switch!");
     }
-    return CORE::LINALG::Matrix<3, 2>(true);
+    return Core::LinAlg::Matrix<3, 2>(true);
   }
 
 
-}  // namespace CORE::GEO
+}  // namespace Core::Geo
 
 
 FOUR_C_NAMESPACE_CLOSE

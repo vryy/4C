@@ -140,7 +140,7 @@ void EXODUS::ReadBCFile(const std::string& bcfile, std::vector<EXODUS::ElemDef>&
         EXODUS::CondDef cdef = EXODUS::ReadCdef(mesh_entity, id, actcond);
         switch (cdef.gtype)
         {
-          case CORE::Conditions::geometry_type_point:
+          case Core::Conditions::geometry_type_point:
           {
             if (eb_dp2Eid.find(id) != eb_dp2Eid.end())
               E_id = eb_dp2Eid.find(id)->second;
@@ -152,7 +152,7 @@ void EXODUS::ReadBCFile(const std::string& bcfile, std::vector<EXODUS::ElemDef>&
             }
             break;
           }
-          case CORE::Conditions::geometry_type_line:
+          case Core::Conditions::geometry_type_line:
           {
             if (eb_dl2Eid.find(id) != eb_dl2Eid.end())
               E_id = eb_dl2Eid.find(id)->second;
@@ -164,7 +164,7 @@ void EXODUS::ReadBCFile(const std::string& bcfile, std::vector<EXODUS::ElemDef>&
             }
             break;
           }
-          case CORE::Conditions::geometry_type_surface:
+          case Core::Conditions::geometry_type_surface:
           {
             if (eb_ds2Eid.find(id) != eb_ds2Eid.end())
               E_id = eb_ds2Eid.find(id)->second;
@@ -176,7 +176,7 @@ void EXODUS::ReadBCFile(const std::string& bcfile, std::vector<EXODUS::ElemDef>&
             }
             break;
           }
-          case CORE::Conditions::geometry_type_volume:
+          case Core::Conditions::geometry_type_volume:
           {
             if (eb_dv2Eid.find(id) != eb_dv2Eid.end())
               E_id = eb_dv2Eid.find(id)->second;
@@ -188,7 +188,7 @@ void EXODUS::ReadBCFile(const std::string& bcfile, std::vector<EXODUS::ElemDef>&
             }
             break;
           }
-          case CORE::Conditions::geometry_type_no_geom:
+          case Core::Conditions::geometry_type_no_geom:
             E_id = 0;
             break;
           default:
@@ -209,7 +209,7 @@ void EXODUS::ReadBCFile(const std::string& bcfile, std::vector<EXODUS::ElemDef>&
       EXODUS::CondDef cdef = EXODUS::ReadCdef(mesh_entity, id, actcond);
       switch (cdef.gtype)
       {
-        case CORE::Conditions::geometry_type_point:
+        case Core::Conditions::geometry_type_point:
         {
           if (ns_dp2Eid.find(id) != ns_dp2Eid.end())
             E_id = ns_dp2Eid.find(id)->second;
@@ -221,7 +221,7 @@ void EXODUS::ReadBCFile(const std::string& bcfile, std::vector<EXODUS::ElemDef>&
           }
           break;
         }
-        case CORE::Conditions::geometry_type_line:
+        case Core::Conditions::geometry_type_line:
         {
           if (ns_dl2Eid.find(id) != ns_dl2Eid.end())
             E_id = ns_dl2Eid.find(id)->second;
@@ -233,7 +233,7 @@ void EXODUS::ReadBCFile(const std::string& bcfile, std::vector<EXODUS::ElemDef>&
           }
           break;
         }
-        case CORE::Conditions::geometry_type_surface:
+        case Core::Conditions::geometry_type_surface:
         {
           if (ns_ds2Eid.find(id) != ns_ds2Eid.end())
             E_id = ns_ds2Eid.find(id)->second;
@@ -245,7 +245,7 @@ void EXODUS::ReadBCFile(const std::string& bcfile, std::vector<EXODUS::ElemDef>&
           }
           break;
         }
-        case CORE::Conditions::geometry_type_volume:
+        case Core::Conditions::geometry_type_volume:
         {
           if (ns_dv2Eid.find(id) != ns_dv2Eid.end())
             E_id = ns_dv2Eid.find(id)->second;
@@ -257,7 +257,7 @@ void EXODUS::ReadBCFile(const std::string& bcfile, std::vector<EXODUS::ElemDef>&
           }
           break;
         }
-        case CORE::Conditions::geometry_type_no_geom:
+        case Core::Conditions::geometry_type_no_geom:
           E_id = 0;
           break;
         default:
@@ -339,27 +339,27 @@ EXODUS::CondDef EXODUS::ReadCdef(
   cdef.desc = description;
 
   // figure out geometry type
-  cdef.gtype = CORE::Conditions::geometry_type_no_geom;  // default
+  cdef.gtype = Core::Conditions::geometry_type_no_geom;  // default
   size_t found = secname.find("POINT");
   if (found != std::string::npos)
   {
-    cdef.gtype = CORE::Conditions::geometry_type_point;
+    cdef.gtype = Core::Conditions::geometry_type_point;
     return cdef;
   }
   found = secname.find("LINE");
   if (found != std::string::npos)
   {
-    cdef.gtype = CORE::Conditions::geometry_type_line;
+    cdef.gtype = Core::Conditions::geometry_type_line;
     return cdef;
   }
   found = secname.find("SURF");
   if (found != std::string::npos)
   {
-    cdef.gtype = CORE::Conditions::geometry_type_surface;
+    cdef.gtype = Core::Conditions::geometry_type_surface;
     return cdef;
   }
   found = secname.find("VOL");
-  if (found != std::string::npos) cdef.gtype = CORE::Conditions::geometry_type_volume;
+  if (found != std::string::npos) cdef.gtype = Core::Conditions::geometry_type_volume;
 
   return cdef;
 }

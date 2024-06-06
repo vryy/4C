@@ -22,20 +22,20 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace CORE::GEO
+namespace Core::Geo
 {
   //! map position from eta^boundary to xi^domain space
-  inline void mapEtaBToXiD(const CORE::GEO::BoundaryIntCell& cell,
-      const CORE::LINALG::Matrix<2, 1>& pos_eta_boundary,
-      CORE::LINALG::Matrix<3, 1>& pos_xsi_domain)
+  inline void mapEtaBToXiD(const Core::Geo::BoundaryIntCell& cell,
+      const Core::LinAlg::Matrix<2, 1>& pos_eta_boundary,
+      Core::LinAlg::Matrix<3, 1>& pos_xsi_domain)
   {
     // get cell node coordinates in xi_domain
-    const CORE::LINALG::SerialDenseMatrix& xyze_cell(cell.cell_nodal_pos_xi_domain());
-    CORE::GEO::elementToCurrentCoordinates(
+    const Core::LinAlg::SerialDenseMatrix& xyze_cell(cell.cell_nodal_pos_xi_domain());
+    Core::Geo::elementToCurrentCoordinates(
         cell.Shape(), xyze_cell, pos_eta_boundary, pos_xsi_domain);
     return;
   }
-}  // namespace CORE::GEO
+}  // namespace Core::Geo
 
 FOUR_C_NAMESPACE_CLOSE
 

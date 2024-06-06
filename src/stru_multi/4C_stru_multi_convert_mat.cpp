@@ -14,9 +14,9 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void STRUMULTI::MicroStatic::ConvertMat(const Epetra_MultiVector& cmatpf,
-    const CORE::LINALG::Matrix<3, 3>& F_inv, const CORE::LINALG::Matrix<6, 1>& S,
-    CORE::LINALG::Matrix<6, 6>& cmat)
+void MultiScale::MicroStatic::ConvertMat(const Epetra_MultiVector& cmatpf,
+    const Core::LinAlg::Matrix<3, 3>& F_inv, const Core::LinAlg::Matrix<6, 1>& S,
+    Core::LinAlg::Matrix<6, 6>& cmat)
 {
   // For details concerning the conversion of the constitutive tensor
   // relating first Piola Kirchhoff stresses and deformation gradient

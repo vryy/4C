@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------*/
 /*! \file
 
-\brief A collection of helper methods for namespace DRT
+\brief A collection of helper methods for namespace Discret
 
 \level 0
 
@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  allocate an instance of a specific impl. of ParObject (public) mwgee 12/06|
  *----------------------------------------------------------------------*/
-CORE::COMM::ParObject* CORE::COMM::Factory(const std::vector<char>& data)
+Core::Communication::ParObject* Core::Communication::Factory(const std::vector<char>& data)
 {
   return ParObjectFactory::Instance().Create(data);
 }
@@ -26,7 +26,7 @@ CORE::COMM::ParObject* CORE::COMM::Factory(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  allocate an element of a specific type (public)          mwgee 03|07|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::Elements::Element> CORE::COMM::Factory(
+Teuchos::RCP<Core::Elements::Element> Core::Communication::Factory(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   return ParObjectFactory::Instance().Create(eletype, eledistype, id, owner);

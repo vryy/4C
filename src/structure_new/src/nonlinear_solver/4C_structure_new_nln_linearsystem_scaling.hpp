@@ -31,21 +31,21 @@ FOUR_C_NAMESPACE_OPEN
 // forward declarations
 namespace STR
 {
-  namespace TIMINT
+  namespace TimeInt
   {
     class BaseDataSDyn;
     class BaseDataGlobalState;
-  }  // namespace TIMINT
+  }  // namespace TimeInt
 }  // namespace STR
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
 }
 
 namespace STR
 {
-  namespace NLN
+  namespace Nln
   {
     namespace LinSystem
     {
@@ -54,7 +54,7 @@ namespace STR
        public:
         //! Constructor.
         StcScaling(
-            const STR::TIMINT::BaseDataSDyn& DataSDyn, STR::TIMINT::BaseDataGlobalState& GState);
+            const STR::TimeInt::BaseDataSDyn& DataSDyn, STR::TimeInt::BaseDataGlobalState& GState);
 
 
         //! Scales the linear system.
@@ -65,19 +65,19 @@ namespace STR
 
        private:
         //! stiffness matrix after scaling
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_scaled_;
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_scaled_;
 
         //! scale thickness of shells
-        const enum INPAR::STR::StcScale stcscale_;
+        const enum Inpar::STR::StcScale stcscale_;
 
         //! number of layers for multilayered case
         const int stclayer_;
 
         //! scaling matrix for STC
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> stcmat_;
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> stcmat_;
       };
     }  // namespace LinSystem
-  }    // namespace NLN
+  }    // namespace Nln
 }  // namespace STR
 
 FOUR_C_NAMESPACE_CLOSE

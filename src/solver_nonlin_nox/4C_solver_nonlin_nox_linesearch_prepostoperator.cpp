@@ -16,14 +16,14 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::LineSearch::PrePostOperator::PrePostOperator(Teuchos::ParameterList& linesearchSublist)
+NOX::Nln::LineSearch::PrePostOperator::PrePostOperator(Teuchos::ParameterList& linesearchSublist)
 {
   reset(linesearchSublist);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::LineSearch::PrePostOperator::reset(Teuchos::ParameterList& linesearchSublist)
+void NOX::Nln::LineSearch::PrePostOperator::reset(Teuchos::ParameterList& linesearchSublist)
 {
   havePrePostOperator_ = false;
 
@@ -40,7 +40,7 @@ void NOX::NLN::LineSearch::PrePostOperator::reset(Teuchos::ParameterList& linese
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::LineSearch::PrePostOperator::map& NOX::NLN::LineSearch::PrePostOperator::GetMap(
+NOX::Nln::LineSearch::PrePostOperator::map& NOX::Nln::LineSearch::PrePostOperator::GetMap(
     Teuchos::ParameterList& p_ls_list)
 {
   Teuchos::RCP<map>& mapptr =

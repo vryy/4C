@@ -20,31 +20,31 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-CORE::UTILS::ResultTest::ResultTest(std::string name) : myname_(std::move(name)) {}
+Core::UTILS::ResultTest::ResultTest(std::string name) : myname_(std::move(name)) {}
 
-void CORE::UTILS::ResultTest::TestElement(INPUT::LineDefinition& res, int& nerr, int& test_count)
+void Core::UTILS::ResultTest::TestElement(Input::LineDefinition& res, int& nerr, int& test_count)
 {
   FOUR_C_THROW("no element test available");
 }
 
-void CORE::UTILS::ResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int& test_count)
+void Core::UTILS::ResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test_count)
 {
   FOUR_C_THROW("no node test available");
 }
 
-void CORE::UTILS::ResultTest::test_node_on_geometry(INPUT::LineDefinition& res, int& nerr,
+void Core::UTILS::ResultTest::test_node_on_geometry(Input::LineDefinition& res, int& nerr,
     int& test_count, const std::vector<std::vector<std::vector<int>>>& nodeset)
 {
   FOUR_C_THROW("no geometry test available");
 }
 
-void CORE::UTILS::ResultTest::TestSpecial(INPUT::LineDefinition& res, int& nerr, int& test_count)
+void Core::UTILS::ResultTest::TestSpecial(Input::LineDefinition& res, int& nerr, int& test_count)
 {
   FOUR_C_THROW("no special case test available");
 }
 
-void CORE::UTILS::ResultTest::TestSpecial(
-    INPUT::LineDefinition& res, int& nerr, int& test_count, int& unevaluated_test_count)
+void Core::UTILS::ResultTest::TestSpecial(
+    Input::LineDefinition& res, int& nerr, int& test_count, int& unevaluated_test_count)
 {
   TestSpecial(res, nerr, test_count);
 }
@@ -65,8 +65,8 @@ void CORE::UTILS::ResultTest::TestSpecial(
  \date 06/04
  */
 /*----------------------------------------------------------------------*/
-int CORE::UTILS::ResultTest::compare_values(
-    double actresult, std::string type, INPUT::LineDefinition& res)
+int Core::UTILS::ResultTest::compare_values(
+    double actresult, std::string type, Input::LineDefinition& res)
 {
   int gid;
 
@@ -136,12 +136,12 @@ int CORE::UTILS::ResultTest::compare_values(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool CORE::UTILS::ResultTest::Match(INPUT::LineDefinition& res) { return res.HaveNamed(myname_); }
+bool Core::UTILS::ResultTest::Match(Input::LineDefinition& res) { return res.HaveNamed(myname_); }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::UTILS::ResultTestManager::AddFieldTest(Teuchos::RCP<ResultTest> test)
+void Core::UTILS::ResultTestManager::AddFieldTest(Teuchos::RCP<ResultTest> test)
 {
   fieldtest_.push_back(test);
 }
@@ -149,14 +149,14 @@ void CORE::UTILS::ResultTestManager::AddFieldTest(Teuchos::RCP<ResultTest> test)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::UTILS::ResultTestManager::TestAll(const Epetra_Comm& comm)
+void Core::UTILS::ResultTestManager::TestAll(const Epetra_Comm& comm)
 {
   int nerr = 0;                      // number of tests with errors
   int test_count = 0;                // number of tests performed
   int uneval_test_count = 0;         // number of unevaluated tests
   const int size = results_.size();  // total number of tests
 
-  if (comm.MyPID() == 0) CORE::IO::cout << "\nChecking results of " << size << " tests:\n";
+  if (comm.MyPID() == 0) Core::IO::cout << "\nChecking results of " << size << " tests:\n";
 
   for (auto& result : results_)
   {
@@ -181,7 +181,7 @@ void CORE::UTILS::ResultTestManager::TestAll(const Epetra_Comm& comm)
   int guneval_test_count = 0;
   comm.SumAll(&uneval_test_count, &guneval_test_count, 1);
   if (guneval_test_count > 0 and comm.MyPID() == 0)
-    CORE::IO::cout << guneval_test_count << " tests stay unevaluated" << CORE::IO::endl;
+    Core::IO::cout << guneval_test_count << " tests stay unevaluated" << Core::IO::endl;
 
   // determine the total number of errors
   int numerr;
@@ -210,19 +210,19 @@ void CORE::UTILS::ResultTestManager::TestAll(const Epetra_Comm& comm)
     }
   }
 
-  if (comm.MyPID() == 0) CORE::IO::cout << "\nOK (" << count << ")\n";
+  if (comm.MyPID() == 0) Core::IO::cout << "\nOK (" << count << ")\n";
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::UTILS::ResultTestManager::SetParsedLines(std::vector<INPUT::LineDefinition> results)
+void Core::UTILS::ResultTestManager::SetParsedLines(std::vector<Input::LineDefinition> results)
 {
   results_ = std::move(results);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::UTILS::ResultTestManager::set_node_set(
+void Core::UTILS::ResultTestManager::set_node_set(
     const std::vector<std::vector<std::vector<int>>>& nodeset)
 {
   nodeset_ = std::move(nodeset);

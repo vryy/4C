@@ -25,18 +25,18 @@ namespace
 {
   TEST(LinalgDenseMatrixDeterminantTest, 2x2Determinant)
   {
-    CORE::LINALG::Matrix<2, 2, double> A;
+    Core::LinAlg::Matrix<2, 2, double> A;
     A(0, 0) = 0.72903241936703114203;
     A(1, 0) = 0.81862230026150939335;
     A(0, 1) = 0.32707405507901372465;
     A(1, 1) = 0.0052737129228371719370;
 
-    EXPECT_NEAR(CORE::LINALG::Determinant(A), -0.2639054076334587, 1e-14);
+    EXPECT_NEAR(Core::LinAlg::Determinant(A), -0.2639054076334587, 1e-14);
   }
 
   TEST(LinalgDenseMatrixDeterminantTest, 3x3Determinant)
   {
-    CORE::LINALG::Matrix<3, 3, double> A;
+    Core::LinAlg::Matrix<3, 3, double> A;
     A(0, 0) = 0.72903241936703114203;
     A(1, 0) = 0.0052737129228371719370;
     A(2, 0) = 0.36847164343389089096;
@@ -47,12 +47,12 @@ namespace
     A(1, 2) = 0.64019842179333806573;
     A(2, 2) = 0.69378923027976465858;
 
-    EXPECT_NEAR(CORE::LINALG::Determinant(A), -0.1008304741716571, 1e-14);
+    EXPECT_NEAR(Core::LinAlg::Determinant(A), -0.1008304741716571, 1e-14);
   }
 
   TEST(LinalgDenseMatrixDeterminantTest, 4x4Determinant)
   {
-    CORE::LINALG::Matrix<4, 4, double> A;
+    Core::LinAlg::Matrix<4, 4, double> A;
     A(0, 0) = 0.72903241936703114203;
     A(1, 0) = 0.87570663114228933311;
     A(2, 0) = 0.69378923027976465858;
@@ -70,23 +70,23 @@ namespace
     A(2, 3) = 0.024003735765356129168;
     A(3, 3) = 0.27465069811053651449;
 
-    EXPECT_NEAR(CORE::LINALG::Determinant(A), -0.01620776397174742, 1e-14);
+    EXPECT_NEAR(Core::LinAlg::Determinant(A), -0.01620776397174742, 1e-14);
   }
 
   TEST(LinalgDenseMatrixDeterminantTest, 2x2DeterminantLU)
   {
-    CORE::LINALG::SerialDenseMatrix A(2, 2, true);
+    Core::LinAlg::SerialDenseMatrix A(2, 2, true);
     A(0, 0) = 0.72903241936703114203;
     A(1, 0) = 0.81862230026150939335;
     A(0, 1) = 0.32707405507901372465;
     A(1, 1) = 0.0052737129228371719370;
 
-    EXPECT_NEAR(CORE::LINALG::DeterminantLU(A), -0.2639054076334587, 1e-14);
+    EXPECT_NEAR(Core::LinAlg::DeterminantLU(A), -0.2639054076334587, 1e-14);
   }
 
   TEST(LinalgDenseMatrixDeterminantTest, 3x3DeterminantLU)
   {
-    CORE::LINALG::SerialDenseMatrix A(3, 3, true);
+    Core::LinAlg::SerialDenseMatrix A(3, 3, true);
     A(0, 0) = 0.72903241936703114203;
     A(1, 0) = 0.0052737129228371719370;
     A(2, 0) = 0.36847164343389089096;
@@ -97,12 +97,12 @@ namespace
     A(1, 2) = 0.64019842179333806573;
     A(2, 2) = 0.69378923027976465858;
 
-    EXPECT_NEAR(CORE::LINALG::DeterminantLU(A), -0.1008304741716571, 1e-14);
+    EXPECT_NEAR(Core::LinAlg::DeterminantLU(A), -0.1008304741716571, 1e-14);
   }
 
   TEST(LinalgDenseMatrixDeterminantTest, 4x4DeterminantLU)
   {
-    CORE::LINALG::SerialDenseMatrix A(4, 4, true);
+    Core::LinAlg::SerialDenseMatrix A(4, 4, true);
     A(0, 0) = 0.72903241936703114203;
     A(1, 0) = 0.87570663114228933311;
     A(2, 0) = 0.69378923027976465858;
@@ -120,7 +120,7 @@ namespace
     A(2, 3) = 0.024003735765356129168;
     A(3, 3) = 0.27465069811053651449;
 
-    EXPECT_NEAR(CORE::LINALG::DeterminantLU(A), -0.01620776397174742, 1e-14);
+    EXPECT_NEAR(Core::LinAlg::DeterminantLU(A), -0.01620776397174742, 1e-14);
   }
 }  // namespace
 

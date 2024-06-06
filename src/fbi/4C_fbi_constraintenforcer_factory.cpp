@@ -24,16 +24,16 @@
 FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<ADAPTER::FBIConstraintenforcer> ADAPTER::ConstraintEnforcerFactory::CreateEnforcer(
+Teuchos::RCP<Adapter::FBIConstraintenforcer> Adapter::ConstraintEnforcerFactory::CreateEnforcer(
     const Teuchos::ParameterList& fsidyn, const Teuchos::ParameterList& fbidyn)
 {
-  Teuchos::RCP<ADAPTER::FBIConstraintBridge> bridge =
-      Teuchos::rcp(new ADAPTER::FBIConstraintBridgePenalty());
+  Teuchos::RCP<Adapter::FBIConstraintBridge> bridge =
+      Teuchos::rcp(new Adapter::FBIConstraintBridgePenalty());
 
   Teuchos::RCP<FBI::FBIGeometryCoupler> coupler =
       FBI::GeometryCouplerFactory::create_geometry_coupler(fbidyn);
 
-  return Teuchos::rcp(new ADAPTER::FBIPenaltyConstraintenforcer(bridge, coupler));
+  return Teuchos::rcp(new Adapter::FBIPenaltyConstraintenforcer(bridge, coupler));
 }
 
 FOUR_C_NAMESPACE_CLOSE

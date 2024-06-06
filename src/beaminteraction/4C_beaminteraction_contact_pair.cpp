@@ -45,7 +45,7 @@ BEAMINTERACTION::BeamContactPair::BeamContactPair()
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamContactPair::Init(
     const Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params_ptr,
-    std::vector<CORE::Elements::Element const*> elements)
+    std::vector<Core::Elements::Element const*> elements)
 {
   issetup_ = false;
 
@@ -69,15 +69,17 @@ void BEAMINTERACTION::BeamContactPair::Setup()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::BeamContactPair::Create(
-    std::vector<CORE::Elements::Element const*> const& ele_ptrs,
+    std::vector<Core::Elements::Element const*> const& ele_ptrs,
     const Teuchos::RCP<BEAMINTERACTION::BeamInteractionConditions>& beam_interaction_conditions_ptr)
 {
   // Check the type of the second element.
-  const bool other_is_beam = dynamic_cast<DRT::ELEMENTS::Beam3Base const*>(ele_ptrs[1]) != nullptr;
-  const bool other_is_solid = dynamic_cast<DRT::ELEMENTS::SoBase const*>(ele_ptrs[1]) != nullptr ||
-                              dynamic_cast<DRT::ELEMENTS::Solid const*>(ele_ptrs[1]) != nullptr;
+  const bool other_is_beam =
+      dynamic_cast<Discret::ELEMENTS::Beam3Base const*>(ele_ptrs[1]) != nullptr;
+  const bool other_is_solid =
+      dynamic_cast<Discret::ELEMENTS::SoBase const*>(ele_ptrs[1]) != nullptr ||
+      dynamic_cast<Discret::ELEMENTS::Solid const*>(ele_ptrs[1]) != nullptr;
   const bool other_is_sphere =
-      ele_ptrs[1]->ElementType() == DRT::ELEMENTS::RigidsphereType::Instance();
+      ele_ptrs[1]->ElementType() == Discret::ELEMENTS::RigidsphereType::Instance();
 
   if (other_is_beam or other_is_solid)
   {
@@ -90,8 +92,8 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::BeamContactPair:
     // numnodalvalues = 1: only positions as primary nodal DoFs ==> Lagrange interpolation
     // numnodalvalues = 2: positions AND tangents ==> Hermite interpolation
 
-    const DRT::ELEMENTS::Beam3Base* beamele1 =
-        dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele_ptrs[0]);
+    const Discret::ELEMENTS::Beam3Base* beamele1 =
+        dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele_ptrs[0]);
 
     const unsigned int numnodes_centerline = beamele1->NumCenterlineNodes();
     const unsigned int numnodalvalues = beamele1->hermite_centerline_interpolation() ? 2 : 1;

@@ -27,12 +27,12 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
-namespace ADAPTER
+namespace Adapter
 {
   class CouplingBase;
   class Coupling;
   class AleFluidWrapper;
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 namespace FSI
 {
@@ -41,7 +41,7 @@ namespace FSI
 
 /*----------------------------------------------------------------------------*/
 /* definition of classes */
-namespace ADAPTER
+namespace Adapter
 {
   /// fluid on ale
   class FluidAle : public FluidMovingBoundary
@@ -50,13 +50,13 @@ namespace ADAPTER
     FluidAle(const Teuchos::ParameterList& prbdyn, std::string condname);
 
     /// fluid field
-    const Teuchos::RCP<ADAPTER::Fluid>& fluid_field() override { return fluid_; }
+    const Teuchos::RCP<Adapter::Fluid>& fluid_field() override { return fluid_; }
 
     /// ale field
-    const Teuchos::RCP<ADAPTER::AleFluidWrapper>& ale_field() const { return ale_; }
+    const Teuchos::RCP<Adapter::AleFluidWrapper>& ale_field() const { return ale_; }
 
     /// discretization
-    Teuchos::RCP<DRT::Discretization> discretization() override;
+    Teuchos::RCP<Discret::Discretization> discretization() override;
 
     /// fluid interface
     Teuchos::RCP<FLD::UTILS::MapExtractor> const& Interface() const override
@@ -98,7 +98,7 @@ namespace ADAPTER
 
     Teuchos::RCP<Epetra_Vector> integrate_interface_shape() override;
 
-    Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() override;
+    Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() override;
 
    protected:
     //! @name Transfer helpers
@@ -127,29 +127,29 @@ namespace ADAPTER
     //@}
 
     /// coupling of fluid and ale (whole field)
-    Teuchos::RCP<CORE::ADAPTER::CouplingBase> coupfa_;
+    Teuchos::RCP<Core::Adapter::CouplingBase> coupfa_;
 
     /// coupling of fluid and ale (interface or volume...)
-    Teuchos::RCP<CORE::ADAPTER::CouplingBase> icoupfa_;
+    Teuchos::RCP<Core::Adapter::CouplingBase> icoupfa_;
 
     /// coupling of fluid and ale at the free surface
-    Teuchos::RCP<CORE::ADAPTER::Coupling> fscoupfa_;
+    Teuchos::RCP<Core::Adapter::Coupling> fscoupfa_;
 
     /// coupling of fluid and ale for the ale update condition
-    Teuchos::RCP<CORE::ADAPTER::Coupling> aucoupfa_;
+    Teuchos::RCP<Core::Adapter::Coupling> aucoupfa_;
 
    private:
     /// problem-specific Fluid-wrapper
-    Teuchos::RCP<ADAPTER::Fluid> fluid_;
+    Teuchos::RCP<Adapter::Fluid> fluid_;
 
     /// problem-specific ALE-wrapper
-    Teuchos::RCP<ADAPTER::AleFluidWrapper> ale_;
+    Teuchos::RCP<Adapter::AleFluidWrapper> ale_;
 
     /// problem specific time parameter list
     const Teuchos::ParameterList& timeparams_;
   };
 
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 FOUR_C_NAMESPACE_CLOSE
 

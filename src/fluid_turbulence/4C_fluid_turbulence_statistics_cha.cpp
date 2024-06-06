@@ -34,7 +34,7 @@ FOUR_C_NAMESPACE_OPEN
                   Standard Constructor (public)
 
   ---------------------------------------------------------------------*/
-FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discretization> actdis,
+FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<Discret::Discretization> actdis,
     bool alefluid, Teuchos::RCP<Epetra_Vector> dispnp, Teuchos::ParameterList& params,
     const std::string& statistics_outfilename, bool subgrid_dissipation,
     Teuchos::RCP<FLD::XWall> xwallobj)
@@ -46,7 +46,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
       statistics_outfilename_(statistics_outfilename),
       subgrid_dissipation_(subgrid_dissipation),
       inflowchannel_(
-          CORE::UTILS::IntegralValue<int>(params_.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW")),
+          Core::UTILS::IntegralValue<int>(params_.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW")),
       inflowmax_(params_.sublist("TURBULENT INFLOW").get<double>("INFLOW_CHA_SIDE", 0.0)),
       dens_(1.0),
       visc_(1.0),
@@ -84,7 +84,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
   // switches, control parameters, material parameters
 
   // type of fluid flow solver: incompressible, Boussinesq approximation, varying density, loma
-  physicaltype_ = CORE::UTILS::GetAsEnum<INPAR::FLUID::PhysicalType>(params, "Physical Type");
+  physicaltype_ = Core::UTILS::GetAsEnum<Inpar::FLUID::PhysicalType>(params, "Physical Type");
 
   // get the plane normal direction from the parameterlist
   {
@@ -162,35 +162,35 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
   // not supported yet
   if (myxwall_ != Teuchos::null) multifractal_ = false;
 
-  if (physicaltype_ == INPAR::FLUID::incompressible)
+  if (physicaltype_ == Inpar::FLUID::incompressible)
   {
     // get fluid viscosity from material definition --- for computation
     // of ltau
-    int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(CORE::Materials::m_fluid);
+    int id = Global::Problem::Instance()->Materials()->FirstIdByType(Core::Materials::m_fluid);
     if (id == -1)
       FOUR_C_THROW("Could not find Newtonian fluid material");
     else
     {
-      const CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
-      const MAT::PAR::NewtonianFluid* actmat = static_cast<const MAT::PAR::NewtonianFluid*>(mat);
+      const Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance()->Materials()->ParameterById(id);
+      const Mat::PAR::NewtonianFluid* actmat = static_cast<const Mat::PAR::NewtonianFluid*>(mat);
       // we need the kinematic viscosity here
       dens_ = actmat->density_;
       visc_ = actmat->viscosity_ / dens_;
     }
   }
-  else if (physicaltype_ == INPAR::FLUID::loma)
+  else if (physicaltype_ == Inpar::FLUID::loma)
   {
     // get specific heat capacity --- for computation
     // of Temp_tau
-    int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(CORE::Materials::m_sutherland);
+    int id = Global::Problem::Instance()->Materials()->FirstIdByType(Core::Materials::m_sutherland);
     if (id == -1)
       FOUR_C_THROW("Could not find sutherland material");
     else
     {
-      const CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
-      const MAT::PAR::Sutherland* actmat = static_cast<const MAT::PAR::Sutherland*>(mat);
+      const Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance()->Materials()->ParameterById(id);
+      const Mat::PAR::Sutherland* actmat = static_cast<const Mat::PAR::Sutherland*>(mat);
       // we need the kinematic viscosity here
       shc_ = actmat->shc_;
     }
@@ -204,15 +204,15 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
   // allocate some (toggle) vectors
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
-  meanvelnp_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  meanvelnp_ = Core::LinAlg::CreateVector(*dofrowmap, true);
   // this vector is only necessary for low-Mach-number flow or
   // turbulent passive scalar transport
-  meanscanp_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  meanscanp_ = Core::LinAlg::CreateVector(*dofrowmap, true);
 
-  toggleu_ = CORE::LINALG::CreateVector(*dofrowmap, true);
-  togglev_ = CORE::LINALG::CreateVector(*dofrowmap, true);
-  togglew_ = CORE::LINALG::CreateVector(*dofrowmap, true);
-  togglep_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  toggleu_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  togglev_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  togglew_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  togglep_ = Core::LinAlg::CreateVector(*dofrowmap, true);
 
   // ---------------------------------------------------------------------
   // compute all planes for sampling
@@ -231,8 +231,8 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
   // try to cast discretisation to nurbs variant
   // this tells you what kind of computation of
   // samples is required
-  DRT::NURBS::NurbsDiscretization* nurbsdis =
-      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*actdis));
+  Discret::Nurbs::NurbsDiscretization* nurbsdis =
+      dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(*actdis));
 
   // allocate array for bounding box
   //
@@ -243,7 +243,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
   //      max |     |     |
   //
   //
-  boundingbox_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(2, 3));
+  boundingbox_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(2, 3));
   for (int row = 0; row < 3; ++row)
   {
     (*boundingbox_)(0, row) = +10e+19;
@@ -263,7 +263,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
     // calculate bounding box
     for (int i = 0; i < discret_->NumMyRowNodes(); ++i)
     {
-      CORE::Nodes::Node* node = discret_->lRowNode(i);
+      Core::Nodes::Node* node = discret_->lRowNode(i);
 
       if (inflowchannel_ and node->X()[0] > inflowmax_ + NODETOL) continue;
 
@@ -311,22 +311,22 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
       std::vector<char> rblock;
 
       // create an exporter for point to point comunication
-      CORE::COMM::Exporter exporter(discret_->Comm());
+      Core::Communication::Exporter exporter(discret_->Comm());
 
       for (int np = 0; np < numprocs; ++np)
       {
-        CORE::COMM::PackBuffer data;
+        Core::Communication::PackBuffer data;
 
         for (std::set<double, PlaneSortCriterion>::iterator plane = availablecoords.begin();
              plane != availablecoords.end(); ++plane)
         {
-          CORE::COMM::ParObject::AddtoPack(data, *plane);
+          Core::Communication::ParObject::AddtoPack(data, *plane);
         }
         data.StartPacking();
         for (std::set<double, PlaneSortCriterion>::iterator plane = availablecoords.begin();
              plane != availablecoords.end(); ++plane)
         {
-          CORE::COMM::ParObject::AddtoPack(data, *plane);
+          Core::Communication::ParObject::AddtoPack(data, *plane);
         }
         swap(sblock, data());
 
@@ -368,7 +368,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
           while (index < rblock.size())
           {
             double onecoord;
-            CORE::COMM::ParObject::ExtractfromPack(index, rblock, onecoord);
+            Core::Communication::ParObject::ExtractfromPack(index, rblock, onecoord);
             availablecoords.insert(onecoord);
           }
         }
@@ -428,7 +428,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
     std::vector<int> nele_x_mele_x_lele(nurbsdis->return_nele_x_mele_x_lele(0));
 
     // get the knotvector itself
-    Teuchos::RCP<DRT::NURBS::Knotvector> knots = nurbsdis->GetKnotVector();
+    Teuchos::RCP<Discret::Nurbs::Knotvector> knots = nurbsdis->GetKnotVector();
 
     // resize and initialise to 0
     {
@@ -453,8 +453,8 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
     // loop all available elements
     for (int iele = 0; iele < elementmap->NumMyElements(); ++iele)
     {
-      CORE::Elements::Element* const actele = nurbsdis->gElement(elementmap->GID(iele));
-      CORE::Nodes::Node** nodes = actele->Nodes();
+      Core::Elements::Element* const actele = nurbsdis->gElement(elementmap->GID(iele));
+      Core::Nodes::Node** nodes = actele->Nodes();
 
       // get gid, location in the patch
       int gid = actele->Id();
@@ -469,29 +469,30 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
       const int numnp = actele->num_node();
 
       // access elements knot span
-      std::vector<CORE::LINALG::SerialDenseVector> knots(3);
+      std::vector<Core::LinAlg::SerialDenseVector> knots(3);
       (*((*nurbsdis).GetKnotVector())).GetEleKnots(knots, actele->Id());
 
       // aquire weights from nodes
-      CORE::LINALG::SerialDenseVector weights(numnp);
+      Core::LinAlg::SerialDenseVector weights(numnp);
 
       for (int inode = 0; inode < numnp; ++inode)
       {
-        DRT::NURBS::ControlPoint* cp = dynamic_cast<DRT::NURBS::ControlPoint*>(nodes[inode]);
+        Discret::Nurbs::ControlPoint* cp =
+            dynamic_cast<Discret::Nurbs::ControlPoint*>(nodes[inode]);
 
         weights(inode) = cp->W();
       }
 
       // get shapefunctions, compute all visualisation point positions
-      CORE::LINALG::SerialDenseVector nurbs_shape_funct(numnp);
+      Core::LinAlg::SerialDenseVector nurbs_shape_funct(numnp);
 
       switch (actele->Shape())
       {
-        case CORE::FE::CellType::nurbs8:
-        case CORE::FE::CellType::nurbs27:
+        case Core::FE::CellType::nurbs8:
+        case Core::FE::CellType::nurbs27:
         {
           // element local point position
-          CORE::LINALG::SerialDenseVector uv(3);
+          Core::LinAlg::SerialDenseVector uv(3);
 
           {
             // standard
@@ -519,7 +520,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
             uv(0) = -1.0;
             uv(1) = -1.0;
             uv(2) = -1.0;
-            CORE::FE::NURBS::nurbs_get_3D_funct(
+            Core::FE::Nurbs::nurbs_get_3D_funct(
                 nurbs_shape_funct, uv, knots, weights, actele->Shape());
             for (int isd = 0; isd < 3; ++isd)
             {
@@ -550,7 +551,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
             {
               uv(1) += 2.0 / (numsubdivisions_ - 1);
 
-              CORE::FE::NURBS::nurbs_get_3D_funct(
+              Core::FE::Nurbs::nurbs_get_3D_funct(
                   nurbs_shape_funct, uv, knots, weights, actele->Shape());
               for (int isd = 0; isd < 3; ++isd)
               {
@@ -572,7 +573,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
               uv(0) = 1.0;
               uv(1) = 1.0;
               uv(2) = 1.0;
-              CORE::FE::NURBS::nurbs_get_3D_funct(
+              Core::FE::Nurbs::nurbs_get_3D_funct(
                   nurbs_shape_funct, uv, knots, weights, actele->Shape());
               for (int isd = 0; isd < 3; ++isd)
               {
@@ -730,7 +731,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
   // arrays for point based averaging
   // --------------------------------
 
-  pointsquaredvelnp_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  pointsquaredvelnp_ = Core::LinAlg::CreateVector(*dofrowmap, true);
 
   // first order moments
   pointsumu_ = Teuchos::rcp(new std::vector<double>);
@@ -1256,7 +1257,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
   {
     std::string s(statistics_outfilename_);
 
-    if (physicaltype_ == INPAR::FLUID::loma)
+    if (physicaltype_ == Inpar::FLUID::loma)
     {
       if (inflowchannel_)
         s.append(".inflow.loma_statistics");
@@ -1381,8 +1382,8 @@ void FLD::TurbulenceStatisticsCha::DoTimeSample(
   // try to cast discretisation to nurbs variant
   // this tells you whether pointwise computation of
   // samples is allowed
-  DRT::NURBS::NurbsDiscretization* nurbsdis =
-      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*discret_));
+  Discret::Nurbs::NurbsDiscretization* nurbsdis =
+      dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(*discret_));
 
   if (nurbsdis == nullptr)
   {
@@ -1409,7 +1410,7 @@ void FLD::TurbulenceStatisticsCha::DoTimeSample(
       // activate toggles for in plane dofs
       for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
       {
-        CORE::Nodes::Node* node = discret_->lRowNode(nn);
+        Core::Nodes::Node* node = discret_->lRowNode(nn);
 
         // if we have an inflow channel problem, the nodes outside the inflow discretization are
         // not in the bounding box -> we don't consider them for averaging
@@ -1541,7 +1542,7 @@ void FLD::TurbulenceStatisticsCha::DoLomaTimeSample(const Teuchos::RCP<const Epe
       // activate toggles for in plane dofs
       for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
       {
-        CORE::Nodes::Node* node = discret_->lRowNode(nn);
+        Core::Nodes::Node* node = discret_->lRowNode(nn);
 
         // if we have an inflow channel problem, the nodes outside the inflow discretization are
         // not in the bounding box -> we don't consider them for averaging
@@ -1594,7 +1595,7 @@ void FLD::TurbulenceStatisticsCha::DoLomaTimeSample(const Teuchos::RCP<const Epe
       // activate toggles for in plane dofs
       for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
       {
-        CORE::Nodes::Node* node = discret_->lRowNode(nn);
+        Core::Nodes::Node* node = discret_->lRowNode(nn);
 
         // if we have an inflow channel problem, the nodes outside the inflow discretization are
         // not in the bounding box -> we don't consider them for averaging
@@ -1699,7 +1700,7 @@ void FLD::TurbulenceStatisticsCha::DoScatraTimeSample(const Teuchos::RCP<const E
       // activate toggles for in plane dofs
       for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
       {
-        CORE::Nodes::Node* node = discret_->lRowNode(nn);
+        Core::Nodes::Node* node = discret_->lRowNode(nn);
 
         // if we have an inflow channel problem, the nodes outside the inflow discretization are
         // not in the bounding box -> we don't consider them for averaging
@@ -1752,7 +1753,7 @@ void FLD::TurbulenceStatisticsCha::DoScatraTimeSample(const Teuchos::RCP<const E
       // activate toggles for in plane dofs
       for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
       {
-        CORE::Nodes::Node* node = discret_->lRowNode(nn);
+        Core::Nodes::Node* node = discret_->lRowNode(nn);
 
         // if we have an inflow channel problem, the nodes outside the inflow discretization are
         // not in the bounding box -> we don't consider them for averaging
@@ -1987,8 +1988,8 @@ void FLD::TurbulenceStatisticsCha::evaluate_integral_mean_values_in_planes()
   //----------------------------------------------------------------------
   // the sums are divided by the layers area to get the area average
 
-  DRT::NURBS::NurbsDiscretization* nurbsdis =
-      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*discret_));
+  Discret::Nurbs::NurbsDiscretization* nurbsdis =
+      dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(*discret_));
 
   if (nurbsdis == nullptr)
   {
@@ -2510,7 +2511,7 @@ void FLD::TurbulenceStatisticsCha::evaluate_pointwise_mean_values_in_planes()
 
     for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
     {
-      CORE::Nodes::Node* node = discret_->lRowNode(nn);
+      Core::Nodes::Node* node = discret_->lRowNode(nn);
 
       // if we have an inflow channel problem, the nodes outside the inflow discretization are
       // not in the bounding box -> we don't consider them for averaging
@@ -2533,7 +2534,7 @@ void FLD::TurbulenceStatisticsCha::evaluate_pointwise_mean_values_in_planes()
           togglep_->ReplaceGlobalValues(1, &one, &(dof[3]));
 
           // now check whether we have a pbc condition on this node
-          std::vector<CORE::Conditions::Condition*> mypbc;
+          std::vector<Core::Conditions::Condition*> mypbc;
 
           node->GetCondition("SurfacePeriodic", mypbc);
 
@@ -3057,7 +3058,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
 
     // add velafgrad
     Teuchos::ParameterList* stabparams = &(params_.sublist("RESIDUAL-BASED STABILIZATION"));
-    if (CORE::UTILS::IntegralValue<int>(*stabparams, "Reconstruct_Sec_Der"))
+    if (Core::UTILS::IntegralValue<int>(*stabparams, "Reconstruct_Sec_Der"))
     {
       for (std::map<std::string, Teuchos::RCP<Epetra_Vector>>::iterator state = statevecs.begin();
            state != statevecs.end(); ++state)
@@ -3097,12 +3098,12 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
       // add dissipation and residuals of scalar field
 
       // set action for elements
-      CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
-          "action", SCATRA::Action::calc_dissipation, scatraeleparams_);
+      Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+          "action", ScaTra::Action::calc_dissipation, scatraeleparams_);
       // set parameters required for evaluation of residuals, etc.
       scatraeleparams_.set<double>("time-step length", scatraparams_->get<double>("TIMESTEP"));
       scatraeleparams_.set<int>("fs subgrid diffusivity",
-          CORE::UTILS::IntegralValue<INPAR::SCATRA::FSSUGRDIFF>(*scatraparams_, "FSSUGRDIFF"));
+          Core::UTILS::IntegralValue<Inpar::ScaTra::FSSUGRDIFF>(*scatraparams_, "FSSUGRDIFF"));
       scatraeleparams_.sublist("TURBULENCE MODEL") =
           scatraextraparams_->sublist("TURBULENCE MODEL");
       scatraeleparams_.sublist("SUBGRID VISCOSITY") =
@@ -3779,8 +3780,8 @@ void FLD::TurbulenceStatisticsCha::time_average_means_and_output_of_statistics(c
     (*sumsqp_)[i] /= aux;
   }
 
-  DRT::NURBS::NurbsDiscretization* nurbsdis =
-      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*discret_));
+  Discret::Nurbs::NurbsDiscretization* nurbsdis =
+      dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(*discret_));
 
   if (nurbsdis == nullptr)
   {
@@ -5720,7 +5721,7 @@ void FLD::TurbulenceStatisticsCha::ClearStatistics()
   }
 
   meanvelnp_->PutScalar(0.0);
-  if (physicaltype_ == INPAR::FLUID::loma) meanscanp_->PutScalar(0.0);
+  if (physicaltype_ == Inpar::FLUID::loma) meanscanp_->PutScalar(0.0);
 
   // reset sampling for dynamic Smagorinsky model
   if (smagorinsky_)
@@ -5849,7 +5850,8 @@ void FLD::TurbulenceStatisticsCha::ClearStatistics()
 
 
 void FLD::TurbulenceStatisticsCha::store_scatra_discret_and_params(
-    Teuchos::RCP<DRT::Discretization> scatradis, Teuchos::RCP<Teuchos::ParameterList> scatraparams,
+    Teuchos::RCP<Discret::Discretization> scatradis,
+    Teuchos::RCP<Teuchos::ParameterList> scatraparams,
     Teuchos::RCP<Teuchos::ParameterList> scatraextraparams,
     Teuchos::RCP<Teuchos::ParameterList> scatratimeparams)
 {
@@ -5864,21 +5866,21 @@ void FLD::TurbulenceStatisticsCha::store_scatra_discret_and_params(
     std::cout << "-> added ScaTra discretization to channel-flow-statistics manager\n" << std::endl;
   }
 
-  if (physicaltype_ == INPAR::FLUID::incompressible)  // not required for loma
+  if (physicaltype_ == Inpar::FLUID::incompressible)  // not required for loma
   {
     // get diffusivity from material definition --- for computation
     // of additional mfs-statistics
-    int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(CORE::Materials::m_scatra);
+    int id = Global::Problem::Instance()->Materials()->FirstIdByType(Core::Materials::m_scatra);
     if (id == -1)
       FOUR_C_THROW("Could not find scatra material");
     else
     {
-      const CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
-      const MAT::PAR::ScatraMat* actmat = static_cast<const MAT::PAR::ScatraMat*>(mat);
+      const Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance()->Materials()->ParameterById(id);
+      const Mat::PAR::ScatraMat* actmat = static_cast<const Mat::PAR::ScatraMat*>(mat);
 
       double diffus =
-          MAT::PAR::ScatraMat(*actmat).GetParameter(actmat->diff, -1);  // actmat->diffusivity_;
+          Mat::PAR::ScatraMat(*actmat).GetParameter(actmat->diff, -1);  // actmat->diffusivity_;
       // calculate Schmidt number
       // visc is the kinematic viscosity here
       scnum_ = visc_ / diffus;

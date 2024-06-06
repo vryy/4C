@@ -21,7 +21,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
@@ -30,7 +30,7 @@ namespace DRT
      public:
       /// Singleton access method
       static FluidEleParameterXFEM* Instance(
-          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
+          Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
       /// set all the XFEM specific parameters
       void set_element_xfem_parameter(Teuchos::ParameterList& params,  ///< parameter list
@@ -43,10 +43,10 @@ namespace DRT
       //@{
 
       //! get the volumecell integration method used for integrating cut elements?
-      INPAR::CUT::VCellGaussPts volume_cell_gauss_points() const { return vcellgausspts_; };
+      Inpar::Cut::VCellGaussPts volume_cell_gauss_points() const { return vcellgausspts_; };
 
       //! get the boundarycell integration method used for integrating the surface in cut elements?
-      INPAR::CUT::BCellGaussPts boundary_cell_gauss_points() const { return bcellgausspts_; };
+      Inpar::Cut::BCellGaussPts boundary_cell_gauss_points() const { return bcellgausspts_; };
 
       //@}
 
@@ -56,11 +56,11 @@ namespace DRT
       //@{
 
       //! coupling approach (Nitsche or hybrid stress-based LM)
-      INPAR::XFEM::CouplingMethod GetCouplingMethod() const { return coupling_method_; }
+      Inpar::XFEM::CouplingMethod GetCouplingMethod() const { return coupling_method_; }
 
       //! get information, whether L2-projection between stress fields is accomplished on whole cut
       //! element or on physical volume
-      INPAR::XFEM::HybridLmL2Proj HybridLM_L2Proj() const { return hybrid_lm_l2_proj_; }
+      Inpar::XFEM::HybridLmL2Proj HybridLM_L2Proj() const { return hybrid_lm_l2_proj_; }
 
       //@}
 
@@ -72,14 +72,14 @@ namespace DRT
 
       //! get the type of how to estimate the scaling of the trace inequality used for the viscous
       //! part of Nitsche's method?
-      INPAR::XFEM::ViscStabTraceEstimate visc_stab_trac_estimate() const
+      Inpar::XFEM::ViscStabTraceEstimate visc_stab_trac_estimate() const
       {
         return visc_stab_trace_estimate_;
       };
 
       //! get the element length definition used for viscous part of the penalty term in Nitsche's
       //! method
-      INPAR::XFEM::ViscStabHk ViscStabHK() const { return visc_stab_hk_; };
+      Inpar::XFEM::ViscStabHk ViscStabHK() const { return visc_stab_hk_; };
 
       //! get the dimensionless user defined scaling for the penalty term in Nitsche's method and
       //! scaling factor for the MHVS method (then gamma = 1/n, see publications)
@@ -93,9 +93,9 @@ namespace DRT
       //! @return true, in case of a symmetric adjoint term
       bool is_viscous_adjoint_symmetric() const
       {
-        if (visc_adjoint_scaling_ == INPAR::XFEM::adj_none)
+        if (visc_adjoint_scaling_ == Inpar::XFEM::adj_none)
           FOUR_C_THROW("Do not call is_viscous_adjoint_symmetric with adj_none");
-        return visc_adjoint_scaling_ == INPAR::XFEM::adj_sym;
+        return visc_adjoint_scaling_ == Inpar::XFEM::adj_sym;
       }
 
       //! get information, whether the formulation should be symmetric/skew-symmetric/none in the
@@ -105,11 +105,11 @@ namespace DRT
       {
         switch (visc_adjoint_scaling_)
         {
-          case INPAR::XFEM::adj_none:
+          case Inpar::XFEM::adj_none:
             return 0.0;
-          case INPAR::XFEM::adj_sym:
+          case Inpar::XFEM::adj_sym:
             return 1.0;
-          case INPAR::XFEM::adj_skew:
+          case Inpar::XFEM::adj_skew:
             return -1.0;
           default:
             FOUR_C_THROW("Unkown type of AdjointScaling!");
@@ -130,11 +130,11 @@ namespace DRT
       /*----------------------------------------------------*/
       //@{
       //! get the type of scaling for convective/inflow stabilization term for xfluid-fluid problems
-      INPAR::XFEM::XffConvStabScaling XffConvStabScaling() const { return xff_conv_stab_scaling_; }
+      Inpar::XFEM::XffConvStabScaling XffConvStabScaling() const { return xff_conv_stab_scaling_; }
 
       //! get the type of scaling for convective/inflow stabilization term for classical xfluid
       //! problem
-      INPAR::XFEM::ConvStabScaling ConvStabScaling() const { return conv_stab_scaling_; }
+      Inpar::XFEM::ConvStabScaling ConvStabScaling() const { return conv_stab_scaling_; }
 
       //@}
 
@@ -146,14 +146,14 @@ namespace DRT
       //@{
       //! get information, whether we take the maximum from the viscous and convective penalty
       //! scaling or the sum of them
-      INPAR::XFEM::MassConservationCombination mass_conservation_combination() const
+      Inpar::XFEM::MassConservationCombination mass_conservation_combination() const
       {
         return mass_conservation_combo_;
       }
 
       //! get the type of scaling for convective/inflow stabilization term for classical xfluid
       //! problem
-      INPAR::XFEM::MassConservationScaling mass_conservation_scaling() const
+      Inpar::XFEM::MassConservationScaling mass_conservation_scaling() const
       {
         return mass_conservation_scaling_;
       }
@@ -161,14 +161,14 @@ namespace DRT
       //@}
 
       //! for new OST-implementation: which interface terms to be evaluated for previous time step
-      INPAR::XFEM::InterfaceTermsPreviousState interface_terms_previous_state() const
+      Inpar::XFEM::InterfaceTermsPreviousState interface_terms_previous_state() const
       {
         return intterms_prev_state_;
       }
 
       //! assure a valid combination of input parameters for certain weighting
       void check_parameter_consistency_for_averaging_strategy(
-          int myrank, INPAR::XFEM::AveragingStrategy averaging_strategy) const;
+          int myrank, Inpar::XFEM::AveragingStrategy averaging_strategy) const;
 
      private:
       //! assure a valid combination of input parameters
@@ -180,10 +180,10 @@ namespace DRT
       //@{
 
       //! which volumecell integration is used for integrating cut elements?
-      INPAR::CUT::VCellGaussPts vcellgausspts_;
+      Inpar::Cut::VCellGaussPts vcellgausspts_;
 
       //! which boundarycell integration is used for integrating the surface in cut elements?
-      INPAR::CUT::BCellGaussPts bcellgausspts_;
+      Inpar::Cut::BCellGaussPts bcellgausspts_;
 
       //@}
 
@@ -194,11 +194,11 @@ namespace DRT
       //@{
 
       //! coupling approach (Nitsche or hybrid stress-based LM)
-      INPAR::XFEM::CouplingMethod coupling_method_;
+      Inpar::XFEM::CouplingMethod coupling_method_;
 
       //! for coupling using stress-based LM: L2-projection between stress fields on whole cut
       //! element or on physical volume
-      INPAR::XFEM::HybridLmL2Proj hybrid_lm_l2_proj_;
+      Inpar::XFEM::HybridLmL2Proj hybrid_lm_l2_proj_;
 
       //@}
 
@@ -211,10 +211,10 @@ namespace DRT
 
       //! how to estimate the scaling of the trace inequality used for the viscous part of Nitsche's
       //! method?
-      INPAR::XFEM::ViscStabTraceEstimate visc_stab_trace_estimate_;
+      Inpar::XFEM::ViscStabTraceEstimate visc_stab_trace_estimate_;
 
       //! element length definition used for viscous part of the penalty term in Nitsche's method
-      INPAR::XFEM::ViscStabHk visc_stab_hk_;
+      Inpar::XFEM::ViscStabHk visc_stab_hk_;
 
       //! dimensionless user defined scaling for the penalty term in Nitsche's method and
       //! scaling factor for the MHVS method (then gamma = 1/n, see publications),
@@ -227,7 +227,7 @@ namespace DRT
 
       //! enum, that indicates matching signs between the viscous and adjoint viscous Nitsche terms
       //! or between the equivalent MHVS-terms
-      INPAR::XFEM::AdjointScaling visc_adjoint_scaling_;
+      Inpar::XFEM::AdjointScaling visc_adjoint_scaling_;
 
       //@}
 
@@ -248,10 +248,10 @@ namespace DRT
       //@{
 
       //! type of convective scaling for xfluid-fluid problem
-      INPAR::XFEM::XffConvStabScaling xff_conv_stab_scaling_;
+      Inpar::XFEM::XffConvStabScaling xff_conv_stab_scaling_;
 
       //! type of convective scaling for xfluid problem
-      INPAR::XFEM::ConvStabScaling conv_stab_scaling_;
+      Inpar::XFEM::ConvStabScaling conv_stab_scaling_;
 
       //@}
 
@@ -263,16 +263,16 @@ namespace DRT
 
       //! get information, whether we take the maximum from the viscous and convective penalty
       //! scaling or the sum of them
-      INPAR::XFEM::MassConservationCombination mass_conservation_combo_;
+      Inpar::XFEM::MassConservationCombination mass_conservation_combo_;
 
       //! get the type of scaling for convective/inflow stabilization term for classical xfluid
       //! problem
-      INPAR::XFEM::MassConservationScaling mass_conservation_scaling_;
+      Inpar::XFEM::MassConservationScaling mass_conservation_scaling_;
 
       //@}
 
       //! which interface terms to be evaluated for previous time step (new OST)
-      INPAR::XFEM::InterfaceTermsPreviousState intterms_prev_state_;
+      Inpar::XFEM::InterfaceTermsPreviousState intterms_prev_state_;
 
      protected:
       /// protected Constructor since we are a Singleton.
@@ -280,7 +280,7 @@ namespace DRT
     };
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

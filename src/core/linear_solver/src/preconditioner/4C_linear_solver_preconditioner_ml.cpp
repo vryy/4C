@@ -26,14 +26,14 @@ FOUR_C_NAMESPACE_OPEN
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-CORE::LINEAR_SOLVER::MLPreconditioner::MLPreconditioner(Teuchos::ParameterList& mllist)
+Core::LinearSolver::MLPreconditioner::MLPreconditioner(Teuchos::ParameterList& mllist)
     : mllist_(mllist)
 {
 }
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void CORE::LINEAR_SOLVER::MLPreconditioner::Setup(
+void Core::LinearSolver::MLPreconditioner::Setup(
     bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
 {
   if (create)

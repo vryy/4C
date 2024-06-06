@@ -23,64 +23,64 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
     namespace CARDIOVASCULAR0D
     {
-      class LinearSystem : public NOX::NLN::LinearSystem
+      class LinearSystem : public NOX::Nln::LinearSystem
       {
        public:
         //! Standard constructor with full functionality.
         LinearSystem(Teuchos::ParameterList& printParams,
             Teuchos::ParameterList& linearSolverParams,
-            const std::map<NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>>& solvers,
+            const std::map<NOX::Nln::SolutionType, Teuchos::RCP<Core::LinAlg::Solver>>& solvers,
             const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
             const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
-            const Teuchos::RCP<CORE::LINALG::SparseOperator>& J,
+            const Teuchos::RCP<Core::LinAlg::SparseOperator>& J,
             const Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner>& iPrec,
-            const Teuchos::RCP<CORE::LINALG::SparseOperator>& M,
+            const Teuchos::RCP<Core::LinAlg::SparseOperator>& M,
             const ::NOX::Epetra::Vector& cloneVector,
             const Teuchos::RCP<::NOX::Epetra::Scaling> scalingObject);
 
         //! Constructor without scaling object
         LinearSystem(Teuchos::ParameterList& printParams,
             Teuchos::ParameterList& linearSolverParams,
-            const std::map<NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>>& solvers,
+            const std::map<NOX::Nln::SolutionType, Teuchos::RCP<Core::LinAlg::Solver>>& solvers,
             const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
             const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
-            const Teuchos::RCP<CORE::LINALG::SparseOperator>& J,
+            const Teuchos::RCP<Core::LinAlg::SparseOperator>& J,
             const Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner>& iPrec,
-            const Teuchos::RCP<CORE::LINALG::SparseOperator>& M,
+            const Teuchos::RCP<Core::LinAlg::SparseOperator>& M,
             const ::NOX::Epetra::Vector& cloneVector);
 
         //! Constructor without preconditioner
         LinearSystem(Teuchos::ParameterList& printParams,
             Teuchos::ParameterList& linearSolverParams,
-            const std::map<NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>>& solvers,
+            const std::map<NOX::Nln::SolutionType, Teuchos::RCP<Core::LinAlg::Solver>>& solvers,
             const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
             const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
-            const Teuchos::RCP<CORE::LINALG::SparseOperator>& J,
+            const Teuchos::RCP<Core::LinAlg::SparseOperator>& J,
             const ::NOX::Epetra::Vector& cloneVector,
             const Teuchos::RCP<::NOX::Epetra::Scaling> scalingObject);
 
         //! Constructor without preconditioner and scaling object
         LinearSystem(Teuchos::ParameterList& printParams,
             Teuchos::ParameterList& linearSolverParams,
-            const std::map<NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>>& solvers,
+            const std::map<NOX::Nln::SolutionType, Teuchos::RCP<Core::LinAlg::Solver>>& solvers,
             const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
             const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
-            const Teuchos::RCP<CORE::LINALG::SparseOperator>& J,
+            const Teuchos::RCP<Core::LinAlg::SparseOperator>& J,
             const ::NOX::Epetra::Vector& cloneVector);
 
         //! sets the options of the underlying solver
-        CORE::LINALG::SolverParams set_solver_options(Teuchos::ParameterList& p,
-            Teuchos::RCP<CORE::LINALG::Solver>& solverPtr,
-            const NOX::NLN::SolutionType& solverType) override;
+        Core::LinAlg::SolverParams set_solver_options(Teuchos::ParameterList& p,
+            Teuchos::RCP<Core::LinAlg::Solver>& solverPtr,
+            const NOX::Nln::SolutionType& solverType) override;
 
         //! Returns a pointer to the linear solver, which has to be used
-        NOX::NLN::SolutionType get_active_lin_solver(
-            const std::map<NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>>& solvers,
-            Teuchos::RCP<CORE::LINALG::Solver>& currSolver) override;
+        NOX::Nln::SolutionType get_active_lin_solver(
+            const std::map<NOX::Nln::SolutionType, Teuchos::RCP<Core::LinAlg::Solver>>& solvers,
+            Teuchos::RCP<Core::LinAlg::Solver>& currSolver) override;
 
        private:
         //! throws an error message
@@ -88,7 +88,7 @@ namespace NOX
 
       };  // class LinearSystem
     }     // namespace CARDIOVASCULAR0D
-  }       // namespace NLN
+  }       // namespace Nln
 }  // namespace NOX
 
 

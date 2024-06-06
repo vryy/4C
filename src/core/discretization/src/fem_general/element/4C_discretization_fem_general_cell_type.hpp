@@ -12,7 +12,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::FE
+namespace Core::FE
 {
   enum class CellType
   {
@@ -57,7 +57,7 @@ namespace CORE::FE
   struct CelltypeSequence
   {
   };
-}  // namespace CORE::FE
+}  // namespace Core::FE
 
 FOUR_C_NAMESPACE_CLOSE
 

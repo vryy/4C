@@ -22,25 +22,25 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  initialize EAS data (private)                           seitz 04/14 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3Plast<distype>::eas_init()
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::So3Plast<distype>::eas_init()
 {
   switch (eastype_)
   {
     case soh8p_easnone:
-      neas_ = PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easnone>::neas;
+      neas_ = PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easnone>::neas;
       break;
     case soh8p_easmild:
-      neas_ = PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas;
+      neas_ = PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>::neas;
       break;
     case soh8p_easfull:
-      neas_ = PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easfull>::neas;
+      neas_ = PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easfull>::neas;
       break;
     case soh8p_eassosh8:
-      neas_ = PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_eassosh8>::neas;
+      neas_ = PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_eassosh8>::neas;
       break;
     case soh18p_eassosh18:
-      neas_ = PlastEasTypeToNumEas<DRT::ELEMENTS::soh18p_eassosh18>::neas;
+      neas_ = PlastEasTypeToNumEas<Discret::ELEMENTS::soh18p_eassosh18>::neas;
       break;
     default:
       FOUR_C_THROW("unknown EAS type");
@@ -48,22 +48,22 @@ void DRT::ELEMENTS::So3Plast<distype>::eas_init()
 
   if (eastype_ != soh8p_easnone)
   {
-    KaaInv_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(neas_, neas_, true));
-    Kad_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(neas_, numdofperelement_, true));
-    feas_ = Teuchos::rcp(new CORE::LINALG::SerialDenseVector(neas_, true));
-    alpha_eas_ = Teuchos::rcp(new CORE::LINALG::SerialDenseVector(neas_, true));
-    alpha_eas_last_timestep_ = Teuchos::rcp(new CORE::LINALG::SerialDenseVector(neas_, true));
+    KaaInv_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(neas_, neas_, true));
+    Kad_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(neas_, numdofperelement_, true));
+    feas_ = Teuchos::rcp(new Core::LinAlg::SerialDenseVector(neas_, true));
+    alpha_eas_ = Teuchos::rcp(new Core::LinAlg::SerialDenseVector(neas_, true));
+    alpha_eas_last_timestep_ = Teuchos::rcp(new Core::LinAlg::SerialDenseVector(neas_, true));
     alpha_eas_delta_over_last_timestep_ =
-        Teuchos::rcp(new CORE::LINALG::SerialDenseVector(neas_, true));
-    alpha_eas_inc_ = Teuchos::rcp(new CORE::LINALG::SerialDenseVector(neas_, true));
-    Kba_ = Teuchos::rcp(new std::vector<CORE::LINALG::SerialDenseMatrix>(
-        numgpt_, CORE::LINALG::SerialDenseMatrix(5, neas_, true)));
+        Teuchos::rcp(new Core::LinAlg::SerialDenseVector(neas_, true));
+    alpha_eas_inc_ = Teuchos::rcp(new Core::LinAlg::SerialDenseVector(neas_, true));
+    Kba_ = Teuchos::rcp(new std::vector<Core::LinAlg::SerialDenseMatrix>(
+        numgpt_, Core::LinAlg::SerialDenseMatrix(5, neas_, true)));
 
-    CORE::ProblemType probtype = GLOBAL::Problem::Instance()->GetProblemType();
-    if (probtype == CORE::ProblemType::tsi)
+    Core::ProblemType probtype = Global::Problem::Instance()->GetProblemType();
+    if (probtype == Core::ProblemType::tsi)
     {
-      KaT_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(neas_, nen_, true));
-      KdT_eas_ = Teuchos::rcp(new CORE::LINALG::Matrix<numdofperelement_, nen_>);
+      KaT_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(neas_, nen_, true));
+      KdT_eas_ = Teuchos::rcp(new Core::LinAlg::Matrix<numdofperelement_, nen_>);
     }
   }
 
@@ -73,8 +73,8 @@ void DRT::ELEMENTS::So3Plast<distype>::eas_init()
 /*----------------------------------------------------------------------*
  |  setup EAS data (private)                                seitz 04/14 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3Plast<distype>::eas_setup()
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::So3Plast<distype>::eas_setup()
 {
   /* evaluation of EAS variables (which are constant for the following):
   ** -> M defining interpolation of enhanced strains alpha, evaluated at GPs
@@ -131,7 +131,7 @@ void DRT::ELEMENTS::So3Plast<distype>::eas_setup()
   set_t0inv_t()(5, 5) = jac_0()(0, 0) * jac_0()(2, 2) + jac_0()(2, 0) * jac_0()(0, 2);
 
   // now evaluate T0^{-T} with solver
-  CORE::LINALG::FixedSizeSerialDenseSolver<numstr_, numstr_, 1> solve_for_inverseT0;
+  Core::LinAlg::FixedSizeSerialDenseSolver<numstr_, numstr_, 1> solve_for_inverseT0;
   solve_for_inverseT0.SetMatrix(set_t0inv_t());
   int err2 = solve_for_inverseT0.Factor();
   int err = solve_for_inverseT0.Invert();
@@ -149,10 +149,10 @@ void DRT::ELEMENTS::So3Plast<distype>::eas_setup()
 /*----------------------------------------------------------------------*
  |  Defgrd consistent with enhanced GL strain (private)     seitz 04/14 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3Plast<distype>::calc_consistent_defgrd()
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::So3Plast<distype>::calc_consistent_defgrd()
 {
-  static CORE::LINALG::Matrix<numstr_, 1> glstrain_mod(false);
+  static Core::LinAlg::Matrix<numstr_, 1> glstrain_mod(false);
   glstrain_mod(0) = 0.5 * (rcg()(0, 0) - 1.0);
   glstrain_mod(1) = 0.5 * (rcg()(1, 1) - 1.0);
   glstrain_mod(2) = 0.5 * (rcg()(2, 2) - 1.0);
@@ -160,12 +160,12 @@ void DRT::ELEMENTS::So3Plast<distype>::calc_consistent_defgrd()
   glstrain_mod(4) = rcg()(1, 2);
   glstrain_mod(5) = rcg()(2, 0);
 
-  CORE::LINALG::Matrix<3, 3> R;       // rotation tensor
-  CORE::LINALG::Matrix<3, 3> U_mod;   // modified right stretch tensor
-  CORE::LINALG::Matrix<3, 3> U_disp;  // displacement-based right stretch tensor
-  CORE::LINALG::Matrix<3, 3> EW;      // temporarily store eigenvalues
-  CORE::LINALG::Matrix<3, 3> tmp;     // temporary matrix for matrix matrix matrix products
-  CORE::LINALG::Matrix<3, 3> tmp2;    // temporary matrix for matrix matrix matrix products
+  Core::LinAlg::Matrix<3, 3> R;       // rotation tensor
+  Core::LinAlg::Matrix<3, 3> U_mod;   // modified right stretch tensor
+  Core::LinAlg::Matrix<3, 3> U_disp;  // displacement-based right stretch tensor
+  Core::LinAlg::Matrix<3, 3> EW;      // temporarily store eigenvalues
+  Core::LinAlg::Matrix<3, 3> tmp;     // temporary matrix for matrix matrix matrix products
+  Core::LinAlg::Matrix<3, 3> tmp2;    // temporary matrix for matrix matrix matrix products
 
   // ******************************************************************
   // calculate modified right stretch tensor
@@ -178,7 +178,7 @@ void DRT::ELEMENTS::So3Plast<distype>::calc_consistent_defgrd()
   U_mod(0, 2) = glstrain_mod(5);
   U_mod(2, 0) = glstrain_mod(5);
 
-  CORE::LINALG::SYEV(U_mod, EW, U_mod);
+  Core::LinAlg::SYEV(U_mod, EW, U_mod);
   for (int i = 0; i < 3; ++i) EW(i, i) = sqrt(EW(i, i));
   tmp.Multiply(U_mod, EW);
   tmp2.MultiplyNT(tmp, U_mod);
@@ -189,7 +189,7 @@ void DRT::ELEMENTS::So3Plast<distype>::calc_consistent_defgrd()
   // ******************************************************************
   U_disp.MultiplyTN(defgrd(), defgrd());
 
-  CORE::LINALG::SYEV(U_disp, EW, U_disp);
+  Core::LinAlg::SYEV(U_disp, EW, U_disp);
   for (int i = 0; i < 3; ++i) EW(i, i) = sqrt(EW(i, i));
   tmp.Multiply(U_disp, EW);
   tmp2.MultiplyNT(tmp, U_disp);
@@ -206,16 +206,16 @@ void DRT::ELEMENTS::So3Plast<distype>::calc_consistent_defgrd()
   return;
 }
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3Plast<distype>::eas_shape(const int gp)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::So3Plast<distype>::eas_shape(const int gp)
 {
-  std::vector<CORE::LINALG::SerialDenseMatrix>* M_GP = nullptr;  // EAS matrix M at all GPs
+  std::vector<Core::LinAlg::SerialDenseMatrix>* M_GP = nullptr;  // EAS matrix M at all GPs
   // build EAS interpolation matrix M, evaluated at the 8 GPs of so_hex8
 
   // fill up M at each gp
   if (eastype_ == soh8p_easmild)
   {
-    static std::vector<CORE::LINALG::SerialDenseMatrix> M_mild(numgpt_);
+    static std::vector<Core::LinAlg::SerialDenseMatrix> M_mild(numgpt_);
     static bool M_mild_eval;
     /* easmild is the EAS interpolation of 9 modes, based on
      **            r 0 0   0 0 0 0 0 0
@@ -252,7 +252,7 @@ void DRT::ELEMENTS::So3Plast<distype>::eas_shape(const int gp)
   }
   else if (eastype_ == soh8p_easfull)
   {
-    static std::vector<CORE::LINALG::SerialDenseMatrix> M_full(numgpt_);
+    static std::vector<Core::LinAlg::SerialDenseMatrix> M_full(numgpt_);
     static bool M_full_eval;
     /* easfull is the EAS interpolation of 21 modes, based on
     **            r 0 0   0 0 0 0 0 0   0  0  0  0  0  0   rs rt 0  0  0  0
@@ -300,7 +300,7 @@ void DRT::ELEMENTS::So3Plast<distype>::eas_shape(const int gp)
   }
   else if (eastype_ == soh8p_eassosh8)
   {
-    static std::vector<CORE::LINALG::SerialDenseMatrix> M_sosh8(numgpt_);
+    static std::vector<Core::LinAlg::SerialDenseMatrix> M_sosh8(numgpt_);
     static bool M_sosh8_eval;
     /* eassosh8 is the EAS interpolation for the Solid-Shell with t=thickness dir.
      ** consisting of 7 modes, based on
@@ -341,18 +341,18 @@ void DRT::ELEMENTS::So3Plast<distype>::eas_shape(const int gp)
   switch (eastype_)
   {
     case soh8p_easfull:
-      CORE::LINALG::DENSEFUNCTIONS::multiply<double, numstr_, numstr_,
-          PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easfull>::neas>(
+      Core::LinAlg::DenseFunctions::multiply<double, numstr_, numstr_,
+          PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easfull>::neas>(
           set_m_eas().values(), det_jac_0() / det_j(), t0inv_t().A(), (M_GP->at(gp)).values());
       break;
     case soh8p_easmild:
-      CORE::LINALG::DENSEFUNCTIONS::multiply<double, numstr_, numstr_,
-          PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas>(
+      Core::LinAlg::DenseFunctions::multiply<double, numstr_, numstr_,
+          PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>::neas>(
           set_m_eas().values(), det_jac_0() / det_j(), t0inv_t().A(), (M_GP->at(gp)).values());
       break;
     case soh8p_eassosh8:
-      CORE::LINALG::DENSEFUNCTIONS::multiply<double, numstr_, numstr_,
-          PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_eassosh8>::neas>(
+      Core::LinAlg::DenseFunctions::multiply<double, numstr_, numstr_,
+          PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_eassosh8>::neas>(
           set_m_eas().values(), det_jac_0() / det_j(), t0inv_t().A(), (M_GP->at(gp)).values());
       break;
     case soh8p_easnone:
@@ -363,11 +363,11 @@ void DRT::ELEMENTS::So3Plast<distype>::eas_shape(const int gp)
   }
 }
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3Plast<distype>::eas_enhance_strains()
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::So3Plast<distype>::eas_enhance_strains()
 {
   // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-  static CORE::LINALG::Matrix<numstr_, 1> total_glstrain(false);
+  static Core::LinAlg::Matrix<numstr_, 1> total_glstrain(false);
   total_glstrain(0) = 0.5 * (rcg()(0, 0) - 1.0);
   total_glstrain(1) = 0.5 * (rcg()(1, 1) - 1.0);
   total_glstrain(2) = 0.5 * (rcg()(2, 2) - 1.0);
@@ -378,18 +378,18 @@ void DRT::ELEMENTS::So3Plast<distype>::eas_enhance_strains()
   switch (eastype_)
   {
     case soh8p_easfull:
-      CORE::LINALG::DENSEFUNCTIONS::multiply<double, numstr_,
-          PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easfull>::neas, 1>(
+      Core::LinAlg::DenseFunctions::multiply<double, numstr_,
+          PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easfull>::neas, 1>(
           1.0, total_glstrain.A(), 1.0, m_eas().values(), alpha_eas_->values());
       break;
     case soh8p_easmild:
-      CORE::LINALG::DENSEFUNCTIONS::multiply<double, numstr_,
-          PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas, 1>(
+      Core::LinAlg::DenseFunctions::multiply<double, numstr_,
+          PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>::neas, 1>(
           1.0, total_glstrain.A(), 1.0, m_eas().values(), alpha_eas_->values());
       break;
     case soh8p_eassosh8:
-      CORE::LINALG::DENSEFUNCTIONS::multiply<double, numstr_,
-          PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_eassosh8>::neas, 1>(
+      Core::LinAlg::DenseFunctions::multiply<double, numstr_,
+          PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_eassosh8>::neas, 1>(
           1.0, total_glstrain.A(), 1.0, m_eas().values(), alpha_eas_->values());
       break;
     case soh8p_easnone:
@@ -408,10 +408,10 @@ void DRT::ELEMENTS::So3Plast<distype>::eas_enhance_strains()
   calc_consistent_defgrd();
 }
 
-template class DRT::ELEMENTS::So3Plast<CORE::FE::CellType::tet4>;
-template class DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex8>;
-template class DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex18>;
-template class DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex27>;
-template class DRT::ELEMENTS::So3Plast<CORE::FE::CellType::nurbs27>;
+template class Discret::ELEMENTS::So3Plast<Core::FE::CellType::tet4>;
+template class Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex8>;
+template class Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex18>;
+template class Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex27>;
+template class Discret::ELEMENTS::So3Plast<Core::FE::CellType::nurbs27>;
 
 FOUR_C_NAMESPACE_CLOSE

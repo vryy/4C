@@ -20,8 +20,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::PoroMultiPhaseScaTraArtCouplSurfBased(
-    Teuchos::RCP<DRT::Discretization> arterydis, Teuchos::RCP<DRT::Discretization> contdis,
+PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplSurfBased::PoroMultiPhaseScaTraArtCouplSurfBased(
+    Teuchos::RCP<Discret::Discretization> arterydis, Teuchos::RCP<Discret::Discretization> contdis,
     const Teuchos::ParameterList& couplingparams, const std::string& condname,
     const std::string& artcoupleddofname, const std::string& contcoupleddofname)
     : PoroMultiPhaseScaTraArtCouplNonConforming(
@@ -40,13 +40,13 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::PoroMultiPhaseScaTr
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::pre_evaluate_coupling_pairs()
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplSurfBased::pre_evaluate_coupling_pairs()
 {
-  const int numpatch_axi = GLOBAL::Problem::Instance()
+  const int numpatch_axi = Global::Problem::Instance()
                                ->poro_fluid_multi_phase_dynamic_params()
                                .sublist("ARTERY COUPLING")
                                .get<int>("NUMPATCH_AXI");
-  const int numpatch_rad = GLOBAL::Problem::Instance()
+  const int numpatch_rad = Global::Problem::Instance()
                                ->poro_fluid_multi_phase_dynamic_params()
                                .sublist("ARTERY COUPLING")
                                .get<int>("NUMPATCH_RAD");
@@ -153,7 +153,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::pre_evaluate_c
 
   // print out summary of pairs
   if (contdis_->Name() == "porofluid" &&
-      (CORE::UTILS::IntegralValue<int>(couplingparams_, "PRINT_OUT_SUMMARY_PAIRS")))
+      (Core::UTILS::IntegralValue<int>(couplingparams_, "PRINT_OUT_SUMMARY_PAIRS")))
   {
     if (myrank_ == 0)
       std::cout << "In total " << numgp_desired << " GPs (" << numgp_per_artele
@@ -166,8 +166,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::pre_evaluate_c
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::is_not_active(
-    const Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase>
+bool PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplSurfBased::is_not_active(
+    const Teuchos::RCP<PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPairBase>
         coupling_pair)
 {
   return not coupling_pair->is_active();
@@ -175,10 +175,10 @@ bool POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::is_not_active(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::Setup()
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplSurfBased::Setup()
 {
   // call base class
-  POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::Setup();
+  PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::Setup();
 
   // error-checks
   if (has_varying_diam_)
@@ -191,8 +191,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::Setup()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::Evaluate(
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplSurfBased::Evaluate(
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
 {
   if (!issetup_) FOUR_C_THROW("Setup() has not been called");
 
@@ -203,28 +203,28 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::Evaluate(
   }
 
   // call base class
-  POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::Evaluate(sysmat, rhs);
+  PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::Evaluate(sysmat, rhs);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::SetupSystem(
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs,
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat_cont,
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat_art, Teuchos::RCP<const Epetra_Vector> rhs_cont,
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplSurfBased::SetupSystem(
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs,
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_cont,
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_art, Teuchos::RCP<const Epetra_Vector> rhs_cont,
     Teuchos::RCP<const Epetra_Vector> rhs_art,
-    Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmap_cont,
-    Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmap_art)
+    Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmap_cont,
+    Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmap_art)
 {
   // call base class
-  POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::SetupSystem(sysmat, rhs,
+  PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::SetupSystem(sysmat, rhs,
       sysmat_cont, sysmat_art, rhs_cont, rhs_art, dbcmap_cont, dbcmap_art->CondMap(),
       dbcmap_art->CondMap());
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::ApplyMeshMovement()
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplSurfBased::ApplyMeshMovement()
 {
   if (!evaluate_in_ref_config_)
     FOUR_C_THROW("Evaluation in current configuration not possible for surface-based coupling");
@@ -233,7 +233,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::ApplyMeshMovem
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector>
-POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::blood_vessel_volume_fraction()
+PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplSurfBased::blood_vessel_volume_fraction()
 {
   FOUR_C_THROW("Output of vessel volume fraction not possible for surface-based coupling");
 
@@ -243,7 +243,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::blood_vessel_volume
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::print_out_coupling_method() const
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplSurfBased::print_out_coupling_method() const
 {
   std::cout << "<   surface-based formulation                      >" << std::endl;
   PoroMultiPhaseScaTraArtCouplNonConforming::print_out_coupling_method();

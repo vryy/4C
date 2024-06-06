@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | constructor                                               fang 06/15 |
  *----------------------------------------------------------------------*/
-MAT::PAR::Soret::Soret(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::Soret::Soret(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : FourierIso(matdata), soretcoefficient_(matdata->Get<double>("SORET"))
 {
   return;
@@ -26,16 +26,16 @@ MAT::PAR::Soret::Soret(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
 /*------------------------------------------------------------------*
  | create instance of Soret material                     fang 06/15 |
  *------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::Soret::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::Soret::create_material()
 {
-  return Teuchos::rcp(new MAT::Soret(this));
+  return Teuchos::rcp(new Mat::Soret(this));
 }
 
-MAT::SoretType MAT::SoretType::instance_;
+Mat::SoretType Mat::SoretType::instance_;
 
-CORE::COMM::ParObject* MAT::SoretType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::SoretType::Create(const std::vector<char>& data)
 {
-  MAT::Soret* soret = new MAT::Soret();
+  Mat::Soret* soret = new Mat::Soret();
   soret->Unpack(data);
   return soret;
 }
@@ -44,21 +44,21 @@ CORE::COMM::ParObject* MAT::SoretType::Create(const std::vector<char>& data)
 /*------------------------------------------------------------------*
  | construct empty Soret material                        fang 06/15 |
  *------------------------------------------------------------------*/
-MAT::Soret::Soret() : params_(nullptr) { return; }
+Mat::Soret::Soret() : params_(nullptr) { return; }
 
 
 /*-------------------------------------------------------------------------*
  | construct Soret material with specific material parameters   fang 06/15 |
  *-------------------------------------------------------------------------*/
-MAT::Soret::Soret(MAT::PAR::Soret* params) : FourierIso(params), params_(params) { return; }
+Mat::Soret::Soret(Mat::PAR::Soret* params) : FourierIso(params), params_(params) { return; }
 
 
 /*----------------------------------------------------------------------*
  | pack material for communication purposes                  fang 06/15 |
  *----------------------------------------------------------------------*/
-void MAT::Soret::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::Soret::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -79,24 +79,24 @@ void MAT::Soret::Pack(CORE::COMM::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  | unpack data from a char vector                            fang 06/15 |
  *----------------------------------------------------------------------*/
-void MAT::Soret::Unpack(const std::vector<char>& data)
+void Mat::Soret::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::Soret*>(mat);
+        params_ = static_cast<Mat::PAR::Soret*>(mat);
       else
         FOUR_C_THROW("Type of parameter material %d does not match calling type %d!", mat->Type(),
             MaterialType());

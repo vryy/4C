@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::Sutherland::Sutherland(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::Sutherland::Sutherland(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : Parameter(matdata),
       refvisc_(matdata->Get<double>("REFVISC")),
       reftemp_(matdata->Get<double>("REFTEMP")),
@@ -32,18 +32,18 @@ MAT::PAR::Sutherland::Sutherland(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
 {
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::Sutherland::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::Sutherland::create_material()
 {
-  return Teuchos::rcp(new MAT::Sutherland(this));
+  return Teuchos::rcp(new Mat::Sutherland(this));
 }
 
 
-MAT::SutherlandType MAT::SutherlandType::instance_;
+Mat::SutherlandType Mat::SutherlandType::instance_;
 
 
-CORE::COMM::ParObject* MAT::SutherlandType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::SutherlandType::Create(const std::vector<char>& data)
 {
-  MAT::Sutherland* sutherland = new MAT::Sutherland();
+  Mat::Sutherland* sutherland = new Mat::Sutherland();
   sutherland->Unpack(data);
   return sutherland;
 }
@@ -51,19 +51,19 @@ CORE::COMM::ParObject* MAT::SutherlandType::Create(const std::vector<char>& data
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::Sutherland::Sutherland() : params_(nullptr) {}
+Mat::Sutherland::Sutherland() : params_(nullptr) {}
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::Sutherland::Sutherland(MAT::PAR::Sutherland* params) : params_(params) {}
+Mat::Sutherland::Sutherland(Mat::PAR::Sutherland* params) : params_(params) {}
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Sutherland::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::Sutherland::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -78,24 +78,24 @@ void MAT::Sutherland::Pack(CORE::COMM::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Sutherland::Unpack(const std::vector<char>& data)
+void Mat::Sutherland::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::Sutherland*>(mat);
+        params_ = static_cast<Mat::PAR::Sutherland*>(mat);
       else
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
@@ -108,7 +108,7 @@ void MAT::Sutherland::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::Sutherland::ComputeViscosity(const double temp) const
+double Mat::Sutherland::ComputeViscosity(const double temp) const
 {
   // previous implementation using "pow"-function appears to be extremely
   // time-consuming sometimes, at least on the computing cluster
@@ -122,7 +122,7 @@ double MAT::Sutherland::ComputeViscosity(const double temp) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::Sutherland::ComputeDiffusivity(const double temp) const
+double Mat::Sutherland::ComputeDiffusivity(const double temp) const
 {
   // previous implementation using "pow"-function appears to be extremely
   // time-consuming sometimes, at least on the computing cluster
@@ -136,7 +136,7 @@ double MAT::Sutherland::ComputeDiffusivity(const double temp) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::Sutherland::ComputeDensity(const double temp, const double thermpress) const
+double Mat::Sutherland::ComputeDensity(const double temp, const double thermpress) const
 {
   const double density = thermpress / (GasConst() * temp);
 

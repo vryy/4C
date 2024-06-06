@@ -20,29 +20,29 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SerialDenseMatrix;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
     class Truss3;
   }
-}  // namespace DRT
+}  // namespace Discret
 
 namespace BEAMINTERACTION
 {
-  class BeamLinkTrussType : public CORE::COMM::ParObjectType
+  class BeamLinkTrussType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "BeamLinkTrussType"; };
 
     static BeamLinkTrussType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static BeamLinkTrussType instance_;
@@ -77,9 +77,9 @@ namespace BEAMINTERACTION
 
     //! Initialization [derived]
     void Init(int id, const std::vector<std::pair<int, int>>& eleids,
-        const std::vector<CORE::LINALG::Matrix<3, 1>>& initpos,
-        const std::vector<CORE::LINALG::Matrix<3, 3>>& inittriad,
-        INPAR::BEAMINTERACTION::CrosslinkerType linkertype, double timelinkwasset) override;
+        const std::vector<Core::LinAlg::Matrix<3, 1>>& initpos,
+        const std::vector<Core::LinAlg::Matrix<3, 3>>& inittriad,
+        Inpar::BEAMINTERACTION::CrosslinkerType linkertype, double timelinkwasset) override;
 
     //! Setup [derived]
     void Setup(const int matnum) override;
@@ -101,7 +101,7 @@ namespace BEAMINTERACTION
     \ref Pack and \ref Unpack are used to communicate this element
 
     */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class [derived]
@@ -130,7 +130,7 @@ namespace BEAMINTERACTION
 
     //! get force in first or second binding spot
     void GetBindingSpotForce(
-        int bspotid, CORE::LINALG::SerialDenseVector& bspotforce) const override;
+        int bspotid, Core::LinAlg::SerialDenseVector& bspotforce) const override;
 
     double get_current_linker_length() const override;
 
@@ -141,29 +141,29 @@ namespace BEAMINTERACTION
     /*!
     \brief Evaluate forces and stiffness contribution [derived]
     */
-    bool evaluate_force(CORE::LINALG::SerialDenseVector& forcevec1,
-        CORE::LINALG::SerialDenseVector& forcevec2) override;
+    bool evaluate_force(Core::LinAlg::SerialDenseVector& forcevec1,
+        Core::LinAlg::SerialDenseVector& forcevec2) override;
 
     /*!
     \brief Evaluate stiffness contribution [derived]
     */
-    bool evaluate_stiff(CORE::LINALG::SerialDenseMatrix& stiffmat11,
-        CORE::LINALG::SerialDenseMatrix& stiffmat12, CORE::LINALG::SerialDenseMatrix& stiffmat21,
-        CORE::LINALG::SerialDenseMatrix& stiffmat22) override;
+    bool evaluate_stiff(Core::LinAlg::SerialDenseMatrix& stiffmat11,
+        Core::LinAlg::SerialDenseMatrix& stiffmat12, Core::LinAlg::SerialDenseMatrix& stiffmat21,
+        Core::LinAlg::SerialDenseMatrix& stiffmat22) override;
 
     /*!
     \brief Evaluate forces and stiffness contribution [derived]
     */
-    bool evaluate_force_stiff(CORE::LINALG::SerialDenseVector& forcevec1,
-        CORE::LINALG::SerialDenseVector& forcevec2, CORE::LINALG::SerialDenseMatrix& stiffmat11,
-        CORE::LINALG::SerialDenseMatrix& stiffmat12, CORE::LINALG::SerialDenseMatrix& stiffmat21,
-        CORE::LINALG::SerialDenseMatrix& stiffmat22) override;
+    bool evaluate_force_stiff(Core::LinAlg::SerialDenseVector& forcevec1,
+        Core::LinAlg::SerialDenseVector& forcevec2, Core::LinAlg::SerialDenseMatrix& stiffmat11,
+        Core::LinAlg::SerialDenseMatrix& stiffmat12, Core::LinAlg::SerialDenseMatrix& stiffmat21,
+        Core::LinAlg::SerialDenseMatrix& stiffmat22) override;
 
     /*
     \brief Update position and triad of both connection sites (a.k.a. binding spots)
     */
-    void ResetState(std::vector<CORE::LINALG::Matrix<3, 1>>& bspotpos,
-        std::vector<CORE::LINALG::Matrix<3, 3>>& bspottriad) override;
+    void ResetState(std::vector<Core::LinAlg::Matrix<3, 1>>& bspotpos,
+        std::vector<Core::LinAlg::Matrix<3, 3>>& bspottriad) override;
 
 
     //@}
@@ -175,7 +175,7 @@ namespace BEAMINTERACTION
     \brief Fill absolute nodal positions and nodal quaternions with current values
     */
     void fill_state_variables_for_element_evaluation(
-        CORE::LINALG::Matrix<6, 1, double>& absolute_nodal_positions) const;
+        Core::LinAlg::Matrix<6, 1, double>& absolute_nodal_positions) const;
 
     void get_disp_for_element_evaluation(
         std::map<std::string, std::vector<double>>& ele_state) const;
@@ -186,10 +186,10 @@ namespace BEAMINTERACTION
     //! @name member variables
 
     //! new connecting element
-    Teuchos::RCP<DRT::ELEMENTS::Truss3> linkele_;
+    Teuchos::RCP<Discret::ELEMENTS::Truss3> linkele_;
 
     //! the following variables are for output purposes only (no need to pack or unpack)
-    std::vector<CORE::LINALG::SerialDenseVector> bspotforces_;
+    std::vector<Core::LinAlg::SerialDenseVector> bspotforces_;
 
     //@}
   };

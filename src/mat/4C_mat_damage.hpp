@@ -48,18 +48,18 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
     /*----------------------------------------------------------------------*/
     //! material parameters for small strain elasto-plastic material with
     //! isotropic ductile damage
-    class Damage : public CORE::MAT::PAR::Parameter
+    class Damage : public Core::Mat::PAR::Parameter
     {
      public:
       //! standard constructor
-      Damage(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      Damage(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       //! @name material parameters
       //@{
@@ -94,21 +94,21 @@ namespace MAT
       //@}
 
       //! create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
     };  // class Damage
 
   }  // namespace PAR
 
 
-  class DamageType : public CORE::COMM::ParObjectType
+  class DamageType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "DamageType"; }
 
     static DamageType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static DamageType instance_;
@@ -125,7 +125,7 @@ namespace MAT
     Damage();
 
     //! construct the material object given material parameters
-    explicit Damage(MAT::PAR::Damage* params);
+    explicit Damage(Mat::PAR::Damage* params);
 
     //! @name Packing and Unpacking
 
@@ -143,7 +143,8 @@ namespace MAT
     //!  identify the exact class on the receiving processor.
     //!
     //!  \param data (in/out): char vector to store class information
-    void Pack(CORE::COMM::PackBuffer& data  //!<  data (i/o): char vector to store class information
+    void Pack(Core::Communication::PackBuffer&
+            data  //!<  data (i/o): char vector to store class information
     ) const override;
 
     //!  \brief Unpack data from a char vector into this class
@@ -163,79 +164,79 @@ namespace MAT
     //@}
 
     //! material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_elpldamage;
+      return Core::Materials::m_elpldamage;
     }
 
     //! return copy of this material object
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new Damage(*this));
     }
 
     /// check if element kinematics and material kinematics are compatible
-    void ValidKinematics(INPAR::STR::KinemType kinem) override
+    void ValidKinematics(Inpar::STR::KinemType kinem) override
     {
-      if (!(kinem == INPAR::STR::KinemType::linear))
+      if (!(kinem == Inpar::STR::KinemType::linear))
         FOUR_C_THROW("element and material kinematics are not compatible");
     }
 
     //! initialise internal stress variables
-    void Setup(int numgp, INPUT::LineDefinition* linedef) override;
+    void Setup(int numgp, Input::LineDefinition* linedef) override;
 
     //! update internal stress variables
     void Update() override;
 
     //! evaluate material
-    void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,       //!< deformation gradient
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* linstrain,  //!< linear total strains
+    void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,       //!< deformation gradient
+        const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* linstrain,  //!< linear total strains
         Teuchos::ParameterList& params,                  //!< parameter list for communication
-        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* stress,  //!< 2nd PK-stress
-        CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,  //!< material stiffness matrix
+        Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* stress,  //!< 2nd PK-stress
+        Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,  //!< material stiffness matrix
         int gp,                                                    ///< Gauss point
         int eleGID) override;
 
     //! evaluate material using Lemaitre material model
     virtual void evaluate_full_lemaitre(
-        const CORE::LINALG::Matrix<3, 3>* defgrd,                 //!< deformation gradient
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* linstrain,  //!< linear total strains
+        const Core::LinAlg::Matrix<3, 3>* defgrd,                 //!< deformation gradient
+        const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* linstrain,  //!< linear total strains
         Teuchos::ParameterList& params,                  //!< parameter list for communication
-        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* stress,  //!< 2nd PK-stress
-        CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,  //!< material stiffness matrix
+        Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* stress,  //!< 2nd PK-stress
+        Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,  //!< material stiffness matrix
         int gp,                                                    //!< Gauss point
         int eleGID);                                               //!< element GID
 
     //! evaluate material using the simplified Lemaitre model
     virtual void evaluate_simplified_lemaitre(
-        const CORE::LINALG::Matrix<3, 3>* defgrd,                 //!< deformation gradient
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* linstrain,  //!< linear total strains
+        const Core::LinAlg::Matrix<3, 3>* defgrd,                 //!< deformation gradient
+        const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* linstrain,  //!< linear total strains
         Teuchos::ParameterList& params,                  //!< parameter list for communication
-        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* stress,  //!< 2nd PK-stress
-        CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,  //!< material stiffness matrix
+        Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* stress,  //!< 2nd PK-stress
+        Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,  //!< material stiffness matrix
         int gp,                                                    //!< Gauss point
         int eleGID);                                               //!< element GID
 
     //! computes stress
     void Stress(const double p,                                   //!< volumetric stress tensor
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& devstress,  //!< deviatoric stress tensor
-        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& stress            //!< 2nd PK-stress
+        const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& devstress,  //!< deviatoric stress tensor
+        Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& stress            //!< 2nd PK-stress
     );
 
     //! calculate relative/over stress
     void RelStress(
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& devstress,  //!< deviatoric stress tensor
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& beta,       //!< back stress tensor
-        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& eta               //!< relative stress
+        const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& devstress,  //!< deviatoric stress tensor
+        const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& beta,       //!< back stress tensor
+        Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& eta               //!< relative stress
     );
 
     //! computes isotropic elasticity tensor in matrix notion for 3d
     void setup_cmat(
-        CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat  //!< elastic material tangent
+        Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat  //!< elastic material tangent
     );
 
     //! computes isotropic elastoplastic tensor in matrix notion for 3d
-    void setup_cmat_elasto_plastic(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
+    void setup_cmat_elasto_plastic(Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
                                        cmat,  //!< elasto-plastic material tangent
         int eleID,
         double Dgamma,         //!< plastic multiplier
@@ -245,7 +246,7 @@ namespace MAT
         double q_tilde,        // undamaged trial von Mises equivalent stress
         double energyrelrate,  // damage energy release rate
         double Ytan,           // derivative of engergy release rate Ytan w.r.t. Dgamma
-        double sigma_y, double Hiso, CORE::LINALG::Matrix<NUM_STRESS_3D, 1> Nbar,
+        double sigma_y, double Hiso, Core::LinAlg::Matrix<NUM_STRESS_3D, 1> Nbar,
         int gp,             //!< current Gauss point
         bool damevolution,  //!< flag indicating if damage threshold is passed, i.e. if damage
                             //!< evolves
@@ -254,10 +255,10 @@ namespace MAT
 
     //! computes isotropic elastoplastic damage tensor in matrix nation for 3d
     void setup_cmat_elasto_plastic_full_lemaitre(
-        CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
+        Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
             cmat,                                        //!< elasto-plastic tangent modulus (out)
-        CORE::LINALG::Matrix<NUM_STRESS_3D, 1> N_tilde,  //!< flow vector
-        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& stress,  //!< total stress
+        Core::LinAlg::Matrix<NUM_STRESS_3D, 1> N_tilde,  //!< flow vector
+        Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& stress,  //!< total stress
         double heaviside,                                //!< heaviside-function
         double Dgamma,                                   //!< plastic multiplier
         double s_N,  //!< s_N = 2 * G * (Dgamma / omega_{n+1})^2 * s / r * (Y_{n+1} / r)^(s-1) * (1
@@ -274,8 +275,8 @@ namespace MAT
         int gp,               // current Gauss point
         double qbar_tilde,    // effective relative eta^{~}
         double y,             // (-Y / r)^s
-        CORE::LINALG::Matrix<NUM_STRESS_3D, 1> dy_dsigma_tilde,  // dy/dsigma_tilde
-        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>
+        Core::LinAlg::Matrix<NUM_STRESS_3D, 1> dy_dsigma_tilde,  // dy/dsigma_tilde
+        Core::LinAlg::Matrix<NUM_STRESS_3D, 1>
             b_NbetaoldN  // beta_n - 2/3 . (N_tilde : beta_n) . N_tilde
     );
 
@@ -334,7 +335,7 @@ namespace MAT
     bool Initialized() const { return (isinit_ and (strainplcurr_ != Teuchos::null)); }
 
     //! return quick accessible material parameter data
-    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
     //! return names of visualization data
     void VisNames(std::map<std::string, int>& names) override;
@@ -344,20 +345,20 @@ namespace MAT
 
    private:
     //! my material parameters
-    MAT::PAR::Damage* params_;
+    Mat::PAR::Damage* params_;
 
     //! plastic history vector
     //! old plastic strain at t_n
-    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>>
+    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
         strainpllast_;  //!< \f${\varepsilon}^p_{n}\f$
     //! current plastic strain at t_n+1
-    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>>
+    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
         strainplcurr_;  //!< \f${\varepsilon}^p_{n+1}\f$
     //! old back stress at t_n
-    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>>
+    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
         backstresslast_;  //!< \f${\beta}_{n}\f$
     //! current back stress at t_n+1
-    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>>
+    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
         backstresscurr_;  //!< \f${\beta}_{n+1}\f$
     //! old accumulated plastic strain at t_n
     Teuchos::RCP<std::vector<double>> strainbarpllast_;  //!< \f${\varepsilon}^p_{n}\f$
@@ -377,8 +378,8 @@ namespace MAT
     //! indicator if material has started to be plastic
     bool plastic_step_;
 
-  };  // class Damage : public CORE::MAT::Material
-}  // namespace MAT
+  };  // class Damage : public Core::Mat::Material
+}  // namespace Mat
 
 
 /*----------------------------------------------------------------------*/

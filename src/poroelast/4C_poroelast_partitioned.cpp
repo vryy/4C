@@ -17,23 +17,23 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-POROELAST::Partitioned::Partitioned(const Epetra_Comm& comm,
+PoroElast::Partitioned::Partitioned(const Epetra_Comm& comm,
     const Teuchos::ParameterList& timeparams,
-    Teuchos::RCP<CORE::LINALG::MapExtractor> porosity_splitter)
+    Teuchos::RCP<Core::LinAlg::MapExtractor> porosity_splitter)
     : PoroBase(comm, timeparams, porosity_splitter),
       fluidincnp_(Teuchos::rcp(new Epetra_Vector(*(fluid_field()->Velnp())))),
       structincnp_(Teuchos::rcp(new Epetra_Vector(*(structure_field()->Dispnp()))))
 {
-  const Teuchos::ParameterList& porodyn = GLOBAL::Problem::Instance()->poroelast_dynamic_params();
+  const Teuchos::ParameterList& porodyn = Global::Problem::Instance()->poroelast_dynamic_params();
   // Get the parameters for the convergence_check
   itmax_ = porodyn.get<int>("ITEMAX");     // default: =10
   ittol_ = porodyn.get<double>("INCTOL");  // default: =1e-6
 
-  fluidveln_ = CORE::LINALG::CreateVector(*(fluid_field()->dof_row_map()), true);
+  fluidveln_ = Core::LinAlg::CreateVector(*(fluid_field()->dof_row_map()), true);
   fluidveln_->PutScalar(0.0);
 }
 
-void POROELAST::Partitioned::do_time_step()
+void PoroElast::Partitioned::do_time_step()
 {
   prepare_time_step();
 
@@ -42,9 +42,9 @@ void POROELAST::Partitioned::do_time_step()
   update_and_output();
 }
 
-void POROELAST::Partitioned::SetupSystem() {}  // SetupSystem()
+void PoroElast::Partitioned::SetupSystem() {}  // SetupSystem()
 
-void POROELAST::Partitioned::update_and_output()
+void PoroElast::Partitioned::update_and_output()
 {
   constexpr bool force_prepare = false;
   prepare_output(force_prepare);
@@ -54,7 +54,7 @@ void POROELAST::Partitioned::update_and_output()
   Output();
 }
 
-void POROELAST::Partitioned::Solve()
+void PoroElast::Partitioned::Solve()
 {
   int itnum = 0;
   bool stopnonliniter = false;
@@ -110,7 +110,7 @@ void POROELAST::Partitioned::Solve()
   }
 }
 
-void POROELAST::Partitioned::do_struct_step()
+void PoroElast::Partitioned::do_struct_step()
 {
   if (Comm().MyPID() == 0)
   {
@@ -121,7 +121,7 @@ void POROELAST::Partitioned::do_struct_step()
   structure_field()->Solve();
 }
 
-void POROELAST::Partitioned::do_fluid_step()
+void PoroElast::Partitioned::do_fluid_step()
 {
   if (Comm().MyPID() == 0)
   {
@@ -133,7 +133,7 @@ void POROELAST::Partitioned::do_fluid_step()
   fluid_field()->Solve();
 }
 
-void POROELAST::Partitioned::prepare_time_step()
+void PoroElast::Partitioned::prepare_time_step()
 {
   increment_time_and_step();
   print_header();
@@ -144,7 +144,7 @@ void POROELAST::Partitioned::prepare_time_step()
   set_fluid_solution();
 }
 
-bool POROELAST::Partitioned::convergence_check(int itnum)
+bool PoroElast::Partitioned::convergence_check(int itnum)
 {
   // convergence check based on the increment
   bool stopnonliniter = false;
@@ -223,12 +223,12 @@ bool POROELAST::Partitioned::convergence_check(int itnum)
   return stopnonliniter;
 }
 
-Teuchos::RCP<const Epetra_Map> POROELAST::Partitioned::DofRowMapStructure()
+Teuchos::RCP<const Epetra_Map> PoroElast::Partitioned::DofRowMapStructure()
 {
   return structure_field()->dof_row_map();
 }
 
-Teuchos::RCP<const Epetra_Map> POROELAST::Partitioned::DofRowMapFluid()
+Teuchos::RCP<const Epetra_Map> PoroElast::Partitioned::DofRowMapFluid()
 {
   return fluid_field()->dof_row_map();
 }

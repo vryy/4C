@@ -26,21 +26,21 @@ FOUR_C_NAMESPACE_OPEN
  * Get the std - average weights kappa_m and kappa_s for the Nitsche calculations
  *----------------------------------------------------------------------*/
 void XFEM::UTILS::GetStdAverageWeights(
-    const INPAR::XFEM::AveragingStrategy averaging_strategy, double &kappa_m)
+    const Inpar::XFEM::AveragingStrategy averaging_strategy, double &kappa_m)
 {
   switch (averaging_strategy)
   {
-    case INPAR::XFEM::Xfluid_Sided:
+    case Inpar::XFEM::Xfluid_Sided:
     {
       kappa_m = 1.0;
       break;
     }
-    case INPAR::XFEM::Embedded_Sided:
+    case Inpar::XFEM::Embedded_Sided:
     {
       kappa_m = 0.0;
       break;
     }
-    case INPAR::XFEM::Mean:
+    case Inpar::XFEM::Mean:
     {
       kappa_m = 0.5;
       break;
@@ -56,12 +56,12 @@ void XFEM::UTILS::GetStdAverageWeights(
  * compute viscous part of Nitsche's penalty term scaling for Nitsche's method
  *--------------------------------------------------------------------------------*/
 void XFEM::UTILS::nit_compute_visc_penalty_stabfac(
-    const CORE::FE::CellType ele_distype,  ///< the discretization type of the element w.r.t which
+    const Core::FE::CellType ele_distype,  ///< the discretization type of the element w.r.t which
                                            ///< the stabilization factor is computed
     const double &penscaling,  ///< material dependent penalty scaling (e.g. visceff) divided by h
     const double &NIT_stabscaling,  ///< basic nit penalty stab scaling
     const bool &is_pseudo_2D,       ///< is pseudo 2d
-    const INPAR::XFEM::ViscStabTraceEstimate
+    const Inpar::XFEM::ViscStabTraceEstimate
         &visc_stab_trace_estimate,  ///< how to estimate the scaling from the trace inequality
     double &NIT_visc_stab_fac       ///< viscous part of Nitsche's penalty term
 )
@@ -120,7 +120,7 @@ void XFEM::UTILS::nit_compute_visc_penalty_stabfac(
   NIT_visc_stab_fac = penscaling * NIT_stabscaling;
 
   // compute the final viscous scaling part of Nitsche's penalty term
-  if (visc_stab_trace_estimate == INPAR::XFEM::ViscStab_TraceEstimate_CT_div_by_hk)
+  if (visc_stab_trace_estimate == Inpar::XFEM::ViscStab_TraceEstimate_CT_div_by_hk)
   {
     // get an estimate of the hp-depending constant C_T satisfying the trace inequality w.r.t the
     // corresponding element (compare different weightings)
@@ -129,7 +129,7 @@ void XFEM::UTILS::nit_compute_visc_penalty_stabfac(
     // build the final viscous scaling
     NIT_visc_stab_fac *= C_T;
   }
-  else if (visc_stab_trace_estimate != INPAR::XFEM::ViscStab_TraceEstimate_eigenvalue)
+  else if (visc_stab_trace_estimate != Inpar::XFEM::ViscStab_TraceEstimate_eigenvalue)
   {
     FOUR_C_THROW(
         "unknown trace-inequality-estimate type for viscous part of Nitsche's penalty term");
@@ -142,7 +142,7 @@ void XFEM::UTILS::nit_compute_visc_penalty_stabfac(
  *polynomial order of the element
  *--------------------------------------------------------------------------------*/
 double XFEM::UTILS::nit_get_trace_estimate_constant(
-    const CORE::FE::CellType ele_distype, bool is_pseudo_2D)
+    const Core::FE::CellType ele_distype, bool is_pseudo_2D)
 {
   /*
   => return
@@ -198,7 +198,7 @@ double XFEM::UTILS::nit_get_trace_estimate_constant(
   slightly worse convergence of the linear solver, however, usually it has not a to worse effect.
 */
 
-  CORE::FE::CellType trace_inequality_distype;
+  Core::FE::CellType trace_inequality_distype;
 
   if (!is_pseudo_2D)
   {
@@ -210,25 +210,25 @@ double XFEM::UTILS::nit_get_trace_estimate_constant(
     // modification for pseudo 2D simulations
     switch (ele_distype)
     {
-      case CORE::FE::CellType::hex8:
-        trace_inequality_distype = CORE::FE::CellType::quad4;
+      case Core::FE::CellType::hex8:
+        trace_inequality_distype = Core::FE::CellType::quad4;
         break;  // hex8 -> quad4 reduction
-      case CORE::FE::CellType::hex20:
-        trace_inequality_distype = CORE::FE::CellType::quad8;
+      case Core::FE::CellType::hex20:
+        trace_inequality_distype = Core::FE::CellType::quad8;
         break;  // hex20-> quad8 reduction
-      case CORE::FE::CellType::hex27:
-        trace_inequality_distype = CORE::FE::CellType::quad9;
+      case Core::FE::CellType::hex27:
+        trace_inequality_distype = Core::FE::CellType::quad9;
         break;  // hex27-> quad9 reduction
-      case CORE::FE::CellType::wedge15:
-        trace_inequality_distype = CORE::FE::CellType::tri6;
+      case Core::FE::CellType::wedge15:
+        trace_inequality_distype = Core::FE::CellType::tri6;
         break;  // wedge15 -> tri6 reduction (tri6 elements in 2D plane)
-      case CORE::FE::CellType::wedge6:
-        trace_inequality_distype = CORE::FE::CellType::tri3;
+      case Core::FE::CellType::wedge6:
+        trace_inequality_distype = Core::FE::CellType::tri3;
         break;  // wedge6 -> tri3 reduction (tri3 elements in 2D plane)
       default:
       {
         FOUR_C_THROW("not a valid pseudo 2D element-type - what to do?");
-        trace_inequality_distype = CORE::FE::CellType::dis_none;
+        trace_inequality_distype = Core::FE::CellType::dis_none;
         break;
       }
     };
@@ -248,78 +248,78 @@ double XFEM::UTILS::nit_get_trace_estimate_constant(
     /*
     // CT = p(p+1)/2 * (2+1/p)^d
     // 3D hexahedral elements
-    case CORE::FE::CellType::hex8:      return 27.0;                 break;  /// d=3,
-    p(v_h) = 1 -> p(grad(v_h)) = 1   =>  CT=27.0 case CORE::FE::CellType::hex20:
+    case Core::FE::CellType::hex8:      return 27.0;                 break;  /// d=3,
+    p(v_h) = 1 -> p(grad(v_h)) = 1   =>  CT=27.0 case Core::FE::CellType::hex20:
     return 46.875; break;
     /// d=3, p(v_h) = 2 -> p(grad(v_h)) = 2   =>  CT=46.875 (375/8) case
-    CORE::FE::CellType::hex27: return 46.875;               break;  /// d=3, p(v_h) =
+    Core::FE::CellType::hex27: return 46.875;               break;  /// d=3, p(v_h) =
     2 -> p(grad(v_h)) = 2   =>  CT=46.875 (375/8)
     // 2D quadrilateral elements
-    case CORE::FE::CellType::quad4:     return 9.0;                  break;  /// d=2,
-    p(v_h) = 1 -> p(grad(v_h)) = 1   =>  CT=9.0 case CORE::FE::CellType::quad8:
+    case Core::FE::CellType::quad4:     return 9.0;                  break;  /// d=2,
+    p(v_h) = 1 -> p(grad(v_h)) = 1   =>  CT=9.0 case Core::FE::CellType::quad8:
     return 9.0; break;
     /// d=2, p(v_h) = 1 -> p(grad(v_h)) = 1   =>  CT=9.0 case
-    CORE::FE::CellType::quad9:     return 18.75; break;  /// d=2, p(v_h) = 2 ->
+    Core::FE::CellType::quad9:     return 18.75; break;  /// d=2, p(v_h) = 2 ->
     p(grad(v_h)) = 2   =>  CT=18.75  (75/4)
     */
     // REMARK: the theroretical estimate of the constant CT for hexahedral and quadrilateral
     // elements seems to overestimate the actual constant
     // -> therefore we take the approximate values from solving a local eigenvalue problem
     // estimates from solving the eigenvalue problem on regular elements
-    case CORE::FE::CellType::hex8:
+    case Core::FE::CellType::hex8:
       return 1.59307;
       break;  /// d=3, p(v_h) = 1 -> p(grad(v_h)) = 1   =>  CT= from eigenvalue problem
-    case CORE::FE::CellType::hex20:
+    case Core::FE::CellType::hex20:
       return 4.10462;
       break;  /// d=3, p(v_h) = 2 -> p(grad(v_h)) = 2   =>  CT= from eigenvalue problem
-    case CORE::FE::CellType::hex27:
+    case Core::FE::CellType::hex27:
       return 4.27784;
       break;  /// d=3, p(v_h) = 2 -> p(grad(v_h)) = 2   =>  CT= from eigenvalue problem
     // 2D quadrilateral elements
-    case CORE::FE::CellType::quad4:
+    case Core::FE::CellType::quad4:
       return 1.43426;
       break;  /// d=2, p(v_h) = 1 -> p(grad(v_h)) = 1   =>  CT= from eigenvalue problem
-    case CORE::FE::CellType::quad8:
+    case Core::FE::CellType::quad8:
       return 4.06462;
       break;  /// d=2, p(v_h) = 1 -> p(grad(v_h)) = 1   =>  CT= from eigenvalue problem
-    case CORE::FE::CellType::quad9:
+    case Core::FE::CellType::quad9:
       return 4.19708;
       break;  /// d=2, p(v_h) = 2 -> p(grad(v_h)) = 2   =>  CT= from eigenvalue problem
     //----------------------------------------------------------------
     // CT = (p+1)*(p+d)/d (this estimate leads to the same results as solving a local eigenvalue
     // problem) 3D tetrahedral elements
-    case CORE::FE::CellType::tet4:
+    case Core::FE::CellType::tet4:
       return 1.0;
       break;  /// d=3, p(v_h) = 1 -> p(grad(v_h)) = 0   =>  CT=1.0
-    case CORE::FE::CellType::tet10:
+    case Core::FE::CellType::tet10:
       return 2.6666666666666666;
       break;  /// d=3, p(v_h) = 2 -> p(grad(v_h)) = 1   =>  CT=2.6666666666666666 (8/3)
     // 2D triangular elements
-    case CORE::FE::CellType::tri3:
+    case Core::FE::CellType::tri3:
       return 1.0;
       break;  /// d=2, p(v_h) = 1 -> p(grad(v_h)) = 0   =>  CT=1.0
-    case CORE::FE::CellType::tri6:
+    case Core::FE::CellType::tri6:
       return 3.0;
       break;  /// d=2, p(v_h) = 2 -> p(grad(v_h)) = 1   =>  CT=3.0
     // 1D line elements
-    case CORE::FE::CellType::line2:
+    case Core::FE::CellType::line2:
       return 1.0;
       break;  /// d=1, p(v_h) = 1 -> p(grad(v_h)) = 0   =>  CT=1.0
-    case CORE::FE::CellType::line3:
+    case Core::FE::CellType::line3:
       return 4.0;
       break;  /// d=1, p(v_h) = 1 -> p(grad(v_h)) = 0   =>  CT=4.0
     //----------------------------------------------------------------
     // 3D wedge/pyramid elements, the current estimates are taken from the maximum of hex and tet
     // elements, the correct value has to switch between the faces!
-    case CORE::FE::CellType::pyramid5:
+    case Core::FE::CellType::pyramid5:
       std::cout << "WARNING: calibrate this value!" << std::endl;
       return 1.59307;
       break;  /// d=3, p(v_h) = 1 -> p(grad(v_h)) = 1   =>  CT taken from hex8
-    case CORE::FE::CellType::wedge6:
+    case Core::FE::CellType::wedge6:
       std::cout << "WARNING: calibrate this value!" << std::endl;
       return 1.59307;
       break;  /// d=3, p(v_h) = 1 -> p(grad(v_h)) = 1   =>  CT taken from hex8
-    case CORE::FE::CellType::wedge15:
+    case Core::FE::CellType::wedge15:
       std::cout << "WARNING: calibrate this value!" << std::endl;
       return 4.10462;
       break;  /// d=3, p(v_h) = 2 -> p(grad(v_h)) = 2   =>  CT taken from hex20
@@ -389,10 +389,10 @@ void XFEM::UTILS::GetNavierSlipStabilizationParameters(
  * compute transformation factor for surface integration, normal, local and global gp coordinates
  *--------------------------------------------------------------------------------*/
 void XFEM::UTILS::ComputeSurfaceTransformation(double &drs,  ///< surface transformation factor
-    CORE::LINALG::Matrix<3, 1> &x_gp_lin,  ///< global coordiantes of gaussian point
-    CORE::LINALG::Matrix<3, 1> &normal,    ///< normal vector on boundary cell
-    CORE::GEO::CUT::BoundaryCell *bc,      ///< boundary cell
-    const CORE::LINALG::Matrix<2, 1>
+    Core::LinAlg::Matrix<3, 1> &x_gp_lin,  ///< global coordiantes of gaussian point
+    Core::LinAlg::Matrix<3, 1> &normal,    ///< normal vector on boundary cell
+    Core::Geo::Cut::BoundaryCell *bc,      ///< boundary cell
+    const Core::LinAlg::Matrix<2, 1>
         &eta,          ///< local coordinates of gaussian point w.r.t boundarycell
     bool referencepos  ///< use the bc reference position for transformation
 )
@@ -403,14 +403,14 @@ void XFEM::UTILS::ComputeSurfaceTransformation(double &drs,  ///< surface transf
   // transformation factor
   switch (bc->Shape())
   {
-    case CORE::FE::CellType::tri3:
+    case Core::FE::CellType::tri3:
     {
-      bc->Transform<CORE::FE::CellType::tri3>(eta, x_gp_lin, normal, drs, referencepos);
+      bc->Transform<Core::FE::CellType::tri3>(eta, x_gp_lin, normal, drs, referencepos);
       break;
     }
-    case CORE::FE::CellType::quad4:
+    case Core::FE::CellType::quad4:
     {
-      bc->Transform<CORE::FE::CellType::quad4>(eta, x_gp_lin, normal, drs, referencepos);
+      bc->Transform<Core::FE::CellType::quad4>(eta, x_gp_lin, normal, drs, referencepos);
       break;
     }
     default:
@@ -423,9 +423,9 @@ void XFEM::UTILS::ComputeSurfaceTransformation(double &drs,  ///< surface transf
 /*--------------------------------------------------------------------------------
  * pre-compute the measure of all side's surface cutting the element
  *--------------------------------------------------------------------------------*/
-double XFEM::UTILS::ComputeMeasCutSurf(const std::map<int, std::vector<CORE::FE::GaussIntegration>>
+double XFEM::UTILS::ComputeMeasCutSurf(const std::map<int, std::vector<Core::FE::GaussIntegration>>
                                            &bintpoints,  ///< boundary cell integration points
-    const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell *>> &bcells  ///< boundary cells
+    const std::map<int, std::vector<Core::Geo::Cut::BoundaryCell *>> &bcells  ///< boundary cells
 )
 {
   double surf = 0.0;
@@ -433,46 +433,46 @@ double XFEM::UTILS::ComputeMeasCutSurf(const std::map<int, std::vector<CORE::FE:
   //--------------------------------------------
   // loop intersecting sides
   // map of side-element id and Gauss points
-  for (std::map<int, std::vector<CORE::FE::GaussIntegration>>::const_iterator i =
+  for (std::map<int, std::vector<Core::FE::GaussIntegration>>::const_iterator i =
            bintpoints.begin();
        i != bintpoints.end(); ++i)
   {
     int sid = i->first;
-    const std::vector<CORE::FE::GaussIntegration> &cutintpoints = i->second;
+    const std::vector<Core::FE::GaussIntegration> &cutintpoints = i->second;
 
     // get side's boundary cells
-    std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell *>>::const_iterator j = bcells.find(sid);
+    std::map<int, std::vector<Core::Geo::Cut::BoundaryCell *>>::const_iterator j = bcells.find(sid);
     if (j == bcells.end()) FOUR_C_THROW("missing boundary cell");
 
-    const std::vector<CORE::GEO::CUT::BoundaryCell *> &bcs = j->second;
+    const std::vector<Core::Geo::Cut::BoundaryCell *> &bcs = j->second;
     if (bcs.size() != cutintpoints.size()) FOUR_C_THROW("boundary cell integration rules mismatch");
 
     //--------------------------------------------
     // loop boundary cells w.r.t current cut side
     //--------------------------------------------
-    for (std::vector<CORE::FE::GaussIntegration>::const_iterator i = cutintpoints.begin();
+    for (std::vector<Core::FE::GaussIntegration>::const_iterator i = cutintpoints.begin();
          i != cutintpoints.end(); ++i)
     {
-      const CORE::FE::GaussIntegration &gi = *i;
-      CORE::GEO::CUT::BoundaryCell *bc =
+      const Core::FE::GaussIntegration &gi = *i;
+      Core::Geo::Cut::BoundaryCell *bc =
           bcs[i - cutintpoints.begin()];  // get the corresponding boundary cell
 
       //--------------------------------------------
       // loop gausspoints w.r.t current boundary cell
       //--------------------------------------------
-      for (CORE::FE::GaussIntegration::iterator iquad = gi.begin(); iquad != gi.end(); ++iquad)
+      for (Core::FE::GaussIntegration::iterator iquad = gi.begin(); iquad != gi.end(); ++iquad)
       {
         double drs =
             0.0;  // transformation factor between reference cell and linearized boundary cell
 
-        const CORE::LINALG::Matrix<2, 1> eta(iquad.Point());  // xi-coordinates with respect to side
+        const Core::LinAlg::Matrix<2, 1> eta(iquad.Point());  // xi-coordinates with respect to side
 
-        CORE::LINALG::Matrix<3, 1> normal(true);
+        Core::LinAlg::Matrix<3, 1> normal(true);
 
-        CORE::LINALG::Matrix<3, 1> x_gp_lin(true);  // gp in xyz-system on linearized interface
+        Core::LinAlg::Matrix<3, 1> x_gp_lin(true);  // gp in xyz-system on linearized interface
 
         // compute transformation factor, normal vector and global Gauss point coordiantes
-        if (bc->Shape() != CORE::FE::CellType::dis_none)  // Tessellation approach
+        if (bc->Shape() != Core::FE::CellType::dis_none)  // Tessellation approach
         {
           XFEM::UTILS::ComputeSurfaceTransformation(drs, x_gp_lin, normal, bc, eta);
         }
@@ -501,21 +501,21 @@ double XFEM::UTILS::ComputeMeasCutSurf(const std::map<int, std::vector<CORE::FE:
 /*--------------------------------------------------------------------------------
  * compute the measure of the elements surface with given local id
  *--------------------------------------------------------------------------------*/
-double XFEM::UTILS::ComputeMeasFace(CORE::Elements::Element *ele,  ///< fluid element
-    CORE::LINALG::SerialDenseMatrix &ele_xyze,                     ///< element coordinates
+double XFEM::UTILS::ComputeMeasFace(Core::Elements::Element *ele,  ///< fluid element
+    Core::LinAlg::SerialDenseMatrix &ele_xyze,                     ///< element coordinates
     const int local_face_id,  ///< the local id of the face w.r.t the fluid element
     const int nsd             ///< number of space dimensions
 )
 {
   // get the shape of the face
-  CORE::FE::CellType face_shape = CORE::FE::getEleFaceShapeType(ele->Shape(), local_face_id);
+  Core::FE::CellType face_shape = Core::FE::getEleFaceShapeType(ele->Shape(), local_face_id);
 
   // get the current node coordinates, extract them from the element's node coordinates
-  const int numnode_face = CORE::FE::getNumberOfElementNodes(face_shape);
-  CORE::LINALG::SerialDenseMatrix xyze_face(nsd, numnode_face);
+  const int numnode_face = Core::FE::getNumberOfElementNodes(face_shape);
+  Core::LinAlg::SerialDenseMatrix xyze_face(nsd, numnode_face);
 
   // map for numbering of nodes of the surfaces
-  std::vector<std::vector<int>> map = CORE::FE::getEleNodeNumberingFaces(ele->Shape());
+  std::vector<std::vector<int>> map = Core::FE::getEleNodeNumberingFaces(ele->Shape());
 
   // extract the surface's node coordinates from the element's nodes coordinates
   for (int n = 0; n < numnode_face; ++n)
@@ -525,23 +525,23 @@ double XFEM::UTILS::ComputeMeasFace(CORE::Elements::Element *ele,  ///< fluid el
   }
 
   // the metric tensor and the area of an infintesimal surface element
-  CORE::LINALG::SerialDenseMatrix metrictensor(nsd - 1, nsd - 1);
+  Core::LinAlg::SerialDenseMatrix metrictensor(nsd - 1, nsd - 1);
   double drs = 0.0;
 
   if (nsd != 3)
     FOUR_C_THROW("don't call this function for non-3D examples, adapt the following for 2D!");
 
-  CORE::FE::GaussRule2D gaussrule = CORE::FE::GaussRule2D::undefined;
+  Core::FE::GaussRule2D gaussrule = Core::FE::GaussRule2D::undefined;
   switch (face_shape)
   {
-    case CORE::FE::CellType::quad4:
-    case CORE::FE::CellType::quad8:
-    case CORE::FE::CellType::quad9:
-      gaussrule = CORE::FE::GaussRule2D::quad_1point;
+    case Core::FE::CellType::quad4:
+    case Core::FE::CellType::quad8:
+    case Core::FE::CellType::quad9:
+      gaussrule = Core::FE::GaussRule2D::quad_1point;
       break;
-    case CORE::FE::CellType::tri3:
-    case CORE::FE::CellType::tri6:
-      gaussrule = CORE::FE::GaussRule2D::tri_1point;
+    case Core::FE::CellType::tri3:
+    case Core::FE::CellType::tri6:
+      gaussrule = Core::FE::GaussRule2D::tri_1point;
       break;
     default:
       FOUR_C_THROW("shape type unknown!\n");
@@ -553,20 +553,20 @@ double XFEM::UTILS::ComputeMeasFace(CORE::Elements::Element *ele,  ///< fluid el
   /*----------------------------------------------------------------------*
     |               start loop over integration points                     |
    *----------------------------------------------------------------------*/
-  const CORE::FE::IntegrationPoints2D intpoints(gaussrule);
+  const Core::FE::IntegrationPoints2D intpoints(gaussrule);
   for (int gpid = 0; gpid < intpoints.nquad; ++gpid)
   {
     const double e0 = intpoints.qxg[gpid][0];
     const double e1 = intpoints.qxg[gpid][1];
 
-    CORE::LINALG::SerialDenseMatrix deriv(nsd - 1, numnode_face);
+    Core::LinAlg::SerialDenseMatrix deriv(nsd - 1, numnode_face);
 
     // get shape functions and derivatives in the plane of the element
-    CORE::FE::shape_function_2D_deriv1(deriv, e0, e1, face_shape);
+    Core::FE::shape_function_2D_deriv1(deriv, e0, e1, face_shape);
 
     // compute measure tensor for surface element and the infinitesimal
     // area element drs for the integration
-    CORE::FE::ComputeMetricTensorForSurface(xyze_face, deriv, metrictensor, &drs);
+    Core::FE::ComputeMetricTensorForSurface(xyze_face, deriv, metrictensor, &drs);
 
     meas_face += intpoints.qwgt[gpid] * drs;
   }
@@ -577,48 +577,48 @@ double XFEM::UTILS::ComputeMeasFace(CORE::Elements::Element *ele,  ///< fluid el
 /*----------------------------------------------------------------------*
  | evaluate element volume                                              |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-double XFEM::UTILS::EvalElementVolume(CORE::LINALG::Matrix<3, CORE::FE::num_nodes<distype>> xyze,
-    CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, 1> *nurbs_weights,
-    std::vector<CORE::LINALG::SerialDenseVector> *nurbs_knots)
+template <Core::FE::CellType distype>
+double XFEM::UTILS::EvalElementVolume(Core::LinAlg::Matrix<3, Core::FE::num_nodes<distype>> xyze,
+    Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, 1> *nurbs_weights,
+    std::vector<Core::LinAlg::SerialDenseVector> *nurbs_knots)
 {
   static const int nsd = 3;
-  static const int nen = CORE::FE::num_nodes<distype>;
+  static const int nen = Core::FE::num_nodes<distype>;
 
   // use one-point Gauss rule
-  CORE::FE::IntPointsAndWeights<nsd> intpoints_stab(
-      DRT::ELEMENTS::DisTypeToStabGaussRule<distype>::rule);
+  Core::FE::IntPointsAndWeights<nsd> intpoints_stab(
+      Discret::ELEMENTS::DisTypeToStabGaussRule<distype>::rule);
 
   const double *gpcoord = intpoints_stab.IP().qxg[0];   // actual integration point (coords)
   const double gpweight = intpoints_stab.IP().qwgt[0];  // actual integration point (weight)
 
-  CORE::LINALG::Matrix<nsd, 1> xsi(gpcoord, true);
-  static CORE::LINALG::Matrix<nen, 1> funct;
-  static CORE::LINALG::Matrix<nsd, nen> deriv;
-  static CORE::LINALG::Matrix<nsd, nsd> xjm;
-  static CORE::LINALG::Matrix<nsd, nsd> xji;
+  Core::LinAlg::Matrix<nsd, 1> xsi(gpcoord, true);
+  static Core::LinAlg::Matrix<nen, 1> funct;
+  static Core::LinAlg::Matrix<nsd, nen> deriv;
+  static Core::LinAlg::Matrix<nsd, nsd> xjm;
+  static Core::LinAlg::Matrix<nsd, nsd> xji;
 
   switch (distype)
   {
-    case CORE::FE::CellType::hex8:
-    case CORE::FE::CellType::hex20:
-    case CORE::FE::CellType::hex27:
-    case CORE::FE::CellType::tet4:
-    case CORE::FE::CellType::tet10:
-    case CORE::FE::CellType::wedge6:
-    case CORE::FE::CellType::wedge15:
+    case Core::FE::CellType::hex8:
+    case Core::FE::CellType::hex20:
+    case Core::FE::CellType::hex27:
+    case Core::FE::CellType::tet4:
+    case Core::FE::CellType::tet10:
+    case Core::FE::CellType::wedge6:
+    case Core::FE::CellType::wedge15:
     {
       // shape functions and their first derivatives
-      CORE::FE::shape_function<distype>(xsi, funct);
-      CORE::FE::shape_function_deriv1<distype>(xsi, deriv);
+      Core::FE::shape_function<distype>(xsi, funct);
+      Core::FE::shape_function_deriv1<distype>(xsi, deriv);
       break;
     }
-    case CORE::FE::CellType::nurbs8:
-    case CORE::FE::CellType::nurbs27:
+    case Core::FE::CellType::nurbs8:
+    case Core::FE::CellType::nurbs27:
     {
       if (nurbs_weights == nullptr || nurbs_knots == nullptr)
         FOUR_C_THROW("For Nurbs elements, weights and knots are required!");
-      CORE::FE::NURBS::nurbs_get_funct_deriv(
+      Core::FE::Nurbs::nurbs_get_funct_deriv(
           funct, deriv, xsi, *nurbs_knots, *nurbs_weights, distype);
       break;
     }
@@ -657,29 +657,29 @@ double XFEM::UTILS::EvalElementVolume(CORE::LINALG::Matrix<3, CORE::FE::num_node
 /*--------------------------------------------------------------------------------
  * compute characteristic element length
  *--------------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-double XFEM::UTILS::ComputeCharEleLength(CORE::Elements::Element *ele,  ///< fluid element
-    CORE::LINALG::SerialDenseMatrix &ele_xyze,                          ///< element coordinates
+template <Core::FE::CellType distype>
+double XFEM::UTILS::ComputeCharEleLength(Core::Elements::Element *ele,  ///< fluid element
+    Core::LinAlg::SerialDenseMatrix &ele_xyze,                          ///< element coordinates
     const Teuchos::RCP<XFEM::ConditionManager> &cond_manager,           ///< XFEM condition manager
-    const CORE::GEO::CUT::plain_volumecell_set &vcSet,  ///< volumecell sets for volume integration
-    const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell *>>
+    const Core::Geo::Cut::plain_volumecell_set &vcSet,  ///< volumecell sets for volume integration
+    const std::map<int, std::vector<Core::Geo::Cut::BoundaryCell *>>
         &bcells,  ///< bcells for boundary cell integration
-    const std::map<int, std::vector<CORE::FE::GaussIntegration>>
+    const std::map<int, std::vector<Core::FE::GaussIntegration>>
         &bintpoints,  ///< integration points for boundary cell integration
-    const INPAR::XFEM::ViscStabHk visc_stab_hk,  ///< h definition
-    Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype>>
+    const Inpar::XFEM::ViscStabHk visc_stab_hk,  ///< h definition
+    Teuchos::RCP<Discret::ELEMENTS::XFLUID::SlaveElementInterface<distype>>
         emb,                       ///< pointer to the embedded coupling implementation
-    CORE::Elements::Element *face  ///< side element in 3D
+    Core::Elements::Element *face  ///< side element in 3D
 )
 {
   static const int nsd = 3;
   // TEUCHOS_FUNC_TIME_MONITOR("FluidEleCalcXFEM::ComputeCharEleLength");
 
-  CORE::LINALG::Matrix<3, CORE::FE::num_nodes<distype>> xyze(ele_xyze, true);
+  Core::LinAlg::Matrix<3, Core::FE::num_nodes<distype>> xyze(ele_xyze, true);
   const int coup_sid = bintpoints.begin()->first;
-  const INPAR::XFEM::AveragingStrategy averaging_strategy =
+  const Inpar::XFEM::AveragingStrategy averaging_strategy =
       cond_manager->get_averaging_strategy(coup_sid, ele->Id());
-  if (emb == Teuchos::null and averaging_strategy == INPAR::XFEM::Embedded_Sided)
+  if (emb == Teuchos::null and averaging_strategy == Inpar::XFEM::Embedded_Sided)
     FOUR_C_THROW("no coupling interface available, however Embedded_Sided coupling is activated!");
 
   // characteristic element length to be computed
@@ -696,10 +696,10 @@ double XFEM::UTILS::ComputeCharEleLength(CORE::Elements::Element *ele,  ///< flu
     //---------------------------------------------------
     // volume-equivalent diameter
     //---------------------------------------------------
-    case INPAR::XFEM::ViscStab_hk_vol_equivalent:
+    case Inpar::XFEM::ViscStab_hk_vol_equivalent:
     {
       // evaluate shape functions and derivatives at element center
-      if (averaging_strategy == INPAR::XFEM::Embedded_Sided)
+      if (averaging_strategy == Inpar::XFEM::Embedded_Sided)
       {
         // evaluate shape functions and derivatives at element center w.r.t embedded element
         meas_vol = emb->EvalElementVolume();
@@ -721,9 +721,9 @@ double XFEM::UTILS::ComputeCharEleLength(CORE::Elements::Element *ele,  ///< flu
     // ( used to estimate the cut-dependent inverse estimate on cut elements, not useful for sliver
     // and/or dotted cut situations)
     //---------------------------------------------------
-    case INPAR::XFEM::ViscStab_hk_cut_vol_div_by_cut_surf:
+    case Inpar::XFEM::ViscStab_hk_cut_vol_div_by_cut_surf:
     {
-      if (averaging_strategy == INPAR::XFEM::Embedded_Sided)
+      if (averaging_strategy == Inpar::XFEM::Embedded_Sided)
         FOUR_C_THROW(
             "ViscStab_hk_cut_vol_div_by_cut_surf not reasonable for Embedded_Sided_Coupling!");
 
@@ -733,10 +733,10 @@ double XFEM::UTILS::ComputeCharEleLength(CORE::Elements::Element *ele,  ///< flu
       if (fabs(meas_surf) < 1.e-8) FOUR_C_THROW("Element contribution to interface has zero size.");
 
       // compute the cut volume measure
-      for (CORE::GEO::CUT::plain_volumecell_set::const_iterator i = vcSet.begin(); i != vcSet.end();
+      for (Core::Geo::Cut::plain_volumecell_set::const_iterator i = vcSet.begin(); i != vcSet.end();
            ++i)
       {
-        CORE::GEO::CUT::VolumeCell *vc = *i;
+        Core::Geo::Cut::VolumeCell *vc = *i;
         meas_vol += vc->Volume();
       }
 
@@ -753,9 +753,9 @@ double XFEM::UTILS::ComputeCharEleLength(CORE::Elements::Element *ele,  ///< flu
     // cut-dependent inverse estimate on cut elements, however, avoids problems with sliver cuts,
     // not useful for dotted cuts)
     //---------------------------------------------------
-    case INPAR::XFEM::ViscStab_hk_ele_vol_div_by_cut_surf:
+    case Inpar::XFEM::ViscStab_hk_ele_vol_div_by_cut_surf:
     {
-      if (averaging_strategy == INPAR::XFEM::Embedded_Sided)
+      if (averaging_strategy == Inpar::XFEM::Embedded_Sided)
         FOUR_C_THROW(
             "ViscStab_hk_ele_vol_div_by_cut_surf not reasonable for Embedded_Sided_Coupling!");
 
@@ -771,13 +771,13 @@ double XFEM::UTILS::ComputeCharEleLength(CORE::Elements::Element *ele,  ///< flu
     // full element volume divided by surface measure ( used for uncut situations, standard weak
     // Dirichlet boundary/coupling conditions)
     //---------------------------------------------------
-    case INPAR::XFEM::ViscStab_hk_ele_vol_div_by_ele_surf:
+    case Inpar::XFEM::ViscStab_hk_ele_vol_div_by_ele_surf:
     {
-      if (averaging_strategy != INPAR::XFEM::Embedded_Sided)
+      if (averaging_strategy != Inpar::XFEM::Embedded_Sided)
         FOUR_C_THROW(
             "ViscStab_hk_ele_vol_div_by_ele_surf just reasonable for Embedded_Sided_Coupling!");
 
-      CORE::Elements::FaceElement *fele = dynamic_cast<CORE::Elements::FaceElement *>(face);
+      Core::Elements::FaceElement *fele = dynamic_cast<Core::Elements::FaceElement *>(face);
       if (!fele) FOUR_C_THROW("Cast to FaceElement failed!");
 
       //---------------------------------------------------
@@ -790,16 +790,16 @@ double XFEM::UTILS::ComputeCharEleLength(CORE::Elements::Element *ele,  ///< flu
       break;
     }
     //---------------------------------------------------
-    case INPAR::XFEM::ViscStab_hk_ele_vol_div_by_max_ele_surf:
+    case Inpar::XFEM::ViscStab_hk_ele_vol_div_by_max_ele_surf:
       //---------------------------------------------------
       {
-        if (averaging_strategy == INPAR::XFEM::Embedded_Sided)
+        if (averaging_strategy == Inpar::XFEM::Embedded_Sided)
           FOUR_C_THROW(
               "ViscStab_hk_ele_vol_div_by_max_ele_surf not reasonable for "
               "Embedded_Sided_Coupling!");
 
         // compute the uncut element's surface measure
-        const int numfaces = CORE::FE::getNumberOfElementFaces(ele->Shape());
+        const int numfaces = Core::FE::getNumberOfElementFaces(ele->Shape());
 
         // loop all surfaces
         for (int lid = 0; lid < numfaces; ++lid)
@@ -836,25 +836,25 @@ double XFEM::UTILS::ComputeCharEleLength(CORE::Elements::Element *ele,  ///< flu
 void XFEM::UTILS::NIT_Compute_FullPenalty_Stabfac(
     double &NIT_full_stab_fac,  ///< to be filled: full Nitsche's penalty term scaling
                                 ///< (viscous+convective part)
-    const CORE::LINALG::Matrix<3, 1> &normal,    ///< interface-normal vector
+    const Core::LinAlg::Matrix<3, 1> &normal,    ///< interface-normal vector
     const double h_k,                            ///< characteristic element length
     const double kappa_m,                        ///< Weight parameter (parameter +/master side)
     const double kappa_s,                        ///< Weight parameter (parameter -/slave  side)
-    const CORE::LINALG::Matrix<3, 1> &velint_m,  ///< Master side velocity at gauss-point
-    const CORE::LINALG::Matrix<3, 1> &velint_s,  ///< Slave side velocity at gauss-point
+    const Core::LinAlg::Matrix<3, 1> &velint_m,  ///< Master side velocity at gauss-point
+    const Core::LinAlg::Matrix<3, 1> &velint_s,  ///< Slave side velocity at gauss-point
     const double NIT_visc_stab_fac,              ///< Nitsche's viscous scaling part of penalty term
     const double timefac,                        ///< timefac
     const bool isstationary,                     ///< isstationary
     const double densaf_master,                  ///< master density
     const double densaf_slave,                   ///< slave density
-    INPAR::XFEM::MassConservationScaling
+    Inpar::XFEM::MassConservationScaling
         mass_conservation_scaling,  ///< kind of mass conservation scaling
-    INPAR::XFEM::MassConservationCombination
+    Inpar::XFEM::MassConservationCombination
         mass_conservation_combination,  ///< kind of mass conservation combination
     const double NITStabScaling,        ///< scaling of nit stab fac
-    INPAR::XFEM::ConvStabScaling
+    Inpar::XFEM::ConvStabScaling
         ConvStabScaling,  ///< which convective stab. scaling of inflow stab
-    INPAR::XFEM::XffConvStabScaling
+    Inpar::XFEM::XffConvStabScaling
         XFF_ConvStabScaling,    ///< which convective stab. scaling on XFF interface
     const bool IsConservative,  ///< conservative formulation of navier stokes
     bool error_calc             ///< when called in error calculation, don't add the inflow terms
@@ -868,7 +868,7 @@ void XFEM::UTILS::NIT_Compute_FullPenalty_Stabfac(
   /*
    * Depending on the flow regime, the factor alpha of Nitsches penalty term
    * (\alpha * [v],[u]) can take various forms.
-   * Based on INPAR::XFEM::mass_conservation_combination, we choose:
+   * Based on Inpar::XFEM::mass_conservation_combination, we choose:
    *
    *                       (1)           (2)          (3)
    *                    /  \mu    \rho             h * \rho         \
@@ -890,7 +890,7 @@ void XFEM::UTILS::NIT_Compute_FullPenalty_Stabfac(
    * multiscale method for incompressible two-phase flow', Int. J. Numer. Meth. Engng, 2014
    *
    *
-   * If INPAR::XFEM::MassConservationScaling_only_visc is set, we choose only (1),
+   * If Inpar::XFEM::MassConservationScaling_only_visc is set, we choose only (1),
    * no matter if the combination option max or sum is active!
    *
    */
@@ -899,7 +899,7 @@ void XFEM::UTILS::NIT_Compute_FullPenalty_Stabfac(
   // (1)
   NIT_full_stab_fac = NIT_visc_stab_fac;
 
-  if (mass_conservation_scaling == INPAR::XFEM::MassConservationScaling_full)
+  if (mass_conservation_scaling == Inpar::XFEM::MassConservationScaling_full)
   {
     // TODO: Raffaela: which velocity has to be evaluated for these terms in ALE? the convective
     // velocity or the velint?
@@ -907,7 +907,7 @@ void XFEM::UTILS::NIT_Compute_FullPenalty_Stabfac(
     double velnorminf_s = velint_s.NormInf();
 
     // take the maximum of viscous & convective contribution or the sum?
-    if (mass_conservation_combination == INPAR::XFEM::MassConservationCombination_max)
+    if (mass_conservation_combination == Inpar::XFEM::MassConservationCombination_max)
     {
       NIT_full_stab_fac =
           std::max(NIT_full_stab_fac, NITStabScaling *
@@ -934,11 +934,11 @@ void XFEM::UTILS::NIT_Compute_FullPenalty_Stabfac(
                              (kappa_m * densaf_master + kappa_s * densaf_slave) / (12.0 * timefac);
     }
   }
-  else if (mass_conservation_scaling != INPAR::XFEM::MassConservationScaling_only_visc)
+  else if (mass_conservation_scaling != Inpar::XFEM::MassConservationScaling_only_visc)
     FOUR_C_THROW("Unknown scaling choice in calculation of Nitsche's penalty parameter");
 
-  if (IsConservative and (XFF_ConvStabScaling != INPAR::XFEM::XFF_ConvStabScaling_none or
-                             ConvStabScaling != INPAR::XFEM::ConvStabScaling_none))
+  if (IsConservative and (XFF_ConvStabScaling != Inpar::XFEM::XFF_ConvStabScaling_none or
+                             ConvStabScaling != Inpar::XFEM::ConvStabScaling_none))
   {
     FOUR_C_THROW(
         "convective stabilization is not available for conservative form of Navier-Stokes, but "
@@ -948,44 +948,44 @@ void XFEM::UTILS::NIT_Compute_FullPenalty_Stabfac(
   //----------------------------------------------------------------------------------------------
   // add inflow terms to ensure coercivity at inflow boundaries in the convective limit
 
-  if ((ConvStabScaling == INPAR::XFEM::ConvStabScaling_none &&
-          XFF_ConvStabScaling == INPAR::XFEM::XFF_ConvStabScaling_none) ||
-      XFF_ConvStabScaling == INPAR::XFEM::XFF_ConvStabScaling_only_averaged || error_calc)
+  if ((ConvStabScaling == Inpar::XFEM::ConvStabScaling_none &&
+          XFF_ConvStabScaling == Inpar::XFEM::XFF_ConvStabScaling_none) ||
+      XFF_ConvStabScaling == Inpar::XFEM::XFF_ConvStabScaling_only_averaged || error_calc)
     return;
 
   const double veln_normal = velint_m.Dot(normal);
 
   double NIT_inflow_stab = 0.0;
 
-  if (XFF_ConvStabScaling == INPAR::XFEM::XFF_ConvStabScaling_upwinding)
+  if (XFF_ConvStabScaling == Inpar::XFEM::XFF_ConvStabScaling_upwinding)
   {
     NIT_inflow_stab = fabs(veln_normal) * 0.5;
   }
   else
   {
-    if (ConvStabScaling == INPAR::XFEM::ConvStabScaling_abs_inflow)
+    if (ConvStabScaling == Inpar::XFEM::ConvStabScaling_abs_inflow)
     {
       //      | u*n |
       NIT_inflow_stab = fabs(veln_normal);
     }
-    else if (ConvStabScaling == INPAR::XFEM::ConvStabScaling_inflow)
+    else if (ConvStabScaling == Inpar::XFEM::ConvStabScaling_inflow)
     {
       //      ( -u*n ) if (u*n)<0 (inflow), conv_stabfac >= 0
       NIT_inflow_stab = std::max(0.0, -veln_normal);
     }
     else
-      FOUR_C_THROW("No valid INPAR::XFEM::ConvStabScaling for xfluid/xfsi problems");
+      FOUR_C_THROW("No valid Inpar::XFEM::ConvStabScaling for xfluid/xfsi problems");
   }
 
   NIT_inflow_stab *= densaf_master;  // my::densaf_;
 
   // Todo (kruse): it is planned to add the inflow contributions independent from the max. option!
   // This version is only kept to shift the adaption of test results to a single commit.
-  if (mass_conservation_combination == INPAR::XFEM::MassConservationCombination_max)
+  if (mass_conservation_combination == Inpar::XFEM::MassConservationCombination_max)
   {
     NIT_full_stab_fac = std::max(NIT_full_stab_fac, NIT_inflow_stab);
   }
-  else if (mass_conservation_combination == INPAR::XFEM::MassConservationCombination_sum)
+  else if (mass_conservation_combination == Inpar::XFEM::MassConservationCombination_sum)
   {
     NIT_full_stab_fac += NIT_inflow_stab;
   }
@@ -996,12 +996,12 @@ void XFEM::UTILS::NIT_Compute_FullPenalty_Stabfac(
 }
 
 double XFEM::UTILS::Evaluate_Full_Traction(const double &pres_m,
-    const CORE::LINALG::Matrix<3, 3> &vderxy_m, const double &visc_m, const double &penalty_fac,
-    const CORE::LINALG::Matrix<3, 1> &vel_m, const CORE::LINALG::Matrix<3, 1> &vel_s,
-    const CORE::LINALG::Matrix<3, 1> &elenormal, const CORE::LINALG::Matrix<3, 1> &normal,
-    const CORE::LINALG::Matrix<3, 1> &velpf_s, double porosity)
+    const Core::LinAlg::Matrix<3, 3> &vderxy_m, const double &visc_m, const double &penalty_fac,
+    const Core::LinAlg::Matrix<3, 1> &vel_m, const Core::LinAlg::Matrix<3, 1> &vel_s,
+    const Core::LinAlg::Matrix<3, 1> &elenormal, const Core::LinAlg::Matrix<3, 1> &normal,
+    const Core::LinAlg::Matrix<3, 1> &velpf_s, double porosity)
 {
-  CORE::LINALG::Matrix<3, 1> traction(true);
+  Core::LinAlg::Matrix<3, 1> traction(true);
 
   // pressure contribution
   if (porosity <= 0)
@@ -1025,12 +1025,12 @@ double XFEM::UTILS::Evaluate_Full_Traction(const double &pres_m,
   return traction.Dot(elenormal);
 }
 
-double XFEM::UTILS::Evaluate_Full_Traction(const CORE::LINALG::Matrix<3, 1> &intraction,
-    const double &penalty_fac, const CORE::LINALG::Matrix<3, 1> &vel_m,
-    const CORE::LINALG::Matrix<3, 1> &vel_s, const CORE::LINALG::Matrix<3, 1> &elenormal,
-    const CORE::LINALG::Matrix<3, 1> &normal)
+double XFEM::UTILS::Evaluate_Full_Traction(const Core::LinAlg::Matrix<3, 1> &intraction,
+    const double &penalty_fac, const Core::LinAlg::Matrix<3, 1> &vel_m,
+    const Core::LinAlg::Matrix<3, 1> &vel_s, const Core::LinAlg::Matrix<3, 1> &elenormal,
+    const Core::LinAlg::Matrix<3, 1> &normal)
 {
-  CORE::LINALG::Matrix<3, 1> traction(true);
+  Core::LinAlg::Matrix<3, 1> traction(true);
 
   for (int i = 0; i < 3; ++i)
     traction(i, 0) = intraction(i, 0) - penalty_fac * (vel_m(i, 0) - vel_s(i, 0));
@@ -1038,31 +1038,31 @@ double XFEM::UTILS::Evaluate_Full_Traction(const CORE::LINALG::Matrix<3, 1> &int
 }
 
 double XFEM::UTILS::Evaluate_Full_Traction(const double &intraction, const double &penalty_fac,
-    const CORE::LINALG::Matrix<3, 1> &vel_m, const CORE::LINALG::Matrix<3, 1> &vel_s,
-    const CORE::LINALG::Matrix<3, 1> &elenormal, const CORE::LINALG::Matrix<3, 1> &normal)
+    const Core::LinAlg::Matrix<3, 1> &vel_m, const Core::LinAlg::Matrix<3, 1> &vel_s,
+    const Core::LinAlg::Matrix<3, 1> &elenormal, const Core::LinAlg::Matrix<3, 1> &normal)
 {
-  CORE::LINALG::Matrix<3, 1> traction(true);
+  Core::LinAlg::Matrix<3, 1> traction(true);
 
   for (int i = 0; i < 3; ++i) traction(i, 0) = -penalty_fac * (vel_m(i, 0) - vel_s(i, 0));
   return intraction + traction.Dot(elenormal);
 }
 
-void XFEM::UTILS::EvaluteStateatGP(const CORE::Elements::Element *sele,
-    const CORE::LINALG::Matrix<3, 1> &selexsi, const DRT::Discretization &discret,
-    const std::string &state, CORE::LINALG::Matrix<3, 1> &vel_s)
+void XFEM::UTILS::EvaluteStateatGP(const Core::Elements::Element *sele,
+    const Core::LinAlg::Matrix<3, 1> &selexsi, const Discret::Discretization &discret,
+    const std::string &state, Core::LinAlg::Matrix<3, 1> &vel_s)
 {
   vel_s.Clear();
 
   std::vector<double> ivel;
-  CORE::Elements::Element::LocationArray las(1);
+  Core::Elements::Element::LocationArray las(1);
   sele->LocationVector(discret, las, false);
   Teuchos::RCP<const Epetra_Vector> matrix_state = discret.GetState(state);
-  CORE::FE::ExtractMyValues(*matrix_state, ivel, las[0].lm_);
+  Core::FE::ExtractMyValues(*matrix_state, ivel, las[0].lm_);
 
   // 4 // evaluate slave velocity at guasspoint
-  if (sele->Shape() == CORE::FE::CellType::quad4)
+  if (sele->Shape() == Core::FE::CellType::quad4)
   {
-    CORE::LINALG::Matrix<3, 4> vels;
+    Core::LinAlg::Matrix<3, 4> vels;
     for (int n = 0; n < sele->num_node(); ++n)
     {
       for (int dof = 0; dof < 3; ++dof)
@@ -1071,9 +1071,9 @@ void XFEM::UTILS::EvaluteStateatGP(const CORE::Elements::Element *sele,
       }
     }
 
-    const int numnodes = CORE::FE::num_nodes<CORE::FE::CellType::quad4>;
-    static CORE::LINALG::Matrix<numnodes, 1> funct(false);
-    CORE::FE::shape_function_2D(funct, selexsi(0), selexsi(1), CORE::FE::CellType::quad4);
+    const int numnodes = Core::FE::num_nodes<Core::FE::CellType::quad4>;
+    static Core::LinAlg::Matrix<numnodes, 1> funct(false);
+    Core::FE::shape_function_2D(funct, selexsi(0), selexsi(1), Core::FE::CellType::quad4);
     vel_s.Multiply(vels, funct);
   }
   else
@@ -1081,83 +1081,83 @@ void XFEM::UTILS::EvaluteStateatGP(const CORE::Elements::Element *sele,
 }
 
 
-template double XFEM::UTILS::EvalElementVolume<CORE::FE::CellType::hex8>(
-    CORE::LINALG::Matrix<3, CORE::FE::num_nodes<CORE::FE::CellType::hex8>>,
-    CORE::LINALG::Matrix<CORE::FE::num_nodes<CORE::FE::CellType::hex8>, 1> *,
-    std::vector<CORE::LINALG::SerialDenseVector> *);
-template double XFEM::UTILS::EvalElementVolume<CORE::FE::CellType::hex20>(
-    CORE::LINALG::Matrix<3, CORE::FE::num_nodes<CORE::FE::CellType::hex20>>,
-    CORE::LINALG::Matrix<CORE::FE::num_nodes<CORE::FE::CellType::hex20>, 1> *,
-    std::vector<CORE::LINALG::SerialDenseVector> *);
-template double XFEM::UTILS::EvalElementVolume<CORE::FE::CellType::hex27>(
-    CORE::LINALG::Matrix<3, CORE::FE::num_nodes<CORE::FE::CellType::hex27>>,
-    CORE::LINALG::Matrix<CORE::FE::num_nodes<CORE::FE::CellType::hex27>, 1> *,
-    std::vector<CORE::LINALG::SerialDenseVector> *);
-template double XFEM::UTILS::EvalElementVolume<CORE::FE::CellType::tet4>(
-    CORE::LINALG::Matrix<3, CORE::FE::num_nodes<CORE::FE::CellType::tet4>>,
-    CORE::LINALG::Matrix<CORE::FE::num_nodes<CORE::FE::CellType::tet4>, 1> *,
-    std::vector<CORE::LINALG::SerialDenseVector> *);
-template double XFEM::UTILS::EvalElementVolume<CORE::FE::CellType::tet10>(
-    CORE::LINALG::Matrix<3, CORE::FE::num_nodes<CORE::FE::CellType::tet10>>,
-    CORE::LINALG::Matrix<CORE::FE::num_nodes<CORE::FE::CellType::tet10>, 1> *,
-    std::vector<CORE::LINALG::SerialDenseVector> *);
-template double XFEM::UTILS::EvalElementVolume<CORE::FE::CellType::wedge6>(
-    CORE::LINALG::Matrix<3, CORE::FE::num_nodes<CORE::FE::CellType::wedge6>>,
-    CORE::LINALG::Matrix<CORE::FE::num_nodes<CORE::FE::CellType::wedge6>, 1> *,
-    std::vector<CORE::LINALG::SerialDenseVector> *);
-template double XFEM::UTILS::EvalElementVolume<CORE::FE::CellType::wedge15>(
-    CORE::LINALG::Matrix<3, CORE::FE::num_nodes<CORE::FE::CellType::wedge15>>,
-    CORE::LINALG::Matrix<CORE::FE::num_nodes<CORE::FE::CellType::wedge15>, 1> *,
-    std::vector<CORE::LINALG::SerialDenseVector> *);
+template double XFEM::UTILS::EvalElementVolume<Core::FE::CellType::hex8>(
+    Core::LinAlg::Matrix<3, Core::FE::num_nodes<Core::FE::CellType::hex8>>,
+    Core::LinAlg::Matrix<Core::FE::num_nodes<Core::FE::CellType::hex8>, 1> *,
+    std::vector<Core::LinAlg::SerialDenseVector> *);
+template double XFEM::UTILS::EvalElementVolume<Core::FE::CellType::hex20>(
+    Core::LinAlg::Matrix<3, Core::FE::num_nodes<Core::FE::CellType::hex20>>,
+    Core::LinAlg::Matrix<Core::FE::num_nodes<Core::FE::CellType::hex20>, 1> *,
+    std::vector<Core::LinAlg::SerialDenseVector> *);
+template double XFEM::UTILS::EvalElementVolume<Core::FE::CellType::hex27>(
+    Core::LinAlg::Matrix<3, Core::FE::num_nodes<Core::FE::CellType::hex27>>,
+    Core::LinAlg::Matrix<Core::FE::num_nodes<Core::FE::CellType::hex27>, 1> *,
+    std::vector<Core::LinAlg::SerialDenseVector> *);
+template double XFEM::UTILS::EvalElementVolume<Core::FE::CellType::tet4>(
+    Core::LinAlg::Matrix<3, Core::FE::num_nodes<Core::FE::CellType::tet4>>,
+    Core::LinAlg::Matrix<Core::FE::num_nodes<Core::FE::CellType::tet4>, 1> *,
+    std::vector<Core::LinAlg::SerialDenseVector> *);
+template double XFEM::UTILS::EvalElementVolume<Core::FE::CellType::tet10>(
+    Core::LinAlg::Matrix<3, Core::FE::num_nodes<Core::FE::CellType::tet10>>,
+    Core::LinAlg::Matrix<Core::FE::num_nodes<Core::FE::CellType::tet10>, 1> *,
+    std::vector<Core::LinAlg::SerialDenseVector> *);
+template double XFEM::UTILS::EvalElementVolume<Core::FE::CellType::wedge6>(
+    Core::LinAlg::Matrix<3, Core::FE::num_nodes<Core::FE::CellType::wedge6>>,
+    Core::LinAlg::Matrix<Core::FE::num_nodes<Core::FE::CellType::wedge6>, 1> *,
+    std::vector<Core::LinAlg::SerialDenseVector> *);
+template double XFEM::UTILS::EvalElementVolume<Core::FE::CellType::wedge15>(
+    Core::LinAlg::Matrix<3, Core::FE::num_nodes<Core::FE::CellType::wedge15>>,
+    Core::LinAlg::Matrix<Core::FE::num_nodes<Core::FE::CellType::wedge15>, 1> *,
+    std::vector<Core::LinAlg::SerialDenseVector> *);
 
-template double XFEM::UTILS::ComputeCharEleLength<CORE::FE::CellType::hex8>(
-    CORE::Elements::Element *, CORE::LINALG::SerialDenseMatrix &,
-    const Teuchos::RCP<XFEM::ConditionManager> &, const CORE::GEO::CUT::plain_volumecell_set &,
-    const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell *>> &,
-    const std::map<int, std::vector<CORE::FE::GaussIntegration>> &, const INPAR::XFEM::ViscStabHk,
-    Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<CORE::FE::CellType::hex8>>,
-    CORE::Elements::Element *);
-template double XFEM::UTILS::ComputeCharEleLength<CORE::FE::CellType::hex20>(
-    CORE::Elements::Element *, CORE::LINALG::SerialDenseMatrix &,
-    const Teuchos::RCP<XFEM::ConditionManager> &, const CORE::GEO::CUT::plain_volumecell_set &,
-    const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell *>> &,
-    const std::map<int, std::vector<CORE::FE::GaussIntegration>> &, const INPAR::XFEM::ViscStabHk,
-    Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<CORE::FE::CellType::hex20>>,
-    CORE::Elements::Element *);
-template double XFEM::UTILS::ComputeCharEleLength<CORE::FE::CellType::hex27>(
-    CORE::Elements::Element *, CORE::LINALG::SerialDenseMatrix &,
-    const Teuchos::RCP<XFEM::ConditionManager> &, const CORE::GEO::CUT::plain_volumecell_set &,
-    const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell *>> &,
-    const std::map<int, std::vector<CORE::FE::GaussIntegration>> &, const INPAR::XFEM::ViscStabHk,
-    Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<CORE::FE::CellType::hex27>>,
-    CORE::Elements::Element *);
-template double XFEM::UTILS::ComputeCharEleLength<CORE::FE::CellType::tet4>(
-    CORE::Elements::Element *, CORE::LINALG::SerialDenseMatrix &,
-    const Teuchos::RCP<XFEM::ConditionManager> &, const CORE::GEO::CUT::plain_volumecell_set &,
-    const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell *>> &,
-    const std::map<int, std::vector<CORE::FE::GaussIntegration>> &, const INPAR::XFEM::ViscStabHk,
-    Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<CORE::FE::CellType::tet4>>,
-    CORE::Elements::Element *);
-template double XFEM::UTILS::ComputeCharEleLength<CORE::FE::CellType::tet10>(
-    CORE::Elements::Element *, CORE::LINALG::SerialDenseMatrix &,
-    const Teuchos::RCP<XFEM::ConditionManager> &, const CORE::GEO::CUT::plain_volumecell_set &,
-    const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell *>> &,
-    const std::map<int, std::vector<CORE::FE::GaussIntegration>> &, const INPAR::XFEM::ViscStabHk,
-    Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<CORE::FE::CellType::tet10>>,
-    CORE::Elements::Element *);
-template double XFEM::UTILS::ComputeCharEleLength<CORE::FE::CellType::wedge6>(
-    CORE::Elements::Element *, CORE::LINALG::SerialDenseMatrix &,
-    const Teuchos::RCP<XFEM::ConditionManager> &, const CORE::GEO::CUT::plain_volumecell_set &,
-    const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell *>> &,
-    const std::map<int, std::vector<CORE::FE::GaussIntegration>> &, const INPAR::XFEM::ViscStabHk,
-    Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<CORE::FE::CellType::wedge6>>,
-    CORE::Elements::Element *);
-template double XFEM::UTILS::ComputeCharEleLength<CORE::FE::CellType::wedge15>(
-    CORE::Elements::Element *, CORE::LINALG::SerialDenseMatrix &,
-    const Teuchos::RCP<XFEM::ConditionManager> &, const CORE::GEO::CUT::plain_volumecell_set &,
-    const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell *>> &,
-    const std::map<int, std::vector<CORE::FE::GaussIntegration>> &, const INPAR::XFEM::ViscStabHk,
-    Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<CORE::FE::CellType::wedge15>>,
-    CORE::Elements::Element *);
+template double XFEM::UTILS::ComputeCharEleLength<Core::FE::CellType::hex8>(
+    Core::Elements::Element *, Core::LinAlg::SerialDenseMatrix &,
+    const Teuchos::RCP<XFEM::ConditionManager> &, const Core::Geo::Cut::plain_volumecell_set &,
+    const std::map<int, std::vector<Core::Geo::Cut::BoundaryCell *>> &,
+    const std::map<int, std::vector<Core::FE::GaussIntegration>> &, const Inpar::XFEM::ViscStabHk,
+    Teuchos::RCP<Discret::ELEMENTS::XFLUID::SlaveElementInterface<Core::FE::CellType::hex8>>,
+    Core::Elements::Element *);
+template double XFEM::UTILS::ComputeCharEleLength<Core::FE::CellType::hex20>(
+    Core::Elements::Element *, Core::LinAlg::SerialDenseMatrix &,
+    const Teuchos::RCP<XFEM::ConditionManager> &, const Core::Geo::Cut::plain_volumecell_set &,
+    const std::map<int, std::vector<Core::Geo::Cut::BoundaryCell *>> &,
+    const std::map<int, std::vector<Core::FE::GaussIntegration>> &, const Inpar::XFEM::ViscStabHk,
+    Teuchos::RCP<Discret::ELEMENTS::XFLUID::SlaveElementInterface<Core::FE::CellType::hex20>>,
+    Core::Elements::Element *);
+template double XFEM::UTILS::ComputeCharEleLength<Core::FE::CellType::hex27>(
+    Core::Elements::Element *, Core::LinAlg::SerialDenseMatrix &,
+    const Teuchos::RCP<XFEM::ConditionManager> &, const Core::Geo::Cut::plain_volumecell_set &,
+    const std::map<int, std::vector<Core::Geo::Cut::BoundaryCell *>> &,
+    const std::map<int, std::vector<Core::FE::GaussIntegration>> &, const Inpar::XFEM::ViscStabHk,
+    Teuchos::RCP<Discret::ELEMENTS::XFLUID::SlaveElementInterface<Core::FE::CellType::hex27>>,
+    Core::Elements::Element *);
+template double XFEM::UTILS::ComputeCharEleLength<Core::FE::CellType::tet4>(
+    Core::Elements::Element *, Core::LinAlg::SerialDenseMatrix &,
+    const Teuchos::RCP<XFEM::ConditionManager> &, const Core::Geo::Cut::plain_volumecell_set &,
+    const std::map<int, std::vector<Core::Geo::Cut::BoundaryCell *>> &,
+    const std::map<int, std::vector<Core::FE::GaussIntegration>> &, const Inpar::XFEM::ViscStabHk,
+    Teuchos::RCP<Discret::ELEMENTS::XFLUID::SlaveElementInterface<Core::FE::CellType::tet4>>,
+    Core::Elements::Element *);
+template double XFEM::UTILS::ComputeCharEleLength<Core::FE::CellType::tet10>(
+    Core::Elements::Element *, Core::LinAlg::SerialDenseMatrix &,
+    const Teuchos::RCP<XFEM::ConditionManager> &, const Core::Geo::Cut::plain_volumecell_set &,
+    const std::map<int, std::vector<Core::Geo::Cut::BoundaryCell *>> &,
+    const std::map<int, std::vector<Core::FE::GaussIntegration>> &, const Inpar::XFEM::ViscStabHk,
+    Teuchos::RCP<Discret::ELEMENTS::XFLUID::SlaveElementInterface<Core::FE::CellType::tet10>>,
+    Core::Elements::Element *);
+template double XFEM::UTILS::ComputeCharEleLength<Core::FE::CellType::wedge6>(
+    Core::Elements::Element *, Core::LinAlg::SerialDenseMatrix &,
+    const Teuchos::RCP<XFEM::ConditionManager> &, const Core::Geo::Cut::plain_volumecell_set &,
+    const std::map<int, std::vector<Core::Geo::Cut::BoundaryCell *>> &,
+    const std::map<int, std::vector<Core::FE::GaussIntegration>> &, const Inpar::XFEM::ViscStabHk,
+    Teuchos::RCP<Discret::ELEMENTS::XFLUID::SlaveElementInterface<Core::FE::CellType::wedge6>>,
+    Core::Elements::Element *);
+template double XFEM::UTILS::ComputeCharEleLength<Core::FE::CellType::wedge15>(
+    Core::Elements::Element *, Core::LinAlg::SerialDenseMatrix &,
+    const Teuchos::RCP<XFEM::ConditionManager> &, const Core::Geo::Cut::plain_volumecell_set &,
+    const std::map<int, std::vector<Core::Geo::Cut::BoundaryCell *>> &,
+    const std::map<int, std::vector<Core::FE::GaussIntegration>> &, const Inpar::XFEM::ViscStabHk,
+    Teuchos::RCP<Discret::ELEMENTS::XFLUID::SlaveElementInterface<Core::FE::CellType::wedge15>>,
+    Core::Elements::Element *);
 
 FOUR_C_NAMESPACE_CLOSE

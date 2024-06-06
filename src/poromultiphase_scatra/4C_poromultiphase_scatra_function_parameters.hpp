@@ -20,7 +20,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace POROMULTIPHASESCATRA
+namespace PoroMultiPhaseScaTra
 {
 
   /*!
@@ -189,7 +189,7 @@ namespace POROMULTIPHASESCATRA
     double ScalingFormmHg{};
     double volfrac_blood_ref{};
   };
-}  // namespace POROMULTIPHASESCATRA
+}  // namespace PoroMultiPhaseScaTra
 
 
 FOUR_C_NAMESPACE_CLOSE

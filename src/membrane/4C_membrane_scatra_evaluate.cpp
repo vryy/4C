@@ -18,9 +18,9 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  pre-evaluate the element (public)                      sfuchs 05/18 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::MembraneScatra<distype>::pre_evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::MembraneScatra<distype>::pre_evaluate(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la)
 {
   if (la.Size() > 1)
   {
@@ -45,10 +45,10 @@ void DRT::ELEMENTS::MembraneScatra<distype>::pre_evaluate(Teuchos::ParameterList
       Teuchos::RCP<std::vector<double>> myscalar =
           Teuchos::rcp(new std::vector<double>(la[1].lm_.size(), 0.0));
 
-      CORE::FE::ExtractMyValues(*scalarnp, *myscalar, la[1].lm_);
+      Core::FE::ExtractMyValues(*scalarnp, *myscalar, la[1].lm_);
 
       // element vector for k-th scalar
-      std::vector<CORE::LINALG::Matrix<Membrane<distype>::numnod_, 1>> elescalar(numscal);
+      std::vector<Core::LinAlg::Matrix<Membrane<distype>::numnod_, 1>> elescalar(numscal);
       for (int k = 0; k < numscal; ++k)
       {
         for (int i = 0; i < Membrane<distype>::numnod_; ++i)
@@ -65,7 +65,7 @@ void DRT::ELEMENTS::MembraneScatra<distype>::pre_evaluate(Teuchos::ParameterList
           new std::vector<std::vector<double>>(numgp, std::vector<double>(numscal, 0.0)));
 
       // allocate vector for shape functions and matrix for derivatives at gp
-      CORE::LINALG::Matrix<Membrane<distype>::numnod_, 1> shapefcts(true);
+      Core::LinAlg::Matrix<Membrane<distype>::numnod_, 1> shapefcts(true);
 
       // loop over gauss points
       for (int gp = 0; gp < numgp; ++gp)
@@ -75,7 +75,7 @@ void DRT::ELEMENTS::MembraneScatra<distype>::pre_evaluate(Teuchos::ParameterList
         double eta_gp = (Membrane<distype>::intpoints_).qxg[gp][1];
 
         // get shape functions and derivatives in the plane of the element
-        CORE::FE::shape_function_2D(shapefcts, xi_gp, eta_gp, Shape());
+        Core::FE::shape_function_2D(shapefcts, xi_gp, eta_gp, Shape());
 
         // scalar at current gp
         std::vector<double> scalar_curr_gp(numscal, 0.0);
@@ -100,14 +100,14 @@ void DRT::ELEMENTS::MembraneScatra<distype>::pre_evaluate(Teuchos::ParameterList
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                          sfuchs 05/18 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::MembraneScatra<distype>::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
-    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec1_epetra,
-    CORE::LINALG::SerialDenseVector& elevec2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec3_epetra)
+template <Core::FE::CellType distype>
+int Discret::ELEMENTS::MembraneScatra<distype>::Evaluate(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+    Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec1_epetra,
+    Core::LinAlg::SerialDenseVector& elevec2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec3_epetra)
 {
   // in some cases we need to write/change some data before evaluating
   pre_evaluate(params, discretization, la);
@@ -118,9 +118,9 @@ int DRT::ELEMENTS::MembraneScatra<distype>::Evaluate(Teuchos::ParameterList& par
   return 0;
 }
 
-template class DRT::ELEMENTS::MembraneScatra<CORE::FE::CellType::tri3>;
-template class DRT::ELEMENTS::MembraneScatra<CORE::FE::CellType::tri6>;
-template class DRT::ELEMENTS::MembraneScatra<CORE::FE::CellType::quad4>;
-template class DRT::ELEMENTS::MembraneScatra<CORE::FE::CellType::quad9>;
+template class Discret::ELEMENTS::MembraneScatra<Core::FE::CellType::tri3>;
+template class Discret::ELEMENTS::MembraneScatra<Core::FE::CellType::tri6>;
+template class Discret::ELEMENTS::MembraneScatra<Core::FE::CellType::quad4>;
+template class Discret::ELEMENTS::MembraneScatra<Core::FE::CellType::quad9>;
 
 FOUR_C_NAMESPACE_CLOSE

@@ -17,12 +17,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   struct SolverParams;
 }
 
-namespace SCATRA
+namespace ScaTra
 {
   /*!
   \brief Standard solution strategy for standard scalar transport problems (without meshtying)
@@ -42,7 +42,7 @@ namespace SCATRA
   {
    public:
     //! constructor
-    explicit MeshtyingStrategyStd(SCATRA::ScaTraTimIntImpl* scatratimint);
+    explicit MeshtyingStrategyStd(ScaTra::ScaTraTimIntImpl* scatratimint);
 
     //! return global map of degrees of freedom
     const Epetra_Map& dof_row_map() const override;
@@ -57,8 +57,8 @@ namespace SCATRA
     \author rauch
     */
     void evaluate_condition(Teuchos::ParameterList& params,
-        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
-        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
+        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
+        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
         Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
         Teuchos::RCP<Epetra_Vector> systemvector3, const std::string& condstring,
         const int condid) override
@@ -72,7 +72,7 @@ namespace SCATRA
     //! init meshtying objects
     void InitMeshtying() override;
 
-    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> InterfaceMaps() const override
+    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> InterfaceMaps() const override
     {
       FOUR_C_THROW("InterfaceMaps() is not implemented in MeshtyingStrategyStd.");
       return Teuchos::null;
@@ -80,7 +80,7 @@ namespace SCATRA
 
     bool system_matrix_initialization_needed() const override { return false; }
 
-    Teuchos::RCP<CORE::LINALG::SparseOperator> init_system_matrix() const override
+    Teuchos::RCP<Core::LinAlg::SparseOperator> init_system_matrix() const override
     {
       FOUR_C_THROW(
           "This meshtying strategy does not need to initialize the system matrix, but relies "
@@ -94,16 +94,16 @@ namespace SCATRA
     void setup_meshtying() override;
 
     //! solve resulting linear system of equations
-    void Solve(const Teuchos::RCP<CORE::LINALG::Solver>& solver,         //!< solver
-        const Teuchos::RCP<CORE::LINALG::SparseOperator>& systemmatrix,  //!< system matrix
+    void Solve(const Teuchos::RCP<Core::LinAlg::Solver>& solver,         //!< solver
+        const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,  //!< system matrix
         const Teuchos::RCP<Epetra_Vector>& increment,                    //!< increment vector
         const Teuchos::RCP<Epetra_Vector>& residual,                     //!< residual vector
         const Teuchos::RCP<Epetra_Vector>& phinp,  //!< state vector at time n+1
         const int iteration,                       //!< number of current Newton-Raphson iteration
-        CORE::LINALG::SolverParams& solver_params) const override;
+        Core::LinAlg::SolverParams& solver_params) const override;
 
     //! return linear solver for global system of linear equations
-    const CORE::LINALG::Solver& Solver() const override;
+    const Core::LinAlg::Solver& Solver() const override;
 
    protected:
     //! instantiate strategy for Newton-Raphson convergence check
@@ -113,7 +113,7 @@ namespace SCATRA
     //! copy constructor
     MeshtyingStrategyStd(const MeshtyingStrategyStd& old);
   };  // class MeshtyingStrategyStd
-}  // namespace SCATRA
+}  // namespace ScaTra
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

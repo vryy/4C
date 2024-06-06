@@ -21,7 +21,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
@@ -45,7 +45,7 @@ namespace FSI
     \author mayr.mt
     \date 11/2012
   */
-  class FSIResultTest : public CORE::UTILS::ResultTest
+  class FSIResultTest : public Core::UTILS::ResultTest
   {
    public:
     //! constructor for standard FSI
@@ -64,27 +64,27 @@ namespace FSI
     //! \brief fsi version of nodal value tests
     //!
     //! Possible position flags are "lambdax", "lambday", "lambdaz"
-    void test_node(INPUT::LineDefinition& res,  ///< the line definition from input file
+    void test_node(Input::LineDefinition& res,  ///< the line definition from input file
         int& nerr,                              ///< number of tests with errors
         int& test_count                         ///< number of tests performed
         ) override;
 
     //! \brief fsi version of element value tests
-    void TestElement(INPUT::LineDefinition& res,  ///< the line definition from input file
+    void TestElement(Input::LineDefinition& res,  ///< the line definition from input file
         int& nerr,                                ///< number of tests with errors
         int& test_count                           ///< number of tests performed
         ) override;
 
 
     //! \brief fsi version of special tests
-    void TestSpecial(INPUT::LineDefinition& res,  ///< the line definition from input file
+    void TestSpecial(Input::LineDefinition& res,  ///< the line definition from input file
         int& nerr,                                ///< number of tests with errors
         int& test_count                           ///< number of tests performed
         ) override;
 
    private:
     //! slave discretisation
-    Teuchos::RCP<DRT::Discretization> slavedisc_;
+    Teuchos::RCP<Discret::Discretization> slavedisc_;
 
     //! Lagrange multiplier living on the slave discretization
     Teuchos::RCP<Epetra_Vector> fsilambda_;

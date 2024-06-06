@@ -32,14 +32,14 @@ namespace ALE
 }  // namespace ALE
 /*----------------------------------------------------------------------------*/
 /* class definitions */
-namespace ADAPTER
+namespace Adapter
 {
   /*! \brief ALE Wrapper for fluid problems with moving boundaries
    *
    *  Provide ALE functionalities for problems involving moving boundaries
-   *  here by overloading the respective routines from ADAPTER::AleWrapper
+   *  here by overloading the respective routines from Adapter::AleWrapper
    *
-   *  \sa ADAPTER::Ale, ADAPTER::AleWrapper
+   *  \sa Adapter::Ale, Adapter::AleWrapper
    *
    *  \author kruse \date 10/2014
    */
@@ -73,7 +73,7 @@ namespace ADAPTER
     Teuchos::RCP<ALE::UTILS::MapExtractor> interface_;
 
   };  // class AleFluidWrapper
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief A collection of sparse matrix printing methods for namespace CORE::LINALG
+\brief A collection of sparse matrix printing methods for namespace Core::LinAlg
 
 \level 0
 */
@@ -27,11 +27,11 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::LINALG::PrintSparsityToPostscript(const Epetra_RowMatrix& A) { Ifpack_PrintSparsity(A); }
+void Core::LinAlg::PrintSparsityToPostscript(const Epetra_RowMatrix& A) { Ifpack_PrintSparsity(A); }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::LINALG::PrintMatrixInMatlabFormat(
+void Core::LinAlg::PrintMatrixInMatlabFormat(
     const std::string& filename, const Epetra_CrsMatrix& sparsematrix, const bool newfile)
 {
   const auto& comm = sparsematrix.Comm();
@@ -97,7 +97,7 @@ void CORE::LINALG::PrintMatrixInMatlabFormat(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::LINALG::PrintBlockMatrixInMatlabFormat(
+void Core::LinAlg::PrintBlockMatrixInMatlabFormat(
     const std::string& filename, const BlockSparseMatrixBase& blockmatrix)
 {
   for (int row = 0; row < blockmatrix.Rows(); row++)
@@ -105,7 +105,7 @@ void CORE::LINALG::PrintBlockMatrixInMatlabFormat(
     for (int col = 0; col < blockmatrix.Cols(); col++)
     {
       const auto& sparsematrix = blockmatrix.Matrix(row, col);
-      CORE::LINALG::PrintMatrixInMatlabFormat(
+      Core::LinAlg::PrintMatrixInMatlabFormat(
           filename, *(sparsematrix.EpetraMatrix()), ((row == 0) && (col == 0)));
     }
   }
@@ -113,7 +113,7 @@ void CORE::LINALG::PrintBlockMatrixInMatlabFormat(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::LINALG::PrintVectorInMatlabFormat(
+void Core::LinAlg::PrintVectorInMatlabFormat(
     const std::string& filename, const Epetra_Vector& vector, const bool newfile)
 {
   const auto& comm = vector.Comm();
@@ -186,7 +186,7 @@ void CORE::LINALG::PrintVectorInMatlabFormat(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::LINALG::PrintMapInMatlabFormat(
+void Core::LinAlg::PrintMapInMatlabFormat(
     const std::string& filename, const Epetra_Map& map, const bool newfile)
 {
   const auto& comm = map.Comm();
@@ -245,10 +245,10 @@ void CORE::LINALG::PrintMapInMatlabFormat(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::WriteEpetraCrsMatrixAsXpetra(
+void Core::LinAlg::WriteEpetraCrsMatrixAsXpetra(
     const std::string& filename, Teuchos::RCP<Epetra_CrsMatrix> matrix)
 {
-#include <Xpetra_UseShortNames.hpp>  // Include in scope to avoid clash with namespace CORE::IO
+#include <Xpetra_UseShortNames.hpp>  // Include in scope to avoid clash with namespace Core::IO
   using Teuchos::rcp;
   using Teuchos::RCP;
 
@@ -261,7 +261,7 @@ void CORE::LINALG::WriteEpetraCrsMatrixAsXpetra(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::WriteEpetraMultiVectorAsXpetra(
+void Core::LinAlg::WriteEpetraMultiVectorAsXpetra(
     const std::string& filename, Teuchos::RCP<Epetra_MultiVector> vec)
 {
   Xpetra::IO<double, int, int, Node>::Write(filename, *Xpetra::toXpetra<int, Node>(vec));

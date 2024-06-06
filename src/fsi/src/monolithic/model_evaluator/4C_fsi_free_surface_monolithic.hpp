@@ -33,18 +33,18 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
   class MapExtractor;
   class MatrixColTransform;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace ADAPTER
+namespace Adapter
 {
   class Coupling;
   class AleFluidWrapper;
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 namespace NOX
 {
@@ -65,11 +65,11 @@ namespace FSI
 
   /// Base class for Freesurface block preconditioning matrices
   class BlockPreconditioningMatrixFS
-      : public CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>
+      : public Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>
   {
    public:
-    BlockPreconditioningMatrixFS(const CORE::LINALG::MultiMapExtractor& maps, ADAPTER::Fluid& fluid,
-        ADAPTER::AleFluidWrapper& ale, int symmetric, double omega = 1.0, int iterations = 1,
+    BlockPreconditioningMatrixFS(const Core::LinAlg::MultiMapExtractor& maps, Adapter::Fluid& fluid,
+        Adapter::AleFluidWrapper& ale, int symmetric, double omega = 1.0, int iterations = 1,
         double fomega = 1.0, int fiterations = 0, FILE* err = nullptr);
 
     /** \name Mathematical functions */
@@ -91,18 +91,18 @@ namespace FSI
     void merge_solve(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
 
     /// Richardson iteration on one block using the given flags
-    static void local_block_richardson(Teuchos::RCP<CORE::LINALG::Preconditioner> solver,
-        const CORE::LINALG::SparseMatrix& innerOp, Teuchos::RCP<Epetra_Vector> x,
+    static void local_block_richardson(Teuchos::RCP<Core::LinAlg::Preconditioner> solver,
+        const Core::LinAlg::SparseMatrix& innerOp, Teuchos::RCP<Epetra_Vector> x,
         Teuchos::RCP<Epetra_Vector> y, Teuchos::RCP<Epetra_Vector> tmpx, int iterations,
         double omega, FILE* err, const Epetra_Comm& comm);
 
     /** \name Field solver objects */
     //@{
 
-    Teuchos::RCP<CORE::LINALG::Preconditioner> fluidsolver_;
-    Teuchos::RCP<CORE::LINALG::Preconditioner> alesolver_;
+    Teuchos::RCP<Core::LinAlg::Preconditioner> fluidsolver_;
+    Teuchos::RCP<Core::LinAlg::Preconditioner> alesolver_;
 
-    Teuchos::RCP<CORE::LINALG::Preconditioner> constalesolver_;
+    Teuchos::RCP<Core::LinAlg::Preconditioner> constalesolver_;
 
     //@}
 
@@ -124,7 +124,7 @@ namespace FSI
 
 #ifdef BLOCKMATRIXMERGE
     /// debug merged sparse
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> sparse_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> sparse_;
 #endif
   };
 
@@ -138,8 +138,8 @@ namespace FSI
   {
    public:
     /// construction
-    OverlappingBlockMatrixFS(const CORE::LINALG::MultiMapExtractor& maps, ADAPTER::Fluid& fluid,
-        ADAPTER::AleFluidWrapper& ale, bool structuresplit, int symmetric, double omega = 1.0,
+    OverlappingBlockMatrixFS(const Core::LinAlg::MultiMapExtractor& maps, Adapter::Fluid& fluid,
+        Adapter::AleFluidWrapper& ale, bool structuresplit, int symmetric, double omega = 1.0,
         int iterations = 1, double fomega = 1.0, int fiterations = 0, FILE* err = nullptr);
 
     /** \name Attribute access functions */
@@ -160,8 +160,8 @@ namespace FSI
     /// split is in structural matrix, interface equations belong to fluid block
     bool structuresplit_;
 
-    ADAPTER::Fluid& fluid_;
-    ADAPTER::AleFluidWrapper& ale_;
+    Adapter::Fluid& fluid_;
+    Adapter::AleFluidWrapper& ale_;
   };
 
 
@@ -174,7 +174,7 @@ namespace FSI
     \author --
     \date --
    */
-  class MonolithicBaseFS : public ADAPTER::AlgorithmBase
+  class MonolithicBaseFS : public Adapter::AlgorithmBase
   {
    public:
     /// create using a Epetra_Comm
@@ -185,10 +185,10 @@ namespace FSI
     void read_restart(int step) override;
 
     /// access to Fluid field
-    const Teuchos::RCP<ADAPTER::Fluid>& fluid_field() { return fluid_; }
+    const Teuchos::RCP<Adapter::Fluid>& fluid_field() { return fluid_; }
 
     /// access to ale field
-    const Teuchos::RCP<ADAPTER::AleFluidWrapper>& ale_field() { return ale_; }
+    const Teuchos::RCP<Adapter::AleFluidWrapper>& ale_field() { return ale_; }
 
    protected:
     //! @name Time loop building blocks
@@ -212,19 +212,19 @@ namespace FSI
 
     //@}
 
-    CORE::ADAPTER::Coupling& fluid_ale_coupling();
+    Core::Adapter::Coupling& fluid_ale_coupling();
 
-    const CORE::ADAPTER::Coupling& fluid_ale_coupling() const;
+    const Core::Adapter::Coupling& fluid_ale_coupling() const;
 
    private:
     /// coupling of fluid and ale
-    Teuchos::RCP<CORE::ADAPTER::Coupling> coupfa_;
+    Teuchos::RCP<Core::Adapter::Coupling> coupfa_;
 
     /// underlying fluid of the FS problem
-    Teuchos::RCP<ADAPTER::Fluid> fluid_;
+    Teuchos::RCP<Adapter::Fluid> fluid_;
 
     /// underlying ale of the FS problem
-    Teuchos::RCP<ADAPTER::AleFluidWrapper> ale_;
+    Teuchos::RCP<Adapter::AleFluidWrapper> ale_;
   };
 
 
@@ -338,7 +338,7 @@ namespace FSI
     void set_dof_row_maps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps);
 
     /// extractor to communicate between full monolithic map and block maps
-    const CORE::LINALG::MultiMapExtractor& extractor() const { return blockrowdofmap_; }
+    const Core::LinAlg::MultiMapExtractor& extractor() const { return blockrowdofmap_; }
 
     //@}
 
@@ -356,7 +356,7 @@ namespace FSI
 
    private:
     /// dof row map splitted in (field) blocks
-    CORE::LINALG::MultiMapExtractor blockrowdofmap_;
+    Core::LinAlg::MultiMapExtractor blockrowdofmap_;
 
     /// output utilities
     Teuchos::RCP<::NOX::Utils> utils_;
@@ -400,12 +400,12 @@ namespace FSI
     void setup_system_matrix() override { setup_system_matrix(*SystemMatrix()); }
 
     /// setup composed system matrix from field solvers
-    virtual void setup_system_matrix(CORE::LINALG::BlockSparseMatrixBase& mat) = 0;
+    virtual void setup_system_matrix(Core::LinAlg::BlockSparseMatrixBase& mat) = 0;
 
     //@}
 
     /// the composed system matrix
-    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SystemMatrix() const = 0;
+    virtual Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> SystemMatrix() const = 0;
 
     /// apply infnorm scaling to linear block system
     void scale_system(Epetra_Vector& b) override { scale_system(*SystemMatrix(), b); }
@@ -419,11 +419,11 @@ namespace FSI
     //! @name Methods for infnorm-scaling of the system
 
     /// apply infnorm scaling to linear block system
-    virtual void scale_system(CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b) {}
+    virtual void scale_system(Core::LinAlg::BlockSparseMatrixBase& mat, Epetra_Vector& b) {}
 
     /// undo infnorm scaling from scaled solution
     virtual void unscale_solution(
-        CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
+        Core::LinAlg::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
     {
     }
 
@@ -465,7 +465,7 @@ namespace FSI
     void setup_rhs(Epetra_Vector& f, bool firstcall = false) override;
 
     /// setup composed system matrix from field solvers
-    void setup_system_matrix(CORE::LINALG::BlockSparseMatrixBase& mat) override;
+    void setup_system_matrix(Core::LinAlg::BlockSparseMatrixBase& mat) override;
 
     //@}
 
@@ -473,17 +473,17 @@ namespace FSI
     void initial_guess(Teuchos::RCP<Epetra_Vector> ig) override;
 
     /// the composed system matrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SystemMatrix() const override
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> SystemMatrix() const override
     {
       return systemmatrix_;
     }
 
     /// apply infnorm scaling to linear block system
-    void scale_system(CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b) override;
+    void scale_system(Core::LinAlg::BlockSparseMatrixBase& mat, Epetra_Vector& b) override;
 
     /// undo infnorm scaling from scaled solution
     void unscale_solution(
-        CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b) override;
+        Core::LinAlg::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b) override;
 
    protected:
     /// setup solver for global block system
@@ -516,15 +516,15 @@ namespace FSI
     Teuchos::RCP<OverlappingBlockMatrixFS> systemmatrix_;
 
     /// coupling of fluid and ale (interface only)
-    Teuchos::RCP<CORE::ADAPTER::Coupling> icoupfa_;
+    Teuchos::RCP<Core::Adapter::Coupling> icoupfa_;
 
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks
 
-    Teuchos::RCP<CORE::LINALG::MatrixColTransform> aigtransform_;
+    Teuchos::RCP<Core::LinAlg::MatrixColTransform> aigtransform_;
 
-    Teuchos::RCP<CORE::LINALG::MatrixColTransform> fmiitransform_;
-    Teuchos::RCP<CORE::LINALG::MatrixColTransform> fmgitransform_;
+    Teuchos::RCP<Core::LinAlg::MatrixColTransform> fmiitransform_;
+    Teuchos::RCP<Core::LinAlg::MatrixColTransform> fmgitransform_;
 
     ///@}
 
@@ -536,7 +536,7 @@ namespace FSI
     //@}
 
     /// preconditioned block Krylov or block Gauss-Seidel linear solver
-    INPAR::FSI::LinearBlockSolver linearsolverstrategy_;
+    Inpar::FSI::LinearBlockSolver linearsolverstrategy_;
   };
 }  // namespace FSI
 

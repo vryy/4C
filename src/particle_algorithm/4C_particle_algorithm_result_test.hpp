@@ -39,7 +39,7 @@ namespace PARTICLEALGORITHM
    *
    * \author Sebastian Fuchs \date 07/2018
    */
-  class ParticleResultTest final : public CORE::UTILS::ResultTest
+  class ParticleResultTest final : public Core::UTILS::ResultTest
   {
    public:
     //! constructor
@@ -71,7 +71,7 @@ namespace PARTICLEALGORITHM
      * \param[out] nerr       number of tests with errors
      * \param[out] test_count number of tests performed
      */
-    void TestSpecial(INPUT::LineDefinition& res, int& nerr, int& test_count) override;
+    void TestSpecial(Input::LineDefinition& res, int& nerr, int& test_count) override;
 
    private:
     //! interface to particle engine

@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |                                                           dano 08/09 |
  *----------------------------------------------------------------------*/
-THR::ResultTest::ResultTest(TimInt& tintegrator) : CORE::UTILS::ResultTest("THERMAL")
+THR::ResultTest::ResultTest(TimInt& tintegrator) : Core::UTILS::ResultTest("THERMAL")
 {
   temp_ = tintegrator.Temp();
   rate_ = tintegrator.Rate();
@@ -35,7 +35,7 @@ THR::ResultTest::ResultTest(TimInt& tintegrator) : CORE::UTILS::ResultTest("THER
 /*----------------------------------------------------------------------*
  |                                                           dano 08/09 |
  *----------------------------------------------------------------------*/
-void THR::ResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int& test_count)
+void THR::ResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;
@@ -60,7 +60,7 @@ void THR::ResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int& test
     // this implementation does not allow testing of heatfluxes
     if (thrdisc_->HaveGlobalNode(node))
     {
-      const CORE::Nodes::Node* actnode = thrdisc_->gNode(node);
+      const Core::Nodes::Node* actnode = thrdisc_->gNode(node);
 
       // Here we are just interested in the nodes that we own (i.e. a row node)!
       if (actnode->Owner() != thrdisc_->Comm().MyPID()) return;

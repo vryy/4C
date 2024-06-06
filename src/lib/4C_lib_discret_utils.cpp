@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  compute nullspace of system (public)                     mwgee 02/07|
  *----------------------------------------------------------------------*/
-void DRT::Discretization::compute_null_space_if_necessary(
+void Discret::Discretization::compute_null_space_if_necessary(
     Teuchos::ParameterList& solveparams, bool recompute)
 {
   // see whether we have a list for an iterative solver
@@ -38,7 +38,7 @@ void DRT::Discretization::compute_null_space_if_necessary(
   if (NumMyRowElements())
   {
     // We assume that all elements are of equal type
-    CORE::Elements::Element* dwele = lRowElement(0);
+    Core::Elements::Element* dwele = lRowElement(0);
     dwele->ElementType().nodal_block_information(dwele, numdf, dimns, nv, np);
   }
 
@@ -101,14 +101,14 @@ void DRT::Discretization::compute_null_space_if_necessary(
   if (!HaveDofs()) FOUR_C_THROW("discretization has no dofs assigned");
 
   // compute solver parameters and set them into list
-  CORE::LINEAR_SOLVER::Parameters::compute_solver_parameters(*this, mllist);
+  Core::LinearSolver::Parameters::compute_solver_parameters(*this, mllist);
 }
 
 /*----------------------------------------------------------------------*
  |  set_state surrogate for node based vectors                  (public) |
  |                                                            gjb 06/09 |
  *----------------------------------------------------------------------*/
-void DRT::Discretization::add_multi_vector_to_parameter_list(
+void Discret::Discretization::add_multi_vector_to_parameter_list(
     Teuchos::ParameterList& p, const std::string name, Teuchos::RCP<const Epetra_MultiVector> vec)
 {
   // provide data in node-based multi-vector for usage on element level
@@ -133,7 +133,7 @@ void DRT::Discretization::add_multi_vector_to_parameter_list(
     {
       Teuchos::RCP<Epetra_MultiVector> tmp =
           Teuchos::rcp(new Epetra_MultiVector(*nodecolmap, numcol));
-      CORE::LINALG::Export(*vec, *tmp);
+      Core::LinAlg::Export(*vec, *tmp);
       p.set(name, tmp);
     }
   }

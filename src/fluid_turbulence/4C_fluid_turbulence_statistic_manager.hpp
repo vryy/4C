@@ -29,23 +29,23 @@ overhead as possible from the time integration method.
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::Dofsets
+namespace Core::DOFSets
 {
   class DofSet;
 }
 
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationReader;
   class DiscretizationWriter;
-}  // namespace CORE::IO
+}  // namespace Core::IO
 
-namespace SCATRA
+namespace ScaTra
 {
   class ScaTraTimIntImpl;
 }
@@ -137,37 +137,37 @@ namespace FLD
     */
     void DoTimeSample(int step, Teuchos::RCP<Epetra_Vector> velnp,
         Teuchos::RCP<Epetra_Vector> force, Teuchos::RCP<Epetra_Vector> phi,
-        Teuchos::RCP<const CORE::Dofsets::DofSet> stddofset);
+        Teuchos::RCP<const Core::DOFSets::DofSet> stddofset);
 
     /*!
     \brief Write (dump) the statistics to a file
 
     */
-    void DoOutput(CORE::IO::DiscretizationWriter& output, int step, const bool inflow = false);
+    void DoOutput(Core::IO::DiscretizationWriter& output, int step, const bool inflow = false);
 
     /*!
     \brief Restart collection of statistics
 
     */
-    void read_restart(CORE::IO::DiscretizationReader& reader, int step);
+    void read_restart(Core::IO::DiscretizationReader& reader, int step);
 
     /*!
     \brief Restart scatra-specific collection of statistics
 
     */
-    void ReadRestartScaTra(CORE::IO::DiscretizationReader& scatrareader, int step);
+    void ReadRestartScaTra(Core::IO::DiscretizationReader& scatrareader, int step);
 
     /*!
     \brief Provide access to scalar transport field
 
     */
-    void AddScaTraField(Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_timeint);
+    void AddScaTraField(Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra_timeint);
 
     /*!
     \brief   Write (dump) the scatra-specific mean fields to the result file
 
     */
-    void DoOutputForScaTra(CORE::IO::DiscretizationWriter& output, int step);
+    void DoOutputForScaTra(Core::IO::DiscretizationWriter& output, int step);
 
     //@}
 
@@ -202,9 +202,9 @@ namespace FLD
     int dumperiod_;
 
     //! the fluid discretization
-    Teuchos::RCP<DRT::Discretization> discret_;
+    Teuchos::RCP<Discret::Discretization> discret_;
     //! the scatra discretization
-    Teuchos::RCP<DRT::Discretization> scatradis_;
+    Teuchos::RCP<Discret::Discretization> scatradis_;
 
     //! parameterlist of the discretization including time params,
     //! stabilization params and turbulence sublist
@@ -291,7 +291,7 @@ namespace FLD
     bool withscatra_;
 
     //! toggle additional evaluations for turbulence models
-    enum INPAR::FLUID::TurbModelAction turbmodel_;
+    enum Inpar::FLUID::TurbModelAction turbmodel_;
 
     //! toggle evaluation of subgrid quantities, dissipation rates etc
     //! this is only possible for the genalpha implementation since

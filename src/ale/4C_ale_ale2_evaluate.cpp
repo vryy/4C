@@ -24,13 +24,13 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-int DRT::ELEMENTS::Ale2::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
-    CORE::LINALG::SerialDenseVector& elevec3)
+int Discret::ELEMENTS::Ale2::Evaluate(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
+    Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
+    Core::LinAlg::SerialDenseVector& elevec3)
 {
-  DRT::ELEMENTS::Ale2::ActionType act = Ale2::none;
+  Discret::ELEMENTS::Ale2::ActionType act = Ale2::none;
 
   // get the action required
   std::string action = params.get<std::string>("action", "none");
@@ -61,7 +61,7 @@ int DRT::ELEMENTS::Ale2::Evaluate(Teuchos::ParameterList& params,
 
 
   // get the material
-  Teuchos::RCP<CORE::MAT::Material> mat = Material();
+  Teuchos::RCP<Core::Mat::Material> mat = Material();
 
   switch (act)
   {
@@ -69,7 +69,7 @@ int DRT::ELEMENTS::Ale2::Evaluate(Teuchos::ParameterList& params,
     {
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
       std::vector<double> my_dispnp(lm.size());
-      CORE::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
+      Core::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
 
       static_ke_nonlinear(lm, my_dispnp, &elemat1, &elevec1, params, true, false);
 
@@ -79,7 +79,7 @@ int DRT::ELEMENTS::Ale2::Evaluate(Teuchos::ParameterList& params,
     {
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
       std::vector<double> my_dispnp(lm.size());
-      CORE::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
+      Core::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
 
       static_ke_nonlinear(lm, my_dispnp, &elemat1, &elevec1, params, spatialconfiguration, true);
 
@@ -89,7 +89,7 @@ int DRT::ELEMENTS::Ale2::Evaluate(Teuchos::ParameterList& params,
     {
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
       std::vector<double> my_dispnp(lm.size());
-      CORE::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
+      Core::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
       static_ke_laplace(discretization, lm, &elemat1, elevec1, my_dispnp, spatialconfiguration);
 
       break;
@@ -98,7 +98,7 @@ int DRT::ELEMENTS::Ale2::Evaluate(Teuchos::ParameterList& params,
     {
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
       std::vector<double> my_dispnp(lm.size());
-      CORE::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
+      Core::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
       static_ke_laplace(discretization, lm, &elemat1, elevec1, my_dispnp, true);
 
       break;
@@ -108,7 +108,7 @@ int DRT::ELEMENTS::Ale2::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> dispnp =
           discretization.GetState("dispnp");  // get the displacements
       std::vector<double> my_dispnp(lm.size());
-      CORE::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
+      Core::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
 
       static_ke_spring(&elemat1, elevec1, my_dispnp, spatialconfiguration);
 
@@ -119,7 +119,7 @@ int DRT::ELEMENTS::Ale2::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> dispnp =
           discretization.GetState("dispnp");  // get the displacements
       std::vector<double> my_dispnp(lm.size());
-      CORE::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
+      Core::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
 
       static_ke_spring(&elemat1, elevec1, my_dispnp, true);
 
@@ -128,12 +128,12 @@ int DRT::ELEMENTS::Ale2::Evaluate(Teuchos::ParameterList& params,
     case setup_material:
     {
       // get material
-      Teuchos::RCP<MAT::So3Material> so3mat =
-          Teuchos::rcp_dynamic_cast<MAT::So3Material>(mat, true);
+      Teuchos::RCP<Mat::So3Material> so3mat =
+          Teuchos::rcp_dynamic_cast<Mat::So3Material>(mat, true);
 
-      if (so3mat->MaterialType() != CORE::Materials::m_elasthyper and
+      if (so3mat->MaterialType() != Core::Materials::m_elasthyper and
           so3mat->MaterialType() !=
-              CORE::Materials::m_stvenant)  // ToDo (mayr): allow only materials without history
+              Core::Materials::m_stvenant)  // ToDo (mayr): allow only materials without history
       {
         FOUR_C_THROW(
             "Illegal material type for ALE. Only materials allowed that do "
@@ -141,9 +141,9 @@ int DRT::ELEMENTS::Ale2::Evaluate(Teuchos::ParameterList& params,
             "element line definition.");
       }
 
-      if (so3mat->MaterialType() == CORE::Materials::m_elasthyper)
+      if (so3mat->MaterialType() == Core::Materials::m_elasthyper)
       {
-        so3mat = Teuchos::rcp_dynamic_cast<MAT::ElastHyper>(mat, true);
+        so3mat = Teuchos::rcp_dynamic_cast<Mat::ElastHyper>(mat, true);
         so3mat->Setup(0, nullptr);
       }
       break;  // no setup for St-Venant / classic_lin required
@@ -152,7 +152,7 @@ int DRT::ELEMENTS::Ale2::Evaluate(Teuchos::ParameterList& params,
     {
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
       std::vector<double> my_dispnp(lm.size());
-      CORE::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
+      Core::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
 
       compute_det_jac(elevec1, lm, my_dispnp);
 
@@ -170,18 +170,19 @@ int DRT::ELEMENTS::Ale2::Evaluate(Teuchos::ParameterList& params,
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-int DRT::ELEMENTS::Ale2::evaluate_neumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
-    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
-    CORE::LINALG::SerialDenseMatrix* elemat1)
+int Discret::ELEMENTS::Ale2::evaluate_neumann(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
+    Core::LinAlg::SerialDenseMatrix* elemat1)
 {
   return 0;
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale2::edge_geometry(int i, int j, const CORE::LINALG::SerialDenseMatrix& xyze,
-    double* length, double* sin_alpha, double* cos_alpha)
+void Discret::ELEMENTS::Ale2::edge_geometry(int i, int j,
+    const Core::LinAlg::SerialDenseMatrix& xyze, double* length, double* sin_alpha,
+    double* cos_alpha)
 {
   double delta_x, delta_y;
   /*---------------------------------------------- x- and y-difference ---*/
@@ -198,8 +199,8 @@ void DRT::ELEMENTS::Ale2::edge_geometry(int i, int j, const CORE::LINALG::Serial
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-double DRT::ELEMENTS::Ale2::ale2_area_tria(
-    const CORE::LINALG::SerialDenseMatrix& xyze, int i, int j, int k)
+double Discret::ELEMENTS::Ale2::ale2_area_tria(
+    const Core::LinAlg::SerialDenseMatrix& xyze, int i, int j, int k)
 {
   double a, b, c; /* geometrical values */
   double el_area; /* element area */
@@ -217,8 +218,8 @@ double DRT::ELEMENTS::Ale2::ale2_area_tria(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale2::ale2_torsional(int i, int j, int k,
-    const CORE::LINALG::SerialDenseMatrix& xyze, CORE::LINALG::SerialDenseMatrix* k_torsion)
+void Discret::ELEMENTS::Ale2::ale2_torsional(int i, int j, int k,
+    const Core::LinAlg::SerialDenseMatrix& xyze, Core::LinAlg::SerialDenseMatrix* k_torsion)
 {
   /*
                              k
@@ -238,9 +239,9 @@ void DRT::ELEMENTS::Ale2::ale2_torsional(int i, int j, int k,
   double area;             /* area of the triangle */
 
 
-  CORE::LINALG::SerialDenseMatrix R(3, 6); /* rotation matrix same as in Farhat et al. */
-  CORE::LINALG::SerialDenseMatrix C(3, 3); /* torsion stiffness matrix same as in Farhat et al. */
-  CORE::LINALG::SerialDenseMatrix A(6, 3); /* auxiliary array of intermediate results */
+  Core::LinAlg::SerialDenseMatrix R(3, 6); /* rotation matrix same as in Farhat et al. */
+  Core::LinAlg::SerialDenseMatrix C(3, 3); /* torsion stiffness matrix same as in Farhat et al. */
+  Core::LinAlg::SerialDenseMatrix A(6, 3); /* auxiliary array of intermediate results */
 
 
   /*--------------------------------- determine basic geometric values ---*/
@@ -303,20 +304,20 @@ void DRT::ELEMENTS::Ale2::ale2_torsional(int i, int j, int k,
   /*----------------------------------- perform matrix multiplications ---*/
 
 
-  int err = CORE::LINALG::multiplyTN(A, R, C);  // A = R^t * C
+  int err = Core::LinAlg::multiplyTN(A, R, C);  // A = R^t * C
   if (err != 0) FOUR_C_THROW("Multiply failed");
-  err = CORE::LINALG::multiply(*k_torsion, A, R);  // stiff = A * R
+  err = Core::LinAlg::multiply(*k_torsion, A, R);  // stiff = A * R
   if (err != 0) FOUR_C_THROW("Multiply failed");
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale2::ale2_tors_spring_tri3(
-    CORE::LINALG::SerialDenseMatrix* sys_mat, const CORE::LINALG::SerialDenseMatrix& xyze)
+void Discret::ELEMENTS::Ale2::ale2_tors_spring_tri3(
+    Core::LinAlg::SerialDenseMatrix* sys_mat, const Core::LinAlg::SerialDenseMatrix& xyze)
 {
   int i, j; /* counters */
 
-  CORE::LINALG::SerialDenseMatrix k_tria(6, 6);  // rotational stiffness matrix of one triangle
+  Core::LinAlg::SerialDenseMatrix k_tria(6, 6);  // rotational stiffness matrix of one triangle
 
   /*-------------------------------- evaluate torsional stiffness part ---*/
   ale2_torsional(0, 1, 2, xyze, &k_tria);
@@ -328,12 +329,12 @@ void DRT::ELEMENTS::Ale2::ale2_tors_spring_tri3(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale2::ale2_tors_spring_quad4(
-    CORE::LINALG::SerialDenseMatrix* sys_mat, const CORE::LINALG::SerialDenseMatrix& xyze)
+void Discret::ELEMENTS::Ale2::ale2_tors_spring_quad4(
+    Core::LinAlg::SerialDenseMatrix* sys_mat, const Core::LinAlg::SerialDenseMatrix& xyze)
 {
   int i, j; /* counters */
 
-  CORE::LINALG::SerialDenseMatrix k_tria(6, 6);  // rotational stiffness matrix of one triangle
+  Core::LinAlg::SerialDenseMatrix k_tria(6, 6);  // rotational stiffness matrix of one triangle
 
   /*--- pass all nodes and determine the triangle defined by the node i and
   adjunct nodes... ---*/
@@ -381,12 +382,12 @@ void DRT::ELEMENTS::Ale2::ale2_tors_spring_quad4(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale2::static_ke_spring(CORE::LINALG::SerialDenseMatrix* sys_mat,
-    CORE::LINALG::SerialDenseVector& residual, std::vector<double>& displacements,
+void Discret::ELEMENTS::Ale2::static_ke_spring(Core::LinAlg::SerialDenseMatrix* sys_mat,
+    Core::LinAlg::SerialDenseVector& residual, std::vector<double>& displacements,
     const bool spatialconfiguration)
 {
   const int iel = num_node();  // numnode of this element
-  const CORE::FE::CellType distype = this->Shape();
+  const Core::FE::CellType distype = this->Shape();
   int numcnd;          // number of corner nodes
   int node_i, node_j;  // end nodes of actual spring
   double length;       // length of actual edge
@@ -397,13 +398,13 @@ void DRT::ELEMENTS::Ale2::static_ke_spring(CORE::LINALG::SerialDenseMatrix* sys_
   // number of corner nodes
   switch (distype)
   {
-    case CORE::FE::CellType::quad4:
-    case CORE::FE::CellType::quad8:
-    case CORE::FE::CellType::quad9:
+    case Core::FE::CellType::quad4:
+    case Core::FE::CellType::quad8:
+    case Core::FE::CellType::quad9:
       numcnd = 4;
       break;
-    case CORE::FE::CellType::tri3:
-    case CORE::FE::CellType::tri6:
+    case Core::FE::CellType::tri3:
+    case Core::FE::CellType::tri6:
       numcnd = 3;
       break;
     default:
@@ -413,7 +414,7 @@ void DRT::ELEMENTS::Ale2::static_ke_spring(CORE::LINALG::SerialDenseMatrix* sys_
   }
 
   // Actual element coordinates
-  CORE::LINALG::SerialDenseMatrix xyze(2, iel);
+  Core::LinAlg::SerialDenseMatrix xyze(2, iel);
 
   for (int i = 0; i < iel; i++)
   {
@@ -466,7 +467,7 @@ void DRT::ELEMENTS::Ale2::static_ke_spring(CORE::LINALG::SerialDenseMatrix* sys_
   // and put edge nodes on the middle of the respective edge
   switch (distype)
   {
-    case CORE::FE::CellType::quad8:
+    case Core::FE::CellType::quad8:
       (*sys_mat)(8, 8) = 1.0;
       (*sys_mat)(8, 0) = -0.5;
       (*sys_mat)(8, 2) = -0.5;
@@ -493,7 +494,7 @@ void DRT::ELEMENTS::Ale2::static_ke_spring(CORE::LINALG::SerialDenseMatrix* sys_
       (*sys_mat)(15, 1) = -0.5;
       ale2_tors_spring_quad4(sys_mat, xyze);
       break;
-    case CORE::FE::CellType::quad9:
+    case Core::FE::CellType::quad9:
       (*sys_mat)(8, 8) = 1.0;
       (*sys_mat)(8, 0) = -0.5;
       (*sys_mat)(8, 2) = -0.5;
@@ -526,13 +527,13 @@ void DRT::ELEMENTS::Ale2::static_ke_spring(CORE::LINALG::SerialDenseMatrix* sys_
       (*sys_mat)(17, 13) = -0.5;
       ale2_tors_spring_quad4(sys_mat, xyze);
       break;
-    case CORE::FE::CellType::quad4:
+    case Core::FE::CellType::quad4:
       ale2_tors_spring_quad4(sys_mat, xyze);
       break;
-    case CORE::FE::CellType::tri3:
+    case Core::FE::CellType::tri3:
       ale2_tors_spring_tri3(sys_mat, xyze);
       break;
-    case CORE::FE::CellType::tri6:
+    case Core::FE::CellType::tri6:
       (*sys_mat)(6, 6) = 1.0;
       (*sys_mat)(6, 0) = -0.5;
       (*sys_mat)(6, 2) = -0.5;
@@ -568,9 +569,9 @@ void DRT::ELEMENTS::Ale2::static_ke_spring(CORE::LINALG::SerialDenseMatrix* sys_
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale2::static_ke_nonlinear(const std::vector<int>& lm,
-    const std::vector<double>& disp, CORE::LINALG::SerialDenseMatrix* stiffmatrix,
-    CORE::LINALG::SerialDenseVector* force, Teuchos::ParameterList& params,
+void Discret::ELEMENTS::Ale2::static_ke_nonlinear(const std::vector<int>& lm,
+    const std::vector<double>& disp, Core::LinAlg::SerialDenseMatrix* stiffmatrix,
+    Core::LinAlg::SerialDenseVector* force, Teuchos::ParameterList& params,
     const bool spatialconfiguration, const bool pseudolinear)
 {
   const int numnode = num_node();
@@ -578,35 +579,35 @@ void DRT::ELEMENTS::Ale2::static_ke_nonlinear(const std::vector<int>& lm,
   const int nd = numnode * numdf;
 
   // general arrays
-  CORE::LINALG::SerialDenseVector funct(numnode);
-  CORE::LINALG::SerialDenseMatrix deriv;
+  Core::LinAlg::SerialDenseVector funct(numnode);
+  Core::LinAlg::SerialDenseMatrix deriv;
   deriv.shape(2, numnode);
-  CORE::LINALG::SerialDenseMatrix xjm;
+  Core::LinAlg::SerialDenseMatrix xjm;
   xjm.shape(2, 2);
-  CORE::LINALG::SerialDenseMatrix boplin;
+  Core::LinAlg::SerialDenseMatrix boplin;
   boplin.shape(4, 2 * numnode);
-  CORE::LINALG::SerialDenseVector F;
+  Core::LinAlg::SerialDenseVector F;
   F.size(4);
-  CORE::LINALG::SerialDenseVector strain;
+  Core::LinAlg::SerialDenseVector strain;
   strain.size(4);
   double det;
-  CORE::LINALG::SerialDenseMatrix xrefe(2, numnode);
-  CORE::LINALG::SerialDenseMatrix xcure(2, numnode);
+  Core::LinAlg::SerialDenseMatrix xrefe(2, numnode);
+  Core::LinAlg::SerialDenseMatrix xcure(2, numnode);
   const int numeps = 4;
-  CORE::LINALG::SerialDenseMatrix b_cure;
+  Core::LinAlg::SerialDenseMatrix b_cure;
   b_cure.shape(numeps, nd);
-  CORE::LINALG::SerialDenseMatrix stress;
+  Core::LinAlg::SerialDenseMatrix stress;
   stress.shape(4, 4);
-  CORE::LINALG::SerialDenseMatrix C;
+  Core::LinAlg::SerialDenseMatrix C;
   C.shape(4, 4);
 
 
   /*------- get integration data ---------------------------------------- */
-  const CORE::FE::CellType distype = Shape();
+  const Core::FE::CellType distype = Shape();
 
   // gaussian points
-  const CORE::FE::GaussRule2D gaussrule = get_optimal_gaussrule(distype);
-  const CORE::FE::IntegrationPoints2D intpoints(gaussrule);
+  const Core::FE::GaussRule2D gaussrule = get_optimal_gaussrule(distype);
+  const Core::FE::IntegrationPoints2D intpoints(gaussrule);
 
   /*----------------------------------------------------- geometry update */
   for (int k = 0; k < numnode; ++k)
@@ -625,12 +626,13 @@ void DRT::ELEMENTS::Ale2::static_ke_nonlinear(const std::vector<int>& lm,
   }
 
   /*--------------------------------- get node weights for nurbs elements */
-  CORE::LINALG::SerialDenseVector weights(numnode);
-  if (distype == CORE::FE::CellType::nurbs4 || distype == CORE::FE::CellType::nurbs9)
+  Core::LinAlg::SerialDenseVector weights(numnode);
+  if (distype == Core::FE::CellType::nurbs4 || distype == Core::FE::CellType::nurbs9)
   {
     for (int inode = 0; inode < numnode; ++inode)
     {
-      DRT::NURBS::ControlPoint* cp = dynamic_cast<DRT::NURBS::ControlPoint*>(Nodes()[inode]);
+      Discret::Nurbs::ControlPoint* cp =
+          dynamic_cast<Discret::Nurbs::ControlPoint*>(Nodes()[inode]);
 
       weights(inode) = cp->W();
     }
@@ -646,11 +648,11 @@ void DRT::ELEMENTS::Ale2::static_ke_nonlinear(const std::vector<int>& lm,
     const double wgt = intpoints.qwgt[ip];
 
     // get values of shape functions and derivatives in the gausspoint
-    if (distype != CORE::FE::CellType::nurbs4 && distype != CORE::FE::CellType::nurbs9)
+    if (distype != Core::FE::CellType::nurbs4 && distype != Core::FE::CellType::nurbs9)
     {
       // shape functions and their derivatives for polynomials
-      CORE::FE::shape_function_2D(funct, e1, e2, distype);
-      CORE::FE::shape_function_2D_deriv1(deriv, e1, e2, distype);
+      Core::FE::shape_function_2D(funct, e1, e2, distype);
+      Core::FE::shape_function_2D_deriv1(deriv, e1, e2, distype);
     }
     else
     {
@@ -692,11 +694,11 @@ void DRT::ELEMENTS::Ale2::static_ke_nonlinear(const std::vector<int>& lm,
 
   if (pseudolinear and force)
   {
-    CORE::LINALG::SerialDenseVector displacements;
+    Core::LinAlg::SerialDenseVector displacements;
     displacements.resize(nd);
     for (int i = 0; i < nd; ++i) displacements(i) = disp[i];
 
-    CORE::LINALG::multiply(*force, *stiffmatrix, displacements);
+    Core::LinAlg::multiply(*force, *stiffmatrix, displacements);
   }
 
   return;
@@ -704,16 +706,16 @@ void DRT::ELEMENTS::Ale2::static_ke_nonlinear(const std::vector<int>& lm,
 
 ///*----------------------------------------------------------------------------*/
 ///*----------------------------------------------------------------------------*/
-// static void ale2_min_jaco(CORE::FE::CellType distyp,
-//    CORE::LINALG::SerialDenseMatrix xyz, double *min_detF)
+// static void ale2_min_jaco(Core::FE::CellType distyp,
+//    Core::LinAlg::SerialDenseMatrix xyz, double *min_detF)
 //{
 //  double  detF[4]; // Jacobian determinant at nodes
 //
 //  switch (distyp)
 //  {
-//    case CORE::FE::CellType::quad4:
-//    case CORE::FE::CellType::quad8:
-//    case CORE::FE::CellType::quad9:
+//    case Core::FE::CellType::quad4:
+//    case Core::FE::CellType::quad8:
+//    case Core::FE::CellType::quad9:
 //      /*--------------------- evaluate Jacobian determinant at nodes ---*/
 //      detF[0] = 0.25 * ( (xyz[0][0]-xyz[0][1]) * (xyz[1][0]-xyz[1][3])
 //                       - (xyz[1][0]-xyz[1][1]) * (xyz[0][0]-xyz[0][3]) );
@@ -740,7 +742,7 @@ void DRT::ELEMENTS::Ale2::static_ke_nonlinear(const std::vector<int>& lm,
 //      *min_detF = (*min_detF < detF[3]) ? *min_detF : detF[3];
 //      /*----------------------------------------------------------------*/
 //      break;
-//    case CORE::FE::CellType::tri3:
+//    case Core::FE::CellType::tri3:
 //      *min_detF = (-xyz[0][0]+xyz[0][1]) * (-xyz[1][0]+xyz[1][2])
 //                - (-xyz[0][0]+xyz[0][2]) * (-xyz[1][0]+xyz[1][1]);
 //      if (*min_detF <= 0.0) FOUR_C_THROW("Negative JACOBIAN ");
@@ -754,8 +756,8 @@ void DRT::ELEMENTS::Ale2::static_ke_nonlinear(const std::vector<int>& lm,
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale2::static_ke_laplace(DRT::Discretization& dis, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix* sys_mat, CORE::LINALG::SerialDenseVector& residual,
+void Discret::ELEMENTS::Ale2::static_ke_laplace(Discret::Discretization& dis, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix* sys_mat, Core::LinAlg::SerialDenseVector& residual,
     std::vector<double>& displacements, const bool spatialconfiguration)
 {
   //  FOUR_C_THROW("We don't know what is really done in the element evaluation"
@@ -763,9 +765,9 @@ void DRT::ELEMENTS::Ale2::static_ke_laplace(DRT::Discretization& dis, std::vecto
   //      "using it.");
 
   const int iel = num_node();
-  const CORE::FE::CellType distype = this->Shape();
+  const Core::FE::CellType distype = this->Shape();
 
-  CORE::LINALG::SerialDenseMatrix xyze(2, iel);
+  Core::LinAlg::SerialDenseMatrix xyze(2, iel);
 
   // get node coordinates
   for (int i = 0; i < iel; i++)
@@ -786,34 +788,35 @@ void DRT::ELEMENTS::Ale2::static_ke_laplace(DRT::Discretization& dis, std::vecto
 
   // --------------------------------------------------
   // Now do the nurbs specific stuff
-  std::vector<CORE::LINALG::SerialDenseVector> myknots(2);
-  CORE::LINALG::SerialDenseVector weights(iel);
+  std::vector<Core::LinAlg::SerialDenseVector> myknots(2);
+  Core::LinAlg::SerialDenseVector weights(iel);
 
-  if (distype == CORE::FE::CellType::nurbs4 || distype == CORE::FE::CellType::nurbs9)
+  if (distype == Core::FE::CellType::nurbs4 || distype == Core::FE::CellType::nurbs9)
   {
-    DRT::NURBS::NurbsDiscretization* nurbsdis =
-        dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(dis));
+    Discret::Nurbs::NurbsDiscretization* nurbsdis =
+        dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(dis));
 
     (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, Id());
 
     for (int inode = 0; inode < iel; ++inode)
     {
-      DRT::NURBS::ControlPoint* cp = dynamic_cast<DRT::NURBS::ControlPoint*>(Nodes()[inode]);
+      Discret::Nurbs::ControlPoint* cp =
+          dynamic_cast<Discret::Nurbs::ControlPoint*>(Nodes()[inode]);
 
       weights(inode) = cp->W();
     }
   }
 
   /*----------------------------------------- declaration of variables ---*/
-  CORE::LINALG::SerialDenseVector funct(iel);
-  CORE::LINALG::SerialDenseMatrix deriv(2, iel);
-  CORE::LINALG::SerialDenseMatrix deriv_xy(2, iel);
-  CORE::LINALG::SerialDenseMatrix xjm(2, 2);
-  CORE::LINALG::SerialDenseMatrix xji(2, 2);
+  Core::LinAlg::SerialDenseVector funct(iel);
+  Core::LinAlg::SerialDenseMatrix deriv(2, iel);
+  Core::LinAlg::SerialDenseMatrix deriv_xy(2, iel);
+  Core::LinAlg::SerialDenseMatrix xjm(2, 2);
+  Core::LinAlg::SerialDenseMatrix xji(2, 2);
 
   // Gauss quadrature points
-  const CORE::FE::GaussRule2D gaussrule = get_optimal_gaussrule(distype);
-  const CORE::FE::IntegrationPoints2D intpoints(gaussrule);
+  const Core::FE::GaussRule2D gaussrule = get_optimal_gaussrule(distype);
+  const Core::FE::IntegrationPoints2D intpoints(gaussrule);
   //  double min_detF = 0.0;         /* minimal Jacobian determinant   */
   //  ale2_min_jaco(Shape(),xyze,&min_detF);
 
@@ -825,20 +828,20 @@ void DRT::ELEMENTS::Ale2::static_ke_laplace(DRT::Discretization& dis, std::vecto
     const double e2 = intpoints.qxg[iquad][1];
 
     // get values of shape functions and derivatives at the gausspoint
-    if (distype != CORE::FE::CellType::nurbs4 && distype != CORE::FE::CellType::nurbs9)
+    if (distype != Core::FE::CellType::nurbs4 && distype != Core::FE::CellType::nurbs9)
     {
       // shape functions and their derivatives for polynomials
-      CORE::FE::shape_function_2D(funct, e1, e2, distype);
-      CORE::FE::shape_function_2D_deriv1(deriv, e1, e2, distype);
+      Core::FE::shape_function_2D(funct, e1, e2, distype);
+      Core::FE::shape_function_2D_deriv1(deriv, e1, e2, distype);
     }
     else
     {
       // nurbs version
-      CORE::LINALG::SerialDenseVector gp(2);
+      Core::LinAlg::SerialDenseVector gp(2);
       gp(0) = e1;
       gp(1) = e2;
 
-      CORE::FE::NURBS::nurbs_get_2D_funct_deriv(funct, deriv, gp, myknots, weights, distype);
+      Core::FE::Nurbs::nurbs_get_2D_funct_deriv(funct, deriv, gp, myknots, weights, distype);
     }
 
     // compute jacobian matrix
@@ -898,8 +901,8 @@ void DRT::ELEMENTS::Ale2::static_ke_laplace(DRT::Discretization& dis, std::vecto
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale2::calc_b_op_lin(CORE::LINALG::SerialDenseMatrix& boplin,
-    CORE::LINALG::SerialDenseMatrix& deriv, CORE::LINALG::SerialDenseMatrix& xjm, double& det,
+void Discret::ELEMENTS::Ale2::calc_b_op_lin(Core::LinAlg::SerialDenseMatrix& boplin,
+    Core::LinAlg::SerialDenseMatrix& deriv, Core::LinAlg::SerialDenseMatrix& xjm, double& det,
     const int iel)
 {
   double dum;
@@ -934,8 +937,8 @@ void DRT::ELEMENTS::Ale2::calc_b_op_lin(CORE::LINALG::SerialDenseMatrix& boplin,
 
 /*-----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale2::jacobian_matrix(const CORE::LINALG::SerialDenseMatrix& xrefe,
-    const CORE::LINALG::SerialDenseMatrix& deriv, CORE::LINALG::SerialDenseMatrix& xjm, double* det,
+void Discret::ELEMENTS::Ale2::jacobian_matrix(const Core::LinAlg::SerialDenseMatrix& xrefe,
+    const Core::LinAlg::SerialDenseMatrix& deriv, Core::LinAlg::SerialDenseMatrix& xjm, double* det,
     const int iel)
 {
   xjm.putScalar(0.0);
@@ -960,9 +963,9 @@ void DRT::ELEMENTS::Ale2::jacobian_matrix(const CORE::LINALG::SerialDenseMatrix&
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale2::def_grad(CORE::LINALG::SerialDenseVector& F,
-    CORE::LINALG::SerialDenseVector& strain, const CORE::LINALG::SerialDenseMatrix& xrefe,
-    const CORE::LINALG::SerialDenseMatrix& xcure, CORE::LINALG::SerialDenseMatrix& boplin,
+void Discret::ELEMENTS::Ale2::def_grad(Core::LinAlg::SerialDenseVector& F,
+    Core::LinAlg::SerialDenseVector& strain, const Core::LinAlg::SerialDenseMatrix& xrefe,
+    const Core::LinAlg::SerialDenseMatrix& xcure, Core::LinAlg::SerialDenseMatrix& boplin,
     const int iel)
 {
   /*------------------calculate defgrad --------- (Summenschleife->+=) ---*
@@ -997,8 +1000,8 @@ void DRT::ELEMENTS::Ale2::def_grad(CORE::LINALG::SerialDenseVector& F,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale2::kg(CORE::LINALG::SerialDenseMatrix& estif,
-    const CORE::LINALG::SerialDenseMatrix& boplin, const CORE::LINALG::SerialDenseMatrix& stress,
+void Discret::ELEMENTS::Ale2::kg(Core::LinAlg::SerialDenseMatrix& estif,
+    const Core::LinAlg::SerialDenseMatrix& boplin, const Core::LinAlg::SerialDenseMatrix& stress,
     const double fac, const int nd, const int numeps)
 {
   /*---------------------------------------------- perform B^T * SIGMA * B*/
@@ -1013,8 +1016,8 @@ void DRT::ELEMENTS::Ale2::kg(CORE::LINALG::SerialDenseMatrix& estif,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale2::keu(CORE::LINALG::SerialDenseMatrix& estif,
-    const CORE::LINALG::SerialDenseMatrix& b_cure, const CORE::LINALG::SerialDenseMatrix& C,
+void Discret::ELEMENTS::Ale2::keu(Core::LinAlg::SerialDenseMatrix& estif,
+    const Core::LinAlg::SerialDenseMatrix& b_cure, const Core::LinAlg::SerialDenseMatrix& C,
     const double fac, const int nd, const int numeps)
 {
   /*------------- perform B_cure^T * D * B_cure, whereas B_cure = F^T * B */
@@ -1028,12 +1031,12 @@ void DRT::ELEMENTS::Ale2::keu(CORE::LINALG::SerialDenseMatrix& estif,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale2::fint(const CORE::LINALG::SerialDenseMatrix& stress,
-    const CORE::LINALG::SerialDenseMatrix& b_cure, CORE::LINALG::SerialDenseVector& intforce,
+void Discret::ELEMENTS::Ale2::fint(const Core::LinAlg::SerialDenseMatrix& stress,
+    const Core::LinAlg::SerialDenseMatrix& b_cure, Core::LinAlg::SerialDenseVector& intforce,
     const double fac, const int nd)
 
 {
-  CORE::LINALG::SerialDenseVector st;
+  Core::LinAlg::SerialDenseVector st;
   st.size(4);
 
   st[0] = fac * stress(0, 0);
@@ -1049,22 +1052,22 @@ void DRT::ELEMENTS::Ale2::fint(const CORE::LINALG::SerialDenseMatrix& stress,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale2::call_mat_geo_nonl(
-    const CORE::LINALG::SerialDenseVector& strain,     ///< Green-Lagrange strain vector
-    CORE::LINALG::SerialDenseMatrix& stress,           ///< stress vector
-    CORE::LINALG::SerialDenseMatrix& C,                ///< elasticity matrix
+void Discret::ELEMENTS::Ale2::call_mat_geo_nonl(
+    const Core::LinAlg::SerialDenseVector& strain,     ///< Green-Lagrange strain vector
+    Core::LinAlg::SerialDenseMatrix& stress,           ///< stress vector
+    Core::LinAlg::SerialDenseMatrix& C,                ///< elasticity matrix
     const int numeps,                                  ///< number of strains
-    Teuchos::RCP<const CORE::MAT::Material> material,  ///< the material data
+    Teuchos::RCP<const Core::Mat::Material> material,  ///< the material data
     Teuchos::ParameterList& params,                    ///< element parameter list
     const int gp)
 {
   /*--------------------------- call material law -> get tangent modulus--*/
   switch (material->MaterialType())
   {
-    case CORE::Materials::m_stvenant: /*----------------------- linear elastic ---*/
+    case Core::Materials::m_stvenant: /*----------------------- linear elastic ---*/
     {
-      const MAT::StVenantKirchhoff* actmat =
-          static_cast<const MAT::StVenantKirchhoff*>(material.get());
+      const Mat::StVenantKirchhoff* actmat =
+          static_cast<const Mat::StVenantKirchhoff*>(material.get());
       double ym = actmat->Youngs();
       double pv = actmat->PoissonRatio();
 
@@ -1098,7 +1101,7 @@ void DRT::ELEMENTS::Ale2::call_mat_geo_nonl(
       /*-------------------------- evaluate 2.PK-stresses -------------------*/
       /*------------------ Summenschleife -> += (2.PK stored as vector) ------*/
 
-      CORE::LINALG::SerialDenseVector svector;
+      Core::LinAlg::SerialDenseVector svector;
       svector.size(3);
 
       for (int k = 0; k < 3; k++)
@@ -1121,7 +1124,7 @@ void DRT::ELEMENTS::Ale2::call_mat_geo_nonl(
 
       break;
     }
-    case CORE::Materials::m_elasthyper:  // general hyperelastic matrial (bborn, 06/09)
+    case Core::Materials::m_elasthyper:  // general hyperelastic matrial (bborn, 06/09)
     {
       material_response3d_plane(stress, C, strain, params, gp);
       break;
@@ -1138,17 +1141,17 @@ void DRT::ELEMENTS::Ale2::call_mat_geo_nonl(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale2::material_response3d_plane(CORE::LINALG::SerialDenseMatrix& stress,
-    CORE::LINALG::SerialDenseMatrix& C, const CORE::LINALG::SerialDenseVector& strain,
+void Discret::ELEMENTS::Ale2::material_response3d_plane(Core::LinAlg::SerialDenseMatrix& stress,
+    Core::LinAlg::SerialDenseMatrix& C, const Core::LinAlg::SerialDenseVector& strain,
     Teuchos::ParameterList& params, const int gp)
 {
   // make 3d equivalent of Green-Lagrange strain
-  CORE::LINALG::Matrix<6, 1> gl(false);
+  Core::LinAlg::Matrix<6, 1> gl(false);
   green_lagrange_plane3d(strain, gl);
 
   // call 3d stress response
-  CORE::LINALG::Matrix<6, 1> pk2(true);   // must be zerofied!!!
-  CORE::LINALG::Matrix<6, 6> cmat(true);  // must be zerofied!!!
+  Core::LinAlg::Matrix<6, 1> pk2(true);   // must be zerofied!!!
+  Core::LinAlg::Matrix<6, 6> cmat(true);  // must be zerofied!!!
   material_response3d(&pk2, &cmat, &gl, params, gp);
 
   // we have plain strain
@@ -1186,11 +1189,11 @@ void DRT::ELEMENTS::Ale2::material_response3d_plane(CORE::LINALG::SerialDenseMat
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale2::material_response3d(CORE::LINALG::Matrix<6, 1>* stress,
-    CORE::LINALG::Matrix<6, 6>* cmat, const CORE::LINALG::Matrix<6, 1>* glstrain,
+void Discret::ELEMENTS::Ale2::material_response3d(Core::LinAlg::Matrix<6, 1>* stress,
+    Core::LinAlg::Matrix<6, 6>* cmat, const Core::LinAlg::Matrix<6, 1>* glstrain,
     Teuchos::ParameterList& params, const int gp)
 {
-  Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
+  Teuchos::RCP<Mat::So3Material> so3mat = Teuchos::rcp_dynamic_cast<Mat::So3Material>(Material());
   if (so3mat == Teuchos::null) FOUR_C_THROW("cast to So3Material failed!");
 
   so3mat->Evaluate(nullptr, glstrain, params, stress, cmat, gp, Id());
@@ -1200,8 +1203,8 @@ void DRT::ELEMENTS::Ale2::material_response3d(CORE::LINALG::Matrix<6, 1>* stress
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale2::green_lagrange_plane3d(
-    const CORE::LINALG::SerialDenseVector& glplane, CORE::LINALG::Matrix<6, 1>& gl3d)
+void Discret::ELEMENTS::Ale2::green_lagrange_plane3d(
+    const Core::LinAlg::SerialDenseVector& glplane, Core::LinAlg::Matrix<6, 1>& gl3d)
 {
   gl3d(0) = glplane(0);               // E_{11}
   gl3d(1) = glplane(1);               // E_{22}
@@ -1215,11 +1218,11 @@ void DRT::ELEMENTS::Ale2::green_lagrange_plane3d(
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale2::b_op_lin_cure(CORE::LINALG::SerialDenseMatrix& b_cure,
-    const CORE::LINALG::SerialDenseMatrix& boplin, const CORE::LINALG::SerialDenseVector& F,
+void Discret::ELEMENTS::Ale2::b_op_lin_cure(Core::LinAlg::SerialDenseMatrix& b_cure,
+    const Core::LinAlg::SerialDenseMatrix& boplin, const Core::LinAlg::SerialDenseVector& F,
     const int numeps, const int nd)
 {
-  CORE::LINALG::SerialDenseMatrix Fmatrix;
+  Core::LinAlg::SerialDenseMatrix Fmatrix;
   Fmatrix.shape(4, 4);
 
 
@@ -1250,29 +1253,29 @@ void DRT::ELEMENTS::Ale2::b_op_lin_cure(CORE::LINALG::SerialDenseMatrix& b_cure,
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale2::compute_det_jac(CORE::LINALG::SerialDenseVector& elevec1,
+void Discret::ELEMENTS::Ale2::compute_det_jac(Core::LinAlg::SerialDenseVector& elevec1,
     const std::vector<int>& lm, const std::vector<double>& disp)
 {
   const int numnode = num_node();
   const int numdf = 2;
 
   // general arrays
-  CORE::LINALG::SerialDenseVector funct(numnode);
-  CORE::LINALG::SerialDenseMatrix deriv;
+  Core::LinAlg::SerialDenseVector funct(numnode);
+  Core::LinAlg::SerialDenseMatrix deriv;
   deriv.shape(2, numnode);
-  CORE::LINALG::SerialDenseMatrix xjm;
+  Core::LinAlg::SerialDenseMatrix xjm;
   xjm.shape(2, 2);
   double det;
   double qm = 0.0;
-  CORE::LINALG::SerialDenseMatrix xrefe(2, numnode);
-  CORE::LINALG::SerialDenseMatrix xcure(2, numnode);
+  Core::LinAlg::SerialDenseMatrix xrefe(2, numnode);
+  Core::LinAlg::SerialDenseMatrix xcure(2, numnode);
 
-  CORE::LINALG::SerialDenseVector detjac(4);
-  CORE::LINALG::SerialDenseVector quality(4);
+  Core::LinAlg::SerialDenseVector detjac(4);
+  Core::LinAlg::SerialDenseVector quality(4);
 
   /*------- get integration data ---------------------------------------- */
-  const CORE::FE::CellType distype = Shape();
-  if (distype != CORE::FE::CellType::quad4)
+  const Core::FE::CellType distype = Shape();
+  if (distype != Core::FE::CellType::quad4)
     FOUR_C_THROW("Quality metric is currently implemented for Quad4 elements, only.");
 
   /*----------------------------------------------------- geometry update */
@@ -1306,8 +1309,8 @@ void DRT::ELEMENTS::Ale2::compute_det_jac(CORE::LINALG::SerialDenseVector& eleve
 
     // get values of shape functions and derivatives in the gausspoint
     // shape functions and their derivatives for polynomials
-    CORE::FE::shape_function_2D(funct, e1, e2, distype);
-    CORE::FE::shape_function_2D_deriv1(deriv, e1, e2, distype);
+    Core::FE::shape_function_2D(funct, e1, e2, distype);
+    Core::FE::shape_function_2D_deriv1(deriv, e1, e2, distype);
 
     /*--------------------------------------- compute jacobian Matrix */
     jacobian_matrix(xrefe, deriv, xjm, &det, numnode);
@@ -1337,11 +1340,11 @@ void DRT::ELEMENTS::Ale2::compute_det_jac(CORE::LINALG::SerialDenseVector& eleve
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale2::evaluate_oddy(
-    const CORE::LINALG::SerialDenseMatrix& xjm, double det, double& qm)
+void Discret::ELEMENTS::Ale2::evaluate_oddy(
+    const Core::LinAlg::SerialDenseMatrix& xjm, double det, double& qm)
 {
   // compute C
-  CORE::LINALG::SerialDenseMatrix c(2, 2, true);
+  Core::LinAlg::SerialDenseMatrix c(2, 2, true);
   for (int i = 0; i < 2; ++i)
   {
     for (int j = 0; j < 2; ++j)

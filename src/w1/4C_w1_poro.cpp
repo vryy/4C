@@ -20,15 +20,15 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::Wall1Poro<distype>::Wall1Poro(int id, int owner)
-    : DRT::ELEMENTS::Wall1(id, owner), intpoints_(distype), weights_(true), myknots_(numdim_)
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::Wall1Poro<distype>::Wall1Poro(int id, int owner)
+    : Discret::ELEMENTS::Wall1(id, owner), intpoints_(distype), weights_(true), myknots_(numdim_)
 {
   numgpt_ = intpoints_.NumPoints();
 
-  invJ_.resize(numgpt_, CORE::LINALG::Matrix<numdim_, numdim_>(true));
+  invJ_.resize(numgpt_, Core::LinAlg::Matrix<numdim_, numdim_>(true));
   detJ_.resize(numgpt_, 0.0);
-  xsi_.resize(numgpt_, CORE::LINALG::Matrix<numdim_, 1>(true));
+  xsi_.resize(numgpt_, Core::LinAlg::Matrix<numdim_, 1>(true));
   anisotropic_permeability_directions_.resize(2, std::vector<double>(2, 0.0));
   anisotropic_permeability_nodal_coeffs_.resize(2, std::vector<double>(numnod_, 0.0));
 
@@ -37,9 +37,9 @@ DRT::ELEMENTS::Wall1Poro<distype>::Wall1Poro(int id, int owner)
   scatra_coupling_ = false;
 }
 
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::Wall1Poro<distype>::Wall1Poro(const DRT::ELEMENTS::Wall1Poro<distype>& old)
-    : DRT::ELEMENTS::Wall1(old),
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::Wall1Poro<distype>::Wall1Poro(const Discret::ELEMENTS::Wall1Poro<distype>& old)
+    : Discret::ELEMENTS::Wall1(old),
       invJ_(old.invJ_),
       detJ_(old.detJ_),
       xsi_(old.xsi_),
@@ -54,17 +54,17 @@ DRT::ELEMENTS::Wall1Poro<distype>::Wall1Poro(const DRT::ELEMENTS::Wall1Poro<dist
   numgpt_ = intpoints_.NumPoints();
 }
 
-template <CORE::FE::CellType distype>
-CORE::Elements::Element* DRT::ELEMENTS::Wall1Poro<distype>::Clone() const
+template <Core::FE::CellType distype>
+Core::Elements::Element* Discret::ELEMENTS::Wall1Poro<distype>::Clone() const
 {
-  auto* newelement = new DRT::ELEMENTS::Wall1Poro<distype>(*this);
+  auto* newelement = new Discret::ELEMENTS::Wall1Poro<distype>(*this);
   return newelement;
 }
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1Poro<distype>::Pack(CORE::COMM::PackBuffer& data) const
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::Wall1Poro<distype>::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -98,15 +98,15 @@ void DRT::ELEMENTS::Wall1Poro<distype>::Pack(CORE::COMM::PackBuffer& data) const
   for (int i = 0; i < size; ++i) AddtoPack(data, anisotropic_permeability_nodal_coeffs_[i]);
 
   // add base class Element
-  DRT::ELEMENTS::Wall1::Pack(data);
+  Discret::ELEMENTS::Wall1::Pack(data);
 }
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1Poro<distype>::Unpack(const std::vector<char>& data)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::Wall1Poro<distype>::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // detJ_
   ExtractfromPack(position, data, detJ_);
@@ -114,13 +114,13 @@ void DRT::ELEMENTS::Wall1Poro<distype>::Unpack(const std::vector<char>& data)
   // invJ_
   int size = 0;
   ExtractfromPack(position, data, size);
-  invJ_.resize(size, CORE::LINALG::Matrix<numdim_, numdim_>(true));
+  invJ_.resize(size, Core::LinAlg::Matrix<numdim_, numdim_>(true));
   for (int i = 0; i < size; ++i) ExtractfromPack(position, data, invJ_[i]);
 
   // xsi_
   size = 0;
   ExtractfromPack(position, data, size);
-  xsi_.resize(size, CORE::LINALG::Matrix<numdim_, 1>(true));
+  xsi_.resize(size, Core::LinAlg::Matrix<numdim_, 1>(true));
   for (int i = 0; i < size; ++i) ExtractfromPack(position, data, xsi_[i]);
 
   // scatra_coupling_
@@ -143,7 +143,7 @@ void DRT::ELEMENTS::Wall1Poro<distype>::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
-  DRT::ELEMENTS::Wall1::Unpack(basedata);
+  Discret::ELEMENTS::Wall1::Unpack(basedata);
 
 
   if (position != data.size())
@@ -152,35 +152,36 @@ void DRT::ELEMENTS::Wall1Poro<distype>::Unpack(const std::vector<char>& data)
   init_ = true;
 }
 
-template <CORE::FE::CellType distype>
-std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Wall1Poro<distype>::Lines()
+template <Core::FE::CellType distype>
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Wall1Poro<distype>::Lines()
 {
-  return CORE::COMM::ElementBoundaryFactory<Wall1Line, Wall1Poro>(CORE::COMM::buildLines, *this);
+  return Core::Communication::ElementBoundaryFactory<Wall1Line, Wall1Poro>(
+      Core::Communication::buildLines, *this);
 }
 
-template <CORE::FE::CellType distype>
-std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Wall1Poro<distype>::Surfaces()
+template <Core::FE::CellType distype>
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Wall1Poro<distype>::Surfaces()
 {
   return {Teuchos::rcpFromRef(*this)};
 }
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1Poro<distype>::Print(std::ostream& os) const
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::Wall1Poro<distype>::Print(std::ostream& os) const
 {
   os << "Wall1_Poro ";
   Element::Print(os);
   std::cout << std::endl;
 }
 
-template <CORE::FE::CellType distype>
-bool DRT::ELEMENTS::Wall1Poro<distype>::ReadElement(
-    const std::string& eletype, const std::string& eledistype, INPUT::LineDefinition* linedef)
+template <Core::FE::CellType distype>
+bool Discret::ELEMENTS::Wall1Poro<distype>::ReadElement(
+    const std::string& eletype, const std::string& eledistype, Input::LineDefinition* linedef)
 {
   // read base element
   Wall1::ReadElement(eletype, eledistype, linedef);
 
   // setup poro material
-  Teuchos::RCP<MAT::StructPoro> poromat = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(Material());
+  Teuchos::RCP<Mat::StructPoro> poromat = Teuchos::rcp_dynamic_cast<Mat::StructPoro>(Material());
   if (poromat == Teuchos::null)
     FOUR_C_THROW("material assigned to poro element is not a poro material!");
   poromat->PoroSetup(numgpt_, linedef);
@@ -191,10 +192,10 @@ bool DRT::ELEMENTS::Wall1Poro<distype>::ReadElement(
   return true;
 }
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1Poro<distype>::
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::Wall1Poro<distype>::
     read_anisotropic_permeability_directions_from_element_line_definition(
-        INPUT::LineDefinition* linedef)
+        Input::LineDefinition* linedef)
 {
   for (int dim = 0; dim < 2; ++dim)
   {
@@ -204,10 +205,10 @@ void DRT::ELEMENTS::Wall1Poro<distype>::
   }
 }
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1Poro<distype>::
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::Wall1Poro<distype>::
     read_anisotropic_permeability_nodal_coeffs_from_element_line_definition(
-        INPUT::LineDefinition* linedef)
+        Input::LineDefinition* linedef)
 {
   for (int dim = 0; dim < 2; ++dim)
   {
@@ -217,18 +218,18 @@ void DRT::ELEMENTS::Wall1Poro<distype>::
   }
 }
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1Poro<distype>::get_materials()
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::Wall1Poro<distype>::get_materials()
 {
   // get structure material
   if (struct_mat_ == Teuchos::null)
   {
-    struct_mat_ = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(Material());
+    struct_mat_ = Teuchos::rcp_dynamic_cast<Mat::StructPoro>(Material());
     if (struct_mat_ == Teuchos::null) FOUR_C_THROW("cast to poro material failed");
 
-    if (struct_mat_->MaterialType() != CORE::Materials::m_structporo and
-        struct_mat_->MaterialType() != CORE::Materials::m_structpororeaction and
-        struct_mat_->MaterialType() != CORE::Materials::m_structpororeactionECM)
+    if (struct_mat_->MaterialType() != Core::Materials::m_structporo and
+        struct_mat_->MaterialType() != Core::Materials::m_structpororeaction and
+        struct_mat_->MaterialType() != Core::Materials::m_structpororeactionECM)
       FOUR_C_THROW("invalid structure material for poroelasticity");
   }
 
@@ -238,10 +239,10 @@ void DRT::ELEMENTS::Wall1Poro<distype>::get_materials()
     // access second material in structure element
     if (NumMaterial() > 1)
     {
-      fluid_mat_ = Teuchos::rcp_dynamic_cast<MAT::FluidPoro>(Material(1));
+      fluid_mat_ = Teuchos::rcp_dynamic_cast<Mat::FluidPoro>(Material(1));
       if (fluid_mat_ == Teuchos::null) return;
       // FOUR_C_THROW("cast to fluid poro material failed");
-      if (fluid_mat_->MaterialType() != CORE::Materials::m_fluidporo)
+      if (fluid_mat_->MaterialType() != Core::Materials::m_fluidporo)
         FOUR_C_THROW("invalid fluid material for poroelasticity");
     }
     else
@@ -249,18 +250,18 @@ void DRT::ELEMENTS::Wall1Poro<distype>::get_materials()
   }
 }
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1Poro<distype>::get_materials_pressure_based()
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::Wall1Poro<distype>::get_materials_pressure_based()
 {
   // get structure material
   if (struct_mat_ == Teuchos::null)
   {
-    struct_mat_ = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(Material());
+    struct_mat_ = Teuchos::rcp_dynamic_cast<Mat::StructPoro>(Material());
     if (struct_mat_ == Teuchos::null) FOUR_C_THROW("cast to poro material failed");
 
-    if (struct_mat_->MaterialType() != CORE::Materials::m_structporo and
-        struct_mat_->MaterialType() != CORE::Materials::m_structpororeaction and
-        struct_mat_->MaterialType() != CORE::Materials::m_structpororeactionECM)
+    if (struct_mat_->MaterialType() != Core::Materials::m_structporo and
+        struct_mat_->MaterialType() != Core::Materials::m_structpororeaction and
+        struct_mat_->MaterialType() != Core::Materials::m_structpororeactionECM)
       FOUR_C_THROW("invalid structure material for poroelasticity");
   }
 
@@ -270,11 +271,11 @@ void DRT::ELEMENTS::Wall1Poro<distype>::get_materials_pressure_based()
     // access second material in structure element
     if (NumMaterial() > 1)
     {
-      fluidmulti_mat_ = Teuchos::rcp_dynamic_cast<MAT::FluidPoroMultiPhase>(Material(1));
+      fluidmulti_mat_ = Teuchos::rcp_dynamic_cast<Mat::FluidPoroMultiPhase>(Material(1));
       if (fluidmulti_mat_ == Teuchos::null)
         FOUR_C_THROW("cast to multiphase fluid poro material failed");
-      if (fluidmulti_mat_->MaterialType() != CORE::Materials::m_fluidporo_multiphase and
-          fluidmulti_mat_->MaterialType() != CORE::Materials::m_fluidporo_multiphase_reactions)
+      if (fluidmulti_mat_->MaterialType() != Core::Materials::m_fluidporo_multiphase and
+          fluidmulti_mat_->MaterialType() != Core::Materials::m_fluidporo_multiphase_reactions)
         FOUR_C_THROW("invalid fluid material for poro-multiphase-elasticity");
       if (fluidmulti_mat_->NumFluidPhases() == 0)
       {
@@ -288,14 +289,15 @@ void DRT::ELEMENTS::Wall1Poro<distype>::get_materials_pressure_based()
   }
 }
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1Poro<distype>::VisNames(std::map<std::string, int>& names)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::Wall1Poro<distype>::VisNames(std::map<std::string, int>& names)
 {
   SolidMaterial()->VisNames(names);
 }
 
-template <CORE::FE::CellType distype>
-bool DRT::ELEMENTS::Wall1Poro<distype>::VisData(const std::string& name, std::vector<double>& data)
+template <Core::FE::CellType distype>
+bool Discret::ELEMENTS::Wall1Poro<distype>::VisData(
+    const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
   if (Wall1::VisData(name, data)) return true;
@@ -303,10 +305,10 @@ bool DRT::ELEMENTS::Wall1Poro<distype>::VisData(const std::string& name, std::ve
   return SolidMaterial()->VisData(name, data, numgpt_, this->Id());
 }
 
-template class DRT::ELEMENTS::Wall1Poro<CORE::FE::CellType::tri3>;
-template class DRT::ELEMENTS::Wall1Poro<CORE::FE::CellType::quad4>;
-template class DRT::ELEMENTS::Wall1Poro<CORE::FE::CellType::quad9>;
-template class DRT::ELEMENTS::Wall1Poro<CORE::FE::CellType::nurbs4>;
-template class DRT::ELEMENTS::Wall1Poro<CORE::FE::CellType::nurbs9>;
+template class Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::tri3>;
+template class Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::quad4>;
+template class Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::quad9>;
+template class Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::nurbs4>;
+template class Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::nurbs9>;
 
 FOUR_C_NAMESPACE_CLOSE

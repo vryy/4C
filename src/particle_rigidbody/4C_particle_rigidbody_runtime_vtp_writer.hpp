@@ -27,12 +27,12 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationReader;
-}  // namespace CORE::IO
+}  // namespace Core::IO
 
-namespace PARTICLERIGIDBODY
+namespace ParticleRigidBody
 {
   class RigidBodyDataState;
 }
@@ -40,7 +40,7 @@ namespace PARTICLERIGIDBODY
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
  *---------------------------------------------------------------------------*/
-namespace PARTICLERIGIDBODY
+namespace ParticleRigidBody
 {
   /*!
    * \brief rigid body runtime vtp writer class
@@ -68,7 +68,7 @@ namespace PARTICLERIGIDBODY
      *
      * \param[in] rigidbodydatastate rigid body data state container
      */
-    void Init(const std::shared_ptr<PARTICLERIGIDBODY::RigidBodyDataState> rigidbodydatastate);
+    void Init(const std::shared_ptr<ParticleRigidBody::RigidBodyDataState> rigidbodydatastate);
 
     /*!
      * \brief read restart of runtime vtp writer
@@ -77,7 +77,7 @@ namespace PARTICLERIGIDBODY
      *
      * \param[in] reader discretization reader
      */
-    void read_restart(const std::shared_ptr<CORE::IO::DiscretizationReader> reader);
+    void read_restart(const std::shared_ptr<Core::IO::DiscretizationReader> reader);
 
     /*!
      * \brief set positions and states of rigid bodies
@@ -103,13 +103,13 @@ namespace PARTICLERIGIDBODY
     double setuptime_;
 
     //! rigid body data state container
-    std::shared_ptr<PARTICLERIGIDBODY::RigidBodyDataState> rigidbodydatastate_;
+    std::shared_ptr<ParticleRigidBody::RigidBodyDataState> rigidbodydatastate_;
 
     //! visualization manager
-    std::shared_ptr<CORE::IO::VisualizationManager> visualization_manager_;
+    std::shared_ptr<Core::IO::VisualizationManager> visualization_manager_;
   };
 
-}  // namespace PARTICLERIGIDBODY
+}  // namespace ParticleRigidBody
 
 /*---------------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

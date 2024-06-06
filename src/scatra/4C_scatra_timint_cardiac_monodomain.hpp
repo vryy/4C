@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 /*==========================================================================*/
 
 
-namespace SCATRA
+namespace ScaTra
 {
   class TimIntCardiacMonodomain : public virtual ScaTraTimIntImpl
   {
@@ -33,11 +33,11 @@ namespace SCATRA
     /*========================================================================*/
 
     //! Standard Constructor
-    TimIntCardiacMonodomain(Teuchos::RCP<DRT::Discretization> dis,
-        Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+    TimIntCardiacMonodomain(Teuchos::RCP<Discret::Discretization> dis,
+        Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
-        Teuchos::RCP<CORE::IO::DiscretizationWriter> output);
+        Teuchos::RCP<Core::IO::DiscretizationWriter> output);
 
 
     //! setup algorithm
@@ -83,7 +83,7 @@ namespace SCATRA
     const Teuchos::RCP<Teuchos::ParameterList> ep_params_;
   };
 
-};  // namespace SCATRA
+};  // namespace ScaTra
 
 FOUR_C_NAMESPACE_CLOSE
 

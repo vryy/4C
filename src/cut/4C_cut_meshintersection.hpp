@@ -15,14 +15,14 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace CORE::GEO
+namespace Core::Geo
 {
-  namespace CUT
+  namespace Cut
   {
     class Node;
     class Edge;
@@ -55,18 +55,18 @@ namespace CORE::GEO
 
       /// add this background element if it falls within the bounding box of cut mesh
       ElementHandle* add_element(int eid, const std::vector<int>& nids,
-          const CORE::LINALG::SerialDenseMatrix& xyz, CORE::FE::CellType distype,
+          const Core::LinAlg::SerialDenseMatrix& xyz, Core::FE::CellType distype,
           const double* lsv = nullptr);
 
       /// add a side of the cut mesh and return the sidehandle (e.g. quadratic sidehandle for
       /// quadratic sides)
       SideHandle* AddCutSide(
-          int sid, const std::vector<int>& nids, CORE::FE::CellType distype, int mi = 0);
+          int sid, const std::vector<int>& nids, Core::FE::CellType distype, int mi = 0);
 
       /// add a side of the cut mesh and return the sidehandle (e.g. quadratic sidehandle for
       /// quadratic sides)
       SideHandle* AddCutSide(int sid, const std::vector<int>& nids,
-          const CORE::LINALG::SerialDenseMatrix& xyz, CORE::FE::CellType distype, int mi = 0);
+          const Core::LinAlg::SerialDenseMatrix& xyz, Core::FE::CellType distype, int mi = 0);
 
       /// build the static search tree for the collision detection in the self cut
       void BuildSelfCutTree();
@@ -80,8 +80,8 @@ namespace CORE::GEO
 
       /// standard cut routine for non-parallel frameworks and cuttest
       void CutTest_Cut(bool include_inner,
-          INPAR::CUT::VCellGaussPts VCellgausstype = INPAR::CUT::VCellGaussPts_Tessellation,
-          INPAR::CUT::BCellGaussPts BCellgausstype = INPAR::CUT::BCellGaussPts_Tessellation,
+          Inpar::Cut::VCellGaussPts VCellgausstype = Inpar::Cut::VCellGaussPts_Tessellation,
+          Inpar::Cut::BCellGaussPts BCellgausstype = Inpar::Cut::BCellGaussPts_Tessellation,
           bool tetcellsonly = true, bool screenoutput = true,
           bool do_Cut_Positions_Dofsets = false);  // for cuttest with closed cutsides this option
                                                    // can be activated, otherwise this will fail!
@@ -117,8 +117,8 @@ namespace CORE::GEO
       std::vector<Teuchos::RCP<MeshHandle>> cut_mesh_;  ///< a vector of cut_meshes
     };
 
-  }  // namespace CUT
-}  // namespace CORE::GEO
+  }  // namespace Cut
+}  // namespace Core::Geo
 
 FOUR_C_NAMESPACE_CLOSE
 

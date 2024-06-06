@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::Newman::Newman(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::Newman::Newman(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : ElchSingleMat(matdata),
       valence_(matdata->Get<double>("VALENCE")),
       transnrcurve_(matdata->Get<int>("TRANSNR")),
@@ -47,17 +47,17 @@ MAT::PAR::Newman::Newman(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
 }
 
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::Newman::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::Newman::create_material()
 {
-  return Teuchos::rcp(new MAT::Newman(this));
+  return Teuchos::rcp(new Mat::Newman(this));
 }
 
-MAT::NewmanType MAT::NewmanType::instance_;
+Mat::NewmanType Mat::NewmanType::instance_;
 
 
-CORE::COMM::ParObject* MAT::NewmanType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::NewmanType::Create(const std::vector<char>& data)
 {
-  MAT::Newman* newman = new MAT::Newman();
+  Mat::Newman* newman = new Mat::Newman();
   newman->Unpack(data);
   return newman;
 }
@@ -65,19 +65,19 @@ CORE::COMM::ParObject* MAT::NewmanType::Create(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::Newman::Newman() : params_(nullptr) { return; }
+Mat::Newman::Newman() : params_(nullptr) { return; }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::Newman::Newman(MAT::PAR::Newman* params) : params_(params) { return; }
+Mat::Newman::Newman(Mat::PAR::Newman* params) : params_(params) { return; }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Newman::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::Newman::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -95,24 +95,24 @@ void MAT::Newman::Pack(CORE::COMM::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Newman::Unpack(const std::vector<char>& data)
+void Mat::Newman::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::Newman*>(mat);
+        params_ = static_cast<Mat::PAR::Newman*>(mat);
       else
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
@@ -127,7 +127,7 @@ void MAT::Newman::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::Newman::compute_transference_number(const double cint) const
+double Mat::Newman::compute_transference_number(const double cint) const
 {
   double trans = 0.0;
 
@@ -136,8 +136,8 @@ double MAT::Newman::compute_transference_number(const double cint) const
   else if (trans_nr_curve() == 0)
     trans = eval_pre_defined_funct(-1, cint, trans_nr_params());
   else
-    trans = GLOBAL::Problem::Instance()
-                ->FunctionById<CORE::UTILS::FunctionOfTime>(trans_nr_curve() - 1)
+    trans = Global::Problem::Instance()
+                ->FunctionById<Core::UTILS::FunctionOfTime>(trans_nr_curve() - 1)
                 .Evaluate(cint);
 
   return trans;
@@ -145,7 +145,7 @@ double MAT::Newman::compute_transference_number(const double cint) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::Newman::compute_first_deriv_trans(const double cint) const
+double Mat::Newman::compute_first_deriv_trans(const double cint) const
 {
   double firstderiv = 0.0;
 
@@ -154,8 +154,8 @@ double MAT::Newman::compute_first_deriv_trans(const double cint) const
   else if (trans_nr_curve() == 0)
     firstderiv = eval_first_deriv_pre_defined_funct(-1, cint, trans_nr_params());
   else
-    firstderiv = GLOBAL::Problem::Instance()
-                     ->FunctionById<CORE::UTILS::FunctionOfTime>(trans_nr_curve() - 1)
+    firstderiv = Global::Problem::Instance()
+                     ->FunctionById<Core::UTILS::FunctionOfTime>(trans_nr_curve() - 1)
                      .EvaluateDerivative(cint);
 
   return firstderiv;
@@ -163,7 +163,7 @@ double MAT::Newman::compute_first_deriv_trans(const double cint) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::Newman::ComputeThermFac(const double cint) const
+double Mat::Newman::ComputeThermFac(const double cint) const
 {
   double therm = 0.0;
 
@@ -173,8 +173,8 @@ double MAT::Newman::ComputeThermFac(const double cint) const
     // thermodynamic factor has to be one if not defined
     therm = 1.0;
   else
-    therm = GLOBAL::Problem::Instance()
-                ->FunctionById<CORE::UTILS::FunctionOfTime>(therm_fac_curve() - 1)
+    therm = Global::Problem::Instance()
+                ->FunctionById<Core::UTILS::FunctionOfTime>(therm_fac_curve() - 1)
                 .Evaluate(cint);
 
   return therm;
@@ -182,7 +182,7 @@ double MAT::Newman::ComputeThermFac(const double cint) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::Newman::compute_first_deriv_therm_fac(const double cint) const
+double Mat::Newman::compute_first_deriv_therm_fac(const double cint) const
 {
   double firstderiv = 0.0;
 
@@ -193,8 +193,8 @@ double MAT::Newman::compute_first_deriv_therm_fac(const double cint) const
     // -> first derivative = 0.0
     firstderiv = 0.0;
   else
-    firstderiv = GLOBAL::Problem::Instance()
-                     ->FunctionById<CORE::UTILS::FunctionOfTime>(therm_fac_curve() - 1)
+    firstderiv = Global::Problem::Instance()
+                     ->FunctionById<Core::UTILS::FunctionOfTime>(therm_fac_curve() - 1)
                      .EvaluateDerivative(cint);
 
   return firstderiv;

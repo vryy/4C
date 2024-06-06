@@ -26,22 +26,22 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class MultiMapExtractor;
 }
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::Nodes
+namespace Core::Nodes
 {
   class Node;
 }
 
-namespace CORE::Conditions
+namespace Core::Conditions
 {
   /// Select nodes (and their dofs) that are covered by a condition
   /*!
@@ -53,35 +53,35 @@ namespace CORE::Conditions
 
     A stack of ConditionSelector objects is used to build a
     MultiConditionSelector which in turn is used to setup a
-    CORE::LINALG::MultiMapExtractor object.
+    Core::LinAlg::MultiMapExtractor object.
 
-    To put it the other way: A CORE::LINALG::MultiMapExtractor splits a full (row)
+    To put it the other way: A Core::LinAlg::MultiMapExtractor splits a full (row)
     map into non-overlapping parts. If each part corresponds to a Condition, a
-    MultiConditionSelector can be used to setup the CORE::LINALG::MultiMapExtractor,
+    MultiConditionSelector can be used to setup the Core::LinAlg::MultiMapExtractor,
     where each Condition is found by a ConditionSelector object.
 
     \note The Condition objects know the nodes. The maps contain dofs. The
     ConditionSelector translates between nodes and dofs.
 
-    \see CORE::Conditions::MultiConditionSelector
+    \see Core::Conditions::MultiConditionSelector
    */
   class ConditionSelector
   {
    public:
     /// Construct a selector on the given discretization for the Condition
     /// with the given name
-    ConditionSelector(const DRT::Discretization& dis, std::string condname);
+    ConditionSelector(const Discret::Discretization& dis, std::string condname);
 
     /// construct a selector from a given vector of conditions
-    ConditionSelector(const DRT::Discretization& dis,  //!< discretization
-        const std::vector<Condition*>& conds           //!< given vector of conditions
+    ConditionSelector(const Discret::Discretization& dis,  //!< discretization
+        const std::vector<Condition*>& conds               //!< given vector of conditions
     );
 
     /// Destructor
     virtual ~ConditionSelector() = default;
 
     /// select all matching dofs of the node and put them into conddofset
-    virtual bool SelectDofs(CORE::Nodes::Node* node, std::set<int>& conddofset);
+    virtual bool SelectDofs(Core::Nodes::Node* node, std::set<int>& conddofset);
 
     /// tell if the node gid is known by any condition of the given name
     virtual bool ContainsNode(int ngid);
@@ -91,14 +91,14 @@ namespace CORE::Conditions
 
    protected:
     /// discretization we are looking at
-    const DRT::Discretization& discretization() const { return dis_; }
+    const Discret::Discretization& discretization() const { return dis_; }
 
     /// all conditions that come by the given name
     const std::vector<Condition*>& conditions() const { return conds_; }
 
    private:
     /// discretization
-    const DRT::Discretization& dis_;
+    const Discret::Discretization& dis_;
 
     /// Conditions
     std::vector<Condition*> conds_;
@@ -118,7 +118,7 @@ namespace CORE::Conditions
   {
    public:
     NDimConditionSelector(
-        const DRT::Discretization& dis, std::string condname, int startdim, int enddim)
+        const Discret::Discretization& dis, std::string condname, int startdim, int enddim)
         : ConditionSelector(dis, std::move(condname)), startdim_(startdim), enddim_(enddim)
     {
     }
@@ -132,13 +132,13 @@ namespace CORE::Conditions
     int enddim_;
   };
 
-  /// a collection of ConditionSelector objects used to create a CORE::LINALG::MultiMapExtractor
+  /// a collection of ConditionSelector objects used to create a Core::LinAlg::MultiMapExtractor
   /*!
     Oftentimes the dofs of a field need to be split into a set of disjoint
-    maps. The CORE::LINALG::MultiMapExtractor class takes care of these splits. However,
-    CORE::LINALG::MultiMapExtractor does not do the splitting itself. This is where
+    maps. The Core::LinAlg::MultiMapExtractor class takes care of these splits. However,
+    Core::LinAlg::MultiMapExtractor does not do the splitting itself. This is where
     MultiConditionSelector comes in. Here, different ConditionSelector objects
-    are collected and afterwards the CORE::LINALG::MultiMapExtractor is setup according to the
+    are collected and afterwards the Core::LinAlg::MultiMapExtractor is setup according to the
     conditions.
 
     MultiConditionSelector is a helper class that is needed during the setup
@@ -155,20 +155,20 @@ namespace CORE::Conditions
     /// add a new ConditionSelector
     /*!
       \note The order of the selector additions determines the slots within
-      CORE::LINALG::MultiMapExtractor.
+      Core::LinAlg::MultiMapExtractor.
      */
     void AddSelector(Teuchos::RCP<ConditionSelector> s) { selectors_.push_back(s); }
 
     /// Do the setup
-    void SetupExtractor(const DRT::Discretization& dis, const Epetra_Map& fullmap,
-        CORE::LINALG::MultiMapExtractor& extractor);
+    void SetupExtractor(const Discret::Discretization& dis, const Epetra_Map& fullmap,
+        Core::LinAlg::MultiMapExtractor& extractor);
 
     /// Activate overlapping
     void SetOverlapping(bool overlapping) { overlapping_ = overlapping; }
 
    private:
     /// evaluate the ConditionSelector objects
-    void setup_cond_dof_sets(const DRT::Discretization& dis);
+    void setup_cond_dof_sets(const Discret::Discretization& dis);
 
     /// condition selectors
     std::vector<Teuchos::RCP<ConditionSelector>> selectors_;
@@ -180,7 +180,7 @@ namespace CORE::Conditions
     bool overlapping_;
   };
 
-}  // namespace CORE::Conditions
+}  // namespace Core::Conditions
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -34,7 +34,7 @@ namespace PARTICLEALGORITHM
   class ViscousDampingHandler;
 }  // namespace PARTICLEALGORITHM
 
-namespace PARTICLEINTERACTION
+namespace ParticleInteraction
 {
   class ParticleInteractionBase;
 }
@@ -44,12 +44,12 @@ namespace PARTICLEENGINE
   class ParticleObject;
 }
 
-namespace PARTICLERIGIDBODY
+namespace ParticleRigidBody
 {
   class RigidBodyHandler;
 }
 
-namespace DRT
+namespace Discret
 {
   class ResultTest;
 }
@@ -75,7 +75,7 @@ namespace PARTICLEALGORITHM
    * \author Sebastian Fuchs \date 04/2018
    */
 
-  class ParticleAlgorithm final : public ADAPTER::AlgorithmBase
+  class ParticleAlgorithm final : public Adapter::AlgorithmBase
   {
    public:
     /*!
@@ -188,7 +188,7 @@ namespace PARTICLEALGORITHM
      *
      * \return particle field specific result test objects
      */
-    std::vector<std::shared_ptr<CORE::UTILS::ResultTest>> CreateResultTests();
+    std::vector<std::shared_ptr<Core::UTILS::ResultTest>> CreateResultTests();
 
     /*!
      * \brief get interface to particle engine
@@ -447,13 +447,13 @@ namespace PARTICLEALGORITHM
     std::shared_ptr<PARTICLEWALL::WallHandlerBase> particlewall_;
 
     //! rigid body handler
-    std::shared_ptr<PARTICLERIGIDBODY::RigidBodyHandler> particlerigidbody_;
+    std::shared_ptr<ParticleRigidBody::RigidBodyHandler> particlerigidbody_;
 
     //! particle time integration
     std::unique_ptr<PARTICLEALGORITHM::TimInt> particletimint_;
 
     //! particle interaction
-    std::unique_ptr<PARTICLEINTERACTION::ParticleInteractionBase> particleinteraction_;
+    std::unique_ptr<ParticleInteraction::ParticleInteractionBase> particleinteraction_;
 
     //! particle gravity handler
     std::unique_ptr<PARTICLEALGORITHM::GravityHandler> particlegravity_;

@@ -29,21 +29,21 @@ FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class MapExtractor;
 }
 
 
-namespace ADAPTER
+namespace Adapter
 {
   class FluidLung : public FluidFSI
   {
    public:
     /// Constructor
-    FluidLung(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<DRT::Discretization> dis,
-        Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-        Teuchos::RCP<CORE::IO::DiscretizationWriter> output, bool isale, bool dirichletcond);
+    FluidLung(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<Discret::Discretization> dis,
+        Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+        Teuchos::RCP<Core::IO::DiscretizationWriter> output, bool isale, bool dirichletcond);
 
     /// initialize algorithm
     void Init() override;
@@ -55,11 +55,11 @@ namespace ADAPTER
     void InitializeVolCon(Teuchos::RCP<Epetra_Vector> initflowrate, const int offsetID);
 
     /// Evaluate fluid/ale part of lung volume constraint
-    void EvaluateVolCon(Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> FluidShapeDerivMatrix,
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> FluidConstrMatrix,
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> ConstrFluidMatrix,
-        Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> AleConstrMatrix,
-        Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> ConstrAleMatrix,
+    void EvaluateVolCon(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> FluidShapeDerivMatrix,
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> FluidConstrMatrix,
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> ConstrFluidMatrix,
+        Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> AleConstrMatrix,
+        Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> ConstrAleMatrix,
         Teuchos::RCP<Epetra_Vector> FluidRHS, Teuchos::RCP<Epetra_Vector> CurrFlowRates,
         Teuchos::RCP<Epetra_Vector> lagrMultVecRed, const int offsetID, const double dttheta);
 
@@ -67,28 +67,28 @@ namespace ADAPTER
     void OutputForces(Teuchos::RCP<Epetra_Vector> Forces);
 
     /// Get map extractor for fsi <-> full map
-    Teuchos::RCP<CORE::LINALG::MapExtractor> FSIInterface() { return fsiinterface_; }
+    Teuchos::RCP<Core::LinAlg::MapExtractor> FSIInterface() { return fsiinterface_; }
 
     /// Get map extractor for asi, other <-> full inner map
-    Teuchos::RCP<CORE::LINALG::MapExtractor> InnerSplit() { return innersplit_; }
+    Teuchos::RCP<Core::LinAlg::MapExtractor> InnerSplit() { return innersplit_; }
 
    private:
     /// conditions, that define the lung volume constraints
-    std::vector<CORE::Conditions::Condition*> constrcond_;
+    std::vector<Core::Conditions::Condition*> constrcond_;
 
     /// map extractor for fsi <-> full map
     /// this is needed since otherwise "OtherMap" contains only dofs
     /// which are not part of a condition. however, asi dofs are of
     /// course also "inner" dofs for the fluid field.
-    Teuchos::RCP<CORE::LINALG::MapExtractor> fsiinterface_;
+    Teuchos::RCP<Core::LinAlg::MapExtractor> fsiinterface_;
 
     /// map extractor for asi, other <-> full inner map
-    Teuchos::RCP<CORE::LINALG::MapExtractor> innersplit_;
+    Teuchos::RCP<Core::LinAlg::MapExtractor> innersplit_;
 
     /// map extractor for outflow fsi <-> full map
-    Teuchos::RCP<CORE::LINALG::MapExtractor> outflowfsiinterface_;
+    Teuchos::RCP<Core::LinAlg::MapExtractor> outflowfsiinterface_;
   };
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 FOUR_C_NAMESPACE_CLOSE
 

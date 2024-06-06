@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationReader;
 }
@@ -42,27 +42,27 @@ namespace PARTICLEENGINE
 /*---------------------------------------------------------------------------*
  | type definitions                                                          |
  *---------------------------------------------------------------------------*/
-namespace PARTICLEINTERACTION
+namespace ParticleInteraction
 {
   using TouchedDEMHistoryPairTangential =
-      std::pair<bool, PARTICLEINTERACTION::DEMHistoryPairTangential>;
+      std::pair<bool, ParticleInteraction::DEMHistoryPairTangential>;
   using DEMHistoryPairTangentialData =
       std::unordered_map<int, std::unordered_map<int, TouchedDEMHistoryPairTangential>>;
 
-  using TouchedDEMHistoryPairRolling = std::pair<bool, PARTICLEINTERACTION::DEMHistoryPairRolling>;
+  using TouchedDEMHistoryPairRolling = std::pair<bool, ParticleInteraction::DEMHistoryPairRolling>;
   using DEMHistoryPairRollingData =
       std::unordered_map<int, std::unordered_map<int, TouchedDEMHistoryPairRolling>>;
 
   using TouchedDEMHistoryPairAdhesion =
-      std::pair<bool, PARTICLEINTERACTION::DEMHistoryPairAdhesion>;
+      std::pair<bool, ParticleInteraction::DEMHistoryPairAdhesion>;
   using DEMHistoryPairAdhesionData =
       std::unordered_map<int, std::unordered_map<int, TouchedDEMHistoryPairAdhesion>>;
-}  // namespace PARTICLEINTERACTION
+}  // namespace ParticleInteraction
 
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
  *---------------------------------------------------------------------------*/
-namespace PARTICLEINTERACTION
+namespace ParticleInteraction
 {
   class DEMHistoryPairs final
   {
@@ -81,7 +81,7 @@ namespace PARTICLEINTERACTION
     void write_restart() const;
 
     //! read restart of history pair handler
-    void read_restart(const std::shared_ptr<CORE::IO::DiscretizationReader> reader);
+    void read_restart(const std::shared_ptr<Core::IO::DiscretizationReader> reader);
 
     //! get reference to particle tangential history pair data
     inline DEMHistoryPairTangentialData& get_ref_to_particle_tangential_history_data()
@@ -183,7 +183,7 @@ namespace PARTICLEINTERACTION
     std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface_;
   };
 
-}  // namespace PARTICLEINTERACTION
+}  // namespace ParticleInteraction
 
 /*---------------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

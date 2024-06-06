@@ -9,13 +9,13 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT::ELEMENTS
+namespace Discret::ELEMENTS
 {
 
   /*----------------------------------------------------------------------*
    *----------------------------------------------------------------------*/
-  CORE::LINALG::SerialDenseMatrix ComputeSolid3DNullSpace(
-      const CORE::Nodes::Node& node, const double* x0)
+  Core::LinAlg::SerialDenseMatrix ComputeSolid3DNullSpace(
+      const Core::Nodes::Node& node, const double* x0)
   {
     /* the rigid body modes for structures are:
 
@@ -32,7 +32,7 @@ namespace DRT::ELEMENTS
 
     const auto& x = node.X();
 
-    CORE::LINALG::SerialDenseMatrix nullspace(3, 6);
+    Core::LinAlg::SerialDenseMatrix nullspace(3, 6);
     // x-modes
     nullspace(0, 0) = 1.0;
     nullspace(0, 1) = 0.0;
@@ -60,8 +60,8 @@ namespace DRT::ELEMENTS
 
   /*----------------------------------------------------------------------*
    *----------------------------------------------------------------------*/
-  CORE::LINALG::SerialDenseMatrix ComputeSolid2DNullSpace(
-      const CORE::Nodes::Node& node, const double* x0)
+  Core::LinAlg::SerialDenseMatrix ComputeSolid2DNullSpace(
+      const Core::Nodes::Node& node, const double* x0)
   {
     /* the rigid body modes for structures are:
 
@@ -77,7 +77,7 @@ namespace DRT::ELEMENTS
 
     const auto& x = node.X();
 
-    CORE::LINALG::SerialDenseMatrix nullspace(2, 3);
+    Core::LinAlg::SerialDenseMatrix nullspace(2, 3);
     // x-modes
     nullspace(0, 0) = 1.0;
     nullspace(0, 1) = 0.0;
@@ -89,6 +89,6 @@ namespace DRT::ELEMENTS
 
     return nullspace;
   }
-}  // namespace DRT::ELEMENTS
+}  // namespace Discret::ELEMENTS
 
 FOUR_C_NAMESPACE_CLOSE

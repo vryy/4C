@@ -25,27 +25,27 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class MapExtractor;
 }
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::Nodes
+namespace Core::Nodes
 {
   class Node;
 }
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
 
-namespace CORE::Conditions
+namespace Core::Conditions
 {
   // forward declaration
   class ConditionSelector;
@@ -69,15 +69,15 @@ namespace CORE::Conditions
     \param nodes : (out) empty set on input, filled with nodal gids of local nodes
   */
   void FindConditionedNodes(
-      const DRT::Discretization& dis, const std::string& condname, std::vector<int>& nodes);
+      const Discret::Discretization& dis, const std::string& condname, std::vector<int>& nodes);
 
   /// find all local nodes from discretization marked with condition
-  void FindConditionedNodes(const DRT::Discretization& dis, const std::string& condname,
-      std::map<int, CORE::Nodes::Node*>& nodes);
+  void FindConditionedNodes(const Discret::Discretization& dis, const std::string& condname,
+      std::map<int, Core::Nodes::Node*>& nodes);
 
   /// find all local nodes from discretization marked with condition
   void FindConditionedNodes(
-      const DRT::Discretization& dis, const std::string& condname, std::set<int>& nodeset);
+      const Discret::Discretization& dis, const std::string& condname, std::set<int>& nodeset);
 
   /// find all local nodes from discretization marked with condition
   /*!
@@ -89,29 +89,29 @@ namespace CORE::Conditions
     \param conds : (in) conditions in question
     \param nodes : (out) empty set on input, filled with nodal gids of local nodes
   */
-  void FindConditionedNodes(const DRT::Discretization& dis,
-      const std::vector<CORE::Conditions::Condition*>& conds, std::vector<int>& nodes);
+  void FindConditionedNodes(const Discret::Discretization& dis,
+      const std::vector<Core::Conditions::Condition*>& conds, std::vector<int>& nodes);
 
   /// find all local nodes from discretization marked with condition
-  void FindConditionedNodes(const DRT::Discretization& dis,
-      const std::vector<CORE::Conditions::Condition*>& conds,
-      std::map<int, CORE::Nodes::Node*>& nodes);
+  void FindConditionedNodes(const Discret::Discretization& dis,
+      const std::vector<Core::Conditions::Condition*>& conds,
+      std::map<int, Core::Nodes::Node*>& nodes);
 
   /// find all local nodes from discretization marked with condition and
   /// put them into a map indexed by Id of the condition
-  void FindConditionedNodes(const DRT::Discretization& dis,
-      const std::vector<CORE::Conditions::Condition*>& conds,
-      std::map<int, std::map<int, CORE::Nodes::Node*>>& nodes);
+  void FindConditionedNodes(const Discret::Discretization& dis,
+      const std::vector<Core::Conditions::Condition*>& conds,
+      std::map<int, std::map<int, Core::Nodes::Node*>>& nodes);
 
   /// find all local nodes from discretization marked with condition and
   /// put them into a vector indexed by Id of the condition
-  void FindConditionedNodes(const DRT::Discretization& dis,
-      const std::vector<CORE::Conditions::Condition*>& conds,
+  void FindConditionedNodes(const Discret::Discretization& dis,
+      const std::vector<Core::Conditions::Condition*>& conds,
       std::map<int, Teuchos::RCP<std::vector<int>>>& nodes, bool use_coupling_id = true);
 
   /// find all local nodes from discretization marked with condition
-  void FindConditionedNodes(const DRT::Discretization& dis,
-      const std::vector<CORE::Conditions::Condition*>& conds, std::set<int>& nodeset);
+  void FindConditionedNodes(const Discret::Discretization& dis,
+      const std::vector<Core::Conditions::Condition*>& conds, std::set<int>& nodeset);
 
 
   /// collect all local nodes and elements in a condition
@@ -121,9 +121,9 @@ namespace CORE::Conditions
     \param elements unique map of elements
     \param condname name of condition
    */
-  void FindConditionObjects(const DRT::Discretization& dis,
-      std::map<int, CORE::Nodes::Node*>& nodes,
-      std::map<int, Teuchos::RCP<CORE::Elements::Element>>& elements, const std::string& condname);
+  void FindConditionObjects(const Discret::Discretization& dis,
+      std::map<int, Core::Nodes::Node*>& nodes,
+      std::map<int, Teuchos::RCP<Core::Elements::Element>>& elements, const std::string& condname);
 
   /// collect all nodes (in- and excluding 'ghosts') and
   /// elements (including ghosts) in a condition
@@ -134,18 +134,18 @@ namespace CORE::Conditions
     \param elements overlapping map of elements
     \param condname name of condition
    */
-  void FindConditionObjects(const DRT::Discretization& dis,
-      std::map<int, CORE::Nodes::Node*>& nodes, std::map<int, CORE::Nodes::Node*>& gnodes,
-      std::map<int, Teuchos::RCP<CORE::Elements::Element>>& elements,
-      const std::vector<CORE::Conditions::Condition*>& conds);
+  void FindConditionObjects(const Discret::Discretization& dis,
+      std::map<int, Core::Nodes::Node*>& nodes, std::map<int, Core::Nodes::Node*>& gnodes,
+      std::map<int, Teuchos::RCP<Core::Elements::Element>>& elements,
+      const std::vector<Core::Conditions::Condition*>& conds);
 
   /// collect all elements in a condition including ghosts
   /*!
     \param elements overlapping map of elements
     \param vector containing condition pointers
    */
-  void FindConditionObjects(std::map<int, Teuchos::RCP<CORE::Elements::Element>>& elements,
-      const std::vector<CORE::Conditions::Condition*>& conds);
+  void FindConditionObjects(std::map<int, Teuchos::RCP<Core::Elements::Element>>& elements,
+      const std::vector<Core::Conditions::Condition*>& conds);
 
   /// collect all nodes (in- and excluding 'ghosts') and
   /// elements (including ghosts) in a condition
@@ -156,9 +156,9 @@ namespace CORE::Conditions
     \param elements overlapping map of elements
     \param condname name of condition
    */
-  void FindConditionObjects(const DRT::Discretization& dis,
-      std::map<int, CORE::Nodes::Node*>& nodes, std::map<int, CORE::Nodes::Node*>& gnodes,
-      std::map<int, Teuchos::RCP<CORE::Elements::Element>>& elements, const std::string& condname);
+  void FindConditionObjects(const Discret::Discretization& dis,
+      std::map<int, Core::Nodes::Node*>& nodes, std::map<int, Core::Nodes::Node*>& gnodes,
+      std::map<int, Teuchos::RCP<Core::Elements::Element>>& elements, const std::string& condname);
 
   /// collect all nodes (in- and excluding 'ghosts') and
   /// elements (including ghosts) in a condition
@@ -169,10 +169,10 @@ namespace CORE::Conditions
     \param elements overlapping map of elements
     \param condname name of condition
    */
-  void FindConditionObjects(const DRT::Discretization& dis,
-      std::map<int, std::map<int, CORE::Nodes::Node*>>& nodes,
-      std::map<int, std::map<int, CORE::Nodes::Node*>>& gnodes,
-      std::map<int, std::map<int, Teuchos::RCP<CORE::Elements::Element>>>& elements,
+  void FindConditionObjects(const Discret::Discretization& dis,
+      std::map<int, std::map<int, Core::Nodes::Node*>>& nodes,
+      std::map<int, std::map<int, Core::Nodes::Node*>>& gnodes,
+      std::map<int, std::map<int, Teuchos::RCP<Core::Elements::Element>>>& elements,
       const std::string& condname);
 
   /// collect all elements in a condition including ghosts
@@ -181,8 +181,8 @@ namespace CORE::Conditions
     \param elements overlapping map of elements
     \param condname name of condition
    */
-  void FindConditionObjects(const DRT::Discretization& dis,
-      std::map<int, Teuchos::RCP<CORE::Elements::Element>>& elements, const std::string& condname,
+  void FindConditionObjects(const Discret::Discretization& dis,
+      std::map<int, Teuchos::RCP<Core::Elements::Element>>& elements, const std::string& condname,
       const int label = -1);
 
   /// Find all conditions with given name that all nodes of the element have in common
@@ -191,16 +191,16 @@ namespace CORE::Conditions
     \param condname (in) name of the condition to look for
     \param condition (out) all conditions that cover all element nodes
   */
-  void FindElementConditions(const CORE::Elements::Element* ele, const std::string& condname,
-      std::vector<CORE::Conditions::Condition*>& condition);
+  void FindElementConditions(const Core::Elements::Element* ele, const std::string& condname,
+      std::vector<Core::Conditions::Condition*>& condition);
 
   /// row map with nodes from condition
   Teuchos::RCP<Epetra_Map> ConditionNodeRowMap(
-      const DRT::Discretization& dis, const std::string& condname);
+      const Discret::Discretization& dis, const std::string& condname);
 
   /// col map with nodes from condition
   Teuchos::RCP<Epetra_Map> ConditionNodeColMap(
-      const DRT::Discretization& dis, const std::string& condname);
+      const Discret::Discretization& dis, const std::string& condname);
 
   /// create the set of column element gids that have conditioned nodes
   /*!
@@ -208,7 +208,7 @@ namespace CORE::Conditions
     gids of actual discretization elements are listed.
    */
   Teuchos::RCP<std::set<int>> conditioned_element_map(
-      const DRT::Discretization& dis, const std::string& condname);
+      const Discret::Discretization& dis, const std::string& condname);
 
   /*!
    * \brief This method checks whether handed in conditions are defined on the same set of nodes
@@ -218,10 +218,10 @@ namespace CORE::Conditions
    * @param[in] mustmatch   both conditions must match
    * @return flag indicating if both conditions are defined on the same set of nodes
    */
-  bool HaveSameNodes(const CORE::Conditions::Condition* const condition1,
-      const CORE::Conditions::Condition* const condition2, bool mustmatch);
+  bool HaveSameNodes(const Core::Conditions::Condition* const condition1,
+      const Core::Conditions::Condition* const condition2, bool mustmatch);
 
-}  // namespace CORE::Conditions
+}  // namespace Core::Conditions
 
 FOUR_C_NAMESPACE_CLOSE
 

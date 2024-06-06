@@ -34,8 +34,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 09/13|
  *----------------------------------------------------------------------*/
-WEAR::WearInterface::WearInterface(
-    const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData_ptr, const int id,
+Wear::WearInterface::WearInterface(
+    const Teuchos::RCP<Mortar::InterfaceDataContainer>& interfaceData_ptr, const int id,
     const Epetra_Comm& comm, const int dim, const Teuchos::ParameterList& icontact,
     bool selfcontact)
     : CONTACT::Interface(interfaceData_ptr, id, comm, dim, icontact, selfcontact),
@@ -43,29 +43,29 @@ WEAR::WearInterface::WearInterface(
       wearimpl_(false),
       wearpv_(false),
       wearboth_(false),
-      sswear_(CORE::UTILS::IntegralValue<int>(icontact, "SSWEAR"))
+      sswear_(Core::UTILS::IntegralValue<int>(icontact, "SSWEAR"))
 {
   // set wear contact status
-  INPAR::WEAR::WearType wtype =
-      CORE::UTILS::IntegralValue<INPAR::WEAR::WearType>(icontact, "WEARTYPE");
+  Inpar::Wear::WearType wtype =
+      Core::UTILS::IntegralValue<Inpar::Wear::WearType>(icontact, "WEARTYPE");
 
-  INPAR::WEAR::WearTimInt wtimint =
-      CORE::UTILS::IntegralValue<INPAR::WEAR::WearTimInt>(icontact, "WEARTIMINT");
+  Inpar::Wear::WearTimInt wtimint =
+      Core::UTILS::IntegralValue<Inpar::Wear::WearTimInt>(icontact, "WEARTIMINT");
 
-  INPAR::WEAR::WearSide wside =
-      CORE::UTILS::IntegralValue<INPAR::WEAR::WearSide>(icontact, "WEAR_SIDE");
+  Inpar::Wear::WearSide wside =
+      Core::UTILS::IntegralValue<Inpar::Wear::WearSide>(icontact, "WEAR_SIDE");
 
-  INPAR::WEAR::WearLaw wlaw = CORE::UTILS::IntegralValue<INPAR::WEAR::WearLaw>(icontact, "WEARLAW");
+  Inpar::Wear::WearLaw wlaw = Core::UTILS::IntegralValue<Inpar::Wear::WearLaw>(icontact, "WEARLAW");
 
-  if (wlaw != INPAR::WEAR::wear_none) wear_ = true;
+  if (wlaw != Inpar::Wear::wear_none) wear_ = true;
 
-  if (wtimint == INPAR::WEAR::wear_impl) wearimpl_ = true;
-
-  // set wear contact discretization
-  if (wtype == INPAR::WEAR::wear_primvar) wearpv_ = true;
+  if (wtimint == Inpar::Wear::wear_impl) wearimpl_ = true;
 
   // set wear contact discretization
-  if (wside == INPAR::WEAR::wear_both) wearboth_ = true;
+  if (wtype == Inpar::Wear::wear_primvar) wearpv_ = true;
+
+  // set wear contact discretization
+  if (wside == Inpar::Wear::wear_both) wearboth_ = true;
 
   return;
 }
@@ -73,8 +73,8 @@ WEAR::WearInterface::WearInterface(
 /*----------------------------------------------------------------------*
  |  Assemble Mortar wear matrices                            farah 09/13|
  *----------------------------------------------------------------------*/
-void WEAR::WearInterface::AssembleTE(
-    CORE::LINALG::SparseMatrix& tglobal, CORE::LINALG::SparseMatrix& eglobal)
+void Wear::WearInterface::AssembleTE(
+    Core::LinAlg::SparseMatrix& tglobal, Core::LinAlg::SparseMatrix& eglobal)
 {
   /************************************************
    *  This function is only for discrete Wear !!! *
@@ -100,7 +100,7 @@ void WEAR::WearInterface::AssembleTE(
   for (int i = 0; i < considerednodes->NumMyElements(); ++i)
   {
     int gid = considerednodes->GID(i);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -156,12 +156,12 @@ void WEAR::WearInterface::AssembleTE(
         double val = colcurr->second;
 
         // do not assemble zeros into m matrix
-        if (wear_shape_fcn() == INPAR::WEAR::wear_shape_standard)
+        if (wear_shape_fcn() == Inpar::Wear::wear_shape_standard)
         {
           if (abs(val) > 1.0e-12) eglobal.Assemble(val, row, col);
           ++k;
         }
-        else if (wear_shape_fcn() == INPAR::WEAR::wear_shape_dual)
+        else if (wear_shape_fcn() == Inpar::Wear::wear_shape_dual)
         {
           if (col == row)
             if (abs(val) > 1.0e-12) eglobal.Assemble(val, row, col);
@@ -181,8 +181,8 @@ void WEAR::WearInterface::AssembleTE(
 /*----------------------------------------------------------------------*
  |  Assemble Mortar wear matrices (for master side)          farah 11/13|
  *----------------------------------------------------------------------*/
-void WEAR::WearInterface::AssembleTE_Master(
-    CORE::LINALG::SparseMatrix& tglobal, CORE::LINALG::SparseMatrix& eglobal)
+void Wear::WearInterface::AssembleTE_Master(
+    Core::LinAlg::SparseMatrix& tglobal, Core::LinAlg::SparseMatrix& eglobal)
 {
   /************************************************
    *  This function is only for discrete Wear !!! *
@@ -203,14 +203,14 @@ void WEAR::WearInterface::AssembleTE_Master(
   // nothing to do if no active nodes
   if (slipmasternodes_ == Teuchos::null) return;
 
-  const Teuchos::RCP<Epetra_Map> slmasternodes = CORE::LINALG::AllreduceEMap(*(slipmasternodes_));
+  const Teuchos::RCP<Epetra_Map> slmasternodes = Core::LinAlg::AllreduceEMap(*(slipmasternodes_));
 
   // loop over proc's slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
   for (int i = 0; i < slmasternodes->NumMyElements(); ++i)
   {
     int gid = slmasternodes->GID(i);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -264,12 +264,12 @@ void WEAR::WearInterface::AssembleTE_Master(
         double val = colcurr->second;
 
         // do not assemble zeros into m matrix
-        if (wear_shape_fcn() == INPAR::WEAR::wear_shape_standard)
+        if (wear_shape_fcn() == Inpar::Wear::wear_shape_standard)
         {
           if (abs(val) > 1.0e-12) eglobal.FEAssemble(val, row, col);
           ++k;
         }
-        else if (wear_shape_fcn() == INPAR::WEAR::wear_shape_dual)
+        else if (wear_shape_fcn() == Inpar::Wear::wear_shape_dual)
         {
           if (col == row)
             if (abs(val) > 1.0e-12) eglobal.FEAssemble(val, row, col);
@@ -290,7 +290,7 @@ void WEAR::WearInterface::AssembleTE_Master(
 /*----------------------------------------------------------------------*
  |  Assemble matrix LinT containing disp derivatives         farah 09/13|
  *----------------------------------------------------------------------*/
-void WEAR::WearInterface::AssembleLinT_D(CORE::LINALG::SparseMatrix& lintglobal)
+void Wear::WearInterface::AssembleLinT_D(Core::LinAlg::SparseMatrix& lintglobal)
 {
   /************************************************
    *  This function is only for discrete Wear !!! *
@@ -321,7 +321,7 @@ void WEAR::WearInterface::AssembleLinT_D(CORE::LINALG::SparseMatrix& lintglobal)
   for (int j = 0; j < considerednodes->NumMyElements(); ++j)
   {
     int gid = considerednodes->GID(j);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -339,7 +339,7 @@ void WEAR::WearInterface::AssembleLinT_D(CORE::LINALG::SparseMatrix& lintglobal)
       int sgid = scurr->first;
       ++scurr;
 
-      CORE::Nodes::Node* snode = idiscret_->gNode(sgid);
+      Core::Nodes::Node* snode = idiscret_->gNode(sgid);
       if (!snode) FOUR_C_THROW("Cannot find node with gid %", sgid);
       CONTACT::FriNode* csnode = dynamic_cast<CONTACT::FriNode*>(snode);
 
@@ -394,7 +394,7 @@ void WEAR::WearInterface::AssembleLinT_D(CORE::LINALG::SparseMatrix& lintglobal)
   for (int j = 0; j < considerednodes->NumMyElements(); ++j)
   {
     int gid = considerednodes->GID(j);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -402,7 +402,7 @@ void WEAR::WearInterface::AssembleLinT_D(CORE::LINALG::SparseMatrix& lintglobal)
     {
       // map iterator
       typedef std::map<int, double>::const_iterator CI;
-      typedef CORE::GEN::Pairedvector<int, double>::const_iterator _CI;
+      typedef Core::Gen::Pairedvector<int, double>::const_iterator _CI;
 
       std::map<int, double>& nmap = fnode->WearData().GetT()[0];
 
@@ -411,13 +411,13 @@ void WEAR::WearInterface::AssembleLinT_D(CORE::LINALG::SparseMatrix& lintglobal)
       {
         // std::cout << "t-irst= " << z->first << std::endl;
         int gid3 = (int)((z->first) / Dim());
-        CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
+        Core::Nodes::Node* snode = idiscret_->gNode(gid3);
         if (!snode) FOUR_C_THROW("Cannot find node with gid");
         CONTACT::FriNode* csnode = dynamic_cast<CONTACT::FriNode*>(snode);
 
         for (int u = 0; u < Dim(); ++u)
         {
-          CORE::GEN::Pairedvector<int, double>& numap = csnode->Data().GetDerivN()[u];
+          Core::Gen::Pairedvector<int, double>& numap = csnode->Data().GetDerivN()[u];
           double lmu = csnode->MoData().lm()[u];
 
           // multiply T-column entry with lin n*lambda
@@ -443,7 +443,7 @@ void WEAR::WearInterface::AssembleLinT_D(CORE::LINALG::SparseMatrix& lintglobal)
 /*----------------------------------------------------------------------*
  |  Assemble matrix LinT containing disp derivatives         farah 11/13|
  *----------------------------------------------------------------------*/
-void WEAR::WearInterface::assemble_lin_t_d_master(CORE::LINALG::SparseMatrix& lintglobal)
+void Wear::WearInterface::assemble_lin_t_d_master(Core::LinAlg::SparseMatrix& lintglobal)
 {
   /************************************************
    *  This function is only for discrete Wear !!! *
@@ -458,12 +458,12 @@ void WEAR::WearInterface::assemble_lin_t_d_master(CORE::LINALG::SparseMatrix& li
   //                 with c = Displacement slave or master dof
   // we compute (LinT)_kc = T_wj,c * z_j
   /**********************************************************************/
-  const Teuchos::RCP<Epetra_Map> slmasternodes = CORE::LINALG::AllreduceEMap(*(slipmasternodes_));
+  const Teuchos::RCP<Epetra_Map> slmasternodes = Core::LinAlg::AllreduceEMap(*(slipmasternodes_));
 
   for (int j = 0; j < slmasternodes->NumMyElements(); ++j)
   {
     int gid = slmasternodes->GID(j);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -481,7 +481,7 @@ void WEAR::WearInterface::assemble_lin_t_d_master(CORE::LINALG::SparseMatrix& li
       int sgid = scurr->first;
       ++scurr;
 
-      CORE::Nodes::Node* snode = idiscret_->gNode(sgid);
+      Core::Nodes::Node* snode = idiscret_->gNode(sgid);
       if (!snode) FOUR_C_THROW("Cannot find node with gid %", sgid);
       CONTACT::FriNode* csnode = dynamic_cast<CONTACT::FriNode*>(snode);
 
@@ -536,7 +536,7 @@ void WEAR::WearInterface::assemble_lin_t_d_master(CORE::LINALG::SparseMatrix& li
   for (int j = 0; j < slmasternodes->NumMyElements(); ++j)
   {
     int gid = slmasternodes->GID(j);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -544,7 +544,7 @@ void WEAR::WearInterface::assemble_lin_t_d_master(CORE::LINALG::SparseMatrix& li
     {
       // map iterator
       typedef std::map<int, double>::const_iterator CI;
-      typedef CORE::GEN::Pairedvector<int, double>::const_iterator _CI;
+      typedef Core::Gen::Pairedvector<int, double>::const_iterator _CI;
 
       std::map<int, double>& nmap = fnode->WearData().GetT()[0];
 
@@ -553,13 +553,13 @@ void WEAR::WearInterface::assemble_lin_t_d_master(CORE::LINALG::SparseMatrix& li
       {
         // std::cout << "t-irst= " << z->first << std::endl;
         int gid3 = (int)((z->first) / Dim());
-        CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
+        Core::Nodes::Node* snode = idiscret_->gNode(gid3);
         if (!snode) FOUR_C_THROW("Cannot find node with gid");
         CONTACT::FriNode* csnode = dynamic_cast<CONTACT::FriNode*>(snode);
 
         for (int u = 0; u < Dim(); ++u)
         {
-          CORE::GEN::Pairedvector<int, double>& numap = csnode->Data().GetDerivN()[u];
+          Core::Gen::Pairedvector<int, double>& numap = csnode->Data().GetDerivN()[u];
           double lmu = csnode->MoData().lm()[u];
 
           // multiply T-column entry with lin n*lambda
@@ -585,7 +585,7 @@ void WEAR::WearInterface::assemble_lin_t_d_master(CORE::LINALG::SparseMatrix& li
 /*----------------------------------------------------------------------*
  |  Assemble matrix LinE containing disp derivatives         farah 09/13|
  *----------------------------------------------------------------------*/
-void WEAR::WearInterface::AssembleLinE_D(CORE::LINALG::SparseMatrix& lineglobal)
+void Wear::WearInterface::AssembleLinE_D(Core::LinAlg::SparseMatrix& lineglobal)
 {
   /************************************************
    *  This function is only for discrete Wear !!! *
@@ -618,7 +618,7 @@ void WEAR::WearInterface::AssembleLinE_D(CORE::LINALG::SparseMatrix& lineglobal)
   for (int j = 0; j < considerednodes->NumMyElements(); ++j)
   {
     int gid = considerednodes->GID(j);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -636,7 +636,7 @@ void WEAR::WearInterface::AssembleLinE_D(CORE::LINALG::SparseMatrix& lineglobal)
       int sgid = scurr->first;
       ++scurr;
 
-      CORE::Nodes::Node* snode = idiscret_->gNode(sgid);
+      Core::Nodes::Node* snode = idiscret_->gNode(sgid);
       if (!snode) FOUR_C_THROW("Cannot find node with gid %", sgid);
       CONTACT::FriNode* csnode = dynamic_cast<CONTACT::FriNode*>(snode);
 
@@ -683,7 +683,7 @@ void WEAR::WearInterface::AssembleLinE_D(CORE::LINALG::SparseMatrix& lineglobal)
 /*----------------------------------------------------------------------*
  |  Assemble matrix LinE containing disp derivatives         farah 11/13|
  *----------------------------------------------------------------------*/
-void WEAR::WearInterface::assemble_lin_e_d_master(CORE::LINALG::SparseMatrix& lineglobal)
+void Wear::WearInterface::assemble_lin_e_d_master(Core::LinAlg::SparseMatrix& lineglobal)
 {
   /************************************************
    *  This function is only for discrete Wear !!! *
@@ -698,13 +698,13 @@ void WEAR::WearInterface::assemble_lin_e_d_master(CORE::LINALG::SparseMatrix& li
   //                 with c = Displacement slave or master dof
   // we compute (LinE)_kc = T_wj,c * z_j
   /**********************************************************************/
-  const Teuchos::RCP<Epetra_Map> slmasternodes = CORE::LINALG::AllreduceEMap(*(slipmasternodes_));
+  const Teuchos::RCP<Epetra_Map> slmasternodes = Core::LinAlg::AllreduceEMap(*(slipmasternodes_));
 
   // loop over all LM slave nodes (row map)
   for (int j = 0; j < slmasternodes->NumMyElements(); ++j)
   {
     int gid = slmasternodes->GID(j);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -722,7 +722,7 @@ void WEAR::WearInterface::assemble_lin_e_d_master(CORE::LINALG::SparseMatrix& li
       int sgid = scurr->first;
       ++scurr;
 
-      CORE::Nodes::Node* snode = idiscret_->gNode(sgid);
+      Core::Nodes::Node* snode = idiscret_->gNode(sgid);
       if (!snode) FOUR_C_THROW("Cannot find node with gid %", sgid);
       CONTACT::FriNode* csnode = dynamic_cast<CONTACT::FriNode*>(snode);
 
@@ -770,7 +770,7 @@ void WEAR::WearInterface::assemble_lin_e_d_master(CORE::LINALG::SparseMatrix& li
 /*----------------------------------------------------------------------*
  |  Assemble matrix LinT containing lm derivatives           farah 09/13|
  *----------------------------------------------------------------------*/
-void WEAR::WearInterface::AssembleLinT_LM(CORE::LINALG::SparseMatrix& lintglobal)
+void Wear::WearInterface::AssembleLinT_LM(Core::LinAlg::SparseMatrix& lintglobal)
 {
   /************************************************
    *  This function is only for discrete Wear !!! *
@@ -797,7 +797,7 @@ void WEAR::WearInterface::AssembleLinT_LM(CORE::LINALG::SparseMatrix& lintglobal
   for (int j = 0; j < considerednodes->NumMyElements(); ++j)
   {
     int gid = considerednodes->GID(j);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -811,7 +811,7 @@ void WEAR::WearInterface::AssembleLinT_LM(CORE::LINALG::SparseMatrix& lintglobal
       for (CI p = fmap.begin(); p != fmap.end(); ++p)
       {
         int gid2 = (int)((p->first) / Dim());
-        CORE::Nodes::Node* node2 = idiscret_->gNode(gid2);
+        Core::Nodes::Node* node2 = idiscret_->gNode(gid2);
         if (!node2) FOUR_C_THROW("Cannot find node with gid %", gid2);
         CONTACT::FriNode* jnode = dynamic_cast<CONTACT::FriNode*>(node2);
 
@@ -836,7 +836,7 @@ void WEAR::WearInterface::AssembleLinT_LM(CORE::LINALG::SparseMatrix& lintglobal
 /*----------------------------------------------------------------------*
  |  Assemble matrix LinT containing lm derivatives           farah 11/13|
  *----------------------------------------------------------------------*/
-void WEAR::WearInterface::assemble_lin_t_lm_master(CORE::LINALG::SparseMatrix& lintglobal)
+void Wear::WearInterface::assemble_lin_t_lm_master(Core::LinAlg::SparseMatrix& lintglobal)
 {
   /************************************************
    *  This function is only for discrete Wear !!! *
@@ -845,7 +845,7 @@ void WEAR::WearInterface::assemble_lin_t_lm_master(CORE::LINALG::SparseMatrix& l
   // nothing to do if no active nodes
   if (slipmasternodes_ == Teuchos::null) return;
 
-  const Teuchos::RCP<Epetra_Map> slmasternodes = CORE::LINALG::AllreduceEMap(*(slipmasternodes_));
+  const Teuchos::RCP<Epetra_Map> slmasternodes = Core::LinAlg::AllreduceEMap(*(slipmasternodes_));
 
 
   // typedef std::map<int,double>::const_iterator CI;
@@ -854,7 +854,7 @@ void WEAR::WearInterface::assemble_lin_t_lm_master(CORE::LINALG::SparseMatrix& l
   for (int j = 0; j < slmasternodes->NumMyElements(); ++j)
   {
     int gid = slmasternodes->GID(j);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -868,7 +868,7 @@ void WEAR::WearInterface::assemble_lin_t_lm_master(CORE::LINALG::SparseMatrix& l
       for (CI p = fmap.begin(); p != fmap.end(); ++p)
       {
         int gid2 = (int)((p->first) / Dim());
-        CORE::Nodes::Node* node2 = idiscret_->gNode(gid2);
+        Core::Nodes::Node* node2 = idiscret_->gNode(gid2);
         if (!node2) FOUR_C_THROW("Cannot find node with gid %", gid2);
         CONTACT::FriNode* jnode = dynamic_cast<CONTACT::FriNode*>(node2);
 
@@ -894,10 +894,10 @@ void WEAR::WearInterface::assemble_lin_t_lm_master(CORE::LINALG::SparseMatrix& l
 /*----------------------------------------------------------------------*
  |  evaluate nodal normals (public)                          farah 11/13|
  *----------------------------------------------------------------------*/
-void WEAR::WearInterface::evaluate_nodal_normals() const
+void Wear::WearInterface::evaluate_nodal_normals() const
 {
   // call mortar function
-  MORTAR::Interface::evaluate_nodal_normals();
+  Mortar::Interface::evaluate_nodal_normals();
 
   // for both-sided discrete wear
   if (wearboth_ == true and wearpv_ == true)
@@ -905,9 +905,9 @@ void WEAR::WearInterface::evaluate_nodal_normals() const
     for (int i = 0; i < mnoderowmap_->NumMyElements(); ++i)
     {
       int gid = mnoderowmap_->GID(i);
-      CORE::Nodes::Node* node = idiscret_->gNode(gid);
+      Core::Nodes::Node* node = idiscret_->gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
-      MORTAR::Node* mrtrnode = dynamic_cast<MORTAR::Node*>(node);
+      Mortar::Node* mrtrnode = dynamic_cast<Mortar::Node*>(node);
 
       // build averaged normal at each master node
       mrtrnode->BuildAveragedNormal();
@@ -921,12 +921,12 @@ void WEAR::WearInterface::evaluate_nodal_normals() const
 /*----------------------------------------------------------------------*
  |  export nodal normals (public)                            farah 11/13|
  *----------------------------------------------------------------------*/
-void WEAR::WearInterface::export_nodal_normals() const
+void Wear::WearInterface::export_nodal_normals() const
 {
   // call contact function
   CONTACT::Interface::export_nodal_normals();
 
-  std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>> triad;
+  std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>> triad;
 
   std::map<int, std::vector<int>> n_x_key;
   std::map<int, std::vector<int>> n_y_key;
@@ -948,26 +948,26 @@ void WEAR::WearInterface::export_nodal_normals() const
   std::map<int, std::vector<double>> teta_y_val;
   std::map<int, std::vector<double>> teta_z_val;
 
-  CORE::GEN::Pairedvector<int, double>::iterator iter;
+  Core::Gen::Pairedvector<int, double>::iterator iter;
 
   // --------------------------------------------------------------------------------------
   // for both-sided discrete wear we need the same normal information on the master side:
   // --------------------------------------------------------------------------------------
   if (wearboth_ and wearpv_)
   {
-    const Teuchos::RCP<Epetra_Map> masternodes = CORE::LINALG::AllreduceEMap(*(mnoderowmap_));
+    const Teuchos::RCP<Epetra_Map> masternodes = Core::LinAlg::AllreduceEMap(*(mnoderowmap_));
 
     // build info on row map
     for (int i = 0; i < mnoderowmap_->NumMyElements(); ++i)
     {
       int gid = mnoderowmap_->GID(i);
-      CORE::Nodes::Node* node = idiscret_->gNode(gid);
+      Core::Nodes::Node* node = idiscret_->gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
 
       // fill nodal matrix
-      Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> loc =
-          Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(3, 3));
+      Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> loc =
+          Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(3, 3));
       (*loc)(0, 0) = cnode->MoData().n()[0];
       (*loc)(1, 0) = cnode->MoData().n()[1];
       (*loc)(2, 0) = cnode->MoData().n()[2];
@@ -981,9 +981,9 @@ void WEAR::WearInterface::export_nodal_normals() const
       triad[gid] = loc;
 
       // fill nodal derivative vectors
-      std::vector<CORE::GEN::Pairedvector<int, double>>& derivn = cnode->Data().GetDerivN();
-      std::vector<CORE::GEN::Pairedvector<int, double>>& derivtxi = cnode->Data().GetDerivTxi();
-      std::vector<CORE::GEN::Pairedvector<int, double>>& derivteta = cnode->Data().GetDerivTeta();
+      std::vector<Core::Gen::Pairedvector<int, double>>& derivn = cnode->Data().GetDerivN();
+      std::vector<Core::Gen::Pairedvector<int, double>>& derivtxi = cnode->Data().GetDerivTxi();
+      std::vector<Core::Gen::Pairedvector<int, double>>& derivteta = cnode->Data().GetDerivTeta();
 
       for (iter = derivn[0].begin(); iter != derivn[0].end(); ++iter)
       {
@@ -1035,7 +1035,7 @@ void WEAR::WearInterface::export_nodal_normals() const
     }
 
     // communicate from master node row to column map
-    CORE::COMM::Exporter ex(*mnoderowmap_, *masternodes, Comm());
+    Core::Communication::Exporter ex(*mnoderowmap_, *masternodes, Comm());
     ex.Export(triad);
 
     ex.Export(n_x_key);
@@ -1064,7 +1064,7 @@ void WEAR::WearInterface::export_nodal_normals() const
     {
       // only do something for ghosted nodes
       int gid = masternodes->GID(i);
-      CORE::Nodes::Node* node = idiscret_->gNode(gid);
+      Core::Nodes::Node* node = idiscret_->gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
       int linsize = cnode->GetLinsize() + (int)(n_x_key[gid].size());
@@ -1072,7 +1072,7 @@ void WEAR::WearInterface::export_nodal_normals() const
       if (cnode->Owner() == Comm().MyPID()) continue;
 
       // extract info
-      Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> loc = triad[gid];
+      Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> loc = triad[gid];
       cnode->MoData().n()[0] = (*loc)(0, 0);
       cnode->MoData().n()[1] = (*loc)(1, 0);
       cnode->MoData().n()[2] = (*loc)(2, 0);
@@ -1084,9 +1084,9 @@ void WEAR::WearInterface::export_nodal_normals() const
       cnode->Data().teta()[2] = (*loc)(2, 2);
 
       // extract derivative info
-      std::vector<CORE::GEN::Pairedvector<int, double>>& derivn = cnode->Data().GetDerivN();
-      std::vector<CORE::GEN::Pairedvector<int, double>>& derivtxi = cnode->Data().GetDerivTxi();
-      std::vector<CORE::GEN::Pairedvector<int, double>>& derivteta = cnode->Data().GetDerivTeta();
+      std::vector<Core::Gen::Pairedvector<int, double>>& derivn = cnode->Data().GetDerivN();
+      std::vector<Core::Gen::Pairedvector<int, double>>& derivtxi = cnode->Data().GetDerivTxi();
+      std::vector<Core::Gen::Pairedvector<int, double>>& derivteta = cnode->Data().GetDerivTeta();
 
       for (int k = 0; k < (int)(derivn.size()); ++k) derivn[k].clear();
       derivn.resize(3, linsize);
@@ -1162,7 +1162,7 @@ void WEAR::WearInterface::export_nodal_normals() const
  |  PS: "AssembleS" is an outdated name which could make                |
  |  you confused.                                                       |
  *----------------------------------------------------------------------*/
-void WEAR::WearInterface::AssembleS(CORE::LINALG::SparseMatrix& sglobal)
+void Wear::WearInterface::AssembleS(Core::LinAlg::SparseMatrix& sglobal)
 {
   // call contact function
   CONTACT::Interface::AssembleS(sglobal);
@@ -1174,7 +1174,7 @@ void WEAR::WearInterface::AssembleS(CORE::LINALG::SparseMatrix& sglobal)
   for (int i = 0; i < activenodes_->NumMyElements(); ++i)
   {
     int gid = activenodes_->GID(i);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
 
@@ -1210,7 +1210,7 @@ void WEAR::WearInterface::AssembleS(CORE::LINALG::SparseMatrix& sglobal)
 /*----------------------------------------------------------------------*
  |  Assemble matrix S containing gap g~ w derivatives       farah 09/13|
  *----------------------------------------------------------------------*/
-void WEAR::WearInterface::AssembleLinG_W(CORE::LINALG::SparseMatrix& sglobal)
+void Wear::WearInterface::AssembleLinG_W(Core::LinAlg::SparseMatrix& sglobal)
 {
   // nothing to do if no active nodes
   if (activenodes_ == Teuchos::null) return;
@@ -1219,7 +1219,7 @@ void WEAR::WearInterface::AssembleLinG_W(CORE::LINALG::SparseMatrix& sglobal)
   for (int i = 0; i < activenodes_->NumMyElements(); ++i)
   {
     int gid = activenodes_->GID(i);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
 
@@ -1247,12 +1247,12 @@ void WEAR::WearInterface::AssembleLinG_W(CORE::LINALG::SparseMatrix& sglobal)
 /*----------------------------------------------------------------------*
  |  Assemble matrix LinStick with tangential+D+M derivatives  mgit 02/09|
  *----------------------------------------------------------------------*/
-void WEAR::WearInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLMglobal,
-    CORE::LINALG::SparseMatrix& linstickDISglobal, Epetra_Vector& linstickRHSglobal)
+void Wear::WearInterface::AssembleLinStick(Core::LinAlg::SparseMatrix& linstickLMglobal,
+    Core::LinAlg::SparseMatrix& linstickDISglobal, Epetra_Vector& linstickRHSglobal)
 {
   // create map of stick nodes
-  Teuchos::RCP<Epetra_Map> sticknodes = CORE::LINALG::SplitMap(*activenodes_, *slipnodes_);
-  Teuchos::RCP<Epetra_Map> stickt = CORE::LINALG::SplitMap(*activet_, *slipt_);
+  Teuchos::RCP<Epetra_Map> sticknodes = Core::LinAlg::SplitMap(*activenodes_, *slipnodes_);
+  Teuchos::RCP<Epetra_Map> stickt = Core::LinAlg::SplitMap(*activet_, *slipt_);
 
   // nothing to do if no stick nodes
   if (sticknodes->NumMyElements() == 0) return;
@@ -1262,8 +1262,8 @@ void WEAR::WearInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickL
   double ct = interface_params().get<double>("SEMI_SMOOTH_CT");
   double cn = interface_params().get<double>("SEMI_SMOOTH_CN");
 
-  INPAR::CONTACT::FrictionType ftype =
-      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(interface_params(), "FRICTION");
+  Inpar::CONTACT::FrictionType ftype =
+      Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
 
   bool consistent = false;
 
@@ -1276,13 +1276,13 @@ void WEAR::WearInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickL
   consistent = true;
 #endif
 
-  if (consistent && ftype == INPAR::CONTACT::friction_coulomb)
+  if (consistent && ftype == Inpar::CONTACT::friction_coulomb)
   {
     // loop over all stick nodes of the interface
     for (int i = 0; i < sticknodes->NumMyElements(); ++i)
     {
       int gid = sticknodes->GID(i);
-      CORE::Nodes::Node* node = idiscret_->gNode(gid);
+      Core::Nodes::Node* node = idiscret_->gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -1293,9 +1293,9 @@ void WEAR::WearInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickL
       ct = GetCtRef()[GetCtRef().Map().LID(cnode->Id())];
 
       // prepare assembly, get information from node
-      std::vector<CORE::GEN::Pairedvector<int, double>> dnmap = cnode->Data().GetDerivN();
-      std::vector<CORE::GEN::Pairedvector<int, double>> dtximap = cnode->Data().GetDerivTxi();
-      std::vector<CORE::GEN::Pairedvector<int, double>> dtetamap = cnode->Data().GetDerivTeta();
+      std::vector<Core::Gen::Pairedvector<int, double>> dnmap = cnode->Data().GetDerivN();
+      std::vector<Core::Gen::Pairedvector<int, double>> dtximap = cnode->Data().GetDerivTxi();
+      std::vector<Core::Gen::Pairedvector<int, double>> dtetamap = cnode->Data().GetDerivTeta();
       std::map<int, double> dgmap = cnode->Data().GetDerivG();
 
       // check for Dimension of derivative maps
@@ -1321,7 +1321,7 @@ void WEAR::WearInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickL
 
       // iterator for maps
       std::map<int, double>::iterator colcurr;
-      CORE::GEN::Pairedvector<int, double>::iterator _colcurr;
+      Core::Gen::Pairedvector<int, double>::iterator _colcurr;
 
       // row number of entries
       std::vector<int> row(Dim() - 1);
@@ -1348,7 +1348,7 @@ void WEAR::WearInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickL
       for (int i = 0; i < Dim(); i++) znor += n[i] * z[i];
 
       // for slip
-      if (CORE::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
+      if (Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
       {
         jumptxi = cnode->FriData().jump_var()[0];
 
@@ -1395,7 +1395,7 @@ void WEAR::WearInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickL
       }
 
       // Entries on right hand side ****************************
-      CORE::LINALG::SerialDenseVector rhsnode(Dim() - 1);
+      Core::LinAlg::SerialDenseVector rhsnode(Dim() - 1);
       std::vector<int> lm(Dim() - 1);
       std::vector<int> lmowner(Dim() - 1);
       rhsnode(0) = frcoeff * (znor - cn * wgap) * ct * jumptxi;
@@ -1409,12 +1409,12 @@ void WEAR::WearInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickL
         lmowner[1] = cnode->Owner();
       }
 
-      CORE::LINALG::Assemble(linstickRHSglobal, rhsnode, lm, lmowner);
+      Core::LinAlg::Assemble(linstickRHSglobal, rhsnode, lm, lmowner);
 
       // 3) Entries from differentiation with respect to displacements
       /******************************************************************/
 
-      if (CORE::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
+      if (Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
       {
         std::vector<std::map<int, double>> derivjump_ = cnode->FriData().GetDerivVarJump();
 
@@ -1579,7 +1579,7 @@ void WEAR::WearInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickL
     for (int i = 0; i < sticknodes->NumMyElements(); ++i)
     {
       int gid = sticknodes->GID(i);
-      CORE::Nodes::Node* node = idiscret_->gNode(gid);
+      Core::Nodes::Node* node = idiscret_->gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -1587,8 +1587,8 @@ void WEAR::WearInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickL
         FOUR_C_THROW("AssembleLinStick: Node ownership inconsistency!");
 
       // prepare assembly, get information from node
-      std::vector<CORE::GEN::Pairedvector<int, double>> dtximap = cnode->Data().GetDerivTxi();
-      std::vector<CORE::GEN::Pairedvector<int, double>> dtetamap = cnode->Data().GetDerivTeta();
+      std::vector<Core::Gen::Pairedvector<int, double>> dtximap = cnode->Data().GetDerivTxi();
+      std::vector<Core::Gen::Pairedvector<int, double>> dtetamap = cnode->Data().GetDerivTeta();
 
       for (int j = 0; j < Dim() - 1; ++j)
         if ((int)dtximap[j].size() != (int)dtximap[j + 1].size())
@@ -1603,7 +1603,7 @@ void WEAR::WearInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickL
 
       // iterator for maps
       std::map<int, double>::iterator colcurr;
-      CORE::GEN::Pairedvector<int, double>::iterator _colcurr;
+      Core::Gen::Pairedvector<int, double>::iterator _colcurr;
 
       // row number of entries
       std::vector<int> row(Dim() - 1);
@@ -1629,7 +1629,7 @@ void WEAR::WearInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickL
       double* jump = cnode->FriData().jump();
 
       // slip
-      if (CORE::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
+      if (Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
       {
         jumptxi = cnode->FriData().jump_var()[0];
 
@@ -1650,7 +1650,7 @@ void WEAR::WearInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickL
 
       // Entries on right hand side
       /************************************************ (-utxi, -uteta) ***/
-      CORE::LINALG::SerialDenseVector rhsnode(Dim() - 1);
+      Core::LinAlg::SerialDenseVector rhsnode(Dim() - 1);
       std::vector<int> lm(Dim() - 1);
       std::vector<int> lmowner(Dim() - 1);
 
@@ -1676,11 +1676,11 @@ void WEAR::WearInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickL
         lmowner[1] = cnode->Owner();
       }
 
-      CORE::LINALG::Assemble(linstickRHSglobal, rhsnode, lm, lmowner);
+      Core::LinAlg::Assemble(linstickRHSglobal, rhsnode, lm, lmowner);
 
       // Entries from differentiation with respect to displacements
       /*** 1 ************************************** tangent.deriv(jump) ***/
-      if (CORE::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
+      if (Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
       {
         std::map<int, double> derivjump1 = cnode->FriData().GetDerivVarJump()[0];
         std::map<int, double> derivjump2 = cnode->FriData().GetDerivVarJump()[1];
@@ -1768,14 +1768,14 @@ void WEAR::WearInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickL
 /*----------------------------------------------------------------------*
 |  Assemble matrix LinSlip with W derivatives               farah 09/13|
 *----------------------------------------------------------------------*/
-void WEAR::WearInterface::AssembleLinSlip_W(CORE::LINALG::SparseMatrix& linslipWglobal)
+void Wear::WearInterface::AssembleLinSlip_W(Core::LinAlg::SparseMatrix& linslipWglobal)
 {
   // nothing to do if no slip nodes
   if (slipnodes_->NumMyElements() == 0) return;
 
   // information from interface contact parameter list
-  INPAR::CONTACT::FrictionType ftype =
-      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(interface_params(), "FRICTION");
+  Inpar::CONTACT::FrictionType ftype =
+      Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
   double frcoeff = interface_params().get<double>("FRCOEFF");
   double ct = interface_params().get<double>("SEMI_SMOOTH_CT");
   double cn = interface_params().get<double>("SEMI_SMOOTH_CN");
@@ -1787,13 +1787,13 @@ void WEAR::WearInterface::AssembleLinSlip_W(CORE::LINALG::SparseMatrix& linslipW
   //**********************************************************************
   //**********************************************************************
   //**********************************************************************
-  if (ftype == INPAR::CONTACT::friction_coulomb)
+  if (ftype == Inpar::CONTACT::friction_coulomb)
   {
     // loop over all slip nodes of the interface
     for (int i = 0; i < slipnodes_->NumMyElements(); ++i)
     {
       int gid = slipnodes_->GID(i);
-      CORE::Nodes::Node* node = idiscret_->gNode(gid);
+      Core::Nodes::Node* node = idiscret_->gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -1804,9 +1804,9 @@ void WEAR::WearInterface::AssembleLinSlip_W(CORE::LINALG::SparseMatrix& linslipW
       ct = GetCtRef()[GetCtRef().Map().LID(cnode->Id())];
 
       // prepare assembly, get information from node
-      std::vector<CORE::GEN::Pairedvector<int, double>> dnmap = cnode->Data().GetDerivN();
-      std::vector<CORE::GEN::Pairedvector<int, double>> dtximap = cnode->Data().GetDerivTxi();
-      std::vector<CORE::GEN::Pairedvector<int, double>> dtetamap = cnode->Data().GetDerivTeta();
+      std::vector<Core::Gen::Pairedvector<int, double>> dnmap = cnode->Data().GetDerivN();
+      std::vector<Core::Gen::Pairedvector<int, double>> dtximap = cnode->Data().GetDerivTxi();
+      std::vector<Core::Gen::Pairedvector<int, double>> dtetamap = cnode->Data().GetDerivTeta();
 
       // check for Dimension of derivative maps
       for (int j = 0; j < Dim() - 1; ++j)
@@ -1859,7 +1859,7 @@ void WEAR::WearInterface::AssembleLinSlip_W(CORE::LINALG::SparseMatrix& linslipW
       double* jump = cnode->FriData().jump();
 
       // for slip
-      if (CORE::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
+      if (Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
       {
         jumptxi = cnode->FriData().jump_var()[0];
 
@@ -1953,15 +1953,15 @@ void WEAR::WearInterface::AssembleLinSlip_W(CORE::LINALG::SparseMatrix& linslipW
 /*----------------------------------------------------------------------*
 |  Assemble matrix LinSlip with tangential+D+M derivatives    mgit 02/09|
 *----------------------------------------------------------------------*/
-void WEAR::WearInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMglobal,
-    CORE::LINALG::SparseMatrix& linslipDISglobal, Epetra_Vector& linslipRHSglobal)
+void Wear::WearInterface::AssembleLinSlip(Core::LinAlg::SparseMatrix& linslipLMglobal,
+    Core::LinAlg::SparseMatrix& linslipDISglobal, Epetra_Vector& linslipRHSglobal)
 {
   // nothing to do if no slip nodes
   if (slipnodes_->NumMyElements() == 0) return;
 
   // information from interface contact parameter list
-  INPAR::CONTACT::FrictionType ftype =
-      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(interface_params(), "FRICTION");
+  Inpar::CONTACT::FrictionType ftype =
+      Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
   double frcoeff = interface_params().get<double>("FRCOEFF");
   double ct = interface_params().get<double>("SEMI_SMOOTH_CT");
   double cn = interface_params().get<double>("SEMI_SMOOTH_CN");
@@ -1973,13 +1973,13 @@ void WEAR::WearInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMg
   //**********************************************************************
   //**********************************************************************
   //**********************************************************************
-  if (ftype == INPAR::CONTACT::friction_coulomb)
+  if (ftype == Inpar::CONTACT::friction_coulomb)
   {
     // loop over all slip nodes of the interface
     for (int i = 0; i < slipnodes_->NumMyElements(); ++i)
     {
       int gid = slipnodes_->GID(i);
-      CORE::Nodes::Node* node = idiscret_->gNode(gid);
+      Core::Nodes::Node* node = idiscret_->gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -1990,9 +1990,9 @@ void WEAR::WearInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMg
       ct = GetCtRef()[GetCtRef().Map().LID(cnode->Id())];
 
       // prepare assembly, get information from node
-      std::vector<CORE::GEN::Pairedvector<int, double>> dnmap = cnode->Data().GetDerivN();
-      std::vector<CORE::GEN::Pairedvector<int, double>> dtximap = cnode->Data().GetDerivTxi();
-      std::vector<CORE::GEN::Pairedvector<int, double>> dtetamap = cnode->Data().GetDerivTeta();
+      std::vector<Core::Gen::Pairedvector<int, double>> dnmap = cnode->Data().GetDerivN();
+      std::vector<Core::Gen::Pairedvector<int, double>> dtximap = cnode->Data().GetDerivTxi();
+      std::vector<Core::Gen::Pairedvector<int, double>> dtetamap = cnode->Data().GetDerivTeta();
 
       // check for Dimension of derivative maps
       for (int j = 0; j < Dim() - 1; ++j)
@@ -2019,7 +2019,7 @@ void WEAR::WearInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMg
 
       // iterator for maps
       std::map<int, double>::iterator colcurr;
-      CORE::GEN::Pairedvector<int, double>::iterator _colcurr;
+      Core::Gen::Pairedvector<int, double>::iterator _colcurr;
 
       // row number of entries
       std::vector<int> row(Dim() - 1);
@@ -2045,7 +2045,7 @@ void WEAR::WearInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMg
       double* jump = cnode->FriData().jump();
 
       // for gp slip
-      if (CORE::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
+      if (Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
       {
         jumptxi = cnode->FriData().jump_var()[0];
 
@@ -2128,7 +2128,7 @@ void WEAR::WearInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMg
         // 2) Entries on right hand side
         /******************************************************************/
 
-        CORE::LINALG::SerialDenseVector rhsnode(Dim() - 1);
+        Core::LinAlg::SerialDenseVector rhsnode(Dim() - 1);
         std::vector<int> lm(Dim() - 1);
         std::vector<int> lmowner(Dim() - 1);
 
@@ -2145,7 +2145,7 @@ void WEAR::WearInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMg
           lmowner[1] = cnode->Owner();
         }
 
-        CORE::LINALG::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
+        Core::LinAlg::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
 
         // 3) Entries from differentiation with respect to displacements
         /******************************************************************/
@@ -2245,7 +2245,7 @@ void WEAR::WearInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMg
 
         // 2) Entries on right hand side
         /******************************************************************/
-        CORE::LINALG::SerialDenseVector rhsnode(Dim() - 1);
+        Core::LinAlg::SerialDenseVector rhsnode(Dim() - 1);
         std::vector<int> lm(Dim() - 1);
         std::vector<int> lmowner(Dim() - 1);
 
@@ -2275,7 +2275,7 @@ void WEAR::WearInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMg
           lmowner[1] = cnode->Owner();
         }
 
-        CORE::LINALG::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
+        Core::LinAlg::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
 
         // 3) Entries from differentiation with respect to displacements
         /******************************************************************/
@@ -2283,7 +2283,7 @@ void WEAR::WearInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMg
         std::vector<std::map<int, double>> derivjump;  // for dm slip
 
         /*** 01  ********* -Deriv(euclidean).ct.tangent.deriv(u)*ztan ***/
-        if (CORE::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
+        if (Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
         {
           derivjump1 = cnode->FriData().GetDerivVarJump()[0];
           derivjump2 = cnode->FriData().GetDerivVarJump()[1];
@@ -2386,7 +2386,7 @@ void WEAR::WearInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMg
 
 
         /*** 02 ***************** frcoeff*znor*ct*tangent.deriv(jump) ***/
-        if (CORE::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
+        if (Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
         {
           for (colcurr = derivjump1.begin(); colcurr != derivjump1.end(); ++colcurr)
           {
@@ -2520,7 +2520,7 @@ void WEAR::WearInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMg
         }
 
         /*** 3 ****************** deriv(euclidean).deriv(T).jump.ztan ***/
-        if (CORE::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
+        if (Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
         {
           //!!!!!!!!!!!!!!! DO NOTHING !!!!!!!
         }
@@ -2607,7 +2607,7 @@ void WEAR::WearInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMg
         }
 
         /*** 5 *********************** (frcoeff*znor).deriv(T).jump ***/
-        if (CORE::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
+        if (Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
         {
           //!!!!!!!!!!!!!!! DO NOTHING !!!!!!!!!!!!!!!!!!!!!!
         }
@@ -2729,7 +2729,7 @@ void WEAR::WearInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMg
   //**********************************************************************
   //**********************************************************************
   //**********************************************************************
-  if (ftype == INPAR::CONTACT::friction_tresca)
+  if (ftype == Inpar::CONTACT::friction_tresca)
   {
     FOUR_C_THROW("Tresca friction not implemented for wear !!!");
   }
@@ -2741,7 +2741,7 @@ void WEAR::WearInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMg
  |  Assemble matrix W_lm containing wear w~ derivatives      farah 07/13|
  |  w.r.t. lm       -- impl wear                                        |
  *----------------------------------------------------------------------*/
-void WEAR::WearInterface::AssembleLinWLm(CORE::LINALG::SparseMatrix& sglobal)
+void Wear::WearInterface::AssembleLinWLm(Core::LinAlg::SparseMatrix& sglobal)
 {
   /************************************************
    *  This function is only for Implicit Wear !!! *
@@ -2756,7 +2756,7 @@ void WEAR::WearInterface::AssembleLinWLm(CORE::LINALG::SparseMatrix& sglobal)
        ++i)  //(int i=0;i<activenodes_->NumMyElements();++i)
   {
     int gid = activenodes_->GID(i);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
 
@@ -2786,7 +2786,7 @@ void WEAR::WearInterface::AssembleLinWLm(CORE::LINALG::SparseMatrix& sglobal)
  |  Assemble matrix W_lmsl containing wear w~ derivatives    farah 07/13|
  |  w.r.t. lm  --> (ONLY !!!) for consistent stick                      |
  *----------------------------------------------------------------------*/
-void WEAR::WearInterface::AssembleLinWLmSt(CORE::LINALG::SparseMatrix& sglobal)
+void Wear::WearInterface::AssembleLinWLmSt(Core::LinAlg::SparseMatrix& sglobal)
 {
   /************************************************
    *  This function is only for Implicit Wear !!! *
@@ -2794,8 +2794,8 @@ void WEAR::WearInterface::AssembleLinWLmSt(CORE::LINALG::SparseMatrix& sglobal)
   if (!wearimpl_) FOUR_C_THROW("This matrix deriv. is only required for implicit wear algorithm!");
 
   // create map of stick nodes
-  Teuchos::RCP<Epetra_Map> sticknodes = CORE::LINALG::SplitMap(*activenodes_, *slipnodes_);
-  Teuchos::RCP<Epetra_Map> stickt = CORE::LINALG::SplitMap(*activet_, *slipt_);
+  Teuchos::RCP<Epetra_Map> sticknodes = Core::LinAlg::SplitMap(*activenodes_, *slipnodes_);
+  Teuchos::RCP<Epetra_Map> stickt = Core::LinAlg::SplitMap(*activet_, *slipt_);
 
   // nothing to do if no stick nodes
   if (sticknodes->NumMyElements() == 0) return;
@@ -2810,7 +2810,7 @@ void WEAR::WearInterface::AssembleLinWLmSt(CORE::LINALG::SparseMatrix& sglobal)
   for (int i = 0; i < sticknodes->NumMyElements(); ++i)
   {
     int gid = sticknodes->GID(i);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -2874,7 +2874,7 @@ void WEAR::WearInterface::AssembleLinWLmSt(CORE::LINALG::SparseMatrix& sglobal)
  |  Assemble matrix W_lmsl containing wear w~ derivatives    farah 07/13|
  |  w.r.t. lm  --> for slip                                             |
  *----------------------------------------------------------------------*/
-void WEAR::WearInterface::AssembleLinWLmSl(CORE::LINALG::SparseMatrix& sglobal)
+void Wear::WearInterface::AssembleLinWLmSl(Core::LinAlg::SparseMatrix& sglobal)
 {
   /************************************************
    *  This function is only for Implicit Wear !!! *
@@ -2894,7 +2894,7 @@ void WEAR::WearInterface::AssembleLinWLmSl(CORE::LINALG::SparseMatrix& sglobal)
   for (int i = 0; i < slipnodes_->NumMyElements(); ++i)
   {
     int gid = slipnodes_->GID(i);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -2992,14 +2992,14 @@ void WEAR::WearInterface::AssembleLinWLmSl(CORE::LINALG::SparseMatrix& sglobal)
 /*----------------------------------------------------------------------*
  |  Assemble wear                                         gitterle 12/10|
  *----------------------------------------------------------------------*/
-void WEAR::WearInterface::AssembleWear(Epetra_Vector& wglobal)
+void Wear::WearInterface::AssembleWear(Epetra_Vector& wglobal)
 {
   // loop over proc's slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
   {
     int gid = snoderowmap_->GID(i);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* frinode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -3009,7 +3009,7 @@ void WEAR::WearInterface::AssembleWear(Epetra_Vector& wglobal)
     /**************************************************** w-vector ******/
     double wear = frinode->WearData().WeightedWear();
 
-    CORE::LINALG::SerialDenseVector wnode(1);
+    Core::LinAlg::SerialDenseVector wnode(1);
     std::vector<int> lm(1);
     std::vector<int> lmowner(1);
 
@@ -3017,7 +3017,7 @@ void WEAR::WearInterface::AssembleWear(Epetra_Vector& wglobal)
     lm[0] = frinode->Id();
     lmowner[0] = frinode->Owner();
 
-    CORE::LINALG::Assemble(wglobal, wnode, lm, lmowner);
+    Core::LinAlg::Assemble(wglobal, wnode, lm, lmowner);
   }
 
   return;
@@ -3026,7 +3026,7 @@ void WEAR::WearInterface::AssembleWear(Epetra_Vector& wglobal)
 /*----------------------------------------------------------------------*
  |  Assemble Mortar matrice for both sided wear              farah 06/13|
  *----------------------------------------------------------------------*/
-void WEAR::WearInterface::AssembleD2(CORE::LINALG::SparseMatrix& dglobal)
+void Wear::WearInterface::AssembleD2(Core::LinAlg::SparseMatrix& dglobal)
 {
   /**************************************************************
    *  This function is only for wear mapping by enforcing weak  *
@@ -3042,12 +3042,12 @@ void WEAR::WearInterface::AssembleD2(CORE::LINALG::SparseMatrix& dglobal)
   // are filled with entries. Therefore, the integrated
   // entries are unique on nodes!
   //*******************************************************
-  const Teuchos::RCP<Epetra_Map> masternodes = CORE::LINALG::AllreduceEMap(*(mnoderowmap_));
+  const Teuchos::RCP<Epetra_Map> masternodes = Core::LinAlg::AllreduceEMap(*(mnoderowmap_));
 
   for (int i = 0; i < masternodes->NumMyElements(); ++i)  // mnoderowmap_
   {
     int gid = masternodes->GID(i);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -3097,7 +3097,7 @@ void WEAR::WearInterface::AssembleD2(CORE::LINALG::SparseMatrix& dglobal)
 /*----------------------------------------------------------------------*
  |  build active set (nodes / dofs) for Master               farah 11/13|
  *----------------------------------------------------------------------*/
-bool WEAR::WearInterface::build_active_set_master()
+bool Wear::WearInterface::build_active_set_master()
 {
   //****************************************
   // for both-sided discr wear
@@ -3110,7 +3110,7 @@ bool WEAR::WearInterface::build_active_set_master()
   for (int j = 0; j < SlaveRowNodes()->NumMyElements(); ++j)
   {
     int gid = SlaveRowNodes()->GID(j);
-    CORE::Nodes::Node* node = Discret().gNode(gid);
+    Core::Nodes::Node* node = Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* frinode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -3123,8 +3123,8 @@ bool WEAR::WearInterface::build_active_set_master()
   Teuchos::RCP<Epetra_Map> auxsl =
       Teuchos::rcp(new Epetra_Map(-1, (int)sl.size(), sl.data(), 0, Comm()));
 
-  const Teuchos::RCP<Epetra_Map> ara = CORE::LINALG::AllreduceEMap(*(auxa));
-  const Teuchos::RCP<Epetra_Map> arsl = CORE::LINALG::AllreduceEMap(*(auxsl));
+  const Teuchos::RCP<Epetra_Map> ara = Core::LinAlg::AllreduceEMap(*(auxa));
+  const Teuchos::RCP<Epetra_Map> arsl = Core::LinAlg::AllreduceEMap(*(auxsl));
 
   for (int j = 0; j < SlaveColNodes()->NumMyElements(); ++j)
   {
@@ -3132,7 +3132,7 @@ bool WEAR::WearInterface::build_active_set_master()
 
     if (ara->LID(gid) == -1) continue;
 
-    CORE::Nodes::Node* node = Discret().gNode(gid);
+    Core::Nodes::Node* node = Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* frinode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -3147,7 +3147,7 @@ bool WEAR::WearInterface::build_active_set_master()
 
     if (arsl->LID(gid) == -1) continue;
 
-    CORE::Nodes::Node* node = Discret().gNode(gid);
+    Core::Nodes::Node* node = Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* frinode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -3155,15 +3155,15 @@ bool WEAR::WearInterface::build_active_set_master()
   }
 
   // spread info for attached status...
-  const Teuchos::RCP<Epetra_Map> meleall = CORE::LINALG::AllreduceEMap(*(MasterRowElements()));
+  const Teuchos::RCP<Epetra_Map> meleall = Core::LinAlg::AllreduceEMap(*(MasterRowElements()));
   std::vector<int> eleatt;
 
   for (int j = 0; j < meleall->NumMyElements(); ++j)
   {
     int gid = meleall->GID(j);
-    CORE::Elements::Element* ele = Discret().gElement(gid);
+    Core::Elements::Element* ele = Discret().gElement(gid);
     if (!ele) FOUR_C_THROW("Cannot find node with gid %", gid);
-    MORTAR::Element* moele = dynamic_cast<MORTAR::Element*>(ele);
+    Mortar::Element* moele = dynamic_cast<Mortar::Element*>(ele);
 
     if (moele->IsAttached() == true and moele->Owner() == Comm().MyPID())
       eleatt.push_back(moele->Id());
@@ -3171,14 +3171,14 @@ bool WEAR::WearInterface::build_active_set_master()
 
   Teuchos::RCP<Epetra_Map> auxe =
       Teuchos::rcp(new Epetra_Map(-1, (int)eleatt.size(), eleatt.data(), 0, Comm()));
-  const Teuchos::RCP<Epetra_Map> att = CORE::LINALG::AllreduceEMap(*(auxe));
+  const Teuchos::RCP<Epetra_Map> att = Core::LinAlg::AllreduceEMap(*(auxe));
 
   for (int j = 0; j < att->NumMyElements(); ++j)
   {
     int gid = att->GID(j);
-    CORE::Elements::Element* ele = Discret().gElement(gid);
+    Core::Elements::Element* ele = Discret().gElement(gid);
     if (!ele) FOUR_C_THROW("Cannot find node with gid %", gid);
-    MORTAR::Element* moele = dynamic_cast<MORTAR::Element*>(ele);
+    Mortar::Element* moele = dynamic_cast<Mortar::Element*>(ele);
 
     if (moele->IsAttached() == false) moele->SetAttached() = true;
   }
@@ -3193,7 +3193,7 @@ bool WEAR::WearInterface::build_active_set_master()
   for (int j = 0; j < SlaveRowNodes()->NumMyElements(); ++j)
   {
     int gid = SlaveRowNodes()->GID(j);
-    CORE::Nodes::Node* node = Discret().gNode(gid);
+    Core::Nodes::Node* node = Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* frinode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -3201,16 +3201,16 @@ bool WEAR::WearInterface::build_active_set_master()
     for (int u = 0; u < (int)frinode->NumElement(); ++u)
     {
       // all found MASTER elements:
-      for (int k = 0; k < (int)dynamic_cast<MORTAR::Element*>(frinode->Elements()[u])
+      for (int k = 0; k < (int)dynamic_cast<Mortar::Element*>(frinode->Elements()[u])
                               ->MoData()
                               .NumSearchElements();
            ++k)
       {
         int gid2 =
-            dynamic_cast<MORTAR::Element*>(frinode->Elements()[u])->MoData().SearchElements()[k];
-        CORE::Elements::Element* ele2 = Discret().gElement(gid2);
+            dynamic_cast<Mortar::Element*>(frinode->Elements()[u])->MoData().SearchElements()[k];
+        Core::Elements::Element* ele2 = Discret().gElement(gid2);
         if (!ele2) FOUR_C_THROW("Cannot find master element with gid %", gid2);
-        MORTAR::Element* celement = dynamic_cast<MORTAR::Element*>(ele2);
+        Mortar::Element* celement = dynamic_cast<Mortar::Element*>(ele2);
 
         // nodes cor. to this master element
         if (celement->IsAttached() == true)
@@ -3225,14 +3225,14 @@ bool WEAR::WearInterface::build_active_set_master()
               if (frinode->Active())
               {
                 wa.push_back(celement->Nodes()[p]->Id());
-                wad.push_back(dynamic_cast<MORTAR::Node*>(celement->Nodes()[p])->Dofs()[0]);
+                wad.push_back(dynamic_cast<Mortar::Node*>(celement->Nodes()[p])->Dofs()[0]);
               }
 
               // slip master nodes!
               if (frinode->FriData().Slip())
               {
                 wsl.push_back(celement->Nodes()[p]->Id());
-                wsln.push_back(dynamic_cast<MORTAR::Node*>(celement->Nodes()[p])->Dofs()[0]);
+                wsln.push_back(dynamic_cast<Mortar::Node*>(celement->Nodes()[p])->Dofs()[0]);
               }
 
               // set detection status
@@ -3247,13 +3247,13 @@ bool WEAR::WearInterface::build_active_set_master()
 
   // reset nodes
   // loop over all master nodes on the current interface
-  const Teuchos::RCP<Epetra_Map> masternodes = CORE::LINALG::AllreduceEMap(*(mnoderowmap_));
-  const Teuchos::RCP<Epetra_Map> mastereles = CORE::LINALG::AllreduceEMap(*(melerowmap_));
+  const Teuchos::RCP<Epetra_Map> masternodes = Core::LinAlg::AllreduceEMap(*(mnoderowmap_));
+  const Teuchos::RCP<Epetra_Map> mastereles = Core::LinAlg::AllreduceEMap(*(melerowmap_));
 
   for (int j = 0; j < masternodes->NumMyElements(); ++j)
   {
     int gid = masternodes->GID(j);
-    CORE::Nodes::Node* node = Discret().gNode(gid);
+    Core::Nodes::Node* node = Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* mnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -3262,9 +3262,9 @@ bool WEAR::WearInterface::build_active_set_master()
   for (int j = 0; j < mastereles->NumMyElements(); ++j)
   {
     int gid = mastereles->GID(j);
-    CORE::Elements::Element* ele = Discret().gElement(gid);
+    Core::Elements::Element* ele = Discret().gElement(gid);
     if (!ele) FOUR_C_THROW("Cannot find element with gid %", gid);
-    MORTAR::Element* mele = dynamic_cast<MORTAR::Element*>(ele);
+    Mortar::Element* mele = dynamic_cast<Mortar::Element*>(ele);
 
     mele->SetAttached() = false;
   }
@@ -3276,8 +3276,8 @@ bool WEAR::WearInterface::build_active_set_master()
   Teuchos::RCP<Epetra_Map> slimd =
       Teuchos::rcp(new Epetra_Map(-1, (int)wsln.size(), wsln.data(), 0, Comm()));
 
-  const Teuchos::RCP<Epetra_Map> ARactmn = CORE::LINALG::AllreduceOverlappingEMap(*(actmn));
-  const Teuchos::RCP<Epetra_Map> ARslimn = CORE::LINALG::AllreduceOverlappingEMap(*(slimn));
+  const Teuchos::RCP<Epetra_Map> ARactmn = Core::LinAlg::AllreduceOverlappingEMap(*(actmn));
+  const Teuchos::RCP<Epetra_Map> ARslimn = Core::LinAlg::AllreduceOverlappingEMap(*(slimn));
 
   std::vector<int> ga;
   std::vector<int> gs;
@@ -3286,7 +3286,7 @@ bool WEAR::WearInterface::build_active_set_master()
   for (int j = 0; j < ARactmn->NumMyElements(); ++j)
   {
     int gid = ARactmn->GID(j);
-    CORE::Nodes::Node* node = Discret().gNode(gid);
+    Core::Nodes::Node* node = Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* mnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -3305,7 +3305,7 @@ bool WEAR::WearInterface::build_active_set_master()
   for (int j = 0; j < ARslimn->NumMyElements(); ++j)
   {
     int gid = ARslimn->GID(j);
-    CORE::Nodes::Node* node = Discret().gNode(gid);
+    Core::Nodes::Node* node = Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* mnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -3334,7 +3334,7 @@ bool WEAR::WearInterface::build_active_set_master()
 
     if (ara->LID(gid) == -1) continue;
 
-    CORE::Nodes::Node* node = Discret().gNode(gid);
+    Core::Nodes::Node* node = Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* frinode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -3346,7 +3346,7 @@ bool WEAR::WearInterface::build_active_set_master()
 
     if (arsl->LID(gid) == -1) continue;
 
-    CORE::Nodes::Node* node = Discret().gNode(gid);
+    Core::Nodes::Node* node = Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* frinode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -3360,7 +3360,7 @@ bool WEAR::WearInterface::build_active_set_master()
 /*----------------------------------------------------------------------*
  |  build active set (nodes / dofs)                          farah 02/16|
  *----------------------------------------------------------------------*/
-bool WEAR::WearInterface::BuildActiveSet(bool init)
+bool Wear::WearInterface::BuildActiveSet(bool init)
 {
   // call contact function
   CONTACT::Interface::BuildActiveSet(init);
@@ -3384,12 +3384,12 @@ bool WEAR::WearInterface::BuildActiveSet(bool init)
     // Note, this node could be ghosted! At the end, the owning proc will take the
     // information to build the map.
 
-    const Teuchos::RCP<Epetra_Map> masternodes = CORE::LINALG::AllreduceEMap(*(mnoderowmap_));
+    const Teuchos::RCP<Epetra_Map> masternodes = Core::LinAlg::AllreduceEMap(*(mnoderowmap_));
 
     for (int k = 0; k < masternodes->NumMyElements(); ++k)  // mnoderowmap_
     {
       int gid = masternodes->GID(k);
-      CORE::Nodes::Node* node = idiscret_->gNode(gid);
+      Core::Nodes::Node* node = idiscret_->gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
       const int numdof = cnode->NumDof();
@@ -3429,7 +3429,7 @@ bool WEAR::WearInterface::BuildActiveSet(bool init)
 /*----------------------------------------------------------------------*
  |  Initialize Data Container for nodes and elements         farah 02/16|
  *----------------------------------------------------------------------*/
-void WEAR::WearInterface::initialize_data_container()
+void Wear::WearInterface::initialize_data_container()
 {
   // call contact class function which calls mortar function
   CONTACT::Interface::initialize_data_container();
@@ -3441,14 +3441,14 @@ void WEAR::WearInterface::initialize_data_container()
   //***********************************************************
   if (wearboth_)
   {
-    const Teuchos::RCP<Epetra_Map> masternodes = CORE::LINALG::AllreduceEMap(*(MasterRowNodes()));
+    const Teuchos::RCP<Epetra_Map> masternodes = Core::LinAlg::AllreduceEMap(*(MasterRowNodes()));
 
     for (int i = 0; i < masternodes->NumMyElements(); ++i)  // MasterRowNodes()
     {
       int gid = masternodes->GID(i);
-      CORE::Nodes::Node* node = Discret().gNode(gid);
+      Core::Nodes::Node* node = Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %i", gid);
-      MORTAR::Node* mnode = dynamic_cast<MORTAR::Node*>(node);
+      Mortar::Node* mnode = dynamic_cast<Mortar::Node*>(node);
 
       //********************************************************
       // NOTE: depending on which kind of node this really is,
@@ -3469,7 +3469,7 @@ void WEAR::WearInterface::initialize_data_container()
 /*----------------------------------------------------------------------*
  |  Assemble inactive wear right hand side                   farah 09/13|
  *----------------------------------------------------------------------*/
-void WEAR::WearInterface::assemble_inactive_wear_rhs(Epetra_Vector& inactiverhs)
+void Wear::WearInterface::assemble_inactive_wear_rhs(Epetra_Vector& inactiverhs)
 {
   /************************************************
    *  This function is only for discrete Wear !!! *
@@ -3482,14 +3482,14 @@ void WEAR::WearInterface::assemble_inactive_wear_rhs(Epetra_Vector& inactiverhs)
   Teuchos::RCP<Epetra_Map> inactivenodes;
 
   if (sswear_)
-    inactivenodes = CORE::LINALG::SplitMap(*snoderowmap_, *activenodes_);
+    inactivenodes = Core::LinAlg::SplitMap(*snoderowmap_, *activenodes_);
   else
-    inactivenodes = CORE::LINALG::SplitMap(*snoderowmap_, *slipnodes_);
+    inactivenodes = Core::LinAlg::SplitMap(*snoderowmap_, *slipnodes_);
 
   for (int i = 0; i < inactivenodes->NumMyElements(); ++i)
   {
     int gid = inactivenodes->GID(i);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -3502,14 +3502,14 @@ void WEAR::WearInterface::assemble_inactive_wear_rhs(Epetra_Vector& inactiverhs)
       std::vector<int> w_owner(1);
 
       // calculate the tangential rhs
-      CORE::LINALG::SerialDenseVector w_i(1);
+      Core::LinAlg::SerialDenseVector w_i(1);
 
       w_owner[0] = cnode->Owner();
       w_i[0] =
           -cnode->WearData().wold()[0] - cnode->WearData().wcurr()[0];  // already negative rhs!!!
       w_gid[0] = cnode->Dofs()[0];                                      // inactivedofs->GID(2*i);
 
-      if (abs(w_i[0]) > 1e-15) CORE::LINALG::Assemble(inactiverhs, w_i, w_gid, w_owner);
+      if (abs(w_i[0]) > 1e-15) Core::LinAlg::Assemble(inactiverhs, w_i, w_gid, w_owner);
     }
     else if (Dim() == 3)
     {
@@ -3517,14 +3517,14 @@ void WEAR::WearInterface::assemble_inactive_wear_rhs(Epetra_Vector& inactiverhs)
       std::vector<int> w_owner(1);
 
       // calculate the tangential rhs
-      CORE::LINALG::SerialDenseVector w_i(1);
+      Core::LinAlg::SerialDenseVector w_i(1);
 
       w_owner[0] = cnode->Owner();
       w_i[0] =
           -cnode->WearData().wold()[0] - cnode->WearData().wcurr()[0];  // already negative rhs!!!
       w_gid[0] = cnode->Dofs()[0];                                      // inactivedofs->GID(3*i);
 
-      if (abs(w_i[0]) > 1e-15) CORE::LINALG::Assemble(inactiverhs, w_i, w_gid, w_owner);
+      if (abs(w_i[0]) > 1e-15) Core::LinAlg::Assemble(inactiverhs, w_i, w_gid, w_owner);
     }
   }
 }
@@ -3533,25 +3533,25 @@ void WEAR::WearInterface::assemble_inactive_wear_rhs(Epetra_Vector& inactiverhs)
 /*----------------------------------------------------------------------*
  |  Assemble inactive wear right hand side                   farah 11/13|
  *----------------------------------------------------------------------*/
-void WEAR::WearInterface::assemble_inactive_wear_rhs_master(Epetra_FEVector& inactiverhs)
+void Wear::WearInterface::assemble_inactive_wear_rhs_master(Epetra_FEVector& inactiverhs)
 {
   /************************************************
    *  This function is only for discrete Wear !!! *
    ************************************************/
 
-  Teuchos::RCP<Epetra_Map> inactivenodes = CORE::LINALG::SplitMap(*mnoderowmap_, *slipmasternodes_);
-  Teuchos::RCP<Epetra_Map> inactivedofs = CORE::LINALG::SplitMap(*(MNDofs()), *slipmn_);
+  Teuchos::RCP<Epetra_Map> inactivenodes = Core::LinAlg::SplitMap(*mnoderowmap_, *slipmasternodes_);
+  Teuchos::RCP<Epetra_Map> inactivedofs = Core::LinAlg::SplitMap(*(MNDofs()), *slipmn_);
 
 
 
-  const Teuchos::RCP<Epetra_Map> allredi = CORE::LINALG::AllreduceEMap(*(inactivedofs));
+  const Teuchos::RCP<Epetra_Map> allredi = Core::LinAlg::AllreduceEMap(*(inactivedofs));
 
-  Teuchos::RCP<Epetra_Vector> rhs = CORE::LINALG::CreateVector(*allredi, true);
+  Teuchos::RCP<Epetra_Vector> rhs = Core::LinAlg::CreateVector(*allredi, true);
 
   for (int i = 0; i < inactivenodes->NumMyElements(); ++i)
   {
     int gid = inactivenodes->GID(i);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -3564,14 +3564,14 @@ void WEAR::WearInterface::assemble_inactive_wear_rhs_master(Epetra_FEVector& ina
       std::vector<int> w_owner(1);
 
       // calculate the tangential rhs
-      CORE::LINALG::SerialDenseVector w_i(1);
+      Core::LinAlg::SerialDenseVector w_i(1);
 
       w_owner[0] = Comm().MyPID();  // cnode->Owner();
       w_i[0] =
           -cnode->WearData().wold()[0] - cnode->WearData().wcurr()[0];  // already negative rhs!!!
       w_gid[0] = cnode->Dofs()[0];                                      // inactivedofs->GID(2*i);
 
-      if (abs(w_i[0]) > 1e-12) CORE::LINALG::Assemble(*rhs, w_i, w_gid, w_owner);
+      if (abs(w_i[0]) > 1e-12) Core::LinAlg::Assemble(*rhs, w_i, w_gid, w_owner);
     }
     else if (Dim() == 3)
     {
@@ -3579,14 +3579,14 @@ void WEAR::WearInterface::assemble_inactive_wear_rhs_master(Epetra_FEVector& ina
       std::vector<int> w_owner(1);
 
       // calculate the tangential rhs
-      CORE::LINALG::SerialDenseVector w_i(1);
+      Core::LinAlg::SerialDenseVector w_i(1);
 
       w_owner[0] = Comm().MyPID();  // cnode->Owner();
       w_i[0] =
           -cnode->WearData().wold()[0] - cnode->WearData().wcurr()[0];  // already negative rhs!!!
       w_gid[0] = cnode->Dofs()[0];                                      // inactivedofs->GID(3*i);
 
-      if (abs(w_i[0]) > 1e-12) CORE::LINALG::Assemble(*rhs, w_i, w_gid, w_owner);
+      if (abs(w_i[0]) > 1e-12) Core::LinAlg::Assemble(*rhs, w_i, w_gid, w_owner);
     }
   }
 
@@ -3601,7 +3601,7 @@ void WEAR::WearInterface::assemble_inactive_wear_rhs_master(Epetra_FEVector& ina
 /*----------------------------------------------------------------------*
  |  Assemble wear-cond. right hand side (discr)              farah 09/13|
  *----------------------------------------------------------------------*/
-void WEAR::WearInterface::AssembleWearCondRhs(Epetra_Vector& rhs)
+void Wear::WearInterface::AssembleWearCondRhs(Epetra_Vector& rhs)
 {
   /************************************************
    *  This function is only for discrete Wear !!! *
@@ -3622,8 +3622,8 @@ void WEAR::WearInterface::AssembleWearCondRhs(Epetra_Vector& rhs)
     considerednodes = slipnodes_;
   }
 
-  INPAR::CONTACT::SystemType systype =
-      CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(interface_params(), "SYSTEM");
+  Inpar::CONTACT::SystemType systype =
+      Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(interface_params(), "SYSTEM");
 
   double wcoeff = interface_params().get<double>("WEARCOEFF");
 
@@ -3632,7 +3632,7 @@ void WEAR::WearInterface::AssembleWearCondRhs(Epetra_Vector& rhs)
   for (int i = 0; i < considerednodes->NumMyElements(); ++i)
   {
     int gid = considerednodes->GID(i);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -3647,34 +3647,34 @@ void WEAR::WearInterface::AssembleWearCondRhs(Epetra_Vector& rhs)
       for (CI p = emap.begin(); p != emap.end(); ++p)
       {
         int gid3 = (int)((p->first) / Dim());
-        CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
+        Core::Nodes::Node* snode = idiscret_->gNode(gid3);
         if (!snode) FOUR_C_THROW("Cannot find node with gid");
         CONTACT::FriNode* csnode = dynamic_cast<CONTACT::FriNode*>(snode);
 
         std::vector<int> w_gid(1);
         std::vector<int> w_owner(1);
 
-        CORE::LINALG::SerialDenseVector w_i(1);
+        Core::LinAlg::SerialDenseVector w_i(1);
 
         w_owner[0] = fnode->Owner();
         w_i[0] = (-(csnode->WearData().wold()[0]) - (csnode->WearData().wcurr()[0])) * (p->second);
         w_gid[0] = fnode->Dofs()[0];
 
-        if (abs(w_i[0]) > 1e-15) CORE::LINALG::Assemble(rhs, w_i, w_gid, w_owner);
+        if (abs(w_i[0]) > 1e-15) Core::LinAlg::Assemble(rhs, w_i, w_gid, w_owner);
       }
     }
 
     /**************************************************** T-matrix ******/
     // for condensation of lm and wear we condense the system with absol. lm
     // --> therefore we do not need the lm^i term...
-    if (((fnode->WearData().GetT()).size() > 0) && systype != INPAR::CONTACT::system_condensed)
+    if (((fnode->WearData().GetT()).size() > 0) && systype != Inpar::CONTACT::system_condensed)
     {
       std::map<int, double> tmap = fnode->WearData().GetT()[0];
 
       for (CI p = tmap.begin(); p != tmap.end(); ++p)
       {
         int gid3 = (int)((p->first) / Dim());
-        CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
+        Core::Nodes::Node* snode = idiscret_->gNode(gid3);
         if (!snode) FOUR_C_THROW("Cannot find node with gid");
         CONTACT::FriNode* csnode = dynamic_cast<CONTACT::FriNode*>(snode);
 
@@ -3685,13 +3685,13 @@ void WEAR::WearInterface::AssembleWearCondRhs(Epetra_Vector& rhs)
         std::vector<int> w_gid(1);
         std::vector<int> w_owner(1);
 
-        CORE::LINALG::SerialDenseVector w_i(1);
+        Core::LinAlg::SerialDenseVector w_i(1);
 
         w_owner[0] = fnode->Owner();
         w_i[0] = wcoeff * lmn * (p->second);
         w_gid[0] = fnode->Dofs()[0];
 
-        if (abs(w_i[0]) > 1e-15) CORE::LINALG::Assemble(rhs, w_i, w_gid, w_owner);
+        if (abs(w_i[0]) > 1e-15) Core::LinAlg::Assemble(rhs, w_i, w_gid, w_owner);
       }
     }
   }
@@ -3703,7 +3703,7 @@ void WEAR::WearInterface::AssembleWearCondRhs(Epetra_Vector& rhs)
 /*----------------------------------------------------------------------*
  |  Assemble wear-cond. right hand side (discr)              farah 11/13|
  *----------------------------------------------------------------------*/
-void WEAR::WearInterface::assemble_wear_cond_rhs_master(Epetra_FEVector& RHS)
+void Wear::WearInterface::assemble_wear_cond_rhs_master(Epetra_FEVector& RHS)
 {
   /************************************************
    *  This function is only for discrete Wear !!! *
@@ -3712,22 +3712,22 @@ void WEAR::WearInterface::assemble_wear_cond_rhs_master(Epetra_FEVector& RHS)
   // nothing to do if no active nodes
   if (slipmasternodes_ == Teuchos::null) return;
 
-  INPAR::CONTACT::SystemType systype =
-      CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(interface_params(), "SYSTEM");
+  Inpar::CONTACT::SystemType systype =
+      Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(interface_params(), "SYSTEM");
 
   double wcoeff = interface_params().get<double>("WEARCOEFF_MASTER");
 
   typedef std::map<int, double>::const_iterator CI;
 
-  const Teuchos::RCP<Epetra_Map> slmasternodes = CORE::LINALG::AllreduceEMap(*(slipmasternodes_));
-  const Teuchos::RCP<Epetra_Map> slmastern = CORE::LINALG::AllreduceEMap(*(slipmn_));
+  const Teuchos::RCP<Epetra_Map> slmasternodes = Core::LinAlg::AllreduceEMap(*(slipmasternodes_));
+  const Teuchos::RCP<Epetra_Map> slmastern = Core::LinAlg::AllreduceEMap(*(slipmn_));
 
-  Teuchos::RCP<Epetra_Vector> rhs = CORE::LINALG::CreateVector(*slmastern, true);
+  Teuchos::RCP<Epetra_Vector> rhs = Core::LinAlg::CreateVector(*slmastern, true);
 
   for (int i = 0; i < slmasternodes->NumMyElements(); ++i)
   {
     int gid = slmasternodes->GID(i);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -3739,34 +3739,34 @@ void WEAR::WearInterface::assemble_wear_cond_rhs_master(Epetra_FEVector& RHS)
       for (CI p = emap.begin(); p != emap.end(); ++p)
       {
         int gid3 = (int)((p->first) / Dim());
-        CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
+        Core::Nodes::Node* snode = idiscret_->gNode(gid3);
         if (!snode) FOUR_C_THROW("Cannot find node with gid");
         CONTACT::FriNode* csnode = dynamic_cast<CONTACT::FriNode*>(snode);
 
         std::vector<int> w_gid(1);
         std::vector<int> w_owner(1);
 
-        CORE::LINALG::SerialDenseVector w_i(1);
+        Core::LinAlg::SerialDenseVector w_i(1);
 
         w_owner[0] = Comm().MyPID();  // fnode->Owner();
         w_i[0] = (-(csnode->WearData().wold()[0]) - (csnode->WearData().wcurr()[0])) * (p->second);
         w_gid[0] = fnode->Dofs()[0];
 
-        if (abs(w_i[0]) > 1e-15) CORE::LINALG::Assemble(*rhs, w_i, w_gid, w_owner);
+        if (abs(w_i[0]) > 1e-15) Core::LinAlg::Assemble(*rhs, w_i, w_gid, w_owner);
       }
     }
 
     /**************************************************** T-matrix ******/
     // for condensation of lm and wear we condense the system with absol. lm
     // --> therefore we do not need the lm^i term...
-    if (((fnode->WearData().GetT()).size() > 0) && systype != INPAR::CONTACT::system_condensed)
+    if (((fnode->WearData().GetT()).size() > 0) && systype != Inpar::CONTACT::system_condensed)
     {
       std::map<int, double> tmap = fnode->WearData().GetT()[0];
 
       for (CI p = tmap.begin(); p != tmap.end(); ++p)
       {
         int gid3 = (int)((p->first) / Dim());
-        CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
+        Core::Nodes::Node* snode = idiscret_->gNode(gid3);
         if (!snode) FOUR_C_THROW("Cannot find node with gid");
         CONTACT::FriNode* csnode = dynamic_cast<CONTACT::FriNode*>(snode);
 
@@ -3777,13 +3777,13 @@ void WEAR::WearInterface::assemble_wear_cond_rhs_master(Epetra_FEVector& RHS)
         std::vector<int> w_gid(1);
         std::vector<int> w_owner(1);
 
-        CORE::LINALG::SerialDenseVector w_i(1);
+        Core::LinAlg::SerialDenseVector w_i(1);
 
         w_owner[0] = Comm().MyPID();  // fnode->Owner();
         w_i[0] = wcoeff * lmn * (p->second);
         w_gid[0] = fnode->Dofs()[0];
 
-        if (abs(w_i[0]) > 1e-15) CORE::LINALG::Assemble(*rhs, w_i, w_gid, w_owner);
+        if (abs(w_i[0]) > 1e-15) Core::LinAlg::Assemble(*rhs, w_i, w_gid, w_owner);
       }
     }
   }
@@ -3798,7 +3798,7 @@ void WEAR::WearInterface::assemble_wear_cond_rhs_master(Epetra_FEVector& RHS)
 /*----------------------------------------------------------------------*
  |  initialize / reset interface for wear                    farah 09/13|
  *----------------------------------------------------------------------*/
-void WEAR::WearInterface::Initialize()
+void Wear::WearInterface::Initialize()
 {
   // loop over all nodes to reset stuff (fully overlapping column map)
   // (use fully overlapping column map)
@@ -3817,13 +3817,13 @@ void WEAR::WearInterface::Initialize()
   //**************************************************
   if (wearboth_ and !wearpv_)
   {
-    const Teuchos::RCP<Epetra_Map> masternodes = CORE::LINALG::AllreduceEMap(*(MasterRowNodes()));
+    const Teuchos::RCP<Epetra_Map> masternodes = Core::LinAlg::AllreduceEMap(*(MasterRowNodes()));
 
     for (int i = 0; i < masternodes->NumMyElements();
          ++i)  // for (int i=0;i<MasterRowNodes()->NumMyElements();++i)
     {
       int gid = masternodes->GID(i);
-      CORE::Nodes::Node* node = Discret().gNode(gid);
+      Core::Nodes::Node* node = Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -3843,7 +3843,7 @@ void WEAR::WearInterface::Initialize()
   for (int i = 0; i < SlaveColNodesBound()->NumMyElements(); ++i)
   {
     int gid = SlaveColNodesBound()->GID(i);
-    CORE::Nodes::Node* node = Discret().gNode(gid);
+    Core::Nodes::Node* node = Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
 
@@ -3890,7 +3890,7 @@ void WEAR::WearInterface::Initialize()
       frinode->FriData().GetMNodes().clear();
 
       // for gp slip
-      if (CORE::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
+      if (Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
       {
         // reset jump deriv.
         for (int j = 0; j < (int)((frinode->FriData().GetDerivVarJump()).size()); ++j)
@@ -3946,13 +3946,13 @@ void WEAR::WearInterface::Initialize()
   // for both-sided wear with discrete wear
   if (wearboth_ and wearpv_)
   {
-    const Teuchos::RCP<Epetra_Map> masternodes = CORE::LINALG::AllreduceEMap(*(MasterRowNodes()));
+    const Teuchos::RCP<Epetra_Map> masternodes = Core::LinAlg::AllreduceEMap(*(MasterRowNodes()));
 
     for (int i = 0; i < masternodes->NumMyElements();
          ++i)  // for (int i=0;i<MasterRowNodes()->NumMyElements();++i)
     {
       int gid = masternodes->GID(i);
-      CORE::Nodes::Node* node = Discret().gNode(gid);
+      Core::Nodes::Node* node = Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       CONTACT::FriNode* frinode = dynamic_cast<CONTACT::FriNode*>(node);
 
@@ -3983,8 +3983,8 @@ void WEAR::WearInterface::Initialize()
     // (use fully overlapping column map of S+M elements)
     for (int i = 0; i < idiscret_->NumMyColElements(); ++i)
     {
-      CORE::Elements::Element* ele = idiscret_->lColElement(i);
-      MORTAR::Element* mele = dynamic_cast<MORTAR::Element*>(ele);
+      Core::Elements::Element* ele = idiscret_->lColElement(i);
+      Mortar::Element* mele = dynamic_cast<Mortar::Element*>(ele);
 
       mele->MoData().SearchElements().resize(0);
 
@@ -4000,9 +4000,9 @@ void WEAR::WearInterface::Initialize()
     for (int i = 0; i < SlaveColElements()->NumMyElements(); ++i)
     {
       int gid = SlaveColElements()->GID(i);
-      CORE::Elements::Element* ele = Discret().gElement(gid);
+      Core::Elements::Element* ele = Discret().gElement(gid);
       if (!ele) FOUR_C_THROW("Cannot find ele with gid %i", gid);
-      MORTAR::Element* mele = dynamic_cast<MORTAR::Element*>(ele);
+      Mortar::Element* mele = dynamic_cast<Mortar::Element*>(ele);
 
       mele->MoData().SearchElements().resize(0);
 
@@ -4024,7 +4024,7 @@ void WEAR::WearInterface::Initialize()
 /*----------------------------------------------------------------------*
  |  create snode n_                                          farah 09/13|
  *----------------------------------------------------------------------*/
-void WEAR::WearInterface::SplitSlaveDofs()
+void Wear::WearInterface::SplitSlaveDofs()
 {
   // get out of here if active set is empty
   if (snoderowmap_ == Teuchos::null)
@@ -4051,7 +4051,7 @@ void WEAR::WearInterface::SplitSlaveDofs()
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
   {
     int gid = snoderowmap_->GID(i);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
 
@@ -4081,7 +4081,7 @@ void WEAR::WearInterface::SplitSlaveDofs()
 /*----------------------------------------------------------------------*
  |  create mnode n_                                          farah 11/13|
  *----------------------------------------------------------------------*/
-void WEAR::WearInterface::SplitMasterDofs()
+void Wear::WearInterface::SplitMasterDofs()
 {
   // get out of here if active set is empty
   if (mnoderowmap_ == Teuchos::null)
@@ -4108,7 +4108,7 @@ void WEAR::WearInterface::SplitMasterDofs()
   for (int i = 0; i < mnoderowmap_->NumMyElements(); ++i)
   {
     int gid = mnoderowmap_->GID(i);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
 
@@ -4138,7 +4138,7 @@ void WEAR::WearInterface::SplitMasterDofs()
 /*----------------------------------------------------------------------*
  |  compute element areas (public)                           farah 02/16|
  *----------------------------------------------------------------------*/
-void WEAR::WearInterface::set_element_areas()
+void Wear::WearInterface::set_element_areas()
 {
   //**********************************************************************
   // In general, it is sufficient to compute element areas only for
@@ -4154,7 +4154,7 @@ void WEAR::WearInterface::set_element_areas()
     // (use fully overlapping column map)
     for (int i = 0; i < idiscret_->NumMyColElements(); ++i)
     {
-      MORTAR::Element* element = dynamic_cast<MORTAR::Element*>(idiscret_->lColElement(i));
+      Mortar::Element* element = dynamic_cast<Mortar::Element*>(idiscret_->lColElement(i));
       element->initialize_data_container();
       element->MoData().Area() = element->ComputeArea();
     }
@@ -4162,7 +4162,7 @@ void WEAR::WearInterface::set_element_areas()
   else
   {
     // refer call back to base class version
-    MORTAR::Interface::set_element_areas();
+    Mortar::Interface::set_element_areas();
   }
 
   return;
@@ -4172,7 +4172,7 @@ void WEAR::WearInterface::set_element_areas()
 /*----------------------------------------------------------------------*
  |  update wear set (dofs)                                   farah 09/13|
  *----------------------------------------------------------------------*/
-void WEAR::WearInterface::UpdateWSets(int offset_if, int maxdofwear, bool bothdiscr)
+void Wear::WearInterface::UpdateWSets(int offset_if, int maxdofwear, bool bothdiscr)
 {
   //********************************************************************
   // WEAR DOFS --  one per node

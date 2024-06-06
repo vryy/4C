@@ -29,13 +29,13 @@ namespace SSTI
     by field-specific result testing classes. Feel free to extend this class if necessary.
 
   */
-  class SSTIResultTest : public CORE::UTILS::ResultTest
+  class SSTIResultTest : public Core::UTILS::ResultTest
   {
    public:
     //! constructor
     explicit SSTIResultTest(const SSTI::SSTIAlgorithm& ssti_algorithm);
 
-    void TestSpecial(INPUT::LineDefinition& res, int& nerr, int& test_count) override;
+    void TestSpecial(Input::LineDefinition& res, int& nerr, int& test_count) override;
 
    private:
     /*!

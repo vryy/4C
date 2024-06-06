@@ -31,20 +31,20 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | active strain membrane material                 brandstaeter 05/2018 |
  *----------------------------------------------------------------------*/
-namespace MAT
+namespace Mat
 {
   // forward declaration
   class MembraneActiveStrain;
 
   namespace PAR
   {
-    class MembraneActiveStrain : public CORE::MAT::PAR::Parameter
+    class MembraneActiveStrain : public Core::Mat::PAR::Parameter
     {
-      friend class MAT::MembraneActiveStrain;
+      friend class Mat::MembraneActiveStrain;
 
      public:
       /// standard constructor
-      MembraneActiveStrain(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      MembraneActiveStrain(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -76,20 +76,20 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
     };
     // class MembraneActiveStrain
 
   }  // namespace PAR
 
-  class MembraneActiveStrainType : public CORE::COMM::ParObjectType
+  class MembraneActiveStrainType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "Membrane_ActiveStrainType"; }
 
     static MembraneActiveStrainType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static MembraneActiveStrainType instance_;
@@ -102,14 +102,14 @@ namespace MAT
   // forward declaration
   class Material;
 
-  class MembraneActiveStrain : public So3Material, public MAT::MembraneMaterialLocalCoordinates
+  class MembraneActiveStrain : public So3Material, public Mat::MembraneMaterialLocalCoordinates
   {
    public:
     /// construct empty material object
     MembraneActiveStrain();
 
     /// construct the material object given material parameters
-    explicit MembraneActiveStrain(MAT::PAR::MembraneActiveStrain* params);
+    explicit MembraneActiveStrain(Mat::PAR::MembraneActiveStrain* params);
 
     ///@name Packing and Unpacking
     //@{
@@ -131,7 +131,7 @@ namespace MAT
     /// identify the exact class on the receiving processor.
     ///
     /// \param data (in/out): char vector to store class information
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /// \brief Unpack data from a char vector into this class
     ///
@@ -148,20 +148,20 @@ namespace MAT
     //@}
 
     /// check if element kinematics and material kinematics are compatible
-    void ValidKinematics(INPAR::STR::KinemType kinem) override
+    void ValidKinematics(Inpar::STR::KinemType kinem) override
     {
-      if (!(kinem == INPAR::STR::KinemType::nonlinearTotLag))
+      if (!(kinem == Inpar::STR::KinemType::nonlinearTotLag))
         FOUR_C_THROW("element and material kinematics are not compatible");
     }
 
     /// material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_membrane_activestrain;
+      return Core::Materials::m_membrane_activestrain;
     }
 
     /// return copy of this material object
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new MembraneActiveStrain(*this));
     }
@@ -170,30 +170,30 @@ namespace MAT
     double Density() const override { return params_->density_; }
 
     /// setup
-    void Setup(int numgp, INPUT::LineDefinition* linedef) override;
+    void Setup(int numgp, Input::LineDefinition* linedef) override;
 
     /// Standard SO3 evaluate (not meant to be used)
-    void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,  ///< Deformation gradient
-        const CORE::LINALG::Matrix<6, 1>* glstrain,          ///< Green-Lagrange strain
+    void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,  ///< Deformation gradient
+        const Core::LinAlg::Matrix<6, 1>* glstrain,          ///< Green-Lagrange strain
         Teuchos::ParameterList& params,      ///< Container for additional information
-        CORE::LINALG::Matrix<6, 1>* stress,  ///< 2nd Piola-Kirchhoff stresses
-        CORE::LINALG::Matrix<6, 6>* cmat,    ///< Constitutive matrix
+        Core::LinAlg::Matrix<6, 1>* stress,  ///< 2nd Piola-Kirchhoff stresses
+        Core::LinAlg::Matrix<6, 6>* cmat,    ///< Constitutive matrix
         int gp,                              ///< Gauss point
         int eleGID) override                 ///< Element ID
     {
       FOUR_C_THROW("This a membrane material. Calling So3 evaluate does not make sense.");
     };
 
-    void UpdateMembrane(const CORE::LINALG::Matrix<3, 3>& defgrd, Teuchos::ParameterList& params,
-        const CORE::LINALG::Matrix<3, 3>& Q_trafo, int gp, int eleGID) override
+    void UpdateMembrane(const Core::LinAlg::Matrix<3, 3>& defgrd, Teuchos::ParameterList& params,
+        const Core::LinAlg::Matrix<3, 3>& Q_trafo, int gp, int eleGID) override
     {
       // nothing to do
     }
 
-    void EvaluateMembrane(const CORE::LINALG::Matrix<3, 3>& defgrd,
-        const CORE::LINALG::Matrix<3, 3>& cauchygreen, Teuchos::ParameterList& params,
-        const CORE::LINALG::Matrix<3, 3>& Q_trafo, CORE::LINALG::Matrix<3, 1>& stress,
-        CORE::LINALG::Matrix<3, 3>& cmat, int gp, int eleGID) override;
+    void EvaluateMembrane(const Core::LinAlg::Matrix<3, 3>& defgrd,
+        const Core::LinAlg::Matrix<3, 3>& cauchygreen, Teuchos::ParameterList& params,
+        const Core::LinAlg::Matrix<3, 3>& Q_trafo, Core::LinAlg::Matrix<3, 1>& stress,
+        Core::LinAlg::Matrix<3, 3>& cmat, int gp, int eleGID) override;
 
     /// Update internal variables
     void Update() override;
@@ -202,7 +202,7 @@ namespace MAT
     void reset_step() override;
 
     /// Return quick accessible material parameter data
-    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
     /// Return names of visualization data
     void VisNames(std::map<std::string, int>& names) override;
@@ -212,10 +212,10 @@ namespace MAT
 
    private:
     /// My material parameters
-    MAT::PAR::MembraneActiveStrain* params_;
+    Mat::PAR::MembraneActiveStrain* params_;
 
     /// passive material
-    Teuchos::RCP<MAT::So3Material> matpassive_;
+    Teuchos::RCP<Mat::So3Material> matpassive_;
 
     /// (tansmembrane) voltage at every gp
     Teuchos::RCP<std::vector<double>> voltage_;
@@ -227,19 +227,19 @@ namespace MAT
     bool isinit_;
 
     // setup fiber vectors
-    void setup_fiber_vectors(int numgp, INPUT::LineDefinition* linedef);
+    void setup_fiber_vectors(int numgp, Input::LineDefinition* linedef);
 
     // read RAD-AXI-CIR
     void read_dir(
-        INPUT::LineDefinition* linedef, std::string specifier, CORE::LINALG::Matrix<3, 1>& dir);
+        Input::LineDefinition* linedef, std::string specifier, Core::LinAlg::Matrix<3, 1>& dir);
 
     // calculate normal direction from FIBER1 and FIBER2
     void setup_normal_direction();
 
     // pullback of the tangent from intermediate to reference configuration
-    void pullback4th_tensor_voigt(const CORE::LINALG::Matrix<2, 2>& defgrd_active_inv_red,
-        const CORE::LINALG::Matrix<3, 3>& cmat_passive_intermediate,
-        CORE::LINALG::Matrix<3, 3>& cmat_reference);
+    void pullback4th_tensor_voigt(const Core::LinAlg::Matrix<2, 2>& defgrd_active_inv_red,
+        const Core::LinAlg::Matrix<3, 3>& cmat_passive_intermediate,
+        Core::LinAlg::Matrix<3, 3>& cmat_reference);
 
     // transform voigt to tensor notation
     void tensor2x2_indices(int p, int* i, int* j);
@@ -249,11 +249,11 @@ namespace MAT
 
    protected:
     /// vector of fiber vectors
-    std::vector<CORE::LINALG::Matrix<3, 1>> fibervecs_;
+    std::vector<Core::LinAlg::Matrix<3, 1>> fibervecs_;
   };  // class MembraneActiveStrain
 
-}  // namespace MAT
-// namespace MAT
+}  // namespace Mat
+// namespace Mat
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

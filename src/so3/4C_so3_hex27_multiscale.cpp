@@ -23,9 +23,9 @@ FOUR_C_NAMESPACE_OPEN
 // this routine is intended to determine a homogenized material
 // density for multi-scale analyses by averaging over the initial volume
 
-void DRT::ELEMENTS::SoHex27::soh27_homog(Teuchos::ParameterList& params)
+void Discret::ELEMENTS::SoHex27::soh27_homog(Teuchos::ParameterList& params)
 {
-  if (GLOBAL::Problem::Instance(0)->GetCommunicators()->SubComm()->MyPID() == Owner())
+  if (Global::Problem::Instance(0)->GetCommunicators()->SubComm()->MyPID() == Owner())
   {
     double homogdens = 0.;
     const static std::vector<double> weights = soh27_weights();
@@ -47,16 +47,16 @@ void DRT::ELEMENTS::SoHex27::soh27_homog(Teuchos::ParameterList& params)
 /*----------------------------------------------------------------------*
  |  Read restart on the microscale                                      |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex27::soh27_read_restart_multi()
+void Discret::ELEMENTS::SoHex27::soh27_read_restart_multi()
 {
-  Teuchos::RCP<CORE::MAT::Material> mat = Material();
+  Teuchos::RCP<Core::Mat::Material> mat = Material();
 
-  if (mat->MaterialType() == CORE::Materials::m_struct_multiscale)
+  if (mat->MaterialType() == Core::Materials::m_struct_multiscale)
   {
-    auto* micro = dynamic_cast<MAT::MicroMaterial*>(mat.get());
+    auto* micro = dynamic_cast<Mat::MicroMaterial*>(mat.get());
     int eleID = Id();
     bool eleowner = false;
-    if (GLOBAL::Problem::Instance()->GetDis("structure")->Comm().MyPID() == Owner())
+    if (Global::Problem::Instance()->GetDis("structure")->Comm().MyPID() == Owner())
       eleowner = true;
 
     for (int gp = 0; gp < NUMGPT_SOH27; ++gp) micro->read_restart(gp, eleID, eleowner);

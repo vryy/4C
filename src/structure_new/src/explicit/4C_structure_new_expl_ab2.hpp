@@ -50,26 +50,26 @@ namespace STR
 
       /*! \brief Add the viscous and mass contributions to the jacobian (TR-rule)
        */
-      void add_visco_mass_contributions(CORE::LINALG::SparseOperator& jac) const override;
+      void add_visco_mass_contributions(Core::LinAlg::SparseOperator& jac) const override;
 
       //! Update configuration after time step (derived)
       void UpdateStepState() override;
 
       //! (derived)
       void write_restart(
-          CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
+          Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
 
       /*! read restart information of the different time integration schemes
        *  and model evaluators (derived) */
-      void read_restart(CORE::IO::DiscretizationReader& ioreader) override;
+      void read_restart(Core::IO::DiscretizationReader& ioreader) override;
 
       //! @name Attribute access functions
       //@{
 
       //! Return time integrator name
-      [[nodiscard]] enum INPAR::STR::DynamicType MethodName() const override
+      [[nodiscard]] enum Inpar::STR::DynamicType MethodName() const override
       {
-        return INPAR::STR::dyna_ab2;
+        return Inpar::STR::dyna_ab2;
       }
 
       //! Provide number of steps, e.g. a single-step method returns 1,

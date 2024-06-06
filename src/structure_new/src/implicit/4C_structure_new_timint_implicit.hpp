@@ -26,20 +26,20 @@ namespace STR
   {
     class Generic;
   }  // namespace IMPLICIT
-  namespace PREDICT
+  namespace Predict
   {
     class Generic;
-  }  // namespace PREDICT
-  namespace NLN::SOLVER
+  }  // namespace Predict
+  namespace Nln::SOLVER
   {
     class Generic;
     namespace INTERFACE
     {
       class Required;
     }  // namespace INTERFACE
-  }    // namespace NLN::SOLVER
+  }    // namespace Nln::SOLVER
 
-  namespace TIMINT
+  namespace TimeInt
   {
     /** \brief Implicit time integration strategy
      *
@@ -54,7 +54,7 @@ namespace STR
       int IntegrateStep() override;
 
       /// set the state of the nox group and the global state data container
-      /// see class \ref ADAPTER::StructureNew for a detailed documentation.
+      /// see class \ref Adapter::StructureNew for a detailed documentation.
       void set_state(const Teuchos::RCP<Epetra_Vector>& x) override;
 
       /*! \brief nonlinear solve
@@ -62,7 +62,7 @@ namespace STR
        *  Do the nonlinear solve, i.e. (multiple) corrector,
        *  for the time step. All boundary conditions have
        *  been set. */
-      INPAR::STR::ConvergenceStatus Solve() override;
+      Inpar::STR::ConvergenceStatus Solve() override;
 
       /** \brief Identify residual
        *
@@ -79,25 +79,25 @@ namespace STR
       //! @name Accessors
       //! @{
       //! return the predictor
-      [[nodiscard]] const STR::PREDICT::Generic& Predictor() const
+      [[nodiscard]] const STR::Predict::Generic& Predictor() const
       {
         check_init_setup();
         return *predictor_ptr_;
       }
 
       //! @}
-      [[nodiscard]] Teuchos::RCP<const STR::NLN::SOLVER::Generic> GetNlnSolverPtr() const
+      [[nodiscard]] Teuchos::RCP<const STR::Nln::SOLVER::Generic> GetNlnSolverPtr() const
       {
         return nlnsolver_ptr_;
       };
 
       //! do something in case nonlinear solution does not converge for some reason
-      INPAR::STR::ConvergenceStatus PerformErrorAction(
-          INPAR::STR::ConvergenceStatus nonlinsoldiv) override;
+      Inpar::STR::ConvergenceStatus PerformErrorAction(
+          Inpar::STR::ConvergenceStatus nonlinsoldiv) override;
 
 
       //! check, if according to divercont flag time step size can be increased
-      void check_for_time_step_increase(INPAR::STR::ConvergenceStatus& status);
+      void check_for_time_step_increase(Inpar::STR::ConvergenceStatus& status);
 
       //! returns pointer to generic implicit object
       Teuchos::RCP<STR::IMPLICIT::Generic> ImplIntPtr()
@@ -128,10 +128,10 @@ namespace STR
        *  [OUTPUT-FOLDER]/[OUTPUT FILE NAME]_str_jacobian_step-[STEP]_nlniter-[NEWTON-ITERATION].mtl
        *
        *  \author hiermeier \date 06/17 */
-      void print_jacobian_in_matlab_format(const NOX::NLN::Group& curr_grp) const;
+      void print_jacobian_in_matlab_format(const NOX::Nln::Group& curr_grp) const;
 
       /// compute the condition number of the tangential stiffness matrix
-      void compute_condition_number(const NOX::NLN::Group& grp) const;
+      void compute_condition_number(const NOX::Nln::Group& grp) const;
 
      protected:
       //! returns the current solution group
@@ -146,31 +146,31 @@ namespace STR
         return *implint_ptr_;
       };
 
-      STR::PREDICT::Generic& predictor()
+      STR::Predict::Generic& predictor()
       {
         check_init_setup();
         return *predictor_ptr_;
       };
 
-      Teuchos::RCP<STR::PREDICT::Generic> predictor_ptr()
+      Teuchos::RCP<STR::Predict::Generic> predictor_ptr()
       {
         check_init_setup();
         return predictor_ptr_;
       };
 
-      [[nodiscard]] const STR::NLN::SOLVER::Generic& nln_solver() const
+      [[nodiscard]] const STR::Nln::SOLVER::Generic& nln_solver() const
       {
         check_init_setup();
         return *nlnsolver_ptr_;
       };
 
-      STR::NLN::SOLVER::Generic& nln_solver()
+      STR::Nln::SOLVER::Generic& nln_solver()
       {
         check_init_setup();
         return *nlnsolver_ptr_;
       };
 
-      Teuchos::RCP<STR::NLN::SOLVER::Generic> nln_solver_ptr()
+      Teuchos::RCP<STR::Nln::SOLVER::Generic> nln_solver_ptr()
       {
         check_init_setup();
         return nlnsolver_ptr_;
@@ -180,7 +180,7 @@ namespace STR
       //@{
 
       //! Provide Name
-      enum INPAR::STR::DynamicType MethodName() const override;
+      enum Inpar::STR::DynamicType MethodName() const override;
 
       //! Provide number of steps, e.g. a single-step method returns 1,
       //! a \f$m\f$-multistep method returns \f$m\f$
@@ -205,15 +205,15 @@ namespace STR
       Teuchos::RCP<STR::IMPLICIT::Generic> implint_ptr_;
 
       //! ptr to the predictor object
-      Teuchos::RCP<STR::PREDICT::Generic> predictor_ptr_;
+      Teuchos::RCP<STR::Predict::Generic> predictor_ptr_;
 
       //! ptr to the non-linear solver object
-      Teuchos::RCP<STR::NLN::SOLVER::Generic> nlnsolver_ptr_;
+      Teuchos::RCP<STR::Nln::SOLVER::Generic> nlnsolver_ptr_;
 
       //! ptr to the nox group object
       Teuchos::RCP<::NOX::Abstract::Group> grp_ptr_;
     };
-  }  // namespace TIMINT
+  }  // namespace TimeInt
 }  // namespace STR
 
 

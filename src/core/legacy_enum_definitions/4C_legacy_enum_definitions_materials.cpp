@@ -9,7 +9,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-std::string_view CORE::Materials::to_string(CORE::Materials::MaterialType material_type)
+std::string_view Core::Materials::to_string(Core::Materials::MaterialType material_type)
 {
   switch (material_type)
   {

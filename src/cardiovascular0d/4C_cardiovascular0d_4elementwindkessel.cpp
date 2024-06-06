@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
  |  ctor (public)                                              mhv 10/13|
  *----------------------------------------------------------------------*/
 UTILS::Cardiovascular0D4ElementWindkessel::Cardiovascular0D4ElementWindkessel(
-    Teuchos::RCP<DRT::Discretization> discr, const std::string& conditionname,
+    Teuchos::RCP<Discret::Discretization> discr, const std::string& conditionname,
     std::vector<int>& curID)
     : Cardiovascular0D(discr, conditionname, curID)
 {
@@ -45,9 +45,9 @@ UTILS::Cardiovascular0D4ElementWindkessel::Cardiovascular0D4ElementWindkessel(
  |based on this conditions                                               |
  *----------------------------------------------------------------------*/
 void UTILS::Cardiovascular0D4ElementWindkessel::Evaluate(Teuchos::ParameterList& params,
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat1,
-    Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat2,
-    Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat3, Teuchos::RCP<Epetra_Vector> sysvec1,
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat1,
+    Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat2,
+    Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat3, Teuchos::RCP<Epetra_Vector> sysvec1,
     Teuchos::RCP<Epetra_Vector> sysvec2, Teuchos::RCP<Epetra_Vector> sysvec3,
     const Teuchos::RCP<Epetra_Vector> sysvec4, Teuchos::RCP<Epetra_Vector> sysvec5)
 {
@@ -93,7 +93,7 @@ void UTILS::Cardiovascular0D4ElementWindkessel::Evaluate(Teuchos::ParameterList&
     double p_ref = cardiovascular0dcond_[condID]->parameters().Get<double>("p_ref");
 
     // Cardiovascular0D stiffness
-    CORE::LINALG::SerialDenseMatrix wkstiff(numdof_per_cond, numdof_per_cond);
+    Core::LinAlg::SerialDenseMatrix wkstiff(numdof_per_cond, numdof_per_cond);
 
     // contributions to total residuals r:
     // r_m = df_m              - f_m
@@ -135,7 +135,7 @@ void UTILS::Cardiovascular0D4ElementWindkessel::Evaluate(Teuchos::ParameterList&
     for (int j = 1; j < numdof_per_cond; j++) gindex[j] = gindex[0] + j;
 
     // elements might need condition
-    params.set<Teuchos::RCP<CORE::Conditions::Condition>>("condition", Teuchos::rcp(cond, false));
+    params.set<Teuchos::RCP<Core::Conditions::Condition>>("condition", Teuchos::rcp(cond, false));
 
     // assemble of Cardiovascular0D stiffness matrix, scale with time-integrator dependent value
     if (assmat1)
@@ -186,18 +186,18 @@ void UTILS::Cardiovascular0D4ElementWindkessel::Evaluate(Teuchos::ParameterList&
     }
 
     // define element matrices and vectors
-    CORE::LINALG::SerialDenseMatrix elematrix1;
-    CORE::LINALG::SerialDenseMatrix elematrix2;
-    CORE::LINALG::SerialDenseVector elevector1;
-    CORE::LINALG::SerialDenseVector elevector2;
-    CORE::LINALG::SerialDenseVector elevector3;
+    Core::LinAlg::SerialDenseMatrix elematrix1;
+    Core::LinAlg::SerialDenseMatrix elematrix2;
+    Core::LinAlg::SerialDenseVector elevector1;
+    Core::LinAlg::SerialDenseVector elevector2;
+    Core::LinAlg::SerialDenseVector elevector3;
 
-    std::map<int, Teuchos::RCP<CORE::Elements::Element>>& geom = cond->Geometry();
+    std::map<int, Teuchos::RCP<Core::Elements::Element>>& geom = cond->Geometry();
     // if (geom.empty()) FOUR_C_THROW("evaluation of condition with empty geometry");
     // no check for empty geometry here since in parallel computations
     // can exist processors which do not own a portion of the elements belonging
     // to the condition geometry
-    std::map<int, Teuchos::RCP<CORE::Elements::Element>>::iterator curr;
+    std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator curr;
     for (curr = geom.begin(); curr != geom.end(); ++curr)
     {
       // get element location vector and ownerships
@@ -245,7 +245,7 @@ void UTILS::Cardiovascular0D4ElementWindkessel::Evaluate(Teuchos::ParameterList&
           cardiovascular0dlm.push_back(gindex[j]);
           cardiovascular0downer.push_back(curr->second->Owner());
         }
-        CORE::LINALG::Assemble(*sysvec3, elevector3, cardiovascular0dlm, cardiovascular0downer);
+        Core::LinAlg::Assemble(*sysvec3, elevector3, cardiovascular0dlm, cardiovascular0downer);
       }
     }
   }
@@ -297,20 +297,20 @@ void UTILS::Cardiovascular0D4ElementWindkessel::Initialize(Teuchos::ParameterLis
     int err3 = sysvec2->SumIntoGlobalValues(1, &s_0, &gindex[2]);
     if (err1 or err2 or err3) FOUR_C_THROW("SumIntoGlobalValues failed!");
 
-    params.set<Teuchos::RCP<CORE::Conditions::Condition>>("condition", Teuchos::rcp(cond, false));
+    params.set<Teuchos::RCP<Core::Conditions::Condition>>("condition", Teuchos::rcp(cond, false));
 
     // define element matrices and vectors
-    CORE::LINALG::SerialDenseMatrix elematrix1;
-    CORE::LINALG::SerialDenseMatrix elematrix2;
-    CORE::LINALG::SerialDenseVector elevector1;
-    CORE::LINALG::SerialDenseVector elevector2;
-    CORE::LINALG::SerialDenseVector elevector3;
+    Core::LinAlg::SerialDenseMatrix elematrix1;
+    Core::LinAlg::SerialDenseMatrix elematrix2;
+    Core::LinAlg::SerialDenseVector elevector1;
+    Core::LinAlg::SerialDenseVector elevector2;
+    Core::LinAlg::SerialDenseVector elevector3;
 
-    std::map<int, Teuchos::RCP<CORE::Elements::Element>>& geom = cond->Geometry();
+    std::map<int, Teuchos::RCP<Core::Elements::Element>>& geom = cond->Geometry();
     // no check for empty geometry here since in parallel computations
     // can exist processors which do not own a portion of the elements belonging
     // to the condition geometry
-    std::map<int, Teuchos::RCP<CORE::Elements::Element>>::iterator curr;
+    std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator curr;
     for (curr = geom.begin(); curr != geom.end(); ++curr)
     {
       // get element location vector and ownerships
@@ -338,7 +338,7 @@ void UTILS::Cardiovascular0D4ElementWindkessel::Initialize(Teuchos::ParameterLis
         cardiovascular0dlm.push_back(gindex[j]);
         cardiovascular0downer.push_back(curr->second->Owner());
       }
-      CORE::LINALG::Assemble(*sysvec1, elevector3, cardiovascular0dlm, cardiovascular0downer);
+      Core::LinAlg::Assemble(*sysvec1, elevector3, cardiovascular0dlm, cardiovascular0downer);
     }
   }
 

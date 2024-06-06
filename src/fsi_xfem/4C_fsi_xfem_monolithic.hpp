@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 // forward declarations
-namespace ADAPTER
+namespace Adapter
 {
   class Coupling;
 }
@@ -38,7 +38,7 @@ namespace FSI
   }
 }  // namespace FSI
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class Solver;
 }
@@ -74,7 +74,7 @@ namespace FSI
    public:
     //! constructor
     explicit MonolithicXFEM(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams,
-        const ADAPTER::FieldWrapper::Fieldtype type = ADAPTER::FieldWrapper::type_StructureField);
+        const Adapter::FieldWrapper::Fieldtype type = Adapter::FieldWrapper::type_StructureField);
 
     //--------------------------------------------------------------------------//
     //! @name Setup routine
@@ -140,11 +140,11 @@ namespace FSI
     Teuchos::RCP<const Epetra_Map> dof_row_map() const { return extractor().FullMap(); }
 
     //! extractor to communicate between full monolithic map and block maps of single fields
-    const CORE::LINALG::MultiMapExtractor& extractor() const { return blockrowdofmap_; }
+    const Core::LinAlg::MultiMapExtractor& extractor() const { return blockrowdofmap_; }
 
     //! extractor to communicate between full monolithic map and block maps of single fields
     //! this extractor considere poro as one field
-    const CORE::LINALG::MultiMapExtractor& extractor_merged_poro() const
+    const Core::LinAlg::MultiMapExtractor& extractor_merged_poro() const
     {
       return blockrowdofmap_mergedporo_;
     }
@@ -263,11 +263,11 @@ namespace FSI
     void linear_solve();
 
     //! apply infnorm scaling to linear block system
-    void scale_system(CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b);
+    void scale_system(Core::LinAlg::BlockSparseMatrixBase& mat, Epetra_Vector& b);
 
     //! undo infnorm scaling from scaled solution
     void unscale_solution(
-        CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b);
+        Core::LinAlg::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b);
 
     //! create combined Dirichlet boundary condition map, map containing the dofs with Dirichlet BC
     Teuchos::RCP<Epetra_Map> combined_dbc_map();
@@ -304,7 +304,7 @@ namespace FSI
 
     bool solveradapttol_;                        //!< adapt solver tolerance
     double solveradaptolbetter_;                 //!< tolerance to which is adapted
-    Teuchos::RCP<CORE::LINALG::Solver> solver_;  //!< linear algebraic solver
+    Teuchos::RCP<Core::LinAlg::Solver> solver_;  //!< linear algebraic solver
 
     //@}
 
@@ -342,13 +342,13 @@ namespace FSI
     //! @name Global setup attributes
 
     //! dofrowmap split in (field) blocks with merged poro (to avoid splitting and merging vector)
-    CORE::LINALG::MultiMapExtractor blockrowdofmap_mergedporo_;
+    Core::LinAlg::MultiMapExtractor blockrowdofmap_mergedporo_;
 
     //! dofrowmap split in (field) blocks
-    CORE::LINALG::MultiMapExtractor blockrowdofmap_;
+    Core::LinAlg::MultiMapExtractor blockrowdofmap_;
 
     //! block systemmatrix for structural and fluid dofs
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> systemmatrix_;
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> systemmatrix_;
 
     //--------------------------------------------------------------------------//
     //! @name vectors used within the Newton scheme
@@ -484,9 +484,9 @@ namespace FSI
     //--------------------------------------------------------------------------//
     //! @name Convergence criterion and convergence tolerances for Newton scheme
 
-    const enum INPAR::FSI::ConvNorm normtypeinc_;   //!< convergence check for increment
-    const enum INPAR::FSI::ConvNorm normtypefres_;  //!< convergence check for residual forces
-    const enum INPAR::FSI::BinaryOp
+    const enum Inpar::FSI::ConvNorm normtypeinc_;   //!< convergence check for increment
+    const enum Inpar::FSI::ConvNorm normtypefres_;  //!< convergence check for residual forces
+    const enum Inpar::FSI::BinaryOp
         combincfres_;  //!< binary operator to check for increment plus residual convergence or not
 
     const double tolinc_;   //!< tolerance full increment (structure + fluid)

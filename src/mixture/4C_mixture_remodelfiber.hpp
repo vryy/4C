@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::COMM
+namespace Core::Communication
 {
   class PackBuffer;
 }
@@ -29,7 +29,7 @@ namespace MIXTURE
   class RemodelFiberMaterial;
 
 
-  namespace IMPLEMENTATION
+  namespace Implementation
   {
     template <int numstates, typename T>
     class RemodelFiberImplementation;
@@ -55,10 +55,11 @@ namespace MIXTURE
      *
      * @param data (out) : buffer to serialize data to.
      */
-    void Pack(CORE::COMM::PackBuffer& data) const;
+    void Pack(Core::Communication::PackBuffer& data) const;
 
     /*!
-     * @brief Unpack all internal data that was previously packed by #Pack(CORE::COMM::PackBuffer&)
+     * @brief Unpack all internal data that was previously packed by
+     * #Pack(Core::Communication::PackBuffer&)
      *
      * @param position (in/out) : Position, where to start reading
      * @param data (in) : Vector of chars to extract data from
@@ -102,7 +103,7 @@ namespace MIXTURE
      * @return Derivative of the residuum of the time integration scheme w.r.t. growth scalar and
      * lambda_r
      */
-    CORE::LINALG::Matrix<2, 2> integrate_local_evolution_equations_implicit(double dt);
+    Core::LinAlg::Matrix<2, 2> integrate_local_evolution_equations_implicit(double dt);
 
     /*!
      * @brief Integrate the local evolution equation with an explicit time integration scheme.
@@ -127,7 +128,7 @@ namespace MIXTURE
     /// @}
 
    private:
-    const std::shared_ptr<IMPLEMENTATION::RemodelFiberImplementation<2, double>> impl_;
+    const std::shared_ptr<Implementation::RemodelFiberImplementation<2, double>> impl_;
   };
 }  // namespace MIXTURE
 

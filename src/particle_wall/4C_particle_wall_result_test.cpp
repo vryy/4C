@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-PARTICLEWALL::WallResultTest::WallResultTest() : CORE::UTILS::ResultTest("PARTICLEWALL")
+PARTICLEWALL::WallResultTest::WallResultTest() : Core::UTILS::ResultTest("PARTICLEWALL")
 {
   // empty constructor
 }
@@ -40,7 +40,7 @@ void PARTICLEWALL::WallResultTest::Setup(
   walldiscretization_ = particlewallinterface_->get_wall_discretization();
 }
 
-void PARTICLEWALL::WallResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int& test_count)
+void PARTICLEWALL::WallResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test_count)
 {
   // extract and check discretization name
   std::string dis;
@@ -64,7 +64,7 @@ void PARTICLEWALL::WallResultTest::test_node(INPUT::LineDefinition& res, int& ne
 
   if (walldiscretization_->HaveGlobalNode(node))
   {
-    const CORE::Nodes::Node* actnode = walldiscretization_->gNode(node);
+    const Core::Nodes::Node* actnode = walldiscretization_->gNode(node);
 
     // node not owned on this processor
     if (actnode->Owner() != walldiscretization_->Comm().MyPID()) return;
@@ -146,7 +146,7 @@ void PARTICLEWALL::WallResultTest::test_node(INPUT::LineDefinition& res, int& ne
 }
 
 void PARTICLEWALL::WallResultTest::TestSpecial(
-    INPUT::LineDefinition& res, int& nerr, int& test_count)
+    Input::LineDefinition& res, int& nerr, int& test_count)
 {
   // check results only for processor 0
   if (walldiscretization_->Comm().MyPID() != 0) return;

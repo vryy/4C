@@ -17,9 +17,9 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
-  namespace NURBS
+  namespace Nurbs
   {
     /*----------------------------------------------------------------------*/
     /*!
@@ -35,13 +35,13 @@ namespace DRT
     \date 12/10
     */
     template <class WG>
-    bool GetMyNurbsKnotsAndWeights(const DRT::Discretization& dis,
-        const CORE::Elements::Element* ele, std::vector<CORE::LINALG::SerialDenseVector>& myknots,
+    bool GetMyNurbsKnotsAndWeights(const Discret::Discretization& dis,
+        const Core::Elements::Element* ele, std::vector<Core::LinAlg::SerialDenseVector>& myknots,
         WG& weights)
     {
       // try to cast dis to a nurbs discretisation
-      const DRT::NURBS::NurbsDiscretization* nurbsdis =
-          dynamic_cast<const DRT::NURBS::NurbsDiscretization*>(&(dis));
+      const Discret::Nurbs::NurbsDiscretization* nurbsdis =
+          dynamic_cast<const Discret::Nurbs::NurbsDiscretization*>(&(dis));
       if (nurbsdis == nullptr) FOUR_C_THROW("Received discretization which is not Nurbs!");
 
       // get local knot vector entries and check for zero sized elements
@@ -54,12 +54,12 @@ namespace DRT
         return (zero_size);
       }
       // you are still here? So get the node weights for the nurbs element as well
-      const CORE::Nodes::Node* const* nodes = ele->Nodes();
+      const Core::Nodes::Node* const* nodes = ele->Nodes();
       const int nen = ele->num_node();
       for (int inode = 0; inode < nen; inode++)
       {
-        const DRT::NURBS::ControlPoint* cp =
-            dynamic_cast<const DRT::NURBS::ControlPoint*>(nodes[inode]);
+        const Discret::Nurbs::ControlPoint* cp =
+            dynamic_cast<const Discret::Nurbs::ControlPoint*>(nodes[inode]);
         weights(inode) = cp->W();
       }
 
@@ -69,16 +69,16 @@ namespace DRT
 
 
     //! determine whether a given element is a NURBS element or not
-    inline bool IsNurbs(CORE::FE::CellType distype)
+    inline bool IsNurbs(Core::FE::CellType distype)
     {
       switch (distype)
       {
-        case CORE::FE::CellType::nurbs8:
-        case CORE::FE::CellType::nurbs27:
-        case CORE::FE::CellType::nurbs4:
-        case CORE::FE::CellType::nurbs9:
-        case CORE::FE::CellType::nurbs2:
-        case CORE::FE::CellType::nurbs3:
+        case Core::FE::CellType::nurbs8:
+        case Core::FE::CellType::nurbs27:
+        case Core::FE::CellType::nurbs4:
+        case Core::FE::CellType::nurbs9:
+        case Core::FE::CellType::nurbs2:
+        case Core::FE::CellType::nurbs3:
         {
           return true;
           break;
@@ -106,16 +106,17 @@ namespace DRT
     \date 12/10
     */
     template <class WG>
-    bool GetKnotVectorAndWeightsForNurbsBoundary(const CORE::Elements::Element* boundaryele,
-        const int localsurfaceid, const int parenteleid, const DRT::Discretization& discretization,
-        std::vector<CORE::LINALG::SerialDenseVector>& mypknots,
-        std::vector<CORE::LINALG::SerialDenseVector>& myknots, WG& weights, double& normalfac)
+    bool GetKnotVectorAndWeightsForNurbsBoundary(const Core::Elements::Element* boundaryele,
+        const int localsurfaceid, const int parenteleid,
+        const Discret::Discretization& discretization,
+        std::vector<Core::LinAlg::SerialDenseVector>& mypknots,
+        std::vector<Core::LinAlg::SerialDenseVector>& myknots, WG& weights, double& normalfac)
     {
       // get knotvector(s)
-      const DRT::NURBS::NurbsDiscretization* nurbsdis =
-          dynamic_cast<const DRT::NURBS::NurbsDiscretization*>(&(discretization));
+      const Discret::Nurbs::NurbsDiscretization* nurbsdis =
+          dynamic_cast<const Discret::Nurbs::NurbsDiscretization*>(&(discretization));
 
-      Teuchos::RCP<const DRT::NURBS::Knotvector> knots = (*nurbsdis).GetKnotVector();
+      Teuchos::RCP<const Discret::Nurbs::Knotvector> knots = (*nurbsdis).GetKnotVector();
 
       bool zero_size = knots->get_boundary_ele_and_parent_knots(
           mypknots, myknots, normalfac, parenteleid, localsurfaceid);
@@ -127,12 +128,12 @@ namespace DRT
         return (zero_size);
       }
       // you are still here? So get the node weights as well
-      const CORE::Nodes::Node* const* nodes = boundaryele->Nodes();
+      const Core::Nodes::Node* const* nodes = boundaryele->Nodes();
       const int boundarynen = boundaryele->num_node();
       for (int inode = 0; inode < boundarynen; inode++)
       {
-        const DRT::NURBS::ControlPoint* cp =
-            dynamic_cast<const DRT::NURBS::ControlPoint*>(nodes[inode]);
+        const Discret::Nurbs::ControlPoint* cp =
+            dynamic_cast<const Discret::Nurbs::ControlPoint*>(nodes[inode]);
         weights(inode) = cp->W();
       }
 
@@ -158,18 +159,18 @@ namespace DRT
     \date 01/14
     */
     template <class WG>
-    bool GetKnotVectorAndWeightsForNurbsBoundaryAndParent(CORE::Elements::Element* parentele,
-        CORE::Elements::Element* boundaryele, const int localsurfaceid,
-        const DRT::Discretization& discretization,
-        std::vector<CORE::LINALG::SerialDenseVector>& mypknots,
-        std::vector<CORE::LINALG::SerialDenseVector>& myknots, WG& pweights, WG& weights,
+    bool GetKnotVectorAndWeightsForNurbsBoundaryAndParent(Core::Elements::Element* parentele,
+        Core::Elements::Element* boundaryele, const int localsurfaceid,
+        const Discret::Discretization& discretization,
+        std::vector<Core::LinAlg::SerialDenseVector>& mypknots,
+        std::vector<Core::LinAlg::SerialDenseVector>& myknots, WG& pweights, WG& weights,
         double& normalfac)
     {
       // get knotvector(s)
-      const DRT::NURBS::NurbsDiscretization* nurbsdis =
-          dynamic_cast<const DRT::NURBS::NurbsDiscretization*>(&(discretization));
+      const Discret::Nurbs::NurbsDiscretization* nurbsdis =
+          dynamic_cast<const Discret::Nurbs::NurbsDiscretization*>(&(discretization));
 
-      Teuchos::RCP<const DRT::NURBS::Knotvector> knots = (*nurbsdis).GetKnotVector();
+      Teuchos::RCP<const Discret::Nurbs::Knotvector> knots = (*nurbsdis).GetKnotVector();
 
       bool zero_size = knots->get_boundary_ele_and_parent_knots(
           mypknots, myknots, normalfac, parentele->Id(), localsurfaceid);
@@ -181,19 +182,21 @@ namespace DRT
         return (zero_size);
       }
       // you are still here? So get the node weights as well
-      CORE::Nodes::Node** nodes = boundaryele->Nodes();
+      Core::Nodes::Node** nodes = boundaryele->Nodes();
       const int boundarynen = boundaryele->num_node();
       for (int inode = 0; inode < boundarynen; inode++)
       {
-        DRT::NURBS::ControlPoint* cp = dynamic_cast<DRT::NURBS::ControlPoint*>(nodes[inode]);
+        Discret::Nurbs::ControlPoint* cp =
+            dynamic_cast<Discret::Nurbs::ControlPoint*>(nodes[inode]);
         weights(inode) = cp->W();
       }
 
-      CORE::Nodes::Node** pnodes = parentele->Nodes();
+      Core::Nodes::Node** pnodes = parentele->Nodes();
       const int pnen = parentele->num_node();
       for (int inode = 0; inode < pnen; inode++)
       {
-        DRT::NURBS::ControlPoint* cp = dynamic_cast<DRT::NURBS::ControlPoint*>(pnodes[inode]);
+        Discret::Nurbs::ControlPoint* cp =
+            dynamic_cast<Discret::Nurbs::ControlPoint*>(pnodes[inode]);
         pweights(inode) = cp->W();
       }
 
@@ -201,9 +204,9 @@ namespace DRT
       return zero_size;
     }  // GetKnotVectorAndWeightsForNurbsBoundary()
 
-  }  // namespace NURBS
+  }  // namespace Nurbs
 
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

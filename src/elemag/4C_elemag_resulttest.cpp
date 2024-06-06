@@ -20,12 +20,12 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |                                                     berardocco 10/18 |
  *----------------------------------------------------------------------*/
-ELEMAG::ElemagResultTest::ElemagResultTest(ElemagTimeInt& elemagalgo)
-    : CORE::UTILS::ResultTest("ELECTROMAGNETIC")
+EleMag::ElemagResultTest::ElemagResultTest(ElemagTimeInt& elemagalgo)
+    : Core::UTILS::ResultTest("ELECTROMAGNETIC")
 {
   dis_ = elemagalgo.discretization();
-  // mysol_ = CORE::LINALG::CreateVector(*(dis_->NodeRowMap()), true);
-  error_ = Teuchos::rcp(new CORE::LINALG::SerialDenseVector(4));
+  // mysol_ = Core::LinAlg::CreateVector(*(dis_->NodeRowMap()), true);
+  error_ = Teuchos::rcp(new Core::LinAlg::SerialDenseVector(4));
   error_ = elemagalgo.compute_error();
   // elemagalgo.NodalPressureField(mysol_);
 }
@@ -33,7 +33,7 @@ ELEMAG::ElemagResultTest::ElemagResultTest(ElemagTimeInt& elemagalgo)
 /*----------------------------------------------------------------------*
  |                                                     berardocco 10/18 |
  *----------------------------------------------------------------------*/
-void ELEMAG::ElemagResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int& test_count)
+void EleMag::ElemagResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;
@@ -56,7 +56,7 @@ void ELEMAG::ElemagResultTest::test_node(INPUT::LineDefinition& res, int& nerr, 
   {
     if (dis_->HaveGlobalNode(node))
     {
-      CORE::Nodes::Node* actnode = dis_->gNode(node);
+      Core::Nodes::Node* actnode = dis_->gNode(node);
 
       // Here, we are just interested in the nodes that we own (i.e. a row node)!
       if (actnode->Owner() != dis_->Comm().MyPID()) return;

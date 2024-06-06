@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief A collection of sparse matrix manipulation methods for namespace CORE::LINALG
+\brief A collection of sparse matrix manipulation methods for namespace Core::LinAlg
 
 \level 0
 */
@@ -26,17 +26,17 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationWriter;
 }
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   /*!
    \brief Export a vector to a different map
@@ -130,7 +130,7 @@ namespace CORE::LINALG
    */
   inline void Complete(Teuchos::RCP<Epetra_CrsMatrix> A)
   {
-    CORE::LINALG::Complete(*A);
+    Core::LinAlg::Complete(*A);
     return;
   }
 
@@ -147,7 +147,7 @@ namespace CORE::LINALG
   inline void Complete(
       Teuchos::RCP<Epetra_CrsMatrix> A, const Epetra_Map& domainmap, const Epetra_Map& rangemap)
   {
-    CORE::LINALG::Complete(*A, domainmap, rangemap);
+    Core::LinAlg::Complete(*A, domainmap, rangemap);
     return;
   }
 
@@ -216,11 +216,11 @@ namespace CORE::LINALG
    \param A21          : on exit matrix block A21
    \param A22          : on exit matrix block A22
    */
-  bool SplitMatrix2x2(Teuchos::RCP<CORE::LINALG::SparseMatrix> A,
+  bool SplitMatrix2x2(Teuchos::RCP<Core::LinAlg::SparseMatrix> A,
       Teuchos::RCP<Epetra_Map>& A11rowmap, Teuchos::RCP<Epetra_Map>& A22rowmap,
       Teuchos::RCP<Epetra_Map>& A11domainmap, Teuchos::RCP<Epetra_Map>& A22domainmap,
-      Teuchos::RCP<CORE::LINALG::SparseMatrix>& A11, Teuchos::RCP<CORE::LINALG::SparseMatrix>& A12,
-      Teuchos::RCP<CORE::LINALG::SparseMatrix>& A21, Teuchos::RCP<CORE::LINALG::SparseMatrix>& A22);
+      Teuchos::RCP<Core::LinAlg::SparseMatrix>& A11, Teuchos::RCP<Core::LinAlg::SparseMatrix>& A12,
+      Teuchos::RCP<Core::LinAlg::SparseMatrix>& A21, Teuchos::RCP<Core::LinAlg::SparseMatrix>& A22);
 
   /** \brief Insert a diagonal row vector into a unfilled SparseMatrix
    *         on each proc without communication
@@ -233,7 +233,7 @@ namespace CORE::LINALG
    *
    *  \author hiermeier \date 03/17 */
   int InsertMyRowDiagonalIntoUnfilledMatrix(
-      CORE::LINALG::SparseMatrix& mat, const Epetra_Vector& diag);
+      Core::LinAlg::SparseMatrix& mat, const Epetra_Vector& diag);
 
   /*!
    \brief Split an Epetra_Map and return the part complementary to \c Agiven
@@ -345,8 +345,8 @@ namespace CORE::LINALG
    *
    *  \author hiermeier \date 03/18 */
   void ComputeDofMapsFromNodeMaps(const int dofset_id,
-      const std::vector<Teuchos::RCP<Epetra_Map>>& node_maps, const DRT::Discretization& discret,
-      std::vector<Teuchos::RCP<Epetra_Map>>& dof_maps);
+      const std::vector<Teuchos::RCP<Epetra_Map>>& node_maps,
+      const Discret::Discretization& discret, std::vector<Teuchos::RCP<Epetra_Map>>& dof_maps);
 
   /*! \brief Compute a dof map corresponding to the given node map
    *
@@ -358,7 +358,7 @@ namespace CORE::LINALG
    *
    *  \author hiermeier \date 03/18 */
   Teuchos::RCP<Epetra_Map> ComputeDofMapFromNodeMap(
-      const int dofset_id, const Epetra_Map& node_map, const DRT::Discretization& discret);
+      const int dofset_id, const Epetra_Map& node_map, const Discret::Discretization& discret);
 
   /*! \brief Write values from a std::vector to a Epetra_MultiVector
    *
@@ -384,7 +384,7 @@ namespace CORE::LINALG
   void EpetraMultiVectorToStdVector(const Teuchos::RCP<Epetra_MultiVector> epetraMultiVector,
       std::vector<double>& stdVector, const int blockSize);
 
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 FOUR_C_NAMESPACE_CLOSE
 

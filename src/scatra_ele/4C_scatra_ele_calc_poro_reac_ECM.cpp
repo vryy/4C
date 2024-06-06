@@ -26,14 +26,15 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::ScaTraEleCalcPoroReacECM(
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::ScaTraEleCalcPoroReacECM(
     const int numdofpernode, const int numscal, const std::string& disname)
-    : DRT::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode, numscal, disname),
-      DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ScaTraEleCalcPoro(numdofpernode, numscal, disname),
-      DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::ScaTraEleCalcAdvReac(
+    : Discret::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode, numscal, disname),
+      Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::ScaTraEleCalcPoro(
           numdofpernode, numscal, disname),
-      DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::ScaTraEleCalcPoroReac(
+      Discret::ELEMENTS::ScaTraEleCalcAdvReac<distype>::ScaTraEleCalcAdvReac(
+          numdofpernode, numscal, disname),
+      Discret::ELEMENTS::ScaTraEleCalcPoroReac<distype>::ScaTraEleCalcPoroReac(
           numdofpernode, numscal, disname)
 {
   return;
@@ -41,12 +42,12 @@ DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::ScaTraEleCalcPoroReacECM(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>*
-DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::Instance(
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>*
+Discret::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
       [](const int numdofpernode, const int numscal, const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleCalcPoroReacECM<distype>>(
@@ -54,16 +55,16 @@ DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::Instance(
       });
 
   return singleton_map[disname].Instance(
-      CORE::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
+      Core::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 
 /*----------------------------------------------------------------------*
  |  evaluate single material  (protected)                    thon 02/14 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::materials(
-    const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::materials(
+    const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
     double& densn,                                           //!< density at t_(n)
     double& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
@@ -74,7 +75,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::materials(
 {
   switch (material->MaterialType())
   {
-    case CORE::Materials::m_scatra:
+    case Core::Materials::m_scatra:
       pororeac::mat_scatra(material, k, densn, densnp, densam, visc, iquad);
       break;
     default:
@@ -87,9 +88,9 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::materials(
 /*----------------------------------------------------------------------*
  |  evaluate single material  (protected)                    vuong 10/14 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::get_material_params(
-    const CORE::Elements::Element* ele,  //!< the element we are dealing with
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::get_material_params(
+    const Core::Elements::Element* ele,  //!< the element we are dealing with
     std::vector<double>& densn,          //!< density at t_(n)
     std::vector<double>& densnp,         //!< density at t_(n+1) or t_(n+alpha_F)
     std::vector<double>& densam,         //!< density at t_(n+alpha_M)
@@ -101,27 +102,27 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::get_material_params(
   poro::compute_porosity(ele);
 
   // get the material
-  Teuchos::RCP<CORE::MAT::Material> material = ele->Material();
+  Teuchos::RCP<Core::Mat::Material> material = ele->Material();
 
-  if (material->MaterialType() == CORE::Materials::m_matlist_reactions)
+  if (material->MaterialType() == Core::Materials::m_matlist_reactions)
   {
-    const Teuchos::RCP<MAT::MatListReactions> actmat =
-        Teuchos::rcp_dynamic_cast<MAT::MatListReactions>(material);
+    const Teuchos::RCP<Mat::MatListReactions> actmat =
+        Teuchos::rcp_dynamic_cast<Mat::MatListReactions>(material);
     if (actmat->NumMat() != my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
     for (int k = 0; k < actmat->NumReac(); ++k)
     {
       int matid = actmat->ReacID(k);
-      Teuchos::RCP<CORE::MAT::Material> singlemat = actmat->MaterialById(matid);
+      Teuchos::RCP<Core::Mat::Material> singlemat = actmat->MaterialById(matid);
 
-      Teuchos::RCP<MAT::ScatraMatPoroECM> scatramat =
-          Teuchos::rcp_dynamic_cast<MAT::ScatraMatPoroECM>(singlemat);
+      Teuchos::RCP<Mat::ScatraMatPoroECM> scatramat =
+          Teuchos::rcp_dynamic_cast<Mat::ScatraMatPoroECM>(singlemat);
 
       if (scatramat != Teuchos::null)
       {
-        Teuchos::RCP<MAT::StructPoroReactionECM> structmat =
-            Teuchos::rcp_dynamic_cast<MAT::StructPoroReactionECM>(my::ele_->Material(1));
-        if (structmat == Teuchos::null) FOUR_C_THROW("cast to MAT::StructPoroReactionECM failed!");
+        Teuchos::RCP<Mat::StructPoroReactionECM> structmat =
+            Teuchos::rcp_dynamic_cast<Mat::StructPoroReactionECM>(my::ele_->Material(1));
+        if (structmat == Teuchos::null) FOUR_C_THROW("cast to Mat::StructPoroReactionECM failed!");
         double structpot = compute_struct_chem_potential(structmat, iquad);
 
         scatramat->ComputeReacCoeff(structpot);
@@ -138,20 +139,20 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::get_material_params(
 /*----------------------------------------------------------------------*
  |  evaluate single material  (protected)                    vuong 19/15 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-double DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::compute_struct_chem_potential(
-    Teuchos::RCP<MAT::StructPoroReactionECM>& structmat, const int gp)
+template <Core::FE::CellType distype>
+double Discret::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::compute_struct_chem_potential(
+    Teuchos::RCP<Mat::StructPoroReactionECM>& structmat, const int gp)
 {
   // gauss point displacements
-  CORE::LINALG::Matrix<nsd_, 1> dispint(false);
+  Core::LinAlg::Matrix<nsd_, 1> dispint(false);
   dispint.Multiply(my::edispnp_, my::funct_);
 
   // transposed jacobian "dX/ds"
-  CORE::LINALG::Matrix<nsd_, nsd_> xjm0;
+  Core::LinAlg::Matrix<nsd_, nsd_> xjm0;
   xjm0.MultiplyNT(my::deriv_, poro::xyze0_);
 
   // inverse of transposed jacobian "ds/dX"
-  CORE::LINALG::Matrix<nsd_, nsd_> xji0(true);
+  Core::LinAlg::Matrix<nsd_, nsd_> xji0(true);
   xji0.Invert(xjm0);
 
   // inverse of transposed jacobian "ds/dX"
@@ -165,21 +166,21 @@ double DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::compute_struct_chem_pot
 
   // ----------------------compute derivatives N_XYZ_ at gp w.r.t. material coordinates
   /// first derivatives of shape functions w.r.t. material coordinates
-  CORE::LINALG::Matrix<nsd_, nen_> N_XYZ;
+  Core::LinAlg::Matrix<nsd_, nen_> N_XYZ;
   N_XYZ.Multiply(xji0, my::deriv_);
 
   // -------------------------(material) deformation gradient F = d xyze_ / d XYZE = xyze_ *
   // N_XYZ_^T
-  static CORE::LINALG::Matrix<nsd_, nsd_> defgrd(false);
+  static Core::LinAlg::Matrix<nsd_, nsd_> defgrd(false);
   defgrd.MultiplyNT(my::xyze_, N_XYZ);
 
   // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-  static CORE::LINALG::Matrix<6, 1> glstrain(true);
+  static Core::LinAlg::Matrix<6, 1> glstrain(true);
   glstrain.Clear();
-  // if (kinemtype_ == INPAR::STR::KinemType::nonlinearTotLag)
+  // if (kinemtype_ == Inpar::STR::KinemType::nonlinearTotLag)
   {
     // Right Cauchy-Green tensor = F^T * F
-    CORE::LINALG::Matrix<nsd_, nsd_> cauchygreen;
+    Core::LinAlg::Matrix<nsd_, nsd_> cauchygreen;
     cauchygreen.MultiplyTN(defgrd, defgrd);
     // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
@@ -218,26 +219,26 @@ double DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::compute_struct_chem_pot
 // template classes
 
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<CORE::FE::CellType::line2>;
-template class DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<CORE::FE::CellType::line3>;
+template class Discret::ELEMENTS::ScaTraEleCalcPoroReacECM<Core::FE::CellType::line2>;
+template class Discret::ELEMENTS::ScaTraEleCalcPoroReacECM<Core::FE::CellType::line3>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<CORE::FE::CellType::tri3>;
-template class DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<CORE::FE::CellType::tri6>;
-template class DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<CORE::FE::CellType::quad4>;
-// template class DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<CORE::FE::CellType::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<CORE::FE::CellType::quad9>;
+template class Discret::ELEMENTS::ScaTraEleCalcPoroReacECM<Core::FE::CellType::tri3>;
+template class Discret::ELEMENTS::ScaTraEleCalcPoroReacECM<Core::FE::CellType::tri6>;
+template class Discret::ELEMENTS::ScaTraEleCalcPoroReacECM<Core::FE::CellType::quad4>;
+// template class Discret::ELEMENTS::ScaTraEleCalcPoroReacECM<Core::FE::CellType::quad8>;
+template class Discret::ELEMENTS::ScaTraEleCalcPoroReacECM<Core::FE::CellType::quad9>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<CORE::FE::CellType::hex8>;
-// template class DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<CORE::FE::CellType::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<CORE::FE::CellType::hex27>;
-template class DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<CORE::FE::CellType::tet4>;
-template class DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<CORE::FE::CellType::tet10>;
-// template class DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<CORE::FE::CellType::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<CORE::FE::CellType::pyramid5>;
-template class DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<CORE::FE::CellType::nurbs9>;
+template class Discret::ELEMENTS::ScaTraEleCalcPoroReacECM<Core::FE::CellType::hex8>;
+// template class Discret::ELEMENTS::ScaTraEleCalcPoroReacECM<Core::FE::CellType::hex20>;
+template class Discret::ELEMENTS::ScaTraEleCalcPoroReacECM<Core::FE::CellType::hex27>;
+template class Discret::ELEMENTS::ScaTraEleCalcPoroReacECM<Core::FE::CellType::tet4>;
+template class Discret::ELEMENTS::ScaTraEleCalcPoroReacECM<Core::FE::CellType::tet10>;
+// template class Discret::ELEMENTS::ScaTraEleCalcPoroReacECM<Core::FE::CellType::wedge6>;
+template class Discret::ELEMENTS::ScaTraEleCalcPoroReacECM<Core::FE::CellType::pyramid5>;
+template class Discret::ELEMENTS::ScaTraEleCalcPoroReacECM<Core::FE::CellType::nurbs9>;
 // template class
-// DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<CORE::FE::CellType::nurbs27>;
+// Discret::ELEMENTS::ScaTraEleCalcPoroReacECM<Core::FE::CellType::nurbs27>;
 
 FOUR_C_NAMESPACE_CLOSE

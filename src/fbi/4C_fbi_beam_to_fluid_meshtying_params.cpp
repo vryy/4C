@@ -23,12 +23,12 @@ FOUR_C_NAMESPACE_OPEN
 FBI::BeamToFluidMeshtyingParams::BeamToFluidMeshtyingParams()
     : isinit_(false),
       issetup_(false),
-      constraint_enforcement_(INPAR::FBI::BeamToFluidConstraintEnforcement::none),
-      meshtying_discretization_(INPAR::FBI::BeamToFluidDiscretization::none),
+      constraint_enforcement_(Inpar::FBI::BeamToFluidConstraintEnforcement::none),
+      meshtying_discretization_(Inpar::FBI::BeamToFluidDiscretization::none),
       penalty_parameter_(-1.0),
-      gauss_rule_(CORE::FE::GaussRule1D::undefined),
+      gauss_rule_(Core::FE::GaussRule1D::undefined),
       calcfluidweakdirichletforce_(false),
-      mortar_shape_function_(INPAR::FBI::BeamToFluidMeshtingMortarShapefunctions::none)
+      mortar_shape_function_(Inpar::FBI::BeamToFluidMeshtingMortarShapefunctions::none)
 {
   // Empty Constructor.
 }
@@ -40,22 +40,22 @@ void FBI::BeamToFluidMeshtyingParams::Init()
 {
   // Teuchos parameter list for beam contact
   const Teuchos::ParameterList& beam_to_fluid_meshtying_params_list =
-      GLOBAL::Problem::Instance()->getParameterList()->sublist("FLUID BEAM INTERACTION");
+      Global::Problem::Instance()->getParameterList()->sublist("FLUID BEAM INTERACTION");
 
   // Get parameters form input file.
   // Constraint enforcement.
-  constraint_enforcement_ = Teuchos::getIntegralValue<INPAR::FBI::BeamToFluidConstraintEnforcement>(
+  constraint_enforcement_ = Teuchos::getIntegralValue<Inpar::FBI::BeamToFluidConstraintEnforcement>(
       beam_to_fluid_meshtying_params_list.sublist("BEAM TO FLUID MESHTYING"),
       "CONSTRAINT_STRATEGY");
 
   // Constraint enforcement.
   mortar_shape_function_ =
-      Teuchos::getIntegralValue<INPAR::FBI::BeamToFluidMeshtingMortarShapefunctions>(
+      Teuchos::getIntegralValue<Inpar::FBI::BeamToFluidMeshtingMortarShapefunctions>(
           beam_to_fluid_meshtying_params_list.sublist("BEAM TO FLUID MESHTYING"),
           "MORTAR_SHAPE_FUNCTION");
 
   // Contact discretization to be used.
-  meshtying_discretization_ = Teuchos::getIntegralValue<INPAR::FBI::BeamToFluidDiscretization>(
+  meshtying_discretization_ = Teuchos::getIntegralValue<Inpar::FBI::BeamToFluidDiscretization>(
       beam_to_fluid_meshtying_params_list.sublist("BEAM TO FLUID MESHTYING"),
       "MESHTYING_DISCRETIZATION");
 
@@ -66,7 +66,7 @@ void FBI::BeamToFluidMeshtyingParams::Init()
     FOUR_C_THROW("beam-to-volume-meshtying penalty parameter must not be negative!");
 
   // Gauss rule for integration along the beam (segments).
-  gauss_rule_ = INPAR::GEOMETRYPAIR::IntToGaussRule1D(
+  gauss_rule_ = Inpar::GEOMETRYPAIR::IntToGaussRule1D(
       beam_to_fluid_meshtying_params_list.sublist("BEAM TO FLUID MESHTYING")
           .get<int>("GAUSS_POINTS"));
   isinit_ = true;

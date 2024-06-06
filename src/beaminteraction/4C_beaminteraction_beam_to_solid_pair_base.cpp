@@ -52,19 +52,20 @@ void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, bea
   // Set reference nodal positions (and tangents) for beam element
   for (unsigned int n = 0; n < beam::n_nodes_; ++n)
   {
-    const CORE::Nodes::Node* node = Element1()->Nodes()[n];
+    const Core::Nodes::Node* node = Element1()->Nodes()[n];
     for (int d = 0; d < 3; ++d)
       ele1posref_.element_position_(3 * beam::n_val_ * n + d) = node->X()[d];
 
     // tangents
     if (beam::n_val_ == 2)
     {
-      CORE::LINALG::Matrix<3, 1> tan;
-      const CORE::Elements::ElementType& eot = Element1()->ElementType();
+      Core::LinAlg::Matrix<3, 1> tan;
+      const Core::Elements::ElementType& eot = Element1()->ElementType();
 
-      if (eot == DRT::ELEMENTS::Beam3rType::Instance())
+      if (eot == Discret::ELEMENTS::Beam3rType::Instance())
       {
-        const DRT::ELEMENTS::Beam3r* ele = dynamic_cast<const DRT::ELEMENTS::Beam3r*>(Element1());
+        const Discret::ELEMENTS::Beam3r* ele =
+            dynamic_cast<const Discret::ELEMENTS::Beam3r*>(Element1());
         if (ele->hermite_centerline_interpolation())
           tan = ele->Tref()[n];
         else
@@ -72,14 +73,16 @@ void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, bea
               "ERROR: Beam3tosolidmeshtying: beam::n_val_=2 detected for beam3r element w/o "
               "Hermite centerline");
       }
-      else if (eot == DRT::ELEMENTS::Beam3kType::Instance())
+      else if (eot == Discret::ELEMENTS::Beam3kType::Instance())
       {
-        const DRT::ELEMENTS::Beam3k* ele = dynamic_cast<const DRT::ELEMENTS::Beam3k*>(Element1());
+        const Discret::ELEMENTS::Beam3k* ele =
+            dynamic_cast<const Discret::ELEMENTS::Beam3k*>(Element1());
         tan = ele->Tref()[n];
       }
-      else if (eot == DRT::ELEMENTS::Beam3ebType::Instance())
+      else if (eot == Discret::ELEMENTS::Beam3ebType::Instance())
       {
-        const DRT::ELEMENTS::Beam3eb* ele = dynamic_cast<const DRT::ELEMENTS::Beam3eb*>(Element1());
+        const Discret::ELEMENTS::Beam3eb* ele =
+            dynamic_cast<const Discret::ELEMENTS::Beam3eb*>(Element1());
         tan = ele->Tref()[n];
       }
       else
@@ -109,7 +112,7 @@ void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, bea
   // Set the current configuration of the beam element
   ele1pos_ = GEOMETRYPAIR::InitializeElementData<beam, scalar_type>::Initialize(Element1());
   for (unsigned int i = 0; i < beam::n_dof_; i++)
-    ele1pos_.element_position_(i) = CORE::FADUTILS::HigherOrderFadValue<scalar_type>::apply(
+    ele1pos_.element_position_(i) = Core::FADUtils::HigherOrderFadValue<scalar_type>::apply(
         beam::n_dof_ + solid::n_dof_, i, beam_centerline_dofvec[i]);
 }
 
@@ -164,8 +167,8 @@ void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, bea
   for (unsigned int index_segment = 0; index_segment < line_to_3D_segments_.size(); index_segment++)
   {
     out << "    segment " << index_segment << ": ";
-    out << "eta in [" << CORE::FADUTILS::CastToDouble(line_to_3D_segments_[index_segment].GetEtaA())
-        << ", " << CORE::FADUTILS::CastToDouble(line_to_3D_segments_[index_segment].GetEtaB())
+    out << "eta in [" << Core::FADUtils::CastToDouble(line_to_3D_segments_[index_segment].GetEtaA())
+        << ", " << Core::FADUtils::CastToDouble(line_to_3D_segments_[index_segment].GetEtaB())
         << "]";
     out << ", Gauss points = "
         << line_to_3D_segments_[index_segment].get_number_of_projection_points();
@@ -180,7 +183,7 @@ template <typename scalar_type, typename segments_scalar_type, typename beam, ty
 void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, beam,
     solid>::evaluate_beam_position_double(const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>&
                                               integration_point,
-    CORE::LINALG::Matrix<3, 1, double>& r_beam, bool reference) const
+    Core::LinAlg::Matrix<3, 1, double>& r_beam, bool reference) const
 {
   if (reference)
     GEOMETRYPAIR::EvaluatePosition<beam>(integration_point.GetEta(), ele1posref_, r_beam);

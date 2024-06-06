@@ -21,7 +21,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   // forward declarations
   class So_sh8Plast;
@@ -36,17 +36,17 @@ namespace DRT
 
       static SoSh8PlastType& Instance();
 
-      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-      int Initialize(DRT::Discretization& dis) override;
+      int Initialize(Discret::Discretization& dis) override;
 
       void setup_element_definition(
-          std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+          std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
           override;
 
      private:
@@ -55,7 +55,7 @@ namespace DRT
       std::string get_element_type_string() const { return "SOLIDSH8PLAST"; }
     };  // class So_sh8PlastType
 
-    class SoSh8Plast : public virtual So3Plast<CORE::FE::CellType::hex8>
+    class SoSh8Plast : public virtual So3Plast<Core::FE::CellType::hex8>
     {
      public:
       //! @name Friends
@@ -75,7 +75,7 @@ namespace DRT
       //!
       //! The Clone() method is used from the virtual base class Element in cases
       //! where the type of the derived class is unknown and a copy-ctor is needed
-      CORE::Elements::Element* Clone() const override;
+      Core::Elements::Element* Clone() const override;
 
 
       //! Return unique ParObject id
@@ -89,7 +89,7 @@ namespace DRT
 
       //! Pack this class so it can be communicated
       //! Pack and \ref Unpack are used to communicate this element
-      void Pack(CORE::COMM::PackBuffer& data) const override;
+      void Pack(Core::Communication::PackBuffer& data) const override;
 
       //! Unpack data from a char vector into this class
       //! Pack and \ref Unpack are used to communicate this element
@@ -103,7 +103,7 @@ namespace DRT
 
       //! read input for this element
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          INPUT::LineDefinition* linedef) override;
+          Input::LineDefinition* linedef) override;
 
       //! definition of shell-thickness direction
       enum ThicknessDirection
@@ -149,49 +149,49 @@ namespace DRT
       //! vector in thickness direction for compatibility with sosh8
       std::vector<double> thickvec_;
 
-      static std::pair<bool, CORE::LINALG::Matrix<nsd_, nsd_>> jac_refe_;
-      static std::pair<bool, CORE::LINALG::Matrix<nsd_, nsd_>> jac_curr_;
-      static std::pair<bool, CORE::LINALG::Matrix<num_ans * num_sp, numdofperelement_>> B_ans_loc_;
-      static std::pair<bool, CORE::LINALG::Matrix<numstr_, numstr_>> TinvT_;
+      static std::pair<bool, Core::LinAlg::Matrix<nsd_, nsd_>> jac_refe_;
+      static std::pair<bool, Core::LinAlg::Matrix<nsd_, nsd_>> jac_curr_;
+      static std::pair<bool, Core::LinAlg::Matrix<num_ans * num_sp, numdofperelement_>> B_ans_loc_;
+      static std::pair<bool, Core::LinAlg::Matrix<numstr_, numstr_>> TinvT_;
 
       //! Calculate nonlinear stiffness and mass matrix with condensed plastic matrices
       void nln_stiffmass(std::vector<double>& disp,  // current displacements
           std::vector<double>& vel,                  // current velocities
           std::vector<double>& temp,                 // current temperatures
-          CORE::LINALG::Matrix<numdofperelement_, numdofperelement_>*
+          Core::LinAlg::Matrix<numdofperelement_, numdofperelement_>*
               stiffmatrix,  // element stiffness matrix
-          CORE::LINALG::Matrix<numdofperelement_, numdofperelement_>*
+          Core::LinAlg::Matrix<numdofperelement_, numdofperelement_>*
               massmatrix,                                         // element mass matrix
-          CORE::LINALG::Matrix<numdofperelement_, 1>* force,      // element internal force vector
-          CORE::LINALG::Matrix<numgpt_post, numstr_>* elestress,  // stresses at GP
-          CORE::LINALG::Matrix<numgpt_post, numstr_>* elestrain,  // strains at GP
+          Core::LinAlg::Matrix<numdofperelement_, 1>* force,      // element internal force vector
+          Core::LinAlg::Matrix<numgpt_post, numstr_>* elestress,  // stresses at GP
+          Core::LinAlg::Matrix<numgpt_post, numstr_>* elestrain,  // strains at GP
           Teuchos::ParameterList& params,         // algorithmic parameters e.g. time
-          const INPAR::STR::StressType iostress,  // stress output option
-          const INPAR::STR::StrainType iostrain   // strain output option
+          const Inpar::STR::StressType iostress,  // stress output option
+          const Inpar::STR::StrainType iostrain   // strain output option
           ) override;
 
       //! calculate nonlinear B-operator (potentially with ANS modification)
-      void calculate_bop(CORE::LINALG::Matrix<numstr_, numdofperelement_>* bop,
-          const CORE::LINALG::Matrix<nsd_, nsd_>* defgrd,
-          const CORE::LINALG::Matrix<nsd_, nen_>* N_XYZ, const int gp) override;
+      void calculate_bop(Core::LinAlg::Matrix<numstr_, numdofperelement_>* bop,
+          const Core::LinAlg::Matrix<nsd_, nsd_>* defgrd,
+          const Core::LinAlg::Matrix<nsd_, nen_>* N_XYZ, const int gp) override;
 
       //! Evaluate all ANS related data at the ANS sampling points
-      void anssetup(const CORE::LINALG::Matrix<nen_, nsd_>& xrefe,  ///< material element coords
-          const CORE::LINALG::Matrix<nen_, nsd_>& xcurr,            ///< current element coords
-          std::vector<CORE::LINALG::Matrix<nsd_, nen_>>**
+      void anssetup(const Core::LinAlg::Matrix<nen_, nsd_>& xrefe,  ///< material element coords
+          const Core::LinAlg::Matrix<nen_, nsd_>& xcurr,            ///< current element coords
+          std::vector<Core::LinAlg::Matrix<nsd_, nen_>>**
               deriv_sp,  ///< derivs eval. at all sampling points
-          std::vector<CORE::LINALG::Matrix<nsd_, nsd_>>& jac_sps,  ///< jac at all sampling points
-          std::vector<CORE::LINALG::Matrix<nsd_, nsd_>>&
+          std::vector<Core::LinAlg::Matrix<nsd_, nsd_>>& jac_sps,  ///< jac at all sampling points
+          std::vector<Core::LinAlg::Matrix<nsd_, nsd_>>&
               jac_cur_sps,  ///< current jac at all sampling points
-          CORE::LINALG::Matrix<num_ans * num_sp, numdofperelement_>& B_ans_loc);  ///< modified B
+          Core::LinAlg::Matrix<num_ans * num_sp, numdofperelement_>& B_ans_loc);  ///< modified B
 
       //! Evaluate transformation matrix T (parameter->material) at gp
-      void evaluate_t(const CORE::LINALG::Matrix<nsd_, nsd_>& jac,  ///< actual jacobian
-          CORE::LINALG::Matrix<numstr_, numstr_>& TinvT);           ///< T^{-T}
+      void evaluate_t(const Core::LinAlg::Matrix<nsd_, nsd_>& jac,  ///< actual jacobian
+          Core::LinAlg::Matrix<numstr_, numstr_>& TinvT);           ///< T^{-T}
 
       void ans_strains(const int gp,
-          std::vector<CORE::LINALG::Matrix<nsd_, nsd_>>& jac_sps,  // jac at all sampling points
-          std::vector<CORE::LINALG::Matrix<nsd_, nsd_>>&
+          std::vector<Core::LinAlg::Matrix<nsd_, nsd_>>& jac_sps,  // jac at all sampling points
+          std::vector<Core::LinAlg::Matrix<nsd_, nsd_>>&
               jac_cur_sps  // current jac at all sampling points
       );
 
@@ -199,16 +199,16 @@ namespace DRT
       ThicknessDirection findthickdir();
 
       //! Find parametric co-ordinate which directs in enforced thickness direction
-      ThicknessDirection enfthickdir(CORE::LINALG::Matrix<nsd_, 1>&
+      ThicknessDirection enfthickdir(Core::LinAlg::Matrix<nsd_, 1>&
               thickdirglo  ///< global direction of enforced thickness direction
       );
 
       //! Re-initialize EAS data, needed for sosh8 morphing
-      void re_init_eas(const DRT::ELEMENTS::So3PlastEasType EASType);
+      void re_init_eas(const Discret::ELEMENTS::So3PlastEasType EASType);
 
       void invalid_gp_data() override
       {
-        So3Plast<CORE::FE::CellType::hex8>::invalid_gp_data();
+        So3Plast<Core::FE::CellType::hex8>::invalid_gp_data();
         jac_refe_.first = false;
         jac_curr_.first = false;
         TinvT_.first = false;
@@ -216,56 +216,56 @@ namespace DRT
 
       void invalid_ele_data()
       {
-        So3Plast<CORE::FE::CellType::hex8>::invalid_ele_data();
+        So3Plast<Core::FE::CellType::hex8>::invalid_ele_data();
         B_ans_loc_.first = false;
       }
 
-      const CORE::LINALG::Matrix<nsd_, nsd_>& jac_curr() const
+      const Core::LinAlg::Matrix<nsd_, nsd_>& jac_curr() const
       {
         if (jac_curr_.first == false) FOUR_C_THROW("jac_curr_ not valid");
         return jac_curr_.second;
       }
-      CORE::LINALG::Matrix<nsd_, nsd_>& set_jac_curr()
+      Core::LinAlg::Matrix<nsd_, nsd_>& set_jac_curr()
       {
         jac_curr_.first = true;
         return jac_curr_.second;
       }
 
-      const CORE::LINALG::Matrix<nsd_, nsd_>& jac_refe() const
+      const Core::LinAlg::Matrix<nsd_, nsd_>& jac_refe() const
       {
         if (jac_refe_.first == false) FOUR_C_THROW("jac_refe_ not valid");
         return jac_refe_.second;
       }
-      CORE::LINALG::Matrix<nsd_, nsd_>& set_jac_refe()
+      Core::LinAlg::Matrix<nsd_, nsd_>& set_jac_refe()
       {
         jac_refe_.first = true;
         return jac_refe_.second;
       }
 
-      const CORE::LINALG::Matrix<num_ans * num_sp, numdofperelement_>& b_ans_loc() const
+      const Core::LinAlg::Matrix<num_ans * num_sp, numdofperelement_>& b_ans_loc() const
       {
         if (B_ans_loc_.first == false) FOUR_C_THROW("B_ans_loc_ not valid");
         return B_ans_loc_.second;
       }
-      CORE::LINALG::Matrix<num_ans * num_sp, numdofperelement_>& set_b_ans_loc()
+      Core::LinAlg::Matrix<num_ans * num_sp, numdofperelement_>& set_b_ans_loc()
       {
         B_ans_loc_.first = true;
         return B_ans_loc_.second;
       }
 
-      const CORE::LINALG::Matrix<numstr_, numstr_>& tinv_t() const
+      const Core::LinAlg::Matrix<numstr_, numstr_>& tinv_t() const
       {
         if (TinvT_.first == false) FOUR_C_THROW("TinvT_ not valid");
         return TinvT_.second;
       }
-      CORE::LINALG::Matrix<numstr_, numstr_>& set_tinv_t()
+      Core::LinAlg::Matrix<numstr_, numstr_>& set_tinv_t()
       {
         TinvT_.first = true;
         return TinvT_.second;
       }
     };  // class So_sh8Plast
   }     // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 
 

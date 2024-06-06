@@ -37,27 +37,27 @@ FSI::MonolithicNoNOX::MonolithicNoNOX(
     const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
     : MonolithicBase(comm, timeparams), zeros_(Teuchos::null)
 {
-  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
 
   // use taylored fluid- and ALE-wrappers
-  fluid_ = Teuchos::rcp_dynamic_cast<ADAPTER::FluidFluidFSI>(MonolithicBase::fluid_field());
-  ale_ = Teuchos::rcp_dynamic_cast<ADAPTER::AleXFFsiWrapper>(MonolithicBase::ale_field());
+  fluid_ = Teuchos::rcp_dynamic_cast<Adapter::FluidFluidFSI>(MonolithicBase::fluid_field());
+  ale_ = Teuchos::rcp_dynamic_cast<Adapter::AleXFFsiWrapper>(MonolithicBase::ale_field());
 
   // enable debugging
-  if (CORE::UTILS::IntegralValue<int>(fsidyn, "DEBUGOUTPUT") == 1)
+  if (Core::UTILS::IntegralValue<int>(fsidyn, "DEBUGOUTPUT") == 1)
   {
     sdbg_ = Teuchos::rcp(new UTILS::DebugWriter(structure_field()->discretization()));
     // fdbg_ = Teuchos::rcp(new UTILS::DebugWriter(fluid_field()->discretization()));
   }
 
-  std::string s = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
+  std::string s = Global::Problem::Instance()->OutputControlFile()->FileName();
   s.append(".iteration");
   log_ = Teuchos::rcp(new std::ofstream(s.c_str()));
   itermax_ = fsimono.get<int>("ITEMAX");
-  normtypeinc_ = CORE::UTILS::IntegralValue<INPAR::FSI::ConvNorm>(fsimono, "NORM_INC");
-  normtypefres_ = CORE::UTILS::IntegralValue<INPAR::FSI::ConvNorm>(fsimono, "NORM_RESF");
-  combincfres_ = CORE::UTILS::IntegralValue<INPAR::FSI::BinaryOp>(fsimono, "NORMCOMBI_RESFINC");
+  normtypeinc_ = Core::UTILS::IntegralValue<Inpar::FSI::ConvNorm>(fsimono, "NORM_INC");
+  normtypefres_ = Core::UTILS::IntegralValue<Inpar::FSI::ConvNorm>(fsimono, "NORM_RESF");
+  combincfres_ = Core::UTILS::IntegralValue<Inpar::FSI::BinaryOp>(fsimono, "NORMCOMBI_RESFINC");
   tolinc_ = fsimono.get<double>("CONVTOL");
   tolfres_ = fsimono.get<double>("CONVTOL");
 
@@ -82,12 +82,12 @@ FSI::MonolithicNoNOX::MonolithicNoNOX(
 
 void FSI::MonolithicNoNOX::SetupSystem()
 {
-  const int ndim = GLOBAL::Problem::Instance()->NDim();
+  const int ndim = Global::Problem::Instance()->NDim();
 
-  CORE::ADAPTER::Coupling& coupsf = structure_fluid_coupling();
-  CORE::ADAPTER::Coupling& coupsa = structure_ale_coupling();
-  CORE::ADAPTER::Coupling& coupfa = fluid_ale_coupling();
-  CORE::ADAPTER::Coupling& icoupfa = interface_fluid_ale_coupling();
+  Core::Adapter::Coupling& coupsf = structure_fluid_coupling();
+  Core::Adapter::Coupling& coupsa = structure_ale_coupling();
+  Core::Adapter::Coupling& coupfa = fluid_ale_coupling();
+  Core::Adapter::Coupling& icoupfa = interface_fluid_ale_coupling();
 
   // structure to fluid
 
@@ -148,18 +148,18 @@ void FSI::MonolithicNoNOX::newton()
   // initialise equilibrium loop
   iter_ = 1;
 
-  x_sum_ = CORE::LINALG::CreateVector(*dof_row_map(), true);
+  x_sum_ = Core::LinAlg::CreateVector(*dof_row_map(), true);
   x_sum_->PutScalar(0.0);
 
   // incremental solution vector with length of all FSI dofs
-  iterinc_ = CORE::LINALG::CreateVector(*dof_row_map(), true);
+  iterinc_ = Core::LinAlg::CreateVector(*dof_row_map(), true);
   iterinc_->PutScalar(0.0);
 
-  zeros_ = CORE::LINALG::CreateVector(*dof_row_map(), true);
+  zeros_ = Core::LinAlg::CreateVector(*dof_row_map(), true);
   zeros_->PutScalar(0.0);
 
   // residual vector with length of all FSI dofs
-  rhs_ = CORE::LINALG::CreateVector(*dof_row_map(), true);
+  rhs_ = Core::LinAlg::CreateVector(*dof_row_map(), true);
   rhs_->PutScalar(0.0);
 
   firstcall_ = true;
@@ -211,13 +211,13 @@ void FSI::MonolithicNoNOX::newton()
   // test whether max iterations was hit
   if ((converged()) and (Comm().MyPID() == 0))
   {
-    CORE::IO::cout << CORE::IO::endl;
-    CORE::IO::cout << "  Newton Converged! " << CORE::IO::endl;
+    Core::IO::cout << Core::IO::endl;
+    Core::IO::cout << "  Newton Converged! " << Core::IO::endl;
   }
   else if (iter_ >= itermax_)
   {
-    CORE::IO::cout << CORE::IO::endl;
-    CORE::IO::cout << "  Newton unconverged in " << iter_ << " iterations " << CORE::IO::endl;
+    Core::IO::cout << Core::IO::endl;
+    Core::IO::cout << "  Newton unconverged in " << iter_ << " iterations " << Core::IO::endl;
   }
 }
 
@@ -232,10 +232,10 @@ bool FSI::MonolithicNoNOX::converged()
   // residual increments
   switch (normtypeinc_)
   {
-    case INPAR::FSI::convnorm_abs:
+    case Inpar::FSI::convnorm_abs:
       convinc = norminc_ < tolinc_;
       break;
-    case INPAR::FSI::convnorm_rel:
+    case Inpar::FSI::convnorm_rel:
       convinc =
           (((normstrincL2_ / ns_) < tol_dis_inc_l2_) and ((normstrincInf_) < tol_dis_inc_inf_) and
               ((norminterfaceincL2_ / ni_) < tol_fsi_inc_l2_) and
@@ -245,7 +245,7 @@ bool FSI::MonolithicNoNOX::converged()
               ((normflpresincL2_ / nfp_) < tol_pre_inc_l2_) and
               ((normflpresincInf_) < tol_pre_inc_inf_));
       break;
-    case INPAR::FSI::convnorm_mix:
+    case Inpar::FSI::convnorm_mix:
       FOUR_C_THROW("not implemented!");
       break;
     default:
@@ -256,10 +256,10 @@ bool FSI::MonolithicNoNOX::converged()
   // structural, fluid and ale residual forces
   switch (normtypefres_)
   {
-    case INPAR::FSI::convnorm_abs:
+    case Inpar::FSI::convnorm_abs:
       convfres = normrhs_ < tolfres_;
       break;
-    case INPAR::FSI::convnorm_rel:
+    case Inpar::FSI::convnorm_rel:
       convfres =
           (((normstrrhsL2_ / ns_) < tol_dis_res_l2_) and ((normstrrhsInf_) < tol_dis_res_inf_) and
               ((norminterfacerhsL2_ / ni_) < tol_fsi_res_l2_) and
@@ -269,7 +269,7 @@ bool FSI::MonolithicNoNOX::converged()
               ((normflpresrhsL2_ / nfp_) < tol_pre_res_l2_) and
               ((normflpresrhsInf_) < tol_pre_res_inf_));
       break;
-    case INPAR::FSI::convnorm_mix:
+    case Inpar::FSI::convnorm_mix:
       FOUR_C_THROW("not implemented!");
       break;
     default:
@@ -279,7 +279,7 @@ bool FSI::MonolithicNoNOX::converged()
 
   // combined
   bool conv = false;
-  if (combincfres_ == INPAR::FSI::bop_and)
+  if (combincfres_ == Inpar::FSI::bop_and)
     conv = convinc and convfres;
   else
     FOUR_C_THROW("Something went wrong!");
@@ -292,7 +292,7 @@ bool FSI::MonolithicNoNOX::converged()
 void FSI::MonolithicNoNOX::linear_solve()
 {
   // merge blockmatrix to SparseMatrix and solve
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> sparse = systemmatrix_->Merge();
 
   // apply Dirichlet BCs to system of equations
   if (firstcall_)
@@ -300,22 +300,22 @@ void FSI::MonolithicNoNOX::linear_solve()
   else
     iterinc_->PutScalar(0.0);
 
-  CORE::LINALG::apply_dirichlet_to_system(*sparse, *iterinc_, *rhs_, *zeros_, *combined_dbc_map());
+  Core::LinAlg::apply_dirichlet_to_system(*sparse, *iterinc_, *rhs_, *zeros_, *combined_dbc_map());
 
 #ifndef moresolvers
-  const Teuchos::ParameterList& fdyn = GLOBAL::Problem::Instance()->FluidDynamicParams();
+  const Teuchos::ParameterList& fdyn = Global::Problem::Instance()->FluidDynamicParams();
   const int fluidsolver = fdyn.get<int>("LINEAR_SOLVER");
   solver_ = Teuchos::rcp(
-      new CORE::LINALG::Solver(GLOBAL::Problem::Instance()->SolverParams(fluidsolver), Comm()));
+      new Core::LinAlg::Solver(Global::Problem::Instance()->SolverParams(fluidsolver), Comm()));
 #else
   // get UMFPACK...
-  Teuchos::ParameterList solverparams = GLOBAL::Problem::Instance()->UMFPACKSolverParams();
-  solver_ = Teuchos::rcp(new CORE::LINALG::Solver(solverparams, Comm()));
+  Teuchos::ParameterList solverparams = Global::Problem::Instance()->UMFPACKSolverParams();
+  solver_ = Teuchos::rcp(new Core::LinAlg::Solver(solverparams, Comm()));
 #endif
 
 
   // standard solver call
-  CORE::LINALG::SolverParams solver_params;
+  Core::LinAlg::SolverParams solver_params;
   solver_params.refactor = true;
   solver_params.reset = iter_ == 1;
   solver_->Solve(sparse->EpetraOperator(), iterinc_, rhs_, solver_params);
@@ -385,7 +385,7 @@ void FSI::MonolithicNoNOX::evaluate(Teuchos::RCP<const Epetra_Vector> step_incre
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicNoNOX::set_dof_row_maps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps)
 {
-  Teuchos::RCP<Epetra_Map> fullmap = CORE::LINALG::MultiMapExtractor::MergeMaps(maps);
+  Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::MergeMaps(maps);
   blockrowdofmap_.Setup(*fullmap, maps);
 }
 
@@ -467,39 +467,39 @@ void FSI::MonolithicNoNOX::print_newton_iter()
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicNoNOX::print_newton_iter_header()
 {
-  CORE::IO::cout << "CONVTOL: " << tolfres_ << CORE::IO::endl;
+  Core::IO::cout << "CONVTOL: " << tolfres_ << Core::IO::endl;
 
   // open outstringstream
   // std::ostringstream oss;
 
-  CORE::IO::cout
+  Core::IO::cout
       << "===================================================================================="
          "======="
          "========================================================================="
-      << CORE::IO::endl;
+      << Core::IO::endl;
 
   // enter converged state etc
-  CORE::IO::cout << "|nit|";
+  Core::IO::cout << "|nit|";
 
   // different style due relative or absolute error checking
   // displacement
   switch (normtypefres_)
   {
-    case INPAR::FSI::convnorm_abs:
-      CORE::IO::cout << "            "
+    case Inpar::FSI::convnorm_abs:
+      Core::IO::cout << "            "
                      << "abs-res-norm  |";
       break;
-    case INPAR::FSI::convnorm_rel:
-      CORE::IO::cout << "str-rs-l2|"
+    case Inpar::FSI::convnorm_rel:
+      Core::IO::cout << "str-rs-l2|"
                      << "fsi-rs-l2|"
                      << "flv-rs-l2|"
                      << "flp-rs-l2|";
-      CORE::IO::cout << "str-rs-li|"
+      Core::IO::cout << "str-rs-li|"
                      << "fsi-rs-li|"
                      << "flv-rs-li|"
                      << "flp-rs-li|";
       break;
-    case INPAR::FSI::convnorm_mix:
+    case Inpar::FSI::convnorm_mix:
       FOUR_C_THROW("not implemented");
       break;
     default:
@@ -509,21 +509,21 @@ void FSI::MonolithicNoNOX::print_newton_iter_header()
 
   switch (normtypeinc_)
   {
-    case INPAR::FSI::convnorm_abs:
-      CORE::IO::cout << "                  "
+    case Inpar::FSI::convnorm_abs:
+      Core::IO::cout << "                  "
                      << "abs-inc-norm";
       break;
-    case INPAR::FSI::convnorm_rel:
-      CORE::IO::cout << "str-in-l2|"
+    case Inpar::FSI::convnorm_rel:
+      Core::IO::cout << "str-in-l2|"
                      << "fsi-in-l2|"
                      << "flv-in-l2|"
                      << "flp-in-l2|";
-      CORE::IO::cout << "str-in-li|"
+      Core::IO::cout << "str-in-li|"
                      << "fsi-in-li|"
                      << "flv-in-li|"
                      << "flp-in-li|";
       break;
-    case INPAR::FSI::convnorm_mix:
+    case Inpar::FSI::convnorm_mix:
       FOUR_C_THROW("convnorm_mix not implemented");
       break;
     default:
@@ -532,12 +532,12 @@ void FSI::MonolithicNoNOX::print_newton_iter_header()
   }
 
   // add solution time
-  CORE::IO::cout << CORE::IO::endl;
-  CORE::IO::cout
+  Core::IO::cout << Core::IO::endl;
+  Core::IO::cout
       << "===================================================================================="
          "======="
          "========================================================================="
-      << CORE::IO::endl;
+      << Core::IO::endl;
 }
 
 /*---------------------------------------------------------------------*/
@@ -546,22 +546,22 @@ void FSI::MonolithicNoNOX::print_newton_iter_header()
 void FSI::MonolithicNoNOX::print_newton_iter_text()
 {
   // enter converged state etc
-  CORE::IO::cout << " " << iter_ << "/" << itermax_;
+  Core::IO::cout << " " << iter_ << "/" << itermax_;
 
   // different style due relative or absolute error checking
   // displacement
   switch (normtypefres_)
   {
-    case INPAR::FSI::convnorm_abs:
-      CORE::IO::cout << "             " << (normrhs_) << CORE::IO::endl;
+    case Inpar::FSI::convnorm_abs:
+      Core::IO::cout << "             " << (normrhs_) << Core::IO::endl;
       break;
-    case INPAR::FSI::convnorm_rel:
-      CORE::IO::cout << "|" << (normstrrhsL2_ / ns_) << "|" << (norminterfacerhsL2_ / ni_) << "|"
+    case Inpar::FSI::convnorm_rel:
+      Core::IO::cout << "|" << (normstrrhsL2_ / ns_) << "|" << (norminterfacerhsL2_ / ni_) << "|"
                      << (normflvelrhsL2_ / nfv_) << "|" << (normflpresrhsL2_ / nfp_) << "|"
                      << (normstrrhsInf_) << "|" << (norminterfacerhsInf_) << "|"
                      << (normflvelrhsInf_) << "|" << (normflpresrhsInf_);
       break;
-    case INPAR::FSI::convnorm_mix:
+    case Inpar::FSI::convnorm_mix:
       FOUR_C_THROW("Mixed absolute-relative residual norm not implemented for XFFSI.");
       break;
     default:
@@ -571,16 +571,16 @@ void FSI::MonolithicNoNOX::print_newton_iter_text()
 
   switch (normtypeinc_)
   {
-    case INPAR::FSI::convnorm_abs:
-      CORE::IO::cout << "             " << (norminc_) << CORE::IO::endl;
+    case Inpar::FSI::convnorm_abs:
+      Core::IO::cout << "             " << (norminc_) << Core::IO::endl;
       break;
-    case INPAR::FSI::convnorm_rel:
-      CORE::IO::cout << "|" << (normstrincL2_ / ns_) << "|" << (norminterfaceincL2_ / ni_) << "|"
+    case Inpar::FSI::convnorm_rel:
+      Core::IO::cout << "|" << (normstrincL2_ / ns_) << "|" << (norminterfaceincL2_ / ni_) << "|"
                      << (normflvelincL2_ / nfv_) << "|" << (normflpresincL2_ / nfp_) << "|"
                      << (normstrincInf_) << "|" << (norminterfaceincInf_) << "|"
-                     << (normflvelincInf_) << "|" << (normflpresincInf_) << "|" << CORE::IO::endl;
+                     << (normflvelincInf_) << "|" << (normflpresincInf_) << "|" << Core::IO::endl;
       break;
-    case INPAR::FSI::convnorm_mix:
+    case Inpar::FSI::convnorm_mix:
       FOUR_C_THROW("Mixed absolute-relative increment norm not implemented for XFFSI.");
       break;
     default:
@@ -598,10 +598,10 @@ void FSI::MonolithicNoNOX::update()
   recover_lagrange_multiplier();
 
   // In case of ALE relaxation
-  if (fluid_->monolithic_xffsi_approach() != INPAR::XFEM::XFFSI_Full_Newton and
+  if (fluid_->monolithic_xffsi_approach() != Inpar::XFEM::XFFSI_Full_Newton and
       fluid_->IsAleRelaxationStep(Step()))
   {
-    if (Comm().MyPID() == 0) CORE::IO::cout << "Relaxing ALE!" << CORE::IO::endl;
+    if (Comm().MyPID() == 0) Core::IO::cout << "Relaxing ALE!" << Core::IO::endl;
     // Set the ALE FSI-DOFs to Dirichlet and solve ALE system again
     // to obtain the true ALE displacement
     ale_field()->Solve();
@@ -630,7 +630,7 @@ void FSI::MonolithicNoNOX::prepare_time_step()
   ale_field()->prepare_time_step();
 
   // no ALE-relaxation or still at the first step? leave!
-  if (fluid_->monolithic_xffsi_approach() == INPAR::XFEM::XFFSI_Full_Newton || Step() == 0 ||
+  if (fluid_->monolithic_xffsi_approach() == Inpar::XFEM::XFFSI_Full_Newton || Step() == 0 ||
       !fluid_->IsAleRelaxationStep(Step() - 1))
     return;
 
@@ -638,7 +638,7 @@ void FSI::MonolithicNoNOX::prepare_time_step()
   // as we have to deal with a new map extrator
   create_combined_dof_row_map();
   systemmatrix_ =
-      Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
+      Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
           extractor(), extractor(), 81, false, true));
 }
 

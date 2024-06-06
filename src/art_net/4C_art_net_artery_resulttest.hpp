@@ -21,12 +21,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace ART
+namespace Arteries
 {
   // forward declaration
   class ArtNetExplicitTimeInt;
@@ -38,7 +38,7 @@ namespace ART
     \author Mahmoud Ismail
     \date 11/11
   */
-  class ArteryResultTest : public CORE::UTILS::ResultTest
+  class ArteryResultTest : public Core::UTILS::ResultTest
   {
    public:
     /*!
@@ -56,14 +56,14 @@ namespace ART
     /*!
       Possible position flags is only "phi"
      */
-    void test_node(INPUT::LineDefinition& res, int& nerr, int& test_count) override;
+    void test_node(Input::LineDefinition& res, int& nerr, int& test_count) override;
 
     /// our version of element value tests
-    void TestElement(INPUT::LineDefinition& res, int& nerr, int& test_count) override;
+    void TestElement(Input::LineDefinition& res, int& nerr, int& test_count) override;
 
    private:
     /// Teuchos::RCP to scalar transport discretization
-    Teuchos::RCP<DRT::Discretization> dis_;
+    Teuchos::RCP<Discret::Discretization> dis_;
     /// Teuchos::RCP to solution vector
     Teuchos::RCP<const Epetra_Vector> mysol_;
     /// Teuchos::RCP to element volumetric flow
@@ -72,7 +72,7 @@ namespace ART
     Teuchos::RCP<const Epetra_Vector> myeleradius_;
   };
 
-}  // namespace ART
+}  // namespace Arteries
 
 FOUR_C_NAMESPACE_CLOSE
 

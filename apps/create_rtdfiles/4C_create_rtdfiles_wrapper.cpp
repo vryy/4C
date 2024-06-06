@@ -59,7 +59,7 @@ namespace RTD
     headerdocumentationfile << ".. _headerparameters:\n\n";
     headerdocumentationfile << "Header parameters\n";
     headerdocumentationfile << "=================\n\n";
-    WriteHeaderReference(headerdocumentationfile, *INPUT::ValidParameters(), "");
+    WriteHeaderReference(headerdocumentationfile, *Input::ValidParameters(), "");
   }
 
   /*----------------------------------------------------------------------*/
@@ -87,7 +87,7 @@ namespace RTD
       FOUR_C_THROW("failed to open file: %s", materialdocumentationfilename.c_str());
     materialdocumentationfile << "..\n   Created using 4C version (git SHA1):\n";
     materialdocumentationfile << "   " << VersionControl::git_hash << "\n\n";
-    WriteMaterialReference(materialdocumentationfile, *INPUT::ValidMaterials());
+    WriteMaterialReference(materialdocumentationfile, *Input::ValidMaterials());
   }
 
   /*----------------------------------------------------------------------*/
@@ -101,9 +101,9 @@ namespace RTD
       FOUR_C_THROW("failed to open file: %s", conditiondocumentationfilename.c_str());
     conditiondocumentationfile << "..\n   Created using 4C version (git SHA1):\n";
     conditiondocumentationfile << "   " << VersionControl::git_hash << "\n\n";
-    WriteConditionsReference(conditiondocumentationfile, *INPUT::ValidConditions());
+    WriteConditionsReference(conditiondocumentationfile, *Input::ValidConditions());
 
-    WriteContactLawReference(conditiondocumentationfile, *INPUT::ValidContactConstitutiveLaws());
+    WriteContactLawReference(conditiondocumentationfile, *Input::ValidContactConstitutiveLaws());
   }
 
   /*----------------------------------------------------------------------*/

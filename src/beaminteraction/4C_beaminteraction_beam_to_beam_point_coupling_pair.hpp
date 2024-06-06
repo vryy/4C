@@ -22,11 +22,11 @@ FOUR_C_NAMESPACE_OPEN
 
 
 // Forward declarations.
-namespace CORE::LARGEROTATIONS
+namespace Core::LargeRotations
 {
   template <unsigned int numnodes, typename T>
   class TriadInterpolationLocalRotationVectors;
-}  // namespace CORE::LARGEROTATIONS
+}  // namespace Core::LargeRotations
 
 
 namespace BEAMINTERACTION
@@ -72,10 +72,10 @@ namespace BEAMINTERACTION
     /**
      * \brief Evaluate this contact element pair.
      */
-    bool Evaluate(CORE::LINALG::SerialDenseVector* forcevec1,
-        CORE::LINALG::SerialDenseVector* forcevec2, CORE::LINALG::SerialDenseMatrix* stiffmat11,
-        CORE::LINALG::SerialDenseMatrix* stiffmat12, CORE::LINALG::SerialDenseMatrix* stiffmat21,
-        CORE::LINALG::SerialDenseMatrix* stiffmat22) override
+    bool Evaluate(Core::LinAlg::SerialDenseVector* forcevec1,
+        Core::LinAlg::SerialDenseVector* forcevec2, Core::LinAlg::SerialDenseMatrix* stiffmat11,
+        Core::LinAlg::SerialDenseMatrix* stiffmat12, Core::LinAlg::SerialDenseMatrix* stiffmat21,
+        Core::LinAlg::SerialDenseMatrix* stiffmat22) override
     {
       return false;
     }
@@ -89,9 +89,9 @@ namespace BEAMINTERACTION
      * @param stiffness_matrix (in / out) Global stiffness matrix.
      * @param displacement_vector (in) Global displacement vector.
      */
-    void EvaluateAndAssemble(const Teuchos::RCP<const DRT::Discretization>& discret,
+    void EvaluateAndAssemble(const Teuchos::RCP<const Discret::Discretization>& discret,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
-        const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
+        const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
         const Teuchos::RCP<const Epetra_Vector>& displacement_vector) override;
 
     /**
@@ -119,7 +119,7 @@ namespace BEAMINTERACTION
      * \brief Get coordinates of all active contact points on element1. Not yet implemented.
      */
     void get_all_active_contact_point_coords_element1(
-        std::vector<CORE::LINALG::Matrix<3, 1, double>>& coords) const override
+        std::vector<Core::LinAlg::Matrix<3, 1, double>>& coords) const override
     {
       FOUR_C_THROW("get_all_active_contact_point_coords_element1 not yet implemented!");
     }
@@ -128,7 +128,7 @@ namespace BEAMINTERACTION
      * \brief Get coordinates of all active contact points on element2. Not yet implemented.
      */
     void get_all_active_contact_point_coords_element2(
-        std::vector<CORE::LINALG::Matrix<3, 1, double>>& coords) const override
+        std::vector<Core::LinAlg::Matrix<3, 1, double>>& coords) const override
     {
       FOUR_C_THROW("get_all_active_contact_point_coords_element2 not yet implemented!");
     }
@@ -179,9 +179,9 @@ namespace BEAMINTERACTION
      * @param displacement_vector (in) Global displacement vector.
      */
     void evaluate_and_assemble_positional_coupling(
-        const Teuchos::RCP<const DRT::Discretization>& discret,
+        const Teuchos::RCP<const Discret::Discretization>& discret,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
-        const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
+        const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
         const Teuchos::RCP<const Epetra_Vector>& displacement_vector) const;
 
     /**
@@ -194,9 +194,9 @@ namespace BEAMINTERACTION
      * @param displacement_vector (in) Global displacement vector.
      */
     void evaluate_and_assemble_rotational_coupling(
-        const Teuchos::RCP<const DRT::Discretization>& discret,
+        const Teuchos::RCP<const Discret::Discretization>& discret,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
-        const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
+        const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
         const Teuchos::RCP<const Epetra_Vector>& displacement_vector) const;
 
    private:

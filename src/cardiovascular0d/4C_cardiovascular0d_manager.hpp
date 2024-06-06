@@ -25,28 +25,28 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationReader;
 }
 
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
   class Structure;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
   class SparseOperator;
   class MapExtractor;
   class MultiMapExtractor;
   class Solver;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace MOR
+namespace ModelOrderRed
 {
   class ProperOrthogonalDecomposition;
 }
@@ -63,13 +63,14 @@ namespace UTILS
     /*!
       \brief Constructor of cardiovascular0d manager
     */
-    Cardiovascular0DManager(Teuchos::RCP<DRT::Discretization> disc,  ///< standard discretization
-        Teuchos::RCP<const Epetra_Vector> disp,                      ///< current displacement
+    Cardiovascular0DManager(
+        Teuchos::RCP<Discret::Discretization> disc,  ///< standard discretization
+        Teuchos::RCP<const Epetra_Vector> disp,      ///< current displacement
         Teuchos::ParameterList
             strparams,  ///<  parameterlist from structural time integration algorithm
         Teuchos::ParameterList cv0dparams,  ///<  parameterlist from cardiovascular0d
-        CORE::LINALG::Solver& solver,       ///< Solver to solve linear subproblem in iteration
-        Teuchos::RCP<MOR::ProperOrthogonalDecomposition> mor  ///< model order reduction
+        Core::LinAlg::Solver& solver,       ///< Solver to solve linear subproblem in iteration
+        Teuchos::RCP<ModelOrderRed::ProperOrthogonalDecomposition> mor  ///< model order reduction
     );
 
     /*!
@@ -78,7 +79,7 @@ namespace UTILS
     void evaluate_force_stiff(const double time,           ///< time at end of time step
         Teuchos::RCP<const Epetra_Vector> disp,            ///< displacement at end of time step
         Teuchos::RCP<Epetra_Vector> fint,                  ///< vector of internal structural forces
-        Teuchos::RCP<CORE::LINALG::SparseOperator> stiff,  ///< structural stiffness matrix
+        Teuchos::RCP<Core::LinAlg::SparseOperator> stiff,  ///< structural stiffness matrix
         Teuchos::ParameterList scalelist);
 
     /*!
@@ -144,7 +145,7 @@ namespace UTILS
     void evaluate_neumann_cardiovascular0_d_coupling(
         Teuchos::ParameterList params, const Teuchos::RCP<Epetra_Vector> actpres,
         Teuchos::RCP<Epetra_Vector> systemvector,                ///< structural rhs
-        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix  ///< structural stiffness matrix
+        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix  ///< structural stiffness matrix
     );
 
     /*!
@@ -162,19 +163,19 @@ namespace UTILS
     };
 
     //! Return the additional rectangular matrix, constructed for pressure evaluation
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatDcardvasc0dDd()  // const
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> GetMatDcardvasc0dDd()  // const
     {
       return mat_dcardvasc0d_dd_;
     };
 
     //! Return the additional rectangular matrix, constructed for pressure evaluation
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> get_mat_dstruct_dcv0ddof()  // const
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> get_mat_dstruct_dcv0ddof()  // const
     {
       return mat_dstruct_dcv0ddof_;
     };
 
     //! Return the additional rectangular matrix, constructed for pressure evaluation
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> get_cardiovascular0_d_stiffness()  // const
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> get_cardiovascular0_d_stiffness()  // const
     {
       return cardiovascular0dstiffness_;
     };
@@ -222,7 +223,7 @@ namespace UTILS
     /*!
      \brief Read restart information
     */
-    void read_restart(CORE::IO::DiscretizationReader& reader, const double& time);
+    void read_restart(Core::IO::DiscretizationReader& reader, const double& time);
 
     /*!
      \brief Return structural input parameter list
@@ -234,7 +235,7 @@ namespace UTILS
     */
     Teuchos::ParameterList& Cardvasc0DParams() { return cv0dparams_; }
 
-    Teuchos::RCP<CORE::LINALG::Solver>& GetSolver() { return solver_; }
+    Teuchos::RCP<Core::LinAlg::Solver>& GetSolver() { return solver_; }
 
     /// Reset reference base values for restart computations
     void Set0D_v_n(Teuchos::RCP<Epetra_Vector> newval  ///< new reference base values
@@ -271,14 +272,14 @@ namespace UTILS
 
 
     //! switch Cardiovascular0D matrix to block matrix
-    void use_block_matrix(Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
-        Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> rangemaps);
+    void use_block_matrix(Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> domainmaps,
+        Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> rangemaps);
 
 
-    void SolverSetup(CORE::LINALG::Solver& solver, Teuchos::ParameterList params);
+    void SolverSetup(Core::LinAlg::Solver& solver, Teuchos::ParameterList params);
 
 
-    int Solve(Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff,  ///< stiffness matrix
+    int Solve(Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff,  ///< stiffness matrix
         Teuchos::RCP<Epetra_Vector> dispinc,          ///< displacement increment to compute
         const Teuchos::RCP<Epetra_Vector> rhsstruct,  ///< standard right hand side
         const double k_ptc                            ///< for 3D-0D PTC
@@ -330,10 +331,10 @@ namespace UTILS
     Cardiovascular0DManager(const Cardiovascular0DManager& old);
 
 
-    Teuchos::RCP<DRT::Discretization>
+    Teuchos::RCP<Discret::Discretization>
         actdisc_;  ///< discretization where elements of cardiovascular0d boundary live in
     int myrank_;   ///< processor
-    Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps_;  ///< map for Dirichlet DOFs
+    Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps_;  ///< map for Dirichlet DOFs
     Teuchos::RCP<Cardiovascular0DDofSet>
         cardiovascular0ddofset_full_;  ///< degrees of freedom of pressures
     Teuchos::RCP<Cardiovascular0DDofSet>
@@ -383,19 +384,19 @@ namespace UTILS
     Teuchos::RCP<Cardiovascular0D> cardvasc0d_arterialproxdist_;
     Teuchos::RCP<Cardiovascular0D> cardvasc0d_syspulcirculation_;
     Teuchos::RCP<Cardiovascular0D> cardvascrespir0d_syspulperiphcirculation_;
-    Teuchos::RCP<CORE::LINALG::Solver> solver_;  ///< solver for linear standard linear system
-    Teuchos::RCP<CORE::LINALG::SparseMatrix>
+    Teuchos::RCP<Core::LinAlg::Solver> solver_;  ///< solver for linear standard linear system
+    Teuchos::RCP<Core::LinAlg::SparseMatrix>
         cardiovascular0dstiffness_;  ///< additional rectangular matrix
-    Teuchos::RCP<CORE::LINALG::SparseMatrix>
+    Teuchos::RCP<Core::LinAlg::SparseMatrix>
         mat_dcardvasc0d_dd_;  ///< additional rectangular matrix
-    Teuchos::RCP<CORE::LINALG::SparseMatrix>
+    Teuchos::RCP<Core::LinAlg::SparseMatrix>
         mat_dstruct_dcv0ddof_;  ///< additional rectangular matrix
     int counter_;               ///< counts how often #Solve is called
     bool isadapttol_;           ///< adaptive tolerance for solver?
     double adaptolbetter_;      ///< adaptive tolerance for solver useful?
     double tolres_struct_;      ///< tolerace for structural residual
     double tolres_cardvasc0d_;  ///< tolerace for cardiovascular0d residual
-    INPAR::CARDIOVASCULAR0D::Cardvasc0DSolveAlgo algochoice_;
+    Inpar::CARDIOVASCULAR0D::Cardvasc0DSolveAlgo algochoice_;
     Teuchos::RCP<Epetra_Vector> dirichtoggle_;  ///< \b only for compatability: dirichlet toggle --
                                                 ///< monitor its target change!
     Teuchos::RCP<Epetra_Vector> zeros_;         ///< a zero vector of full length
@@ -407,10 +408,10 @@ namespace UTILS
     int linsolveerror_;                  ///< indicates error / problem in linear solver
     Teuchos::ParameterList strparams_;   ///< structure input parameters
     Teuchos::ParameterList cv0dparams_;  ///< 0D cardiovascular input parameters
-    INPAR::STR::IntegrationStrategy
+    Inpar::STR::IntegrationStrategy
         intstrat_;  ///< structural time-integration strategy (old vs. standard)
-    Teuchos::RCP<MOR::ProperOrthogonalDecomposition> mor_;  ///< model order reduction
-    bool have_mor_;                                         ///< model order reduction is used
+    Teuchos::RCP<ModelOrderRed::ProperOrthogonalDecomposition> mor_;  ///< model order reduction
+    bool have_mor_;  ///< model order reduction is used
 
   };  // class
 }  // namespace UTILS

@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::NLN::SOLVER::IsXMLStatusTestFile(const Teuchos::ParameterList& pstatus)
+bool STR::Nln::SOLVER::IsXMLStatusTestFile(const Teuchos::ParameterList& pstatus)
 {
   bool check = false;
 
@@ -47,17 +47,17 @@ bool STR::NLN::SOLVER::IsXMLStatusTestFile(const Teuchos::ParameterList& pstatus
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::NLN::SOLVER::CreateQuantityTypes(
-    std::set<enum NOX::NLN::StatusTest::QuantityType>& qtypes,
-    const STR::TIMINT::BaseDataSDyn& datasdyn)
+void STR::Nln::SOLVER::CreateQuantityTypes(
+    std::set<enum NOX::Nln::StatusTest::QuantityType>& qtypes,
+    const STR::TimeInt::BaseDataSDyn& datasdyn)
 {
   // ---------------------------------------------------------------------------
   // get the model types
   // ---------------------------------------------------------------------------
-  const std::set<enum INPAR::STR::ModelType>& mtypes = datasdyn.GetModelTypes();
-  std::vector<enum NOX::NLN::StatusTest::QuantityType> qt_vec;
+  const std::set<enum Inpar::STR::ModelType>& mtypes = datasdyn.GetModelTypes();
+  std::vector<enum NOX::Nln::StatusTest::QuantityType> qt_vec;
 
-  std::set<enum INPAR::STR::ModelType>::const_iterator miter;
+  std::set<enum Inpar::STR::ModelType>::const_iterator miter;
   for (miter = mtypes.begin(); miter != mtypes.end(); ++miter)
   {
     ConvertModelType2QuantityType(*miter, qt_vec);
@@ -73,9 +73,9 @@ void STR::NLN::SOLVER::CreateQuantityTypes(
   // ---------------------------------------------------------------------------
   // get the element technologies
   // ---------------------------------------------------------------------------
-  const std::set<enum INPAR::STR::EleTech>& eletechs = datasdyn.get_element_technologies();
+  const std::set<enum Inpar::STR::EleTech>& eletechs = datasdyn.get_element_technologies();
 
-  std::set<enum INPAR::STR::EleTech>::const_iterator etiter;
+  std::set<enum Inpar::STR::EleTech>::const_iterator etiter;
   for (etiter = eletechs.begin(); etiter != eletechs.end(); ++etiter)
   {
     ConvertEleTech2QuantityType(*etiter, qt_vec);
@@ -92,8 +92,8 @@ void STR::NLN::SOLVER::CreateQuantityTypes(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::NLN::SOLVER::ConvertModelType2QuantityType(
-    const enum INPAR::STR::ModelType& mt, std::vector<enum NOX::NLN::StatusTest::QuantityType>& qt)
+void STR::Nln::SOLVER::ConvertModelType2QuantityType(
+    const enum Inpar::STR::ModelType& mt, std::vector<enum NOX::Nln::StatusTest::QuantityType>& qt)
 {
   // clear quantity type vector
   qt.clear();
@@ -101,30 +101,30 @@ void STR::NLN::SOLVER::ConvertModelType2QuantityType(
   switch (mt)
   {
     // --- Structural case -----------------------------------------------------
-    case INPAR::STR::model_structure:
+    case Inpar::STR::model_structure:
     {
-      qt.push_back(NOX::NLN::StatusTest::quantity_structure);
+      qt.push_back(NOX::Nln::StatusTest::quantity_structure);
       break;
     }
     // --- Contact case --------------------------------------------------------
-    case INPAR::STR::model_contact:
+    case Inpar::STR::model_contact:
     {
       // add the normal/frictionless case
-      qt.push_back(NOX::NLN::StatusTest::quantity_contact_normal);
+      qt.push_back(NOX::Nln::StatusTest::quantity_contact_normal);
       // check for friction
       const Teuchos::ParameterList& p_contact =
-          GLOBAL::Problem::Instance()->contact_dynamic_params();
-      enum INPAR::CONTACT::FrictionType frictiontype =
-          CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(p_contact, "FRICTION");
+          Global::Problem::Instance()->contact_dynamic_params();
+      enum Inpar::CONTACT::FrictionType frictiontype =
+          Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(p_contact, "FRICTION");
       switch (frictiontype)
       {
-        case INPAR::CONTACT::friction_none:
+        case Inpar::CONTACT::friction_none:
         {
           break;
         }
         default:
         {
-          qt.push_back(NOX::NLN::StatusTest::quantity_contact_friction);
+          qt.push_back(NOX::Nln::StatusTest::quantity_contact_friction);
           break;
         }
       }
@@ -132,27 +132,27 @@ void STR::NLN::SOLVER::ConvertModelType2QuantityType(
       break;
     }
     // --- MeshTying case ------------------------------------------------------
-    case INPAR::STR::model_meshtying:
+    case Inpar::STR::model_meshtying:
     {
-      qt.push_back(NOX::NLN::StatusTest::quantity_meshtying);
+      qt.push_back(NOX::Nln::StatusTest::quantity_meshtying);
       break;
     }
     // --- constraint model case -----------------------------------------------
-    case INPAR::STR::model_constraints:
+    case Inpar::STR::model_constraints:
     {
-      qt.push_back(NOX::NLN::StatusTest::quantity_structure);
+      qt.push_back(NOX::Nln::StatusTest::quantity_structure);
       break;
     }
     // --- 0D cardiovascular model case ----------------------------------------
-    case INPAR::STR::model_cardiovascular0d:
+    case Inpar::STR::model_cardiovascular0d:
     {
-      qt.push_back(NOX::NLN::StatusTest::quantity_cardiovascular0d);
+      qt.push_back(NOX::Nln::StatusTest::quantity_cardiovascular0d);
       break;
     }
     // --- Lagrangian/penalty case constraint ----------------------------------
-    case INPAR::STR::model_lag_pen_constraint:
+    case Inpar::STR::model_lag_pen_constraint:
     {
-      qt.push_back(NOX::NLN::StatusTest::quantity_lag_pen_constraint);
+      qt.push_back(NOX::Nln::StatusTest::quantity_lag_pen_constraint);
       break;
     }
     default:
@@ -163,8 +163,8 @@ void STR::NLN::SOLVER::ConvertModelType2QuantityType(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::NLN::SOLVER::ConvertEleTech2QuantityType(
-    const enum INPAR::STR::EleTech& et, std::vector<enum NOX::NLN::StatusTest::QuantityType>& qt)
+void STR::Nln::SOLVER::ConvertEleTech2QuantityType(
+    const enum Inpar::STR::EleTech& et, std::vector<enum NOX::Nln::StatusTest::QuantityType>& qt)
 {
   // clear quantity type vector
   qt.clear();
@@ -172,21 +172,21 @@ void STR::NLN::SOLVER::ConvertEleTech2QuantityType(
   switch (et)
   {
     // --- EAS case ------------------------------------------------------------
-    case INPAR::STR::EleTech::eas:
+    case Inpar::STR::EleTech::eas:
     {
-      qt.push_back(NOX::NLN::StatusTest::quantity_eas);
+      qt.push_back(NOX::Nln::StatusTest::quantity_eas);
       break;
     }
     // --- Plasticity case -----------------------------------------------------
-    case INPAR::STR::EleTech::plasticity:
+    case Inpar::STR::EleTech::plasticity:
     {
-      qt.push_back(NOX::NLN::StatusTest::quantity_plasticity);
+      qt.push_back(NOX::Nln::StatusTest::quantity_plasticity);
       break;
     }
     // --- Pressure case -------------------------------------------------------
-    case INPAR::STR::EleTech::pressure:
+    case Inpar::STR::EleTech::pressure:
     {
-      qt.push_back(NOX::NLN::StatusTest::quantity_pressure);
+      qt.push_back(NOX::Nln::StatusTest::quantity_pressure);
       break;
     }
     default:
@@ -199,9 +199,9 @@ void STR::NLN::SOLVER::ConvertEleTech2QuantityType(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::NLN::SOLVER::SetStatusTestParams(Teuchos::ParameterList& pstatus,
-    const STR::TIMINT::BaseDataSDyn& datasdyn,
-    const std::set<enum NOX::NLN::StatusTest::QuantityType>& qt)
+void STR::Nln::SOLVER::SetStatusTestParams(Teuchos::ParameterList& pstatus,
+    const STR::TimeInt::BaseDataSDyn& datasdyn,
+    const std::set<enum NOX::Nln::StatusTest::QuantityType>& qt)
 {
   // ------ outer status test ------
   // Combo test: OR-combination:
@@ -233,12 +233,12 @@ void STR::NLN::SOLVER::SetStatusTestParams(Teuchos::ParameterList& pstatus,
   Teuchos::ParameterList& pcombo_incr_fres = pcombo_incr_fres_constr.sublist("Test 0");
   pcombo_incr_fres.set("Test Type", "Combo");
   switch (datasdyn.GetResIncrComboType(
-      NOX::NLN::StatusTest::quantity_structure, NOX::NLN::StatusTest::quantity_structure))
+      NOX::Nln::StatusTest::quantity_structure, NOX::Nln::StatusTest::quantity_structure))
   {
-    case INPAR::STR::bop_and:
+    case Inpar::STR::bop_and:
       pcombo_incr_fres.set("Combo Type", "AND");
       break;
-    case INPAR::STR::bop_or:
+    case Inpar::STR::bop_or:
       pcombo_incr_fres.set("Combo Type", "OR");
       break;
     default:
@@ -277,10 +277,10 @@ void STR::NLN::SOLVER::SetStatusTestParams(Teuchos::ParameterList& pstatus,
   // | lvl. 1: combo AND - Test OPTIONAL:
   // | Tests the constraint NormF
   // ---------------------------------------------------------------------------
-  if (qt.find(NOX::NLN::StatusTest::quantity_lag_pen_constraint) != qt.end())
+  if (qt.find(NOX::Nln::StatusTest::quantity_lag_pen_constraint) != qt.end())
   {
     SetQuantityTestParams(pcombo_incr_fres_constr, datasdyn,
-        NOX::NLN::StatusTest::quantity_lag_pen_constraint, opt_count, "NormF");
+        NOX::Nln::StatusTest::quantity_lag_pen_constraint, opt_count, "NormF");
     ++opt_count;
 
     // ---------------------------------------------------------------------------
@@ -288,7 +288,7 @@ void STR::NLN::SOLVER::SetStatusTestParams(Teuchos::ParameterList& pstatus,
     // | Tests the constraint model NormUpdate
     // ---------------------------------------------------------------------------
     SetQuantityTestParams(pcombo_incr_fres_constr, datasdyn,
-        NOX::NLN::StatusTest::quantity_lag_pen_constraint, opt_count, "NormUpdate");
+        NOX::Nln::StatusTest::quantity_lag_pen_constraint, opt_count, "NormUpdate");
     ++opt_count;
   }
 
@@ -296,10 +296,10 @@ void STR::NLN::SOLVER::SetStatusTestParams(Teuchos::ParameterList& pstatus,
   // | lvl. 1: combo AND - Test OPTIONAL:
   // | Tests the 0D cardiovascular model NormF
   // ---------------------------------------------------------------------------
-  if (qt.find(NOX::NLN::StatusTest::quantity_cardiovascular0d) != qt.end())
+  if (qt.find(NOX::Nln::StatusTest::quantity_cardiovascular0d) != qt.end())
   {
     SetQuantityTestParams(pcombo_incr_fres_constr, datasdyn,
-        NOX::NLN::StatusTest::quantity_cardiovascular0d, opt_count, "NormF");
+        NOX::Nln::StatusTest::quantity_cardiovascular0d, opt_count, "NormF");
     ++opt_count;
 
     // ---------------------------------------------------------------------------
@@ -307,7 +307,7 @@ void STR::NLN::SOLVER::SetStatusTestParams(Teuchos::ParameterList& pstatus,
     // | Tests the 0D cardiovascular model NormUpdate
     // ---------------------------------------------------------------------------
     SetQuantityTestParams(pcombo_incr_fres_constr, datasdyn,
-        NOX::NLN::StatusTest::quantity_cardiovascular0d, opt_count, "NormUpdate");
+        NOX::Nln::StatusTest::quantity_cardiovascular0d, opt_count, "NormUpdate");
     ++opt_count;
   }
 
@@ -315,16 +315,16 @@ void STR::NLN::SOLVER::SetStatusTestParams(Teuchos::ParameterList& pstatus,
   // | lvl. 1: combo AND - Test OPTIONAL:
   // | Tests the semi-smooth contact active set
   // ---------------------------------------------------------------------------
-  if (qt.find(NOX::NLN::StatusTest::quantity_contact_normal) != qt.end())
+  if (qt.find(NOX::Nln::StatusTest::quantity_contact_normal) != qt.end())
   {
     SetQuantityTestParams(pcombo_incr_fres_constr, datasdyn,
-        NOX::NLN::StatusTest::quantity_contact_normal, opt_count, "ActiveSet");
+        NOX::Nln::StatusTest::quantity_contact_normal, opt_count, "ActiveSet");
     ++opt_count;
   }
-  if (qt.find(NOX::NLN::StatusTest::quantity_contact_friction) != qt.end())
+  if (qt.find(NOX::Nln::StatusTest::quantity_contact_friction) != qt.end())
   {
     SetQuantityTestParams(pcombo_incr_fres_constr, datasdyn,
-        NOX::NLN::StatusTest::quantity_contact_friction, opt_count, "ActiveSet");
+        NOX::Nln::StatusTest::quantity_contact_friction, opt_count, "ActiveSet");
     ++opt_count;
   }
 
@@ -332,10 +332,10 @@ void STR::NLN::SOLVER::SetStatusTestParams(Teuchos::ParameterList& pstatus,
   // | lvl. 1: combo AND - Test OPTIONAL:
   // | Tests the semi-smooth plasticity active set
   // ---------------------------------------------------------------------------
-  if (qt.find(NOX::NLN::StatusTest::quantity_plasticity) != qt.end())
+  if (qt.find(NOX::Nln::StatusTest::quantity_plasticity) != qt.end())
   {
     SetQuantityTestParams(pcombo_incr_fres_constr, datasdyn,
-        NOX::NLN::StatusTest::quantity_plasticity, opt_count, "ActiveSet");
+        NOX::Nln::StatusTest::quantity_plasticity, opt_count, "ActiveSet");
     ++opt_count;
   }
   // *** END: OPTIONAL STATUS TESTS ********************************************
@@ -352,18 +352,18 @@ void STR::NLN::SOLVER::SetStatusTestParams(Teuchos::ParameterList& pstatus,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::NLN::SOLVER::SetComboQuantityTestParams(Teuchos::ParameterList& p,
-    const STR::TIMINT::BaseDataSDyn& datasdyn, const std::size_t& count,
-    const std::string& testname, const std::set<enum NOX::NLN::StatusTest::QuantityType>& qtypes)
+void STR::Nln::SOLVER::SetComboQuantityTestParams(Teuchos::ParameterList& p,
+    const STR::TimeInt::BaseDataSDyn& datasdyn, const std::size_t& count,
+    const std::string& testname, const std::set<enum NOX::Nln::StatusTest::QuantityType>& qtypes)
 {
-  std::vector<enum NOX::NLN::StatusTest::QuantityType> combo_or(0);
-  std::vector<enum NOX::NLN::StatusTest::QuantityType> combo_and(0);
+  std::vector<enum NOX::Nln::StatusTest::QuantityType> combo_or(0);
+  std::vector<enum NOX::Nln::StatusTest::QuantityType> combo_and(0);
   SplitAndOrCombo(combo_or, combo_and, datasdyn, testname, qtypes);
   std::ostringstream test_string;
   test_string << "Test " << count;
   Teuchos::ParameterList& ptest = p.sublist(test_string.str());
 
-  std::vector<enum NOX::NLN::StatusTest::QuantityType>::const_iterator qtiter;
+  std::vector<enum NOX::Nln::StatusTest::QuantityType>::const_iterator qtiter;
   // if there are any OR combinations
   std::size_t count_or = 0;
   std::size_t count_and = 0;
@@ -381,7 +381,7 @@ void STR::NLN::SOLVER::SetComboQuantityTestParams(Teuchos::ParameterList& p,
     // if there are only OR combinations
     if (combo_and.size() == 0)
       SetQuantityTestParams(
-          ptest, datasdyn, NOX::NLN::StatusTest::quantity_structure, count_or, testname);
+          ptest, datasdyn, NOX::Nln::StatusTest::quantity_structure, count_or, testname);
   }
   // if there are any AND combinations
   if (combo_and.size() > 0)
@@ -401,19 +401,20 @@ void STR::NLN::SOLVER::SetComboQuantityTestParams(Teuchos::ParameterList& p,
       ++count_and;
     }
     SetQuantityTestParams(
-        ptest_and, datasdyn, NOX::NLN::StatusTest::quantity_structure, count_and, testname);
+        ptest_and, datasdyn, NOX::Nln::StatusTest::quantity_structure, count_and, testname);
   }
   // if there are neither AND nor OR combinations
   if (count_or == 0 and count_and == 0)
-    SetQuantityTestParams(ptest, datasdyn, NOX::NLN::StatusTest::quantity_structure, testname);
+    SetQuantityTestParams(ptest, datasdyn, NOX::Nln::StatusTest::quantity_structure, testname);
 }
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::NLN::SOLVER::SetQuantityTestParams(Teuchos::ParameterList& p,
-    const STR::TIMINT::BaseDataSDyn& datasdyn, const enum NOX::NLN::StatusTest::QuantityType& qtype,
-    const std::size_t& count, const std::string& testname)
+void STR::Nln::SOLVER::SetQuantityTestParams(Teuchos::ParameterList& p,
+    const STR::TimeInt::BaseDataSDyn& datasdyn,
+    const enum NOX::Nln::StatusTest::QuantityType& qtype, const std::size_t& count,
+    const std::string& testname)
 {
   std::ostringstream test_string;
   test_string << "Test " << count;
@@ -424,9 +425,9 @@ void STR::NLN::SOLVER::SetQuantityTestParams(Teuchos::ParameterList& p,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::NLN::SOLVER::SetQuantityTestParams(Teuchos::ParameterList& p,
-    const STR::TIMINT::BaseDataSDyn& datasdyn, const enum NOX::NLN::StatusTest::QuantityType& qtype,
-    const std::string& testname)
+void STR::Nln::SOLVER::SetQuantityTestParams(Teuchos::ParameterList& p,
+    const STR::TimeInt::BaseDataSDyn& datasdyn,
+    const enum NOX::Nln::StatusTest::QuantityType& qtype, const std::string& testname)
 {
   if (testname == "NormUpdate")
     SetNormUpdateParams(p, qtype, datasdyn.get_incr_tolerance_type(qtype),
@@ -443,19 +444,19 @@ void STR::NLN::SOLVER::SetQuantityTestParams(Teuchos::ParameterList& p,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::NLN::SOLVER::SplitAndOrCombo(
-    std::vector<enum NOX::NLN::StatusTest::QuantityType>& combo_or,
-    std::vector<enum NOX::NLN::StatusTest::QuantityType>& combo_and,
-    const STR::TIMINT::BaseDataSDyn& datasdyn, const std::string& testname,
-    const std::set<enum NOX::NLN::StatusTest::QuantityType>& qtypes)
+void STR::Nln::SOLVER::SplitAndOrCombo(
+    std::vector<enum NOX::Nln::StatusTest::QuantityType>& combo_or,
+    std::vector<enum NOX::Nln::StatusTest::QuantityType>& combo_and,
+    const STR::TimeInt::BaseDataSDyn& datasdyn, const std::string& testname,
+    const std::set<enum NOX::Nln::StatusTest::QuantityType>& qtypes)
 {
-  std::set<enum NOX::NLN::StatusTest::QuantityType>::const_iterator qtiter;
+  std::set<enum NOX::Nln::StatusTest::QuantityType>::const_iterator qtiter;
 
   for (qtiter = qtypes.begin(); qtiter != qtypes.end(); ++qtiter)
   {
-    if (*qtiter == NOX::NLN::StatusTest::quantity_structure) continue;
+    if (*qtiter == NOX::Nln::StatusTest::quantity_structure) continue;
 
-    enum INPAR::STR::BinaryOp combotype = datasdyn.GetIncrComboType(*qtiter);
+    enum Inpar::STR::BinaryOp combotype = datasdyn.GetIncrComboType(*qtiter);
     if (testname == "NormF")
       combotype = datasdyn.GetResComboType(*qtiter);
     else if (testname != "NormUpdate")
@@ -463,16 +464,16 @@ void STR::NLN::SOLVER::SplitAndOrCombo(
 
     switch (combotype)
     {
-      case INPAR::STR::bop_or:
+      case Inpar::STR::bop_or:
         combo_or.push_back(*qtiter);
         break;
-      case INPAR::STR::bop_and:
+      case Inpar::STR::bop_and:
         combo_and.push_back(*qtiter);
         break;
       default:
         FOUR_C_THROW(
             "Unknown combination type. See list of valid "
-            "\"INPAR::STR::BinaryOp\" enums for more information.");
+            "\"Inpar::STR::BinaryOp\" enums for more information.");
         break;
     }  // switch case
   }    // loop over the model type vector
@@ -481,9 +482,9 @@ void STR::NLN::SOLVER::SplitAndOrCombo(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::NLN::SOLVER::SetNormUpdateParams(Teuchos::ParameterList& qlist,
-    const enum NOX::NLN::StatusTest::QuantityType& qtype, const enum INPAR::STR::ConvNorm& toltype,
-    const double& tol, const enum INPAR::STR::VectorNorm& normtype)
+void STR::Nln::SOLVER::SetNormUpdateParams(Teuchos::ParameterList& qlist,
+    const enum NOX::Nln::StatusTest::QuantityType& qtype, const enum Inpar::STR::ConvNorm& toltype,
+    const double& tol, const enum Inpar::STR::VectorNorm& normtype)
 {
   SetNormUpdateParams(qlist, qtype, 1.0, 0.5, toltype, tol, normtype, false);
 }
@@ -491,10 +492,10 @@ void STR::NLN::SOLVER::SetNormUpdateParams(Teuchos::ParameterList& qlist,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::NLN::SOLVER::SetNormUpdateParams(Teuchos::ParameterList& qlist,
-    const enum NOX::NLN::StatusTest::QuantityType& qtype, const double& alpha, const double& beta,
-    const enum INPAR::STR::ConvNorm& toltype, const double& tol,
-    const enum INPAR::STR::VectorNorm& normtype, const bool& isscaled)
+void STR::Nln::SOLVER::SetNormUpdateParams(Teuchos::ParameterList& qlist,
+    const enum NOX::Nln::StatusTest::QuantityType& qtype, const double& alpha, const double& beta,
+    const enum Inpar::STR::ConvNorm& toltype, const double& tol,
+    const enum Inpar::STR::VectorNorm& normtype, const bool& isscaled)
 {
   /* Set the tolerance type
    * Be careful: This has to be done in first place because of the special
@@ -503,18 +504,18 @@ void STR::NLN::SOLVER::SetNormUpdateParams(Teuchos::ParameterList& qlist,
   switch (toltype)
   {
     // ABSOLUTE TOLERANCE TYPE
-    case INPAR::STR::convnorm_abs:
+    case Inpar::STR::convnorm_abs:
     {
       qlist.set("Test Type", "NormUpdate");
-      qlist.set("Quantity Type", NOX::NLN::StatusTest::QuantityType2String(qtype).c_str());
+      qlist.set("Quantity Type", NOX::Nln::StatusTest::QuantityType2String(qtype).c_str());
       qlist.set("Tolerance Type", "Absolute");
       break;
     }
     // RELATIVE TOLERANCE TYPE
-    case INPAR::STR::convnorm_rel:
+    case Inpar::STR::convnorm_rel:
     {
       qlist.set("Test Type", "NormUpdate");
-      qlist.set("Quantity Type", NOX::NLN::StatusTest::QuantityType2String(qtype).c_str());
+      qlist.set("Quantity Type", NOX::Nln::StatusTest::QuantityType2String(qtype).c_str());
       qlist.set("Tolerance Type", "Relative");
       break;
     }
@@ -524,16 +525,16 @@ void STR::NLN::SOLVER::SetNormUpdateParams(Teuchos::ParameterList& qlist,
      * related status test, please use a xml file in combination with the combo
      * status test instead.
      */
-    case INPAR::STR::convnorm_mix:
+    case Inpar::STR::convnorm_mix:
     {
       qlist.set("Test Type", "Combo");
       qlist.set("Combo Type", "OR");
       Teuchos::ParameterList& qlist_abs = qlist.sublist("Test 0");
       // first recursive call
-      SetNormUpdateParams(qlist_abs, qtype, INPAR::STR::convnorm_abs, tol, normtype);
+      SetNormUpdateParams(qlist_abs, qtype, Inpar::STR::convnorm_abs, tol, normtype);
       Teuchos::ParameterList& qlist_rel = qlist.sublist("Test 1");
       // second recursive call
-      SetNormUpdateParams(qlist_rel, qtype, INPAR::STR::convnorm_rel, tol, normtype);
+      SetNormUpdateParams(qlist_rel, qtype, Inpar::STR::convnorm_rel, tol, normtype);
       break;
     }
     default:
@@ -547,21 +548,21 @@ void STR::NLN::SOLVER::SetNormUpdateParams(Teuchos::ParameterList& qlist,
   // set norm type
   switch (normtype)
   {
-    case INPAR::STR::norm_l2:
+    case Inpar::STR::norm_l2:
       qlist.set("Norm Type", "Two Norm");
       break;
-    case INPAR::STR::norm_l1:
+    case Inpar::STR::norm_l1:
       qlist.set("Norm Type", "One Norm");
       break;
-    case INPAR::STR::norm_inf:
+    case Inpar::STR::norm_inf:
       qlist.set("Norm Type", "Max Norm");
       break;
-    case INPAR::STR::norm_rms:
+    case Inpar::STR::norm_rms:
       FOUR_C_THROW(
           "The norm type \"Root Mean Square\" is no longer supported! "
-          "Consider to use the \"NOX::NLN::StatusTest::NormWRMS\" test instead!");
+          "Consider to use the \"NOX::Nln::StatusTest::NormWRMS\" test instead!");
       break;
-    case INPAR::STR::norm_vague:
+    case Inpar::STR::norm_vague:
     default:
       FOUR_C_THROW("Unknown vector norm type!");
       break;
@@ -580,9 +581,9 @@ void STR::NLN::SOLVER::SetNormUpdateParams(Teuchos::ParameterList& qlist,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::NLN::SOLVER::SetNormFParams(Teuchos::ParameterList& qlist,
-    const enum NOX::NLN::StatusTest::QuantityType& qtype, const enum INPAR::STR::ConvNorm& toltype,
-    const double& tol, const enum INPAR::STR::VectorNorm& normtype)
+void STR::Nln::SOLVER::SetNormFParams(Teuchos::ParameterList& qlist,
+    const enum NOX::Nln::StatusTest::QuantityType& qtype, const enum Inpar::STR::ConvNorm& toltype,
+    const double& tol, const enum Inpar::STR::VectorNorm& normtype)
 {
   SetNormFParams(qlist, qtype, toltype, tol, normtype, false);
 }
@@ -590,9 +591,9 @@ void STR::NLN::SOLVER::SetNormFParams(Teuchos::ParameterList& qlist,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::NLN::SOLVER::SetNormFParams(Teuchos::ParameterList& qlist,
-    const enum NOX::NLN::StatusTest::QuantityType& qtype, const enum INPAR::STR::ConvNorm& toltype,
-    const double& tol, const enum INPAR::STR::VectorNorm& normtype, const bool& isscaled)
+void STR::Nln::SOLVER::SetNormFParams(Teuchos::ParameterList& qlist,
+    const enum NOX::Nln::StatusTest::QuantityType& qtype, const enum Inpar::STR::ConvNorm& toltype,
+    const double& tol, const enum Inpar::STR::VectorNorm& normtype, const bool& isscaled)
 {
   /* Set the tolerance type
    * Be careful: This has to be done in first place because of the special
@@ -601,18 +602,18 @@ void STR::NLN::SOLVER::SetNormFParams(Teuchos::ParameterList& qlist,
   switch (toltype)
   {
     // ABSOLUTE TOLERANCE TYPE
-    case INPAR::STR::convnorm_abs:
+    case Inpar::STR::convnorm_abs:
     {
       qlist.set("Test Type", "NormF");
-      qlist.set("Quantity Type", NOX::NLN::StatusTest::QuantityType2String(qtype).c_str());
+      qlist.set("Quantity Type", NOX::Nln::StatusTest::QuantityType2String(qtype).c_str());
       qlist.set("Tolerance Type", "Absolute");
       break;
     }
     // RELATIVE TOLERANCE TYPE
-    case INPAR::STR::convnorm_rel:
+    case Inpar::STR::convnorm_rel:
     {
       qlist.set("Test Type", "NormF");
-      qlist.set("Quantity Type", NOX::NLN::StatusTest::QuantityType2String(qtype).c_str());
+      qlist.set("Quantity Type", NOX::Nln::StatusTest::QuantityType2String(qtype).c_str());
       qlist.set("Tolerance Type", "Relative");
       break;
     }
@@ -622,16 +623,16 @@ void STR::NLN::SOLVER::SetNormFParams(Teuchos::ParameterList& qlist,
      * related status test, please use a xml file in combination with the combo
      * status test instead.
      */
-    case INPAR::STR::convnorm_mix:
+    case Inpar::STR::convnorm_mix:
     {
       qlist.set("Test Type", "Combo");
       qlist.set("Combo Type", "OR");
       Teuchos::ParameterList& qlist_abs = qlist.sublist("Test 0");
       // first recursive call
-      SetNormFParams(qlist_abs, qtype, INPAR::STR::convnorm_abs, tol, normtype);
+      SetNormFParams(qlist_abs, qtype, Inpar::STR::convnorm_abs, tol, normtype);
       Teuchos::ParameterList& qlist_rel = qlist.sublist("Test 1");
       // second recursive call
-      SetNormFParams(qlist_rel, qtype, INPAR::STR::convnorm_rel, tol, normtype);
+      SetNormFParams(qlist_rel, qtype, Inpar::STR::convnorm_rel, tol, normtype);
       break;
     }
     default:
@@ -645,21 +646,21 @@ void STR::NLN::SOLVER::SetNormFParams(Teuchos::ParameterList& qlist,
   // set norm type
   switch (normtype)
   {
-    case INPAR::STR::norm_l2:
+    case Inpar::STR::norm_l2:
       qlist.set("Norm Type", "Two Norm");
       break;
-    case INPAR::STR::norm_l1:
+    case Inpar::STR::norm_l1:
       qlist.set("Norm Type", "One Norm");
       break;
-    case INPAR::STR::norm_inf:
+    case Inpar::STR::norm_inf:
       qlist.set("Norm Type", "Max Norm");
       break;
-    case INPAR::STR::norm_rms:
+    case Inpar::STR::norm_rms:
       FOUR_C_THROW(
           "This norm type is no longer supported! "
-          "Consider to use the \"NOX::NLN::StatusTest::NormWRMS\" test instead!");
+          "Consider to use the \"NOX::Nln::StatusTest::NormWRMS\" test instead!");
       break;
-    case INPAR::STR::norm_vague:
+    case Inpar::STR::norm_vague:
     default:
       FOUR_C_THROW("Unknown vector norm type!");
       break;
@@ -672,12 +673,12 @@ void STR::NLN::SOLVER::SetNormFParams(Teuchos::ParameterList& qlist,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::NLN::SOLVER::SetActiveSetParams(
-    Teuchos::ParameterList& qlist, const enum NOX::NLN::StatusTest::QuantityType& qtype)
+void STR::Nln::SOLVER::SetActiveSetParams(
+    Teuchos::ParameterList& qlist, const enum NOX::Nln::StatusTest::QuantityType& qtype)
 {
   qlist.set("Test Type", "ActiveSet");
   // set the quantity type
-  qlist.set("Quantity Type", NOX::NLN::StatusTest::QuantityType2String(qtype).c_str());
+  qlist.set("Quantity Type", NOX::Nln::StatusTest::QuantityType2String(qtype).c_str());
   qlist.set<int>("Max Cycle Size", 3);
 }
 

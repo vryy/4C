@@ -30,30 +30,30 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace STR
 {
-  namespace TIMINT
+  namespace TimeInt
   {
     class Base;
     class BaseDataGlobalState;
     class BaseDataSDyn;
     class BaseDataIO;
-  }  // namespace TIMINT
+  }  // namespace TimeInt
   namespace MODELEVALUATOR
   {
     class Generic;
   }  // namespace MODELEVALUATOR
 }  // namespace STR
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class Solver;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace ADAPTER
+namespace Adapter
 {
   class StructureNew : public Structure
   {
@@ -194,10 +194,10 @@ namespace ADAPTER
     int Integrate() override = 0;
 
     /// fixme: this can go when the old structure time integration is gone and PerformErrorAction is
-    /// only called in STR::TIMINT::Implicit::Solve() and not on the structure in the adapter time
+    /// only called in STR::TimeInt::Implicit::Solve() and not on the structure in the adapter time
     /// loop
-    INPAR::STR::ConvergenceStatus PerformErrorAction(
-        INPAR::STR::ConvergenceStatus nonlinsoldiv) override
+    Inpar::STR::ConvergenceStatus PerformErrorAction(
+        Inpar::STR::ConvergenceStatus nonlinsoldiv) override
     {
       FOUR_C_THROW("You should not be here");
       return nonlinsoldiv;
@@ -264,7 +264,7 @@ namespace ADAPTER
     void update_iter_incr_cardiovascular0_d(Teuchos::RCP<Epetra_Vector> presincr) override = 0;
 
     /// Access to output object
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> DiscWriter() override = 0;
+    Teuchos::RCP<Core::IO::DiscretizationWriter> DiscWriter() override = 0;
 
     /// prepare output (i.e. calculate stresses, strains, energies)
     void prepare_output(bool force_prepare_timestep) override = 0;
@@ -331,7 +331,7 @@ namespace ADAPTER
     for the time step. All boundary conditions have
     been set.
     */
-    INPAR::STR::ConvergenceStatus Solve() override = 0;
+    Inpar::STR::ConvergenceStatus Solve() override = 0;
 
     /*!
     \brief linear structure solve with just a interface load
@@ -352,7 +352,7 @@ namespace ADAPTER
     };
 
     /// get the linear solver object used for this field
-    Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() override = 0;
+    Teuchos::RCP<Core::LinAlg::Solver> LinearSolver() override = 0;
 
     //@}
 
@@ -413,30 +413,30 @@ namespace ADAPTER
     [[nodiscard]] const Epetra_Map& DomainMap() const override { return GetMassDomainMap(); }
 
     /// direct access to system matrix
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() override = 0;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() override = 0;
 
     /// direct access to system matrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() override = 0;
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> BlockSystemMatrix() override = 0;
 
     /// switch structure field to block matrix
-    void use_block_matrix(Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
-        Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> rangemaps) override = 0;
+    void use_block_matrix(Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> domainmaps,
+        Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> rangemaps) override = 0;
 
     /// return contact/meshtying bridge
     Teuchos::RCP<CONTACT::MeshtyingContactBridge> meshtying_contact_bridge() override = 0;
 
     /// access to locsys manager
-    Teuchos::RCP<CORE::Conditions::LocsysManager> LocsysManager() override = 0;
+    Teuchos::RCP<Core::Conditions::LocsysManager> LocsysManager() override = 0;
 
     /// access the desired model evaluator (read-only)
     [[nodiscard]] virtual const STR::MODELEVALUATOR::Generic& ModelEvaluator(
-        INPAR::STR::ModelType mtype) const = 0;
+        Inpar::STR::ModelType mtype) const = 0;
 
     /// access the desired model evaluator (read and write)
-    STR::MODELEVALUATOR::Generic& ModelEvaluator(INPAR::STR::ModelType mtype) override = 0;
+    STR::MODELEVALUATOR::Generic& ModelEvaluator(Inpar::STR::ModelType mtype) override = 0;
 
     /// direct access to discretization
-    Teuchos::RCP<DRT::Discretization> discretization() override = 0;
+    Teuchos::RCP<Discret::Discretization> discretization() override = 0;
 
     /// are there any algebraic constraints?
     bool HaveConstraint() override = 0;
@@ -445,16 +445,16 @@ namespace ADAPTER
     Teuchos::RCP<CONSTRAINTS::ConstrManager> get_constraint_manager() override = 0;
 
     /// Get type of thickness scaling for thin shell structures
-    INPAR::STR::StcScale GetSTCAlgo() override = 0;
+    Inpar::STR::StcScale GetSTCAlgo() override = 0;
 
     /// Access to scaling matrix for STC
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> GetSTCMat() override = 0;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> GetSTCMat() override = 0;
 
     /// Return MapExtractor for Dirichlet boundary conditions
-    Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() override = 0;
+    Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor() override = 0;
 
     /// create result test for encapsulated structure algorithm
-    Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() override = 0;
+    Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() override = 0;
 
     /// reset time and state vectors (needed for biofilm growth simulations)
     void Reset() override = 0;
@@ -495,7 +495,7 @@ namespace ADAPTER
      * global state in the 'new' structural time integration.
      *
      * 1) The current state is held in the global state data container:
-     *    \ref STR::TIMINT::BaseDataGlobalState
+     *    \ref STR::TimeInt::BaseDataGlobalState
      *
      * 2) Also the NOX group (that means the nonlinear solver) has its
      *    own state vector (called 'X').
@@ -506,10 +506,10 @@ namespace ADAPTER
      * to be set from outside:
      *
      *   For example, see the class:
-     *   \ref IMMERSED::ImmersedPartitionedAdhesionTraction
+     *   \ref Immersed::ImmersedPartitionedAdhesionTraction
      *
      *   There, see the method
-     *   \ref IMMERSED::ImmersedPartitionedAdhesionTraction::ImmersedOp
+     *   \ref Immersed::ImmersedPartitionedAdhesionTraction::ImmersedOp
      *
      *   First, the displacement state with write access is request from
      *   the time integrator via the corresponding adapter.
@@ -547,7 +547,7 @@ namespace ADAPTER
 
     /// initialize all class internal variables
     virtual void Init(const Teuchos::ParameterList& prbdyn, Teuchos::ParameterList& sdyn,
-        Teuchos::RCP<DRT::Discretization> actdis);
+        Teuchos::RCP<Discret::Discretization> actdis);
 
     /// setup
     virtual void Setup();
@@ -621,33 +621,33 @@ namespace ADAPTER
      *
      *  \author hiermeier
      *  \date 09/16 */
-    void set_model_types(std::set<enum INPAR::STR::ModelType>& modeltypes) const;
+    void set_model_types(std::set<enum Inpar::STR::ModelType>& modeltypes) const;
 
     /// Set all found model types.
-    void detect_element_technologies(std::set<enum INPAR::STR::EleTech>& eletechs) const;
+    void detect_element_technologies(std::set<enum Inpar::STR::EleTech>& eletechs) const;
 
     /// Set different time integrator specific parameters in the different parameter lists
     virtual void set_params(Teuchos::ParameterList& ioflags, Teuchos::ParameterList& xparams,
         Teuchos::ParameterList& time_adaptivity_params);
 
     /// Create, initialize and setup the global state data container
-    virtual void set_global_state(Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& dataglobalstate,
-        const Teuchos::RCP<const STR::TIMINT::BaseDataSDyn>& datasdyn_ptr);
+    virtual void set_global_state(Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& dataglobalstate,
+        const Teuchos::RCP<const STR::TimeInt::BaseDataSDyn>& datasdyn_ptr);
 
     /// Create, initialize and setup the time integration strategy object
-    virtual void set_time_integration_strategy(Teuchos::RCP<STR::TIMINT::Base>& ti_strategy,
-        const Teuchos::RCP<STR::TIMINT::BaseDataIO>& dataio,
-        const Teuchos::RCP<STR::TIMINT::BaseDataSDyn>& datasdyn,
-        const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& dataglobalstate, const int& restart);
+    virtual void set_time_integration_strategy(Teuchos::RCP<STR::TimeInt::Base>& ti_strategy,
+        const Teuchos::RCP<STR::TimeInt::BaseDataIO>& dataio,
+        const Teuchos::RCP<STR::TimeInt::BaseDataSDyn>& datasdyn,
+        const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& dataglobalstate, const int& restart);
 
     /// set the final structure time integrator object
     virtual void set_structure_wrapper(const Teuchos::ParameterList& ioflags,
         const Teuchos::ParameterList& sdyn, const Teuchos::ParameterList& xparams,
         const Teuchos::ParameterList& time_adaptivity_params,
-        Teuchos::RCP<STR::TIMINT::Base> ti_strategy);
+        Teuchos::RCP<STR::TimeInt::Base> ti_strategy);
 
     /// create the time integrator wrapper
-    void create_wrapper(Teuchos::RCP<STR::TIMINT::Base> ti_strategy);
+    void create_wrapper(Teuchos::RCP<STR::TimeInt::Base> ti_strategy);
 
    protected:
     /// structural field solver
@@ -660,7 +660,7 @@ namespace ADAPTER
     Teuchos::RCP<Teuchos::ParameterList> sdyn_;
 
     /// current discretization
-    Teuchos::RCP<DRT::Discretization> actdis_;
+    Teuchos::RCP<Discret::Discretization> actdis_;
 
     /// init flag
     bool isinit_;
@@ -668,7 +668,7 @@ namespace ADAPTER
     /// setup flag
     bool issetup_;
   };  // class StructureBaseAlgorithmNew
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 FOUR_C_NAMESPACE_CLOSE
 

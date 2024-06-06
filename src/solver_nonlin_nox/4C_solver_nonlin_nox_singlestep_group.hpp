@@ -22,11 +22,11 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
     namespace SINGLESTEP
     {
-      class Group : public NOX::NLN::Group
+      class Group : public NOX::Nln::Group
       {
        public:
         //! Standard constructor
@@ -41,7 +41,7 @@ namespace NOX
 
         /*! \brief Copy constructor. If type is DeepCopy, takes ownership of
           valid shared linear system. */
-        Group(const NOX::NLN::SINGLESTEP::Group& source, ::NOX::CopyType type = ::NOX::DeepCopy);
+        Group(const NOX::Nln::SINGLESTEP::Group& source, ::NOX::CopyType type = ::NOX::DeepCopy);
 
         //! generate a clone of the given object concerning the given \c CopyType
         Teuchos::RCP<::NOX::Abstract::Group> clone(::NOX::CopyType type) const override;
@@ -51,7 +51,7 @@ namespace NOX
 
         //! compute/update the current state variables
         void computeX(
-            const NOX::NLN::SINGLESTEP::Group& grp, const ::NOX::Epetra::Vector& d, double step);
+            const NOX::Nln::SINGLESTEP::Group& grp, const ::NOX::Epetra::Vector& d, double step);
         void computeX(const ::NOX::Abstract::Group& grp, const ::NOX::Abstract::Vector& d,
             double step) override;
 
@@ -60,7 +60,7 @@ namespace NOX
         void throw_error(const std::string& functionName, const std::string& errorMsg) const;
       };
     }  // namespace SINGLESTEP
-  }    // namespace NLN
+  }    // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 // forward declarations
 struct _SOH8_DATA;
 
-namespace DRT
+namespace Discret
 {
   // forward declarations
   class Discretization;
@@ -33,23 +33,23 @@ namespace DRT
 
       static SoSh8Type& Instance();
 
-      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-      int Initialize(DRT::Discretization& dis) override;
+      int Initialize(Discret::Discretization& dis) override;
 
       void nodal_block_information(
-          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+          Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
+      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+          Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       void setup_element_definition(
-          std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+          std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
           override;
 
      private:
@@ -104,7 +104,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      CORE::Elements::Element* Clone() const override;
+      Core::Elements::Element* Clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -120,7 +120,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(CORE::COMM::PackBuffer& data) const override;
+      void Pack(Core::Communication::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -145,7 +145,7 @@ namespace DRT
       \brief Read input for this element
       */
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          INPUT::LineDefinition* linedef) override;
+          Input::LineDefinition* linedef) override;
 
 
 
@@ -179,11 +179,11 @@ namespace DRT
                               to fill this vector
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
-          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2,
-          CORE::LINALG::SerialDenseVector& elevec3) override;
+      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
+          Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseVector& elevec2,
+          Core::LinAlg::SerialDenseVector& elevec3) override;
 
       //! definition of shell-thickness direction
       enum ThicknessDirection
@@ -231,39 +231,39 @@ namespace DRT
       void sosh8_nlnstiffmass(std::vector<int>& lm,  ///< location matrix
           std::vector<double>& disp,                 ///< current displacements
           std::vector<double>& residual,             ///< current residual displ
-          CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>*
+          Core::LinAlg::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>*
               stiffmatrix,                                             ///< element stiffness matrix
-          CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* massmatrix,  ///< element mass matrix
-          CORE::LINALG::Matrix<NUMDOF_SOH8, 1>* force,      ///< element internal force vector
-          CORE::LINALG::Matrix<NUMDOF_SOH8, 1>* force_str,  // element structural force vector
-          CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* elestress,  ///< stresses at GP
-          CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* elestrain,  ///< strains at GP
+          Core::LinAlg::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* massmatrix,  ///< element mass matrix
+          Core::LinAlg::Matrix<NUMDOF_SOH8, 1>* force,      ///< element internal force vector
+          Core::LinAlg::Matrix<NUMDOF_SOH8, 1>* force_str,  // element structural force vector
+          Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D>* elestress,  ///< stresses at GP
+          Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D>* elestrain,  ///< strains at GP
           Teuchos::ParameterList& params,          ///< algorithmic parameters e.g. time
-          const INPAR::STR::StressType iostress,   ///< stress output option
-          const INPAR::STR::StrainType iostrain);  ///< strain output option
+          const Inpar::STR::StressType iostress,   ///< stress output option
+          const Inpar::STR::StrainType iostrain);  ///< strain output option
 
       //! Evaluate all ANS related data at the ANS sampling points
       void sosh8_anssetup(
-          const CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xrefe,  ///< material element coords
-          const CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xcurr,  ///< current element coords
-          std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>>**
+          const Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xrefe,  ///< material element coords
+          const Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xcurr,  ///< current element coords
+          std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>>**
               deriv_sp,  ///< derivs eval. at all sampling points
-          std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>>&
+          std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>>&
               jac_sps,  ///< jac at all sampling points
-          std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>>&
+          std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>>&
               jac_cur_sps,  ///< current jac at all sampling points
-          CORE::LINALG::Matrix<num_ans * num_sp, NUMDOF_SOH8>& B_ans_loc) const;  ///< modified B
+          Core::LinAlg::Matrix<num_ans * num_sp, NUMDOF_SOH8>& B_ans_loc) const;  ///< modified B
 
       //! Evaluate transformation matrix T (parameter->material) at gp
       void sosh8_evaluate_t(
-          const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& jac,  ///< actual jacobian
-          CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& TinvT);  ///< T^{-T}
+          const Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& jac,  ///< actual jacobian
+          Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D>& TinvT);  ///< T^{-T}
 
       //! Return true Cauchy-stress at gausspoint
-      void sosh8_cauchy(CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* elestress,
-          const int gp, const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& defgrd,
-          const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& glstrain,
-          const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& stress);
+      void sosh8_cauchy(Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D>* elestress,
+          const int gp, const Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& defgrd,
+          const Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>& glstrain,
+          const Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>& stress);
 
       //! Find "thin"=thickness direction
       ThicknessDirection sosh8_findthickdir();
@@ -272,12 +272,12 @@ namespace DRT
       double sosh8_calcaspectratio();
 
       //! Calculate the STC matrix
-      virtual void do_calc_stc_matrix(CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>& elemat1,
-          const INPAR::STR::StcScale stc_scaling, const int stc_layer, std::vector<int>& lm,
-          DRT::Discretization& discretization, bool calcinverse);
+      virtual void do_calc_stc_matrix(Core::LinAlg::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>& elemat1,
+          const Inpar::STR::StcScale stc_scaling, const int stc_layer, std::vector<int>& lm,
+          Discret::Discretization& discretization, bool calcinverse);
 
       //! Find parametric co-ordinate which directs in enforced thickness direction
-      ThicknessDirection sosh8_enfthickdir(CORE::LINALG::Matrix<NUMDIM_SOH8, 1>&
+      ThicknessDirection sosh8_enfthickdir(Core::LinAlg::Matrix<NUMDIM_SOH8, 1>&
               thickdirglo  ///< global direction of enforced thickness direction
       );
 
@@ -287,49 +287,49 @@ namespace DRT
       //! Debug gmsh-plot to check thickness direction
       void sosh8_gmshplotlabeledelement(const int LabelIds[NUMNOD_SOH8]);
 
-      std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> sosh8_derivs_sdc();
+      std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> sosh8_derivs_sdc();
 
       /** \brief Evaluate the reference and current jacobian as well as the
        *  respective determinants */
       bool sosh8_evaluatejacobians(const unsigned gp,
-          const std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>>& derivs,
-          const CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xrefe,
-          const CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xcurr,
-          CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& jac_ref, double& detJ_ref,
-          CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& jac_curr, double& detJ_curr) const;
+          const std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>>& derivs,
+          const Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xrefe,
+          const Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xcurr,
+          Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& jac_ref, double& detJ_ref,
+          Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& jac_curr, double& detJ_curr) const;
 
       /** \brief evaluate the jacobian and the determinant for the given GP */
       void sosh8_evaluatejacobian(const unsigned gp,
-          const std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>>& derivs,
-          const CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& x,
-          CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& jac, double& detJ) const;
+          const std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>>& derivs,
+          const Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& x,
+          Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& jac, double& detJ) const;
 
       /** \brief Get the local B-operator */
       void sosh8_get_bop_loc(const unsigned gp,
-          const std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>>& derivs,
-          const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& jac_curr, const double* r,
-          const double* s, const CORE::LINALG::Matrix<num_ans * num_sp, NUMDOF_SOH8>& B_ans_loc,
-          CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDOF_SOH8>& bop_loc) const;
+          const std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>>& derivs,
+          const Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& jac_curr, const double* r,
+          const double* s, const Core::LinAlg::Matrix<num_ans * num_sp, NUMDOF_SOH8>& B_ans_loc,
+          Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, NUMDOF_SOH8>& bop_loc) const;
 
       /** \brief Get the local green lagrange strain */
       void sosh8_get_glstrain_loc(const unsigned gp,
-          const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& jac_curr,
-          const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& jac,
-          const std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>>& jac_sps,
-          const std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>>& jac_cur_sps,
+          const Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& jac_curr,
+          const Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& jac,
+          const std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>>& jac_sps,
+          const std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>>& jac_cur_sps,
           const double* r, const double* s,
-          CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& lstrain) const;
+          Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>& lstrain) const;
 
       void sosh8_get_deformationgradient(const unsigned gp,
-          const std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>>& derivs,
-          const CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xcurr,
-          const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& glstrain,
-          CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& defgrd) const;
+          const std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>>& derivs,
+          const Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xcurr,
+          const Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>& glstrain,
+          Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& defgrd) const;
 
       double sosh8_calc_energy(const std::vector<double>& disp, Teuchos::ParameterList& params);
 
       double sosh8_third_invariant(
-          const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& glstrain) const;
+          const Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>& glstrain) const;
 
      private:
       std::string get_element_type_string() const { return "SOLIDSH8"; }
@@ -338,7 +338,7 @@ namespace DRT
 
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 
 FOUR_C_NAMESPACE_CLOSE

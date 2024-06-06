@@ -15,7 +15,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::StructureNOXCorrectionWrapper::prepare_time_step()
+void Adapter::StructureNOXCorrectionWrapper::prepare_time_step()
 {
   StructureWrapper::prepare_time_step();
   if (disstepinc_ != Teuchos::null) disstepinc_->PutScalar(0.);
@@ -24,7 +24,7 @@ void ADAPTER::StructureNOXCorrectionWrapper::prepare_time_step()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::StructureNOXCorrectionWrapper::Evaluate(Teuchos::RCP<const Epetra_Vector> disstepinc)
+void Adapter::StructureNOXCorrectionWrapper::Evaluate(Teuchos::RCP<const Epetra_Vector> disstepinc)
 {
   // The field solver always expects an iteration increment only. And
   // there are Dirichlet conditions that need to be preserved. So take

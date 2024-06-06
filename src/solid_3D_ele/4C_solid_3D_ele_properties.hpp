@@ -16,7 +16,7 @@
 #include <string>
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::COMM
+namespace Core::Communication
 {
   class PackBuffer;
 }
@@ -24,7 +24,7 @@ namespace STR::ELEMENTS
 {
   enum class EasType;
 }
-namespace DRT::ELEMENTS
+namespace Discret::ELEMENTS
 {
   enum class ElementTechnology
   {
@@ -109,7 +109,7 @@ namespace DRT::ELEMENTS
   struct SolidElementProperties
   {
     //! kinematic type
-    INPAR::STR::KinemType kintype{INPAR::STR::KinemType::vague};
+    Inpar::STR::KinemType kintype{Inpar::STR::KinemType::vague};
 
     //! element technology (none, F-Bar, EAS full, EAS mild)
     ElementTechnology element_technology{ElementTechnology::none};
@@ -118,13 +118,13 @@ namespace DRT::ELEMENTS
     PrestressTechnology prestress_technology{PrestressTechnology::none};
   };
 
-  void AddToPack(
-      CORE::COMM::PackBuffer& data, const DRT::ELEMENTS::SolidElementProperties& properties);
+  void AddToPack(Core::Communication::PackBuffer& data,
+      const Discret::ELEMENTS::SolidElementProperties& properties);
 
   void ExtractFromPack(std::size_t& position, const std::vector<char>& data,
-      DRT::ELEMENTS::SolidElementProperties& properties);
+      Discret::ELEMENTS::SolidElementProperties& properties);
 
-}  // namespace DRT::ELEMENTS
+}  // namespace Discret::ELEMENTS
 
 
 FOUR_C_NAMESPACE_CLOSE

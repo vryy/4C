@@ -25,7 +25,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE
+namespace Core
 {
   namespace INTERNAL
   {
@@ -59,7 +59,7 @@ namespace CORE
       compound_message << formatted_msg;
       compound_message << "\n------------------\n";
 
-      throw CORE::Exception(compound_message.str());
+      throw Core::Exception(compound_message.str());
     }
 
     class ExceptionImplementation
@@ -110,6 +110,6 @@ namespace CORE
 
   // Default the destructor here to facilitate an incomplete implementation type as member variable.
   Exception::~Exception() = default;
-}  // namespace CORE
+}  // namespace Core
 
 FOUR_C_NAMESPACE_CLOSE

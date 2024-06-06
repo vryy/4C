@@ -22,24 +22,24 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-POROELAST::MonolithicMeshtying::MonolithicMeshtying(const Epetra_Comm& comm,
+PoroElast::MonolithicMeshtying::MonolithicMeshtying(const Epetra_Comm& comm,
     const Teuchos::ParameterList& timeparams,
-    Teuchos::RCP<CORE::LINALG::MapExtractor> porosity_splitter)
+    Teuchos::RCP<Core::LinAlg::MapExtractor> porosity_splitter)
     : Monolithic(comm, timeparams, porosity_splitter), normrhsfactiven_(0.0), tolfres_ncoup_(0.0)
 {
   // Initialize mortar adapter for meshtying interface
-  mortar_adapter_ = Teuchos::rcp(new ADAPTER::CouplingPoroMortar(
-      GLOBAL::Problem::Instance()->NDim(), GLOBAL::Problem::Instance()->mortar_coupling_params(),
-      GLOBAL::Problem::Instance()->contact_dynamic_params(),
-      GLOBAL::Problem::Instance()->spatial_approximation_type()));
+  mortar_adapter_ = Teuchos::rcp(new Adapter::CouplingPoroMortar(
+      Global::Problem::Instance()->NDim(), Global::Problem::Instance()->mortar_coupling_params(),
+      Global::Problem::Instance()->contact_dynamic_params(),
+      Global::Problem::Instance()->spatial_approximation_type()));
 
-  const int ndim = GLOBAL::Problem::Instance()->NDim();
+  const int ndim = Global::Problem::Instance()->NDim();
   std::vector<int> coupleddof(ndim, 1);  // 1,1,1 should be in coupleddof
   // coupleddof[ndim]=0; // not necessary because structural discretization is used
   mortar_adapter_->Setup(structure_field()->discretization(), structure_field()->discretization(),
       coupleddof, "Mortar");
 
-  fvelactiverowdofmap_ = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor);
+  fvelactiverowdofmap_ = Teuchos::rcp(new Core::LinAlg::MultiMapExtractor);
 
   // mesh tying not yet works for non-matching structure and fluid discretizations
   if (not matchinggrid_)
@@ -50,9 +50,9 @@ POROELAST::MonolithicMeshtying::MonolithicMeshtying(const Epetra_Comm& comm,
   }
 }
 
-void POROELAST::MonolithicMeshtying::SetupSystem() { Monolithic::SetupSystem(); }
+void PoroElast::MonolithicMeshtying::SetupSystem() { Monolithic::SetupSystem(); }
 
-void POROELAST::MonolithicMeshtying::Evaluate(
+void PoroElast::MonolithicMeshtying::Evaluate(
     Teuchos::RCP<const Epetra_Vector> iterinc, bool firstiter)
 {
   // evaluate monolithic system for newton iterations
@@ -72,7 +72,7 @@ void POROELAST::MonolithicMeshtying::Evaluate(
   Teuchos::RCP<Epetra_Vector> modfpres =
       Teuchos::rcp(new Epetra_Vector(*fluid_field()->VelocityRowMap(), true));
 
-  const int ndim = GLOBAL::Problem::Instance()->NDim();
+  const int ndim = Global::Problem::Instance()->NDim();
   int* mygids = fpres->Map().MyGlobalElements();
   double* val = fpres->Values();
   for (int i = 0; i < fpres->MyLength(); ++i)
@@ -90,10 +90,10 @@ void POROELAST::MonolithicMeshtying::Evaluate(
   Teuchos::RCP<Epetra_Vector> sdisp = structure_field()->WriteAccessDispnp();
 
   // for the EvaluatePoroMt() method RCPs on the matrices are needed...
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> f =
-      Teuchos::rcpFromRef<CORE::LINALG::SparseMatrix>(systemmatrix_->Matrix(1, 1));
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> k_fs =
-      Teuchos::rcpFromRef<CORE::LINALG::SparseMatrix>(systemmatrix_->Matrix(1, 0));
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> f =
+      Teuchos::rcpFromRef<Core::LinAlg::SparseMatrix>(systemmatrix_->Matrix(1, 1));
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> k_fs =
+      Teuchos::rcpFromRef<Core::LinAlg::SparseMatrix>(systemmatrix_->Matrix(1, 0));
 
   Teuchos::RCP<Epetra_Vector> frhs = Extractor()->ExtractVector(rhs_, 1);
 
@@ -102,8 +102,8 @@ void POROELAST::MonolithicMeshtying::Evaluate(
       f, k_fs, frhs, fluid_structure_coupling(), fluid_field()->dof_row_map());
 
   // assign modified parts of system matrix into full system matrix
-  systemmatrix_->Assign(1, 1, CORE::LINALG::View, *f);
-  systemmatrix_->Assign(1, 0, CORE::LINALG::View, *k_fs);
+  systemmatrix_->Assign(1, 1, Core::LinAlg::View, *f);
+  systemmatrix_->Assign(1, 0, Core::LinAlg::View, *k_fs);
 
   // assign modified part of RHS vector into full RHS vector
   Extractor()->InsertVector(*frhs, 1, *rhs_);
@@ -113,13 +113,13 @@ void POROELAST::MonolithicMeshtying::Evaluate(
   if ((iter_ == 1) and (Step() == 1)) SetupExtractor();
 }
 
-void POROELAST::MonolithicMeshtying::Update()
+void PoroElast::MonolithicMeshtying::Update()
 {
   Monolithic::Update();
   mortar_adapter_->UpdatePoroMt();
 }
 
-void POROELAST::MonolithicMeshtying::recover_lagrange_multiplier_after_newton_step(
+void PoroElast::MonolithicMeshtying::recover_lagrange_multiplier_after_newton_step(
     Teuchos::RCP<const Epetra_Vector> iterinc)
 {
   Monolithic::recover_lagrange_multiplier_after_newton_step(iterinc);
@@ -136,7 +136,7 @@ void POROELAST::MonolithicMeshtying::recover_lagrange_multiplier_after_newton_st
   mortar_adapter_->recover_fluid_lm_poro_mt(tmpsx, tmpfx);
 }
 
-void POROELAST::MonolithicMeshtying::build_convergence_norms()
+void PoroElast::MonolithicMeshtying::build_convergence_norms()
 {
   //------------------------------------------------------------ build residual force norms
   normrhs_ = UTILS::calculate_vector_norm(vectornormfres_, rhs_);
@@ -202,7 +202,7 @@ void POROELAST::MonolithicMeshtying::build_convergence_norms()
   normincfluidpres_ = UTILS::calculate_vector_norm(vectornorminc_, interincfpres);
 }
 
-void POROELAST::MonolithicMeshtying::SetupExtractor()
+void PoroElast::MonolithicMeshtying::SetupExtractor()
 {
   // some maps and vectors
   Teuchos::RCP<Epetra_Map> factivenmap;
@@ -213,7 +213,7 @@ void POROELAST::MonolithicMeshtying::SetupExtractor()
   factivenmap = mortar_adapter_->GetPoroStrategy()->FluidActiveNDofMap();
 
   // build the complement part of the map
-  factivenmapcomplement = CORE::LINALG::SplitMap(*fluid_field()->VelocityRowMap(), *factivenmap);
+  factivenmapcomplement = Core::LinAlg::SplitMap(*fluid_field()->VelocityRowMap(), *factivenmap);
 
   // write things into the vector for ->Setup
   fluidveldofmapvec.emplace_back(factivenmap);
@@ -222,7 +222,7 @@ void POROELAST::MonolithicMeshtying::SetupExtractor()
   fvelactiverowdofmap_->Setup(*fluid_field()->VelocityRowMap(), fluidveldofmapvec);
 }
 
-bool POROELAST::MonolithicMeshtying::Converged()
+bool PoroElast::MonolithicMeshtying::Converged()
 {
   // check for single norms
   bool convinc = false;
@@ -232,10 +232,10 @@ bool POROELAST::MonolithicMeshtying::Converged()
   // residual increments
   switch (normtypeinc_)
   {
-    case INPAR::POROELAST::convnorm_abs_global:
+    case Inpar::PoroElast::convnorm_abs_global:
       convinc = norminc_ < tolinc_;
       break;
-    case INPAR::POROELAST::convnorm_abs_singlefields:
+    case Inpar::PoroElast::convnorm_abs_singlefields:
       convinc = (normincstruct_ < tolinc_struct_ and normincfluidvel_ < tolinc_velocity_ and
                  normincfluidpres_ < tolinc_pressure_ and normincporo_ < tolinc_porosity_);
       break;
@@ -247,10 +247,10 @@ bool POROELAST::MonolithicMeshtying::Converged()
   // residual forces
   switch (normtypefres_)
   {
-    case INPAR::POROELAST::convnorm_abs_global:
+    case Inpar::PoroElast::convnorm_abs_global:
       convfres = normrhs_ < tolfres_;
       break;
-    case INPAR::POROELAST::convnorm_abs_singlefields:
+    case Inpar::PoroElast::convnorm_abs_singlefields:
       convfres = (normrhsstruct_ < tolfres_struct_ and normrhsfluidvel_ < tolfres_velocity_ and
                   normrhsfluidpres_ < tolfres_pressure_ and normrhsporo_ < tolfres_porosity_ and
                   normrhsfactiven_ < tolfres_ncoup_);
@@ -262,9 +262,9 @@ bool POROELAST::MonolithicMeshtying::Converged()
 
   // combine increments and forces
   bool conv = false;
-  if (combincfres_ == INPAR::POROELAST::bop_and)
+  if (combincfres_ == Inpar::PoroElast::bop_and)
     conv = convinc and convfres;
-  else if (combincfres_ == INPAR::POROELAST::bop_or)
+  else if (combincfres_ == Inpar::PoroElast::bop_or)
     conv = convinc or convfres;
   else
     FOUR_C_THROW("Something went terribly wrong with binary operator!");
@@ -272,20 +272,20 @@ bool POROELAST::MonolithicMeshtying::Converged()
   return conv;
 }
 
-bool POROELAST::MonolithicMeshtying::SetupSolver()
+bool PoroElast::MonolithicMeshtying::SetupSolver()
 {
   Monolithic::SetupSolver();
 
   // get dynamic section of poroelasticity
   const Teuchos::ParameterList& poroelastdyn =
-      GLOBAL::Problem::Instance()->poroelast_dynamic_params();
+      Global::Problem::Instance()->poroelast_dynamic_params();
 
   tolfres_ncoup_ = poroelastdyn.get<double>("TOLRES_NCOUP");
 
   return true;
 }
 
-void POROELAST::MonolithicMeshtying::print_newton_iter_header_stream(std::ostringstream& oss)
+void PoroElast::MonolithicMeshtying::print_newton_iter_header_stream(std::ostringstream& oss)
 {
   oss << "------------------------------------------------------------" << std::endl;
   oss << "                   Newton-Raphson Scheme                    " << std::endl;
@@ -302,11 +302,11 @@ void POROELAST::MonolithicMeshtying::print_newton_iter_header_stream(std::ostrin
   // residual forces
   switch (normtypefres_)
   {
-    case INPAR::POROELAST::convnorm_abs_global:
+    case Inpar::PoroElast::convnorm_abs_global:
       oss << std::setw(15) << "abs-res"
           << "(" << std::setw(5) << std::setprecision(2) << tolfres_ << ")";
       break;
-    case INPAR::POROELAST::convnorm_abs_singlefields:
+    case Inpar::PoroElast::convnorm_abs_singlefields:
       oss << std::setw(15) << "abs-s-res"
           << "(" << std::setw(5) << std::setprecision(2) << tolfres_struct_ << ")";
       if (porosity_dof_)
@@ -326,11 +326,11 @@ void POROELAST::MonolithicMeshtying::print_newton_iter_header_stream(std::ostrin
 
   switch (normtypeinc_)
   {
-    case INPAR::POROELAST::convnorm_abs_global:
+    case Inpar::PoroElast::convnorm_abs_global:
       oss << std::setw(15) << "abs-inc"
           << "(" << std::setw(5) << std::setprecision(2) << tolinc_ << ")";
       break;
-    case INPAR::POROELAST::convnorm_abs_singlefields:
+    case Inpar::PoroElast::convnorm_abs_singlefields:
       oss << std::setw(15) << "abs-s-inc"
           << "(" << std::setw(5) << std::setprecision(2) << tolinc_struct_ << ")";
       if (porosity_dof_)
@@ -347,7 +347,7 @@ void POROELAST::MonolithicMeshtying::print_newton_iter_header_stream(std::ostrin
   }
 }
 
-void POROELAST::MonolithicMeshtying::print_newton_iter_text_stream(std::ostringstream& oss)
+void PoroElast::MonolithicMeshtying::print_newton_iter_text_stream(std::ostringstream& oss)
 {
   // enter converged state etc
   oss << std::setw(7) << iter_;
@@ -358,10 +358,10 @@ void POROELAST::MonolithicMeshtying::print_newton_iter_text_stream(std::ostrings
   // residual forces
   switch (normtypefres_)
   {
-    case INPAR::POROELAST::convnorm_abs_global:
+    case Inpar::PoroElast::convnorm_abs_global:
       oss << std::setw(22) << std::setprecision(5) << std::scientific << normrhs_;
       break;
-    case INPAR::POROELAST::convnorm_abs_singlefields:
+    case Inpar::PoroElast::convnorm_abs_singlefields:
       break;
     default:
       FOUR_C_THROW("Unknown or undefined convergence form for global residual.");
@@ -370,10 +370,10 @@ void POROELAST::MonolithicMeshtying::print_newton_iter_text_stream(std::ostrings
   // increments
   switch (normtypeinc_)
   {
-    case INPAR::POROELAST::convnorm_abs_global:
+    case Inpar::PoroElast::convnorm_abs_global:
       oss << std::setw(22) << std::setprecision(5) << std::scientific << norminc_;
       break;
-    case INPAR::POROELAST::convnorm_abs_singlefields:
+    case Inpar::PoroElast::convnorm_abs_singlefields:
       break;
     default:
       FOUR_C_THROW("Unknown or undefined convergence form for global increment.");
@@ -383,7 +383,7 @@ void POROELAST::MonolithicMeshtying::print_newton_iter_text_stream(std::ostrings
   // --------------------------------------------------------single field test
   switch (normtypefres_)
   {
-    case INPAR::POROELAST::convnorm_abs_singlefields:
+    case Inpar::PoroElast::convnorm_abs_singlefields:
       oss << std::setw(22) << std::setprecision(5) << std::scientific << normrhsstruct_;
       if (porosity_dof_)
         oss << std::setw(22) << std::setprecision(5) << std::scientific << normrhsporo_;
@@ -391,7 +391,7 @@ void POROELAST::MonolithicMeshtying::print_newton_iter_text_stream(std::ostrings
       oss << std::setw(22) << std::setprecision(5) << std::scientific << normrhsfluidpres_;
       oss << std::setw(22) << std::setprecision(5) << std::scientific << normrhsfactiven_;
       break;
-    case INPAR::POROELAST::convnorm_abs_global:
+    case Inpar::PoroElast::convnorm_abs_global:
       break;
     default:
       FOUR_C_THROW("Unknown or undefined convergence form for single field residual.");
@@ -400,14 +400,14 @@ void POROELAST::MonolithicMeshtying::print_newton_iter_text_stream(std::ostrings
 
   switch (normtypeinc_)
   {
-    case INPAR::POROELAST::convnorm_abs_singlefields:
+    case Inpar::PoroElast::convnorm_abs_singlefields:
       oss << std::setw(22) << std::setprecision(5) << std::scientific << normincstruct_;
       if (porosity_dof_)
         oss << std::setw(22) << std::setprecision(5) << std::scientific << normincporo_;
       oss << std::setw(22) << std::setprecision(5) << std::scientific << normincfluidvel_;
       oss << std::setw(22) << std::setprecision(5) << std::scientific << normincfluidpres_;
       break;
-    case INPAR::POROELAST::convnorm_abs_global:
+    case Inpar::PoroElast::convnorm_abs_global:
       break;
     default:
       FOUR_C_THROW("Unknown or undefined convergence form for single field increment.");

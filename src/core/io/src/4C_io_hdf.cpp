@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  * The Constructor of the HDFReader (num_proc defaults to 1)
  *----------------------------------------------------------------------*/
-CORE::IO::HDFReader::HDFReader(std::string dir)
+Core::IO::HDFReader::HDFReader(std::string dir)
     : filenames_(0), files_(0), input_dir_(dir), num_output_proc_(0)
 {
   // inhibit delayed closure, throws error if file contents still in use
@@ -33,7 +33,7 @@ CORE::IO::HDFReader::HDFReader(std::string dir)
 /*----------------------------------------------------------------------*
  * The Destructor
  *----------------------------------------------------------------------*/
-CORE::IO::HDFReader::~HDFReader()
+Core::IO::HDFReader::~HDFReader()
 {
   Close();
   herr_t status = H5Pclose(h5_plist_);
@@ -45,7 +45,7 @@ CORE::IO::HDFReader::~HDFReader()
  * with name basename. When num_output_proc_ > 1 it opens the result
  * files of all processors, by appending .p<proc_num> to the basename.
  *----------------------------------------------------------------------*/
-void CORE::IO::HDFReader::Open(
+void Core::IO::HDFReader::Open(
     std::string basename, int num_output_procs, int new_proc_num, int my_id)
 {
   int start;
@@ -79,7 +79,7 @@ void CORE::IO::HDFReader::Open(
  * Note: this function should only be called when the HDFReader opened
  * the mesh files
  *----------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<char>> CORE::IO::HDFReader::ReadElementData(
+Teuchos::RCP<std::vector<char>> Core::IO::HDFReader::ReadElementData(
     int step, int new_proc_num, int my_id) const
 {
   if (files_.size() == 0) FOUR_C_THROW("Tried to read data without opening any file");
@@ -104,7 +104,7 @@ Teuchos::RCP<std::vector<char>> CORE::IO::HDFReader::ReadElementData(
  * Note: this function should only be called when the HDFReader opened
  * the mesh files                                          gammi 05/07
  *----------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<char>> CORE::IO::HDFReader::ReadCondition(
+Teuchos::RCP<std::vector<char>> Core::IO::HDFReader::ReadCondition(
     const int step, const int new_proc_num, const int my_id, const std::string condname) const
 {
   if (files_.size() == 0) FOUR_C_THROW("Tried to read data without opening any file");
@@ -128,7 +128,7 @@ Teuchos::RCP<std::vector<char>> CORE::IO::HDFReader::ReadCondition(
  * Note: this function should only be called when the HDFReader opened
  * the mesh files                                          gammi 05/08
  *----------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<char>> CORE::IO::HDFReader::ReadKnotvector(const int step) const
+Teuchos::RCP<std::vector<char>> Core::IO::HDFReader::ReadKnotvector(const int step) const
 {
   if (files_.size() == 0) FOUR_C_THROW("Tried to read data without opening any file");
 
@@ -152,7 +152,7 @@ Teuchos::RCP<std::vector<char>> CORE::IO::HDFReader::ReadKnotvector(const int st
  * Note: this function should only be called when the HDFReader opened
  * the mesh files
  *----------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<char>> CORE::IO::HDFReader::ReadNodeData(
+Teuchos::RCP<std::vector<char>> Core::IO::HDFReader::ReadNodeData(
     int step, int new_proc_num, int my_id) const
 {
   if (files_.size() == 0) FOUR_C_THROW("Tried to read data without opening any file");
@@ -177,7 +177,7 @@ Teuchos::RCP<std::vector<char>> CORE::IO::HDFReader::ReadNodeData(
  * and returns all the data in one vector. The data is assumed to by
  * of type char (private)
  *----------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<char>> CORE::IO::HDFReader::read_char_data(
+Teuchos::RCP<std::vector<char>> Core::IO::HDFReader::read_char_data(
     std::string path, int start, int end) const
 {
   if (end == -1) end = num_output_proc_;
@@ -236,7 +236,7 @@ Teuchos::RCP<std::vector<char>> CORE::IO::HDFReader::read_char_data(
  * reads the dataset 'path' in all the files in the range [start,end)
  * and returns all the data in one std::vector<int> (private)
  *----------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<int>> CORE::IO::HDFReader::read_int_data(
+Teuchos::RCP<std::vector<int>> Core::IO::HDFReader::read_int_data(
     std::string path, int start, int end) const
 {
   if (end == -1) end = num_output_proc_;
@@ -292,7 +292,7 @@ Teuchos::RCP<std::vector<int>> CORE::IO::HDFReader::read_int_data(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<double>> CORE::IO::HDFReader::read_double_data(
+Teuchos::RCP<std::vector<double>> Core::IO::HDFReader::read_double_data(
     std::string path, int start, int end, std::vector<int>& lengths) const
 {
   if (end == -1) end = num_output_proc_;
@@ -348,7 +348,7 @@ Teuchos::RCP<std::vector<double>> CORE::IO::HDFReader::read_double_data(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> CORE::IO::HDFReader::ReadResultData(
+Teuchos::RCP<Epetra_MultiVector> Core::IO::HDFReader::ReadResultData(
     std::string id_path, std::string value_path, int columns, const Epetra_Comm& Comm) const
 {
   int new_proc_num = Comm.NumProc();
@@ -394,7 +394,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::IO::HDFReader::ReadResultData(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<char>> CORE::IO::HDFReader::read_result_data_vec_char(std::string id_path,
+Teuchos::RCP<std::vector<char>> Core::IO::HDFReader::read_result_data_vec_char(std::string id_path,
     std::string value_path, int columns, const Epetra_Comm& Comm,
     Teuchos::RCP<Epetra_Map>& elemap) const
 {
@@ -418,7 +418,7 @@ Teuchos::RCP<std::vector<char>> CORE::IO::HDFReader::read_result_data_vec_char(s
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<char>> CORE::IO::HDFReader::ReadCharVector(
+Teuchos::RCP<std::vector<char>> Core::IO::HDFReader::ReadCharVector(
     std::string value_path, const Epetra_Comm& Comm) const
 {
   int new_proc_num = Comm.NumProc();
@@ -435,7 +435,7 @@ Teuchos::RCP<std::vector<char>> CORE::IO::HDFReader::ReadCharVector(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::IO::HDFReader::Close()
+void Core::IO::HDFReader::Close()
 {
   for (int i = 0; i < num_output_proc_ and i < static_cast<int>(files_.size()); ++i)
   {
@@ -452,7 +452,7 @@ void CORE::IO::HDFReader::Close()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::IO::HDFReader::calculate_range(int new_proc_num, int my_id, int& start, int& end) const
+void Core::IO::HDFReader::calculate_range(int new_proc_num, int my_id, int& start, int& end) const
 {
   const int mod = num_output_proc_ % new_proc_num;
   if (my_id < mod)

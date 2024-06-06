@@ -20,11 +20,11 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     ehrl 01/14 |
  *----------------------------------------------------------------------*/
-SCATRA::ScaTraTimIntElchOST::ScaTraTimIntElchOST(Teuchos::RCP<DRT::Discretization> actdis,
-    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+ScaTra::ScaTraTimIntElchOST::ScaTraTimIntElchOST(Teuchos::RCP<Discret::Discretization> actdis,
+    Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
     Teuchos::RCP<Teuchos::ParameterList> extraparams,
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, sctratimintparams, extraparams, output),
       ScaTraTimIntElch(actdis, solver, params, sctratimintparams, extraparams, output),
       TimIntOneStepTheta(actdis, solver, sctratimintparams, extraparams, output)
@@ -35,7 +35,7 @@ SCATRA::ScaTraTimIntElchOST::ScaTraTimIntElchOST(Teuchos::RCP<DRT::Discretizatio
 /*----------------------------------------------------------------------*
  |  initialize time integration                              ehrl 01/14 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchOST::Init()
+void ScaTra::ScaTraTimIntElchOST::Init()
 {
   // call Init()-functions of base classes
   // note: this order is important
@@ -47,7 +47,7 @@ void SCATRA::ScaTraTimIntElchOST::Init()
 /*----------------------------------------------------------------------*
  |  initialize time integration                              ehrl 01/14 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchOST::Setup()
+void ScaTra::ScaTraTimIntElchOST::Setup()
 {
   // call Setup()-functions of base classes
   // note: this order is important
@@ -57,7 +57,7 @@ void SCATRA::ScaTraTimIntElchOST::Setup()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchOST::pre_calc_initial_potential_field()
+void ScaTra::ScaTraTimIntElchOST::pre_calc_initial_potential_field()
 {
   // evaluate Dirichlet boundary conditions at time t=0
   // the values should match your initial field at the boundary!
@@ -83,7 +83,7 @@ void SCATRA::ScaTraTimIntElchOST::pre_calc_initial_potential_field()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchOST::post_calc_initial_potential_field()
+void ScaTra::ScaTraTimIntElchOST::post_calc_initial_potential_field()
 {  // and finally undo our temporary settings
   set_element_general_parameters(false);
   set_element_time_parameter(false);
@@ -93,7 +93,7 @@ void SCATRA::ScaTraTimIntElchOST::post_calc_initial_potential_field()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchOST::write_restart() const
+void ScaTra::ScaTraTimIntElchOST::write_restart() const
 {
   // output restart information associated with one-step-theta time integration scheme
   TimIntOneStepTheta::write_restart();
@@ -103,20 +103,20 @@ void SCATRA::ScaTraTimIntElchOST::write_restart() const
 
   // write additional restart data for galvanostatic applications or simulations including a double
   // layer formulation
-  if (CORE::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
+  if (Core::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
   {
     // define a vector with all electrode kinetics BCs
-    std::vector<CORE::Conditions::Condition*> cond;
+    std::vector<Core::Conditions::Condition*> cond;
     discret_->GetCondition("ElchBoundaryKinetics", cond);
     if (!cond.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", cond);
 
     int condid_cathode = elchparams_->get<int>("GSTATCONDID_CATHODE");
 
-    std::vector<CORE::Conditions::Condition*>::iterator fool;
+    std::vector<Core::Conditions::Condition*>::iterator fool;
     // loop through conditions and find the cathode
     for (fool = cond.begin(); fool != cond.end(); ++fool)
     {
-      CORE::Conditions::Condition* mycond = (*(fool));
+      Core::Conditions::Condition* mycond = (*(fool));
       const int condid = mycond->parameters().Get<int>("ConditionID");
       // galvanostatic mode: only applied potential of cathode is adapted
       if (condid_cathode == condid or dlcapexists_)
@@ -148,37 +148,37 @@ void SCATRA::ScaTraTimIntElchOST::write_restart() const
 /*----------------------------------------------------------------------*
  |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchOST::read_restart(
-    const int step, Teuchos::RCP<CORE::IO::InputControl> input)
+void ScaTra::ScaTraTimIntElchOST::read_restart(
+    const int step, Teuchos::RCP<Core::IO::InputControl> input)
 {
   TimIntOneStepTheta::read_restart(step, input);
 
-  Teuchos::RCP<CORE::IO::DiscretizationReader> reader(Teuchos::null);
+  Teuchos::RCP<Core::IO::DiscretizationReader> reader(Teuchos::null);
   if (input == Teuchos::null)
-    reader = Teuchos::rcp(new CORE::IO::DiscretizationReader(
-        discret_, GLOBAL::Problem::Instance()->InputControlFile(), step));
+    reader = Teuchos::rcp(new Core::IO::DiscretizationReader(
+        discret_, Global::Problem::Instance()->InputControlFile(), step));
   else
-    reader = Teuchos::rcp(new CORE::IO::DiscretizationReader(discret_, input, step));
+    reader = Teuchos::rcp(new Core::IO::DiscretizationReader(discret_, input, step));
 
   // Initialize Nernst-BC
   init_nernst_bc();
 
-  if (CORE::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
+  if (Core::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
   {
     // define a vector with all electrode kinetics BCs
-    std::vector<CORE::Conditions::Condition*> cond;
+    std::vector<Core::Conditions::Condition*> cond;
     discret_->GetCondition("ElchBoundaryKinetics", cond);
     if (!cond.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", cond);
 
     int condid_cathode = elchparams_->get<int>("GSTATCONDID_CATHODE");
-    std::vector<CORE::Conditions::Condition*>::iterator fool;
+    std::vector<Core::Conditions::Condition*>::iterator fool;
     bool read_pot = false;
 
     // read desired values from the .control file and add/set the value to
     // the electrode kinetics boundary condition representing the cathode
     for (fool = cond.begin(); fool != cond.end(); ++fool)
     {
-      CORE::Conditions::Condition* mycond = (*(fool));
+      Core::Conditions::Condition* mycond = (*(fool));
       const int condid = mycond->parameters().Get<int>("ConditionID");
       // galvanostatic mode: only applied potential of cathode is adapted
       if (condid_cathode == condid or dlcapexists_)
@@ -209,7 +209,7 @@ void SCATRA::ScaTraTimIntElchOST::read_restart(
  | current solution becomes most recent solution of next timestep       |
  |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchOST::Update()
+void ScaTra::ScaTraTimIntElchOST::Update()
 {
   TimIntOneStepTheta::Update();
   ScaTraTimIntElch::Update();
@@ -219,13 +219,13 @@ void SCATRA::ScaTraTimIntElchOST::Update()
 /*----------------------------------------------------------------------*
  | update of time-dependent variables for electrode kinetics  gjb 11/09 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchOST::electrode_kinetics_time_update()
+void ScaTra::ScaTraTimIntElchOST::electrode_kinetics_time_update()
 {
-  if ((CORE::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC")) or dlcapexists_)
+  if ((Core::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC")) or dlcapexists_)
   {
     compute_time_deriv_pot0(false);
 
-    std::vector<CORE::Conditions::Condition*> conditions;
+    std::vector<Core::Conditions::Condition*> conditions;
     discret_->GetCondition("ElchBoundaryKinetics", conditions);
     if (!conditions.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", conditions);
     for (auto& condition : conditions)  // we update simply every condition!
@@ -245,7 +245,7 @@ void SCATRA::ScaTraTimIntElchOST::electrode_kinetics_time_update()
 /*----------------------------------------------------------------------*
  | explicit predictor for nonlinear solver                   fang 10/15 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchOST::explicit_predictor() const
+void ScaTra::ScaTraTimIntElchOST::explicit_predictor() const
 {
   // call base class routine
   TimIntOneStepTheta::explicit_predictor();
@@ -258,9 +258,9 @@ void SCATRA::ScaTraTimIntElchOST::explicit_predictor() const
 /*-------------------------------------------------------------------------------------*
  | compute time derivative of applied electrode potential                   ehrl 08/13 |
  *-------------------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchOST::compute_time_deriv_pot0(const bool init)
+void ScaTra::ScaTraTimIntElchOST::compute_time_deriv_pot0(const bool init)
 {
-  std::vector<CORE::Conditions::Condition*> cond;
+  std::vector<Core::Conditions::Condition*> cond;
   discret_->GetCondition("ElchBoundaryKinetics", cond);
   if (!cond.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", cond);
   int numcond = static_cast<int>(cond.size());
@@ -288,7 +288,7 @@ void SCATRA::ScaTraTimIntElchOST::compute_time_deriv_pot0(const bool init)
       if (functnum >= 0)
       {
         const double functfac =
-            problem_->FunctionById<CORE::UTILS::FunctionOfTime>(functnum).Evaluate(time_);
+            problem_->FunctionById<Core::UTILS::FunctionOfTime>(functnum).Evaluate(time_);
 
         // adjust potential at metal side accordingly
         pot0np *= functfac;
@@ -308,15 +308,15 @@ void SCATRA::ScaTraTimIntElchOST::compute_time_deriv_pot0(const bool init)
 /*--------------------------------------------------------------------------*
  | set part of residual vector belonging to previous time step   fang 02/15 |
  *--------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchOST::set_old_part_of_righthandside()
+void ScaTra::ScaTraTimIntElchOST::set_old_part_of_righthandside()
 {
   // call base class routine
   TimIntOneStepTheta::set_old_part_of_righthandside();
 
   // contribution from galvanostatic equation
-  if ((CORE::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC")) or dlcapexists_)
+  if ((Core::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC")) or dlcapexists_)
   {
-    std::vector<CORE::Conditions::Condition*> conditions;
+    std::vector<Core::Conditions::Condition*> conditions;
     discret_->GetCondition("ElchBoundaryKinetics", conditions);
     if (!conditions.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", conditions);
     for (auto& condition : conditions)  // we update simply every condition!
@@ -338,11 +338,11 @@ void SCATRA::ScaTraTimIntElchOST::set_old_part_of_righthandside()
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     ehrl 01/14 |
  *----------------------------------------------------------------------*/
-SCATRA::ScaTraTimIntElchBDF2::ScaTraTimIntElchBDF2(Teuchos::RCP<DRT::Discretization> actdis,
-    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+ScaTra::ScaTraTimIntElchBDF2::ScaTraTimIntElchBDF2(Teuchos::RCP<Discret::Discretization> actdis,
+    Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
     Teuchos::RCP<Teuchos::ParameterList> extraparams,
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, sctratimintparams, extraparams, output),
       ScaTraTimIntElch(actdis, solver, params, sctratimintparams, extraparams, output),
       TimIntBDF2(actdis, solver, sctratimintparams, extraparams, output)
@@ -353,7 +353,7 @@ SCATRA::ScaTraTimIntElchBDF2::ScaTraTimIntElchBDF2(Teuchos::RCP<DRT::Discretizat
 /*----------------------------------------------------------------------*
  |  initialize time integration                              ehrl 01/14 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchBDF2::Init()
+void ScaTra::ScaTraTimIntElchBDF2::Init()
 {
   // call Init()-functions of base classes
   // note: this order is important
@@ -364,7 +364,7 @@ void SCATRA::ScaTraTimIntElchBDF2::Init()
 /*----------------------------------------------------------------------*
  |  initialize time integration                             rauch 09/16 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchBDF2::Setup()
+void ScaTra::ScaTraTimIntElchBDF2::Setup()
 {
   // call Setup()-functions of base classes
   // note: this order is important
@@ -375,7 +375,7 @@ void SCATRA::ScaTraTimIntElchBDF2::Setup()
 
 /*-----------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchBDF2::pre_calc_initial_potential_field()
+void ScaTra::ScaTraTimIntElchBDF2::pre_calc_initial_potential_field()
 {
   apply_dirichlet_bc(time_, phin_, Teuchos::null);
   apply_dirichlet_bc(time_, phinp_, Teuchos::null);
@@ -385,7 +385,7 @@ void SCATRA::ScaTraTimIntElchBDF2::pre_calc_initial_potential_field()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchBDF2::write_restart() const
+void ScaTra::ScaTraTimIntElchBDF2::write_restart() const
 {
   // output restart information associated with BDF2 time integration scheme
   TimIntBDF2::write_restart();
@@ -394,20 +394,20 @@ void SCATRA::ScaTraTimIntElchBDF2::write_restart() const
   ScaTraTimIntElch::write_restart();
 
   // write additional restart data for galvanostatic applications
-  if (CORE::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
+  if (Core::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
   {
     // define a vector with all electrode kinetics BCs
-    std::vector<CORE::Conditions::Condition*> cond;
+    std::vector<Core::Conditions::Condition*> cond;
     discret_->GetCondition("ElchBoundaryKinetics", cond);
     if (!cond.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", cond);
 
     int condid_cathode = elchparams_->get<int>("GSTATCONDID_CATHODE");
 
-    std::vector<CORE::Conditions::Condition*>::iterator fool;
+    std::vector<Core::Conditions::Condition*>::iterator fool;
     // loop through conditions and find the cathode
     for (fool = cond.begin(); fool != cond.end(); ++fool)
     {
-      CORE::Conditions::Condition* mycond = (*(fool));
+      Core::Conditions::Condition* mycond = (*(fool));
       const int condid = mycond->parameters().Get<int>("ConditionID");
       if (condid_cathode == condid or dlcapexists_)
       {
@@ -434,38 +434,38 @@ void SCATRA::ScaTraTimIntElchBDF2::write_restart() const
 /*----------------------------------------------------------------------*
  |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchBDF2::read_restart(
-    const int step, Teuchos::RCP<CORE::IO::InputControl> input)
+void ScaTra::ScaTraTimIntElchBDF2::read_restart(
+    const int step, Teuchos::RCP<Core::IO::InputControl> input)
 {
   TimIntBDF2::read_restart(step, input);
 
-  Teuchos::RCP<CORE::IO::DiscretizationReader> reader(Teuchos::null);
+  Teuchos::RCP<Core::IO::DiscretizationReader> reader(Teuchos::null);
   if (input == Teuchos::null)
-    reader = Teuchos::rcp(new CORE::IO::DiscretizationReader(
-        discret_, GLOBAL::Problem::Instance()->InputControlFile(), step));
+    reader = Teuchos::rcp(new Core::IO::DiscretizationReader(
+        discret_, Global::Problem::Instance()->InputControlFile(), step));
   else
-    reader = Teuchos::rcp(new CORE::IO::DiscretizationReader(discret_, input, step));
+    reader = Teuchos::rcp(new Core::IO::DiscretizationReader(discret_, input, step));
 
   // Initialize Nernst-BC
   init_nernst_bc();
 
   // restart for galvanostatic applications
-  if (CORE::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
+  if (Core::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
   {
     // define a vector with all electrode kinetics BCs
-    std::vector<CORE::Conditions::Condition*> cond;
+    std::vector<Core::Conditions::Condition*> cond;
     discret_->GetCondition("ElchBoundaryKinetics", cond);
     if (!cond.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", cond);
 
     int condid_cathode = elchparams_->get<int>("GSTATCONDID_CATHODE");
-    std::vector<CORE::Conditions::Condition*>::iterator fool;
+    std::vector<Core::Conditions::Condition*>::iterator fool;
     bool read_pot = false;
 
     // read desired values from the .control file and add/set the value to
     // the electrode kinetics boundary condition representing the cathode
     for (fool = cond.begin(); fool != cond.end(); ++fool)
     {
-      CORE::Conditions::Condition* mycond = (*(fool));
+      Core::Conditions::Condition* mycond = (*(fool));
       const int condid = mycond->parameters().Get<int>("ConditionID");
       if (condid_cathode == condid or dlcapexists_)
       {
@@ -491,7 +491,7 @@ void SCATRA::ScaTraTimIntElchBDF2::read_restart(
  | current solution becomes most recent solution of next timestep       |
  |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchBDF2::Update()
+void ScaTra::ScaTraTimIntElchBDF2::Update()
 {
   TimIntBDF2::Update();
   ScaTraTimIntElch::Update();
@@ -501,16 +501,16 @@ void SCATRA::ScaTraTimIntElchBDF2::Update()
 /*----------------------------------------------------------------------*
  | update of time-dependent variables for electrode kinetics  gjb 11/09 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchBDF2::electrode_kinetics_time_update()
+void ScaTra::ScaTraTimIntElchBDF2::electrode_kinetics_time_update()
 {
   // The galvanostatic mode and double layer charging has never been tested if it is implemented
   // correctly!! The code have to be checked in detail, if somebody want to use it!!
 
-  if (CORE::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
+  if (Core::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
   {
     // compute_time_deriv_pot0(false);
 
-    std::vector<CORE::Conditions::Condition*> conditions;
+    std::vector<Core::Conditions::Condition*> conditions;
     discret_->GetCondition("ElchBoundaryKinetics", conditions);
     if (!conditions.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", conditions);
     for (auto& condition : conditions)  // we update simply every condition!
@@ -530,9 +530,9 @@ void SCATRA::ScaTraTimIntElchBDF2::electrode_kinetics_time_update()
 /*-------------------------------------------------------------------------------------*
  | compute time derivative of applied electrode potential                   ehrl 08/13 |
  *-------------------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchBDF2::compute_time_deriv_pot0(const bool init)
+void ScaTra::ScaTraTimIntElchBDF2::compute_time_deriv_pot0(const bool init)
 {
-  std::vector<CORE::Conditions::Condition*> cond;
+  std::vector<Core::Conditions::Condition*> cond;
   discret_->GetCondition("ElchBoundaryKinetics", cond);
   if (!cond.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", cond);
   int numcond = static_cast<int>(cond.size());
@@ -558,7 +558,7 @@ void SCATRA::ScaTraTimIntElchBDF2::compute_time_deriv_pot0(const bool init)
             "to use one-step-theta time integration scheme");
       }
 
-      if (CORE::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") == true)
+      if (Core::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") == true)
       {
         FOUR_C_THROW(
             "Double layer charging and galvanostatic mode are not implemented for BDF2! You have "
@@ -572,15 +572,15 @@ void SCATRA::ScaTraTimIntElchBDF2::compute_time_deriv_pot0(const bool init)
 /*--------------------------------------------------------------------------*
  | set part of residual vector belonging to previous time step   fang 02/15 |
  *--------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchBDF2::set_old_part_of_righthandside()
+void ScaTra::ScaTraTimIntElchBDF2::set_old_part_of_righthandside()
 {
   // call base class routine
   TimIntBDF2::set_old_part_of_righthandside();
 
   // contribution from galvanostatic equation
-  if ((CORE::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC")) or dlcapexists_)
+  if ((Core::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC")) or dlcapexists_)
   {
-    std::vector<CORE::Conditions::Condition*> conditions;
+    std::vector<Core::Conditions::Condition*> conditions;
     discret_->GetCondition("ElchBoundaryKinetics", conditions);
     if (!conditions.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", conditions);
     for (auto& condition : conditions)  // we update simply every condition!
@@ -611,11 +611,12 @@ void SCATRA::ScaTraTimIntElchBDF2::set_old_part_of_righthandside()
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     ehrl 01/14 |
  *----------------------------------------------------------------------*/
-SCATRA::ScaTraTimIntElchGenAlpha::ScaTraTimIntElchGenAlpha(Teuchos::RCP<DRT::Discretization> actdis,
-    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+ScaTra::ScaTraTimIntElchGenAlpha::ScaTraTimIntElchGenAlpha(
+    Teuchos::RCP<Discret::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
+    Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
     Teuchos::RCP<Teuchos::ParameterList> extraparams,
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, sctratimintparams, extraparams, output),
       ScaTraTimIntElch(actdis, solver, params, sctratimintparams, extraparams, output),
       TimIntGenAlpha(actdis, solver, sctratimintparams, extraparams, output)
@@ -626,7 +627,7 @@ SCATRA::ScaTraTimIntElchGenAlpha::ScaTraTimIntElchGenAlpha(Teuchos::RCP<DRT::Dis
 /*----------------------------------------------------------------------*
  |  initialize time integration                              ehrl 01/14 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchGenAlpha::Init()
+void ScaTra::ScaTraTimIntElchGenAlpha::Init()
 {
   // call Init()-functions of base classes
   // note: this order is important
@@ -638,7 +639,7 @@ void SCATRA::ScaTraTimIntElchGenAlpha::Init()
 /*----------------------------------------------------------------------*
  |  initialize time integration                             rauch 09/16 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchGenAlpha::Setup()
+void ScaTra::ScaTraTimIntElchGenAlpha::Setup()
 {
   // call Setup()-functions of base classes
   // note: this order is important
@@ -649,7 +650,7 @@ void SCATRA::ScaTraTimIntElchGenAlpha::Setup()
 
 /*---------------------------------------------------------------------------*
  ----------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchGenAlpha::pre_calc_initial_potential_field()
+void ScaTra::ScaTraTimIntElchGenAlpha::pre_calc_initial_potential_field()
 {
   // evaluate Dirichlet boundary conditions at time t = 0
   // the values should match your initial field at the boundary!
@@ -677,7 +678,7 @@ void SCATRA::ScaTraTimIntElchGenAlpha::pre_calc_initial_potential_field()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchGenAlpha::post_calc_initial_potential_field()
+void ScaTra::ScaTraTimIntElchGenAlpha::post_calc_initial_potential_field()
 {
   // and finally undo our temporary settings
   set_element_general_parameters();
@@ -688,7 +689,7 @@ void SCATRA::ScaTraTimIntElchGenAlpha::post_calc_initial_potential_field()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchGenAlpha::write_restart() const
+void ScaTra::ScaTraTimIntElchGenAlpha::write_restart() const
 {
   // output restart information associated with generalized-alpha time integration scheme
   TimIntGenAlpha::write_restart();
@@ -697,20 +698,20 @@ void SCATRA::ScaTraTimIntElchGenAlpha::write_restart() const
   ScaTraTimIntElch::write_restart();
 
   // write additional restart data for galvanostatic applications
-  if (CORE::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
+  if (Core::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
   {
     // define a vector with all electrode kinetics BCs
-    std::vector<CORE::Conditions::Condition*> cond;
+    std::vector<Core::Conditions::Condition*> cond;
     discret_->GetCondition("ElchBoundaryKinetics", cond);
     if (!cond.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", cond);
 
     int condid_cathode = elchparams_->get<int>("GSTATCONDID_CATHODE");
 
-    std::vector<CORE::Conditions::Condition*>::iterator fool;
+    std::vector<Core::Conditions::Condition*>::iterator fool;
     // loop through conditions and find the cathode
     for (fool = cond.begin(); fool != cond.end(); ++fool)
     {
-      CORE::Conditions::Condition* mycond = (*(fool));
+      Core::Conditions::Condition* mycond = (*(fool));
       const int condid = mycond->parameters().Get<int>("ConditionID");
       if (condid_cathode == condid or dlcapexists_)
       {
@@ -729,37 +730,37 @@ void SCATRA::ScaTraTimIntElchGenAlpha::write_restart() const
 /*----------------------------------------------------------------------*
  |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchGenAlpha::read_restart(
-    const int step, Teuchos::RCP<CORE::IO::InputControl> input)
+void ScaTra::ScaTraTimIntElchGenAlpha::read_restart(
+    const int step, Teuchos::RCP<Core::IO::InputControl> input)
 {
   TimIntGenAlpha::read_restart(step, input);
 
-  Teuchos::RCP<CORE::IO::DiscretizationReader> reader(Teuchos::null);
+  Teuchos::RCP<Core::IO::DiscretizationReader> reader(Teuchos::null);
   if (input == Teuchos::null)
-    reader = Teuchos::rcp(new CORE::IO::DiscretizationReader(
-        discret_, GLOBAL::Problem::Instance()->InputControlFile(), step));
+    reader = Teuchos::rcp(new Core::IO::DiscretizationReader(
+        discret_, Global::Problem::Instance()->InputControlFile(), step));
   else
-    reader = Teuchos::rcp(new CORE::IO::DiscretizationReader(discret_, input, step));
+    reader = Teuchos::rcp(new Core::IO::DiscretizationReader(discret_, input, step));
 
   // Initialize Nernst-BC
   init_nernst_bc();
 
-  if (CORE::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
+  if (Core::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
   {
     // define a vector with all electrode kinetics BCs
-    std::vector<CORE::Conditions::Condition*> cond;
+    std::vector<Core::Conditions::Condition*> cond;
     discret_->GetCondition("ElchBoundaryKinetics", cond);
     if (!cond.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", cond);
 
     int condid_cathode = elchparams_->get<int>("GSTATCONDID_CATHODE");
-    std::vector<CORE::Conditions::Condition*>::iterator fool;
+    std::vector<Core::Conditions::Condition*>::iterator fool;
     bool read_pot = false;
 
     // read desired values from the .control file and add/set the value to
     // the electrode kinetics boundary condition representing the cathode
     for (fool = cond.begin(); fool != cond.end(); ++fool)
     {
-      CORE::Conditions::Condition* mycond = (*(fool));
+      Core::Conditions::Condition* mycond = (*(fool));
       const int condid = mycond->parameters().Get<int>("ConditionID");
       if (condid_cathode == condid or dlcapexists_)
       {
@@ -783,7 +784,7 @@ void SCATRA::ScaTraTimIntElchGenAlpha::read_restart(
  | current solution becomes most recent solution of next timestep       |
  |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchGenAlpha::Update()
+void ScaTra::ScaTraTimIntElchGenAlpha::Update()
 {
   TimIntGenAlpha::Update();
   ScaTraTimIntElch::Update();
@@ -793,13 +794,13 @@ void SCATRA::ScaTraTimIntElchGenAlpha::Update()
 /*----------------------------------------------------------------------*
  | update of time-dependent variables for electrode kinetics  gjb 11/09 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchGenAlpha::electrode_kinetics_time_update()
+void ScaTra::ScaTraTimIntElchGenAlpha::electrode_kinetics_time_update()
 {
-  if ((CORE::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC")) or dlcapexists_)
+  if ((Core::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC")) or dlcapexists_)
   {
     compute_time_deriv_pot0(false);
 
-    std::vector<CORE::Conditions::Condition*> conditions;
+    std::vector<Core::Conditions::Condition*> conditions;
     discret_->GetCondition("ElchBoundaryKinetics", conditions);
     if (!conditions.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", conditions);
     for (auto& condition : conditions)  // we update simply every condition!
@@ -817,9 +818,9 @@ void SCATRA::ScaTraTimIntElchGenAlpha::electrode_kinetics_time_update()
 /*-------------------------------------------------------------------------------------*
  | compute time derivative of applied electrode potential                   ehrl 08/13 |
  *-------------------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchGenAlpha::compute_time_deriv_pot0(const bool init)
+void ScaTra::ScaTraTimIntElchGenAlpha::compute_time_deriv_pot0(const bool init)
 {
-  std::vector<CORE::Conditions::Condition*> cond;
+  std::vector<Core::Conditions::Condition*> cond;
   discret_->GetCondition("ElchBoundaryKinetics", cond);
   if (!cond.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", cond);
   int numcond = static_cast<int>(cond.size());
@@ -856,7 +857,7 @@ void SCATRA::ScaTraTimIntElchGenAlpha::compute_time_deriv_pot0(const bool init)
       if (functnum >= 0)
       {
         const double functfac =
-            problem_->FunctionById<CORE::UTILS::FunctionOfTime>(functnum).Evaluate(time_);
+            problem_->FunctionById<Core::UTILS::FunctionOfTime>(functnum).Evaluate(time_);
         // adjust potential at metal side accordingly
 
         pot0np *= functfac;
@@ -877,12 +878,12 @@ void SCATRA::ScaTraTimIntElchGenAlpha::compute_time_deriv_pot0(const bool init)
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     ehrl 01/14 |
  *----------------------------------------------------------------------*/
-SCATRA::ScaTraTimIntElchStationary::ScaTraTimIntElchStationary(
-    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver,
+ScaTra::ScaTraTimIntElchStationary::ScaTraTimIntElchStationary(
+    Teuchos::RCP<Discret::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
     Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
     Teuchos::RCP<Teuchos::ParameterList> extraparams,
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, sctratimintparams, extraparams, output),
       ScaTraTimIntElch(actdis, solver, params, sctratimintparams, extraparams, output),
       TimIntStationary(actdis, solver, sctratimintparams, extraparams, output)
@@ -893,7 +894,7 @@ SCATRA::ScaTraTimIntElchStationary::ScaTraTimIntElchStationary(
 /*----------------------------------------------------------------------*
  |  initialize time integration                              ehrl 01/14 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchStationary::Init()
+void ScaTra::ScaTraTimIntElchStationary::Init()
 {
   // call Init()-functions of base classes
   // note: this order is important
@@ -906,7 +907,7 @@ void SCATRA::ScaTraTimIntElchStationary::Init()
 /*----------------------------------------------------------------------*
  |  initialize time integration                             rauch 09/16 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchStationary::Setup()
+void ScaTra::ScaTraTimIntElchStationary::Setup()
 {
   // call Setup()-functions of base classes
   // note: this order is important
@@ -917,7 +918,7 @@ void SCATRA::ScaTraTimIntElchStationary::Setup()
 
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchStationary::pre_calc_initial_potential_field()
+void ScaTra::ScaTraTimIntElchStationary::pre_calc_initial_potential_field()
 {
   apply_dirichlet_bc(time_, phin_, Teuchos::null);
   apply_dirichlet_bc(time_, phinp_, Teuchos::null);
@@ -927,7 +928,7 @@ void SCATRA::ScaTraTimIntElchStationary::pre_calc_initial_potential_field()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchStationary::write_restart() const
+void ScaTra::ScaTraTimIntElchStationary::write_restart() const
 {
   // output restart information associated with stationary time integration scheme
   TimIntStationary::write_restart();
@@ -936,20 +937,20 @@ void SCATRA::ScaTraTimIntElchStationary::write_restart() const
   ScaTraTimIntElch::write_restart();
 
   // write additional restart data for galvanostatic applications
-  if (CORE::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
+  if (Core::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
   {
     // define a vector with all electrode kinetics BCs
-    std::vector<CORE::Conditions::Condition*> cond;
+    std::vector<Core::Conditions::Condition*> cond;
     discret_->GetCondition("ElchBoundaryKinetics", cond);
     if (!cond.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", cond);
 
     int condid_cathode = elchparams_->get<int>("GSTATCONDID_CATHODE");
 
-    std::vector<CORE::Conditions::Condition*>::iterator fool;
+    std::vector<Core::Conditions::Condition*>::iterator fool;
     // loop through conditions and find the cathode
     for (fool = cond.begin(); fool != cond.end(); ++fool)
     {
-      CORE::Conditions::Condition* mycond = (*(fool));
+      Core::Conditions::Condition* mycond = (*(fool));
       const int condid = mycond->parameters().Get<int>("ConditionID");
       if (condid_cathode == condid or dlcapexists_)
       {
@@ -964,38 +965,38 @@ void SCATRA::ScaTraTimIntElchStationary::write_restart() const
 /*----------------------------------------------------------------------*
  |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchStationary::read_restart(
-    const int step, Teuchos::RCP<CORE::IO::InputControl> input)
+void ScaTra::ScaTraTimIntElchStationary::read_restart(
+    const int step, Teuchos::RCP<Core::IO::InputControl> input)
 {
   TimIntStationary::read_restart(step, input);
 
-  Teuchos::RCP<CORE::IO::DiscretizationReader> reader(Teuchos::null);
+  Teuchos::RCP<Core::IO::DiscretizationReader> reader(Teuchos::null);
   if (input == Teuchos::null)
-    reader = Teuchos::rcp(new CORE::IO::DiscretizationReader(
-        discret_, GLOBAL::Problem::Instance()->InputControlFile(), step));
+    reader = Teuchos::rcp(new Core::IO::DiscretizationReader(
+        discret_, Global::Problem::Instance()->InputControlFile(), step));
   else
-    reader = Teuchos::rcp(new CORE::IO::DiscretizationReader(discret_, input, step));
+    reader = Teuchos::rcp(new Core::IO::DiscretizationReader(discret_, input, step));
 
   // Initialize Nernst-BC
   init_nernst_bc();
 
   // restart for galvanostatic applications
-  if (CORE::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
+  if (Core::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
   {
     // define a vector with all electrode kinetics BCs
-    std::vector<CORE::Conditions::Condition*> cond;
+    std::vector<Core::Conditions::Condition*> cond;
     discret_->GetCondition("ElchBoundaryKinetics", cond);
     if (!cond.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", cond);
 
     int condid_cathode = elchparams_->get<int>("GSTATCONDID_CATHODE");
-    std::vector<CORE::Conditions::Condition*>::iterator fool;
+    std::vector<Core::Conditions::Condition*>::iterator fool;
     bool read_pot = false;
 
     // read desired values from the .control file and add/set the value to
     // the electrode kinetics boundary condition representing the cathode
     for (fool = cond.begin(); fool != cond.end(); ++fool)
     {
-      CORE::Conditions::Condition* mycond = (*(fool));
+      Core::Conditions::Condition* mycond = (*(fool));
       const int condid = mycond->parameters().Get<int>("ConditionID");
       if (condid_cathode == condid or dlcapexists_)
       {
@@ -1015,14 +1016,14 @@ void SCATRA::ScaTraTimIntElchStationary::read_restart(
  | current solution becomes most recent solution of next timestep       |
  |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchStationary::Update() { TimIntStationary::Update(); }
+void ScaTra::ScaTraTimIntElchStationary::Update() { TimIntStationary::Update(); }
 
 /*-------------------------------------------------------------------------------------*
  | compute time derivative of applied electrode potential                   ehrl 08/13 |
  *-------------------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchStationary::compute_time_deriv_pot0(const bool init)
+void ScaTra::ScaTraTimIntElchStationary::compute_time_deriv_pot0(const bool init)
 {
-  std::vector<CORE::Conditions::Condition*> cond;
+  std::vector<Core::Conditions::Condition*> cond;
   discret_->GetCondition("ElchBoundaryKinetics", cond);
   if (!cond.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", cond);
   int numcond = static_cast<int>(cond.size());
@@ -1040,7 +1041,7 @@ void SCATRA::ScaTraTimIntElchStationary::compute_time_deriv_pot0(const bool init
             "integration scheme! You have to use one-step-theta time integration scheme!");
       }
 
-      if (CORE::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") == true)
+      if (Core::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") == true)
       {
         FOUR_C_THROW(
             "Double layer charging and galvanostatic mode are not implemented for stationary time "
@@ -1052,11 +1053,11 @@ void SCATRA::ScaTraTimIntElchStationary::compute_time_deriv_pot0(const bool init
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-SCATRA::ScaTraTimIntElchSCLOST::ScaTraTimIntElchSCLOST(Teuchos::RCP<DRT::Discretization> actdis,
-    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+ScaTra::ScaTraTimIntElchSCLOST::ScaTraTimIntElchSCLOST(Teuchos::RCP<Discret::Discretization> actdis,
+    Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
     Teuchos::RCP<Teuchos::ParameterList> extraparams,
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, sctratimintparams, extraparams, output),
       ScaTraTimIntElch(actdis, solver, params, sctratimintparams, extraparams, output),
       ScaTraTimIntElchSCL(actdis, solver, params, sctratimintparams, extraparams, output),
@@ -1066,7 +1067,7 @@ SCATRA::ScaTraTimIntElchSCLOST::ScaTraTimIntElchSCLOST(Teuchos::RCP<DRT::Discret
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchSCLOST::Init()
+void ScaTra::ScaTraTimIntElchSCLOST::Init()
 {
   // call Init()-functions of base classes
   // note: this order is important
@@ -1077,7 +1078,7 @@ void SCATRA::ScaTraTimIntElchSCLOST::Init()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchSCLOST::Setup()
+void ScaTra::ScaTraTimIntElchSCLOST::Setup()
 {
   // call Setup()-functions of base classes
   // note: this order is important
@@ -1087,7 +1088,7 @@ void SCATRA::ScaTraTimIntElchSCLOST::Setup()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchSCLOST::pre_calc_initial_potential_field()
+void ScaTra::ScaTraTimIntElchSCLOST::pre_calc_initial_potential_field()
 {
   // evaluate Dirichlet boundary conditions at time t=0
   // the values should match your initial field at the boundary!
@@ -1113,7 +1114,7 @@ void SCATRA::ScaTraTimIntElchSCLOST::pre_calc_initial_potential_field()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchSCLOST::post_calc_initial_potential_field()
+void ScaTra::ScaTraTimIntElchSCLOST::post_calc_initial_potential_field()
 {  // and finally undo our temporary settings
   set_element_general_parameters(false);
   set_element_time_parameter(false);
@@ -1123,7 +1124,7 @@ void SCATRA::ScaTraTimIntElchSCLOST::post_calc_initial_potential_field()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchSCLOST::write_restart() const
+void ScaTra::ScaTraTimIntElchSCLOST::write_restart() const
 {
   // output restart information associated with one-step-theta time integration scheme
   TimIntOneStepTheta::write_restart();
@@ -1135,8 +1136,8 @@ void SCATRA::ScaTraTimIntElchSCLOST::write_restart() const
 
 /*----------------------------------------------------------------------*
  -----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchSCLOST::read_restart(
-    const int step, Teuchos::RCP<CORE::IO::InputControl> input)
+void ScaTra::ScaTraTimIntElchSCLOST::read_restart(
+    const int step, Teuchos::RCP<Core::IO::InputControl> input)
 {
   FOUR_C_THROW("Restart is not implemented for coupled space-charge layers.");
 }
@@ -1144,7 +1145,7 @@ void SCATRA::ScaTraTimIntElchSCLOST::read_restart(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchSCLOST::Update()
+void ScaTra::ScaTraTimIntElchSCLOST::Update()
 {
   TimIntOneStepTheta::Update();
   ScaTraTimIntElchSCL::Update();
@@ -1153,7 +1154,7 @@ void SCATRA::ScaTraTimIntElchSCLOST::Update()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchSCLOST::explicit_predictor() const
+void ScaTra::ScaTraTimIntElchSCLOST::explicit_predictor() const
 {
   // call base class routine
   TimIntOneStepTheta::explicit_predictor();
@@ -1164,15 +1165,15 @@ void SCATRA::ScaTraTimIntElchSCLOST::explicit_predictor() const
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchSCLOST::set_old_part_of_righthandside()
+void ScaTra::ScaTraTimIntElchSCLOST::set_old_part_of_righthandside()
 {
   // call base class routine
   TimIntOneStepTheta::set_old_part_of_righthandside();
 
   // contribution from galvanostatic equation
-  if ((CORE::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC")) or dlcapexists_)
+  if ((Core::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC")) or dlcapexists_)
   {
-    std::vector<CORE::Conditions::Condition*> conditions;
+    std::vector<Core::Conditions::Condition*> conditions;
     discret_->GetCondition("ElchBoundaryKinetics", conditions);
     if (!conditions.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", conditions);
     for (auto& condition : conditions)  // we update simply every condition!
@@ -1192,7 +1193,7 @@ void SCATRA::ScaTraTimIntElchSCLOST::set_old_part_of_righthandside()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchSCLOST::add_time_integration_specific_vectors(
+void ScaTra::ScaTraTimIntElchSCLOST::add_time_integration_specific_vectors(
     bool forcedincrementalsolver)
 {
   TimIntOneStepTheta::add_time_integration_specific_vectors(forcedincrementalsolver);

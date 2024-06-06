@@ -17,7 +17,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace UTILS
   {
@@ -32,7 +32,7 @@ namespace DRT
      * \param ele element
      */
     void AssembleNodalElementCount(
-        Epetra_IntVector& global_count, const CORE::Elements::Element& ele);
+        Epetra_IntVector& global_count, const Core::Elements::Element& ele);
 
     /*!
      * \brief Assemble Gauss point data into an array of global cell data
@@ -42,7 +42,7 @@ namespace DRT
      * \param ele element
      */
     void AssembleGaussPointValues(std::vector<Teuchos::RCP<Epetra_MultiVector>>& global_data,
-        const CORE::LINALG::SerialDenseMatrix& gp_data, const CORE::Elements::Element& ele);
+        const Core::LinAlg::SerialDenseMatrix& gp_data, const Core::Elements::Element& ele);
 
     /*!
      * @brief calculate and return the value of the quantity at position xi based on the
@@ -53,11 +53,11 @@ namespace DRT
      * @param nodal_quantity  nodal vector of the quantity to be projected
      * @return quantities projected to position xi
      */
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     std::vector<double> ProjectNodalQuantityToXi(
-        const CORE::LINALG::Matrix<3, 1>& xi, const std::vector<double>& nodal_quantity);
+        const Core::LinAlg::Matrix<3, 1>& xi, const std::vector<double>& nodal_quantity);
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

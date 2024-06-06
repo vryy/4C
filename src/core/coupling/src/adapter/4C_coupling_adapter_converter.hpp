@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------*/
 /*! \file
 
-\brief Converter to use ADAPTER::Coupling type objects in both coupling directions
+\brief Converter to use Adapter::Coupling type objects in both coupling directions
 
 \level 1
 
@@ -29,14 +29,14 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
-namespace CORE::ADAPTER
+namespace Core::Adapter
 {
   class Coupling;
 }
 
 /*----------------------------------------------------------------------------*/
 /* definition of classes */
-namespace CORE::ADAPTER
+namespace Core::Adapter
 {
   /*! \class CouplingConverter
    *  \brief Abstract converter base for master/slave conversion of data
@@ -112,7 +112,7 @@ namespace CORE::ADAPTER
     const Coupling& coup_;
   };
 
-}  // namespace CORE::ADAPTER
+}  // namespace Core::Adapter
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -25,10 +25,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       bk 11/13 |
  *----------------------------------------------------------------------*/
-FLD::TimIntGenAlpha::TimIntGenAlpha(const Teuchos::RCP<DRT::Discretization>& actdis,
-    const Teuchos::RCP<CORE::LINALG::Solver>& solver,
+FLD::TimIntGenAlpha::TimIntGenAlpha(const Teuchos::RCP<Discret::Discretization>& actdis,
+    const Teuchos::RCP<Core::LinAlg::Solver>& solver,
     const Teuchos::RCP<Teuchos::ParameterList>& params,
-    const Teuchos::RCP<CORE::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
+    const Teuchos::RCP<Core::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
     : FluidImplicitTimeInt(actdis, solver, params, output, alefluid),
       alphaM_(params_->get<double>("alpha_M")),
       alphaF_(params_->get<double>("alpha_F")),
@@ -54,7 +54,7 @@ void FLD::TimIntGenAlpha::Init()
   // -> check for time-integration scheme and reasonable number of steps
   if (numstasteps_ > 0)
   {
-    if (timealgo_ != INPAR::FLUID::timeint_afgenalpha)
+    if (timealgo_ != Inpar::FLUID::timeint_afgenalpha)
       FOUR_C_THROW("no starting algorithm supported for schemes other than af-gen-alpha");
     else
       startalgo_ = true;
@@ -80,13 +80,13 @@ void FLD::TimIntGenAlpha::print_time_step_info()
   {
     switch (timealgo_)
     {
-      case INPAR::FLUID::timeint_afgenalpha:
+      case Inpar::FLUID::timeint_afgenalpha:
         printf(
             "TIME: %11.4E/%11.4E  DT = %11.4E  Af-Generalized-Alpha (gamma = %0.2f, alphaF = "
             "%0.2f, alphaM = %0.2f) STEP = %4d/%4d \n",
             time_, maxtime_, dta_, gamma_, alphaF_, alphaM_, step_, stepmax_);
         break;
-      case INPAR::FLUID::timeint_npgenalpha:
+      case Inpar::FLUID::timeint_npgenalpha:
         printf(
             "TIME: %11.4E/%11.4E  DT = %11.4E  Np-Generalized-Alpha (gamma = %0.2f, alphaF = "
             "%0.2f, alphaM = %0.2f) STEP = %4d/%4d \n",
@@ -189,9 +189,9 @@ void FLD::TimIntGenAlpha::gen_alpha_update_acceleration()
   // extract and update only velocity degrees of freedom, since in
   // low-Mach-number flow, 'pressure' components are used to store
   // temporal derivatives of scalar/temperature values
-  if (physicaltype_ == INPAR::FLUID::artcomp or
-      physicaltype_ == INPAR::FLUID::weakly_compressible or
-      physicaltype_ == INPAR::FLUID::weakly_compressible_stokes)
+  if (physicaltype_ == Inpar::FLUID::artcomp or
+      physicaltype_ == Inpar::FLUID::weakly_compressible or
+      physicaltype_ == Inpar::FLUID::weakly_compressible_stokes)
   {
     accnp_->Update(fact2, *accn_, 0.0);
     accnp_->Update(fact1, *velnp_, -fact1, *veln_, 1.0);
@@ -208,7 +208,7 @@ void FLD::TimIntGenAlpha::gen_alpha_update_acceleration()
     onlyaccnp->Update(fact1, *onlyvelnp, -fact1, *onlyveln, 1.0);
 
     // copy back into global vector
-    CORE::LINALG::Export(*onlyaccnp, *accnp_);
+    Core::LinAlg::Export(*onlyaccnp, *accnp_);
   }
 
 }  // TimIntGenAlpha::gen_alpha_update_acceleration
@@ -231,9 +231,9 @@ void FLD::TimIntGenAlpha::gen_alpha_intermediate_values()
   // extract and update only velocity degrees of freedom, since in
   // low-Mach-number flow, 'pressure' components are used to store
   // temporal derivatives of scalar/temperature values
-  if (physicaltype_ == INPAR::FLUID::artcomp or
-      physicaltype_ == INPAR::FLUID::weakly_compressible or
-      physicaltype_ == INPAR::FLUID::weakly_compressible_stokes)
+  if (physicaltype_ == Inpar::FLUID::artcomp or
+      physicaltype_ == Inpar::FLUID::weakly_compressible or
+      physicaltype_ == Inpar::FLUID::weakly_compressible_stokes)
   {
     accam_->Update((alphaM_), *accnp_, (1.0 - alphaM_), *accn_, 0.0);
   }
@@ -247,7 +247,7 @@ void FLD::TimIntGenAlpha::gen_alpha_intermediate_values()
     onlyaccam->Update((alphaM_), *onlyaccnp, (1.0 - alphaM_), *onlyaccn, 0.0);
 
     // copy back into global vector
-    CORE::LINALG::Export(*onlyaccam, *accam_);
+    Core::LinAlg::Export(*onlyaccam, *accam_);
   }
 
   // set intermediate values for velocity
@@ -288,10 +288,10 @@ void FLD::TimIntGenAlpha::gen_alpha_intermediate_values(
   Teuchos::RCP<Epetra_Map> vecmap = Teuchos::rcp(new Epetra_Map(vecnp->Map().NumGlobalElements(),
       vecnp->Map().NumMyElements(), vecnp->Map().MyGlobalElements(), 0, vecnp->Map().Comm()));
 
-  Teuchos::RCP<Epetra_Vector> vecam = CORE::LINALG::CreateVector(*vecmap, true);
+  Teuchos::RCP<Epetra_Vector> vecam = Core::LinAlg::CreateVector(*vecmap, true);
   vecam->Update((alphaM_), *vecnp, (1.0 - alphaM_), *vecn, 0.0);
 
-  Teuchos::RCP<Epetra_Vector> vecaf = CORE::LINALG::CreateVector(*vecmap, true);
+  Teuchos::RCP<Epetra_Vector> vecaf = Core::LinAlg::CreateVector(*vecmap, true);
   vecaf->Update((alphaF_), *vecnp, (1.0 - alphaF_), *vecn, 0.0);
 
   // store computed intermediate values in given vectors
@@ -309,7 +309,7 @@ void FLD::TimIntGenAlpha::SetStateTimInt()
 {
   discret_->set_state("velaf", velaf_);
   discret_->set_state("velam", velam_);
-  if (timealgo_ == INPAR::FLUID::timeint_npgenalpha) discret_->set_state("velnp", velnp_);
+  if (timealgo_ == Inpar::FLUID::timeint_npgenalpha) discret_->set_state("velnp", velnp_);
 
   return;
 }
@@ -385,7 +385,7 @@ void FLD::TimIntGenAlpha::OutputofFilteredVel(
   row_finescaleveltmp = Teuchos::rcp(new Epetra_Vector(*dofrowmap, true));
 
   // get fine scale velocity
-  if (scale_sep_ == INPAR::FLUID::algebraic_multigrid_operator)
+  if (scale_sep_ == Inpar::FLUID::algebraic_multigrid_operator)
     Sep_->Multiply(false, *velaf_, *row_finescaleveltmp);
   else
     FOUR_C_THROW("Unknown separation type!");

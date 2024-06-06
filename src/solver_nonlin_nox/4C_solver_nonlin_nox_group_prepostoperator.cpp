@@ -18,14 +18,14 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::GROUP::PrePostOperator::PrePostOperator() : havePrePostOperator_(false)
+NOX::Nln::GROUP::PrePostOperator::PrePostOperator() : havePrePostOperator_(false)
 {
   // Disallowed constructor
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::GROUP::PrePostOperator::PrePostOperator(const PrePostOperator& ppo)
+NOX::Nln::GROUP::PrePostOperator::PrePostOperator(const PrePostOperator& ppo)
     : havePrePostOperator_(false)
 {
   // Disallowed copy constructor
@@ -33,7 +33,7 @@ NOX::NLN::GROUP::PrePostOperator::PrePostOperator(const PrePostOperator& ppo)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::GROUP::PrePostOperator& NOX::NLN::GROUP::PrePostOperator::operator=(
+NOX::Nln::GROUP::PrePostOperator& NOX::Nln::GROUP::PrePostOperator::operator=(
     const PrePostOperator& ppo)
 {
   // disallowed assignment operator
@@ -42,7 +42,7 @@ NOX::NLN::GROUP::PrePostOperator& NOX::NLN::GROUP::PrePostOperator::operator=(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::GROUP::PrePostOperator::PrePostOperator(Teuchos::ParameterList& groupOptionsSubList)
+NOX::Nln::GROUP::PrePostOperator::PrePostOperator(Teuchos::ParameterList& groupOptionsSubList)
     : havePrePostOperator_(false), prePostOperatorMapPtr_(Teuchos::null)
 {
   reset(groupOptionsSubList);
@@ -50,7 +50,7 @@ NOX::NLN::GROUP::PrePostOperator::PrePostOperator(Teuchos::ParameterList& groupO
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::GROUP::PrePostOperator::reset(Teuchos::ParameterList& groupOptionsSubList)
+void NOX::Nln::GROUP::PrePostOperator::reset(Teuchos::ParameterList& groupOptionsSubList)
 {
   havePrePostOperator_ = false;
 
@@ -68,13 +68,13 @@ void NOX::NLN::GROUP::PrePostOperator::reset(Teuchos::ParameterList& groupOption
 // non-member function
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::GROUP::PrePostOperator::Map& NOX::NLN::GROUP::PrePostOp::GetMap(
+NOX::Nln::GROUP::PrePostOperator::Map& NOX::Nln::GROUP::PrePostOp::GetMap(
     Teuchos::ParameterList& p_grp_opt)
 {
-  Teuchos::RCP<NOX::NLN::GROUP::PrePostOperator::Map>& mapptr =
-      p_grp_opt.get<Teuchos::RCP<NOX::NLN::GROUP::PrePostOperator::Map>>(
+  Teuchos::RCP<NOX::Nln::GROUP::PrePostOperator::Map>& mapptr =
+      p_grp_opt.get<Teuchos::RCP<NOX::Nln::GROUP::PrePostOperator::Map>>(
           "User Defined Pre/Post Operator",
-          Teuchos::rcp(new NOX::NLN::GROUP::PrePostOperator::Map()));
+          Teuchos::rcp(new NOX::Nln::GROUP::PrePostOperator::Map()));
 
   return *mapptr;
 }

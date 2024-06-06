@@ -25,21 +25,21 @@ Kloeppel
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationReader;
 }
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseOperator;
   class MultiMapExtractor;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 namespace CONSTRAINTS
 {
@@ -63,7 +63,7 @@ namespace CONSTRAINTS
 
 
     //! initialize this class
-    void Init(Teuchos::RCP<DRT::Discretization> discr, const Teuchos::ParameterList& params);
+    void Init(Teuchos::RCP<Discret::Discretization> discr, const Teuchos::ParameterList& params);
 
     /*! \brief Setup all class internal objects and members
 
@@ -97,7 +97,7 @@ namespace CONSTRAINTS
         Teuchos::RCP<const Epetra_Vector> displast,  ///< displacement at beginning of time step
         Teuchos::RCP<const Epetra_Vector> disp,      ///< displacement at end of time step
         Teuchos::RCP<Epetra_Vector> fint,            ///< vector of internal forces
-        Teuchos::RCP<CORE::LINALG::SparseOperator> stiff,  ///< stiffness matrix
+        Teuchos::RCP<Core::LinAlg::SparseOperator> stiff,  ///< stiffness matrix
         Teuchos::ParameterList scalelist);
 
     /*!
@@ -170,7 +170,7 @@ namespace CONSTRAINTS
     Teuchos::RCP<Epetra_Map> GetConstraintMap() const { return constrmap_; };
 
     //! Return the additional rectangular matrix, constructed for lagrange multiplier evaluation
-    Teuchos::RCP<CORE::LINALG::SparseOperator> GetConstrMatrix()  // const
+    Teuchos::RCP<Core::LinAlg::SparseOperator> GetConstrMatrix()  // const
     {
       return constr_matrix_;
     };
@@ -217,7 +217,7 @@ namespace CONSTRAINTS
     /*!
      \brief Read restart information
     */
-    void read_restart(CORE::IO::DiscretizationReader& reader, const double& time);
+    void read_restart(Core::IO::DiscretizationReader& reader, const double& time);
 
     /*!
      \brief Return current value
@@ -263,8 +263,8 @@ namespace CONSTRAINTS
     Teuchos::RCP<Epetra_Vector> GetRefBaseValues() const { return refbasevalues_; }
 
     //! switch constraint matrix to block matrix
-    void use_block_matrix(Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
-        Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> rangemaps);
+    void use_block_matrix(Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> domainmaps,
+        Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> rangemaps);
 
 
    private:
@@ -275,7 +275,8 @@ namespace CONSTRAINTS
     /// Build Monitor type Vector
     void build_moni_type();
 
-    Teuchos::RCP<DRT::Discretization> actdisc_;  ///< discretization, elements to constraint live in
+    Teuchos::RCP<Discret::Discretization>
+        actdisc_;  ///< discretization, elements to constraint live in
     Teuchos::RCP<ConstraintDofSet> constrdofset_;  ///< degrees of freedom of lagrange multipliers
     Teuchos::RCP<Epetra_Map> constrmap_;           ///< unique map of constraint values
     Teuchos::RCP<Epetra_Map> redconstrmap_;        ///< fully redundant map of constraint values
@@ -303,7 +304,7 @@ namespace CONSTRAINTS
     Teuchos::RCP<Epetra_Vector> fact_;               ///< vector with current time curve values
     Teuchos::RCP<Epetra_Vector> lagr_mult_vec_;      ///< lagrange multipliers
     Teuchos::RCP<Epetra_Vector> lagr_mult_vec_old_;  ///< lagrange multipliers
-    Teuchos::RCP<CORE::LINALG::SparseOperator> constr_matrix_;  ///< additional rectangular matrix
+    Teuchos::RCP<Core::LinAlg::SparseOperator> constr_matrix_;  ///< additional rectangular matrix
     bool haveconstraint_;                                       ///< are there constraints at all?
     bool havelagrconstr_;  ///< are there constraints controlled by Lagrange multiplier?
     bool havepenaconstr_;  ///< are there constraints controlled by Penalty approach?

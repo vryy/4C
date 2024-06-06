@@ -24,21 +24,21 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-PARTICLEINTERACTION::SPHPressure::SPHPressure()
+ParticleInteraction::SPHPressure::SPHPressure()
 {
   // empty constructor
 }
 
-void PARTICLEINTERACTION::SPHPressure::Init()
+void ParticleInteraction::SPHPressure::Init()
 {
   // init with potential fluid particle types
   fluidtypes_ = {PARTICLEENGINE::Phase1, PARTICLEENGINE::Phase2};
 }
 
-void PARTICLEINTERACTION::SPHPressure::Setup(
+void ParticleInteraction::SPHPressure::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-    const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
-    const std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle)
+    const std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial,
+    const std::shared_ptr<ParticleInteraction::SPHEquationOfStateBundle> equationofstatebundle)
 {
   // set interface to particle engine
   particleengineinterface_ = particleengineinterface;
@@ -66,9 +66,9 @@ void PARTICLEINTERACTION::SPHPressure::Setup(
   }
 }
 
-void PARTICLEINTERACTION::SPHPressure::ComputePressure() const
+void ParticleInteraction::SPHPressure::ComputePressure() const
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHPressure::ComputePressure");
+  TEUCHOS_FUNC_TIME_MONITOR("ParticleInteraction::SPHPressure::ComputePressure");
 
   // iterate over fluid particle types
   for (const auto& type_i : fluidtypes_)
@@ -88,11 +88,11 @@ void PARTICLEINTERACTION::SPHPressure::ComputePressure() const
     double* press = container->GetPtrToState(PARTICLEENGINE::Pressure, 0);
 
     // get material for current particle type
-    const MAT::PAR::ParticleMaterialBase* material =
+    const Mat::PAR::ParticleMaterialBase* material =
         particlematerial_->get_ptr_to_particle_mat_parameter(type_i);
 
     // get equation of state for current particle type
-    const PARTICLEINTERACTION::SPHEquationOfStateBase* equationofstate =
+    const ParticleInteraction::SPHEquationOfStateBase* equationofstate =
         equationofstatebundle_->get_ptr_to_specific_equation_of_state(type_i);
 
     // iterate over owned particles of current type

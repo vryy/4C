@@ -19,7 +19,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
@@ -30,7 +30,7 @@ namespace DRT
     class ScaTraEleInternalVariableManagerLsReinit;
     class ScaTraEleParameterLsReinit;
 
-    template <CORE::FE::CellType distype, unsigned probDim>
+    template <Core::FE::CellType distype, unsigned probDim>
     class ScaTraEleCalcLsReinit : public ScaTraEleCalc<distype, probDim>
     {
      private:
@@ -52,37 +52,37 @@ namespace DRT
       /*========================================================================*/
 
       //! setup element evaluation
-      int SetupCalc(CORE::Elements::Element* ele, DRT::Discretization& discretization) override;
+      int SetupCalc(Core::Elements::Element* ele, Discret::Discretization& discretization) override;
 
       //! evaluate the element
-      int Evaluate(CORE::Elements::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
-          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra,
-          CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
+      int Evaluate(Core::Elements::Element* ele, Teuchos::ParameterList& params,
+          Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec1_epetra,
+          Core::LinAlg::SerialDenseVector& elevec2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec3_epetra) override;
 
-      int evaluate_action(CORE::Elements::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, const SCATRA::Action& action,
-          CORE::Elements::Element::LocationArray& la,
-          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra,
-          CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
+      int evaluate_action(Core::Elements::Element* ele, Teuchos::ParameterList& params,
+          Discret::Discretization& discretization, const ScaTra::Action& action,
+          Core::Elements::Element::LocationArray& la,
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec1_epetra,
+          Core::LinAlg::SerialDenseVector& elevec2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec3_epetra) override;
 
      protected:
       //! calculate matrix and rhs. Here the whole thing is hidden. Hyperbolic reinit.
       void sysmat_hyperbolic(
-          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
-          CORE::LINALG::SerialDenseVector& erhs   //!< element rhs to calculate
+          Core::LinAlg::SerialDenseMatrix& emat,  //!< element matrix to calculate
+          Core::LinAlg::SerialDenseVector& erhs   //!< element rhs to calculate
       );
 
       //! calculate matrix and rhs. Here the whole thing is hidden. Ellipitic reinit.
-      void sysmat_elliptic(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
-          CORE::LINALG::SerialDenseVector& erhs,                   //!< element rhs to calculate
-          const CORE::GEO::BoundaryIntCellPtrs& bcell              //!< interface for penalty term
+      void sysmat_elliptic(Core::LinAlg::SerialDenseMatrix& emat,  //!< element matrix to calculate
+          Core::LinAlg::SerialDenseVector& erhs,                   //!< element rhs to calculate
+          const Core::Geo::BoundaryIntCellPtrs& bcell              //!< interface for penalty term
       );
 
       /** \brief Evaluate the system matrix and right-hand-side for the ellipitic
@@ -95,10 +95,10 @@ namespace DRT
        *  \param bcell (in)  : boundary integration cell (necessary for the penalty term)
        *
        *  \author hiermeier \date 12/16 */
-      void elliptic_newton_system(CORE::LINALG::SerialDenseMatrix* emat,
-          CORE::LINALG::SerialDenseVector* erhs,
-          const CORE::LINALG::Matrix<nen_, 1>& el2sysmat_diag_inv,
-          const CORE::GEO::BoundaryIntCellPtrs& bcell);
+      void elliptic_newton_system(Core::LinAlg::SerialDenseMatrix* emat,
+          Core::LinAlg::SerialDenseVector* erhs,
+          const Core::LinAlg::Matrix<nen_, 1>& el2sysmat_diag_inv,
+          const Core::Geo::BoundaryIntCellPtrs& bcell);
 
      private:
       /*========================================================================*/
@@ -106,35 +106,35 @@ namespace DRT
       /*========================================================================*/
 
       void eval_reinitialization(const Epetra_Vector& phinp, const std::vector<int>& lm,
-          CORE::Elements::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra);
+          Core::Elements::Element* ele, Teuchos::ParameterList& params,
+          Discret::Discretization& discretization, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::LinAlg::SerialDenseVector& elevec1_epetra);
 
-      void eval_reinitialization_embedded(const std::vector<int>& lm, CORE::Elements::Element* ele,
-          Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra);
+      void eval_reinitialization_embedded(const std::vector<int>& lm, Core::Elements::Element* ele,
+          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::LinAlg::SerialDenseVector& elevec1_epetra);
 
       void eval_reinitialization_std(const Epetra_Vector& phinp, const std::vector<int>& lm,
-          CORE::Elements::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra);
+          Core::Elements::Element* ele, Teuchos::ParameterList& params,
+          Discret::Discretization& discretization, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::LinAlg::SerialDenseVector& elevec1_epetra);
 
       /*========================================================================*/
       //! @name overloaded methods for evaluation of individual terms
       /*========================================================================*/
 
       //! calculation of diffusive element matrix
-      void calc_mat_diff(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+      void calc_mat_diff(Core::LinAlg::SerialDenseMatrix& emat,  //!< element matrix to be filled
           const int k,                                           //!< index of current scalar
           const double timefacfac  //!< domain-integration factor times time-integration factor
           ) override;
 
       //! standard Galerkin diffusive term on right hand side
-      void calc_rhs_diff(CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
+      void calc_rhs_diff(Core::LinAlg::SerialDenseVector& erhs,  //!< element vector to be filled
           const int k,                                           //!< index of current scalar
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
-          const CORE::LINALG::Matrix<nsd_, 1>& gradphi  //!< scalar gradient at Gauss point
+          const Core::LinAlg::Matrix<nsd_, 1>& gradphi  //!< scalar gradient at Gauss point
       );
 
       /*========================================================================*/
@@ -145,9 +145,9 @@ namespace DRT
       void sign_function(double& sign_phi,                   //!< sign of phi
           const double charelelength,                        //!< characteristic element length
           const double phizero,                              //!< initial phi
-          const CORE::LINALG::Matrix<nsd_, 1>& gradphizero,  //!< gradient of initial phi
+          const Core::LinAlg::Matrix<nsd_, 1>& gradphizero,  //!< gradient of initial phi
           const double phi,                                  //!< phi at time n+1
-          const CORE::LINALG::Matrix<nsd_, 1>& gradphi       //!< gradient of phi at time n+1
+          const Core::LinAlg::Matrix<nsd_, 1>& gradphi       //!< gradient of phi at time n+1
       );
 
       //! derivative of sign function
@@ -158,7 +158,7 @@ namespace DRT
 
       //! calculation of characteristic element length, i.e., interface thickness
       double calc_char_ele_length_reinit(const double vol,  //!< element volume
-          const CORE::LINALG::Matrix<nsd_, 1>& gradphizero  //!< gradient of initial phi
+          const Core::LinAlg::Matrix<nsd_, 1>& gradphizero  //!< gradient of initial phi
       );
 
       /*========================================================================*/
@@ -171,12 +171,12 @@ namespace DRT
 
       //! calculate system matrix and rhs for correction step
       void sysmat_correction(const double penalty,  ///!< element penalty parameter
-          CORE::LINALG::SerialDenseMatrix& emat,    ///!< element matrix to calculate
-          CORE::LINALG::SerialDenseVector& erhs     ///!< element rhs to calculate
+          Core::LinAlg::SerialDenseMatrix& emat,    ///!< element matrix to calculate
+          Core::LinAlg::SerialDenseVector& erhs     ///!< element rhs to calculate
       );
 
       //! calculation of penalty term on rhs
-      void calc_rhs_penalty(CORE::LINALG::SerialDenseVector& erhs,  //!< rhs vector
+      void calc_rhs_penalty(Core::LinAlg::SerialDenseVector& erhs,  //!< rhs vector
           const double fac,                                         //!< domain integration factor
           const double penalty,                                     //!< penalty parameter
           const double deriv_sign,                                  //!< derivative of sign function
@@ -185,17 +185,17 @@ namespace DRT
 
       //! calculation of interface penalty term for elliptic reinitialization
       void evaluate_interface_term(
-          CORE::LINALG::SerialDenseMatrix* emat,       //!< element matrix to calculate
-          CORE::LINALG::SerialDenseVector* erhs,       //!< element vector to calculate
-          const CORE::GEO::BoundaryIntCellPtrs& bcell  //!< interface for penalty term
+          Core::LinAlg::SerialDenseMatrix* emat,       //!< element matrix to calculate
+          Core::LinAlg::SerialDenseVector* erhs,       //!< element vector to calculate
+          const Core::Geo::BoundaryIntCellPtrs& bcell  //!< interface for penalty term
       );
 
       //! calculation of interface penalty term for elliptic reinitialization (gauss loop)
-      template <CORE::FE::CellType celldistype>
+      template <Core::FE::CellType celldistype>
       void calc_penalty_term(
-          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
-          CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to calculate
-          const CORE::GEO::BoundaryIntCell& cell  //!< interface cell
+          Core::LinAlg::SerialDenseMatrix& emat,  //!< element matrix to calculate
+          Core::LinAlg::SerialDenseVector& erhs,  //!< element vector to calculate
+          const Core::Geo::BoundaryIntCell& cell  //!< interface cell
       );
 
 
@@ -207,8 +207,8 @@ namespace DRT
        *  \param cell (in)  : interface boundary integration cell
        *
        *  \author hiermeier \date 11/16 */
-      void calc_penalty_term_0_d(CORE::LINALG::SerialDenseMatrix* emat,
-          CORE::LINALG::SerialDenseVector* erhs, const CORE::GEO::BoundaryIntCell& cell);
+      void calc_penalty_term_0_d(Core::LinAlg::SerialDenseMatrix* emat,
+          Core::LinAlg::SerialDenseVector* erhs, const Core::Geo::BoundaryIntCell& cell);
 
       /*========================================================================*/
       //! @name additional service routines
@@ -216,8 +216,8 @@ namespace DRT
 
       //! calculate system matrix and rhs for velocity projection
       void sysmat_nodal_vel(const int dir,        ///< current spatial direction
-          CORE::LINALG::SerialDenseMatrix& emat,  ///< element matrix to calculate
-          CORE::LINALG::SerialDenseVector& erhs   ///< element rhs to calculate
+          Core::LinAlg::SerialDenseMatrix& emat,  ///< element matrix to calculate
+          Core::LinAlg::SerialDenseVector& erhs   ///< element rhs to calculate
       );
 
       //! get diffusion manager for reinitialization
@@ -238,7 +238,7 @@ namespace DRT
       /*========================================================================*/
 
       //! scalar at before reinitialization
-      std::vector<CORE::LINALG::Matrix<nen_, 1>> ephizero_;
+      std::vector<Core::LinAlg::Matrix<nen_, 1>> ephizero_;
 
       //! parameter class for reinitialization
       const ScaTraEleParameterLsReinit* lsreinitparams_;
@@ -269,7 +269,7 @@ namespace DRT
         return;
       }
 
-      void set_velocity_for_cross_wind_diff(const CORE::LINALG::Matrix<NSD, 1> velocity)
+      void set_velocity_for_cross_wind_diff(const Core::LinAlg::Matrix<NSD, 1> velocity)
       {
         if (NSD != 3) FOUR_C_THROW("Currently only 3d problems supported for crosswind diffusion");
 
@@ -314,13 +314,13 @@ namespace DRT
         return;
       }
 
-      CORE::LINALG::Matrix<NSD, NSD> GetCrosswindTensor() { return diffdirectiontensor_; }
+      Core::LinAlg::Matrix<NSD, NSD> GetCrosswindTensor() { return diffdirectiontensor_; }
 
       bool HaveCrossWindDiff() { return have_cross_wind_diff_; }
 
      private:
       //! velocity for crosswind diffusion
-      CORE::LINALG::Matrix<NSD, NSD> diffdirectiontensor_;
+      Core::LinAlg::Matrix<NSD, NSD> diffdirectiontensor_;
 
       //! flag for crosswind diffusion
       bool have_cross_wind_diff_;
@@ -353,12 +353,12 @@ namespace DRT
        * \param ephin      (in) : scalar at t_(n)
        * \param econvelnp  (in) : nodal convective velocity values at t_(n+1) or t_(n+alpha_F)
        * \param ehist      (in) : history vector of transported scalars */
-      void set_internal_variables(const CORE::LINALG::Matrix<NEN, 1>& funct,
-          const CORE::LINALG::Matrix<NSD, NEN>& derxy,
-          const std::vector<CORE::LINALG::Matrix<NEN, 1>>& ephinp,
-          const std::vector<CORE::LINALG::Matrix<NEN, 1>>& ephin,
-          const CORE::LINALG::Matrix<NSD, NEN>& econvelnp,
-          const std::vector<CORE::LINALG::Matrix<NEN, 1>>& ehist)
+      void set_internal_variables(const Core::LinAlg::Matrix<NEN, 1>& funct,
+          const Core::LinAlg::Matrix<NSD, NEN>& derxy,
+          const std::vector<Core::LinAlg::Matrix<NEN, 1>>& ephinp,
+          const std::vector<Core::LinAlg::Matrix<NEN, 1>>& ephin,
+          const Core::LinAlg::Matrix<NSD, NEN>& econvelnp,
+          const std::vector<Core::LinAlg::Matrix<NEN, 1>>& ehist)
       {
         FOUR_C_THROW("Setting all members at once is not allowed for reinitialization!");
         return;
@@ -386,7 +386,7 @@ namespace DRT
         return;
       };
       //! set spatial gradient of current scalar value
-      void SetGradPhi(const int k, CORE::LINALG::Matrix<NSD, 1>& gradphi) override
+      void SetGradPhi(const int k, Core::LinAlg::Matrix<NSD, 1>& gradphi) override
       {
         my::gradphi_[k] = gradphi;
         return;
@@ -398,7 +398,7 @@ namespace DRT
         return;
       };
       //! set convective velocity
-      void SetConVel(const int k, CORE::LINALG::Matrix<NSD, 1>& convel)
+      void SetConVel(const int k, Core::LinAlg::Matrix<NSD, 1>& convel)
       {
         my::convelint_[k] = convel;
       };
@@ -409,7 +409,7 @@ namespace DRT
         return;
       };
       //! set convective part in convective form
-      virtual void SetConv(const int k, CORE::LINALG::Matrix<NEN, 1>& conv)
+      virtual void SetConv(const int k, Core::LinAlg::Matrix<NEN, 1>& conv)
       {
         my::conv_[k] = conv;
       };
@@ -458,25 +458,25 @@ namespace DRT
 
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
-namespace SCATRA
+namespace ScaTra
 {
-  template <CORE::FE::CellType CELLDISTYPE>
+  template <Core::FE::CellType CELLDISTYPE>
   struct CellTypeToOptGaussRule
   {
   };
   template <>
-  struct CellTypeToOptGaussRule<CORE::FE::CellType::quad4>
+  struct CellTypeToOptGaussRule<Core::FE::CellType::quad4>
   {
-    static constexpr CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::quad_36point;
+    static constexpr Core::FE::GaussRule2D rule = Core::FE::GaussRule2D::quad_36point;
   };
   template <>
-  struct CellTypeToOptGaussRule<CORE::FE::CellType::tri3>
+  struct CellTypeToOptGaussRule<Core::FE::CellType::tri3>
   {
-    static constexpr CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::tri_37point;
+    static constexpr Core::FE::GaussRule2D rule = Core::FE::GaussRule2D::tri_37point;
   };
-}  // namespace SCATRA
+}  // namespace ScaTra
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -31,7 +31,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::NLN::SOLVER::Nox::Nox()
+STR::Nln::SOLVER::Nox::Nox()
 {
   // empty constructor
 }
@@ -39,7 +39,7 @@ STR::NLN::SOLVER::Nox::Nox()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::NLN::SOLVER::Nox::Setup()
+void STR::Nln::SOLVER::Nox::Setup()
 {
   check_init();
 
@@ -63,41 +63,41 @@ void STR::NLN::SOLVER::Nox::Setup()
   Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner> iprec = nox_interface_ptr();
 
   // vector of currently present solution types
-  std::vector<enum NOX::NLN::SolutionType> soltypes(0);
+  std::vector<enum NOX::Nln::SolutionType> soltypes(0);
   // map of linear solvers, the key is the solution type
-  NOX::NLN::LinearSystem::SolverMap linsolvers;
-  /* convert the INPAR::STR::ModelType to a NOX::NLN::SolType
+  NOX::Nln::LinearSystem::SolverMap linsolvers;
+  /* convert the Inpar::STR::ModelType to a NOX::Nln::SolType
    * and fill the linear solver map. */
-  STR::NLN::ConvertModelType2SolType(
+  STR::Nln::ConvertModelType2SolType(
       soltypes, linsolvers, data_s_dyn().GetModelTypes(), data_s_dyn().GetLinSolvers());
 
   // define and initialize the optimization type
-  const NOX::NLN::OptimizationProblemType opttype = STR::NLN::OptimizationType(soltypes);
+  const NOX::Nln::OptimizationProblemType opttype = STR::Nln::OptimizationType(soltypes);
 
   // map of constraint interfaces, the key is the solution type
-  NOX::NLN::CONSTRAINT::ReqInterfaceMap iconstr;
+  NOX::Nln::CONSTRAINT::ReqInterfaceMap iconstr;
   // set constraint interfaces
-  STR::NLN::CreateConstraintInterfaces(iconstr, integrator(), soltypes);
+  STR::Nln::CreateConstraintInterfaces(iconstr, integrator(), soltypes);
 
   // preconditioner map for constraint problems
-  NOX::NLN::CONSTRAINT::PrecInterfaceMap iconstr_prec;
-  STR::NLN::CreateConstraintPreconditioner(iconstr_prec, integrator(), soltypes);
+  NOX::Nln::CONSTRAINT::PrecInterfaceMap iconstr_prec;
+  STR::Nln::CreateConstraintPreconditioner(iconstr_prec, integrator(), soltypes);
 
   // create object to scale linear system
   Teuchos::RCP<::NOX::Epetra::Scaling> iscale = Teuchos::null;
-  STR::NLN::CreateScaling(iscale, data_s_dyn(), data_global_state());
+  STR::Nln::CreateScaling(iscale, data_s_dyn(), data_global_state());
 
   // build the global data container for the nox_nln_solver
   nlnglobaldata_ = Teuchos::rcp(
-      new NOX::NLN::GlobalData(data_global_state().GetComm(), data_s_dyn().GetNoxParams(),
+      new NOX::Nln::GlobalData(data_global_state().GetComm(), data_s_dyn().GetNoxParams(),
           linsolvers, ireq, ijac, opttype, iconstr, iprec, iconstr_prec, iscale));
 
   // -------------------------------------------------------------------------
   // Create NOX control class: NoxProblem()
   // -------------------------------------------------------------------------
   Teuchos::RCP<::NOX::Epetra::Vector> soln = data_global_state().CreateGlobalVector();
-  Teuchos::RCP<CORE::LINALG::SparseOperator>& jac = data_global_state().CreateJacobian();
-  problem_ = Teuchos::rcp(new NOX::NLN::Problem(nlnglobaldata_, soln, jac));
+  Teuchos::RCP<Core::LinAlg::SparseOperator>& jac = data_global_state().CreateJacobian();
+  problem_ = Teuchos::rcp(new NOX::Nln::Problem(nlnglobaldata_, soln, jac));
 
   // -------------------------------------------------------------------------
   // Create NOX linear system to provide access to Jacobian etc.
@@ -107,8 +107,8 @@ void STR::NLN::SOLVER::Nox::Setup()
   // -------------------------------------------------------------------------
   // Create NOX group
   // -------------------------------------------------------------------------
-  /* use NOX::NLN::Group to enable access to time integration
-   * use NOX::NLN::Constraint::Group to enable access to the constraint data*/
+  /* use NOX::Nln::Group to enable access to time integration
+   * use NOX::Nln::Constraint::Group to enable access to the constraint data*/
   group_ptr() = problem_->CreateGroup(linsys_);
 
   // -------------------------------------------------------------------------
@@ -124,7 +124,7 @@ void STR::NLN::SOLVER::Nox::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::NLN::SOLVER::Nox::Reset()
+void STR::Nln::SOLVER::Nox::Reset()
 {
   // safety check
   check_init_setup();
@@ -140,13 +140,13 @@ void STR::NLN::SOLVER::Nox::Reset()
   // -------------------------------------------------------------------------
   // Create NOX non-linear solver
   // -------------------------------------------------------------------------
-  nlnsolver_ = NOX::NLN::Solver::BuildSolver(group_ptr(), ostatus_, istatus_, nlnglobaldata_);
+  nlnsolver_ = NOX::Nln::Solver::BuildSolver(group_ptr(), ostatus_, istatus_, nlnglobaldata_);
 }
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::NLN::SOLVER::Nox::reset_params()
+void STR::Nln::SOLVER::Nox::reset_params()
 {
   // safety check
   check_init_setup();
@@ -183,7 +183,7 @@ void STR::NLN::SOLVER::Nox::reset_params()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum INPAR::STR::ConvergenceStatus STR::NLN::SOLVER::Nox::Solve()
+enum Inpar::STR::ConvergenceStatus STR::Nln::SOLVER::Nox::Solve()
 {
   check_init_setup();
 
@@ -192,7 +192,7 @@ enum INPAR::STR::ConvergenceStatus STR::NLN::SOLVER::Nox::Solve()
 
   // Check if we do something special if the non-linear solver fails,
   // otherwise an error is thrown.
-  if (data_s_dyn().GetDivergenceAction() == INPAR::STR::divcont_stop)
+  if (data_s_dyn().GetDivergenceAction() == Inpar::STR::divcont_stop)
     problem_->CheckFinalStatus(finalstatus);
 
   // copy the solution group into the class variable
@@ -204,29 +204,29 @@ enum INPAR::STR::ConvergenceStatus STR::NLN::SOLVER::Nox::Solve()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum INPAR::STR::ConvergenceStatus STR::NLN::SOLVER::Nox::convert_final_status(
+enum Inpar::STR::ConvergenceStatus STR::Nln::SOLVER::Nox::convert_final_status(
     const ::NOX::StatusTest::StatusType& finalstatus) const
 {
   check_init_setup();
 
-  INPAR::STR::ConvergenceStatus convstatus = INPAR::STR::conv_success;
+  Inpar::STR::ConvergenceStatus convstatus = Inpar::STR::conv_success;
 
   switch (finalstatus)
   {
     case ::NOX::StatusTest::Unevaluated:
-      convstatus = INPAR::STR::conv_ele_fail;
+      convstatus = Inpar::STR::conv_ele_fail;
       break;
     case ::NOX::StatusTest::Unconverged:
     case ::NOX::StatusTest::Failed:
-      convstatus = INPAR::STR::conv_nonlin_fail;
+      convstatus = Inpar::STR::conv_nonlin_fail;
       break;
     case ::NOX::StatusTest::Converged:
-      convstatus = INPAR::STR::conv_success;
+      convstatus = Inpar::STR::conv_success;
       break;
     default:
       FOUR_C_THROW(
           "Conversion of the ::NOX::StatusTest::StatusType to "
-          "a INPAR::STR::ConvergenceStatus is not possible!");
+          "a Inpar::STR::ConvergenceStatus is not possible!");
       break;
   }
 
@@ -235,7 +235,7 @@ enum INPAR::STR::ConvergenceStatus STR::NLN::SOLVER::Nox::convert_final_status(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int STR::NLN::SOLVER::Nox::GetNumNlnIterations() const
+int STR::Nln::SOLVER::Nox::GetNumNlnIterations() const
 {
   if (not nlnsolver_.is_null()) return nlnsolver_->getNumIterations();
   return 0;

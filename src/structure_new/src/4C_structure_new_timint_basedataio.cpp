@@ -36,7 +36,7 @@ namespace
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::TIMINT::BaseDataIO::BaseDataIO()
+STR::TimeInt::BaseDataIO::BaseDataIO()
     : isinit_(false),
       issetup_(false),
       output_(Teuchos::null),
@@ -59,12 +59,12 @@ STR::TIMINT::BaseDataIO::BaseDataIO()
       writerestartevery_(-1),
       writeresultsevery_(-1),
       writeenergyevery_(-1),
-      writestress_(INPAR::STR::stress_none),
-      writecouplstress_(INPAR::STR::stress_none),
-      writestrain_(INPAR::STR::strain_none),
-      writeplstrain_(INPAR::STR::strain_none),
-      writeoptquantity_(INPAR::STR::optquantity_none),
-      conditionnumbertype_(INPAR::STR::ConditionNumber::none)
+      writestress_(Inpar::STR::stress_none),
+      writecouplstress_(Inpar::STR::stress_none),
+      writestrain_(Inpar::STR::strain_none),
+      writeplstrain_(Inpar::STR::strain_none),
+      writeoptquantity_(Inpar::STR::optquantity_none),
+      conditionnumbertype_(Inpar::STR::ConditionNumber::none)
 {
   // empty constructor
 }
@@ -72,9 +72,9 @@ STR::TIMINT::BaseDataIO::BaseDataIO()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::BaseDataIO::Init(const Teuchos::ParameterList& ioparams,
+void STR::TimeInt::BaseDataIO::Init(const Teuchos::ParameterList& ioparams,
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
 {
   // We have to call Setup() after Init()
   issetup_ = false;
@@ -86,32 +86,32 @@ void STR::TIMINT::BaseDataIO::Init(const Teuchos::ParameterList& ioparams,
     output_ = output;
     printscreen_ = ioparams.get<int>("STDOUTEVRY");
     printlogo_ = printscreen_ > 0;
-    gmsh_out_ = (bool)CORE::UTILS::IntegralValue<int>(ioparams, "OUTPUT_GMSH");
+    gmsh_out_ = (bool)Core::UTILS::IntegralValue<int>(ioparams, "OUTPUT_GMSH");
     printiter_ = true;
     p_io_every_iteration_ =
         Teuchos::rcp(new Teuchos::ParameterList(ioparams.sublist("EVERY ITERATION")));
     outputeveryiter_ =
-        CORE::UTILS::IntegralValue<bool>(*p_io_every_iteration_, "OUTPUT_EVERY_ITER");
+        Core::UTILS::IntegralValue<bool>(*p_io_every_iteration_, "OUTPUT_EVERY_ITER");
     writerestartevery_ = sdynparams.get<int>("RESTARTEVRY");
     writetimestepoffset_ = sdynparams.get<int>("OUTPUT_STEP_OFFSET");
-    writestate_ = (bool)CORE::UTILS::IntegralValue<int>(ioparams, "STRUCT_DISP");
-    writevelacc_ = (bool)CORE::UTILS::IntegralValue<int>(ioparams, "STRUCT_VEL_ACC");
-    writejac2matlab_ = (bool)CORE::UTILS::IntegralValue<int>(ioparams, "STRUCT_JACOBIAN_MATLAB");
+    writestate_ = (bool)Core::UTILS::IntegralValue<int>(ioparams, "STRUCT_DISP");
+    writevelacc_ = (bool)Core::UTILS::IntegralValue<int>(ioparams, "STRUCT_VEL_ACC");
+    writejac2matlab_ = (bool)Core::UTILS::IntegralValue<int>(ioparams, "STRUCT_JACOBIAN_MATLAB");
     conditionnumbertype_ =
-        Teuchos::getIntegralValue<INPAR::STR::ConditionNumber>(ioparams, "STRUCT_CONDITION_NUMBER");
+        Teuchos::getIntegralValue<Inpar::STR::ConditionNumber>(ioparams, "STRUCT_CONDITION_NUMBER");
     firstoutputofrun_ = true;
     writeresultsevery_ = sdynparams.get<int>("RESULTSEVRY");
     writecurrentelevolume_ =
-        (bool)CORE::UTILS::IntegralValue<int>(ioparams, "STRUCT_CURRENT_VOLUME");
-    writestress_ = CORE::UTILS::IntegralValue<INPAR::STR::StressType>(ioparams, "STRUCT_STRESS");
+        (bool)Core::UTILS::IntegralValue<int>(ioparams, "STRUCT_CURRENT_VOLUME");
+    writestress_ = Core::UTILS::IntegralValue<Inpar::STR::StressType>(ioparams, "STRUCT_STRESS");
     writecouplstress_ =
-        CORE::UTILS::IntegralValue<INPAR::STR::StressType>(ioparams, "STRUCT_COUPLING_STRESS");
-    writestrain_ = CORE::UTILS::IntegralValue<INPAR::STR::StrainType>(ioparams, "STRUCT_STRAIN");
+        Core::UTILS::IntegralValue<Inpar::STR::StressType>(ioparams, "STRUCT_COUPLING_STRESS");
+    writestrain_ = Core::UTILS::IntegralValue<Inpar::STR::StrainType>(ioparams, "STRUCT_STRAIN");
     writeplstrain_ =
-        CORE::UTILS::IntegralValue<INPAR::STR::StrainType>(ioparams, "STRUCT_PLASTIC_STRAIN");
+        Core::UTILS::IntegralValue<Inpar::STR::StrainType>(ioparams, "STRUCT_PLASTIC_STRAIN");
     writeenergyevery_ = sdynparams.get<int>("RESEVRYERGY");
-    writesurfactant_ = (bool)CORE::UTILS::IntegralValue<int>(ioparams, "STRUCT_SURFACTANT");
-    writeoptquantity_ = CORE::UTILS::IntegralValue<INPAR::STR::OptQuantityType>(
+    writesurfactant_ = (bool)Core::UTILS::IntegralValue<int>(ioparams, "STRUCT_SURFACTANT");
+    writeoptquantity_ = Core::UTILS::IntegralValue<Inpar::STR::OptQuantityType>(
         ioparams, "STRUCT_OPTIONAL_QUANTITY");
 
     // build params container for monitoring reaction forces
@@ -144,27 +144,27 @@ void STR::TIMINT::BaseDataIO::Init(const Teuchos::ParameterList& ioparams,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::BaseDataIO::Setup()
+void STR::TimeInt::BaseDataIO::Setup()
 {
   // safety check
   FOUR_C_ASSERT(is_init(), "Init() has not been called, yet!");
 
-  if (outputeveryiter_) writer_every_iter_ = Teuchos::rcp(new CORE::IO::EveryIterationWriter());
+  if (outputeveryiter_) writer_every_iter_ = Teuchos::rcp(new Core::IO::EveryIterationWriter());
 
   issetup_ = true;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::BaseDataIO::check_init_setup() const
+void STR::TimeInt::BaseDataIO::check_init_setup() const
 {
   FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and Setup() first!");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::BaseDataIO::init_setup_every_iteration_writer(
-    CORE::IO::EveryIterationWriterInterface* interface, Teuchos::ParameterList& p_nox)
+void STR::TimeInt::BaseDataIO::init_setup_every_iteration_writer(
+    Core::IO::EveryIterationWriterInterface* interface, Teuchos::ParameterList& p_nox)
 {
   if (not outputeveryiter_) return;
 
@@ -175,30 +175,30 @@ void STR::TIMINT::BaseDataIO::init_setup_every_iteration_writer(
   Teuchos::ParameterList& p_sol_opt = p_nox.sublist("Solver Options");
 
   Teuchos::RCP<::NOX::Observer> prepost_solver_ptr = Teuchos::rcp(
-      new NOX::NLN::Solver::PrePostOp::TIMINT::WriteOutputEveryIteration(*writer_every_iter_));
+      new NOX::Nln::Solver::PrePostOp::TimeInt::WriteOutputEveryIteration(*writer_every_iter_));
 
-  NOX::NLN::AUX::AddToPrePostOpVector(p_sol_opt, prepost_solver_ptr);
+  NOX::Nln::Aux::AddToPrePostOpVector(p_sol_opt, prepost_solver_ptr);
 
   // insert the every_iter output writer as ppo for the linesearch object
   Teuchos::ParameterList& p_linesearch = p_nox.sublist("Line Search");
 
   // Get the current map. If there is no map, return a new empty one. (reference)
-  NOX::NLN::LineSearch::PrePostOperator::map& prepostls_map =
-      NOX::NLN::LineSearch::PrePostOperator::GetMap(p_linesearch);
+  NOX::Nln::LineSearch::PrePostOperator::map& prepostls_map =
+      NOX::Nln::LineSearch::PrePostOperator::GetMap(p_linesearch);
 
   // insert/replace the old pointer in the map
-  prepostls_map[NOX::NLN::LineSearch::prepost_output_every_iter] =
-      Teuchos::rcp_dynamic_cast<NOX::NLN::Abstract::PrePostOperator>(prepost_solver_ptr);
+  prepostls_map[NOX::Nln::LineSearch::prepost_output_every_iter] =
+      Teuchos::rcp_dynamic_cast<NOX::Nln::Abstract::PrePostOperator>(prepost_solver_ptr);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::BaseDataIO::setup_energy_output_file()
+void STR::TimeInt::BaseDataIO::setup_energy_output_file()
 {
   if (energyfile_.is_null())
   {
     std::string energy_file_name =
-        GLOBAL::Problem::Instance()->OutputControlFile()->FileName() + "_energy.csv";
+        Global::Problem::Instance()->OutputControlFile()->FileName() + "_energy.csv";
 
     energyfile_ = Teuchos::rcp(new std::ofstream(energy_file_name.c_str()));
   }
@@ -206,21 +206,21 @@ void STR::TIMINT::BaseDataIO::setup_energy_output_file()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::TIMINT::BaseDataIO::write_results_for_this_step(const int step) const
+bool STR::TimeInt::BaseDataIO::write_results_for_this_step(const int step) const
 {
   if (step < 0) FOUR_C_THROW("The variable step is not allowed to be negative.");
   return is_write_results_enabled() and
          DetermineWriteOutput(step, get_write_timestep_offset(), get_write_results_every_n_step());
 }
 
-bool STR::TIMINT::BaseDataIO::is_write_results_enabled() const
+bool STR::TimeInt::BaseDataIO::is_write_results_enabled() const
 {
   return get_write_results_every_n_step() > 0;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::TIMINT::BaseDataIO::write_runtime_vtk_results_for_this_step(const int step) const
+bool STR::TimeInt::BaseDataIO::write_runtime_vtk_results_for_this_step(const int step) const
 {
   if (step < 0) FOUR_C_THROW("The variable step is not allowed to be negative.");
   return (is_runtime_output_enabled() &&
@@ -228,14 +228,14 @@ bool STR::TIMINT::BaseDataIO::write_runtime_vtk_results_for_this_step(const int 
               get_runtime_output_params()->output_interval_in_steps()));
 }
 
-bool STR::TIMINT::BaseDataIO::is_runtime_output_enabled() const
+bool STR::TimeInt::BaseDataIO::is_runtime_output_enabled() const
 {
   return get_runtime_output_params() != Teuchos::null;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::TIMINT::BaseDataIO::write_runtime_vtp_results_for_this_step(const int step) const
+bool STR::TimeInt::BaseDataIO::write_runtime_vtp_results_for_this_step(const int step) const
 {
   if (step < 0) FOUR_C_THROW("The variable step is not allowed to be negative.");
   return (get_runtime_vtp_output_params() != Teuchos::null &&
@@ -244,7 +244,7 @@ bool STR::TIMINT::BaseDataIO::write_runtime_vtp_results_for_this_step(const int 
 }
 
 
-bool STR::TIMINT::BaseDataIO::should_write_restart_for_step(const int step) const
+bool STR::TimeInt::BaseDataIO::should_write_restart_for_step(const int step) const
 {
   return get_write_restart_every_n_step() &&
          DetermineWriteOutput(
@@ -253,7 +253,7 @@ bool STR::TIMINT::BaseDataIO::should_write_restart_for_step(const int step) cons
 }
 
 
-bool STR::TIMINT::BaseDataIO::should_write_reaction_forces_for_this_step(const int step) const
+bool STR::TimeInt::BaseDataIO::should_write_reaction_forces_for_this_step(const int step) const
 {
   return GetMonitorDBCParams()->output_interval_in_steps() > 0 &&
          DetermineWriteOutput(
@@ -261,32 +261,32 @@ bool STR::TIMINT::BaseDataIO::should_write_reaction_forces_for_this_step(const i
 }
 
 
-bool STR::TIMINT::BaseDataIO::should_write_stress_strain_for_this_step(const int step) const
+bool STR::TimeInt::BaseDataIO::should_write_stress_strain_for_this_step(const int step) const
 {
   return write_results_for_this_step(step) &&
-         ((GetStressOutputType() != INPAR::STR::stress_none) ||
-             (get_coupling_stress_output_type() != INPAR::STR::stress_none) ||
-             (GetStrainOutputType() != INPAR::STR::strain_none) ||
-             (get_plastic_strain_output_type() != INPAR::STR::strain_none));
+         ((GetStressOutputType() != Inpar::STR::stress_none) ||
+             (get_coupling_stress_output_type() != Inpar::STR::stress_none) ||
+             (GetStrainOutputType() != Inpar::STR::strain_none) ||
+             (get_plastic_strain_output_type() != Inpar::STR::strain_none));
 }
 
-bool STR::TIMINT::BaseDataIO::should_write_energy_for_this_step(const int step) const
+bool STR::TimeInt::BaseDataIO::should_write_energy_for_this_step(const int step) const
 {
   return get_write_energy_every_n_step() > 0 &&
          DetermineWriteOutput(step, get_write_timestep_offset(), get_write_energy_every_n_step());
 }
 
-int STR::TIMINT::BaseDataIO::get_last_written_results() const { return lastwrittenresultsstep_; }
+int STR::TimeInt::BaseDataIO::get_last_written_results() const { return lastwrittenresultsstep_; }
 
-void STR::TIMINT::BaseDataIO::set_last_written_results(const int step)
+void STR::TimeInt::BaseDataIO::set_last_written_results(const int step)
 {
   lastwrittenresultsstep_ = step;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::Solver::PrePostOp::TIMINT::WriteOutputEveryIteration::WriteOutputEveryIteration(
-    CORE::IO::EveryIterationWriter& every_iter_writer)
+NOX::Nln::Solver::PrePostOp::TimeInt::WriteOutputEveryIteration::WriteOutputEveryIteration(
+    Core::IO::EveryIterationWriter& every_iter_writer)
     : every_iter_writer_(every_iter_writer)
 {
   /* empty */
@@ -294,7 +294,7 @@ NOX::NLN::Solver::PrePostOp::TIMINT::WriteOutputEveryIteration::WriteOutputEvery
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Solver::PrePostOp::TIMINT::WriteOutputEveryIteration::runPreSolve(
+void NOX::Nln::Solver::PrePostOp::TimeInt::WriteOutputEveryIteration::runPreSolve(
     const ::NOX::Solver::Generic& solver)
 {
   every_iter_writer_.InitNewtonIteration();
@@ -302,7 +302,7 @@ void NOX::NLN::Solver::PrePostOp::TIMINT::WriteOutputEveryIteration::runPreSolve
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Solver::PrePostOp::TIMINT::WriteOutputEveryIteration::runPostIterate(
+void NOX::Nln::Solver::PrePostOp::TimeInt::WriteOutputEveryIteration::runPostIterate(
     const ::NOX::Solver::Generic& solver)
 {
   const int newton_iteration = solver.getNumIterations();
@@ -311,12 +311,12 @@ void NOX::NLN::Solver::PrePostOp::TIMINT::WriteOutputEveryIteration::runPostIter
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Solver::PrePostOp::TIMINT::WriteOutputEveryIteration::run_pre_modify_step_length(
+void NOX::Nln::Solver::PrePostOp::TimeInt::WriteOutputEveryIteration::run_pre_modify_step_length(
     const ::NOX::Solver::Generic& solver, const ::NOX::LineSearch::Generic& linesearch)
 {
   const int newton_iteration = solver.getNumIterations();
   const int ls_iteration =
-      dynamic_cast<const NOX::NLN::LineSearch::Generic&>(linesearch).GetNumIterations();
+      dynamic_cast<const NOX::Nln::LineSearch::Generic&>(linesearch).GetNumIterations();
   every_iter_writer_.add_line_search_iteration(newton_iteration, ls_iteration);
 }
 

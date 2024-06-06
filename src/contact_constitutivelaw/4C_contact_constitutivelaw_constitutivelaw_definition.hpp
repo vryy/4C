@@ -23,22 +23,22 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::IO
+namespace Core::IO
 {
   class DatFileReader;
-}  // namespace CORE::IO
+}  // namespace Core::IO
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace GLOBAL
+namespace Global
 {
   class Problem;
 }
 
-namespace INPAR::CONTACT
+namespace Inpar::CONTACT
 {
   enum class ConstitutiveLawType;
 }
@@ -71,7 +71,7 @@ namespace CONTACT
        * \param[in] type of contact constitutive law to be built
        */
       LawDefinition(std::string name, std::string description,
-          INPAR::CONTACT::ConstitutiveLawType contactconstitutivelawlawtype);
+          Inpar::CONTACT::ConstitutiveLawType contactconstitutivelawlawtype);
 
       // destructor
       virtual ~LawDefinition() = default;
@@ -80,7 +80,7 @@ namespace CONTACT
        *
        * \param[in] c new component needed as parameter for the contact constitutive law
        */
-      void AddComponent(Teuchos::RCP<INPUT::LineComponent> c);
+      void AddComponent(Teuchos::RCP<Input::LineComponent> c);
 
       /** \brief read all materials from my input file section
        *
@@ -88,24 +88,24 @@ namespace CONTACT
        * \param[in] reader the actual dat file reader that has access to the dat file
        * \params[inout] mmap map mapping IDs to parameters of the contact constitutive model
        */
-      void Read(const GLOBAL::Problem& problem, CORE::IO::DatFileReader& reader,
+      void Read(const Global::Problem& problem, Core::IO::DatFileReader& reader,
           Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Bundle> bundle);
 
       /// print my DAT file section and possible contact constitutive laws
       std::ostream& Print(std::ostream& stream,  ///< the output stream
-          const DRT::Discretization* dis = nullptr);
+          const Discret::Discretization* dis = nullptr);
 
       /// get contact constitutive law name
       [[nodiscard]] std::string Name() const { return coconstlawname_; }
 
       // get contact constitutive law type
-      [[nodiscard]] INPAR::CONTACT::ConstitutiveLawType Type() const { return coconstlawtype_; }
+      [[nodiscard]] Inpar::CONTACT::ConstitutiveLawType Type() const { return coconstlawtype_; }
 
       /// get contact constitutive law description
       [[nodiscard]] std::string Description() const { return description_; }
 
       /// get contact constitutive law inputline
-      [[nodiscard]] std::vector<Teuchos::RCP<INPUT::LineComponent>> Inputline() const
+      [[nodiscard]] std::vector<Teuchos::RCP<Input::LineComponent>> Inputline() const
       {
         return inputline_;
       }
@@ -116,9 +116,9 @@ namespace CONTACT
       /// description of ontact constitutive law type
       std::string description_;
       /// type of ontact constitutive law to be build
-      INPAR::CONTACT::ConstitutiveLawType coconstlawtype_;
+      Inpar::CONTACT::ConstitutiveLawType coconstlawtype_;
       /// the list of valid components
-      std::vector<Teuchos::RCP<INPUT::LineComponent>> inputline_;
+      std::vector<Teuchos::RCP<Input::LineComponent>> inputline_;
     };
 
 

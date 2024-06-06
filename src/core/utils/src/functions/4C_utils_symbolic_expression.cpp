@@ -47,7 +47,7 @@ namespace
 
 }  // namespace
 
-namespace CORE::UTILS::SYMBOLICEXPRESSIONDETAILS
+namespace Core::UTILS::SymbolicExpressionDetails
 {
   /*----------------------------------------------------------------------*/
   /*!
@@ -958,17 +958,17 @@ namespace CORE::UTILS::SYMBOLICEXPRESSIONDETAILS
     return res;
   }
 
-}  // namespace CORE::UTILS::SYMBOLICEXPRESSIONDETAILS
+}  // namespace Core::UTILS::SymbolicExpressionDetails
 
 template <typename T>
-CORE::UTILS::SymbolicExpression<T>::SymbolicExpression(const std::string& expression)
+Core::UTILS::SymbolicExpression<T>::SymbolicExpression(const std::string& expression)
     : parser_for_value_(
-          std::make_unique<CORE::UTILS::SYMBOLICEXPRESSIONDETAILS::Parser<ValueType>>(expression)),
+          std::make_unique<Core::UTILS::SymbolicExpressionDetails::Parser<ValueType>>(expression)),
       parser_for_firstderivative_(
-          std::make_unique<CORE::UTILS::SYMBOLICEXPRESSIONDETAILS::Parser<FirstDerivativeType>>(
+          std::make_unique<Core::UTILS::SymbolicExpressionDetails::Parser<FirstDerivativeType>>(
               expression)),
       parser_for_secondderivative_(
-          std::make_unique<CORE::UTILS::SYMBOLICEXPRESSIONDETAILS::Parser<SecondDerivativeType>>(
+          std::make_unique<Core::UTILS::SymbolicExpressionDetails::Parser<SecondDerivativeType>>(
               expression))
 {
 }
@@ -976,7 +976,7 @@ CORE::UTILS::SymbolicExpression<T>::SymbolicExpression(const std::string& expres
 
 
 template <typename T>
-auto CORE::UTILS::SymbolicExpression<T>::Value(
+auto Core::UTILS::SymbolicExpression<T>::Value(
     const std::map<std::string, ValueType>& variable_values) const -> ValueType
 {
   return parser_for_value_->EvaluateExpression(variable_values);
@@ -984,7 +984,7 @@ auto CORE::UTILS::SymbolicExpression<T>::Value(
 
 
 template <typename T>
-auto CORE::UTILS::SymbolicExpression<T>::FirstDerivative(
+auto Core::UTILS::SymbolicExpression<T>::FirstDerivative(
     std::map<std::string, FirstDerivativeType> variable_values,
     const std::map<std::string, ValueType>& constant_values) const -> FirstDerivativeType
 {
@@ -993,7 +993,7 @@ auto CORE::UTILS::SymbolicExpression<T>::FirstDerivative(
 
 
 template <typename T>
-auto CORE::UTILS::SymbolicExpression<T>::SecondDerivative(
+auto Core::UTILS::SymbolicExpression<T>::SecondDerivative(
     const std::map<std::string, SecondDerivativeType>& variable_values,
     const std::map<std::string, ValueType>& constant_values) const -> SecondDerivativeType
 {
@@ -1002,31 +1002,31 @@ auto CORE::UTILS::SymbolicExpression<T>::SecondDerivative(
 
 
 template <typename Number>
-CORE::UTILS::SymbolicExpression<Number>::SymbolicExpression(
-    const CORE::UTILS::SymbolicExpression<Number>& other)
-    : parser_for_value_{std::make_unique<CORE::UTILS::SYMBOLICEXPRESSIONDETAILS::Parser<ValueType>>(
+Core::UTILS::SymbolicExpression<Number>::SymbolicExpression(
+    const Core::UTILS::SymbolicExpression<Number>& other)
+    : parser_for_value_{std::make_unique<Core::UTILS::SymbolicExpressionDetails::Parser<ValueType>>(
           *other.parser_for_value_)},
       parser_for_firstderivative_{
-          std::make_unique<CORE::UTILS::SYMBOLICEXPRESSIONDETAILS::Parser<FirstDerivativeType>>(
+          std::make_unique<Core::UTILS::SymbolicExpressionDetails::Parser<FirstDerivativeType>>(
               *other.parser_for_firstderivative_)},
       parser_for_secondderivative_{
-          std::make_unique<CORE::UTILS::SYMBOLICEXPRESSIONDETAILS::Parser<SecondDerivativeType>>(
+          std::make_unique<Core::UTILS::SymbolicExpressionDetails::Parser<SecondDerivativeType>>(
               *other.parser_for_secondderivative_)}
 {
 }
 
 
 template <typename Number>
-CORE::UTILS::SymbolicExpression<Number>& CORE::UTILS::SymbolicExpression<Number>::operator=(
-    const CORE::UTILS::SymbolicExpression<Number>& other)
+Core::UTILS::SymbolicExpression<Number>& Core::UTILS::SymbolicExpression<Number>::operator=(
+    const Core::UTILS::SymbolicExpression<Number>& other)
 {
-  parser_for_value_ = std::make_unique<CORE::UTILS::SYMBOLICEXPRESSIONDETAILS::Parser<ValueType>>(
+  parser_for_value_ = std::make_unique<Core::UTILS::SymbolicExpressionDetails::Parser<ValueType>>(
       *other.parser_for_value_);
   parser_for_firstderivative_ =
-      std::make_unique<CORE::UTILS::SYMBOLICEXPRESSIONDETAILS::Parser<FirstDerivativeType>>(
+      std::make_unique<Core::UTILS::SymbolicExpressionDetails::Parser<FirstDerivativeType>>(
           *other.parser_for_firstderivative_);
   parser_for_secondderivative_ =
-      std::make_unique<CORE::UTILS::SYMBOLICEXPRESSIONDETAILS::Parser<SecondDerivativeType>>(
+      std::make_unique<Core::UTILS::SymbolicExpressionDetails::Parser<SecondDerivativeType>>(
           *other.parser_for_secondderivative_);
   return *this;
 }
@@ -1034,9 +1034,9 @@ CORE::UTILS::SymbolicExpression<Number>& CORE::UTILS::SymbolicExpression<Number>
 
 
 template <typename Number>
-CORE::UTILS::SymbolicExpression<Number>::~SymbolicExpression() = default;
+Core::UTILS::SymbolicExpression<Number>::~SymbolicExpression() = default;
 
 // explicit instantiations
-template class CORE::UTILS::SymbolicExpression<double>;
+template class Core::UTILS::SymbolicExpression<double>;
 
 FOUR_C_NAMESPACE_CLOSE

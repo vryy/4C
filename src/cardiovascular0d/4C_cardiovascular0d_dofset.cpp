@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             ukue 04/07|
  *----------------------------------------------------------------------*/
-UTILS::Cardiovascular0DDofSet::Cardiovascular0DDofSet() : CORE::Dofsets::DofSet() { return; }
+UTILS::Cardiovascular0DDofSet::Cardiovascular0DDofSet() : Core::DOFSets::DofSet() { return; }
 
 
 
@@ -40,8 +40,8 @@ void UTILS::Cardiovascular0DDofSet::Reset()
  |  setup everything  (public)                                ukue 04/07|
  *----------------------------------------------------------------------*/
 int UTILS::Cardiovascular0DDofSet::assign_degrees_of_freedom(
-    const Teuchos::RCP<DRT::Discretization> dis, const int ndofs, const int start,
-    const Teuchos::RCP<MOR::ProperOrthogonalDecomposition> mor)
+    const Teuchos::RCP<Discret::Discretization> dis, const int ndofs, const int start,
+    const Teuchos::RCP<ModelOrderRed::ProperOrthogonalDecomposition> mor)
 {
   // A definite offset is currently not supported.
   if (start != 0) FOUR_C_THROW("right now user specified dof offsets are not supported");

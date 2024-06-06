@@ -25,15 +25,15 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace ADAPTER
+namespace Adapter
 {
   class FluidPoro : public FluidFPSI
   {
    public:
     //! Constructor
-    FluidPoro(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<DRT::Discretization> dis,
-        Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-        Teuchos::RCP<CORE::IO::DiscretizationWriter> output, bool isale, bool dirichletcond);
+    FluidPoro(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<Discret::Discretization> dis,
+        Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+        Teuchos::RCP<Core::IO::DiscretizationWriter> output, bool isale, bool dirichletcond);
 
     //! Evaluate no penetration constraint
     /*!
@@ -45,13 +45,13 @@ namespace ADAPTER
      fluid-fluid, 1== fluid -structure)
      */
     void evaluate_no_penetration_cond(Teuchos::RCP<Epetra_Vector> Cond_RHS,
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> ConstraintMatrix,
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> struct_vel_constraint_matrix,
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> ConstraintMatrix,
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> struct_vel_constraint_matrix,
         Teuchos::RCP<Epetra_Vector> condVector, Teuchos::RCP<std::set<int>> condIDs,
-        POROELAST::Coupltype coupltype = POROELAST::fluidfluid);
+        PoroElast::Coupltype coupltype = PoroElast::fluidfluid);
 
     //! calls the VelPresSplitter on the time integrator
-    virtual Teuchos::RCP<CORE::LINALG::MapExtractor> VelPresSplitter();
+    virtual Teuchos::RCP<Core::LinAlg::MapExtractor> VelPresSplitter();
 
     /*!
       \brief Write extra output for specified step and time.
@@ -70,12 +70,12 @@ namespace ADAPTER
 
    private:
     /// fluid field
-    const Teuchos::RCP<ADAPTER::Fluid>& fluid_field() { return fluid_; }
+    const Teuchos::RCP<Adapter::Fluid>& fluid_field() { return fluid_; }
 
-    std::vector<CORE::Conditions::Condition*>
+    std::vector<Core::Conditions::Condition*>
         nopencond_;  ///< vector containing no penetration conditions
   };
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 FOUR_C_NAMESPACE_CLOSE
 

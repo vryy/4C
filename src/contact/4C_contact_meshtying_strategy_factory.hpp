@@ -28,7 +28,7 @@ namespace CONTACT
   class MtAbstractStrategy;
 }  // namespace CONTACT
 
-namespace MORTAR
+namespace Mortar
 {
   class InterfaceDataContainer;
   class MortarAbstractStrategy;
@@ -41,7 +41,7 @@ namespace MORTAR
     /*! \brief Factory to create meshtying strategy
      *
      */
-    class FactoryMT : public MORTAR::STRATEGY::Factory
+    class FactoryMT : public Mortar::STRATEGY::Factory
     {
      public:
       //! constructor
@@ -53,7 +53,7 @@ namespace MORTAR
       /*! \brief Read and check meshtying/contact input parameters
        *
        * All specified contact-related input parameters are read from the
-       * GLOBAL::Problem::Instance() and stored into a local variable of
+       * Global::Problem::Instance() and stored into a local variable of
        * type Teuchos::ParameterList. Invalid parameter combinations are
        * sorted out and throw a FOUR_C_THROW.
        *
@@ -75,7 +75,7 @@ namespace MORTAR
        * \author Popp
        */
       void BuildInterfaces(const Teuchos::ParameterList& params,
-          std::vector<Teuchos::RCP<MORTAR::Interface>>& interfaces, bool& poroslave,
+          std::vector<Teuchos::RCP<Mortar::Interface>>& interfaces, bool& poroslave,
           bool& poromaster) const;
 
       /*! \brief Create the solver strategy object and pass all necessary data to it
@@ -91,7 +91,7 @@ namespace MORTAR
        * \author Popp */
       Teuchos::RCP<CONTACT::MtAbstractStrategy> BuildStrategy(const Teuchos::ParameterList& params,
           const bool& poroslave, const bool& poromaster, const int& dof_offset,
-          std::vector<Teuchos::RCP<MORTAR::Interface>>& interfaces) const;
+          std::vector<Teuchos::RCP<Mortar::Interface>>& interfaces) const;
 
       /*! \brief Create the solver strategy object and pass all necessary data to it
        *
@@ -113,18 +113,18 @@ namespace MORTAR
        *
        * \author hiermeier \date 03/17 */
       static Teuchos::RCP<CONTACT::MtAbstractStrategy> BuildStrategy(
-          const INPAR::CONTACT::SolvingStrategy stype, const Teuchos::ParameterList& params,
+          const Inpar::CONTACT::SolvingStrategy stype, const Teuchos::ParameterList& params,
           const bool& poroslave, const bool& poromaster, const int& dof_offset,
-          std::vector<Teuchos::RCP<MORTAR::Interface>>& interfaces, const Epetra_Map* dof_row_map,
+          std::vector<Teuchos::RCP<Mortar::Interface>>& interfaces, const Epetra_Map* dof_row_map,
           const Epetra_Map* node_row_map, const int dim,
           const Teuchos::RCP<const Epetra_Comm>& comm_ptr,
-          Teuchos::RCP<MORTAR::StratDataContainer> data_ptr);
+          Teuchos::RCP<Mortar::StratDataContainer> data_ptr);
 
      protected:
      private:
     };  // class FactoryMT
   }     // namespace STRATEGY
-}  // namespace MORTAR
+}  // namespace Mortar
 
 FOUR_C_NAMESPACE_CLOSE
 

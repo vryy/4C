@@ -19,11 +19,11 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------*
  | constructor                                             farah 01/14 |
  *---------------------------------------------------------------------*/
-CORE::VOLMORTAR::Cell::Cell(int id, int nvertices, const CORE::LINALG::SerialDenseMatrix& coords,
-    const CORE::FE::CellType& shape)
+Core::VolMortar::Cell::Cell(int id, int nvertices, const Core::LinAlg::SerialDenseMatrix& coords,
+    const Core::FE::CellType& shape)
     : id_(id), coords_(coords), shape_(shape)
 {
-  if (shape_ == CORE::FE::CellType::tet4)
+  if (shape_ == Core::FE::CellType::tet4)
   {
     /* get the matrix of the coordinates of edges needed to compute the volume,
     ** which is used here as detJ in the quadrature rule.
@@ -34,7 +34,7 @@ CORE::VOLMORTAR::Cell::Cell(int id, int nvertices, const CORE::LINALG::SerialDen
     **             [ z_1  z_2  z_3  z_4 ]
     */
 
-    CORE::LINALG::Matrix<4, 4> jac;
+    Core::LinAlg::Matrix<4, 4> jac;
     for (int i = 0; i < 4; i++) jac(0, i) = 1;
     for (int row = 0; row < 3; row++)
       for (int col = 0; col < 4; col++) jac(row + 1, col) = coords_(row, col);
@@ -47,7 +47,7 @@ CORE::VOLMORTAR::Cell::Cell(int id, int nvertices, const CORE::LINALG::SerialDen
     vol_ = 0.0;
 
   // std::cout << "SHAPE=     "<< shape_ << std::endl;
-  if (shape_ != CORE::FE::CellType::tet4) FOUR_C_THROW("wrong shape");
+  if (shape_ != Core::FE::CellType::tet4) FOUR_C_THROW("wrong shape");
 
   return;
 }
@@ -55,19 +55,19 @@ CORE::VOLMORTAR::Cell::Cell(int id, int nvertices, const CORE::LINALG::SerialDen
 /*---------------------------------------------------------------------*
  | calculate jacobian for hex elements                     farah 04/14 |
  *---------------------------------------------------------------------*/
-double CORE::VOLMORTAR::Cell::CalcJac(const double* xi)
+double Core::VolMortar::Cell::CalcJac(const double* xi)
 {
   double jac = 0.0;
 
-  CORE::LINALG::Matrix<3, 8> derivs;
+  Core::LinAlg::Matrix<3, 8> derivs;
   const double r = xi[0];
   const double s = xi[1];
   const double t = xi[2];
 
-  CORE::FE::shape_function_3D_deriv1(derivs, r, s, t, CORE::FE::CellType::hex8);
+  Core::FE::shape_function_3D_deriv1(derivs, r, s, t, Core::FE::CellType::hex8);
 
 
-  CORE::LINALG::Matrix<8, 3> xrefe;
+  Core::LinAlg::Matrix<8, 3> xrefe;
   for (int i = 0; i < 8; ++i)
   {
     xrefe(i, 0) = coords_(0, i);
@@ -75,7 +75,7 @@ double CORE::VOLMORTAR::Cell::CalcJac(const double* xi)
     xrefe(i, 2) = coords_(2, i);
   }
 
-  CORE::LINALG::Matrix<3, 3> invJ;
+  Core::LinAlg::Matrix<3, 3> invJ;
   invJ.Clear();
 
   invJ.Multiply(derivs, xrefe);
@@ -87,9 +87,9 @@ double CORE::VOLMORTAR::Cell::CalcJac(const double* xi)
 /*---------------------------------------------------------------------*
  | mapping from parameter space to global space            farah 01/14 |
  *---------------------------------------------------------------------*/
-void CORE::VOLMORTAR::Cell::LocalToGlobal(double* local, double* global)
+void Core::VolMortar::Cell::LocalToGlobal(double* local, double* global)
 {
-  if (shape_ == CORE::FE::CellType::tet4)
+  if (shape_ == Core::FE::CellType::tet4)
   {
     // check input
     if (!local) FOUR_C_THROW("ERROR: LocalToGlobal called with xi=nullptr");
@@ -100,8 +100,8 @@ void CORE::VOLMORTAR::Cell::LocalToGlobal(double* local, double* global)
 
     for (int i = 0; i < ndim; ++i) global[i] = 0.0;
 
-    CORE::LINALG::Matrix<n, 1> val;
-    CORE::FE::shape_function_3D(val, local[0], local[1], local[2], shape_);
+    Core::LinAlg::Matrix<n, 1> val;
+    Core::FE::shape_function_3D(val, local[0], local[1], local[2], shape_);
 
     for (int i = 0; i < n; ++i)
     {
@@ -112,7 +112,7 @@ void CORE::VOLMORTAR::Cell::LocalToGlobal(double* local, double* global)
       }
     }
   }
-  else if (shape_ == CORE::FE::CellType::hex8)
+  else if (shape_ == Core::FE::CellType::hex8)
   {
     // check input
     if (!local) FOUR_C_THROW("ERROR: LocalToGlobal called with xi=nullptr");
@@ -123,8 +123,8 @@ void CORE::VOLMORTAR::Cell::LocalToGlobal(double* local, double* global)
 
     for (int i = 0; i < ndim; ++i) global[i] = 0.0;
 
-    CORE::LINALG::Matrix<n, 1> val;
-    CORE::FE::shape_function_3D(val, local[0], local[1], local[2], shape_);
+    Core::LinAlg::Matrix<n, 1> val;
+    Core::FE::shape_function_3D(val, local[0], local[1], local[2], shape_);
 
     for (int i = 0; i < n; ++i)
     {
@@ -144,7 +144,7 @@ void CORE::VOLMORTAR::Cell::LocalToGlobal(double* local, double* global)
 /*---------------------------------------------------------------------*
  | output                                                  farah 03/14 |
  *---------------------------------------------------------------------*/
-void CORE::VOLMORTAR::Cell::Print()
+void Core::VolMortar::Cell::Print()
 {
   for (int i = 0; i < 4; ++i)
     std::cout << "coords= " << coords_(0, i) << " " << coords_(1, i) << " " << coords_(2, i)

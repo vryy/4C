@@ -47,7 +47,7 @@ PARTICLEALGORITHM::ParticleAlgorithm::ParticleAlgorithm(
       myrank_(comm.MyPID()),
       params_(params),
       numparticlesafterlastloadbalance_(0),
-      transferevery_(CORE::UTILS::IntegralValue<int>(params_, "TRANSFER_EVERY")),
+      transferevery_(Core::UTILS::IntegralValue<int>(params_, "TRANSFER_EVERY")),
       writeresultsevery_(params.get<int>("RESULTSEVRY")),
       writerestartevery_(params.get<int>("RESTARTEVRY")),
       writeresultsthisstep_(true),
@@ -153,7 +153,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::read_restart(const int restartstep)
   particlestodistribute_.clear();
 
   // create discretization reader
-  const std::shared_ptr<CORE::IO::DiscretizationReader> reader =
+  const std::shared_ptr<Core::IO::DiscretizationReader> reader =
       particleengine_->BinDisReader(restartstep);
 
   // safety check
@@ -183,8 +183,8 @@ void PARTICLEALGORITHM::ParticleAlgorithm::read_restart(const int restartstep)
 
   // short screen output
   if (myrank_ == 0)
-    CORE::IO::cout << "====== restart of the particle simulation from step " << restartstep
-                   << CORE::IO::endl;
+    Core::IO::cout << "====== restart of the particle simulation from step " << restartstep
+                   << Core::IO::endl;
 }
 
 void PARTICLEALGORITHM::ParticleAlgorithm::Timeloop()
@@ -322,20 +322,20 @@ void PARTICLEALGORITHM::ParticleAlgorithm::write_restart() const
 
     // short screen output
     if (myrank_ == 0)
-      CORE::IO::cout(CORE::IO::verbose)
+      Core::IO::cout(Core::IO::verbose)
           << "====== restart of the particle simulation written in step " << Step()
-          << CORE::IO::endl;
+          << Core::IO::endl;
   }
 }
 
-std::vector<std::shared_ptr<CORE::UTILS::ResultTest>>
+std::vector<std::shared_ptr<Core::UTILS::ResultTest>>
 PARTICLEALGORITHM::ParticleAlgorithm::CreateResultTests()
 {
   // build global id to local index map
   particleengine_->build_global_id_to_local_index_map();
 
   // particle field specific result test objects
-  std::vector<std::shared_ptr<CORE::UTILS::ResultTest>> allresulttests(0);
+  std::vector<std::shared_ptr<Core::UTILS::ResultTest>> allresulttests(0);
 
   // particle result test
   {
@@ -367,8 +367,8 @@ PARTICLEALGORITHM::ParticleAlgorithm::CreateResultTests()
   if (particlerigidbody_)
   {
     // create and init rigid body result test
-    std::shared_ptr<PARTICLERIGIDBODY::RigidBodyResultTest> rigidbodyresulttest =
-        std::make_shared<PARTICLERIGIDBODY::RigidBodyResultTest>();
+    std::shared_ptr<ParticleRigidBody::RigidBodyResultTest> rigidbodyresulttest =
+        std::make_shared<ParticleRigidBody::RigidBodyResultTest>();
     rigidbodyresulttest->Init();
 
     // setup rigid body result test
@@ -390,24 +390,24 @@ void PARTICLEALGORITHM::ParticleAlgorithm::init_particle_engine()
 void PARTICLEALGORITHM::ParticleAlgorithm::init_particle_wall()
 {
   // get type of particle wall source
-  INPAR::PARTICLE::ParticleWallSource particlewallsource =
-      CORE::UTILS::IntegralValue<INPAR::PARTICLE::ParticleWallSource>(
+  Inpar::PARTICLE::ParticleWallSource particlewallsource =
+      Core::UTILS::IntegralValue<Inpar::PARTICLE::ParticleWallSource>(
           params_, "PARTICLE_WALL_SOURCE");
 
   // create particle wall handler
   switch (particlewallsource)
   {
-    case INPAR::PARTICLE::NoParticleWall:
+    case Inpar::PARTICLE::NoParticleWall:
     {
       particlewall_ = std::shared_ptr<PARTICLEWALL::WallHandlerBase>(nullptr);
       break;
     }
-    case INPAR::PARTICLE::DiscretCondition:
+    case Inpar::PARTICLE::DiscretCondition:
     {
       particlewall_ = std::make_shared<PARTICLEWALL::WallHandlerDiscretCondition>(Comm(), params_);
       break;
     }
-    case INPAR::PARTICLE::BoundingBox:
+    case Inpar::PARTICLE::BoundingBox:
     {
       particlewall_ = std::make_shared<PARTICLEWALL::WallHandlerBoundingBox>(Comm(), params_);
       break;
@@ -426,8 +426,8 @@ void PARTICLEALGORITHM::ParticleAlgorithm::init_particle_wall()
 void PARTICLEALGORITHM::ParticleAlgorithm::init_particle_rigid_body()
 {
   // create rigid body handler
-  if (CORE::UTILS::IntegralValue<int>(params_, "RIGID_BODY_MOTION"))
-    particlerigidbody_ = std::make_shared<PARTICLERIGIDBODY::RigidBodyHandler>(Comm(), params_);
+  if (Core::UTILS::IntegralValue<int>(params_, "RIGID_BODY_MOTION"))
+    particlerigidbody_ = std::make_shared<ParticleRigidBody::RigidBodyHandler>(Comm(), params_);
 
   // init rigid body handler
   if (particlerigidbody_) particlerigidbody_->Init();
@@ -436,19 +436,19 @@ void PARTICLEALGORITHM::ParticleAlgorithm::init_particle_rigid_body()
 void PARTICLEALGORITHM::ParticleAlgorithm::init_particle_time_integration()
 {
   // get particle time integration scheme
-  INPAR::PARTICLE::DynamicType timinttype =
-      CORE::UTILS::IntegralValue<INPAR::PARTICLE::DynamicType>(params_, "DYNAMICTYP");
+  Inpar::PARTICLE::DynamicType timinttype =
+      Core::UTILS::IntegralValue<Inpar::PARTICLE::DynamicType>(params_, "DYNAMICTYP");
 
   // create particle time integration
   switch (timinttype)
   {
-    case INPAR::PARTICLE::dyna_semiimpliciteuler:
+    case Inpar::PARTICLE::dyna_semiimpliciteuler:
     {
       particletimint_ = std::unique_ptr<PARTICLEALGORITHM::TimIntSemiImplicitEuler>(
           new PARTICLEALGORITHM::TimIntSemiImplicitEuler(params_));
       break;
     }
-    case INPAR::PARTICLE::dyna_velocityverlet:
+    case Inpar::PARTICLE::dyna_velocityverlet:
     {
       particletimint_ = std::unique_ptr<PARTICLEALGORITHM::TimIntVelocityVerlet>(
           new PARTICLEALGORITHM::TimIntVelocityVerlet(params_));
@@ -468,27 +468,27 @@ void PARTICLEALGORITHM::ParticleAlgorithm::init_particle_time_integration()
 void PARTICLEALGORITHM::ParticleAlgorithm::init_particle_interaction()
 {
   // get particle interaction type
-  INPAR::PARTICLE::InteractionType interactiontype =
-      CORE::UTILS::IntegralValue<INPAR::PARTICLE::InteractionType>(params_, "INTERACTION");
+  Inpar::PARTICLE::InteractionType interactiontype =
+      Core::UTILS::IntegralValue<Inpar::PARTICLE::InteractionType>(params_, "INTERACTION");
 
   // create particle interaction handler
   switch (interactiontype)
   {
-    case INPAR::PARTICLE::interaction_none:
+    case Inpar::PARTICLE::interaction_none:
     {
-      particleinteraction_ = std::unique_ptr<PARTICLEINTERACTION::ParticleInteractionBase>(nullptr);
+      particleinteraction_ = std::unique_ptr<ParticleInteraction::ParticleInteractionBase>(nullptr);
       break;
     }
-    case INPAR::PARTICLE::interaction_sph:
+    case Inpar::PARTICLE::interaction_sph:
     {
-      particleinteraction_ = std::unique_ptr<PARTICLEINTERACTION::ParticleInteractionSPH>(
-          new PARTICLEINTERACTION::ParticleInteractionSPH(Comm(), params_));
+      particleinteraction_ = std::unique_ptr<ParticleInteraction::ParticleInteractionSPH>(
+          new ParticleInteraction::ParticleInteractionSPH(Comm(), params_));
       break;
     }
-    case INPAR::PARTICLE::interaction_dem:
+    case Inpar::PARTICLE::interaction_dem:
     {
-      particleinteraction_ = std::unique_ptr<PARTICLEINTERACTION::ParticleInteractionDEM>(
-          new PARTICLEINTERACTION::ParticleInteractionDEM(Comm(), params_));
+      particleinteraction_ = std::unique_ptr<ParticleInteraction::ParticleInteractionDEM>(
+          new ParticleInteraction::ParticleInteractionDEM(Comm(), params_));
       break;
     }
     default:
@@ -832,7 +832,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::transfer_load_between_procs()
 
   // short screen output
   if (myrank_ == 0)
-    CORE::IO::cout(CORE::IO::verbose) << "transfer load in step " << Step() << CORE::IO::endl;
+    Core::IO::cout(Core::IO::verbose) << "transfer load in step " << Step() << Core::IO::endl;
 }
 
 bool PARTICLEALGORITHM::ParticleAlgorithm::check_load_redistribution_needed()
@@ -890,7 +890,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::distribute_load_among_procs()
 
   // short screen output
   if (myrank_ == 0)
-    CORE::IO::cout(CORE::IO::verbose) << "distribute load in step " << Step() << CORE::IO::endl;
+    Core::IO::cout(Core::IO::verbose) << "distribute load in step " << Step() << Core::IO::endl;
 }
 
 void PARTICLEALGORITHM::ParticleAlgorithm::build_potential_neighbor_relation()

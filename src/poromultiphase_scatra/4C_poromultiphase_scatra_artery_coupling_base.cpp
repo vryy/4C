@@ -20,15 +20,15 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase::PoroMultiPhaseScaTraArtCouplBase(
-    Teuchos::RCP<DRT::Discretization> arterydis, Teuchos::RCP<DRT::Discretization> contdis,
+PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplBase::PoroMultiPhaseScaTraArtCouplBase(
+    Teuchos::RCP<Discret::Discretization> arterydis, Teuchos::RCP<Discret::Discretization> contdis,
     const Teuchos::ParameterList& couplingparams, const std::string& condname,
     const std::string& artcoupleddofname, const std::string& contcoupleddofname)
     : arterydis_(arterydis),
       contdis_(contdis),
       myrank_(arterydis->Comm().MyPID()),
-      evaluate_in_ref_config_(CORE::UTILS::IntegralValue<int>(
-          GLOBAL::Problem::Instance()->poro_fluid_multi_phase_dynamic_params().sublist(
+      evaluate_in_ref_config_(Core::UTILS::IntegralValue<int>(
+          Global::Problem::Instance()->poro_fluid_multi_phase_dynamic_params().sublist(
               "ARTERY COUPLING"),
           "EVALUATE_IN_REF_CONFIG")),
       comm_(arterydis->Comm())
@@ -83,8 +83,8 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase::PoroMultiPhaseScaTraArtC
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase::recompute_coupled_do_fs_for_ntp(
-    std::vector<CORE::Conditions::Condition*> coupcond, unsigned int couplingnode)
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplBase::recompute_coupled_do_fs_for_ntp(
+    std::vector<Core::Conditions::Condition*> coupcond, unsigned int couplingnode)
 {
   coupleddofs_art_ =
       (coupcond[couplingnode]->parameters().Get<std::vector<int>>("COUPLEDDOF_REDUCED"));
@@ -100,22 +100,22 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase::recompute_coupled_d
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 const Teuchos::RCP<const Epetra_Map>&
-POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase::FullMap() const
+PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplBase::FullMap() const
 {
   return globalex_->FullMap();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Teuchos::RCP<CORE::LINALG::MultiMapExtractor>&
-POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase::GlobalExtractor() const
+const Teuchos::RCP<Core::LinAlg::MultiMapExtractor>&
+PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplBase::GlobalExtractor() const
 {
   return globalex_;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase::SetSolutionVectors(
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplBase::SetSolutionVectors(
     Teuchos::RCP<const Epetra_Vector> phinp_cont, Teuchos::RCP<const Epetra_Vector> phin_cont,
     Teuchos::RCP<const Epetra_Vector> phinp_art)
 {
@@ -124,7 +124,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase::SetSolutionVectors(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase::SetNearbyElePairs(
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplBase::SetNearbyElePairs(
     const std::map<int, std::set<int>>* nearbyelepairs)
 {
   // do nothing

@@ -40,8 +40,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-ADAPTER::AleBaseAlgorithm::AleBaseAlgorithm(
-    const Teuchos::ParameterList& prbdyn, Teuchos::RCP<DRT::Discretization> actdis)
+Adapter::AleBaseAlgorithm::AleBaseAlgorithm(
+    const Teuchos::ParameterList& prbdyn, Teuchos::RCP<Discret::Discretization> actdis)
 {
   setup_ale(prbdyn, actdis);
 }
@@ -49,15 +49,15 @@ ADAPTER::AleBaseAlgorithm::AleBaseAlgorithm(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ADAPTER::AleBaseAlgorithm::setup_ale(
-    const Teuchos::ParameterList& prbdyn, Teuchos::RCP<DRT::Discretization> actdis)
+void Adapter::AleBaseAlgorithm::setup_ale(
+    const Teuchos::ParameterList& prbdyn, Teuchos::RCP<Discret::Discretization> actdis)
 {
   Teuchos::RCP<Teuchos::Time> t =
       Teuchos::TimeMonitor::getNewTimer("ALE::AleBaseAlgorithm::setup_ale");
   Teuchos::TimeMonitor monitor(*t);
 
   // what's the current problem type?
-  const CORE::ProblemType probtype = GLOBAL::Problem::Instance()->GetProblemType();
+  const Core::ProblemType probtype = Global::Problem::Instance()->GetProblemType();
 
   // ---------------------------------------------------------------------------
   // set degrees of freedom in the discretization
@@ -67,13 +67,13 @@ void ADAPTER::AleBaseAlgorithm::setup_ale(
   // ---------------------------------------------------------------------------
   // connect degrees of freedom for coupled nodes
   // ---------------------------------------------------------------------------
-  CORE::Conditions::PeriodicBoundaryConditions pbc(actdis);
+  Core::Conditions::PeriodicBoundaryConditions pbc(actdis);
   pbc.update_dofs_for_periodic_boundary_conditions();
 
   // ---------------------------------------------------------------------------
   // context for output and restart
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<CORE::IO::DiscretizationWriter> output = actdis->Writer();
+  Teuchos::RCP<Core::IO::DiscretizationWriter> output = actdis->Writer();
 
   // Output for these problems are not necessary because we write
   // restart data at each time step for visualization
@@ -83,7 +83,7 @@ void ADAPTER::AleBaseAlgorithm::setup_ale(
   // set some pointers and variables
   // ---------------------------------------------------------------------------
   Teuchos::RCP<Teuchos::ParameterList> adyn =
-      Teuchos::rcp(new Teuchos::ParameterList(GLOBAL::Problem::Instance()->AleDynamicParams()));
+      Teuchos::rcp(new Teuchos::ParameterList(Global::Problem::Instance()->AleDynamicParams()));
 
   // ---------------------------------------------------------------------------
   // create a linear solver
@@ -95,8 +95,8 @@ void ADAPTER::AleBaseAlgorithm::setup_ale(
         "No linear solver defined for ALE problems. Please set "
         "LINEAR_SOLVER in ALE DYNAMIC to a valid number!");
 
-  Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(new CORE::LINALG::Solver(
-      GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm()));
+  Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::rcp(new Core::LinAlg::Solver(
+      Global::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm()));
   actdis->compute_null_space_if_necessary(solver->Params());
 
   // ---------------------------------------------------------------------------
@@ -108,11 +108,11 @@ void ADAPTER::AleBaseAlgorithm::setup_ale(
   adyn->set<int>("RESTARTEVRY", prbdyn.get<int>("RESTARTEVRY"));
   adyn->set<int>("RESULTSEVRY", prbdyn.get<int>("RESULTSEVRY"));
 
-  if (probtype == CORE::ProblemType::fpsi)
+  if (probtype == Core::ProblemType::fpsi)
   {
     // FPSI input parameters
-    const Teuchos::ParameterList& fpsidyn = GLOBAL::Problem::Instance()->FPSIDynamicParams();
-    int coupling = CORE::UTILS::IntegralValue<int>(fpsidyn, "COUPALGO");
+    const Teuchos::ParameterList& fpsidyn = Global::Problem::Instance()->FPSIDynamicParams();
+    int coupling = Core::UTILS::IntegralValue<int>(fpsidyn, "COUPALGO");
     if (coupling == partitioned)
     {
       FOUR_C_THROW("partitioned fpsi solution scheme has not been implemented yet.");
@@ -121,24 +121,24 @@ void ADAPTER::AleBaseAlgorithm::setup_ale(
 
 
   // create the ALE time integrator
-  INPAR::ALE::AleDynamic aletype =
-      CORE::UTILS::IntegralValue<INPAR::ALE::AleDynamic>(*adyn, "ALE_TYPE");
+  Inpar::ALE::AleDynamic aletype =
+      Core::UTILS::IntegralValue<Inpar::ALE::AleDynamic>(*adyn, "ALE_TYPE");
   Teuchos::RCP<ALE::Ale> ale = Teuchos::null;
   switch (aletype)
   {
     // catch all nonlinear cases
-    case INPAR::ALE::solid:
-    case INPAR::ALE::laplace_spatial:
-    case INPAR::ALE::springs_spatial:
+    case Inpar::ALE::solid:
+    case Inpar::ALE::laplace_spatial:
+    case Inpar::ALE::springs_spatial:
     {
       ale = Teuchos::rcp(new ALE::Ale(actdis, solver, adyn, output));
 
       break;
     }
     // catch and linear cases
-    case INPAR::ALE::solid_linear:
-    case INPAR::ALE::laplace_material:
-    case INPAR::ALE::springs_material:
+    case Inpar::ALE::solid_linear:
+    case Inpar::ALE::laplace_material:
+    case Inpar::ALE::springs_material:
     {
       ale = Teuchos::rcp(new ALE::AleLinear(actdis, solver, adyn, output));
 
@@ -156,19 +156,19 @@ void ADAPTER::AleBaseAlgorithm::setup_ale(
    * problem-specific wrapper */
   switch (probtype)
   {
-    case CORE::ProblemType::ale:
+    case Core::ProblemType::ale:
     {
       ale_ = ale;
       break;
     }
-    case CORE::ProblemType::fsi:
-    case CORE::ProblemType::gas_fsi:
-    case CORE::ProblemType::thermo_fsi:
-    case CORE::ProblemType::ac_fsi:
-    case CORE::ProblemType::biofilm_fsi:
+    case Core::ProblemType::fsi:
+    case Core::ProblemType::gas_fsi:
+    case Core::ProblemType::thermo_fsi:
+    case Core::ProblemType::ac_fsi:
+    case Core::ProblemType::biofilm_fsi:
     {
-      const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
-      int coupling = CORE::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
+      const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
+      int coupling = Core::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
       if (coupling == fsi_iter_monolithicfluidsplit or
           coupling == fsi_iter_monolithicstructuresplit or
           coupling == fsi_iter_constr_monolithicfluidsplit or
@@ -179,19 +179,19 @@ void ADAPTER::AleBaseAlgorithm::setup_ale(
           coupling == fsi_iter_mortar_monolithicfluidsplit or
           coupling == fsi_iter_mortar_monolithicfluidsplit_saddlepoint)
       {
-        ale_ = Teuchos::rcp(new ADAPTER::AleFsiWrapper(ale));
+        ale_ = Teuchos::rcp(new Adapter::AleFsiWrapper(ale));
       }
       else if (coupling == fsi_iter_sliding_monolithicfluidsplit or
                coupling == fsi_iter_sliding_monolithicstructuresplit)
       {
-        ale_ = Teuchos::rcp(new ADAPTER::AleFsiMshtWrapper(ale));
+        ale_ = Teuchos::rcp(new Adapter::AleFsiMshtWrapper(ale));
       }
       else if (coupling == fsi_iter_fluidfluid_monolithicstructuresplit or
                coupling == fsi_iter_fluidfluid_monolithicfluidsplit or
                coupling == fsi_iter_fluidfluid_monolithicstructuresplit_nonox or
                coupling == fsi_iter_fluidfluid_monolithicfluidsplit_nonox)
       {
-        ale_ = Teuchos::rcp(new ADAPTER::AleXFFsiWrapper(ale));
+        ale_ = Teuchos::rcp(new Adapter::AleXFFsiWrapper(ale));
       }
       else if (coupling == fsi_iter_stagg_AITKEN_rel_force or
                coupling == fsi_iter_stagg_AITKEN_rel_param or
@@ -202,7 +202,7 @@ void ADAPTER::AleBaseAlgorithm::setup_ale(
                coupling == fsi_iter_stagg_fixed_rel_param or
                coupling == fsi_iter_stagg_steep_desc or coupling == fsi_iter_stagg_steep_desc_force)
       {
-        ale_ = Teuchos::rcp(new ADAPTER::AleFluidWrapper(ale));
+        ale_ = Teuchos::rcp(new Adapter::AleFluidWrapper(ale));
       }
       else
       {
@@ -212,14 +212,14 @@ void ADAPTER::AleBaseAlgorithm::setup_ale(
       }
       break;
     }
-    case CORE::ProblemType::fsi_lung:
+    case Core::ProblemType::fsi_lung:
     {
-      const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
-      int coupling = CORE::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
+      const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
+      int coupling = Core::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
       if (coupling == fsi_iter_lung_monolithicfluidsplit or
           coupling == fsi_iter_lung_monolithicstructuresplit)
       {
-        ale_ = Teuchos::rcp(new ADAPTER::AleFsiWrapper(ale));
+        ale_ = Teuchos::rcp(new Adapter::AleFsiWrapper(ale));
       }
       else
       {
@@ -229,10 +229,10 @@ void ADAPTER::AleBaseAlgorithm::setup_ale(
       }
       break;
     }
-    case CORE::ProblemType::fsi_redmodels:
+    case Core::ProblemType::fsi_redmodels:
     {
-      const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
-      int coupling = CORE::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
+      const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
+      int coupling = Core::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
       if (coupling == fsi_iter_monolithicfluidsplit or
           coupling == fsi_iter_monolithicstructuresplit or
           coupling == fsi_iter_constr_monolithicfluidsplit or
@@ -242,7 +242,7 @@ void ADAPTER::AleBaseAlgorithm::setup_ale(
           coupling == fsi_iter_sliding_monolithicfluidsplit or
           coupling == fsi_iter_sliding_monolithicstructuresplit)
       {
-        ale_ = Teuchos::rcp(new ADAPTER::AleFsiWrapper(ale));
+        ale_ = Teuchos::rcp(new Adapter::AleFsiWrapper(ale));
       }
       else if (coupling == fsi_iter_stagg_AITKEN_rel_force or
                coupling == fsi_iter_stagg_AITKEN_rel_param or
@@ -253,7 +253,7 @@ void ADAPTER::AleBaseAlgorithm::setup_ale(
                coupling == fsi_iter_stagg_fixed_rel_param or
                coupling == fsi_iter_stagg_steep_desc or coupling == fsi_iter_stagg_steep_desc_force)
       {
-        ale_ = Teuchos::rcp(new ADAPTER::AleFluidWrapper(ale));
+        ale_ = Teuchos::rcp(new Adapter::AleFluidWrapper(ale));
       }
       else
       {
@@ -263,25 +263,25 @@ void ADAPTER::AleBaseAlgorithm::setup_ale(
       }
       break;
     }
-    case CORE::ProblemType::fpsi:
-    case CORE::ProblemType::fps3i:
-    case CORE::ProblemType::fsi_xfem:
-    case CORE::ProblemType::fpsi_xfem:
+    case Core::ProblemType::fpsi:
+    case Core::ProblemType::fps3i:
+    case Core::ProblemType::fsi_xfem:
+    case Core::ProblemType::fpsi_xfem:
     {
-      ale_ = Teuchos::rcp(new ADAPTER::AleFpsiWrapper(ale));
+      ale_ = Teuchos::rcp(new Adapter::AleFpsiWrapper(ale));
       break;
     }
-    case CORE::ProblemType::struct_ale:
+    case Core::ProblemType::struct_ale:
     {
-      ale_ = Teuchos::rcp(new ADAPTER::AleWearWrapper(ale));
+      ale_ = Teuchos::rcp(new Adapter::AleWearWrapper(ale));
       break;
     }
-    case CORE::ProblemType::freesurf:
-    case CORE::ProblemType::fluid_ale:
-    case CORE::ProblemType::elch:
-    case CORE::ProblemType::fluid_xfem:
+    case Core::ProblemType::freesurf:
+    case Core::ProblemType::fluid_ale:
+    case Core::ProblemType::elch:
+    case Core::ProblemType::fluid_xfem:
     {
-      ale_ = Teuchos::rcp(new ADAPTER::AleFluidWrapper(ale));
+      ale_ = Teuchos::rcp(new Adapter::AleFluidWrapper(ale));
       break;
     }
     default:

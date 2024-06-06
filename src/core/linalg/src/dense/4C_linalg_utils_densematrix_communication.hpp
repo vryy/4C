@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief A collection of communication methods for namespace CORE::LINALG
+\brief A collection of communication methods for namespace Core::LinAlg
 
 \level 0
 */
@@ -25,7 +25,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   /*!
    \brief Gather information of type vector<T> on a subset of processors
@@ -85,7 +85,7 @@ namespace CORE::LINALG
     const int tnummyelements = (int)targetvec.size();
     Epetra_Map target(-1, tnummyelements, targetvec.data(), 0, comm);
     // build an exporter and export data
-    CORE::COMM::Exporter exporter(source, target, comm);
+    Core::Communication::Exporter exporter(source, target, comm);
     exporter.Export(datamap);
     // put data from map in rdata
     rdata.clear();
@@ -160,7 +160,7 @@ namespace CORE::LINALG
     const int tnummyelements = (int)targetvec.size();
     Epetra_Map target(-1, tnummyelements, targetvec.data(), 0, comm);
     // build an exporter and export data
-    CORE::COMM::Exporter exporter(source, target, comm);
+    Core::Communication::Exporter exporter(source, target, comm);
     exporter.Export(datamap);
     // put data from map in rdata
     rdata.clear();
@@ -235,7 +235,7 @@ namespace CORE::LINALG
     const int tnummyelements = (int)targetvec.size();
     Epetra_Map target(-1, tnummyelements, targetvec.data(), 0, comm);
     // build an exporter and export data
-    CORE::COMM::Exporter exporter(source, target, comm);
+    Core::Communication::Exporter exporter(source, target, comm);
     exporter.Export(datamap);
     // put data from map in rdata
     rdata.clear();
@@ -310,7 +310,7 @@ namespace CORE::LINALG
     const int tnummyelements = (int)targetvec.size();
     Epetra_Map target(-1, tnummyelements, targetvec.data(), 0, comm);
     // build an exporter and export data
-    CORE::COMM::Exporter exporter(source, target, comm);
+    Core::Communication::Exporter exporter(source, target, comm);
     exporter.Export(datamap);
     // put data from map in rdata
     rdata.clear();
@@ -388,7 +388,7 @@ namespace CORE::LINALG
     const int tnummyelements = (int)targetvec.size();
     Epetra_Map target(-1, tnummyelements, targetvec.data(), 0, comm);
     // build an exporter and export data
-    CORE::COMM::Exporter exporter(source, target, comm);
+    Core::Communication::Exporter exporter(source, target, comm);
     exporter.Export(datamap);
     // put data from map in rdata
     rdata.clear();
@@ -687,7 +687,7 @@ namespace CORE::LINALG
     const typename pair_type::first_type& operator()(const pair_type& v) const { return v.first; }
   };
 
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
@@ -28,25 +28,25 @@ namespace DRT
       /*!
       \brief Decide which element type should be created : FLUIDIMMERSED or FLUIDPOROIMMERSED
       */
-      CORE::COMM::ParObject* Create(const std::vector<char>& data) override = 0;
+      Core::Communication::ParObject* Create(const std::vector<char>& data) override = 0;
 
       /*!
       \brief Decide which element type should be created : FLUIDIMMERSED or FLUIDPOROIMMERSED
 
       */
-      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
       /*!
       \brief Decide which element type should be created : FLUIDIMMERSED or FLUIDPOROIMMERSED
       */
-      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override = 0;
+      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override = 0;
 
       /*!
       \brief Setup the definition line for this element
       */
       void setup_element_definition(
-          std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+          std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
           override = 0;
 
 
@@ -81,7 +81,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      CORE::Elements::Element* Clone() const override
+      Core::Elements::Element* Clone() const override
       {
         FOUR_C_THROW("not implemented in base class");
         return nullptr;
@@ -253,7 +253,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(CORE::COMM::PackBuffer& data) const override
+      void Pack(Core::Communication::PackBuffer& data) const override
       {
         FOUR_C_THROW("not implemented in base class");
       };
@@ -272,7 +272,7 @@ namespace DRT
 
     };  // class FluidImmersedBase
   }     // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

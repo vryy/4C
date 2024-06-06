@@ -19,9 +19,9 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::GEO
+namespace Core::Geo
 {
-  namespace CUT
+  namespace Cut
   {
     /*--------------------------------------------------------------------------*/
     class SimpleFacetGraph1D : public FacetGraph
@@ -50,8 +50,8 @@ namespace CORE::GEO
       void CreateVolumeCells(Mesh& mesh, Element* element, plain_volumecell_set& cells) override;
 
     };  // class  SimpleFacetGraph_2D
-  }     // namespace CUT
-}  // namespace CORE::GEO
+  }     // namespace Cut
+}  // namespace Core::Geo
 
 
 FOUR_C_NAMESPACE_CLOSE

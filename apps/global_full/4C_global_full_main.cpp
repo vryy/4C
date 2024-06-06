@@ -219,9 +219,9 @@ int main(int argc, char *argv[])
 
   using namespace FourC;
 
-  Teuchos::RCP<CORE::COMM::Communicators> communicators =
-      CORE::COMM::CreateComm(std::vector<std::string>(argv, argv + argc));
-  GLOBAL::Problem::Instance()->SetCommunicators(communicators);
+  Teuchos::RCP<Core::Communication::Communicators> communicators =
+      Core::Communication::CreateComm(std::vector<std::string>(argv, argv + argc));
+  Global::Problem::Instance()->SetCommunicators(communicators);
   Teuchos::RCP<Epetra_Comm> lcomm = communicators->LocalComm();
   Teuchos::RCP<Epetra_Comm> gcomm = communicators->GlobalComm();
   int ngroups = communicators->NumGroups();
@@ -295,14 +295,14 @@ int main(int argc, char *argv[])
       PrintMaterialDatHeader();
       PrintContactConstitutiveLawDatHeader();
 
-      const auto lines = CORE::FE::valid_cloning_material_map_lines();
-      CORE::IO::DatFileUtils::print_section(std::cout, "CLONING MATERIAL MAP", lines);
+      const auto lines = Core::FE::valid_cloning_material_map_lines();
+      Core::IO::DatFileUtils::print_section(std::cout, "CLONING MATERIAL MAP", lines);
 
       PrintElementDatHeader();
 
-      const std::vector<INPUT::LineDefinition> result_lines =
+      const std::vector<Input::LineDefinition> result_lines =
           GlobalLegacyModuleCallbacks().valid_result_description_lines();
-      CORE::IO::DatFileUtils::print_section(std::cout, "RESULT DESCRIPTION", result_lines);
+      Core::IO::DatFileUtils::print_section(std::cout, "RESULT DESCRIPTION", result_lines);
 
       printf("\n\n");
     }
@@ -341,7 +341,7 @@ int main(int argc, char *argv[])
     {
       ntam(argc, argv);
     }
-    catch (CORE::Exception &err)
+    catch (Core::Exception &err)
     {
       char line[] = "=========================================================================\n";
       std::cout << "\n\n"
@@ -356,7 +356,7 @@ int main(int argc, char *argv[])
         gcomm->Barrier();
       }
 
-      GLOBAL::Problem::Done();
+      Global::Problem::Done();
 
       MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
     }
@@ -379,7 +379,7 @@ int main(int argc, char *argv[])
     printf("processor %d finished normally\n", lcomm->MyPID());
   }
 
-  GLOBAL::Problem::Done();
+  Global::Problem::Done();
 
   MPI_Finalize();
 

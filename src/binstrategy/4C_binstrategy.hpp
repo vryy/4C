@@ -32,28 +32,28 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
 
-namespace CORE::Nodes
+namespace Core::Nodes
 {
   class Node;
 }
 
-namespace CORE::GEO
+namespace Core::Geo
 {
-  namespace MESHFREE
+  namespace MeshFree
   {
     class BoundingBox;
   }
-}  // namespace CORE::GEO
+}  // namespace Core::Geo
 
 /*----------------------------------------------------------------------*
  | binning strategy                                         ghamm 11/13 |
@@ -119,8 +119,8 @@ namespace BINSTRATEGY
      * \param[in] disnp vector of column displacement states (belonging to input discrets) so that
      * current positions of elements and nodes can be considered for build up of binning domain
      */
-    void Init(std::vector<Teuchos::RCP<DRT::Discretization>> const discret =
-                  std::vector<Teuchos::RCP<DRT::Discretization>>(),
+    void Init(std::vector<Teuchos::RCP<Discret::Discretization>> const discret =
+                  std::vector<Teuchos::RCP<Discret::Discretization>>(),
         std::vector<Teuchos::RCP<const Epetra_Vector>> disnp =
             std::vector<Teuchos::RCP<const Epetra_Vector>>());
 
@@ -140,14 +140,14 @@ namespace BINSTRATEGY
      *
      * \return const pointer to binning discretization
      */
-    inline Teuchos::RCP<DRT::Discretization> const& BinDiscret() const { return bindis_; }
+    inline Teuchos::RCP<Discret::Discretization> const& BinDiscret() const { return bindis_; }
 
     /*!
      * \brief get const list of pointer to boundary row bins
      *
      * \return reference to const list of pointer to boundary row bins
      */
-    inline std::list<CORE::Elements::Element*> const& BoundaryRowBins() const
+    inline std::list<Core::Elements::Element*> const& BoundaryRowBins() const
     {
       return boundaryrowbins_;
     }
@@ -217,7 +217,7 @@ namespace BINSTRATEGY
      *
      * \return const bounding box dimension of binning domain
      */
-    inline CORE::LINALG::Matrix<3, 2> const& domain_bounding_box_corner_positions() const
+    inline Core::LinAlg::Matrix<3, 2> const& domain_bounding_box_corner_positions() const
     {
       return domain_bounding_box_corner_positions_;
     }
@@ -250,7 +250,7 @@ namespace BINSTRATEGY
      * \param[in] domain_bounding_box_corner_positions dimension for binning domain
      */
     inline void set_domain_bounding_box_corner_positions(
-        CORE::LINALG::Matrix<3, 2> const& domain_bounding_box_corner_positions)
+        Core::LinAlg::Matrix<3, 2> const& domain_bounding_box_corner_positions)
     {
       domain_bounding_box_corner_positions_ = domain_bounding_box_corner_positions;
     }
@@ -261,7 +261,7 @@ namespace BINSTRATEGY
      * \param[in] pbb dimension for binning domain
      */
     inline void set_deforming_binning_domain_handler(
-        Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> const pbb)
+        Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> const pbb)
     {
       deforming_simulation_domain_handler_ = pbb;
     };
@@ -337,7 +337,7 @@ namespace BINSTRATEGY
      * \param[in] pos  position to be converted into ijk
      * \param[out] ijk resulting ijk
      */
-    void ConvertPosToijk(const CORE::LINALG::Matrix<3, 1>& pos, int* ijk) const;
+    void ConvertPosToijk(const Core::LinAlg::Matrix<3, 1>& pos, int* ijk) const;
 
     /*!
      * \brief convert position to bin id
@@ -346,7 +346,7 @@ namespace BINSTRATEGY
      *
      * \return position of which the corresponding bin id is asked for
      */
-    int ConvertPosToGid(const CORE::LINALG::Matrix<3, 1>& pos) const;
+    int ConvertPosToGid(const Core::LinAlg::Matrix<3, 1>& pos) const;
 
     /*!
      * \brief get 26 neighboring bin ids (one bin layer) to binID (if existing)
@@ -370,7 +370,7 @@ namespace BINSTRATEGY
      * \param[in] binId bin id of which corners are calculated
      * \param[out] bincorners position of corners of given bin
      */
-    void GetBinCorners(const int binId, std::vector<CORE::LINALG::Matrix<3, 1>>& bincorners) const;
+    void GetBinCorners(const int binId, std::vector<Core::LinAlg::Matrix<3, 1>>& bincorners) const;
 
     /*!
      * \brief get all bin centers (needed for repartitioning)
@@ -388,7 +388,7 @@ namespace BINSTRATEGY
      *
      * \return centroid of requested bin
      */
-    CORE::LINALG::Matrix<3, 1> GetBinCentroid(const int binId) const;
+    Core::LinAlg::Matrix<3, 1> GetBinCentroid(const int binId) const;
 
     /*!
      * \brief get minimal size of bins
@@ -489,7 +489,7 @@ namespace BINSTRATEGY
      * \param[out] ijk_range ijk range for rigid sphere element
      */
     void build_axis_alignedijk_range_for_rigid_sphere(
-        CORE::Elements::Element const* const sphereele, double currpos[3], int ijk[3],
+        Core::Elements::Element const* const sphereele, double currpos[3], int ijk[3],
         int ijk_range[6]) const;
 
     /// fixme: the following function needs to be replaced by
@@ -501,7 +501,7 @@ namespace BINSTRATEGY
      * \param[out] binelemap map of bins and assigned elements
      * \param[in] isslave decide whether slave or master side is processed
      */
-    void distribute_eles_to_bins(const DRT::Discretization& mortardis,
+    void distribute_eles_to_bins(const Discret::Discretization& mortardis,
         std::map<int, std::set<int>>& binelemap, bool isslave) const;
 
     /*!
@@ -512,7 +512,7 @@ namespace BINSTRATEGY
      * \param[in] disnp current col displacement state
      */
     void distribute_row_elements_to_bins_using_ele_aabb(
-        Teuchos::RCP<DRT::Discretization> const& discret,
+        Teuchos::RCP<Discret::Discretization> const& discret,
         std::map<int, std::set<int>>& bintorowelemap,
         Teuchos::RCP<const Epetra_Vector> disnp = Teuchos::null) const;
 
@@ -524,7 +524,7 @@ namespace BINSTRATEGY
      * \param[in] disnp current col displacement state
      */
     void distribute_col_elements_to_bins_using_ele_aabb(
-        Teuchos::RCP<DRT::Discretization> const& discret,
+        Teuchos::RCP<Discret::Discretization> const& discret,
         std::map<int, std::set<int>>& bintocolelemap,
         Teuchos::RCP<const Epetra_Vector> disnp = Teuchos::null) const;
 
@@ -537,7 +537,7 @@ namespace BINSTRATEGY
      * \param[in] disnp current col displacement state
      */
     void distribute_single_element_to_bins_using_ele_aabb(
-        Teuchos::RCP<DRT::Discretization> const& discret, CORE::Elements::Element* eleptr,
+        Teuchos::RCP<Discret::Discretization> const& discret, Core::Elements::Element* eleptr,
         std::vector<int>& binIds, Teuchos::RCP<const Epetra_Vector> const& disnp) const;
 
     /*!
@@ -547,7 +547,7 @@ namespace BINSTRATEGY
      * \param[in] extended_bin_to_row_ele_map map containing bins [key] and elements[std::set]
      * that belong to it
      */
-    void AssignElesToBins(Teuchos::RCP<DRT::Discretization> discret,
+    void AssignElesToBins(Teuchos::RCP<Discret::Discretization> discret,
         std::map<int, std::set<int>> const& extended_bin_to_row_ele_map) const;
 
     /*!
@@ -558,7 +558,7 @@ namespace BINSTRATEGY
      * \param[in] binIds bins you want to look for your element type
      * \param[in] roweles flag indicating to just consider elements owned by myrank
      */
-    void GetBinContent(std::set<CORE::Elements::Element*>& eles,
+    void GetBinContent(std::set<Core::Elements::Element*>& eles,
         std::vector<BINSTRATEGY::UTILS::BinContentType> bincontent, std::vector<int>& binIds,
         bool roweles = false) const;
 
@@ -582,9 +582,9 @@ namespace BINSTRATEGY
      * \param[in] disnp current column displacement state
      * \param[out] ijk requested ijk
      */
-    void getijk_of_single_node_in_current_position(Teuchos::RCP<DRT::Discretization> const& discret,
-        CORE::Nodes::Node const* const node, Teuchos::RCP<const Epetra_Vector> const& disnp,
-        int ijk[3]) const;
+    void getijk_of_single_node_in_current_position(
+        Teuchos::RCP<Discret::Discretization> const& discret, Core::Nodes::Node const* const node,
+        Teuchos::RCP<const Epetra_Vector> const& disnp, int ijk[3]) const;
 
     /*!
      * \brief assign node to bins
@@ -593,7 +593,7 @@ namespace BINSTRATEGY
      * \param[out] bin_to_rownodes_map bin to row nodes assignment map
      * \param[in] disnp current column displacement state
      */
-    void distribute_row_nodes_to_bins(Teuchos::RCP<DRT::Discretization> discret,
+    void distribute_row_nodes_to_bins(Teuchos::RCP<Discret::Discretization> discret,
         std::map<int, std::vector<int>>& bin_to_rownodes_map,
         Teuchos::RCP<const Epetra_Vector> disnp = Teuchos::null) const;
 
@@ -627,7 +627,7 @@ namespace BINSTRATEGY
      */
     Teuchos::RCP<Epetra_Map>
     do_weighted_partitioning_of_bins_and_extend_ghosting_of_discret_to_one_bin_layer(
-        std::vector<Teuchos::RCP<DRT::Discretization>> discret,
+        std::vector<Teuchos::RCP<Discret::Discretization>> discret,
         std::vector<Teuchos::RCP<Epetra_Map>>& stdelecolmap,
         std::vector<Teuchos::RCP<Epetra_Map>>& stdnodecolmap);
 
@@ -643,7 +643,7 @@ namespace BINSTRATEGY
      * \return new row bin distribution
      */
     Teuchos::RCP<Epetra_Map> weighted_distribution_of_bins_to_procs(
-        std::vector<Teuchos::RCP<DRT::Discretization>>& discret,
+        std::vector<Teuchos::RCP<Discret::Discretization>>& discret,
         std::vector<Teuchos::RCP<const Epetra_Vector>>& disnp,
         std::vector<std::map<int, std::vector<int>>>& row_nodes_to_bin_map, double const& weight,
         bool repartition = false) const;
@@ -694,7 +694,7 @@ namespace BINSTRATEGY
      * \param[out] stdelecolmap standard element column map
      * \param[out] stdnodecolmap standard node column map
      */
-    void standard_discretization_ghosting(Teuchos::RCP<DRT::Discretization>& discret,
+    void standard_discretization_ghosting(Teuchos::RCP<Discret::Discretization>& discret,
         Teuchos::RCP<Epetra_Map> const& rowbins, Teuchos::RCP<Epetra_Vector>& disnp,
         Teuchos::RCP<Epetra_Map>& stdelecolmap, Teuchos::RCP<Epetra_Map>& stdnodecolmap) const;
 
@@ -716,7 +716,7 @@ namespace BINSTRATEGY
      * \param[in] stdelecolmap element column map based on standard ghosting
      * \param[in] stdnodecolmap node column map based on standard ghosting
      */
-    void revert_extended_ghosting(std::vector<Teuchos::RCP<DRT::Discretization>> dis,
+    void revert_extended_ghosting(std::vector<Teuchos::RCP<Discret::Discretization>> dis,
         std::vector<Teuchos::RCP<Epetra_Map>>& stdelecolmap,
         std::vector<Teuchos::RCP<Epetra_Map>>& stdnodecolmap) const;
 
@@ -730,9 +730,9 @@ namespace BINSTRATEGY
      * \param[in] set_bin_size_lower_bound_ flag indicating to set lower bound for bin size
      */
     void compute_min_binning_domain_containing_all_elements_of_multiple_discrets(
-        std::vector<Teuchos::RCP<DRT::Discretization>> discret,
+        std::vector<Teuchos::RCP<Discret::Discretization>> discret,
         std::vector<Teuchos::RCP<const Epetra_Vector>> disnp,
-        CORE::LINALG::Matrix<3, 2>& domain_bounding_box_corner_positions,
+        Core::LinAlg::Matrix<3, 2>& domain_bounding_box_corner_positions,
         bool set_bin_size_lower_bound_);
 
     /*!
@@ -744,7 +744,7 @@ namespace BINSTRATEGY
      * \return lower bound for bin size based on size of elements in discret
      */
     double compute_lower_bound_for_bin_size_as_max_edge_length_of_aabb_of_largest_ele(
-        std::vector<Teuchos::RCP<DRT::Discretization>> discret,
+        std::vector<Teuchos::RCP<Discret::Discretization>> discret,
         std::vector<Teuchos::RCP<const Epetra_Vector>> disnp);
 
     /*!
@@ -753,7 +753,7 @@ namespace BINSTRATEGY
      * \param[in] dis current column displacement state
      */
     void create_bins_based_on_bin_size_lower_bound_and_binning_domain_dimensions(
-        Teuchos::RCP<DRT::Discretization> dis = Teuchos::null);
+        Teuchos::RCP<Discret::Discretization> dis = Teuchos::null);
 
     /*!
      * \brief create binning domain dimensions based on discretization and compute lower bound for
@@ -765,7 +765,7 @@ namespace BINSTRATEGY
      * \param[in] set_bin_size_lower_bound_ flag indicating to set bin size lower bound
      */
     void compute_min_binning_domain_containing_all_elements_of_single_discret(
-        Teuchos::RCP<DRT::Discretization> discret, CORE::LINALG::Matrix<3, 2>& XAABB,
+        Teuchos::RCP<Discret::Discretization> discret, Core::LinAlg::Matrix<3, 2>& XAABB,
         Teuchos::RCP<const Epetra_Vector> disnp = Teuchos::null,
         bool set_bin_size_lower_bound_ = false);
 
@@ -777,7 +777,7 @@ namespace BINSTRATEGY
      * \param[in] disnp current column displacement state
      * \param[in] bintorowelemap bin to row element map
      */
-    void transfer_nodes_and_elements(Teuchos::RCP<DRT::Discretization>& discret,
+    void transfer_nodes_and_elements(Teuchos::RCP<Discret::Discretization>& discret,
         Teuchos::RCP<const Epetra_Vector> disnp, std::map<int, std::set<int>>& bintorowelemap);
 
     //! \}
@@ -786,17 +786,17 @@ namespace BINSTRATEGY
     /*!
      * \brief binning discretization with bins as elements
      */
-    Teuchos::RCP<DRT::Discretization> bindis_;
+    Teuchos::RCP<Discret::Discretization> bindis_;
 
     /*!
      * \brief visualization discretization for bins
      */
-    Teuchos::RCP<DRT::Discretization> visbindis_;
+    Teuchos::RCP<Discret::Discretization> visbindis_;
 
     /*!
      * \brief list of boundary row bins
      */
-    std::list<CORE::Elements::Element*> boundaryrowbins_;
+    std::list<Core::Elements::Element*> boundaryrowbins_;
 
     /*!
      * \brief list of boundary col bins (one full bin layer)
@@ -811,12 +811,12 @@ namespace BINSTRATEGY
     /*!
      * \brief binning domain edges
      */
-    CORE::LINALG::Matrix<3, 2> domain_bounding_box_corner_positions_;
+    Core::LinAlg::Matrix<3, 2> domain_bounding_box_corner_positions_;
 
     /*!
      * \brief if simulation domain is deforming, e.g. under shear, this handler takes care of this
      */
-    Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> deforming_simulation_domain_handler_;
+    Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> deforming_simulation_domain_handler_;
 
     /*!
      * \brief type of bin visualization
@@ -876,7 +876,7 @@ namespace BINSTRATEGY
   };  // namespace BINSTRATEGY
 
   /*!
-   *\brief Class for comparing Teuchos::RCP<CORE::Nodes::Node> in a std::set
+   *\brief Class for comparing Teuchos::RCP<Core::Nodes::Node> in a std::set
    */
   class Less
   {

@@ -22,7 +22,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
@@ -33,7 +33,7 @@ namespace FLD
   {
    public:
     //! constructor: set-up sampling
-    TurbulenceStatisticsHit(Teuchos::RCP<DRT::Discretization> actdis,
+    TurbulenceStatisticsHit(Teuchos::RCP<Discret::Discretization> actdis,
         Teuchos::ParameterList& params, const std::string& statistics_outfilename,
         const bool forced);
 
@@ -41,7 +41,7 @@ namespace FLD
     virtual ~TurbulenceStatisticsHit() = default;
 
     //! store scatra discretization if passive scalar is included
-    virtual void StoreScatraDiscret(Teuchos::RCP<DRT::Discretization> scatradis)
+    virtual void StoreScatraDiscret(Teuchos::RCP<Discret::Discretization> scatradis)
     {
       scatradiscret_ = scatradis;
       return;
@@ -100,10 +100,10 @@ namespace FLD
     }
 
     //! the discretisation (required for nodes, dofs etc;)
-    Teuchos::RCP<DRT::Discretization> discret_;
+    Teuchos::RCP<Discret::Discretization> discret_;
 
     //! the scatra discretisation (required for nodes, dofs etc;)
-    Teuchos::RCP<DRT::Discretization> scatradiscret_;
+    Teuchos::RCP<Discret::Discretization> scatradiscret_;
 
     //! parameter list
     Teuchos::ParameterList& params_;
@@ -164,13 +164,13 @@ namespace FLD
   {
    public:
     //! constructor: set-up sampling
-    TurbulenceStatisticsHitHDG(Teuchos::RCP<DRT::Discretization> actdis,
+    TurbulenceStatisticsHitHDG(Teuchos::RCP<Discret::Discretization> actdis,
         Teuchos::ParameterList& params, const std::string& statistics_outfilename,
         const bool forced);
 
 
     //! store scatra discretization if passive scalar is included
-    void StoreScatraDiscret(Teuchos::RCP<DRT::Discretization> scatradis) override
+    void StoreScatraDiscret(Teuchos::RCP<Discret::Discretization> scatradis) override
     {
       FOUR_C_THROW("not implemented for hdg");
       return;

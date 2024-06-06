@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief Bundle holds all read-in materials of a #GLOBAL::Problem
+\brief Bundle holds all read-in materials of a #Global::Problem
 
 \level 1
 
@@ -21,16 +21,16 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
-void MAT::PAR::Bundle::insert(int matid, CORE::UTILS::LazyPtr<CORE::MAT::PAR::Parameter> mat)
+void Mat::PAR::Bundle::insert(int matid, Core::UTILS::LazyPtr<Core::Mat::PAR::Parameter> mat)
 {
   matmap_.emplace(matid, mat);
 }
 
 /*----------------------------------------------------------------------*/
-bool MAT::PAR::Bundle::id_exists(int id) const { return !(matmap_.find(id) == matmap_.end()); }
+bool Mat::PAR::Bundle::id_exists(int id) const { return !(matmap_.find(id) == matmap_.end()); }
 
 /*----------------------------------------------------------------------*/
-CORE::MAT::PAR::Parameter* MAT::PAR::Bundle::ParameterById(const int num) const
+Core::Mat::PAR::Parameter* Mat::PAR::Bundle::ParameterById(const int num) const
 {
   if (matmap_.size() == 0) FOUR_C_THROW("No materials available, num=%d", num);
 
@@ -41,7 +41,7 @@ CORE::MAT::PAR::Parameter* MAT::PAR::Bundle::ParameterById(const int num) const
 }
 
 /*----------------------------------------------------------------------*/
-int MAT::PAR::Bundle::FirstIdByType(const CORE::Materials::MaterialType type) const
+int Mat::PAR::Bundle::FirstIdByType(const Core::Materials::MaterialType type) const
 {
   if (auto it = std::find_if(matmap_.begin(), matmap_.end(),
           [&type](const auto& m) { return m.second->Type() == type; });

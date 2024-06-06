@@ -31,18 +31,18 @@ FOUR_C_NAMESPACE_OPEN
 
 
 // forward declaration ...
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SerialDenseVector;
   class SerialDenseMatrix;
-}  // namespace CORE::LINALG
-namespace CORE::GEO
+}  // namespace Core::LinAlg
+namespace Core::Geo
 {
-  namespace MESHFREE
+  namespace MeshFree
   {
     class BoundingBox;
   }
-}  // namespace CORE::GEO
+}  // namespace Core::Geo
 namespace STR
 {
   namespace ELEMENTS
@@ -56,19 +56,19 @@ namespace BROWNIANDYN
   class ParamsInterface;
 }
 
-namespace MAT
+namespace Mat
 {
   class BeamMaterial;
   template <typename T>
   class BeamMaterialTemplated;
-}  // namespace MAT
+}  // namespace Mat
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
     //! base class for all beam elements
-    class Beam3Base : public CORE::Elements::Element
+    class Beam3Base : public Core::Elements::Element
     {
      public:
       /*!
@@ -93,7 +93,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(CORE::COMM::PackBuffer& data) const override;
+      void Pack(Core::Communication::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -123,7 +123,7 @@ namespace DRT
        *
        *  \author hiermeier
        *  \date 04/16 */
-      Teuchos::RCP<CORE::Elements::ParamsInterface> ParamsInterfacePtr() override;
+      Teuchos::RCP<Core::Elements::ParamsInterface> ParamsInterfacePtr() override;
       virtual Teuchos::RCP<BROWNIANDYN::ParamsInterface> brownian_dyn_params_interface_ptr() const;
 
       //! computes the number of different random numbers required in each time step for generation
@@ -157,28 +157,28 @@ namespace DRT
        *
        *  \author grill
        *  \date 10/16 */
-      virtual bool IsCenterlineNode(const CORE::Nodes::Node& node) const = 0;
+      virtual bool IsCenterlineNode(const Core::Nodes::Node& node) const = 0;
 
       /** \brief return GIDs of all additive DoFs for a given node
        *
        *  \author grill
        *  \date 07/16 */
       std::vector<int> GetAdditiveDofGIDs(
-          const DRT::Discretization& discret, const CORE::Nodes::Node& node) const;
+          const Discret::Discretization& discret, const Core::Nodes::Node& node) const;
 
       /** \brief return GIDs of all non-additive, i.e. rotation pseudo vector DoFs for a given node
        *
        *  \author grill
        *  \date 07/16 */
       std::vector<int> GetRotVecDofGIDs(
-          const DRT::Discretization& discret, const CORE::Nodes::Node& node) const;
+          const Discret::Discretization& discret, const Core::Nodes::Node& node) const;
 
       /** \brief add indices of those DOFs of a given node that are positions
        *
        *  \author grill
        *  \date 07/16 */
       virtual void PositionDofIndices(
-          std::vector<int>& posdofs, const CORE::Nodes::Node& node) const = 0;
+          std::vector<int>& posdofs, const Core::Nodes::Node& node) const = 0;
 
       /** \brief add indices of those DOFs of a given node that are tangents (in the case of Hermite
        * interpolation)
@@ -186,7 +186,7 @@ namespace DRT
        *  \author grill
        *  \date 07/16 */
       virtual void TangentDofIndices(
-          std::vector<int>& tangdofs, const CORE::Nodes::Node& node) const = 0;
+          std::vector<int>& tangdofs, const Core::Nodes::Node& node) const = 0;
 
       /** \brief add indices of those DOFs of a given node that are rotation DOFs (non-additive
        * rotation vectors)
@@ -194,7 +194,7 @@ namespace DRT
        *  \author grill
        *  \date 07/16 */
       virtual void rotation_vec_dof_indices(
-          std::vector<int>& rotvecdofs, const CORE::Nodes::Node& node) const = 0;
+          std::vector<int>& rotvecdofs, const Core::Nodes::Node& node) const = 0;
 
       /** \brief add indices of those DOFs of a given node that are 1D rotation DOFs
        *         (planar rotations are additive, e.g. in case of relative twist DOF of beam3k with
@@ -203,7 +203,7 @@ namespace DRT
        *  \author grill
        *  \date 07/16 */
       virtual void rotation1_d_dof_indices(
-          std::vector<int>& twistdofs, const CORE::Nodes::Node& node) const = 0;
+          std::vector<int>& twistdofs, const Core::Nodes::Node& node) const = 0;
 
       /** \brief add indices of those DOFs of a given node that represent norm of tangent vector
        *         (additive, e.g. in case of beam3k with rotvec=true)
@@ -211,7 +211,7 @@ namespace DRT
        *  \author grill
        *  \date 07/16 */
       virtual void tangent_length_dof_indices(
-          std::vector<int>& tangnormdofs, const CORE::Nodes::Node& node) const = 0;
+          std::vector<int>& tangnormdofs, const Core::Nodes::Node& node) const = 0;
 
       /** \brief get element local indices of those Dofs that are used for centerline interpolation
        *
@@ -293,7 +293,7 @@ namespace DRT
        *
        *  \author eichinger
        *  \date 08/16 */
-      int NumDofPerNode(const CORE::Nodes::Node& node) const override
+      int NumDofPerNode(const Core::Nodes::Node& node) const override
       {
         FOUR_C_THROW("not implemented");
         return -1;
@@ -304,28 +304,28 @@ namespace DRT
        *
        *  \author grill
        *  \date 06/16 */
-      void GetRefPosAtXi(CORE::LINALG::Matrix<3, 1>& refpos, const double& xi) const;
+      void GetRefPosAtXi(Core::LinAlg::Matrix<3, 1>& refpos, const double& xi) const;
 
       /** \brief get unit tangent vector in reference configuration at i-th node of beam element
        * (element-internal numbering)
        *
        *  \author grill
        *  \date 06/16 */
-      virtual void GetRefTangentAtNode(CORE::LINALG::Matrix<3, 1>& Tref_i, const int& i) const = 0;
+      virtual void GetRefTangentAtNode(Core::LinAlg::Matrix<3, 1>& Tref_i, const int& i) const = 0;
 
       /** \brief get centerline position at xi \in [-1,1] (element parameter space) from
        * displacement state vector
        *
        *  \author grill
        *  \date 06/16 */
-      virtual void GetPosAtXi(CORE::LINALG::Matrix<3, 1>& pos, const double& xi,
+      virtual void GetPosAtXi(Core::LinAlg::Matrix<3, 1>& pos, const double& xi,
           const std::vector<double>& disp) const = 0;
 
       /** \brief get triad at xi \in [-1,1] (element parameter space)
        *
        *  \author grill
        *  \date 07/16 */
-      virtual void GetTriadAtXi(CORE::LINALG::Matrix<3, 3>& triad, const double& xi,
+      virtual void GetTriadAtXi(Core::LinAlg::Matrix<3, 3>& triad, const double& xi,
           const std::vector<double>& disp) const
       {
         // ToDo make pure virtual and add/generalize implementations in beam eles
@@ -339,7 +339,7 @@ namespace DRT
        *  \author grill
        *  \date 11/16 */
       virtual void get_generalized_interpolation_matrix_variations_at_xi(
-          CORE::LINALG::SerialDenseMatrix& Ivar, const double& xi,
+          Core::LinAlg::SerialDenseMatrix& Ivar, const double& xi,
           const std::vector<double>& disp) const
       {
         FOUR_C_THROW("not implemented");
@@ -352,8 +352,8 @@ namespace DRT
        *  \author grill
        *  \date 01/17 */
       virtual void get_stiffmat_resulting_from_generalized_interpolation_matrix_at_xi(
-          CORE::LINALG::SerialDenseMatrix& stiffmat, const double& xi,
-          const std::vector<double>& disp, const CORE::LINALG::SerialDenseVector& force) const
+          Core::LinAlg::SerialDenseMatrix& stiffmat, const double& xi,
+          const std::vector<double>& disp, const Core::LinAlg::SerialDenseVector& force) const
       {
         FOUR_C_THROW("not implemented");
       }
@@ -364,7 +364,7 @@ namespace DRT
        *  \author grill
        *  \date 11/16 */
       virtual void get_generalized_interpolation_matrix_increments_at_xi(
-          CORE::LINALG::SerialDenseMatrix& Iinc, const double& xi,
+          Core::LinAlg::SerialDenseMatrix& Iinc, const double& xi,
           const std::vector<double>& disp) const
       {
         FOUR_C_THROW("not implemented");
@@ -379,11 +379,11 @@ namespace DRT
       //! shifts nodes so that proper evaluation is possible even in case of periodic boundary
       //! conditions
       virtual void UnShiftNodePosition(std::vector<double>& disp,  //!< element disp vector
-          CORE::GEO::MESHFREE::BoundingBox const& periodic_boundingbox) const;
+          Core::Geo::MeshFree::BoundingBox const& periodic_boundingbox) const;
 
       //! get directions in which element might be cut by a periodic boundary
       virtual void get_directions_of_shifts(std::vector<double>& disp,
-          CORE::GEO::MESHFREE::BoundingBox const& periodic_boundingbox,
+          Core::Geo::MeshFree::BoundingBox const& periodic_boundingbox,
           std::vector<bool>& shift_in_dim) const;
 
       /** \brief extract values for those Dofs relevant for centerline-interpolation from total
@@ -401,7 +401,7 @@ namespace DRT
 
      protected:
       //! vector holding reference tangent at the centerline nodes
-      std::vector<CORE::LINALG::Matrix<3, 1>> Tref_;
+      std::vector<Core::LinAlg::Matrix<3, 1>> Tref_;
 
       //! bool storing whether Hermite interpolation of centerline is applied (false: Lagrange
       //! interpolation)
@@ -431,7 +431,7 @@ namespace DRT
        */
       template <unsigned int nnodecl, unsigned int vpernode, typename T>
       void add_ref_values_disp_centerline(
-          CORE::LINALG::Matrix<3 * vpernode * nnodecl, 1, T>& pos_ref_centerline) const
+          Core::LinAlg::Matrix<3 * vpernode * nnodecl, 1, T>& pos_ref_centerline) const
       {
         for (unsigned int dim = 0; dim < 3; ++dim)
           for (unsigned int node = 0; node < nnodecl; ++node)
@@ -456,9 +456,9 @@ namespace DRT
        */
       template <unsigned int nnode, unsigned int vpernode>
       double calc_reflength(
-          const CORE::LINALG::Matrix<3 * vpernode * nnode, 1, double>& disp_refe_centerline)
+          const Core::LinAlg::Matrix<3 * vpernode * nnode, 1, double>& disp_refe_centerline)
       {
-        CORE::LINALG::Matrix<3, 1> tempvec(true);
+        Core::LinAlg::Matrix<3, 1> tempvec(true);
 
         for (int dim = 0; dim < 3; dim++)
           tempvec(dim) = disp_refe_centerline(3 * vpernode * 1 + dim) - disp_refe_centerline(dim);
@@ -467,19 +467,19 @@ namespace DRT
         if (hermite_centerline_interpolation())
         {
           const auto gausspoints =
-              CORE::FE::IntegrationPoints1D(CORE::FE::GaussRule1D::line_10point);
+              Core::FE::IntegrationPoints1D(Core::FE::GaussRule1D::line_10point);
           const auto distype = this->Shape();
 
           auto lengthEquationAndDerivative = [&gausspoints, &disp_refe_centerline, &distype](
                                                  double reflength)
           {
-            return DRT::UTILS::BEAM::IntegrateCenterlineArcLengthAndArcLengthDerivative<nnode,
+            return Discret::UTILS::Beam::IntegrateCenterlineArcLengthAndArcLengthDerivative<nnode,
                 vpernode>(gausspoints, disp_refe_centerline, distype, reflength);
           };
 
           const double newton_tolerance = 1e-12;
           const int max_iterations = 200;
-          reflength = CORE::UTILS::SolveLocalNewton(
+          reflength = Core::UTILS::SolveLocalNewton(
               lengthEquationAndDerivative, reflength, newton_tolerance, max_iterations);
         }
 
@@ -496,12 +496,12 @@ namespace DRT
        * values (\ref update_disp_totlag or \ref add_ref_values_disp_centerline).
        */
       template <unsigned int nnode, unsigned int vpernode, typename T>
-      void get_pos_at_xi(CORE::LINALG::Matrix<3, 1, T>& r, const double& xi,
-          const CORE::LINALG::Matrix<3 * nnode * vpernode, 1, T>& disp_totlag) const
+      void get_pos_at_xi(Core::LinAlg::Matrix<3, 1, T>& r, const double& xi,
+          const Core::LinAlg::Matrix<3 * nnode * vpernode, 1, T>& disp_totlag) const
       {
-        CORE::LINALG::Matrix<1, vpernode * nnode, T> N_i;
+        Core::LinAlg::Matrix<1, vpernode * nnode, T> N_i;
 
-        DRT::UTILS::BEAM::EvaluateShapeFunctionsAtXi<nnode, vpernode>(
+        Discret::UTILS::Beam::EvaluateShapeFunctionsAtXi<nnode, vpernode>(
             xi, N_i, Shape(), RefLength());
         calc_r<nnode, vpernode, T>(disp_totlag, N_i, r);
       }
@@ -512,11 +512,11 @@ namespace DRT
        *  \author grill
        *  \date 03/16 */
       template <unsigned int nnode, unsigned int vpernode, typename T>
-      void calc_r(const CORE::LINALG::Matrix<3 * vpernode * nnode, 1, T>& disp_totlag_centerline,
-          const CORE::LINALG::Matrix<1, vpernode * nnode, double>& funct,
-          CORE::LINALG::Matrix<3, 1, T>& r) const
+      void calc_r(const Core::LinAlg::Matrix<3 * vpernode * nnode, 1, T>& disp_totlag_centerline,
+          const Core::LinAlg::Matrix<1, vpernode * nnode, double>& funct,
+          Core::LinAlg::Matrix<3, 1, T>& r) const
       {
-        DRT::UTILS::BEAM::CalcInterpolation<nnode, vpernode, 3, T>(
+        Discret::UTILS::Beam::CalcInterpolation<nnode, vpernode, 3, T>(
             disp_totlag_centerline, funct, r);
       }
 
@@ -527,11 +527,11 @@ namespace DRT
        *  \author grill
        *  \date 03/16 */
       template <unsigned int nnode, unsigned int vpernode, typename T>
-      void calc_r_xi(const CORE::LINALG::Matrix<3 * vpernode * nnode, 1, T>& disp_totlag_centerline,
-          const CORE::LINALG::Matrix<1, vpernode * nnode, double>& deriv,
-          CORE::LINALG::Matrix<3, 1, T>& r_xi) const
+      void calc_r_xi(const Core::LinAlg::Matrix<3 * vpernode * nnode, 1, T>& disp_totlag_centerline,
+          const Core::LinAlg::Matrix<1, vpernode * nnode, double>& deriv,
+          Core::LinAlg::Matrix<3, 1, T>& r_xi) const
       {
-        DRT::UTILS::BEAM::CalcInterpolation<nnode, vpernode, 3, T>(
+        Discret::UTILS::Beam::CalcInterpolation<nnode, vpernode, 3, T>(
             disp_totlag_centerline, deriv, r_xi);
       }
 
@@ -543,9 +543,9 @@ namespace DRT
        *  \author grill
        *  \date 03/16 */
       template <unsigned int nnode, unsigned int vpernode, typename T>
-      void calc_r_s(const CORE::LINALG::Matrix<3 * vpernode * nnode, 1, T>& disp_totlag_centerline,
-          const CORE::LINALG::Matrix<1, vpernode * nnode, double>& deriv, const double& jacobi,
-          CORE::LINALG::Matrix<3, 1, T>& r_s) const
+      void calc_r_s(const Core::LinAlg::Matrix<3 * vpernode * nnode, 1, T>& disp_totlag_centerline,
+          const Core::LinAlg::Matrix<1, vpernode * nnode, double>& deriv, const double& jacobi,
+          Core::LinAlg::Matrix<3, 1, T>& r_s) const
       {
         calc_r_xi<nnode, vpernode, T>(disp_totlag_centerline, deriv, r_s);
 
@@ -557,14 +557,14 @@ namespace DRT
 
       /** \brief get applied beam material law object
        */
-      MAT::BeamMaterial& get_beam_material() const;
+      Mat::BeamMaterial& get_beam_material() const;
 
 
       /** \brief get elasto(plastic) beam material law object
        *
        */
       template <typename T>
-      MAT::BeamMaterialTemplated<T>& get_templated_beam_material() const;
+      Mat::BeamMaterialTemplated<T>& get_templated_beam_material() const;
 
       /** \brief setup constitutive matrices from material law
        *
@@ -572,7 +572,7 @@ namespace DRT
        *  \date 03/16 */
       template <typename T>
       void get_constitutive_matrices(
-          CORE::LINALG::Matrix<3, 3, T>& CN, CORE::LINALG::Matrix<3, 3, T>& CM) const;
+          Core::LinAlg::Matrix<3, 3, T>& CN, Core::LinAlg::Matrix<3, 3, T>& CM) const;
 
       /** \brief setup mass inertia tensors from material law
        *
@@ -580,7 +580,7 @@ namespace DRT
        *  \date 03/16 */
       template <typename T>
       void get_translational_and_rotational_mass_inertia_tensor(
-          double& mass_inertia_translational, CORE::LINALG::Matrix<3, 3, T>& J) const;
+          double& mass_inertia_translational, Core::LinAlg::Matrix<3, 3, T>& J) const;
 
       /** \brief setup only translational mass inertia factor from material law
        *      this method is called by reduced beam formulation which don't inlcude
@@ -593,37 +593,37 @@ namespace DRT
       //! @name Methods and variables for Brownian dynamics or beaminteraction simulations
       //! @{
       //! computes damping coefficients
-      void get_damping_coefficients(CORE::LINALG::Matrix<3, 1>& gamma) const;
+      void get_damping_coefficients(Core::LinAlg::Matrix<3, 1>& gamma) const;
 
       //! computes velocity of background fluid and gradient of that velocity at a certain
       //! evaluation point in the physical space and adds respective terms to internal forces and
       //! damping matrix
       template <unsigned int ndim, typename T>  // number of dimensions of embedding space
       void get_background_velocity(Teuchos::ParameterList& params,  //!< parameter list
-          const CORE::LINALG::Matrix<ndim, 1, T>&
+          const Core::LinAlg::Matrix<ndim, 1, T>&
               evaluationpoint,  //!< point at which background velocity and its gradient has to be
                                 //!< computed
-          CORE::LINALG::Matrix<ndim, 1, T>& velbackground,  //!< velocity of background fluid
-          CORE::LINALG::Matrix<ndim, ndim, T>& velbackgroundgrad)
+          Core::LinAlg::Matrix<ndim, 1, T>& velbackground,  //!< velocity of background fluid
+          Core::LinAlg::Matrix<ndim, ndim, T>& velbackgroundgrad)
           const;  //!< gradient of velocity of background fluid
 
      public:
       //! get centerline pos at binding spot with locn x stored in element parameter space
       //! coordinates \in [-1,1] from displacement state vector
-      void GetPosOfBindingSpot(CORE::LINALG::Matrix<3, 1>& pos, std::vector<double>& disp,
-          INPAR::BEAMINTERACTION::CrosslinkerType linkertype, int bspotlocn,
-          CORE::GEO::MESHFREE::BoundingBox const& periodic_boundingbox) const;
+      void GetPosOfBindingSpot(Core::LinAlg::Matrix<3, 1>& pos, std::vector<double>& disp,
+          Inpar::BEAMINTERACTION::CrosslinkerType linkertype, int bspotlocn,
+          Core::Geo::MeshFree::BoundingBox const& periodic_boundingbox) const;
 
       //! get triad at binding spot with locn x stored in element parameter space coordinates \in
       //! [-1,1] from displacement state vector
-      void get_triad_of_binding_spot(CORE::LINALG::Matrix<3, 3>& triad, std::vector<double>& disp,
-          INPAR::BEAMINTERACTION::CrosslinkerType linkertype, int bspotlocn) const;
+      void get_triad_of_binding_spot(Core::LinAlg::Matrix<3, 3>& triad, std::vector<double>& disp,
+          Inpar::BEAMINTERACTION::CrosslinkerType linkertype, int bspotlocn) const;
 
       /** \brief get entire binding spot information of element
        *
        *  \author eichinger
        *  \date 06/17 */
-      std::map<INPAR::BEAMINTERACTION::CrosslinkerType, std::vector<double>> const&
+      std::map<Inpar::BEAMINTERACTION::CrosslinkerType, std::vector<double>> const&
       GetBindingSpots() const
       {
         return bspotposxi_;
@@ -640,7 +640,7 @@ namespace DRT
        *  \author eichinger
        *  \date 06/17 */
       unsigned int get_number_of_binding_spots(
-          INPAR::BEAMINTERACTION::CrosslinkerType linkertype) const
+          Inpar::BEAMINTERACTION::CrosslinkerType linkertype) const
       {
         return bspotposxi_.at(linkertype).size();
       }
@@ -650,7 +650,7 @@ namespace DRT
        *  \author eichinger
        *  \date 03/17 */
       double GetBindingSpotXi(
-          INPAR::BEAMINTERACTION::CrosslinkerType linkertype, unsigned int bspotlocn) const
+          Inpar::BEAMINTERACTION::CrosslinkerType linkertype, unsigned int bspotlocn) const
       {
         if (bspotlocn > bspotposxi_.at(linkertype).size())
           FOUR_C_THROW("number of requested binding spot exceeds total number of binding spots");
@@ -663,7 +663,7 @@ namespace DRT
        *  \author eichinger
        *  \date 03/17 */
       void SetBindingSpots(
-          std::map<INPAR::BEAMINTERACTION::CrosslinkerType, std::vector<double>> bspotposxi)
+          std::map<Inpar::BEAMINTERACTION::CrosslinkerType, std::vector<double>> bspotposxi)
       {
         bspotposxi_.clear();
         bspotposxi_ = bspotposxi;
@@ -674,7 +674,7 @@ namespace DRT
        *  \author eichinger
        *  \date 03/17 */
       void set_positions_of_binding_spot_type(
-          INPAR::BEAMINTERACTION::CrosslinkerType linkertype, std::vector<double> const& bspotposxi)
+          Inpar::BEAMINTERACTION::CrosslinkerType linkertype, std::vector<double> const& bspotposxi)
       {
         bspotposxi_[linkertype] = bspotposxi;
       }
@@ -683,12 +683,12 @@ namespace DRT
        *
        *  \author eichinger
        *  \date 03/17 */
-      void SetFilamentType(INPAR::BEAMINTERACTION::FilamentType filamenttype)
+      void SetFilamentType(Inpar::BEAMINTERACTION::FilamentType filamenttype)
       {
         filamenttype_ = filamenttype;
       }
 
-      INPAR::BEAMINTERACTION::FilamentType GetFilamentType() const { return filamenttype_; }
+      Inpar::BEAMINTERACTION::FilamentType GetFilamentType() const { return filamenttype_; }
 
       /**
        * \brief Get the bounding volume of the element for geometric search
@@ -697,17 +697,17 @@ namespace DRT
        * @param result_data_dofbased Result data vector used for extracting positions
        * @return bounding volume of the respective element
        */
-      CORE::GEOMETRICSEARCH::BoundingVolume GetBoundingVolume(const DRT::Discretization& discret,
-          const Epetra_Vector& result_data_dofbased,
-          const CORE::GEOMETRICSEARCH::GeometricSearchParams& params) const override;
+      Core::GeometricSearch::BoundingVolume GetBoundingVolume(
+          const Discret::Discretization& discret, const Epetra_Vector& result_data_dofbased,
+          const Core::GeometricSearch::GeometricSearchParams& params) const override;
 
      private:
       //! position of binding spots on beam element in local coordinate system
       //! size of vector equals number of binding spots on this element
-      std::map<INPAR::BEAMINTERACTION::CrosslinkerType, std::vector<double>> bspotposxi_;
+      std::map<Inpar::BEAMINTERACTION::CrosslinkerType, std::vector<double>> bspotposxi_;
 
       //! type of filament element belongs to
-      INPAR::BEAMINTERACTION::FilamentType filamenttype_;
+      Inpar::BEAMINTERACTION::FilamentType filamenttype_;
 
       //! @}
 
@@ -725,7 +725,7 @@ namespace DRT
     };
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

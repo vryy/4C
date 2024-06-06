@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   // forward declarations
   class Discretization;
@@ -28,22 +28,22 @@ namespace DRT
     /*----------------------------------------------------------------------*
      |  QUAD 4 Element                                        schmidt 09/17 |
      *----------------------------------------------------------------------*/
-    class WallQuad4PoroP1ScatraType : public DRT::ELEMENTS::WallQuad4PoroP1Type
+    class WallQuad4PoroP1ScatraType : public Discret::ELEMENTS::WallQuad4PoroP1Type
     {
      public:
       std::string Name() const override { return "WallQuad4PoroP1ScatraType"; }
 
       static WallQuad4PoroP1ScatraType& Instance();
 
-      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
       void setup_element_definition(
-          std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+          std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
           override;
 
      private:
@@ -53,22 +53,22 @@ namespace DRT
     /*----------------------------------------------------------------------*
      |  QUAD 9 Element                                        schmidt 09/17 |
      *----------------------------------------------------------------------*/
-    class WallQuad9PoroP1ScatraType : public DRT::ELEMENTS::WallQuad9PoroP1Type
+    class WallQuad9PoroP1ScatraType : public Discret::ELEMENTS::WallQuad9PoroP1Type
     {
      public:
       std::string Name() const override { return "WallQuad9PoroP1ScatraType"; }
 
       static WallQuad9PoroP1ScatraType& Instance();
 
-      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
       void setup_element_definition(
-          std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+          std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
           override;
 
      private:
@@ -78,22 +78,22 @@ namespace DRT
     /*----------------------------------------------------------------------*
      |  TRI 3 Element                                         schmidt 09/17 ||
      *----------------------------------------------------------------------*/
-    class WallTri3PoroP1ScatraType : public DRT::ELEMENTS::WallTri3PoroP1Type
+    class WallTri3PoroP1ScatraType : public Discret::ELEMENTS::WallTri3PoroP1Type
     {
      public:
       std::string Name() const override { return "WallTri3PoroP1ScatraType"; }
 
       static WallTri3PoroP1ScatraType& Instance();
 
-      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
       void setup_element_definition(
-          std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+          std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
           override;
 
      private:
@@ -101,7 +101,7 @@ namespace DRT
     };
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 
 FOUR_C_NAMESPACE_CLOSE

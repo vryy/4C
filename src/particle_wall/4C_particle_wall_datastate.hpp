@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
@@ -61,7 +61,7 @@ namespace PARTICLEWALL
      *
      * \param[in] walldiscretization wall discretization
      */
-    void Init(const Teuchos::RCP<DRT::Discretization> walldiscretization);
+    void Init(const Teuchos::RCP<Discret::Discretization> walldiscretization);
 
     /*!
      * \brief setup wall data state container
@@ -143,7 +143,7 @@ namespace PARTICLEWALL
     const Teuchos::ParameterList& params_;
 
     //! wall discretization
-    Teuchos::RCP<DRT::Discretization> walldiscretization_;
+    Teuchos::RCP<Discret::Discretization> walldiscretization_;
 
     //! current dof row map
     Teuchos::RCP<Epetra_Map> curr_dof_row_map_;

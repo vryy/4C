@@ -21,29 +21,31 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Beam3ebType DRT::ELEMENTS::Beam3ebType::instance_;
+Discret::ELEMENTS::Beam3ebType Discret::ELEMENTS::Beam3ebType::instance_;
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Beam3ebType& DRT::ELEMENTS::Beam3ebType::Instance() { return instance_; }
+Discret::ELEMENTS::Beam3ebType& Discret::ELEMENTS::Beam3ebType::Instance() { return instance_; }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::COMM::ParObject* DRT::ELEMENTS::Beam3ebType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Discret::ELEMENTS::Beam3ebType::Create(
+    const std::vector<char>& data)
 {
-  DRT::ELEMENTS::Beam3eb* object = new DRT::ELEMENTS::Beam3eb(-1, -1);
+  Discret::ELEMENTS::Beam3eb* object = new Discret::ELEMENTS::Beam3eb(-1, -1);
   object->Unpack(data);
   return object;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Beam3ebType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Beam3ebType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "BEAM3EB")
   {
-    Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Beam3eb(id, owner));
+    Teuchos::RCP<Core::Elements::Element> ele =
+        Teuchos::rcp(new Discret::ELEMENTS::Beam3eb(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -51,7 +53,7 @@ Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Beam3ebType::Create(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Beam3ebType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Beam3ebType::Create(
     const int id, const int owner)
 {
   return Teuchos::rcp(new Beam3eb(id, owner));
@@ -59,8 +61,8 @@ Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Beam3ebType::Create(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3ebType::nodal_block_information(
-    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+void Discret::ELEMENTS::Beam3ebType::nodal_block_information(
+    Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 6;  // 3 translations, 3 tangent DOFs per node
   nv = 6;     // obsolete, just needed for fluid
@@ -69,8 +71,8 @@ void DRT::ELEMENTS::Beam3ebType::nodal_block_information(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Beam3ebType::ComputeNullSpace(
-    CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
+Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::Beam3ebType::ComputeNullSpace(
+    Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   if (numdof != 6)
     FOUR_C_THROW(
@@ -90,15 +92,15 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Beam3ebType::ComputeNullSpace(
   const auto& x = node.X();
 
   // getting pointer at current element
-  const auto* beam3eb = dynamic_cast<const DRT::ELEMENTS::Beam3eb*>(node.Elements()[0]);
+  const auto* beam3eb = dynamic_cast<const Discret::ELEMENTS::Beam3eb*>(node.Elements()[0]);
   if (!beam3eb) FOUR_C_THROW("Cannot cast to Beam3eb");
 
   // Compute tangent vector with unit length from nodal coordinates.
   // Note: Tangent vector is the same at both nodes due to straight initial configuration.
-  CORE::LINALG::Matrix<spacedim, 1> tangent(true);
+  Core::LinAlg::Matrix<spacedim, 1> tangent(true);
   {
-    const CORE::Nodes::Node* firstnode = beam3eb->Nodes()[0];
-    const CORE::Nodes::Node* secondnode = beam3eb->Nodes()[1];
+    const Core::Nodes::Node* firstnode = beam3eb->Nodes()[0];
+    const Core::Nodes::Node* secondnode = beam3eb->Nodes()[1];
     const auto& xfirst = firstnode->X();
     const auto& xsecond = secondnode->X();
 
@@ -107,12 +109,12 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Beam3ebType::ComputeNullSpace(
   }
 
   // Form a Cartesian basis
-  std::array<CORE::LINALG::Matrix<spacedim, 1>, spacedim> basis;
-  CORE::LINALG::Matrix<spacedim, 1> e1(true);
+  std::array<Core::LinAlg::Matrix<spacedim, 1>, spacedim> basis;
+  Core::LinAlg::Matrix<spacedim, 1> e1(true);
   e1(0) = 1.0;
-  CORE::LINALG::Matrix<spacedim, 1> e2(true);
+  Core::LinAlg::Matrix<spacedim, 1> e2(true);
   e2(1) = 1.0;
-  CORE::LINALG::Matrix<spacedim, 1> e3(true);
+  Core::LinAlg::Matrix<spacedim, 1> e3(true);
   e3(2) = 1.0;
   basis[0] = e1;
   basis[1] = e2;
@@ -136,8 +138,8 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Beam3ebType::ComputeNullSpace(
   }
 
   // Compute two vectors orthogonal to the tangent vector
-  CORE::LINALG::Matrix<spacedim, 1> someVector = basis[baseVecIndexWithMindDotProduct];
-  CORE::LINALG::Matrix<spacedim, 1> omegaOne, omegaTwo;
+  Core::LinAlg::Matrix<spacedim, 1> someVector = basis[baseVecIndexWithMindDotProduct];
+  Core::LinAlg::Matrix<spacedim, 1> omegaOne, omegaTwo;
   omegaOne.CrossProduct(tangent, someVector);
   omegaTwo.CrossProduct(tangent, omegaOne);
 
@@ -146,20 +148,20 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Beam3ebType::ComputeNullSpace(
   if (std::abs(omegaTwo.Dot(tangent)) > 1.0e-12)
     FOUR_C_THROW("omegaTwo not orthogonal to tangent vector.");
 
-  CORE::LINALG::Matrix<3, 1> nodeCoords(true);
+  Core::LinAlg::Matrix<3, 1> nodeCoords(true);
   for (std::size_t dim = 0; dim < 3; ++dim) nodeCoords(dim) = x[dim] - x0[dim];
 
   // Compute rotations in displacement DOFs
-  CORE::LINALG::Matrix<spacedim, 1> rotOne(true), rotTwo(true);
+  Core::LinAlg::Matrix<spacedim, 1> rotOne(true), rotTwo(true);
   rotOne.CrossProduct(omegaOne, nodeCoords);
   rotTwo.CrossProduct(omegaTwo, nodeCoords);
 
   // Compute rotations in tangent DOFs
-  CORE::LINALG::Matrix<spacedim, 1> rotTangOne(true), rotTangTwo(true);
+  Core::LinAlg::Matrix<spacedim, 1> rotTangOne(true), rotTangTwo(true);
   rotTangOne.CrossProduct(omegaOne, tangent);
   rotTangTwo.CrossProduct(omegaTwo, tangent);
 
-  CORE::LINALG::SerialDenseMatrix nullspace(numdof, dimnsp);
+  Core::LinAlg::SerialDenseMatrix nullspace(numdof, dimnsp);
   // x-modes
   nullspace(0, 0) = 1.0;
   nullspace(0, 1) = 0.0;
@@ -202,18 +204,18 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Beam3ebType::ComputeNullSpace(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3ebType::setup_element_definition(
-    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+void Discret::ELEMENTS::Beam3ebType::setup_element_definition(
+    std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
-  std::map<std::string, INPUT::LineDefinition>& defs = definitions["BEAM3EB"];
+  std::map<std::string, Input::LineDefinition>& defs = definitions["BEAM3EB"];
 
   defs["LINE2"] =
-      INPUT::LineDefinition::Builder().AddIntVector("LINE2", 2).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().AddIntVector("LINE2", 2).AddNamedInt("MAT").Build();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Beam3ebType::Initialize(DRT::Discretization& dis)
+int Discret::ELEMENTS::Beam3ebType::Initialize(Discret::Discretization& dis)
 {
   // setting up geometric variables for beam3eb elements
   for (int num = 0; num < dis.NumMyColElements(); ++num)
@@ -223,7 +225,8 @@ int DRT::ELEMENTS::Beam3ebType::Initialize(DRT::Discretization& dis)
     if (dis.lColElement(num)->ElementType() != *this) continue;
 
     // if we get so far current element is a beam3eb element and  we get a pointer at it
-    DRT::ELEMENTS::Beam3eb* currele = dynamic_cast<DRT::ELEMENTS::Beam3eb*>(dis.lColElement(num));
+    Discret::ELEMENTS::Beam3eb* currele =
+        dynamic_cast<Discret::ELEMENTS::Beam3eb*>(dis.lColElement(num));
     if (!currele) FOUR_C_THROW("cast to Beam3eb* failed");
 
     // reference node position
@@ -236,8 +239,8 @@ int DRT::ELEMENTS::Beam3ebType::Initialize(DRT::Discretization& dis)
 
     // the next section is needed in case of periodic boundary conditions and a shifted
     // configuration (i.e. elements cut by the periodic boundary) in the input file
-    Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> periodic_boundingbox =
-        Teuchos::rcp(new CORE::GEO::MESHFREE::BoundingBox());
+    Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> periodic_boundingbox =
+        Teuchos::rcp(new Core::Geo::MeshFree::BoundingBox());
     periodic_boundingbox->Init();  // no Setup() call needed here
 
     std::vector<double> disp_shift;
@@ -271,17 +274,17 @@ int DRT::ELEMENTS::Beam3ebType::Initialize(DRT::Discretization& dis)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Beam3eb::Beam3eb(int id, int owner)
-    : DRT::ELEMENTS::Beam3Base(id, owner),
+Discret::ELEMENTS::Beam3eb::Beam3eb(int id, int owner)
+    : Discret::ELEMENTS::Beam3Base(id, owner),
       isinit_(false),
       jacobi_(0.0),
       firstcall_(true),
       ekin_(0.0),
       eint_(0.0),
-      l_(CORE::LINALG::Matrix<3, 1>(true)),
-      p_(CORE::LINALG::Matrix<3, 1>(true)),
-      t0_(CORE::LINALG::Matrix<3, 2>(true)),
-      t_(CORE::LINALG::Matrix<3, 2>(true)),
+      l_(Core::LinAlg::Matrix<3, 1>(true)),
+      p_(Core::LinAlg::Matrix<3, 1>(true)),
+      t0_(Core::LinAlg::Matrix<3, 2>(true)),
+      t_(Core::LinAlg::Matrix<3, 2>(true)),
       kappa_max_(0.0),
       epsilon_max_(0.0),
       axial_strain_gp_(0),
@@ -298,8 +301,8 @@ DRT::ELEMENTS::Beam3eb::Beam3eb(int id, int owner)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Beam3eb::Beam3eb(const DRT::ELEMENTS::Beam3eb& old)
-    : DRT::ELEMENTS::Beam3Base(old),
+Discret::ELEMENTS::Beam3eb::Beam3eb(const Discret::ELEMENTS::Beam3eb& old)
+    : Discret::ELEMENTS::Beam3Base(old),
       isinit_(old.isinit_),
       jacobi_(old.jacobi_),
       ekin_(old.ekin_),
@@ -319,15 +322,15 @@ DRT::ELEMENTS::Beam3eb::Beam3eb(const DRT::ELEMENTS::Beam3eb& old)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::Elements::Element* DRT::ELEMENTS::Beam3eb::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::Beam3eb::Clone() const
 {
-  DRT::ELEMENTS::Beam3eb* newelement = new DRT::ELEMENTS::Beam3eb(*this);
+  Discret::ELEMENTS::Beam3eb* newelement = new Discret::ELEMENTS::Beam3eb(*this);
   return newelement;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3eb::Print(std::ostream& os) const
+void Discret::ELEMENTS::Beam3eb::Print(std::ostream& os) const
 {
   os << "beam3eb ";
   Element::Print(os);
@@ -335,13 +338,13 @@ void DRT::ELEMENTS::Beam3eb::Print(std::ostream& os) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::FE::CellType DRT::ELEMENTS::Beam3eb::Shape() const { return CORE::FE::CellType::line2; }
+Core::FE::CellType Discret::ELEMENTS::Beam3eb::Shape() const { return Core::FE::CellType::line2; }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3eb::Pack(CORE::COMM::PackBuffer& data) const
+void Discret::ELEMENTS::Beam3eb::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -370,11 +373,11 @@ void DRT::ELEMENTS::Beam3eb::Pack(CORE::COMM::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3eb::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Beam3eb::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -404,7 +407,7 @@ void DRT::ELEMENTS::Beam3eb::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Beam3eb::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Beam3eb::Lines()
 {
   return {Teuchos::rcpFromRef(*this)};
 }
@@ -417,7 +420,7 @@ std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Beam3eb::Lines
  | has to be stored; prerequesite for applying this method is that the
  | element nodes are already known
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3eb::set_up_reference_geometry(
+void Discret::ELEMENTS::Beam3eb::set_up_reference_geometry(
     const std::vector<double>& xrefe, const bool secondinit)
 {
   /*this method initializes geometric variables of the element; the initilization can usually be
@@ -435,10 +438,10 @@ void DRT::ELEMENTS::Beam3eb::set_up_reference_geometry(
     isinit_ = true;
 
     // Get DiscretizationType
-    CORE::FE::CellType distype = Shape();
+    Core::FE::CellType distype = Shape();
 
     // Get integrationpoints for exact integration
-    CORE::FE::IntegrationPoints1D gausspoints = CORE::FE::IntegrationPoints1D(mygaussruleeb);
+    Core::FE::IntegrationPoints1D gausspoints = Core::FE::IntegrationPoints1D(mygaussruleeb);
 
     Tref_.resize(gausspoints.nquad);
 
@@ -458,7 +461,7 @@ void DRT::ELEMENTS::Beam3eb::set_up_reference_geometry(
 
 
     // create Matrix for the derivates of the shapefunctions at the GP
-    CORE::LINALG::Matrix<1, nnode> shapefuncderiv;
+    Core::LinAlg::Matrix<1, nnode> shapefuncderiv;
 
     // Loop through all GPs and compute jacobi at the GPs
     for (int numgp = 0; numgp < gausspoints.nquad; numgp++)
@@ -470,7 +473,7 @@ void DRT::ELEMENTS::Beam3eb::set_up_reference_geometry(
       // instead of Hermite polynomials used to calculate the reference geometry. Since the
       // reference geometry for this beam element must always be a straight line there is no
       // difference between theses to types of interpolation functions.
-      CORE::FE::shape_function_1D_deriv1(shapefuncderiv, xi, distype);
+      Core::FE::shape_function_1D_deriv1(shapefuncderiv, xi, distype);
 
       Tref_[numgp].Clear();
 
@@ -519,16 +522,16 @@ void DRT::ELEMENTS::Beam3eb::set_up_reference_geometry(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-std::vector<CORE::LINALG::Matrix<3, 1>> DRT::ELEMENTS::Beam3eb::Tref() const { return Tref_; }
+std::vector<Core::LinAlg::Matrix<3, 1>> Discret::ELEMENTS::Beam3eb::Tref() const { return Tref_; }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-double DRT::ELEMENTS::Beam3eb::jacobi() const { return jacobi_; }
+double Discret::ELEMENTS::Beam3eb::jacobi() const { return jacobi_; }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3eb::GetPosAtXi(
-    CORE::LINALG::Matrix<3, 1>& pos, const double& xi, const std::vector<double>& disp) const
+void Discret::ELEMENTS::Beam3eb::GetPosAtXi(
+    Core::LinAlg::Matrix<3, 1>& pos, const double& xi, const std::vector<double>& disp) const
 {
   if (disp.size() != 12)
     FOUR_C_THROW(
@@ -537,7 +540,7 @@ void DRT::ELEMENTS::Beam3eb::GetPosAtXi(
         disp.size());
 
   // add reference positions and tangents => total Lagrangean state vector
-  CORE::LINALG::Matrix<12, 1> disp_totlag(true);
+  Core::LinAlg::Matrix<12, 1> disp_totlag(true);
   update_disp_totlag<2, 6>(disp, disp_totlag);
 
   Beam3Base::get_pos_at_xi<2, 2, double>(pos, xi, disp_totlag);
@@ -545,8 +548,8 @@ void DRT::ELEMENTS::Beam3eb::GetPosAtXi(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3eb::GetTriadAtXi(
-    CORE::LINALG::Matrix<3, 3>& triad, const double& xi, const std::vector<double>& disp) const
+void Discret::ELEMENTS::Beam3eb::GetTriadAtXi(
+    Core::LinAlg::Matrix<3, 3>& triad, const double& xi, const std::vector<double>& disp) const
 {
   if (disp.size() != 12)
     FOUR_C_THROW(
@@ -555,7 +558,7 @@ void DRT::ELEMENTS::Beam3eb::GetTriadAtXi(
         disp.size());
 
   // add reference positions and tangents => total Lagrangean state vector
-  CORE::LINALG::Matrix<12, 1> disp_totlag(true);
+  Core::LinAlg::Matrix<12, 1> disp_totlag(true);
   update_disp_totlag<2, 6>(disp, disp_totlag);
 
   triad.Clear();

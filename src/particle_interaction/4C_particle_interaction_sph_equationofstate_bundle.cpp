@@ -20,19 +20,19 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-PARTICLEINTERACTION::SPHEquationOfStateBundle::SPHEquationOfStateBundle(
+ParticleInteraction::SPHEquationOfStateBundle::SPHEquationOfStateBundle(
     const Teuchos::ParameterList& params)
     : params_sph_(params)
 {
   // empty constructor
 }
 
-void PARTICLEINTERACTION::SPHEquationOfStateBundle::Init(
-    const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial)
+void ParticleInteraction::SPHEquationOfStateBundle::Init(
+    const std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial)
 {
   // get type of smoothed particle hydrodynamics equation of state
-  INPAR::PARTICLE::EquationOfStateType equationofstatetype =
-      CORE::UTILS::IntegralValue<INPAR::PARTICLE::EquationOfStateType>(
+  Inpar::PARTICLE::EquationOfStateType equationofstatetype =
+      Core::UTILS::IntegralValue<Inpar::PARTICLE::EquationOfStateType>(
           params_sph_, "EQUATIONOFSTATE");
 
   // determine size of vector indexed by particle types
@@ -51,32 +51,32 @@ void PARTICLEINTERACTION::SPHEquationOfStateBundle::Init(
     storedtypes_.insert(type_i);
 
     // get material for current particle type
-    const MAT::PAR::ParticleMaterialSPHFluid* material =
-        dynamic_cast<const MAT::PAR::ParticleMaterialSPHFluid*>(
+    const Mat::PAR::ParticleMaterialSPHFluid* material =
+        dynamic_cast<const Mat::PAR::ParticleMaterialSPHFluid*>(
             particlematerial->get_ptr_to_particle_mat_parameter(type_i));
 
     // create equation of state handler
     switch (equationofstatetype)
     {
-      case INPAR::PARTICLE::GenTait:
+      case Inpar::PARTICLE::GenTait:
       {
         const double speedofsound = material->SpeedOfSound();
         const double refdensfac = material->refDensFac_;
         const double exponent = material->exponent_;
 
         phasetypetoequationofstate_[type_i] =
-            std::unique_ptr<PARTICLEINTERACTION::SPHEquationOfStateGenTait>(
-                new PARTICLEINTERACTION::SPHEquationOfStateGenTait(
+            std::unique_ptr<ParticleInteraction::SPHEquationOfStateGenTait>(
+                new ParticleInteraction::SPHEquationOfStateGenTait(
                     speedofsound, refdensfac, exponent));
         break;
       }
-      case INPAR::PARTICLE::IdealGas:
+      case Inpar::PARTICLE::IdealGas:
       {
         const double speedofsound = material->SpeedOfSound();
 
         phasetypetoequationofstate_[type_i] =
-            std::unique_ptr<PARTICLEINTERACTION::SPHEquationOfStateIdealGas>(
-                new PARTICLEINTERACTION::SPHEquationOfStateIdealGas(speedofsound));
+            std::unique_ptr<ParticleInteraction::SPHEquationOfStateIdealGas>(
+                new ParticleInteraction::SPHEquationOfStateIdealGas(speedofsound));
         break;
       }
       default:
@@ -91,7 +91,7 @@ void PARTICLEINTERACTION::SPHEquationOfStateBundle::Init(
   }
 }
 
-void PARTICLEINTERACTION::SPHEquationOfStateBundle::Setup()
+void ParticleInteraction::SPHEquationOfStateBundle::Setup()
 {
   for (PARTICLEENGINE::TypeEnum type_i : storedtypes_) phasetypetoequationofstate_[type_i]->Setup();
 }

@@ -22,27 +22,27 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationWriter;
   class DiscretizationReader;
-}  // namespace CORE::IO
+}  // namespace Core::IO
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class MapExtractor;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace MORTAR
+namespace Mortar
 {
   class ManagerBase;
   class StrategyBase;
-}  // namespace MORTAR
+}  // namespace Mortar
 
 namespace CONTACT
 {
@@ -64,9 +64,9 @@ namespace CONTACT
     @param contactConditions List of contact conditions as given in input file
     @param timeIntegrationMidPoint Generalized mid-point of time integration scheme
     */
-    MeshtyingContactBridge(DRT::Discretization& dis,
-        std::vector<CORE::Conditions::Condition*>& meshtyingConditions,
-        std::vector<CORE::Conditions::Condition*>& contactConditions,
+    MeshtyingContactBridge(Discret::Discretization& dis,
+        std::vector<Core::Conditions::Condition*>& meshtyingConditions,
+        std::vector<Core::Conditions::Condition*>& contactConditions,
         double timeIntegrationMidPoint);
 
     /*!
@@ -87,19 +87,19 @@ namespace CONTACT
     \brief Get contact manager
 
     */
-    Teuchos::RCP<MORTAR::ManagerBase> ContactManager() const;
+    Teuchos::RCP<Mortar::ManagerBase> ContactManager() const;
 
     /*!
     \brief Get meshtying manager
 
     */
-    Teuchos::RCP<MORTAR::ManagerBase> MtManager() const;
+    Teuchos::RCP<Mortar::ManagerBase> MtManager() const;
 
     /*!
     \brief Get strategy of meshtying/contact problem
 
     */
-    MORTAR::StrategyBase& GetStrategy() const;
+    Mortar::StrategyBase& GetStrategy() const;
 
     /*!
     \brief return bool indicating if contact is defined
@@ -121,7 +121,7 @@ namespace CONTACT
 
     \param[in] output Output writer of structure discretization to write results to disk
     */
-    void postprocess_quantities(Teuchos::RCP<CORE::IO::DiscretizationWriter>& output);
+    void postprocess_quantities(Teuchos::RCP<Core::IO::DiscretizationWriter>& output);
 
     /*!
     \brief Write results for visualization separately for each meshtying/contact interface
@@ -136,7 +136,7 @@ namespace CONTACT
     \brief read restart
 
     */
-    void read_restart(CORE::IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis,
+    void read_restart(Core::IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis,
         Teuchos::RCP<Epetra_Vector> zero);
     /*!
     \brief recover lagr. mult. for contact/meshtying and slave displ for mesht.
@@ -154,7 +154,7 @@ namespace CONTACT
     \brief store dirichlet status
 
     */
-    void store_dirichlet_status(Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps);
+    void store_dirichlet_status(Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps);
 
     /*!
     \brief update
@@ -176,17 +176,17 @@ namespace CONTACT
 
     */
     void write_restart(
-        Teuchos::RCP<CORE::IO::DiscretizationWriter>& output, bool forcedrestart = false);
+        Teuchos::RCP<Core::IO::DiscretizationWriter>& output, bool forcedrestart = false);
 
    private:
     //! don't want cctor (= operator impossible anyway for abstract class)
     MeshtyingContactBridge(const MeshtyingContactBridge& old) = delete;
 
     //! Contact manager
-    Teuchos::RCP<MORTAR::ManagerBase> cman_;
+    Teuchos::RCP<Mortar::ManagerBase> cman_;
 
     //! Meshtying manager
-    Teuchos::RCP<MORTAR::ManagerBase> mtman_;
+    Teuchos::RCP<Mortar::ManagerBase> mtman_;
 
   };  // class meshtying_contact_bridge
 }  // namespace CONTACT

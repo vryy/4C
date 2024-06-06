@@ -21,9 +21,9 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
-namespace INPAR
+namespace Inpar
 {
-  namespace IO_RUNTIME_VTP_STRUCTURE
+  namespace IORuntimeVTPStructure
   {
     /// data format for written numeric data
     enum OutputDataFormat
@@ -36,8 +36,8 @@ namespace INPAR
     /// set the valid parameters related to writing of VTP output at runtime
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
-  }  // namespace IO_RUNTIME_VTP_STRUCTURE
-}  // namespace INPAR
+  }  // namespace IORuntimeVTPStructure
+}  // namespace Inpar
 
 FOUR_C_NAMESPACE_CLOSE
 

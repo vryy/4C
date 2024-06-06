@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | standard constructor                                     thon 11/14 |
  *----------------------------------------------------------------------*/
-MAT::PAR::MatListReactions::MatListReactions(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::MatListReactions::MatListReactions(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : MatList(matdata),
       numreac_((matdata->Get<int>("NUMREAC"))),
       reacids_((matdata->Get<std::vector<int>>("REACIDS")))
@@ -45,24 +45,24 @@ MAT::PAR::MatListReactions::MatListReactions(Teuchos::RCP<CORE::MAT::PAR::Materi
     for (m = reacids_.begin(); m != reacids_.end(); ++m)
     {
       const int reacid = *m;
-      Teuchos::RCP<CORE::MAT::Material> mat = MAT::Factory(reacid);
-      material_map_write()->insert(std::pair<int, Teuchos::RCP<CORE::MAT::Material>>(reacid, mat));
+      Teuchos::RCP<Core::Mat::Material> mat = Mat::Factory(reacid);
+      material_map_write()->insert(std::pair<int, Teuchos::RCP<Core::Mat::Material>>(reacid, mat));
     }
   }
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::MatListReactions::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::MatListReactions::create_material()
 {
-  return Teuchos::rcp(new MAT::MatListReactions(this));
+  return Teuchos::rcp(new Mat::MatListReactions(this));
 }
 
 
-MAT::MatListReactionsType MAT::MatListReactionsType::instance_;
+Mat::MatListReactionsType Mat::MatListReactionsType::instance_;
 
 
-CORE::COMM::ParObject* MAT::MatListReactionsType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::MatListReactionsType::Create(const std::vector<char>& data)
 {
-  MAT::MatListReactions* MatListReactions = new MAT::MatListReactions();
+  Mat::MatListReactions* MatListReactions = new Mat::MatListReactions();
   MatListReactions->Unpack(data);
   return MatListReactions;
 }
@@ -71,12 +71,12 @@ CORE::COMM::ParObject* MAT::MatListReactionsType::Create(const std::vector<char>
 /*----------------------------------------------------------------------*
  | construct empty material object                           thon 11/14 |
  *----------------------------------------------------------------------*/
-MAT::MatListReactions::MatListReactions() : MatList(), paramsreac_(nullptr) {}
+Mat::MatListReactions::MatListReactions() : MatList(), paramsreac_(nullptr) {}
 
 /*----------------------------------------------------------------------*
  | construct the material object given material parameter    thon 11/14 |
  *----------------------------------------------------------------------*/
-MAT::MatListReactions::MatListReactions(MAT::PAR::MatListReactions* params)
+Mat::MatListReactions::MatListReactions(Mat::PAR::MatListReactions* params)
     : MatList(params), paramsreac_(params)
 {
   // setup of material map
@@ -89,7 +89,7 @@ MAT::MatListReactions::MatListReactions(MAT::PAR::MatListReactions* params)
 /*----------------------------------------------------------------------*
  | setup of material map                                     vuong 08/16 |
  *----------------------------------------------------------------------*/
-void MAT::MatListReactions::Initialize()
+void Mat::MatListReactions::Initialize()
 {
   if (paramsreac_ != nullptr)
   {
@@ -97,10 +97,10 @@ void MAT::MatListReactions::Initialize()
     for (m = paramsreac_->ReacIds()->begin(); m != paramsreac_->ReacIds()->end(); ++m)
     {
       const int reacid = *m;
-      Teuchos::RCP<CORE::MAT::Material> mat = MaterialById(reacid);
+      Teuchos::RCP<Core::Mat::Material> mat = MaterialById(reacid);
       if (mat == Teuchos::null) FOUR_C_THROW("Failed to allocate this material");
-      Teuchos::RCP<MAT::ScatraReactionMat> reacmat =
-          Teuchos::rcp_dynamic_cast<MAT::ScatraReactionMat>(mat, true);
+      Teuchos::RCP<Mat::ScatraReactionMat> reacmat =
+          Teuchos::rcp_dynamic_cast<Mat::ScatraReactionMat>(mat, true);
       reacmat->Initialize();
     }
   }
@@ -110,19 +110,19 @@ void MAT::MatListReactions::Initialize()
 /*----------------------------------------------------------------------*
  | setup of material map                                     thon 11/14 |
  *----------------------------------------------------------------------*/
-void MAT::MatListReactions::setup_mat_map()
+void Mat::MatListReactions::setup_mat_map()
 {
   // We just have to add the reaction materials, since the rest is already done in
-  // MAT::MatList::setup_mat_map() called from the MatList constructor
+  // Mat::MatList::setup_mat_map() called from the MatList constructor
 
   // here's the recursive creation of materials
   std::vector<int>::const_iterator m;
   for (m = paramsreac_->ReacIds()->begin(); m != paramsreac_->ReacIds()->end(); ++m)
   {
     const int reacid = *m;
-    Teuchos::RCP<CORE::MAT::Material> mat = MAT::Factory(reacid);
+    Teuchos::RCP<Core::Mat::Material> mat = Mat::Factory(reacid);
     if (mat == Teuchos::null) FOUR_C_THROW("Failed to allocate this material");
-    material_map_write()->insert(std::pair<int, Teuchos::RCP<CORE::MAT::Material>>(reacid, mat));
+    material_map_write()->insert(std::pair<int, Teuchos::RCP<Core::Mat::Material>>(reacid, mat));
   }
   return;
 }
@@ -130,7 +130,7 @@ void MAT::MatListReactions::setup_mat_map()
 /*----------------------------------------------------------------------*
  | reset everything                                          thon 11/14 |
  *----------------------------------------------------------------------*/
-void MAT::MatListReactions::clear()
+void Mat::MatListReactions::clear()
 {
   paramsreac_ = nullptr;
   return;
@@ -139,9 +139,9 @@ void MAT::MatListReactions::clear()
 /*----------------------------------------------------------------------*
  | Unpack data from a char vector into this class            thon 11/14 |
  *----------------------------------------------------------------------*/
-void MAT::MatListReactions::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::MatListReactions::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -155,7 +155,7 @@ void MAT::MatListReactions::Pack(CORE::COMM::PackBuffer& data) const
   AddtoPack(data, matid);
 
   // Pack base class material
-  MAT::MatList::Pack(data);
+  Mat::MatList::Pack(data);
 
   if (paramsreac_ != nullptr)
   {
@@ -173,30 +173,30 @@ void MAT::MatListReactions::Pack(CORE::COMM::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  | Unpack data from a char vector into this class            thon 11/14 |
  *----------------------------------------------------------------------*/
-void MAT::MatListReactions::Unpack(const std::vector<char>& data)
+void Mat::MatListReactions::Unpack(const std::vector<char>& data)
 {
   // make sure we have a pristine material
   clear();
 
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover paramsreac_
   int matid(-1);
   ExtractfromPack(position, data, matid);
   paramsreac_ = nullptr;
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
       {
         // Note: We need to do a dynamic_cast here since Chemotaxis, Reaction, and Chemo-reaction
         // are in a diamond inheritance structure
-        paramsreac_ = dynamic_cast<MAT::PAR::MatListReactions*>(mat);
+        paramsreac_ = dynamic_cast<Mat::PAR::MatListReactions*>(mat);
       }
       else
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
@@ -205,8 +205,8 @@ void MAT::MatListReactions::Unpack(const std::vector<char>& data)
 
   // extract base class material
   std::vector<char> basedata(0);
-  MAT::MatList::ExtractfromPack(position, data, basedata);
-  MAT::MatList::Unpack(basedata);
+  Mat::MatList::ExtractfromPack(position, data, basedata);
+  Mat::MatList::Unpack(basedata);
 
   if (paramsreac_ != nullptr)  // paramsreac_ are not accessible in postprocessing mode
   {
@@ -215,10 +215,10 @@ void MAT::MatListReactions::Unpack(const std::vector<char>& data)
     for (m = paramsreac_->ReacIds()->begin(); m != paramsreac_->ReacIds()->end(); m++)
     {
       const int actmatid = *m;
-      Teuchos::RCP<CORE::MAT::Material> mat = MAT::Factory(actmatid);
+      Teuchos::RCP<Core::Mat::Material> mat = Mat::Factory(actmatid);
       if (mat == Teuchos::null) FOUR_C_THROW("Failed to allocate this material");
       material_map_write()->insert(
-          std::pair<int, Teuchos::RCP<CORE::MAT::Material>>(actmatid, mat));
+          std::pair<int, Teuchos::RCP<Core::Mat::Material>>(actmatid, mat));
     }
 
     if (paramsreac_->local_)
@@ -241,7 +241,7 @@ void MAT::MatListReactions::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  | reaction ID by Index                                      thon 11/14 |
  *----------------------------------------------------------------------*/
-int MAT::MatListReactions::ReacID(const unsigned index) const
+int Mat::MatListReactions::ReacID(const unsigned index) const
 {
   if ((int)index < paramsreac_->numreac_)
     return paramsreac_->reacids_.at(index);
@@ -255,7 +255,7 @@ int MAT::MatListReactions::ReacID(const unsigned index) const
 /*----------------------------------------------------------------------*
  | calculate advanced reaction terms                         thon 08/16 |
  *----------------------------------------------------------------------*/
-double MAT::MatListReactions::calc_rea_body_force_term(
+double Mat::MatListReactions::calc_rea_body_force_term(
     const int k, const std::vector<double>& phinp, const double* gpcoord, const double scale) const
 {
   // set time and space coordinates
@@ -270,8 +270,8 @@ double MAT::MatListReactions::calc_rea_body_force_term(
   for (int condnum = 0; condnum < NumReac(); condnum++)
   {
     const int reacid = ReacID(condnum);
-    const Teuchos::RCP<const MAT::ScatraReactionMat> reacmat =
-        Teuchos::rcp_static_cast<const MAT::ScatraReactionMat>(MaterialById(reacid));
+    const Teuchos::RCP<const Mat::ScatraReactionMat> reacmat =
+        Teuchos::rcp_static_cast<const Mat::ScatraReactionMat>(MaterialById(reacid));
 
     bodyforcetermK += reacmat->calc_rea_body_force_term(k, phinp, constants, scale);
   }
@@ -282,7 +282,7 @@ double MAT::MatListReactions::calc_rea_body_force_term(
 /*----------------------------------------------------------------------*
  | calculate advanced reaction term derivatives              thon 08/16 |
  *----------------------------------------------------------------------*/
-void MAT::MatListReactions::calc_rea_body_force_deriv_matrix(const int k,
+void Mat::MatListReactions::calc_rea_body_force_deriv_matrix(const int k,
     std::vector<double>& derivs, const std::vector<double>& phinp, const double* gpcoord,
     const double scale) const
 {
@@ -296,8 +296,8 @@ void MAT::MatListReactions::calc_rea_body_force_deriv_matrix(const int k,
   for (int condnum = 0; condnum < NumReac(); condnum++)
   {
     const int reacid = ReacID(condnum);
-    const Teuchos::RCP<const MAT::ScatraReactionMat> reacmat =
-        Teuchos::rcp_static_cast<const MAT::ScatraReactionMat>(MaterialById(reacid));
+    const Teuchos::RCP<const Mat::ScatraReactionMat> reacmat =
+        Teuchos::rcp_static_cast<const Mat::ScatraReactionMat>(MaterialById(reacid));
 
     reacmat->calc_rea_body_force_deriv_matrix(k, derivs, phinp, constants, scale);
   }
@@ -308,7 +308,7 @@ void MAT::MatListReactions::calc_rea_body_force_deriv_matrix(const int k,
 /*----------------------------------------------------------------------*
  | calculate advanced reaction terms                         thon 08/16 |
  *----------------------------------------------------------------------*/
-double MAT::MatListReactions::calc_rea_body_force_term(const int k,
+double Mat::MatListReactions::calc_rea_body_force_term(const int k,
     const std::vector<double>& phinp, const std::vector<std::pair<std::string, double>>& constants,
     const double* gpcoord, const double scale) const
 {
@@ -324,8 +324,8 @@ double MAT::MatListReactions::calc_rea_body_force_term(const int k,
   for (int condnum = 0; condnum < NumReac(); condnum++)
   {
     const int reacid = ReacID(condnum);
-    const Teuchos::RCP<const MAT::ScatraReactionMat> reacmat =
-        Teuchos::rcp_static_cast<const MAT::ScatraReactionMat>(MaterialById(reacid));
+    const Teuchos::RCP<const Mat::ScatraReactionMat> reacmat =
+        Teuchos::rcp_static_cast<const Mat::ScatraReactionMat>(MaterialById(reacid));
 
     bodyforcetermK += reacmat->calc_rea_body_force_term(k, phinp, constants_mod, scale);
   }
@@ -336,7 +336,7 @@ double MAT::MatListReactions::calc_rea_body_force_term(const int k,
 /*----------------------------------------------------------------------*
  | calculate advanced reaction term derivatives              thon 08/16 |
  *----------------------------------------------------------------------*/
-void MAT::MatListReactions::calc_rea_body_force_deriv_matrix(const int k,
+void Mat::MatListReactions::calc_rea_body_force_deriv_matrix(const int k,
     std::vector<double>& derivs, const std::vector<double>& phinp,
     const std::vector<std::pair<std::string, double>>& constants, const double* gpcoord,
     const double scale) const
@@ -351,8 +351,8 @@ void MAT::MatListReactions::calc_rea_body_force_deriv_matrix(const int k,
   for (int condnum = 0; condnum < NumReac(); condnum++)
   {
     const int reacid = ReacID(condnum);
-    const Teuchos::RCP<const MAT::ScatraReactionMat> reacmat =
-        Teuchos::rcp_static_cast<const MAT::ScatraReactionMat>(MaterialById(reacid));
+    const Teuchos::RCP<const Mat::ScatraReactionMat> reacmat =
+        Teuchos::rcp_static_cast<const Mat::ScatraReactionMat>(MaterialById(reacid));
 
     reacmat->calc_rea_body_force_deriv_matrix(k, derivs, phinp, constants_mod, scale);
   }
@@ -363,14 +363,14 @@ void MAT::MatListReactions::calc_rea_body_force_deriv_matrix(const int k,
 /*----------------------------------------------------------------------*
  | add additional variables to reaction                kremheller 07/17 |
  *----------------------------------------------------------------------*/
-void MAT::MatListReactions::add_additional_variables(
+void Mat::MatListReactions::add_additional_variables(
     const int k, const std::vector<std::pair<std::string, double>>& variables) const
 {
   for (int condnum = 0; condnum < NumReac(); condnum++)
   {
     const int reacid = ReacID(condnum);
-    const Teuchos::RCP<const MAT::ScatraReactionMat> reacmat =
-        Teuchos::rcp_static_cast<const MAT::ScatraReactionMat>(MaterialById(reacid));
+    const Teuchos::RCP<const Mat::ScatraReactionMat> reacmat =
+        Teuchos::rcp_static_cast<const Mat::ScatraReactionMat>(MaterialById(reacid));
 
     reacmat->add_additional_variables(k, variables);
   }
@@ -380,7 +380,7 @@ void MAT::MatListReactions::add_additional_variables(
  |  calculating advanced reaction term derivatives after additional variables     |
  |  (e.g. for monolithic coupling)                               kremheller 07/17 |
  *--------------------------------------------------------------------------------*/
-void MAT::MatListReactions::calc_rea_body_force_deriv_matrix_add_variables(const int k,
+void Mat::MatListReactions::calc_rea_body_force_deriv_matrix_add_variables(const int k,
     std::vector<double>& derivs, const std::vector<double>& phinp,
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants, const double* gpcoord,
@@ -404,8 +404,8 @@ void MAT::MatListReactions::calc_rea_body_force_deriv_matrix_add_variables(const
   for (int condnum = 0; condnum < NumReac(); condnum++)
   {
     const int reacid = ReacID(condnum);
-    const Teuchos::RCP<const MAT::ScatraReactionMat> reacmat =
-        Teuchos::rcp_static_cast<const MAT::ScatraReactionMat>(MaterialById(reacid));
+    const Teuchos::RCP<const Mat::ScatraReactionMat> reacmat =
+        Teuchos::rcp_static_cast<const Mat::ScatraReactionMat>(MaterialById(reacid));
 
     reacmat->calc_rea_body_force_deriv_matrix_add_variables(
         k, derivs, variables, constants_mod, scale);

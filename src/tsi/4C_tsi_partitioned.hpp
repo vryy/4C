@@ -114,7 +114,7 @@ namespace TSI
         double ittol                   //!< iteration tolerance
     );
 
-    enum INPAR::TSI::ConvNorm normtypeinc_;  //!< convergence check for residual temperatures
+    enum Inpar::TSI::ConvNorm normtypeinc_;  //!< convergence check for residual temperatures
 
     //! maximum iteration steps
     int itmax_;
@@ -149,7 +149,7 @@ namespace TSI
     //@}
 
     //! coupling algorithm
-    INPAR::TSI::SolutionSchemeOverFields coupling_;
+    Inpar::TSI::SolutionSchemeOverFields coupling_;
     //! we couple based on displacements
     bool displacementcoupling_;
     //! quasi-static solution of the mechanical equation

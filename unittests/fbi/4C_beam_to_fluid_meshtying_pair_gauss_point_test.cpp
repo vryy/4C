@@ -43,7 +43,7 @@ namespace
     {
       // Set up the evaluation data container for the geometry pairs.
       Teuchos::ParameterList line_to_volume_params_list;
-      INPAR::GEOMETRYPAIR::SetValidParametersLineTo3D(line_to_volume_params_list);
+      Inpar::GEOMETRYPAIR::SetValidParametersLineTo3D(line_to_volume_params_list);
       evaluation_data_ =
           Teuchos::rcp(new GEOMETRYPAIR::LineTo3DEvaluationData(line_to_volume_params_list));
     }
@@ -53,14 +53,14 @@ namespace
      */
     template <typename beam_type, typename fluid_type>
     void perform_gpts_pair_unit_test(
-        const CORE::LINALG::Matrix<beam_type::n_dof_, 1, double>& q_beam,
+        const Core::LinAlg::Matrix<beam_type::n_dof_, 1, double>& q_beam,
         const std::vector<double>& beam_dofvec,
-        const CORE::LINALG::Matrix<fluid_type::n_dof_, 1, double>& q_fluid,
-        const std::vector<double>& fluid_dofvec, CORE::LINALG::SerialDenseVector results_fs,
-        CORE::LINALG::SerialDenseVector results_ff,
-        const CORE::LINALG::Matrix<beam_type::n_dof_, fluid_type::n_dof_, double> results_ksf,
-        const CORE::LINALG::Matrix<fluid_type::n_dof_, beam_type::n_dof_, double> results_kfs,
-        const CORE::LINALG::Matrix<fluid_type::n_dof_, fluid_type::n_dof_, double> results_kff)
+        const Core::LinAlg::Matrix<fluid_type::n_dof_, 1, double>& q_fluid,
+        const std::vector<double>& fluid_dofvec, Core::LinAlg::SerialDenseVector results_fs,
+        Core::LinAlg::SerialDenseVector results_ff,
+        const Core::LinAlg::Matrix<beam_type::n_dof_, fluid_type::n_dof_, double> results_ksf,
+        const Core::LinAlg::Matrix<fluid_type::n_dof_, beam_type::n_dof_, double> results_kfs,
+        const Core::LinAlg::Matrix<fluid_type::n_dof_, fluid_type::n_dof_, double> results_kff)
     {
       using scalar_type = GEOMETRYPAIR::line_to_volume_scalar_type<beam_type, fluid_type>;
 
@@ -70,12 +70,12 @@ namespace
 
       // Create the elements.
       const int dummy_node_ids[2] = {0, 1};
-      Teuchos::RCP<CORE::Elements::Element> beam_element =
-          Teuchos::rcp(new DRT::ELEMENTS::Beam3eb(0, 0));
+      Teuchos::RCP<Core::Elements::Element> beam_element =
+          Teuchos::rcp(new Discret::ELEMENTS::Beam3eb(0, 0));
       beam_element->SetNodeIds(2, dummy_node_ids);
-      Teuchos::RCP<DRT::ELEMENTS::Fluid> fluid_element =
-          Teuchos::rcp(new DRT::ELEMENTS::Fluid(1, 0));
-      fluid_element->SetDisType(CORE::FE::CellType::hex8);
+      Teuchos::RCP<Discret::ELEMENTS::Fluid> fluid_element =
+          Teuchos::rcp(new Discret::ELEMENTS::Fluid(1, 0));
+      fluid_element->SetDisType(Core::FE::CellType::hex8);
 
       // Set up the beam element.
       std::vector<double> xrefe(6);
@@ -87,15 +87,15 @@ namespace
         }
       }
       // Cast beam element and set the geometry.
-      Teuchos::RCP<DRT::ELEMENTS::Beam3eb> beam_element_cast =
-          Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::Beam3eb>(beam_element, true);
+      Teuchos::RCP<Discret::ELEMENTS::Beam3eb> beam_element_cast =
+          Teuchos::rcp_dynamic_cast<Discret::ELEMENTS::Beam3eb>(beam_element, true);
       beam_element_cast->set_up_reference_geometry(xrefe);
 
       Teuchos::RCP<FBI::BeamToFluidMeshtyingParams> intersection_params =
           Teuchos::rcp(new FBI::BeamToFluidMeshtyingParams());
 
       // Call Init on the beam contact pair.
-      std::vector<const CORE::Elements::Element*> pair_elements;
+      std::vector<const Core::Elements::Element*> pair_elements;
       pair_elements.push_back(&(*beam_element));
       pair_elements.push_back(&(*fluid_element));
       pair.CreateGeometryPair(pair_elements[0], pair_elements[1], evaluation_data_);
@@ -118,12 +118,12 @@ namespace
       const int beam_dofs = beam_type::n_dof_;
 
       // Evaluate the local matrices.
-      CORE::LINALG::SerialDenseMatrix local_kff;
-      CORE::LINALG::SerialDenseMatrix local_kfs;
-      CORE::LINALG::SerialDenseMatrix local_ksf;
-      CORE::LINALG::SerialDenseMatrix local_kss;
-      CORE::LINALG::SerialDenseVector local_fs;
-      CORE::LINALG::SerialDenseVector local_ff;
+      Core::LinAlg::SerialDenseMatrix local_kff;
+      Core::LinAlg::SerialDenseMatrix local_kfs;
+      Core::LinAlg::SerialDenseMatrix local_ksf;
+      Core::LinAlg::SerialDenseMatrix local_kss;
+      Core::LinAlg::SerialDenseVector local_fs;
+      Core::LinAlg::SerialDenseVector local_ff;
       pair.pre_evaluate();
       bool projects =
           pair.Evaluate(&local_fs, &local_ff, &local_kss, &local_ksf, &local_kfs, &local_kff);
@@ -165,20 +165,20 @@ namespace
     typedef GEOMETRYPAIR::t_hex8 fluid_type;
 
     // Definition of variables for this test case.
-    CORE::LINALG::Matrix<beam_type::n_dof_, 1, double> q_beam;
-    CORE::LINALG::Matrix<beam_type::n_dof_, 1, double> v_beam;
-    CORE::LINALG::Matrix<9, 1, double> q_beam_rot;
-    CORE::LINALG::Matrix<fluid_type::n_dof_, 1, double> q_fluid;
-    CORE::LINALG::Matrix<fluid_type::n_dof_, 1, double> v_fluid;
+    Core::LinAlg::Matrix<beam_type::n_dof_, 1, double> q_beam;
+    Core::LinAlg::Matrix<beam_type::n_dof_, 1, double> v_beam;
+    Core::LinAlg::Matrix<9, 1, double> q_beam_rot;
+    Core::LinAlg::Matrix<fluid_type::n_dof_, 1, double> q_fluid;
+    Core::LinAlg::Matrix<fluid_type::n_dof_, 1, double> v_fluid;
     std::vector<double> beam_centerline_dofvec;
     std::vector<double> fluid_dofvec;
 
     // Matrices for the results.
-    CORE::LINALG::Matrix<fluid_type::n_dof_, fluid_type::n_dof_, double> results_kff(true);
-    CORE::LINALG::Matrix<fluid_type::n_dof_, beam_type::n_dof_, double> results_kfs(true);
-    CORE::LINALG::Matrix<beam_type::n_dof_, fluid_type::n_dof_, double> results_ksf(true);
-    CORE::LINALG::SerialDenseVector results_fs(beam_type::n_dof_, true);
-    CORE::LINALG::SerialDenseVector results_ff(fluid_type::n_dof_, true);
+    Core::LinAlg::Matrix<fluid_type::n_dof_, fluid_type::n_dof_, double> results_kff(true);
+    Core::LinAlg::Matrix<fluid_type::n_dof_, beam_type::n_dof_, double> results_kfs(true);
+    Core::LinAlg::Matrix<beam_type::n_dof_, fluid_type::n_dof_, double> results_ksf(true);
+    Core::LinAlg::SerialDenseVector results_fs(beam_type::n_dof_, true);
+    Core::LinAlg::SerialDenseVector results_ff(fluid_type::n_dof_, true);
     results_fs.putScalar(0.0);
     results_ff.putScalar(0.0);
 

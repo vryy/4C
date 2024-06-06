@@ -15,11 +15,11 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   template <bool do_piv, unsigned dim, typename valtype>
-  valtype gaussElimination(CORE::LINALG::Matrix<dim, dim, valtype>& A,
-      CORE::LINALG::Matrix<dim, 1, valtype>& b, CORE::LINALG::Matrix<dim, 1, valtype>& x)
+  valtype gaussElimination(Core::LinAlg::Matrix<dim, dim, valtype>& A,
+      Core::LinAlg::Matrix<dim, 1, valtype>& b, Core::LinAlg::Matrix<dim, 1, valtype>& x)
   {
     if (dim > 1)
     {
@@ -56,8 +56,8 @@ namespace CORE::LINALG
           // search for pivot element
           for (unsigned i = k + 1; i < dim; ++i)
           {
-            pivot = (CORE::MathOperations<valtype>::abs(A(pivot, k)) <
-                        CORE::MathOperations<valtype>::abs(A(i, k)))
+            pivot = (Core::MathOperations<valtype>::abs(A(pivot, k)) <
+                        Core::MathOperations<valtype>::abs(A(i, k)))
                         ? i
                         : pivot;
           }
@@ -130,9 +130,9 @@ namespace CORE::LINALG
     \return determinant of system matrix
   */
   template <unsigned dim>
-  double scaledGaussElimination(CORE::LINALG::Matrix<dim, dim>& A,  ///< (in)    : system matrix
-      CORE::LINALG::Matrix<dim, 1>& b,                              ///< (in)    : right-hand-side
-      CORE::LINALG::Matrix<dim, 1>& x                               ///< (out)   : solution vector
+  double scaledGaussElimination(Core::LinAlg::Matrix<dim, dim>& A,  ///< (in)    : system matrix
+      Core::LinAlg::Matrix<dim, 1>& b,                              ///< (in)    : right-hand-side
+      Core::LinAlg::Matrix<dim, 1>& x                               ///< (out)   : solution vector
   )
   {
     // infnorm scaling
@@ -149,7 +149,7 @@ namespace CORE::LINALG
       // close to zero row detected -> matrix does probably not have full rank
       if (max < 1.0e-14)
       {
-        return CORE::LINALG::gaussElimination<true, dim>(A, b, x);
+        return Core::LinAlg::gaussElimination<true, dim>(A, b, x);
       }
 
       // scale row with inv of max entry
@@ -162,10 +162,10 @@ namespace CORE::LINALG
     }
 
     // solve scaled system using pivoting
-    return CORE::LINALG::gaussElimination<true, dim>(A, b, x);
+    return Core::LinAlg::gaussElimination<true, dim>(A, b, x);
   }
 
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 FOUR_C_NAMESPACE_CLOSE
 

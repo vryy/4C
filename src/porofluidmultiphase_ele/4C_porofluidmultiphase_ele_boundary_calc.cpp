@@ -23,12 +23,12 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | singleton access method                                   vuong 08/16 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>*
-DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::Instance(
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>*
+Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::Instance(
     const int numdofpernode, const std::string& disname)
 {
-  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
       [](const int numdofpernode, const std::string& disname)
       {
         return std::unique_ptr<PoroFluidMultiPhaseEleBoundaryCalc<distype>>(
@@ -36,17 +36,17 @@ DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::Instance(
       });
 
   return singleton_map[disname].Instance(
-      CORE::UTILS::SingletonAction::create, numdofpernode, disname);
+      Core::UTILS::SingletonAction::create, numdofpernode, disname);
 }
 
 
 /*----------------------------------------------------------------------*
  | protected constructor for singletons                      vuong 08/16 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::PoroFluidMultiPhaseEleBoundaryCalc(
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::PoroFluidMultiPhaseEleBoundaryCalc(
     const int numdofpernode, const std::string& disname)
-    : params_(DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter::Instance(disname)),
+    : params_(Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter::Instance(disname)),
       numdofpernode_(numdofpernode),
       xyze_(true),  // initialize to zero
       edispnp_(true),
@@ -65,13 +65,13 @@ DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::PoroFluidMultiPhaseE
 /*----------------------------------------------------------------------*
  | setup element evaluation                                  vuong 08/16 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::setup_calc(
-    CORE::Elements::Element* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization)
+template <Core::FE::CellType distype>
+int Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::setup_calc(
+    Core::Elements::Element* ele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization)
 {
   // get node coordinates (we have a nsd_+1 dimensional domain!)
-  CORE::GEO::fillInitialPositionArray<distype, nsd_ + 1, CORE::LINALG::Matrix<nsd_ + 1, nen_>>(
+  Core::Geo::fillInitialPositionArray<distype, nsd_ + 1, Core::LinAlg::Matrix<nsd_ + 1, nen_>>(
       ele, xyze_);
 
   return 0;
@@ -80,12 +80,12 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::setup_calc(
 /*----------------------------------------------------------------------*
  * Evaluate element                                          vuong 08/16 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::Evaluate(
-    CORE::Elements::Element* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
-    std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
-    std::vector<CORE::LINALG::SerialDenseVector*>& elevec)
+template <Core::FE::CellType distype>
+int Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::Evaluate(
+    Core::Elements::Element* ele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
+    std::vector<Core::LinAlg::SerialDenseVector*>& elevec)
 {
   //--------------------------------------------------------------------------------
   // preparations for element
@@ -99,7 +99,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::Evaluate(
 
   // check for the action parameter
   const POROFLUIDMULTIPHASE::BoundaryAction action =
-      CORE::UTILS::GetAsEnum<POROFLUIDMULTIPHASE::BoundaryAction>(params, "action");
+      Core::UTILS::GetAsEnum<POROFLUIDMULTIPHASE::BoundaryAction>(params, "action");
   // evaluate action
   evaluate_action(ele, params, discretization, action, la, elemat, elevec);
 
@@ -109,10 +109,11 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::Evaluate(
 /*----------------------------------------------------------------------*
  | extract element based or nodal values                     vuong 08/16 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::extract_element_and_node_values(
-    CORE::Elements::Element* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<
+    distype>::extract_element_and_node_values(Core::Elements::Element* ele,
+    Teuchos::ParameterList& params, Discret::Discretization& discretization,
+    Core::Elements::Element::LocationArray& la)
 {
   // get additional state vector for ALE case: grid displacement
   if (params_->IsAle())
@@ -133,7 +134,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::extract_element
         lmdisp[inode * (nsd_ + 1) + idim] = la[ndsdisp].lm_[inode * numdispdofpernode + idim];
 
     // extract local values of displacement field from global state vector
-    CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nsd_ + 1, nen_>>(*dispnp, edispnp_, lmdisp);
+    Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nsd_ + 1, nen_>>(*dispnp, edispnp_, lmdisp);
 
     // add nodal displacements to point coordinates
     xyze_ += edispnp_;
@@ -145,13 +146,13 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::extract_element
 /*----------------------------------------------------------------------*
  * Action type: Evaluate                                     vuong 08/16 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::evaluate_action(
-    CORE::Elements::Element* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, POROFLUIDMULTIPHASE::BoundaryAction action,
-    CORE::Elements::Element::LocationArray& la,
-    std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
-    std::vector<CORE::LINALG::SerialDenseVector*>& elevec)
+template <Core::FE::CellType distype>
+int Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::evaluate_action(
+    Core::Elements::Element* ele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, POROFLUIDMULTIPHASE::BoundaryAction action,
+    Core::Elements::Element::LocationArray& la,
+    std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
+    std::vector<Core::LinAlg::SerialDenseVector*>& elevec)
 {
   // switch over action type
   switch (action)
@@ -159,8 +160,8 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::evaluate_action(
     case POROFLUIDMULTIPHASE::bd_calc_Neumann:
     {
       // check if the neumann conditions were set
-      CORE::Conditions::Condition* condition =
-          params.get<CORE::Conditions::Condition*>("condition");
+      Core::Conditions::Condition* condition =
+          params.get<Core::Conditions::Condition*>("condition");
       if (condition == nullptr) FOUR_C_THROW("Cannot access Neumann boundary condition!");
 
       // evaluate neumann loads
@@ -176,15 +177,15 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::evaluate_action(
 /*----------------------------------------------------------------------*
  | evaluate Neumann boundary condition                        vuong 08/16 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::evaluate_neumann(
-    CORE::Elements::Element* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
-    CORE::Elements::Element::LocationArray& la, CORE::LINALG::SerialDenseVector& elevec1)
+template <Core::FE::CellType distype>
+int Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::evaluate_neumann(
+    Core::Elements::Element* ele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseVector& elevec1)
 {
   // integration points and weights
-  const CORE::FE::IntPointsAndWeights<nsd_> intpoints(
-      POROFLUIDMULTIPHASE::ELEUTILS::DisTypeToOptGaussRule<distype>::rule);
+  const Core::FE::IntPointsAndWeights<nsd_> intpoints(
+      POROFLUIDMULTIPHASE::ElementUtils::DisTypeToOptGaussRule<distype>::rule);
 
   // find out whether we will use a time curve
   const double time = params_->Time();
@@ -211,7 +212,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::evaluate_neumann
 
     // determine global coordinates of current Gauss point
     const int nsd_vol_ele = nsd_ + 1;
-    CORE::LINALG::Matrix<nsd_vol_ele, 1> coordgp;  // coordinate has always to be given in 3D!
+    Core::LinAlg::Matrix<nsd_vol_ele, 1> coordgp;  // coordinate has always to be given in 3D!
     coordgp.MultiplyNN(xyze_, funct_);
 
     int functnum = -1;
@@ -227,8 +228,8 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::evaluate_neumann
         if (functnum > 0)
         {
           // evaluate function at current Gauss point (provide always 3D coordinates!)
-          functfac = GLOBAL::Problem::Instance()
-                         ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
+          functfac = Global::Problem::Instance()
+                         ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
                          .Evaluate(coordgpref, time, dof);
         }
         else
@@ -248,11 +249,11 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::evaluate_neumann
 /*----------------------------------------------------------------------*
  | evaluate shape functions and int. factor at int. point     vuong 08/16 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-double DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::eval_shape_func_and_int_fac(
-    const CORE::FE::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
+template <Core::FE::CellType distype>
+double Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::eval_shape_func_and_int_fac(
+    const Core::FE::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
     const int iquad,                                       ///< id of current Gauss point
-    CORE::LINALG::Matrix<1 + nsd_, 1>* normalvec  ///< normal vector at Gauss point(optional)
+    Core::LinAlg::Matrix<1 + nsd_, 1>* normalvec  ///< normal vector at Gauss point(optional)
 )
 {
   // coordinates of the current integration point
@@ -263,13 +264,13 @@ double DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::eval_shape_fu
   }
 
   // shape functions and their first derivatives
-  CORE::FE::shape_function<distype>(xsi_, funct_);
-  CORE::FE::shape_function_deriv1<distype>(xsi_, deriv_);
+  Core::FE::shape_function<distype>(xsi_, funct_);
+  Core::FE::shape_function_deriv1<distype>(xsi_, deriv_);
 
   // the metric tensor and the area of an infinitesimal surface/line element
   // optional: get normal at integration point as well
   double drs(0.0);
-  CORE::FE::ComputeMetricTensorForBoundaryEle<distype>(
+  Core::FE::ComputeMetricTensorForBoundaryEle<distype>(
       xyze_, deriv_, metrictensor_, drs, normalvec);
 
   // return the integration factor
@@ -279,12 +280,12 @@ double DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::eval_shape_fu
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 // template classes
-template class DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<CORE::FE::CellType::quad4>;
-template class DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<CORE::FE::CellType::quad8>;
-template class DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<CORE::FE::CellType::quad9>;
-template class DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<CORE::FE::CellType::tri3>;
-template class DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<CORE::FE::CellType::tri6>;
-template class DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<CORE::FE::CellType::line2>;
-template class DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<CORE::FE::CellType::line3>;
+template class Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<Core::FE::CellType::quad4>;
+template class Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<Core::FE::CellType::quad8>;
+template class Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<Core::FE::CellType::quad9>;
+template class Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<Core::FE::CellType::tri3>;
+template class Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<Core::FE::CellType::tri6>;
+template class Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<Core::FE::CellType::line2>;
+template class Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<Core::FE::CellType::line3>;
 
 FOUR_C_NAMESPACE_CLOSE

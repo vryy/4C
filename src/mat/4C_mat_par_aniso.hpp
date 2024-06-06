@@ -20,42 +20,42 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
-  namespace ELASTIC
+  namespace Elastic
   {
     class StructuralTensorStrategyBase;
   }
-}  // namespace MAT
+}  // namespace Mat
 
 /*----------------------------------------------------------------------*/
 /* declarations */
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
     /// Extension to hold 'quick' access material parameters for anisotropy
-    class ParameterAniso : public CORE::MAT::PAR::Parameter
+    class ParameterAniso : public Core::Mat::PAR::Parameter
     {
      public:
       /// construct the material object given material parameters
-      ParameterAniso(Teuchos::RCP<const CORE::MAT::PAR::Material> matdata);
+      ParameterAniso(Teuchos::RCP<const Core::Mat::PAR::Material> matdata);
 
       /// return pointer to strategy
-      const Teuchos::RCP<MAT::ELASTIC::StructuralTensorStrategyBase>& structural_tensor_strategy()
+      const Teuchos::RCP<Mat::Elastic::StructuralTensorStrategyBase>& structural_tensor_strategy()
       {
         return structural_tensor_strategy_;
       };
 
      private:
       /// structural tensor strategy
-      Teuchos::RCP<MAT::ELASTIC::StructuralTensorStrategyBase> structural_tensor_strategy_;
+      Teuchos::RCP<Mat::Elastic::StructuralTensorStrategyBase> structural_tensor_strategy_;
 
     };  // class ParameterAniso
 
   }  // namespace PAR
 
-}  // namespace MAT
+}  // namespace Mat
 
 
 FOUR_C_NAMESPACE_CLOSE

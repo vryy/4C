@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 \brief Returns the function that is to be integrated along the bounding lines of the irregular
 volume
 */
-double base_func_line_int(CORE::LINALG::Matrix<2, 1> pt, int inte_num, std::vector<double> alfa)
+double base_func_line_int(Core::LinAlg::Matrix<2, 1> pt, int inte_num, std::vector<double> alfa)
 {
   double basef_line = 0.0;
   if (inte_num == 1)  // f(x,y,z) = 1

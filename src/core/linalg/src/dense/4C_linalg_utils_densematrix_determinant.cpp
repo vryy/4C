@@ -17,12 +17,12 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double CORE::LINALG::DeterminantLU(const CORE::LINALG::SerialDenseMatrix& A)
+double Core::LinAlg::DeterminantLU(const Core::LinAlg::SerialDenseMatrix& A)
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   if (A.numRows() != A.numCols()) FOUR_C_THROW("Matrix is not square");
 #endif
-  CORE::LINALG::SerialDenseMatrix tmp(A);
+  Core::LinAlg::SerialDenseMatrix tmp(A);
   const int n = tmp.numCols();
   const int m = tmp.numRows();
   std::vector<int> ipiv(n);

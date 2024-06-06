@@ -22,12 +22,12 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SerialDenseVector;
   class SerialDenseMatrix;
-}  // namespace CORE::LINALG
-namespace DRT
+}  // namespace Core::LinAlg
+namespace Discret
 {
   class Discretization;
 
@@ -43,39 +43,39 @@ namespace DRT
     //=======================================================================
     //=======================================================================
 
-    class NStet5Type : public CORE::Elements::ElementType
+    class NStet5Type : public Core::Elements::ElementType
     {
       //! allow NStet5 element to access the nodal data
-      friend class DRT::ELEMENTS::NStet5;
+      friend class Discret::ELEMENTS::NStet5;
 
      public:
       std::string Name() const override { return "NStet5Type"; }
 
       static NStet5Type& Instance();
 
-      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-      int Initialize(DRT::Discretization& dis) override;
+      int Initialize(Discret::Discretization& dis) override;
 
-      void pre_evaluate(DRT::Discretization& dis, Teuchos::ParameterList& p,
-          Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
-          Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
+      void pre_evaluate(Discret::Discretization& dis, Teuchos::ParameterList& p,
+          Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
+          Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
           Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
           Teuchos::RCP<Epetra_Vector> systemvector3) override;
 
       void nodal_block_information(
-          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+          Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
+      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+          Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       void setup_element_definition(
-          std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+          std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
           override;
 
      private:
@@ -84,10 +84,10 @@ namespace DRT
       std::string get_element_type_string() const { return "NSTET5"; }
 
       //! map of row nodes adjacent to NStet5 elements
-      std::map<int, CORE::Nodes::Node*> noderids_;
+      std::map<int, Core::Nodes::Node*> noderids_;
 
       //! map of column NStet5 elements
-      std::map<int, DRT::ELEMENTS::NStet5*> elecids_;
+      std::map<int, Discret::ELEMENTS::NStet5*> elecids_;
 
       //! nodal stresses and strains for output
       Teuchos::RCP<Epetra_MultiVector> nstress_;
@@ -95,11 +95,11 @@ namespace DRT
 
       //! map of nodes forming a patch around a node (includes center node)
       // std::map<centernodeid,std::map<nodeid,nodeptr> >
-      std::map<int, std::map<int, CORE::Nodes::Node*>> adjnode_;
+      std::map<int, std::map<int, Core::Nodes::Node*>> adjnode_;
 
       //! vector of elements adjacent to each row node
       // std::map<centernodeid,vector of ptrs to elements>
-      std::map<int, std::vector<DRT::ELEMENTS::NStet5*>> adjele_;
+      std::map<int, std::vector<Discret::ELEMENTS::NStet5*>> adjele_;
 
       //! map of subelements of adjacent elements
       // std::map<centernodeid,std::map<eleid,vector of local subele numbers> >
@@ -112,58 +112,59 @@ namespace DRT
       //! map of location vectors for patch around a node
       std::map<int, std::vector<std::vector<std::vector<int>>>> lmlm_;
 
-      void init_elementsand_maps(std::map<int, DRT::ELEMENTS::NStet5*>& elecids,
-          std::map<int, CORE::Nodes::Node*>& noderids, const int myrank, const int numproc,
-          DRT::Discretization& dis);
+      void init_elementsand_maps(std::map<int, Discret::ELEMENTS::NStet5*>& elecids,
+          std::map<int, Core::Nodes::Node*>& noderids, const int myrank, const int numproc,
+          Discret::Discretization& dis);
 
-      void init_adjacency(std::map<int, DRT::ELEMENTS::NStet5*>& elecids,
-          std::map<int, CORE::Nodes::Node*>& noderids,
-          std::map<int, std::vector<DRT::ELEMENTS::NStet5*>>& adjele,
-          std::map<int, std::map<int, CORE::Nodes::Node*>>& adjnode,
+      void init_adjacency(std::map<int, Discret::ELEMENTS::NStet5*>& elecids,
+          std::map<int, Core::Nodes::Node*>& noderids,
+          std::map<int, std::vector<Discret::ELEMENTS::NStet5*>>& adjele,
+          std::map<int, std::map<int, Core::Nodes::Node*>>& adjnode,
           std::map<int, std::vector<int>>& adjlm,
           std::map<int, std::map<int, std::vector<int>>>& adjsubele,
           std::map<int, std::vector<std::vector<std::vector<int>>>>& adjlmlm,
-          DRT::Discretization& dis);
+          Discret::Discretization& dis);
 
 
-      void element_deformation_gradient(DRT::Discretization& dis);
+      void element_deformation_gradient(Discret::Discretization& dis);
 
-      void nodal_integration(CORE::LINALG::SerialDenseMatrix* stiff,
-          CORE::LINALG::SerialDenseVector* force, std::map<int, CORE::Nodes::Node*>& adjnode,
-          std::vector<DRT::ELEMENTS::NStet5*>& adjele, std::map<int, std::vector<int>>& adjsubele,
-          std::vector<int>& lm, std::vector<std::vector<std::vector<int>>>& lmlm,
-          const Epetra_Vector& disp, DRT::Discretization& dis, std::vector<double>* nodalstress,
-          std::vector<double>* nodalstrain, const INPAR::STR::StressType iostress,
-          const INPAR::STR::StrainType iostrain);
+      void nodal_integration(Core::LinAlg::SerialDenseMatrix* stiff,
+          Core::LinAlg::SerialDenseVector* force, std::map<int, Core::Nodes::Node*>& adjnode,
+          std::vector<Discret::ELEMENTS::NStet5*>& adjele,
+          std::map<int, std::vector<int>>& adjsubele, std::vector<int>& lm,
+          std::vector<std::vector<std::vector<int>>>& lmlm, const Epetra_Vector& disp,
+          Discret::Discretization& dis, std::vector<double>* nodalstress,
+          std::vector<double>* nodalstrain, const Inpar::STR::StressType iostress,
+          const Inpar::STR::StrainType iostrain);
 
 
-      void select_material(const Teuchos::RCP<CORE::MAT::Material>& mat,
-          CORE::LINALG::Matrix<6, 1>& stress, CORE::LINALG::Matrix<6, 6>& cmat, double& density,
-          CORE::LINALG::Matrix<6, 1>& glstrain, CORE::LINALG::Matrix<3, 3>& defgrd, int gp,
+      void select_material(const Teuchos::RCP<Core::Mat::Material>& mat,
+          Core::LinAlg::Matrix<6, 1>& stress, Core::LinAlg::Matrix<6, 6>& cmat, double& density,
+          Core::LinAlg::Matrix<6, 1>& glstrain, Core::LinAlg::Matrix<3, 3>& defgrd, int gp,
           const int eleGID);
 
       // compute deviatoric stresses and tangent
-      static void dev_stress_tangent(CORE::LINALG::Matrix<6, 1>& Sdev,
-          CORE::LINALG::Matrix<6, 6>& CCdev, CORE::LINALG::Matrix<6, 6>& CC,
-          const CORE::LINALG::Matrix<6, 1>& S, const CORE::LINALG::Matrix<3, 3>& C);
+      static void dev_stress_tangent(Core::LinAlg::Matrix<6, 1>& Sdev,
+          Core::LinAlg::Matrix<6, 6>& CCdev, Core::LinAlg::Matrix<6, 6>& CC,
+          const Core::LinAlg::Matrix<6, 1>& S, const Core::LinAlg::Matrix<3, 3>& C);
 
-      void strain_output(const INPAR::STR::StrainType iostrain, std::vector<double>& nodalstrain,
-          CORE::LINALG::Matrix<3, 3>& F, const double& detF, const double volweight,
+      void strain_output(const Inpar::STR::StrainType iostrain, std::vector<double>& nodalstrain,
+          Core::LinAlg::Matrix<3, 3>& F, const double& detF, const double volweight,
           const double devweight);
 
-      void strain_output(const INPAR::STR::StrainType iostrain, std::vector<double>& nodalstrain,
-          CORE::LINALG::Matrix<3, 3>& F, CORE::LINALG::Matrix<6, 1>& glstrain, const double weight);
+      void strain_output(const Inpar::STR::StrainType iostrain, std::vector<double>& nodalstrain,
+          Core::LinAlg::Matrix<3, 3>& F, Core::LinAlg::Matrix<6, 1>& glstrain, const double weight);
 
-      void stress_output(const INPAR::STR::StressType iostress, std::vector<double>& nodalstress,
-          CORE::LINALG::Matrix<6, 1>& stress, CORE::LINALG::Matrix<3, 3>& F, const double& detF);
+      void stress_output(const Inpar::STR::StressType iostress, std::vector<double>& nodalstress,
+          Core::LinAlg::Matrix<6, 1>& stress, Core::LinAlg::Matrix<3, 3>& F, const double& detF);
 
 
       //! build deformation gradient
       template <typename T>
-      static CORE::LINALG::Matrix<3, 3, T> t_build_f(
-          const CORE::LINALG::Matrix<4, 3, T>& xdisp, const CORE::LINALG::Matrix<4, 3>& nxyz)
+      static Core::LinAlg::Matrix<3, 3, T> t_build_f(
+          const Core::LinAlg::Matrix<4, 3, T>& xdisp, const Core::LinAlg::Matrix<4, 3>& nxyz)
       {
-        CORE::LINALG::Matrix<3, 3, T> F(true);
+        Core::LinAlg::Matrix<3, 3, T> F(true);
         for (int i = 0; i < 3; ++i)
         {
           for (int j = 0; j < 3; ++j)
@@ -175,7 +176,7 @@ namespace DRT
 
       //! build and return determinant of a 3x3 matrix
       template <typename T>
-      T determinant(CORE::LINALG::Matrix<3, 3, T>& A)
+      T determinant(Core::LinAlg::Matrix<3, 3, T>& A)
       {
         T b00 = A(0, 0);
         T b01 = A(0, 1);
@@ -200,7 +201,7 @@ namespace DRT
 
     */
     //----------------------------------------------------------------------------
-    class NStet5 : public CORE::Elements::Element
+    class NStet5 : public Core::Elements::Element
     {
      public:
       friend class NStet5Type;
@@ -229,15 +230,15 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      inline CORE::Elements::Element* Clone() const override
+      inline Core::Elements::Element* Clone() const override
       {
-        return new DRT::ELEMENTS::NStet5(*this);
+        return new Discret::ELEMENTS::NStet5(*this);
       }
 
       /*!
       \brief Get shape type of element
       */
-      inline CORE::FE::CellType Shape() const override { return CORE::FE::CellType::tet4; }
+      inline Core::FE::CellType Shape() const override { return Core::FE::CellType::tet4; }
 
       /*!
       \brief Return number of volumes of this element
@@ -258,13 +259,13 @@ namespace DRT
       \brief Get vector of Teuchos::RCPs to the lines of this element
 
       */
-      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
 
       */
-      std::vector<Teuchos::RCP<CORE::Elements::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> Surfaces() override;
 
       /*!
       \brief Return unique ParObject id
@@ -280,7 +281,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(CORE::COMM::PackBuffer& data) const override;
+      void Pack(Core::Communication::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -293,14 +294,14 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom of a certain node
-             (implements pure virtual CORE::Elements::Element)
+             (implements pure virtual Core::Elements::Element)
 
       The element decides how many degrees of freedom its nodes must have.
       As this may vary along a simulation, the element can redecide the
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      inline int NumDofPerNode(const CORE::Nodes::Node& node) const override { return 3; }
+      inline int NumDofPerNode(const Core::Nodes::Node& node) const override { return 3; }
 
       /*!
       \brief The 3 degrees of freedom of the center node
@@ -318,7 +319,7 @@ namespace DRT
       \brief Read input for this element
       */
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          INPUT::LineDefinition* linedef) override;
+          Input::LineDefinition* linedef) override;
 
       /*!
       \brief Evaluate an element
@@ -344,11 +345,11 @@ namespace DRT
                               to fill this vector
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
-          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2,
-          CORE::LINALG::SerialDenseVector& elevec3) override;
+      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
+          Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseVector& elevec2,
+          Core::LinAlg::SerialDenseVector& elevec3) override;
 
 
       /*!
@@ -365,10 +366,10 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          CORE::Conditions::Condition& condition, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
+      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Core::Conditions::Condition& condition, std::vector<int>& lm,
+          Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;
 
 
      protected:
@@ -412,7 +413,7 @@ namespace DRT
       int material_;
 
       //! vector of history variables for each Gauss point
-      std::vector<Teuchos::RCP<CORE::MAT::Material>> mat_;
+      std::vector<Teuchos::RCP<Core::Mat::Material>> mat_;
 
       //! volume of element
       double V_;
@@ -421,17 +422,17 @@ namespace DRT
       ///----------------------------------------------- prestressing switch & time
       /// prestressing assume 4 Gausspoints per element,
       /// that is, one per sub-element
-      INPAR::STR::PreStress pstype_;
+      Inpar::STR::PreStress pstype_;
       double pstime_;
       double time_;
       /// Prestressing object
-      Teuchos::RCP<DRT::ELEMENTS::PreStress> prestress_;
+      Teuchos::RCP<Discret::ELEMENTS::PreStress> prestress_;
       /// compute Jacobian mapping wrt to deformed configuration
       void update_jacobian_mapping(
-          const std::vector<double>& disp, DRT::ELEMENTS::PreStress& prestress);
+          const std::vector<double>& disp, Discret::ELEMENTS::PreStress& prestress);
       /// compute defgrd in all gp for given disp
-      void def_gradient(const std::vector<double>& disp, CORE::LINALG::SerialDenseMatrix& gpdefgrd,
-          DRT::ELEMENTS::PreStress& prestress);
+      void def_gradient(const std::vector<double>& disp, Core::LinAlg::SerialDenseMatrix& gpdefgrd,
+          Discret::ELEMENTS::PreStress& prestress);
 
       //---------------------------------------------- quantities related to subtets
       //! nodal connectivity  of subelements
@@ -443,23 +444,23 @@ namespace DRT
       inline const double* mid_x() const { return midX_; }
 
       //! derivatives of shape functions for subtets
-      CORE::LINALG::Matrix<4, 3> subnxyz_[4];
-      inline const CORE::LINALG::Matrix<4, 3>& sub_nxyz(int i) const { return subnxyz_[i]; }
+      Core::LinAlg::Matrix<4, 3> subnxyz_[4];
+      inline const Core::LinAlg::Matrix<4, 3>& sub_nxyz(int i) const { return subnxyz_[i]; }
 
       //! reference volume of subelements
       double subV_[4]{};
       inline const double& sub_v(int i) const { return subV_[i]; }
 
-      CORE::LINALG::Matrix<3, 3> subF_[4];
-      inline CORE::LINALG::Matrix<3, 3>& sub_f(int i) { return subF_[i]; }
+      Core::LinAlg::Matrix<3, 3> subF_[4];
+      inline Core::LinAlg::Matrix<3, 3>& sub_f(int i) { return subF_[i]; }
       //---------------------------------------------------------------------------
 
 
 
-      inline static CORE::LINALG::Matrix<3, 3> build_f(
-          const CORE::LINALG::Matrix<4, 3>& xdisp, const CORE::LINALG::Matrix<4, 3>& nxyz)
+      inline static Core::LinAlg::Matrix<3, 3> build_f(
+          const Core::LinAlg::Matrix<4, 3>& xdisp, const Core::LinAlg::Matrix<4, 3>& nxyz)
       {
-        CORE::LINALG::Matrix<3, 3> F(false);
+        Core::LinAlg::Matrix<3, 3> F(false);
         F.MultiplyTN(xdisp, nxyz);
         F(0, 0) += 1.0;
         F(1, 1) += 1.0;
@@ -476,7 +477,7 @@ namespace DRT
       virtual void init_element();
 
       //! Shape functions
-      inline void shape_function(CORE::LINALG::Matrix<4, 1>& funct, const double& e1,
+      inline void shape_function(Core::LinAlg::Matrix<4, 1>& funct, const double& e1,
           const double& e2, const double& e3, const double& e4)
       {
         // shape function is N_i = xsi_i
@@ -488,7 +489,7 @@ namespace DRT
       }
 
       //! Shape function derivatives
-      inline void shape_function_derivatives(CORE::LINALG::Matrix<4, 4>& deriv)
+      inline void shape_function_derivatives(Core::LinAlg::Matrix<4, 4>& deriv)
       {
         // Ni,j = 1.0 for i==j, otherwise 0.0
         deriv.Clear();
@@ -501,23 +502,23 @@ namespace DRT
 
       //! standards displ. tet4 calc routine
       virtual void nstet5nlnstiffmass(std::vector<int>& lm, std::vector<double>& disp,
-          CORE::LINALG::Matrix<15, 15>* stiffmatrix, CORE::LINALG::Matrix<15, 15>* massmatrix,
-          CORE::LINALG::Matrix<15, 1>* force, CORE::LINALG::Matrix<1, 6>* elestress,
-          CORE::LINALG::Matrix<1, 6>* elestrain, const INPAR::STR::StressType iostress,
-          const INPAR::STR::StrainType iostrain);
+          Core::LinAlg::Matrix<15, 15>* stiffmatrix, Core::LinAlg::Matrix<15, 15>* massmatrix,
+          Core::LinAlg::Matrix<15, 1>* force, Core::LinAlg::Matrix<1, 6>* elestress,
+          Core::LinAlg::Matrix<1, 6>* elestrain, const Inpar::STR::StressType iostress,
+          const Inpar::STR::StrainType iostrain);
 
 
       //! lump mass matrix (bborn 07/08)
-      void nstet5lumpmass(CORE::LINALG::Matrix<15, 15>* emass);
+      void nstet5lumpmass(Core::LinAlg::Matrix<15, 15>* emass);
 
 
       void so_nstet5_expol(
-          CORE::LINALG::Matrix<1, 6>& stresses, CORE::LINALG::Matrix<4, 6>& nodalstresses);
+          Core::LinAlg::Matrix<1, 6>& stresses, Core::LinAlg::Matrix<4, 6>& nodalstresses);
 
 
 
-      void select_material(CORE::LINALG::Matrix<6, 1>& stress, CORE::LINALG::Matrix<6, 6>& cmat,
-          double& density, CORE::LINALG::Matrix<6, 1>& glstrain, CORE::LINALG::Matrix<3, 3>& defgrd,
+      void select_material(Core::LinAlg::Matrix<6, 1>& stress, Core::LinAlg::Matrix<6, 6>& cmat,
+          double& density, Core::LinAlg::Matrix<6, 1>& glstrain, Core::LinAlg::Matrix<3, 3>& defgrd,
           int gp);
 
 
@@ -539,7 +540,7 @@ namespace DRT
 
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

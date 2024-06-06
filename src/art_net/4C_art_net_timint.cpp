@@ -28,9 +28,9 @@ FOUR_C_NAMESPACE_OPEN
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
-ART::TimInt::TimInt(Teuchos::RCP<DRT::Discretization> actdis, const int linsolvernumber,
+Arteries::TimInt::TimInt(Teuchos::RCP<Discret::Discretization> actdis, const int linsolvernumber,
     const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& artparams,
-    CORE::IO::DiscretizationWriter& output)
+    Core::IO::DiscretizationWriter& output)
     : discret_(actdis),
       solver_(Teuchos::null),
       params_(probparams),
@@ -60,7 +60,7 @@ ART::TimInt::TimInt(Teuchos::RCP<DRT::Discretization> actdis, const int linsolve
   maxtime_ = dtp_ * double(stepmax_);
 
   // solve scatra flag
-  solvescatra_ = CORE::UTILS::IntegralValue<int>(artparams, "SOLVESCATRA");
+  solvescatra_ = Core::UTILS::IntegralValue<int>(artparams, "SOLVESCATRA");
 
   if (linsolvernumber_ == -1) FOUR_C_THROW("Set a valid linear solver for arterial network");
 }
@@ -70,11 +70,11 @@ ART::TimInt::TimInt(Teuchos::RCP<DRT::Discretization> actdis, const int linsolve
 /*------------------------------------------------------------------------*
  | initialize time integration                            kremheller 03/18 |
  *------------------------------------------------------------------------*/
-void ART::TimInt::Init(const Teuchos::ParameterList& globaltimeparams,
+void Arteries::TimInt::Init(const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& arteryparams, const std::string& scatra_disname)
 {
-  solver_ = Teuchos::rcp(new CORE::LINALG::Solver(
-      GLOBAL::Problem::Instance()->SolverParams(linsolvernumber_), discret_->Comm()));
+  solver_ = Teuchos::rcp(new Core::LinAlg::Solver(
+      Global::Problem::Instance()->SolverParams(linsolvernumber_), discret_->Comm()));
 
   discret_->compute_null_space_if_necessary(solver_->Params());
 
@@ -91,7 +91,8 @@ void ART::TimInt::Init(const Teuchos::ParameterList& globaltimeparams,
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void ART::TimInt::Integrate(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams)
+void Arteries::TimInt::Integrate(
+    bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams)
 {
   coupledTo3D_ = CoupledTo3D;
   if (CoupledTo3D && CouplingParams.get() == nullptr)
@@ -123,7 +124,7 @@ void ART::TimInt::Integrate(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterLis
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void ART::TimInt::prepare_time_loop()
+void Arteries::TimInt::prepare_time_loop()
 {
   // do nothing
   return;
@@ -139,7 +140,7 @@ void ART::TimInt::prepare_time_loop()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void ART::TimInt::TimeLoop(
+void Arteries::TimInt::TimeLoop(
     bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams)
 {
   coupledTo3D_ = CoupledTo3D;
@@ -211,7 +212,7 @@ void ART::TimInt::TimeLoop(
     }
   }
 
-}  // ART::TimInt::TimeLoop
+}  // Arteries::TimInt::TimeLoop
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -223,7 +224,7 @@ void ART::TimInt::TimeLoop(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void ART::TimInt::prepare_time_step()
+void Arteries::TimInt::prepare_time_step()
 {
   // -------------------------------------------------------------------
   //              set time dependent parameters

@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
  *---------------------------------------------------------------------------*/
-namespace PARTICLEINTERACTION
+namespace ParticleInteraction
 {
   class MaterialHandler final
   {
@@ -45,7 +45,7 @@ namespace PARTICLEINTERACTION
     void Setup();
 
     //! return pointer to particle material parameter
-    inline const MAT::PAR::ParticleMaterialBase* get_ptr_to_particle_mat_parameter(
+    inline const Mat::PAR::ParticleMaterialBase* get_ptr_to_particle_mat_parameter(
         PARTICLEENGINE::TypeEnum type_i) const
     {
       return phasetypetoparticlematpar_[type_i];
@@ -59,12 +59,12 @@ namespace PARTICLEINTERACTION
     const Teuchos::ParameterList& params_;
 
     //! relate particle types to particle material parameters
-    std::vector<const MAT::PAR::ParticleMaterialBase*> phasetypetoparticlematpar_;
+    std::vector<const Mat::PAR::ParticleMaterialBase*> phasetypetoparticlematpar_;
 
     //! set of particle types of stored particle material parameters
     std::set<PARTICLEENGINE::TypeEnum> storedtypes_;
   };
-}  // namespace PARTICLEINTERACTION
+}  // namespace ParticleInteraction
 
 /*---------------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

@@ -62,10 +62,10 @@ namespace CONTACT
     NitscheStrategy(const NitscheStrategy& old) = delete;
 
     void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
-        Teuchos::RCP<CORE::LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f, int step,
+        Teuchos::RCP<Core::LinAlg::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f, int step,
         int iter, bool predictor) override;
 
-    void DoReadRestart(CORE::IO::DiscretizationReader& reader,
+    void DoReadRestart(Core::IO::DiscretizationReader& reader,
         Teuchos::RCP<const Epetra_Vector> dis,
         Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr) override;
 
@@ -85,7 +85,7 @@ namespace CONTACT
     Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
         const enum CONTACT::VecBlockType& bt) const override;
 
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrixBlockPtr(const enum CONTACT::MatBlockType& bt,
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> GetMatrixBlockPtr(const enum CONTACT::MatBlockType& bt,
         const CONTACT::ParamsInterface* cparams) const override;
 
     /*! \brief Setup this strategy object (maps, vectors, etc.)
@@ -103,7 +103,7 @@ namespace CONTACT
      to set the D.B.C. status in each CNode.
 
      \param dbcmaps (in): MapExtractor carrying global dbc map */
-    void store_dirichlet_status(Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmaps) override{
+    void store_dirichlet_status(Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmaps) override{
         /* we don't care about dirichlet for now */
     };
     void Update(Teuchos::RCP<const Epetra_Vector> dis) override;
@@ -114,7 +114,7 @@ namespace CONTACT
     };
     void compute_contact_stresses() final{/* nothing stress output in nitsche strategy yet */};
     virtual void reconnect_parent_elements();
-    void set_state(const enum MORTAR::StateType& statename, const Epetra_Vector& vec) override;
+    void set_state(const enum Mortar::StateType& statename, const Epetra_Vector& vec) override;
 
     /*!
      * @brief  Set the parent state
@@ -122,7 +122,7 @@ namespace CONTACT
      * @param[in] statename  name of state to be set
      * @param[in] vec        corresponding state vector
      */
-    virtual void SetParentState(const enum MORTAR::StateType& statename, const Epetra_Vector& vec);
+    virtual void SetParentState(const enum Mortar::StateType& statename, const Epetra_Vector& vec);
 
     Teuchos::RCP<const Epetra_Vector> GetLagrMultN(const bool& redist) const override
     {
@@ -153,9 +153,9 @@ namespace CONTACT
     int ActiveSetSteps() override { return 0; }
     void ResetActiveSet() override {}
     void Recover(Teuchos::RCP<Epetra_Vector> disi) override {}
-    void build_saddle_point_system(Teuchos::RCP<CORE::LINALG::SparseOperator> kdd,
+    void build_saddle_point_system(Teuchos::RCP<Core::LinAlg::SparseOperator> kdd,
         Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
-        Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
+        Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
         Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) override
     {
       FOUR_C_THROW(
@@ -177,17 +177,17 @@ namespace CONTACT
     void update_uzawa_augmented_lagrange() override {}
     void update_constraint_norm(int uzawaiter) override {}
     void Initialize() override{};
-    void EvaluateContact(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
+    void EvaluateContact(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff) override
     {
       FOUR_C_THROW("not supported in this strategy");
     }
-    void EvaluateFriction(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
+    void EvaluateFriction(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff) override
     {
       FOUR_C_THROW("not supported in this strategy");
     }
-    void InitializeUzawa(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
+    void InitializeUzawa(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff) override
     {
     }
@@ -239,7 +239,7 @@ namespace CONTACT
      * @param[in] bt  matrix block type
      * @return matrix block for given matrix block type
      */
-    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> setup_matrix_block_ptr(
+    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> setup_matrix_block_ptr(
         const enum MatBlockType& bt);
 
     /*!
@@ -249,7 +249,7 @@ namespace CONTACT
      * @param[in,out] kc  matrix block of given matrix block type that has to be completed
      */
     virtual void complete_matrix_block_ptr(
-        const enum MatBlockType& bt, Teuchos::RCP<CORE::LINALG::SparseMatrix> kc);
+        const enum MatBlockType& bt, Teuchos::RCP<Core::LinAlg::SparseMatrix> kc);
 
     /*!
      * @brief Fill block matrix of given matrix block type
@@ -257,7 +257,7 @@ namespace CONTACT
      * @param[in] bt  matrix block type
      * @return the filled block matrix of given matrix block type
      */
-    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> create_matrix_block_ptr(
+    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> create_matrix_block_ptr(
         const enum MatBlockType& bt);
 
     std::vector<Teuchos::RCP<CONTACT::Interface>> interface_;
@@ -266,7 +266,7 @@ namespace CONTACT
     bool curr_state_eval_;
 
     Teuchos::RCP<Epetra_FEVector> fc_;
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> kc_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> kc_;
   };
 }  // namespace CONTACT
 FOUR_C_NAMESPACE_CLOSE

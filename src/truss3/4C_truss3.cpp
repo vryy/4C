@@ -18,58 +18,60 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-DRT::ELEMENTS::Truss3Type DRT::ELEMENTS::Truss3Type::instance_;
+Discret::ELEMENTS::Truss3Type Discret::ELEMENTS::Truss3Type::instance_;
 
-DRT::ELEMENTS::Truss3Type& DRT::ELEMENTS::Truss3Type::Instance() { return instance_; }
+Discret::ELEMENTS::Truss3Type& Discret::ELEMENTS::Truss3Type::Instance() { return instance_; }
 
-CORE::COMM::ParObject* DRT::ELEMENTS::Truss3Type::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Discret::ELEMENTS::Truss3Type::Create(const std::vector<char>& data)
 {
-  auto* object = new DRT::ELEMENTS::Truss3(-1, -1);
+  auto* object = new Discret::ELEMENTS::Truss3(-1, -1);
   object->Unpack(data);
   return object;
 }
 
 
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Truss3Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Truss3Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "TRUSS3")
   {
-    Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Truss3(id, owner));
+    Teuchos::RCP<Core::Elements::Element> ele =
+        Teuchos::rcp(new Discret::ELEMENTS::Truss3(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Truss3Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Truss3Type::Create(
     const int id, const int owner)
 {
-  Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Truss3(id, owner));
+  Teuchos::RCP<Core::Elements::Element> ele =
+      Teuchos::rcp(new Discret::ELEMENTS::Truss3(id, owner));
   return ele;
 }
 
 
-void DRT::ELEMENTS::Truss3Type::nodal_block_information(
-    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+void Discret::ELEMENTS::Truss3Type::nodal_block_information(
+    Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
   dimns = 6;
   nv = 3;
 }
 
-CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Truss3Type::ComputeNullSpace(
-    CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
+Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::Truss3Type::ComputeNullSpace(
+    Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid3DNullSpace(node, x0);
 }
 
-void DRT::ELEMENTS::Truss3Type::setup_element_definition(
-    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+void Discret::ELEMENTS::Truss3Type::setup_element_definition(
+    std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
-  std::map<std::string, INPUT::LineDefinition>& defs = definitions["TRUSS3"];
+  std::map<std::string, Input::LineDefinition>& defs = definitions["TRUSS3"];
 
-  defs["LINE2"] = INPUT::LineDefinition::Builder()
+  defs["LINE2"] = Input::LineDefinition::Builder()
                       .AddIntVector("LINE2", 2)
                       .AddNamedInt("MAT")
                       .AddNamedDouble("CROSS")
@@ -81,13 +83,13 @@ void DRT::ELEMENTS::Truss3Type::setup_element_definition(
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            cyron 08/08|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Truss3::Truss3(int id, int owner)
-    : CORE::Elements::Element(id, owner),
+Discret::ELEMENTS::Truss3::Truss3(int id, int owner)
+    : Core::Elements::Element(id, owner),
       crosssec_(0.0),
       eint_(0.0),
       lrefe_(0.0),
-      gaussrule_(CORE::FE::GaussRule1D::line_2point),
-      diff_disp_ref_(CORE::LINALG::Matrix<1, 3>(true)),
+      gaussrule_(Core::FE::GaussRule1D::line_2point),
+      diff_disp_ref_(Core::LinAlg::Matrix<1, 3>(true)),
       interface_ptr_(Teuchos::null),
       isinit_(false),
       jacobimass_(),
@@ -100,8 +102,8 @@ DRT::ELEMENTS::Truss3::Truss3(int id, int owner)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       cyron 08/08|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Truss3::Truss3(const DRT::ELEMENTS::Truss3& old)
-    : CORE::Elements::Element(old),
+Discret::ELEMENTS::Truss3::Truss3(const Discret::ELEMENTS::Truss3& old)
+    : Core::Elements::Element(old),
       crosssec_(old.crosssec_),
       eint_(old.eint_),
       lrefe_(old.lrefe_),
@@ -121,25 +123,25 @@ DRT::ELEMENTS::Truss3::Truss3(const DRT::ELEMENTS::Truss3& old)
  |  Deep copy this instance of Truss3 and return pointer to it (public) |
  |                                                            cyron 08/08|
  *----------------------------------------------------------------------*/
-CORE::Elements::Element* DRT::ELEMENTS::Truss3::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::Truss3::Clone() const
 {
-  auto* newelement = new DRT::ELEMENTS::Truss3(*this);
+  auto* newelement = new Discret::ELEMENTS::Truss3(*this);
   return newelement;
 }
 
 /*----------------------------------------------------------------------*
  |(public)                                                   cyron 08/08|
  *----------------------------------------------------------------------*/
-CORE::FE::CellType DRT::ELEMENTS::Truss3::Shape() const { return CORE::FE::CellType::line2; }
+Core::FE::CellType Discret::ELEMENTS::Truss3::Shape() const { return Core::FE::CellType::line2; }
 
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  |                                                           cyron 08/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::Pack(CORE::COMM::PackBuffer& data) const
+void Discret::ELEMENTS::Truss3::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -164,11 +166,11 @@ void DRT::ELEMENTS::Truss3::Pack(CORE::COMM::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                           cyron 08/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Truss3::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -193,7 +195,7 @@ void DRT::ELEMENTS::Truss3::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                              cyron 08/08|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Truss3::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Truss3::Lines()
 {
   return {Teuchos::rcpFromRef(*this)};
 }
@@ -202,10 +204,10 @@ std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Truss3::Lines(
  |determine Gauss rule from required type of integration                |
  |                                                   (public)cyron 09/09|
  *----------------------------------------------------------------------*/
-CORE::FE::GaussRule1D DRT::ELEMENTS::Truss3::my_gauss_rule(
+Core::FE::GaussRule1D Discret::ELEMENTS::Truss3::my_gauss_rule(
     int nnode, IntegrationType integrationtype)
 {
-  CORE::FE::GaussRule1D gaussrule = CORE::FE::GaussRule1D::undefined;
+  Core::FE::GaussRule1D gaussrule = Core::FE::GaussRule1D::undefined;
 
   switch (nnode)
   {
@@ -215,17 +217,17 @@ CORE::FE::GaussRule1D DRT::ELEMENTS::Truss3::my_gauss_rule(
       {
         case gaussexactintegration:
         {
-          gaussrule = CORE::FE::GaussRule1D::line_2point;
+          gaussrule = Core::FE::GaussRule1D::line_2point;
           break;
         }
         case gaussunderintegration:
         {
-          gaussrule = CORE::FE::GaussRule1D::line_1point;
+          gaussrule = Core::FE::GaussRule1D::line_1point;
           break;
         }
         case lobattointegration:
         {
-          gaussrule = CORE::FE::GaussRule1D::line_lobatto2point;
+          gaussrule = Core::FE::GaussRule1D::line_lobatto2point;
           break;
         }
         default:
@@ -239,17 +241,17 @@ CORE::FE::GaussRule1D DRT::ELEMENTS::Truss3::my_gauss_rule(
       {
         case gaussexactintegration:
         {
-          gaussrule = CORE::FE::GaussRule1D::line_3point;
+          gaussrule = Core::FE::GaussRule1D::line_3point;
           break;
         }
         case gaussunderintegration:
         {
-          gaussrule = CORE::FE::GaussRule1D::line_2point;
+          gaussrule = Core::FE::GaussRule1D::line_2point;
           break;
         }
         case lobattointegration:
         {
-          gaussrule = CORE::FE::GaussRule1D::line_lobatto3point;
+          gaussrule = Core::FE::GaussRule1D::line_lobatto3point;
           break;
         }
         default:
@@ -263,12 +265,12 @@ CORE::FE::GaussRule1D DRT::ELEMENTS::Truss3::my_gauss_rule(
       {
         case gaussexactintegration:
         {
-          gaussrule = CORE::FE::GaussRule1D::line_4point;
+          gaussrule = Core::FE::GaussRule1D::line_4point;
           break;
         }
         case gaussunderintegration:
         {
-          gaussrule = CORE::FE::GaussRule1D::line_3point;
+          gaussrule = Core::FE::GaussRule1D::line_3point;
           break;
         }
         default:
@@ -282,12 +284,12 @@ CORE::FE::GaussRule1D DRT::ELEMENTS::Truss3::my_gauss_rule(
       {
         case gaussexactintegration:
         {
-          gaussrule = CORE::FE::GaussRule1D::line_5point;
+          gaussrule = Core::FE::GaussRule1D::line_5point;
           break;
         }
         case gaussunderintegration:
         {
-          gaussrule = CORE::FE::GaussRule1D::line_4point;
+          gaussrule = Core::FE::GaussRule1D::line_4point;
           break;
         }
         default:
@@ -304,7 +306,7 @@ CORE::FE::GaussRule1D DRT::ELEMENTS::Truss3::my_gauss_rule(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::set_up_reference_geometry(const std::vector<double>& xrefe)
+void Discret::ELEMENTS::Truss3::set_up_reference_geometry(const std::vector<double>& xrefe)
 {
   if (!isinit_)
   {
@@ -329,7 +331,7 @@ void DRT::ELEMENTS::Truss3::set_up_reference_geometry(const std::vector<double>&
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::scale_reference_length(double scalefac)
+void Discret::ELEMENTS::Truss3::scale_reference_length(double scalefac)
 {
   // scale length in reference configuration
   x_(3) = x_(0) + (scalefac * (x_(3) - x_(0)));
@@ -350,11 +352,11 @@ void DRT::ELEMENTS::Truss3::scale_reference_length(double scalefac)
  *----------------------------------------------------------------------*/
 // TODO: remove once truss3 element is fixed and no longer expects more dofs (6) than it can
 // inherently handle (3)...
-void DRT::ELEMENTS::Truss3::LocationVector(
+void Discret::ELEMENTS::Truss3::LocationVector(
     const Discretization& dis, LocationArray& la, bool doDirichlet) const
 {
   const int numnode = num_node();
-  const CORE::Nodes::Node* const* nodes = Nodes();
+  const Core::Nodes::Node* const* nodes = Nodes();
 
   la.Clear();
 
@@ -371,7 +373,7 @@ void DRT::ELEMENTS::Truss3::LocationVector(
     {
       for (int i = 0; i < numnode; ++i)
       {
-        const CORE::Nodes::Node* node = nodes[i];
+        const Core::Nodes::Node* node = nodes[i];
 
         const int owner = node->Owner();
         std::vector<int> dof;
@@ -388,13 +390,13 @@ void DRT::ELEMENTS::Truss3::LocationVector(
         if (doDirichlet)
         {
           const std::vector<int>* flag = nullptr;
-          CORE::Conditions::Condition* dirich = node->GetCondition("Dirichlet");
+          Core::Conditions::Condition* dirich = node->GetCondition("Dirichlet");
           if (dirich)
           {
-            if (dirich->Type() != CORE::Conditions::PointDirichlet &&
-                dirich->Type() != CORE::Conditions::LineDirichlet &&
-                dirich->Type() != CORE::Conditions::SurfaceDirichlet &&
-                dirich->Type() != CORE::Conditions::VolumeDirichlet)
+            if (dirich->Type() != Core::Conditions::PointDirichlet &&
+                dirich->Type() != Core::Conditions::LineDirichlet &&
+                dirich->Type() != Core::Conditions::SurfaceDirichlet &&
+                dirich->Type() != Core::Conditions::VolumeDirichlet)
               FOUR_C_THROW("condition with name Dirichlet is not of type Dirichlet");
             flag = &dirich->parameters().Get<std::vector<int>>("onoff");
           }
@@ -422,13 +424,13 @@ void DRT::ELEMENTS::Truss3::LocationVector(
     if (doDirichlet)
     {
       const std::vector<int>* flag = nullptr;
-      CORE::Conditions::Condition* dirich = GetCondition("Dirichlet");
+      Core::Conditions::Condition* dirich = GetCondition("Dirichlet");
       if (dirich)
       {
-        if (dirich->Type() != CORE::Conditions::PointDirichlet &&
-            dirich->Type() != CORE::Conditions::LineDirichlet &&
-            dirich->Type() != CORE::Conditions::SurfaceDirichlet &&
-            dirich->Type() != CORE::Conditions::VolumeDirichlet)
+        if (dirich->Type() != Core::Conditions::PointDirichlet &&
+            dirich->Type() != Core::Conditions::LineDirichlet &&
+            dirich->Type() != Core::Conditions::SurfaceDirichlet &&
+            dirich->Type() != Core::Conditions::VolumeDirichlet)
           FOUR_C_THROW("condition with name Dirichlet is not of type Dirichlet");
         flag = &dirich->parameters().Get<std::vector<int>>("onoff");
       }
@@ -445,13 +447,13 @@ void DRT::ELEMENTS::Truss3::LocationVector(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Truss3Type::Initialize(DRT::Discretization& dis)
+int Discret::ELEMENTS::Truss3Type::Initialize(Discret::Discretization& dis)
 {
   // reference node positions
   std::vector<double> xrefe;
 
   // reference nodal tangent positions
-  CORE::LINALG::Matrix<3, 1> trefNodeAux(true);
+  Core::LinAlg::Matrix<3, 1> trefNodeAux(true);
   // resize vectors for the number of coordinates we need to store
   xrefe.resize(3 * 2);
 
@@ -463,7 +465,7 @@ int DRT::ELEMENTS::Truss3Type::Initialize(DRT::Discretization& dis)
     if (dis.lColElement(i)->ElementType() != *this) continue;
 
     // if we get so far current element is a truss3 element and  we get a pointer at it
-    auto* currele = dynamic_cast<DRT::ELEMENTS::Truss3*>(dis.lColElement(i));
+    auto* currele = dynamic_cast<Discret::ELEMENTS::Truss3*>(dis.lColElement(i));
     if (!currele) FOUR_C_THROW("cast to Truss3* failed");
 
     // getting element's nodal coordinates and treating them as reference configuration
@@ -484,12 +486,12 @@ int DRT::ELEMENTS::Truss3Type::Initialize(DRT::Discretization& dis)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::set_params_interface_ptr(const Teuchos::ParameterList& p)
+void Discret::ELEMENTS::Truss3::set_params_interface_ptr(const Teuchos::ParameterList& p)
 {
   if (p.isParameter("interface"))
   {
     interface_ptr_ = Teuchos::rcp_dynamic_cast<STR::ELEMENTS::ParamsInterface>(
-        p.get<Teuchos::RCP<CORE::Elements::ParamsInterface>>("interface"));
+        p.get<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface"));
   }
   else
     interface_ptr_ = Teuchos::null;
@@ -497,7 +499,7 @@ void DRT::ELEMENTS::Truss3::set_params_interface_ptr(const Teuchos::ParameterLis
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::Elements::ParamsInterface> DRT::ELEMENTS::Truss3::ParamsInterfacePtr()
+Teuchos::RCP<Core::Elements::ParamsInterface> Discret::ELEMENTS::Truss3::ParamsInterfacePtr()
 {
   return interface_ptr_;
 }

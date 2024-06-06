@@ -55,9 +55,9 @@ namespace BEAMINTERACTION
       if (!is_init()) FOUR_C_THROW("Init() has not been called yet!");
     }
 
-    inline enum INPAR::BEAMCONTACT::Strategy Strategy() const { return strategy_; }
+    inline enum Inpar::BEAMCONTACT::Strategy Strategy() const { return strategy_; }
 
-    inline enum INPAR::BEAMCONTACT::PenaltyLaw PenaltyLaw() const { return penalty_law_; }
+    inline enum Inpar::BEAMCONTACT::PenaltyLaw PenaltyLaw() const { return penalty_law_; }
 
     inline double beam_to_beam_penalty_law_regularization_g0() const
     {
@@ -108,10 +108,10 @@ namespace BEAMINTERACTION
     bool issetup_;
 
     //! strategy
-    enum INPAR::BEAMCONTACT::Strategy strategy_;
+    enum Inpar::BEAMCONTACT::Strategy strategy_;
 
     //! penalty law
-    enum INPAR::BEAMCONTACT::PenaltyLaw penalty_law_;
+    enum Inpar::BEAMCONTACT::PenaltyLaw penalty_law_;
 
     //! regularization parameters for penalty law
     double btb_penalty_law_regularization_g0_;

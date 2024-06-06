@@ -22,12 +22,12 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     ljag 01/14 |
  *----------------------------------------------------------------------*/
-SCATRA::TimIntCardiacMonodomainOST::TimIntCardiacMonodomainOST(
-    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver,
+ScaTra::TimIntCardiacMonodomainOST::TimIntCardiacMonodomainOST(
+    Teuchos::RCP<Discret::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
     Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
     Teuchos::RCP<Teuchos::ParameterList> extraparams,
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, sctratimintparams, extraparams, output),
       TimIntCardiacMonodomain(actdis, solver, params, sctratimintparams, extraparams, output),
       TimIntOneStepTheta(actdis, solver, sctratimintparams, extraparams, output)
@@ -39,7 +39,7 @@ SCATRA::TimIntCardiacMonodomainOST::TimIntCardiacMonodomainOST(
 /*----------------------------------------------------------------------*
  |  initialize time integration                              ehrl 01/14 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainOST::Setup()
+void ScaTra::TimIntCardiacMonodomainOST::Setup()
 {
   // call Setup()-functions of base classes
   // note: this order is important
@@ -54,7 +54,7 @@ void SCATRA::TimIntCardiacMonodomainOST::Setup()
  | current solution becomes most recent solution of next timestep       |
  |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainOST::Update()
+void ScaTra::TimIntCardiacMonodomainOST::Update()
 {
   // Standard Update
   TimIntOneStepTheta::Update();
@@ -67,7 +67,7 @@ void SCATRA::TimIntCardiacMonodomainOST::Update()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainOST::write_restart() const
+void ScaTra::TimIntCardiacMonodomainOST::write_restart() const
 {
   // Call function from baseclass
   TimIntOneStepTheta::write_restart();
@@ -82,18 +82,18 @@ void SCATRA::TimIntCardiacMonodomainOST::write_restart() const
 /*----------------------------------------------------------------------*
  |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainOST::read_restart(
-    const int step, Teuchos::RCP<CORE::IO::InputControl> input)
+void ScaTra::TimIntCardiacMonodomainOST::read_restart(
+    const int step, Teuchos::RCP<Core::IO::InputControl> input)
 {
   // Call function from baseclass
   TimIntOneStepTheta::read_restart(step, input);
 
-  Teuchos::RCP<CORE::IO::DiscretizationReader> reader(Teuchos::null);
+  Teuchos::RCP<Core::IO::DiscretizationReader> reader(Teuchos::null);
   if (input == Teuchos::null)
-    reader = Teuchos::rcp(new CORE::IO::DiscretizationReader(
-        discret_, GLOBAL::Problem::Instance()->InputControlFile(), step));
+    reader = Teuchos::rcp(new Core::IO::DiscretizationReader(
+        discret_, Global::Problem::Instance()->InputControlFile(), step));
   else
-    reader = Teuchos::rcp(new CORE::IO::DiscretizationReader(discret_, input, step));
+    reader = Teuchos::rcp(new Core::IO::DiscretizationReader(discret_, input, step));
 
   // Cardiac Monodomain specific
   reader->ReadVector(activation_time_np_, "activation_time_np");
@@ -106,7 +106,7 @@ void SCATRA::TimIntCardiacMonodomainOST::read_restart(
 /*--------------------------------------------------------------------------*
  | add global state vectors specific for time-integration scheme  hoe 06/16 |
  *--------------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainOST::add_time_integration_specific_vectors(
+void ScaTra::TimIntCardiacMonodomainOST::add_time_integration_specific_vectors(
     bool forcedincrementalsolver)
 {
   // Call function from baseclass
@@ -119,12 +119,12 @@ void SCATRA::TimIntCardiacMonodomainOST::add_time_integration_specific_vectors(
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     ljag 01/14 |
  *----------------------------------------------------------------------*/
-SCATRA::TimIntCardiacMonodomainBDF2::TimIntCardiacMonodomainBDF2(
-    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver,
+ScaTra::TimIntCardiacMonodomainBDF2::TimIntCardiacMonodomainBDF2(
+    Teuchos::RCP<Discret::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
     Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
     Teuchos::RCP<Teuchos::ParameterList> extraparams,
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, sctratimintparams, extraparams, output),
       TimIntCardiacMonodomain(actdis, solver, params, sctratimintparams, extraparams, output),
       TimIntBDF2(actdis, solver, sctratimintparams, extraparams, output)
@@ -136,7 +136,7 @@ SCATRA::TimIntCardiacMonodomainBDF2::TimIntCardiacMonodomainBDF2(
 /*----------------------------------------------------------------------*
  |  initialize time integration                              ehrl 01/14 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainBDF2::Setup()
+void ScaTra::TimIntCardiacMonodomainBDF2::Setup()
 {
   // call Setup()-functions of base classes
   // note: this order is important
@@ -151,7 +151,7 @@ void SCATRA::TimIntCardiacMonodomainBDF2::Setup()
  | current solution becomes most recent solution of next timestep       |
  |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainBDF2::Update()
+void ScaTra::TimIntCardiacMonodomainBDF2::Update()
 {
   // Standard Update
   TimIntBDF2::Update();
@@ -164,7 +164,7 @@ void SCATRA::TimIntCardiacMonodomainBDF2::Update()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainBDF2::write_restart() const
+void ScaTra::TimIntCardiacMonodomainBDF2::write_restart() const
 {
   // Call function from baseclass
   TimIntBDF2::write_restart();
@@ -180,18 +180,18 @@ void SCATRA::TimIntCardiacMonodomainBDF2::write_restart() const
 /*----------------------------------------------------------------------*
  |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainBDF2::read_restart(
-    const int step, Teuchos::RCP<CORE::IO::InputControl> input)
+void ScaTra::TimIntCardiacMonodomainBDF2::read_restart(
+    const int step, Teuchos::RCP<Core::IO::InputControl> input)
 {
   // Call function from baseclass
   TimIntBDF2::read_restart(step, input);
 
-  Teuchos::RCP<CORE::IO::DiscretizationReader> reader(Teuchos::null);
+  Teuchos::RCP<Core::IO::DiscretizationReader> reader(Teuchos::null);
   if (input == Teuchos::null)
-    reader = Teuchos::rcp(new CORE::IO::DiscretizationReader(
-        discret_, GLOBAL::Problem::Instance()->InputControlFile(), step));
+    reader = Teuchos::rcp(new Core::IO::DiscretizationReader(
+        discret_, Global::Problem::Instance()->InputControlFile(), step));
   else
-    reader = Teuchos::rcp(new CORE::IO::DiscretizationReader(discret_, input, step));
+    reader = Teuchos::rcp(new Core::IO::DiscretizationReader(discret_, input, step));
 
   // Cardiac Monodomain specific
   reader->ReadVector(activation_time_np_, "activation_time_np");
@@ -205,12 +205,12 @@ void SCATRA::TimIntCardiacMonodomainBDF2::read_restart(
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     ljag 01/14 |
  *----------------------------------------------------------------------*/
-SCATRA::TimIntCardiacMonodomainGenAlpha::TimIntCardiacMonodomainGenAlpha(
-    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver,
+ScaTra::TimIntCardiacMonodomainGenAlpha::TimIntCardiacMonodomainGenAlpha(
+    Teuchos::RCP<Discret::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
     Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
     Teuchos::RCP<Teuchos::ParameterList> extraparams,
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, sctratimintparams, extraparams, output),
       TimIntCardiacMonodomain(actdis, solver, params, sctratimintparams, extraparams, output),
       TimIntGenAlpha(actdis, solver, sctratimintparams, extraparams, output)
@@ -222,7 +222,7 @@ SCATRA::TimIntCardiacMonodomainGenAlpha::TimIntCardiacMonodomainGenAlpha(
 /*----------------------------------------------------------------------*
  |  initialize time integration                              ehrl 01/14 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainGenAlpha::Setup()
+void ScaTra::TimIntCardiacMonodomainGenAlpha::Setup()
 {
   // call Init()-functions of base classes
   // note: this order is important
@@ -237,7 +237,7 @@ void SCATRA::TimIntCardiacMonodomainGenAlpha::Setup()
  | current solution becomes most recent solution of next timestep       |
  |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainGenAlpha::Update()
+void ScaTra::TimIntCardiacMonodomainGenAlpha::Update()
 {
   // Standard Update
   TimIntGenAlpha::Update();
@@ -250,7 +250,7 @@ void SCATRA::TimIntCardiacMonodomainGenAlpha::Update()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainGenAlpha::write_restart() const
+void ScaTra::TimIntCardiacMonodomainGenAlpha::write_restart() const
 {
   // Call function from baseclass
   TimIntGenAlpha::write_restart();
@@ -266,14 +266,14 @@ void SCATRA::TimIntCardiacMonodomainGenAlpha::write_restart() const
 /*----------------------------------------------------------------------*
  |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainGenAlpha::read_restart(
-    const int step, Teuchos::RCP<CORE::IO::InputControl> input)
+void ScaTra::TimIntCardiacMonodomainGenAlpha::read_restart(
+    const int step, Teuchos::RCP<Core::IO::InputControl> input)
 {
   // Call function from baseclass
   TimIntGenAlpha::read_restart(step, input);
 
-  CORE::IO::DiscretizationReader reader(
-      discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
+  Core::IO::DiscretizationReader reader(
+      discret_, Global::Problem::Instance()->InputControlFile(), step);
 
   // Cardiac Monodomain specific
   reader.ReadVector(activation_time_np_, "activation_time_np");
@@ -286,7 +286,7 @@ void SCATRA::TimIntCardiacMonodomainGenAlpha::read_restart(
 /*--------------------------------------------------------------------------*
  | add global state vectors specific for time-integration scheme  hoe 12/16 |
  *--------------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainGenAlpha::add_time_integration_specific_vectors(
+void ScaTra::TimIntCardiacMonodomainGenAlpha::add_time_integration_specific_vectors(
     bool forcedincrementalsolver)
 {
   // Call function from baseclass

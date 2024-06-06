@@ -22,7 +22,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
@@ -39,7 +39,7 @@ namespace FLD
    public:
     //! constructor
     HomIsoTurbInitialField(
-        FluidImplicitTimeInt& timeint, const INPAR::FLUID::InitialField initfield);
+        FluidImplicitTimeInt& timeint, const Inpar::FLUID::InitialField initfield);
 
     //! destructor
     virtual ~HomIsoTurbInitialField() = default;
@@ -68,14 +68,14 @@ namespace FLD
     double calculate_energy_from_spectrum(double k);
 
     //! fluid discretization
-    Teuchos::RCP<DRT::Discretization> discret_;
+    Teuchos::RCP<Discret::Discretization> discret_;
 
     //! state vectors to be initialized
     Teuchos::RCP<Epetra_Vector> velnp_;
     Teuchos::RCP<Epetra_Vector> veln_;
     Teuchos::RCP<Epetra_Vector> velnm_;
     //! type of energy spectrum for initialization
-    INPAR::FLUID::InitialField type_;
+    Inpar::FLUID::InitialField type_;
 
     //! number of resolved mode
     int nummodes_;
@@ -96,7 +96,7 @@ namespace FLD
    public:
     //! constructor
     HomIsoTurbInitialFieldHDG(
-        FluidImplicitTimeInt& timeint, const INPAR::FLUID::InitialField initfield);
+        FluidImplicitTimeInt& timeint, const Inpar::FLUID::InitialField initfield);
 
 
     //! calculate initial field

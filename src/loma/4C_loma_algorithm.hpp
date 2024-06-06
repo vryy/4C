@@ -21,7 +21,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace LOMA
+namespace LowMach
 {
   /// LOMA algorithm base
   /*!
@@ -34,7 +34,7 @@ namespace LOMA
     \author vg
     \date 08/08
    */
-  class Algorithm : public ADAPTER::ScaTraFluidCouplingAlgorithm
+  class Algorithm : public Adapter::ScaTraFluidCouplingAlgorithm
   {
    public:
     /// constructor
@@ -114,10 +114,10 @@ namespace LOMA
     void setup_mono_loma_matrix();
 
     /// evaluate off-diagonal block with fluid weighting functions
-    void evaluate_loma_od_block_mat_fluid(Teuchos::RCP<CORE::LINALG::SparseMatrix> mat_fs);
+    void evaluate_loma_od_block_mat_fluid(Teuchos::RCP<Core::LinAlg::SparseMatrix> mat_fs);
 
     /// evaluate off-diagonal block with scatra weighting functions
-    // void EvaluateLomaODBlockMatScaTra(Teuchos::RCP<CORE::LINALG::SparseMatrix> mat_sf);
+    // void EvaluateLomaODBlockMatScaTra(Teuchos::RCP<Core::LinAlg::SparseMatrix> mat_sf);
 
     /// set up right-hand-side for monolithic low-Mach-number system
     void setup_mono_loma_rhs();
@@ -141,7 +141,7 @@ namespace LOMA
     bool monolithic_;
 
     /// dof row map splitted in (field) blocks for monolithic solver
-    CORE::LINALG::MultiMapExtractor lomablockdofrowmap_;
+    Core::LinAlg::MultiMapExtractor lomablockdofrowmap_;
 
     /// combined Dirichlet boundary condition map for monolithic solver
     /// (unique map of all dofs with Dirichlet boundary conditions)
@@ -157,10 +157,10 @@ namespace LOMA
     Teuchos::RCP<Epetra_Vector> zeros_;
 
     /// block matrix for monolithic solver
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> lomasystemmatrix_;
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> lomasystemmatrix_;
 
     /// monolithic solver
-    Teuchos::RCP<CORE::LINALG::Solver> lomasolver_;
+    Teuchos::RCP<Core::LinAlg::Solver> lomasolver_;
 
     /// time-step length, maximum time and maximum number of steps
     double dt_;
@@ -192,7 +192,7 @@ namespace LOMA
     Teuchos::ParameterList probdyn_;
   };
 
-}  // namespace LOMA
+}  // namespace LowMach
 
 FOUR_C_NAMESPACE_CLOSE
 

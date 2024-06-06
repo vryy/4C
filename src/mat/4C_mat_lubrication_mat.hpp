@@ -19,7 +19,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
@@ -27,11 +27,11 @@ namespace MAT
 
     /*----------------------------------------------------------------------*/
     /// parameters for scalar transport material
-    class LubricationMat : public CORE::MAT::PAR::Parameter
+    class LubricationMat : public Core::Mat::PAR::Parameter
     {
      public:
       /// standard constructor
-      LubricationMat(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      LubricationMat(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// density
       const double density_;
@@ -45,20 +45,20 @@ namespace MAT
       LubricationLaw* lubricationlaw_;
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
     };  // class Lubrication
 
   }  // namespace PAR
 
-  class LubricationMatType : public CORE::COMM::ParObjectType
+  class LubricationMatType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "LubricationMatType"; }
 
     static LubricationMatType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static LubricationMatType instance_;
@@ -66,14 +66,14 @@ namespace MAT
 
   /*----------------------------------------------------------------------*/
   /// wrapper for scalar transport material
-  class LubricationMat : public CORE::MAT::Material
+  class LubricationMat : public Core::Mat::Material
   {
    public:
     /// construct empty material object
     LubricationMat();
 
     /// construct the material object given material parameters
-    explicit LubricationMat(MAT::PAR::LubricationMat* params);
+    explicit LubricationMat(Mat::PAR::LubricationMat* params);
 
     //! @name Packing and Unpacking
 
@@ -98,7 +98,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -117,13 +117,13 @@ namespace MAT
     //@}
 
     /// material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_lubrication;
+      return Core::Materials::m_lubrication;
     }
 
     /// return copy of this material object
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new LubricationMat(*this));
     }
@@ -139,14 +139,14 @@ namespace MAT
     double Density() const override { return params_->density_; }
 
     /// Return quick accessible material parameter data
-    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
    private:
     /// my material parameters
-    MAT::PAR::LubricationMat* params_;
+    Mat::PAR::LubricationMat* params_;
   };
 
-}  // namespace MAT
+}  // namespace Mat
 
 
 FOUR_C_NAMESPACE_CLOSE

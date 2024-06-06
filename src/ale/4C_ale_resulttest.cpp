@@ -20,13 +20,13 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 ALE::AleResultTest::AleResultTest(ALE::Ale& ale)
-    : CORE::UTILS::ResultTest("ALE"), aledis_(ale.discretization()), dispnp_(ale.Dispnp())
+    : Core::UTILS::ResultTest("ALE"), aledis_(ale.discretization()), dispnp_(ale.Dispnp())
 {
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALE::AleResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int& test_count)
+void ALE::AleResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;
@@ -49,7 +49,7 @@ void ALE::AleResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int& t
   {
     if (aledis_->HaveGlobalNode(node))
     {
-      CORE::Nodes::Node* actnode = aledis_->gNode(node);
+      Core::Nodes::Node* actnode = aledis_->gNode(node);
 
       // Here we are just interested in the nodes that we own (i.e. a row node)!
       if (actnode->Owner() != aledis_->Comm().MyPID()) return;

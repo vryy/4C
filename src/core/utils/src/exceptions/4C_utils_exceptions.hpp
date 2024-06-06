@@ -21,7 +21,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE
+namespace Core
 {
   namespace INTERNAL
   {
@@ -93,12 +93,12 @@ namespace CORE
     };
 
   }  // namespace INTERNAL
-}  // namespace CORE
+}  // namespace Core
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
 
 /**
- * Assert that @p test is `true`. If not issue an error in the form of a CORE::Exception.
+ * Assert that @p test is `true`. If not issue an error in the form of a Core::Exception.
  * This macro is only active if FOUR_C_ENABLE_ASSERTIONS is set. Otherwise, the @p test is not
  * even evaluated.
  *
@@ -126,7 +126,7 @@ namespace CORE
 #endif
 
 /**
- * Throw an error in the form of a CORE::Exception.
+ * Throw an error in the form of a Core::Exception.
  *
  * This macro takes an error message, which may contain C-style formatting.
  * All format arguments are passed as additional arguments. For example:
@@ -136,10 +136,10 @@ namespace CORE
  * @endcode
  */
 #define FOUR_C_THROW \
-  FourC::CORE::INTERNAL::ErrorHelper { __FILE__, __LINE__ }
+  FourC::Core::INTERNAL::ErrorHelper { __FILE__, __LINE__ }
 
 /**
- * Throw an error in the form of a CORE::Exception, unless the @p test is true.
+ * Throw an error in the form of a Core::Exception, unless the @p test is true.
  *
  * This macro takes an error message, which may contain C-style formatting.
  * All format arguments are passed as additional arguments. For example:

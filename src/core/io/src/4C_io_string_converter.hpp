@@ -31,7 +31,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace CORE::IO
+namespace Core::IO
 {
   /*!
    * @brief Convert a string matching a predefined pattern into an object of type T.
@@ -44,7 +44,7 @@ namespace CORE::IO
    *
    * @code
    *   std::string str = "1: 1.0, 2.0, 3.0; 2: 4.0, 5.0, 6.0; 3: 7.0, 8.0, 9.0"
-   *   auto data = CORE::IO::StringConverter<std::map<int, std::vector<double>>>::Parse(str);
+   *   auto data = Core::IO::StringConverter<std::map<int, std::vector<double>>>::Parse(str);
    * @endcode
    *
    * We distinguish map-compatible and list-compatible data types and the associated map-like
@@ -241,7 +241,7 @@ namespace CORE::IO
     {
       CheckDimension(split_str, N);
       for (unsigned int i = 0; i < N; ++i)
-        t[i] = CORE::IO::StringConverter<ValueType>::Parse(split_str[i]);
+        t[i] = Core::IO::StringConverter<ValueType>::Parse(split_str[i]);
     }
 
     /**
@@ -253,7 +253,7 @@ namespace CORE::IO
     void ParseSplitString(std::pair<Key, Value> &t, const std::vector<std::string> &split_str)
     {
       CheckDimension(split_str, 2);
-      t = std::make_pair(CORE::IO::StringConverter<Key>::Parse(split_str[0]),
+      t = std::make_pair(Core::IO::StringConverter<Key>::Parse(split_str[0]),
           StringConverter<Value>::Parse(split_str[1]));
     }
 
@@ -363,7 +363,7 @@ namespace CORE::IO
     {
       const char sep = INTERNAL::GetSeparatorAtRank<INTERNAL::StringPatternTraits<T>::list_rank>(
           INTERNAL::default_list_separator);
-      auto split_str = CORE::UTILS::SplitStringList(str, sep);
+      auto split_str = Core::UTILS::SplitStringList(str, sep);
 
       T t;
       INTERNAL::ParseSplitString(t, split_str);
@@ -394,11 +394,11 @@ namespace CORE::IO
           INTERNAL::GetSeparatorAtRank<INTERNAL::StringPatternTraits<T>::list_rank>(
               INTERNAL::default_list_separator);
 
-      auto split_str = CORE::UTILS::SplitStringList(str, sep_list);
+      auto split_str = Core::UTILS::SplitStringList(str, sep_list);
 
       for (const auto &split_str_i : split_str)
       {
-        auto key_val = CORE::UTILS::SplitStringList(split_str_i, sep_map);
+        auto key_val = Core::UTILS::SplitStringList(split_str_i, sep_map);
         INTERNAL::CheckDimension(key_val, 2);
 
         t.insert(std::make_pair(StringConverter<typename T::key_type>::Parse(key_val[0]),
@@ -408,7 +408,7 @@ namespace CORE::IO
       return t;
     }
   };
-};  // namespace CORE::IO
+};  // namespace Core::IO
 
 FOUR_C_NAMESPACE_CLOSE
 

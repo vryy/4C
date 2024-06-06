@@ -26,7 +26,7 @@ general static parameters required for scalar transport element evaluation.
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
@@ -50,9 +50,9 @@ namespace DRT
 
       //! @name return turbulence parameters
       //! @{
-      INPAR::FLUID::TurbModelAction TurbModel() { return turbmodel_; };
-      INPAR::FLUID::ScalarForcing ScalarForcing() { return scalarforcing_; };
-      INPAR::SCATRA::FSSUGRDIFF WhichFssgd() { return whichfssgd_; };
+      Inpar::FLUID::TurbModelAction TurbModel() { return turbmodel_; };
+      Inpar::FLUID::ScalarForcing ScalarForcing() { return scalarforcing_; };
+      Inpar::ScaTra::FSSUGRDIFF WhichFssgd() { return whichfssgd_; };
       bool FSSGD() { return fssgd_; };
       double Cs() { return cs_; };
       double TPN() { return tpn_; };
@@ -61,8 +61,8 @@ namespace DRT
       double Alpha() { return alpha_; }
       bool Calc_N() { return calc_n_; };
       double N_Vel() { return n_vel_; };
-      INPAR::FLUID::RefVelocity RefVel() { return refvel_; };
-      INPAR::FLUID::RefLength RefLength() { return reflength_; };
+      Inpar::FLUID::RefVelocity RefVel() { return refvel_; };
+      Inpar::FLUID::RefLength RefLength() { return reflength_; };
       double C_Nu() { return c_nu_; };
       bool Nwl() { return nwl_; };
       bool Nwl_ScaTra() { return nwl_scatra_; };
@@ -96,16 +96,16 @@ namespace DRT
       //! @name turbulence parameters
       //! @{
       //! definition of turbulence model
-      INPAR::FLUID::TurbModelAction turbmodel_;
+      Inpar::FLUID::TurbModelAction turbmodel_;
 
       //! define forcing for scalar field
-      INPAR::FLUID::ScalarForcing scalarforcing_;
+      Inpar::FLUID::ScalarForcing scalarforcing_;
 
       //! flag to activate AVM3
       bool fssgd_;
 
       //! type of AVM3
-      INPAR::SCATRA::FSSUGRDIFF whichfssgd_;
+      Inpar::ScaTra::FSSUGRDIFF whichfssgd_;
 
       //! parameters for subgrid-diffusivity models
       double cs_;
@@ -117,8 +117,8 @@ namespace DRT
       double alpha_;
       bool calc_n_;
       double n_vel_;
-      INPAR::FLUID::RefVelocity refvel_;
-      INPAR::FLUID::RefLength reflength_;
+      Inpar::FLUID::RefVelocity refvel_;
+      Inpar::FLUID::RefLength reflength_;
       double c_nu_;
       bool nwl_;
       bool nwl_scatra_;
@@ -135,10 +135,10 @@ namespace DRT
       //! @}
 
       //! parameter class for time integration
-      DRT::ELEMENTS::ScaTraEleParameterTimInt* timintparams_;
+      Discret::ELEMENTS::ScaTraEleParameterTimInt* timintparams_;
     };
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

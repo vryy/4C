@@ -19,7 +19,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace POROELAST
+namespace PoroElast
 {
   //! base class for monolithic approaches, when the system is splitted for some reason
   //! (most of the time this means some dofs are condensed)
@@ -28,7 +28,7 @@ namespace POROELAST
    public:
     //! create using a Epetra_Comm
     explicit MonolithicSplit(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams,
-        Teuchos::RCP<CORE::LINALG::MapExtractor> porosity_splitter);
+        Teuchos::RCP<Core::LinAlg::MapExtractor> porosity_splitter);
 
     //! Setup the monolithic system (depends on which field is splitted)
     void SetupSystem() override = 0;
@@ -37,7 +37,7 @@ namespace POROELAST
     void setup_rhs(bool firstcall = false) override = 0;
 
     //! setup composed system matrix from field solvers (depends on which field is splitted)
-    void setup_system_matrix(CORE::LINALG::BlockSparseMatrixBase& mat) override = 0;
+    void setup_system_matrix(Core::LinAlg::BlockSparseMatrixBase& mat) override = 0;
 
     //! start a new time step
     void prepare_time_step() override;
@@ -74,7 +74,7 @@ namespace POROELAST
 
     //! coupling of fluid and structure (interface only), only needed by algorithms, who perform a
     //! split, i.e. structure or fluid split.
-    Teuchos::RCP<CORE::ADAPTER::Coupling> icoupfs_;
+    Teuchos::RCP<Core::Adapter::Coupling> icoupfs_;
 
     //! flag indicating whether there are no slip conditions to be evaluated at the interface
     bool evaluateinterface_;
@@ -83,7 +83,7 @@ namespace POROELAST
     Teuchos::RCP<Epetra_Map> fsibcmap_;
 
     //! map extractor DOFs with both fsi- and DBC conditions
-    Teuchos::RCP<CORE::LINALG::MapExtractor> fsibcextractor_;
+    Teuchos::RCP<Core::LinAlg::MapExtractor> fsibcextractor_;
 
     //! @name Some quantities to recover the Langrange multiplier at the end of each time step
 
@@ -128,7 +128,7 @@ namespace POROELAST
     //! interface increment for dof with dirichlet condition on fsi-interface
     Teuchos::RCP<Epetra_Vector> ddi_;
   };
-}  // namespace POROELAST
+}  // namespace PoroElast
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -17,12 +17,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::UTILS
+namespace Core::UTILS
 {
   class FunctionManager;
 }
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 
@@ -31,10 +31,10 @@ namespace DRT
   namespace UTILS
   {
     /// add valid combustion-specific function lines
-    void AddValidCombustFunctions(CORE::UTILS::FunctionManager& function_manager);
+    void AddValidCombustFunctions(Core::UTILS::FunctionManager& function_manager);
 
     /// special implementation for a level set test function "Zalesak's disk"
-    class ZalesaksDiskFunction : public CORE::UTILS::FunctionOfSpaceTime
+    class ZalesaksDiskFunction : public Core::UTILS::FunctionOfSpaceTime
     {
      public:
       double Evaluate(const double* x, double t, std::size_t component) const override;
@@ -46,7 +46,7 @@ namespace DRT
     };
 
     /// special implementation two-phase flow test case
-    class CollapsingWaterColumnFunction : public CORE::UTILS::FunctionOfSpaceTime
+    class CollapsingWaterColumnFunction : public Core::UTILS::FunctionOfSpaceTime
     {
      public:
       double Evaluate(const double* x, double t, std::size_t component) const override;
@@ -57,7 +57,7 @@ namespace DRT
       };
     };
   }  // namespace UTILS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -40,12 +40,12 @@ FOUR_C_NAMESPACE_OPEN
 typedef Sacado::Fad::DFad<double> FAD;
 
 // forward declaration ...
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SerialDenseMatrix;
 }
 
-namespace LARGEROTATIONS
+namespace LargeRotations
 {
   template <unsigned int numnodes, typename T>
   class TriadInterpolationLocalRotationVectors;
@@ -56,34 +56,34 @@ namespace LARGEROTATIONS
 //  length and to only provide random numbers for the 3 translational DoFs (needed in order to
 //  compare with beam3eb)
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
-    class Beam3rType : public CORE::Elements::ElementType
+    class Beam3rType : public Core::Elements::ElementType
     {
      public:
       std::string Name() const override { return "Beam3rType"; }
 
       static Beam3rType& Instance();
 
-      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-      int Initialize(DRT::Discretization& dis) override;
+      int Initialize(Discret::Discretization& dis) override;
 
       void nodal_block_information(
-          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+          Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(CORE::Nodes::Node& actnode, const double* x0,
+      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(Core::Nodes::Node& actnode, const double* x0,
           const int numdof, const int dimnsp) override;
 
       void setup_element_definition(
-          std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+          std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
           override;
 
      private:
@@ -147,12 +147,12 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
     .
       */
-      CORE::Elements::Element* Clone() const override;
+      Core::Elements::Element* Clone() const override;
 
       /*!
      \brief Get shape type of element
      */
-      CORE::FE::CellType Shape() const override;
+      Core::FE::CellType Shape() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -168,7 +168,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(CORE::COMM::PackBuffer& data) const override;
+      void Pack(Core::Communication::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -178,7 +178,7 @@ namespace DRT
       */
       void Unpack(const std::vector<char>& data) override;
 
-      CORE::Elements::ElementType& ElementType() const override { return Beam3rType::Instance(); }
+      Core::Elements::ElementType& ElementType() const override { return Beam3rType::Instance(); }
 
       //@}
 
@@ -190,7 +190,7 @@ namespace DRT
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
       */
-      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
 
       /** \brief Get number of nodes used for centerline interpolation
        *
@@ -205,7 +205,7 @@ namespace DRT
        *
        *  \author grill
        *  \date 10/16 */
-      inline bool IsCenterlineNode(const CORE::Nodes::Node& node) const override
+      inline bool IsCenterlineNode(const Core::Nodes::Node& node) const override
       {
         if (!centerline_hermite_ or node.Id() == this->Nodes()[0]->Id() or
             node.Id() == this->Nodes()[1]->Id())
@@ -217,7 +217,7 @@ namespace DRT
       /*!
       \brief Get number of degrees of freedom of a single node
       */
-      int NumDofPerNode(const CORE::Nodes::Node& node) const override
+      int NumDofPerNode(const Core::Nodes::Node& node) const override
       {
         /* note: this is not necessarily the number of DOF assigned to this node by the
          * discretization finally, but only the number of DOF requested for this node by this
@@ -260,14 +260,14 @@ namespace DRT
        *
        *  \author grill
        *  \date 06/16 */
-      void GetPosAtXi(CORE::LINALG::Matrix<3, 1>& pos, const double& xi,
+      void GetPosAtXi(Core::LinAlg::Matrix<3, 1>& pos, const double& xi,
           const std::vector<double>& disp) const override;
 
       /** \brief get triad at xi \in [-1,1] (element parameter space)
        *
        *  \author grill
        *  \date 07/16 */
-      void GetTriadAtXi(CORE::LINALG::Matrix<3, 3>& triad, const double& xi,
+      void GetTriadAtXi(Core::LinAlg::Matrix<3, 3>& triad, const double& xi,
           const std::vector<double>& disp) const override;
 
       /** \brief get generalized interpolation matrix which yields the variation of the position and
@@ -277,7 +277,7 @@ namespace DRT
        *  \author grill
        *  \date 11/16 */
       void get_generalized_interpolation_matrix_variations_at_xi(
-          CORE::LINALG::SerialDenseMatrix& Ivar, const double& xi,
+          Core::LinAlg::SerialDenseMatrix& Ivar, const double& xi,
           const std::vector<double>& disp) const override;
 
       /** \brief get linearization of the product of (generalized interpolation matrix for
@@ -287,9 +287,9 @@ namespace DRT
        *  \author grill
        *  \date 01/17 */
       void get_stiffmat_resulting_from_generalized_interpolation_matrix_at_xi(
-          CORE::LINALG::SerialDenseMatrix& stiffmat, const double& xi,
+          Core::LinAlg::SerialDenseMatrix& stiffmat, const double& xi,
           const std::vector<double>& disp,
-          const CORE::LINALG::SerialDenseVector& force) const override
+          const Core::LinAlg::SerialDenseVector& force) const override
       {
         const unsigned int vpernode = this->hermite_centerline_interpolation() ? 2 : 1;
         const unsigned int nnodecl = this->NumCenterlineNodes();
@@ -312,7 +312,7 @@ namespace DRT
        *  \author grill
        *  \date 11/16 */
       void get_generalized_interpolation_matrix_increments_at_xi(
-          CORE::LINALG::SerialDenseMatrix& Iinc, const double& xi,
+          Core::LinAlg::SerialDenseMatrix& Iinc, const double& xi,
           const std::vector<double>& disp) const override;
 
       /** \brief get unit tangent vector in reference configuration at i-th node of beam element
@@ -321,7 +321,7 @@ namespace DRT
        *  \author grill
        *  \date 06/16 */
       inline void GetRefTangentAtNode(
-          CORE::LINALG::Matrix<3, 1>& Tref_i, const int& i) const override
+          Core::LinAlg::Matrix<3, 1>& Tref_i, const int& i) const override
       {
         if (not((unsigned)i < Tref().size()))
           FOUR_C_THROW("asked for tangent at node index %d, but only %d centerline nodes existing",
@@ -333,7 +333,7 @@ namespace DRT
       /*!
       \brief get tangent of centerline at all nodes in reference configuration
       */
-      std::vector<CORE::LINALG::Matrix<3, 1>> Tref() const { return Tref_; }
+      std::vector<Core::LinAlg::Matrix<3, 1>> Tref() const { return Tref_; }
 
       /*!
       \brief Get jacobiGP_ factor of first Gauss point for under-integration (constant over element
@@ -443,7 +443,7 @@ namespace DRT
       /*!
       \brief Get initial nodal rotation vectors
       */
-      const std::vector<CORE::LINALG::Matrix<3, 1>>& InitialNodalRotVecs() const
+      const std::vector<Core::LinAlg::Matrix<3, 1>>& InitialNodalRotVecs() const
       {
         return theta0node_;
       }
@@ -474,7 +474,7 @@ namespace DRT
       \brief Read input for this element
       */
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          INPUT::LineDefinition* linedef) override;
+          Input::LineDefinition* linedef) override;
 
       //@}
 
@@ -501,11 +501,11 @@ namespace DRT
                                   given in params
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
-          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2,
-          CORE::LINALG::SerialDenseVector& elevec3) override;
+      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
+          Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseVector& elevec2,
+          Core::LinAlg::SerialDenseVector& elevec3) override;
 
       /*!
       \brief Evaluate a Neumann boundary condition
@@ -519,10 +519,10 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          CORE::Conditions::Condition& condition, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
+      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Core::Conditions::Condition& condition, std::vector<int>& lm,
+          Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;
 
       /*!
       \brief Evaluate PTC addition to stiffness for free Brownian motion
@@ -538,15 +538,15 @@ namespace DRT
       \return 0 if successful, negative otherwise
       */
       template <unsigned int nnode>
-      void EvaluatePTC(Teuchos::ParameterList& params, CORE::LINALG::SerialDenseMatrix& elemat1);
+      void EvaluatePTC(Teuchos::ParameterList& params, Core::LinAlg::SerialDenseMatrix& elemat1);
 
       //! calculation of nonlinear stiffness and mass matrix
       template <unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
       void calc_internal_and_inertia_forces_and_stiff(
-          CORE::LINALG::Matrix<3 * vpernode * nnodecl, 1, double>& disp_totlag_centerline,
-          std::vector<CORE::LINALG::Matrix<4, 1, double>>& Qnode,
-          CORE::LINALG::SerialDenseMatrix* stiffmatrix, CORE::LINALG::SerialDenseMatrix* massmatrix,
-          CORE::LINALG::SerialDenseVector* force, CORE::LINALG::SerialDenseVector* inertia_force);
+          Core::LinAlg::Matrix<3 * vpernode * nnodecl, 1, double>& disp_totlag_centerline,
+          std::vector<Core::LinAlg::Matrix<4, 1, double>>& Qnode,
+          Core::LinAlg::SerialDenseMatrix* stiffmatrix, Core::LinAlg::SerialDenseMatrix* massmatrix,
+          Core::LinAlg::SerialDenseVector* force, Core::LinAlg::SerialDenseVector* inertia_force);
 
       //@}
 
@@ -555,7 +555,7 @@ namespace DRT
        *  \author grill
        *  \date 07/16 */
       inline void PositionDofIndices(
-          std::vector<int>& posdofs, const CORE::Nodes::Node& node) const override
+          std::vector<int>& posdofs, const Core::Nodes::Node& node) const override
       {
         if ((not centerline_hermite_) or
             (node.Id() == this->Nodes()[0]->Id() or node.Id() == this->Nodes()[1]->Id()))
@@ -573,7 +573,7 @@ namespace DRT
        *  \author grill
        *  \date 07/16 */
       inline void TangentDofIndices(
-          std::vector<int>& tangdofs, const CORE::Nodes::Node& node) const override
+          std::vector<int>& tangdofs, const Core::Nodes::Node& node) const override
       {
         if (centerline_hermite_ and
             (node.Id() == this->Nodes()[0]->Id() or node.Id() == this->Nodes()[1]->Id()))
@@ -591,7 +591,7 @@ namespace DRT
        *  \author grill
        *  \date 07/16 */
       inline void rotation_vec_dof_indices(
-          std::vector<int>& rotvecdofs, const CORE::Nodes::Node& node) const override
+          std::vector<int>& rotvecdofs, const Core::Nodes::Node& node) const override
       {
         if ((not centerline_hermite_) or
             (node.Id() == this->Nodes()[0]->Id() or node.Id() == this->Nodes()[1]->Id()))
@@ -616,7 +616,7 @@ namespace DRT
        *  \author grill
        *  \date 07/16 */
       inline void rotation1_d_dof_indices(
-          std::vector<int>& twistdofs, const CORE::Nodes::Node& node) const override
+          std::vector<int>& twistdofs, const Core::Nodes::Node& node) const override
       {
         return;
       }
@@ -627,7 +627,7 @@ namespace DRT
        *  \author grill
        *  \date 07/16 */
       inline void tangent_length_dof_indices(
-          std::vector<int>& tangnormdofs, const CORE::Nodes::Node& node) const override
+          std::vector<int>& tangnormdofs, const Core::Nodes::Node& node) const override
       {
         return;
       }
@@ -690,9 +690,9 @@ namespace DRT
        *  \date 12/16 */
       template <unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
       void calc_internal_and_inertia_forces_and_stiff(Teuchos::ParameterList& params,
-          std::vector<double>& disp, CORE::LINALG::SerialDenseMatrix* stiffmatrix,
-          CORE::LINALG::SerialDenseMatrix* massmatrix, CORE::LINALG::SerialDenseVector* force,
-          CORE::LINALG::SerialDenseVector* inertia_force);
+          std::vector<double>& disp, Core::LinAlg::SerialDenseMatrix* stiffmatrix,
+          Core::LinAlg::SerialDenseMatrix* massmatrix, Core::LinAlg::SerialDenseVector* force,
+          Core::LinAlg::SerialDenseVector* inertia_force);
 
       /** \brief compute internal (i.e. elastic) force and stiffness matrix
        *
@@ -700,10 +700,10 @@ namespace DRT
        *  \date 12/16 */
       template <unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode, typename T>
       void calc_internal_force_and_stiff(
-          const CORE::LINALG::Matrix<3 * vpernode * nnodecl, 1, T>& disp_totlag_centerline,
-          const std::vector<CORE::LINALG::Matrix<4, 1, T>>& Qnode,
-          CORE::LINALG::SerialDenseMatrix* stiffmatrix,
-          CORE::LINALG::Matrix<3 * vpernode * nnodecl + 3 * nnodetriad, 1, T>& internal_force);
+          const Core::LinAlg::Matrix<3 * vpernode * nnodecl, 1, T>& disp_totlag_centerline,
+          const std::vector<Core::LinAlg::Matrix<4, 1, T>>& Qnode,
+          Core::LinAlg::SerialDenseMatrix* stiffmatrix,
+          Core::LinAlg::Matrix<3 * vpernode * nnodecl + 3 * nnodetriad, 1, T>& internal_force);
 
       /** \brief calculate inertia force and mass matrix
        *
@@ -711,10 +711,10 @@ namespace DRT
        *  \date 11/16 */
       template <unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
       void calc_inertia_force_and_mass_matrix(
-          const CORE::LINALG::Matrix<3 * vpernode * nnodecl, 1, double>& disp_totlag_centerline,
-          const std::vector<CORE::LINALG::Matrix<4, 1, double>>& Qnode,
-          CORE::LINALG::SerialDenseMatrix* massmatrix,
-          CORE::LINALG::SerialDenseVector* inertia_force);
+          const Core::LinAlg::Matrix<3 * vpernode * nnodecl, 1, double>& disp_totlag_centerline,
+          const std::vector<Core::LinAlg::Matrix<4, 1, double>>& Qnode,
+          Core::LinAlg::SerialDenseMatrix* massmatrix,
+          Core::LinAlg::SerialDenseVector* inertia_force);
 
       /** \brief get Jacobi factor ds/dxi(xi) at xi \in [-1;1]
        *
@@ -725,9 +725,9 @@ namespace DRT
       {
         /* ||dr_0/ds(xi)||=1 because s is arc-length parameter => ||dr_0/dxi(xi)|| * dxi/ds(xi) = 1
          * => JacobiFac(xi) = ds/dxi(xi) = ||dr_0/dxi(xi)|| */
-        CORE::LINALG::Matrix<3, 1> r0_xi;
-        CORE::LINALG::Matrix<1, vpernode * nnodecl, double> N_i_xi;
-        CORE::LINALG::Matrix<3 * nnodecl * vpernode, 1> disp_centerline_ref;
+        Core::LinAlg::Matrix<3, 1> r0_xi;
+        Core::LinAlg::Matrix<1, vpernode * nnodecl, double> N_i_xi;
+        Core::LinAlg::Matrix<3 * nnodecl * vpernode, 1> disp_centerline_ref;
 
         // fill disp_centerline_ref with reference nodal centerline positions and tangents
         for (unsigned int node = 0; node < nnodecl; node++)
@@ -740,7 +740,7 @@ namespace DRT
           }
         }
 
-        DRT::UTILS::BEAM::EvaluateShapeFunctionDerivsAtXi<nnodecl, vpernode>(
+        Discret::UTILS::Beam::EvaluateShapeFunctionDerivsAtXi<nnodecl, vpernode>(
             xi, N_i_xi, this->Shape(), this->RefLength());
         this->calc_r_xi<nnodecl, vpernode, double>(disp_centerline_ref, N_i_xi, r0_xi);
 
@@ -751,13 +751,13 @@ namespace DRT
        \brief Get triad (three unit base vectors) at given parameter coordinate xi
       */
       template <unsigned int nnodetriad, typename T>
-      void GetTriadAtXi(CORE::LINALG::Matrix<3, 3, T>& triad, const double& xi,
-          const std::vector<CORE::LINALG::Matrix<4, 1, T>>& Qnode) const
+      void GetTriadAtXi(Core::LinAlg::Matrix<3, 3, T>& triad, const double& xi,
+          const std::vector<Core::LinAlg::Matrix<4, 1, T>>& Qnode) const
       {
         // create object of triad interpolation scheme
-        Teuchos::RCP<LARGEROTATIONS::TriadInterpolationLocalRotationVectors<nnodetriad, T>>
+        Teuchos::RCP<LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, T>>
             triad_interpolation_scheme_ptr = Teuchos::rcp(
-                new LARGEROTATIONS::TriadInterpolationLocalRotationVectors<nnodetriad, T>());
+                new LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, T>());
 
         // reset scheme with nodal quaternions
         triad_interpolation_scheme_ptr->Reset(Qnode);
@@ -773,7 +773,7 @@ namespace DRT
        *  \date 11/16 */
       template <unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
       void get_generalized_interpolation_matrix_variations_at_xi(
-          CORE::LINALG::Matrix<6, 3 * vpernode * nnodecl + 3 * nnodetriad, double>& Ivar,
+          Core::LinAlg::Matrix<6, 3 * vpernode * nnodecl + 3 * nnodetriad, double>& Ivar,
           const double& xi) const;
 
       /** \brief get generalized interpolation matrix which yields the increments of the position
@@ -783,14 +783,14 @@ namespace DRT
        *  \date 11/16 */
       template <unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
       void get_generalized_interpolation_matrix_increments_at_xi(
-          CORE::LINALG::Matrix<6, 3 * vpernode * nnodecl + 3 * nnodetriad, double>& Iinc,
+          Core::LinAlg::Matrix<6, 3 * vpernode * nnodecl + 3 * nnodetriad, double>& Iinc,
           const double& xi, const std::vector<double>& disp) const;
 
       //! compute material curvature at certain Gauss point according to Crisfield 1999, eq. (4.9)
       template <typename T>
-      void compute_k(const CORE::LINALG::Matrix<3, 1, T>& Psi_l,
-          const CORE::LINALG::Matrix<3, 1, T>& Psi_l_s,
-          const CORE::LINALG::Matrix<3, 1, double>& Kref, CORE::LINALG::Matrix<3, 1, T>& K) const
+      void compute_k(const Core::LinAlg::Matrix<3, 1, T>& Psi_l,
+          const Core::LinAlg::Matrix<3, 1, T>& Psi_l_s,
+          const Core::LinAlg::Matrix<3, 1, double>& Kref, Core::LinAlg::Matrix<3, 1, T>& K) const
       {
         K.Clear();
 
@@ -798,8 +798,8 @@ namespace DRT
          * equation has been derived for a different beam element formulation but is also valid for
          * the element type considered here),
          * or Jelenic 1999, paragraph on page 153 between NOTE 5 and NOTE 6*/
-        CORE::LINALG::Matrix<3, 3, T> Tinv(true);
-        Tinv = CORE::LARGEROTATIONS::Tinvmatrix<T>(Psi_l);
+        Core::LinAlg::Matrix<3, 3, T> Tinv(true);
+        Tinv = Core::LargeRotations::Tinvmatrix<T>(Psi_l);
         // It is important to use the transposed matrix Tinv^T instead of Tinv (these two only
         // differ in one of three terms)
         K.MultiplyTN(Tinv, Psi_l_s);
@@ -812,10 +812,10 @@ namespace DRT
       //! compute convected strain at certain Gauss point with according to Crisfield 1999, eq.
       //! (3.4)
       template <typename T>
-      void compute_gamma(const CORE::LINALG::Matrix<3, 1, T>& r_s,
-          const CORE::LINALG::Matrix<3, 3, T>& Lambda,
-          const CORE::LINALG::Matrix<3, 1, double>& Gammaref,
-          CORE::LINALG::Matrix<3, 1, T>& Gamma) const
+      void compute_gamma(const Core::LinAlg::Matrix<3, 1, T>& r_s,
+          const Core::LinAlg::Matrix<3, 3, T>& Lambda,
+          const Core::LinAlg::Matrix<3, 1, double>& Gammaref,
+          Core::LinAlg::Matrix<3, 1, T>& Gamma) const
       {
         Gamma.Clear();
 
@@ -842,10 +842,10 @@ namespace DRT
       //! push forward material stress vector and constitutive matrix to their spatial counterparts
       //! by rotation matrix Lambda
       template <typename T>
-      void pushforward(const CORE::LINALG::Matrix<3, 3, T>& Lambda,
-          const CORE::LINALG::Matrix<3, 1, T>& stress_mat,
-          const CORE::LINALG::Matrix<3, 3, T>& C_mat, CORE::LINALG::Matrix<3, 1, T>& stress_spatial,
-          CORE::LINALG::Matrix<3, 3, T>& c_spatial) const;
+      void pushforward(const Core::LinAlg::Matrix<3, 3, T>& Lambda,
+          const Core::LinAlg::Matrix<3, 1, T>& stress_mat,
+          const Core::LinAlg::Matrix<3, 3, T>& C_mat, Core::LinAlg::Matrix<3, 1, T>& stress_spatial,
+          Core::LinAlg::Matrix<3, 3, T>& c_spatial) const;
 
       /** \brief compute analytic linearization (i.e. stiffness matrix) of element force vector
        *         resulting from internal elastic forces at a certain Gauss point
@@ -853,14 +853,14 @@ namespace DRT
        *  \author grill
        *  \date 12/16 */
       template <unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
-      void calc_stiffmat_analytic_force_contributions(CORE::LINALG::SerialDenseMatrix& stiffmatrix,
-          const CORE::LINALG::Matrix<3, 1, double>& stressn,
-          const CORE::LINALG::Matrix<3, 3, double>& cn,
-          const CORE::LINALG::Matrix<3, 3, double>& r_s_hat,
-          const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<nnodetriad, double>&
+      void calc_stiffmat_analytic_force_contributions(Core::LinAlg::SerialDenseMatrix& stiffmatrix,
+          const Core::LinAlg::Matrix<3, 1, double>& stressn,
+          const Core::LinAlg::Matrix<3, 3, double>& cn,
+          const Core::LinAlg::Matrix<3, 3, double>& r_s_hat,
+          const LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, double>&
               triad_intpol,
-          const CORE::LINALG::Matrix<1, nnodetriad, double>& I_i,
-          const CORE::LINALG::Matrix<1, vpernode * nnodecl, double>& H_i_xi, const double wgt,
+          const Core::LinAlg::Matrix<1, nnodetriad, double>& I_i,
+          const Core::LinAlg::Matrix<1, vpernode * nnodecl, double>& H_i_xi, const double wgt,
           const double jacobifactor) const;
 
       /** \brief compute analytic linearization (i.e. stiffness matrix) of element force vector
@@ -870,14 +870,14 @@ namespace DRT
        *  \date 12/16 */
       template <unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
       inline void calc_stiffmat_analytic_force_contributions(
-          CORE::LINALG::SerialDenseMatrix& stiffmatrix,
-          const CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>& stressn,
-          const CORE::LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>& cn,
-          const CORE::LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>& r_s_hat,
-          const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<nnodetriad,
+          Core::LinAlg::SerialDenseMatrix& stiffmatrix,
+          const Core::LinAlg::Matrix<3, 1, Sacado::Fad::DFad<double>>& stressn,
+          const Core::LinAlg::Matrix<3, 3, Sacado::Fad::DFad<double>>& cn,
+          const Core::LinAlg::Matrix<3, 3, Sacado::Fad::DFad<double>>& r_s_hat,
+          const LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad,
               Sacado::Fad::DFad<double>>& triad_intpol,
-          const CORE::LINALG::Matrix<1, nnodetriad, double>& I_i,
-          const CORE::LINALG::Matrix<1, vpernode * nnodecl, double>& H_i_xi, const double wgt,
+          const Core::LinAlg::Matrix<1, nnodetriad, double>& I_i,
+          const Core::LinAlg::Matrix<1, vpernode * nnodecl, double>& H_i_xi, const double wgt,
           const double jacobifactor) const
       {
         // this is a dummy because in case that the pre-calculated values are of type Fad,
@@ -890,15 +890,15 @@ namespace DRT
        *  \author grill
        *  \date 12/16 */
       template <unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
-      void calc_stiffmat_analytic_moment_contributions(CORE::LINALG::SerialDenseMatrix& stiffmatrix,
-          const CORE::LINALG::Matrix<3, 1, double>& stressm,
-          const CORE::LINALG::Matrix<3, 3, double>& cm,
-          const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<nnodetriad, double>&
+      void calc_stiffmat_analytic_moment_contributions(Core::LinAlg::SerialDenseMatrix& stiffmatrix,
+          const Core::LinAlg::Matrix<3, 1, double>& stressm,
+          const Core::LinAlg::Matrix<3, 3, double>& cm,
+          const LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, double>&
               triad_intpol,
-          const CORE::LINALG::Matrix<3, 1, double>& Psi_l,
-          const CORE::LINALG::Matrix<3, 1, double>& Psi_l_s,
-          const CORE::LINALG::Matrix<1, nnodetriad, double>& I_i,
-          const CORE::LINALG::Matrix<1, nnodetriad, double>& I_i_xi, const double wgt,
+          const Core::LinAlg::Matrix<3, 1, double>& Psi_l,
+          const Core::LinAlg::Matrix<3, 1, double>& Psi_l_s,
+          const Core::LinAlg::Matrix<1, nnodetriad, double>& I_i,
+          const Core::LinAlg::Matrix<1, nnodetriad, double>& I_i_xi, const double wgt,
           const double jacobifactor) const;
 
       /** \brief compute analytic linearization (i.e. stiffness matrix) of element force vector
@@ -908,15 +908,15 @@ namespace DRT
        *  \date 12/16 */
       template <unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
       inline void calc_stiffmat_analytic_moment_contributions(
-          CORE::LINALG::SerialDenseMatrix& stiffmatrix,
-          const CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>& stressm,
-          const CORE::LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>& cm,
-          const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<nnodetriad,
+          Core::LinAlg::SerialDenseMatrix& stiffmatrix,
+          const Core::LinAlg::Matrix<3, 1, Sacado::Fad::DFad<double>>& stressm,
+          const Core::LinAlg::Matrix<3, 3, Sacado::Fad::DFad<double>>& cm,
+          const LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad,
               Sacado::Fad::DFad<double>>& triad_intpol,
-          const CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>& Psi_l,
-          const CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>& Psi_l_s,
-          const CORE::LINALG::Matrix<1, nnodetriad, double>& I_i,
-          const CORE::LINALG::Matrix<1, nnodetriad, double>& I_i_xi, const double wgt,
+          const Core::LinAlg::Matrix<3, 1, Sacado::Fad::DFad<double>>& Psi_l,
+          const Core::LinAlg::Matrix<3, 1, Sacado::Fad::DFad<double>>& Psi_l_s,
+          const Core::LinAlg::Matrix<1, nnodetriad, double>& I_i,
+          const Core::LinAlg::Matrix<1, nnodetriad, double>& I_i_xi, const double wgt,
           const double jacobifactor) const
       {
         // this is a dummy because in case that the pre-calculated values are of type Fad,
@@ -929,52 +929,52 @@ namespace DRT
        *  \author grill
        *  \date 12/16 */
       template <unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
-      void calc_stiffmat_automatic_differentiation(CORE::LINALG::SerialDenseMatrix& stiffmatrix,
-          const std::vector<CORE::LINALG::Matrix<4, 1, double>>& Qnode,
-          CORE::LINALG::Matrix<3 * vpernode * nnodecl + 3 * nnodetriad, 1,
+      void calc_stiffmat_automatic_differentiation(Core::LinAlg::SerialDenseMatrix& stiffmatrix,
+          const std::vector<Core::LinAlg::Matrix<4, 1, double>>& Qnode,
+          Core::LinAlg::Matrix<3 * vpernode * nnodecl + 3 * nnodetriad, 1,
               Sacado::Fad::DFad<double>>
               forcevec) const;
 
       //! calculation of thermal (i.e. stochastic) and damping forces according to Brownian dynamics
       template <unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
       void calc_brownian_forces_and_stiff(Teuchos::ParameterList& params, std::vector<double>& vel,
-          std::vector<double>& disp, CORE::LINALG::SerialDenseMatrix* stiffmatrix,
-          CORE::LINALG::SerialDenseVector* force);
+          std::vector<double>& disp, Core::LinAlg::SerialDenseMatrix* stiffmatrix,
+          Core::LinAlg::SerialDenseVector* force);
 
       //! update (total) displacement vector and set nodal triads (as quaternions)
       template <unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode, typename T>
       void update_disp_tot_lag_and_nodal_triads(const std::vector<double>& disp,
-          CORE::LINALG::Matrix<3 * vpernode * nnodecl, 1, T>& disp_totlag_centerline,
-          std::vector<CORE::LINALG::Matrix<4, 1, T>>& Q_i);
+          Core::LinAlg::Matrix<3 * vpernode * nnodecl, 1, T>& disp_totlag_centerline,
+          std::vector<Core::LinAlg::Matrix<4, 1, T>>& Q_i);
 
       //! set differentiation variables for automatic differentiation via FAD
       template <unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
       void set_automatic_differentiation_variables(
-          CORE::LINALG::Matrix<3 * vpernode * nnodecl, 1, FAD>& disp_totlag_centerline,
-          std::vector<CORE::LINALG::Matrix<4, 1, FAD>>& Q_i) const;
+          Core::LinAlg::Matrix<3 * vpernode * nnodecl, 1, FAD>& disp_totlag_centerline,
+          std::vector<Core::LinAlg::Matrix<4, 1, FAD>>& Q_i) const;
 
       //! extract those Dofs relevant for centerline-interpolation from total state vector
       template <unsigned int nnodecl, unsigned int vpernode, typename T>
       void extract_centerline_dof_values_from_element_state_vector(
           const std::vector<double>& dofvec,
-          CORE::LINALG::Matrix<3 * vpernode * nnodecl, 1, T>& dofvec_centerline,
+          Core::LinAlg::Matrix<3 * vpernode * nnodecl, 1, T>& dofvec_centerline,
           bool add_reference_values = false) const;
 
       //! extract those Dofs relevant for triad interpolation from total state vector
       template <unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode, typename T>
       void extract_rot_vec_dof_values(const std::vector<double>& dofvec,
-          std::vector<CORE::LINALG::Matrix<3, 1, T>>& dofvec_rotvec) const;
+          std::vector<Core::LinAlg::Matrix<3, 1, T>>& dofvec_rotvec) const;
 
       //! extract those Dofs relevant for triad interpolation from total state vector
       void extract_rot_vec_dof_values(const std::vector<double>& dofvec,
-          std::vector<CORE::LINALG::Matrix<3, 1, double>>& dofvec_rotvec) const;
+          std::vector<Core::LinAlg::Matrix<3, 1, double>>& dofvec_rotvec) const;
 
       //! compute nodal triads from current nodal rotation vectors ("displacement", i.e. relative
       //! rotations)
       template <unsigned int nnodetriad, typename T>
       void get_nodal_triads_from_disp_theta(
-          const std::vector<CORE::LINALG::Matrix<3, 1, double>>& disptheta,
-          std::vector<CORE::LINALG::Matrix<4, 1, T>>& Qnode) const;
+          const std::vector<Core::LinAlg::Matrix<3, 1, double>>& disptheta,
+          std::vector<Core::LinAlg::Matrix<4, 1, T>>& Qnode) const;
 
      public:
       //! compute nodal triads either from current nodal rotation vectors ("displacement", i.e.
@@ -983,23 +983,23 @@ namespace DRT
       //  vector)
       template <unsigned int nnodetriad, typename T>
       void get_nodal_triads_from_full_disp_vec_or_from_disp_theta(
-          const std::vector<T>& dispvec, std::vector<CORE::LINALG::Matrix<4, 1, T>>& Qnode) const;
+          const std::vector<T>& dispvec, std::vector<Core::LinAlg::Matrix<4, 1, T>>& Qnode) const;
 
      private:
       //! compute vector with nnodetriad elements, who represent the 3x3-matrix-shaped interpolation
       //  function \tilde{I}^nnode at a certain point xi according to (3.18), Jelenic 1999
       template <unsigned int nnodetriad, typename T>
       void compute_generalized_nodal_rotation_interpolation_matrix_from_nodal_triads(
-          const std::vector<CORE::LINALG::Matrix<4, 1, T>>& Qnode, const double xi,
-          std::vector<CORE::LINALG::Matrix<3, 3, T>>& Itilde) const;
+          const std::vector<Core::LinAlg::Matrix<4, 1, T>>& Qnode, const double xi,
+          std::vector<Core::LinAlg::Matrix<3, 3, T>>& Itilde) const;
 
       //! lump mass matrix
       template <unsigned int nnode>
-      void lumpmass(CORE::LINALG::SerialDenseMatrix* massmatrix);
+      void lumpmass(Core::LinAlg::SerialDenseMatrix* massmatrix);
 
      public:
       //! determine Gauss rule from required type of integration and parameter list
-      CORE::FE::GaussRule1D MyGaussRule(const IntegrationPurpose intpurpose) const;
+      Core::FE::GaussRule1D MyGaussRule(const IntegrationPurpose intpurpose) const;
 
       //@}
 
@@ -1010,35 +1010,35 @@ namespace DRT
       template <unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode,
           unsigned int ndim>
       void evaluate_rotational_damping(Teuchos::ParameterList& params,  //!< parameter list
-          const std::vector<CORE::LINALG::Matrix<4, 1, double>>& Qnode,
-          CORE::LINALG::SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-          CORE::LINALG::SerialDenseVector* force);       //!< element internal force vector
+          const std::vector<Core::LinAlg::Matrix<4, 1, double>>& Qnode,
+          Core::LinAlg::SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+          Core::LinAlg::SerialDenseVector* force);       //!< element internal force vector
 
       //! computes translational damping forces and stiffness
       template <unsigned int nnodecl, unsigned int vpernode,
           unsigned int ndim>  // number of nodes, number of dimensions of embedding space, number of
                               // degrees of freedom per node
       void evaluate_translational_damping(Teuchos::ParameterList& params,  //!< parameter list
-          const CORE::LINALG::Matrix<ndim * vpernode * nnodecl, 1, double>& vel_centerline,
-          const CORE::LINALG::Matrix<ndim * vpernode * nnodecl, 1, double>& disp_totlag_centerline,
-          CORE::LINALG::SerialDenseMatrix* stiffmatrix,   //!< element stiffness matrix
-          CORE::LINALG::SerialDenseVector* force) const;  //!< element internal force vector
+          const Core::LinAlg::Matrix<ndim * vpernode * nnodecl, 1, double>& vel_centerline,
+          const Core::LinAlg::Matrix<ndim * vpernode * nnodecl, 1, double>& disp_totlag_centerline,
+          Core::LinAlg::SerialDenseMatrix* stiffmatrix,   //!< element stiffness matrix
+          Core::LinAlg::SerialDenseVector* force) const;  //!< element internal force vector
 
       //! computes stochastic translational forces and resulting stiffness
       template <unsigned int nnodecl, unsigned int vpernode, unsigned int ndim,
           unsigned int randompergauss>
       void evaluate_stochastic_forces(Teuchos::ParameterList& params,  //!< parameter list
-          const CORE::LINALG::Matrix<ndim * vpernode * nnodecl, 1, double>& disp_totlag_centerline,
-          CORE::LINALG::SerialDenseMatrix* stiffmatrix,   //!< element stiffness matrix
-          CORE::LINALG::SerialDenseVector* force) const;  //!< element internal force vector
+          const Core::LinAlg::Matrix<ndim * vpernode * nnodecl, 1, double>& disp_totlag_centerline,
+          Core::LinAlg::SerialDenseMatrix* stiffmatrix,   //!< element stiffness matrix
+          Core::LinAlg::SerialDenseVector* force) const;  //!< element internal force vector
 
       //@}
       //! computes modified Jacobian for PTC
-      void calc_stiff_contributions_ptc(CORE::LINALG::SerialDenseMatrix& elemat1);
+      void calc_stiff_contributions_ptc(Core::LinAlg::SerialDenseMatrix& elemat1);
 
      private:
       //! storing temporary stiffness matrix for element based scaling operator in PTC method
-      CORE::LINALG::SerialDenseMatrix stiff_ptc_;
+      Core::LinAlg::SerialDenseMatrix stiff_ptc_;
 
       //! bool storing whether automatic differentiation shall be used for this element evaluation
       bool use_fad_;
@@ -1051,18 +1051,18 @@ namespace DRT
       double reflength_;
 
       //! rotational pseudovectors at nodes in reference configuration
-      std::vector<CORE::LINALG::Matrix<3, 1>> theta0node_;
+      std::vector<Core::LinAlg::Matrix<3, 1>> theta0node_;
 
       //! vector holding current tangent at the centerline nodes Todo needed?
-      std::vector<CORE::LINALG::Matrix<3, 1>> tcurrnode_;
+      std::vector<Core::LinAlg::Matrix<3, 1>> tcurrnode_;
 
       //! initial material curvature at Gauss points for elasticity (corresponding to \Lambda_0^t
       //! \Labmda'_0 in eq. (3.5), Crisfield 1999
-      std::vector<CORE::LINALG::Matrix<3, 1>> kref_gp_;
+      std::vector<Core::LinAlg::Matrix<3, 1>> kref_gp_;
 
       //! initial axial tension (always zero) and shear deformation at Gauss points for elasticity
       //! (corresponding to \Lambda_0^t rprime_0 - (1,0,0) )
-      std::vector<CORE::LINALG::Matrix<3, 1>> gammaref_gp_;
+      std::vector<Core::LinAlg::Matrix<3, 1>> gammaref_gp_;
 
 
       //! Vector holding value of Jacobi determinant for each Gauss point of integration purpose
@@ -1087,71 +1087,71 @@ namespace DRT
 
 
       //  //! nodal triads in quaternion form at the end of the preceding time step
-      std::vector<CORE::LINALG::Matrix<4, 1>> qconvnode_;
+      std::vector<Core::LinAlg::Matrix<4, 1>> qconvnode_;
       //! nodal triads in quaternion during the current iteration step
-      std::vector<CORE::LINALG::Matrix<4, 1>> qnewnode_;
+      std::vector<Core::LinAlg::Matrix<4, 1>> qnewnode_;
 
       //************** begin: Class variables required for element-based Lie-group time integration
       //*******************************
       //! triads at Gauss points for exact integration in quaternion at the end of the preceding
       //! time step (required for computation of angular velocity)
-      std::vector<CORE::LINALG::Matrix<4, 1>> qconv_gp_mass_;
+      std::vector<Core::LinAlg::Matrix<4, 1>> qconv_gp_mass_;
       //! current triads at Gauss points for exact integration in quaternion (required for
       //! computation of angular velocity)
-      std::vector<CORE::LINALG::Matrix<4, 1>> qnew_gp_mass_;
+      std::vector<Core::LinAlg::Matrix<4, 1>> qnew_gp_mass_;
       //! spatial angular velocity vector at Gauss points for exact integration at the end of the
       //! preceding time step (required for computation of inertia terms)
-      std::vector<CORE::LINALG::Matrix<3, 1>> wconv_gp_mass_;
+      std::vector<Core::LinAlg::Matrix<3, 1>> wconv_gp_mass_;
       //! current spatial angular velocity vector at Gauss points for exact integration (required
       //! for computation of inertia terms)
-      std::vector<CORE::LINALG::Matrix<3, 1>> wnew_gp_mass_;
+      std::vector<Core::LinAlg::Matrix<3, 1>> wnew_gp_mass_;
       //! spatial angular acceleration vector at Gauss points for exact integration at the end of
       //! the preceding time step (required for computation of inertia terms)
-      std::vector<CORE::LINALG::Matrix<3, 1>> aconv_gp_mass_;
+      std::vector<Core::LinAlg::Matrix<3, 1>> aconv_gp_mass_;
       //! current spatial angular acceleration vector at Gauss points for exact integration
       //! (required for computation of inertia terms)
-      std::vector<CORE::LINALG::Matrix<3, 1>> anew_gp_mass_;
+      std::vector<Core::LinAlg::Matrix<3, 1>> anew_gp_mass_;
       //! modified spatial angular acceleration vector (according to gen-alpha time integration) at
       //! Gauss points for exact integration at the end of the preceding time step (required for
       //! computation of inertia terms)
-      std::vector<CORE::LINALG::Matrix<3, 1>> amodconv_gp_mass_;
+      std::vector<Core::LinAlg::Matrix<3, 1>> amodconv_gp_mass_;
       //! current modified spatial angular acceleration vector (according to gen-alpha time
       //! integration) at Gauss points for exact integration (required for computation of inertia
       //! terms)
-      std::vector<CORE::LINALG::Matrix<3, 1>> amodnew_gp_mass_;
+      std::vector<Core::LinAlg::Matrix<3, 1>> amodnew_gp_mass_;
       //! translational acceleration vector at Gauss points for exact integration at the end of the
       //! preceding time step (required for computation of inertia terms)
-      std::vector<CORE::LINALG::Matrix<3, 1>> rttconv_gp_mass_;
+      std::vector<Core::LinAlg::Matrix<3, 1>> rttconv_gp_mass_;
       //! current translational acceleration vector at Gauss points for exact integration (required
       //! for computation of inertia terms)
-      std::vector<CORE::LINALG::Matrix<3, 1>> rttnew_gp_mass_;
+      std::vector<Core::LinAlg::Matrix<3, 1>> rttnew_gp_mass_;
       //! modified translational acceleration vector at Gauss points for exact integration at the
       //! end of the preceding time step (required for computation of inertia terms)
-      std::vector<CORE::LINALG::Matrix<3, 1>> rttmodconv_gp_mass_;
+      std::vector<Core::LinAlg::Matrix<3, 1>> rttmodconv_gp_mass_;
       //! modified current translational acceleration vector at Gauss points for exact integration
       //! (required for computation of inertia terms)
-      std::vector<CORE::LINALG::Matrix<3, 1>> rttmodnew_gp_mass_;
+      std::vector<Core::LinAlg::Matrix<3, 1>> rttmodnew_gp_mass_;
       //! translational velocity vector at Gauss points for exact integration at the end of the
       //! preceding time step (required for computation of inertia terms)
-      std::vector<CORE::LINALG::Matrix<3, 1>> rtconv_gp_mass_;
+      std::vector<Core::LinAlg::Matrix<3, 1>> rtconv_gp_mass_;
       //! current translational velocity vector at Gauss points for exact integration (required for
       //! computation of inertia terms)
-      std::vector<CORE::LINALG::Matrix<3, 1>> rtnew_gp_mass_;
+      std::vector<Core::LinAlg::Matrix<3, 1>> rtnew_gp_mass_;
       //! translational displacement vector at Gauss points for exact integration at the end of the
       //! preceding time step (required for computation of inertia terms)
-      std::vector<CORE::LINALG::Matrix<3, 1>> rconv_gp_mass_;
+      std::vector<Core::LinAlg::Matrix<3, 1>> rconv_gp_mass_;
       //! current translational displacement vector at Gauss points for exact integration (required
       //! for computation of inertia terms)
-      std::vector<CORE::LINALG::Matrix<3, 1>> rnew_gp_mass_;
+      std::vector<Core::LinAlg::Matrix<3, 1>> rnew_gp_mass_;
       //************** end: Class variables required for element-based Lie-group time integration
       //*******************************//
 
       //! triads at Gauss points for integration of damping/stochastic forces in quaternion form at
       //! the end of the preceding time step (required for computation of angular velocity)
-      std::vector<CORE::LINALG::Matrix<4, 1>> qconv_gp_dampstoch_;
+      std::vector<Core::LinAlg::Matrix<4, 1>> qconv_gp_dampstoch_;
       //! current triads at Gauss points for integration of damping/stochastic forces in quaternion
       //! form (required for computation of angular velocity)
-      std::vector<CORE::LINALG::Matrix<4, 1>> qnew_gp_dampstoch_;
+      std::vector<Core::LinAlg::Matrix<4, 1>> qnew_gp_dampstoch_;
 
       //!@name variables only needed/used for output purposes. Note: No need to pack and unpack
       //! @{
@@ -1172,10 +1172,10 @@ namespace DRT
       double ekintrans_;
 
       //! angular momentum of the element
-      CORE::LINALG::Matrix<3, 1> l_;
+      Core::LinAlg::Matrix<3, 1> l_;
 
       //! linear momentum of the element
-      CORE::LINALG::Matrix<3, 1> p_;
+      Core::LinAlg::Matrix<3, 1> p_;
 
       //! norm of maximal bending curvature occurring in this element Todo obsolete?
       double kmax_;
@@ -1211,11 +1211,11 @@ namespace DRT
     };
 
     // << operator
-    std::ostream& operator<<(std::ostream& os, const CORE::Elements::Element& ele);
+    std::ostream& operator<<(std::ostream& os, const Core::Elements::Element& ele);
 
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 
 FOUR_C_NAMESPACE_CLOSE

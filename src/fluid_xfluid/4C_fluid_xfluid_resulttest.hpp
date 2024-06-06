@@ -20,7 +20,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
@@ -35,7 +35,7 @@ namespace FLD
   /*!
     ResultTest class for XFluid
    */
-  class XFluidResultTest : public CORE::UTILS::ResultTest
+  class XFluidResultTest : public Core::UTILS::ResultTest
   {
    public:
     //! ctor for standard XFEM problems
@@ -49,22 +49,22 @@ namespace FLD
       Possible position flags are "velx", "vely", "velz" and
       "pressure". With the obvious meaning.
      */
-    void test_node(INPUT::LineDefinition& res, int& nerr, int& test_count) override;
+    void test_node(Input::LineDefinition& res, int& nerr, int& test_count) override;
 
    private:
     /// nodal value test (one can specify discretization and corresponding solution here!)
-    void test_node(INPUT::LineDefinition& res, int& nerr, int& test_count, int node,
-        const Teuchos::RCP<const DRT::Discretization>& discret,
+    void test_node(Input::LineDefinition& res, int& nerr, int& test_count, int node,
+        const Teuchos::RCP<const Discret::Discretization>& discret,
         const Teuchos::RCP<const Epetra_Vector>& velnp);
 
     /// XFEM discretization
-    Teuchos::RCP<const DRT::Discretization> discret_;
+    Teuchos::RCP<const Discret::Discretization> discret_;
 
     /// solution vector for XFEM discretization
     Teuchos::RCP<const Epetra_Vector> velnp_;
 
     /// optional additional discretization for the same field (fluid-fluid coupling)
-    Teuchos::RCP<const DRT::Discretization> coupl_discret_;
+    Teuchos::RCP<const Discret::Discretization> coupl_discret_;
 
     /// solution vector for additional coupling discretization
     Teuchos::RCP<const Epetra_Vector> coupl_velnp_;

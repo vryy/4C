@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::PREDICT::Factory::Factory()
+STR::Predict::Factory::Factory()
 {
   // empty
 }
@@ -29,26 +29,26 @@ STR::PREDICT::Factory::Factory()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::PREDICT::Generic> STR::PREDICT::Factory::BuildPredictor(
-    const enum INPAR::STR::PredEnum& predType) const
+Teuchos::RCP<STR::Predict::Generic> STR::Predict::Factory::BuildPredictor(
+    const enum Inpar::STR::PredEnum& predType) const
 {
-  Teuchos::RCP<STR::PREDICT::Generic> predictor = Teuchos::null;
+  Teuchos::RCP<STR::Predict::Generic> predictor = Teuchos::null;
 
   switch (predType)
   {
-    case INPAR::STR::pred_constdis:
-    case INPAR::STR::pred_constvel:
-    case INPAR::STR::pred_constacc:
-    case INPAR::STR::pred_constdisvelacc:
-    case INPAR::STR::pred_constdispres:
-    case INPAR::STR::pred_constdisvelaccpres:
-      predictor = Teuchos::rcp(new STR::PREDICT::ConstDisVelAccPress());
+    case Inpar::STR::pred_constdis:
+    case Inpar::STR::pred_constvel:
+    case Inpar::STR::pred_constacc:
+    case Inpar::STR::pred_constdisvelacc:
+    case Inpar::STR::pred_constdispres:
+    case Inpar::STR::pred_constdisvelaccpres:
+      predictor = Teuchos::rcp(new STR::Predict::ConstDisVelAccPress());
       break;
-    case INPAR::STR::pred_tangdis:
-    case INPAR::STR::pred_tangdis_constfext:
-      predictor = Teuchos::rcp(new STR::PREDICT::TangDis());
+    case Inpar::STR::pred_tangdis:
+    case Inpar::STR::pred_tangdis_constfext:
+      predictor = Teuchos::rcp(new STR::Predict::TangDis());
       break;
-    case INPAR::STR::pred_vague:
+    case Inpar::STR::pred_vague:
     default:
       FOUR_C_THROW("Unknown predictor type!");
       break;
@@ -60,8 +60,8 @@ Teuchos::RCP<STR::PREDICT::Generic> STR::PREDICT::Factory::BuildPredictor(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::PREDICT::Generic> STR::PREDICT::BuildPredictor(
-    const enum INPAR::STR::PredEnum& predType)
+Teuchos::RCP<STR::Predict::Generic> STR::Predict::BuildPredictor(
+    const enum Inpar::STR::PredEnum& predType)
 {
   Factory factory;
   return factory.BuildPredictor(predType);

@@ -25,12 +25,12 @@ namespace
     };
 
     auto [x_with_jac, jacobian] =
-        CORE::UTILS::SolveLocalNewtonAndReturnJacobian(residuum_and_jacobian, 0.0, 1e-9);
+        Core::UTILS::SolveLocalNewtonAndReturnJacobian(residuum_and_jacobian, 0.0, 1e-9);
 
     EXPECT_NEAR(x_with_jac, -0.271887376775884, 1e-8);
     EXPECT_NEAR(jacobian, 3.577755203747107557, 1e-8);
 
-    auto x = CORE::UTILS::SolveLocalNewton(residuum_and_jacobian, 0.0, 1e-9);
+    auto x = Core::UTILS::SolveLocalNewton(residuum_and_jacobian, 0.0, 1e-9);
 
     EXPECT_NEAR(x, -0.271887376775884, 1e-8);
   }
@@ -38,11 +38,11 @@ namespace
 
   TEST(CoreUtilsLocalNewtonTest, NewtonVector)
   {
-    auto residuum_and_jacobian = [](const CORE::LINALG::Matrix<2, 1>& x)
-        -> std::tuple<CORE::LINALG::Matrix<2, 1>, CORE::LINALG::Matrix<2, 2>>
+    auto residuum_and_jacobian = [](const Core::LinAlg::Matrix<2, 1>& x)
+        -> std::tuple<Core::LinAlg::Matrix<2, 1>, Core::LinAlg::Matrix<2, 2>>
     {
-      CORE::LINALG::Matrix<2, 1> residuum(false);
-      CORE::LINALG::Matrix<2, 2> jacobian(false);
+      Core::LinAlg::Matrix<2, 1> residuum(false);
+      Core::LinAlg::Matrix<2, 2> jacobian(false);
 
       residuum(0) = std::exp(x(0) * x(1)) - 1;
       residuum(1) = 2 * std::exp(x(0) * x(1)) - x(0);
@@ -56,18 +56,18 @@ namespace
       return {residuum, jacobian};
     };
 
-    CORE::LINALG::Matrix<2, 1> x_0(true);
+    Core::LinAlg::Matrix<2, 1> x_0(true);
     x_0(0) = 1.1;
     x_0(1) = 0.1;
 
     auto [x_with_jac, jacobian] =
-        CORE::UTILS::SolveLocalNewtonAndReturnJacobian(residuum_and_jacobian, x_0, 1e-9);
+        Core::UTILS::SolveLocalNewtonAndReturnJacobian(residuum_and_jacobian, x_0, 1e-9);
 
     EXPECT_NEAR(x_with_jac(0), 2, 1e-8);
     EXPECT_NEAR(x_with_jac(1), 0, 1e-8);
 
 
-    auto x = CORE::UTILS::SolveLocalNewton(residuum_and_jacobian, x_0, 1e-9);
+    auto x = Core::UTILS::SolveLocalNewton(residuum_and_jacobian, x_0, 1e-9);
 
     EXPECT_NEAR(x(0), 2, 1e-8);
     EXPECT_NEAR(x(1), 0, 1e-8);
@@ -116,14 +116,14 @@ namespace
     };
 
     CustomVectorType x_0{0.0};
-    auto [x_with_jac, jacobian] = CORE::UTILS::SolveLocalNewtonAndReturnJacobian(
+    auto [x_with_jac, jacobian] = Core::UTILS::SolveLocalNewtonAndReturnJacobian(
         residuum_and_jacobian, x_0, CustomScalarType(1e-9));
 
     EXPECT_NEAR(x_with_jac.value_, -0.271887376775884, 1e-8);
     EXPECT_NEAR(jacobian.jacobian_, 3.577755203747107557, 1e-8);
 
 
-    auto x = CORE::UTILS::SolveLocalNewton(residuum_and_jacobian, x_0, CustomScalarType(1e-9));
+    auto x = Core::UTILS::SolveLocalNewton(residuum_and_jacobian, x_0, CustomScalarType(1e-9));
     EXPECT_NEAR(x.value_, -0.271887376775884, 1e-8);
   }
 }  // namespace

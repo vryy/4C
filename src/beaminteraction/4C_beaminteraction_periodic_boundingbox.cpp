@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::GEO::MESHFREE::BoundingBox::BoundingBox()
+Core::Geo::MeshFree::BoundingBox::BoundingBox()
     : isinit_(false),
       issetup_(false),
       boxdiscret_(Teuchos::null),
@@ -51,7 +51,7 @@ CORE::GEO::MESHFREE::BoundingBox::BoundingBox()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::MESHFREE::BoundingBox::Init()
+void Core::Geo::MeshFree::BoundingBox::Init()
 {
   issetup_ = false;
 
@@ -59,7 +59,7 @@ void CORE::GEO::MESHFREE::BoundingBox::Init()
   // fixme: like this or by eight nodes of element in discret
   box_.PutScalar(1.0e12);
   std::istringstream xaabbstream(Teuchos::getNumericStringParameter(
-      GLOBAL::Problem::Instance()->binning_strategy_params(), "DOMAINBOUNDINGBOX"));
+      Global::Problem::Instance()->binning_strategy_params(), "DOMAINBOUNDINGBOX"));
   for (int col = 0; col < 2; ++col)
   {
     for (int row = 0; row < 3; ++row)
@@ -79,7 +79,7 @@ void CORE::GEO::MESHFREE::BoundingBox::Init()
 
   // set up boundary conditions
   std::istringstream periodicbc(Teuchos::getNumericStringParameter(
-      GLOBAL::Problem::Instance()->binning_strategy_params(), "PERIODICONOFF"));
+      Global::Problem::Instance()->binning_strategy_params(), "PERIODICONOFF"));
 
   // loop over all spatial directions
   for (int dim = 0; dim < 3; ++dim)
@@ -116,8 +116,8 @@ void CORE::GEO::MESHFREE::BoundingBox::Init()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::MESHFREE::BoundingBox::Init(
-    CORE::LINALG::Matrix<3, 2> const& box, std::vector<bool> const& pbconoff)
+void Core::Geo::MeshFree::BoundingBox::Init(
+    Core::LinAlg::Matrix<3, 2> const& box, std::vector<bool> const& pbconoff)
 {
   issetup_ = false;
 
@@ -141,7 +141,7 @@ void CORE::GEO::MESHFREE::BoundingBox::Init(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::MESHFREE::BoundingBox::Setup()
+void Core::Geo::MeshFree::BoundingBox::Setup()
 {
   throw_if_not_init();
 
@@ -151,11 +151,11 @@ void CORE::GEO::MESHFREE::BoundingBox::Setup()
   if (boxdiscret_->GetCondition("Dirichlet") != nullptr) havedirichletbc_ = true;
 
   // displacement vector in row and col format
-  disn_row_ = CORE::LINALG::CreateVector(*boxdiscret_->dof_row_map(), true);
-  disn_col_ = CORE::LINALG::CreateVector(*boxdiscret_->DofColMap(), true);
+  disn_row_ = Core::LinAlg::CreateVector(*boxdiscret_->dof_row_map(), true);
+  disn_col_ = Core::LinAlg::CreateVector(*boxdiscret_->DofColMap(), true);
 
   // initialize bounding box runtime output
-  if (GLOBAL::Problem::Instance()
+  if (Global::Problem::Instance()
           ->IOParams()
           .sublist("RUNTIME VTK OUTPUT")
           .get<int>("INTERVAL_STEPS") != -1)
@@ -167,19 +167,19 @@ void CORE::GEO::MESHFREE::BoundingBox::Setup()
 /*----------------------------------------------------------------------------*
  * (public)                                                                   |
  *----------------------------------------------------------------------------*/
-void CORE::GEO::MESHFREE::BoundingBox::setup_bounding_box_discretization()
+void Core::Geo::MeshFree::BoundingBox::setup_bounding_box_discretization()
 {
-  if (GLOBAL::Problem::Instance()->DoesExistDis("boundingbox"))
+  if (Global::Problem::Instance()->DoesExistDis("boundingbox"))
   {
-    boxdiscret_ = GLOBAL::Problem::Instance()->GetDis("boundingbox");
+    boxdiscret_ = Global::Problem::Instance()->GetDis("boundingbox");
 
     if (boxdiscret_->Filled() == false) boxdiscret_->fill_complete(true, false, false);
 
     // create fully overlapping boundingbox discret
     Teuchos::RCP<Epetra_Map> rednodecolmap =
-        CORE::LINALG::AllreduceEMap(*boxdiscret_->NodeRowMap());
+        Core::LinAlg::AllreduceEMap(*boxdiscret_->NodeRowMap());
     Teuchos::RCP<Epetra_Map> redelecolmap =
-        CORE::LINALG::AllreduceEMap(*boxdiscret_->ElementRowMap());
+        Core::LinAlg::AllreduceEMap(*boxdiscret_->ElementRowMap());
 
     // do the fully overlapping ghosting of the bounding box element to have everything redundant
     boxdiscret_->ExportColumnNodes(*rednodecolmap);
@@ -188,19 +188,19 @@ void CORE::GEO::MESHFREE::BoundingBox::setup_bounding_box_discretization()
     boxdiscret_->fill_complete(true, false, false);
   }
 
-  if (not GLOBAL::Problem::Instance()->DoesExistDis("boundingbox") or
+  if (not Global::Problem::Instance()->DoesExistDis("boundingbox") or
       boxdiscret_->NumMyColElements() == 0)
   {
-    if (not GLOBAL::Problem::Instance()->DoesExistDis("boundingbox"))
+    if (not Global::Problem::Instance()->DoesExistDis("boundingbox"))
     {
       Teuchos::RCP<Epetra_Comm> com =
-          Teuchos::rcp(GLOBAL::Problem::Instance()->GetDis("structure")->Comm().Clone());
+          Teuchos::rcp(Global::Problem::Instance()->GetDis("structure")->Comm().Clone());
       boxdiscret_ = Teuchos::rcp(
-          new DRT::Discretization("boundingbox", com, GLOBAL::Problem::Instance()->NDim()));
+          new Discret::Discretization("boundingbox", com, Global::Problem::Instance()->NDim()));
     }
     else
     {
-      boxdiscret_ = GLOBAL::Problem::Instance()->GetDis("boundingbox");
+      boxdiscret_ = Global::Problem::Instance()->GetDis("boundingbox");
     }
 
     // create nodes
@@ -211,20 +211,21 @@ void CORE::GEO::MESHFREE::BoundingBox::setup_bounding_box_discretization()
       undeformed_box_corner_point_position(corner_i, cornerpos);
       node_ids[corner_i] = corner_i;
 
-      Teuchos::RCP<CORE::Nodes::Node> newnode =
-          Teuchos::rcp(new CORE::Nodes::Node(corner_i, cornerpos, 0));
+      Teuchos::RCP<Core::Nodes::Node> newnode =
+          Teuchos::rcp(new Core::Nodes::Node(corner_i, cornerpos, 0));
       boxdiscret_->AddNode(newnode);
     }
 
     // assign nodes to element
-    Teuchos::RCP<CORE::Elements::Element> newele = CORE::COMM::Factory("VELE3", "Polynomial", 0, 0);
+    Teuchos::RCP<Core::Elements::Element> newele =
+        Core::Communication::Factory("VELE3", "Polynomial", 0, 0);
     newele->SetNodeIds(8, node_ids);
     boxdiscret_->add_element(newele);
   }
 
   // build independent dof set
-  Teuchos::RCP<CORE::Dofsets::IndependentDofSet> independentdofset =
-      Teuchos::rcp(new CORE::Dofsets::IndependentDofSet(true));
+  Teuchos::RCP<Core::DOFSets::IndependentDofSet> independentdofset =
+      Teuchos::rcp(new Core::DOFSets::IndependentDofSet(true));
   boxdiscret_->ReplaceDofSet(independentdofset);
   boxdiscret_->fill_complete();
 }
@@ -232,8 +233,8 @@ void CORE::GEO::MESHFREE::BoundingBox::setup_bounding_box_discretization()
 /*----------------------------------------------------------------------------*
  * (public)                                                                   |
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::MESHFREE::BoundingBox::Shift3D(
-    CORE::LINALG::Matrix<3, 1>& d, CORE::LINALG::Matrix<3, 1> const X) const
+bool Core::Geo::MeshFree::BoundingBox::Shift3D(
+    Core::LinAlg::Matrix<3, 1>& d, Core::LinAlg::Matrix<3, 1> const X) const
 {
   throw_if_not_init();
 
@@ -242,10 +243,10 @@ bool CORE::GEO::MESHFREE::BoundingBox::Shift3D(
   if (not haveperiodicbc_) return shifted;
 
   // x = X + d
-  CORE::LINALG::Matrix<3, 1> x(X);
+  Core::LinAlg::Matrix<3, 1> x(X);
   x.Update(1.0, d, 1.0);
 
-  CORE::LINALG::Matrix<3, 1> x_ud(true);
+  Core::LinAlg::Matrix<3, 1> x_ud(true);
   transform_from_global_to_undeformed_bounding_box_system(x, x_ud);
 
   // shift
@@ -265,9 +266,9 @@ bool CORE::GEO::MESHFREE::BoundingBox::Shift3D(
 /*----------------------------------------------------------------------------*
  * (public)                                                                   |
  *----------------------------------------------------------------------------*/
-void CORE::GEO::MESHFREE::BoundingBox::get_xi_of_intersection3_d(
-    CORE::LINALG::Matrix<3, 1> const& x1, CORE::LINALG::Matrix<3, 1> const& x2,
-    CORE::LINALG::Matrix<3, 1>& xi) const
+void Core::Geo::MeshFree::BoundingBox::get_xi_of_intersection3_d(
+    Core::LinAlg::Matrix<3, 1> const& x1, Core::LinAlg::Matrix<3, 1> const& x2,
+    Core::LinAlg::Matrix<3, 1>& xi) const
 {
   throw_if_not_init();
   get_xi_of_intersection3_d(x1, x2, xi, box_);
@@ -275,16 +276,16 @@ void CORE::GEO::MESHFREE::BoundingBox::get_xi_of_intersection3_d(
 /*----------------------------------------------------------------------------*
  * (public)                                                                   |
  *----------------------------------------------------------------------------*/
-void CORE::GEO::MESHFREE::BoundingBox::get_xi_of_intersection3_d(
-    CORE::LINALG::Matrix<3, 1> const& x1, CORE::LINALG::Matrix<3, 1> const& x2,
-    CORE::LINALG::Matrix<3, 1>& xi, CORE::LINALG::Matrix<3, 2> const& box) const
+void Core::Geo::MeshFree::BoundingBox::get_xi_of_intersection3_d(
+    Core::LinAlg::Matrix<3, 1> const& x1, Core::LinAlg::Matrix<3, 1> const& x2,
+    Core::LinAlg::Matrix<3, 1>& xi, Core::LinAlg::Matrix<3, 2> const& box) const
 {
   throw_if_not_init();
 
   // set default values
   for (unsigned int dim = 0; dim < 3; ++dim) xi(dim) = 2.0;
 
-  CORE::LINALG::Matrix<3, 1> x1_ud(true), x2_ud(true);
+  Core::LinAlg::Matrix<3, 1> x1_ud(true), x2_ud(true);
   transform_from_global_to_undeformed_bounding_box_system(x1, x1_ud);
   transform_from_global_to_undeformed_bounding_box_system(x2, x2_ud);
 
@@ -342,18 +343,18 @@ void CORE::GEO::MESHFREE::BoundingBox::get_xi_of_intersection3_d(
 /*----------------------------------------------------------------------------*
  * (public)                                                                   |
  *----------------------------------------------------------------------------*/
-void CORE::GEO::MESHFREE::BoundingBox::UnShift3D(CORE::LINALG::Matrix<3, 1>& d,
-    CORE::LINALG::Matrix<3, 1> const& ref, CORE::LINALG::Matrix<3, 1> const X) const
+void Core::Geo::MeshFree::BoundingBox::UnShift3D(Core::LinAlg::Matrix<3, 1>& d,
+    Core::LinAlg::Matrix<3, 1> const& ref, Core::LinAlg::Matrix<3, 1> const X) const
 {
   throw_if_not_init();
 
   if (not haveperiodicbc_) return;
 
   // x = X + d
-  CORE::LINALG::Matrix<3, 1> x(X);
+  Core::LinAlg::Matrix<3, 1> x(X);
   x.Update(1.0, d, 1.0);
 
-  CORE::LINALG::Matrix<3, 1> x_ud(true), ref_ud(true);
+  Core::LinAlg::Matrix<3, 1> x_ud(true), ref_ud(true);
   transform_from_global_to_undeformed_bounding_box_system(x, x_ud);
   transform_from_global_to_undeformed_bounding_box_system(ref, ref_ud);
 
@@ -370,9 +371,9 @@ void CORE::GEO::MESHFREE::BoundingBox::UnShift3D(CORE::LINALG::Matrix<3, 1>& d,
 /*----------------------------------------------------------------------------*
  * (public)                                                                   |
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::MESHFREE::BoundingBox::check_if_shift_between_points(CORE::LINALG::Matrix<3, 1>& d,
-    CORE::LINALG::Matrix<3, 1> const& ref, std::vector<bool>& shift_in_dim,
-    CORE::LINALG::Matrix<3, 1> const X) const
+bool Core::Geo::MeshFree::BoundingBox::check_if_shift_between_points(Core::LinAlg::Matrix<3, 1>& d,
+    Core::LinAlg::Matrix<3, 1> const& ref, std::vector<bool>& shift_in_dim,
+    Core::LinAlg::Matrix<3, 1> const X) const
 {
   throw_if_not_init();
 
@@ -386,10 +387,10 @@ bool CORE::GEO::MESHFREE::BoundingBox::check_if_shift_between_points(CORE::LINAL
   }
 
   // x = X + d
-  CORE::LINALG::Matrix<3, 1> x(X);
+  Core::LinAlg::Matrix<3, 1> x(X);
   x.Update(1.0, d, 1.0);
 
-  CORE::LINALG::Matrix<3, 1> x_ud(true), ref_ud(true);
+  Core::LinAlg::Matrix<3, 1> x_ud(true), ref_ud(true);
   transform_from_global_to_undeformed_bounding_box_system(x, x_ud);
   transform_from_global_to_undeformed_bounding_box_system(ref, ref_ud);
 
@@ -408,7 +409,7 @@ bool CORE::GEO::MESHFREE::BoundingBox::check_if_shift_between_points(CORE::LINAL
 /*----------------------------------------------------------------------------*
  * (private)                                                                   |
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::MESHFREE::BoundingBox::shift1_d(int dim, double& d, double const& X) const
+bool Core::Geo::MeshFree::BoundingBox::shift1_d(int dim, double& d, double const& X) const
 {
   throw_if_not_init();
 
@@ -435,7 +436,7 @@ bool CORE::GEO::MESHFREE::BoundingBox::shift1_d(int dim, double& d, double const
 /*----------------------------------------------------------------------------*
  * (private)                                                                   |
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::MESHFREE::BoundingBox::un_shift1_d(
+bool Core::Geo::MeshFree::BoundingBox::un_shift1_d(
     int dim, double& d, double const& ref, double const& X) const
 {
   throw_if_not_init();
@@ -462,24 +463,24 @@ bool CORE::GEO::MESHFREE::BoundingBox::un_shift1_d(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::MESHFREE::BoundingBox::in_between(
+bool Core::Geo::MeshFree::BoundingBox::in_between(
     double smin, double smax, double omin, double omax) const
 {
-  double tol = CORE::GEO::TOL7;
+  double tol = Core::Geo::TOL7;
   return ((omax > smin - tol) and (smax > omin - tol));
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::MESHFREE::BoundingBox::RandomPosWithin(CORE::LINALG::Matrix<3, 1>& randpos) const
+void Core::Geo::MeshFree::BoundingBox::RandomPosWithin(Core::LinAlg::Matrix<3, 1>& randpos) const
 {
   throw_if_not_init();
 
-  GLOBAL::Problem::Instance()->Random()->SetRandRange(0.0, 1.0);
+  Global::Problem::Instance()->Random()->SetRandRange(0.0, 1.0);
   std::vector<double> randuni;
-  GLOBAL::Problem::Instance()->Random()->Uni(randuni, 3);
+  Global::Problem::Instance()->Random()->Uni(randuni, 3);
 
-  CORE::LINALG::Matrix<3, 1> randpos_ud(true);
+  Core::LinAlg::Matrix<3, 1> randpos_ud(true);
   for (int dim = 0; dim < 3; ++dim)
     randpos_ud(dim) = box_min(dim) + (edgelength_[dim] * randuni[dim]);
 
@@ -488,7 +489,7 @@ void CORE::GEO::MESHFREE::BoundingBox::RandomPosWithin(CORE::LINALG::Matrix<3, 1
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::MESHFREE::BoundingBox::AddPoint(const double* x)
+void Core::Geo::MeshFree::BoundingBox::AddPoint(const double* x)
 {
   FOUR_C_THROW("Check before use.");
   if (empty_)
@@ -511,7 +512,7 @@ void CORE::GEO::MESHFREE::BoundingBox::AddPoint(const double* x)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::MESHFREE::BoundingBox::Within(BoundingBox const& b) const
+bool Core::Geo::MeshFree::BoundingBox::Within(BoundingBox const& b) const
 {
   FOUR_C_THROW("Check before use.");
   if (empty_) return true;
@@ -522,7 +523,7 @@ bool CORE::GEO::MESHFREE::BoundingBox::Within(BoundingBox const& b) const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::MESHFREE::BoundingBox::Within(
+bool Core::Geo::MeshFree::BoundingBox::Within(
     const double* x, std::vector<bool>& within_in_dir) const
 {
   throw_if_not_init();
@@ -537,8 +538,8 @@ bool CORE::GEO::MESHFREE::BoundingBox::Within(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::MESHFREE::BoundingBox::Within(
-    CORE::LINALG::Matrix<3, 1> const& x, std::vector<bool>& within_in_dir) const
+bool Core::Geo::MeshFree::BoundingBox::Within(
+    Core::LinAlg::Matrix<3, 1> const& x, std::vector<bool>& within_in_dir) const
 {
   throw_if_not_init();
 
@@ -552,8 +553,8 @@ bool CORE::GEO::MESHFREE::BoundingBox::Within(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::MESHFREE::BoundingBox::Within(CORE::LINALG::Matrix<3, 2> const& box,
-    CORE::LINALG::Matrix<3, 1> const& x, std::vector<bool>& within_in_dir) const
+bool Core::Geo::MeshFree::BoundingBox::Within(Core::LinAlg::Matrix<3, 2> const& box,
+    Core::LinAlg::Matrix<3, 1> const& x, std::vector<bool>& within_in_dir) const
 {
   throw_if_not_init();
 
@@ -567,7 +568,7 @@ bool CORE::GEO::MESHFREE::BoundingBox::Within(CORE::LINALG::Matrix<3, 2> const& 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::MESHFREE::BoundingBox::Within(const CORE::LINALG::SerialDenseMatrix& xyz) const
+bool Core::Geo::MeshFree::BoundingBox::Within(const Core::LinAlg::SerialDenseMatrix& xyz) const
 {
   FOUR_C_THROW("Check before use.");
   BoundingBox bb;
@@ -581,7 +582,7 @@ bool CORE::GEO::MESHFREE::BoundingBox::Within(const CORE::LINALG::SerialDenseMat
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::MESHFREE::BoundingBox::Print()
+void Core::Geo::MeshFree::BoundingBox::Print()
 {
   if (empty_)
   {
@@ -596,14 +597,14 @@ void CORE::GEO::MESHFREE::BoundingBox::Print()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::MESHFREE::BoundingBox::ApplyDirichlet(double timen)
+void Core::Geo::MeshFree::BoundingBox::ApplyDirichlet(double timen)
 {
   throw_if_not_init_or_setup();
 
   Teuchos::ParameterList p;
   p.set("total time", timen);
-  p.set<const CORE::UTILS::FunctionManager*>(
-      "function_manager", &GLOBAL::Problem::Instance()->FunctionManager());
+  p.set<const Core::UTILS::FunctionManager*>(
+      "function_manager", &Global::Problem::Instance()->FunctionManager());
 
   // disn_ then also holds prescribed new Dirichlet displacements
   boxdiscret_->ClearState();
@@ -612,12 +613,12 @@ void CORE::GEO::MESHFREE::BoundingBox::ApplyDirichlet(double timen)
   boxdiscret_->ClearState();
 
   // export to col format
-  CORE::LINALG::Export(*disn_row_, *disn_col_);
+  Core::LinAlg::Export(*disn_row_, *disn_col_);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::MESHFREE::BoundingBox::InitRuntimeOutput()
+void Core::Geo::MeshFree::BoundingBox::InitRuntimeOutput()
 {
   // TODO This does not work for restarted simulations as the time is obviously wrong. However, this
   // is called before the restart is read and someone with knowledge on the module has to refactor
@@ -626,15 +627,15 @@ void CORE::GEO::MESHFREE::BoundingBox::InitRuntimeOutput()
   const double restart_time(0.0);
 
   visualization_output_writer_ptr_ =
-      Teuchos::rcp(new CORE::IO::DiscretizationVisualizationWriterMesh(
-          boxdiscret_, CORE::IO::VisualizationParametersFactory(
-                           GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
-                           *GLOBAL::Problem::Instance()->OutputControlFile(), restart_time)));
+      Teuchos::rcp(new Core::IO::DiscretizationVisualizationWriterMesh(
+          boxdiscret_, Core::IO::VisualizationParametersFactory(
+                           Global::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
+                           *Global::Problem::Instance()->OutputControlFile(), restart_time)));
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::MESHFREE::BoundingBox::runtime_output_step_state(double timen, int stepn) const
+void Core::Geo::MeshFree::BoundingBox::runtime_output_step_state(double timen, int stepn) const
 {
   throw_if_not_init_or_setup();
 
@@ -651,14 +652,14 @@ void CORE::GEO::MESHFREE::BoundingBox::runtime_output_step_state(double timen, i
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::LINALG::Matrix<3, 1> CORE::GEO::MESHFREE::BoundingBox::reference_pos_of_corner_point(
+Core::LinAlg::Matrix<3, 1> Core::Geo::MeshFree::BoundingBox::reference_pos_of_corner_point(
     int i) const
 {
   // dof gids of node i (note: each proc just has one element and eight nodes,
   // therefore local numbering from 0 to 7 on each proc)
-  CORE::Nodes::Node* node_i = boxdiscret_->lColNode(i);
+  Core::Nodes::Node* node_i = boxdiscret_->lColNode(i);
 
-  CORE::LINALG::Matrix<3, 1> x(true);
+  Core::LinAlg::Matrix<3, 1> x(true);
   for (int dim = 0; dim < 3; ++dim) x(dim) = node_i->X()[dim];
 
   return x;
@@ -666,15 +667,15 @@ CORE::LINALG::Matrix<3, 1> CORE::GEO::MESHFREE::BoundingBox::reference_pos_of_co
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::LINALG::Matrix<3, 1> CORE::GEO::MESHFREE::BoundingBox::current_position_of_corner_point(
+Core::LinAlg::Matrix<3, 1> Core::Geo::MeshFree::BoundingBox::current_position_of_corner_point(
     int i) const
 {
   // dof gids of node i (note: each proc just has one element and eight nodes,
   // therefore local numbering from 0 to 7 on each proc)
-  CORE::LINALG::Matrix<3, 1> x(true);
+  Core::LinAlg::Matrix<3, 1> x(true);
   if (boxdiscret_ != Teuchos::null)
   {
-    CORE::Nodes::Node* node_i = boxdiscret_->lColNode(i);
+    Core::Nodes::Node* node_i = boxdiscret_->lColNode(i);
     std::vector<int> dofnode = boxdiscret_->Dof(node_i);
 
     for (int dim = 0; dim < 3; ++dim)
@@ -690,7 +691,7 @@ CORE::LINALG::Matrix<3, 1> CORE::GEO::MESHFREE::BoundingBox::current_position_of
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::MESHFREE::BoundingBox::undeformed_box_corner_point_position(
+void Core::Geo::MeshFree::BoundingBox::undeformed_box_corner_point_position(
     int i, std::vector<double>& x) const
 {
   // to get numbering according to 4C convention of hex eles
@@ -706,7 +707,7 @@ void CORE::GEO::MESHFREE::BoundingBox::undeformed_box_corner_point_position(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::LINALG::Matrix<3, 1> CORE::GEO::MESHFREE::BoundingBox::undeformed_box_corner_point_position(
+Core::LinAlg::Matrix<3, 1> Core::Geo::MeshFree::BoundingBox::undeformed_box_corner_point_position(
     int i) const
 {
   // to get numbering according to 4C convention of hex eles
@@ -715,7 +716,7 @@ CORE::LINALG::Matrix<3, 1> CORE::GEO::MESHFREE::BoundingBox::undeformed_box_corn
   else if (i == 3 or i == 7)
     --i;
 
-  CORE::LINALG::Matrix<3, 1> x(true);
+  Core::LinAlg::Matrix<3, 1> x(true);
   x(0) = ((i & 1) == 1) ? box_max(0) : box_min(0);
   x(1) = ((i & 2) == 2) ? box_max(1) : box_min(1);
   x(2) = ((i & 4) == 4) ? box_max(2) : box_min(2);
@@ -725,8 +726,8 @@ CORE::LINALG::Matrix<3, 1> CORE::GEO::MESHFREE::BoundingBox::undeformed_box_corn
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void CORE::GEO::MESHFREE::BoundingBox::transform_from_undeformed_bounding_box_system_to_global(
-    CORE::LINALG::Matrix<3, 1> const& xi, CORE::LINALG::Matrix<3, 1>& x) const
+void Core::Geo::MeshFree::BoundingBox::transform_from_undeformed_bounding_box_system_to_global(
+    Core::LinAlg::Matrix<3, 1> const& xi, Core::LinAlg::Matrix<3, 1>& x) const
 {
   throw_if_not_init();
 
@@ -741,11 +742,11 @@ void CORE::GEO::MESHFREE::BoundingBox::transform_from_undeformed_bounding_box_sy
   x.Clear();
 
   // Evaluate lagrangian shape functions at xi
-  CORE::LINALG::Matrix<8, 1> funct;
+  Core::LinAlg::Matrix<8, 1> funct;
   lagrange_polynomial_to_map_from_undeformed_bounding_box_system_to_global(
       funct, xi(0), xi(1), xi(2));
 
-  CORE::LINALG::Matrix<3, 8> coord;
+  Core::LinAlg::Matrix<3, 8> coord;
   for (unsigned int i = 0; i < 8; ++i)
   {
     for (unsigned int j = 0; j < 3; ++j)
@@ -759,23 +760,23 @@ void CORE::GEO::MESHFREE::BoundingBox::transform_from_undeformed_bounding_box_sy
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void CORE::GEO::MESHFREE::BoundingBox::transform_from_undeformed_bounding_box_system_to_global(
+void Core::Geo::MeshFree::BoundingBox::transform_from_undeformed_bounding_box_system_to_global(
     double const* xi, double* x) const
 {
   throw_if_not_init_or_setup();
 
-  CORE::Nodes::Node** mynodes = boxdiscret_->lColElement(0)->Nodes();
+  Core::Nodes::Node** mynodes = boxdiscret_->lColElement(0)->Nodes();
   if (!mynodes) FOUR_C_THROW("ERROR: LocalToGlobal: Null pointer!");
 
   // reset globcoord variable
   for (unsigned int dim = 0; dim < 3; ++dim) x[dim] = 0.0;
 
   // Evaluate lagrangian shape functions at xi
-  CORE::LINALG::Matrix<8, 1> funct;
+  Core::LinAlg::Matrix<8, 1> funct;
   lagrange_polynomial_to_map_from_undeformed_bounding_box_system_to_global(
       funct, xi[0], xi[1], xi[2]);
 
-  CORE::LINALG::Matrix<3, 8> coord;
+  Core::LinAlg::Matrix<3, 8> coord;
   for (unsigned int i = 0; i < 8; ++i)
   {
     for (unsigned int j = 0; j < 3; ++j)
@@ -789,8 +790,8 @@ void CORE::GEO::MESHFREE::BoundingBox::transform_from_undeformed_bounding_box_sy
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-bool CORE::GEO::MESHFREE::BoundingBox::transform_from_global_to_undeformed_bounding_box_system(
-    CORE::LINALG::Matrix<3, 1> const& x, CORE::LINALG::Matrix<3, 1>& xi) const
+bool Core::Geo::MeshFree::BoundingBox::transform_from_global_to_undeformed_bounding_box_system(
+    Core::LinAlg::Matrix<3, 1> const& x, Core::LinAlg::Matrix<3, 1>& xi) const
 {
   throw_if_not_init();
 
@@ -804,13 +805,13 @@ bool CORE::GEO::MESHFREE::BoundingBox::transform_from_global_to_undeformed_bound
   // initialize variables
   int const numnode = 8;
   int const ndim = 3;
-  double tol = CORE::GEO::TOL12;
+  double tol = Core::Geo::TOL12;
   bool converged = false;
-  CORE::LINALG::Matrix<numnode, 1> funct;
-  CORE::LINALG::Matrix<ndim, numnode> deriv;
-  CORE::LINALG::Matrix<ndim, numnode> pbbcurrnodepos;
-  CORE::LINALG::Matrix<ndim, ndim> xjm;
-  CORE::LINALG::Matrix<ndim, 1> rhs;
+  Core::LinAlg::Matrix<numnode, 1> funct;
+  Core::LinAlg::Matrix<ndim, numnode> deriv;
+  Core::LinAlg::Matrix<ndim, numnode> pbbcurrnodepos;
+  Core::LinAlg::Matrix<ndim, ndim> xjm;
+  Core::LinAlg::Matrix<ndim, 1> rhs;
 
   // spatial configuration of this element!
   for (int k = 0; k < numnode; ++k)
@@ -875,7 +876,7 @@ bool CORE::GEO::MESHFREE::BoundingBox::transform_from_global_to_undeformed_bound
     if (abs(xjm_invert) < 1e-15) FOUR_C_THROW("ERROR: Singular Jacobian");
 
     // compute increment
-    CORE::LINALG::Matrix<ndim, 1> deltaxi(true);
+    Core::LinAlg::Matrix<ndim, 1> deltaxi(true);
     for (int z = 0; z < ndim; ++z)
       for (int p = 0; p < ndim; ++p) deltaxi(z) -= xjm(z, p) * rhs(p);
 
@@ -889,11 +890,11 @@ bool CORE::GEO::MESHFREE::BoundingBox::transform_from_global_to_undeformed_bound
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-bool CORE::GEO::MESHFREE::BoundingBox::transform_from_global_to_undeformed_bounding_box_system(
+bool Core::Geo::MeshFree::BoundingBox::transform_from_global_to_undeformed_bounding_box_system(
     double const* x, double* xi) const
 {
   throw_if_not_init();
-  static CORE::LINALG::Matrix<3, 1> x_m(true), xi_m(true);
+  static Core::LinAlg::Matrix<3, 1> x_m(true), xi_m(true);
   for (int dim = 0; dim < 3; ++dim) x_m(dim) = x[dim];
 
   bool converged = transform_from_global_to_undeformed_bounding_box_system(x_m, xi_m);
@@ -907,9 +908,9 @@ bool CORE::GEO::MESHFREE::BoundingBox::transform_from_global_to_undeformed_bound
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void CORE::GEO::MESHFREE::BoundingBox::
+void Core::Geo::MeshFree::BoundingBox::
     lagrange_polynomial_to_map_from_undeformed_bounding_box_system_to_global(
-        CORE::LINALG::Matrix<8, 1>& funct,  ///< to be filled with shape function values
+        Core::LinAlg::Matrix<8, 1>& funct,  ///< to be filled with shape function values
         double r, double s, double t) const
 {
   throw_if_not_init();
@@ -942,9 +943,9 @@ void CORE::GEO::MESHFREE::BoundingBox::
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void CORE::GEO::MESHFREE::BoundingBox::
+void Core::Geo::MeshFree::BoundingBox::
     lagrange_polynomial_to_map_from_undeformed_bounding_box_system_to_global_deriv1(
-        CORE::LINALG::Matrix<3, 8>& deriv1,  ///< to be filled with shape function derivative values
+        Core::LinAlg::Matrix<3, 8>& deriv1,  ///< to be filled with shape function derivative values
         double r, double s, double t) const
 {
   throw_if_not_init();

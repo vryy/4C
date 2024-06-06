@@ -28,7 +28,7 @@ class PostField;
 class PostResult;
 
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 
@@ -36,9 +36,9 @@ namespace DRT
   {
     class Beam3Base;
   }
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::Nodes
+namespace Core::Nodes
 {
   class Node;
 }
@@ -98,7 +98,7 @@ class PostVtuWriter : public PostVtkWriter
   void write_geo() override;
 
   //! write the geometry of Nurbs Element
-  virtual void write_geo_nurbs_ele(const CORE::Elements::Element* ele,
+  virtual void write_geo_nurbs_ele(const Core::Elements::Element* ele,
       std::vector<uint8_t>& celltypes, int& outNodeId, std::vector<int32_t>& celloffset,
       std::vector<double>& coordinates) const;
 
@@ -106,20 +106,20 @@ class PostVtuWriter : public PostVtkWriter
    *  discretization types
    *
    *  \author hiermeier (originally Seitz) \date 10/17 */
-  template <CORE::FE::CellType nurbs_type>
-  void write_geo_nurbs_ele(const CORE::Elements::Element* ele, std::vector<uint8_t>& celltypes,
+  template <Core::FE::CellType nurbs_type>
+  void write_geo_nurbs_ele(const Core::Elements::Element* ele, std::vector<uint8_t>& celltypes,
       int& outNodeId, std::vector<int32_t>& celloffset, std::vector<double>& coordinates) const;
 
-  CORE::FE::CellType map_nurbs_dis_type_to_lagrange_dis_type(
-      const CORE::FE::CellType nurbs_dis_type) const;
+  Core::FE::CellType map_nurbs_dis_type_to_lagrange_dis_type(
+      const Core::FE::CellType nurbs_dis_type) const;
 
   //! write the geometry of beam element (special treatment due to Hermite interpolation)
-  virtual void write_geo_beam_ele(const DRT::ELEMENTS::Beam3Base* beamele,
+  virtual void write_geo_beam_ele(const Discret::ELEMENTS::Beam3Base* beamele,
       std::vector<uint8_t>& celltypes, int& outNodeId, std::vector<int32_t>& celloffset,
       std::vector<double>& coordinates);
 
   //! Write a single result step for one Nurbs Element
-  virtual void wirte_dof_result_step_nurbs_ele(const CORE::Elements::Element* ele, int ncomponents,
+  virtual void wirte_dof_result_step_nurbs_ele(const Core::Elements::Element* ele, int ncomponents,
       const int numdf, std::vector<double>& solution, Teuchos::RCP<Epetra_Vector> ghostedData,
       const int from, const bool fillzeros) const;
 
@@ -127,17 +127,17 @@ class PostVtuWriter : public PostVtkWriter
    *  discretization types
    *
    *  \author hiermeier (originally Seitz) \date 10/17 */
-  template <CORE::FE::CellType nurbs_type>
-  void wirte_dof_result_step_nurbs_ele(const CORE::Elements::Element* ele, int ncomponents,
+  template <Core::FE::CellType nurbs_type>
+  void wirte_dof_result_step_nurbs_ele(const Core::Elements::Element* ele, int ncomponents,
       const int numdf, std::vector<double>& solution, Teuchos::RCP<Epetra_Vector> ghostedData,
       const int from, const bool fillzeros) const;
 
-  virtual void write_dof_result_step_beam_ele(const DRT::ELEMENTS::Beam3Base* beamele,
+  virtual void write_dof_result_step_beam_ele(const Discret::ELEMENTS::Beam3Base* beamele,
       const int& ncomponents, const int& numdf, std::vector<double>& solution,
       Teuchos::RCP<Epetra_Vector>& ghostedData, const int& from, const bool fillzeros);
 
   //! Write a single result step for one Nurbs Element
-  virtual void write_nodal_result_step_nurbs_ele(const CORE::Elements::Element* ele,
+  virtual void write_nodal_result_step_nurbs_ele(const Core::Elements::Element* ele,
       int ncomponents, const int numdf, std::vector<double>& solution,
       Teuchos::RCP<Epetra_MultiVector> ghostedData) const;
 
@@ -145,8 +145,8 @@ class PostVtuWriter : public PostVtkWriter
    *  discretization types
    *
    *  \author hiermeier (originally Seitz) \date 10/17 */
-  template <CORE::FE::CellType nurbs_type>
-  void write_nodal_result_step_nurbs_ele(const CORE::Elements::Element* ele, int ncomponents,
+  template <Core::FE::CellType nurbs_type>
+  void write_nodal_result_step_nurbs_ele(const Core::Elements::Element* ele, int ncomponents,
       const int numdf, std::vector<double>& solution,
       Teuchos::RCP<Epetra_MultiVector> ghostedData) const;
 

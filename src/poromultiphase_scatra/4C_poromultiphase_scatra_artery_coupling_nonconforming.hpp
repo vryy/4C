@@ -19,16 +19,16 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SerialDenseVector;
 }
-namespace POROMULTIPHASESCATRA
+namespace PoroMultiPhaseScaTra
 {
   // forward declaration
   class PoroMultiPhaseScatraArteryCouplingPairBase;
@@ -38,22 +38,22 @@ namespace POROMULTIPHASESCATRA
   {
    public:
     //! create using a Epetra_Comm
-    PoroMultiPhaseScaTraArtCouplNonConforming(Teuchos::RCP<DRT::Discretization> arterydis,
-        Teuchos::RCP<DRT::Discretization> contdis, const Teuchos::ParameterList& couplingparams,
+    PoroMultiPhaseScaTraArtCouplNonConforming(Teuchos::RCP<Discret::Discretization> arterydis,
+        Teuchos::RCP<Discret::Discretization> contdis, const Teuchos::ParameterList& couplingparams,
         const std::string& condname, const std::string& artcoupleddofname,
         const std::string& contcoupleddofname);
 
    protected:
     //! Evaluate the 1D-3D coupling
-    void Evaluate(Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat,
+    void Evaluate(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
         Teuchos::RCP<Epetra_Vector> rhs) override;
 
     //! set-up of linear system of equations of coupled problem
-    void SetupSystem(Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat,
-        Teuchos::RCP<Epetra_Vector> rhs, Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat_cont,
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat_art,
+    void SetupSystem(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
+        Teuchos::RCP<Epetra_Vector> rhs, Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_cont,
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_art,
         Teuchos::RCP<const Epetra_Vector> rhs_cont, Teuchos::RCP<const Epetra_Vector> rhs_art,
-        Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmap_cont,
+        Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmap_cont,
         Teuchos::RCP<const Epetra_Map> dbcmap_art,
         Teuchos::RCP<const Epetra_Map> dbcmap_art_with_collapsed);
 
@@ -67,9 +67,9 @@ namespace POROMULTIPHASESCATRA
     //! FE-assemble into global force and stiffness matrix
     virtual void fe_assemble_ele_force_stiff_into_system_vector_matrix(const int& ele1gid,
         const int& ele2gid, const double& integrated_diam,
-        std::vector<CORE::LINALG::SerialDenseVector> const& elevec,
-        std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> const& elemat,
-        Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs);
+        std::vector<Core::LinAlg::SerialDenseVector> const& elevec,
+        std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> const& elemat,
+        Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs);
 
     //! set flag if varying diameter has to be calculated
     virtual void set_varying_diam_flag();
@@ -103,20 +103,20 @@ namespace POROMULTIPHASESCATRA
     double delete_free_hanging_eles_threshold_;
 
     //! interacting pairs of artery and continuous-discretization elements
-    std::vector<Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase>>
+    std::vector<Teuchos::RCP<PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPairBase>>
         coupl_elepairs_;
 
     //! vector with 1D coupling nodes for ntp coupling
     std::vector<int> couplingnodes_ntp_;
 
     //! type of coupling method
-    INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod coupling_method_;
+    Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod coupling_method_;
 
     //! phinp for artery dis
     Teuchos::RCP<const Epetra_Vector> phinp_art_;
 
     //! coupling matrix (FE)
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> FEmat_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> FEmat_;
 
    private:
     //! check if initial fields on coupled DOFs are equal
@@ -167,24 +167,24 @@ namespace POROMULTIPHASESCATRA
 
     //! evaluate the pairs
     void evaluate_coupling_pairs(
-        Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs);
+        Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs);
 
     //! FE-assemble into global D, M and kappa (MP case)
     void fe_assemble_dm_kappa(const int& ele1gid, const int& ele2gid,
-        const CORE::LINALG::SerialDenseMatrix& D_ele, const CORE::LINALG::SerialDenseMatrix& M_ele,
-        const CORE::LINALG::SerialDenseVector& Kappa_ele);
+        const Core::LinAlg::SerialDenseMatrix& D_ele, const Core::LinAlg::SerialDenseMatrix& M_ele,
+        const Core::LinAlg::SerialDenseVector& Kappa_ele);
 
     //! sum D and M into global force and stiffness matrix
     void sum_dm_into_global_force_stiff(
-        Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs);
+        Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs);
 
     //! invert kappa vector
     void invert_kappa();
 
     //! return appropriate internal implementation class (acts as a simple factory to create single
     //! pairs)
-    static Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase>
-    create_new_artery_coupling_pair(std::vector<CORE::Elements::Element const*> const& ele_ptrs);
+    static Teuchos::RCP<PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPairBase>
+    create_new_artery_coupling_pair(std::vector<Core::Elements::Element const*> const& ele_ptrs);
 
     //! set the artery diameter in material to be able to use it on 1D discretization
     virtual void set_artery_diam_in_material() = 0;
@@ -226,8 +226,8 @@ namespace POROMULTIPHASESCATRA
     std::vector<std::vector<int>> funct_vec_;
 
     //! mortar coupling matrices
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> d_;
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> m_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> d_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> m_;
     Teuchos::RCP<Epetra_FEVector> kappa_inv_;
 
     //! penalty parameter
@@ -236,7 +236,7 @@ namespace POROMULTIPHASESCATRA
     //! coupling rhs-vector (FE)
     Teuchos::RCP<Epetra_FEVector> fe_rhs_;
   };
-}  // namespace POROMULTIPHASESCATRA
+}  // namespace PoroMultiPhaseScaTra
 
 
 FOUR_C_NAMESPACE_CLOSE

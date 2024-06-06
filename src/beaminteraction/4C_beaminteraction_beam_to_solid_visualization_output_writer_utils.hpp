@@ -25,12 +25,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   template <unsigned int rows, unsigned int cols, class value_type>
   class Matrix;
 }
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
@@ -56,7 +56,7 @@ namespace BEAMINTERACTION
    */
   void AddBeamInteractionNodalForces(
       const Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>& visualization,
-      const Teuchos::RCP<const DRT::Discretization>& discret_ptr,
+      const Teuchos::RCP<const Discret::Discretization>& discret_ptr,
       const Teuchos::RCP<const Epetra_MultiVector>& displacement,
       const Teuchos::RCP<const Epetra_MultiVector>& force, const bool write_unique_ids = false);
 
@@ -87,10 +87,10 @@ namespace BEAMINTERACTION
    * @param beam_resultant (out) Matrix with the force and moment resultants for the beam nodes.
    * @param solid_resultant (out) Matrix with the force and moment resultants for the solid nodes.
    */
-  void GetGlobalCouplingForceResultants(const DRT::Discretization& discret,
+  void GetGlobalCouplingForceResultants(const Discret::Discretization& discret,
       const Epetra_MultiVector& force, const Epetra_MultiVector& displacement,
-      CORE::LINALG::Matrix<3, 2, double>& beam_resultant,
-      CORE::LINALG::Matrix<3, 2, double>& solid_resultant);
+      Core::LinAlg::Matrix<3, 2, double>& beam_resultant,
+      Core::LinAlg::Matrix<3, 2, double>& solid_resultant);
 
   /**
    * \brief Add node contributions to the force and moment data arrays.
@@ -99,7 +99,7 @@ namespace BEAMINTERACTION
    * @param resultant (in/out) Array with the force and moment resultants.
    */
   void GetNodeCouplingForceResultants(const std::vector<double>& local_force,
-      const std::vector<double>& local_position, CORE::LINALG::Matrix<3, 2, double>& resultant);
+      const std::vector<double>& local_position, Core::LinAlg::Matrix<3, 2, double>& resultant);
 
 }  // namespace BEAMINTERACTION
 

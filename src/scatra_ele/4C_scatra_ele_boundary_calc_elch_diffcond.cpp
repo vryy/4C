@@ -22,12 +22,12 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 02/15 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>*
-DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::Instance(
+template <Core::FE::CellType distype, int probdim>
+Discret::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>*
+Discret::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
       [](const int numdofpernode, const int numscal, const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>>(
@@ -36,15 +36,15 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::Instance(
       });
 
   return singleton_map[disname].Instance(
-      CORE::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
+      Core::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 
 /*----------------------------------------------------------------------*
  | private constructor for singletons                        fang 02/15 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype,
+template <Core::FE::CellType distype, int probdim>
+Discret::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype,
     probdim>::ScaTraEleBoundaryCalcElchDiffCond(const int numdofpernode, const int numscal,
     const std::string& disname)
     :  // constructor of base class
@@ -58,42 +58,42 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype,
 /*----------------------------------------------------------------------*
  | evaluate action                                           fang 08/15 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::evaluate_action(
-    CORE::Elements::FaceElement* ele,                 //!< boundary element
+template <Core::FE::CellType distype, int probdim>
+int Discret::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::evaluate_action(
+    Core::Elements::FaceElement* ele,                 //!< boundary element
     Teuchos::ParameterList& params,                   //!< parameter list
-    DRT::Discretization& discretization,              //!< discretization
-    SCATRA::BoundaryAction action,                    //!< action
-    CORE::Elements::Element::LocationArray& la,       //!< location array
-    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,  //!< element matrix 1
-    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,  //!< element matrix 2
-    CORE::LINALG::SerialDenseVector& elevec1_epetra,  //!< element right-hand side vector 1
-    CORE::LINALG::SerialDenseVector& elevec2_epetra,  //!< element right-hand side vector 2
-    CORE::LINALG::SerialDenseVector& elevec3_epetra   //!< element right-hand side vector 3
+    Discret::Discretization& discretization,          //!< discretization
+    ScaTra::BoundaryAction action,                    //!< action
+    Core::Elements::Element::LocationArray& la,       //!< location array
+    Core::LinAlg::SerialDenseMatrix& elemat1_epetra,  //!< element matrix 1
+    Core::LinAlg::SerialDenseMatrix& elemat2_epetra,  //!< element matrix 2
+    Core::LinAlg::SerialDenseVector& elevec1_epetra,  //!< element right-hand side vector 1
+    Core::LinAlg::SerialDenseVector& elevec2_epetra,  //!< element right-hand side vector 2
+    Core::LinAlg::SerialDenseVector& elevec3_epetra   //!< element right-hand side vector 3
 )
 {
   // determine and evaluate action
   switch (action)
   {
-    case SCATRA::BoundaryAction::calc_elch_boundary_kinetics:
+    case ScaTra::BoundaryAction::calc_elch_boundary_kinetics:
     {
       // access material of parent element
-      Teuchos::RCP<CORE::MAT::Material> material = ele->parent_element()->Material();
+      Teuchos::RCP<Core::Mat::Material> material = ele->parent_element()->Material();
 
       // extract porosity from material and store in diffusion manager
-      if (material->MaterialType() == CORE::Materials::m_elchmat)
+      if (material->MaterialType() == Core::Materials::m_elchmat)
       {
-        const auto* elchmat = static_cast<const MAT::ElchMat*>(material.get());
+        const auto* elchmat = static_cast<const Mat::ElchMat*>(material.get());
 
         for (int iphase = 0; iphase < elchmat->NumPhase(); ++iphase)
         {
-          Teuchos::RCP<const CORE::MAT::Material> phase =
+          Teuchos::RCP<const Core::Mat::Material> phase =
               elchmat->PhaseById(elchmat->PhaseID(iphase));
 
-          if (phase->MaterialType() == CORE::Materials::m_elchphase)
+          if (phase->MaterialType() == Core::Materials::m_elchphase)
           {
             dmedc_->SetPhasePoro(
-                (static_cast<const MAT::ElchPhase*>(phase.get()))->Epsilon(), iphase);
+                (static_cast<const Mat::ElchPhase*>(phase.get()))->Epsilon(), iphase);
           }
           else
             FOUR_C_THROW("Invalid material!");
@@ -126,28 +126,28 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::evaluate
 /*----------------------------------------------------------------------*
  | evaluate Neumann boundary condition                       fang 02/15 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::evaluate_neumann(
-    CORE::Elements::FaceElement* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
-    CORE::Elements::Element::LocationArray& la, CORE::LINALG::SerialDenseVector& elevec1,
+template <Core::FE::CellType distype, int probdim>
+int Discret::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::evaluate_neumann(
+    Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseVector& elevec1,
     const double scalar)
 {
   // get material of parent element
-  Teuchos::RCP<CORE::MAT::Material> mat = ele->parent_element()->Material();
+  Teuchos::RCP<Core::Mat::Material> mat = ele->parent_element()->Material();
 
-  if (mat->MaterialType() == CORE::Materials::m_elchmat)
+  if (mat->MaterialType() == Core::Materials::m_elchmat)
   {
-    const auto* actmat = static_cast<const MAT::ElchMat*>(mat.get());
+    const auto* actmat = static_cast<const Mat::ElchMat*>(mat.get());
 
     for (int iphase = 0; iphase < actmat->NumPhase(); ++iphase)
     {
       const int phaseid = actmat->PhaseID(iphase);
-      Teuchos::RCP<const CORE::MAT::Material> singlemat = actmat->PhaseById(phaseid);
+      Teuchos::RCP<const Core::Mat::Material> singlemat = actmat->PhaseById(phaseid);
 
-      if (singlemat->MaterialType() == CORE::Materials::m_elchphase)
+      if (singlemat->MaterialType() == Core::Materials::m_elchphase)
       {
-        const auto* actsinglemat = static_cast<const MAT::ElchPhase*>(singlemat.get());
+        const auto* actsinglemat = static_cast<const Mat::ElchPhase*>(singlemat.get());
 
         dmedc_->SetPhasePoro(actsinglemat->Epsilon(), iphase);
       }
@@ -167,7 +167,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::evaluate
   {
     switch (myelch::elchparams_->EquPot())
     {
-      case INPAR::ELCH::equpot_divi:
+      case Inpar::ElCh::equpot_divi:
       {
         for (int k = 0; k < my::numscal_; ++k)
         {
@@ -197,18 +197,18 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::evaluate
 /*----------------------------------------------------------------------*
  | evaluate an electrode kinetics boundary condition         fang 02/15 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype,
-    probdim>::evaluate_elch_boundary_kinetics(const CORE::Elements::Element*
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype,
+    probdim>::evaluate_elch_boundary_kinetics(const Core::Elements::Element*
                                                   ele,  ///< current element
-    CORE::LINALG::SerialDenseMatrix& emat,              ///< element matrix
-    CORE::LINALG::SerialDenseVector& erhs,              ///< element right-hand side vector
-    const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
+    Core::LinAlg::SerialDenseMatrix& emat,              ///< element matrix
+    Core::LinAlg::SerialDenseVector& erhs,              ///< element right-hand side vector
+    const std::vector<Core::LinAlg::Matrix<nen_, 1>>&
         ephinp,  ///< nodal values of concentration and electric potential
-    const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ehist,  ///< nodal history vector
+    const std::vector<Core::LinAlg::Matrix<nen_, 1>>& ehist,  ///< nodal history vector
     double timefac,                                           ///< time factor
-    Teuchos::RCP<const CORE::MAT::Material> material,         ///< material
-    Teuchos::RCP<CORE::Conditions::Condition> cond,  ///< electrode kinetics boundary condition
+    Teuchos::RCP<const Core::Mat::Material> material,         ///< material
+    Teuchos::RCP<Core::Conditions::Condition> cond,  ///< electrode kinetics boundary condition
     const int nume,                                  ///< number of transferred electrons
     const std::vector<int> stoich,                   ///< stoichiometry of the reaction
     const int kinetics,                              ///< desired electrode kinetics model
@@ -224,13 +224,13 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype,
   // compute matrix and residual contributions arising from closing equation for electric potential
   switch (myelch::elchparams_->EquPot())
   {
-    case INPAR::ELCH::equpot_enc:
+    case Inpar::ElCh::equpot_enc:
     {
       // do nothing, since no boundary integral present
       break;
     }
 
-    case INPAR::ELCH::equpot_divi:
+    case Inpar::ElCh::equpot_divi:
     {
       for (int k = 0; k < my::numscal_; ++k)
       {
@@ -263,18 +263,18 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype,
 /*-------------------------------------------------------------------------------------*
  | evaluate scatra-scatra interface coupling condition (electrochemistry)   fang 12/14 |
  *-------------------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::evaluate_s2_i_coupling(
-    const CORE::Elements::FaceElement* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
-    CORE::LINALG::SerialDenseMatrix& eslavematrix, CORE::LINALG::SerialDenseMatrix& emastermatrix,
-    CORE::LINALG::SerialDenseVector& eslaveresidual)
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::evaluate_s2_i_coupling(
+    const Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::LinAlg::SerialDenseMatrix& eslavematrix, Core::LinAlg::SerialDenseMatrix& emastermatrix,
+    Core::LinAlg::SerialDenseVector& eslaveresidual)
 {
   switch (my::scatraparamsboundary_->KineticModel())
   {
-    case INPAR::S2I::kinetics_nointerfaceflux:
+    case Inpar::S2I::kinetics_nointerfaceflux:
       break;
-    case INPAR::S2I::kinetics_constantinterfaceresistance:
+    case Inpar::S2I::kinetics_constantinterfaceresistance:
     {
       myelectrode::evaluate_s2_i_coupling(
           ele, params, discretization, la, eslavematrix, emastermatrix, eslaveresidual);
@@ -293,17 +293,17 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::evaluat
 
 /*-------------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::evaluate_s2_i_coupling_od(
-    const CORE::Elements::FaceElement* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
-    CORE::LINALG::SerialDenseMatrix& eslavematrix)
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype,
+    probdim>::evaluate_s2_i_coupling_od(const Core::Elements::FaceElement* ele,
+    Teuchos::ParameterList& params, Discret::Discretization& discretization,
+    Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& eslavematrix)
 {
   switch (my::scatraparamsboundary_->KineticModel())
   {
-    case INPAR::S2I::kinetics_nointerfaceflux:
+    case Inpar::S2I::kinetics_nointerfaceflux:
       break;
-    case INPAR::S2I::kinetics_constantinterfaceresistance:
+    case Inpar::S2I::kinetics_constantinterfaceresistance:
     {
       myelectrode::evaluate_s2_i_coupling_od(ele, params, discretization, la, eslavematrix);
       break;
@@ -323,18 +323,18 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::evaluat
 /*-------------------------------------------------------------------------------------*
  | extract valence of species k from element material                       fang 12/14 |
  *-------------------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::get_valence(
-    const Teuchos::RCP<const CORE::MAT::Material>& material,  // element material
+template <Core::FE::CellType distype, int probdim>
+double Discret::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::get_valence(
+    const Teuchos::RCP<const Core::Mat::Material>& material,  // element material
     const int k                                               // species number
 ) const
 {
   double valence(0.);
 
-  if (material->MaterialType() == CORE::Materials::m_elchmat)
+  if (material->MaterialType() == Core::Materials::m_elchmat)
   {
-    const Teuchos::RCP<const MAT::ElchMat> elchmat =
-        Teuchos::rcp_dynamic_cast<const MAT::ElchMat>(material);
+    const Teuchos::RCP<const Mat::ElchMat> elchmat =
+        Teuchos::rcp_dynamic_cast<const Mat::ElchMat>(material);
 
     // safety check
     if (elchmat->NumPhase() != 1) FOUR_C_THROW("Only one material phase is allowed at the moment!");
@@ -342,23 +342,23 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::get_v
     // loop over phases
     for (int iphase = 0; iphase < elchmat->NumPhase(); ++iphase)
     {
-      const Teuchos::RCP<const MAT::ElchPhase> phase =
-          Teuchos::rcp_dynamic_cast<const MAT::ElchPhase>(
+      const Teuchos::RCP<const Mat::ElchPhase> phase =
+          Teuchos::rcp_dynamic_cast<const Mat::ElchPhase>(
               elchmat->PhaseById(elchmat->PhaseID(iphase)));
 
       // loop over species within phase
       for (int imat = 0; imat < phase->NumMat(); ++imat)
       {
-        const Teuchos::RCP<const CORE::MAT::Material> species = phase->MatById(phase->MatID(imat));
+        const Teuchos::RCP<const Core::Mat::Material> species = phase->MatById(phase->MatID(imat));
 
-        if (species->MaterialType() == CORE::Materials::m_newman)
+        if (species->MaterialType() == Core::Materials::m_newman)
         {
-          valence = Teuchos::rcp_static_cast<const MAT::Newman>(species)->Valence();
+          valence = Teuchos::rcp_static_cast<const Mat::Newman>(species)->Valence();
           if (abs(valence) < 1.e-14) FOUR_C_THROW("Received zero valence!");
         }
-        else if (species->MaterialType() == CORE::Materials::m_ion)
+        else if (species->MaterialType() == Core::Materials::m_ion)
         {
-          valence = Teuchos::rcp_static_cast<const MAT::Ion>(species)->Valence();
+          valence = Teuchos::rcp_static_cast<const Mat::Ion>(species)->Valence();
           if (abs(valence) < 1.e-14) FOUR_C_THROW("Received zero valence!");
         }
         else
@@ -375,15 +375,15 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::get_v
 
 
 // template classes
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<CORE::FE::CellType::quad4, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<CORE::FE::CellType::quad8, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<CORE::FE::CellType::quad9, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<CORE::FE::CellType::tri3, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<CORE::FE::CellType::tri6, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<CORE::FE::CellType::line2, 2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<CORE::FE::CellType::line2, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<CORE::FE::CellType::line3, 2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<CORE::FE::CellType::nurbs3, 2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<CORE::FE::CellType::nurbs9, 3>;
+template class Discret::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<Core::FE::CellType::quad4, 3>;
+template class Discret::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<Core::FE::CellType::quad8, 3>;
+template class Discret::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<Core::FE::CellType::quad9, 3>;
+template class Discret::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<Core::FE::CellType::tri3, 3>;
+template class Discret::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<Core::FE::CellType::tri6, 3>;
+template class Discret::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<Core::FE::CellType::line2, 2>;
+template class Discret::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<Core::FE::CellType::line2, 3>;
+template class Discret::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<Core::FE::CellType::line3, 2>;
+template class Discret::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<Core::FE::CellType::nurbs3, 2>;
+template class Discret::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<Core::FE::CellType::nurbs9, 3>;
 
 FOUR_C_NAMESPACE_CLOSE

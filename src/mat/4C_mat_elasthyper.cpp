@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::ElastHyper::ElastHyper(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
+Mat::PAR::ElastHyper::ElastHyper(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
     : Parameter(matdata),
       nummat_(matdata->Get<int>("NUMMAT")),
       matids_(matdata->Get<std::vector<int>>("MATIDS")),
@@ -45,19 +45,19 @@ MAT::PAR::ElastHyper::ElastHyper(const Teuchos::RCP<CORE::MAT::PAR::Material>& m
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ElastHyper::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::ElastHyper::create_material()
 {
-  return Teuchos::rcp(new MAT::ElastHyper(this));
+  return Teuchos::rcp(new Mat::ElastHyper(this));
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::ElastHyperType MAT::ElastHyperType::instance_;
+Mat::ElastHyperType Mat::ElastHyperType::instance_;
 
 
-CORE::COMM::ParObject* MAT::ElastHyperType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::ElastHyperType::Create(const std::vector<char>& data)
 {
-  auto* elhy = new MAT::ElastHyper();
+  auto* elhy = new Mat::ElastHyper();
   elhy->Unpack(data);
 
   return elhy;
@@ -72,12 +72,12 @@ CORE::COMM::ParObject* MAT::ElastHyperType::Create(const std::vector<char>& data
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::ElastHyper::ElastHyper() : summandProperties_(), params_(nullptr), potsum_(0), anisotropy_() {}
+Mat::ElastHyper::ElastHyper() : summandProperties_(), params_(nullptr), potsum_(0), anisotropy_() {}
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::ElastHyper::ElastHyper(MAT::PAR::ElastHyper* params)
+Mat::ElastHyper::ElastHyper(Mat::PAR::ElastHyper* params)
     : summandProperties_(), params_(params), potsum_(0), anisotropy_()
 {
   // make sure the referenced materials in material list have quick access parameters
@@ -85,7 +85,7 @@ MAT::ElastHyper::ElastHyper(MAT::PAR::ElastHyper* params)
   for (m = params_->matids_.begin(); m != params_->matids_.end(); ++m)
   {
     const int matid = *m;
-    Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(matid);
+    Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::Factory(matid);
     if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
     potsum_.push_back(sum);
     sum->register_anisotropy_extensions(anisotropy_);
@@ -95,9 +95,9 @@ MAT::ElastHyper::ElastHyper(MAT::PAR::ElastHyper* params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::ElastHyper::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -124,7 +124,7 @@ void MAT::ElastHyper::Pack(CORE::COMM::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::Unpack(const std::vector<char>& data)
+void Mat::ElastHyper::Unpack(const std::vector<char>& data)
 {
   // make sure we have a pristine material
   params_ = nullptr;
@@ -132,20 +132,20 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
 
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
   ExtractfromPack(position, data, matid);
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
   {
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = dynamic_cast<MAT::PAR::ElastHyper*>(mat);
+        params_ = dynamic_cast<Mat::PAR::ElastHyper*>(mat);
       else
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
@@ -164,7 +164,7 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
     for (m = params_->matids_.begin(); m != params_->matids_.end(); ++m)
     {
       const int summand_matid = *m;
-      Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(summand_matid);
+      Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::Factory(summand_matid);
       if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
       potsum_.push_back(sum);
     }
@@ -187,7 +187,7 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int MAT::ElastHyper::MatID(const unsigned index) const
+int Mat::ElastHyper::MatID(const unsigned index) const
 {
   if ((int)index >= params_->nummat_)
   {
@@ -199,7 +199,7 @@ int MAT::ElastHyper::MatID(const unsigned index) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::ElastHyper::shear_mod() const
+double Mat::ElastHyper::shear_mod() const
 {
   // principal coefficients
   bool haveshearmod = false;
@@ -220,7 +220,7 @@ double MAT::ElastHyper::shear_mod() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::ElastHyper::GetYoung()
+double Mat::ElastHyper::GetYoung()
 {
   double young;
   double shear;
@@ -235,7 +235,7 @@ double MAT::ElastHyper::GetYoung()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::SetupAAA(Teuchos::ParameterList& params, const int eleGID)
+void Mat::ElastHyper::SetupAAA(Teuchos::ParameterList& params, const int eleGID)
 {
   // loop map of associated potential summands
   for (auto& p : potsum_)
@@ -246,7 +246,7 @@ void MAT::ElastHyper::SetupAAA(Teuchos::ParameterList& params, const int eleGID)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::Setup(int numgp, INPUT::LineDefinition* linedef)
+void Mat::ElastHyper::Setup(int numgp, Input::LineDefinition* linedef)
 {
   // Read anisotropy
   anisotropy_.set_number_of_gauss_points(numgp);
@@ -268,7 +268,7 @@ void MAT::ElastHyper::Setup(int numgp, INPUT::LineDefinition* linedef)
   }
 }
 
-void MAT::ElastHyper::post_setup(Teuchos::ParameterList& params, const int eleGID)
+void Mat::ElastHyper::post_setup(Teuchos::ParameterList& params, const int eleGID)
 {
   anisotropy_.read_anisotropy_from_parameter_list(params);
 
@@ -281,7 +281,7 @@ void MAT::ElastHyper::post_setup(Teuchos::ParameterList& params, const int eleGI
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::Update()
+void Mat::ElastHyper::Update()
 {
   // loop map of associated potential summands
   for (auto& p : potsum_)
@@ -292,7 +292,7 @@ void MAT::ElastHyper::Update()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::GetFiberVecs(std::vector<CORE::LINALG::Matrix<3, 1>>& fibervecs)
+void Mat::ElastHyper::GetFiberVecs(std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs)
 {
   if (summandProperties_.anisoprinc || summandProperties_.anisomod)
   {
@@ -305,8 +305,8 @@ void MAT::ElastHyper::GetFiberVecs(std::vector<CORE::LINALG::Matrix<3, 1>>& fibe
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::EvaluateFiberVecs(const double newgamma,
-    const CORE::LINALG::Matrix<3, 3>& locsys, const CORE::LINALG::Matrix<3, 3>& defgrd)
+void Mat::ElastHyper::EvaluateFiberVecs(const double newgamma,
+    const Core::LinAlg::Matrix<3, 3>& locsys, const Core::LinAlg::Matrix<3, 3>& defgrd)
 {
   if (summandProperties_.anisoprinc || summandProperties_.anisomod)
   {
@@ -319,18 +319,18 @@ void MAT::ElastHyper::EvaluateFiberVecs(const double newgamma,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::StrainEnergy(
-    const CORE::LINALG::Matrix<6, 1>& glstrain, double& psi, const int gp, const int eleGID)
+void Mat::ElastHyper::StrainEnergy(
+    const Core::LinAlg::Matrix<6, 1>& glstrain, double& psi, const int gp, const int eleGID)
 {
-  static CORE::LINALG::Matrix<6, 1> C_strain(true);
+  static Core::LinAlg::Matrix<6, 1> C_strain(true);
   C_strain.Clear();
-  static CORE::LINALG::Matrix<3, 1> prinv(true);
+  static Core::LinAlg::Matrix<3, 1> prinv(true);
   prinv.Clear();
-  static CORE::LINALG::Matrix<3, 1> modinv(true);
+  static Core::LinAlg::Matrix<3, 1> modinv(true);
   modinv.Clear();
 
   EvaluateRightCauchyGreenStrainLikeVoigt(glstrain, C_strain);
-  CORE::LINALG::VOIGT::Strains::InvariantsPrincipal(prinv, C_strain);
+  Core::LinAlg::Voigt::Strains::InvariantsPrincipal(prinv, C_strain);
   invariants_modified(modinv, prinv);
 
   // loop map of associated potential summands
@@ -344,9 +344,9 @@ void MAT::ElastHyper::StrainEnergy(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
-    const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-    CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, const int gp,
+void Mat::ElastHyper::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+    const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+    Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
 {
   bool checkpolyconvexity = (params_ != nullptr and params_->polyconvex_ != 0);
@@ -357,9 +357,9 @@ void MAT::ElastHyper::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::evaluate_cauchy_derivs(const CORE::LINALG::Matrix<3, 1>& prinv, const int gp,
-    int eleGID, CORE::LINALG::Matrix<3, 1>& dPI, CORE::LINALG::Matrix<6, 1>& ddPII,
-    CORE::LINALG::Matrix<10, 1>& dddPIII, const double* temp)
+void Mat::ElastHyper::evaluate_cauchy_derivs(const Core::LinAlg::Matrix<3, 1>& prinv, const int gp,
+    int eleGID, Core::LinAlg::Matrix<3, 1>& dPI, Core::LinAlg::Matrix<6, 1>& ddPII,
+    Core::LinAlg::Matrix<10, 1>& dddPIII, const double* temp)
 {
   for (auto& i : potsum_)
   {
@@ -375,43 +375,43 @@ void MAT::ElastHyper::evaluate_cauchy_derivs(const CORE::LINALG::Matrix<3, 1>& p
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::evaluate_cauchy_n_dir_and_derivatives(
-    const CORE::LINALG::Matrix<3, 3>& defgrd, const CORE::LINALG::Matrix<3, 1>& n,
-    const CORE::LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
-    CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dn, CORE::LINALG::Matrix<3, 1>* d_cauchyndir_ddir,
-    CORE::LINALG::Matrix<9, 1>* d_cauchyndir_dF, CORE::LINALG::Matrix<9, 9>* d2_cauchyndir_dF2,
-    CORE::LINALG::Matrix<9, 3>* d2_cauchyndir_dF_dn,
-    CORE::LINALG::Matrix<9, 3>* d2_cauchyndir_dF_ddir, int gp, int eleGID,
+void Mat::ElastHyper::evaluate_cauchy_n_dir_and_derivatives(
+    const Core::LinAlg::Matrix<3, 3>& defgrd, const Core::LinAlg::Matrix<3, 1>& n,
+    const Core::LinAlg::Matrix<3, 1>& dir, double& cauchy_n_dir,
+    Core::LinAlg::Matrix<3, 1>* d_cauchyndir_dn, Core::LinAlg::Matrix<3, 1>* d_cauchyndir_ddir,
+    Core::LinAlg::Matrix<9, 1>* d_cauchyndir_dF, Core::LinAlg::Matrix<9, 9>* d2_cauchyndir_dF2,
+    Core::LinAlg::Matrix<9, 3>* d2_cauchyndir_dF_dn,
+    Core::LinAlg::Matrix<9, 3>* d2_cauchyndir_dF_ddir, int gp, int eleGID,
     const double* concentration, const double* temp, double* d_cauchyndir_dT,
-    CORE::LINALG::Matrix<9, 1>* d2_cauchyndir_dF_dT)
+    Core::LinAlg::Matrix<9, 1>* d2_cauchyndir_dF_dT)
 {
   cauchy_n_dir = 0.0;
 
-  static CORE::LINALG::Matrix<3, 3> b(true);
+  static Core::LinAlg::Matrix<3, 3> b(true);
   b.MultiplyNT(1.0, defgrd, defgrd, 0.0);
-  static CORE::LINALG::Matrix<3, 1> bdn(true);
+  static Core::LinAlg::Matrix<3, 1> bdn(true);
   bdn.Multiply(1.0, b, n, 0.0);
-  static CORE::LINALG::Matrix<3, 1> bddir(true);
+  static Core::LinAlg::Matrix<3, 1> bddir(true);
   bddir.Multiply(1.0, b, dir, 0.0);
   const double bdnddir = bdn.Dot(dir);
 
-  static CORE::LINALG::Matrix<3, 3> ib(true);
+  static Core::LinAlg::Matrix<3, 3> ib(true);
   ib.Invert(b);
-  static CORE::LINALG::Matrix<3, 1> ibdn(true);
+  static Core::LinAlg::Matrix<3, 1> ibdn(true);
   ibdn.Multiply(1.0, ib, n, 0.0);
-  static CORE::LINALG::Matrix<3, 1> ibddir(true);
+  static Core::LinAlg::Matrix<3, 1> ibddir(true);
   ibddir.Multiply(1.0, ib, dir, 0.0);
   const double ibdnddir = ibdn.Dot(dir);
   const double nddir = n.Dot(dir);
 
-  static CORE::LINALG::Matrix<6, 1> bV_strain(true);
-  CORE::LINALG::VOIGT::Strains::MatrixToVector(b, bV_strain);
-  static CORE::LINALG::Matrix<3, 1> prinv(true);
-  CORE::LINALG::VOIGT::Strains::InvariantsPrincipal(prinv, bV_strain);
+  static Core::LinAlg::Matrix<6, 1> bV_strain(true);
+  Core::LinAlg::Voigt::Strains::MatrixToVector(b, bV_strain);
+  static Core::LinAlg::Matrix<3, 1> prinv(true);
+  Core::LinAlg::Voigt::Strains::InvariantsPrincipal(prinv, bV_strain);
 
-  static CORE::LINALG::Matrix<3, 1> dPI(true);
-  static CORE::LINALG::Matrix<6, 1> ddPII(true);
-  static CORE::LINALG::Matrix<10, 1> dddPIII(true);
+  static Core::LinAlg::Matrix<3, 1> dPI(true);
+  static Core::LinAlg::Matrix<6, 1> ddPII(true);
+  static Core::LinAlg::Matrix<10, 1> dddPIII(true);
   dPI.Clear();
   ddPII.Clear();
   dddPIII.Clear();
@@ -439,55 +439,55 @@ void MAT::ElastHyper::evaluate_cauchy_n_dir_and_derivatives(
   }
 
   // calculate stuff that is needed for evaluations of derivatives w.r.t. F
-  static CORE::LINALG::Matrix<9, 1> FV(true);
-  CORE::LINALG::VOIGT::Matrix3x3to9x1(defgrd, FV);
-  static CORE::LINALG::Matrix<3, 3> iF(true);
+  static Core::LinAlg::Matrix<9, 1> FV(true);
+  Core::LinAlg::Voigt::Matrix3x3to9x1(defgrd, FV);
+  static Core::LinAlg::Matrix<3, 3> iF(true);
   iF.Invert(defgrd);
-  static CORE::LINALG::Matrix<3, 3> iFT(true);
+  static Core::LinAlg::Matrix<3, 3> iFT(true);
   iFT.UpdateT(iF);
-  static CORE::LINALG::Matrix<9, 1> iFTV(true);
-  CORE::LINALG::VOIGT::Matrix3x3to9x1(iFT, iFTV);
+  static Core::LinAlg::Matrix<9, 1> iFTV(true);
+  Core::LinAlg::Voigt::Matrix3x3to9x1(iFT, iFTV);
 
   // calculation of dI_i/dF (derivatives of invariants of b w.r.t. deformation gradient)
-  static CORE::LINALG::Matrix<3, 3> bdF(true);
+  static Core::LinAlg::Matrix<3, 3> bdF(true);
   bdF.Multiply(1.0, b, defgrd, 0.0);
-  static CORE::LINALG::Matrix<9, 1> bdFV(true);
-  CORE::LINALG::VOIGT::Matrix3x3to9x1(bdF, bdFV);
-  static CORE::LINALG::Matrix<3, 3> ibdF(true);
+  static Core::LinAlg::Matrix<9, 1> bdFV(true);
+  Core::LinAlg::Voigt::Matrix3x3to9x1(bdF, bdFV);
+  static Core::LinAlg::Matrix<3, 3> ibdF(true);
   ibdF.Multiply(1.0, ib, defgrd, 0.0);
-  static CORE::LINALG::Matrix<9, 1> ibdFV(true);
-  CORE::LINALG::VOIGT::Matrix3x3to9x1(ibdF, ibdFV);
-  static CORE::LINALG::Matrix<9, 1> d_I1_dF(true);
+  static Core::LinAlg::Matrix<9, 1> ibdFV(true);
+  Core::LinAlg::Voigt::Matrix3x3to9x1(ibdF, ibdFV);
+  static Core::LinAlg::Matrix<9, 1> d_I1_dF(true);
   d_I1_dF.Update(2.0, FV, 0.0);
-  static CORE::LINALG::Matrix<9, 1> d_I2_dF(true);
+  static Core::LinAlg::Matrix<9, 1> d_I2_dF(true);
   d_I2_dF.Update(prinv(0), FV, 0.0);
   d_I2_dF.Update(-1.0, bdFV, 1.0);
   d_I2_dF.Scale(2.0);
-  static CORE::LINALG::Matrix<9, 1> d_I3_dF(true);
+  static Core::LinAlg::Matrix<9, 1> d_I3_dF(true);
   d_I3_dF.Update(2.0 * prinv(2), ibdFV, 0.0);
 
   // calculate d(b \cdot n \cdot t)/dF
-  static CORE::LINALG::Matrix<3, 1> tempvec3x1(true);
-  static CORE::LINALG::Matrix<1, 3> tempvec1x3(true);
+  static Core::LinAlg::Matrix<3, 1> tempvec3x1(true);
+  static Core::LinAlg::Matrix<1, 3> tempvec1x3(true);
   tempvec1x3.MultiplyTN(1.0, dir, defgrd, 0.0);
-  static CORE::LINALG::Matrix<3, 3> d_bdnddir_dF(true);
+  static Core::LinAlg::Matrix<3, 3> d_bdnddir_dF(true);
   d_bdnddir_dF.MultiplyNN(1.0, n, tempvec1x3, 0.0);
   tempvec1x3.MultiplyTN(1.0, n, defgrd, 0.0);
   d_bdnddir_dF.MultiplyNN(1.0, dir, tempvec1x3, 1.0);
-  static CORE::LINALG::Matrix<9, 1> d_bdnddir_dFV(true);
-  CORE::LINALG::VOIGT::Matrix3x3to9x1(d_bdnddir_dF, d_bdnddir_dFV);
+  static Core::LinAlg::Matrix<9, 1> d_bdnddir_dFV(true);
+  Core::LinAlg::Voigt::Matrix3x3to9x1(d_bdnddir_dF, d_bdnddir_dFV);
 
   // calculate d(b^{-1} \cdot n \cdot t)/dF
-  static CORE::LINALG::Matrix<1, 3> dirdibdF(true);
-  static CORE::LINALG::Matrix<1, 3> ndibdF(true);
+  static Core::LinAlg::Matrix<1, 3> dirdibdF(true);
+  static Core::LinAlg::Matrix<1, 3> ndibdF(true);
   dirdibdF.MultiplyTN(1.0, dir, ibdF, 0.0);
-  static CORE::LINALG::Matrix<3, 3> d_ibdnddir_dF(true);
+  static Core::LinAlg::Matrix<3, 3> d_ibdnddir_dF(true);
   d_ibdnddir_dF.MultiplyNN(1.0, ibdn, dirdibdF, 0.0);
   ndibdF.MultiplyTN(1.0, n, ibdF, 0.0);
   d_ibdnddir_dF.MultiplyNN(1.0, ibddir, ndibdF, 1.0);
   d_ibdnddir_dF.Scale(-1.0);
-  static CORE::LINALG::Matrix<9, 1> d_ibdnddir_dFV(true);
-  CORE::LINALG::VOIGT::Matrix3x3to9x1(d_ibdnddir_dF, d_ibdnddir_dFV);
+  static Core::LinAlg::Matrix<9, 1> d_ibdnddir_dFV(true);
+  Core::LinAlg::Voigt::Matrix3x3to9x1(d_ibdnddir_dF, d_ibdnddir_dFV);
 
   if (temp != nullptr)
     evaluate_cauchy_temp_deriv(prinv, nddir, bdnddir, ibdnddir, temp, d_cauchyndir_dT, iFTV,
@@ -537,7 +537,7 @@ void MAT::ElastHyper::evaluate_cauchy_n_dir_and_derivatives(
       for (int l = 0; l < 3; ++l)
       {
         for (int z = 0; z < 3; ++z)
-          (*d2_cauchyndir_dF_dn)(CORE::LINALG::VOIGT::IndexMappings::NonSymToVoigt9(k, l), z) +=
+          (*d2_cauchyndir_dF_dn)(Core::LinAlg::Voigt::IndexMappings::NonSymToVoigt9(k, l), z) +=
               fac * (dir(k, 0) * defgrd(z, l) + static_cast<double>(k == z) * tempvec1x3(0, l));
       }
     }
@@ -549,7 +549,7 @@ void MAT::ElastHyper::evaluate_cauchy_n_dir_and_derivatives(
       for (int l = 0; l < 3; ++l)
       {
         for (int z = 0; z < 3; ++z)
-          (*d2_cauchyndir_dF_dn)(CORE::LINALG::VOIGT::IndexMappings::NonSymToVoigt9(k, l), z) +=
+          (*d2_cauchyndir_dF_dn)(Core::LinAlg::Voigt::IndexMappings::NonSymToVoigt9(k, l), z) +=
               fac2 * (ibddir(k, 0) * ibdF(z, l) + ib(z, k) * dirdibdF(0, l));
       }
     }
@@ -590,7 +590,7 @@ void MAT::ElastHyper::evaluate_cauchy_n_dir_and_derivatives(
       for (int l = 0; l < 3; ++l)
       {
         for (int z = 0; z < 3; ++z)
-          (*d2_cauchyndir_dF_ddir)(CORE::LINALG::VOIGT::IndexMappings::NonSymToVoigt9(k, l), z) +=
+          (*d2_cauchyndir_dF_ddir)(Core::LinAlg::Voigt::IndexMappings::NonSymToVoigt9(k, l), z) +=
               fac * (n(k, 0) * defgrd(z, l) + static_cast<double>(k == z) * tempvec1x3(0, l));
       }
     }
@@ -602,7 +602,7 @@ void MAT::ElastHyper::evaluate_cauchy_n_dir_and_derivatives(
       for (int l = 0; l < 3; ++l)
       {
         for (int z = 0; z < 3; ++z)
-          (*d2_cauchyndir_dF_ddir)(CORE::LINALG::VOIGT::IndexMappings::NonSymToVoigt9(k, l), z) +=
+          (*d2_cauchyndir_dF_ddir)(Core::LinAlg::Voigt::IndexMappings::NonSymToVoigt9(k, l), z) +=
               fac2 * (ibdn(k, 0) * ibdF(z, l) + ib(z, k) * ndibdF(0, l));
       }
     }
@@ -629,12 +629,12 @@ void MAT::ElastHyper::evaluate_cauchy_n_dir_and_derivatives(
   if (d2_cauchyndir_dF2 != nullptr)
   {
     // define and fill all tensors that can not be calculated using multiply operations first
-    static CORE::LINALG::Matrix<9, 9> d_iFT_dF(true);
-    static CORE::LINALG::Matrix<9, 9> d2_bdnddir_dF2(true);
-    static CORE::LINALG::Matrix<9, 9> d2_ibdnddir_dF2(true);
-    static CORE::LINALG::Matrix<9, 9> d2_I1_dF2(true);
-    static CORE::LINALG::Matrix<9, 9> d2_I2_dF2(true);
-    static CORE::LINALG::Matrix<9, 9> d2_I3_dF2(true);
+    static Core::LinAlg::Matrix<9, 9> d_iFT_dF(true);
+    static Core::LinAlg::Matrix<9, 9> d2_bdnddir_dF2(true);
+    static Core::LinAlg::Matrix<9, 9> d2_ibdnddir_dF2(true);
+    static Core::LinAlg::Matrix<9, 9> d2_I1_dF2(true);
+    static Core::LinAlg::Matrix<9, 9> d2_I2_dF2(true);
+    static Core::LinAlg::Matrix<9, 9> d2_I3_dF2(true);
     d_iFT_dF.Clear();
     d2_bdnddir_dF2.Clear();
     d2_ibdnddir_dF2.Clear();
@@ -642,10 +642,10 @@ void MAT::ElastHyper::evaluate_cauchy_n_dir_and_derivatives(
     d2_I2_dF2.Clear();
     d2_I3_dF2.Clear();
 
-    static CORE::LINALG::Matrix<3, 3> C(true);
+    static Core::LinAlg::Matrix<3, 3> C(true);
     C.MultiplyTN(1.0, defgrd, defgrd, 0.0);
 
-    using map = CORE::LINALG::VOIGT::IndexMappings;
+    using map = Core::LinAlg::Voigt::IndexMappings;
 
     for (int k = 0; k < 3; ++k)
     {
@@ -794,11 +794,11 @@ void MAT::ElastHyper::evaluate_cauchy_n_dir_and_derivatives(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::VisNames(std::map<std::string, int>& names)
+void Mat::ElastHyper::VisNames(std::map<std::string, int>& names)
 {
   if (anisotropic_principal() or AnisotropicModified())
   {
-    std::vector<CORE::LINALG::Matrix<3, 1>> fibervecs;
+    std::vector<Core::LinAlg::Matrix<3, 1>> fibervecs;
     GetFiberVecs(fibervecs);
     int vissize = fibervecs.size();
     std::string fiber;
@@ -820,14 +820,14 @@ void MAT::ElastHyper::VisNames(std::map<std::string, int>& names)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool MAT::ElastHyper::VisData(
+bool Mat::ElastHyper::VisData(
     const std::string& name, std::vector<double>& data, int numgp, int eleID)
 {
   //
   int return_val = 0;
   if (anisotropic_principal() or AnisotropicModified())
   {
-    std::vector<CORE::LINALG::Matrix<3, 1>> fibervecs;
+    std::vector<Core::LinAlg::Matrix<3, 1>> fibervecs;
     GetFiberVecs(fibervecs);
     int vissize = fibervecs.size();
     for (int i = 0; i < vissize; i++)
@@ -857,8 +857,8 @@ bool MAT::ElastHyper::VisData(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const MAT::ELASTIC::Summand> MAT::ElastHyper::GetPotSummandPtr(
-    const CORE::Materials::MaterialType& materialtype) const
+Teuchos::RCP<const Mat::Elastic::Summand> Mat::ElastHyper::GetPotSummandPtr(
+    const Core::Materials::MaterialType& materialtype) const
 {
   for (const auto& p : potsum_)
   {

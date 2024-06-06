@@ -27,10 +27,10 @@ namespace GEOMETRYPAIR
    */
   template <typename element_type, typename T, typename V, typename scalar_type>
   inline void EvaluatePosition(const T& xi, const ElementData<element_type, V>& element_data,
-      CORE::LINALG::Matrix<element_type::spatial_dim_, 1, scalar_type>& r)
+      Core::LinAlg::Matrix<element_type::spatial_dim_, 1, scalar_type>& r)
   {
     // Matrix for shape function values
-    CORE::LINALG::Matrix<1, element_type::n_nodes_ * element_type::n_val_, scalar_type> N(true);
+    Core::LinAlg::Matrix<1, element_type::n_nodes_ * element_type::n_val_, scalar_type> N(true);
 
     // Evaluate the shape function values
     EvaluateShapeFunction<element_type>::Evaluate(N, xi, element_data.shape_function_data_);
@@ -52,10 +52,10 @@ namespace GEOMETRYPAIR
   template <typename element_type, typename T, typename V, typename scalar_type>
   inline void EvaluatePositionDerivative1(const T& xi,
       const ElementData<element_type, V>& element_data,
-      CORE::LINALG::Matrix<element_type::spatial_dim_, element_type::element_dim_, scalar_type>& dr)
+      Core::LinAlg::Matrix<element_type::spatial_dim_, element_type::element_dim_, scalar_type>& dr)
   {
     // Matrix for shape function values
-    CORE::LINALG::Matrix<element_type::element_dim_, element_type::n_nodes_ * element_type::n_val_,
+    Core::LinAlg::Matrix<element_type::element_dim_, element_type::n_nodes_ * element_type::n_val_,
         scalar_type>
         dN(true);
 
@@ -81,15 +81,15 @@ namespace GEOMETRYPAIR
   template <typename surface, typename T, typename scalar_type_dof, typename scalar_type_result>
   void EvaluateFaceNormal(const T& xi,
       const ElementData<surface, scalar_type_dof>& element_data_surface,
-      CORE::LINALG::Matrix<3, 1, scalar_type_result>& normal)
+      Core::LinAlg::Matrix<3, 1, scalar_type_result>& normal)
   {
     // Check at compile time if a surface (2D) element is given
     static_assert(
         surface::element_dim_ == 2, "EvaluateFaceNormal can only be called for 2D elements!");
 
-    CORE::LINALG::Matrix<3, 2, scalar_type_result> dr;
-    CORE::LINALG::Matrix<3, 1, scalar_type_result> dr_0;
-    CORE::LINALG::Matrix<3, 1, scalar_type_result> dr_1;
+    Core::LinAlg::Matrix<3, 2, scalar_type_result> dr;
+    Core::LinAlg::Matrix<3, 1, scalar_type_result> dr_0;
+    Core::LinAlg::Matrix<3, 1, scalar_type_result> dr_1;
     GEOMETRYPAIR::EvaluatePositionDerivative1<surface>(xi, element_data_surface, dr);
     for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
     {
@@ -97,7 +97,7 @@ namespace GEOMETRYPAIR
       dr_1(i_dir) = dr(i_dir, 1);
     }
     normal.CrossProduct(dr_0, dr_1);
-    normal.Scale(1.0 / CORE::FADUTILS::VectorNorm(normal));
+    normal.Scale(1.0 / Core::FADUtils::VectorNorm(normal));
     if constexpr (std::is_same<surface, t_nurbs9>::value)
     {
       // In the NURBS case some normals have to be flipped to point outward of the volume element
@@ -112,7 +112,7 @@ namespace GEOMETRYPAIR
   template <typename surface, typename T, typename scalar_type_dof, typename scalar_type_result>
   void EvaluateSurfaceNormal(const T& xi,
       const ElementData<surface, scalar_type_dof>& element_data_surface,
-      CORE::LINALG::Matrix<3, 1, scalar_type_result>& normal)
+      Core::LinAlg::Matrix<3, 1, scalar_type_result>& normal)
   {
     // Check at compile time if a surface (2D) element is given
     static_assert(
@@ -125,14 +125,14 @@ namespace GEOMETRYPAIR
           "one value per node and dimension");
 
       // Calculate the normal as a interpolation of nodal normals
-      CORE::LINALG::Matrix<1, surface::n_nodes_, typename T::scalar_type> N(true);
+      Core::LinAlg::Matrix<1, surface::n_nodes_, typename T::scalar_type> N(true);
       EvaluateShapeFunction<surface>::Evaluate(N, xi, element_data_surface.shape_function_data_);
       normal.Clear();
       for (unsigned int node = 0; node < surface::n_nodes_; node++)
         for (unsigned int dim = 0; dim < surface::spatial_dim_; dim++)
           normal(dim) +=
               element_data_surface.nodal_normals_(surface::spatial_dim_ * node + dim) * N(node);
-      normal.Scale(1.0 / CORE::FADUTILS::VectorNorm(normal));
+      normal.Scale(1.0 / Core::FADUtils::VectorNorm(normal));
     }
     else
     {
@@ -147,16 +147,16 @@ namespace GEOMETRYPAIR
    */
   template <typename surface, typename scalar_type_xi, typename scalar_type_dof,
       typename scalar_type_result>
-  void EvaluateSurfacePosition(const CORE::LINALG::Matrix<3, 1, scalar_type_xi>& xi,
+  void EvaluateSurfacePosition(const Core::LinAlg::Matrix<3, 1, scalar_type_xi>& xi,
       const ElementData<surface, scalar_type_dof>& element_data_surface,
-      CORE::LINALG::Matrix<3, 1, scalar_type_result>& r)
+      Core::LinAlg::Matrix<3, 1, scalar_type_result>& r)
   {
     // Check at compile time if a surface (2D) element is given
     static_assert(
         surface::element_dim_ == 2, "EvaluateSurfacePosition can only be called for 2D elements!");
 
     // Evaluate the normal
-    CORE::LINALG::Matrix<3, 1, scalar_type_result> normal;
+    Core::LinAlg::Matrix<3, 1, scalar_type_result> normal;
     EvaluateSurfaceNormal<surface>(xi, element_data_surface, normal);
 
     // Evaluate the position on the surface
@@ -178,22 +178,22 @@ namespace GEOMETRYPAIR
       typename scalar_type_result>
   void EvaluateTriadAtPlaneCurve(const scalar_type_xi xi,
       const ElementData<line, scalar_type_dof>& element_data_line,
-      CORE::LINALG::Matrix<3, 3, scalar_type_result>& triad)
+      Core::LinAlg::Matrix<3, 3, scalar_type_result>& triad)
   {
-    CORE::LINALG::Matrix<3, 1, scalar_type_result> tangent, cross_section_director_2,
+    Core::LinAlg::Matrix<3, 1, scalar_type_result> tangent, cross_section_director_2,
         cross_section_director_3;
     EvaluatePositionDerivative1<line>(xi, element_data_line, tangent);
 
-    if (std::abs(tangent(2)) > CONSTANTS::pos_tol)
+    if (std::abs(tangent(2)) > Constants::pos_tol)
       FOUR_C_THROW(
           "EvaluateTriadAtPlaneCurve: The tangent vector can not have a component in z direction! "
           "The component is %f!",
-          CORE::FADUTILS::CastToDouble(tangent(2)));
+          Core::FADUtils::CastToDouble(tangent(2)));
 
     // Create the director vectors in the cross-section
     // Director 2 is the one in the y-axis (reference configuration)
     // Director 3 is the one in the z-axis (reference configuration)
-    tangent.Scale(1. / CORE::FADUTILS::VectorNorm(tangent));
+    tangent.Scale(1. / Core::FADUtils::VectorNorm(tangent));
     cross_section_director_2.Clear();
     cross_section_director_2(0) = -tangent(1);
     cross_section_director_2(1) = tangent(0);
@@ -213,9 +213,9 @@ namespace GEOMETRYPAIR
    * \brief Evaluate the Jacobi matrix for a volume element
    */
   template <typename volume, typename scalar_type>
-  void EvaluateJacobian(const CORE::LINALG::Matrix<3, 1, scalar_type>& xi,
+  void EvaluateJacobian(const Core::LinAlg::Matrix<3, 1, scalar_type>& xi,
       const GEOMETRYPAIR::ElementData<volume, double>& X_volume,
-      CORE::LINALG::Matrix<3, 3, scalar_type>& J)
+      Core::LinAlg::Matrix<3, 3, scalar_type>& J)
   {
     // Check at compile time if a volume (3D) element is given
     static_assert(
@@ -223,7 +223,7 @@ namespace GEOMETRYPAIR
 
     // Get the derivatives of the reference position w.r.t the parameter coordinates. This is the
     // transposed Jacobi matrix.
-    CORE::LINALG::Matrix<3, 3, scalar_type> dXdxi(true);
+    Core::LinAlg::Matrix<3, 3, scalar_type> dXdxi(true);
     EvaluatePositionDerivative1<volume>(xi, X_volume, dXdxi);
     J.Clear();
     J.UpdateT(dXdxi);
@@ -234,28 +234,28 @@ namespace GEOMETRYPAIR
    */
   template <typename volume, typename scalar_type_xi, typename scalar_type_dof,
       typename scalar_type_result>
-  void EvaluateDeformationGradient(const CORE::LINALG::Matrix<3, 1, scalar_type_xi>& xi,
+  void EvaluateDeformationGradient(const Core::LinAlg::Matrix<3, 1, scalar_type_xi>& xi,
       const GEOMETRYPAIR::ElementData<volume, double>& X_volume,
       const GEOMETRYPAIR::ElementData<volume, scalar_type_dof>& q_volume,
-      CORE::LINALG::Matrix<3, 3, scalar_type_result>& F)
+      Core::LinAlg::Matrix<3, 3, scalar_type_result>& F)
   {
     // Check at compile time if a volume (3D) element is given
     static_assert(volume::element_dim_ == 3,
         "EvaluateDeformationGradient can only be called for 3D elements!");
 
     // Get the inverse of the Jacobian
-    CORE::LINALG::Matrix<3, 3, scalar_type_xi> inv_J(true);
+    Core::LinAlg::Matrix<3, 3, scalar_type_xi> inv_J(true);
     EvaluateJacobian<volume>(xi, X_volume, inv_J);
-    CORE::LINALG::Inverse(inv_J);
+    Core::LinAlg::Inverse(inv_J);
 
     // Get the derivatives of the shape functions w.r.t to the parameter coordinates
-    CORE::LINALG::Matrix<volume::element_dim_, volume::n_nodes_ * volume::n_val_, scalar_type_xi>
+    Core::LinAlg::Matrix<volume::element_dim_, volume::n_nodes_ * volume::n_val_, scalar_type_xi>
         dNdxi(true);
     GEOMETRYPAIR::EvaluateShapeFunction<volume>::EvaluateDeriv1(
         dNdxi, xi, q_volume.shape_function_data_);
 
     // Transform to derivatives w.r.t physical coordinates
-    CORE::LINALG::Matrix<volume::element_dim_, volume::n_nodes_ * volume::n_val_, scalar_type_xi>
+    Core::LinAlg::Matrix<volume::element_dim_, volume::n_nodes_ * volume::n_val_, scalar_type_xi>
         dNdX(true);
     for (unsigned int i_row = 0; i_row < 3; i_row++)
       for (unsigned int i_col = 0; i_col < volume::n_nodes_ * volume::n_val_; i_col++)
@@ -281,16 +281,16 @@ namespace GEOMETRYPAIR
   template <typename scalar_type, typename surface>
   void EvaluateSurfacePositionAndDerivative(
       const ElementData<surface, scalar_type>& element_data_surface,
-      const CORE::LINALG::Matrix<3, 1, scalar_type>& xi, CORE::LINALG::Matrix<3, 1, scalar_type>& r,
-      CORE::LINALG::Matrix<3, 3, scalar_type>& dr)
+      const Core::LinAlg::Matrix<3, 1, scalar_type>& xi, Core::LinAlg::Matrix<3, 1, scalar_type>& r,
+      Core::LinAlg::Matrix<3, 3, scalar_type>& dr)
   {
     // Create a nested FAD type.
     using FAD_outer = Sacado::ELRFad::SLFad<scalar_type, 3>;
 
     // Set up the AD variables.
-    CORE::LINALG::Matrix<3, 1, FAD_outer> xi_AD;
+    Core::LinAlg::Matrix<3, 1, FAD_outer> xi_AD;
     for (unsigned int i_dim = 0; i_dim < 3; i_dim++) xi_AD(i_dim) = FAD_outer(3, i_dim, xi(i_dim));
-    CORE::LINALG::Matrix<3, 1, FAD_outer> r_AD;
+    Core::LinAlg::Matrix<3, 1, FAD_outer> r_AD;
 
     // Evaluate the position.
     EvaluateSurfacePosition<surface>(xi_AD, element_data_surface, r_AD);
@@ -309,7 +309,7 @@ namespace GEOMETRYPAIR
   template <typename T>
   bool ValidParameter1D(const T& xi)
   {
-    const double xi_limit = 1.0 + CONSTANTS::projection_xi_eta_tol;
+    const double xi_limit = 1.0 + Constants::projection_xi_eta_tol;
     if (fabs(xi) < xi_limit)
       return true;
     else
@@ -322,15 +322,15 @@ namespace GEOMETRYPAIR
   template <typename element_type, typename T>
   bool ValidParameter2D(const T& xi)
   {
-    const double xi_limit = 1.0 + CONSTANTS::projection_xi_eta_tol;
+    const double xi_limit = 1.0 + Constants::projection_xi_eta_tol;
     if (element_type::geometry_type_ == DiscretizationTypeGeometry::quad)
     {
       if (fabs(xi(0)) < xi_limit && fabs(xi(1)) < xi_limit) return true;
     }
     else if (element_type::geometry_type_ == DiscretizationTypeGeometry::triangle)
     {
-      if (xi(0) > -CONSTANTS::projection_xi_eta_tol && xi(1) > -CONSTANTS::projection_xi_eta_tol &&
-          xi(0) + xi(1) < 1.0 + CONSTANTS::projection_xi_eta_tol)
+      if (xi(0) > -Constants::projection_xi_eta_tol && xi(1) > -Constants::projection_xi_eta_tol &&
+          xi(0) + xi(1) < 1.0 + Constants::projection_xi_eta_tol)
         return true;
     }
     else
@@ -348,16 +348,16 @@ namespace GEOMETRYPAIR
   template <typename element_type, typename T>
   bool ValidParameter3D(const T& xi)
   {
-    const double xi_limit = 1.0 + CONSTANTS::projection_xi_eta_tol;
+    const double xi_limit = 1.0 + Constants::projection_xi_eta_tol;
     if (element_type::geometry_type_ == DiscretizationTypeGeometry::hexahedron)
     {
       if (fabs(xi(0)) < xi_limit && fabs(xi(1)) < xi_limit && fabs(xi(2)) < xi_limit) return true;
     }
     else if (element_type::geometry_type_ == DiscretizationTypeGeometry::tetraeder)
     {
-      if (xi(0) > -CONSTANTS::projection_xi_eta_tol && xi(1) > -CONSTANTS::projection_xi_eta_tol &&
-          xi(2) > -CONSTANTS::projection_xi_eta_tol &&
-          xi(0) + xi(1) + xi(2) < 1.0 + CONSTANTS::projection_xi_eta_tol)
+      if (xi(0) > -Constants::projection_xi_eta_tol && xi(1) > -Constants::projection_xi_eta_tol &&
+          xi(2) > -Constants::projection_xi_eta_tol &&
+          xi(0) + xi(1) + xi(2) < 1.0 + Constants::projection_xi_eta_tol)
         return true;
     }
     else

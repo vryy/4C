@@ -58,7 +58,7 @@ void printehlmixlogo()
  *----------------------------------------------------------------------*/
 void ehl_dyn()
 {
-  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
+  Global::Problem* problem = Global::Problem::Instance();
 
   // 1.- Initialization
   const Epetra_Comm& comm = problem->GetDis("structure")->Comm();
@@ -71,7 +71,7 @@ void ehl_dyn()
       const_cast<Teuchos::ParameterList&>(problem->lubrication_dynamic_params());
   // do we want to use Modified Reynolds Equation?
   bool modifiedreynolds =
-      (CORE::UTILS::IntegralValue<int>(lubricationdyn, "MODIFIED_REYNOLDS_EQU"));
+      (Core::UTILS::IntegralValue<int>(lubricationdyn, "MODIFIED_REYNOLDS_EQU"));
 
   // print problem specific logo
   if (!problem->GetDis("structure")->Comm().MyPID())
@@ -87,14 +87,14 @@ void ehl_dyn()
   // access structural dynamic params list which will be possibly modified while creating the time
   // integrator
   Teuchos::ParameterList& sdyn =
-      const_cast<Teuchos::ParameterList&>(GLOBAL::Problem::Instance()->structural_dynamic_params());
+      const_cast<Teuchos::ParameterList&>(Global::Problem::Instance()->structural_dynamic_params());
 
 
   //  //Modification of time parameter list
   EHL::Utils::ChangeTimeParameter(comm, ehlparams, lubricationdyn, sdyn);
 
-  const INPAR::EHL::SolutionSchemeOverFields coupling =
-      CORE::UTILS::IntegralValue<INPAR::EHL::SolutionSchemeOverFields>(ehlparams, "COUPALGO");
+  const Inpar::EHL::SolutionSchemeOverFields coupling =
+      Core::UTILS::IntegralValue<Inpar::EHL::SolutionSchemeOverFields>(ehlparams, "COUPALGO");
 
   // 3.- Creation of Lubrication + Structure problem. (discretization called inside)
   Teuchos::RCP<EHL::Base> ehl = Teuchos::null;
@@ -102,11 +102,11 @@ void ehl_dyn()
   // 3.1 choose algorithm depending on solution type
   switch (coupling)
   {
-    case INPAR::EHL::ehl_IterStagg:
+    case Inpar::EHL::ehl_IterStagg:
       ehl = Teuchos::rcp(
           new EHL::Partitioned(comm, ehlparams, lubricationdyn, sdyn, "structure", "lubrication"));
       break;
-    case INPAR::EHL::ehl_Monolithic:
+    case Inpar::EHL::ehl_Monolithic:
       ehl = Teuchos::rcp(
           new EHL::Monolithic(comm, ehlparams, lubricationdyn, sdyn, "structure", "lubrication"));
       break;

@@ -19,7 +19,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
@@ -42,25 +42,25 @@ namespace DRT
       //! dtor
       virtual ~FluidFactory() = default;
       //! ProvideImpl
-      static FluidEleInterface* ProvideImpl(CORE::FE::CellType distype, std::string problem);
+      static FluidEleInterface* ProvideImpl(Core::FE::CellType distype, std::string problem);
 
       //! special ProvideImpl for XFEM problems to reduce created template combinations
-      static FluidEleInterface* ProvideImplXFEM(CORE::FE::CellType distype, std::string problem);
+      static FluidEleInterface* ProvideImplXFEM(Core::FE::CellType distype, std::string problem);
 
      private:
       //! define FluidEle instances dependent on problem
-      template <CORE::FE::CellType distype>
+      template <Core::FE::CellType distype>
       static FluidEleInterface* define_problem_type(std::string problem);
 
       //! special define_problem_type_xfem for XFEM problems
-      template <CORE::FE::CellType distype>
+      template <Core::FE::CellType distype>
       static FluidEleInterface* define_problem_type_xfem(std::string problem);
 
     };  // end class FluidFactory
 
   }  // namespace ELEMENTS
 
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

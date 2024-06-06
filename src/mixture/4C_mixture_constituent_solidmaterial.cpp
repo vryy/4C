@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 // Constructor for the parameter class
 MIXTURE::PAR::MixtureConstituentSolidMaterial::MixtureConstituentSolidMaterial(
-    const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
+    const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
     : MixtureConstituent(matdata), matid_(matdata->Get<int>("MATID"))
 {
 }
@@ -42,10 +42,10 @@ MIXTURE::MixtureConstituentSolidMaterial::MixtureConstituentSolidMaterial(
 {
   // take the matid (i.e. here the id of the solid material), read the type and
   // create the corresponding material
-  auto mat = MAT::Factory(params_->matid_);
+  auto mat = Mat::Factory(params_->matid_);
 
   // cast to an So3Material
-  material_ = Teuchos::rcp_dynamic_cast<MAT::So3Material>(mat);
+  material_ = Teuchos::rcp_dynamic_cast<Mat::So3Material>(mat);
 
   // ensure cast was successfull
   if (Teuchos::is_null(mat))
@@ -59,12 +59,13 @@ MIXTURE::MixtureConstituentSolidMaterial::MixtureConstituentSolidMaterial(
         material_->Parameter()->Id());
 }
 
-CORE::Materials::MaterialType MIXTURE::MixtureConstituentSolidMaterial::MaterialType() const
+Core::Materials::MaterialType MIXTURE::MixtureConstituentSolidMaterial::MaterialType() const
 {
-  return CORE::Materials::mix_solid_material;
+  return Core::Materials::mix_solid_material;
 }
 
-void MIXTURE::MixtureConstituentSolidMaterial::PackConstituent(CORE::COMM::PackBuffer& data) const
+void MIXTURE::MixtureConstituentSolidMaterial::PackConstituent(
+    Core::Communication::PackBuffer& data) const
 {
   // pack constituent data
   MixtureConstituent::PackConstituent(data);
@@ -72,7 +73,7 @@ void MIXTURE::MixtureConstituentSolidMaterial::PackConstituent(CORE::COMM::PackB
   // add the matid of the Mixture_SolidMaterial
   int matid = -1;
   if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
-  CORE::COMM::ParObject::AddtoPack(data, matid);
+  Core::Communication::ParObject::AddtoPack(data, matid);
 
   // pack data of the solid material
   material_->Pack(data);
@@ -90,16 +91,16 @@ void MIXTURE::MixtureConstituentSolidMaterial::UnpackConstituent(
 
   // extract the matid of the Mixture_SolidMaterial
   int matid;
-  CORE::COMM::ParObject::ExtractfromPack(position, data, matid);
+  Core::Communication::ParObject::ExtractfromPack(position, data, matid);
 
   // recover the params_ of the Mixture_SolidMaterial
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
   {
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const unsigned int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const unsigned int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
       {
         params_ = dynamic_cast<MIXTURE::PAR::MixtureConstituentSolidMaterial*>(mat);
@@ -115,36 +116,36 @@ void MIXTURE::MixtureConstituentSolidMaterial::UnpackConstituent(
   // unpack the data of the solid material
   if (params_ != nullptr)
   {
-    auto so3mat = MAT::Factory(params_->matid_);
-    material_ = Teuchos::rcp_dynamic_cast<MAT::So3Material>(so3mat);
+    auto so3mat = Mat::Factory(params_->matid_);
+    material_ = Teuchos::rcp_dynamic_cast<Mat::So3Material>(so3mat);
     if (Teuchos::is_null(so3mat)) FOUR_C_THROW("Failed to allocate");
 
     // solid material packed: 1. the data size, 2. the packed data of size sm
     // ExtractFromPack extracts a sub_vec of size sm from data and updates the position vector
     std::vector<char> sub_vec;
-    CORE::COMM::ParObject::ExtractfromPack(position, data, sub_vec);
+    Core::Communication::ParObject::ExtractfromPack(position, data, sub_vec);
     material_->Unpack(sub_vec);
   }
 }
 
-CORE::Materials::MaterialType MaterialType() { return CORE::Materials::mix_solid_material; }
+Core::Materials::MaterialType MaterialType() { return Core::Materials::mix_solid_material; }
 
 void MIXTURE::MixtureConstituentSolidMaterial::ReadElement(
-    int numgp, INPUT::LineDefinition* linedef)
+    int numgp, Input::LineDefinition* linedef)
 {
   MixtureConstituent::ReadElement(numgp, linedef);
   material_->Setup(numgp, linedef);
 }
 
-void MIXTURE::MixtureConstituentSolidMaterial::Update(CORE::LINALG::Matrix<3, 3> const& defgrd,
+void MIXTURE::MixtureConstituentSolidMaterial::Update(Core::LinAlg::Matrix<3, 3> const& defgrd,
     Teuchos::ParameterList& params, const int gp, const int eleGID)
 {
   material_->Update(defgrd, gp, params, eleGID);
 }
 
-void MIXTURE::MixtureConstituentSolidMaterial::Evaluate(const CORE::LINALG::Matrix<3, 3>& F,
-    const CORE::LINALG::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
-    CORE::LINALG::Matrix<6, 1>& S_stress, CORE::LINALG::Matrix<6, 6>& cmat, const int gp,
+void MIXTURE::MixtureConstituentSolidMaterial::Evaluate(const Core::LinAlg::Matrix<3, 3>& F,
+    const Core::LinAlg::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
+    Core::LinAlg::Matrix<6, 1>& S_stress, Core::LinAlg::Matrix<6, 6>& cmat, const int gp,
     const int eleGID)
 {
   material_->Evaluate(&F, &E_strain, params, &S_stress, &cmat, gp, eleGID);
@@ -157,7 +158,7 @@ void MIXTURE::MixtureConstituentSolidMaterial::register_output_data_names(
 }
 
 bool MIXTURE::MixtureConstituentSolidMaterial::EvaluateOutputData(
-    const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const
+    const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const
 {
   return material_->EvaluateOutputData(name, data);
 }

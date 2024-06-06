@@ -21,11 +21,11 @@ reactive scalars
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
-    template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype>>
+    template <Core::FE::CellType distype, int probdim = Core::FE::dim<distype>>
     class ScaTraEleCalcChemoReac : public ScaTraEleCalcChemo<distype, probdim>,
                                    public ScaTraEleCalcAdvReac<distype, probdim>
     {
@@ -46,7 +46,7 @@ namespace DRT
      protected:
       //! get the material parameters
       void get_material_params(
-          const CORE::Elements::Element* ele,  //!< the element we are dealing with
+          const Core::Elements::Element* ele,  //!< the element we are dealing with
           std::vector<double>& densn,          //!< density at t_(n)
           std::vector<double>& densnp,         //!< density at t_(n+1) or t_(n+alpha_F)
           std::vector<double>& densam,         //!< density at t_(n+alpha_M)
@@ -58,7 +58,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

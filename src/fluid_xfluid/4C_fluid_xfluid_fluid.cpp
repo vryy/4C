@@ -39,8 +39,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 FLD::XFluidFluid::XFluidFluid(const Teuchos::RCP<FLD::FluidImplicitTimeInt>& embedded_fluid,
-    const Teuchos::RCP<DRT::Discretization>& xfluiddis,
-    const Teuchos::RCP<CORE::LINALG::Solver>& solver,
+    const Teuchos::RCP<Discret::Discretization>& xfluiddis,
+    const Teuchos::RCP<Core::LinAlg::Solver>& solver,
     const Teuchos::RCP<Teuchos::ParameterList>& params, bool ale_xfluid, bool ale_fluid)
     : XFluid(xfluiddis, embedded_fluid->discretization(), Teuchos::null, solver, params,
           xfluiddis->Writer(), ale_xfluid),
@@ -56,9 +56,9 @@ FLD::XFluidFluid::XFluidFluid(const Teuchos::RCP<FLD::FluidImplicitTimeInt>& emb
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 FLD::XFluidFluid::XFluidFluid(const Teuchos::RCP<FLD::FluidImplicitTimeInt>& embedded_fluid,
-    const Teuchos::RCP<DRT::Discretization>& xfluiddis,
-    const Teuchos::RCP<DRT::Discretization>& soliddis,
-    const Teuchos::RCP<CORE::LINALG::Solver>& solver,
+    const Teuchos::RCP<Discret::Discretization>& xfluiddis,
+    const Teuchos::RCP<Discret::Discretization>& soliddis,
+    const Teuchos::RCP<Core::LinAlg::Solver>& solver,
     const Teuchos::RCP<Teuchos::ParameterList>& params, bool ale_xfluid, bool ale_fluid)
     : XFluid(xfluiddis, soliddis, Teuchos::null, solver, params, xfluiddis->Writer(), ale_xfluid),
       embedded_fluid_(embedded_fluid),
@@ -94,18 +94,18 @@ void FLD::XFluidFluid::CreateInitialState()
   // base class CreateInitialState
   XFluid::CreateInitialState();
 
-  if (CORE::UTILS::GetAsEnum<INPAR::FLUID::CalcError>(*params_, "calculate error") !=
-      INPAR::FLUID::no_error_calculation)
+  if (Core::UTILS::GetAsEnum<Inpar::FLUID::CalcError>(*params_, "calculate error") !=
+      Inpar::FLUID::no_error_calculation)
   {
     mc_xff_->redistribute_for_error_calculation();
   }
 
   // recreate internal faces of DiscretizationFaces (as the distribution of the embedded
   // discretization may have changed)
-  if (CORE::UTILS::GetAsEnum<INPAR::FLUID::CalcError>(*params_, "calculate error") !=
-          INPAR::FLUID::no_error_calculation ||
-      mc_xff_->get_averaging_strategy() == INPAR::XFEM::Embedded_Sided ||
-      mc_xff_->get_averaging_strategy() == INPAR::XFEM::Mean)
+  if (Core::UTILS::GetAsEnum<Inpar::FLUID::CalcError>(*params_, "calculate error") !=
+          Inpar::FLUID::no_error_calculation ||
+      mc_xff_->get_averaging_strategy() == Inpar::XFEM::Embedded_Sided ||
+      mc_xff_->get_averaging_strategy() == Inpar::XFEM::Mean)
   {
     embedded_fluid_->create_faces_extension();
   }
@@ -114,11 +114,11 @@ void FLD::XFluidFluid::CreateInitialState()
   // domain
   {
     Teuchos::ParameterList* stabparams = &(params_->sublist("RESIDUAL-BASED STABILIZATION"));
-    if (xff_eos_pres_emb_layer_ && CORE::UTILS::IntegralValue<INPAR::FLUID::StabType>(*stabparams,
-                                       "STABTYPE") == INPAR::FLUID::stabtype_residualbased)
+    if (xff_eos_pres_emb_layer_ && Core::UTILS::IntegralValue<Inpar::FLUID::StabType>(*stabparams,
+                                       "STABTYPE") == Inpar::FLUID::stabtype_residualbased)
     {
-      Teuchos::RCP<DRT::DiscretizationFaces> facediscret =
-          Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(
+      Teuchos::RCP<Discret::DiscretizationFaces> facediscret =
+          Teuchos::rcp_dynamic_cast<Discret::DiscretizationFaces>(
               embedded_fluid_->discretization(), true);
       facediscret->create_internal_faces_extension(true);
     }
@@ -127,7 +127,7 @@ void FLD::XFluidFluid::CreateInitialState()
   //--------------------------------------------------
   // Create XFluidFluid State
   //-----------------------------------------------
-  const int restart = GLOBAL::Problem::Instance()->Restart();
+  const int restart = Global::Problem::Instance()->Restart();
 
   if (restart)
   {
@@ -148,7 +148,7 @@ void FLD::XFluidFluid::use_block_matrix(bool splitmatrix)
 
   if (splitmatrix)
     xff_state_->xffluidsysmat_ =
-        Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
+        Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
             *x_fluid_fluid_map_extractor(), *x_fluid_fluid_map_extractor(), 108, false, true));
 }
 
@@ -159,17 +159,17 @@ void FLD::XFluidFluid::set_x_fluid_fluid_params()
   // additional eos pressure stabilization on the elements of the embedded discretization,
   // that contribute to the interface
   xff_eos_pres_emb_layer_ =
-      CORE::UTILS::IntegralValue<bool>(params_xf_stab, "XFF_EOS_PRES_EMB_LAYER");
+      Core::UTILS::IntegralValue<bool>(params_xf_stab, "XFF_EOS_PRES_EMB_LAYER");
 
   // whether an eigenvalue problem has to be solved to estimate Nitsche's parameter
   nitsche_evp_ =
-      (CORE::UTILS::IntegralValue<INPAR::XFEM::ViscStabTraceEstimate>(params_xf_stab,
-           "VISC_STAB_TRACE_ESTIMATE") == INPAR::XFEM::ViscStab_TraceEstimate_eigenvalue);
+      (Core::UTILS::IntegralValue<Inpar::XFEM::ViscStabTraceEstimate>(params_xf_stab,
+           "VISC_STAB_TRACE_ESTIMATE") == Inpar::XFEM::ViscStab_TraceEstimate_eigenvalue);
 
   // get general XFEM/XFFSI specific parameters
-  monolithic_approach_ = CORE::UTILS::IntegralValue<INPAR::XFEM::MonolithicXffsiApproach>(
+  monolithic_approach_ = Core::UTILS::IntegralValue<Inpar::XFEM::MonolithicXffsiApproach>(
       params_->sublist("XFLUID DYNAMIC/GENERAL"), "MONOLITHIC_XFFSI_APPROACH");
-  xfem_timeintapproach_ = CORE::UTILS::IntegralValue<INPAR::XFEM::XFluidFluidTimeInt>(
+  xfem_timeintapproach_ = Core::UTILS::IntegralValue<Inpar::XFEM::XFluidFluidTimeInt>(
       params_->sublist("XFLUID DYNAMIC/GENERAL"), "XFLUIDFLUID_TIMEINT");
 
   // get information about active shape derivatives
@@ -177,7 +177,7 @@ void FLD::XFluidFluid::set_x_fluid_fluid_params()
 }
 
 void FLD::XFluidFluid::SetInitialFlowField(
-    const INPAR::FLUID::InitialField initfield, const int startfuncno)
+    const Inpar::FLUID::InitialField initfield, const int startfuncno)
 {
   XFluid::SetInitialFlowField(initfield, startfuncno);
   embedded_fluid_->SetInitialFlowField(initfield, startfuncno);
@@ -241,7 +241,7 @@ void FLD::XFluidFluid::Evaluate(
         xff_state_->xffluidsplitter_->ExtractFluidVector(xff_state_->xffluidincvel_));
   }
 
-  if (mc_xff_->get_averaging_strategy() == INPAR::XFEM::Embedded_Sided and nitsche_evp_)
+  if (mc_xff_->get_averaging_strategy() == Inpar::XFEM::Embedded_Sided and nitsche_evp_)
   {
     mc_xff_->reset_evaluated_trace_estimates();
     if (ale_embfluid_)
@@ -273,23 +273,23 @@ void FLD::XFluidFluid::TimeUpdate()
   xff_state_->xffluidveln_->Update(1.0, *xff_state_->xffluidvelnp_, 0.0);
 }
 
-Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> FLD::XFluidFluid::BlockSystemMatrix(
+Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> FLD::XFluidFluid::BlockSystemMatrix(
     Teuchos::RCP<Epetra_Map> innermap, Teuchos::RCP<Epetra_Map> condmap)
 {
   // Map of fluid FSI DOFs: condmap
   // Map of inner fluid DOFs: innermap
 
   // Get the fluid-fluid system matrix as sparse matrix
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> sparsesysmat = SystemMatrix();
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> sparsesysmat = SystemMatrix();
 
   // F_{II}, F_{I\Gamma}, F_{\GammaI}, F_{\Gamma\Gamma}
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> fii, fig, fgi, fgg;
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> fii, fig, fgi, fgg;
   // Split sparse system matrix into blocks according to the given maps
-  CORE::LINALG::SplitMatrix2x2(
+  Core::LinAlg::SplitMatrix2x2(
       sparsesysmat, innermap, condmap, innermap, condmap, fii, fig, fgi, fgg);
   // create a new block matrix out of the 4 blocks
-  Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> blockmat =
-      CORE::LINALG::BlockMatrix2x2(*fii, *fig, *fgi, *fgg);
+  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> blockmat =
+      Core::LinAlg::BlockMatrix2x2(*fii, *fig, *fgi, *fgg);
 
   if (blockmat == Teuchos::null) FOUR_C_THROW("Creation of fluid-fluid block matrix failed.");
 
@@ -306,7 +306,7 @@ Teuchos::RCP<const Epetra_Map> FLD::XFluidFluid::VelocityRowMap()
   return xff_state_->xffluidvelpressplitter_->OtherMap();
 }
 
-Teuchos::RCP<CORE::UTILS::ResultTest> FLD::XFluidFluid::CreateFieldTest()
+Teuchos::RCP<Core::UTILS::ResultTest> FLD::XFluidFluid::CreateFieldTest()
 {
   return Teuchos::rcp(new FLD::XFluidResultTest(*this));
 }
@@ -326,7 +326,7 @@ Teuchos::RCP<FLD::XFluidState> FLD::XFluidFluid::get_new_state()
   {
     mc_xff_
         ->update_displacement_iteration_vectors();  // update last iteration interface displacements
-    CORE::LINALG::Export(*embedded_fluid_->Dispnp(), *mc_xff_->IDispnp());
+    Core::LinAlg::Export(*embedded_fluid_->Dispnp(), *mc_xff_->IDispnp());
   }
 
   state_it_++;
@@ -339,7 +339,7 @@ Teuchos::RCP<FLD::XFluidState> FLD::XFluidFluid::get_new_state()
   // increment vector for merged background & embedded fluid
   // (not the classical Newton increment but the difference to
   // the value at the last time step)
-  stepinc_ = CORE::LINALG::CreateVector(*state->xffluiddofrowmap_, true);
+  stepinc_ = Core::LinAlg::CreateVector(*state->xffluiddofrowmap_, true);
 
   // build a merged map from fluid-fluid dbc-maps
   state->create_merged_dbc_map_extractor(embedded_fluid_->GetDBCMapExtractor());
@@ -370,7 +370,7 @@ void FLD::XFluidFluid::assemble_mat_and_rhs(int itnum  ///< iteration number
   // evaluate elements of embedded fluid
   embedded_fluid_->PrepareSolve();
 
-  if (mc_xff_->get_averaging_strategy() == INPAR::XFEM::Embedded_Sided)
+  if (mc_xff_->get_averaging_strategy() == Inpar::XFEM::Embedded_Sided)
   {
     mc_xff_->GetCouplingDis()->ClearState();
     // set velocity and displacement state for embedded fluid
@@ -385,8 +385,8 @@ void FLD::XFluidFluid::assemble_mat_and_rhs(int itnum  ///< iteration number
 
   // export interface velocities
   // TODO: shift to mesh coupling class
-  CORE::LINALG::Export(*(embedded_fluid_->Velnp()), *(mc_xff_->IVelnp()));
-  CORE::LINALG::Export(*(embedded_fluid_->Veln()), *(mc_xff_->IVeln()));
+  Core::LinAlg::Export(*(embedded_fluid_->Velnp()), *(mc_xff_->IVelnp()));
+  Core::LinAlg::Export(*(embedded_fluid_->Veln()), *(mc_xff_->IVeln()));
 
   // evaluate elements of XFluid part
   XFluid::assemble_mat_and_rhs(itnum);
@@ -428,19 +428,19 @@ void FLD::XFluidFluid::assemble_mat_and_rhs(int itnum  ///< iteration number
   // assemble XFluid and embedded fluid system matrices into one
 
   // TODO: when creation is shifted state-class, we can ask the state class for this
-  Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat_block =
-      Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(
+  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat_block =
+      Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(
           xff_state_->xffluidsysmat_, false);
   if (sysmat_block != Teuchos::null)
   {
-    sysmat_block->Assign(1, 1, CORE::LINALG::View, *xff_state_->sysmat_);
-    sysmat_block->Assign(1, 0, CORE::LINALG::View, *coup_state->C_xs_);
-    sysmat_block->Assign(0, 1, CORE::LINALG::View, *coup_state->C_sx_);
+    sysmat_block->Assign(1, 1, Core::LinAlg::View, *xff_state_->sysmat_);
+    sysmat_block->Assign(1, 0, Core::LinAlg::View, *coup_state->C_xs_);
+    sysmat_block->Assign(0, 1, Core::LinAlg::View, *coup_state->C_sx_);
     embedded_fluid_->SystemMatrix()->UnComplete();
     embedded_fluid_->SystemMatrix()->Add(*coup_state->C_ss_, false, 1.0, 1.0);
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> alesysmat_sparse =
-        Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(embedded_fluid_->SystemMatrix());
-    sysmat_block->Assign(0, 0, CORE::LINALG::View, *alesysmat_sparse);
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> alesysmat_sparse =
+        Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(embedded_fluid_->SystemMatrix());
+    sysmat_block->Assign(0, 0, Core::LinAlg::View, *alesysmat_sparse);
   }
   else
   {
@@ -458,7 +458,7 @@ void FLD::XFluidFluid::assemble_mat_and_rhs(int itnum  ///< iteration number
 }
 
 void FLD::XFluidFluid::prepare_shape_derivatives(
-    const Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> fsiextractor,
+    const Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> fsiextractor,
     const Teuchos::RCP<std::set<int>> condelements)
 {
   if (!active_shapederivatives_) return;
@@ -467,8 +467,8 @@ void FLD::XFluidFluid::prepare_shape_derivatives(
   // REMARK: the shape derivatives matrix results from linearization w.r.t. ALE-displacements
   // and therefore solely knows ALE-dof - here we use "extended shapederivatives" including
   // background fluid entries, that are set to zero
-  Teuchos::RCP<CORE::LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>> mat =
-      Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(
+  Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>> mat =
+      Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(
           *fsiextractor, *fsiextractor, 108, false, true));
   mat->SetCondElements(condelements);
   extended_shapederivatives_ = mat;
@@ -498,15 +498,16 @@ void FLD::XFluidFluid::add_eos_pres_stab_to_emb_layer()
 
   Teuchos::ParameterList faceparams;
 
-  const Teuchos::RCP<DRT::DiscretizationFaces> xdiscret =
-      Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(embedded_fluid_->discretization(), true);
+  const Teuchos::RCP<Discret::DiscretizationFaces> xdiscret =
+      Teuchos::rcp_dynamic_cast<Discret::DiscretizationFaces>(
+          embedded_fluid_->discretization(), true);
 
   // set additional faceparams according to ghost-penalty terms due to Nitsche's method
   faceparams.set("ghost_penalty_reconstruct", false);
 
   //------------------------------------------------------------
   Teuchos::RCP<Epetra_Vector> residual_col =
-      CORE::LINALG::CreateVector(*xdiscret->DofColMap(), true);
+      Core::LinAlg::CreateVector(*xdiscret->DofColMap(), true);
 
   //------------------------------------------------------------
   const Epetra_Map* rmap = nullptr;
@@ -519,9 +520,9 @@ void FLD::XFluidFluid::add_eos_pres_stab_to_emb_layer()
   sysmat_FE = Teuchos::rcp(new Epetra_FECrsMatrix(::Copy, *rmap, 256, false));
 
   // TODO: think about the dirichlet and savegraph flags when ApplyDirichlet or Zero is called
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat_linalg = Teuchos::rcp(
-      new CORE::LINALG::SparseMatrix(Teuchos::rcp_static_cast<Epetra_CrsMatrix>(sysmat_FE),
-          CORE::LINALG::View, true, true, CORE::LINALG::SparseMatrix::FE_MATRIX));
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_linalg = Teuchos::rcp(
+      new Core::LinAlg::SparseMatrix(Teuchos::rcp_static_cast<Epetra_CrsMatrix>(sysmat_FE),
+          Core::LinAlg::View, true, true, Core::LinAlg::SparseMatrix::FE_MATRIX));
 
   //------------------------------------------------------------
   // loop over row faces
@@ -530,8 +531,8 @@ void FLD::XFluidFluid::add_eos_pres_stab_to_emb_layer()
 
   for (int i = 0; i < numrowintfaces; ++i)
   {
-    CORE::Elements::Element* actface = xdiscret->lRowFace(i);
-    DRT::ELEMENTS::FluidIntFace* ele = dynamic_cast<DRT::ELEMENTS::FluidIntFace*>(actface);
+    Core::Elements::Element* actface = xdiscret->lRowFace(i);
+    Discret::ELEMENTS::FluidIntFace* ele = dynamic_cast<Discret::ELEMENTS::FluidIntFace*>(actface);
     if (ele == nullptr) FOUR_C_THROW("expect FluidIntFace element");
     edgestab_->evaluate_edge_stab_boundary_gp(faceparams, xdiscret,
         mc_xff_->get_auxiliary_discretization(), ele, sysmat_linalg, residual_col);
@@ -567,19 +568,19 @@ bool FLD::XFluidFluid::x_timint_project_from_embedded_discretization(
 {
   std::vector<Teuchos::RCP<const Epetra_Vector>> oldStateVectors;
 
-  Teuchos::RCP<const Epetra_Vector> velncol = CORE::REBALANCE::GetColVersionOfRowVector(
+  Teuchos::RCP<const Epetra_Vector> velncol = Core::Rebalance::GetColVersionOfRowVector(
       embedded_fluid_->discretization(), embedded_fluid_->Veln());
-  Teuchos::RCP<const Epetra_Vector> accncol = CORE::REBALANCE::GetColVersionOfRowVector(
+  Teuchos::RCP<const Epetra_Vector> accncol = Core::Rebalance::GetColVersionOfRowVector(
       embedded_fluid_->discretization(), embedded_fluid_->Accn());
   oldStateVectors.push_back(velncol);
   oldStateVectors.push_back(accncol);
 
   // get set of node-ids, that demand projection from embedded discretization
   std::map<int, std::set<int>>& projection_nodeToDof =
-      xfluid_timeint->get_node_to_dof_map_for_reconstr(INPAR::XFEM::Xf_TimeInt_by_PROJ_from_DIS);
+      xfluid_timeint->get_node_to_dof_map_for_reconstr(Inpar::XFEM::Xf_TimeInt_by_PROJ_from_DIS);
 
   Teuchos::RCP<const Epetra_Vector> disp =
-      CORE::REBALANCE::GetColVersionOfRowVector(embedded_fluid_->discretization(), dispnpoldstate_);
+      Core::Rebalance::GetColVersionOfRowVector(embedded_fluid_->discretization(), dispnpoldstate_);
   projector_->set_source_position_vector(disp);
   projector_->set_source_state_vectors(oldStateVectors);
 
@@ -628,10 +629,10 @@ void FLD::XFluidFluid::update_monolithic_fluid_solution(
   std::vector<Teuchos::RCP<const Epetra_Map>> condmaps;
   condmaps.push_back(dbcmap);
   condmaps.push_back(fsidofmap);
-  Teuchos::RCP<Epetra_Map> condmerged = CORE::LINALG::MultiMapExtractor::MergeMaps(condmaps);
+  Teuchos::RCP<Epetra_Map> condmerged = Core::LinAlg::MultiMapExtractor::MergeMaps(condmaps);
 
-  Teuchos::RCP<CORE::LINALG::MapExtractor> fsidbcmapex =
-      Teuchos::rcp(new CORE::LINALG::MapExtractor(*(embedded_fluid_->dof_row_map()), condmerged));
+  Teuchos::RCP<Core::LinAlg::MapExtractor> fsidbcmapex =
+      Teuchos::rcp(new Core::LinAlg::MapExtractor(*(embedded_fluid_->dof_row_map()), condmerged));
 
   // DBC map-extractor containing FSI-dof
   xff_state_->create_merged_dbc_map_extractor(fsidbcmapex);
@@ -652,19 +653,19 @@ void FLD::XFluidFluid::interpolate_embedded_state_vectors()
 
   std::vector<Teuchos::RCP<const Epetra_Vector>> oldStateVectors;
 
-  Teuchos::RCP<const Epetra_Vector> velncol = CORE::REBALANCE::GetColVersionOfRowVector(
+  Teuchos::RCP<const Epetra_Vector> velncol = Core::Rebalance::GetColVersionOfRowVector(
       embedded_fluid_->discretization(), embedded_fluid_->Velnp());
-  Teuchos::RCP<const Epetra_Vector> accncol = CORE::REBALANCE::GetColVersionOfRowVector(
+  Teuchos::RCP<const Epetra_Vector> accncol = Core::Rebalance::GetColVersionOfRowVector(
       embedded_fluid_->discretization(), embedded_fluid_->Accnp());
   oldStateVectors.push_back(velncol);
   oldStateVectors.push_back(accncol);
 
   Teuchos::RCP<const Epetra_Vector> srcdisp =
-      CORE::REBALANCE::GetColVersionOfRowVector(embedded_fluid_->discretization(), dispnpoldstate_);
+      Core::Rebalance::GetColVersionOfRowVector(embedded_fluid_->discretization(), dispnpoldstate_);
   embedded_projector.set_source_position_vector(srcdisp);
   embedded_projector.set_source_state_vectors(oldStateVectors);
 
-  Teuchos::RCP<const Epetra_Vector> tardisp = CORE::REBALANCE::GetColVersionOfRowVector(
+  Teuchos::RCP<const Epetra_Vector> tardisp = Core::Rebalance::GetColVersionOfRowVector(
       embedded_fluid_->discretization(), embedded_fluid_->Dispnp());
 
   embedded_projector.project_in_full_target_discretization(newRowStateVectors, tardisp);
@@ -683,10 +684,10 @@ Teuchos::RCP<std::vector<double>> FLD::XFluidFluid::evaluate_error_compared_to_a
   // solutions and an analytical solution which is implemented or given by a function in the input
   // file
 
-  INPAR::FLUID::CalcError calcerr =
-      CORE::UTILS::GetAsEnum<INPAR::FLUID::CalcError>(*params_, "calculate error");
+  Inpar::FLUID::CalcError calcerr =
+      Core::UTILS::GetAsEnum<Inpar::FLUID::CalcError>(*params_, "calculate error");
 
-  if (calcerr == INPAR::FLUID::no_error_calculation) return Teuchos::null;
+  if (calcerr == Inpar::FLUID::no_error_calculation) return Teuchos::null;
   // set the time to evaluate errors
   //
 
@@ -784,19 +785,19 @@ Teuchos::RCP<std::vector<double>> FLD::XFluidFluid::evaluate_error_compared_to_a
   const int num_interf_norms = 8;
   const int num_stab_norms = 3;
 
-  CORE::LINALG::SerialDenseVector cpu_dom_norms(num_dom_norms);
-  CORE::LINALG::SerialDenseVector cpu_dom_norms_emb(num_dom_norms);
-  CORE::LINALG::SerialDenseVector cpu_interf_norms(num_interf_norms);
-  CORE::LINALG::SerialDenseVector cpu_stab_norms(num_stab_norms);
+  Core::LinAlg::SerialDenseVector cpu_dom_norms(num_dom_norms);
+  Core::LinAlg::SerialDenseVector cpu_dom_norms_emb(num_dom_norms);
+  Core::LinAlg::SerialDenseVector cpu_interf_norms(num_interf_norms);
+  Core::LinAlg::SerialDenseVector cpu_stab_norms(num_stab_norms);
 
-  Teuchos::RCP<CORE::LINALG::SerialDenseVector> glob_dom_norms_bg =
-      Teuchos::rcp(new CORE::LINALG::SerialDenseVector(num_dom_norms));
-  Teuchos::RCP<CORE::LINALG::SerialDenseVector> glob_dom_norms_emb =
-      Teuchos::rcp(new CORE::LINALG::SerialDenseVector(num_dom_norms));
-  Teuchos::RCP<CORE::LINALG::SerialDenseVector> glob_interf_norms =
-      Teuchos::rcp(new CORE::LINALG::SerialDenseVector(num_interf_norms));
-  Teuchos::RCP<CORE::LINALG::SerialDenseVector> glob_stab_norms =
-      Teuchos::rcp(new CORE::LINALG::SerialDenseVector(num_stab_norms));
+  Teuchos::RCP<Core::LinAlg::SerialDenseVector> glob_dom_norms_bg =
+      Teuchos::rcp(new Core::LinAlg::SerialDenseVector(num_dom_norms));
+  Teuchos::RCP<Core::LinAlg::SerialDenseVector> glob_dom_norms_emb =
+      Teuchos::rcp(new Core::LinAlg::SerialDenseVector(num_dom_norms));
+  Teuchos::RCP<Core::LinAlg::SerialDenseVector> glob_interf_norms =
+      Teuchos::rcp(new Core::LinAlg::SerialDenseVector(num_interf_norms));
+  Teuchos::RCP<Core::LinAlg::SerialDenseVector> glob_stab_norms =
+      Teuchos::rcp(new Core::LinAlg::SerialDenseVector(num_stab_norms));
 
   // set vector values needed by elements
   discret_->ClearState();
@@ -825,27 +826,27 @@ Teuchos::RCP<std::vector<double>> FLD::XFluidFluid::evaluate_error_compared_to_a
   for (int i = 0; i < numrowele_emb; ++i)
   {
     // local element-wise squared error norms
-    CORE::LINALG::SerialDenseVector ele_dom_norms_emb(num_dom_norms);
+    Core::LinAlg::SerialDenseVector ele_dom_norms_emb(num_dom_norms);
 
     // pointer to current element
-    CORE::Elements::Element* actele = mc_xff_->GetCondDis()->lRowElement(i);
+    Core::Elements::Element* actele = mc_xff_->GetCondDis()->lRowElement(i);
 
-    Teuchos::RCP<CORE::MAT::Material> mat = actele->Material();
+    Teuchos::RCP<Core::Mat::Material> mat = actele->Material();
 
-    DRT::ELEMENTS::Fluid* ele = dynamic_cast<DRT::ELEMENTS::Fluid*>(actele);
+    Discret::ELEMENTS::Fluid* ele = dynamic_cast<Discret::ELEMENTS::Fluid*>(actele);
 
-    CORE::Elements::Element::LocationArray la(1);
+    Core::Elements::Element::LocationArray la(1);
 
     // get element location vector, dirichlet flags and ownerships
     actele->LocationVector(*mc_xff_->GetCondDis(), la, false);
 
-    CORE::LINALG::SerialDenseMatrix elemat1;
-    CORE::LINALG::SerialDenseMatrix elemat2;
-    CORE::LINALG::SerialDenseVector elevec2;
-    CORE::LINALG::SerialDenseVector elevec3;
+    Core::LinAlg::SerialDenseMatrix elemat1;
+    Core::LinAlg::SerialDenseMatrix elemat2;
+    Core::LinAlg::SerialDenseVector elevec2;
+    Core::LinAlg::SerialDenseVector elevec3;
     params_->set<int>("action", FLD::calc_fluid_error);
 
-    DRT::ELEMENTS::FluidFactory::ProvideImplXFEM(actele->Shape(), "xfem")
+    Discret::ELEMENTS::FluidFactory::ProvideImplXFEM(actele->Shape(), "xfem")
         ->EvaluateService(ele, *params_, mat, *mc_xff_->GetCondDis(), la[0].lm_, elemat1, elemat2,
             ele_dom_norms_emb, elevec2, elevec3);
 
@@ -954,79 +955,79 @@ Teuchos::RCP<std::vector<double>> FLD::XFluidFluid::evaluate_error_compared_to_a
   {
     {
       std::cout.precision(8);
-      CORE::IO::cout << CORE::IO::endl
+      Core::IO::cout << Core::IO::endl
                      << "---- error norm for analytical solution Nr. "
-                     << CORE::UTILS::GetAsEnum<INPAR::FLUID::CalcError>(*params_, "calculate error")
-                     << " ----------" << CORE::IO::endl;
-      CORE::IO::cout << "-------------- domain error norms (background)------------"
-                     << CORE::IO::endl;
-      CORE::IO::cout << "|| u - u_b ||_L2(Omega)                        =  " << dom_bg_err_vel_L2
-                     << CORE::IO::endl;
-      CORE::IO::cout << "|| grad( u - u_b ) ||_L2(Omega)                =  "
-                     << dom_bg_err_vel_H1_semi << CORE::IO::endl;
-      CORE::IO::cout << "|| u - u_b ||_H1(Omega)                        =  " << dom_bg_err_vel_H1
-                     << CORE::IO::endl;
-      CORE::IO::cout << "|| p - p_b ||_L2(Omega)                        =  " << dom_bg_err_pre_L2
-                     << CORE::IO::endl;
-      CORE::IO::cout << "-------------- domain error norms (embedded)  ------------"
-                     << CORE::IO::endl;
-      CORE::IO::cout << "|| u - u_e ||_L2(Omega)                        =  " << dom_emb_err_vel_L2
-                     << CORE::IO::endl;
-      CORE::IO::cout << "|| grad( u_ - u_h ) ||_L2(Omega)               =  "
-                     << dom_emb_err_vel_H1_semi << CORE::IO::endl;
-      CORE::IO::cout << "|| u - u_e ||_H1(Omega)                        =  " << dom_emb_err_vel_H1
-                     << CORE::IO::endl;
-      CORE::IO::cout << "|| p - p_e ||_L2(Omega)                        =  " << dom_emb_err_pre_L2
-                     << CORE::IO::endl;
-      CORE::IO::cout << "----viscosity-scaled domain error norms (background)------"
-                     << CORE::IO::endl;
-      CORE::IO::cout << "|| nu^(+1/2) grad( u - u_b ) ||_L2(Omega)      =  "
-                     << dom_bg_err_vel_H1_semi_nu_scaled << CORE::IO::endl;
-      CORE::IO::cout << "|| nu^(-1/2) (p - p_b) ||_L2(Omega)            =  "
-                     << dom_bg_err_pre_L2_nu_scaled << CORE::IO::endl;
-      CORE::IO::cout << "|| sigma^(+1/2) ( u - u_h ) ||_L2(Omega)       =  "
-                     << dom_bg_err_vel_L2_sigma_scaled << CORE::IO::endl;
-      CORE::IO::cout << "|| Phi^(+1/2) (p - p_h) ||_L2(Omega)           =  "
-                     << dom_bg_err_pre_L2_Phi_scaled << CORE::IO::endl;
-      CORE::IO::cout << "----viscosity-scaled domain error norms (embedded) ------"
-                     << CORE::IO::endl;
-      CORE::IO::cout << "|| nu^(+1/2) grad( u - u_e ) ||_L2(Omega)      =  "
-                     << dom_emb_err_vel_H1_semi_nu_scaled << CORE::IO::endl;
-      CORE::IO::cout << "|| nu^(-1/2) (p - p_e) ||_L2(Omega)            =  "
-                     << dom_emb_err_pre_L2_nu_scaled << CORE::IO::endl;
-      CORE::IO::cout << "|| sigma^(+1/2) ( u - u_h ) ||_L2(Omega)       =  "
-                     << dom_emb_err_vel_L2_sigma_scaled << CORE::IO::endl;
-      CORE::IO::cout << "|| Phi^(+1/2) (p - p_h) ||_L2(Omega)           =  "
-                     << dom_emb_err_pre_L2_Phi_scaled << CORE::IO::endl;
-      CORE::IO::cout << "---------------------------------------------------------"
-                     << CORE::IO::endl;
-      CORE::IO::cout << "-------------- interface/boundary error norms -----------"
-                     << CORE::IO::endl;
-      CORE::IO::cout << "|| nu^(+1/2) (u_b - u_e) ||_H1/2(Gamma)            =  "
-                     << interf_err_Honehalf << CORE::IO::endl;
-      CORE::IO::cout << "|| nu^(+1/2) grad( u_b - u_e )*n ||_H-1/2(Gamma)   =  "
-                     << interf_err_Hmonehalf_u << CORE::IO::endl;
-      CORE::IO::cout << "|| nu^(-1/2) (p_b - p_e)*n ||_H-1/2(Gamma)         =  "
-                     << interf_err_Hmonehalf_p << CORE::IO::endl;
-      CORE::IO::cout << "|| (u*n)_inflow (u_b - u_e) ||_L2(Gamma)           =  "
-                     << interf_err_inflow << CORE::IO::endl;
-      CORE::IO::cout << "|| (sigma*h+|u|+nu/h)^(+1/2) (u_b - u_e)*n ||_L2(Gamma)  =  "
-                     << interf_err_mass_cons << CORE::IO::endl;
-      CORE::IO::cout << "---------------------------------------------------------"
-                     << CORE::IO::endl;
-      CORE::IO::cout << "-------------- Error on Functionals from solution  ------------"
-                     << CORE::IO::endl;
-      CORE::IO::cout << " | sin(x) ( u,x - u,x exact ) | (background)        = " << functional_bg
-                     << CORE::IO::endl;
-      CORE::IO::cout << " | sin(x) ( u,x - u,x exact ) | (embedded)          = " << functional_emb
-                     << CORE::IO::endl;
+                     << Core::UTILS::GetAsEnum<Inpar::FLUID::CalcError>(*params_, "calculate error")
+                     << " ----------" << Core::IO::endl;
+      Core::IO::cout << "-------------- domain error norms (background)------------"
+                     << Core::IO::endl;
+      Core::IO::cout << "|| u - u_b ||_L2(Omega)                        =  " << dom_bg_err_vel_L2
+                     << Core::IO::endl;
+      Core::IO::cout << "|| grad( u - u_b ) ||_L2(Omega)                =  "
+                     << dom_bg_err_vel_H1_semi << Core::IO::endl;
+      Core::IO::cout << "|| u - u_b ||_H1(Omega)                        =  " << dom_bg_err_vel_H1
+                     << Core::IO::endl;
+      Core::IO::cout << "|| p - p_b ||_L2(Omega)                        =  " << dom_bg_err_pre_L2
+                     << Core::IO::endl;
+      Core::IO::cout << "-------------- domain error norms (embedded)  ------------"
+                     << Core::IO::endl;
+      Core::IO::cout << "|| u - u_e ||_L2(Omega)                        =  " << dom_emb_err_vel_L2
+                     << Core::IO::endl;
+      Core::IO::cout << "|| grad( u_ - u_h ) ||_L2(Omega)               =  "
+                     << dom_emb_err_vel_H1_semi << Core::IO::endl;
+      Core::IO::cout << "|| u - u_e ||_H1(Omega)                        =  " << dom_emb_err_vel_H1
+                     << Core::IO::endl;
+      Core::IO::cout << "|| p - p_e ||_L2(Omega)                        =  " << dom_emb_err_pre_L2
+                     << Core::IO::endl;
+      Core::IO::cout << "----viscosity-scaled domain error norms (background)------"
+                     << Core::IO::endl;
+      Core::IO::cout << "|| nu^(+1/2) grad( u - u_b ) ||_L2(Omega)      =  "
+                     << dom_bg_err_vel_H1_semi_nu_scaled << Core::IO::endl;
+      Core::IO::cout << "|| nu^(-1/2) (p - p_b) ||_L2(Omega)            =  "
+                     << dom_bg_err_pre_L2_nu_scaled << Core::IO::endl;
+      Core::IO::cout << "|| sigma^(+1/2) ( u - u_h ) ||_L2(Omega)       =  "
+                     << dom_bg_err_vel_L2_sigma_scaled << Core::IO::endl;
+      Core::IO::cout << "|| Phi^(+1/2) (p - p_h) ||_L2(Omega)           =  "
+                     << dom_bg_err_pre_L2_Phi_scaled << Core::IO::endl;
+      Core::IO::cout << "----viscosity-scaled domain error norms (embedded) ------"
+                     << Core::IO::endl;
+      Core::IO::cout << "|| nu^(+1/2) grad( u - u_e ) ||_L2(Omega)      =  "
+                     << dom_emb_err_vel_H1_semi_nu_scaled << Core::IO::endl;
+      Core::IO::cout << "|| nu^(-1/2) (p - p_e) ||_L2(Omega)            =  "
+                     << dom_emb_err_pre_L2_nu_scaled << Core::IO::endl;
+      Core::IO::cout << "|| sigma^(+1/2) ( u - u_h ) ||_L2(Omega)       =  "
+                     << dom_emb_err_vel_L2_sigma_scaled << Core::IO::endl;
+      Core::IO::cout << "|| Phi^(+1/2) (p - p_h) ||_L2(Omega)           =  "
+                     << dom_emb_err_pre_L2_Phi_scaled << Core::IO::endl;
+      Core::IO::cout << "---------------------------------------------------------"
+                     << Core::IO::endl;
+      Core::IO::cout << "-------------- interface/boundary error norms -----------"
+                     << Core::IO::endl;
+      Core::IO::cout << "|| nu^(+1/2) (u_b - u_e) ||_H1/2(Gamma)            =  "
+                     << interf_err_Honehalf << Core::IO::endl;
+      Core::IO::cout << "|| nu^(+1/2) grad( u_b - u_e )*n ||_H-1/2(Gamma)   =  "
+                     << interf_err_Hmonehalf_u << Core::IO::endl;
+      Core::IO::cout << "|| nu^(-1/2) (p_b - p_e)*n ||_H-1/2(Gamma)         =  "
+                     << interf_err_Hmonehalf_p << Core::IO::endl;
+      Core::IO::cout << "|| (u*n)_inflow (u_b - u_e) ||_L2(Gamma)           =  "
+                     << interf_err_inflow << Core::IO::endl;
+      Core::IO::cout << "|| (sigma*h+|u|+nu/h)^(+1/2) (u_b - u_e)*n ||_L2(Gamma)  =  "
+                     << interf_err_mass_cons << Core::IO::endl;
+      Core::IO::cout << "---------------------------------------------------------"
+                     << Core::IO::endl;
+      Core::IO::cout << "-------------- Error on Functionals from solution  ------------"
+                     << Core::IO::endl;
+      Core::IO::cout << " | sin(x) ( u,x - u,x exact ) | (background)        = " << functional_bg
+                     << Core::IO::endl;
+      Core::IO::cout << " | sin(x) ( u,x - u,x exact ) | (embedded)          = " << functional_emb
+                     << Core::IO::endl;
     }
 
     // append error of the last time step to the error file
     if ((step_ == stepmax_) or (time_ == maxtime_))  // write results to file
     {
       std::ostringstream temp;
-      const std::string simulation = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
+      const std::string simulation = Global::Problem::Instance()->OutputControlFile()->FileName();
       const std::string fname = simulation + ".xfem_abserror";
 
       std::ofstream f;
@@ -1073,7 +1074,7 @@ Teuchos::RCP<std::vector<double>> FLD::XFluidFluid::evaluate_error_compared_to_a
       f.close();
     }
     std::ostringstream temp;
-    const std::string simulation = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
+    const std::string simulation = Global::Problem::Instance()->OutputControlFile()->FileName();
     const std::string fname = simulation + "_time.xfem_abserror";
 
     if (step_ == 1)

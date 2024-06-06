@@ -22,15 +22,16 @@ FOUR_C_NAMESPACE_OPEN
 
 
 // initialize static variable
-DRT::ELEMENTS::FluidHDGType DRT::ELEMENTS::FluidHDGType::instance_;
+Discret::ELEMENTS::FluidHDGType Discret::ELEMENTS::FluidHDGType::instance_;
 
-DRT::ELEMENTS::FluidHDGType& DRT::ELEMENTS::FluidHDGType::Instance() { return instance_; }
+Discret::ELEMENTS::FluidHDGType& Discret::ELEMENTS::FluidHDGType::Instance() { return instance_; }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::COMM::ParObject* DRT::ELEMENTS::FluidHDGType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Discret::ELEMENTS::FluidHDGType::Create(
+    const std::vector<char>& data)
 {
-  DRT::ELEMENTS::FluidHDG* object = new DRT::ELEMENTS::FluidHDG(-1, -1);
+  Discret::ELEMENTS::FluidHDG* object = new Discret::ELEMENTS::FluidHDG(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -39,12 +40,12 @@ CORE::COMM::ParObject* DRT::ELEMENTS::FluidHDGType::Create(const std::vector<cha
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::FluidHDGType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidHDGType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "FLUIDHDG")
   {
-    return Teuchos::rcp(new DRT::ELEMENTS::FluidHDG(id, owner));
+    return Teuchos::rcp(new Discret::ELEMENTS::FluidHDG(id, owner));
   }
   return Teuchos::null;
 }
@@ -53,20 +54,20 @@ Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::FluidHDGType::Create(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::FluidHDGType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidHDGType::Create(
     const int id, const int owner)
 {
-  return Teuchos::rcp(new DRT::ELEMENTS::FluidHDG(id, owner));
+  return Teuchos::rcp(new Discret::ELEMENTS::FluidHDG(id, owner));
 }
 
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidHDGType::nodal_block_information(
-    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+void Discret::ELEMENTS::FluidHDGType::nodal_block_information(
+    Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
-  numdf = CORE::FE::getDimension(dwele->Shape()) + 1;
+  numdf = Core::FE::getDimension(dwele->Shape()) + 1;
   dimns = numdf;
   nv = numdf - 1;
   np = 1;
@@ -76,10 +77,10 @@ void DRT::ELEMENTS::FluidHDGType::nodal_block_information(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidHDGType::ComputeNullSpace(
-    DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+void Discret::ELEMENTS::FluidHDGType::ComputeNullSpace(
+    Discret::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
 {
-  if (DRT::DiscretizationFaces* facedis = dynamic_cast<DRT::DiscretizationFaces*>(&dis))
+  if (Discret::DiscretizationFaces* facedis = dynamic_cast<Discret::DiscretizationFaces*>(&dis))
   {
     const Epetra_Map* rowmap = dis.dof_row_map();
     const int lrows = rowmap->NumMyElements();
@@ -90,7 +91,7 @@ void DRT::ELEMENTS::FluidHDGType::ComputeNullSpace(
     for (int i = 0; i < frowmap->NumMyElements(); ++i)
     {
       std::vector<int> dofs = facedis->Dof(0, facedis->lRowFace(i));
-      const unsigned int dim = CORE::FE::getDimension(facedis->lRowFace(i)->Shape()) + 1;
+      const unsigned int dim = Core::FE::getDimension(facedis->lRowFace(i)->Shape()) + 1;
       FOUR_C_ASSERT(dofs.size() % dim == 0, "Could not match face dofs");
       const unsigned int ndofs = dofs.size() / dim;
       for (unsigned int i = 0; i < dofs.size(); ++i)
@@ -106,7 +107,7 @@ void DRT::ELEMENTS::FluidHDGType::ComputeNullSpace(
       std::vector<int> dofs = dis.Dof(0, dis.lRowElement(i));
       FOUR_C_ASSERT(dofs.size() == 1, "Expect a single pressure dof per element for fluid HDG");
       const unsigned int lid = rowmap->LID(dofs[0]);
-      const unsigned int dim = CORE::FE::getDimension(dis.lRowElement(i)->Shape());
+      const unsigned int dim = Core::FE::getDimension(dis.lRowElement(i)->Shape());
       for (unsigned int d = 0; d < dim; ++d) mode[d][lid] = 0.;
       mode[dim][lid] = 1.;
     }
@@ -119,20 +120,20 @@ void DRT::ELEMENTS::FluidHDGType::ComputeNullSpace(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidHDGType ::setup_element_definition(
-    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+void Discret::ELEMENTS::FluidHDGType ::setup_element_definition(
+    std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
   // Get the the fluid line definitions and amend them with data for HDG elements
-  std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_fluid;
+  std::map<std::string, std::map<std::string, Input::LineDefinition>> definitions_fluid;
   FluidType::setup_element_definition(definitions_fluid);
 
-  const std::map<std::string, INPUT::LineDefinition>& defs_fluid = definitions_fluid["FLUID"];
+  const std::map<std::string, Input::LineDefinition>& defs_fluid = definitions_fluid["FLUID"];
 
-  std::map<std::string, INPUT::LineDefinition>& defs_hdg = definitions["FLUIDHDG"];
+  std::map<std::string, Input::LineDefinition>& defs_hdg = definitions["FLUIDHDG"];
 
   for (const auto& [key, fluid_line_def] : defs_fluid)
   {
-    defs_hdg[key] = INPUT::LineDefinition::Builder(fluid_line_def)
+    defs_hdg[key] = Input::LineDefinition::Builder(fluid_line_def)
                         .AddNamedInt("DEG")
                         .AddOptionalNamedInt("SPC")
                         .Build();
@@ -145,7 +146,7 @@ void DRT::ELEMENTS::FluidHDGType ::setup_element_definition(
  |  ctor (public)                                      kronbichler 05/13|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::FluidHDG::FluidHDG(int id, int owner)
+Discret::ELEMENTS::FluidHDG::FluidHDG(int id, int owner)
     : Fluid(id, owner), degree_(1), completepol_(true)
 {
 }
@@ -155,7 +156,7 @@ DRT::ELEMENTS::FluidHDG::FluidHDG(int id, int owner)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                 kronbichler 05/13|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::FluidHDG::FluidHDG(const DRT::ELEMENTS::FluidHDG& old)
+Discret::ELEMENTS::FluidHDG::FluidHDG(const Discret::ELEMENTS::FluidHDG& old)
     : Fluid(old), degree_(old.degree_), completepol_(old.completepol_)
 {
 }
@@ -166,9 +167,9 @@ DRT::ELEMENTS::FluidHDG::FluidHDG(const DRT::ELEMENTS::FluidHDG& old)
  |  Deep copy this instance of Fluid and return pointer to it (public)  |
  |                                                    kronbichler 05/13 |
  *----------------------------------------------------------------------*/
-CORE::Elements::Element* DRT::ELEMENTS::FluidHDG::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::FluidHDG::Clone() const
 {
-  DRT::ELEMENTS::FluidHDG* newelement = new DRT::ELEMENTS::FluidHDG(*this);
+  Discret::ELEMENTS::FluidHDG* newelement = new Discret::ELEMENTS::FluidHDG(*this);
   return newelement;
 }
 
@@ -177,9 +178,9 @@ CORE::Elements::Element* DRT::ELEMENTS::FluidHDG::Clone() const
 /*----------------------------------------------------------------------*
  |  Pack data (public)                                kronbichler 05/13 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidHDG::Pack(CORE::COMM::PackBuffer& data) const
+void Discret::ELEMENTS::FluidHDG::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -200,11 +201,11 @@ void DRT::ELEMENTS::FluidHDG::Pack(CORE::COMM::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  Unpack data (public)                              kronbichler 05/13 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidHDG::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::FluidHDG::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -226,8 +227,8 @@ void DRT::ELEMENTS::FluidHDG::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  Read element from input (public)                  kronbichler 06/14 |
  *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::FluidHDG::ReadElement(
-    const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
+bool Discret::ELEMENTS::FluidHDG::ReadElement(
+    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
   bool success = Fluid::ReadElement(eletype, distype, linedef);
   int degree;
@@ -250,17 +251,17 @@ bool DRT::ELEMENTS::FluidHDG::ReadElement(
 /*---------------------------------------------------------------------*
 |  evaluate the element (public)                      kronbichler 05/13|
 *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::FluidHDG::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
-    CORE::LINALG::SerialDenseVector& elevec3)
+int Discret::ELEMENTS::FluidHDG::Evaluate(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
+    Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
+    Core::LinAlg::SerialDenseVector& elevec3)
 {
   // get the action required
-  const FLD::Action act = CORE::UTILS::GetAsEnum<FLD::Action>(params, "action");
+  const FLD::Action act = Core::UTILS::GetAsEnum<FLD::Action>(params, "action");
 
   // get material
-  Teuchos::RCP<CORE::MAT::Material> mat = Material();
+  Teuchos::RCP<Core::Mat::Material> mat = Material();
 
   // switch between different physical types as used below
   std::string impltype = "hdg";
@@ -273,7 +274,7 @@ int DRT::ELEMENTS::FluidHDG::Evaluate(Teuchos::ParameterList& params,
     //-----------------------------------------------------------------------
     case FLD::calc_fluid_systemmat_and_residual:
     {
-      return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), impltype)
+      return Discret::ELEMENTS::FluidFactory::ProvideImpl(Shape(), impltype)
           ->Evaluate(
               this, discretization, lm, params, mat, elemat1, elemat2, elevec1, elevec2, elevec3);
     }
@@ -292,7 +293,7 @@ int DRT::ELEMENTS::FluidHDG::Evaluate(Teuchos::ParameterList& params,
     case FLD::project_fluid_field:
     case FLD::calc_pressure_average:
     {
-      return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), impltype)
+      return Discret::ELEMENTS::FluidFactory::ProvideImpl(Shape(), impltype)
           ->EvaluateService(
               this, params, mat, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3);
       break;
@@ -316,7 +317,7 @@ int DRT::ELEMENTS::FluidHDG::Evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  print this element (public)                        kronbichler 05/13|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidHDG::Print(std::ostream& os) const
+void Discret::ELEMENTS::FluidHDG::Print(std::ostream& os) const
 {
   os << "FluidHDG ";
   Element::Print(os);

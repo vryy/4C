@@ -31,7 +31,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | initialize or update velocity field                  rasthofer 03/14 |
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::set_velocity_field(bool init)
+void ScaTra::LevelSetAlgorithm::set_velocity_field(bool init)
 {
   // call function of base class
   ScaTraTimIntImpl::set_velocity_field();
@@ -47,7 +47,7 @@ void SCATRA::LevelSetAlgorithm::set_velocity_field(bool init)
  | set convective velocity field (+ pressure and acceleration field as  |
  | well as fine-scale velocity field, if required)      rasthofer 11/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::set_velocity_field(Teuchos::RCP<const Epetra_Vector> convvel,
+void ScaTra::LevelSetAlgorithm::set_velocity_field(Teuchos::RCP<const Epetra_Vector> convvel,
     Teuchos::RCP<const Epetra_Vector> acc, Teuchos::RCP<const Epetra_Vector> vel,
     Teuchos::RCP<const Epetra_Vector> fsvel, bool setpressure, bool init)
 {
@@ -67,7 +67,7 @@ void SCATRA::LevelSetAlgorithm::set_velocity_field(Teuchos::RCP<const Epetra_Vec
 /*----------------------------------------------------------------------*
  | add problem depended params for assemble_mat_and_rhs    rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::add_problem_specific_parameters_and_vectors(
+void ScaTra::LevelSetAlgorithm::add_problem_specific_parameters_and_vectors(
     Teuchos::ParameterList& params)
 {
   // set only special parameters of the solution of the reinitialization equation
@@ -77,7 +77,7 @@ void SCATRA::LevelSetAlgorithm::add_problem_specific_parameters_and_vectors(
     // action for elements
     params.set<bool>("solve reinit eq", true);
 
-    if (reinitaction_ == INPAR::SCATRA::reinitaction_sussman)
+    if (reinitaction_ == Inpar::ScaTra::reinitaction_sussman)
     {
       // set initial phi, i.e., solution of level-set equation
       discret_->set_state("phizero", initialphireinit_);
@@ -85,23 +85,23 @@ void SCATRA::LevelSetAlgorithm::add_problem_specific_parameters_and_vectors(
       discret_->set_state("phin", phin_);
 
 #ifndef USE_PHIN_FOR_VEL
-      if (useprojectedreinitvel_ == INPAR::SCATRA::vel_reinit_node_based)
+      if (useprojectedreinitvel_ == Inpar::ScaTra::vel_reinit_node_based)
         calc_node_based_reinit_vel();
 #endif
 
       // add nodal velocity field, if required
-      if (useprojectedreinitvel_ == INPAR::SCATRA::vel_reinit_node_based)
+      if (useprojectedreinitvel_ == Inpar::ScaTra::vel_reinit_node_based)
         discret_->add_multi_vector_to_parameter_list(
             params, "reinitialization velocity field", nb_grad_val_);
     }
-    else if (reinitaction_ == INPAR::SCATRA::reinitaction_ellipticeq)
+    else if (reinitaction_ == Inpar::ScaTra::reinitaction_ellipticeq)
     {
       // add node-based gradient, if required
       if (projection_ == true)
         discret_->add_multi_vector_to_parameter_list(params, "gradphi", nb_grad_val_);
 
       // add interface integration cells
-      params.set<Teuchos::RCP<std::map<int, CORE::GEO::BoundaryIntCells>>>(
+      params.set<Teuchos::RCP<std::map<int, Core::Geo::BoundaryIntCells>>>(
           "boundary cells", interface_eleq_);
     }
   }
@@ -113,14 +113,14 @@ void SCATRA::LevelSetAlgorithm::add_problem_specific_parameters_and_vectors(
 /*----------------------------------------------------------------------*
  | capture interface                                    rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::capture_interface(
-    std::map<int, CORE::GEO::BoundaryIntCells>& interface, const bool writetofile)
+void ScaTra::LevelSetAlgorithm::capture_interface(
+    std::map<int, Core::Geo::BoundaryIntCells>& interface, const bool writetofile)
 {
   double volminus = 0.0;
   double volplus = 0.0;
   double surf = 0.0;
   // reconstruct interface and calculate volumes, etc ...
-  SCATRA::LEVELSET::Intersection intersect;
+  ScaTra::LevelSet::Intersection intersect;
   intersect.CaptureZeroLevelSet(phinp_, discret_, volminus, volplus, surf, interface);
 
   // do mass conservation check
@@ -133,7 +133,7 @@ void SCATRA::LevelSetAlgorithm::capture_interface(
 /*----------------------------------------------------------------------*
  | mass conservation check                              rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::mass_conservation_check(
+void ScaTra::LevelSetAlgorithm::mass_conservation_check(
     const double actvolminus, const bool writetofile)
 {
   if (myrank_ == 0)
@@ -146,14 +146,14 @@ void SCATRA::LevelSetAlgorithm::mass_conservation_check(
       // 'isnan' seems to work not reliably; error occurs in line above
       if (std::isnan(massloss)) FOUR_C_THROW("NaN detected in mass conservation check");
 
-      CORE::IO::cout << "---------------------------------------" << CORE::IO::endl;
-      CORE::IO::cout << "           mass conservation" << CORE::IO::endl;
-      CORE::IO::cout << " initial mass: " << std::setprecision(5) << initvolminus_
-                     << CORE::IO::endl;
-      CORE::IO::cout << " final mass:   " << std::setprecision(5) << actvolminus << CORE::IO::endl;
-      CORE::IO::cout << " mass loss:    " << std::setprecision(5) << massloss << "%"
-                     << CORE::IO::endl;
-      CORE::IO::cout << "---------------------------------------" << CORE::IO::endl;
+      Core::IO::cout << "---------------------------------------" << Core::IO::endl;
+      Core::IO::cout << "           mass conservation" << Core::IO::endl;
+      Core::IO::cout << " initial mass: " << std::setprecision(5) << initvolminus_
+                     << Core::IO::endl;
+      Core::IO::cout << " final mass:   " << std::setprecision(5) << actvolminus << Core::IO::endl;
+      Core::IO::cout << " mass loss:    " << std::setprecision(5) << massloss << "%"
+                     << Core::IO::endl;
+      Core::IO::cout << "---------------------------------------" << Core::IO::endl;
 
       if (writetofile)
       {
@@ -190,9 +190,9 @@ void SCATRA::LevelSetAlgorithm::mass_conservation_check(
     else
     {
       if (step_ > 0)
-        CORE::IO::cout
+        Core::IO::cout
             << " there is no 'minus domain'! -> division by zero checking mass conservation"
-            << CORE::IO::endl;
+            << Core::IO::endl;
     }
   }
 
@@ -203,16 +203,16 @@ void SCATRA::LevelSetAlgorithm::mass_conservation_check(
 /*----------------------------------------------------------------------*
  | calculate error compared to analytical solution      rasthofer 04/14 |
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::evaluate_error_compared_to_analytical_sol()
+void ScaTra::LevelSetAlgorithm::evaluate_error_compared_to_analytical_sol()
 {
-  const INPAR::SCATRA::CalcErrorLevelSet calcerr =
-      CORE::UTILS::IntegralValue<INPAR::SCATRA::CalcErrorLevelSet>(*levelsetparams_, "CALCERROR");
+  const Inpar::ScaTra::CalcErrorLevelSet calcerr =
+      Core::UTILS::IntegralValue<Inpar::ScaTra::CalcErrorLevelSet>(*levelsetparams_, "CALCERROR");
 
   switch (calcerr)
   {
-    case INPAR::SCATRA::calcerror_no_ls:  // do nothing (the usual case)
+    case Inpar::ScaTra::calcerror_no_ls:  // do nothing (the usual case)
       break;
-    case INPAR::SCATRA::calcerror_initial_field:
+    case Inpar::ScaTra::calcerror_initial_field:
     {
       if (myrank_ == 0)
       {
@@ -234,8 +234,8 @@ void SCATRA::LevelSetAlgorithm::evaluate_error_compared_to_analytical_sol()
       {
         // create the parameters for the error calculation
         Teuchos::ParameterList eleparams;
-        CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
-            "action", SCATRA::Action::calc_error, eleparams);
+        Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+            "action", ScaTra::Action::calc_error, eleparams);
         eleparams.set<int>("calcerrorflag", calcerr);
 
         // get initial field
@@ -250,7 +250,7 @@ void SCATRA::LevelSetAlgorithm::evaluate_error_compared_to_analytical_sol()
         for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
         {
           // get the processor local node
-          CORE::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
+          Core::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
           // the set of degrees of freedom associated with the node
           std::vector<int> nodedofset = discret_->Dof(0, lnode);
 
@@ -261,7 +261,7 @@ void SCATRA::LevelSetAlgorithm::evaluate_error_compared_to_analytical_sol()
             int doflid = dofrowmap->LID(dofgid);
             // evaluate component k of spatial function
             double initialval =
-                problem_->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
+                problem_->FunctionById<Core::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
                     .Evaluate(lnode->X().data(), time_, k);
             int err = phiref->ReplaceMyValues(1, &initialval, &doflid);
             if (err != 0) FOUR_C_THROW("dof not on proc");
@@ -274,8 +274,8 @@ void SCATRA::LevelSetAlgorithm::evaluate_error_compared_to_analytical_sol()
         discret_->set_state("phiref", phiref);
 
         // get error and volume
-        Teuchos::RCP<CORE::LINALG::SerialDenseVector> errors =
-            Teuchos::rcp(new CORE::LINALG::SerialDenseVector(2));
+        Teuchos::RCP<Core::LinAlg::SerialDenseVector> errors =
+            Teuchos::rcp(new Core::LinAlg::SerialDenseVector(2));
         discret_->EvaluateScalars(eleparams, errors);
         discret_->ClearState();
 
@@ -316,10 +316,10 @@ void SCATRA::LevelSetAlgorithm::evaluate_error_compared_to_analytical_sol()
 /*------------------------------------------------------------------------------------------------*
  | compute convective velocity for contact points no-slip wall and interface      rasthofer 12/13 |
  *------------------------------------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::apply_contact_point_boundary_condition()
+void ScaTra::LevelSetAlgorithm::apply_contact_point_boundary_condition()
 {
   // get condition
-  std::vector<CORE::Conditions::Condition*> lscontactpoint;
+  std::vector<Core::Conditions::Condition*> lscontactpoint;
   discret_->GetCondition("LsContact", lscontactpoint);
 
   // map to store node gid and corrected values
@@ -335,7 +335,7 @@ void SCATRA::LevelSetAlgorithm::apply_contact_point_boundary_condition()
   // loop all conditions
   for (std::size_t icond = 0; icond < lscontactpoint.size(); icond++)
   {
-    CORE::Conditions::Condition* mycondition = lscontactpoint[icond];
+    Core::Conditions::Condition* mycondition = lscontactpoint[icond];
 
     // loop all nodes belonging to this condition
     // for these nodes, new values have to be set
@@ -346,14 +346,14 @@ void SCATRA::LevelSetAlgorithm::apply_contact_point_boundary_condition()
       if (discret_->HaveGlobalNode((*mynodes)[inode]))
       {
         // get node
-        CORE::Nodes::Node* actnode = discret_->gNode((*mynodes)[inode]);
+        Core::Nodes::Node* actnode = discret_->gNode((*mynodes)[inode]);
 
         // exclude ghosted nodes, since we need all adjacent elements here,
         // which are only available for nodes belonging to the this proc
         if (actnode->Owner() == myrank_)
         {
           // get adjacent elements
-          const CORE::Elements::Element* const* adjelements = actnode->Elements();
+          const Core::Elements::Element* const* adjelements = actnode->Elements();
 
           // initialize vector for averaged center velocity
           // note: velocity in scatra algorithm has three components (see also basic constructor)
@@ -364,30 +364,30 @@ void SCATRA::LevelSetAlgorithm::apply_contact_point_boundary_condition()
           for (int iele = 0; iele < actnode->NumElement(); iele++)
           {
             // get discretization type
-            if ((adjelements[iele])->Shape() != CORE::FE::CellType::hex8)
+            if ((adjelements[iele])->Shape() != Core::FE::CellType::hex8)
               FOUR_C_THROW("Currently only hex8 supported");
-            const CORE::FE::CellType distype = CORE::FE::CellType::hex8;
+            const Core::FE::CellType distype = Core::FE::CellType::hex8;
 
             // in case of further distypes, move the following block to a templated function
             {
               // get number of element nodes
-              const int nen = CORE::FE::num_nodes<distype>;
+              const int nen = Core::FE::num_nodes<distype>;
               // get number of space dimensions
-              const int nsd = CORE::FE::dim<distype>;
+              const int nsd = Core::FE::dim<distype>;
 
               // get nodal values of velocity field from secondary dofset
-              CORE::Elements::Element::LocationArray la(discret_->NumDofSets());
+              Core::Elements::Element::LocationArray la(discret_->NumDofSets());
               adjelements[iele]->LocationVector(*discret_, la, false);
               const std::vector<int>& lmvel = la[NdsVel()].lm_;
               std::vector<double> myconvel(lmvel.size());
 
               // extract local values from global vector
-              CORE::FE::ExtractMyValues(*convel, myconvel, lmvel);
+              Core::FE::ExtractMyValues(*convel, myconvel, lmvel);
 
               // determine number of velocity related dofs per node
               const int numveldofpernode = lmvel.size() / nen;
 
-              CORE::LINALG::Matrix<nsd, nen> evel(true);
+              Core::LinAlg::Matrix<nsd, nen> evel(true);
 
               // loop over number of nodes
               for (int inode = 0; inode < nen; ++inode)
@@ -397,18 +397,18 @@ void SCATRA::LevelSetAlgorithm::apply_contact_point_boundary_condition()
 
               // use one-point Gauss rule to do calculations at the element center
               // used here to get center coordinates
-              CORE::FE::IntPointsAndWeights<nsd> centercoord(
-                  SCATRA::DisTypeToStabGaussRule<distype>::rule);
-              CORE::LINALG::Matrix<nsd, 1> xsi(true);
+              Core::FE::IntPointsAndWeights<nsd> centercoord(
+                  ScaTra::DisTypeToStabGaussRule<distype>::rule);
+              Core::LinAlg::Matrix<nsd, 1> xsi(true);
               const double* gpcoord = (centercoord.IP().qxg)[0];
               for (int idim = 0; idim < nsd; idim++) xsi(idim, 0) = gpcoord[idim];
 
               // compute shape functions at element center
-              CORE::LINALG::Matrix<nen, 1> funct(true);
-              CORE::FE::shape_function<distype>(xsi, funct);
+              Core::LinAlg::Matrix<nen, 1> funct(true);
+              Core::FE::shape_function<distype>(xsi, funct);
 
               // get velocity at integration point
-              CORE::LINALG::Matrix<nsd, 1> velint(true);
+              Core::LinAlg::Matrix<nsd, 1> velint(true);
               velint.Multiply(evel, funct);
 
               // add to averaged velocity vector
@@ -436,7 +436,7 @@ void SCATRA::LevelSetAlgorithm::apply_contact_point_boundary_condition()
   {
     const int gnodeid = iter->first;
     const int lnodeid = noderowmap->LID(gnodeid);
-    CORE::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
+    Core::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
 
     std::vector<int> nodedofs = discret_->Dof(NdsVel(), lnode);
 
@@ -465,22 +465,22 @@ void SCATRA::LevelSetAlgorithm::apply_contact_point_boundary_condition()
  | manipulate velocity field away from the interface                              rasthofer 08/11 |
  |                                                                                    DA wichmann |
  *------------------------------------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
+void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
 {
   // idea: Velocity field at no-slip walls is zero fixing the level-set contours here.
   //       This may result in strong deformations of the level-set field, which may then
   //       convect into the domain crashing the level-set algorithm.
   //       There for the convective velocity field around the interface is extended to the wall.
   if (myrank_ == 0)
-    CORE::IO::cout << "--- extension of flow field in interface region to entire domain"
-                   << CORE::IO::endl;
+    Core::IO::cout << "--- extension of flow field in interface region to entire domain"
+                   << Core::IO::endl;
 
   Teuchos::RCP<const Epetra_Vector> convel_col =
       discret_->GetState(NdsVel(), "convective velocity field");
   if (convel_col == Teuchos::null) FOUR_C_THROW("Cannot get state vector convective velocity");
   Teuchos::RCP<Epetra_Vector> convel =
       Teuchos::rcp(new Epetra_Vector(*discret_->dof_row_map(NdsVel()), true));
-  CORE::LINALG::Export(*convel_col, *convel);
+  Core::LinAlg::Export(*convel_col, *convel);
 
   // temporary vector for convective velocity (based on dofrowmap of standard (non-XFEM) dofset)
   // remark: operations must not be performed on 'convel', because the vector is accessed by both
@@ -500,9 +500,9 @@ void SCATRA::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
   // - planenormaldirection e.g. (1,0,0)
   // - minimum in planenormaldirection
   // - maximum in planenormaldirection
-  // std::vector<CORE::Conditions::Condition*>* surfacepbcs = pbc_->ReturnSurfacePBCs();
+  // std::vector<Core::Conditions::Condition*>* surfacepbcs = pbc_->ReturnSurfacePBCs();
   // get periodic surface boundary conditions
-  std::vector<CORE::Conditions::Condition*> surfacepbcs;
+  std::vector<Core::Conditions::Condition*> surfacepbcs;
   discret_->GetCondition("SurfacePeriodic", surfacepbcs);
   if (surfacepbcs.empty()) discret_->GetCondition("LinePeriodic", surfacepbcs);
   std::vector<int> planenormal(0);
@@ -552,7 +552,7 @@ void SCATRA::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
         const int gid = nodeids[j];
         const int lid = discret_->NodeRowMap()->LID(gid);
         if (lid < 0) continue;
-        const CORE::Nodes::Node* lnode = discret_->lRowNode(lid);
+        const Core::Nodes::Node* lnode = discret_->lRowNode(lid);
         const auto& coord = lnode->X();
         if (coord[planenormal.back()] < min) min = coord[planenormal.back()];
         if (coord[planenormal.back()] > max) max = coord[planenormal.back()];
@@ -572,7 +572,7 @@ void SCATRA::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
   // export phinp to column map
   const Teuchos::RCP<Epetra_Vector> phinpcol =
       Teuchos::rcp(new Epetra_Vector(*discret_->DofColMap()));
-  CORE::LINALG::Export(*phinp_, *phinpcol);
+  Core::LinAlg::Export(*phinp_, *phinpcol);
 
   // this loop determines how many layers around the cut elements will be collected
   for (int loopcounter = 0; loopcounter < convel_layers_; ++loopcounter)
@@ -585,7 +585,7 @@ void SCATRA::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
       //-------------------------------------------------------------------------------------------------
       for (int lroweleid = 0; lroweleid < discret_->NumMyRowElements(); lroweleid++)
       {
-        CORE::Elements::Element* ele = discret_->lRowElement(lroweleid);
+        Core::Elements::Element* ele = discret_->lRowElement(lroweleid);
         const int* nodeids = ele->NodeIds();
         bool gotpositivephi = false;
         bool gotnegativephi = false;
@@ -593,7 +593,7 @@ void SCATRA::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
         for (int inode = 0; inode < ele->num_node(); ++inode)
         {
           const int nodegid = nodeids[inode];
-          CORE::Nodes::Node* node = discret_->gNode(nodegid);
+          Core::Nodes::Node* node = discret_->gNode(nodegid);
           const int dofgid = discret_->Dof(0, node, 0);
           const int doflid = phinpcol->Map().LID(dofgid);
           if (doflid < 0)
@@ -618,11 +618,11 @@ void SCATRA::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
       for (nodeit = allcollectednodes->begin(); nodeit != allcollectednodes->end(); ++nodeit)
       {
         const int nodelid = discret_->NodeRowMap()->LID(*nodeit);
-        CORE::Nodes::Node* node = discret_->lRowNode(nodelid);
-        CORE::Elements::Element** elements = node->Elements();
+        Core::Nodes::Node* node = discret_->lRowNode(nodelid);
+        Core::Elements::Element** elements = node->Elements();
         for (int iele = 0; iele < node->NumElement(); ++iele)
         {
-          CORE::Elements::Element* ele = elements[iele];
+          Core::Elements::Element* ele = elements[iele];
           allcollectedelements->insert(ele->Id());
         }
       }  // loop over elements
@@ -639,14 +639,14 @@ void SCATRA::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
     for (eleit = allcollectedelements->begin(); eleit != allcollectedelements->end(); ++eleit)
     {
       const int elelid = discret_->ElementColMap()->LID(*eleit);
-      CORE::Elements::Element* ele = discret_->lColElement(elelid);
-      CORE::Nodes::Node** nodes = ele->Nodes();
+      Core::Elements::Element* ele = discret_->lColElement(elelid);
+      Core::Nodes::Node** nodes = ele->Nodes();
       for (int inode = 0; inode < ele->num_node(); ++inode)
       {
-        CORE::Nodes::Node* node = nodes[inode];
+        Core::Nodes::Node* node = nodes[inode];
 
         // now check whether we have a pbc condition on this node
-        std::vector<CORE::Conditions::Condition*> mypbc;
+        std::vector<Core::Conditions::Condition*> mypbc;
         node->GetCondition("SurfacePeriodic", mypbc);
 
         if (mypbc.size() == 0)
@@ -694,7 +694,7 @@ void SCATRA::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
     // which then eliminate all but their row nodes
     {
       Teuchos::RCP<std::set<int>> globalcollectednodes = Teuchos::rcp(new std::set<int>);
-      CORE::LINALG::Gather<int>(
+      Core::LinAlg::Gather<int>(
           *allcollectednodes, *globalcollectednodes, numproc, allproc.data(), discret_->Comm());
 
       allcollectednodes->clear();
@@ -714,19 +714,19 @@ void SCATRA::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
   // and therefore gets added to the surfacenodes set. This set is redundantly available and
   // mereley knows a node's position and velocities
   //-----------------------------------------------------------------------------------------------
-  Teuchos::RCP<std::vector<CORE::LINALG::Matrix<3, 2>>> surfacenodes =
-      Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<3, 2>>);
+  Teuchos::RCP<std::vector<Core::LinAlg::Matrix<3, 2>>> surfacenodes =
+      Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<3, 2>>);
 
   std::set<int>::const_iterator nodeit;
   for (nodeit = allcollectednodes->begin(); nodeit != allcollectednodes->end(); ++nodeit)
   {
     const int nodelid = discret_->NodeRowMap()->LID(*nodeit);
-    CORE::Nodes::Node* node = discret_->lRowNode(nodelid);
-    CORE::Elements::Element** eles = node->Elements();
+    Core::Nodes::Node* node = discret_->lRowNode(nodelid);
+    Core::Elements::Element** eles = node->Elements();
     int elementcount = 0;
     for (int iele = 0; iele < node->NumElement(); ++iele)
     {
-      CORE::Elements::Element* ele = eles[iele];
+      Core::Elements::Element* ele = eles[iele];
       std::set<int>::const_iterator foundit = allcollectedelements->find(ele->Id());
       if (foundit != allcollectedelements->end()) elementcount++;
     }
@@ -734,7 +734,7 @@ void SCATRA::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
     if (elementcount < 8)
     {
       std::vector<int> nodedofs = discret_->Dof(NdsVel(), node);
-      CORE::LINALG::Matrix<3, 2> coordandvel;
+      Core::LinAlg::Matrix<3, 2> coordandvel;
       const auto& coord = node->X();
       for (int i = 0; i < 3; ++i)
       {
@@ -751,10 +751,10 @@ void SCATRA::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
 
   // Now the surfacenodes must be gathered to all procs
   {
-    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<3, 2>>> mysurfacenodes = surfacenodes;
-    surfacenodes = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<3, 2>>);
+    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<3, 2>>> mysurfacenodes = surfacenodes;
+    surfacenodes = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<3, 2>>);
 
-    CORE::LINALG::Gather<CORE::LINALG::Matrix<3, 2>>(
+    Core::LinAlg::Gather<Core::LinAlg::Matrix<3, 2>>(
         *mysurfacenodes, *surfacenodes, numproc, allproc.data(), discret_->Comm());
   }
 
@@ -764,10 +764,10 @@ void SCATRA::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
   //----------------------------------------------------------------------------------------------
   for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); ++lnodeid)
   {
-    CORE::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
+    Core::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
     std::vector<int> nodedofs = discret_->Dof(NdsVel(), lnode);
 
-    CORE::LINALG::Matrix<3, 1> fluidvel(true);
+    Core::LinAlg::Matrix<3, 1> fluidvel(true);
 
     // extract velocity values (no pressure!) from global velocity vector
     for (int i = 0; i < 3; ++i)
@@ -784,9 +784,9 @@ void SCATRA::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
     if (foundit == allcollectednodes->end())
     {
       // find closest node in surfacenodes
-      CORE::LINALG::Matrix<3, 2> closestnodedata(true);
+      Core::LinAlg::Matrix<3, 2> closestnodedata(true);
       {
-        CORE::LINALG::Matrix<3, 1> nodecoord;
+        Core::LinAlg::Matrix<3, 1> nodecoord;
         auto& coord = lnode->X();
         for (int i = 0; i < 3; ++i) nodecoord(i) = coord[i];
         double mindist = 1.0e19;
@@ -820,7 +820,7 @@ void SCATRA::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
 
         for (size_t ipbc = 0; ipbc < looplimit; ++ipbc)
         {
-          CORE::LINALG::Matrix<3, 1> tmpcoord(nodecoord);
+          Core::LinAlg::Matrix<3, 1> tmpcoord(nodecoord);
 
           // determine which pbcs have to be applied
           //
@@ -913,7 +913,7 @@ void SCATRA::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
 /*----------------------------------------------------------------------------*
  | Get Mass Center, using the smoothing function                 winter 06/14 |
  *----------------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::mass_center_using_smoothing()
+void ScaTra::LevelSetAlgorithm::mass_center_using_smoothing()
 {
   // set vector values needed by elements
   discret_->ClearState();
@@ -923,16 +923,16 @@ void SCATRA::LevelSetAlgorithm::mass_center_using_smoothing()
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
-      "action", SCATRA::Action::calc_mass_center_smoothingfunct, eleparams);
+  Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+      "action", ScaTra::Action::calc_mass_center_smoothingfunct, eleparams);
 
   // give access to interface thickness from smoothing function (TPF module) in element calculations
   eleparams.set<double>(
       "INTERFACE_THICKNESS_TPF", levelsetparams_->get<double>("INTERFACE_THICKNESS_TPF"));
 
   // get masscenter and volume, last entry of vector is total volume of minus domain.
-  Teuchos::RCP<CORE::LINALG::SerialDenseVector> masscenter_and_volume =
-      Teuchos::rcp(new CORE::LINALG::SerialDenseVector(nsd_ + 1));
+  Teuchos::RCP<Core::LinAlg::SerialDenseVector> masscenter_and_volume =
+      Teuchos::rcp(new Core::LinAlg::SerialDenseVector(nsd_ + 1));
   discret_->EvaluateScalars(eleparams, masscenter_and_volume);
   discret_->ClearState();
 
@@ -983,14 +983,14 @@ void SCATRA::LevelSetAlgorithm::mass_center_using_smoothing()
 
   return;
 
-}  // SCATRA::LevelSetAlgorithm::mass_center_using_smoothing
+}  // ScaTra::LevelSetAlgorithm::mass_center_using_smoothing
 
 
 /*----------------------------------------------------------------------------*
  | redistribute the scatra discretization and vectors         rasthofer 07/11 |
  | according to nodegraph according to nodegraph              DA wichmann     |
  *----------------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::Redistribute(const Teuchos::RCP<Epetra_CrsGraph>& nodegraph)
+void ScaTra::LevelSetAlgorithm::Redistribute(const Teuchos::RCP<Epetra_CrsGraph>& nodegraph)
 {
   // TODO: works if and only if discretization has already been redistributed
   //      change this and use unused nodegraph
@@ -1012,12 +1012,12 @@ void SCATRA::LevelSetAlgorithm::Redistribute(const Teuchos::RCP<Epetra_CrsGraph>
   // initialize standard (stabilized) system matrix (and save its graph!)
   // in standard case, but do not save the graph if fine-scale subgrid
   // diffusivity is used in non-incremental case
-  if (fssgd_ != INPAR::SCATRA::fssugrdiff_no and not incremental_)
-    // sysmat_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*dofrowmap,27));
+  if (fssgd_ != Inpar::ScaTra::fssugrdiff_no and not incremental_)
+    // sysmat_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dofrowmap,27));
     // cf constructor
-    sysmat_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*dofrowmap, 27, false, true));
+    sysmat_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dofrowmap, 27, false, true));
   else
-    sysmat_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*dofrowmap, 27, false, true));
+    sysmat_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dofrowmap, 27, false, true));
 
   // -------------------------------------------------------------------
   // create vectors containing problem variables
@@ -1030,31 +1030,31 @@ void SCATRA::LevelSetAlgorithm::Redistribute(const Teuchos::RCP<Epetra_CrsGraph>
   if (phinp_ != Teuchos::null)
   {
     old = phinp_;
-    phinp_ = CORE::LINALG::CreateVector(*dofrowmap, true);
-    CORE::LINALG::Export(*old, *phinp_);
+    phinp_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    Core::LinAlg::Export(*old, *phinp_);
   }
 
   if (phin_ != Teuchos::null)
   {
     old = phin_;
-    phin_ = CORE::LINALG::CreateVector(*dofrowmap, true);
-    CORE::LINALG::Export(*old, *phin_);
+    phin_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    Core::LinAlg::Export(*old, *phin_);
   }
 
   // temporal solution derivative at time n+1
   if (phidtnp_ != Teuchos::null)
   {
     old = phidtnp_;
-    phidtnp_ = CORE::LINALG::CreateVector(*dofrowmap, true);
-    CORE::LINALG::Export(*old, *phidtnp_);
+    phidtnp_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    Core::LinAlg::Export(*old, *phidtnp_);
   }
 
   // temporal solution derivative at time n
   if (phidtn_ != Teuchos::null)
   {
     old = phidtn_;
-    phidtn_ = CORE::LINALG::CreateVector(*dofrowmap, true);
-    CORE::LINALG::Export(*old, *phidtn_);
+    phidtn_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    Core::LinAlg::Export(*old, *phidtn_);
   }
 
   // history vector (a linear combination of phinm, phin (BDF)
@@ -1062,8 +1062,8 @@ void SCATRA::LevelSetAlgorithm::Redistribute(const Teuchos::RCP<Epetra_CrsGraph>
   if (hist_ != Teuchos::null)
   {
     old = hist_;
-    hist_ = CORE::LINALG::CreateVector(*dofrowmap, true);
-    CORE::LINALG::Export(*old, *hist_);
+    hist_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    Core::LinAlg::Export(*old, *hist_);
   }
 
   // -------------------------------------------------------------------
@@ -1073,8 +1073,8 @@ void SCATRA::LevelSetAlgorithm::Redistribute(const Teuchos::RCP<Epetra_CrsGraph>
   if (zeros_ != Teuchos::null)
   {
     old = zeros_;
-    zeros_ = CORE::LINALG::CreateVector(*dofrowmap, true);
-    CORE::LINALG::Export(*old, *zeros_);
+    zeros_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    Core::LinAlg::Export(*old, *zeros_);
   }
 
   // -------------------------------------------------------------------
@@ -1084,32 +1084,32 @@ void SCATRA::LevelSetAlgorithm::Redistribute(const Teuchos::RCP<Epetra_CrsGraph>
   if (neumann_loads_ != Teuchos::null)
   {
     old = neumann_loads_;
-    neumann_loads_ = CORE::LINALG::CreateVector(*dofrowmap, true);
-    CORE::LINALG::Export(*old, *neumann_loads_);
+    neumann_loads_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    Core::LinAlg::Export(*old, *neumann_loads_);
   }
 
   // the residual vector --- more or less the rhs
   if (residual_ != Teuchos::null)
   {
     old = residual_;
-    residual_ = CORE::LINALG::CreateVector(*dofrowmap, true);
-    CORE::LINALG::Export(*old, *residual_);
+    residual_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    Core::LinAlg::Export(*old, *residual_);
   }
 
   // residual vector containing the normal boundary fluxes
   if (trueresidual_ != Teuchos::null)
   {
     old = trueresidual_;
-    trueresidual_ = CORE::LINALG::CreateVector(*dofrowmap, true);
-    CORE::LINALG::Export(*old, *trueresidual_);
+    trueresidual_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    Core::LinAlg::Export(*old, *trueresidual_);
   }
 
   // incremental solution vector
   if (increment_ != Teuchos::null)
   {
     old = increment_;
-    increment_ = CORE::LINALG::CreateVector(*dofrowmap, true);
-    CORE::LINALG::Export(*old, *increment_);
+    increment_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    Core::LinAlg::Export(*old, *increment_);
   }
 
   // subgrid-diffusivity(-scaling) vector
@@ -1118,18 +1118,18 @@ void SCATRA::LevelSetAlgorithm::Redistribute(const Teuchos::RCP<Epetra_CrsGraph>
   if (subgrdiff_ != Teuchos::null)
   {
     old = subgrdiff_;
-    subgrdiff_ = CORE::LINALG::CreateVector(*dofrowmap, true);
-    CORE::LINALG::Export(*old, *subgrdiff_);
+    subgrdiff_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    Core::LinAlg::Export(*old, *subgrdiff_);
   }
 
   if (initialphireinit_ != Teuchos::null)
   {
     old = initialphireinit_;
-    initialphireinit_ = CORE::LINALG::CreateVector(*dofrowmap, true);
-    CORE::LINALG::Export(*old, *initialphireinit_);
+    initialphireinit_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    Core::LinAlg::Export(*old, *initialphireinit_);
   }
 
-  if (fssgd_ != INPAR::SCATRA::fssugrdiff_no)
+  if (fssgd_ != Inpar::ScaTra::fssugrdiff_no)
   {
     FOUR_C_THROW("No redistribution for AVM3 subgrid stuff.");
   }
@@ -1137,6 +1137,6 @@ void SCATRA::LevelSetAlgorithm::Redistribute(const Teuchos::RCP<Epetra_CrsGraph>
   if (discret_->Comm().MyPID() == 0) std::cout << "done" << std::endl;
 
   return;
-}  // SCATRA::ScaTraTimIntImpl::Redistribute
+}  // ScaTra::ScaTraTimIntImpl::Redistribute
 
 FOUR_C_NAMESPACE_CLOSE

@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
-namespace DRT
+namespace Discret
 {
   class Discretization;
 
@@ -37,28 +37,28 @@ namespace DRT
 
     /*----------------------------------------------------------------------------*/
     /* definition of classes */
-    class Ale2Type : public CORE::Elements::ElementType
+    class Ale2Type : public Core::Elements::ElementType
     {
      public:
       std::string Name() const override { return "Ale2Type"; }
 
       static Ale2Type& Instance();
 
-      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+          Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
+      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+          Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       void setup_element_definition(
-          std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+          std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
           override;
 
      private:
@@ -69,7 +69,7 @@ namespace DRT
     /*!
     \brief A C++ wrapper for the ale2 element
     */
-    class Ale2 : public CORE::Elements::Element
+    class Ale2 : public Core::Elements::Element
     {
      public:
       //! @name Friends
@@ -100,12 +100,12 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      CORE::Elements::Element* Clone() const override;
+      Core::Elements::Element* Clone() const override;
 
       /*!
       \brief Get shape type of element
       */
-      CORE::FE::CellType Shape() const override;
+      Core::FE::CellType Shape() const override;
 
       /*!
       \brief Return number of lines of this element
@@ -137,13 +137,13 @@ namespace DRT
       \brief Get vector of Teuchos::RCPs to the lines of this element
 
       */
-      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
 
       */
-      std::vector<Teuchos::RCP<CORE::Elements::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> Surfaces() override;
 
       /*!
       \brief Return unique ParObject id
@@ -159,7 +159,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(CORE::COMM::PackBuffer& data) const override;
+      void Pack(Core::Communication::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -177,18 +177,18 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom of a certain node
-             (implements pure virtual CORE::Elements::Element)
+             (implements pure virtual Core::Elements::Element)
 
       The element decides how many degrees of freedom its nodes must have.
       As this may vary along a simulation, the element can redecide the
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const CORE::Nodes::Node& node) const override { return 2; }
+      int NumDofPerNode(const Core::Nodes::Node& node) const override { return 2; }
 
       /*!
       \brief Get number of degrees of freedom per element
-             (implements pure virtual CORE::Elements::Element)
+             (implements pure virtual Core::Elements::Element)
 
       The element decides how many element degrees of freedom it has.
       It can redecide along the way of a simulation.
@@ -204,7 +204,7 @@ namespace DRT
       */
       void Print(std::ostream& os) const override;
 
-      CORE::Elements::ElementType& ElementType() const override { return Ale2Type::Instance(); }
+      Core::Elements::ElementType& ElementType() const override { return Ale2Type::Instance(); }
 
       //@}
 
@@ -214,7 +214,7 @@ namespace DRT
       \brief Read input for this element
       */
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          INPUT::LineDefinition* linedef) override;
+          Input::LineDefinition* linedef) override;
 
       //@}
 
@@ -244,11 +244,11 @@ namespace DRT
                               to fill this vector
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
-          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2,
-          CORE::LINALG::SerialDenseVector& elevec3) override;
+      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
+          Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseVector& elevec2,
+          Core::LinAlg::SerialDenseVector& elevec3) override;
 
 
       /*!
@@ -265,10 +265,10 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          CORE::Conditions::Condition& condition, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
+      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Core::Conditions::Condition& condition, std::vector<int>& lm,
+          Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;
 
 
       //@}
@@ -276,7 +276,7 @@ namespace DRT
       //! @name Other
 
       /// set number of gauss points to element shape default
-      CORE::FE::GaussRule2D get_optimal_gaussrule(const CORE::FE::CellType& distype);
+      Core::FE::GaussRule2D get_optimal_gaussrule(const Core::FE::CellType& distype);
 
       //@}
 
@@ -295,18 +295,18 @@ namespace DRT
        *  \note For spatial configuration, displacement vector equals current
        *  displacements. For material configuration, displacement vector is zero.
        */
-      void static_ke_laplace(DRT::Discretization& dis,  ///< discretization
-          std::vector<int>& lm,                         ///< node owning procs
-          CORE::LINALG::SerialDenseMatrix* sys_mat,     ///< element stiffness matrix (to be filled)
-          CORE::LINALG::SerialDenseVector& residual,    ///< element residual vector (to be filled)
-          std::vector<double>& displacements,           ///< nodal discplacements
+      void static_ke_laplace(Discret::Discretization& dis,  ///< discretization
+          std::vector<int>& lm,                             ///< node owning procs
+          Core::LinAlg::SerialDenseMatrix* sys_mat,   ///< element stiffness matrix (to be filled)
+          Core::LinAlg::SerialDenseVector& residual,  ///< element residual vector (to be filled)
+          std::vector<double>& displacements,         ///< nodal discplacements
           const bool spatialconfiguration  ///< use spatial configuration (true), material
                                            ///< configuration (false)
       );
 
       void static_ke_spring(
-          CORE::LINALG::SerialDenseMatrix* sys_mat,   ///< element stiffness matrix (to be filled)
-          CORE::LINALG::SerialDenseVector& residual,  ///< element residual vector (to be filled)
+          Core::LinAlg::SerialDenseMatrix* sys_mat,   ///< element stiffness matrix (to be filled)
+          Core::LinAlg::SerialDenseVector& residual,  ///< element residual vector (to be filled)
           std::vector<double>& displacements,         ///, nodal displacements
           const bool spatialconfiguration  ///< use spatial configuration (true), material
                                            ///< configuration (false)
@@ -317,13 +317,13 @@ namespace DRT
        *  We can handle St.-Venant-Kirchhoff material and many materials
        *  from the elast hyper toolbox.
        *
-       *  \note this routine was copied from DRT::ELEMENTS::Wall1
+       *  \note this routine was copied from Discret::ELEMENTS::Wall1
        */
       void static_ke_nonlinear(const std::vector<int>& lm,  ///< node owning procs
           const std::vector<double>& disp,                  ///< nodal displacements
-          CORE::LINALG::SerialDenseMatrix*
+          Core::LinAlg::SerialDenseMatrix*
               stiffmatrix,                         ///< element stiffness matrix (to be filled)
-          CORE::LINALG::SerialDenseVector* force,  ///< element residual vector (to be filled)
+          Core::LinAlg::SerialDenseVector* force,  ///< element residual vector (to be filled)
           Teuchos::ParameterList& params,          ///< parameter list
           const bool spatialconfiguration,         ///< use spatial configuration (true), material
                                                    ///< configuration (false)
@@ -339,7 +339,7 @@ namespace DRT
        *  \author mayr.mt \date 01/2016
        */
       void compute_det_jac(
-          CORE::LINALG::SerialDenseVector& elevec1,  ///< vector with element result data
+          Core::LinAlg::SerialDenseVector& elevec1,  ///< vector with element result data
           const std::vector<int>& lm,                ///< node owning procs
           const std::vector<double>& disp            ///< nodal displacements
       );
@@ -353,93 +353,93 @@ namespace DRT
        *  for isoparametric finite elements, Trans. Can. Soc. Mech. Engrg.,
        *  Vol. 12 (4), pp. 213-217
        */
-      void evaluate_oddy(const CORE::LINALG::SerialDenseMatrix& xjm, double det, double& qm);
+      void evaluate_oddy(const Core::LinAlg::SerialDenseMatrix& xjm, double det, double& qm);
 
       void call_mat_geo_nonl(
-          const CORE::LINALG::SerialDenseVector& strain,     ///< Green-Lagrange strain vector
-          CORE::LINALG::SerialDenseMatrix& stress,           ///< stress vector
-          CORE::LINALG::SerialDenseMatrix& C,                ///< elasticity matrix
+          const Core::LinAlg::SerialDenseVector& strain,     ///< Green-Lagrange strain vector
+          Core::LinAlg::SerialDenseMatrix& stress,           ///< stress vector
+          Core::LinAlg::SerialDenseMatrix& C,                ///< elasticity matrix
           const int numeps,                                  ///< number of strains
-          Teuchos::RCP<const CORE::MAT::Material> material,  ///< the material data
+          Teuchos::RCP<const Core::Mat::Material> material,  ///< the material data
           Teuchos::ParameterList& params,                    ///< element parameter list
           int gp                                             ///< Integration point
       );
 
       void material_response3d_plane(
-          CORE::LINALG::SerialDenseMatrix& stress,        ///< stress state (output)
-          CORE::LINALG::SerialDenseMatrix& C,             ///< material tensor (output)
-          const CORE::LINALG::SerialDenseVector& strain,  ///< strain state (input)
+          Core::LinAlg::SerialDenseMatrix& stress,        ///< stress state (output)
+          Core::LinAlg::SerialDenseMatrix& C,             ///< material tensor (output)
+          const Core::LinAlg::SerialDenseVector& strain,  ///< strain state (input)
           Teuchos::ParameterList& params,                 ///< parameter list
           int gp                                          ///< Integration point
       );
 
-      void material_response3d(CORE::LINALG::Matrix<6, 1>* stress,  ///< stress state (output)
-          CORE::LINALG::Matrix<6, 6>* cmat,                         ///< material tensor (output)
-          const CORE::LINALG::Matrix<6, 1>* glstrain,               ///< strain state (input)
+      void material_response3d(Core::LinAlg::Matrix<6, 1>* stress,  ///< stress state (output)
+          Core::LinAlg::Matrix<6, 6>* cmat,                         ///< material tensor (output)
+          const Core::LinAlg::Matrix<6, 1>* glstrain,               ///< strain state (input)
           Teuchos::ParameterList& params,                           ///< parameter list
           int gp                                                    ///< Integration point
       );
 
       //! Transform Green-Lagrange notation from 2D to 3D
-      void green_lagrange_plane3d(const CORE::LINALG::SerialDenseVector&
+      void green_lagrange_plane3d(const Core::LinAlg::SerialDenseVector&
                                       glplane,  ///< Green-Lagrange strains in 2D notation
-          CORE::LINALG::Matrix<6, 1>& gl3d);    ///< Green-Lagrange strains in 2D notation
+          Core::LinAlg::Matrix<6, 1>& gl3d);    ///< Green-Lagrange strains in 2D notation
 
-      void edge_geometry(int i, int j, const CORE::LINALG::SerialDenseMatrix& xyze, double* length,
+      void edge_geometry(int i, int j, const Core::LinAlg::SerialDenseMatrix& xyze, double* length,
           double* sin_alpha, double* cos_alpha);
-      double ale2_area_tria(const CORE::LINALG::SerialDenseMatrix& xyze, int i, int j, int k);
+      double ale2_area_tria(const Core::LinAlg::SerialDenseMatrix& xyze, int i, int j, int k);
       void ale2_tors_spring_tri3(
-          CORE::LINALG::SerialDenseMatrix* sys_mat, const CORE::LINALG::SerialDenseMatrix& xyze);
+          Core::LinAlg::SerialDenseMatrix* sys_mat, const Core::LinAlg::SerialDenseMatrix& xyze);
       void ale2_tors_spring_quad4(
-          CORE::LINALG::SerialDenseMatrix* sys_mat, const CORE::LINALG::SerialDenseMatrix& xyze);
-      void ale2_torsional(int i, int j, int k, const CORE::LINALG::SerialDenseMatrix& xyze,
-          CORE::LINALG::SerialDenseMatrix* k_torsion);
+          Core::LinAlg::SerialDenseMatrix* sys_mat, const Core::LinAlg::SerialDenseMatrix& xyze);
+      void ale2_torsional(int i, int j, int k, const Core::LinAlg::SerialDenseMatrix& xyze,
+          Core::LinAlg::SerialDenseMatrix* k_torsion);
 
-      void calc_b_op_lin(CORE::LINALG::SerialDenseMatrix& boplin,
-          CORE::LINALG::SerialDenseMatrix& deriv, CORE::LINALG::SerialDenseMatrix& xjm, double& det,
+      void calc_b_op_lin(Core::LinAlg::SerialDenseMatrix& boplin,
+          Core::LinAlg::SerialDenseMatrix& deriv, Core::LinAlg::SerialDenseMatrix& xjm, double& det,
           const int iel);
 
-      void b_op_lin_cure(CORE::LINALG::SerialDenseMatrix& b_cure,
-          const CORE::LINALG::SerialDenseMatrix& boplin, const CORE::LINALG::SerialDenseVector& F,
+      void b_op_lin_cure(Core::LinAlg::SerialDenseMatrix& b_cure,
+          const Core::LinAlg::SerialDenseMatrix& boplin, const Core::LinAlg::SerialDenseVector& F,
           const int numeps, const int nd);
 
-      void jacobian_matrix(const CORE::LINALG::SerialDenseMatrix& xrefe,
-          const CORE::LINALG::SerialDenseMatrix& deriv, CORE::LINALG::SerialDenseMatrix& xjm,
+      void jacobian_matrix(const Core::LinAlg::SerialDenseMatrix& xrefe,
+          const Core::LinAlg::SerialDenseMatrix& deriv, Core::LinAlg::SerialDenseMatrix& xjm,
           double* det, const int iel);
 
       ///! Compute deformation gradient
-      void def_grad(CORE::LINALG::SerialDenseVector& F,  ///< deformation gradient (to be filled)
-          CORE::LINALG::SerialDenseVector& strain,       ///< strain tensor (to be filled)
-          const CORE::LINALG::SerialDenseMatrix&
+      void def_grad(Core::LinAlg::SerialDenseVector& F,  ///< deformation gradient (to be filled)
+          Core::LinAlg::SerialDenseVector& strain,       ///< strain tensor (to be filled)
+          const Core::LinAlg::SerialDenseMatrix&
               xrefe,  ///< nodal positions of reference configuration
-          const CORE::LINALG::SerialDenseMatrix&
+          const Core::LinAlg::SerialDenseMatrix&
               xcure,                                ///< nodal positions of current configuration
-          CORE::LINALG::SerialDenseMatrix& boplin,  ///< B-operator
+          Core::LinAlg::SerialDenseMatrix& boplin,  ///< B-operator
           const int iel);
 
       //! Compute geometric part of stiffness matrix
-      void kg(CORE::LINALG::SerialDenseMatrix& estif,  ///< element stiffness matrix (to be filled)
-          const CORE::LINALG::SerialDenseMatrix& boplin,  ///< B-operator
-          const CORE::LINALG::SerialDenseMatrix& stress,  ///< 2. Piola-Kirchhoff stress tensor
+      void kg(Core::LinAlg::SerialDenseMatrix& estif,  ///< element stiffness matrix (to be filled)
+          const Core::LinAlg::SerialDenseMatrix& boplin,  ///< B-operator
+          const Core::LinAlg::SerialDenseMatrix& stress,  ///< 2. Piola-Kirchhoff stress tensor
           const double fac,                               ///< factor for Gaussian quadrature
           const int nd,                                   ///< number of DOFs in this element
           const int numeps);
 
       //! Compute elastic part of stiffness matrix
-      void keu(CORE::LINALG::SerialDenseMatrix& estif,  ///< element stiffness matrix (to be filled)
-          const CORE::LINALG::SerialDenseMatrix&
+      void keu(Core::LinAlg::SerialDenseMatrix& estif,  ///< element stiffness matrix (to be filled)
+          const Core::LinAlg::SerialDenseMatrix&
               b_cure,  ///< B-operator for current configuration (input)
-          const CORE::LINALG::SerialDenseMatrix& C,  ///< material tensor (input)
+          const Core::LinAlg::SerialDenseMatrix& C,  ///< material tensor (input)
           const double fac,                          ///< factor for Gaussian quadrature
           const int nd,                              ///< number of DOFs in this element
           const int numeps);
 
       //! Compute internal forces for solid approach
       void fint(
-          const CORE::LINALG::SerialDenseMatrix& stress,  ///< 2. Piola-Kirchhoff stress (input)
-          const CORE::LINALG::SerialDenseMatrix&
+          const Core::LinAlg::SerialDenseMatrix& stress,  ///< 2. Piola-Kirchhoff stress (input)
+          const Core::LinAlg::SerialDenseMatrix&
               b_cure,  ///< B-operator for current configuration (input)
-          CORE::LINALG::SerialDenseVector& intforce,  ///< force vector (to be filled)
+          Core::LinAlg::SerialDenseVector& intforce,  ///< force vector (to be filled)
           const double fac,                           ///< factor for Gaussian quadrature
           const int nd                                ///< number of DOFs in this element
       );
@@ -476,24 +476,24 @@ namespace DRT
     //=======================================================================
 
 
-    class Ale2LineType : public CORE::Elements::ElementType
+    class Ale2LineType : public Core::Elements::ElementType
     {
      public:
       std::string Name() const override { return "Ale2LineType"; }
 
       static Ale2LineType& Instance();
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
+          Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
-      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
+      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+          Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
-        CORE::LINALG::SerialDenseMatrix nullspace;
+        Core::LinAlg::SerialDenseMatrix nullspace;
         FOUR_C_THROW("method ComputeNullSpace not implemented!");
         return nullspace;
       }
@@ -506,7 +506,7 @@ namespace DRT
     /*!
     \brief An element representing a line of a ale2 element
     */
-    class Ale2Line : public CORE::Elements::FaceElement
+    class Ale2Line : public Core::Elements::FaceElement
     {
      public:
       //! @name Constructors and destructors and related methods
@@ -522,8 +522,8 @@ namespace DRT
       \param parent: The parent ale element of this line
       \param lline: the local line number of this line w.r.t. the parent element
       */
-      Ale2Line(int id, int owner, int nnode, const int* nodeids, CORE::Nodes::Node** nodes,
-          DRT::ELEMENTS::Ale2* parent, const int lline);
+      Ale2Line(int id, int owner, int nnode, const int* nodeids, Core::Nodes::Node** nodes,
+          Discret::ELEMENTS::Ale2* parent, const int lline);
 
       /*!
       \brief Copy Constructor
@@ -540,12 +540,12 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      CORE::Elements::Element* Clone() const override;
+      Core::Elements::Element* Clone() const override;
 
       /*!
       \brief Get shape type of element
       */
-      CORE::FE::CellType Shape() const override;
+      Core::FE::CellType Shape() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -564,7 +564,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(CORE::COMM::PackBuffer& data) const override;
+      void Pack(Core::Communication::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -582,18 +582,18 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom of a certain node
-             (implements pure virtual CORE::Elements::Element)
+             (implements pure virtual Core::Elements::Element)
 
       The element decides how many degrees of freedom its nodes must have.
       As this may vary along a simulation, the element can redecide the
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const CORE::Nodes::Node& node) const override { return 2; }
+      int NumDofPerNode(const Core::Nodes::Node& node) const override { return 2; }
 
       /*!
       \brief Get number of degrees of freedom per element
-             (implements pure virtual CORE::Elements::Element)
+             (implements pure virtual Core::Elements::Element)
 
       The element decides how many element degrees of freedom it has.
       It can redecide along the way of a simulation.
@@ -609,7 +609,7 @@ namespace DRT
       */
       void Print(std::ostream& os) const override;
 
-      CORE::Elements::ElementType& ElementType() const override { return Ale2LineType::Instance(); }
+      Core::Elements::ElementType& ElementType() const override { return Ale2LineType::Instance(); }
 
       //@}
 
@@ -629,10 +629,10 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          CORE::Conditions::Condition& condition, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
+      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Core::Conditions::Condition& condition, std::vector<int>& lm,
+          Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;
 
       //@}
 
@@ -645,7 +645,7 @@ namespace DRT
 
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

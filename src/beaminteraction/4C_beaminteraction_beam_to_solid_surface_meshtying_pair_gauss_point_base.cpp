@@ -37,7 +37,7 @@ template <typename scalar_type, typename beam, typename surface>
 double BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointBase<scalar_type, beam,
     surface>::get_energy() const
 {
-  return CORE::FADUTILS::CastToDouble(get_penalty_potential());
+  return Core::FADUtils::CastToDouble(get_penalty_potential());
 }
 
 /**
@@ -47,14 +47,14 @@ template <typename scalar_type, typename beam, typename surface>
 scalar_type BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointBase<scalar_type, beam,
     surface>::get_penalty_potential() const
 {
-  using namespace INPAR::BEAMTOSOLID;
+  using namespace Inpar::BeamToSolid;
 
   // If there are no intersection segments, no penalty potential exists for this pair.
   if (this->line_to_3D_segments_.size() == 0) return 0.0;
 
   // Initialize variables for position and potential.
-  CORE::LINALG::Matrix<3, 1, double> dr_beam_ref;
-  CORE::LINALG::Matrix<3, 1, scalar_type> coupling_vector;
+  Core::LinAlg::Matrix<3, 1, double> dr_beam_ref;
+  Core::LinAlg::Matrix<3, 1, scalar_type> coupling_vector;
   scalar_type potential = 0.0;
 
   // Initialize scalar variables.

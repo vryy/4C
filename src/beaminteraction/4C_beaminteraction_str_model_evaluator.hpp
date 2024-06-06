@@ -23,21 +23,21 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration ...
-namespace ADAPTER
+namespace Adapter
 {
   class Coupling;
 }
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
   class MatrixRowTransform;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 namespace BINSTRATEGY
 {
@@ -66,7 +66,7 @@ namespace STR
     class BeamInteraction : public Generic
     {
      public:
-      typedef std::map<enum INPAR::BEAMINTERACTION::SubModelType,
+      typedef std::map<enum Inpar::BEAMINTERACTION::SubModelType,
           Teuchos::RCP<BEAMINTERACTION::SUBMODELEVALUATOR::Generic>>
           Map;
       typedef std::vector<Teuchos::RCP<BEAMINTERACTION::SUBMODELEVALUATOR::Generic>> Vector;
@@ -86,7 +86,7 @@ namespace STR
       //! derived
 
       //! derived
-      INPAR::STR::ModelType Type() const override { return INPAR::STR::model_beaminteraction; }
+      Inpar::STR::ModelType Type() const override { return Inpar::STR::model_beaminteraction; }
 
       //! derived
       bool evaluate_force() override;
@@ -108,21 +108,21 @@ namespace STR
 
       //! derived
       bool assemble_jacobian(
-          CORE::LINALG::SparseOperator& jac, const double& timefac_np) const override;
+          Core::LinAlg::SparseOperator& jac, const double& timefac_np) const override;
 
       //! derived
       void write_restart(
-          CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
+          Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
 
       //! derived
-      void read_restart(CORE::IO::DiscretizationReader& ioreader) override;
+      void read_restart(Core::IO::DiscretizationReader& ioreader) override;
 
       //! [derived]
-      void Predict(const INPAR::STR::PredEnum& pred_type) override { return; };
+      void Predict(const Inpar::STR::PredEnum& pred_type) override { return; };
 
       //! derived
       void run_pre_compute_x(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
-          const NOX::NLN::Group& curr_grp) override
+          const NOX::Nln::Group& curr_grp) override
       {
         return;
       };
@@ -150,7 +150,7 @@ namespace STR
       void determine_optional_quantity() override;
 
       //! derived
-      void OutputStepState(CORE::IO::DiscretizationWriter& iowriter) const override;
+      void OutputStepState(Core::IO::DiscretizationWriter& iowriter) const override;
 
       //! derived
       void runtime_output_step_state() const override;
@@ -180,7 +180,7 @@ namespace STR
 
      public:
       /// check if the given model type is active.
-      bool HaveSubModelType(INPAR::BEAMINTERACTION::SubModelType const& submodeltype) const;
+      bool HaveSubModelType(Inpar::BEAMINTERACTION::SubModelType const& submodeltype) const;
 
      private:
       void partition_problem();
@@ -197,7 +197,7 @@ namespace STR
       //! give submodels a certain order in which they are evaluated
       virtual Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Vector> transform_to_vector(
           STR::MODELEVALUATOR::BeamInteraction::Map submodel_map,
-          std::vector<INPAR::BEAMINTERACTION::SubModelType>& sorted_submodel_types) const;
+          std::vector<Inpar::BEAMINTERACTION::SubModelType>& sorted_submodel_types) const;
 
       //! @}
 
@@ -240,7 +240,7 @@ namespace STR
 
      private:
       //! pointer to the problem discretization (cast of base class member)
-      Teuchos::RCP<DRT::Discretization> discret_ptr_;
+      Teuchos::RCP<Discret::Discretization> discret_ptr_;
 
       //! data container holding all beaminteraction related parameters
       Teuchos::RCP<BEAMINTERACTION::BeamInteractionParams> beaminteraction_params_ptr_;
@@ -248,7 +248,7 @@ namespace STR
       //!@name data for submodel management
       //! @{
       /// current active model types for the model evaluator
-      Teuchos::RCP<std::set<enum INPAR::BEAMINTERACTION::SubModelType>> submodeltypes_;
+      Teuchos::RCP<std::set<enum Inpar::BEAMINTERACTION::SubModelType>> submodeltypes_;
 
       Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Map> me_map_ptr_;
 
@@ -261,10 +261,10 @@ namespace STR
       int myrank_;
 
       //! coupling adapter to transfer vectors and matrices between Discret() and intactids_
-      Teuchos::RCP<CORE::ADAPTER::Coupling> coupsia_;
+      Teuchos::RCP<Core::Adapter::Coupling> coupsia_;
 
       //! transform object for structure stiffness matrix
-      Teuchos::RCP<CORE::LINALG::MatrixRowTransform> siatransform_;
+      Teuchos::RCP<Core::LinAlg::MatrixRowTransform> siatransform_;
       //! @}
 
 
@@ -272,10 +272,10 @@ namespace STR
       //! @{
       //! interaction discretization handling all interactions (e.g. crosslinker to beam,
       //! beam to beam, potential ...)
-      Teuchos::RCP<DRT::Discretization> ia_discret_;
+      Teuchos::RCP<Discret::Discretization> ia_discret_;
 
       /// map extractor for split of different element types
-      Teuchos::RCP<CORE::LINALG::MultiMapExtractor> eletypeextractor_;
+      Teuchos::RCP<Core::LinAlg::MultiMapExtractor> eletypeextractor_;
 
       //! pointer to the global state data container
       Teuchos::RCP<STR::MODELEVALUATOR::BeamInteractionDataState> ia_state_ptr_;
@@ -287,7 +287,7 @@ namespace STR
       Teuchos::RCP<Epetra_Vector> force_beaminteraction_;
 
       //! structural stiffness matrix based on Discret()
-      Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_beaminteraction_;
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_beaminteraction_;
 
       //! beam crosslinker handler
       Teuchos::RCP<BEAMINTERACTION::BeamCrosslinkerHandler> beam_crosslinker_handler_;
@@ -296,7 +296,7 @@ namespace STR
       Teuchos::RCP<BINSTRATEGY::BinningStrategy> binstrategy_;
 
       //! crosslinker and bin discretization
-      Teuchos::RCP<DRT::Discretization> bindis_;
+      Teuchos::RCP<Discret::Discretization> bindis_;
 
       //! elerowmap of bindis
       Teuchos::RCP<Epetra_Map> rowbins_;

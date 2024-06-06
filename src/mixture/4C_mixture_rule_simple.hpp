@@ -30,13 +30,13 @@ namespace Teuchos
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
     class Material;
   }
-}  // namespace MAT
+}  // namespace Mat
 
 namespace MIXTURE
 {
@@ -51,7 +51,7 @@ namespace MIXTURE
 
      public:
       /// constructor
-      explicit SimpleMixtureRule(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
+      explicit SimpleMixtureRule(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
 
       /// Create mixturerule instance
       std::unique_ptr<MIXTURE::MixtureRule> CreateRule() override;
@@ -76,9 +76,9 @@ namespace MIXTURE
     /// Constructor for mixture rule given the input parameters
     explicit SimpleMixtureRule(MIXTURE::PAR::SimpleMixtureRule* params);
 
-    void Evaluate(const CORE::LINALG::Matrix<3, 3>& F, const CORE::LINALG::Matrix<6, 1>& E_strain,
-        Teuchos::ParameterList& params, CORE::LINALG::Matrix<6, 1>& S_stress,
-        CORE::LINALG::Matrix<6, 6>& cmat, int gp, int eleGID) override;
+    void Evaluate(const Core::LinAlg::Matrix<3, 3>& F, const Core::LinAlg::Matrix<6, 1>& E_strain,
+        Teuchos::ParameterList& params, Core::LinAlg::Matrix<6, 1>& S_stress,
+        Core::LinAlg::Matrix<6, 6>& cmat, int gp, int eleGID) override;
 
     double ReturnMassDensity() const override { return params_->initial_reference_density_; };
 

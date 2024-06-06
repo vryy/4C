@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::MatList::MatList(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::MatList::MatList(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : Parameter(matdata),
       nummat_(matdata->Get<int>("NUMMAT")),
       matids_(matdata->Get<std::vector<int>>("MATIDS")),
@@ -38,22 +38,22 @@ MAT::PAR::MatList::MatList(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     for (m = matids_.begin(); m != matids_.end(); ++m)
     {
       const int matid = *m;
-      Teuchos::RCP<CORE::MAT::Material> mat = MAT::Factory(matid);
-      mat_.insert(std::pair<int, Teuchos::RCP<CORE::MAT::Material>>(matid, mat));
+      Teuchos::RCP<Core::Mat::Material> mat = Mat::Factory(matid);
+      mat_.insert(std::pair<int, Teuchos::RCP<Core::Mat::Material>>(matid, mat));
     }
   }
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::MatList::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::MatList::create_material()
 {
-  return Teuchos::rcp(new MAT::MatList(this));
+  return Teuchos::rcp(new Mat::MatList(this));
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::MatList::MaterialById(const int id) const
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::MatList::MaterialById(const int id) const
 {
   if (not local_)
   {
-    std::map<int, Teuchos::RCP<CORE::MAT::Material>>::const_iterator m = mat_.find(id);
+    std::map<int, Teuchos::RCP<Core::Mat::Material>>::const_iterator m = mat_.find(id);
 
     if (m == mat_.end())
     {
@@ -70,12 +70,12 @@ Teuchos::RCP<CORE::MAT::Material> MAT::PAR::MatList::MaterialById(const int id) 
 }
 
 
-MAT::MatListType MAT::MatListType::instance_;
+Mat::MatListType Mat::MatListType::instance_;
 
 
-CORE::COMM::ParObject* MAT::MatListType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::MatListType::Create(const std::vector<char>& data)
 {
-  MAT::MatList* matlist = new MAT::MatList();
+  Mat::MatList* matlist = new Mat::MatList();
   matlist->Unpack(data);
   return matlist;
 }
@@ -83,12 +83,12 @@ CORE::COMM::ParObject* MAT::MatListType::Create(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::MatList::MatList() : params_(nullptr) {}
+Mat::MatList::MatList() : params_(nullptr) {}
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::MatList::MatList(MAT::PAR::MatList* params) : params_(params)
+Mat::MatList::MatList(Mat::PAR::MatList* params) : params_(params)
 {
   // setup of material map
   if (params_->local_)
@@ -100,7 +100,7 @@ MAT::MatList::MatList(MAT::PAR::MatList* params) : params_(params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::MatList::setup_mat_map()
+void Mat::MatList::setup_mat_map()
 {
   // safety first
   mat_.clear();
@@ -113,9 +113,9 @@ void MAT::MatList::setup_mat_map()
   for (m = params_->MatIds()->begin(); m != params_->MatIds()->end(); ++m)
   {
     const int matid = *m;
-    Teuchos::RCP<CORE::MAT::Material> mat = MAT::Factory(matid);
+    Teuchos::RCP<Core::Mat::Material> mat = Mat::Factory(matid);
     if (mat == Teuchos::null) FOUR_C_THROW("Failed to allocate this material");
-    mat_.insert(std::pair<int, Teuchos::RCP<CORE::MAT::Material>>(matid, mat));
+    mat_.insert(std::pair<int, Teuchos::RCP<Core::Mat::Material>>(matid, mat));
   }
   return;
 }
@@ -123,7 +123,7 @@ void MAT::MatList::setup_mat_map()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::MatList::clear()
+void Mat::MatList::clear()
 {
   params_ = nullptr;
   mat_.clear();
@@ -132,9 +132,9 @@ void MAT::MatList::clear()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::MatList::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::MatList::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -151,7 +151,7 @@ void MAT::MatList::Pack(CORE::COMM::PackBuffer& data) const
       // loop map of associated local materials
       if (params_ != nullptr)
       {
-        // std::map<int, Teuchos::RCP<CORE::MAT::Material> >::const_iterator m;
+        // std::map<int, Teuchos::RCP<Core::Mat::Material> >::const_iterator m;
         std::vector<int>::const_iterator m;
         for (m = params_->MatIds()->begin(); m != params_->MatIds()->end(); m++)
         {
@@ -164,27 +164,27 @@ void MAT::MatList::Pack(CORE::COMM::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::MatList::Unpack(const std::vector<char>& data)
+void Mat::MatList::Unpack(const std::vector<char>& data)
 {
   // make sure we have a pristine material
   clear();
 
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid(-1);
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::MatList*>(mat);
+        params_ = static_cast<Mat::PAR::MatList*>(mat);
       else
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
@@ -197,9 +197,9 @@ void MAT::MatList::Unpack(const std::vector<char>& data)
     for (m = params_->MatIds()->begin(); m != params_->MatIds()->end(); m++)
     {
       const int actmatid = *m;
-      Teuchos::RCP<CORE::MAT::Material> mat = MAT::Factory(actmatid);
+      Teuchos::RCP<Core::Mat::Material> mat = Mat::Factory(actmatid);
       if (mat == Teuchos::null) FOUR_C_THROW("Failed to allocate this material");
-      mat_.insert(std::pair<int, Teuchos::RCP<CORE::MAT::Material>>(actmatid, mat));
+      mat_.insert(std::pair<int, Teuchos::RCP<Core::Mat::Material>>(actmatid, mat));
     }
 
     if (params_->local_)
@@ -222,7 +222,7 @@ void MAT::MatList::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  | material ID by Index                                      thon 11/14 |
  *----------------------------------------------------------------------*/
-int MAT::MatList::MatID(const unsigned index) const
+int Mat::MatList::MatID(const unsigned index) const
 {
   if ((int)index < params_->nummat_)
     return params_->matids_.at(index);
@@ -237,11 +237,11 @@ int MAT::MatList::MatID(const unsigned index) const
  | provide access to material by its ID                      thon 11/14 |
  *----------------------------------------------------------------------*/
 ///
-Teuchos::RCP<CORE::MAT::Material> MAT::MatList::MaterialById(const int id) const
+Teuchos::RCP<Core::Mat::Material> Mat::MatList::MaterialById(const int id) const
 {
   if (params_->local_)
   {
-    std::map<int, Teuchos::RCP<CORE::MAT::Material>>::const_iterator m =
+    std::map<int, Teuchos::RCP<Core::Mat::Material>>::const_iterator m =
         material_map_read()->find(id);
     if (m == mat_.end())
     {

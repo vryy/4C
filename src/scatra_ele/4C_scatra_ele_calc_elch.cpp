@@ -18,14 +18,15 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::ScaTraEleCalcElch(
+template <Core::FE::CellType distype, int probdim>
+Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::ScaTraEleCalcElch(
     const int numdofpernode, const int numscal, const std::string& disname)
-    : DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ScaTraEleCalc(
+    : Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::ScaTraEleCalc(
           numdofpernode, numscal, disname),
-      elchparams_(DRT::ELEMENTS::ScaTraEleParameterElch::Instance(
+      elchparams_(Discret::ELEMENTS::ScaTraEleParameterElch::Instance(
           disname)),  // parameter class for electrochemistry problems
-      utils_(DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::Instance(numdofpernode, numscal, disname))
+      utils_(
+          Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::Instance(numdofpernode, numscal, disname))
 {
   // replace standard scatra diffusion manager by elch diffusion manager
   my::diffmanager_ = Teuchos::rcp(new ScaTraEleDiffManagerElch(my::numscal_));
@@ -40,14 +41,14 @@ DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::ScaTraEleCalcElch(
 /*----------------------------------------------------------------------*
  | Action type: Evaluate                                     ehrl 01/14 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::Evaluate(CORE::Elements::Element* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    CORE::Elements::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec1_epetra,
-    CORE::LINALG::SerialDenseVector& elevec2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec3_epetra)
+template <Core::FE::CellType distype, int probdim>
+int Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::Evaluate(Core::Elements::Element* ele,
+    Teuchos::ParameterList& params, Discret::Discretization& discretization,
+    Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+    Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec1_epetra,
+    Core::LinAlg::SerialDenseVector& elevec2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec3_epetra)
 {
   // call base class routine
   my::Evaluate(ele, params, discretization, la, elemat1_epetra, elemat2_epetra, elevec1_epetra,
@@ -65,12 +66,12 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::Evaluate(CORE::Elements:
 /*----------------------------------------------------------------------*
 |  calculate system matrix and rhs (public)                 ehrl  08/08|
 *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::sysmat(
-    CORE::Elements::Element* ele,               ///< the element whose matrix is calculated
-    CORE::LINALG::SerialDenseMatrix& emat,      ///< element matrix to calculate
-    CORE::LINALG::SerialDenseVector& erhs,      ///< element rhs to calculate
-    CORE::LINALG::SerialDenseVector& subgrdiff  ///< subgrid-diff.-scaling vector
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::sysmat(
+    Core::Elements::Element* ele,               ///< the element whose matrix is calculated
+    Core::LinAlg::SerialDenseMatrix& emat,      ///< element matrix to calculate
+    Core::LinAlg::SerialDenseVector& erhs,      ///< element rhs to calculate
+    Core::LinAlg::SerialDenseVector& subgrdiff  ///< subgrid-diff.-scaling vector
 )
 {
   //----------------------------------------------------------------------
@@ -93,8 +94,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::sysmat(
 
   // stabilization variables
   std::vector<double> tau(my::numscal_, 0.);
-  std::vector<CORE::LINALG::Matrix<nen_, 1>> tauderpot(
-      my::numscal_, CORE::LINALG::Matrix<nen_, 1>(true));
+  std::vector<Core::LinAlg::Matrix<nen_, 1>> tauderpot(
+      my::numscal_, Core::LinAlg::Matrix<nen_, 1>(true));
 
   if (not my::scatrapara_->MatGP() or not my::scatrapara_->TauGP())
   {
@@ -111,8 +112,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::sysmat(
   // integration loop for one element
   //----------------------------------------------------------------------
   // integration points and weights
-  const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
-      SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
+      ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
@@ -165,9 +166,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::sysmat(
 /*----------------------------------------------------------------------------------*
 |  CalcMat: Potential equation ENC                                       ehrl  02/14|
 *-----------------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::calc_mat_pot_equ_enc(
-    CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::calc_mat_pot_equ_enc(
+    Core::LinAlg::SerialDenseMatrix& emat,  //!< element matrix to be filled
     const int k,                            //!< index of current scalar
     const double fac,                       //!< domain-integration factor
     const double alphaf                     //!< time factor for ENC
@@ -192,9 +193,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::calc_mat_pot_equ_enc(
 /*-------------------------------------------------------------------------------------*
  |  CalcRhs: Potential equation ENC                                         ehrl 11/13 |
  *-------------------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::calc_rhs_pot_equ_enc(
-    CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::calc_rhs_pot_equ_enc(
+    Core::LinAlg::SerialDenseVector& erhs,  //!< element vector to be filled
     const int k,                            //!< index of current scalar
     const double fac,                       //!< domain-integration factor
     const double conint                     //!< concentration at GP
@@ -212,29 +213,29 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::calc_rhs_pot_equ_enc(
 
 // template classes
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElch<CORE::FE::CellType::line2, 1>;
-template class DRT::ELEMENTS::ScaTraEleCalcElch<CORE::FE::CellType::line2, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcElch<CORE::FE::CellType::line2, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElch<CORE::FE::CellType::line3, 1>;
+template class Discret::ELEMENTS::ScaTraEleCalcElch<Core::FE::CellType::line2, 1>;
+template class Discret::ELEMENTS::ScaTraEleCalcElch<Core::FE::CellType::line2, 2>;
+template class Discret::ELEMENTS::ScaTraEleCalcElch<Core::FE::CellType::line2, 3>;
+template class Discret::ELEMENTS::ScaTraEleCalcElch<Core::FE::CellType::line3, 1>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElch<CORE::FE::CellType::tri3, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcElch<CORE::FE::CellType::tri3, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElch<CORE::FE::CellType::tri6, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcElch<CORE::FE::CellType::quad4, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcElch<CORE::FE::CellType::quad4, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcElch<CORE::FE::CellType::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalcElch<CORE::FE::CellType::quad9, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcElch<CORE::FE::CellType::nurbs9, 2>;
+template class Discret::ELEMENTS::ScaTraEleCalcElch<Core::FE::CellType::tri3, 2>;
+template class Discret::ELEMENTS::ScaTraEleCalcElch<Core::FE::CellType::tri3, 3>;
+template class Discret::ELEMENTS::ScaTraEleCalcElch<Core::FE::CellType::tri6, 2>;
+template class Discret::ELEMENTS::ScaTraEleCalcElch<Core::FE::CellType::quad4, 2>;
+template class Discret::ELEMENTS::ScaTraEleCalcElch<Core::FE::CellType::quad4, 3>;
+// template class Discret::ELEMENTS::ScaTraEleCalcElch<Core::FE::CellType::quad8>;
+template class Discret::ELEMENTS::ScaTraEleCalcElch<Core::FE::CellType::quad9, 2>;
+template class Discret::ELEMENTS::ScaTraEleCalcElch<Core::FE::CellType::nurbs9, 2>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElch<CORE::FE::CellType::hex8, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcElch<CORE::FE::CellType::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalcElch<CORE::FE::CellType::hex27, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElch<CORE::FE::CellType::tet4, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElch<CORE::FE::CellType::tet10, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcElch<CORE::FE::CellType::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalcElch<CORE::FE::CellType::pyramid5, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcElch<CORE::FE::CellType::nurbs27>;
+template class Discret::ELEMENTS::ScaTraEleCalcElch<Core::FE::CellType::hex8, 3>;
+// template class Discret::ELEMENTS::ScaTraEleCalcElch<Core::FE::CellType::hex20>;
+template class Discret::ELEMENTS::ScaTraEleCalcElch<Core::FE::CellType::hex27, 3>;
+template class Discret::ELEMENTS::ScaTraEleCalcElch<Core::FE::CellType::tet4, 3>;
+template class Discret::ELEMENTS::ScaTraEleCalcElch<Core::FE::CellType::tet10, 3>;
+// template class Discret::ELEMENTS::ScaTraEleCalcElch<Core::FE::CellType::wedge6>;
+template class Discret::ELEMENTS::ScaTraEleCalcElch<Core::FE::CellType::pyramid5, 3>;
+// template class Discret::ELEMENTS::ScaTraEleCalcElch<Core::FE::CellType::nurbs27>;
 
 FOUR_C_NAMESPACE_CLOSE

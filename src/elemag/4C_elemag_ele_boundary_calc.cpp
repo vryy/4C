@@ -20,54 +20,54 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ElemagBoundaryImplInterface* DRT::ELEMENTS::ElemagBoundaryImplInterface::Impl(
-    const CORE::Elements::Element* ele)
+Discret::ELEMENTS::ElemagBoundaryImplInterface*
+Discret::ELEMENTS::ElemagBoundaryImplInterface::Impl(const Core::Elements::Element* ele)
 {
   switch (ele->Shape())
   {
-    case CORE::FE::CellType::quad4:
+    case Core::FE::CellType::quad4:
     {
-      return ElemagBoundaryImpl<CORE::FE::CellType::quad4>::Instance();
+      return ElemagBoundaryImpl<Core::FE::CellType::quad4>::Instance();
     }
-    case CORE::FE::CellType::quad8:
+    case Core::FE::CellType::quad8:
     {
-      return ElemagBoundaryImpl<CORE::FE::CellType::quad8>::Instance();
+      return ElemagBoundaryImpl<Core::FE::CellType::quad8>::Instance();
     }
-    case CORE::FE::CellType::quad9:
+    case Core::FE::CellType::quad9:
     {
-      return ElemagBoundaryImpl<CORE::FE::CellType::quad9>::Instance();
+      return ElemagBoundaryImpl<Core::FE::CellType::quad9>::Instance();
     }
-    case CORE::FE::CellType::tri3:
+    case Core::FE::CellType::tri3:
     {
-      return ElemagBoundaryImpl<CORE::FE::CellType::tri3>::Instance();
+      return ElemagBoundaryImpl<Core::FE::CellType::tri3>::Instance();
     }
-    case CORE::FE::CellType::tri6:
+    case Core::FE::CellType::tri6:
     {
-      return ElemagBoundaryImpl<CORE::FE::CellType::tri6>::Instance();
+      return ElemagBoundaryImpl<Core::FE::CellType::tri6>::Instance();
     }
-    case CORE::FE::CellType::line2:
+    case Core::FE::CellType::line2:
     {
-      return ElemagBoundaryImpl<CORE::FE::CellType::line2>::Instance();
+      return ElemagBoundaryImpl<Core::FE::CellType::line2>::Instance();
     }
-    case CORE::FE::CellType::line3:
+    case Core::FE::CellType::line3:
     {
-      return ElemagBoundaryImpl<CORE::FE::CellType::line3>::Instance();
+      return ElemagBoundaryImpl<Core::FE::CellType::line3>::Instance();
     }
-    case CORE::FE::CellType::nurbs2:  // 1D nurbs boundary element
+    case Core::FE::CellType::nurbs2:  // 1D nurbs boundary element
     {
-      return ElemagBoundaryImpl<CORE::FE::CellType::nurbs2>::Instance();
+      return ElemagBoundaryImpl<Core::FE::CellType::nurbs2>::Instance();
     }
-    case CORE::FE::CellType::nurbs3:  // 1D nurbs boundary element
+    case Core::FE::CellType::nurbs3:  // 1D nurbs boundary element
     {
-      return ElemagBoundaryImpl<CORE::FE::CellType::nurbs3>::Instance();
+      return ElemagBoundaryImpl<Core::FE::CellType::nurbs3>::Instance();
     }
-    case CORE::FE::CellType::nurbs4:  // 2D nurbs boundary element
+    case Core::FE::CellType::nurbs4:  // 2D nurbs boundary element
     {
-      return ElemagBoundaryImpl<CORE::FE::CellType::nurbs4>::Instance();
+      return ElemagBoundaryImpl<Core::FE::CellType::nurbs4>::Instance();
     }
-    case CORE::FE::CellType::nurbs9:  // 2D nurbs boundary element
+    case Core::FE::CellType::nurbs9:  // 2D nurbs boundary element
     {
-      return ElemagBoundaryImpl<CORE::FE::CellType::nurbs9>::Instance();
+      return ElemagBoundaryImpl<Core::FE::CellType::nurbs9>::Instance();
     }
     default:
       FOUR_C_THROW(
@@ -76,15 +76,15 @@ DRT::ELEMENTS::ElemagBoundaryImplInterface* DRT::ELEMENTS::ElemagBoundaryImplInt
   }
 }
 
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::ElemagBoundaryImpl<distype>* DRT::ELEMENTS::ElemagBoundaryImpl<distype>::Instance(
-    CORE::UTILS::SingletonAction action)
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::ElemagBoundaryImpl<distype>*
+Discret::ELEMENTS::ElemagBoundaryImpl<distype>::Instance(Core::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = CORE::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
       []()
       {
-        return std::unique_ptr<DRT::ELEMENTS::ElemagBoundaryImpl<distype>>(
-            new DRT::ELEMENTS::ElemagBoundaryImpl<distype>());
+        return std::unique_ptr<Discret::ELEMENTS::ElemagBoundaryImpl<distype>>(
+            new Discret::ELEMENTS::ElemagBoundaryImpl<distype>());
       });
 
   return singleton_owner.Instance(action);
@@ -93,8 +93,8 @@ DRT::ELEMENTS::ElemagBoundaryImpl<distype>* DRT::ELEMENTS::ElemagBoundaryImpl<di
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::ElemagBoundaryImpl<distype>::ElemagBoundaryImpl()
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::ElemagBoundaryImpl<distype>::ElemagBoundaryImpl()
     : xyze_(true),
       funct_(true),
       deriv_(true),
@@ -110,26 +110,26 @@ DRT::ELEMENTS::ElemagBoundaryImpl<distype>::ElemagBoundaryImpl()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::ElemagBoundaryImpl<distype>::evaluate_neumann(DRT::ELEMENTS::ElemagBoundary* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    CORE::Conditions::Condition& condition, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseVector& elevec1_epetra,
-    CORE::LINALG::SerialDenseMatrix* elemat1_epetra)
+template <Core::FE::CellType distype>
+int Discret::ELEMENTS::ElemagBoundaryImpl<distype>::evaluate_neumann(
+    Discret::ELEMENTS::ElemagBoundary* ele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1_epetra,
+    Core::LinAlg::SerialDenseMatrix* elemat1_epetra)
 {
   return 0;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::ElemagBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ElemagBoundary* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec1_epetra,
-    CORE::LINALG::SerialDenseVector& elevec2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec3_epetra)
+template <Core::FE::CellType distype>
+int Discret::ELEMENTS::ElemagBoundaryImpl<distype>::Evaluate(Discret::ELEMENTS::ElemagBoundary* ele,
+    Teuchos::ParameterList& params, Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+    Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec1_epetra,
+    Core::LinAlg::SerialDenseVector& elevec2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec3_epetra)
 {
   /* the term representing absorbing first order boundary conditions for the
    * here given problem looks like < lambda, mu > over Gamma_ext, hence it belongs
@@ -137,15 +137,15 @@ int DRT::ELEMENTS::ElemagBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ElemagBo
    * unknowns we build K with G as summand. Hence, we can just add the terms
    * resulting from this boundary condition to K (and hence G)
    */
-  const ELEMAG::Action action = CORE::UTILS::GetAsEnum<ELEMAG::Action>(params, "action");
+  const EleMag::Action action = Core::UTILS::GetAsEnum<EleMag::Action>(params, "action");
   switch (action)
   {
-    case ELEMAG::calc_abc:
+    case EleMag::calc_abc:
     {
       const int* nodeids = ele->NodeIds();
 
-      CORE::Elements::Element* parent = ele->parent_element();
-      Teuchos::RCP<CORE::Elements::FaceElement>* faces = parent->Faces();
+      Core::Elements::Element* parent = ele->parent_element();
+      Teuchos::RCP<Core::Elements::FaceElement>* faces = parent->Faces();
       bool same = false;
       for (int i = 0; i < parent->NumFace(); ++i)
       {
@@ -224,12 +224,12 @@ int DRT::ELEMENTS::ElemagBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ElemagBo
       //  whom it belongs");
       break;
     }
-    case ELEMAG::bd_integrate:
+    case EleMag::bd_integrate:
     {
       const int* nodeids = ele->NodeIds();
 
-      CORE::Elements::Element* parent = ele->parent_element();
-      Teuchos::RCP<CORE::Elements::FaceElement>* faces = parent->Faces();
+      Core::Elements::Element* parent = ele->parent_element();
+      Teuchos::RCP<Core::Elements::FaceElement>* faces = parent->Faces();
       bool same = false;
       for (int i = 0; i < parent->NumFace(); ++i)
       {

@@ -17,7 +17,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
@@ -32,17 +32,17 @@ namespace DRT
       //! dtor
       virtual ~ElemagFactory() = default;
       //! ProvideImpl
-      static ElemagEleInterface* ProvideImpl(CORE::FE::CellType distype, std::string problem);
+      static ElemagEleInterface* ProvideImpl(Core::FE::CellType distype, std::string problem);
 
      private:
       //! define ElemagEle instances dependent on problem
-      template <CORE::FE::CellType distype>
+      template <Core::FE::CellType distype>
       static ElemagEleInterface* define_problem_type(std::string problem);
     };
 
   }  // namespace ELEMENTS
 
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

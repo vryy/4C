@@ -39,68 +39,68 @@ STR::MODELEVALUATOR::Factory::Factory()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<STR::ModelEvaluator::Map> STR::MODELEVALUATOR::Factory::build_model_evaluators(
-    const std::set<enum INPAR::STR::ModelType>& modeltypes,
+    const std::set<enum Inpar::STR::ModelType>& modeltypes,
     const Teuchos::RCP<STR::MODELEVALUATOR::Generic>& coupling_model_ptr) const
 {
   // create a new standard map
   Teuchos::RCP<STR::ModelEvaluator::Map> model_map = Teuchos::rcp(new STR::ModelEvaluator::Map());
 
-  std::set<enum INPAR::STR::ModelType>::const_iterator mt_iter;
+  std::set<enum Inpar::STR::ModelType>::const_iterator mt_iter;
   for (mt_iter = modeltypes.begin(); mt_iter != modeltypes.end(); ++mt_iter)
   {
     switch (*mt_iter)
     {
-      case INPAR::STR::model_structure:
+      case Inpar::STR::model_structure:
         (*model_map)[*mt_iter] = build_structure_model_evaluator();
         break;
-      case INPAR::STR::model_springdashpot:
+      case Inpar::STR::model_springdashpot:
         (*model_map)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::SpringDashpot());
         break;
-      case INPAR::STR::model_browniandyn:
+      case Inpar::STR::model_browniandyn:
         (*model_map)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::BrownianDyn());
         break;
-      case INPAR::STR::model_beaminteraction:
+      case Inpar::STR::model_beaminteraction:
         (*model_map)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::BeamInteraction());
         break;
-      case INPAR::STR::model_contact:
+      case Inpar::STR::model_contact:
       {
         (*model_map)[*mt_iter] = build_contact_model_evaluator();
         break;
       }
-      case INPAR::STR::model_beam_interaction_old:
+      case Inpar::STR::model_beam_interaction_old:
         (*model_map)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::BeamInteractionOld());
         break;
-      case INPAR::STR::model_lag_pen_constraint:
+      case Inpar::STR::model_lag_pen_constraint:
         (*model_map)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::LagPenConstraint());
         break;
-      case INPAR::STR::model_cardiovascular0d:
+      case Inpar::STR::model_cardiovascular0d:
         (*model_map)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::Cardiovascular0D());
         break;
-      case INPAR::STR::model_monolithic_coupling:
+      case Inpar::STR::model_monolithic_coupling:
       {
         if (coupling_model_ptr.is_null())
           FOUR_C_THROW("The monolithic coupling model evaluator is not defined.");
         (*model_map)[*mt_iter] = coupling_model_ptr;
         break;
       }
-      case INPAR::STR::model_partitioned_coupling:
+      case Inpar::STR::model_partitioned_coupling:
       {
         if (coupling_model_ptr.is_null())
           FOUR_C_THROW("The partitioned coupling model evaluator is not defined.");
         (*model_map)[*mt_iter] = coupling_model_ptr;
         break;
       }
-      case INPAR::STR::model_basic_coupling:
+      case Inpar::STR::model_basic_coupling:
       {
         if (coupling_model_ptr.is_null())
           FOUR_C_THROW("The basic coupling model evaluator is not defined.");
         (*model_map)[*mt_iter] = coupling_model_ptr;
         break;
       }
-      case INPAR::STR::model_meshtying:
+      case Inpar::STR::model_meshtying:
         (*model_map)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::Meshtying());
         break;
-      case INPAR::STR::model_constraints:
+      case Inpar::STR::model_constraints:
         (*model_map)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::Constraints());
         break;
       default:
@@ -132,7 +132,7 @@ STR::MODELEVALUATOR::Factory::build_structure_model_evaluator() const
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<STR::ModelEvaluator::Map> STR::MODELEVALUATOR::build_model_evaluators(
-    const std::set<enum INPAR::STR::ModelType>& modeltypes,
+    const std::set<enum Inpar::STR::ModelType>& modeltypes,
     const Teuchos::RCP<STR::MODELEVALUATOR::Generic>& coupling_model_ptr)
 {
   Factory factory;

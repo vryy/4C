@@ -27,11 +27,11 @@ namespace STR::MODELEVALUATOR
   class GaussPointDataOutputManager;
 }
 
-namespace INPUT
+namespace Input
 {
   class LineDefinition;
 }
-namespace DRT
+namespace Discret
 {
   // forward declaration
   class Discretization;
@@ -42,13 +42,13 @@ namespace DRT
     class Shell7p;
     struct ShellStressIO
     {
-      INPAR::STR::StressType type;
+      Inpar::STR::StressType type;
       std::vector<char>& mutable_data;
     };
 
     struct ShellStrainIO
     {
-      INPAR::STR::StrainType type;
+      Inpar::STR::StrainType type;
       std::vector<char>& mutable_data;
     };
 
@@ -66,8 +66,8 @@ namespace DRT
        * @param shell_data (in) : Shell data (thickness, number of ANS, SDC)
        * @param linedef (in) : Input line of the corresponding element
        */
-      virtual void Setup(CORE::Elements::Element& ele, MAT::So3Material& solid_material,
-          INPUT::LineDefinition* linedef, const STR::ELEMENTS::ShellLockingTypes& locking_types,
+      virtual void Setup(Core::Elements::Element& ele, Mat::So3Material& solid_material,
+          Input::LineDefinition* linedef, const STR::ELEMENTS::ShellLockingTypes& locking_types,
           const STR::ELEMENTS::ShellData& shell_data) = 0;
 
       /*!
@@ -78,7 +78,7 @@ namespace DRT
        *
        */
       virtual void material_post_setup(
-          CORE::Elements::Element& ele, MAT::So3Material& solid_material) = 0;
+          Core::Elements::Element& ele, Mat::So3Material& solid_material) = 0;
 
       /*!
        * @brief Evaluate the force vector, stiffness matrix and mass matrix of the element
@@ -94,13 +94,13 @@ namespace DRT
        * @param stiffness_matrix (out) : Pointer to stiffness matrix or nullptr
        * @param mass_matrix (out) : Pointer to mass matrix or nullptr
        */
-      virtual void evaluate_nonlinear_force_stiffness_mass(CORE::Elements::Element& ele,
-          MAT::So3Material& solid_material, const DRT::Discretization& discretization,
-          const CORE::LINALG::SerialDenseMatrix& nodal_directors,
+      virtual void evaluate_nonlinear_force_stiffness_mass(Core::Elements::Element& ele,
+          Mat::So3Material& solid_material, const Discret::Discretization& discretization,
+          const Core::LinAlg::SerialDenseMatrix& nodal_directors,
           const std::vector<int>& dof_index_array, Teuchos::ParameterList& params,
-          CORE::LINALG::SerialDenseVector* force_vector,
-          CORE::LINALG::SerialDenseMatrix* stiffness_matrix,
-          CORE::LINALG::SerialDenseMatrix* mass_matrix) = 0;
+          Core::LinAlg::SerialDenseVector* force_vector,
+          Core::LinAlg::SerialDenseMatrix* stiffness_matrix,
+          Core::LinAlg::SerialDenseMatrix* mass_matrix) = 0;
 
       /*!
        * @brief Recover condensed EAS variables
@@ -111,9 +111,9 @@ namespace DRT
        * @param params (in) : ParameterList for communication between control routine, elements and
        * materials
        */
-      virtual void Recover(CORE::Elements::Element& ele, const DRT::Discretization& discretization,
-          const std::vector<int>& dof_index_array, Teuchos::ParameterList& params,
-          STR::ELEMENTS::ParamsInterface& str_interface) = 0;
+      virtual void Recover(Core::Elements::Element& ele,
+          const Discret::Discretization& discretization, const std::vector<int>& dof_index_array,
+          Teuchos::ParameterList& params, STR::ELEMENTS::ParamsInterface& str_interface) = 0;
 
       /*!
        * @brief Evaluates the stresses and strains
@@ -128,10 +128,10 @@ namespace DRT
        * @param params (in) : ParameterList for communication between control routine, elements and
        * materials
        */
-      virtual void calculate_stresses_strains(CORE::Elements::Element& ele,
-          MAT::So3Material& solid_material, const ShellStressIO& stressIO,
-          const ShellStrainIO& strainIO, const DRT::Discretization& discretization,
-          const CORE::LINALG::SerialDenseMatrix& nodal_directors,
+      virtual void calculate_stresses_strains(Core::Elements::Element& ele,
+          Mat::So3Material& solid_material, const ShellStressIO& stressIO,
+          const ShellStrainIO& strainIO, const Discret::Discretization& discretization,
+          const Core::LinAlg::SerialDenseMatrix& nodal_directors,
           const std::vector<int>& dof_index_array, Teuchos::ParameterList& params) = 0;
 
       /*!
@@ -145,9 +145,9 @@ namespace DRT
        * @param params (in) : ParameterList for communication between control routine, elements and
        * materials
        */
-      virtual double calculate_internal_energy(CORE::Elements::Element& ele,
-          MAT::So3Material& solid_material, const DRT::Discretization& discretization,
-          const CORE::LINALG::SerialDenseMatrix& nodal_directors,
+      virtual double calculate_internal_energy(Core::Elements::Element& ele,
+          Mat::So3Material& solid_material, const Discret::Discretization& discretization,
+          const Core::LinAlg::SerialDenseMatrix& nodal_directors,
           const std::vector<int>& dof_index_array, Teuchos::ParameterList& params) = 0;
 
       /*!
@@ -161,9 +161,9 @@ namespace DRT
        * @param params (in/[out]) : A ParameterList to pass values from the time integrator to
        * the elements/materials
        */
-      virtual void Update(CORE::Elements::Element& ele, MAT::So3Material& solid_material,
-          const DRT::Discretization& discretization,
-          const CORE::LINALG::SerialDenseMatrix& nodal_directors,
+      virtual void Update(Core::Elements::Element& ele, Mat::So3Material& solid_material,
+          const Discret::Discretization& discretization,
+          const Core::LinAlg::SerialDenseMatrix& nodal_directors,
           const std::vector<int>& dof_index_array, Teuchos::ParameterList& params) = 0;
 
       /*!
@@ -173,7 +173,7 @@ namespace DRT
        * @param solid_material (in) : Solid material of the element
        */
       virtual void reset_to_last_converged(
-          CORE::Elements::Element& ele, MAT::So3Material& solid_material) = 0;
+          Core::Elements::Element& ele, Mat::So3Material& solid_material) = 0;
 
       /*!
        * \brief Query data to be visualized using BINIO of a given name
@@ -185,7 +185,7 @@ namespace DRT
     };  // class Shell7pEleInterface
   }     // namespace ELEMENTS
 
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

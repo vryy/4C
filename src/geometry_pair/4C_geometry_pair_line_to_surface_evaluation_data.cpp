@@ -22,9 +22,9 @@ GEOMETRYPAIR::LineToSurfaceEvaluationData::LineToSurfaceEvaluationData(
     const Teuchos::ParameterList& input_parameter_list)
     : LineTo3DEvaluationData(input_parameter_list),
       face_elements_(),
-      surface_normal_strategy_(INPAR::GEOMETRYPAIR::SurfaceNormals::standard)
+      surface_normal_strategy_(Inpar::GEOMETRYPAIR::SurfaceNormals::standard)
 {
-  surface_normal_strategy_ = Teuchos::getIntegralValue<INPAR::GEOMETRYPAIR::SurfaceNormals>(
+  surface_normal_strategy_ = Teuchos::getIntegralValue<Inpar::GEOMETRYPAIR::SurfaceNormals>(
       input_parameter_list, "GEOMETRY_PAIR_SURFACE_NORMALS");
 }
 
@@ -42,7 +42,7 @@ void GEOMETRYPAIR::LineToSurfaceEvaluationData::Clear()
  *
  */
 void GEOMETRYPAIR::LineToSurfaceEvaluationData::Setup(
-    const Teuchos::RCP<const DRT::Discretization>& discret,
+    const Teuchos::RCP<const Discret::Discretization>& discret,
     const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
 {
   face_elements_ = face_elements;

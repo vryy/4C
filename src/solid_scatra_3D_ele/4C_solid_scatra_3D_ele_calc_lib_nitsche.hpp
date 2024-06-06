@@ -16,7 +16,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT::ELEMENTS
+namespace Discret::ELEMENTS
 {
 
   template <int dim>
@@ -26,19 +26,19 @@ namespace DRT::ELEMENTS
     CauchyNDirLinearizations<dim> solid{};
 
     /// first derivative w.r.t. scalars
-    CORE::LINALG::SerialDenseMatrix* d_cauchyndir_ds = nullptr;
+    Core::LinAlg::SerialDenseMatrix* d_cauchyndir_ds = nullptr;
   };
 
-  template <CORE::FE::CellType celltype, typename SolidFormulation>
+  template <Core::FE::CellType celltype, typename SolidFormulation>
   CauchyNDirLinearizationDependencies<celltype>
   get_initialized_cauchy_n_dir_linearization_dependencies(
-      const DRT::ELEMENTS::ElementFormulationDerivativeEvaluator<celltype, SolidFormulation>&
+      const Discret::ELEMENTS::ElementFormulationDerivativeEvaluator<celltype, SolidFormulation>&
           evaluator,
-      DRT::ELEMENTS::SolidScatraCauchyNDirLinearizations<3>& linearizations)
+      Discret::ELEMENTS::SolidScatraCauchyNDirLinearizations<3>& linearizations)
   {
     // Get pure solid dependencies
     CauchyNDirLinearizationDependencies<celltype> linearization_dependencies =
-        DRT::ELEMENTS::get_initialized_cauchy_n_dir_linearization_dependencies(
+        Discret::ELEMENTS::get_initialized_cauchy_n_dir_linearization_dependencies(
             evaluator, linearizations.solid);
 
     // initialize dependencies for solid-scatra
@@ -57,24 +57,24 @@ namespace DRT::ELEMENTS
   template <typename T, int dim>
   constexpr bool can_evaluate_solid_scatra_cauchy_n_dir_at_xi<T, dim,
       std::void_t<decltype(std::declval<T>()->GetCauchyNDirAtXi(
-          std::declval<const CORE::Elements::Element&>(), std::declval<MAT::So3Material&>(),
+          std::declval<const Core::Elements::Element&>(), std::declval<Mat::So3Material&>(),
           std::declval<const std::vector<double>&>(),
           std::declval<const std::optional<std::vector<double>>&>(),
-          std::declval<const CORE::LINALG::Matrix<dim, 1>&>(),
-          std::declval<const CORE::LINALG::Matrix<dim, 1>&>(),
-          std::declval<const CORE::LINALG::Matrix<dim, 1>&>(),
+          std::declval<const Core::LinAlg::Matrix<dim, 1>&>(),
+          std::declval<const Core::LinAlg::Matrix<dim, 1>&>(),
+          std::declval<const Core::LinAlg::Matrix<dim, 1>&>(),
           std::declval<SolidScatraCauchyNDirLinearizations<dim>&>()))>> = true;
 
 
-  namespace DETAILS
+  namespace Details
   {
     template <int dim>
     struct EvaluateSolidScatraCauchyNDirAction
     {
-      EvaluateSolidScatraCauchyNDirAction(const CORE::Elements::Element& e, MAT::So3Material& m,
+      EvaluateSolidScatraCauchyNDirAction(const Core::Elements::Element& e, Mat::So3Material& m,
           const std::vector<double>& d, const std::optional<std::vector<double>>& s,
-          const CORE::LINALG::Matrix<dim, 1>& x, const CORE::LINALG::Matrix<dim, 1>& normal,
-          const CORE::LINALG::Matrix<dim, 1>& direction,
+          const Core::LinAlg::Matrix<dim, 1>& x, const Core::LinAlg::Matrix<dim, 1>& normal,
+          const Core::LinAlg::Matrix<dim, 1>& direction,
           SolidScatraCauchyNDirLinearizations<dim>& lins)
           : element(e),
             mat(m),
@@ -103,32 +103,32 @@ namespace DRT::ELEMENTS
             "Your element evaluation %s does not allow to evaluate the Cauchy stress at a "
             "specific "
             "point in a specific direction in the dimension dim=%d.",
-            CORE::UTILS::TryDemangle(typeid(T).name()).c_str(), dim);
+            Core::UTILS::TryDemangle(typeid(T).name()).c_str(), dim);
       }
 
-      const CORE::Elements::Element& element;
-      MAT::So3Material& mat;
+      const Core::Elements::Element& element;
+      Mat::So3Material& mat;
       const std::vector<double>& disp;
       const std::optional<std::vector<double>>& scalars;
-      const CORE::LINALG::Matrix<dim, 1>& xi;
-      const CORE::LINALG::Matrix<dim, 1>& n;
-      const CORE::LINALG::Matrix<dim, 1>& dir;
+      const Core::LinAlg::Matrix<dim, 1>& xi;
+      const Core::LinAlg::Matrix<dim, 1>& n;
+      const Core::LinAlg::Matrix<dim, 1>& dir;
       SolidScatraCauchyNDirLinearizations<dim>& linearizations;
     };
-  }  // namespace DETAILS
+  }  // namespace Details
 
   template <typename VariantType>
-  double GetCauchyNDirAtXi(VariantType& variant, const CORE::Elements::Element& element,
-      MAT::So3Material& mat, const std::vector<double>& disp,
-      const std::optional<std::vector<double>>& scalars, const CORE::LINALG::Matrix<3, 1>& xi,
-      const CORE::LINALG::Matrix<3, 1>& n, const CORE::LINALG::Matrix<3, 1>& dir,
+  double GetCauchyNDirAtXi(VariantType& variant, const Core::Elements::Element& element,
+      Mat::So3Material& mat, const std::vector<double>& disp,
+      const std::optional<std::vector<double>>& scalars, const Core::LinAlg::Matrix<3, 1>& xi,
+      const Core::LinAlg::Matrix<3, 1>& n, const Core::LinAlg::Matrix<3, 1>& dir,
       SolidScatraCauchyNDirLinearizations<3>& linearizations)
   {
-    return std::visit(DETAILS::EvaluateSolidScatraCauchyNDirAction<3>(
+    return std::visit(Details::EvaluateSolidScatraCauchyNDirAction<3>(
                           element, mat, disp, scalars, xi, n, dir, linearizations),
         variant);
   }
-}  // namespace DRT::ELEMENTS
+}  // namespace Discret::ELEMENTS
 
 FOUR_C_NAMESPACE_CLOSE
 #endif

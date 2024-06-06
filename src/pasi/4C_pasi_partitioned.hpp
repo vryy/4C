@@ -27,11 +27,11 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
-namespace ADAPTER
+namespace Adapter
 {
   class StructureBaseAlgorithmNew;
   class PASIStructureWrapper;
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 namespace PARTICLEALGORITHM
 {
@@ -46,7 +46,7 @@ namespace STR
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
  *---------------------------------------------------------------------------*/
-namespace PASI
+namespace PaSI
 {
   /*!
    * \brief partitioned algorithm for particle structure interaction
@@ -56,7 +56,7 @@ namespace PASI
    *
    * \author Sebastian Fuchs \date 01/2017
    */
-  class PartitionedAlgo : public ADAPTER::AlgorithmBase
+  class PartitionedAlgo : public Adapter::AlgorithmBase
   {
    public:
     /*!
@@ -206,7 +206,7 @@ namespace PASI
     };
 
     //! structural field
-    Teuchos::RCP<ADAPTER::PASIStructureWrapper> structurefield_;
+    Teuchos::RCP<Adapter::PASIStructureWrapper> structurefield_;
 
     //! particle algorithm
     Teuchos::RCP<PARTICLEALGORITHM::ParticleAlgorithm> particlealgorithm_;
@@ -246,7 +246,7 @@ namespace PASI
     void build_structure_model_evaluator();
 
     //! ptr to the underlying structure problem base algorithm
-    Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> struct_adapterbase_ptr_;
+    Teuchos::RCP<Adapter::StructureBaseAlgorithmNew> struct_adapterbase_ptr_;
 
     //! flag indicating correct initialization
     bool isinit_;
@@ -261,7 +261,7 @@ namespace PASI
     void set_is_setup(bool issetup) { issetup_ = issetup; };
   };
 
-}  // namespace PASI
+}  // namespace PaSI
 
 /*---------------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

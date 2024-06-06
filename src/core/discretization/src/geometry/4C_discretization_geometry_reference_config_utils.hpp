@@ -21,7 +21,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::GEO
+namespace Core::Geo
 {
   /**
    * \brief Calculate the global position in the reference configuration for a given element at a
@@ -33,17 +33,17 @@ namespace CORE::GEO
    * space position xi
    *
    *  \author cschmidt \date 11/18 */
-  template <int probdim, CORE::FE::CellType distype>
-  static void LocalToGlobalPositionAtXiRefConfig(const CORE::Elements::Element* element,
-      const CORE::LINALG::Matrix<CORE::FE::dim<distype>, 1>& xi,
-      CORE::LINALG::Matrix<probdim, 1>& coord)
+  template <int probdim, Core::FE::CellType distype>
+  static void LocalToGlobalPositionAtXiRefConfig(const Core::Elements::Element* element,
+      const Core::LinAlg::Matrix<Core::FE::dim<distype>, 1>& xi,
+      Core::LinAlg::Matrix<probdim, 1>& coord)
   {
-    static CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, 1> funct(true);
-    static CORE::LINALG::Matrix<probdim, CORE::FE::num_nodes<distype>> nodecoords(true);
+    static Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, 1> funct(true);
+    static Core::LinAlg::Matrix<probdim, Core::FE::num_nodes<distype>> nodecoords(true);
 
-    CORE::FE::shape_function<distype>(xi, funct);
+    Core::FE::shape_function<distype>(xi, funct);
 
-    const CORE::Nodes::Node* const* nodes = element->Nodes();
+    const Core::Nodes::Node* const* nodes = element->Nodes();
     const int nodedim = nodes[0]->Dim();
 
     if (!nodes)
@@ -56,7 +56,7 @@ namespace CORE::GEO
           "Problem dimension: %i and dimension of nodes: %i does not match!", probdim, nodedim);
     }
 
-    for (int i = 0; i < CORE::FE::num_nodes<distype>; ++i)
+    for (int i = 0; i < Core::FE::num_nodes<distype>; ++i)
     {
       for (int j = 0; j < nodedim; ++j)
       {
@@ -77,17 +77,17 @@ namespace CORE::GEO
    * position xi
    *
    *  \author cschmidt \date 11/18 */
-  template <CORE::FE::CellType distype>
-  static void ComputeUnitNormalAtXiRefConfig(const CORE::Elements::Element* element,
-      const CORE::LINALG::Matrix<CORE::FE::dim<distype>, 1>& xi, CORE::LINALG::Matrix<3, 1>& normal)
+  template <Core::FE::CellType distype>
+  static void ComputeUnitNormalAtXiRefConfig(const Core::Elements::Element* element,
+      const Core::LinAlg::Matrix<Core::FE::dim<distype>, 1>& xi, Core::LinAlg::Matrix<3, 1>& normal)
   {
-    static CORE::LINALG::Matrix<3, CORE::FE::dim<distype>> gxieta(true);
-    static CORE::LINALG::Matrix<CORE::FE::dim<distype>, CORE::FE::num_nodes<distype>> deriv(true);
-    static CORE::LINALG::Matrix<3, CORE::FE::num_nodes<distype>> nodecoords(true);
+    static Core::LinAlg::Matrix<3, Core::FE::dim<distype>> gxieta(true);
+    static Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::num_nodes<distype>> deriv(true);
+    static Core::LinAlg::Matrix<3, Core::FE::num_nodes<distype>> nodecoords(true);
 
-    CORE::FE::shape_function_deriv1<distype>(xi, deriv);
+    Core::FE::shape_function_deriv1<distype>(xi, deriv);
 
-    const CORE::Nodes::Node* const* nodes = element->Nodes();
+    const Core::Nodes::Node* const* nodes = element->Nodes();
     const int nodedim = nodes[0]->Dim();
 
     if (!nodes)
@@ -99,7 +99,7 @@ namespace CORE::GEO
       FOUR_C_THROW("ERROR: Only implemented for 3D cases so far!");
     }
 
-    for (int i = 0; i < CORE::FE::num_nodes<distype>; ++i)
+    for (int i = 0; i < Core::FE::num_nodes<distype>; ++i)
     {
       for (int j = 0; j < nodedim; ++j)
       {
@@ -108,10 +108,10 @@ namespace CORE::GEO
     }
 
     gxieta.MultiplyNT(1.0, nodecoords, deriv, 0.0);
-    static CORE::LINALG::Matrix<3, 1> gxi(true);
-    static CORE::LINALG::Matrix<3, 1> geta(true);
-    static CORE::LINALG::Matrix<2, 1> first(true);
-    static CORE::LINALG::Matrix<2, 1> second(true);
+    static Core::LinAlg::Matrix<3, 1> gxi(true);
+    static Core::LinAlg::Matrix<3, 1> geta(true);
+    static Core::LinAlg::Matrix<2, 1> first(true);
+    static Core::LinAlg::Matrix<2, 1> second(true);
     first(0, 0) = 1.0;
     second(1, 0) = 1.0;
     gxi.Multiply(1.0, gxieta, first, 0.0);
@@ -123,7 +123,7 @@ namespace CORE::GEO
     const double normnormal = normal.Norm2();
     normal.Scale(1.0 / normnormal);
   }
-}  // namespace CORE::GEO
+}  // namespace Core::Geo
 
 FOUR_C_NAMESPACE_CLOSE
 

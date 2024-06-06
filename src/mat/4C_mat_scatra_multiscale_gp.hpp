@@ -21,17 +21,17 @@ class Epetra_Vector;
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace SCATRA
+namespace ScaTra
 {
   class TimIntOneStepTheta;
 }
 
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationWriter;
 }
 
-namespace MAT
+namespace Mat
 {
   //! class implementation
   class ScatraMultiScaleGP
@@ -82,7 +82,7 @@ namespace MAT
     void read_restart();
 
     //! calculate derivative of determinate w.r.t. time according to macro time int scheme
-    void CalculateDdetFDt(Teuchos::RCP<SCATRA::TimIntOneStepTheta> microtimint);
+    void CalculateDdetFDt(Teuchos::RCP<ScaTra::TimIntOneStepTheta> microtimint);
 
     //! set time stepping data: time step size @p dt, current time @p time, and number of time step
     //! @p step
@@ -90,7 +90,7 @@ namespace MAT
 
    private:
     //! map between number of micro-scale discretization and micro-scale time integrator
-    static std::map<int, Teuchos::RCP<SCATRA::TimIntOneStepTheta>> microdisnum_microtimint_map_;
+    static std::map<int, Teuchos::RCP<ScaTra::TimIntOneStepTheta>> microdisnum_microtimint_map_;
 
     //! map between number of micro-scale discretization and number of associated macro-scale Gauss
     //! points
@@ -133,7 +133,7 @@ namespace MAT
     Teuchos::RCP<Epetra_Vector> hist_;
 
     //! micro-scale discretization writer
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> micro_output_;
+    Teuchos::RCP<Core::IO::DiscretizationWriter> micro_output_;
 
     //! file name prefix for restart
     std::string restartname_;
@@ -153,8 +153,8 @@ namespace MAT
 
     //! indicates if macro dis deforms
     const bool is_ale_;
-  };  // class MAT::ScatraMultiScaleGP
-}  // namespace MAT
+  };  // class Mat::ScatraMultiScaleGP
+}  // namespace Mat
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

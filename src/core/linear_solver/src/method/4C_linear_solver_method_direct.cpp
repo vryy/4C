@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 template <class MatrixType, class VectorType>
-CORE::LINEAR_SOLVER::DirectSolver<MatrixType, VectorType>::DirectSolver(std::string solvertype)
+Core::LinearSolver::DirectSolver<MatrixType, VectorType>::DirectSolver(std::string solvertype)
     : solvertype_(solvertype),
       factored_(false),
       x_(Teuchos::null),
@@ -42,9 +42,9 @@ CORE::LINEAR_SOLVER::DirectSolver<MatrixType, VectorType>::DirectSolver(std::str
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 template <class MatrixType, class VectorType>
-void CORE::LINEAR_SOLVER::DirectSolver<MatrixType, VectorType>::Setup(
+void Core::LinearSolver::DirectSolver<MatrixType, VectorType>::Setup(
     Teuchos::RCP<MatrixType> matrix, Teuchos::RCP<VectorType> x, Teuchos::RCP<VectorType> b,
-    const bool refactor, const bool reset, Teuchos::RCP<CORE::LINALG::KrylovProjector> projector)
+    const bool refactor, const bool reset, Teuchos::RCP<Core::LinAlg::KrylovProjector> projector)
 {
   // Assume the input matrix to be a single block matrix
   bool bIsCrsMatrix = true;
@@ -71,18 +71,18 @@ void CORE::LINEAR_SOLVER::DirectSolver<MatrixType, VectorType>::Setup(
     // P^T A P x_tilda = P^T b
     //
 
-    // cast system matrix to CORE::LINALG::SparseMatrix
+    // cast system matrix to Core::LinAlg::SparseMatrix
     // check whether cast was successfull
     if (crsA == Teuchos::null)
     {
       FOUR_C_THROW("Could not cast system matrix to Epetra_CrsMatrix.");
     }
-    // get view on systemmatrix as CORE::LINALG::SparseMatrix - this is no copy!
-    CORE::LINALG::SparseMatrix A_view(crsA, CORE::LINALG::View);
+    // get view on systemmatrix as Core::LinAlg::SparseMatrix - this is no copy!
+    Core::LinAlg::SparseMatrix A_view(crsA, Core::LinAlg::View);
 
     // apply projection to A without computing projection matrix thus avoiding
     // matrix-matrix multiplication
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> A2 = projector_->Project(A_view);
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> A2 = projector_->Project(A_view);
 
     // hand matrix over to A_
     a_ = A2->EpetraMatrix();
@@ -100,8 +100,8 @@ void CORE::LINEAR_SOLVER::DirectSolver<MatrixType, VectorType>::Setup(
     }
     else
     {
-      Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> Ablock =
-          Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(matrix);
+      Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> Ablock =
+          Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(matrix);
 
       int matrixDim = Ablock->FullRangeMap().NumGlobalElements();
       if (matrixDim > 50000)
@@ -117,7 +117,7 @@ void CORE::LINEAR_SOLVER::DirectSolver<MatrixType, VectorType>::Setup(
         *fos << "---------------------------- ATTENTION -----------------------" << std::endl;
       }
 
-      Teuchos::RCP<CORE::LINALG::SparseMatrix> Ablock_merged = Ablock->Merge();
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> Ablock_merged = Ablock->Merge();
       a_ = Ablock_merged->EpetraMatrix();
     }
     x_ = x;
@@ -171,7 +171,7 @@ void CORE::LINEAR_SOLVER::DirectSolver<MatrixType, VectorType>::Setup(
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 template <class MatrixType, class VectorType>
-int CORE::LINEAR_SOLVER::DirectSolver<MatrixType, VectorType>::Solve()
+int Core::LinearSolver::DirectSolver<MatrixType, VectorType>::Solve()
 {
   if (amesos_ == Teuchos::null) FOUR_C_THROW("No solver allocated");
 
@@ -202,6 +202,6 @@ int CORE::LINEAR_SOLVER::DirectSolver<MatrixType, VectorType>::Solve()
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 // explicit initialization
-template class CORE::LINEAR_SOLVER::DirectSolver<Epetra_Operator, Epetra_MultiVector>;
+template class Core::LinearSolver::DirectSolver<Epetra_Operator, Epetra_MultiVector>;
 
 FOUR_C_NAMESPACE_CLOSE

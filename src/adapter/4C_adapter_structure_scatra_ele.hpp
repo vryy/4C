@@ -18,15 +18,15 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
 
-namespace ADAPTER
+namespace Adapter
 {
-  INPAR::SCATRA::ImplType GetScaTraImplType(CORE::Elements::Element* ele);
-}  // namespace ADAPTER
+  Inpar::ScaTra::ImplType GetScaTraImplType(Core::Elements::Element* ele);
+}  // namespace Adapter
 
 
 FOUR_C_NAMESPACE_CLOSE

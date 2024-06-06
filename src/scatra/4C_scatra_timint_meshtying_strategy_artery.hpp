@@ -20,15 +20,15 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
-namespace ADAPTER
+namespace Adapter
 {
   class Coupling;
   class ArtNet;
-}  // namespace ADAPTER
+}  // namespace Adapter
 namespace FSI
 {
   class Monolithic;
@@ -41,19 +41,19 @@ namespace FSI
   }  // namespace UTILS
 }  // namespace FSI
 
-namespace POROMULTIPHASESCATRA
+namespace PoroMultiPhaseScaTra
 {
   class PoroMultiPhaseScaTraArtCouplBase;
 }
 
-namespace SCATRA
+namespace ScaTra
 {
   class MeshtyingStrategyArtery : public MeshtyingStrategyBase
   {
    public:
     //! constructor
     explicit MeshtyingStrategyArtery(
-        SCATRA::ScaTraTimIntImpl* scatratimint  //!< scalar transport time integrator
+        ScaTra::ScaTraTimIntImpl* scatratimint  //!< scalar transport time integrator
     );
 
     //! return global map of degrees of freedom
@@ -74,7 +74,7 @@ namespace SCATRA
 
     bool system_matrix_initialization_needed() const override { return false; }
 
-    Teuchos::RCP<CORE::LINALG::SparseOperator> init_system_matrix() const override
+    Teuchos::RCP<Core::LinAlg::SparseOperator> init_system_matrix() const override
     {
       FOUR_C_THROW(
           "This meshtying strategy does not need to initialize the system matrix, but relies "
@@ -84,7 +84,7 @@ namespace SCATRA
       return Teuchos::null;
     }
 
-    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> InterfaceMaps() const override
+    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> InterfaceMaps() const override
     {
       FOUR_C_THROW("InterfaceMaps() is not implemented in MeshtyingStrategyArtery.");
       return Teuchos::null;
@@ -94,30 +94,30 @@ namespace SCATRA
     void setup_meshtying() override;
 
     //! solver
-    const CORE::LINALG::Solver& Solver() const override;
+    const Core::LinAlg::Solver& Solver() const override;
 
     //! init the convergence check
     void init_conv_check_strategy() override;
 
     //! solve resulting linear system of equations
-    void Solve(const Teuchos::RCP<CORE::LINALG::Solver>& solver,         //!< solver
-        const Teuchos::RCP<CORE::LINALG::SparseOperator>& systemmatrix,  //!< system matrix
+    void Solve(const Teuchos::RCP<Core::LinAlg::Solver>& solver,         //!< solver
+        const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,  //!< system matrix
         const Teuchos::RCP<Epetra_Vector>& increment,                    //!< increment vector
         const Teuchos::RCP<Epetra_Vector>& residual,                     //!< residual vector
         const Teuchos::RCP<Epetra_Vector>& phinp,  //!< state vector at time n+1
         const int iteration,                       //!< number of current Newton-Raphson iteration
-        CORE::LINALG::SolverParams& solver_params) const override;
+        Core::LinAlg::SolverParams& solver_params) const override;
 
     void SetupSystem(
-        const Teuchos::RCP<CORE::LINALG::SparseOperator>& systemmatrix,  //!< system matrix
+        const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,  //!< system matrix
         const Teuchos::RCP<Epetra_Vector>& residual                      //!< residual vector
     ) const;
 
     //! init the convergence check
-    void set_artery_scatra_time_integrator(Teuchos::RCP<SCATRA::ScaTraTimIntImpl> artscatratimint);
+    void set_artery_scatra_time_integrator(Teuchos::RCP<ScaTra::ScaTraTimIntImpl> artscatratimint);
 
     //! set the artery time integrator
-    void set_artery_time_integrator(Teuchos::RCP<ADAPTER::ArtNet> arttimint);
+    void set_artery_time_integrator(Teuchos::RCP<Adapter::ArtNet> arttimint);
 
     //! set the element pairs that are close as found by search algorithm
     void SetNearbyElePairs(const std::map<int, std::set<int>>* nearbyelepairs);
@@ -132,7 +132,7 @@ namespace SCATRA
     void ApplyMeshMovement();
 
     //! block systemmatrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> combined_system_matrix()
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> combined_system_matrix()
     {
       return comb_systemmatrix_;
     }
@@ -144,7 +144,7 @@ namespace SCATRA
     Teuchos::RCP<Epetra_Vector> CombinedIncrement() const { return comb_increment_; }
 
     //! access to time integrator
-    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ArtScatraField() { return artscatratimint_; }
+    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> ArtScatraField() { return artscatratimint_; }
 
     //! check if initial fields match
     void CheckInitialFields() const;
@@ -166,18 +166,18 @@ namespace SCATRA
     //! initialize the linear solver
     void initialize_linear_solver(const Teuchos::ParameterList& scatraparams);
     //! time integrators
-    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> artscatratimint_;
-    Teuchos::RCP<ADAPTER::ArtNet> arttimint_;
+    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> artscatratimint_;
+    Teuchos::RCP<Adapter::ArtNet> arttimint_;
 
     //! mesh tying object
-    Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase> arttoscatracoupling_;
+    Teuchos::RCP<PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplBase> arttoscatracoupling_;
 
     //! the two discretizations
-    Teuchos::RCP<DRT::Discretization> artscatradis_;
-    Teuchos::RCP<DRT::Discretization> scatradis_;
+    Teuchos::RCP<Discret::Discretization> artscatradis_;
+    Teuchos::RCP<Discret::Discretization> scatradis_;
 
     //! block systemmatrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> comb_systemmatrix_;
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> comb_systemmatrix_;
 
     //! combined rhs
     Teuchos::RCP<Epetra_Vector> rhs_;
@@ -187,7 +187,7 @@ namespace SCATRA
 
   };  // class MeshtyingStrategyArtery
 
-}  // namespace SCATRA
+}  // namespace ScaTra
 
 FOUR_C_NAMESPACE_CLOSE
 

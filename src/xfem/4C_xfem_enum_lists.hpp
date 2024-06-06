@@ -74,7 +74,7 @@ namespace XFEM
     map_nodes = 1  ///< extract/insert nodes
   };
 
-  namespace MULTIFIELD
+  namespace MultiField
   {
     /// block type enumerator
     enum BlockType
@@ -82,7 +82,7 @@ namespace XFEM
       block_interface = 0,     ///< interface block
       block_non_interface = 1  ///< non-interface block
     };
-  }  // namespace MULTIFIELD
+  }  // namespace MultiField
 }  // namespace XFEM
 
 

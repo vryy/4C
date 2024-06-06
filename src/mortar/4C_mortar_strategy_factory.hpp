@@ -18,36 +18,36 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::Nodes
+namespace Core::Nodes
 {
   class Node;
 }
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
 
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationReader;
   class DiscretizationWriter;
-}  // namespace CORE::IO
+}  // namespace Core::IO
 
 namespace STR
 {
-  namespace TIMINT
+  namespace TimeInt
   {
     class BaseDataGlobalState;
-  }  // namespace TIMINT
+  }  // namespace TimeInt
 }  // namespace STR
 
-namespace MORTAR
+namespace Mortar
 {
   class Element;
   class Interface;
@@ -71,8 +71,8 @@ namespace MORTAR
       Factory();
 
       //! initialization of class variables
-      void Init(const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& gstate_ptr);
-      void Init(Teuchos::RCP<DRT::Discretization> dis);
+      void Init(const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr);
+      void Init(Teuchos::RCP<Discret::Discretization> dis);
 
       /*! \brief Setup of class variables
        *
@@ -85,7 +85,7 @@ namespace MORTAR
        *
        *  \param[in] soltype contact solving strategy type
        */
-      static void PrintStrategyBanner(const enum INPAR::CONTACT::SolvingStrategy soltype);
+      static void PrintStrategyBanner(const enum Inpar::CONTACT::SolvingStrategy soltype);
 
       /*! \brief Create the desired search tree object
        *
@@ -93,7 +93,7 @@ namespace MORTAR
        *
        * @param[in] interfaces All meshtying interfaces
        */
-      void BuildSearchTree(const std::vector<Teuchos::RCP<MORTAR::Interface>>& interfaces) const;
+      void BuildSearchTree(const std::vector<Teuchos::RCP<Mortar::Interface>>& interfaces) const;
 
       /*! \brief Check the problem dimension
        *
@@ -129,8 +129,8 @@ namespace MORTAR
        *  Stores knot vector, zerosized information and normal factor
        *
        *  \author Farah */
-      void prepare_nurbs_element(const DRT::Discretization& discret,
-          Teuchos::RCP<CORE::Elements::Element> ele, Teuchos::RCP<MORTAR::Element> cele) const;
+      void prepare_nurbs_element(const Discret::Discretization& discret,
+          Teuchos::RCP<Core::Elements::Element> ele, Teuchos::RCP<Mortar::Element> cele) const;
 
       /*! \brief Prepare mortar node for NURBS case
        *
@@ -138,7 +138,7 @@ namespace MORTAR
        *
        *  \author Farah */
       void prepare_nurbs_node(
-          const CORE::Nodes::Node* node, Teuchos::RCP<MORTAR::Node> mnode) const;
+          const Core::Nodes::Node* node, Teuchos::RCP<Mortar::Node> mnode) const;
 
       //!@}
 
@@ -146,11 +146,11 @@ namespace MORTAR
       //!@{
 
       //! Returns the global state data container (read-only, do not change this!!!)
-      const STR::TIMINT::BaseDataGlobalState& g_state() const;
+      const STR::TimeInt::BaseDataGlobalState& g_state() const;
 
       //! Returns the (structural) discretization
-      DRT::Discretization& discret();
-      const DRT::Discretization& discret() const;
+      Discret::Discretization& discret();
+      const Discret::Discretization& discret() const;
 
       //! returns a reference to a copy of the structural communicator
       Epetra_Comm& comm();
@@ -164,7 +164,7 @@ namespace MORTAR
       //!@}
 
       //! pointer to the structural problem discretization
-      Teuchos::RCP<DRT::Discretization> discret_ptr_;
+      Teuchos::RCP<Discret::Discretization> discret_ptr_;
 
      private:
       //! @name Status flags
@@ -179,7 +179,7 @@ namespace MORTAR
       //!@}
 
       //! pointer to the structural global state data container
-      Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> gstate_ptr_;
+      Teuchos::RCP<STR::TimeInt::BaseDataGlobalState> gstate_ptr_;
 
       //! pointer to a COPY of the structural communicator
       Teuchos::RCP<Epetra_Comm> comm_ptr_;
@@ -187,7 +187,7 @@ namespace MORTAR
       int dim_;
     };  // namespace STRATEGY
   }     // namespace STRATEGY
-}  // namespace MORTAR
+}  // namespace Mortar
 
 FOUR_C_NAMESPACE_CLOSE
 

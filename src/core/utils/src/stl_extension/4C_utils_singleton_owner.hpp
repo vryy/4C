@@ -19,7 +19,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::UTILS
+namespace Core::UTILS
 {
   //! Action types for the singleton owner
   enum class SingletonAction
@@ -121,7 +121,7 @@ namespace CORE::UTILS
      * call to SingletonOwner::Instance() e.g.
      *
      * @code
-     *   singleton_map[disname].Instance(CORE::UTILS::SingletonAction::create, numdofpernode,
+     *   singleton_map[disname].Instance(Core::UTILS::SingletonAction::create, numdofpernode,
      * disname);
      * @endoce
      */
@@ -294,7 +294,7 @@ namespace CORE::UTILS
     using T = typename detail::DeduceSingletonMap<KeyType, decltype(&Fn::operator())>::type;
     return T(std::forward<Fn>(creator));
   }
-}  // namespace CORE::UTILS
+}  // namespace Core::UTILS
 
 
 FOUR_C_NAMESPACE_CLOSE

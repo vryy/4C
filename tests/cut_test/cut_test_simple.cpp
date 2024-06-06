@@ -14,9 +14,9 @@
 
 #include "cut_test_utils.hpp"
 
-CORE::GEO::CUT::Element* create_tet4(CORE::GEO::CUT::Mesh& mesh)
+Core::Geo::Cut::Element* create_tet4(Core::Geo::Cut::Mesh& mesh)
 {
-  CORE::LINALG::SerialDenseMatrix xyze(3, 4);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 4);
 
   xyze(0, 0) = 2;
   xyze(1, 0) = 0;
@@ -37,10 +37,10 @@ CORE::GEO::CUT::Element* create_tet4(CORE::GEO::CUT::Mesh& mesh)
   return create_tet4(mesh, xyze);
 }
 
-CORE::GEO::CUT::Side* create_quad4(
-    CORE::GEO::CUT::Mesh& mesh, double x, double dx, double dz, bool reverse = false)
+Core::Geo::Cut::Side* create_quad4(
+    Core::Geo::Cut::Mesh& mesh, double x, double dx, double dz, bool reverse = false)
 {
-  CORE::LINALG::SerialDenseMatrix xyze(3, 4);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 4);
 
   xyze(0, 0) = x - dx;
   xyze(1, 0) = -0.5;
@@ -70,11 +70,11 @@ CORE::GEO::CUT::Side* create_quad4(
 
 void test_hex8_simple()
 {
-  CORE::GEO::CUT::Options options;
+  Core::Geo::Cut::Options options;
   options.Init_for_Cuttests();
-  CORE::GEO::CUT::Mesh mesh(options);
-  CORE::GEO::CUT::Element* e = create_hex8(mesh);
-  CORE::GEO::CUT::Side* s = create_quad4(mesh, 0.5, 0.1, 0);
+  Core::Geo::Cut::Mesh mesh(options);
+  Core::Geo::Cut::Element* e = create_hex8(mesh);
+  Core::Geo::Cut::Side* s = create_quad4(mesh, 0.5, 0.1, 0);
 
   e->Cut(mesh, *(s));
 
@@ -83,11 +83,11 @@ void test_hex8_simple()
 
 void test_tet4_simple()
 {
-  CORE::GEO::CUT::Options options;
+  Core::Geo::Cut::Options options;
   options.Init_for_Cuttests();
-  CORE::GEO::CUT::Mesh mesh(options);
+  Core::Geo::Cut::Mesh mesh(options);
 
-  CORE::LINALG::SerialDenseMatrix xyze(3, 4);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 4);
 
   xyze(0, 0) = 0;
   xyze(1, 0) = 0;
@@ -105,8 +105,8 @@ void test_tet4_simple()
   xyze(1, 3) = 0.5;
   xyze(2, 3) = 1;
 
-  CORE::GEO::CUT::Element* e = create_tet4(mesh, xyze);
-  CORE::GEO::CUT::Side* s = create_quad4(mesh, 0.5, 0.1, 0);
+  Core::Geo::Cut::Element* e = create_tet4(mesh, xyze);
+  Core::Geo::Cut::Side* s = create_quad4(mesh, 0.5, 0.1, 0);
 
   e->Cut(mesh, *(s));
 
@@ -115,11 +115,11 @@ void test_tet4_simple()
 
 void test_pyramid5_simple()
 {
-  CORE::GEO::CUT::Options options;
+  Core::Geo::Cut::Options options;
   options.Init_for_Cuttests();
-  CORE::GEO::CUT::Mesh mesh(options);
+  Core::Geo::Cut::Mesh mesh(options);
 
-  CORE::LINALG::SerialDenseMatrix xyze(3, 5);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 5);
 
   xyze(0, 0) = 0;
   xyze(1, 0) = 0;
@@ -141,8 +141,8 @@ void test_pyramid5_simple()
   xyze(1, 4) = 1;
   xyze(2, 4) = 1;
 
-  CORE::GEO::CUT::Element* e = create_pyramid5(mesh, xyze);
-  CORE::GEO::CUT::Side* s = create_quad4(mesh, 0.5, 0.1, 0);
+  Core::Geo::Cut::Element* e = create_pyramid5(mesh, xyze);
+  Core::Geo::Cut::Side* s = create_quad4(mesh, 0.5, 0.1, 0);
 
   e->Cut(mesh, *(s));
 
@@ -151,11 +151,11 @@ void test_pyramid5_simple()
 
 void test_wedge6_simple()
 {
-  CORE::GEO::CUT::Options options;
+  Core::Geo::Cut::Options options;
   options.Init_for_Cuttests();
-  CORE::GEO::CUT::Mesh mesh(options);
+  Core::Geo::Cut::Mesh mesh(options);
 
-  CORE::LINALG::SerialDenseMatrix xyze(3, 6);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 6);
 
   xyze(0, 0) = 0;
   xyze(1, 0) = 0;
@@ -181,8 +181,8 @@ void test_wedge6_simple()
   xyze(1, 5) = 1;
   xyze(2, 5) = 1;
 
-  CORE::GEO::CUT::Element* e = create_wedge6(mesh, xyze);
-  CORE::GEO::CUT::Side* s = create_quad4(mesh, 0.5, 0.1, 0);
+  Core::Geo::Cut::Element* e = create_wedge6(mesh, xyze);
+  Core::Geo::Cut::Side* s = create_quad4(mesh, 0.5, 0.1, 0);
 
   e->Cut(mesh, *(s));
 
@@ -192,11 +192,11 @@ void test_wedge6_simple()
 
 void test_hex8_fullside()
 {
-  CORE::GEO::CUT::Options options;
+  Core::Geo::Cut::Options options;
   options.Init_for_Cuttests();
-  CORE::GEO::CUT::Mesh mesh(options);
-  CORE::GEO::CUT::Element* e = create_hex8(mesh);
-  CORE::GEO::CUT::Side* s = create_quad4(mesh, 1, 0, 0);
+  Core::Geo::Cut::Mesh mesh(options);
+  Core::Geo::Cut::Element* e = create_hex8(mesh);
+  Core::Geo::Cut::Side* s = create_quad4(mesh, 1, 0, 0);
 
   e->Cut(mesh, *(s));
 
@@ -205,11 +205,11 @@ void test_hex8_fullside()
 
 void test_hex8_diagonal()
 {
-  CORE::GEO::CUT::Options options;
+  Core::Geo::Cut::Options options;
   options.Init_for_Cuttests();
-  CORE::GEO::CUT::Mesh mesh(options);
-  CORE::GEO::CUT::Element* e = create_hex8(mesh);
-  CORE::GEO::CUT::Side* s = create_quad4(mesh, 0.5, 1, 0);
+  Core::Geo::Cut::Mesh mesh(options);
+  Core::Geo::Cut::Element* e = create_hex8(mesh);
+  Core::Geo::Cut::Side* s = create_quad4(mesh, 0.5, 1, 0);
 
   e->Cut(mesh, *(s));
 
@@ -224,7 +224,7 @@ void test_hex8_tet4()
   w.CreateHex8();
   w.CreateTet4Sides();
 
-  CORE::LINALG::SerialDenseMatrix xyze(3, 4);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 4);
 
   // add second cut to be able to find nodal positions
 
@@ -265,7 +265,7 @@ void test_hex8_touch()
   w.CreateHex8();
   w.CreateHex8Sides(1, 0, 0);
 
-  CORE::LINALG::SerialDenseMatrix xyze(3, 4);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 4);
 
   // add second cut to be able to find nodal positions
 
@@ -305,7 +305,7 @@ void test_hex8_schraeg()
 
   w.CreateHex8();
 
-  CORE::LINALG::SerialDenseMatrix xyze(3, 4);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 4);
 
   xyze(0, 0) = 1;
   xyze(1, 0) = 0;
@@ -334,7 +334,7 @@ void test_hex8_quad4_woelbung()
 
   w.CreateHex8();
 
-  CORE::LINALG::SerialDenseMatrix xyze(3, 4);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 4);
 
   xyze(0, 0) = -0.5;
   xyze(1, 0) = -0.5;
@@ -364,7 +364,7 @@ void test_hex8_tet4_touch()
 
   w.CreateHex8();
 
-  CORE::LINALG::SerialDenseMatrix xyze(3, 4);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 4);
 
   xyze(0, 0) = 2;
   xyze(1, 0) = 0;
@@ -413,7 +413,7 @@ void test_hex8_tet4_touch2()
 
   w.CreateHex8();
 
-  CORE::LINALG::SerialDenseMatrix xyze(3, 4);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 4);
 
   xyze(0, 0) = 1;
   xyze(1, 0) = 0.5;
@@ -438,16 +438,16 @@ void test_hex8_tet4_touch2()
 
 void test_hex8_mesh()
 {
-  CORE::GEO::CUT::Options options;
+  Core::Geo::Cut::Options options;
   options.Init_for_Cuttests();
-  CORE::GEO::CUT::Mesh mesh(options);
+  Core::Geo::Cut::Mesh mesh(options);
 
   create_hex8_mesh(mesh, 10, 10, 10);
 
-  CORE::GEO::CUT::Side* s = create_quad4(mesh, 0.5, 0.5, 0);
+  Core::Geo::Cut::Side* s = create_quad4(mesh, 0.5, 0.5, 0);
 
-  CORE::GEO::CUT::plain_element_set done;
-  CORE::GEO::CUT::plain_element_set elements_done;
+  Core::Geo::Cut::plain_element_set done;
+  Core::Geo::Cut::plain_element_set elements_done;
   mesh.Cut(*(s), done, elements_done);
 
   cutmesh(mesh);
@@ -455,12 +455,12 @@ void test_hex8_mesh()
 
 void test_hex8_double()
 {
-  CORE::GEO::CUT::Options options;
+  Core::Geo::Cut::Options options;
   options.Init_for_Cuttests();
-  CORE::GEO::CUT::Mesh mesh(options);
-  CORE::GEO::CUT::Element* e = create_hex8(mesh);
-  CORE::GEO::CUT::Side* s1 = create_quad4(mesh, 0.4, 0.1, 0);
-  CORE::GEO::CUT::Side* s2 = create_quad4(mesh, 0.6, 0.1, 0);
+  Core::Geo::Cut::Mesh mesh(options);
+  Core::Geo::Cut::Element* e = create_hex8(mesh);
+  Core::Geo::Cut::Side* s1 = create_quad4(mesh, 0.4, 0.1, 0);
+  Core::Geo::Cut::Side* s2 = create_quad4(mesh, 0.6, 0.1, 0);
 
   e->Cut(mesh, *(s1));
   e->Cut(mesh, *(s2));
@@ -470,11 +470,11 @@ void test_hex8_double()
 
 void test_hex8_bad1()
 {
-  CORE::GEO::CUT::Options options;
+  Core::Geo::Cut::Options options;
   options.Init_for_Cuttests();
-  CORE::GEO::CUT::Mesh mesh(options);
+  Core::Geo::Cut::Mesh mesh(options);
 
-  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 8);
 
   xyze(0, 0) = 0.7291666666666666;
   xyze(1, 0) = 0.5208333333332368;
@@ -508,7 +508,7 @@ void test_hex8_bad1()
   xyze(1, 7) = 0.5;
   xyze(2, 7) = 0.025;
 
-  CORE::GEO::CUT::Element* e = create_hex8(mesh, xyze);
+  Core::Geo::Cut::Element* e = create_hex8(mesh, xyze);
 
   xyze(0, 0) = 0.75;
   xyze(1, 0) = 0.5010108360343256;
@@ -526,7 +526,7 @@ void test_hex8_bad1()
   xyze(1, 3) = 0.5010108360343257;
   xyze(2, 3) = 0.02500000000038694;
 
-  CORE::GEO::CUT::Side* quad4 = create_quad4(mesh, xyze);
+  Core::Geo::Cut::Side* quad4 = create_quad4(mesh, xyze);
 
   e->Cut(mesh, *(quad4));
 
@@ -535,11 +535,11 @@ void test_hex8_bad1()
 
 void test_hex8_bad2()
 {
-  CORE::GEO::CUT::Options options;
+  Core::Geo::Cut::Options options;
   options.Init_for_Cuttests();
-  CORE::GEO::CUT::Mesh mesh(options);
+  Core::Geo::Cut::Mesh mesh(options);
 
-  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 8);
 
   xyze(0, 0) = 1.05556;
   xyze(1, 0) = 0.444444;
@@ -573,7 +573,7 @@ void test_hex8_bad2()
   xyze(1, 7) = 0.5;
   xyze(2, 7) = 0;
 
-  CORE::GEO::CUT::Element* e = create_hex8(mesh, xyze);
+  Core::Geo::Cut::Element* e = create_hex8(mesh, xyze);
 
   xyze(0, 0) = 1;
   xyze(1, 0) = 0.5;
@@ -591,7 +591,7 @@ void test_hex8_bad2()
   xyze(1, 3) = 0.5;
   xyze(2, 3) = -0.0505;
 
-  CORE::GEO::CUT::Side* quad4 = create_quad4(mesh, xyze);
+  Core::Geo::Cut::Side* quad4 = create_quad4(mesh, xyze);
 
   e->Cut(mesh, *(quad4));
 
@@ -600,11 +600,11 @@ void test_hex8_bad2()
 
 void test_hex8_bad3()
 {
-  CORE::GEO::CUT::Options options;
+  Core::Geo::Cut::Options options;
   options.Init_for_Cuttests();
-  CORE::GEO::CUT::Mesh mesh(options);
+  Core::Geo::Cut::Mesh mesh(options);
 
-  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 8);
 
   xyze(0, 0) = 1.05556;
   xyze(1, 0) = 0.444444;
@@ -638,7 +638,7 @@ void test_hex8_bad3()
   xyze(1, 7) = 0.5;
   xyze(2, 7) = 0.05;
 
-  CORE::GEO::CUT::Element* e = create_hex8(mesh, xyze);
+  Core::Geo::Cut::Element* e = create_hex8(mesh, xyze);
 
   xyze(0, 0) = 1.05714;
   xyze(1, 0) = 0.5;
@@ -656,7 +656,7 @@ void test_hex8_bad3()
   xyze(1, 3) = 0.5;
   xyze(2, 3) = 1.60089e-18;
 
-  CORE::GEO::CUT::Side* quad4 = create_quad4(mesh, xyze);
+  Core::Geo::Cut::Side* quad4 = create_quad4(mesh, xyze);
 
   e->Cut(mesh, *(quad4));
 
@@ -673,9 +673,9 @@ void test_hex8_bad3()
 
 void test_hex8_bad4()
 {
-  CORE::GEO::CUT::Options options;
+  Core::Geo::Cut::Options options;
   options.Init_for_Cuttests();
-  CORE::GEO::CUT::Mesh mesh(options);
+  Core::Geo::Cut::Mesh mesh(options);
 
   double hex8_xyz[24] = {0.944444, 0, 0.05, 0.944444, 0, 6.55604e-19, 0.944444, 0.0555556,
       1.29045e-18, 0.944444, 0.0555556, 0.05, 1, 0, 0.05, 1, 0, 0, 1, 0.0555556, 3.40507e-19, 1,
@@ -683,15 +683,15 @@ void test_hex8_bad4()
 
   double quad4_xyz[12] = {1, 0, 0.0505, 1, 0.0555556, 0.0505, 1, 0.0555556, 3.40507e-19, 1, 0, 0};
 
-  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 8);
 
   std::copy(hex8_xyz, hex8_xyz + 24, &xyze(0, 0));
 
-  CORE::GEO::CUT::Element* e = create_hex8(mesh, xyze);
+  Core::Geo::Cut::Element* e = create_hex8(mesh, xyze);
 
   std::copy(quad4_xyz, quad4_xyz + 12, &xyze(0, 0));
 
-  CORE::GEO::CUT::Side* quad4 = create_quad4(mesh, xyze);
+  Core::Geo::Cut::Side* quad4 = create_quad4(mesh, xyze);
 
   e->Cut(mesh, *(quad4));
 
@@ -704,7 +704,7 @@ void test_hex8_wedge6()
 
   w.CreateHex8();
 
-  CORE::LINALG::SerialDenseMatrix xyze(3, 6);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 6);
 
   xyze(0, 0) = 0.5;
   xyze(1, 0) = 2;
@@ -741,7 +741,7 @@ void test_hex8_quad4_touch()
 
   w.CreateHex8();
 
-  CORE::LINALG::SerialDenseMatrix xyze(3, 4);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 4);
 
   xyze(0, 0) = 1;
   xyze(1, 0) = 0;
@@ -770,7 +770,7 @@ void test_hex8_quad4_touch2()
 
   w.CreateHex8();
 
-  CORE::LINALG::SerialDenseMatrix xyze(3, 4);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 4);
 
   xyze(0, 0) = 1;
   xyze(1, 0) = 0.5;
@@ -799,7 +799,7 @@ void test_hex8_quad4_touch3()
 
   w.CreateHex8();
 
-  CORE::LINALG::SerialDenseMatrix xyze(3, 4);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 4);
 
   xyze(0, 0) = 1;
   xyze(1, 0) = 0.5;
@@ -828,7 +828,7 @@ void test_hex8_quad4_cut()
 
   w.CreateHex8();
 
-  CORE::LINALG::SerialDenseMatrix xyze(3, 4);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 4);
 
   xyze(0, 0) = 0.5;
   xyze(1, 0) = 0;
@@ -868,7 +868,7 @@ void test_hex8_hex8_durchstoss()
 
   w.CreateHex8();
 
-  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 8);
 
   xyze(0, 0) = -0.5;
   xyze(1, 0) = 0.2;
@@ -933,7 +933,7 @@ void test_hex8_hex8_onside()
 
   w.CreateHex8();
 
-  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 8);
 
   xyze(0, 0) = 0.5;
   xyze(1, 0) = 0.5;
@@ -996,7 +996,7 @@ void test_hex8_hex8_internal()
 {
   SimpleWrapper w;
 
-  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 8);
 
   xyze(0, 0) = -1;
   xyze(1, 0) = -1;
@@ -1073,7 +1073,7 @@ void test_hex8_hex8_sideintersection()
 {
   SimpleWrapper w;
 
-  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 8);
 
   xyze(0, 0) = -1;
   xyze(1, 0) = -1;
@@ -1170,7 +1170,7 @@ void test_hex8_hex8_inside()
 {
   SimpleWrapper w;
 
-  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 8);
 
   xyze(0, 0) = -1;
   xyze(1, 0) = -1;
@@ -1249,7 +1249,7 @@ void test_hex8_quad4_schnitt()
 
   w.CreateHex8();
 
-  CORE::LINALG::SerialDenseMatrix xyze(3, 4);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 4);
 
   xyze(0, 0) = 0.5;
   xyze(1, 0) = 0.5;
@@ -1278,7 +1278,7 @@ void test_hex8_quad4_touch4()
 
   w.CreateHex8();
 
-  CORE::LINALG::SerialDenseMatrix xyze(3, 4);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 4);
 
   xyze(0, 0) = 0.2;
   xyze(1, 0) = 0;
@@ -1307,7 +1307,7 @@ void test_hex8_quad4_touch5()
 
   w.CreateHex8();
 
-  CORE::LINALG::SerialDenseMatrix xyze(3, 4);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 4);
 
   xyze(0, 0) = 0.2;
   xyze(1, 0) = 0;
@@ -1336,7 +1336,7 @@ void test_hex8_quad4_touch6()
 
   w.CreateHex8();
 
-  CORE::LINALG::SerialDenseMatrix xyze(3, 4);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 4);
 
   xyze(0, 0) = 1;
   xyze(1, 0) = 0.5;
@@ -1385,7 +1385,7 @@ void test_hex8_quad4_touch7()
 
   w.CreateHex8();
 
-  CORE::LINALG::SerialDenseMatrix xyze(3, 4);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 4);
 
   xyze(0, 0) = 1;
   xyze(1, 0) = 0.5;
@@ -1410,20 +1410,20 @@ void test_hex8_quad4_touch7()
 
 void test_hex8_quad4_mesh()
 {
-  CORE::GEO::CUT::Options options;
+  Core::Geo::Cut::Options options;
   options.Init_for_Cuttests();
-  CORE::GEO::CUT::Mesh mesh(options);
+  Core::Geo::Cut::Mesh mesh(options);
 
   create_hex8_mesh(mesh, 2, 2, 2);
 
-  std::vector<CORE::GEO::CUT::Side*> sides;
+  std::vector<Core::Geo::Cut::Side*> sides;
   create_quad4_mesh(mesh, 3, 3, sides);
 
-  for (std::vector<CORE::GEO::CUT::Side*>::iterator i = sides.begin(); i != sides.end(); ++i)
+  for (std::vector<Core::Geo::Cut::Side*>::iterator i = sides.begin(); i != sides.end(); ++i)
   {
-    CORE::GEO::CUT::Side* quad4 = *i;
-    CORE::GEO::CUT::plain_element_set done;
-    CORE::GEO::CUT::plain_element_set elements_done;
+    Core::Geo::Cut::Side* quad4 = *i;
+    Core::Geo::Cut::plain_element_set done;
+    Core::Geo::Cut::plain_element_set elements_done;
     mesh.Cut(*(quad4), done, elements_done);
   }
 
@@ -1432,9 +1432,9 @@ void test_hex8_quad4_mesh()
 
 void test_position2d()
 {
-  CORE::LINALG::Matrix<3, 3> side_xyze;
-  CORE::LINALG::Matrix<3, 1> xyz;
-  CORE::LINALG::Matrix<3, 1> shift;
+  Core::LinAlg::Matrix<3, 3> side_xyze;
+  Core::LinAlg::Matrix<3, 1> xyz;
+  Core::LinAlg::Matrix<3, 1> shift;
 
   side_xyze(0, 0) = -0.20710678118654757;
   side_xyze(1, 0) = 0;
@@ -1456,7 +1456,7 @@ void test_position2d()
 
   for (int i = 0; i < 3; ++i)
   {
-    CORE::LINALG::Matrix<3, 1> x1(&side_xyze(0, i), true);
+    Core::LinAlg::Matrix<3, 1> x1(&side_xyze(0, i), true);
     x1.Update(1, shift, 1);
   }
   xyz.Update(1, shift, 1);
@@ -1466,12 +1466,12 @@ void test_position2d()
   side_xyze.Scale(scale);
   xyz.Scale(scale);
 
-  CORE::GEO::CUT::PositionFactory::specify_general_dist_floattype(
-      INPAR::CUT::floattype_cln);  // use cln
-  CORE::GEO::CUT::PositionFactory::specify_general_pos_floattype(
-      INPAR::CUT::floattype_double);  // use
+  Core::Geo::Cut::PositionFactory::specify_general_dist_floattype(
+      Inpar::Cut::floattype_cln);  // use cln
+  Core::Geo::Cut::PositionFactory::specify_general_pos_floattype(
+      Inpar::Cut::floattype_double);  // use
                                       // double
-  Teuchos::RCP<CORE::GEO::CUT::Position> pos =
-      CORE::GEO::CUT::Position::Create(side_xyze, xyz, CORE::FE::CellType::tri3);
+  Teuchos::RCP<Core::Geo::Cut::Position> pos =
+      Core::Geo::Cut::Position::Create(side_xyze, xyz, Core::FE::CellType::tri3);
   pos->Compute();
 }

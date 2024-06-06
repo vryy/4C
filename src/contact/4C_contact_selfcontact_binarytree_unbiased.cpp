@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor UnbiasedSelfBinaryTree (public)                   schmidt 01/19|
  *----------------------------------------------------------------------*/
-CONTACT::UnbiasedSelfBinaryTree::UnbiasedSelfBinaryTree(DRT::Discretization& discret,
+CONTACT::UnbiasedSelfBinaryTree::UnbiasedSelfBinaryTree(Discret::Discretization& discret,
     const Teuchos::ParameterList& iparams, Teuchos::RCP<Epetra_Map> elements, int dim, double eps)
     : SelfBinaryTree(discret, iparams, elements, dim, eps),
       two_half_pass_(iparams.get<bool>("Two_half_pass")),
@@ -76,9 +76,9 @@ void CONTACT::UnbiasedSelfBinaryTree::calculate_proc_specific_dual_graph(
     std::vector<int> possadjids;
 
     // get current elements and its nodes
-    CORE::Elements::Element* element = discret().gElement(gid);
+    Core::Elements::Element* element = discret().gElement(gid);
     if (!element) FOUR_C_THROW("Cannot find element with gid %\n", gid);
-    CORE::Nodes::Node** nodes = element->Nodes();
+    Core::Nodes::Node** nodes = element->Nodes();
     if (!nodes) FOUR_C_THROW("Null pointer!");
 
     // skip further steps, if element is not owned by processor p
@@ -105,19 +105,19 @@ void CONTACT::UnbiasedSelfBinaryTree::calculate_proc_specific_dual_graph(
     // first-order nodes are always stored before higher-order nodes)
     for (int j = 0; j < numnode; ++j)
     {
-      CORE::Nodes::Node* node = nodes[j];
+      Core::Nodes::Node* node = nodes[j];
       if (!node) FOUR_C_THROW("Null pointer!");
 
       // adjacent elements of current node
       int numE = node->NumElement();
-      CORE::Elements::Element** adjElements = node->Elements();
+      Core::Elements::Element** adjElements = node->Elements();
       if (!adjElements) FOUR_C_THROW("Null pointer!");
 
       // loop over all adjacent elements of current node
       for (int k = 0; k < numE; ++k)
       {
         // get k-th adjacent element
-        CORE::Elements::Element* adjElementk = adjElements[k];
+        Core::Elements::Element* adjElementk = adjElements[k];
 
         // we only need to collect information if current adjacent element is owned by processor p
         if (adjElementk->Owner() != p) continue;
@@ -151,14 +151,14 @@ void CONTACT::UnbiasedSelfBinaryTree::define_search_elements()
   if (contact_pairs().find(eleID) != contact_pairs().end() && !contact_pairs().empty())
   {
     // get the current element to content of "isslave"
-    CORE::Elements::Element* element = discret().gElement(eleID);
+    Core::Elements::Element* element = discret().gElement(eleID);
     CONTACT::Element* celement = dynamic_cast<CONTACT::Element*>(element);
     if (celement->IsSlave() != true)
       FOUR_C_THROW("Element: this should not happen!");
     else
       for (int i = 0; i < element->num_node(); ++i)
       {
-        CORE::Nodes::Node* node = element->Nodes()[i];
+        Core::Nodes::Node* node = element->Nodes()[i];
         CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
         if (cnode->IsSlave() != true) FOUR_C_THROW("Node: this should not happen!");
       }
@@ -203,7 +203,7 @@ void CONTACT::UnbiasedSelfBinaryTree::get_contracted_node(
 void CONTACT::UnbiasedSelfBinaryTree::Init()
 {
   // call initialization method of base class
-  MORTAR::BaseBinaryTree::Init();
+  Mortar::BaseBinaryTree::Init();
 
   // initialize internal variables
   init_internal_variables();
@@ -340,43 +340,43 @@ bool CONTACT::UnbiasedSelfBinaryTree::rough_check_ref_config(int ele1gid, int el
 {
   // variables
   bool refconfig(false);
-  static CORE::LINALG::Matrix<2, 1> xicele1(true);
-  static CORE::LINALG::Matrix<3, 1> ele1coords(true);
-  static CORE::LINALG::Matrix<3, 1> ele1normal(true);
-  static CORE::LINALG::Matrix<2, 1> xicele2(true);
-  static CORE::LINALG::Matrix<3, 1> ele2coords(true);
-  static CORE::LINALG::Matrix<3, 1> ele1ele2vec(true);
-  static CORE::LINALG::Matrix<1, 1> scalarprod(true);
+  static Core::LinAlg::Matrix<2, 1> xicele1(true);
+  static Core::LinAlg::Matrix<3, 1> ele1coords(true);
+  static Core::LinAlg::Matrix<3, 1> ele1normal(true);
+  static Core::LinAlg::Matrix<2, 1> xicele2(true);
+  static Core::LinAlg::Matrix<3, 1> ele2coords(true);
+  static Core::LinAlg::Matrix<3, 1> ele1ele2vec(true);
+  static Core::LinAlg::Matrix<1, 1> scalarprod(true);
 
   // get center and normal of leaf1-element
-  const CORE::Elements::Element* ele1 = discret().gElement(ele1gid);
-  const CORE::FE::CellType dtele1 = ele1->Shape();
+  const Core::Elements::Element* ele1 = discret().gElement(ele1gid);
+  const Core::FE::CellType dtele1 = ele1->Shape();
   switch (dtele1)
   {
-    case CORE::FE::CellType::tri3:
+    case Core::FE::CellType::tri3:
     {
       xicele1.PutScalar(1.0 / 3.0);
-      CORE::GEO::LocalToGlobalPositionAtXiRefConfig<3, CORE::FE::CellType::tri3>(
+      Core::Geo::LocalToGlobalPositionAtXiRefConfig<3, Core::FE::CellType::tri3>(
           ele1, xicele1, ele1coords);
-      CORE::GEO::ComputeUnitNormalAtXiRefConfig<CORE::FE::CellType::tri3>(
+      Core::Geo::ComputeUnitNormalAtXiRefConfig<Core::FE::CellType::tri3>(
           ele1, xicele1, ele1normal);
     }
     break;
-    case CORE::FE::CellType::tri6:
+    case Core::FE::CellType::tri6:
     {
       xicele1.PutScalar(1.0 / 3.0);
-      CORE::GEO::LocalToGlobalPositionAtXiRefConfig<3, CORE::FE::CellType::tri6>(
+      Core::Geo::LocalToGlobalPositionAtXiRefConfig<3, Core::FE::CellType::tri6>(
           ele1, xicele1, ele1coords);
-      CORE::GEO::ComputeUnitNormalAtXiRefConfig<CORE::FE::CellType::tri6>(
+      Core::Geo::ComputeUnitNormalAtXiRefConfig<Core::FE::CellType::tri6>(
           ele1, xicele1, ele1normal);
     }
     break;
-    case CORE::FE::CellType::quad4:
+    case Core::FE::CellType::quad4:
     {
       xicele1.PutScalar(0.0);
-      CORE::GEO::LocalToGlobalPositionAtXiRefConfig<3, CORE::FE::CellType::quad4>(
+      Core::Geo::LocalToGlobalPositionAtXiRefConfig<3, Core::FE::CellType::quad4>(
           ele1, xicele1, ele1coords);
-      CORE::GEO::ComputeUnitNormalAtXiRefConfig<CORE::FE::CellType::quad4>(
+      Core::Geo::ComputeUnitNormalAtXiRefConfig<Core::FE::CellType::quad4>(
           ele1, xicele1, ele1normal);
     }
     break;
@@ -385,28 +385,28 @@ bool CONTACT::UnbiasedSelfBinaryTree::rough_check_ref_config(int ele1gid, int el
       break;
   }
   // get center of master element
-  const CORE::Elements::Element* ele2 = discret().gElement(ele2gid);
-  const CORE::FE::CellType dtele2 = ele2->Shape();
+  const Core::Elements::Element* ele2 = discret().gElement(ele2gid);
+  const Core::FE::CellType dtele2 = ele2->Shape();
   switch (dtele2)
   {
-    case CORE::FE::CellType::tri3:
+    case Core::FE::CellType::tri3:
     {
       xicele2.PutScalar(1.0 / 3.0);
-      CORE::GEO::LocalToGlobalPositionAtXiRefConfig<3, CORE::FE::CellType::tri3>(
+      Core::Geo::LocalToGlobalPositionAtXiRefConfig<3, Core::FE::CellType::tri3>(
           ele2, xicele2, ele2coords);
     }
     break;
-    case CORE::FE::CellType::tri6:
+    case Core::FE::CellType::tri6:
     {
       xicele2.PutScalar(1.0 / 3.0);
-      CORE::GEO::LocalToGlobalPositionAtXiRefConfig<3, CORE::FE::CellType::tri6>(
+      Core::Geo::LocalToGlobalPositionAtXiRefConfig<3, Core::FE::CellType::tri6>(
           ele2, xicele2, ele2coords);
     }
     break;
-    case CORE::FE::CellType::quad4:
+    case Core::FE::CellType::quad4:
     {
       xicele2.PutScalar(0.0);
-      CORE::GEO::LocalToGlobalPositionAtXiRefConfig<3, CORE::FE::CellType::quad4>(
+      Core::Geo::LocalToGlobalPositionAtXiRefConfig<3, Core::FE::CellType::quad4>(
           ele2, xicele2, ele2coords);
     }
     break;
@@ -495,7 +495,7 @@ void CONTACT::UnbiasedSelfBinaryTree::search_contact()
   while (leafiter != leafiter_end)
   {
     const int gid = leafiter->first;
-    CORE::Elements::Element* element = discret().gElement(gid);
+    Core::Elements::Element* element = discret().gElement(gid);
     CONTACT::Element* celement = dynamic_cast<CONTACT::Element*>(element);
 
     // set contact element to slave
@@ -504,7 +504,7 @@ void CONTACT::UnbiasedSelfBinaryTree::search_contact()
     // set nodes to slave
     for (int i = 0; i < element->num_node(); ++i)
     {
-      CORE::Nodes::Node* node = element->Nodes()[i];
+      Core::Nodes::Node* node = element->Nodes()[i];
       CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
       cnode->SetSlave() = true;
     }
@@ -539,7 +539,7 @@ void CONTACT::UnbiasedSelfBinaryTree::communicate_search_elements_all_procs()
     if (contact_pairs().find(elegid) != contact_pairs().end())
       searchelements = contact_pairs()[elegid];
 
-    CORE::LINALG::AllreduceVector(searchelements, searchelements_all, discret().Comm());
+    Core::LinAlg::AllreduceVector(searchelements, searchelements_all, discret().Comm());
 
     if (searchelements_all.size()) set_contact_pairs()[elegid] = searchelements_all;
   }

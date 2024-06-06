@@ -28,13 +28,13 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CONTACT::AUG::LagrangeMultiplierFunction::LagrangeMultiplierFunction()
+CONTACT::Aug::LagrangeMultiplierFunction::LagrangeMultiplierFunction()
     : isinit_(false),
       issetup_(false),
       strategy_(nullptr),
       interfaces_(0),
       data_(Teuchos::null),
-      lin_solver_type_(CORE::LINEAR_SOLVER::SolverType::undefined),
+      lin_solver_type_(Core::LinearSolver::SolverType::undefined),
       lin_solver_(Teuchos::null),
       bmat_(Teuchos::null)
 {
@@ -43,8 +43,8 @@ CONTACT::AUG::LagrangeMultiplierFunction::LagrangeMultiplierFunction()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::LagrangeMultiplierFunction::Init(
-    const Strategy* const strategy, CONTACT::AUG::DataContainer& data)
+void CONTACT::Aug::LagrangeMultiplierFunction::Init(
+    const Strategy* const strategy, CONTACT::Aug::DataContainer& data)
 {
   issetup_ = false;
 
@@ -60,7 +60,7 @@ void CONTACT::AUG::LagrangeMultiplierFunction::Init(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::LagrangeMultiplierFunction::Setup()
+void CONTACT::Aug::LagrangeMultiplierFunction::Setup()
 {
   check_init();
 
@@ -77,30 +77,30 @@ void CONTACT::AUG::LagrangeMultiplierFunction::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::LagrangeMultiplierFunction::Redistribute()
+void CONTACT::Aug::LagrangeMultiplierFunction::Redistribute()
 {
   const Epetra_Map& slMaDofRowMap = *data_->GSlMaDofRowMapPtr();
-  bmat_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(slMaDofRowMap, 100, false, false));
+  bmat_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(slMaDofRowMap, 100, false, false));
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::Solver> CONTACT::AUG::LagrangeMultiplierFunction::create_linear_solver(
+Teuchos::RCP<Core::LinAlg::Solver> CONTACT::Aug::LagrangeMultiplierFunction::create_linear_solver(
     const int lin_sol_id, const Epetra_Comm& comm,
-    enum CORE::LINEAR_SOLVER::SolverType& solver_type) const
+    enum Core::LinearSolver::SolverType& solver_type) const
 {
   if (lin_sol_id == -1) FOUR_C_THROW("You must specify a meaningful LINEAR_SOLVER!");
 
   // get solver parameter list of linear solver
   const Teuchos::ParameterList& solverparams =
-      GLOBAL::Problem::Instance()->SolverParams(lin_sol_id);
-  solver_type = Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::SolverType>(solverparams, "SOLVER");
+      Global::Problem::Instance()->SolverParams(lin_sol_id);
+  solver_type = Teuchos::getIntegralValue<Core::LinearSolver::SolverType>(solverparams, "SOLVER");
 
-  Teuchos::RCP<CORE::LINALG::Solver> solver =
-      Teuchos::rcp(new CORE::LINALG::Solver(solverparams, comm));
+  Teuchos::RCP<Core::LinAlg::Solver> solver =
+      Teuchos::rcp(new Core::LinAlg::Solver(solverparams, comm));
 
-  if (solver_type != CORE::LINEAR_SOLVER::SolverType::umfpack and
-      solver_type != CORE::LINEAR_SOLVER::SolverType::superlu)
+  if (solver_type != Core::LinearSolver::SolverType::umfpack and
+      solver_type != Core::LinearSolver::SolverType::superlu)
     FOUR_C_THROW("Currently only direct linear solvers are supported!");
 
   return solver;
@@ -108,13 +108,13 @@ Teuchos::RCP<CORE::LINALG::Solver> CONTACT::AUG::LagrangeMultiplierFunction::cre
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::LagrangeMultiplierFunction::lin_solve(
-    CORE::LINALG::SparseOperator& mat, Epetra_MultiVector& rhs, Epetra_MultiVector& sol)
+void CONTACT::Aug::LagrangeMultiplierFunction::lin_solve(
+    Core::LinAlg::SparseOperator& mat, Epetra_MultiVector& rhs, Epetra_MultiVector& sol)
 {
   if (rhs.NumVectors() > 1 or sol.NumVectors() > 1)
     FOUR_C_THROW("MultiVector support is not yet implemented!");
 
-  CORE::LINALG::SolverParams solver_params;
+  Core::LinAlg::SolverParams solver_params;
   solver_params.refactor = true;
   solver_params.reset = true;
   int err = lin_solver_->Solve(
@@ -125,7 +125,7 @@ void CONTACT::AUG::LagrangeMultiplierFunction::lin_solve(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> CONTACT::AUG::LagrangeMultiplierFunction::Compute(
+Teuchos::RCP<Epetra_Vector> CONTACT::Aug::LagrangeMultiplierFunction::Compute(
     const CONTACT::ParamsInterface& cparams)
 {
   TEUCHOS_FUNC_TIME_MONITOR(CONTACT_FUNC_NAME);
@@ -139,13 +139,13 @@ Teuchos::RCP<Epetra_Vector> CONTACT::AUG::LagrangeMultiplierFunction::Compute(
   create_b_matrix();
 
   Epetra_Vector str_gradient_exp(*data_->GSlMaDofRowMapPtr(), true);
-  CORE::LINALG::Export(*str_gradient, str_gradient_exp);
+  Core::LinAlg::Export(*str_gradient, str_gradient_exp);
 
   Epetra_Vector rhs(data_->GActiveNDofRowMap(), true);
   bmat_->Multiply(true, str_gradient_exp, rhs);
 
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> bbmat =
-      CORE::LINALG::MLMultiply(*bmat_, true, *bmat_, false, false, false, true);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> bbmat =
+      Core::LinAlg::MLMultiply(*bmat_, true, *bmat_, false, false, false, true);
 
   lin_solve(*bbmat, rhs, *lmn_vec);
 
@@ -154,14 +154,14 @@ Teuchos::RCP<Epetra_Vector> CONTACT::AUG::LagrangeMultiplierFunction::Compute(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> CONTACT::AUG::LagrangeMultiplierFunction::get_structure_gradient(
+Teuchos::RCP<Epetra_Vector> CONTACT::Aug::LagrangeMultiplierFunction::get_structure_gradient(
     const CONTACT::ParamsInterface& cparams) const
 {
   const STR::MODELEVALUATOR::Generic& model = cparams.GetModelEvaluator();
   const STR::MODELEVALUATOR::Contact& cmodel =
       dynamic_cast<const STR::MODELEVALUATOR::Contact&>(model);
 
-  const std::vector<INPAR::STR::ModelType> without_contact_model(1, model.Type());
+  const std::vector<Inpar::STR::ModelType> without_contact_model(1, model.Type());
 
   Teuchos::RCP<Epetra_Vector> str_gradient =
       cmodel.assemble_force_of_models(&without_contact_model, true);
@@ -171,7 +171,7 @@ Teuchos::RCP<Epetra_Vector> CONTACT::AUG::LagrangeMultiplierFunction::get_struct
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::LagrangeMultiplierFunction::create_b_matrix()
+void CONTACT::Aug::LagrangeMultiplierFunction::create_b_matrix()
 {
   bmat_->Reset();
 
@@ -184,7 +184,7 @@ void CONTACT::AUG::LagrangeMultiplierFunction::create_b_matrix()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> CONTACT::AUG::LagrangeMultiplierFunction::FirstOrderDirection(
+Teuchos::RCP<Epetra_Vector> CONTACT::Aug::LagrangeMultiplierFunction::FirstOrderDirection(
     const CONTACT::ParamsInterface& cparams, const Epetra_Vector& dincr)
 {
   TEUCHOS_FUNC_TIME_MONITOR(CONTACT_FUNC_NAME);
@@ -196,23 +196,23 @@ Teuchos::RCP<Epetra_Vector> CONTACT::AUG::LagrangeMultiplierFunction::FirstOrder
       dynamic_cast<const STR::MODELEVALUATOR::Contact&>(model);
 
   // access the full stiffness matrix
-  CORE::LINALG::SparseMatrix full_stiff(
-      *cmodel.GetJacobianBlock(STR::MatBlockType::displ_displ), CORE::LINALG::Copy);
+  Core::LinAlg::SparseMatrix full_stiff(
+      *cmodel.GetJacobianBlock(STR::MatBlockType::displ_displ), Core::LinAlg::Copy);
 
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> kdd_ptr =
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> kdd_ptr =
       strategy_->GetMatrixBlockPtr(CONTACT::MatBlockType::displ_displ);
 
   // undo matrix contributions
   full_stiff.Add(*kdd_ptr, false, -1.0, 1.0);
 
   // --- first summand
-  Teuchos::RCP<Epetra_Vector> tmp_vec = CORE::LINALG::CreateVector(full_stiff.RangeMap(), true);
+  Teuchos::RCP<Epetra_Vector> tmp_vec = Core::LinAlg::CreateVector(full_stiff.RangeMap(), true);
 
   int err = full_stiff.Multiply(false, dincr, *tmp_vec);
   if (err) FOUR_C_THROW("Multiply failed with err = %d", err);
 
   Teuchos::RCP<Epetra_Vector> tmp_vec_exp =
-      CORE::LINALG::CreateVector(*data_->GSlMaDofRowMapPtr(), true);
+      Core::LinAlg::CreateVector(*data_->GSlMaDofRowMapPtr(), true);
 
   // build necessary exporter
   Epetra_Export exporter(tmp_vec_exp->Map(), tmp_vec->Map());
@@ -229,7 +229,7 @@ Teuchos::RCP<Epetra_Vector> CONTACT::AUG::LagrangeMultiplierFunction::FirstOrder
   tmp_vec_exp->Import(*tmp_vec, exporter, Insert);
 
   Teuchos::RCP<Epetra_Vector> dincr_exp =
-      CORE::LINALG::CreateVector(*data_->GSlMaDofRowMapPtr(), true);
+      Core::LinAlg::CreateVector(*data_->GSlMaDofRowMapPtr(), true);
   err = dincr_exp->Import(dincr, exporter, Insert);
   if (err) FOUR_C_THROW("Import failed with err = %d", err);
 
@@ -238,10 +238,10 @@ Teuchos::RCP<Epetra_Vector> CONTACT::AUG::LagrangeMultiplierFunction::FirstOrder
   // --- 3rd summand
   assemble_gradient_bb_matrix_contribution(*dincr_exp, data_->LmN(), rhs);
 
-  Teuchos::RCP<Epetra_Vector> lmincr = CORE::LINALG::CreateVector(data_->GActiveNDofRowMap(), true);
+  Teuchos::RCP<Epetra_Vector> lmincr = Core::LinAlg::CreateVector(data_->GActiveNDofRowMap(), true);
 
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> bbmat =
-      CORE::LINALG::MLMultiply(*bmat_, true, *bmat_, false, false, false, true);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> bbmat =
+      Core::LinAlg::MLMultiply(*bmat_, true, *bmat_, false, false, false, true);
 
   lin_solve(*bbmat, rhs, *lmincr);
 
@@ -250,7 +250,7 @@ Teuchos::RCP<Epetra_Vector> CONTACT::AUG::LagrangeMultiplierFunction::FirstOrder
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::LagrangeMultiplierFunction::assemble_gradient_bb_matrix_contribution(
+void CONTACT::Aug::LagrangeMultiplierFunction::assemble_gradient_bb_matrix_contribution(
     const Epetra_Vector& dincr, const Epetra_Vector& lm, Epetra_Vector& lmincr) const
 {
   if (not lmincr.Map().SameAs(lm.Map())) FOUR_C_THROW("The maps must be identical!");
@@ -258,7 +258,7 @@ void CONTACT::AUG::LagrangeMultiplierFunction::assemble_gradient_bb_matrix_contr
   for (plain_interface_set::const_iterator cit = interfaces_.begin(); cit != interfaces_.end();
        ++cit)
   {
-    const CONTACT::AUG::Interface& interface = dynamic_cast<const CONTACT::AUG::Interface&>(**cit);
+    const CONTACT::Aug::Interface& interface = dynamic_cast<const CONTACT::Aug::Interface&>(**cit);
 
     interface.assemble_gradient_bb_matrix_contribution(dincr, lm, lmincr);
   }
@@ -266,7 +266,7 @@ void CONTACT::AUG::LagrangeMultiplierFunction::assemble_gradient_bb_matrix_contr
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::LagrangeMultiplierFunction::assemble_gradient_b_matrix_contribution(
+void CONTACT::Aug::LagrangeMultiplierFunction::assemble_gradient_b_matrix_contribution(
     const Epetra_Vector& dincr, const Epetra_Vector& str_grad, Epetra_Vector& lmincr) const
 {
   if (not dincr.Map().SameAs(str_grad.Map())) FOUR_C_THROW("The maps must be identical!");
@@ -274,7 +274,7 @@ void CONTACT::AUG::LagrangeMultiplierFunction::assemble_gradient_b_matrix_contri
   for (plain_interface_set::const_iterator cit = interfaces_.begin(); cit != interfaces_.end();
        ++cit)
   {
-    const CONTACT::AUG::Interface& interface = dynamic_cast<const CONTACT::AUG::Interface&>(**cit);
+    const CONTACT::Aug::Interface& interface = dynamic_cast<const CONTACT::Aug::Interface&>(**cit);
 
     interface.assemble_gradient_b_matrix_contribution(dincr, str_grad, lmincr);
   }

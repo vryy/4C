@@ -12,8 +12,8 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-template class DRT::ELEMENTS::So3PoroP1<DRT::ELEMENTS::SoHex8, CORE::FE::CellType::hex8>;
-template class DRT::ELEMENTS::So3PoroP1<DRT::ELEMENTS::SoTet4, CORE::FE::CellType::tet4>;
+template class Discret::ELEMENTS::So3PoroP1<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>;
+template class Discret::ELEMENTS::So3PoroP1<Discret::ELEMENTS::SoTet4, Core::FE::CellType::tet4>;
 
 FOUR_C_NAMESPACE_CLOSE
 

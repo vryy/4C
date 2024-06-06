@@ -27,10 +27,10 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace CORE::UTILS
+namespace Core::UTILS
 {
   // forward declaration
-  namespace SYMBOLICEXPRESSIONDETAILS
+  namespace SymbolicExpressionDetails
   {
     template <typename Number>
     class Parser;
@@ -139,18 +139,18 @@ namespace CORE::UTILS
 
    private:
     //! Parser for the symbolic expression evaluation
-    std::unique_ptr<CORE::UTILS::SYMBOLICEXPRESSIONDETAILS::Parser<ValueType>> parser_for_value_;
+    std::unique_ptr<Core::UTILS::SymbolicExpressionDetails::Parser<ValueType>> parser_for_value_;
 
     //! Parser for the symbolic expression first derivative evaluation
-    std::unique_ptr<CORE::UTILS::SYMBOLICEXPRESSIONDETAILS::Parser<FirstDerivativeType>>
+    std::unique_ptr<Core::UTILS::SymbolicExpressionDetails::Parser<FirstDerivativeType>>
         parser_for_firstderivative_;
 
     //! Parser for the symbolic expression second derivative evaluation
-    std::unique_ptr<CORE::UTILS::SYMBOLICEXPRESSIONDETAILS::Parser<SecondDerivativeType>>
+    std::unique_ptr<Core::UTILS::SymbolicExpressionDetails::Parser<SecondDerivativeType>>
         parser_for_secondderivative_;
   };
 
-}  // namespace CORE::UTILS
+}  // namespace Core::UTILS
 
 FOUR_C_NAMESPACE_CLOSE
 

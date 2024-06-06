@@ -23,24 +23,24 @@ FOUR_C_NAMESPACE_OPEN
 
 
 // Forward declaration.
-namespace INPAR
+namespace Inpar
 {
   namespace BEAMINTERACTION
   {
     enum class BeamInteractionConditions;
   }
-}  // namespace INPAR
+}  // namespace Inpar
 
 
-namespace INPAR
+namespace Inpar
 {
-  namespace BEAMTOSOLID
+  namespace BeamToSolid
   {
     /**
      * \brief Get the condition strings for the beam-to-solid interactions.
      */
     void BeamToSolidInteractionGetString(
-        const INPAR::BEAMINTERACTION::BeamInteractionConditions& interaction,
+        const Inpar::BEAMINTERACTION::BeamInteractionConditions& interaction,
         std::array<std::string, 2>& condition_names);
 
     /**
@@ -195,9 +195,9 @@ namespace INPAR
      * \brief Set beam beam-to-solid specific conditions.
      */
     void SetValidConditions(
-        std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist);
-  }  // namespace BEAMTOSOLID
-}  // namespace INPAR
+        std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist);
+  }  // namespace BeamToSolid
+}  // namespace Inpar
 
 FOUR_C_NAMESPACE_CLOSE
 

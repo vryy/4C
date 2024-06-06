@@ -41,8 +41,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | Constructor                                              farah 11/13 |
  *----------------------------------------------------------------------*/
-WEAR::Algorithm::Algorithm(const Epetra_Comm& comm)
-    : AlgorithmBase(comm, GLOBAL::Problem::Instance()->structural_dynamic_params())
+Wear::Algorithm::Algorithm(const Epetra_Comm& comm)
+    : AlgorithmBase(comm, Global::Problem::Instance()->structural_dynamic_params())
 
 {
   /*--------------------------------------------------------------------*
@@ -51,25 +51,25 @@ WEAR::Algorithm::Algorithm(const Epetra_Comm& comm)
    *--------------------------------------------------------------------*/
 
   // create structure
-  Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure = Teuchos::rcp(
-      new ADAPTER::StructureBaseAlgorithm(GLOBAL::Problem::Instance()->structural_dynamic_params(),
+  Teuchos::RCP<Adapter::StructureBaseAlgorithm> structure = Teuchos::rcp(
+      new Adapter::StructureBaseAlgorithm(Global::Problem::Instance()->structural_dynamic_params(),
           const_cast<Teuchos::ParameterList&>(
-              GLOBAL::Problem::Instance()->structural_dynamic_params()),
-          GLOBAL::Problem::Instance()->GetDis("structure")));
+              Global::Problem::Instance()->structural_dynamic_params()),
+          Global::Problem::Instance()->GetDis("structure")));
   structure_ =
-      Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapper>(structure->structure_field());
+      Teuchos::rcp_dynamic_cast<Adapter::FSIStructureWrapper>(structure->structure_field());
   structure_->Setup();
 
   if (structure_ == Teuchos::null)
-    FOUR_C_THROW("cast from ADAPTER::Structure to ADAPTER::FSIStructureWrapper failed");
+    FOUR_C_THROW("cast from Adapter::Structure to Adapter::FSIStructureWrapper failed");
 
   // ask base algorithm for the ale time integrator
-  Teuchos::RCP<ADAPTER::AleBaseAlgorithm> ale = Teuchos::rcp(
-      new ADAPTER::AleBaseAlgorithm(GLOBAL::Problem::Instance()->structural_dynamic_params(),
-          GLOBAL::Problem::Instance()->GetDis("ale")));
-  ale_ = Teuchos::rcp_dynamic_cast<ADAPTER::AleWearWrapper>(ale->ale_field());
+  Teuchos::RCP<Adapter::AleBaseAlgorithm> ale = Teuchos::rcp(
+      new Adapter::AleBaseAlgorithm(Global::Problem::Instance()->structural_dynamic_params(),
+          Global::Problem::Instance()->GetDis("ale")));
+  ale_ = Teuchos::rcp_dynamic_cast<Adapter::AleWearWrapper>(ale->ale_field());
   if (ale_ == Teuchos::null)
-    FOUR_C_THROW("cast from ADAPTER::Ale to ADAPTER::AleFsiWrapper failed");
+    FOUR_C_THROW("cast from Adapter::Ale to Adapter::AleFsiWrapper failed");
 
   // create empty operator
   ale_->create_system_matrix();
@@ -79,8 +79,8 @@ WEAR::Algorithm::Algorithm(const Epetra_Comm& comm)
 
   // copy interfaces for material configuration
   // stactic cast of mortar strategy to contact strategy
-  MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
-  WEAR::LagrangeStrategyWear& cstrategy = static_cast<WEAR::LagrangeStrategyWear&>(strategy);
+  Mortar::StrategyBase& strategy = cmtman_->GetStrategy();
+  Wear::LagrangeStrategyWear& cstrategy = static_cast<Wear::LagrangeStrategyWear&>(strategy);
 
   // get dimension
   dim_ = strategy.Dim();
@@ -100,12 +100,12 @@ WEAR::Algorithm::Algorithm(const Epetra_Comm& comm)
 /*----------------------------------------------------------------------*
  | Check compatibility of input parameters                  farah 09/14 |
  *----------------------------------------------------------------------*/
-void WEAR::Algorithm::check_input()
+void Wear::Algorithm::check_input()
 {
-  //  Teuchos::ParameterList apara = GLOBAL::Problem::Instance()->AleDynamicParams();
+  //  Teuchos::ParameterList apara = Global::Problem::Instance()->AleDynamicParams();
   //
-  //  INPAR::ALE::AleDynamic aletype =
-  //      CORE::UTILS::IntegralValue<INPAR::ALE::AleDynamic>(apara, "ALE_TYPE");
+  //  Inpar::ALE::AleDynamic aletype =
+  //      Core::UTILS::IntegralValue<Inpar::ALE::AleDynamic>(apara, "ALE_TYPE");
 
   return;
 }
@@ -114,13 +114,13 @@ void WEAR::Algorithm::check_input()
 /*----------------------------------------------------------------------*
  | Create interfaces for material conf.                     farah 09/14 |
  *----------------------------------------------------------------------*/
-void WEAR::Algorithm::create_material_interface()
+void Wear::Algorithm::create_material_interface()
 {
-  MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
-  WEAR::LagrangeStrategyWear& cstrategy = static_cast<WEAR::LagrangeStrategyWear&>(strategy);
+  Mortar::StrategyBase& strategy = cmtman_->GetStrategy();
+  Wear::LagrangeStrategyWear& cstrategy = static_cast<Wear::LagrangeStrategyWear&>(strategy);
 
   // create some local variables (later to be stored in strategy)
-  int dim = GLOBAL::Problem::Instance()->NDim();
+  int dim = Global::Problem::Instance()->NDim();
   if (dim != 2 && dim != 3) FOUR_C_THROW("Contact problem must be 2D or 3D");
   Teuchos::ParameterList cparams = cstrategy.Params();
 
@@ -136,7 +136,7 @@ void WEAR::Algorithm::create_material_interface()
     fflush(stdout);
   }
 
-  std::vector<CORE::Conditions::Condition*> contactconditions(0);
+  std::vector<Core::Conditions::Condition*> contactconditions(0);
   structure_->discretization()->GetCondition("Contact", contactconditions);
 
   // there must be more than one contact condition
@@ -160,15 +160,15 @@ void WEAR::Algorithm::create_material_interface()
   int maxdof = structure_->discretization()->dof_row_map()->MaxAllGID();
 
   // get input par.
-  INPAR::CONTACT::SolvingStrategy stype =
-      CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cparams, "STRATEGY");
-  INPAR::WEAR::WearLaw wlaw = CORE::UTILS::IntegralValue<INPAR::WEAR::WearLaw>(cparams, "WEARLAW");
-  INPAR::CONTACT::ConstraintDirection constr_direction =
-      CORE::UTILS::IntegralValue<INPAR::CONTACT::ConstraintDirection>(
+  Inpar::CONTACT::SolvingStrategy stype =
+      Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(cparams, "STRATEGY");
+  Inpar::Wear::WearLaw wlaw = Core::UTILS::IntegralValue<Inpar::Wear::WearLaw>(cparams, "WEARLAW");
+  Inpar::CONTACT::ConstraintDirection constr_direction =
+      Core::UTILS::IntegralValue<Inpar::CONTACT::ConstraintDirection>(
           cparams, "CONSTRAINT_DIRECTIONS");
 
   bool friplus = false;
-  if ((wlaw != INPAR::WEAR::wear_none) || (cparams.get<int>("PROBTYPE") == INPAR::CONTACT::tsi))
+  if ((wlaw != Inpar::Wear::wear_none) || (cparams.get<int>("PROBTYPE") == Inpar::CONTACT::tsi))
     friplus = true;
 
   bool isanyselfcontact = false;
@@ -176,8 +176,8 @@ void WEAR::Algorithm::create_material_interface()
   for (int i = 0; i < (int)contactconditions.size(); ++i)
   {
     // initialize vector for current group of conditions and temp condition
-    std::vector<CORE::Conditions::Condition*> currentgroup(0);
-    CORE::Conditions::Condition* tempcond = nullptr;
+    std::vector<Core::Conditions::Condition*> currentgroup(0);
+    Core::Conditions::Condition* tempcond = nullptr;
 
     // try to build contact group around this condition
     currentgroup.push_back(contactconditions[i]);
@@ -241,9 +241,9 @@ void WEAR::Algorithm::create_material_interface()
     Teuchos::ParameterList icparams = cparams;
 
     // find out if interface-specific coefficients of friction are given
-    INPAR::CONTACT::FrictionType fric =
-        CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(cparams, "FRICTION");
-    if (fric == INPAR::CONTACT::friction_tresca || fric == INPAR::CONTACT::friction_coulomb)
+    Inpar::CONTACT::FrictionType fric =
+        Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(cparams, "FRICTION");
+    if (fric == Inpar::CONTACT::friction_tresca || fric == Inpar::CONTACT::friction_coulomb)
     {
       // read interface COFs
       std::vector<double> frcoeff((int)currentgroup.size());
@@ -259,12 +259,12 @@ void WEAR::Algorithm::create_material_interface()
       if (frcoeff[0] < 0.0) FOUR_C_THROW("Negative FrCoeff / FrBound on interface %i", groupid1);
 
       // add COF locally to contact parameter list of this interface
-      if (fric == INPAR::CONTACT::friction_tresca)
+      if (fric == Inpar::CONTACT::friction_tresca)
       {
         icparams.setEntry("FRBOUND", static_cast<Teuchos::ParameterEntry>(frcoeff[0]));
         icparams.setEntry("FRCOEFF", static_cast<Teuchos::ParameterEntry>(-1.0));
       }
-      else if (fric == INPAR::CONTACT::friction_coulomb)
+      else if (fric == Inpar::CONTACT::friction_coulomb)
       {
         icparams.setEntry("FRCOEFF", static_cast<Teuchos::ParameterEntry>(frcoeff[0]));
         icparams.setEntry("FRBOUND", static_cast<Teuchos::ParameterEntry>(-1.0));
@@ -272,9 +272,9 @@ void WEAR::Algorithm::create_material_interface()
     }
 
     // find out if interface-specific coefficients of friction are given
-    INPAR::CONTACT::AdhesionType ad =
-        CORE::UTILS::IntegralValue<INPAR::CONTACT::AdhesionType>(cparams, "ADHESION");
-    if (ad == INPAR::CONTACT::adhesion_bound)
+    Inpar::CONTACT::AdhesionType ad =
+        Core::UTILS::IntegralValue<Inpar::CONTACT::AdhesionType>(cparams, "ADHESION");
+    if (ad == Inpar::CONTACT::adhesion_bound)
     {
       // read interface COFs
       std::vector<double> ad_bound((int)currentgroup.size());
@@ -300,10 +300,10 @@ void WEAR::Algorithm::create_material_interface()
 
     // for structural contact we currently choose redundant master storage
     // the only exception is self contact where a redundant slave is needed, too
-    INPAR::MORTAR::ExtendGhosting redundant =
-        Teuchos::getIntegralValue<INPAR::MORTAR::ExtendGhosting>(
+    Inpar::Mortar::ExtendGhosting redundant =
+        Teuchos::getIntegralValue<Inpar::Mortar::ExtendGhosting>(
             icparams.sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY");
-    if (isanyselfcontact == true && redundant != INPAR::MORTAR::ExtendGhosting::redundant_all)
+    if (isanyselfcontact == true && redundant != Inpar::Mortar::ExtendGhosting::redundant_all)
       FOUR_C_THROW("Self contact requires fully redundant slave and master storage");
 
     // decide between contactinterface, augmented interface and wearinterface
@@ -334,7 +334,7 @@ void WEAR::Algorithm::create_material_interface()
         int gid = (*nodeids)[k];
         // do only nodes that I have in my discretization
         if (!structure_->discretization()->NodeColMap()->MyGID(gid)) continue;
-        CORE::Nodes::Node* node = structure_->discretization()->gNode(gid);
+        Core::Nodes::Node* node = structure_->discretization()->gNode(gid);
         if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
 
         // store initial active node gids
@@ -354,13 +354,13 @@ void WEAR::Algorithm::create_material_interface()
         }
 
         // create Node object or FriNode object in the frictional case
-        INPAR::CONTACT::FrictionType ftype =
-            CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(cparams, "FRICTION");
+        Inpar::CONTACT::FrictionType ftype =
+            Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(cparams, "FRICTION");
 
         // for the boolean variable initactive we use isactive[j]+foundinitialactive,
         // as this is true for BOTH initial active nodes found for the first time
         // and found for the second, third, ... time!
-        if (ftype != INPAR::CONTACT::friction_none)
+        if (ftype != Inpar::CONTACT::friction_none)
         {
           Teuchos::RCP<CONTACT::FriNode> cnode = Teuchos::rcp(new CONTACT::FriNode(node->Id(),
               node->X(), node->Owner(), structure_->discretization()->Dof(0, node), isslave[j],
@@ -369,13 +369,13 @@ void WEAR::Algorithm::create_material_interface()
           // get nurbs weight!
           if (cparams.get<bool>("NURBS") == true)
           {
-            DRT::NURBS::ControlPoint* cp = dynamic_cast<DRT::NURBS::ControlPoint*>(node);
+            Discret::Nurbs::ControlPoint* cp = dynamic_cast<Discret::Nurbs::ControlPoint*>(node);
 
             cnode->NurbsW() = cp->W();
           }
 
           // Check, if this node (and, in case, which dofs) are in the contact symmetry condition
-          std::vector<CORE::Conditions::Condition*> contactSymconditions(0);
+          std::vector<Core::Conditions::Condition*> contactSymconditions(0);
           structure_->discretization()->GetCondition("mrtrsym", contactSymconditions);
 
           for (unsigned j = 0; j < contactSymconditions.size(); j++)
@@ -385,8 +385,8 @@ void WEAR::Algorithm::create_material_interface()
                   contactSymconditions.at(j)->parameters().Get<std::vector<int>>("onoff");
               for (unsigned k = 0; k < onoff.size(); k++)
                 if (onoff.at(k) == 1) cnode->DbcDofs()[k] = true;
-              if (stype == INPAR::CONTACT::solution_lagmult &&
-                  constr_direction != INPAR::CONTACT::constr_xyz)
+              if (stype == Inpar::CONTACT::solution_lagmult &&
+                  constr_direction != Inpar::CONTACT::constr_xyz)
                 FOUR_C_THROW(
                     "Contact symmetry with Lagrange multiplier method"
                     " only with contact constraints in xyz direction.\n"
@@ -409,13 +409,13 @@ void WEAR::Algorithm::create_material_interface()
           // get nurbs weight!
           if (cparams.get<bool>("NURBS") == true)
           {
-            DRT::NURBS::ControlPoint* cp = dynamic_cast<DRT::NURBS::ControlPoint*>(node);
+            Discret::Nurbs::ControlPoint* cp = dynamic_cast<Discret::Nurbs::ControlPoint*>(node);
 
             cnode->NurbsW() = cp->W();
           }
 
           // Check, if this node (and, in case, which dofs) are in the contact symmetry condition
-          std::vector<CORE::Conditions::Condition*> contactSymconditions(0);
+          std::vector<Core::Conditions::Condition*> contactSymconditions(0);
           structure_->discretization()->GetCondition("mrtrsym", contactSymconditions);
 
           for (unsigned j = 0; j < contactSymconditions.size(); j++)
@@ -442,7 +442,7 @@ void WEAR::Algorithm::create_material_interface()
     for (int j = 0; j < (int)currentgroup.size(); ++j)
     {
       // get elements from condition j of current group
-      std::map<int, Teuchos::RCP<CORE::Elements::Element>>& currele = currentgroup[j]->Geometry();
+      std::map<int, Teuchos::RCP<Core::Elements::Element>>& currele = currentgroup[j]->Geometry();
 
       // elements in a boundary condition have a unique id
       // but ids are not unique among 2 distinct conditions
@@ -456,10 +456,10 @@ void WEAR::Algorithm::create_material_interface()
       int gsize = 0;
       Comm().SumAll(&lsize, &gsize, 1);
 
-      std::map<int, Teuchos::RCP<CORE::Elements::Element>>::iterator fool;
+      std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator fool;
       for (fool = currele.begin(); fool != currele.end(); ++fool)
       {
-        Teuchos::RCP<CORE::Elements::Element> ele = fool->second;
+        Teuchos::RCP<Core::Elements::Element> ele = fool->second;
         Teuchos::RCP<CONTACT::Element> cele =
             Teuchos::rcp(new CONTACT::Element(ele->Id() + ggsize, ele->Owner(), ele->Shape(),
                 ele->num_node(), ele->NodeIds(), isslave[j], cparams.get<bool>("NURBS")));
@@ -468,15 +468,16 @@ void WEAR::Algorithm::create_material_interface()
         // get knotvector, normal factor and zero-size information for nurbs
         if (cparams.get<bool>("NURBS") == true)
         {
-          DRT::NURBS::NurbsDiscretization* nurbsdis =
-              dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*(structure_->discretization())));
+          Discret::Nurbs::NurbsDiscretization* nurbsdis =
+              dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(
+                  &(*(structure_->discretization())));
 
-          Teuchos::RCP<DRT::NURBS::Knotvector> knots = (*nurbsdis).GetKnotVector();
-          std::vector<CORE::LINALG::SerialDenseVector> parentknots(dim);
-          std::vector<CORE::LINALG::SerialDenseVector> mortarknots(dim - 1);
+          Teuchos::RCP<Discret::Nurbs::Knotvector> knots = (*nurbsdis).GetKnotVector();
+          std::vector<Core::LinAlg::SerialDenseVector> parentknots(dim);
+          std::vector<Core::LinAlg::SerialDenseVector> mortarknots(dim - 1);
 
-          Teuchos::RCP<CORE::Elements::FaceElement> faceele =
-              Teuchos::rcp_dynamic_cast<CORE::Elements::FaceElement>(ele, true);
+          Teuchos::RCP<Core::Elements::FaceElement> faceele =
+              Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(ele, true);
           double normalfac = 0.0;
           bool zero_size = knots->get_boundary_ele_and_parent_knots(parentknots, mortarknots,
               normalfac, faceele->ParentMasterElement()->Id(), faceele->FaceMasterNumber());

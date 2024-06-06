@@ -63,23 +63,23 @@ FOUR_C_NAMESPACE_OPEN
 /* constructor */
 STR::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioparams, const Teuchos::ParameterList& sdynparams,
-    const Teuchos::ParameterList& xparams, Teuchos::RCP<DRT::Discretization> actdis,
-    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<CORE::LINALG::Solver> contactsolver,
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
+    const Teuchos::ParameterList& xparams, Teuchos::RCP<Discret::Discretization> actdis,
+    Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Core::LinAlg::Solver> contactsolver,
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : TimInt(timeparams, ioparams, sdynparams, xparams, actdis, solver, contactsolver, output),
-      pred_(CORE::UTILS::IntegralValue<INPAR::STR::PredEnum>(sdynparams, "PREDICT")),
-      itertype_(CORE::UTILS::IntegralValue<INPAR::STR::NonlinSolTech>(sdynparams, "NLNSOL")),
-      normtypedisi_(CORE::UTILS::IntegralValue<INPAR::STR::ConvNorm>(sdynparams, "NORM_DISP")),
-      normtypefres_(CORE::UTILS::IntegralValue<INPAR::STR::ConvNorm>(sdynparams, "NORM_RESF")),
-      normtypepres_(CORE::UTILS::IntegralValue<INPAR::STR::ConvNorm>(sdynparams, "NORM_PRES")),
-      normtypepfres_(CORE::UTILS::IntegralValue<INPAR::STR::ConvNorm>(sdynparams, "NORM_INCO")),
+      pred_(Core::UTILS::IntegralValue<Inpar::STR::PredEnum>(sdynparams, "PREDICT")),
+      itertype_(Core::UTILS::IntegralValue<Inpar::STR::NonlinSolTech>(sdynparams, "NLNSOL")),
+      normtypedisi_(Core::UTILS::IntegralValue<Inpar::STR::ConvNorm>(sdynparams, "NORM_DISP")),
+      normtypefres_(Core::UTILS::IntegralValue<Inpar::STR::ConvNorm>(sdynparams, "NORM_RESF")),
+      normtypepres_(Core::UTILS::IntegralValue<Inpar::STR::ConvNorm>(sdynparams, "NORM_PRES")),
+      normtypepfres_(Core::UTILS::IntegralValue<Inpar::STR::ConvNorm>(sdynparams, "NORM_INCO")),
       combdispre_(
-          CORE::UTILS::IntegralValue<INPAR::STR::BinaryOp>(sdynparams, "NORMCOMBI_DISPPRES")),
+          Core::UTILS::IntegralValue<Inpar::STR::BinaryOp>(sdynparams, "NORMCOMBI_DISPPRES")),
       combfrespfres_(
-          CORE::UTILS::IntegralValue<INPAR::STR::BinaryOp>(sdynparams, "NORMCOMBI_RESFINCO")),
+          Core::UTILS::IntegralValue<Inpar::STR::BinaryOp>(sdynparams, "NORMCOMBI_RESFINCO")),
       combdisifres_(
-          CORE::UTILS::IntegralValue<INPAR::STR::BinaryOp>(sdynparams, "NORMCOMBI_RESFDISP")),
-      iternorm_(CORE::UTILS::IntegralValue<INPAR::STR::VectorNorm>(sdynparams, "ITERNORM")),
+          Core::UTILS::IntegralValue<Inpar::STR::BinaryOp>(sdynparams, "NORMCOMBI_RESFDISP")),
+      iternorm_(Core::UTILS::IntegralValue<Inpar::STR::VectorNorm>(sdynparams, "ITERNORM")),
       itermax_(sdynparams.get<int>("MAXITER")),
       itermin_(sdynparams.get<int>("MINITER")),
       toldisi_(sdynparams.get<double>("TOLDISP")),
@@ -89,10 +89,10 @@ STR::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& timeparams,
       uzawaparam_(sdynparams.get<double>("UZAWAPARAM")),
       uzawaitermax_(sdynparams.get<int>("UZAWAMAXITER")),
       tolcon_(sdynparams.get<double>("TOLCONSTR")),
-      tolcardvasc0d_(GLOBAL::Problem::Instance()->cardiovascular0_d_structural_params().get<double>(
+      tolcardvasc0d_(Global::Problem::Instance()->cardiovascular0_d_structural_params().get<double>(
           "TOL_CARDVASC0D_RES")),
       tolcardvasc0ddofincr_(
-          GLOBAL::Problem::Instance()->cardiovascular0_d_structural_params().get<double>(
+          Global::Problem::Instance()->cardiovascular0_d_structural_params().get<double>(
               "TOL_CARDVASC0D_DOFINCR")),
       iter_(-1),
       normcharforce_(0.0),
@@ -120,7 +120,7 @@ STR::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& timeparams,
       fres_(Teuchos::null),
       freact_(Teuchos::null),
       updateprojection_(false),
-      stcscale_(CORE::UTILS::IntegralValue<INPAR::STR::StcScale>(sdynparams, "STC_SCALING")),
+      stcscale_(Core::UTILS::IntegralValue<Inpar::STR::StcScale>(sdynparams, "STC_SCALING")),
       stclayer_(sdynparams.get<int>("STC_LAYER")),
       ptcdt_(sdynparams.get<double>("PTCDT")),
       dti_(1.0 / ptcdt_)
@@ -138,7 +138,7 @@ STR::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& timeparams,
  *----------------------------------------------------------------------------------------------*/
 void STR::TimIntImpl::Init(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver)
+    Teuchos::RCP<Discret::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver)
 {
   // call Init() in base class
   STR::TimInt::Init(timeparams, sdynparams, xparams, actdis, solver);
@@ -186,9 +186,9 @@ void STR::TimIntImpl::Init(const Teuchos::ParameterList& timeparams,
   if (ptcdt_ <= 0) FOUR_C_THROW("PTCDT has to be greater than zero. Fix your input file.");
 
   // setup NOX parameter lists
-  if (itertype_ == INPAR::STR::soltech_noxnewtonlinesearch)
+  if (itertype_ == Inpar::STR::soltech_noxnewtonlinesearch)
     NoxSetup();
-  else if (itertype_ == INPAR::STR::soltech_noxgeneral)
+  else if (itertype_ == Inpar::STR::soltech_noxgeneral)
     NoxSetup(xparams.sublist("NOX"));
 
   // done so far
@@ -207,54 +207,54 @@ void STR::TimIntImpl::Setup()
   // then Uzawa-type solver is used
   if (conman_->HaveConstraintLagr())
   {
-    if ((itertype_ != INPAR::STR::soltech_newtonuzawalin) and
-        (itertype_ != INPAR::STR::soltech_newtonuzawanonlin))
+    if ((itertype_ != Inpar::STR::soltech_newtonuzawalin) and
+        (itertype_ != Inpar::STR::soltech_newtonuzawanonlin))
       FOUR_C_THROW("Chosen solution technique %s does not work constrained.",
-          INPAR::STR::NonlinSolTechString(itertype_).c_str());
+          Inpar::STR::NonlinSolTechString(itertype_).c_str());
   }
   else if (cardvasc0dman_->have_cardiovascular0_d())
   {
-    if (itertype_ != INPAR::STR::soltech_newtonuzawalin)
+    if (itertype_ != Inpar::STR::soltech_newtonuzawalin)
       if (myrank_ == 0)
         FOUR_C_THROW("Chosen solution technique %s does not work with Cardiovascular0D bc.",
-            INPAR::STR::NonlinSolTechString(itertype_).c_str());
+            Inpar::STR::NonlinSolTechString(itertype_).c_str());
   }
-  else if ((itertype_ == INPAR::STR::soltech_newtonuzawalin) or
-           (itertype_ == INPAR::STR::soltech_newtonuzawanonlin))
+  else if ((itertype_ == Inpar::STR::soltech_newtonuzawalin) or
+           (itertype_ == Inpar::STR::soltech_newtonuzawanonlin))
   {
     FOUR_C_THROW(
         "Chosen solution technique %s does only work constrained or with Cardiovascular0D bc.",
-        INPAR::STR::NonlinSolTechString(itertype_).c_str());
+        Inpar::STR::NonlinSolTechString(itertype_).c_str());
   }
 
   // setup tolerances and binary operators for convergence check of contact/meshtying problems
   // in saddlepoint formulation
   tolcontconstr_ = tolfres_;
   tollagr_ = toldisi_;
-  combfrescontconstr_ = INPAR::STR::bop_and;  // default values, avoid uninitialized variables
-  combdisilagr_ = INPAR::STR::bop_and;
-  normtypecontconstr_ = INPAR::STR::
-      convnorm_abs;  // CORE::UTILS::IntegralValue<INPAR::STR::ConvNorm>(sdynparams,"NORM_RESF"));
-  normtypeplagrincr_ = INPAR::STR::
-      convnorm_abs;  // CORE::UTILS::IntegralValue<INPAR::STR::ConvNorm>(sdynparams,"NORM_DISP"));
+  combfrescontconstr_ = Inpar::STR::bop_and;  // default values, avoid uninitialized variables
+  combdisilagr_ = Inpar::STR::bop_and;
+  normtypecontconstr_ = Inpar::STR::
+      convnorm_abs;  // Core::UTILS::IntegralValue<Inpar::STR::ConvNorm>(sdynparams,"NORM_RESF"));
+  normtypeplagrincr_ = Inpar::STR::
+      convnorm_abs;  // Core::UTILS::IntegralValue<Inpar::STR::ConvNorm>(sdynparams,"NORM_DISP"));
 
   if (have_contact_meshtying())
   {
     // extract information from parameter lists
     tolcontconstr_ = cmtbridge_->GetStrategy().Params().get<double>("TOLCONTCONSTR");
     tollagr_ = cmtbridge_->GetStrategy().Params().get<double>("TOLLAGR");
-    combfrescontconstr_ = CORE::UTILS::IntegralValue<INPAR::STR::BinaryOp>(
+    combfrescontconstr_ = Core::UTILS::IntegralValue<Inpar::STR::BinaryOp>(
         cmtbridge_->GetStrategy().Params(), "NORMCOMBI_RESFCONTCONSTR");
-    combdisilagr_ = CORE::UTILS::IntegralValue<INPAR::STR::BinaryOp>(
+    combdisilagr_ = Core::UTILS::IntegralValue<Inpar::STR::BinaryOp>(
         cmtbridge_->GetStrategy().Params(), "NORMCOMBI_DISPLAGR");
   }
 
 
   // setup binary operators for convergence check of semi-smooth plasticity problems
-  combfresplconstr_ = INPAR::STR::bop_and;
-  combdisiLp_ = INPAR::STR::bop_and;
-  combfresEasres_ = INPAR::STR::bop_and;
-  combdisiEasIncr_ = INPAR::STR::bop_and;
+  combfresplconstr_ = Inpar::STR::bop_and;
+  combdisiLp_ = Inpar::STR::bop_and;
+  combfresEasres_ = Inpar::STR::bop_and;
+  combdisiEasIncr_ = Inpar::STR::bop_and;
 
   // -------------------------------------------------------------------
   // setup Krylov projection if necessary
@@ -264,12 +264,12 @@ void STR::TimIntImpl::Setup()
   // in this case, we need a basis vector for the nullspace/kernel
 
   // get condition "KrylovSpaceProjection" from discretization
-  std::vector<CORE::Conditions::Condition*> KSPcond;
+  std::vector<Core::Conditions::Condition*> KSPcond;
   discret_->GetCondition("KrylovSpaceProjection", KSPcond);
   int numcond = KSPcond.size();
   int numsolid = 0;
 
-  CORE::Conditions::Condition* kspcond = nullptr;
+  Core::Conditions::Condition* kspcond = nullptr;
   // check if for solid Krylov projection is required
   for (int icond = 0; icond < numcond; icond++)
   {
@@ -294,20 +294,20 @@ void STR::TimIntImpl::Setup()
     FOUR_C_THROW("Received more than one KrylovSpaceCondition for solid field");
 
   // prepare line search
-  if (itertype_ == INPAR::STR::soltech_newtonls) PrepareLineSearch();
+  if (itertype_ == Inpar::STR::soltech_newtonls) PrepareLineSearch();
 
   // create empty residual force vector
-  fres_ = CORE::LINALG::CreateVector(*DofRowMapView(), false);
+  fres_ = Core::LinAlg::CreateVector(*DofRowMapView(), false);
 
   // create empty reaction force vector of full length
-  freact_ = CORE::LINALG::CreateVector(*DofRowMapView(), false);
+  freact_ = Core::LinAlg::CreateVector(*DofRowMapView(), false);
 
   // iterative displacement increments IncD_{n+1}
   // also known as residual displacements
-  disi_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  disi_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
 
   // prepare matrix for scaled thickness business of thin shell structures
-  stcmat_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*DofRowMapView(), 81, true, true));
+  stcmat_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*DofRowMapView(), 81, true, true));
   stccompl_ = false;
 
   return;
@@ -362,37 +362,37 @@ void STR::TimIntImpl::Predict()
 
   // Update locals systems (which may be time dependent)
   if (locsysman_ != Teuchos::null)
-    locsysman_->Update(timen_, {}, GLOBAL::Problem::Instance()->FunctionManager());
+    locsysman_->Update(timen_, {}, Global::Problem::Instance()->FunctionManager());
 
   // set iteration step to 0 (predictor)
   iter_ = 0;
   // choose predictor
-  if ((pred_ == INPAR::STR::pred_constdis) or (pred_ == INPAR::STR::pred_constdispres))
+  if ((pred_ == Inpar::STR::pred_constdis) or (pred_ == Inpar::STR::pred_constdispres))
   {
     predict_const_dis_consist_vel_acc();
     normdisi_ = 1.0e6;
     normpres_ = 1.0e6;
   }
-  else if (pred_ == INPAR::STR::pred_constvel)
+  else if (pred_ == Inpar::STR::pred_constvel)
   {
     predict_const_vel_consist_acc();
     normdisi_ = 1.0e6;
     normpres_ = 1.0e6;
   }
-  else if (pred_ == INPAR::STR::pred_constacc)
+  else if (pred_ == Inpar::STR::pred_constacc)
   {
     PredictConstAcc();
     normdisi_ = 1.0e6;
     normpres_ = 1.0e6;
   }
-  else if ((pred_ == INPAR::STR::pred_constdisvelacc) or
-           (pred_ == INPAR::STR::pred_constdisvelaccpres))
+  else if ((pred_ == Inpar::STR::pred_constdisvelacc) or
+           (pred_ == Inpar::STR::pred_constdisvelaccpres))
   {
     predict_const_dis_vel_acc();
     normdisi_ = 1.0e6;
     normpres_ = 1.0e6;
   }
-  else if (pred_ == INPAR::STR::pred_tangdis)
+  else if (pred_ == Inpar::STR::pred_tangdis)
   {
     predict_tang_dis_consist_vel_acc();
     // normdisi_ has been set
@@ -405,7 +405,7 @@ void STR::TimIntImpl::Predict()
   // zerofy pressure DOFs and time-derivatives
   if (pressure_ != Teuchos::null)
   {
-    if ((pred_ != INPAR::STR::pred_constdispres) and (pred_ != INPAR::STR::pred_constdisvelaccpres))
+    if ((pred_ != Inpar::STR::pred_constdispres) and (pred_ != Inpar::STR::pred_constdisvelaccpres))
     {
       pressure_->InsertCondVector(pressure_->ExtractCondVector(zeros_), disn_);
     }
@@ -430,7 +430,7 @@ void STR::TimIntImpl::Predict()
   // compute residual forces fres_ and stiffness stiff_
   // If we use a tangential predictor, the contact status could have been changed in contrast
   // to a constant predictor. Thus the contact status has to be reevaluated! (hiermeier 22.01.2014)
-  if (pred_ == INPAR::STR::pred_tangdis) params.set<bool>("predict", false);
+  if (pred_ == Inpar::STR::pred_tangdis) params.set<bool>("predict", false);
 
   // compute residual forces fres_ and stiffness stiff_
   evaluate_force_stiff_residual(params);
@@ -561,13 +561,13 @@ void STR::TimIntImpl::PrepareLineSearch()
   // each proc searches through his elements
   for (int i = 0; i < discret_->NumMyRowElements(); i++)
   {
-    CORE::Elements::Element* actele = discret_->lRowElement(i);
-    DRT::ELEMENTS::SoHex8* ele_hex8 = dynamic_cast<DRT::ELEMENTS::SoHex8*>(actele);
+    Core::Elements::Element* actele = discret_->lRowElement(i);
+    Discret::ELEMENTS::SoHex8* ele_hex8 = dynamic_cast<Discret::ELEMENTS::SoHex8*>(actele);
     if ((ele_hex8 != nullptr && ele_hex8->HaveEAS() == true) ||
-        (actele->ElementType() == DRT::ELEMENTS::SoHex8P1J1Type::Instance()) ||
-        (actele->ElementType() == DRT::ELEMENTS::SoShw6Type::Instance()))
+        (actele->ElementType() == Discret::ELEMENTS::SoHex8P1J1Type::Instance()) ||
+        (actele->ElementType() == Discret::ELEMENTS::SoShw6Type::Instance()))
       haveCondensationLocal = 1;
-    if (actele->ElementType() == DRT::ELEMENTS::SoSh8p8Type::Instance())
+    if (actele->ElementType() == Discret::ELEMENTS::SoSh8p8Type::Instance())
       FOUR_C_THROW(
           "no line search for this element implemented.\n"
           "Feel free to implement similar to hex8 with EAS");
@@ -575,8 +575,8 @@ void STR::TimIntImpl::PrepareLineSearch()
   discret_->Comm().MaxAll(&haveCondensationLocal, &haveCondensationGlobal, 1);
   if (haveCondensationGlobal)
   {
-    fresn_str_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
-    fintn_str_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+    fresn_str_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
+    fintn_str_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
   }
   return;
 }
@@ -605,7 +605,7 @@ void STR::TimIntImpl::predict_tang_dis_consist_vel_acc()
   disi_->PutScalar(0.0);
 
   // for displacement increments on Dirichlet boundary
-  Teuchos::RCP<Epetra_Vector> dbcinc = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  Teuchos::RCP<Epetra_Vector> dbcinc = Core::LinAlg::CreateVector(*DofRowMapView(), true);
 
   // copy last converged displacements
   dbcinc->Update(1.0, *(*dis_)(0), 0.0);
@@ -629,7 +629,7 @@ void STR::TimIntImpl::predict_tang_dis_consist_vel_acc()
   // add linear reaction forces to residual
   {
     // linear reactions
-    Teuchos::RCP<Epetra_Vector> freact = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+    Teuchos::RCP<Epetra_Vector> freact = Core::LinAlg::CreateVector(*DofRowMapView(), true);
     stiff_->Multiply(false, *dbcinc, *freact);
 
     // add linear reaction forces due to prescribed Dirichlet BCs
@@ -661,13 +661,13 @@ void STR::TimIntImpl::predict_tang_dis_consist_vel_acc()
   stiff_->Complete();
   if (get_loc_sys_trafo() != Teuchos::null)
   {
-    CORE::LINALG::apply_dirichlet_to_system(
-        *CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_), *disi_, *fres_,
+    Core::LinAlg::apply_dirichlet_to_system(
+        *Core::LinAlg::CastToSparseMatrixAndCheckSuccess(stiff_), *disi_, *fres_,
         *get_loc_sys_trafo(), *zeros_, *(dbcmaps_->CondMap()));
   }
   else
   {
-    CORE::LINALG::apply_dirichlet_to_system(
+    Core::LinAlg::apply_dirichlet_to_system(
         *stiff_, *disi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
   }
 
@@ -677,7 +677,7 @@ void STR::TimIntImpl::predict_tang_dis_consist_vel_acc()
     CmtLinearSolve();  // use contact/meshtying solver
   else
   {
-    CORE::LINALG::SolverParams solver_params;
+    Core::LinAlg::SolverParams solver_params;
     solver_params.refactor = true;
     solver_params.reset = true;
     solver_->Solve(stiff_->EpetraOperator(), disi_, fres_, solver_params);
@@ -690,13 +690,13 @@ void STR::TimIntImpl::predict_tang_dis_consist_vel_acc()
   bool bPressure = pressure_ != Teuchos::null;
   bool bContactSP =
       (have_contact_meshtying() &&
-          CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
-              cmtbridge_->GetStrategy().Params(), "STRATEGY") == INPAR::CONTACT::solution_lagmult &&
-          (CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(
-               cmtbridge_->GetStrategy().Params(), "SYSTEM") != INPAR::CONTACT::system_condensed ||
-              CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(
+          Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(
+              cmtbridge_->GetStrategy().Params(), "STRATEGY") == Inpar::CONTACT::solution_lagmult &&
+          (Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(
+               cmtbridge_->GetStrategy().Params(), "SYSTEM") != Inpar::CONTACT::system_condensed ||
+              Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(
                   cmtbridge_->GetStrategy().Params(), "SYSTEM") !=
-                  INPAR::CONTACT::system_condensed_lagmult));
+                  Inpar::CONTACT::system_condensed_lagmult));
 
   if (bPressure && bContactSP)
     FOUR_C_THROW(
@@ -759,7 +759,7 @@ void STR::TimIntImpl::predict_tang_dis_consist_vel_acc()
 /*--------------------------------------------------------------------------*
  | setup Krylov projector including first fill                    nis Feb13 |
  *--------------------------------------------------------------------------*/
-void STR::TimIntImpl::setup_krylov_space_projection(CORE::Conditions::Condition* kspcond)
+void STR::TimIntImpl::setup_krylov_space_projection(Core::Conditions::Condition* kspcond)
 {
   // get number of mode flags in dat-file
   const int nummodes = kspcond->parameters().Get<int>("NUMMODES");
@@ -787,7 +787,7 @@ void STR::TimIntImpl::setup_krylov_space_projection(CORE::Conditions::Condition*
 
   // create the projector
   projector_ = Teuchos::rcp(
-      new CORE::LINALG::KrylovProjector(activemodeids, weighttype, discret_->dof_row_map()));
+      new Core::LinAlg::KrylovProjector(activemodeids, weighttype, discret_->dof_row_map()));
 
   // update the projector
   update_krylov_space_projection();
@@ -812,7 +812,8 @@ void STR::TimIntImpl::update_krylov_space_projection()
   std::vector<int> modeids = projector_->Modes();
 
   Teuchos::RCP<Epetra_Map> nullspaceMap = Teuchos::rcp(new Epetra_Map(*discret_->dof_row_map()));
-  Teuchos::RCP<Epetra_MultiVector> nullspace = DRT::ComputeNullSpace(*discret_, 3, 6, nullspaceMap);
+  Teuchos::RCP<Epetra_MultiVector> nullspace =
+      Discret::ComputeNullSpace(*discret_, 3, 6, nullspaceMap);
   if (nullspace == Teuchos::null) FOUR_C_THROW("nullspace not successfully computed");
 
   // sort vector of nullspace data into kernel vector c_
@@ -838,23 +839,23 @@ void STR::TimIntImpl::apply_force_stiff_external(const double time,  //!< evalua
     const Teuchos::RCP<Epetra_Vector> disn,                          //!< new displacement state
     const Teuchos::RCP<Epetra_Vector> vel,                           //!< velocity state
     Teuchos::RCP<Epetra_Vector>& fext,                               //!< external force
-    Teuchos::RCP<CORE::LINALG::SparseOperator>& fextlin  //!< linearization of external force
+    Teuchos::RCP<Core::LinAlg::SparseOperator>& fextlin  //!< linearization of external force
 )
 {
   Teuchos::ParameterList p;
   // other parameters needed by the elements
   p.set("total time", time);
-  p.set<const CORE::UTILS::FunctionManager*>(
-      "function_manager", &GLOBAL::Problem::Instance()->FunctionManager());
+  p.set<const Core::UTILS::FunctionManager*>(
+      "function_manager", &Global::Problem::Instance()->FunctionManager());
 
   // set vector values needed by elements
   discret_->ClearState();
   discret_->set_state(0, "displacement", dis);
 
-  if (damping_ == INPAR::STR::damp_material) discret_->set_state(0, "velocity", vel);
+  if (damping_ == Inpar::STR::damp_material) discret_->set_state(0, "velocity", vel);
   // get load vector
-  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->structural_dynamic_params();
-  bool loadlin = (CORE::UTILS::IntegralValue<int>(sdyn, "LOADLIN") == 1);
+  const Teuchos::ParameterList& sdyn = Global::Problem::Instance()->structural_dynamic_params();
+  bool loadlin = (Core::UTILS::IntegralValue<int>(sdyn, "LOADLIN") == 1);
 
   if (!loadlin)
     discret_->evaluate_neumann(p, *fext);
@@ -873,8 +874,8 @@ void STR::TimIntImpl::apply_force_stiff_external(const double time,  //!< evalua
 void STR::TimIntImpl::apply_force_stiff_internal(const double time, const double dt,
     const Teuchos::RCP<Epetra_Vector> dis, const Teuchos::RCP<Epetra_Vector> disi,
     const Teuchos::RCP<Epetra_Vector> vel, Teuchos::RCP<Epetra_Vector> fint,
-    Teuchos::RCP<CORE::LINALG::SparseOperator> stiff, Teuchos::ParameterList& params,
-    Teuchos::RCP<CORE::LINALG::SparseOperator> damp)
+    Teuchos::RCP<Core::LinAlg::SparseOperator> stiff, Teuchos::ParameterList& params,
+    Teuchos::RCP<Core::LinAlg::SparseOperator> damp)
 {
   // *********** time measurement ***********
   double dtcpu = timer_->wallTime();
@@ -893,7 +894,7 @@ void STR::TimIntImpl::apply_force_stiff_internal(const double time, const double
   discret_->ClearState();
   discret_->set_state(0, "residual displacement", disi);
   discret_->set_state(0, "displacement", dis);
-  if (damping_ == INPAR::STR::damp_material) discret_->set_state(0, "velocity", vel);
+  if (damping_ == Inpar::STR::damp_material) discret_->set_state(0, "velocity", vel);
   // fintn_->PutScalar(0.0);  // initialise internal force vector
 
   // Set material displacement state for ale-wear formulation
@@ -922,8 +923,8 @@ void STR::TimIntImpl::apply_force_stiff_internal_and_inertial(const double time,
     const double timintfac_dis, const double timintfac_vel, const Teuchos::RCP<Epetra_Vector> dis,
     const Teuchos::RCP<Epetra_Vector> disi, const Teuchos::RCP<Epetra_Vector> vel,
     const Teuchos::RCP<Epetra_Vector> acc, Teuchos::RCP<Epetra_Vector> fint,
-    Teuchos::RCP<Epetra_Vector> finert, Teuchos::RCP<CORE::LINALG::SparseOperator> stiff,
-    Teuchos::RCP<CORE::LINALG::SparseOperator> mass, Teuchos::ParameterList& params,
+    Teuchos::RCP<Epetra_Vector> finert, Teuchos::RCP<Core::LinAlg::SparseOperator> stiff,
+    Teuchos::RCP<Core::LinAlg::SparseOperator> mass, Teuchos::ParameterList& params,
     const double beta, const double gamma, const double alphaf, const double alpham)
 {
   // action for elements
@@ -936,7 +937,7 @@ void STR::TimIntImpl::apply_force_stiff_internal_and_inertial(const double time,
   params.set("timintfac_dis", timintfac_dis);
   params.set("timintfac_vel", timintfac_vel);
 
-  if (HaveNonlinearMass() == INPAR::STR::ml_rotations)
+  if (HaveNonlinearMass() == Inpar::STR::ml_rotations)
   {
     params.set("rot_beta", beta);
     params.set("rot_gamma", gamma);
@@ -972,7 +973,7 @@ void STR::TimIntImpl::apply_force_stiff_internal_and_inertial(const double time,
 /* evaluate forces due to constraints */
 void STR::TimIntImpl::apply_force_stiff_constraint(const double time,
     const Teuchos::RCP<Epetra_Vector> dis, const Teuchos::RCP<Epetra_Vector> disn,
-    Teuchos::RCP<Epetra_Vector>& fint, Teuchos::RCP<CORE::LINALG::SparseOperator>& stiff,
+    Teuchos::RCP<Epetra_Vector>& fint, Teuchos::RCP<Core::LinAlg::SparseOperator>& stiff,
     Teuchos::ParameterList pcon)
 {
   if (conman_->HaveConstraint())
@@ -987,7 +988,7 @@ void STR::TimIntImpl::apply_force_stiff_constraint(const double time,
 /* evaluate forces due to Cardiovascular0D bcs */
 void STR::TimIntImpl::apply_force_stiff_cardiovascular0_d(const double time,
     const Teuchos::RCP<Epetra_Vector> disn, Teuchos::RCP<Epetra_Vector>& fint,
-    Teuchos::RCP<CORE::LINALG::SparseOperator>& stiff, Teuchos::ParameterList pwindk)
+    Teuchos::RCP<Core::LinAlg::SparseOperator>& stiff, Teuchos::ParameterList pwindk)
 {
   if (cardvasc0dman_->have_cardiovascular0_d())
   {
@@ -1000,14 +1001,14 @@ void STR::TimIntImpl::apply_force_stiff_cardiovascular0_d(const double time,
 /*----------------------------------------------------------------------*/
 /* evaluate forces and stiffness due to spring dashpot BCs */
 void STR::TimIntImpl::apply_force_stiff_spring_dashpot(
-    Teuchos::RCP<CORE::LINALG::SparseOperator> stiff, Teuchos::RCP<Epetra_Vector> fint,
+    Teuchos::RCP<Core::LinAlg::SparseOperator> stiff, Teuchos::RCP<Epetra_Vector> fint,
     Teuchos::RCP<Epetra_Vector> disn, Teuchos::RCP<Epetra_Vector> veln, bool predict,
     Teuchos::ParameterList psprdash)
 {
   psprdash.set("total time", Time());
   if (springman_->HaveSpringDashpot())
   {
-    auto stiff_sparse = Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(stiff);
+    auto stiff_sparse = Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(stiff);
     if (stiff_sparse == Teuchos::null)
       FOUR_C_THROW("Cannot cast stiffness matrix to sparse matrix!");
     springman_->stiffness_and_internal_forces(stiff_sparse, fint, disn, veln, psprdash);
@@ -1019,7 +1020,7 @@ void STR::TimIntImpl::apply_force_stiff_spring_dashpot(
 /*----------------------------------------------------------------------*/
 /* evaluate forces and stiffness due to contact / meshtying */
 void STR::TimIntImpl::apply_force_stiff_contact_meshtying(
-    Teuchos::RCP<CORE::LINALG::SparseOperator>& stiff, Teuchos::RCP<Epetra_Vector>& fresm,
+    Teuchos::RCP<Core::LinAlg::SparseOperator>& stiff, Teuchos::RCP<Epetra_Vector>& fresm,
     Teuchos::RCP<Epetra_Vector>& dis, bool predict)
 {
   if (have_contact_meshtying())
@@ -1037,7 +1038,7 @@ void STR::TimIntImpl::apply_force_stiff_contact_meshtying(
       {
         // set structural velocity for poro normal no penetration
         Teuchos::RCP<Epetra_Vector> svel = Teuchos::rcp(new Epetra_Vector(*Velnp()));
-        cmtbridge_->ContactManager()->GetStrategy().set_state(MORTAR::state_svelocity, *svel);
+        cmtbridge_->ContactManager()->GetStrategy().set_state(Mortar::state_svelocity, *svel);
       }
     }
 
@@ -1065,7 +1066,7 @@ void STR::TimIntImpl::apply_force_stiff_contact_meshtying(
     // visualization of current Newton step
 #ifdef MORTARGMSH2
     bool gmsh =
-        CORE::UTILS::IntegralValue<int>(GLOBAL::Problem::Instance()->IOParams(), "OUTPUT_GMSH");
+        Core::UTILS::IntegralValue<int>(Global::Problem::Instance()->IOParams(), "OUTPUT_GMSH");
     if (gmsh) cmtbridge_->VisualizeGmsh(stepn_, iter_);
 #endif
   }
@@ -1076,7 +1077,7 @@ void STR::TimIntImpl::apply_force_stiff_contact_meshtying(
 /*----------------------------------------------------------------------*/
 /* evaluate forces and stiffness due to beam contact */
 void STR::TimIntImpl::apply_force_stiff_beam_contact(
-    Teuchos::RCP<CORE::LINALG::SparseOperator>& stiff, Teuchos::RCP<Epetra_Vector>& fresm,
+    Teuchos::RCP<Core::LinAlg::SparseOperator>& stiff, Teuchos::RCP<Epetra_Vector>& fresm,
     Teuchos::RCP<Epetra_Vector>& dis, bool predict)
 {
   if (HaveBeamContact())
@@ -1193,16 +1194,16 @@ bool STR::TimIntImpl::Converged()
   // residual displacement
   switch (normtypedisi_)
   {
-    case INPAR::STR::convnorm_abs:
+    case Inpar::STR::convnorm_abs:
       if (mor_->HaveMOR())
         convdis = normdisir_ < toldisi_;
       else
         convdis = normdisi_ < toldisi_;
       break;
-    case INPAR::STR::convnorm_rel:
+    case Inpar::STR::convnorm_rel:
       convdis = normdisi_ < std::max(normchardis_ * toldisi_, 1e-15);
       break;
-    case INPAR::STR::convnorm_mix:
+    case Inpar::STR::convnorm_mix:
       convdis = ((normdisi_ < toldisi_) or (normdisi_ < std::max(normchardis_ * toldisi_, 1e-15)));
       break;
     default:
@@ -1213,16 +1214,16 @@ bool STR::TimIntImpl::Converged()
   // residual forces
   switch (normtypefres_)
   {
-    case INPAR::STR::convnorm_abs:
+    case Inpar::STR::convnorm_abs:
       if (mor_->HaveMOR())
         convfres = normfresr_ < tolfres_;
       else
         convfres = normfres_ < tolfres_;
       break;
-    case INPAR::STR::convnorm_rel:
+    case Inpar::STR::convnorm_rel:
       convfres = normfres_ < std::max(tolfres_ * normcharforce_, 1e-15);
       break;
-    case INPAR::STR::convnorm_mix:
+    case Inpar::STR::convnorm_mix:
       convfres =
           ((normfres_ < tolfres_) or (normfres_ < std::max(tolfres_ * normcharforce_, 1e-15)));
       break;
@@ -1252,23 +1253,23 @@ bool STR::TimIntImpl::Converged()
   if (have_contact_meshtying())
   {
     // check which case (application, strategy) we are in
-    INPAR::CONTACT::SolvingStrategy stype =
-        CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+    Inpar::CONTACT::SolvingStrategy stype =
+        Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(
             cmtbridge_->GetStrategy().Params(), "STRATEGY");
     bool semismooth =
-        CORE::UTILS::IntegralValue<int>(cmtbridge_->GetStrategy().Params(), "SEMI_SMOOTH_NEWTON");
+        Core::UTILS::IntegralValue<int>(cmtbridge_->GetStrategy().Params(), "SEMI_SMOOTH_NEWTON");
 
     // only do this convergence check for semi-smooth Lagrange multiplier contact
     if (cmtbridge_->HaveContact() &&
-        (stype == INPAR::CONTACT::solution_lagmult ||
-            stype == INPAR::CONTACT::solution_augmented) &&
+        (stype == Inpar::CONTACT::solution_lagmult ||
+            stype == Inpar::CONTACT::solution_augmented) &&
         semismooth)
       ccontact = cmtbridge_->GetStrategy().active_set_semi_smooth_converged();
 
     // add convergence check for saddlepoint formulations
     // use separate convergence checks for contact constraints and
     // LM increments
-    if ((stype == INPAR::CONTACT::solution_lagmult || stype == INPAR::CONTACT::solution_augmented))
+    if ((stype == Inpar::CONTACT::solution_lagmult || stype == Inpar::CONTACT::solution_augmented))
     {
       bool convDispLagrIncr = false;
       bool convDispWIncr = false;
@@ -1276,12 +1277,12 @@ bool STR::TimIntImpl::Converged()
 
       switch (normtypeplagrincr_)
       {
-        case INPAR::STR::convnorm_abs:
+        case Inpar::STR::convnorm_abs:
           convDispLagrIncr = normlagr_ < tollagr_;
           convDispWIncr = normw_ < 1e-12;    // WEAR
           convDispWMIncr = normwm_ < 1e-12;  // WEAR
           break;
-        /*case INPAR::STR::convnorm_rel:
+        /*case Inpar::STR::convnorm_rel:
           convDispLagrIncr = normlagr_ < tollagr_;
           break;*/
         default:
@@ -1290,9 +1291,9 @@ bool STR::TimIntImpl::Converged()
       }
 
       // switch between "and" and "or"
-      if (combdisilagr_ == INPAR::STR::bop_and)
+      if (combdisilagr_ == Inpar::STR::bop_and)
         convdis = convdis and convDispLagrIncr and convDispWIncr and convDispWMIncr;
-      else if (combdisilagr_ == INPAR::STR::bop_or)
+      else if (combdisilagr_ == Inpar::STR::bop_or)
         convdis = convdis or convDispLagrIncr;
       else
         FOUR_C_THROW("Something went terribly wrong with binary operator!");
@@ -1301,10 +1302,10 @@ bool STR::TimIntImpl::Converged()
 
       switch (normtypecontconstr_)
       {
-        case INPAR::STR::convnorm_abs:
+        case Inpar::STR::convnorm_abs:
           convResfContConstr = normcontconstr_ < tolcontconstr_;
           break;
-        /*case INPAR::STR::convnorm_rel:
+        /*case Inpar::STR::convnorm_rel:
           //convDispLagrIncr = normcontconstr_ < std::max(tolfres_*normcharforce_,1e-15);
           convResfContConstr = normcontconstr_ < tolcontconstr_;
           break;*/
@@ -1314,9 +1315,9 @@ bool STR::TimIntImpl::Converged()
       }
 
       // switch between "and" and "or"
-      if (combfrescontconstr_ == INPAR::STR::bop_and)
+      if (combfrescontconstr_ == Inpar::STR::bop_and)
         convfres = convfres and convResfContConstr;
-      else if (combfrescontconstr_ == INPAR::STR::bop_or)
+      else if (combfrescontconstr_ == Inpar::STR::bop_or)
         convfres = convfres or convResfContConstr;
       else
         FOUR_C_THROW("Something went terribly wrong with binary operator!");
@@ -1333,7 +1334,7 @@ bool STR::TimIntImpl::Converged()
     // pressure
     switch (normtypepres_)
     {
-      case INPAR::STR::convnorm_abs:
+      case Inpar::STR::convnorm_abs:
         convpre = normpres_ < tolpres_;
         break;
       default:
@@ -1346,7 +1347,7 @@ bool STR::TimIntImpl::Converged()
     // incompressible residual
     switch (normtypepfres_)
     {
-      case INPAR::STR::convnorm_abs:
+      case Inpar::STR::convnorm_abs:
         convfpre = normpfres_ < tolpfres_;
         break;
       default:
@@ -1356,16 +1357,16 @@ bool STR::TimIntImpl::Converged()
 
 
     // combine fields
-    if (combdispre_ == INPAR::STR::bop_and)
+    if (combdispre_ == Inpar::STR::bop_and)
       convdis = convdis and convpre;
-    else if (combdispre_ == INPAR::STR::bop_or)
+    else if (combdispre_ == Inpar::STR::bop_or)
       convdis = convdis or convpre;
     else
       FOUR_C_THROW("Something went terribly wrong with binary operator!");
 
-    if (combfrespfres_ == INPAR::STR::bop_and)
+    if (combfrespfres_ == Inpar::STR::bop_and)
       convfres = convfres and convfpre;
-    else if (combfrespfres_ == INPAR::STR::bop_or)
+    else if (combfrespfres_ == Inpar::STR::bop_or)
       convfres = convfres or convfpre;
     else
       FOUR_C_THROW("Something went terribly wrong with binary operator!");
@@ -1373,9 +1374,9 @@ bool STR::TimIntImpl::Converged()
 
   // combine displacement-like and force-like residuals
   bool conv = false;
-  if (combdisifres_ == INPAR::STR::bop_and)
+  if (combdisifres_ == Inpar::STR::bop_and)
     conv = convdis and convfres;
-  else if (combdisifres_ == INPAR::STR::bop_or)
+  else if (combdisifres_ == Inpar::STR::bop_or)
     conv = convdis or convfres;
   else
     FOUR_C_THROW("Something went terribly wrong with binary operator!");
@@ -1387,7 +1388,7 @@ bool STR::TimIntImpl::Converged()
 
 /*----------------------------------------------------------------------*/
 /* solve equilibrium */
-INPAR::STR::ConvergenceStatus STR::TimIntImpl::Solve()
+Inpar::STR::ConvergenceStatus STR::TimIntImpl::Solve()
 {
   // safety check
   check_is_init();
@@ -1420,29 +1421,29 @@ INPAR::STR::ConvergenceStatus STR::TimIntImpl::Solve()
     // choose solution technique in accordance with user's will
     switch (itertype_)
     {
-      case INPAR::STR::soltech_newtonfull:
+      case Inpar::STR::soltech_newtonfull:
         nonlin_error = NewtonFull();
         break;
-      case INPAR::STR::soltech_newtonls:
+      case Inpar::STR::soltech_newtonls:
         nonlin_error = NewtonLS();
         break;
-      case INPAR::STR::soltech_newtonuzawanonlin:
+      case Inpar::STR::soltech_newtonuzawanonlin:
         nonlin_error = uzawa_non_linear_newton_full();
         break;
-      case INPAR::STR::soltech_newtonuzawalin:
+      case Inpar::STR::soltech_newtonuzawalin:
         nonlin_error = uzawa_linear_newton_full();
         break;
-      case INPAR::STR::soltech_noxnewtonlinesearch:
-      case INPAR::STR::soltech_noxgeneral:
+      case Inpar::STR::soltech_noxnewtonlinesearch:
+      case Inpar::STR::soltech_noxgeneral:
         nonlin_error = NoxSolve();
         break;
-      case INPAR::STR::soltech_ptc:
+      case Inpar::STR::soltech_ptc:
         nonlin_error = PTC();
         break;
       // catch problems
       default:
         FOUR_C_THROW("Solution technique \"%s\" is not implemented.",
-            INPAR::STR::NonlinSolTechString(itertype_).c_str());
+            Inpar::STR::NonlinSolTechString(itertype_).c_str());
         break;
     }
   }
@@ -1452,7 +1453,7 @@ INPAR::STR::ConvergenceStatus STR::TimIntImpl::Solve()
   int lnonlin_error = nonlin_error;
   discretization()->Comm().MaxAll(&lnonlin_error, &nonlin_error, 1);
 
-  INPAR::STR::ConvergenceStatus status = static_cast<INPAR::STR::ConvergenceStatus>(nonlin_error);
+  Inpar::STR::ConvergenceStatus status = static_cast<Inpar::STR::ConvergenceStatus>(nonlin_error);
 
   // Only relevant, if the input parameter DIVERCONT is used and set to divcontype_ == adapt_step:
   // In this case, the time step size is halved as consequence of a non-converging nonlinear solver.
@@ -1480,7 +1481,7 @@ int STR::TimIntImpl::NewtonFull()
 
   if (outputeveryiter_)
   {
-    int restart = GLOBAL::Problem::Instance()->Restart();
+    int restart = Global::Problem::Instance()->Restart();
     if (stepn_ == (restart + 1)) outputcounter_ = 0;
     OutputEveryIter(true);
   }
@@ -1511,13 +1512,13 @@ int STR::TimIntImpl::NewtonFull()
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
     if (get_loc_sys_trafo() != Teuchos::null)
     {
-      CORE::LINALG::apply_dirichlet_to_system(
-          *CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_), *disi_, *fres_,
+      Core::LinAlg::apply_dirichlet_to_system(
+          *Core::LinAlg::CastToSparseMatrixAndCheckSuccess(stiff_), *disi_, *fres_,
           *get_loc_sys_trafo(), *zeros_, *(dbcmaps_->CondMap()));
     }
     else
     {
-      CORE::LINALG::apply_dirichlet_to_system(
+      Core::LinAlg::apply_dirichlet_to_system(
           *stiff_, *disi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
     }
 
@@ -1527,7 +1528,7 @@ int STR::TimIntImpl::NewtonFull()
 
     // solve for disi_
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
-    CORE::LINALG::SolverParams solver_params;
+    Core::LinAlg::SolverParams solver_params;
     if (solveradapttol_ and (iter_ > 1))
     {
       solver_params.nonlin_tolerance = tolfres_;
@@ -1575,7 +1576,7 @@ int STR::TimIntImpl::NewtonFull()
 
     // set flag for element error in form of a negative Jacobian determinant
     // in parameter list in case of potential continuation
-    if (divcontype_ == INPAR::STR::divcont_rand_adapt_step_ele_err)
+    if (divcontype_ == Inpar::STR::divcont_rand_adapt_step_ele_err)
     {
       params.set<bool>("tolerate_errors", true);
       params.set<bool>("eval_error", false);
@@ -1587,7 +1588,7 @@ int STR::TimIntImpl::NewtonFull()
 
     // check for element error in form of a negative Jacobian determinant
     // in case of potential continuation
-    if (divcontype_ == INPAR::STR::divcont_rand_adapt_step_ele_err)
+    if (divcontype_ == Inpar::STR::divcont_rand_adapt_step_ele_err)
       element_error = ElementErrorCheck(params.get<bool>("eval_error"));
 
     // blank residual at (locally oriented) Dirichlet DOFs
@@ -1613,18 +1614,18 @@ int STR::TimIntImpl::NewtonFull()
     // decide which norms have to be evaluated
     bool bPressure = pressure_ != Teuchos::null;
     bool bContactSP = (have_contact_meshtying() &&
-                       ((CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+                       ((Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(
                              cmtbridge_->GetStrategy().Params(), "STRATEGY") ==
-                                INPAR::CONTACT::solution_lagmult &&
-                            (CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(
+                                Inpar::CONTACT::solution_lagmult &&
+                            (Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(
                                  cmtbridge_->GetStrategy().Params(), "SYSTEM") !=
-                                    INPAR::CONTACT::system_condensed ||
-                                CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(
+                                    Inpar::CONTACT::system_condensed ||
+                                Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(
                                     cmtbridge_->GetStrategy().Params(), "SYSTEM") !=
-                                    INPAR::CONTACT::system_condensed_lagmult)) ||
-                           (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+                                    Inpar::CONTACT::system_condensed_lagmult)) ||
+                           (Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(
                                 cmtbridge_->GetStrategy().Params(), "STRATEGY") ==
-                               INPAR::CONTACT::solution_augmented)));
+                               Inpar::CONTACT::solution_augmented)));
 
     if (bPressure && bContactSP)
       FOUR_C_THROW(
@@ -1672,12 +1673,12 @@ int STR::TimIntImpl::NewtonFull()
         normlagr_ = -1.0;
 
       // for wear discretization
-      INPAR::WEAR::WearType wtype = CORE::UTILS::IntegralValue<INPAR::WEAR::WearType>(
+      Inpar::Wear::WearType wtype = Core::UTILS::IntegralValue<Inpar::Wear::WearType>(
           cmtbridge_->GetStrategy().Params(), "WEARTYPE");
-      INPAR::WEAR::WearSide wside = CORE::UTILS::IntegralValue<INPAR::WEAR::WearSide>(
+      Inpar::Wear::WearSide wside = Core::UTILS::IntegralValue<Inpar::Wear::WearSide>(
           cmtbridge_->GetStrategy().Params(), "WEAR_SIDE");
 
-      if (wtype == INPAR::WEAR::wear_primvar)
+      if (wtype == Inpar::Wear::wear_primvar)
       {
         Teuchos::RCP<Epetra_Vector> wincr = cmtbridge_->GetStrategy().WSolveIncr();
         Teuchos::RCP<Epetra_Vector> wearrhs = cmtbridge_->GetStrategy().WearRhs();
@@ -1692,7 +1693,7 @@ int STR::TimIntImpl::NewtonFull()
         else
           normw_ = -1.0;
 
-        if (wside == INPAR::WEAR::wear_both)
+        if (wside == Inpar::Wear::wear_both)
         {
           Teuchos::RCP<Epetra_Vector> wmincr = cmtbridge_->GetStrategy().WMSolveIncr();
           Teuchos::RCP<Epetra_Vector> wearmrhs = cmtbridge_->GetStrategy().WearMRhs();
@@ -1754,25 +1755,25 @@ int STR::TimIntImpl::newton_full_error_check(int linerror, int eleerror)
   }
   // now some error checks: do we have an element problem
   // only check if we continue in this case; other wise, we ignore the error
-  if (eleerror and divcontype_ == INPAR::STR::divcont_rand_adapt_step_ele_err)
+  if (eleerror and divcontype_ == Inpar::STR::divcont_rand_adapt_step_ele_err)
   {
     return eleerror;
   }
   // do we have a problem in the linear solver
   // only check if we want to do something fancy other wise we ignore the error in the linear solver
-  else if (linerror and (divcontype_ == INPAR::STR::divcont_halve_step or
-                            divcontype_ == INPAR::STR::divcont_adapt_step or
-                            divcontype_ == INPAR::STR::divcont_rand_adapt_step or
-                            divcontype_ == INPAR::STR::divcont_rand_adapt_step_ele_err or
-                            divcontype_ == INPAR::STR::divcont_repeat_step or
-                            divcontype_ == INPAR::STR::divcont_repeat_simulation or
-                            divcontype_ == INPAR::STR::divcont_adapt_penaltycontact))
+  else if (linerror and (divcontype_ == Inpar::STR::divcont_halve_step or
+                            divcontype_ == Inpar::STR::divcont_adapt_step or
+                            divcontype_ == Inpar::STR::divcont_rand_adapt_step or
+                            divcontype_ == Inpar::STR::divcont_rand_adapt_step_ele_err or
+                            divcontype_ == Inpar::STR::divcont_repeat_step or
+                            divcontype_ == Inpar::STR::divcont_repeat_simulation or
+                            divcontype_ == Inpar::STR::divcont_adapt_penaltycontact))
   {
     return linerror;
   }
   else
   {
-    if ((iter_ >= itermax_) and (divcontype_ == INPAR::STR::divcont_stop))
+    if ((iter_ >= itermax_) and (divcontype_ == Inpar::STR::divcont_stop))
     {
       // write restart output of last converged step before stopping
       Output(true);
@@ -1780,24 +1781,24 @@ int STR::TimIntImpl::newton_full_error_check(int linerror, int eleerror)
       FOUR_C_THROW("Newton unconverged in %d iterations", iter_);
       return 1;
     }
-    else if ((iter_ >= itermax_) and (divcontype_ == INPAR::STR::divcont_continue))
+    else if ((iter_ >= itermax_) and (divcontype_ == Inpar::STR::divcont_continue))
     {
       if (myrank_ == 0)
-        CORE::IO::cout << "Newton unconverged in " << iter_ << " iterations, continuing"
-                       << CORE::IO::endl;
+        Core::IO::cout << "Newton unconverged in " << iter_ << " iterations, continuing"
+                       << Core::IO::endl;
       return 0;
     }
     else if ((iter_ >= itermax_) and
-             (divcontype_ == INPAR::STR::divcont_halve_step or
-                 divcontype_ == INPAR::STR::divcont_adapt_step or
-                 divcontype_ == INPAR::STR::divcont_rand_adapt_step or
-                 divcontype_ == INPAR::STR::divcont_rand_adapt_step_ele_err or
-                 divcontype_ == INPAR::STR::divcont_repeat_step or
-                 divcontype_ == INPAR::STR::divcont_repeat_simulation or
-                 divcontype_ == INPAR::STR::divcont_adapt_penaltycontact))
+             (divcontype_ == Inpar::STR::divcont_halve_step or
+                 divcontype_ == Inpar::STR::divcont_adapt_step or
+                 divcontype_ == Inpar::STR::divcont_rand_adapt_step or
+                 divcontype_ == Inpar::STR::divcont_rand_adapt_step_ele_err or
+                 divcontype_ == Inpar::STR::divcont_repeat_step or
+                 divcontype_ == Inpar::STR::divcont_repeat_simulation or
+                 divcontype_ == Inpar::STR::divcont_adapt_penaltycontact))
     {
       if (myrank_ == 0)
-        CORE::IO::cout << "Newton unconverged in " << iter_ << " iterations " << CORE::IO::endl;
+        Core::IO::cout << "Newton unconverged in " << iter_ << " iterations " << Core::IO::endl;
       return 1;
     }
   }
@@ -1810,16 +1811,16 @@ int STR::TimIntImpl::newton_full_error_check(int linerror, int eleerror)
 int STR::TimIntImpl::LinSolveErrorCheck(int linerror)
 {
   // we only care about problems in the linear solver if we have a fancy divcont action
-  if (linerror and (divcontype_ == INPAR::STR::divcont_halve_step or
-                       divcontype_ == INPAR::STR::divcont_adapt_step or
-                       divcontype_ == INPAR::STR::divcont_rand_adapt_step or
-                       divcontype_ == INPAR::STR::divcont_rand_adapt_step_ele_err or
-                       divcontype_ == INPAR::STR::divcont_repeat_step or
-                       divcontype_ == INPAR::STR::divcont_repeat_simulation or
-                       divcontype_ == INPAR::STR::divcont_adapt_penaltycontact or
-                       divcontype_ == INPAR::STR::divcont_adapt_3D0Dptc_ele_err))
+  if (linerror and (divcontype_ == Inpar::STR::divcont_halve_step or
+                       divcontype_ == Inpar::STR::divcont_adapt_step or
+                       divcontype_ == Inpar::STR::divcont_rand_adapt_step or
+                       divcontype_ == Inpar::STR::divcont_rand_adapt_step_ele_err or
+                       divcontype_ == Inpar::STR::divcont_repeat_step or
+                       divcontype_ == Inpar::STR::divcont_repeat_simulation or
+                       divcontype_ == Inpar::STR::divcont_adapt_penaltycontact or
+                       divcontype_ == Inpar::STR::divcont_adapt_3D0Dptc_ele_err))
   {
-    if (myrank_ == 0) CORE::IO::cout << "Linear solver is having trouble " << CORE::IO::endl;
+    if (myrank_ == 0) Core::IO::cout << "Linear solver is having trouble " << Core::IO::endl;
     return 2;
   }
   else
@@ -1834,12 +1835,12 @@ int STR::TimIntImpl::ElementErrorCheck(bool evalerr)
 {
   // merly care about element problems if there is a fancy divcont action
   // and element errors are considered
-  if (evalerr and (divcontype_ == INPAR::STR::divcont_rand_adapt_step_ele_err or
-                      divcontype_ == INPAR::STR::divcont_adapt_3D0Dptc_ele_err))
+  if (evalerr and (divcontype_ == Inpar::STR::divcont_rand_adapt_step_ele_err or
+                      divcontype_ == Inpar::STR::divcont_adapt_3D0Dptc_ele_err))
   {
     if (myrank_ == 0)
-      CORE::IO::cout << "Element error in form of a negative Jacobian determinant "
-                     << CORE::IO::endl;
+      Core::IO::cout << "Element error in form of a negative Jacobian determinant "
+                     << Core::IO::endl;
     return 3;
   }
   else
@@ -1867,7 +1868,7 @@ int STR::TimIntImpl::NewtonLS()
 
   if (outputeveryiter_)
   {
-    int restart = GLOBAL::Problem::Instance()->Restart();
+    int restart = Global::Problem::Instance()->Restart();
     if (stepn_ == (restart + 1)) outputcounter_ = 0;
     OutputEveryIter(true);
   }
@@ -1916,10 +1917,10 @@ int STR::TimIntImpl::NewtonLS()
       merit_fct[0] = merit_fct[1];
 
     // Check if pred_constdis is used. If yes, the first step is not controlled.
-    if (pred_ == INPAR::STR::pred_constdis or pred_ == INPAR::STR::pred_constdisvelacc)
+    if (pred_ == Inpar::STR::pred_constdis or pred_ == Inpar::STR::pred_constdisvelacc)
       fscontrol = 1;
-    else if ((pred_ == INPAR::STR::pred_tangdis || pred_ == INPAR::STR::pred_constacc ||
-                 pred_ == INPAR::STR::pred_constvel) ||
+    else if ((pred_ == Inpar::STR::pred_tangdis || pred_ == Inpar::STR::pred_constacc ||
+                 pred_ == Inpar::STR::pred_constvel) ||
              (iter_ > 1))
       fscontrol = 0;
     else
@@ -2101,13 +2102,13 @@ int STR::TimIntImpl::LsSolveNewtonStep()
   disi_->PutScalar(0.0);  // Useful? depends on solver and more
   if (get_loc_sys_trafo() != Teuchos::null)
   {
-    CORE::LINALG::apply_dirichlet_to_system(
-        *CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_), *disi_, *fres_,
+    Core::LinAlg::apply_dirichlet_to_system(
+        *Core::LinAlg::CastToSparseMatrixAndCheckSuccess(stiff_), *disi_, *fres_,
         *get_loc_sys_trafo(), *zeros_, *(dbcmaps_->CondMap()));
   }
   else
   {
-    CORE::LINALG::apply_dirichlet_to_system(
+    Core::LinAlg::apply_dirichlet_to_system(
         *stiff_, *disi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
   }
 
@@ -2120,7 +2121,7 @@ int STR::TimIntImpl::LsSolveNewtonStep()
 
   // solve for disi_
   // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
-  CORE::LINALG::SolverParams solver_params;
+  Core::LinAlg::SolverParams solver_params;
   if (solveradapttol_ and (iter_ > 1))
   {
     solver_params.nonlin_tolerance = tolfres_;
@@ -2520,13 +2521,13 @@ int STR::TimIntImpl::uzawa_linear_newton_full()
       disi_->PutScalar(0.0);  // Useful? depends on solver and more
       if (get_loc_sys_trafo() != Teuchos::null)
       {
-        CORE::LINALG::apply_dirichlet_to_system(
-            *CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_), *disi_, *fres_,
+        Core::LinAlg::apply_dirichlet_to_system(
+            *Core::LinAlg::CastToSparseMatrixAndCheckSuccess(stiff_), *disi_, *fres_,
             *get_loc_sys_trafo(), *zeros_, *(dbcmaps_->CondMap()));
       }
       else
       {
-        CORE::LINALG::apply_dirichlet_to_system(
+        Core::LinAlg::apply_dirichlet_to_system(
             *stiff_, *disi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
       }
 
@@ -2541,21 +2542,21 @@ int STR::TimIntImpl::uzawa_linear_newton_full()
       STCPreconditioning();
 
       // get constraint matrix with and without Dirichlet zeros
-      Teuchos::RCP<CORE::LINALG::SparseMatrix> constr =
-          (Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(conman_->GetConstrMatrix()));
-      Teuchos::RCP<CORE::LINALG::SparseMatrix> constrT =
-          Teuchos::rcp(new CORE::LINALG::SparseMatrix(*constr));
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> constr =
+          (Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(conman_->GetConstrMatrix()));
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> constrT =
+          Teuchos::rcp(new Core::LinAlg::SparseMatrix(*constr));
 
       constr->ApplyDirichlet(*(dbcmaps_->CondMap()), false);
 
       // Apply STC on constraint matrices of desired
-      if (stcscale_ != INPAR::STR::stc_none)
+      if (stcscale_ != Inpar::STR::stc_none)
       {
         // std::cout<<"scaling constraint matrices"<<std::endl;
-        constrT = CORE::LINALG::MLMultiply(*stcmat_, true, *constrT, false, false, false, true);
-        if (stcscale_ == INPAR::STR::stc_currsym)
+        constrT = Core::LinAlg::MLMultiply(*stcmat_, true, *constrT, false, false, false, true);
+        if (stcscale_ == Inpar::STR::stc_currsym)
         {
-          constr = CORE::LINALG::MLMultiply(*stcmat_, true, *constr, false, false, false, true);
+          constr = Core::LinAlg::MLMultiply(*stcmat_, true, *constr, false, false, false, true);
         }
       }
       // Call constraint solver to solve system with zeros on diagonal
@@ -2581,7 +2582,7 @@ int STR::TimIntImpl::uzawa_linear_newton_full()
 
       // set flag for element error in form of a negative Jacobian determinant
       // in parameter list in case of potential continuation
-      if (divcontype_ == INPAR::STR::divcont_rand_adapt_step_ele_err)
+      if (divcontype_ == Inpar::STR::divcont_rand_adapt_step_ele_err)
       {
         params.set<bool>("tolerate_errors", true);
         params.set<bool>("eval_error", false);
@@ -2593,7 +2594,7 @@ int STR::TimIntImpl::uzawa_linear_newton_full()
 
       // check for element error in form of a negative Jacobian determinant
       // in case of potential continuation
-      if (divcontype_ == INPAR::STR::divcont_rand_adapt_step_ele_err)
+      if (divcontype_ == Inpar::STR::divcont_rand_adapt_step_ele_err)
         element_error = ElementErrorCheck(params.get<bool>("eval_error"));
 
       // compute residual and stiffness of constraint equations
@@ -2682,8 +2683,8 @@ int STR::TimIntImpl::uzawa_linear_newton_full()
 
     double dti = cardvasc0dman_->Get_k_ptc();
 
-    const bool ptc_3D0D = CORE::UTILS::IntegralValue<int>(
-        GLOBAL::Problem::Instance()->cardiovascular0_d_structural_params(), "PTC_3D0D");
+    const bool ptc_3D0D = Core::UTILS::IntegralValue<int>(
+        Global::Problem::Instance()->cardiovascular0_d_structural_params(), "PTC_3D0D");
 
     // equilibrium iteration loop
     while (((not Converged() and (not linsolve_error) and (not element_error)) and
@@ -2696,7 +2697,7 @@ int STR::TimIntImpl::uzawa_linear_newton_full()
       // modify stiffness matrix with dti
       if (ptc_3D0D)
       {
-        if (myrank_ == 0 and dti > 0.0) CORE::IO::cout << "k_ptc = " << dti << CORE::IO::endl;
+        if (myrank_ == 0 and dti > 0.0) Core::IO::cout << "k_ptc = " << dti << Core::IO::endl;
       }
 
       // uncomplete stiffness matrix, so stuff can be inserted again
@@ -2709,13 +2710,13 @@ int STR::TimIntImpl::uzawa_linear_newton_full()
       disi_->PutScalar(0.0);  // Useful? depends on solver and more
       if (get_loc_sys_trafo() != Teuchos::null)
       {
-        CORE::LINALG::apply_dirichlet_to_system(
-            *CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_), *disi_, *fres_,
+        Core::LinAlg::apply_dirichlet_to_system(
+            *Core::LinAlg::CastToSparseMatrixAndCheckSuccess(stiff_), *disi_, *fres_,
             *get_loc_sys_trafo(), *zeros_, *(dbcmaps_->CondMap()));
       }
       else
       {
-        CORE::LINALG::apply_dirichlet_to_system(
+        Core::LinAlg::apply_dirichlet_to_system(
             *stiff_, *disi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
       }
 
@@ -2758,8 +2759,8 @@ int STR::TimIntImpl::uzawa_linear_newton_full()
 
       // set flag for element error in form of a negative Jacobian determinant
       // in parameter list in case of potential continuation
-      if (divcontype_ == INPAR::STR::divcont_rand_adapt_step_ele_err or
-          divcontype_ == INPAR::STR::divcont_adapt_3D0Dptc_ele_err)
+      if (divcontype_ == Inpar::STR::divcont_rand_adapt_step_ele_err or
+          divcontype_ == Inpar::STR::divcont_adapt_3D0Dptc_ele_err)
       {
         params.set<bool>("tolerate_errors", true);
         params.set<bool>("eval_error", false);
@@ -2771,8 +2772,8 @@ int STR::TimIntImpl::uzawa_linear_newton_full()
 
       // check for element error in form of a negative Jacobian determinant
       // in case of potential continuation
-      if (divcontype_ == INPAR::STR::divcont_rand_adapt_step_ele_err or
-          divcontype_ == INPAR::STR::divcont_adapt_3D0Dptc_ele_err)
+      if (divcontype_ == Inpar::STR::divcont_rand_adapt_step_ele_err or
+          divcontype_ == Inpar::STR::divcont_adapt_3D0Dptc_ele_err)
         element_error = ElementErrorCheck(params.get<bool>("eval_error"));
 
       // blank residual at (locally oriented) Dirichlet DOFs
@@ -2882,8 +2883,8 @@ int STR::TimIntImpl::uzawa_linear_newton_full_error_check(int linerror, int elee
 
   // now some error checks: do we have an element problem
   // only check if we continue in this case; other wise, we ignore the error
-  if (eleerror and (divcontype_ == INPAR::STR::divcont_rand_adapt_step_ele_err or
-                       divcontype_ == INPAR::STR::divcont_adapt_3D0Dptc_ele_err))
+  if (eleerror and (divcontype_ == Inpar::STR::divcont_rand_adapt_step_ele_err or
+                       divcontype_ == Inpar::STR::divcont_adapt_3D0Dptc_ele_err))
   {
     return eleerror;
   }
@@ -2891,20 +2892,20 @@ int STR::TimIntImpl::uzawa_linear_newton_full_error_check(int linerror, int elee
   // now some error checks
   // do we have a problem in the linear solver
   // only check if we want to do something fancy other wise we ignore the error in the linear solver
-  if (linerror and (divcontype_ == INPAR::STR::divcont_halve_step or
-                       divcontype_ == INPAR::STR::divcont_adapt_step or
-                       divcontype_ == INPAR::STR::divcont_rand_adapt_step or
-                       divcontype_ == INPAR::STR::divcont_rand_adapt_step_ele_err or
-                       divcontype_ == INPAR::STR::divcont_repeat_step or
-                       divcontype_ == INPAR::STR::divcont_repeat_simulation or
-                       divcontype_ == INPAR::STR::divcont_adapt_penaltycontact or
-                       divcontype_ == INPAR::STR::divcont_adapt_3D0Dptc_ele_err))
+  if (linerror and (divcontype_ == Inpar::STR::divcont_halve_step or
+                       divcontype_ == Inpar::STR::divcont_adapt_step or
+                       divcontype_ == Inpar::STR::divcont_rand_adapt_step or
+                       divcontype_ == Inpar::STR::divcont_rand_adapt_step_ele_err or
+                       divcontype_ == Inpar::STR::divcont_repeat_step or
+                       divcontype_ == Inpar::STR::divcont_repeat_simulation or
+                       divcontype_ == Inpar::STR::divcont_adapt_penaltycontact or
+                       divcontype_ == Inpar::STR::divcont_adapt_3D0Dptc_ele_err))
   {
     return linerror;
   }
   else
   {
-    if ((iter_ >= itermax_) and (divcontype_ == INPAR::STR::divcont_stop))
+    if ((iter_ >= itermax_) and (divcontype_ == Inpar::STR::divcont_stop))
     {
       // write restart output of last converged step before stopping
       Output(true);
@@ -2912,26 +2913,26 @@ int STR::TimIntImpl::uzawa_linear_newton_full_error_check(int linerror, int elee
       FOUR_C_THROW("Newton unconverged in %d iterations", iter_);
       return 1;
     }
-    else if ((iter_ >= itermax_) and (divcontype_ == INPAR::STR::divcont_continue))
+    else if ((iter_ >= itermax_) and (divcontype_ == Inpar::STR::divcont_continue))
     {
       if (myrank_ == 0)
-        CORE::IO::cout << "Newton unconverged in " << iter_ << " iterations, continuing"
-                       << CORE::IO::endl;
+        Core::IO::cout << "Newton unconverged in " << iter_ << " iterations, continuing"
+                       << Core::IO::endl;
       if (conman_->HaveMonitor()) conman_->compute_monitor_values(disn_);
       return 0;
     }
     else if ((iter_ >= itermax_) and
-             (divcontype_ == INPAR::STR::divcont_halve_step or
-                 divcontype_ == INPAR::STR::divcont_adapt_step or
-                 divcontype_ == INPAR::STR::divcont_rand_adapt_step or
-                 divcontype_ == INPAR::STR::divcont_rand_adapt_step_ele_err or
-                 divcontype_ == INPAR::STR::divcont_repeat_step or
-                 divcontype_ == INPAR::STR::divcont_repeat_simulation or
-                 divcontype_ == INPAR::STR::divcont_adapt_penaltycontact or
-                 divcontype_ == INPAR::STR::divcont_adapt_3D0Dptc_ele_err))
+             (divcontype_ == Inpar::STR::divcont_halve_step or
+                 divcontype_ == Inpar::STR::divcont_adapt_step or
+                 divcontype_ == Inpar::STR::divcont_rand_adapt_step or
+                 divcontype_ == Inpar::STR::divcont_rand_adapt_step_ele_err or
+                 divcontype_ == Inpar::STR::divcont_repeat_step or
+                 divcontype_ == Inpar::STR::divcont_repeat_simulation or
+                 divcontype_ == Inpar::STR::divcont_adapt_penaltycontact or
+                 divcontype_ == Inpar::STR::divcont_adapt_3D0Dptc_ele_err))
     {
       if (myrank_ == 0)
-        CORE::IO::cout << "Newton unconverged in " << iter_ << " iterations " << CORE::IO::endl;
+        Core::IO::cout << "Newton unconverged in " << iter_ << " iterations " << Core::IO::endl;
       return 1;
     }
   }
@@ -2947,22 +2948,22 @@ int STR::TimIntImpl::CmtNonlinearSolve()
   // get some parameters
   //********************************************************************
   // strategy type
-  INPAR::CONTACT::SolvingStrategy soltype =
-      CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+  Inpar::CONTACT::SolvingStrategy soltype =
+      Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(
           cmtbridge_->GetStrategy().Params(), "STRATEGY");
 
   // semi-smooth Newton type
   bool semismooth =
-      CORE::UTILS::IntegralValue<int>(cmtbridge_->GetStrategy().Params(), "SEMI_SMOOTH_NEWTON");
+      Core::UTILS::IntegralValue<int>(cmtbridge_->GetStrategy().Params(), "SEMI_SMOOTH_NEWTON");
 
   // iteration type
-  if (itertype_ != INPAR::STR::soltech_newtonfull)
+  if (itertype_ != Inpar::STR::soltech_newtonfull)
     FOUR_C_THROW("Unknown type of equilibrium iteration");
 
   //********************************************************************
   // Solving Strategy using Lagrangian Multipliers
   //********************************************************************
-  if (soltype == INPAR::CONTACT::solution_lagmult)
+  if (soltype == Inpar::CONTACT::solution_lagmult)
   {
     //********************************************************************
     // 1) SEMI-SMOOTH NEWTON FOR CONTACT
@@ -3028,15 +3029,15 @@ int STR::TimIntImpl::CmtNonlinearSolve()
   // iteration loop (which is then basically a standard Newton).
   // TODO EXTENSION TO A SMOOTH NEWTON APPROACH ARE UNDER CONSIDERATION
   //********************************************************************
-  else if (soltype == INPAR::CONTACT::solution_augmented)
+  else if (soltype == Inpar::CONTACT::solution_augmented)
   {
     if (cmtbridge_->HaveContact() && semismooth)
     {
       int error = 0;
       // nonlinear iteration
-      if (itertype_ == INPAR::STR::soltech_newtonfull)
+      if (itertype_ == Inpar::STR::soltech_newtonfull)
         error = NewtonFull();
-      else if (itertype_ == INPAR::STR::soltech_newtonls)
+      else if (itertype_ == Inpar::STR::soltech_newtonls)
         error = NewtonLS();
 
       if (error) return error;
@@ -3046,8 +3047,8 @@ int STR::TimIntImpl::CmtNonlinearSolve()
   //********************************************************************
   // Solving Strategy using Regularization Techniques (Penalty Method)
   //********************************************************************
-  else if (soltype == INPAR::CONTACT::solution_penalty ||
-           soltype == INPAR::CONTACT::solution_multiscale)
+  else if (soltype == Inpar::CONTACT::solution_penalty ||
+           soltype == Inpar::CONTACT::solution_multiscale)
   {
     // nonlinear iteration
     int error = NewtonFull();
@@ -3060,7 +3061,7 @@ int STR::TimIntImpl::CmtNonlinearSolve()
   //********************************************************************
   // Solving Strategy using Nitsche's method
   //********************************************************************
-  else if (soltype == INPAR::CONTACT::solution_nitsche)
+  else if (soltype == Inpar::CONTACT::solution_nitsche)
   {
     // nonlinear iteration
     return NewtonFull();
@@ -3069,7 +3070,7 @@ int STR::TimIntImpl::CmtNonlinearSolve()
   //********************************************************************
   // Solving Strategy using Augmented Lagrange Techniques with Uzawa
   //********************************************************************
-  else if (soltype == INPAR::CONTACT::solution_uzawa)
+  else if (soltype == Inpar::CONTACT::solution_uzawa)
   {
     // get tolerance and maximum Uzawa steps
     double eps = cmtbridge_->GetStrategy().Params().get<double>("UZAWACONSTRTOL");
@@ -3102,7 +3103,7 @@ int STR::TimIntImpl::CmtNonlinearSolve()
 
       // store Lagrange multipliers for next Uzawa step
       cmtbridge_->GetStrategy().update_uzawa_augmented_lagrange();
-      cmtbridge_->GetStrategy().store_nodal_quantities(MORTAR::StrategyBase::lmuzawa);
+      cmtbridge_->GetStrategy().store_nodal_quantities(Mortar::StrategyBase::lmuzawa);
 
     } while (cmtbridge_->GetStrategy().ConstraintNorm() >= eps);
 
@@ -3119,7 +3120,7 @@ void STR::TimIntImpl::CmtLinearSolve()
 {
   // adapt tolerance for contact solver
   // note: tolerance for fallback solver already adapted in NewtonFull
-  CORE::LINALG::SolverParams solver_params;
+  Core::LinAlg::SolverParams solver_params;
   if (solveradapttol_ and (iter_ > 1))
   {
     solver_params.nonlin_tolerance = tolfres_;
@@ -3127,10 +3128,10 @@ void STR::TimIntImpl::CmtLinearSolve()
     solver_params.lin_tol_better = solveradaptolbetter_;
   }
 
-  INPAR::CONTACT::SolvingStrategy soltype =
-      CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+  Inpar::CONTACT::SolvingStrategy soltype =
+      Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(
           cmtbridge_->GetStrategy().Params(), "STRATEGY");
-  INPAR::CONTACT::SystemType systype = CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(
+  Inpar::CONTACT::SystemType systype = Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(
       cmtbridge_->GetStrategy().Params(), "SYSTEM");
 
   // update information about active slave dofs
@@ -3144,7 +3145,7 @@ void STR::TimIntImpl::CmtLinearSolve()
     Teuchos::RCP<Epetra_Map> slaveDofMap;
     Teuchos::RCP<Epetra_Map> innerDofMap;
     Teuchos::RCP<Epetra_Map> activeDofMap;
-    Teuchos::RCP<MORTAR::StrategyBase> strat = Teuchos::rcpFromRef(cmtbridge_->GetStrategy());
+    Teuchos::RCP<Mortar::StrategyBase> strat = Teuchos::rcpFromRef(cmtbridge_->GetStrategy());
     strat->collect_maps_for_preconditioner(masterDofMap, slaveDofMap, innerDofMap, activeDofMap);
 
     // feed Belos based solvers with contact information
@@ -3158,9 +3159,9 @@ void STR::TimIntImpl::CmtLinearSolve()
       Teuchos::RCP<CONTACT::AbstractStrategy> costrat =
           Teuchos::rcp_dynamic_cast<CONTACT::AbstractStrategy>(strat);
       if (costrat != Teuchos::null)
-        mueluParams.set<std::string>("CORE::ProblemType", "contact");
+        mueluParams.set<std::string>("Core::ProblemType", "contact");
       else
-        mueluParams.set<std::string>("CORE::ProblemType", "meshtying");
+        mueluParams.set<std::string>("Core::ProblemType", "meshtying");
       mueluParams.set<int>("time step", step_);
       mueluParams.set<int>("iter", iter_);
     }
@@ -3176,11 +3177,11 @@ void STR::TimIntImpl::CmtLinearSolve()
   std::ostringstream filename;
   const std::string filebase = "sparsematrix";
   filename << "o/matlab_output/" << filebase << "_" << globindex << ".mtl";
-  CORE::LINALG::PrintMatrixInMatlabFormat(
+  Core::LinAlg::PrintMatrixInMatlabFormat(
       filename.str().c_str(), *(SystemMatrix()->EpetraMatrix()));
 
   // print sparsity pattern to file
-  CORE::LINALG::PrintSparsityToPostscript(*(SystemMatrix()->EpetraMatrix()));
+  Core::LinAlg::PrintSparsityToPostscript(*(SystemMatrix()->EpetraMatrix()));
 #endif  // #ifdef CONTACTEIG
 
   //**********************************************************************
@@ -3190,10 +3191,10 @@ void STR::TimIntImpl::CmtLinearSolve()
   //**********************************************************************
   solver_params.refactor = true;
   solver_params.reset = iter_ == 1;
-  if ((soltype == INPAR::CONTACT::solution_lagmult ||
-          soltype == INPAR::CONTACT::solution_augmented) &&
-      (systype != INPAR::CONTACT::system_condensed &&
-          systype != INPAR::CONTACT::system_condensed_lagmult))
+  if ((soltype == Inpar::CONTACT::solution_lagmult ||
+          soltype == Inpar::CONTACT::solution_augmented) &&
+      (systype != Inpar::CONTACT::system_condensed &&
+          systype != Inpar::CONTACT::system_condensed_lagmult))
   {
     // check if contact contributions are present,
     // if not we make a standard solver call to speed things up
@@ -3265,18 +3266,18 @@ int STR::TimIntImpl::beam_contact_nonlinear_solve()
   // get some parameters
   //********************************************************************
   // strategy type
-  INPAR::BEAMCONTACT::Strategy strategy = CORE::UTILS::IntegralValue<INPAR::BEAMCONTACT::Strategy>(
+  Inpar::BEAMCONTACT::Strategy strategy = Core::UTILS::IntegralValue<Inpar::BEAMCONTACT::Strategy>(
       beamcman_->beam_contact_parameters(), "BEAMS_STRATEGY");
 
   // unknown types of nonlinear iteration schemes
-  if (itertype_ != INPAR::STR::soltech_newtonfull)
+  if (itertype_ != Inpar::STR::soltech_newtonfull)
     FOUR_C_THROW("Unknown type of equilibrium iteration");
 
   //**********************************************************************
   // solving strategy using regularization with penalty method
   // (nonlinear solution approach: ordinary NEWTON)
   //**********************************************************************
-  if (strategy == INPAR::BEAMCONTACT::bstr_penalty)
+  if (strategy == Inpar::BEAMCONTACT::bstr_penalty)
   {
     // nonlinear iteration (Newton)
     int error = NewtonFull();
@@ -3291,7 +3292,7 @@ int STR::TimIntImpl::beam_contact_nonlinear_solve()
   // misuse of beam contact module for GMSH output
   // (nonlinear solution approach: ordinary NEWTON)
   //**********************************************************************
-  else if (strategy == INPAR::BEAMCONTACT::bstr_gmshonly)
+  else if (strategy == Inpar::BEAMCONTACT::bstr_gmshonly)
   {
     // nonlinear iteration (Newton)
     int error = NewtonFull();
@@ -3327,7 +3328,7 @@ int STR::TimIntImpl::PTC()
 
   if (outputeveryiter_)
   {
-    int restart = GLOBAL::Problem::Instance()->Restart();
+    int restart = Global::Problem::Instance()->Restart();
     if (stepn_ == (restart + 1)) outputcounter_ = 0;
     OutputEveryIter(true);
   }
@@ -3358,10 +3359,10 @@ int STR::TimIntImpl::PTC()
 
     // modify stiffness matrix with dti
     {
-      Teuchos::RCP<Epetra_Vector> tmp = CORE::LINALG::CreateVector(SystemMatrix()->RowMap(), false);
+      Teuchos::RCP<Epetra_Vector> tmp = Core::LinAlg::CreateVector(SystemMatrix()->RowMap(), false);
       tmp->PutScalar(dti);
       Teuchos::RCP<Epetra_Vector> diag =
-          CORE::LINALG::CreateVector(SystemMatrix()->RowMap(), false);
+          Core::LinAlg::CreateVector(SystemMatrix()->RowMap(), false);
       SystemMatrix()->ExtractDiagonalCopy(*diag);
       diag->Update(1.0, *tmp, 1.0);
       SystemMatrix()->replace_diagonal_values(*diag);
@@ -3371,13 +3372,13 @@ int STR::TimIntImpl::PTC()
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
     if (get_loc_sys_trafo() != Teuchos::null)
     {
-      CORE::LINALG::apply_dirichlet_to_system(
-          *CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_), *disi_, *fres_,
+      Core::LinAlg::apply_dirichlet_to_system(
+          *Core::LinAlg::CastToSparseMatrixAndCheckSuccess(stiff_), *disi_, *fres_,
           *get_loc_sys_trafo(), *zeros_, *(dbcmaps_->CondMap()));
     }
     else
     {
-      CORE::LINALG::apply_dirichlet_to_system(
+      Core::LinAlg::apply_dirichlet_to_system(
           *stiff_, *disi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
     }
 
@@ -3391,7 +3392,7 @@ int STR::TimIntImpl::PTC()
 
     // solve for disi_
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
-    CORE::LINALG::SolverParams solver_params;
+    Core::LinAlg::SolverParams solver_params;
     if (solveradapttol_ and (iter_ > 1))
     {
       solver_params.nonlin_tolerance = tolfres_;
@@ -3433,7 +3434,7 @@ int STR::TimIntImpl::PTC()
 
     // set flag for element error in form of a negative Jacobian determinant
     // in parameter list in case of potential continuation
-    if (divcontype_ == INPAR::STR::divcont_rand_adapt_step_ele_err)
+    if (divcontype_ == Inpar::STR::divcont_rand_adapt_step_ele_err)
     {
       params.set<bool>("tolerate_errors", true);
       params.set<bool>("eval_error", false);
@@ -3445,7 +3446,7 @@ int STR::TimIntImpl::PTC()
 
     // check for element error in form of a negative Jacobian determinant
     // in case of potential continuation
-    if (divcontype_ == INPAR::STR::divcont_rand_adapt_step_ele_err)
+    if (divcontype_ == Inpar::STR::divcont_rand_adapt_step_ele_err)
       element_error = ElementErrorCheck(params.get<bool>("eval_error"));
 
     // blank residual at (locally oriented) Dirichlet DOFs
@@ -3467,15 +3468,15 @@ int STR::TimIntImpl::PTC()
     // decide which norms have to be evaluated
     bool bPressure = pressure_ != Teuchos::null;
     bool bContactSP = (have_contact_meshtying() &&
-                       CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+                       Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(
                            cmtbridge_->GetStrategy().Params(), "STRATEGY") ==
-                           INPAR::CONTACT::solution_lagmult &&
-                       (CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(
+                           Inpar::CONTACT::solution_lagmult &&
+                       (Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(
                             cmtbridge_->GetStrategy().Params(), "SYSTEM") !=
-                               INPAR::CONTACT::system_condensed ||
-                           CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(
+                               Inpar::CONTACT::system_condensed ||
+                           Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(
                                cmtbridge_->GetStrategy().Params(), "SYSTEM") !=
-                               INPAR::CONTACT::system_condensed));
+                               Inpar::CONTACT::system_condensed));
 
     if (bPressure && bContactSP)
       FOUR_C_THROW(
@@ -3593,7 +3594,7 @@ void STR::TimIntImpl::update_iter_incrementally(
 
   // recover contact / meshtying Lagrange multipliers (monolithic FSI)
   // not in the case of TSI with contact
-  if (GLOBAL::Problem::Instance()->GetProblemType() != CORE::ProblemType::tsi)
+  if (Global::Problem::Instance()->GetProblemType() != Core::ProblemType::tsi)
     if (have_contact_meshtying() && disi != Teuchos::null) cmtbridge_->Recover(disi_);
 
   // Update using #disi_
@@ -3611,24 +3612,24 @@ void STR::TimIntImpl::print_predictor()
   // only master processor
   if ((myrank_ == 0) and printscreen_ and (StepOld() % printscreen_ == 0))
   {
-    CORE::IO::cout << "Structural predictor for field '" << discret_->Name() << "' "
-                   << INPAR::STR::PredEnumString(pred_) << " yields ";
+    Core::IO::cout << "Structural predictor for field '" << discret_->Name() << "' "
+                   << Inpar::STR::PredEnumString(pred_) << " yields ";
 
     // relative check of force residual
-    if (normtypefres_ == INPAR::STR::convnorm_rel)
+    if (normtypefres_ == Inpar::STR::convnorm_rel)
     {
-      CORE::IO::cout << "scaled res-norm " << normfres_ / normcharforce_ << CORE::IO::endl;
+      Core::IO::cout << "scaled res-norm " << normfres_ / normcharforce_ << Core::IO::endl;
     }
     // absolute check of force residual
-    else if (normtypefres_ == INPAR::STR::convnorm_abs)
+    else if (normtypefres_ == Inpar::STR::convnorm_abs)
     {
-      CORE::IO::cout << "absolute res-norm " << normfres_ << CORE::IO::endl;
+      Core::IO::cout << "absolute res-norm " << normfres_ << Core::IO::endl;
     }
     // mixed absolute-relative check of force residual
-    else if (normtypefres_ == INPAR::STR::convnorm_mix)
+    else if (normtypefres_ == Inpar::STR::convnorm_mix)
     {
-      CORE::IO::cout << "mixed res-norm " << std::min(normfres_, normfres_ / normcharforce_)
-                     << CORE::IO::endl;
+      Core::IO::cout << "mixed res-norm " << std::min(normfres_, normfres_ / normcharforce_)
+                     << Core::IO::endl;
     }
     // default
     else
@@ -3668,14 +3669,14 @@ void STR::TimIntImpl::print_newton_iter_header(FILE* ofile)
   // displacement
   switch (normtypefres_)
   {
-    case INPAR::STR::convnorm_rel:
+    case Inpar::STR::convnorm_rel:
       oss << std::setw(16) << "rel-res-norm";
       break;
-    case INPAR::STR::convnorm_abs:
+    case Inpar::STR::convnorm_abs:
       oss << std::setw(16) << "abs-res-norm";
       if (mor_->HaveMOR()) oss << std::setw(16) << "abs-res-norm-r";
       break;
-    case INPAR::STR::convnorm_mix:
+    case Inpar::STR::convnorm_mix:
       oss << std::setw(16) << "mix-res-norm";
       break;
     default:
@@ -3687,7 +3688,7 @@ void STR::TimIntImpl::print_newton_iter_header(FILE* ofile)
   {
     switch (normtypepfres_)
     {
-      case INPAR::STR::convnorm_abs:
+      case Inpar::STR::convnorm_abs:
         oss << std::setw(16) << "abs-inco-norm";
         break;
       default:
@@ -3698,14 +3699,14 @@ void STR::TimIntImpl::print_newton_iter_header(FILE* ofile)
 
   switch (normtypedisi_)
   {
-    case INPAR::STR::convnorm_rel:
+    case Inpar::STR::convnorm_rel:
       oss << std::setw(16) << "rel-dis-norm";
       break;
-    case INPAR::STR::convnorm_abs:
+    case Inpar::STR::convnorm_abs:
       oss << std::setw(16) << "abs-dis-norm";
       if (mor_->HaveMOR()) oss << std::setw(16) << "abs-dis-norm-r";
       break;
-    case INPAR::STR::convnorm_mix:
+    case Inpar::STR::convnorm_mix:
       oss << std::setw(16) << "mix-dis-norm";
       break;
     default:
@@ -3717,7 +3718,7 @@ void STR::TimIntImpl::print_newton_iter_header(FILE* ofile)
   {
     switch (normtypepfres_)
     {
-      case INPAR::STR::convnorm_abs:
+      case Inpar::STR::convnorm_abs:
         oss << std::setw(16) << "abs-pre-norm";
         break;
       default:
@@ -3730,27 +3731,27 @@ void STR::TimIntImpl::print_newton_iter_header(FILE* ofile)
   if (have_contact_meshtying())
   {
     // strategy and system setup types
-    INPAR::CONTACT::SolvingStrategy soltype =
-        CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+    Inpar::CONTACT::SolvingStrategy soltype =
+        Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(
             cmtbridge_->GetStrategy().Params(), "STRATEGY");
-    INPAR::CONTACT::SystemType systype = CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(
+    Inpar::CONTACT::SystemType systype = Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(
         cmtbridge_->GetStrategy().Params(), "SYSTEM");
-    INPAR::WEAR::WearType wtype = CORE::UTILS::IntegralValue<INPAR::WEAR::WearType>(
+    Inpar::Wear::WearType wtype = Core::UTILS::IntegralValue<Inpar::Wear::WearType>(
         cmtbridge_->GetStrategy().Params(), "WEARTYPE");
-    INPAR::WEAR::WearSide wside = CORE::UTILS::IntegralValue<INPAR::WEAR::WearSide>(
+    Inpar::Wear::WearSide wside = Core::UTILS::IntegralValue<Inpar::Wear::WearSide>(
         cmtbridge_->GetStrategy().Params(), "WEAR_SIDE");
 
-    if ((soltype == INPAR::CONTACT::solution_lagmult ||
-            soltype == INPAR::CONTACT::solution_augmented) &&
-        (systype != INPAR::CONTACT::system_condensed &&
-            systype != INPAR::CONTACT::system_condensed_lagmult))
+    if ((soltype == Inpar::CONTACT::solution_lagmult ||
+            soltype == Inpar::CONTACT::solution_augmented) &&
+        (systype != Inpar::CONTACT::system_condensed &&
+            systype != Inpar::CONTACT::system_condensed_lagmult))
     {
       switch (normtypecontconstr_)
       {
-        case INPAR::STR::convnorm_rel:
+        case Inpar::STR::convnorm_rel:
           oss << std::setw(20) << "rel-contconstr-norm";
           break;
-        case INPAR::STR::convnorm_abs:
+        case Inpar::STR::convnorm_abs:
           oss << std::setw(20) << "abs-contconstr-norm";
           break;
         default:
@@ -3760,17 +3761,17 @@ void STR::TimIntImpl::print_newton_iter_header(FILE* ofile)
 
       switch (normtypeplagrincr_)
       {
-        case INPAR::STR::convnorm_rel:
+        case Inpar::STR::convnorm_rel:
           oss << std::setw(20) << "rel-lagrincr-norm";
           break;
-        case INPAR::STR::convnorm_abs:
+        case Inpar::STR::convnorm_abs:
         {
           oss << std::setw(20) << "abs-lagrincr-norm";
-          if (wtype == INPAR::WEAR::wear_primvar)
+          if (wtype == Inpar::Wear::wear_primvar)
           {
             oss << std::setw(20) << "abs-wearincr-S-norm";
             oss << std::setw(20) << "abs-wearcon-S-norm";
-            if (wside == INPAR::WEAR::wear_both)
+            if (wside == Inpar::Wear::wear_both)
             {
               oss << std::setw(20) << "abs-wearincr-M-norm";
               oss << std::setw(20) << "abs-wearcon-M-norm";
@@ -3798,7 +3799,7 @@ void STR::TimIntImpl::print_newton_iter_header(FILE* ofile)
     oss << std::setw(16) << "abs-0Dinc-norm";
   }
 
-  if (itertype_ == INPAR::STR::soltech_ptc)
+  if (itertype_ == Inpar::STR::soltech_ptc)
   {
     oss << std::setw(16) << "        PTC-dti";
   }
@@ -3847,15 +3848,15 @@ void STR::TimIntImpl::print_newton_iter_text(FILE* ofile)
   // displacement
   switch (normtypefres_)
   {
-    case INPAR::STR::convnorm_rel:
+    case Inpar::STR::convnorm_rel:
       oss << std::setw(16) << std::setprecision(5) << std::scientific << normfres_ / normcharforce_;
       break;
-    case INPAR::STR::convnorm_abs:
+    case Inpar::STR::convnorm_abs:
       oss << std::setw(16) << std::setprecision(5) << std::scientific << normfres_;
       if (mor_->HaveMOR())
         oss << std::setw(16) << std::setprecision(5) << std::scientific << normfresr_;
       break;
-    case INPAR::STR::convnorm_mix:
+    case Inpar::STR::convnorm_mix:
       oss << std::setw(16) << std::setprecision(5) << std::scientific
           << std::min(normfres_, normfres_ / normcharforce_);
       break;
@@ -3868,7 +3869,7 @@ void STR::TimIntImpl::print_newton_iter_text(FILE* ofile)
   {
     switch (normtypepfres_)
     {
-      case INPAR::STR::convnorm_abs:
+      case Inpar::STR::convnorm_abs:
         oss << std::setw(16) << std::setprecision(5) << std::scientific << normpfres_;
         break;
       default:
@@ -3879,15 +3880,15 @@ void STR::TimIntImpl::print_newton_iter_text(FILE* ofile)
 
   switch (normtypedisi_)
   {
-    case INPAR::STR::convnorm_rel:
+    case Inpar::STR::convnorm_rel:
       oss << std::setw(16) << std::setprecision(5) << std::scientific << normdisi_ / normchardis_;
       break;
-    case INPAR::STR::convnorm_abs:
+    case Inpar::STR::convnorm_abs:
       oss << std::setw(16) << std::setprecision(5) << std::scientific << normdisi_;
       if (mor_->HaveMOR())
         oss << std::setw(16) << std::setprecision(5) << std::scientific << normdisir_;
       break;
-    case INPAR::STR::convnorm_mix:
+    case Inpar::STR::convnorm_mix:
       oss << std::setw(16) << std::setprecision(5) << std::scientific
           << std::min(normdisi_, normdisi_ / normchardis_);
       break;
@@ -3900,7 +3901,7 @@ void STR::TimIntImpl::print_newton_iter_text(FILE* ofile)
   {
     switch (normtypepfres_)
     {
-      case INPAR::STR::convnorm_abs:
+      case Inpar::STR::convnorm_abs:
         oss << std::setw(16) << std::scientific << normpres_;
         break;
       default:
@@ -3913,20 +3914,20 @@ void STR::TimIntImpl::print_newton_iter_text(FILE* ofile)
   if (have_contact_meshtying())
   {
     // strategy and system setup types
-    INPAR::CONTACT::SolvingStrategy soltype =
-        CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+    Inpar::CONTACT::SolvingStrategy soltype =
+        Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(
             cmtbridge_->GetStrategy().Params(), "STRATEGY");
-    INPAR::CONTACT::SystemType systype = CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(
+    Inpar::CONTACT::SystemType systype = Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(
         cmtbridge_->GetStrategy().Params(), "SYSTEM");
-    INPAR::WEAR::WearType wtype = CORE::UTILS::IntegralValue<INPAR::WEAR::WearType>(
+    Inpar::Wear::WearType wtype = Core::UTILS::IntegralValue<Inpar::Wear::WearType>(
         cmtbridge_->GetStrategy().Params(), "WEARTYPE");
-    INPAR::WEAR::WearSide wside = CORE::UTILS::IntegralValue<INPAR::WEAR::WearSide>(
+    Inpar::Wear::WearSide wside = Core::UTILS::IntegralValue<Inpar::Wear::WearSide>(
         cmtbridge_->GetStrategy().Params(), "WEAR_SIDE");
 
-    if ((soltype == INPAR::CONTACT::solution_lagmult ||
-            soltype == INPAR::CONTACT::solution_augmented) &&
-        (systype != INPAR::CONTACT::system_condensed &&
-            systype != INPAR::CONTACT::system_condensed_lagmult))
+    if ((soltype == Inpar::CONTACT::solution_lagmult ||
+            soltype == Inpar::CONTACT::solution_augmented) &&
+        (systype != Inpar::CONTACT::system_condensed &&
+            systype != Inpar::CONTACT::system_condensed_lagmult))
     {
       // we only support abs norms
       oss << std::setw(20) << std::setprecision(5) << std::scientific
@@ -3934,12 +3935,12 @@ void STR::TimIntImpl::print_newton_iter_text(FILE* ofile)
       oss << std::setw(20) << std::setprecision(5) << std::scientific
           << normlagr_;  // norm Lagrange multipliers
 
-      if (wtype == INPAR::WEAR::wear_primvar)
+      if (wtype == Inpar::Wear::wear_primvar)
       {
         oss << std::setw(20) << std::setprecision(5) << std::scientific << normw_;  // norm wear
         oss << std::setw(20) << std::setprecision(5) << std::scientific
             << normwrhs_;  // norm wear rhs
-        if (wside == INPAR::WEAR::wear_both)
+        if (wside == Inpar::Wear::wear_both)
         {
           oss << std::setw(20) << std::setprecision(5) << std::scientific << normwm_;  // norm wear
           oss << std::setw(20) << std::setprecision(5) << std::scientific
@@ -3962,7 +3963,7 @@ void STR::TimIntImpl::print_newton_iter_text(FILE* ofile)
     oss << std::setw(16) << std::setprecision(5) << std::scientific << normcardvasc0ddofincr_;
   }
 
-  if (itertype_ == INPAR::STR::soltech_ptc)
+  if (itertype_ == Inpar::STR::soltech_ptc)
   {
     oss << std::setw(16) << std::setprecision(5) << std::scientific << dti_;
   }
@@ -3977,14 +3978,14 @@ void STR::TimIntImpl::print_newton_iter_text(FILE* ofile)
   if (have_contact_meshtying())
   {
     // only print something for contact, not for meshtying
-    INPAR::CONTACT::SolvingStrategy soltype =
-        CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+    Inpar::CONTACT::SolvingStrategy soltype =
+        Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(
             cmtbridge_->GetStrategy().Params(), "STRATEGY");
     bool semismooth =
-        CORE::UTILS::IntegralValue<int>(cmtbridge_->GetStrategy().Params(), "SEMI_SMOOTH_NEWTON");
+        Core::UTILS::IntegralValue<int>(cmtbridge_->GetStrategy().Params(), "SEMI_SMOOTH_NEWTON");
     if (cmtbridge_->HaveContact())
     {
-      if (soltype == INPAR::CONTACT::solution_augmented && semismooth)
+      if (soltype == Inpar::CONTACT::solution_augmented && semismooth)
       {
         bool ccontact = cmtbridge_->GetStrategy().active_set_semi_smooth_converged();
         // active set changed
@@ -4030,7 +4031,7 @@ void STR::TimIntImpl::export_contact_quantities()
   // write number of active nodes for converged newton in textfile xx x.active
   FILE* MyFile = nullptr;
   std::ostringstream filename;
-  const std::string filebase = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
+  const std::string filebase = Global::Problem::Instance()->OutputControlFile()->FileName();
   filename << filebase << ".active";
   MyFile = fopen(filename.str().c_str(), "at+");
 
@@ -4048,7 +4049,7 @@ void STR::TimIntImpl::export_contact_quantities()
   // write required time
   FILE* MyFile2 = nullptr;
   std::ostringstream filename2;
-  const std::string filebase2 = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
+  const std::string filebase2 = Global::Problem::Instance()->OutputControlFile()->FileName();
   filename2 << filebase2 << ".time";
   MyFile2 = fopen(filename2.str().c_str(), "at+");
 
@@ -4144,10 +4145,10 @@ Teuchos::RCP<Epetra_Vector> STR::TimIntImpl::solve_relaxation_linear()
 
   // apply Dirichlet BCs to system of equations
   disi_->PutScalar(0.0);  // Useful? depends on solver and more
-  CORE::LINALG::apply_dirichlet_to_system(*stiff_, *disi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
+  Core::LinAlg::apply_dirichlet_to_system(*stiff_, *disi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
 
   // solve for #disi_
-  CORE::LINALG::SolverParams solver_params;
+  Core::LinAlg::SolverParams solver_params;
   solver_params.refactor = true;
   solver_params.reset = true;
   solver_->Solve(stiff_->EpetraOperator(), disi_, fres_, solver_params);
@@ -4191,12 +4192,12 @@ void STR::TimIntImpl::prepare_system_for_newton_solve(const bool preparejacobian
   {
     if (get_loc_sys_trafo() != Teuchos::null)
     {
-      CORE::LINALG::apply_dirichlet_to_system(
-          *CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_), *disi_, *fres_,
+      Core::LinAlg::apply_dirichlet_to_system(
+          *Core::LinAlg::CastToSparseMatrixAndCheckSuccess(stiff_), *disi_, *fres_,
           *get_loc_sys_trafo(), *zeros_, *(dbcmaps_->CondMap()));
     }
     else
-      CORE::LINALG::apply_dirichlet_to_system(
+      Core::LinAlg::apply_dirichlet_to_system(
           *stiff_, *disi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
   }
 
@@ -4207,25 +4208,25 @@ void STR::TimIntImpl::prepare_system_for_newton_solve(const bool preparejacobian
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void STR::TimIntImpl::use_block_matrix(
-    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
-    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> rangemaps)
+    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> domainmaps,
+    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> rangemaps)
 {
   // (re)allocate system matrix
   stiff_ =
-      Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
+      Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
           *domainmaps, *rangemaps, 81, false, true));
   mass_ =
-      Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
+      Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
           *domainmaps, *rangemaps, 81, false, true));
-  if (damping_ != INPAR::STR::damp_none)
+  if (damping_ != Inpar::STR::damp_none)
     damp_ =
-        Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
+        Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
             *domainmaps, *rangemaps, 81, false, true));
 
   // recalculate mass and damping matrices
 
   Teuchos::RCP<Epetra_Vector> fint =
-      CORE::LINALG::CreateVector(*DofRowMapView(), true);  // internal force
+      Core::LinAlg::CreateVector(*DofRowMapView(), true);  // internal force
 
   stiff_->Zero();
   mass_->Zero();
@@ -4242,7 +4243,7 @@ void STR::TimIntImpl::use_block_matrix(
     Teuchos::RCP<Epetra_Vector> finert = Teuchos::null;
     if (HaveNonlinearMass())
     {
-      finert = CORE::LINALG::CreateVector(*DofRowMapView(), true);  // intertial force
+      finert = Core::LinAlg::CreateVector(*DofRowMapView(), true);  // intertial force
       // Note: the following parameters are just dummies, since they are only needed to calculate
       // finert which we will not use anyway
       p.set("timintfac_dis", 0.0);  // dummy!
@@ -4256,7 +4257,7 @@ void STR::TimIntImpl::use_block_matrix(
     discret_->set_state("displacement", (*dis_)(0));
     discret_->set_state(0, "velocity", (*vel_)(0));
     discret_->set_state(0, "acceleration", (*acc_)(0));
-    if (damping_ == INPAR::STR::damp_material) discret_->set_state("velocity", (*vel_)(0));
+    if (damping_ == Inpar::STR::damp_material) discret_->set_state("velocity", (*vel_)(0));
 
     discret_->Evaluate(p, stiff_, mass_, fint, finert, Teuchos::null);
     discret_->ClearState();
@@ -4269,7 +4270,7 @@ void STR::TimIntImpl::use_block_matrix(
   stiff_->Complete();
 
   // build Rayleigh damping matrix if desired
-  if (damping_ == INPAR::STR::damp_rayleigh)
+  if (damping_ == Inpar::STR::damp_rayleigh)
   {
     damp_->Add(*stiff_, false, dampk_, 0.0);
     damp_->Add(*mass_, false, dampm_, 1.0);
@@ -4293,7 +4294,7 @@ void STR::TimIntImpl::use_block_matrix(
  *----------------------------------------------------------------------*/
 void STR::TimIntImpl::STCPreconditioning()
 {
-  if (stcscale_ != INPAR::STR::stc_none)
+  if (stcscale_ != Inpar::STR::stc_none)
   {
     if (!stccompl_)
     {
@@ -4301,14 +4302,14 @@ void STR::TimIntImpl::STCPreconditioning()
       stccompl_ = true;
     }
 
-    stiff_ = MLMultiply(*(Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(stiff_)), *stcmat_,
+    stiff_ = MLMultiply(*(Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(stiff_)), *stcmat_,
         true, false, true);
-    if (stcscale_ == INPAR::STR::stc_currsym)
+    if (stcscale_ == Inpar::STR::stc_currsym)
     {
       stiff_ = MLMultiply(*stcmat_, true,
-          *(Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(stiff_)), false, true, false,
+          *(Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(stiff_)), false, true, false,
           true);
-      Teuchos::RCP<Epetra_Vector> fressdc = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+      Teuchos::RCP<Epetra_Vector> fressdc = Core::LinAlg::CreateVector(*DofRowMapView(), true);
       stcmat_->Multiply(true, *fres_, *fressdc);
       fres_->Update(1.0, *fressdc, 0.0);
     }
@@ -4337,11 +4338,11 @@ void STR::TimIntImpl::ComputeSTCMatrix()
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   if (iter_ == 1 && step_ == 0)
   {
-    std::string fname = GLOBAL::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
+    std::string fname = Global::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
     fname += ".stcmatrix1.mtl";
     if (myrank_ == 0) std::cout << "Printing stcmatrix1 to file" << std::endl;
-    CORE::LINALG::PrintMatrixInMatlabFormat(
-        fname, *((Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(stcmat_))->EpetraMatrix()));
+    Core::LinAlg::PrintMatrixInMatlabFormat(
+        fname, *((Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(stcmat_))->EpetraMatrix()));
   }
 #endif
 
@@ -4353,8 +4354,8 @@ void STR::TimIntImpl::ComputeSTCMatrix()
     pe.set<int>("stc_scaling", stcscale_);
     pe.set("stc_layer", lay);
 
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> tmpstcmat =
-        Teuchos::rcp(new CORE::LINALG::SparseMatrix(*DofRowMapView(), 81, true, true));
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> tmpstcmat =
+        Teuchos::rcp(new Core::LinAlg::SparseMatrix(*DofRowMapView(), 81, true, true));
     tmpstcmat->Zero();
 
     discret_->Evaluate(pe, tmpstcmat, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
@@ -4363,11 +4364,11 @@ void STR::TimIntImpl::ComputeSTCMatrix()
 #ifdef FOUR_C_ENABLE_ASSERTIONS
     if (iter_ == 1 && step_ == 0)
     {
-      std::string fname = GLOBAL::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
+      std::string fname = Global::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
       fname += ".stcmatrix2.mtl";
       if (myrank_ == 0) std::cout << "Printing stcmatrix2 to file" << std::endl;
-      CORE::LINALG::PrintMatrixInMatlabFormat(fname,
-          *((Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(tmpstcmat))->EpetraMatrix()));
+      Core::LinAlg::PrintMatrixInMatlabFormat(fname,
+          *((Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(tmpstcmat))->EpetraMatrix()));
     }
 #endif
 
@@ -4381,9 +4382,9 @@ void STR::TimIntImpl::ComputeSTCMatrix()
  *----------------------------------------------------------------------*/
 void STR::TimIntImpl::RecoverSTCSolution()
 {
-  if (stcscale_ != INPAR::STR::stc_none)
+  if (stcscale_ != Inpar::STR::stc_none)
   {
-    Teuchos::RCP<Epetra_Vector> disisdc = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+    Teuchos::RCP<Epetra_Vector> disisdc = Core::LinAlg::CreateVector(*DofRowMapView(), true);
 
     stcmat_->Multiply(false, *disi_, *disisdc);
     disi_->Update(1.0, *disisdc, 0.0);
@@ -4401,23 +4402,23 @@ int STR::TimIntImpl::cmt_windk_constr_nonlinear_solve()
   // get some parameters
   //********************************************************************
   // strategy type
-  INPAR::CONTACT::SolvingStrategy soltype =
-      CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+  Inpar::CONTACT::SolvingStrategy soltype =
+      Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(
           cmtbridge_->GetStrategy().Params(), "STRATEGY");
 
   // semi-smooth Newton type
   bool semismooth =
-      CORE::UTILS::IntegralValue<int>(cmtbridge_->GetStrategy().Params(), "SEMI_SMOOTH_NEWTON");
+      Core::UTILS::IntegralValue<int>(cmtbridge_->GetStrategy().Params(), "SEMI_SMOOTH_NEWTON");
 
   // iteration type
-  if (itertype_ != INPAR::STR::soltech_newtonuzawalin)
+  if (itertype_ != Inpar::STR::soltech_newtonuzawalin)
     FOUR_C_THROW(
         "Unknown type of equilibrium iteration! Choose newtonlinuzawa instead of fullnewton!");
 
   //********************************************************************
   // Solving Strategy using Lagrangian Multipliers
   //********************************************************************
-  if (soltype == INPAR::CONTACT::solution_lagmult)
+  if (soltype == Inpar::CONTACT::solution_lagmult)
   {
     //********************************************************************
     // 1) SEMI-SMOOTH NEWTON FOR CONTACT
@@ -4479,7 +4480,7 @@ int STR::TimIntImpl::cmt_windk_constr_nonlinear_solve()
   //********************************************************************
   // Solving Strategy using Regularization Techniques (Penalty Method)
   //********************************************************************
-  else if (soltype == INPAR::CONTACT::solution_penalty)
+  else if (soltype == Inpar::CONTACT::solution_penalty)
   {
     // nonlinear iteration
     int error = uzawa_linear_newton_full();
@@ -4492,7 +4493,7 @@ int STR::TimIntImpl::cmt_windk_constr_nonlinear_solve()
   //********************************************************************
   // Solving Strategy using Augmented Lagrange Techniques with Uzawa
   //********************************************************************
-  else if (soltype == INPAR::CONTACT::solution_uzawa)
+  else if (soltype == Inpar::CONTACT::solution_uzawa)
   {
     // get tolerance and maximum Uzawa steps
     double eps = cmtbridge_->GetStrategy().Params().get<double>("UZAWACONSTRTOL");
@@ -4525,7 +4526,7 @@ int STR::TimIntImpl::cmt_windk_constr_nonlinear_solve()
 
       // store Lagrange multipliers for next Uzawa step
       cmtbridge_->GetStrategy().update_uzawa_augmented_lagrange();
-      cmtbridge_->GetStrategy().store_nodal_quantities(MORTAR::StrategyBase::lmuzawa);
+      cmtbridge_->GetStrategy().store_nodal_quantities(Mortar::StrategyBase::lmuzawa);
 
     } while (cmtbridge_->GetStrategy().ConstraintNorm() >= eps);
 
@@ -4543,10 +4544,10 @@ int STR::TimIntImpl::cmt_windk_constr_nonlinear_solve()
 int STR::TimIntImpl::cmt_windk_constr_linear_solve(const double k_ptc)
 {
   // strategy and system setup types
-  INPAR::CONTACT::SolvingStrategy soltype =
-      CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+  Inpar::CONTACT::SolvingStrategy soltype =
+      Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(
           cmtbridge_->GetStrategy().Params(), "STRATEGY");
-  INPAR::CONTACT::SystemType systype = CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(
+  Inpar::CONTACT::SystemType systype = Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(
       cmtbridge_->GetStrategy().Params(), "SYSTEM");
 
   int linsolve_error = 0;
@@ -4560,7 +4561,7 @@ int STR::TimIntImpl::cmt_windk_constr_linear_solve(const double k_ptc)
     Teuchos::RCP<Epetra_Map> slaveDofMap;
     Teuchos::RCP<Epetra_Map> innerDofMap;
     Teuchos::RCP<Epetra_Map> activeDofMap;
-    Teuchos::RCP<MORTAR::StrategyBase> strat = Teuchos::rcpFromRef(cmtbridge_->GetStrategy());
+    Teuchos::RCP<Mortar::StrategyBase> strat = Teuchos::rcpFromRef(cmtbridge_->GetStrategy());
     strat->collect_maps_for_preconditioner(masterDofMap, slaveDofMap, innerDofMap, activeDofMap);
 
     // feed Belos based solvers with contact information
@@ -4577,9 +4578,9 @@ int STR::TimIntImpl::cmt_windk_constr_linear_solve(const double k_ptc)
       Teuchos::RCP<CONTACT::AbstractStrategy> costrat =
           Teuchos::rcp_dynamic_cast<CONTACT::AbstractStrategy>(strat);
       if (costrat != Teuchos::null)
-        mueluParams.set<std::string>("CORE::ProblemType", "contact");
+        mueluParams.set<std::string>("Core::ProblemType", "contact");
       else
-        mueluParams.set<std::string>("CORE::ProblemType", "meshtying");
+        mueluParams.set<std::string>("Core::ProblemType", "meshtying");
       mueluParams.set<int>("time step", step_);
       mueluParams.set<int>("iter", iter_);
     }
@@ -4596,11 +4597,11 @@ int STR::TimIntImpl::cmt_windk_constr_linear_solve(const double k_ptc)
   std::ostringstream filename;
   const std::string filebase = "sparsematrix";
   filename << "o/matlab_output/" << filebase << "_" << globindex << ".mtl";
-  CORE::LINALG::PrintMatrixInMatlabFormat(
+  Core::LinAlg::PrintMatrixInMatlabFormat(
       filename.str().c_str(), *(SystemMatrix()->EpetraMatrix()));
 
   // print sparsity pattern to file
-  CORE::LINALG::PrintSparsityToPostscript(*(SystemMatrix()->EpetraMatrix()));
+  Core::LinAlg::PrintSparsityToPostscript(*(SystemMatrix()->EpetraMatrix()));
 #endif  // #ifdef CONTACTEIG
 
   //**********************************************************************
@@ -4609,9 +4610,9 @@ int STR::TimIntImpl::cmt_windk_constr_linear_solve(const double k_ptc)
   // (1) Standard / Dual Lagrange multipliers -> SaddlePointCoupled
   // (2) Standard / Dual Lagrange multipliers -> SaddlePointSimpler
   //**********************************************************************
-  if (soltype == INPAR::CONTACT::solution_lagmult &&
-      (systype != INPAR::CONTACT::system_condensed &&
-          systype != INPAR::CONTACT::system_condensed_lagmult))
+  if (soltype == Inpar::CONTACT::solution_lagmult &&
+      (systype != Inpar::CONTACT::system_condensed &&
+          systype != Inpar::CONTACT::system_condensed_lagmult))
   {
     FOUR_C_THROW(
         "Constraints / Cardiovascular0D bcs together with saddle point contact system does not "
@@ -4636,13 +4637,13 @@ int STR::TimIntImpl::cmt_windk_constr_linear_solve(const double k_ptc)
  * check, if according to divercont flag                             meier 01/15
  * time step size can be increased
  *-----------------------------------------------------------------------------*/
-void STR::TimIntImpl::check_for_time_step_increase(INPAR::STR::ConvergenceStatus& status)
+void STR::TimIntImpl::check_for_time_step_increase(Inpar::STR::ConvergenceStatus& status)
 {
   const int maxnumfinestep = 4;
 
-  if (divcontype_ != INPAR::STR::divcont_adapt_step)
+  if (divcontype_ != Inpar::STR::divcont_adapt_step)
     return;
-  else if (status == INPAR::STR::conv_success and divconrefinementlevel_ != 0)
+  else if (status == Inpar::STR::conv_success and divconrefinementlevel_ != 0)
   {
     divconnumfinestep_++;
 
@@ -4651,7 +4652,7 @@ void STR::TimIntImpl::check_for_time_step_increase(INPAR::STR::ConvergenceStatus
       // increase the step size if the remaining number of steps is a even number
       if (((stepmax_ - stepn_) % 2) == 0 and stepmax_ != stepn_)
       {
-        CORE::IO::cout << "Nonlinear solver successful. Double timestep size!" << CORE::IO::endl;
+        Core::IO::cout << "Nonlinear solver successful. Double timestep size!" << Core::IO::endl;
 
         divconrefinementlevel_--;
         divconnumfinestep_ = 0;
@@ -4670,13 +4671,13 @@ void STR::TimIntImpl::check_for_time_step_increase(INPAR::STR::ConvergenceStatus
   }
 }
 
-void STR::TimIntImpl::check_for3_d0_dptc_reset(INPAR::STR::ConvergenceStatus& status)
+void STR::TimIntImpl::check_for3_d0_dptc_reset(Inpar::STR::ConvergenceStatus& status)
 {
   const int maxnumfinestep = 1;
 
-  if (divcontype_ != INPAR::STR::divcont_adapt_3D0Dptc_ele_err)
+  if (divcontype_ != Inpar::STR::divcont_adapt_3D0Dptc_ele_err)
     return;
-  else if (status == INPAR::STR::conv_success and divconrefinementlevel_ != 0 and
+  else if (status == Inpar::STR::conv_success and divconrefinementlevel_ != 0 and
            cardvasc0dman_->Get_k_ptc() != 0.0)
   {
     divconnumfinestep_++;
@@ -4685,8 +4686,8 @@ void STR::TimIntImpl::check_for3_d0_dptc_reset(INPAR::STR::ConvergenceStatus& st
     {
       if (myrank_ == 0)
       {
-        CORE::IO::cout << "Nonlinear solver successful. Reset 3D-0D PTC to normal Newton!"
-                       << CORE::IO::endl;
+        Core::IO::cout << "Nonlinear solver successful. Reset 3D-0D PTC to normal Newton!"
+                       << Core::IO::endl;
       }
       divconrefinementlevel_ = 0;
       divconnumfinestep_ = 0;

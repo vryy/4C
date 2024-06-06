@@ -25,7 +25,7 @@ chapter 3.4)
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
@@ -36,10 +36,10 @@ namespace MAT
     {
      public:
       /// standard constructor
-      Maxwell0dAcinusDoubleExponential(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      Maxwell0dAcinusDoubleExponential(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
     };  // class Maxwell_0d_acinus_DoubleExponential
   }     // namespace PAR
@@ -52,7 +52,7 @@ namespace MAT
 
     static Maxwell0dAcinusDoubleExponentialType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static Maxwell0dAcinusDoubleExponentialType instance_;
@@ -69,7 +69,7 @@ namespace MAT
     Maxwell0dAcinusDoubleExponential();
 
     /// construct the material object given material parameters
-    Maxwell0dAcinusDoubleExponential(MAT::PAR::Maxwell0dAcinus* params);
+    Maxwell0dAcinusDoubleExponential(Mat::PAR::Maxwell0dAcinus* params);
 
     //! @name Packing and Unpacking
 
@@ -95,7 +95,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -113,13 +113,13 @@ namespace MAT
     //@}
 
     /// material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_0d_maxwell_acinus_doubleexponential;
+      return Core::Materials::m_0d_maxwell_acinus_doubleexponential;
     }
 
     /// return copy of this material object
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new Maxwell0dAcinus(*this));
     }
@@ -127,14 +127,14 @@ namespace MAT
     /*!
       \brief
     */
-    void Setup(INPUT::LineDefinition* linedef) override;
+    void Setup(Input::LineDefinition* linedef) override;
 
     /*!
        \brief
      */
-    void Evaluate(CORE::LINALG::SerialDenseVector& epnp, CORE::LINALG::SerialDenseVector& epn,
-        CORE::LINALG::SerialDenseVector& epnm, CORE::LINALG::SerialDenseMatrix& sysmat,
-        CORE::LINALG::SerialDenseVector& rhs, const DRT::REDAIRWAYS::ElemParams& params,
+    void Evaluate(Core::LinAlg::SerialDenseVector& epnp, Core::LinAlg::SerialDenseVector& epn,
+        Core::LinAlg::SerialDenseVector& epnm, Core::LinAlg::SerialDenseMatrix& sysmat,
+        Core::LinAlg::SerialDenseVector& rhs, const Discret::ReducedLung::ElemParams& params,
         const double NumOfAcini, const double Vo, double time, double dt) override;
 
    private:
@@ -149,7 +149,7 @@ namespace MAT
     double tau2_;
   };
 
-}  // namespace MAT
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

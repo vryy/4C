@@ -21,11 +21,11 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ADAPTER::AlgorithmBase::AlgorithmBase(
+Adapter::AlgorithmBase::AlgorithmBase(
     const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
-    : comm_(comm), printscreen_(GLOBAL::Problem::Instance()->IOParams().get<int>("STDOUTEVRY"))
+    : comm_(comm), printscreen_(Global::Problem::Instance()->IOParams().get<int>("STDOUTEVRY"))
 {
-  if (comm_.MyPID() == 0) INPUT::PrintDefaultParameters(CORE::IO::cout, timeparams);
+  if (comm_.MyPID() == 0) Input::PrintDefaultParameters(Core::IO::cout, timeparams);
 
   step_ = 0;
   time_ = 0.;
@@ -37,7 +37,7 @@ ADAPTER::AlgorithmBase::AlgorithmBase(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::AlgorithmBase::SetTimeStep(const double time, const int step)
+void Adapter::AlgorithmBase::SetTimeStep(const double time, const int step)
 {
   step_ = step;
   time_ = time;
@@ -46,11 +46,11 @@ void ADAPTER::AlgorithmBase::SetTimeStep(const double time, const int step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::AlgorithmBase::print_header()
+void Adapter::AlgorithmBase::print_header()
 {
   if (Comm().MyPID() == 0 and printscreen_ and (step_ % printscreen_ == 0))
   {
-    CORE::IO::cout << "\n"
+    Core::IO::cout << "\n"
                    << method_ << "\n"
                    << "TIME:  " << std::scientific << time_ << "/" << std::scientific << maxtime_
                    << "     DT = " << std::scientific << dt_ << "     STEP = " << std::setw(4)

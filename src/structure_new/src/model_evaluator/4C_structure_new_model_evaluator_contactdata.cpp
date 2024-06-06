@@ -23,9 +23,9 @@ FOUR_C_NAMESPACE_OPEN
 STR::MODELEVALUATOR::ContactData::ContactData()
     : isinit_(false),
       issetup_(false),
-      mortar_action_(MORTAR::eval_none),
-      var_type_(INPAR::CONTACT::var_unknown),
-      coupling_scheme_(INPAR::CONTACT::CouplingScheme::unknown),
+      mortar_action_(Mortar::eval_none),
+      var_type_(Inpar::CONTACT::var_unknown),
+      coupling_scheme_(Inpar::CONTACT::CouplingScheme::unknown),
       str_data_ptr_(Teuchos::null)
 {
   // empty constructor

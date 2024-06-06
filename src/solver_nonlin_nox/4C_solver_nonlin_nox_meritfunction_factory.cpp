@@ -22,15 +22,15 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::MeritFunction::Factory::Factory()
+NOX::Nln::MeritFunction::Factory::Factory()
 {
   // empty;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<::NOX::MeritFunction::Generic> NOX::NLN::MeritFunction::Factory::BuildMeritFunction(
-    const NOX::NLN::GlobalData& noxNlnGlobalData) const
+Teuchos::RCP<::NOX::MeritFunction::Generic> NOX::Nln::MeritFunction::Factory::BuildMeritFunction(
+    const NOX::Nln::GlobalData& noxNlnGlobalData) const
 {
   Teuchos::RCP<::NOX::MeritFunction::Generic> mrtFctPtr;
 
@@ -50,8 +50,8 @@ Teuchos::RCP<::NOX::MeritFunction::Generic> NOX::NLN::MeritFunction::Factory::Bu
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<::NOX::MeritFunction::Generic>
-NOX::NLN::MeritFunction::Factory::build_unconstrained_merit_function(
-    const std::string& mftype, const NOX::NLN::GlobalData& noxNlnGlobalData) const
+NOX::Nln::MeritFunction::Factory::build_unconstrained_merit_function(
+    const std::string& mftype, const NOX::Nln::GlobalData& noxNlnGlobalData) const
 {
   Teuchos::RCP<::NOX::MeritFunction::Generic> mrtFctPtr = Teuchos::null;
 
@@ -63,7 +63,7 @@ NOX::NLN::MeritFunction::Factory::build_unconstrained_merit_function(
   else
   {
     std::ostringstream msg;
-    msg << "Error - NOX::NLN::MeritFunction::buildUnconstraintedMeritFunction() - \n"
+    msg << "Error - NOX::Nln::MeritFunction::buildUnconstraintedMeritFunction() - \n"
            "The \"Solver Options > Merit Function\" parameter \""
         << mftype
         << "\" is not a valid UNCONSTRAINTED merit function name.  Please "
@@ -77,8 +77,8 @@ NOX::NLN::MeritFunction::Factory::build_unconstrained_merit_function(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<::NOX::MeritFunction::Generic>
-NOX::NLN::MeritFunction::Factory::build_constrained_merit_function(
-    const std::string& mftype, const NOX::NLN::GlobalData& noxNlnGlobalData) const
+NOX::Nln::MeritFunction::Factory::build_constrained_merit_function(
+    const std::string& mftype, const NOX::Nln::GlobalData& noxNlnGlobalData) const
 {
   Teuchos::RCP<::NOX::MeritFunction::Generic> mrtFctPtr = Teuchos::null;
 
@@ -94,7 +94,7 @@ NOX::NLN::MeritFunction::Factory::build_constrained_merit_function(
   else
   {
     std::ostringstream msg;
-    msg << "Error - NOX::NLN::MeritFunction::buildConstrainedMeritFunction() - \n"
+    msg << "Error - NOX::Nln::MeritFunction::buildConstrainedMeritFunction() - \n"
            "The \"Solver Options > Merit Function\" parameter \""
         << mftype
         << "\" is not a valid CONSTRAINT merit function name.  Please "
@@ -107,8 +107,8 @@ NOX::NLN::MeritFunction::Factory::build_constrained_merit_function(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<::NOX::MeritFunction::Generic> NOX::NLN::MeritFunction::BuildMeritFunction(
-    const NOX::NLN::GlobalData& noxNlnGlobalData)
+Teuchos::RCP<::NOX::MeritFunction::Generic> NOX::Nln::MeritFunction::BuildMeritFunction(
+    const NOX::Nln::GlobalData& noxNlnGlobalData)
 {
   const Factory factory;
   return factory.BuildMeritFunction(noxNlnGlobalData);

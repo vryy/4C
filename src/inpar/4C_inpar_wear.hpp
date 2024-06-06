@@ -15,9 +15,9 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
-namespace INPAR
+namespace Inpar
 {
-  namespace WEAR
+  namespace Wear
   {
     /// Type of contact wear law
     /// (this enum represents the input file parameter WEAR)
@@ -95,8 +95,8 @@ namespace INPAR
 
     /// set the wear parameters
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
-  }  // namespace WEAR
-}  // namespace INPAR
+  }  // namespace Wear
+}  // namespace Inpar
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

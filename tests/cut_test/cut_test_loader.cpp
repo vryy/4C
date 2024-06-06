@@ -37,13 +37,13 @@ void MeshLoader::GetNode(int nid, double x, double y, double z, double lsv)
 }
 
 void MeshLoader::create_side(
-    int sid, int nid1, int nid2, int nid3, int nid4, CORE::FE::CellType shape)
+    int sid, int nid1, int nid2, int nid3, int nid4, Core::FE::CellType shape)
 {
   switch (shape)
   {
-    case CORE::FE::CellType::quad4:
+    case Core::FE::CellType::quad4:
     {
-      CORE::LINALG::SerialDenseMatrix xyz(3, 4);
+      Core::LinAlg::SerialDenseMatrix xyz(3, 4);
       fill(cut_nodes_, nid1, &xyz(0, 0));
       fill(cut_nodes_, nid2, &xyz(0, 1));
       fill(cut_nodes_, nid3, &xyz(0, 2));
@@ -55,7 +55,7 @@ void MeshLoader::create_side(
       nids.push_back(nid2);
       nids.push_back(nid3);
       nids.push_back(nid4);
-      mesh_.AddCutSide(sid, nids, xyz, CORE::FE::CellType::quad4);
+      mesh_.AddCutSide(sid, nids, xyz, Core::FE::CellType::quad4);
 
       break;
     }
@@ -65,13 +65,13 @@ void MeshLoader::create_side(
 }
 
 void MeshLoader::create_element(int eid, int nid1, int nid2, int nid3, int nid4, int nid5, int nid6,
-    int nid7, int nid8, CORE::FE::CellType shape)
+    int nid7, int nid8, Core::FE::CellType shape)
 {
   switch (shape)
   {
-    case CORE::FE::CellType::hex8:
+    case Core::FE::CellType::hex8:
     {
-      CORE::LINALG::SerialDenseMatrix xyz(3, 8);
+      Core::LinAlg::SerialDenseMatrix xyz(3, 8);
       fill(nodes_, nid1, &xyz(0, 0));
       fill(nodes_, nid2, &xyz(0, 1));
       fill(nodes_, nid3, &xyz(0, 2));
@@ -91,7 +91,7 @@ void MeshLoader::create_element(int eid, int nid1, int nid2, int nid3, int nid4,
       nids.push_back(nid6);
       nids.push_back(nid7);
       nids.push_back(nid8);
-      mesh_.add_element(eid, nids, xyz, CORE::FE::CellType::hex8);
+      mesh_.add_element(eid, nids, xyz, Core::FE::CellType::hex8);
 
       break;
     }

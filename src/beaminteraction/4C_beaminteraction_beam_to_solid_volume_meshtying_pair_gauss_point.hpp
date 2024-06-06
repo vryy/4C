@@ -21,18 +21,18 @@ FOUR_C_NAMESPACE_OPEN
 
 
 // Forward declarations.
-namespace INPAR
+namespace Inpar
 {
-  namespace BEAMTOSOLID
+  namespace BeamToSolid
   {
     enum class BeamToSolidRotationCoupling;
   }
-}  // namespace INPAR
-namespace LARGEROTATIONS
+}  // namespace Inpar
+namespace LargeRotations
 {
   template <unsigned int numnodes, typename T>
   class TriadInterpolationLocalRotationVectors;
-}  // namespace LARGEROTATIONS
+}  // namespace LargeRotations
 
 
 namespace BEAMINTERACTION
@@ -57,7 +57,7 @@ namespace BEAMINTERACTION
     //! psi_beam, the following entries are the discrete solid DOFs.
     using scalar_type_rot_1st = typename Sacado::Fad::SLFad<double, 3 + solid::n_dof_>;
     using scalar_type_rot_2nd =
-        typename CORE::FADUTILS::HigherOrderFadType<2, scalar_type_rot_1st>::type;
+        typename Core::FADUtils::HigherOrderFadType<2, scalar_type_rot_1st>::type;
 
     //! Number of rotational DOF for the SR beams;
     static constexpr unsigned int n_dof_rot_ = 9;
@@ -80,10 +80,10 @@ namespace BEAMINTERACTION
      * @param stiffmat22 (out) Stiffness contributions on element 2 - element 2.
      * @return True if pair is in contact.
      */
-    bool Evaluate(CORE::LINALG::SerialDenseVector* forcevec1,
-        CORE::LINALG::SerialDenseVector* forcevec2, CORE::LINALG::SerialDenseMatrix* stiffmat11,
-        CORE::LINALG::SerialDenseMatrix* stiffmat12, CORE::LINALG::SerialDenseMatrix* stiffmat21,
-        CORE::LINALG::SerialDenseMatrix* stiffmat22) override;
+    bool Evaluate(Core::LinAlg::SerialDenseVector* forcevec1,
+        Core::LinAlg::SerialDenseVector* forcevec2, Core::LinAlg::SerialDenseMatrix* stiffmat11,
+        Core::LinAlg::SerialDenseMatrix* stiffmat12, Core::LinAlg::SerialDenseMatrix* stiffmat21,
+        Core::LinAlg::SerialDenseMatrix* stiffmat22) override;
 
     /**
      * \brief Evaluate the pair and directly assemble it into the global force vector and stiffness
@@ -91,9 +91,9 @@ namespace BEAMINTERACTION
      *
      * Rotational coupling contributions will be added in this method.
      */
-    void EvaluateAndAssemble(const Teuchos::RCP<const DRT::Discretization>& discret,
+    void EvaluateAndAssemble(const Teuchos::RCP<const Discret::Discretization>& discret,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
-        const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
+        const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
         const Teuchos::RCP<const Epetra_Vector>& displacement_vector) override;
 
    private:
@@ -107,14 +107,14 @@ namespace BEAMINTERACTION
      * @param local_stiff (in/out) Local pair stiffness matrix.
      */
     void evaluate_rotational_coupling_terms(
-        const INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling& rot_coupling_type,
+        const Inpar::BeamToSolid::BeamToSolidRotationCoupling& rot_coupling_type,
         const GEOMETRYPAIR::ElementData<solid, scalar_type_rot_2nd>& q_solid,
-        const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>&
+        const LargeRotations::TriadInterpolationLocalRotationVectors<3, double>&
             triad_interpolation_scheme,
-        const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>&
+        const LargeRotations::TriadInterpolationLocalRotationVectors<3, double>&
             ref_triad_interpolation_scheme,
-        CORE::LINALG::Matrix<n_dof_pair_, 1, double>& local_force,
-        CORE::LINALG::Matrix<n_dof_pair_, n_dof_pair_, double>& local_stiff) const;
+        Core::LinAlg::Matrix<n_dof_pair_, 1, double>& local_force,
+        Core::LinAlg::Matrix<n_dof_pair_, n_dof_pair_, double>& local_stiff) const;
   };
 }  // namespace BEAMINTERACTION
 

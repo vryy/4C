@@ -26,27 +26,27 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
   class ResultTest;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationWriter;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class Solver;
   class SparseMatrix;
   class BlockSparseMatrixBase;
   class MapExtractor;
   class MultiMapExtractor;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace CORE::Conditions
+namespace Core::Conditions
 {
   class LocsysManager;
 }
@@ -68,7 +68,7 @@ namespace UTILS
   class Cardiovascular0DManager;
 }  // namespace UTILS
 
-namespace TIMINT
+namespace TimeInt
 {
   template <typename>
   class TimIntMStep;
@@ -79,7 +79,7 @@ namespace STR::MODELEVALUATOR
   class Generic;
 }  // namespace STR::MODELEVALUATOR
 
-namespace ADAPTER
+namespace Adapter
 {
   /// general structural field interface
   /*!
@@ -201,33 +201,33 @@ namespace ADAPTER
     [[nodiscard]] virtual const Epetra_Map& DomainMap() const = 0;
 
     /// direct access to system matrix
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() override = 0;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() override = 0;
 
     /// direct access to system matrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() override = 0;
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> BlockSystemMatrix() override = 0;
 
     /// switch structure field to block matrix
-    virtual void use_block_matrix(Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
-        Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> rangemaps) = 0;
+    virtual void use_block_matrix(Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> domainmaps,
+        Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> rangemaps) = 0;
 
     /// return contact/meshtying bridge
     virtual Teuchos::RCP<CONTACT::MeshtyingContactBridge> meshtying_contact_bridge() = 0;
 
     /// do we have this model
-    virtual bool HaveModel(INPAR::STR::ModelType model)
+    virtual bool HaveModel(Inpar::STR::ModelType model)
     {
       FOUR_C_THROW("new time integration only");
       return false;
     }
 
     /// return model evaluator
-    virtual STR::MODELEVALUATOR::Generic& ModelEvaluator(INPAR::STR::ModelType mtype) = 0;
+    virtual STR::MODELEVALUATOR::Generic& ModelEvaluator(Inpar::STR::ModelType mtype) = 0;
 
     // access to locsys manager
-    virtual Teuchos::RCP<CORE::Conditions::LocsysManager> LocsysManager() = 0;
+    virtual Teuchos::RCP<Core::Conditions::LocsysManager> LocsysManager() = 0;
 
     /// direct access to discretization
-    virtual Teuchos::RCP<DRT::Discretization> discretization() = 0;
+    virtual Teuchos::RCP<Discret::Discretization> discretization() = 0;
 
     /// are there any algebraic constraints?
     virtual bool HaveConstraint() = 0;
@@ -242,13 +242,13 @@ namespace ADAPTER
     virtual Teuchos::RCP<CONSTRAINTS::SpringDashpotManager> get_spring_dashpot_manager() = 0;
 
     /// Get type of thickness scaling for thin shell structures
-    virtual INPAR::STR::StcScale GetSTCAlgo() = 0;
+    virtual Inpar::STR::StcScale GetSTCAlgo() = 0;
 
     /// Access to scaling matrix for STC
-    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> GetSTCMat() = 0;
+    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> GetSTCMat() = 0;
 
     /// Return MapExtractor for Dirichlet boundary conditions
-    virtual Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor() = 0;
 
     /// expand dirichlet bc map
     virtual void AddDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoadd){
@@ -265,7 +265,7 @@ namespace ADAPTER
     };
 
     /// set evaluation action
-    virtual void SetActionType(const CORE::Elements::ActionType& action) = 0;
+    virtual void SetActionType(const Core::Elements::ActionType& action) = 0;
 
     //@}
 
@@ -304,8 +304,8 @@ namespace ADAPTER
     virtual int Integrate() = 0;
 
     //! do something in case nonlinear solution does not converge for some reason
-    virtual INPAR::STR::ConvergenceStatus PerformErrorAction(
-        INPAR::STR::ConvergenceStatus nonlinsoldiv) = 0;
+    virtual Inpar::STR::ConvergenceStatus PerformErrorAction(
+        Inpar::STR::ConvergenceStatus nonlinsoldiv) = 0;
 
     /// tests if there are more time steps to do
     [[nodiscard]] virtual bool NotFinished() const = 0;
@@ -368,7 +368,7 @@ namespace ADAPTER
     virtual void update_iter_incr_cardiovascular0_d(Teuchos::RCP<Epetra_Vector> presincr) = 0;
 
     /// Access to output object
-    virtual Teuchos::RCP<CORE::IO::DiscretizationWriter> DiscWriter() = 0;
+    virtual Teuchos::RCP<Core::IO::DiscretizationWriter> DiscWriter() = 0;
 
     /// prepare output (i.e. calculate stresses, strains, energies)
     void prepare_output(bool force_prepare_timestep) override = 0;
@@ -437,7 +437,7 @@ namespace ADAPTER
     for the time step. All boundary conditions have
     been set.
     */
-    virtual INPAR::STR::ConvergenceStatus Solve() = 0;
+    virtual Inpar::STR::ConvergenceStatus Solve() = 0;
 
     /*!
     \brief linear structure solve with just a interface load
@@ -450,7 +450,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<Epetra_Vector> solve_relaxation_linear() = 0;
 
     /// get the linear solver object used for this field
-    virtual Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() = 0;
+    virtual Teuchos::RCP<Core::LinAlg::Solver> LinearSolver() = 0;
 
     //@}
 
@@ -509,7 +509,7 @@ namespace ADAPTER
     //@}
 
     /// create result test for encapsulated structure algorithm
-    virtual Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() = 0;
+    virtual Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() = 0;
 
     /// reset time and state vectors (needed for biofilm growth simulations)
     virtual void Reset() = 0;
@@ -534,7 +534,7 @@ namespace ADAPTER
    public:
     /// constructor
     StructureBaseAlgorithm(const Teuchos::ParameterList& prbdyn, const Teuchos::ParameterList& sdyn,
-        Teuchos::RCP<DRT::Discretization> actdis);
+        Teuchos::RCP<Discret::Discretization> actdis);
 
     /// virtual destructor to support polymorph destruction
     virtual ~StructureBaseAlgorithm() = default;
@@ -548,11 +548,11 @@ namespace ADAPTER
    private:
     /// Create structure algorithm
     void create_structure(const Teuchos::ParameterList& prbdyn, const Teuchos::ParameterList& sdyn,
-        Teuchos::RCP<DRT::Discretization> actdis);
+        Teuchos::RCP<Discret::Discretization> actdis);
 
     /// setup structure algorithm of STR::TimIntImpl type
     void create_tim_int(const Teuchos::ParameterList& prbdyn, const Teuchos::ParameterList& sdyn,
-        Teuchos::RCP<DRT::Discretization> actdis);
+        Teuchos::RCP<Discret::Discretization> actdis);
 
     /*! \brief Create linear solver for contact/meshtying problems
      *
@@ -582,8 +582,8 @@ namespace ADAPTER
      *
      * \sa create_linear_solver()
      */
-    Teuchos::RCP<CORE::LINALG::Solver> create_contact_meshtying_solver(
-        Teuchos::RCP<DRT::Discretization>& actdis, const Teuchos::ParameterList& sdyn);
+    Teuchos::RCP<Core::LinAlg::Solver> create_contact_meshtying_solver(
+        Teuchos::RCP<Discret::Discretization>& actdis, const Teuchos::ParameterList& sdyn);
 
     /*! \brief Create linear solver for pure structure problems
      *
@@ -592,7 +592,7 @@ namespace ADAPTER
      * structural problems, whenever there is no contact.
      *
      * To create the solver, we use the ID of the solver block to access the solver parameter list.
-     * This is then used to create a CORE::LINALG::Solver.
+     * This is then used to create a Core::LinAlg::Solver.
      *
      * We also compute the nullspace information if this is required by the chosen solver.
      *
@@ -603,14 +603,14 @@ namespace ADAPTER
      *
      * \sa create_contact_meshtying_solver()
      */
-    Teuchos::RCP<CORE::LINALG::Solver> create_linear_solver(
-        Teuchos::RCP<DRT::Discretization>& actdis, const Teuchos::ParameterList& sdyn);
+    Teuchos::RCP<Core::LinAlg::Solver> create_linear_solver(
+        Teuchos::RCP<Discret::Discretization>& actdis, const Teuchos::ParameterList& sdyn);
 
     /// structural field solver
     Teuchos::RCP<Structure> structure_;
   };
 
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 FOUR_C_NAMESPACE_CLOSE
 

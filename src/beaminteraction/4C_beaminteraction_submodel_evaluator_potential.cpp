@@ -93,7 +93,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::Reset()
   {
     Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> elepairptr = *iter;
 
-    std::vector<const CORE::Elements::Element*> element_ptr(2);
+    std::vector<const Core::Elements::Element*> element_ptr(2);
 
     element_ptr[0] = elepairptr->Element1();
     element_ptr[1] = elepairptr->Element2();
@@ -125,13 +125,13 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::evaluate_force()
   TEUCHOS_FUNC_TIME_MONITOR("BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::evaluate_force");
 
   // resulting discrete element force vectors of the two interacting elements
-  std::vector<CORE::LINALG::SerialDenseVector> eleforce(2);
+  std::vector<Core::LinAlg::SerialDenseVector> eleforce(2);
 
   // resulting discrete force vectors (centerline DOFs only!) of the two
   // interacting elements
-  std::vector<CORE::LINALG::SerialDenseVector> eleforce_centerlineDOFs(2);
+  std::vector<Core::LinAlg::SerialDenseVector> eleforce_centerlineDOFs(2);
 
-  std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> dummystiff;
+  std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> dummystiff;
 
   // element gids of interacting elements
   std::vector<int> elegids(2);
@@ -147,8 +147,8 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::evaluate_force()
     Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> elepairptr = *iter;
 
     // conditions applied to the elements of this pair
-    std::vector<CORE::Conditions::Condition*> conditions_element1;
-    std::vector<CORE::Conditions::Condition*> conditions_element2;
+    std::vector<Core::Conditions::Condition*> conditions_element1;
+    std::vector<Core::Conditions::Condition*> conditions_element2;
     get_beam_potential_conditions_applied_to_this_element_pair(
         *elepairptr, conditions_element1, conditions_element2);
 
@@ -162,7 +162,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::evaluate_force()
 
         if (npotlaw1 == npotlaw2 and npotlaw1 > 0)
         {
-          std::vector<CORE::Conditions::Condition*> currconds;
+          std::vector<Core::Conditions::Condition*> currconds;
           currconds.clear();
           currconds.push_back(k);
           currconds.push_back(j);
@@ -213,14 +213,14 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::evaluate_stiff()
   TEUCHOS_FUNC_TIME_MONITOR("BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::evaluate_stiff");
 
   // linearizations
-  std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> elestiff(
-      2, std::vector<CORE::LINALG::SerialDenseMatrix>(2));
+  std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> elestiff(
+      2, std::vector<Core::LinAlg::SerialDenseMatrix>(2));
 
   // linearizations (centerline DOFs only!)
-  std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> elestiff_centerlineDOFs(
-      2, std::vector<CORE::LINALG::SerialDenseMatrix>(2));
+  std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> elestiff_centerlineDOFs(
+      2, std::vector<Core::LinAlg::SerialDenseMatrix>(2));
 
-  std::vector<CORE::LINALG::SerialDenseVector> dummyforce;
+  std::vector<Core::LinAlg::SerialDenseVector> dummyforce;
 
   // element gids of interacting elements
   std::vector<int> elegids(2);
@@ -236,8 +236,8 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::evaluate_stiff()
     Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> elepairptr = *iter;
 
     // conditions applied to the elements of this pair
-    std::vector<CORE::Conditions::Condition*> conditions_element1;
-    std::vector<CORE::Conditions::Condition*> conditions_element2;
+    std::vector<Core::Conditions::Condition*> conditions_element1;
+    std::vector<Core::Conditions::Condition*> conditions_element2;
     get_beam_potential_conditions_applied_to_this_element_pair(
         *elepairptr, conditions_element1, conditions_element2);
 
@@ -251,7 +251,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::evaluate_stiff()
 
         if (npotlaw1 == npotlaw2 and npotlaw1 > 0)
         {
-          std::vector<CORE::Conditions::Condition*> currconds;
+          std::vector<Core::Conditions::Condition*> currconds;
           currconds.clear();
           currconds.push_back(conditions_element1[k]);
           currconds.push_back(conditions_element2[j]);
@@ -305,19 +305,19 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::evaluate_force_stiff()
       "BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::evaluate_force_stiff");
 
   // resulting discrete element force vectors of the two interacting elements
-  std::vector<CORE::LINALG::SerialDenseVector> eleforce(2);
+  std::vector<Core::LinAlg::SerialDenseVector> eleforce(2);
 
   // resulting discrete force vectors (centerline DOFs only!) of the two
   // interacting elements
-  std::vector<CORE::LINALG::SerialDenseVector> eleforce_centerlineDOFs(2);
+  std::vector<Core::LinAlg::SerialDenseVector> eleforce_centerlineDOFs(2);
 
   // linearizations
-  std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> elestiff(
-      2, std::vector<CORE::LINALG::SerialDenseMatrix>(2));
+  std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> elestiff(
+      2, std::vector<Core::LinAlg::SerialDenseMatrix>(2));
 
   // linearizations (centerline DOFs only!)
-  std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> elestiff_centerlineDOFs(
-      2, std::vector<CORE::LINALG::SerialDenseMatrix>(2));
+  std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> elestiff_centerlineDOFs(
+      2, std::vector<Core::LinAlg::SerialDenseMatrix>(2));
 
   // element gids of interacting elements
   std::vector<int> elegids(2);
@@ -336,8 +336,8 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::evaluate_force_stiff()
     elegids[1] = elepairptr->Element2()->Id();
 
     // conditions applied to the elements of this pair
-    std::vector<CORE::Conditions::Condition*> conditions_element1;
-    std::vector<CORE::Conditions::Condition*> conditions_element2;
+    std::vector<Core::Conditions::Condition*> conditions_element1;
+    std::vector<Core::Conditions::Condition*> conditions_element2;
     get_beam_potential_conditions_applied_to_this_element_pair(
         *elepairptr, conditions_element1, conditions_element2);
 
@@ -351,7 +351,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::evaluate_force_stiff()
 
         if (npotlaw1 == npotlaw2 and npotlaw1 > 0)
         {
-          std::vector<CORE::Conditions::Condition*> currconds;
+          std::vector<Core::Conditions::Condition*> currconds;
           currconds.clear();
           currconds.push_back(conditions_element1[k]);
           currconds.push_back(conditions_element2[j]);
@@ -470,7 +470,7 @@ std::map<STR::EnergyType, double> BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotent
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::OutputStepState(
-    CORE::IO::DiscretizationWriter& iowriter) const
+    Core::IO::DiscretizationWriter& iowriter) const
 {
   check_init_setup();
   // nothing to do (so far)
@@ -491,7 +491,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::ResetStepState() { check
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::write_restart(
-    CORE::IO::DiscretizationWriter& ia_writer, CORE::IO::DiscretizationWriter& bin_writer) const
+    Core::IO::DiscretizationWriter& ia_writer, Core::IO::DiscretizationWriter& bin_writer) const
 {
   // empty
 }
@@ -506,7 +506,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::PreReadRestart()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::read_restart(
-    CORE::IO::DiscretizationReader& ia_reader, CORE::IO::DiscretizationReader& bin_reader)
+    Core::IO::DiscretizationReader& ia_reader, Core::IO::DiscretizationReader& bin_reader)
 {
   // empty
 }
@@ -566,8 +566,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::get_half_interaction_dis
     half_interaction_distance = 0.5 * beam_potential_params().CutoffRadius();
 
     if (GState().GetMyRank() == 0)
-      CORE::IO::cout(CORE::IO::verbose) << " beam potential half interaction distance "
-                                        << half_interaction_distance << CORE::IO::endl;
+      Core::IO::cout(Core::IO::verbose) << " beam potential half interaction distance "
+                                        << half_interaction_distance << Core::IO::endl;
   }
   else
   {
@@ -592,7 +592,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::find_and_store_neighbori
   for (int rowele_i = 0; rowele_i < numroweles; ++rowele_i)
   {
     int const elegid = ele_type_map_extractor_ptr()->BeamMap()->GID(rowele_i);
-    CORE::Elements::Element* currele = DiscretPtr()->gElement(elegid);
+    Core::Elements::Element* currele = DiscretPtr()->gElement(elegid);
 
     // (unique) set of neighboring bins for all col bins assigned to current element
     std::set<int> neighboring_binIds;
@@ -615,7 +615,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::find_and_store_neighbori
     std::vector<int> glob_neighboring_binIds(neighboring_binIds.begin(), neighboring_binIds.end());
 
     // set of elements that lie in neighboring bins
-    std::set<CORE::Elements::Element*> neighboring_elements;
+    std::set<Core::Elements::Element*> neighboring_elements;
     std::vector<BINSTRATEGY::UTILS::BinContentType> bc(2);
     bc[0] = BINSTRATEGY::UTILS::Beam;
     bc[1] = BINSTRATEGY::UTILS::RigidSphere;
@@ -632,17 +632,17 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::find_and_store_neighbori
  *-----------------------------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
     select_eles_to_be_considered_for_potential_evaluation(
-        CORE::Elements::Element* currele, std::set<CORE::Elements::Element*>& neighbors) const
+        Core::Elements::Element* currele, std::set<Core::Elements::Element*>& neighbors) const
 {
   check_init();
 
   // sort out elements that should not be considered in potential evaluation
-  std::set<CORE::Elements::Element*>::iterator eiter;
+  std::set<Core::Elements::Element*>::iterator eiter;
   for (eiter = neighbors.begin(); eiter != neighbors.end();)
   {
     bool toerase = false;
 
-    CORE::Elements::Element* currneighborele = *eiter;
+    Core::Elements::Element* currneighborele = *eiter;
 
     // 1) ensure each interaction is only evaluated once (keep in mind that we are
     //    using FEMatrices and FEvectors -> || (*eiter)->Owner() != myrank not necessary)
@@ -657,13 +657,13 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
     {
       // get the conditions applied to both elements of the pair and decide whether they need to be
       // evaluated
-      std::vector<CORE::Conditions::Condition*> conds1, conds2;
+      std::vector<Core::Conditions::Condition*> conds1, conds2;
 
       // since only the nodes know about their conditions, we need this workaround
       // we assume that a linecharge condition is always applied to the entire physical beam, i.e.
       // it is sufficient to check only one node
-      CORE::Nodes::Node** nodes1;
-      CORE::Nodes::Node** nodes2;
+      Core::Nodes::Node** nodes1;
+      Core::Nodes::Node** nodes2;
       nodes1 = currele->Nodes();
       nodes2 = currneighborele->Nodes();
 
@@ -719,16 +719,16 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::create_beam_potential_el
   // Todo maybe keep existing pairs and reuse them ?
   beam_potential_element_pairs_.clear();
 
-  std::map<int, std::set<CORE::Elements::Element*>>::const_iterator nearbyeleiter;
+  std::map<int, std::set<Core::Elements::Element*>>::const_iterator nearbyeleiter;
 
   for (nearbyeleiter = nearby_elements_map_.begin(); nearbyeleiter != nearby_elements_map_.end();
        ++nearbyeleiter)
   {
     const int elegid = nearbyeleiter->first;
-    std::vector<CORE::Elements::Element const*> ele_ptrs(2);
+    std::vector<Core::Elements::Element const*> ele_ptrs(2);
     ele_ptrs[0] = DiscretPtr()->gElement(elegid);
 
-    std::set<CORE::Elements::Element*>::const_iterator secondeleiter;
+    std::set<Core::Elements::Element*>::const_iterator secondeleiter;
     for (secondeleiter = nearbyeleiter->second.begin();
          secondeleiter != nearbyeleiter->second.end(); ++secondeleiter)
     {
@@ -747,10 +747,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::create_beam_potential_el
 
   if (static_cast<int>(beam_potential_element_pairs_.size()) > 0)
   {
-    CORE::IO::cout(CORE::IO::standard)
+    Core::IO::cout(Core::IO::standard)
         << "PID " << std::setw(2) << std::right << GState().GetMyRank() << " currently monitors "
         << std::setw(5) << std::right << beam_potential_element_pairs_.size()
-        << " beam potential pairs" << CORE::IO::endl;
+        << " beam potential pairs" << Core::IO::endl;
   }
 }
 
@@ -789,17 +789,17 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::print_active_beam_potent
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
     get_beam_potential_conditions_applied_to_this_element_pair(
         BEAMINTERACTION::BeamPotentialPair const& elementpair,
-        std::vector<CORE::Conditions::Condition*>& conditions_element1,
-        std::vector<CORE::Conditions::Condition*>& conditions_element2) const
+        std::vector<Core::Conditions::Condition*>& conditions_element1,
+        std::vector<Core::Conditions::Condition*>& conditions_element2) const
 {
   // since only the nodes know about their conditions, we need this workaround
   // we assume that a linecharge condition is always applied to the entire physical beam, i.e. it is
   // sufficient to check only one node
-  const CORE::Elements::Element* ele1 = elementpair.Element1();
-  const CORE::Elements::Element* ele2 = elementpair.Element2();
+  const Core::Elements::Element* ele1 = elementpair.Element1();
+  const Core::Elements::Element* ele2 = elementpair.Element2();
 
-  const CORE::Nodes::Node* const* nodes1;
-  const CORE::Nodes::Node* const* nodes2;
+  const Core::Nodes::Node* const* nodes1;
+  const Core::Nodes::Node* const* nodes2;
   nodes1 = ele1->Nodes();
   nodes2 = ele2->Nodes();
 
@@ -831,12 +831,12 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::print_console_welcome_me
 
     switch (beam_potential_params().PotentialType())
     {
-      case INPAR::BEAMPOTENTIAL::beampot_surf:
+      case Inpar::BEAMPOTENTIAL::beampot_surf:
       {
         std::cout << "Potential Type:      Surface" << std::endl;
         break;
       }
-      case INPAR::BEAMPOTENTIAL::beampot_vol:
+      case Inpar::BEAMPOTENTIAL::beampot_vol:
       {
         std::cout << "Potential Type:      Volume" << std::endl;
         break;
@@ -868,7 +868,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::init_output_runtime_beam
   check_init();
 
   visualization_manager_ = Teuchos::rcp(
-      new CORE::IO::VisualizationManager(beam_potential_params()
+      new Core::IO::VisualizationManager(beam_potential_params()
                                              .get_beam_potential_visualization_output_params()
                                              ->get_visualization_parameters(),
           Discret().Comm(), "beam-potential"));
@@ -881,7 +881,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
 {
   check_init_setup();
 
-  auto [output_time, output_step] = CORE::IO::GetTimeAndTimeStepIndexForOutput(
+  auto [output_time, output_step] = Core::IO::GetTimeAndTimeStepIndexForOutput(
       beam_potential_params()
           .get_beam_potential_visualization_output_params()
           ->get_visualization_parameters(),
@@ -896,7 +896,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
 {
   check_init_setup();
 
-  auto [output_time, output_step] = CORE::IO::GetTimeAndTimeStepIndexForOutput(
+  auto [output_time, output_step] = Core::IO::GetTimeAndTimeStepIndexForOutput(
       beam_potential_params()
           .get_beam_potential_visualization_output_params()
           ->get_visualization_parameters(),
@@ -951,14 +951,14 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::write_output_runtime_bea
 
 
   // loop over my points and collect the geometry/grid data, i.e. interacting points
-  std::vector<CORE::LINALG::Matrix<3, 1, double>> coordinates_ele1_this_pair;
-  std::vector<CORE::LINALG::Matrix<3, 1, double>> coordinates_ele2_this_pair;
+  std::vector<Core::LinAlg::Matrix<3, 1, double>> coordinates_ele1_this_pair;
+  std::vector<Core::LinAlg::Matrix<3, 1, double>> coordinates_ele2_this_pair;
 
-  std::vector<CORE::LINALG::Matrix<3, 1, double>> potential_forces_ele1_this_pair;
-  std::vector<CORE::LINALG::Matrix<3, 1, double>> potential_forces_ele2_this_pair;
+  std::vector<Core::LinAlg::Matrix<3, 1, double>> potential_forces_ele1_this_pair;
+  std::vector<Core::LinAlg::Matrix<3, 1, double>> potential_forces_ele2_this_pair;
 
-  std::vector<CORE::LINALG::Matrix<3, 1, double>> potential_moments_ele1_this_pair;
-  std::vector<CORE::LINALG::Matrix<3, 1, double>> potential_moments_ele2_this_pair;
+  std::vector<Core::LinAlg::Matrix<3, 1, double>> potential_moments_ele1_this_pair;
+  std::vector<Core::LinAlg::Matrix<3, 1, double>> potential_moments_ele2_this_pair;
 
   // loop over contact pairs and retrieve all active contact point coordinates
   std::vector<Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair>>::const_iterator pair_iter;

@@ -71,31 +71,31 @@ namespace BEAMINTERACTION
      *
      * Rotational coupling contributions will be added in this method.
      */
-    void EvaluateAndAssemble(const Teuchos::RCP<const DRT::Discretization>& discret,
+    void EvaluateAndAssemble(const Teuchos::RCP<const Discret::Discretization>& discret,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
-        const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
+        const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
         const Teuchos::RCP<const Epetra_Vector>& displacement_vector) override;
 
     /**
      * \brief Update state of rotational DoFs of both elements
      */
-    void ResetRotationState(const DRT::Discretization& discret,
+    void ResetRotationState(const Discret::Discretization& discret,
         const Teuchos::RCP<const Epetra_Vector>& ia_discolnp) override;
 
    protected:
     /**
      * \brief Get the triad of the beam at the parameter coordinate xi (derived)
      */
-    void get_triad_at_xi_double(const double xi, CORE::LINALG::Matrix<3, 3, double>& triad,
+    void get_triad_at_xi_double(const double xi, Core::LinAlg::Matrix<3, 3, double>& triad,
         const bool reference) const override;
 
    private:
     //! Reference triad interpolation in the beam element
-    LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>
+    LargeRotations::TriadInterpolationLocalRotationVectors<3, double>
         triad_interpolation_scheme_ref_;
 
     //! Current triad interpolation in the beam element
-    LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double> triad_interpolation_scheme_;
+    LargeRotations::TriadInterpolationLocalRotationVectors<3, double> triad_interpolation_scheme_;
   };
 }  // namespace BEAMINTERACTION
 

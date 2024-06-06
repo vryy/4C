@@ -39,21 +39,23 @@ namespace BEAMINTERACTION
   {
     /*----------------------------------------------------------------------*
      *----------------------------------------------------------------------*/
-    bool IsBeamElement(CORE::Elements::Element const& element)
+    bool IsBeamElement(Core::Elements::Element const& element)
     {
-      return (dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(&element) != nullptr) ? true : false;
+      return (dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(&element) != nullptr) ? true
+                                                                                      : false;
     }
 
     /*----------------------------------------------------------------------*
      *----------------------------------------------------------------------*/
-    bool IsRigidSphereElement(CORE::Elements::Element const& element)
+    bool IsRigidSphereElement(Core::Elements::Element const& element)
     {
-      return (dynamic_cast<const DRT::ELEMENTS::Rigidsphere*>(&element) != nullptr) ? true : false;
+      return (dynamic_cast<const Discret::ELEMENTS::Rigidsphere*>(&element) != nullptr) ? true
+                                                                                        : false;
     }
 
     /*----------------------------------------------------------------------*
      *----------------------------------------------------------------------*/
-    bool IsBeamNode(CORE::Nodes::Node const& node)
+    bool IsBeamNode(Core::Nodes::Node const& node)
     {
       bool beameles = false;
       bool othereles = false;
@@ -76,15 +78,15 @@ namespace BEAMINTERACTION
 
     /*----------------------------------------------------------------------*
      *----------------------------------------------------------------------*/
-    bool IsBeamCenterlineNode(CORE::Nodes::Node const& node)
+    bool IsBeamCenterlineNode(Core::Nodes::Node const& node)
     {
       bool beamclnode = false;
 
       // TODO: actually we would have to check all elements of all processors!!! Gather?
       for (int i = 0; i < static_cast<int>(node.NumElement()); ++i)
       {
-        const DRT::ELEMENTS::Beam3Base* beamele =
-            dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(node.Elements()[i]);
+        const Discret::ELEMENTS::Beam3Base* beamele =
+            dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(node.Elements()[i]);
 
         if (beamele != nullptr and beamele->IsCenterlineNode(node)) beamclnode = true;
       }
@@ -93,7 +95,7 @@ namespace BEAMINTERACTION
 
     /*----------------------------------------------------------------------*
      *----------------------------------------------------------------------*/
-    bool IsRigidSphereNode(CORE::Nodes::Node const& node)
+    bool IsRigidSphereNode(Core::Nodes::Node const& node)
     {
       bool sphereele = false;
       bool othereles = false;
@@ -118,11 +120,11 @@ namespace BEAMINTERACTION
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
     void PeriodicBoundaryConsistentDisVector(Teuchos::RCP<Epetra_Vector> dis,
-        Teuchos::RCP<const CORE::GEO::MESHFREE::BoundingBox> const& pbb,
-        Teuchos::RCP<const DRT::Discretization> const& discret)
+        Teuchos::RCP<const Core::Geo::MeshFree::BoundingBox> const& pbb,
+        Teuchos::RCP<const Discret::Discretization> const& discret)
     {
-      CORE::LINALG::Matrix<3, 1> d;
-      CORE::LINALG::Matrix<3, 1> X;
+      Core::LinAlg::Matrix<3, 1> d;
+      Core::LinAlg::Matrix<3, 1> X;
       int doflid[3];
 
       for (int i = 0; i < discret->NumMyRowNodes(); ++i)
@@ -131,7 +133,7 @@ namespace BEAMINTERACTION
         X.Clear();
 
         // get a pointer at i-th row node
-        CORE::Nodes::Node* node = discret->lRowNode(i);
+        Core::Nodes::Node* node = discret->lRowNode(i);
 
         /* Hermite Interpolation: Check whether node is a beam node which is NOT
          * used for centerline interpolation if so, we simply skip it because
@@ -164,7 +166,7 @@ namespace BEAMINTERACTION
       // auxiliary variable
       int j = 0;
 
-      GLOBAL::Problem::Instance()->Random()->SetRandRange(0.0, 1.0);
+      Global::Problem::Instance()->Random()->SetRandRange(0.0, 1.0);
 
       // result vector initialized with ordered numbers from 0 to N-1
       std::vector<int> randorder(number, 0);
@@ -173,7 +175,7 @@ namespace BEAMINTERACTION
       for (int i = 0; i < number; ++i)
       {
         // generate random number between 0 and i
-        j = (int)floor((i + 1.0) * GLOBAL::Problem::Instance()->Random()->Uni());
+        j = (int)floor((i + 1.0) * Global::Problem::Instance()->Random()->Uni());
 
         /*exchange values at positions i and j (note: value at position i is i due to above
          *initialization and because so far only positions <=i have been changed*/
@@ -186,8 +188,8 @@ namespace BEAMINTERACTION
 
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
-    void GetCurrentElementDis(DRT::Discretization const& discret,
-        CORE::Elements::Element const* ele, Teuchos::RCP<const Epetra_Vector> const& ia_discolnp,
+    void GetCurrentElementDis(Discret::Discretization const& discret,
+        Core::Elements::Element const* ele, Teuchos::RCP<const Epetra_Vector> const& ia_discolnp,
         std::vector<double>& eledisp)
     {
       // clear
@@ -196,19 +198,20 @@ namespace BEAMINTERACTION
       std::vector<int> lm, lmowner, lmstride;
 
       ele->LocationVector(discret, lm, lmowner, lmstride);
-      CORE::FE::ExtractMyValues(*ia_discolnp, eledisp, lm);
+      Core::FE::ExtractMyValues(*ia_discolnp, eledisp, lm);
     }
 
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
-    void GetCurrentUnshiftedElementDis(DRT::Discretization const& discret,
-        CORE::Elements::Element const* ele, Teuchos::RCP<const Epetra_Vector> const& ia_discolnp,
-        CORE::GEO::MESHFREE::BoundingBox const& pbb, std::vector<double>& eledisp)
+    void GetCurrentUnshiftedElementDis(Discret::Discretization const& discret,
+        Core::Elements::Element const* ele, Teuchos::RCP<const Epetra_Vector> const& ia_discolnp,
+        Core::Geo::MeshFree::BoundingBox const& pbb, std::vector<double>& eledisp)
     {
       GetCurrentElementDis(discret, ele, ia_discolnp, eledisp);
 
       // cast to beambase element
-      DRT::ELEMENTS::Beam3Base const* beamele = dynamic_cast<DRT::ELEMENTS::Beam3Base const*>(ele);
+      Discret::ELEMENTS::Beam3Base const* beamele =
+          dynamic_cast<Discret::ELEMENTS::Beam3Base const*>(ele);
 
       // so far, only beam elements can be cut by a periodic boundary
       if (beamele == nullptr) return;
@@ -220,10 +223,10 @@ namespace BEAMINTERACTION
      *----------------------------------------------------------------------*/
     template <typename T>
     void SetFilamentBindingSpotPositions(
-        Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<T> params)
+        Teuchos::RCP<Discret::Discretization> discret, Teuchos::RCP<T> params)
     {
       // todo: set somewhere else
-      double const tol = CORE::GEO::TOL7;
+      double const tol = Core::Geo::TOL7;
 
       // temporarily extend ghosting, should be reverted somewhere later on as it is needed
       // in this fashion only here
@@ -231,11 +234,11 @@ namespace BEAMINTERACTION
       ExtendGhostingForFilamentBspotSetup(relevantfilaments, discret);
 
       // get pointers to all filament number conditions set
-      std::vector<CORE::Conditions::Condition*> filamentconditions(0);
+      std::vector<Core::Conditions::Condition*> filamentconditions(0);
       discret->GetCondition("BeamLineFilamentCondition", filamentconditions);
 
       // compute number of linker types
-      std::vector<INPAR::BEAMINTERACTION::CrosslinkerType> linkertypes = params->LinkerTypes();
+      std::vector<Inpar::BEAMINTERACTION::CrosslinkerType> linkertypes = params->LinkerTypes();
 
       // loop over all relevant (on myrank) filaments
       for (auto const& filiter : relevantfilaments)
@@ -243,7 +246,7 @@ namespace BEAMINTERACTION
         // loop over all nodes of current filament, sort elements and calculate total filament
         // length
         std::vector<int> const* nodeids = filamentconditions[filiter]->GetNodes();
-        std::vector<CORE::Elements::Element*> sortedfilamenteles(0);
+        std::vector<Core::Elements::Element*> sortedfilamenteles(0);
         double filreflength = 0.0;
         ComputeFilamentLengthAndSortItsElements(sortedfilamenteles, nodeids, filreflength, discret);
 
@@ -294,23 +297,23 @@ namespace BEAMINTERACTION
           if (numbspot == 0) continue;
 
           // print number of binding spots for current filament
-          CORE::IO::cout(CORE::IO::debug)
+          Core::IO::cout(Core::IO::debug)
               << "\n---------------------------------------------------------------"
-              << CORE::IO::endl;
-          CORE::IO::cout(CORE::IO::debug)
+              << Core::IO::endl;
+          Core::IO::cout(Core::IO::debug)
               << numbspot << " binding spots of type "
-              << INPAR::BEAMINTERACTION::CrosslinkerType2String(linkertypes[linkertype_i])
+              << Inpar::BEAMINTERACTION::CrosslinkerType2String(linkertypes[linkertype_i])
               << " on filament " << filiter << " (consists of "
               << static_cast<int>(sortedfilamenteles.size()) << " elements)"
-              << " with: " << CORE::IO::endl;
+              << " with: " << Core::IO::endl;
 
           // set xis on element level
           SetBindingSpotsPositionsOnFilament(sortedfilamenteles, start, linkertypes[linkertype_i],
               numbspot, filamentbspotinterval, tol);
 
-          CORE::IO::cout(CORE::IO::debug)
+          Core::IO::cout(Core::IO::debug)
               << "---------------------------------------------------------------\n"
-              << CORE::IO::endl;
+              << Core::IO::endl;
         }
       }
     }
@@ -318,7 +321,7 @@ namespace BEAMINTERACTION
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
     void ExtendGhostingForFilamentBspotSetup(
-        std::set<int>& relevantfilaments, Teuchos::RCP<DRT::Discretization> discret)
+        std::set<int>& relevantfilaments, Teuchos::RCP<Discret::Discretization> discret)
     {
       std::set<int> setofnodegidswithrequiredelecloud;
       DetermineOffMyRankNodesWithRelevantEleCloudForFilamentBspotSetup(
@@ -354,13 +357,13 @@ namespace BEAMINTERACTION
           if (discret->NodeRowMap()->LID(requirednodes[i]) < 0) continue;
 
           // insert element cloud of current node
-          CORE::Nodes::Node* currnode = discret->gNode(requirednodes[i]);
+          Core::Nodes::Node* currnode = discret->gNode(requirednodes[i]);
           for (int j = 0; j < currnode->NumElement(); ++j)
             sdata.insert(currnode->Elements()[j]->Id());
         }
 
         // gather and store information on iproc
-        CORE::LINALG::Gather<int>(sdata, rdata, 1, &iproc, discret->Comm());
+        Core::LinAlg::Gather<int>(sdata, rdata, 1, &iproc, discret->Comm());
         if (iproc == discret->Comm().MyPID()) coleleset = rdata;
       }
 
@@ -381,13 +384,13 @@ namespace BEAMINTERACTION
      *-----------------------------------------------------------------------------*/
     void DetermineOffMyRankNodesWithRelevantEleCloudForFilamentBspotSetup(
         std::set<int>& relevantfilaments, std::set<int>& setofrequirednodes,
-        Teuchos::RCP<DRT::Discretization> discret)
+        Teuchos::RCP<Discret::Discretization> discret)
     {
       // loop over all row nodes
       for (int rown = 0; rown < discret->NumMyRowNodes(); ++rown)
       {
         // get filament number of current node ( requirement: node belongs to only one filament)
-        CORE::Conditions::Condition* cond =
+        Core::Conditions::Condition* cond =
             discret->lRowNode(rown)->GetCondition("BeamLineFilamentCondition");
 
         // in case node (e.g. node of rigid sphere element) does not belong to a filament, go to
@@ -414,14 +417,14 @@ namespace BEAMINTERACTION
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
     void ComputeFilamentLengthAndSortItsElements(
-        std::vector<CORE::Elements::Element*>& sortedfilamenteles, std::vector<int> const* nodeids,
-        double& filreflength, Teuchos::RCP<DRT::Discretization> discret)
+        std::vector<Core::Elements::Element*>& sortedfilamenteles, std::vector<int> const* nodeids,
+        double& filreflength, Teuchos::RCP<Discret::Discretization> discret)
     {
       // loop over all nodes associated with current filament
       for (int nodei = 0; nodei < static_cast<int>(nodeids->size()); ++nodei)
       {
         // insert element cloud of current node
-        CORE::Nodes::Node* node = discret->gNode((*nodeids)[nodei]);
+        Core::Nodes::Node* node = discret->gNode((*nodeids)[nodei]);
         for (int j = 0; j < node->NumElement(); ++j)
         {
           // only if element has not yet been added to the filaments elements
@@ -429,8 +432,8 @@ namespace BEAMINTERACTION
                   node->Elements()[j]) != sortedfilamenteles.end())
             continue;
 
-          DRT::ELEMENTS::Beam3Base* currbeamele =
-              dynamic_cast<DRT::ELEMENTS::Beam3Base*>(node->Elements()[j]);
+          Discret::ELEMENTS::Beam3Base* currbeamele =
+              dynamic_cast<Discret::ELEMENTS::Beam3Base*>(node->Elements()[j]);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
           if (currbeamele == nullptr)
@@ -448,8 +451,8 @@ namespace BEAMINTERACTION
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
     void SetBindingSpotsPositionsOnFilament(
-        std::vector<CORE::Elements::Element*>& sortedfilamenteles, double start,
-        INPAR::BEAMINTERACTION::CrosslinkerType linkertype, int numbspot,
+        std::vector<Core::Elements::Element*>& sortedfilamenteles, double start,
+        Inpar::BEAMINTERACTION::CrosslinkerType linkertype, int numbspot,
         double filamentbspotinterval, double tol)
     {
       // default no occupied binding spots
@@ -459,8 +462,8 @@ namespace BEAMINTERACTION
       // loop over all elements in sorted order
       for (unsigned int se_iter = 0; se_iter < sortedfilamenteles.size(); ++se_iter)
       {
-        DRT::ELEMENTS::Beam3Base* beamele =
-            dynamic_cast<DRT::ELEMENTS::Beam3Base*>(sortedfilamenteles[se_iter]);
+        Discret::ELEMENTS::Beam3Base* beamele =
+            dynamic_cast<Discret::ELEMENTS::Beam3Base*>(sortedfilamenteles[se_iter]);
 
         // init variables set in beam eles
         std::vector<double> bspotposxi;
@@ -480,9 +483,9 @@ namespace BEAMINTERACTION
           bspotposxi.push_back(xi);
 
           // print to screen
-          CORE::IO::cout(CORE::IO::debug) << bspotcounter + 1 << ". binding spot: "
+          Core::IO::cout(Core::IO::debug) << bspotcounter + 1 << ". binding spot: "
                                           << "xi = " << xi << " on element " << se_iter << " (gid "
-                                          << beamele->Id() << ")" << CORE::IO::endl;
+                                          << beamele->Id() << ")" << Core::IO::endl;
 
           ++bspotcounter;
           currbspotarcparam += filamentbspotinterval;
@@ -495,14 +498,14 @@ namespace BEAMINTERACTION
 
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
-    void GetPosAndTriadOfBindingSpot(CORE::Elements::Element* ele,
-        Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> const& pbb,
-        INPAR::BEAMINTERACTION::CrosslinkerType linkertype, int locbspotnum,
-        CORE::LINALG::Matrix<3, 1>& bspotpos, CORE::LINALG::Matrix<3, 3>& bspottriad,
+    void GetPosAndTriadOfBindingSpot(Core::Elements::Element* ele,
+        Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> const& pbb,
+        Inpar::BEAMINTERACTION::CrosslinkerType linkertype, int locbspotnum,
+        Core::LinAlg::Matrix<3, 1>& bspotpos, Core::LinAlg::Matrix<3, 3>& bspottriad,
         std::vector<double>& eledisp)
     {
       // cast to beambase element
-      DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<DRT::ELEMENTS::Beam3Base*>(ele);
+      Discret::ELEMENTS::Beam3Base* beamele = dynamic_cast<Discret::ELEMENTS::Beam3Base*>(ele);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
       if (beamele == nullptr) FOUR_C_THROW("Dynamic cast to beam3base failed");
@@ -517,11 +520,11 @@ namespace BEAMINTERACTION
 
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
-    void GetPosAndTriadOfBindingSpot(DRT::Discretization const& discret,
-        CORE::Elements::Element* ele, Teuchos::RCP<Epetra_Vector> const& ia_discolnp,
-        Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> const& pbb,
-        INPAR::BEAMINTERACTION::CrosslinkerType linkertype, int locbspotnum,
-        CORE::LINALG::Matrix<3, 1>& bspotpos, CORE::LINALG::Matrix<3, 3>& bspottriad)
+    void GetPosAndTriadOfBindingSpot(Discret::Discretization const& discret,
+        Core::Elements::Element* ele, Teuchos::RCP<Epetra_Vector> const& ia_discolnp,
+        Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> const& pbb,
+        Inpar::BEAMINTERACTION::CrosslinkerType linkertype, int locbspotnum,
+        Core::LinAlg::Matrix<3, 1>& bspotpos, Core::LinAlg::Matrix<3, 3>& bspottriad)
     {
       std::vector<double> eledisp;
       GetCurrentUnshiftedElementDis(discret, ele, ia_discolnp, *pbb, eledisp);
@@ -531,10 +534,10 @@ namespace BEAMINTERACTION
 
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
-    bool IsDistanceOutOfRange(CORE::LINALG::Matrix<3, 1> const& pos1,
-        CORE::LINALG::Matrix<3, 1> const& pos2, double const lowerbound, double const upperbound)
+    bool IsDistanceOutOfRange(Core::LinAlg::Matrix<3, 1> const& pos1,
+        Core::LinAlg::Matrix<3, 1> const& pos2, double const lowerbound, double const upperbound)
     {
-      CORE::LINALG::Matrix<3, 1> dist_vec(true);
+      Core::LinAlg::Matrix<3, 1> dist_vec(true);
       dist_vec.Update(1.0, pos1, -1.0, pos2);
 
       const double distance = dist_vec.Norm2();
@@ -544,8 +547,8 @@ namespace BEAMINTERACTION
 
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
-    bool IsEnclosedAngleOutOfRange(CORE::LINALG::Matrix<3, 1> const& direction1,
-        CORE::LINALG::Matrix<3, 1> const& direction2, double const lowerbound,
+    bool IsEnclosedAngleOutOfRange(Core::LinAlg::Matrix<3, 1> const& direction1,
+        Core::LinAlg::Matrix<3, 1> const& direction2, double const lowerbound,
         double const upperbound)
     {
       // cosine of angle is scalar product of vectors divided by their norms
@@ -554,7 +557,7 @@ namespace BEAMINTERACTION
 
       // to enable parallel directions that are numerically slightly > 1 ( < -1)
       // ( would lead to NaN in std::acos )
-      if (abs(abs(cos_angle) - 1.0) < CORE::GEO::TOL12) cos_angle = std::round(cos_angle);
+      if (abs(abs(cos_angle) - 1.0) < Core::Geo::TOL12) cos_angle = std::round(cos_angle);
 
       double angle = std::acos(cos_angle);
 
@@ -567,7 +570,7 @@ namespace BEAMINTERACTION
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
     bool DoBeamElementsShareNodes(
-        CORE::Elements::Element const* const beam, CORE::Elements::Element const* const nbbeam)
+        Core::Elements::Element const* const beam, Core::Elements::Element const* const nbbeam)
     {
       // check if two considered eles share nodes
       for (unsigned int i = 0; i < 2; ++i)
@@ -583,16 +586,17 @@ namespace BEAMINTERACTION
 
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
-    void fe_assemble_ele_force_stiff_into_system_vector_matrix(const DRT::Discretization& discret,
-        std::vector<int> const& elegid, std::vector<CORE::LINALG::SerialDenseVector> const& elevec,
-        std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> const& elemat,
-        Teuchos::RCP<Epetra_FEVector> fe_sysvec, Teuchos::RCP<CORE::LINALG::SparseMatrix> fe_sysmat)
+    void fe_assemble_ele_force_stiff_into_system_vector_matrix(
+        const Discret::Discretization& discret, std::vector<int> const& elegid,
+        std::vector<Core::LinAlg::SerialDenseVector> const& elevec,
+        std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> const& elemat,
+        Teuchos::RCP<Epetra_FEVector> fe_sysvec, Teuchos::RCP<Core::LinAlg::SparseMatrix> fe_sysmat)
     {
       // the entries of elevecX  belong to the Dofs of the element with GID elegidX
       // the rows    of elematXY belong to the Dofs of the element with GID elegidX
       // the columns of elematXY belong to the Dofs of the element with GID elegidY
-      const CORE::Elements::Element* ele1 = discret.gElement(elegid[0]);
-      const CORE::Elements::Element* ele2 = discret.gElement(elegid[1]);
+      const Core::Elements::Element* ele1 = discret.gElement(elegid[0]);
+      const Core::Elements::Element* ele2 = discret.gElement(elegid[1]);
 
       // get element location vector and ownerships
       std::vector<int> lmrow1;
@@ -626,10 +630,10 @@ namespace BEAMINTERACTION
     /**
      *
      */
-    unsigned int GetNumberOfElementCenterlineDof(const CORE::Elements::Element* ele)
+    unsigned int GetNumberOfElementCenterlineDof(const Core::Elements::Element* ele)
     {
       std::vector<unsigned int> local_centerline_dof_indices;
-      auto beam_element = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+      auto beam_element = dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
       if (beam_element != nullptr)
       {
         beam_element->centerline_dof_indices_of_element(local_centerline_dof_indices);
@@ -645,13 +649,13 @@ namespace BEAMINTERACTION
      *
      */
     template <unsigned int n_centerline_dof>
-    void GetElementCenterlineGIDIndices(DRT::Discretization const& discret,
-        const CORE::Elements::Element* ele,
-        CORE::LINALG::Matrix<n_centerline_dof, 1, int>& centerline_gid)
+    void GetElementCenterlineGIDIndices(Discret::Discretization const& discret,
+        const Core::Elements::Element* ele,
+        Core::LinAlg::Matrix<n_centerline_dof, 1, int>& centerline_gid)
     {
       // First we need the local IDs of the centerline DOFs.
       std::vector<unsigned int> local_centerline_dof_indices;
-      auto beam_element = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+      auto beam_element = dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
       if (beam_element != nullptr)
       {
         beam_element->centerline_dof_indices_of_element(local_centerline_dof_indices);
@@ -678,11 +682,11 @@ namespace BEAMINTERACTION
     /**
      *
      */
-    void GetElementCenterlineDOFIndices(DRT::Discretization const& discret,
-        const CORE::Elements::Element* ele, std::vector<unsigned int>& ele_centerline_dof_indices,
+    void GetElementCenterlineDOFIndices(Discret::Discretization const& discret,
+        const Core::Elements::Element* ele, std::vector<unsigned int>& ele_centerline_dof_indices,
         unsigned int& num_dof)
     {
-      // Todo implement method in CORE::Elements::Element or find alternative way of doing this
+      // Todo implement method in Core::Elements::Element or find alternative way of doing this
       // find out the elements' number of Dofs (=dimension of element vector/matrices)
       std::vector<int> lmrow;
       std::vector<int> dummy1, dummy2;
@@ -690,7 +694,8 @@ namespace BEAMINTERACTION
       ele->LocationVector(discret, lmrow, dummy1, dummy2);
       num_dof = lmrow.size();
 
-      const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+      const Discret::ELEMENTS::Beam3Base* beamele =
+          dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
 
       if (beamele != nullptr)
       {
@@ -705,19 +710,19 @@ namespace BEAMINTERACTION
 
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
-    void AssembleCenterlineDofForceStiffIntoElementForceStiff(DRT::Discretization const& discret,
-        std::vector<int> const& elegid,
-        std::vector<CORE::LINALG::SerialDenseVector> const& eleforce_centerlineDOFs,
-        std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> const& elestiff_centerlineDOFs,
-        std::vector<CORE::LINALG::SerialDenseVector>* eleforce,
-        std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>>* elestiff)
+    void AssembleCenterlineDofForceStiffIntoElementForceStiff(
+        Discret::Discretization const& discret, std::vector<int> const& elegid,
+        std::vector<Core::LinAlg::SerialDenseVector> const& eleforce_centerlineDOFs,
+        std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> const& elestiff_centerlineDOFs,
+        std::vector<Core::LinAlg::SerialDenseVector>* eleforce,
+        std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>>* elestiff)
     {
       std::vector<unsigned int> numdof_ele(2);
       std::vector<std::vector<unsigned int>> ele_centerlinedofindices(2);
 
       for (unsigned int iele = 0; iele < 2; ++iele)
       {
-        CORE::Elements::Element* ele = discret.gElement(elegid[iele]);
+        Core::Elements::Element* ele = discret.gElement(elegid[iele]);
         GetElementCenterlineDOFIndices(
             discret, ele, ele_centerlinedofindices[iele], numdof_ele[iele]);
       }
@@ -785,10 +790,10 @@ namespace BEAMINTERACTION
     /**
      *
      */
-    void AssembleCenterlineDofColMatrixIntoElementColMatrix(DRT::Discretization const& discret,
-        const CORE::Elements::Element* element,
-        CORE::LINALG::SerialDenseMatrix const& row_matrix_centerlineDOFs,
-        CORE::LINALG::SerialDenseMatrix& row_matrix_elementDOFs)
+    void AssembleCenterlineDofColMatrixIntoElementColMatrix(Discret::Discretization const& discret,
+        const Core::Elements::Element* element,
+        Core::LinAlg::SerialDenseMatrix const& row_matrix_centerlineDOFs,
+        Core::LinAlg::SerialDenseMatrix& row_matrix_elementDOFs)
     {
       // Get the centerline DOFs of the element.
       unsigned int numdof_ele;
@@ -815,8 +820,8 @@ namespace BEAMINTERACTION
 
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
-    void ExtractPosDofVecAbsoluteValues(DRT::Discretization const& discret,
-        CORE::Elements::Element const* ele, Teuchos::RCP<const Epetra_Vector> const& ia_discolnp,
+    void ExtractPosDofVecAbsoluteValues(Discret::Discretization const& discret,
+        Core::Elements::Element const* ele, Teuchos::RCP<const Epetra_Vector> const& ia_discolnp,
         std::vector<double>& element_posdofvec_absolutevalues)
     {
       std::vector<double> eledispvec;
@@ -824,8 +829,8 @@ namespace BEAMINTERACTION
       // extract the Dof values of this element from displacement vector
       GetCurrentElementDis(discret, ele, ia_discolnp, eledispvec);
 
-      DRT::ELEMENTS::Beam3Base const* beam_element_ptr =
-          dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+      Discret::ELEMENTS::Beam3Base const* beam_element_ptr =
+          dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
 
       if (beam_element_ptr != nullptr)
       {
@@ -845,8 +850,8 @@ namespace BEAMINTERACTION
 
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
-    void ExtractPosDofVecValues(DRT::Discretization const& discret,
-        CORE::Elements::Element const* ele, Teuchos::RCP<const Epetra_Vector> const& ia_discolnp,
+    void ExtractPosDofVecValues(Discret::Discretization const& discret,
+        Core::Elements::Element const* ele, Teuchos::RCP<const Epetra_Vector> const& ia_discolnp,
         std::vector<double>& element_posdofvec_values)
     {
       std::vector<double> eledispvec;
@@ -854,8 +859,8 @@ namespace BEAMINTERACTION
       // extract the Dof values of this element from displacement vector
       GetCurrentElementDis(discret, ele, ia_discolnp, eledispvec);
 
-      DRT::ELEMENTS::Beam3Base const* beam_element_ptr =
-          dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+      Discret::ELEMENTS::Beam3Base const* beam_element_ptr =
+          dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
 
       if (beam_element_ptr != nullptr)
       {
@@ -873,15 +878,15 @@ namespace BEAMINTERACTION
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
     template <class T1, class T2>
-    void ApplyBindingSpotForceToParentElements(DRT::Discretization const& discret,
-        Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> const& pbb,
+    void ApplyBindingSpotForceToParentElements(Discret::Discretization const& discret,
+        Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> const& pbb,
         const Teuchos::RCP<Epetra_Vector> disp_np_col,
         const Teuchos::RCP<BEAMINTERACTION::BeamLink> elepairptr,
-        std::vector<CORE::LINALG::SerialDenseVector> const& bspotforce,
-        std::vector<CORE::LINALG::SerialDenseVector>& eleforce)
+        std::vector<Core::LinAlg::SerialDenseVector> const& bspotforce,
+        std::vector<Core::LinAlg::SerialDenseVector>& eleforce)
     {
       // auxiliary transformation matrix, will be resized and reused
-      CORE::LINALG::SerialDenseMatrix trafomatrix;
+      Core::LinAlg::SerialDenseMatrix trafomatrix;
 
       T1* cast_ele1 = dynamic_cast<T1*>(discret.gElement(elepairptr->GetEleGid(0)));
       T2* cast_ele2 = dynamic_cast<T2*>(discret.gElement(elepairptr->GetEleGid(1)));
@@ -910,19 +915,19 @@ namespace BEAMINTERACTION
               eledisp);
 
         eleforce[elei].size(numdof_ele);
-        CORE::LINALG::multiplyTN(eleforce[elei], trafomatrix, bspotforce[elei]);
+        Core::LinAlg::multiplyTN(eleforce[elei], trafomatrix, bspotforce[elei]);
       }
     }
 
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
     template <class T1, class T2>
-    void ApplyBindingSpotStiffToParentElements(DRT::Discretization const& discret,
-        Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> const& pbb,
+    void ApplyBindingSpotStiffToParentElements(Discret::Discretization const& discret,
+        Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> const& pbb,
         const Teuchos::RCP<Epetra_Vector> disp_np_col,
         const Teuchos::RCP<BEAMINTERACTION::BeamLink> elepairptr,
-        std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> const& bspotstiff,
-        std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>>& elestiff)
+        std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> const& bspotstiff,
+        std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>>& elestiff)
     {
       // Todo grill 02/17
       FOUR_C_THROW(
@@ -932,8 +937,8 @@ namespace BEAMINTERACTION
           "Use the combined evaluation method instead!");
 
       // todo: put this in a loop
-      CORE::Elements::Element* ele1 = discret.gElement(elepairptr->GetEleGid(0));
-      CORE::Elements::Element* ele2 = discret.gElement(elepairptr->GetEleGid(1));
+      Core::Elements::Element* ele1 = discret.gElement(elepairptr->GetEleGid(0));
+      Core::Elements::Element* ele2 = discret.gElement(elepairptr->GetEleGid(1));
 
       // get current element displacements
       std::vector<double> ele1disp;
@@ -945,12 +950,12 @@ namespace BEAMINTERACTION
       const int numdof_ele2 = ele2disp.size();
 
       // transformation matrix, will be resized and reused for various needs
-      CORE::LINALG::SerialDenseMatrix trafomatrix;
+      Core::LinAlg::SerialDenseMatrix trafomatrix;
 
       // auxiliary matrices required to store intermediate results after first of two
       // consecutive matrix-matrix products for each of four stiffness matrices
-      std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> auxmat(
-          2, std::vector<CORE::LINALG::SerialDenseMatrix>(2));
+      std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> auxmat(
+          2, std::vector<Core::LinAlg::SerialDenseMatrix>(2));
 
       T1* cast_ele1 = dynamic_cast<T1*>(ele1);
       T2* cast_ele2 = dynamic_cast<T2*>(ele2);
@@ -966,10 +971,10 @@ namespace BEAMINTERACTION
             ele1disp);
 
         auxmat[0][0].shape(numdof_ele1, 6);
-        CORE::LINALG::multiplyTN(auxmat[0][0], trafomatrix, bspotstiff[0][0]);
+        Core::LinAlg::multiplyTN(auxmat[0][0], trafomatrix, bspotstiff[0][0]);
 
         auxmat[0][1].shape(numdof_ele1, 6);
-        CORE::LINALG::multiplyTN(auxmat[0][1], trafomatrix, bspotstiff[0][1]);
+        Core::LinAlg::multiplyTN(auxmat[0][1], trafomatrix, bspotstiff[0][1]);
 
         // ii) I_increments
         trafomatrix.shape(6, numdof_ele1);
@@ -979,10 +984,10 @@ namespace BEAMINTERACTION
             ele1disp);
 
         elestiff[0][0].shape(numdof_ele1, numdof_ele1);
-        CORE::LINALG::multiply(elestiff[0][0], auxmat[0][0], trafomatrix);
+        Core::LinAlg::multiply(elestiff[0][0], auxmat[0][0], trafomatrix);
 
         auxmat[1][0].shape(6, numdof_ele1);
-        CORE::LINALG::multiply(auxmat[1][0], bspotstiff[1][0], trafomatrix);
+        Core::LinAlg::multiply(auxmat[1][0], bspotstiff[1][0], trafomatrix);
       }
 
       // element 2:
@@ -995,10 +1000,10 @@ namespace BEAMINTERACTION
             ele2disp);
 
         elestiff[1][0].shape(numdof_ele2, numdof_ele1);
-        CORE::LINALG::multiplyTN(elestiff[1][0], trafomatrix, auxmat[1][0]);
+        Core::LinAlg::multiplyTN(elestiff[1][0], trafomatrix, auxmat[1][0]);
 
         auxmat[1][1].shape(numdof_ele2, 6);
-        CORE::LINALG::multiplyTN(auxmat[1][1], trafomatrix, bspotstiff[1][1]);
+        Core::LinAlg::multiplyTN(auxmat[1][1], trafomatrix, bspotstiff[1][1]);
 
         // ii) I_increments
         trafomatrix.shape(6, numdof_ele2);
@@ -1008,24 +1013,24 @@ namespace BEAMINTERACTION
             ele2disp);
 
         elestiff[0][1].shape(numdof_ele1, numdof_ele2);
-        CORE::LINALG::multiply(elestiff[0][1], auxmat[1][0], trafomatrix);
+        Core::LinAlg::multiply(elestiff[0][1], auxmat[1][0], trafomatrix);
 
         elestiff[1][1].shape(numdof_ele2, numdof_ele2);
-        CORE::LINALG::multiply(elestiff[1][1], auxmat[1][1], trafomatrix);
+        Core::LinAlg::multiply(elestiff[1][1], auxmat[1][1], trafomatrix);
       }
     }
 
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
     template <class T1, class T2>
-    void ApplyBindingSpotForceStiffToParentElements(DRT::Discretization const& discret,
-        Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> const& pbb,
+    void ApplyBindingSpotForceStiffToParentElements(Discret::Discretization const& discret,
+        Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> const& pbb,
         const Teuchos::RCP<Epetra_Vector> disp_np_col,
         const Teuchos::RCP<BEAMINTERACTION::BeamLink> elepairptr,
-        std::vector<CORE::LINALG::SerialDenseVector> const& bspotforce,
-        std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> const& bspotstiff,
-        std::vector<CORE::LINALG::SerialDenseVector>& eleforce,
-        std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>>& elestiff)
+        std::vector<Core::LinAlg::SerialDenseVector> const& bspotforce,
+        std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> const& bspotstiff,
+        std::vector<Core::LinAlg::SerialDenseVector>& eleforce,
+        std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>>& elestiff)
     {
       // apply force on binding spots and corresponding linearizations to parent elements
       // and get discrete element force vectors and stiffness matrices
@@ -1046,8 +1051,8 @@ namespace BEAMINTERACTION
        * stiffness matrices */
 
       // todo @grill: put this in a loop
-      CORE::Elements::Element* ele1 = discret.gElement(elepairptr->GetEleGid(0));
-      CORE::Elements::Element* ele2 = discret.gElement(elepairptr->GetEleGid(1));
+      Core::Elements::Element* ele1 = discret.gElement(elepairptr->GetEleGid(0));
+      Core::Elements::Element* ele2 = discret.gElement(elepairptr->GetEleGid(1));
 
       // get current element displacements
       std::vector<double> ele1disp;
@@ -1059,16 +1064,16 @@ namespace BEAMINTERACTION
       const int numdof_ele2 = ele2disp.size();
 
       // transformation matrix, will be resized and reused for various needs
-      CORE::LINALG::SerialDenseMatrix trafomatrix;
+      Core::LinAlg::SerialDenseMatrix trafomatrix;
 
       // auxiliary matrices required to store intermediate results after first of two
       // consecutive matrix-matrix products for each of four stiffness matrices
-      std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> auxmat(
-          2, std::vector<CORE::LINALG::SerialDenseMatrix>(2));
+      std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> auxmat(
+          2, std::vector<Core::LinAlg::SerialDenseMatrix>(2));
 
       // contribution to stiffmat from linearization of generalized interpolation matrix for
       // variations
-      CORE::LINALG::SerialDenseMatrix stiffmat_lin_Ivar;
+      Core::LinAlg::SerialDenseMatrix stiffmat_lin_Ivar;
 
       // zero out and set correct size of transformation matrix
       trafomatrix.shape(6, numdof_ele1);
@@ -1085,13 +1090,13 @@ namespace BEAMINTERACTION
             ele1disp);
 
         eleforce[0].size(numdof_ele1);
-        CORE::LINALG::multiplyTN(eleforce[0], trafomatrix, bspotforce[0]);
+        Core::LinAlg::multiplyTN(eleforce[0], trafomatrix, bspotforce[0]);
 
         auxmat[0][0].shape(numdof_ele1, 6);
-        CORE::LINALG::multiplyTN(auxmat[0][0], trafomatrix, bspotstiff[0][0]);
+        Core::LinAlg::multiplyTN(auxmat[0][0], trafomatrix, bspotstiff[0][0]);
 
         auxmat[0][1].shape(numdof_ele1, 6);
-        CORE::LINALG::multiplyTN(auxmat[0][1], trafomatrix, bspotstiff[0][1]);
+        Core::LinAlg::multiplyTN(auxmat[0][1], trafomatrix, bspotstiff[0][1]);
 
         // ii) I_increments
         trafomatrix.shape(6, numdof_ele1);
@@ -1101,10 +1106,10 @@ namespace BEAMINTERACTION
             ele1disp);
 
         elestiff[0][0].shape(numdof_ele1, numdof_ele1);
-        CORE::LINALG::multiply(elestiff[0][0], auxmat[0][0], trafomatrix);
+        Core::LinAlg::multiply(elestiff[0][0], auxmat[0][0], trafomatrix);
 
         auxmat[1][0].shape(6, numdof_ele1);
-        CORE::LINALG::multiply(auxmat[1][0], bspotstiff[1][0], trafomatrix);
+        Core::LinAlg::multiply(auxmat[1][0], bspotstiff[1][0], trafomatrix);
 
 
         // additional contribution from linearization of generalized interpolation matrix for
@@ -1116,7 +1121,7 @@ namespace BEAMINTERACTION
             cast_ele1->GetBindingSpotXi(elepairptr->GetLinkerType(), elepairptr->GetLocBSpotNum(0)),
             ele1disp, bspotforce[0]);
 
-        CORE::LINALG::Update(1.0, stiffmat_lin_Ivar, 1.0, elestiff[0][0]);
+        Core::LinAlg::Update(1.0, stiffmat_lin_Ivar, 1.0, elestiff[0][0]);
       }
 
       // element 2
@@ -1129,13 +1134,13 @@ namespace BEAMINTERACTION
             ele2disp);
 
         eleforce[1].size(numdof_ele2);
-        CORE::LINALG::multiplyTN(eleforce[1], trafomatrix, bspotforce[1]);
+        Core::LinAlg::multiplyTN(eleforce[1], trafomatrix, bspotforce[1]);
 
         elestiff[1][0].shape(numdof_ele2, numdof_ele1);
-        CORE::LINALG::multiplyTN(elestiff[1][0], trafomatrix, auxmat[1][0]);
+        Core::LinAlg::multiplyTN(elestiff[1][0], trafomatrix, auxmat[1][0]);
 
         auxmat[1][1].shape(numdof_ele2, 6);
-        CORE::LINALG::multiplyTN(auxmat[1][1], trafomatrix, bspotstiff[1][1]);
+        Core::LinAlg::multiplyTN(auxmat[1][1], trafomatrix, bspotstiff[1][1]);
 
         // ii) I_increments
         trafomatrix.shape(6, numdof_ele2);
@@ -1145,10 +1150,10 @@ namespace BEAMINTERACTION
             ele2disp);
 
         elestiff[0][1].shape(numdof_ele1, numdof_ele2);
-        CORE::LINALG::multiply(elestiff[0][1], auxmat[0][1], trafomatrix);
+        Core::LinAlg::multiply(elestiff[0][1], auxmat[0][1], trafomatrix);
 
         elestiff[1][1].shape(numdof_ele2, numdof_ele2);
-        CORE::LINALG::multiply(elestiff[1][1], auxmat[1][1], trafomatrix);
+        Core::LinAlg::multiply(elestiff[1][1], auxmat[1][1], trafomatrix);
 
 
         // additional contribution from linearization of generalized interpolation matrix for
@@ -1160,32 +1165,32 @@ namespace BEAMINTERACTION
             cast_ele2->GetBindingSpotXi(elepairptr->GetLinkerType(), elepairptr->GetLocBSpotNum(1)),
             ele2disp, bspotforce[1]);
 
-        CORE::LINALG::Update(1.0, stiffmat_lin_Ivar, 1.0, elestiff[1][1]);
+        Core::LinAlg::Update(1.0, stiffmat_lin_Ivar, 1.0, elestiff[1][1]);
       }
     }
 
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
-    void SetupEleTypeMapExtractor(Teuchos::RCP<const DRT::Discretization> const& discret,
-        Teuchos::RCP<CORE::LINALG::MultiMapExtractor>& eletypeextractor)
+    void SetupEleTypeMapExtractor(Teuchos::RCP<const Discret::Discretization> const& discret,
+        Teuchos::RCP<Core::LinAlg::MultiMapExtractor>& eletypeextractor)
     {
       std::vector<std::set<int>> eletypeset(3);
 
       for (int i = 0; i < discret->NumMyRowElements(); ++i)
       {
         // get ele pointer
-        CORE::Elements::Element* eleptr = discret->lRowElement(i);
+        Core::Elements::Element* eleptr = discret->lRowElement(i);
 
-        if (dynamic_cast<DRT::ELEMENTS::Beam3Base const*>(eleptr) != nullptr)
+        if (dynamic_cast<Discret::ELEMENTS::Beam3Base const*>(eleptr) != nullptr)
         {
           eletypeset[0].insert(eleptr->Id());
         }
-        else if (dynamic_cast<DRT::ELEMENTS::Rigidsphere const*>(eleptr) != nullptr)
+        else if (dynamic_cast<Discret::ELEMENTS::Rigidsphere const*>(eleptr) != nullptr)
         {
           eletypeset[1].insert(eleptr->Id());
         }
-        else if (dynamic_cast<DRT::ELEMENTS::SoBase const*>(eleptr) != nullptr ||
-                 dynamic_cast<DRT::ELEMENTS::Solid const*>(eleptr) != nullptr)
+        else if (dynamic_cast<Discret::ELEMENTS::SoBase const*>(eleptr) != nullptr ||
+                 dynamic_cast<Discret::ELEMENTS::Solid const*>(eleptr) != nullptr)
         {
           eletypeset[2].insert(eleptr->Id());
         }
@@ -1209,14 +1214,14 @@ namespace BEAMINTERACTION
 
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
-    void UpdateDofMapOfVector(Teuchos::RCP<DRT::Discretization> discret,
+    void UpdateDofMapOfVector(Teuchos::RCP<Discret::Discretization> discret,
         Teuchos::RCP<Epetra_Vector>& dofmapvec, Teuchos::RCP<Epetra_Vector> old)
     {
       if (dofmapvec != Teuchos::null)
       {
         if (old == Teuchos::null) old = dofmapvec;
-        dofmapvec = CORE::LINALG::CreateVector(*discret->dof_row_map(), true);
-        CORE::LINALG::Export(*old, *dofmapvec);
+        dofmapvec = Core::LinAlg::CreateVector(*discret->dof_row_map(), true);
+        Core::LinAlg::Export(*old, *dofmapvec);
       }
     }
 
@@ -1261,57 +1266,57 @@ namespace BEAMINTERACTION
     // explicit template instantiation (to please every compiler)
     //-----------------------------------------------------------------------------
     template void SetFilamentBindingSpotPositions(
-        Teuchos::RCP<DRT::Discretization>, Teuchos::RCP<BEAMINTERACTION::CrosslinkingParams>);
-    template void SetFilamentBindingSpotPositions(
-        Teuchos::RCP<DRT::Discretization>, Teuchos::RCP<BEAMINTERACTION::SphereBeamLinkingParams>);
+        Teuchos::RCP<Discret::Discretization>, Teuchos::RCP<BEAMINTERACTION::CrosslinkingParams>);
+    template void SetFilamentBindingSpotPositions(Teuchos::RCP<Discret::Discretization>,
+        Teuchos::RCP<BEAMINTERACTION::SphereBeamLinkingParams>);
 
-    template void
-    ApplyBindingSpotForceToParentElements<DRT::ELEMENTS::Beam3Base, DRT::ELEMENTS::Beam3Base>(
-        DRT::Discretization const&, Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> const&,
-        const Teuchos::RCP<Epetra_Vector>, const Teuchos::RCP<BEAMINTERACTION::BeamLink>,
-        std::vector<CORE::LINALG::SerialDenseVector> const&,
-        std::vector<CORE::LINALG::SerialDenseVector>&);
-    template void
-    ApplyBindingSpotForceToParentElements<DRT::ELEMENTS::Rigidsphere, DRT::ELEMENTS::Beam3Base>(
-        DRT::Discretization const&, Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> const&,
-        const Teuchos::RCP<Epetra_Vector>, const Teuchos::RCP<BEAMINTERACTION::BeamLink>,
-        std::vector<CORE::LINALG::SerialDenseVector> const&,
-        std::vector<CORE::LINALG::SerialDenseVector>&);
-
-    template void
-    ApplyBindingSpotStiffToParentElements<DRT::ELEMENTS::Beam3Base, DRT::ELEMENTS::Beam3Base>(
-        DRT::Discretization const&, Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> const&,
-        const Teuchos::RCP<Epetra_Vector>, const Teuchos::RCP<BEAMINTERACTION::BeamLink>,
-        std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> const&,
-        std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>>&);
-    template void
-    ApplyBindingSpotStiffToParentElements<DRT::ELEMENTS::Rigidsphere, DRT::ELEMENTS::Beam3Base>(
-        DRT::Discretization const&, Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> const&,
-        const Teuchos::RCP<Epetra_Vector>, const Teuchos::RCP<BEAMINTERACTION::BeamLink>,
-        std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> const&,
-        std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>>&);
-
-    template void
-    ApplyBindingSpotForceStiffToParentElements<DRT::ELEMENTS::Beam3Base, DRT::ELEMENTS::Beam3Base>(
-        DRT::Discretization const&, Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> const&,
-        const Teuchos::RCP<Epetra_Vector>, const Teuchos::RCP<BEAMINTERACTION::BeamLink>,
-        std::vector<CORE::LINALG::SerialDenseVector> const&,
-        std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> const&,
-        std::vector<CORE::LINALG::SerialDenseVector>&,
-        std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>>&);
-    template void ApplyBindingSpotForceStiffToParentElements<DRT::ELEMENTS::Rigidsphere,
-        DRT::ELEMENTS::Beam3Base>(DRT::Discretization const&,
-        Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> const&, const Teuchos::RCP<Epetra_Vector>,
+    template void ApplyBindingSpotForceToParentElements<Discret::ELEMENTS::Beam3Base,
+        Discret::ELEMENTS::Beam3Base>(Discret::Discretization const&,
+        Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> const&, const Teuchos::RCP<Epetra_Vector>,
         const Teuchos::RCP<BEAMINTERACTION::BeamLink>,
-        std::vector<CORE::LINALG::SerialDenseVector> const&,
-        std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> const&,
-        std::vector<CORE::LINALG::SerialDenseVector>&,
-        std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>>&);
+        std::vector<Core::LinAlg::SerialDenseVector> const&,
+        std::vector<Core::LinAlg::SerialDenseVector>&);
+    template void ApplyBindingSpotForceToParentElements<Discret::ELEMENTS::Rigidsphere,
+        Discret::ELEMENTS::Beam3Base>(Discret::Discretization const&,
+        Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> const&, const Teuchos::RCP<Epetra_Vector>,
+        const Teuchos::RCP<BEAMINTERACTION::BeamLink>,
+        std::vector<Core::LinAlg::SerialDenseVector> const&,
+        std::vector<Core::LinAlg::SerialDenseVector>&);
 
-    template void GetElementCenterlineGIDIndices<6>(DRT::Discretization const&,
-        const CORE::Elements::Element*, CORE::LINALG::Matrix<6, 1, int>&);
-    template void GetElementCenterlineGIDIndices<12>(DRT::Discretization const&,
-        const CORE::Elements::Element*, CORE::LINALG::Matrix<12, 1, int>&);
+    template void ApplyBindingSpotStiffToParentElements<Discret::ELEMENTS::Beam3Base,
+        Discret::ELEMENTS::Beam3Base>(Discret::Discretization const&,
+        Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> const&, const Teuchos::RCP<Epetra_Vector>,
+        const Teuchos::RCP<BEAMINTERACTION::BeamLink>,
+        std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> const&,
+        std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>>&);
+    template void ApplyBindingSpotStiffToParentElements<Discret::ELEMENTS::Rigidsphere,
+        Discret::ELEMENTS::Beam3Base>(Discret::Discretization const&,
+        Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> const&, const Teuchos::RCP<Epetra_Vector>,
+        const Teuchos::RCP<BEAMINTERACTION::BeamLink>,
+        std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> const&,
+        std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>>&);
+
+    template void ApplyBindingSpotForceStiffToParentElements<Discret::ELEMENTS::Beam3Base,
+        Discret::ELEMENTS::Beam3Base>(Discret::Discretization const&,
+        Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> const&, const Teuchos::RCP<Epetra_Vector>,
+        const Teuchos::RCP<BEAMINTERACTION::BeamLink>,
+        std::vector<Core::LinAlg::SerialDenseVector> const&,
+        std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> const&,
+        std::vector<Core::LinAlg::SerialDenseVector>&,
+        std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>>&);
+    template void ApplyBindingSpotForceStiffToParentElements<Discret::ELEMENTS::Rigidsphere,
+        Discret::ELEMENTS::Beam3Base>(Discret::Discretization const&,
+        Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> const&, const Teuchos::RCP<Epetra_Vector>,
+        const Teuchos::RCP<BEAMINTERACTION::BeamLink>,
+        std::vector<Core::LinAlg::SerialDenseVector> const&,
+        std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> const&,
+        std::vector<Core::LinAlg::SerialDenseVector>&,
+        std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>>&);
+
+    template void GetElementCenterlineGIDIndices<6>(Discret::Discretization const&,
+        const Core::Elements::Element*, Core::LinAlg::Matrix<6, 1, int>&);
+    template void GetElementCenterlineGIDIndices<12>(Discret::Discretization const&,
+        const Core::Elements::Element*, Core::LinAlg::Matrix<12, 1, int>&);
 
   }  // namespace UTILS
 }  // namespace BEAMINTERACTION

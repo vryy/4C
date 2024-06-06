@@ -14,7 +14,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-MAT::ELASTIC::PAR::CoupAnisoPow::CoupAnisoPow(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
+Mat::Elastic::PAR::CoupAnisoPow::CoupAnisoPow(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
     : ParameterAniso(matdata),
       k_(matdata->Get<double>("K")),
       d1_(matdata->Get<double>("D1")),
@@ -27,30 +27,30 @@ MAT::ELASTIC::PAR::CoupAnisoPow::CoupAnisoPow(const Teuchos::RCP<CORE::MAT::PAR:
 {
 }
 
-MAT::ELASTIC::CoupAnisoPow::CoupAnisoPow(MAT::ELASTIC::PAR::CoupAnisoPow* params) : params_(params)
+Mat::Elastic::CoupAnisoPow::CoupAnisoPow(Mat::Elastic::PAR::CoupAnisoPow* params) : params_(params)
 {
 }
 
-void MAT::ELASTIC::CoupAnisoPow::PackSummand(CORE::COMM::PackBuffer& data) const
+void Mat::Elastic::CoupAnisoPow::PackSummand(Core::Communication::PackBuffer& data) const
 {
   AddtoPack(data, a_);
   AddtoPack(data, structural_tensor_);
 }
 
-void MAT::ELASTIC::CoupAnisoPow::UnpackSummand(
+void Mat::Elastic::CoupAnisoPow::UnpackSummand(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
   ExtractfromPack(position, data, a_);
   ExtractfromPack(position, data, structural_tensor_);
 }
 
-void MAT::ELASTIC::CoupAnisoPow::Setup(int numgp, INPUT::LineDefinition* linedef)
+void Mat::Elastic::CoupAnisoPow::Setup(int numgp, Input::LineDefinition* linedef)
 {
   // path if fibers aren't given in .dat file
   if (params_->init_ == 0)
   {
     // fibers aligned in YZ-plane with gamma around Z in global cartesian cosy
-    CORE::LINALG::Matrix<3, 3> Id(true);
+    Core::LinAlg::Matrix<3, 3> Id(true);
     for (int i = 0; i < 3; i++) Id(i, i) = 1.0;
     SetFiberVecs(-1.0, Id, Id);
   }
@@ -65,9 +65,9 @@ void MAT::ELASTIC::CoupAnisoPow::Setup(int numgp, INPUT::LineDefinition* linedef
     if (linedef->HaveNamed("RAD") and linedef->HaveNamed("AXI") and linedef->HaveNamed("CIR"))
     {
       // Read in of data
-      CORE::LINALG::Matrix<3, 3> locsys(true);
+      Core::LinAlg::Matrix<3, 3> locsys(true);
       ReadRadAxiCir(linedef, locsys);
-      CORE::LINALG::Matrix<3, 3> Id(true);
+      Core::LinAlg::Matrix<3, 3> Id(true);
       for (int i = 0; i < 3; i++) Id(i, i) = 1.0;
       // final setup of fiber data
       SetFiberVecs(0.0, locsys, Id);
@@ -90,8 +90,8 @@ void MAT::ELASTIC::CoupAnisoPow::Setup(int numgp, INPUT::LineDefinition* linedef
     FOUR_C_THROW("INIT mode not implemented");
 }
 
-void MAT::ELASTIC::CoupAnisoPow::add_stress_aniso_principal(const CORE::LINALG::Matrix<6, 1>& rcg,
-    CORE::LINALG::Matrix<6, 6>& cmat, CORE::LINALG::Matrix<6, 1>& stress,
+void Mat::Elastic::CoupAnisoPow::add_stress_aniso_principal(const Core::LinAlg::Matrix<6, 1>& rcg,
+    Core::LinAlg::Matrix<6, 6>& cmat, Core::LinAlg::Matrix<6, 1>& stress,
     Teuchos::ParameterList& params, const int gp, const int eleGID)
 {
   // load params
@@ -149,15 +149,15 @@ void MAT::ELASTIC::CoupAnisoPow::add_stress_aniso_principal(const CORE::LINALG::
   cmat.MultiplyNT(delta, structural_tensor_, structural_tensor_, 1.0);
 }
 
-void MAT::ELASTIC::CoupAnisoPow::GetFiberVecs(
-    std::vector<CORE::LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
+void Mat::Elastic::CoupAnisoPow::GetFiberVecs(
+    std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
 )
 {
   fibervecs.push_back(a_);
 }
 
-void MAT::ELASTIC::CoupAnisoPow::SetFiberVecs(const double newgamma,
-    const CORE::LINALG::Matrix<3, 3>& locsys, const CORE::LINALG::Matrix<3, 3>& defgrd)
+void Mat::Elastic::CoupAnisoPow::SetFiberVecs(const double newgamma,
+    const Core::LinAlg::Matrix<3, 3>& locsys, const Core::LinAlg::Matrix<3, 3>& defgrd)
 {
   if ((params_->gamma_ < -90) || (params_->gamma_ > 90))
     FOUR_C_THROW("Fiber angle not in [-90,90]");
@@ -172,15 +172,15 @@ void MAT::ELASTIC::CoupAnisoPow::SetFiberVecs(const double newgamma,
       gamma = newgamma;
   }
 
-  CORE::LINALG::Matrix<3, 1> ca(true);
+  Core::LinAlg::Matrix<3, 1> ca(true);
   for (int i = 0; i < 3; ++i)
   {
     // a = cos gamma e3 + sin gamma e2
     ca(i) = cos(gamma) * locsys(i, 2) + sin(gamma) * locsys(i, 1);
   }
   // pull back in reference configuration
-  CORE::LINALG::Matrix<3, 1> a_0(true);
-  CORE::LINALG::Matrix<3, 3> idefgrd(true);
+  Core::LinAlg::Matrix<3, 1> a_0(true);
+  Core::LinAlg::Matrix<3, 3> idefgrd(true);
   idefgrd.Invert(defgrd);
 
   a_0.Multiply(idefgrd, ca);

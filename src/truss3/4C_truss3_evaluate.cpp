@@ -22,15 +22,15 @@ FOUR_C_NAMESPACE_OPEN
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public) cyron 08/08|
  *----------------------------------------------------------------------------------------------------------*/
-int DRT::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, LocationArray& la,
-    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
-    CORE::LINALG::SerialDenseVector& elevec3)
+int Discret::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, LocationArray& la,
+    Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
+    Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
+    Core::LinAlg::SerialDenseVector& elevec3)
 {
   set_params_interface_ptr(params);
 
-  CORE::Elements::ActionType act = CORE::Elements::none;
+  Core::Elements::ActionType act = Core::Elements::none;
 
   if (IsParamsInterface())
   {
@@ -43,25 +43,25 @@ int DRT::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList& params,
     if (action == "calc_none")
       FOUR_C_THROW("No action supplied");
     else if (action == "calc_struct_linstiff")
-      act = CORE::Elements::struct_calc_linstiff;
+      act = Core::Elements::struct_calc_linstiff;
     else if (action == "calc_struct_nlnstiff")
-      act = CORE::Elements::struct_calc_nlnstiff;
+      act = Core::Elements::struct_calc_nlnstiff;
     else if (action == "calc_struct_internalforce")
-      act = CORE::Elements::struct_calc_internalforce;
+      act = Core::Elements::struct_calc_internalforce;
     else if (action == "calc_struct_linstiffmass")
-      act = CORE::Elements::struct_calc_linstiffmass;
+      act = Core::Elements::struct_calc_linstiffmass;
     else if (action == "calc_struct_nlnstiffmass")
-      act = CORE::Elements::struct_calc_nlnstiffmass;
+      act = Core::Elements::struct_calc_nlnstiffmass;
     else if (action == "calc_struct_nlnstifflmass")
-      act = CORE::Elements::struct_calc_nlnstifflmass;
+      act = Core::Elements::struct_calc_nlnstifflmass;
     else if (action == "calc_struct_stress")
-      act = CORE::Elements::struct_calc_stress;
+      act = Core::Elements::struct_calc_stress;
     else if (action == "calc_struct_update_istep")
-      act = CORE::Elements::struct_calc_update_istep;
+      act = Core::Elements::struct_calc_update_istep;
     else if (action == "calc_struct_reset_istep")
-      act = CORE::Elements::struct_calc_reset_istep;
+      act = Core::Elements::struct_calc_reset_istep;
     else if (action == "calc_struct_ptcstiff")
-      act = CORE::Elements::struct_calc_ptcstiff;
+      act = Core::Elements::struct_calc_ptcstiff;
     else
     {
       std::cout << action << std::endl;
@@ -71,7 +71,7 @@ int DRT::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList& params,
 
   switch (act)
   {
-    case CORE::Elements::struct_calc_ptcstiff:
+    case Core::Elements::struct_calc_ptcstiff:
     {
       FOUR_C_THROW("EvaluatePTC not implemented");
 
@@ -79,14 +79,14 @@ int DRT::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList& params,
     }
     /*in case that only linear stiffness matrix is required b3_nlstiffmass is called with zero
        displacement and residual values*/
-    case CORE::Elements::struct_calc_linstiff:
+    case Core::Elements::struct_calc_linstiff:
     {
       FOUR_C_THROW("linear stiffness matrix called, but not implemented");
 
       break;
     }
     // calculate internal energy
-    case CORE::Elements::struct_calc_energy:
+    case Core::Elements::struct_calc_energy:
     {
       std::map<std::string, std::vector<double>> ele_state;
       extract_elemental_variables(la, discretization, params, ele_state);
@@ -97,30 +97,30 @@ int DRT::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList& params,
     }
     // nonlinear stiffness and mass matrix are calculated even if only nonlinear stiffness matrix is
     // required
-    case CORE::Elements::struct_calc_nlnstiffmass:
-    case CORE::Elements::struct_calc_nlnstifflmass:
-    case CORE::Elements::struct_calc_nlnstiff:
-    case CORE::Elements::struct_calc_internalforce:
+    case Core::Elements::struct_calc_nlnstiffmass:
+    case Core::Elements::struct_calc_nlnstifflmass:
+    case Core::Elements::struct_calc_nlnstiff:
+    case Core::Elements::struct_calc_internalforce:
     {
       std::map<std::string, std::vector<double>> ele_state;
       extract_elemental_variables(la, discretization, params, ele_state);
 
       // for engineering strains instead of total lagrange use t3_nlnstiffmass2
-      if (act == CORE::Elements::struct_calc_nlnstiffmass)
+      if (act == Core::Elements::struct_calc_nlnstiffmass)
         nln_stiff_mass(ele_state, &elemat1, &elemat2, &elevec1);
-      else if (act == CORE::Elements::struct_calc_nlnstifflmass)
+      else if (act == Core::Elements::struct_calc_nlnstifflmass)
       {
         nln_stiff_mass(ele_state, &elemat1, &elemat2, &elevec1);
         lump_mass(&elemat2);
       }
-      else if (act == CORE::Elements::struct_calc_nlnstiff)
+      else if (act == Core::Elements::struct_calc_nlnstiff)
         nln_stiff_mass(ele_state, &elemat1, nullptr, &elevec1);
-      else if (act == CORE::Elements::struct_calc_internalforce)
+      else if (act == Core::Elements::struct_calc_internalforce)
         nln_stiff_mass(ele_state, nullptr, nullptr, &elevec1);
 
       break;
     }
-    case CORE::Elements::struct_calc_stress:
+    case Core::Elements::struct_calc_stress:
     {
       std::map<std::string, std::vector<double>> ele_state;
       extract_elemental_variables(la, discretization, params, ele_state);
@@ -128,10 +128,10 @@ int DRT::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList& params,
       CalcGPStresses(params, ele_state);
       break;
     }
-    case CORE::Elements::struct_calc_update_istep:
-    case CORE::Elements::struct_calc_reset_istep:
-    case CORE::Elements::struct_calc_recover:
-    case CORE::Elements::struct_calc_predict:
+    case Core::Elements::struct_calc_update_istep:
+    case Core::Elements::struct_calc_reset_istep:
+    case Core::Elements::struct_calc_recover:
+    case Core::Elements::struct_calc_predict:
     {
       // do nothing here
       break;
@@ -150,10 +150,10 @@ int DRT::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList& params,
  |  Integrate a Surface Neumann boundary condition (public) cyron 03/08|
  *----------------------------------------------------------------------------------------------------------*/
 
-int DRT::ELEMENTS::Truss3::evaluate_neumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
-    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
-    CORE::LINALG::SerialDenseMatrix* elemat1)
+int Discret::ELEMENTS::Truss3::evaluate_neumann(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
+    Core::LinAlg::SerialDenseMatrix* elemat1)
 {
   FOUR_C_THROW("This method needs to be modified for bio-polymer networks!");
 
@@ -163,19 +163,19 @@ int DRT::ELEMENTS::Truss3::evaluate_neumann(Teuchos::ParameterList& params,
 /*--------------------------------------------------------------------------------------*
  | calculation of elastic energy                                             cyron 12/10|
  *--------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::energy(const std::map<std::string, std::vector<double>>& ele_state,
-    Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector& intenergy)
+void Discret::ELEMENTS::Truss3::energy(const std::map<std::string, std::vector<double>>& ele_state,
+    Teuchos::ParameterList& params, Core::LinAlg::SerialDenseVector& intenergy)
 {
-  if (Material()->MaterialType() != CORE::Materials::m_linelast1D)
+  if (Material()->MaterialType() != Core::Materials::m_linelast1D)
     FOUR_C_THROW("only linear elastic material supported for truss element");
 
   const std::vector<double>& disp_ele = ele_state.at("disp");
 
   // current node position (first entries 0 .. 2 for first node, 3 ..5 for second node)
-  CORE::LINALG::Matrix<6, 1> xcurr;
+  Core::LinAlg::Matrix<6, 1> xcurr;
 
   // auxiliary vector for both internal force and stiffness matrix: N^T_(,xi)*N_(,xi)*xcurr
-  CORE::LINALG::Matrix<3, 1> aux;
+  Core::LinAlg::Matrix<3, 1> aux;
 
   const int ndof = 6;
 
@@ -197,7 +197,7 @@ void DRT::ELEMENTS::Truss3::energy(const std::map<std::string, std::vector<doubl
                                                                : (lcurr - lrefe_) / lrefe_;
 
   // W_int = 1/2*PK2*A*lrefe*\epsilon
-  const auto* mat = static_cast<const MAT::LinElast1D*>(Material().get());
+  const auto* mat = static_cast<const Mat::LinElast1D*>(Material().get());
   const double intenergy_calc = mat->evaluate_elastic_energy(epsilon) * crosssec_ * lrefe_;
 
   if (IsParamsInterface())  // new structural time integration
@@ -216,10 +216,10 @@ void DRT::ELEMENTS::Truss3::energy(const std::map<std::string, std::vector<doubl
 /*--------------------------------------------------------------------------------------*
  | switch between kintypes                                                      tk 11/08|
  *--------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::nln_stiff_mass(
+void Discret::ELEMENTS::Truss3::nln_stiff_mass(
     const std::map<std::string, std::vector<double>>& ele_state,
-    CORE::LINALG::SerialDenseMatrix* stiffmatrix, CORE::LINALG::SerialDenseMatrix* massmatrix,
-    CORE::LINALG::SerialDenseVector* force)
+    Core::LinAlg::SerialDenseMatrix* stiffmatrix, Core::LinAlg::SerialDenseMatrix* massmatrix,
+    Core::LinAlg::SerialDenseVector* force)
 {
   /*
    * It is observed that for mixed problems, such is the case for biopolymer network simulations
@@ -231,11 +231,11 @@ void DRT::ELEMENTS::Truss3::nln_stiff_mass(
    * element containing two nodes.
    */
   // 6x6 Stiffness Matrix of the Truss
-  CORE::LINALG::SerialDenseMatrix DummyStiffMatrix;
+  Core::LinAlg::SerialDenseMatrix DummyStiffMatrix;
   DummyStiffMatrix.shape(6, 6);
   DummyStiffMatrix.scale(0);
   // 6x6 force vector of the Truss
-  CORE::LINALG::SerialDenseVector DummyForce;
+  Core::LinAlg::SerialDenseVector DummyForce;
   DummyForce.size(6);
   DummyForce.scale(0);
 
@@ -297,10 +297,10 @@ void DRT::ELEMENTS::Truss3::nln_stiff_mass(
 /*------------------------------------------------------------------------------------------------------------*
  | nonlinear stiffness and mass matrix (private) cyron 08/08|
  *-----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::nln_stiff_mass_tot_lag(
+void Discret::ELEMENTS::Truss3::nln_stiff_mass_tot_lag(
     const std::map<std::string, std::vector<double>>& ele_state,
-    CORE::LINALG::SerialDenseMatrix& DummyStiffMatrix, CORE::LINALG::SerialDenseMatrix* massmatrix,
-    CORE::LINALG::SerialDenseVector& DummyForce)
+    Core::LinAlg::SerialDenseMatrix& DummyStiffMatrix, Core::LinAlg::SerialDenseMatrix* massmatrix,
+    Core::LinAlg::SerialDenseVector& DummyForce)
 {
   // calculate force vector and stiffness matrix
   calc_internal_force_stiff_tot_lag(ele_state, DummyForce, DummyStiffMatrix);
@@ -327,18 +327,18 @@ void DRT::ELEMENTS::Truss3::nln_stiff_mass_tot_lag(
  | linear stiffness and mass matrix (private) | engineering strain measure, small displacements and
  rotations |
  *-----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::nln_stiff_mass_eng_str(
+void Discret::ELEMENTS::Truss3::nln_stiff_mass_eng_str(
     const std::map<std::string, std::vector<double>>& ele_state,
-    CORE::LINALG::SerialDenseMatrix& DummyStiffMatrix, CORE::LINALG::SerialDenseMatrix* massmatrix,
-    CORE::LINALG::SerialDenseVector& DummyForce)
+    Core::LinAlg::SerialDenseMatrix& DummyStiffMatrix, Core::LinAlg::SerialDenseMatrix* massmatrix,
+    Core::LinAlg::SerialDenseVector& DummyForce)
 {
-  if (Material()->MaterialType() != CORE::Materials::m_linelast1D)
+  if (Material()->MaterialType() != Core::Materials::m_linelast1D)
     FOUR_C_THROW("only linear elastic material supported for truss element");
 
   const std::vector<double>& disp_ele = ele_state.at("disp");
 
   // auxiliary vector for both internal force and stiffness matrix
-  CORE::LINALG::Matrix<6, 1> aux;
+  Core::LinAlg::Matrix<6, 1> aux;
 
   const int ndof = 6;
   const int ndof_per_node = ndof / 2;
@@ -352,10 +352,10 @@ void DRT::ELEMENTS::Truss3::nln_stiff_mass_eng_str(
   aux(5) = x_(5) - x_(2);
 
   // resulting force scaled by current length
-  const auto* mat = static_cast<const MAT::LinElast1D*>(Material().get());
+  const auto* mat = static_cast<const Mat::LinElast1D*>(Material().get());
 
   // displacement vector
-  CORE::LINALG::SerialDenseVector disp(ndof);
+  Core::LinAlg::SerialDenseVector disp(ndof);
 
   // computing linear stiffness matrix
   for (int i = 0; i < ndof; ++i)
@@ -367,7 +367,7 @@ void DRT::ELEMENTS::Truss3::nln_stiff_mass_eng_str(
   }
 
   // computing internal forces
-  CORE::LINALG::multiply(DummyForce, DummyStiffMatrix, disp);
+  Core::LinAlg::multiply(DummyForce, DummyStiffMatrix, disp);
 
   // calculating mass matrix.
   if (massmatrix != nullptr)
@@ -385,15 +385,15 @@ void DRT::ELEMENTS::Truss3::nln_stiff_mass_eng_str(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::prep_calc_internal_force_stiff_tot_lag(
+void Discret::ELEMENTS::Truss3::prep_calc_internal_force_stiff_tot_lag(
     const std::map<std::string, std::vector<double>>& ele_state,
-    CORE::LINALG::Matrix<6, 1>& curr_nodal_coords,
-    CORE::LINALG::Matrix<6, 6>& dcurr_nodal_coords_du, CORE::LINALG::Matrix<6, 1>& dN_dx)
+    Core::LinAlg::Matrix<6, 1>& curr_nodal_coords,
+    Core::LinAlg::Matrix<6, 6>& dcurr_nodal_coords_du, Core::LinAlg::Matrix<6, 1>& dN_dx)
 {
   const std::vector<double>& disp_ele = ele_state.at("disp");
 
   const int ndof = 6;
-  static CORE::LINALG::Matrix<6, 1> xcurr;
+  static Core::LinAlg::Matrix<6, 1> xcurr;
   // current nodal position
   for (int j = 0; j < ndof; ++j) xcurr(j) = x_(j) + disp_ele[j];
 
@@ -427,17 +427,17 @@ void DRT::ELEMENTS::Truss3::prep_calc_internal_force_stiff_tot_lag(
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::calc_internal_force_stiff_tot_lag(
+void Discret::ELEMENTS::Truss3::calc_internal_force_stiff_tot_lag(
     const std::map<std::string, std::vector<double>>& ele_state,
-    CORE::LINALG::SerialDenseVector& forcevec, CORE::LINALG::SerialDenseMatrix& stiffmat)
+    Core::LinAlg::SerialDenseVector& forcevec, Core::LinAlg::SerialDenseMatrix& stiffmat)
 {
   // safety check
-  if (Material()->MaterialType() != CORE::Materials::m_linelast1D)
+  if (Material()->MaterialType() != Core::Materials::m_linelast1D)
     FOUR_C_THROW("only linear elastic material supported for truss element");
 
-  static CORE::LINALG::Matrix<6, 1> truss_disp;
-  static CORE::LINALG::Matrix<6, 6> dtruss_disp_du;
-  static CORE::LINALG::Matrix<6, 1> dN_dx;
+  static Core::LinAlg::Matrix<6, 1> truss_disp;
+  static Core::LinAlg::Matrix<6, 6> dtruss_disp_du;
+  static Core::LinAlg::Matrix<6, 1> dN_dx;
 
   prep_calc_internal_force_stiff_tot_lag(ele_state, truss_disp, dtruss_disp_du, dN_dx);
 
@@ -448,7 +448,7 @@ void DRT::ELEMENTS::Truss3::calc_internal_force_stiff_tot_lag(
 
   // 2nd Piola-Kirchhoff stress
 
-  const auto* mat = static_cast<const MAT::LinElast1D*>(Material().get());
+  const auto* mat = static_cast<const Mat::LinElast1D*>(Material().get());
   const double PK2 = mat->EvaluatePK2(epsilon_GL);
   double stiffness = mat->EvaluateStiffness();
   // domain integration factor for linear shape functions -> constant strains and stresses ->
@@ -480,15 +480,15 @@ void DRT::ELEMENTS::Truss3::calc_internal_force_stiff_tot_lag(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::CalcGPStresses(
+void Discret::ELEMENTS::Truss3::CalcGPStresses(
     Teuchos::ParameterList& params, const std::map<std::string, std::vector<double>>& ele_state)
 {
   // safety check
-  if (Material()->MaterialType() != CORE::Materials::m_linelast1D)
+  if (Material()->MaterialType() != Core::Materials::m_linelast1D)
     FOUR_C_THROW("only linear elastic material supported for truss element");
 
   Teuchos::RCP<std::vector<char>> stressdata = Teuchos::null;
-  INPAR::STR::StressType iostress;
+  Inpar::STR::StressType iostress;
   if (IsParamsInterface())
   {
     stressdata = params_interface().StressDataPtr();
@@ -498,16 +498,16 @@ void DRT::ELEMENTS::Truss3::CalcGPStresses(
   {
     stressdata = params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
     iostress =
-        CORE::UTILS::GetAsEnum<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
+        Core::UTILS::GetAsEnum<Inpar::STR::StressType>(params, "iostress", Inpar::STR::stress_none);
   }
 
-  const CORE::FE::IntegrationPoints1D intpoints(gaussrule_);
+  const Core::FE::IntegrationPoints1D intpoints(gaussrule_);
 
-  CORE::LINALG::SerialDenseMatrix stress(intpoints.nquad, 1);
+  Core::LinAlg::SerialDenseMatrix stress(intpoints.nquad, 1);
 
-  static CORE::LINALG::Matrix<6, 1> curr_nodal_coords;
-  static CORE::LINALG::Matrix<6, 6> dtruss_disp_du;
-  static CORE::LINALG::Matrix<6, 1> dN_dx;
+  static Core::LinAlg::Matrix<6, 1> curr_nodal_coords;
+  static Core::LinAlg::Matrix<6, 6> dtruss_disp_du;
+  static Core::LinAlg::Matrix<6, 1> dN_dx;
 
   prep_calc_internal_force_stiff_tot_lag(ele_state, curr_nodal_coords, dtruss_disp_du, dN_dx);
 
@@ -516,26 +516,26 @@ void DRT::ELEMENTS::Truss3::CalcGPStresses(
       0.5 * (CurrLength2(curr_nodal_coords) - lrefe_ * lrefe_) / (lrefe_ * lrefe_);
 
   // 2nd Piola-Kirchhoff stress
-  const auto* mat = static_cast<const MAT::LinElast1D*>(Material().get());
+  const auto* mat = static_cast<const Mat::LinElast1D*>(Material().get());
   const double PK2 = mat->EvaluatePK2(epsilon_GL);
 
   for (int gp = 0; gp < intpoints.nquad; ++gp)
   {
     switch (iostress)
     {
-      case INPAR::STR::stress_2pk:
+      case Inpar::STR::stress_2pk:
       {
         stress(gp, 0) = PK2;
         break;
       }
-      case INPAR::STR::stress_cauchy:
+      case Inpar::STR::stress_cauchy:
       {
         const double def_grad = CurrLength(curr_nodal_coords) / lrefe_;
         stress(gp, 0) = PK2 * def_grad;
         break;
       }
 
-      case INPAR::STR::stress_none:
+      case Inpar::STR::stress_none:
         break;
       default:
         FOUR_C_THROW("Requested stress type not available");
@@ -544,7 +544,7 @@ void DRT::ELEMENTS::Truss3::CalcGPStresses(
   }
 
   {
-    CORE::COMM::PackBuffer data;
+    Core::Communication::PackBuffer data;
     AddtoPack(data, stress);
     data.StartPacking();
     AddtoPack(data, stress);
@@ -554,7 +554,7 @@ void DRT::ELEMENTS::Truss3::CalcGPStresses(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::lump_mass(CORE::LINALG::SerialDenseMatrix* emass)
+void Discret::ELEMENTS::Truss3::lump_mass(Core::LinAlg::SerialDenseMatrix* emass)
 {
   // lump mass matrix
   if (emass != nullptr)
@@ -575,15 +575,15 @@ void DRT::ELEMENTS::Truss3::lump_mass(CORE::LINALG::SerialDenseMatrix* emass)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::extract_elemental_variables(LocationArray& la,
-    const DRT::Discretization& discretization, const Teuchos::ParameterList& params,
+void Discret::ELEMENTS::Truss3::extract_elemental_variables(LocationArray& la,
+    const Discret::Discretization& discretization, const Teuchos::ParameterList& params,
     std::map<std::string, std::vector<double>>& ele_state)
 {
   std::vector<double> disp_ele(la[0].lm_.size());
 
   auto disp = discretization.GetState("displacement");
   if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
-  CORE::FE::ExtractMyValues(*disp, disp_ele, la[0].lm_);
+  Core::FE::ExtractMyValues(*disp, disp_ele, la[0].lm_);
 
   if (ele_state.find("disp") == ele_state.end())
     ele_state.emplace(std::make_pair("disp", disp_ele));

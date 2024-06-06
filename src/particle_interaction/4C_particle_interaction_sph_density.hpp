@@ -36,7 +36,7 @@ namespace PARTICLEWALL
   class WallHandlerInterface;
 }
 
-namespace PARTICLEINTERACTION
+namespace ParticleInteraction
 {
   class SPHKernelBase;
   class MaterialHandler;
@@ -44,12 +44,12 @@ namespace PARTICLEINTERACTION
   class SPHNeighborPairs;
   class SPHVirtualWallParticle;
   class SPHDensityCorrectionBase;
-}  // namespace PARTICLEINTERACTION
+}  // namespace ParticleInteraction
 
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
  *---------------------------------------------------------------------------*/
-namespace PARTICLEINTERACTION
+namespace ParticleInteraction
 {
   class SPHDensityBase
   {
@@ -67,11 +67,11 @@ namespace PARTICLEINTERACTION
     virtual void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
         const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface,
-        const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel,
-        const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
-        const std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle,
-        const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs,
-        const std::shared_ptr<PARTICLEINTERACTION::SPHVirtualWallParticle> virtualwallparticle);
+        const std::shared_ptr<ParticleInteraction::SPHKernelBase> kernel,
+        const std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial,
+        const std::shared_ptr<ParticleInteraction::SPHEquationOfStateBundle> equationofstatebundle,
+        const std::shared_ptr<ParticleInteraction::SPHNeighborPairs> neighborpairs,
+        const std::shared_ptr<ParticleInteraction::SPHVirtualWallParticle> virtualwallparticle);
 
     //! set current step size
     virtual void set_current_step_size(const double currentstepsize) final;
@@ -146,19 +146,19 @@ namespace PARTICLEINTERACTION
     std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface_;
 
     //! kernel handler
-    std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel_;
+    std::shared_ptr<ParticleInteraction::SPHKernelBase> kernel_;
 
     //! particle material handler
-    std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial_;
+    std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial_;
 
     //! equation of state bundle
-    std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle_;
+    std::shared_ptr<ParticleInteraction::SPHEquationOfStateBundle> equationofstatebundle_;
 
     //! neighbor pair handler
-    std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs_;
+    std::shared_ptr<ParticleInteraction::SPHNeighborPairs> neighborpairs_;
 
     //! virtual wall particle handler
-    std::shared_ptr<PARTICLEINTERACTION::SPHVirtualWallParticle> virtualwallparticle_;
+    std::shared_ptr<ParticleInteraction::SPHVirtualWallParticle> virtualwallparticle_;
 
     //! density of ghosted particles to refresh
     PARTICLEENGINE::StatesOfTypesToRefresh densitytorefresh_;
@@ -223,11 +223,11 @@ namespace PARTICLEINTERACTION
     void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
         const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface,
-        const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel,
-        const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
-        const std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle,
-        const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs,
-        const std::shared_ptr<PARTICLEINTERACTION::SPHVirtualWallParticle> virtualwallparticle)
+        const std::shared_ptr<ParticleInteraction::SPHKernelBase> kernel,
+        const std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial,
+        const std::shared_ptr<ParticleInteraction::SPHEquationOfStateBundle> equationofstatebundle,
+        const std::shared_ptr<ParticleInteraction::SPHNeighborPairs> neighborpairs,
+        const std::shared_ptr<ParticleInteraction::SPHVirtualWallParticle> virtualwallparticle)
         override;
 
     //! insert density evaluation dependent states
@@ -246,10 +246,10 @@ namespace PARTICLEINTERACTION
     void correct_density() const;
 
     //! density correction handler
-    std::unique_ptr<PARTICLEINTERACTION::SPHDensityCorrectionBase> densitycorrection_;
+    std::unique_ptr<ParticleInteraction::SPHDensityCorrectionBase> densitycorrection_;
   };
 
-}  // namespace PARTICLEINTERACTION
+}  // namespace ParticleInteraction
 
 /*---------------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

@@ -15,7 +15,7 @@ multipliers method
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
@@ -23,25 +23,25 @@ namespace DRT
     {
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+      template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
           unsigned int slave_numdof>
       void HybridLMCoupling<distype, slave_distype, slave_numdof>::mhcs_build_coupling_matrices(
-          const CORE::LINALG::Matrix<nsd_, 1>& normal,  ///< normal vector
+          const Core::LinAlg::Matrix<nsd_, 1>& normal,  ///< normal vector
           const double& fac,                            ///< integration factor
-          const CORE::LINALG::Matrix<nen_, 1>& funct,   ///< shape function
-          CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, 1>, numstressdof_, 1>&
+          const Core::LinAlg::Matrix<nen_, 1>& funct,   ///< shape function
+          Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, 1>, numstressdof_, 1>&
               rhs_s,  ///< block rhs vector \f$ rhs_{\sigma} \f$
-          const CORE::LINALG::Matrix<nsd_, 1>&
+          const Core::LinAlg::Matrix<nsd_, 1>&
               ivelint_jump,  ///< prescribed interface velocity or interface jump height
-          const CORE::LINALG::Matrix<nsd_, 1>&
+          const Core::LinAlg::Matrix<nsd_, 1>&
               itraction_jump  ///< prescribed interface traction or interface jump height
       )
       {
-        CORE::LINALG::Matrix<nen_, slave_nen_> bK_ms;
-        CORE::LINALG::Matrix<slave_nen_, nen_> bK_sm;
+        Core::LinAlg::Matrix<nen_, slave_nen_> bK_ms;
+        Core::LinAlg::Matrix<slave_nen_, nen_> bK_sm;
 
         // interface velocity at gauss-point (current gauss-point in calling method)
-        CORE::LINALG::Matrix<nsd_, 1> velint_s(true);
+        Core::LinAlg::Matrix<nsd_, 1> velint_s(true);
         this->GetInterfaceVelnp(velint_s);
 
         // add the prescribed interface velocity for weak Dirichlet boundary conditions or the jump
@@ -49,7 +49,7 @@ namespace DRT
         velint_s.Update(1.0, ivelint_jump, 1.0);
 
         // get nodal shape function vector
-        CORE::LINALG::Matrix<slave_nen_, 1> slave_funct(true);
+        Core::LinAlg::Matrix<slave_nen_, 1> slave_funct(true);
         this->GetSlaveFunct(slave_funct);
 
         bK_ms.MultiplyNT(funct, slave_funct);
@@ -72,7 +72,7 @@ namespace DRT
         }
 
         const double km = 1.0;  // only master-sided weighting
-        CORE::LINALG::Matrix<slave_nen_, 1>
+        Core::LinAlg::Matrix<slave_nen_, 1>
             funct_s_timefacfac_km;  ///< funct_s * timefacfac *kappa_m
         funct_s_timefacfac_km.Update(km, slave_funct, 0.0);
 
@@ -82,25 +82,25 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+      template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
           unsigned int slave_numdof>
       void HybridLMCoupling<distype, slave_distype, slave_numdof>::mhvs_build_coupling_matrices(
-          const CORE::LINALG::Matrix<nsd_, 1>& normal,  ///< normal vector
+          const Core::LinAlg::Matrix<nsd_, 1>& normal,  ///< normal vector
           const double& fac,                            ///< integration factor
-          const CORE::LINALG::Matrix<nen_, 1>& funct,   ///< background element shape functions
-          CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, 1>, numstressdof_, 1>&
+          const Core::LinAlg::Matrix<nen_, 1>& funct,   ///< background element shape functions
+          Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, 1>, numstressdof_, 1>&
               rhs_s,                                ///< block rhs vector \f$ rhs_{\sigma}\f$
           const double& press,                      ///< background element pressure
-          CORE::LINALG::Matrix<nen_, 1>& rhs_pmus,  ///< part of block rhs vector \f$rhs_p\f$
+          Core::LinAlg::Matrix<nen_, 1>& rhs_pmus,  ///< part of block rhs vector \f$rhs_p\f$
                                                     ///< including interface velocity terms
-          const CORE::LINALG::Matrix<nsd_, 1>&
+          const Core::LinAlg::Matrix<nsd_, 1>&
               ivelint_jump,  ///< prescribed interface velocity or interface jump height
-          const CORE::LINALG::Matrix<nsd_, 1>&
+          const Core::LinAlg::Matrix<nsd_, 1>&
               itraction_jump  ///< prescribed interface traction or interface jump height
       )
       {
         // interface velocity at gauss-point (current gauss-point in calling method)
-        CORE::LINALG::Matrix<nsd_, 1> velint_s(true);
+        Core::LinAlg::Matrix<nsd_, 1> velint_s(true);
         this->GetInterfaceVelnp(velint_s);
 
         // add the prescribed interface velocity for weak Dirichlet boundary conditions or the jump
@@ -109,10 +109,10 @@ namespace DRT
 
         // block submatrices for interface coupling; s: slave side, m: master side (always
         // background here)
-        CORE::LINALG::Matrix<nen_, slave_nen_> bG_ms(true);
-        CORE::LINALG::Matrix<slave_nen_, nen_> bG_sm(true);
+        Core::LinAlg::Matrix<nen_, slave_nen_> bG_ms(true);
+        Core::LinAlg::Matrix<slave_nen_, nen_> bG_sm(true);
 
-        CORE::LINALG::Matrix<slave_nen_, 1> slave_funct;
+        Core::LinAlg::Matrix<slave_nen_, 1> slave_funct;
         this->GetSlaveFunct(slave_funct);
 
         bG_ms.MultiplyNT(funct, slave_funct);
@@ -203,7 +203,7 @@ namespace DRT
         }
 
         const double km = 1.0;  // only master-sided weighting
-        CORE::LINALG::Matrix<slave_nen_, 1>
+        Core::LinAlg::Matrix<slave_nen_, 1>
             funct_s_timefacfac_km;  ///< funct_s * timefacfac *kappa_m
         funct_s_timefacfac_km.Update(km, slave_funct, 0.0);
 
@@ -217,12 +217,12 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+      template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
           unsigned int slave_numdof>
       void HybridLMCoupling<distype, slave_distype, slave_numdof>::mh_traction_consistency_term(
-          const CORE::LINALG::Matrix<slave_nen_, 1>&
+          const Core::LinAlg::Matrix<slave_nen_, 1>&
               funct_s_timefacfac_km,  ///< funct_s * timefacfac *kappa_m
-          const CORE::LINALG::Matrix<nsd_, 1>&
+          const Core::LinAlg::Matrix<nsd_, 1>&
               itraction_jump  ///< prescribed interface traction, jump height for coupled problems
       )
       {
@@ -256,31 +256,31 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+      template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
           unsigned int slave_numdof>
       void HybridLMCoupling<distype, slave_distype, slave_numdof>::
           hybrid_lm_build_final_coupling_matrices(
-              CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, nen_>, numstressdof_,
+              Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, nen_>, numstressdof_,
                   numstressdof_>& BinvK_ss,  ///< block inverse \f$ K^{-1}_{\sigma\sigma} \f$
-              CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, nen_>, master_numdof_,
+              Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, nen_>, master_numdof_,
                   numstressdof_>&
                   BKumsInvKss,  ///< block matrix \f$ K_{u\sigma} \cdot K^{-1}_{\sigma\sigma} \f$
-              CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, nen_>, numstressdof_,
+              Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, nen_>, numstressdof_,
                   master_numdof_>& BK_sum,  ///< block matrix \f$ K_{\sigma u} \f$
-              CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, 1>, numstressdof_, 1>&
+              Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, 1>, numstressdof_, 1>&
                   rhs_s  ///< block rhs vector \f$ rhs_{\sigma}\f$
           )
       {
         // final coupling matrices in block form
-        CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, slave_nen_>, master_numdof_, nsd_>
+        Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, slave_nen_>, master_numdof_, nsd_>
             BCumus;
-        CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<slave_nen_, nen_>, nsd_, master_numdof_>
+        Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<slave_nen_, nen_>, nsd_, master_numdof_>
             BCusum;
 
         // auxiliary matrices for intermediate calculation results of the matrix product
-        CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<slave_nen_, nen_>, nsd_, numstressdof_>
+        Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<slave_nen_, nen_>, nsd_, numstressdof_>
             BGussInvKss;
-        CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<slave_nen_, 1>, nsd_, 1> BGussinvKssrhs_s;
+        Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<slave_nen_, 1>, nsd_, 1> BGussinvKssrhs_s;
 
         // BKusInvKss:
         // (K_ums + G_ums) * K_ss^-1 (MHVS) or
@@ -312,7 +312,7 @@ namespace DRT
             // (um-us)
             if (BCumus.IsUsed(imdof, isvel))
             {
-              const CORE::LINALG::Matrix<nen_, slave_nen_>& bCumus = *BCumus(imdof, isvel);
+              const Core::LinAlg::Matrix<nen_, slave_nen_>& bCumus = *BCumus(imdof, isvel);
               // loop over slave element nodes
               for (unsigned isn = 0; isn < slave_nen_; ++isn)
               {
@@ -327,7 +327,7 @@ namespace DRT
             // (us-um), MHCS: (us-pm)
             if (BCusum.IsUsed(isvel, imdof))
             {
-              const CORE::LINALG::Matrix<slave_nen_, nen_>& bCusum = *BCusum(isvel, imdof);
+              const Core::LinAlg::Matrix<slave_nen_, nen_>& bCusum = *BCusum(isvel, imdof);
               // loop over slave element nodes
               for (unsigned isn = 0; isn < slave_nen_; ++isn)
               {
@@ -345,7 +345,7 @@ namespace DRT
           // (us-pm)
           if (BG_uspm_.IsUsed(isvel, 0))
           {
-            const CORE::LINALG::Matrix<slave_nen_, nen_>& bGuspm = *BG_uspm_(isvel, 0);
+            const Core::LinAlg::Matrix<slave_nen_, nen_>& bGuspm = *BG_uspm_(isvel, 0);
             // loop over slave element nodes
             for (unsigned isn = 0; isn < slave_nen_; ++isn)
             {
@@ -360,7 +360,7 @@ namespace DRT
           // (pm-us)
           if (BG_pmus_.IsUsed(0, isvel))
           {
-            const CORE::LINALG::Matrix<nen_, slave_nen_>& bGpmus = *BG_pmus_(0, isvel);
+            const Core::LinAlg::Matrix<nen_, slave_nen_>& bGpmus = *BG_pmus_(0, isvel);
             // loop over slave element nodes
             for (unsigned isn = 0; isn < slave_nen_; ++isn)
             {
@@ -375,7 +375,7 @@ namespace DRT
           // rhs - us
           if (BGussinvKssrhs_s.IsUsed(isvel, 0))
           {
-            const CORE::LINALG::Matrix<slave_nen_, 1>& bGussinvKssrhs_s =
+            const Core::LinAlg::Matrix<slave_nen_, 1>& bGussinvKssrhs_s =
                 *BGussinvKssrhs_s(isvel, 0);
 
             // loop over slave element nodes
@@ -398,7 +398,7 @@ namespace DRT
             // extract the stress-velocity coupling submatrix
             if (BG_sus_.IsUsed(ibr, ibc))
             {
-              CORE::LINALG::Matrix<nen_, slave_nen_>& bGsus = *BG_sus_(ibr, ibc);
+              Core::LinAlg::Matrix<nen_, slave_nen_>& bGsus = *BG_sus_(ibr, ibc);
 
               // transfer the entries
               for (unsigned ir = 0; ir < nen_; ++ir)
@@ -426,7 +426,7 @@ namespace DRT
           {
             if (BG_uss_.IsUsed(ibr, ibc))
             {
-              CORE::LINALG::Matrix<slave_nen_, nen_>& bGuss = *BG_uss_(ibr, ibc);
+              Core::LinAlg::Matrix<slave_nen_, nen_>& bGuss = *BG_uss_(ibr, ibc);
 
               // transfer the entries
               for (unsigned ic = 0; ic < nen_; ++ic)
@@ -447,167 +447,167 @@ namespace DRT
 
     }  // namespace XFLUID
   }    // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 
 // pairs with numdof=3
-// template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex8,
-// CORE::FE::CellType::tri3,3>; template class
-// DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex8,
-// CORE::FE::CellType::tri6,3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex8,
-    CORE::FE::CellType::quad4, 3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex8,
-    CORE::FE::CellType::quad8, 3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex8,
-    CORE::FE::CellType::quad9, 3>;
-// template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex20,
-// CORE::FE::CellType::tri3,3>; template class
-// DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex20,
-// CORE::FE::CellType::tri6,3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex20,
-    CORE::FE::CellType::quad4, 3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex20,
-    CORE::FE::CellType::quad8, 3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex20,
-    CORE::FE::CellType::quad9, 3>;
-// template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex27,
-// CORE::FE::CellType::tri3,3>; template class
-// DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex27,
-// CORE::FE::CellType::tri6,3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex27,
-    CORE::FE::CellType::quad4, 3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex27,
-    CORE::FE::CellType::quad8, 3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex27,
-    CORE::FE::CellType::quad9, 3>;
-// template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::tet4,
-// CORE::FE::CellType::tri3,3>; template class
-// DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::tet4,
-// CORE::FE::CellType::tri6,3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::tet4,
-    CORE::FE::CellType::quad4, 3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::tet4,
-    CORE::FE::CellType::quad8, 3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::tet4,
-    CORE::FE::CellType::quad9, 3>;
-// template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::tet10,
-// CORE::FE::CellType::tri3,3>; template class
-// DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::tet10,
-// CORE::FE::CellType::tri6,3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::tet10,
-    CORE::FE::CellType::quad4, 3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::tet10,
-    CORE::FE::CellType::quad8, 3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::tet10,
-    CORE::FE::CellType::quad9, 3>;
-// template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::wedge6,
-// CORE::FE::CellType::tri3,3>; template class
-// DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::wedge6,
-// CORE::FE::CellType::tri6,3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::wedge6,
-    CORE::FE::CellType::quad4, 3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::wedge6,
-    CORE::FE::CellType::quad8, 3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::wedge6,
-    CORE::FE::CellType::quad9, 3>;
-// template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::wedge15,
-// CORE::FE::CellType::tri3,3>; template class
-// DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::wedge15,
-// CORE::FE::CellType::tri6,3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::wedge15,
-    CORE::FE::CellType::quad4, 3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::wedge15,
-    CORE::FE::CellType::quad8, 3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::wedge15,
-    CORE::FE::CellType::quad9, 3>;
+// template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex8,
+// Core::FE::CellType::tri3,3>; template class
+// Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex8,
+// Core::FE::CellType::tri6,3>;
+template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex8,
+    Core::FE::CellType::quad4, 3>;
+template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex8,
+    Core::FE::CellType::quad8, 3>;
+template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex8,
+    Core::FE::CellType::quad9, 3>;
+// template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex20,
+// Core::FE::CellType::tri3,3>; template class
+// Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex20,
+// Core::FE::CellType::tri6,3>;
+template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex20,
+    Core::FE::CellType::quad4, 3>;
+template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex20,
+    Core::FE::CellType::quad8, 3>;
+template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex20,
+    Core::FE::CellType::quad9, 3>;
+// template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex27,
+// Core::FE::CellType::tri3,3>; template class
+// Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex27,
+// Core::FE::CellType::tri6,3>;
+template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex27,
+    Core::FE::CellType::quad4, 3>;
+template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex27,
+    Core::FE::CellType::quad8, 3>;
+template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex27,
+    Core::FE::CellType::quad9, 3>;
+// template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::tet4,
+// Core::FE::CellType::tri3,3>; template class
+// Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::tet4,
+// Core::FE::CellType::tri6,3>;
+template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::tet4,
+    Core::FE::CellType::quad4, 3>;
+template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::tet4,
+    Core::FE::CellType::quad8, 3>;
+template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::tet4,
+    Core::FE::CellType::quad9, 3>;
+// template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::tet10,
+// Core::FE::CellType::tri3,3>; template class
+// Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::tet10,
+// Core::FE::CellType::tri6,3>;
+template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::tet10,
+    Core::FE::CellType::quad4, 3>;
+template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::tet10,
+    Core::FE::CellType::quad8, 3>;
+template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::tet10,
+    Core::FE::CellType::quad9, 3>;
+// template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge6,
+// Core::FE::CellType::tri3,3>; template class
+// Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge6,
+// Core::FE::CellType::tri6,3>;
+template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge6,
+    Core::FE::CellType::quad4, 3>;
+template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge6,
+    Core::FE::CellType::quad8, 3>;
+template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge6,
+    Core::FE::CellType::quad9, 3>;
+// template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge15,
+// Core::FE::CellType::tri3,3>; template class
+// Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge15,
+// Core::FE::CellType::tri6,3>;
+template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge15,
+    Core::FE::CellType::quad4, 3>;
+template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge15,
+    Core::FE::CellType::quad8, 3>;
+template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge15,
+    Core::FE::CellType::quad9, 3>;
 
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex8,
-    CORE::FE::CellType::dis_none, 3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex20,
-    CORE::FE::CellType::dis_none, 3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex27,
-    CORE::FE::CellType::dis_none, 3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::tet4,
-    CORE::FE::CellType::dis_none, 3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::tet10,
-    CORE::FE::CellType::dis_none, 3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::wedge6,
-    CORE::FE::CellType::dis_none, 3>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::wedge15,
-    CORE::FE::CellType::dis_none, 3>;
+template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex8,
+    Core::FE::CellType::dis_none, 3>;
+template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex20,
+    Core::FE::CellType::dis_none, 3>;
+template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex27,
+    Core::FE::CellType::dis_none, 3>;
+template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::tet4,
+    Core::FE::CellType::dis_none, 3>;
+template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::tet10,
+    Core::FE::CellType::dis_none, 3>;
+template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge6,
+    Core::FE::CellType::dis_none, 3>;
+template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge15,
+    Core::FE::CellType::dis_none, 3>;
 
 
 // pairs with numdof=4
-// template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex8,
-// CORE::FE::CellType::tri3,4>; template class
-// DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex8,
-// CORE::FE::CellType::tri6,4>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex8,
-    CORE::FE::CellType::quad4, 4>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex8,
-    CORE::FE::CellType::quad8, 4>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex8,
-    CORE::FE::CellType::quad9, 4>;
-// template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex20,
-// CORE::FE::CellType::tri3,4>; template class
-// DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex20,
-// CORE::FE::CellType::tri6,4>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex20,
-    CORE::FE::CellType::quad4, 4>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex20,
-    CORE::FE::CellType::quad8, 4>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex20,
-    CORE::FE::CellType::quad9, 4>;
-// template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex27,
-// CORE::FE::CellType::tri3,4>; template class
-// DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex27,
-// CORE::FE::CellType::tri6,4>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex27,
-    CORE::FE::CellType::quad4, 4>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex27,
-    CORE::FE::CellType::quad8, 4>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::hex27,
-    CORE::FE::CellType::quad9, 4>;
-// template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::tet4,
-// CORE::FE::CellType::tri3,4>; template class
-// DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::tet4,
-// CORE::FE::CellType::tri6,4>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::tet4,
-    CORE::FE::CellType::quad4, 4>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::tet4,
-    CORE::FE::CellType::quad8, 4>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::tet4,
-    CORE::FE::CellType::quad9, 4>;
-// template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::tet10,
-// CORE::FE::CellType::tri3,4>; template class
-// DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::tet10,
-// CORE::FE::CellType::tri6,4>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::tet10,
-    CORE::FE::CellType::quad4, 4>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::tet10,
-    CORE::FE::CellType::quad8, 4>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::tet10,
-    CORE::FE::CellType::quad9, 4>;
-// template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::wedge6,
-// CORE::FE::CellType::tri3,4>; template class
-// DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::wedge6,
-// CORE::FE::CellType::tri6,4>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::wedge6,
-    CORE::FE::CellType::quad4, 4>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::wedge6,
-    CORE::FE::CellType::quad8, 4>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::wedge6,
-    CORE::FE::CellType::quad9, 4>;
-// template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::wedge15,
-// CORE::FE::CellType::tri3,4>; template class
-// DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::wedge15,
-// CORE::FE::CellType::tri6,4>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::wedge15,
-    CORE::FE::CellType::quad4, 4>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::wedge15,
-    CORE::FE::CellType::quad8, 4>;
-template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<CORE::FE::CellType::wedge15,
-    CORE::FE::CellType::quad9, 4>;
+// template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex8,
+// Core::FE::CellType::tri3,4>; template class
+// Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex8,
+// Core::FE::CellType::tri6,4>;
+template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex8,
+    Core::FE::CellType::quad4, 4>;
+template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex8,
+    Core::FE::CellType::quad8, 4>;
+template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex8,
+    Core::FE::CellType::quad9, 4>;
+// template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex20,
+// Core::FE::CellType::tri3,4>; template class
+// Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex20,
+// Core::FE::CellType::tri6,4>;
+template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex20,
+    Core::FE::CellType::quad4, 4>;
+template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex20,
+    Core::FE::CellType::quad8, 4>;
+template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex20,
+    Core::FE::CellType::quad9, 4>;
+// template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex27,
+// Core::FE::CellType::tri3,4>; template class
+// Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex27,
+// Core::FE::CellType::tri6,4>;
+template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex27,
+    Core::FE::CellType::quad4, 4>;
+template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex27,
+    Core::FE::CellType::quad8, 4>;
+template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex27,
+    Core::FE::CellType::quad9, 4>;
+// template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::tet4,
+// Core::FE::CellType::tri3,4>; template class
+// Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::tet4,
+// Core::FE::CellType::tri6,4>;
+template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::tet4,
+    Core::FE::CellType::quad4, 4>;
+template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::tet4,
+    Core::FE::CellType::quad8, 4>;
+template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::tet4,
+    Core::FE::CellType::quad9, 4>;
+// template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::tet10,
+// Core::FE::CellType::tri3,4>; template class
+// Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::tet10,
+// Core::FE::CellType::tri6,4>;
+template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::tet10,
+    Core::FE::CellType::quad4, 4>;
+template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::tet10,
+    Core::FE::CellType::quad8, 4>;
+template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::tet10,
+    Core::FE::CellType::quad9, 4>;
+// template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge6,
+// Core::FE::CellType::tri3,4>; template class
+// Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge6,
+// Core::FE::CellType::tri6,4>;
+template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge6,
+    Core::FE::CellType::quad4, 4>;
+template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge6,
+    Core::FE::CellType::quad8, 4>;
+template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge6,
+    Core::FE::CellType::quad9, 4>;
+// template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge15,
+// Core::FE::CellType::tri3,4>; template class
+// Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge15,
+// Core::FE::CellType::tri6,4>;
+template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge15,
+    Core::FE::CellType::quad4, 4>;
+template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge15,
+    Core::FE::CellType::quad8, 4>;
+template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge15,
+    Core::FE::CellType::quad9, 4>;
 
 FOUR_C_NAMESPACE_CLOSE

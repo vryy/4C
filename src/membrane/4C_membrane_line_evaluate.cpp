@@ -20,11 +20,11 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Integrate a Line Neumann boundary condition (public)   fbraeu 06/16 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::MembraneLine<distype>::evaluate_neumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
-    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
-    CORE::LINALG::SerialDenseMatrix* elemat1)
+template <Core::FE::CellType distype>
+int Discret::ELEMENTS::MembraneLine<distype>::evaluate_neumann(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
+    Core::LinAlg::SerialDenseMatrix* elemat1)
 {
   // set params interface pointer in the parent element
   parent_element()->set_params_interface_ptr(params);
@@ -72,7 +72,7 @@ int DRT::ELEMENTS::MembraneLine<distype>::evaluate_neumann(Teuchos::ParameterLis
   }
 
   // element geometry update - currently only material configuration
-  CORE::LINALG::Matrix<numnod_line_, noddof_> x(true);
+  Core::LinAlg::Matrix<numnod_line_, noddof_> x(true);
   for (int i = 0; i < numnod_line_; ++i)
   {
     x(i, 0) = Nodes()[i]->X()[0];
@@ -81,8 +81,8 @@ int DRT::ELEMENTS::MembraneLine<distype>::evaluate_neumann(Teuchos::ParameterLis
   }
 
   // allocate vector for shape functions and matrix for derivatives at gp
-  CORE::LINALG::Matrix<numnod_line_, 1> shapefcts(true);
-  CORE::LINALG::Matrix<1, numnod_line_> derivs(true);
+  Core::LinAlg::Matrix<numnod_line_, 1> shapefcts(true);
+  Core::LinAlg::Matrix<1, numnod_line_> derivs(true);
 
   // integration
   for (int gp = 0; gp < intpointsline_.nquad; ++gp)
@@ -94,8 +94,8 @@ int DRT::ELEMENTS::MembraneLine<distype>::evaluate_neumann(Teuchos::ParameterLis
     double gpweight = intpointsline_.qwgt[gp];
 
     // get shape functions and derivatives in the plane of the element
-    CORE::FE::shape_function_1D(shapefcts, xi_gp, Shape());
-    CORE::FE::shape_function_1D_deriv1(derivs, xi_gp, Shape());
+    Core::FE::shape_function_1D(shapefcts, xi_gp, Shape());
+    Core::FE::shape_function_1D_deriv1(derivs, xi_gp, Shape());
 
     switch (ltype)
     {
@@ -104,7 +104,7 @@ int DRT::ELEMENTS::MembraneLine<distype>::evaluate_neumann(Teuchos::ParameterLis
         // uniform load on reference configuration
 
         // compute dXYZ / dr
-        CORE::LINALG::Matrix<noddof_, 1> dxyzdr(true);
+        Core::LinAlg::Matrix<noddof_, 1> dxyzdr(true);
         dxyzdr.MultiplyTT(1.0, x, derivs, 0.0);
         // compute line increment dL
         double dL;
@@ -127,7 +127,7 @@ int DRT::ELEMENTS::MembraneLine<distype>::evaluate_neumann(Teuchos::ParameterLis
             if (functnum > 0)
             {
               // calculate reference position of GP
-              CORE::LINALG::Matrix<noddof_, 1> gp_coord(true);
+              Core::LinAlg::Matrix<noddof_, 1> gp_coord(true);
               gp_coord.MultiplyTN(1.0, x, shapefcts, 0.0);
 
               // write coordinates in another datatype
@@ -136,8 +136,8 @@ int DRT::ELEMENTS::MembraneLine<distype>::evaluate_neumann(Teuchos::ParameterLis
               const double* coordgpref = gp_coord2;  // needed for function evaluation
 
               // evaluate function at current gauss point
-              functfac = GLOBAL::Problem::Instance()
-                             ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
+              functfac = Global::Problem::Instance()
+                             ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
                              .Evaluate(coordgpref, time, i);
             }
 
@@ -160,9 +160,9 @@ int DRT::ELEMENTS::MembraneLine<distype>::evaluate_neumann(Teuchos::ParameterLis
   return 0;
 }
 
-template class DRT::ELEMENTS::MembraneLine<CORE::FE::CellType::tri3>;
-template class DRT::ELEMENTS::MembraneLine<CORE::FE::CellType::tri6>;
-template class DRT::ELEMENTS::MembraneLine<CORE::FE::CellType::quad4>;
-template class DRT::ELEMENTS::MembraneLine<CORE::FE::CellType::quad9>;
+template class Discret::ELEMENTS::MembraneLine<Core::FE::CellType::tri3>;
+template class Discret::ELEMENTS::MembraneLine<Core::FE::CellType::tri6>;
+template class Discret::ELEMENTS::MembraneLine<Core::FE::CellType::quad4>;
+template class Discret::ELEMENTS::MembraneLine<Core::FE::CellType::quad9>;
 
 FOUR_C_NAMESPACE_CLOSE

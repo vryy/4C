@@ -50,7 +50,7 @@ MonWriter::MonWriter(PostProblem& problem, std::string& infieldtype,
     if (field->name() == infieldtype)
     {
       // pointer (rcp) to actual discretisation
-      Teuchos::RCP<DRT::Discretization> mydiscrete = field->discretization();
+      Teuchos::RCP<Discret::Discretization> mydiscrete = field->discretization();
       // store, if this node belongs to me
       if (mydiscrete->HaveGlobalNode(node))
       {
@@ -94,7 +94,7 @@ void MonWriter::WriteMonFile(PostProblem& problem, std::string& infieldtype, int
   check_infield_type(infieldtype);
 
   // pointer (rcp) to actual discretisation
-  Teuchos::RCP<DRT::Discretization> mydiscrete = field->discretization();
+  Teuchos::RCP<Discret::Discretization> mydiscrete = field->discretization();
   // space dimension of the problem
   int dim = problem.num_dim();
 
@@ -119,7 +119,7 @@ void MonWriter::WriteMonFile(PostProblem& problem, std::string& infieldtype, int
       field_error(node);
 
     // pointer to my actual node
-    const CORE::Nodes::Node* mynode = mydiscrete->gNode(node);
+    const Core::Nodes::Node* mynode = mydiscrete->gNode(node);
 
     // global nodal dof numbers
     gdof = mydiscrete->Dof(mynode);
@@ -259,7 +259,7 @@ void MonWriter::write_mon_str_file(const std::string& filename, PostProblem& pro
   check_infield_type(infieldtype);
 
   // pointer (rcp) to actual discretisation
-  Teuchos::RCP<DRT::Discretization> mydiscrete = field->discretization();
+  Teuchos::RCP<Discret::Discretization> mydiscrete = field->discretization();
   // space dimension of the problem
   const int dim = problem.num_dim();
 
@@ -284,7 +284,7 @@ void MonWriter::write_mon_str_file(const std::string& filename, PostProblem& pro
       field_error(node);
 
     // pointer to my actual node
-    const CORE::Nodes::Node* mynode = mydiscrete->gNode(node);
+    const Core::Nodes::Node* mynode = mydiscrete->gNode(node);
 
     // global nodal dof numbers
     gdof = mydiscrete->Dof(mynode);
@@ -316,7 +316,7 @@ void MonWriter::write_mon_str_file(const std::string& filename, PostProblem& pro
 
   // This is a loop over all possible stress or strain modes (called groupnames).
   // The call is handed to _all_ processors, because the extrapolation of the
-  // stresses/strains from Gauss points to nodes is done by DRT::Discretization
+  // stresses/strains from Gauss points to nodes is done by Discret::Discretization
   // utilising an assembly call. The assembly is parallel and thus all processors
   // have to be incoporated --- at least I think so.
   // (culpit: bborn, 07/09)
@@ -404,7 +404,7 @@ void MonWriter::write_mon_thr_file(const std::string& filename, PostProblem& pro
   check_infield_type(infieldtype);
 
   // pointer (rcp) to actual discretisation
-  Teuchos::RCP<DRT::Discretization> mydiscrete = field->discretization();
+  Teuchos::RCP<Discret::Discretization> mydiscrete = field->discretization();
   // space dimension of the problem
   const int dim = problem.num_dim();
 
@@ -429,7 +429,7 @@ void MonWriter::write_mon_thr_file(const std::string& filename, PostProblem& pro
       field_error(node);
 
     // pointer to my actual node
-    const CORE::Nodes::Node* mynode = mydiscrete->gNode(node);
+    const Core::Nodes::Node* mynode = mydiscrete->gNode(node);
 
     // global nodal dof numbers
     gdof = mydiscrete->Dof(mynode);
@@ -463,7 +463,7 @@ void MonWriter::write_mon_thr_file(const std::string& filename, PostProblem& pro
   // This is a loop over all possible heatflux or temperature gradient modes
   // (called groupnames).The call is handed to _all_ processors, because the
   // extrapolation of the heatfluxes/temperature gradients from Gauss points to
-  // nodes is done by DRT::Discretization utilising an assembly call. The
+  // nodes is done by Discret::Discretization utilising an assembly call. The
   // assembly is parallel and thus all processors have to be incoporated
   // --- at least I think so. (culpit: bborn, 07/09)
   for (std::vector<std::string>::iterator gn = groupnames.begin(); gn != groupnames.end(); ++gn)
@@ -871,16 +871,16 @@ void StructMonWriter::write_str_result(std::ofstream& outfile, PostField*& field
   using namespace FourC;
 
   // get stresses/strains at Gauss points
-  const Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> data =
+  const Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> data =
       result.read_result_serialdensematrix(groupname);
   // discretisation (once more)
-  const Teuchos::RCP<DRT::Discretization> dis = field->discretization();
+  const Teuchos::RCP<Discret::Discretization> dis = field->discretization();
 
   Epetra_MultiVector nodal_stress(*dis->NodeRowMap(), 6, true);
 
   dis->Evaluate(
-      [&](CORE::Elements::Element& ele) {
-        CORE::FE::ExtrapolateGaussPointQuantityToNodes(
+      [&](Core::Elements::Element& ele) {
+        Core::FE::ExtrapolateGaussPointQuantityToNodes(
             ele, *data->at(ele.Id()), *dis, nodal_stress);
       });
 
@@ -1531,10 +1531,10 @@ void ThermoMonWriter::write_thr_result(std::ofstream& outfile, PostField*& field
   using namespace FourC;
 
   // get heatfluxes/temperature gradients at Gauss points
-  const Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> data =
+  const Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> data =
       result.read_result_serialdensematrix(groupname);
   // discretisation (once more)
-  const Teuchos::RCP<DRT::Discretization> dis = field->discretization();
+  const Teuchos::RCP<Discret::Discretization> dis = field->discretization();
 
   // extrapolate heatfluxes/temperature gradients to nodes
   // and assemble them in two global vectors
@@ -1554,7 +1554,7 @@ void ThermoMonWriter::write_thr_result(std::ofstream& outfile, PostField*& field
   // average heatfluxes/temperature gradients and print to file
   if (nodeowner_)
   {
-    const CORE::Nodes::Node* lnode = dis->gNode(node);
+    const Core::Nodes::Node* lnode = dis->gNode(node);
     const std::vector<int> lnodedofs = dis->Dof(lnode);
     const int adjele = lnode->NumElement();
 
@@ -1822,9 +1822,9 @@ int main(int argc, char** argv)
 
   switch (problem.Problemtype())
   {
-    case CORE::ProblemType::fsi:
-    case CORE::ProblemType::fsi_redmodels:
-    case CORE::ProblemType::fsi_lung:
+    case Core::ProblemType::fsi:
+    case Core::ProblemType::fsi_redmodels:
+    case Core::ProblemType::fsi_lung:
     {
       if (infieldtype == "fluid")
       {
@@ -1848,12 +1848,12 @@ int main(int argc, char** argv)
       }
       break;
     }
-    case CORE::ProblemType::structure:
-    case CORE::ProblemType::loma:
-    case CORE::ProblemType::fluid_xfem_ls:
-    case CORE::ProblemType::fluid:
-    case CORE::ProblemType::fluid_redmodels:
-    case CORE::ProblemType::fps3i:
+    case Core::ProblemType::structure:
+    case Core::ProblemType::loma:
+    case Core::ProblemType::fluid_xfem_ls:
+    case Core::ProblemType::fluid:
+    case Core::ProblemType::fluid_redmodels:
+    case Core::ProblemType::fps3i:
     {
       if (infieldtype == "scatra")
       {
@@ -1872,13 +1872,13 @@ int main(int argc, char** argv)
       }
       break;
     }
-    case CORE::ProblemType::ale:
+    case Core::ProblemType::ale:
     {
       AleMonWriter mymonwriter(problem, infieldtype, node);
       mymonwriter.WriteMonFile(problem, infieldtype, node);
       break;
     }
-    case CORE::ProblemType::thermo:
+    case Core::ProblemType::thermo:
     {
       ThermoMonWriter mymonwriter(problem, infieldtype, node);
       mymonwriter.WriteMonFile(problem, infieldtype, node);
@@ -1886,7 +1886,7 @@ int main(int argc, char** argv)
       mymonwriter.write_mon_tempgrad_file(problem, infieldtype, problem.tempgradtype(), node);
       break;
     }
-    case CORE::ProblemType::tsi:
+    case Core::ProblemType::tsi:
     {
       if (infieldtype == "structure")
       {
@@ -1912,15 +1912,15 @@ int main(int argc, char** argv)
       }
       break;
     }
-    case CORE::ProblemType::gas_fsi:
-    case CORE::ProblemType::ac_fsi:
-    case CORE::ProblemType::biofilm_fsi:
-    case CORE::ProblemType::thermo_fsi:
+    case Core::ProblemType::gas_fsi:
+    case Core::ProblemType::ac_fsi:
+    case Core::ProblemType::biofilm_fsi:
+    case Core::ProblemType::thermo_fsi:
     {
       FOUR_C_THROW("not implemented yet");
       break;
     }
-    case CORE::ProblemType::red_airways:
+    case Core::ProblemType::red_airways:
     {
       if (infieldtype == "red_airway")
       {
@@ -1929,7 +1929,7 @@ int main(int argc, char** argv)
       }
       break;
     }
-    case CORE::ProblemType::poroelast:
+    case Core::ProblemType::poroelast:
     {
       if (infieldtype == "fluid")
       {
@@ -1943,13 +1943,13 @@ int main(int argc, char** argv)
       }
       break;
     }
-    case CORE::ProblemType::porofluidmultiphase:
+    case Core::ProblemType::porofluidmultiphase:
     {
       PoroFluidMultiMonWriter mymonwriter(problem, infieldtype, node);
       mymonwriter.WriteMonFile(problem, infieldtype, node);
       break;
     }
-    case CORE::ProblemType::poromultiphase:
+    case Core::ProblemType::poromultiphase:
     {
       if (infieldtype == "structure")
       {
@@ -1966,7 +1966,7 @@ int main(int argc, char** argv)
             infieldtype.c_str());
       break;
     }
-    case CORE::ProblemType::poromultiphasescatra:
+    case Core::ProblemType::poromultiphasescatra:
     {
       if (infieldtype == "structure")
       {
@@ -2000,7 +2000,7 @@ int main(int argc, char** argv)
     break;
   }
 
-  GLOBAL::Problem::Done();
+  Global::Problem::Done();
 
   return 0;
 }

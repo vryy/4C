@@ -51,7 +51,7 @@ void STR::TimIntImpl::NoxSetup(const Teuchos::ParameterList& noxparams)
   // copy the input list
   noxparams_ = Teuchos::rcp(new Teuchos::ParameterList(noxparams));
   // make all Yes/No integral values to Boolean
-  INPUT::BoolifyValidInputParameters(*noxparams_);
+  Input::BoolifyValidInputParameters(*noxparams_);
 
   // Remove legacy parameters
   {
@@ -99,25 +99,25 @@ Teuchos::RCP<::NOX::StatusTest::Combo> STR::TimIntImpl::NoxCreateStatusTest(
   ::NOX::Epetra::Vector::NormType norm = ::NOX::Epetra::Vector::TwoNorm;
   ::NOX::StatusTest::NormF::ScaleType scalefres = ::NOX::StatusTest::NormF::Scaled;
   ::NOX::StatusTest::NormUpdate::ScaleType scaledisi = ::NOX::StatusTest::NormUpdate::Scaled;
-  if (iternorm_ == INPAR::STR::norm_l1)
+  if (iternorm_ == Inpar::STR::norm_l1)
   {
     norm = ::NOX::Epetra::Vector::OneNorm;
     scalefres = ::NOX::StatusTest::NormF::Unscaled;
     scaledisi = ::NOX::StatusTest::NormUpdate::Unscaled;
   }
-  else if (iternorm_ == INPAR::STR::norm_l2)
+  else if (iternorm_ == Inpar::STR::norm_l2)
   {
     norm = ::NOX::Epetra::Vector::TwoNorm;
     scalefres = ::NOX::StatusTest::NormF::Unscaled;
     scaledisi = ::NOX::StatusTest::NormUpdate::Unscaled;
   }
-  else if (iternorm_ == INPAR::STR::norm_rms)
+  else if (iternorm_ == Inpar::STR::norm_rms)
   {
     norm = ::NOX::Epetra::Vector::TwoNorm;
     scalefres = ::NOX::StatusTest::NormF::Scaled;
     scaledisi = ::NOX::StatusTest::NormUpdate::Scaled;
   }
-  else if (iternorm_ == INPAR::STR::norm_inf)
+  else if (iternorm_ == Inpar::STR::norm_inf)
   {
     norm = ::NOX::Epetra::Vector::MaxNorm;
     scalefres = ::NOX::StatusTest::NormF::Unscaled;
@@ -125,16 +125,16 @@ Teuchos::RCP<::NOX::StatusTest::Combo> STR::TimIntImpl::NoxCreateStatusTest(
   }
   else
   {
-    FOUR_C_THROW("Norm %s is not available", INPAR::STR::VectorNormString(iternorm_).c_str());
+    FOUR_C_THROW("Norm %s is not available", Inpar::STR::VectorNormString(iternorm_).c_str());
   }
 
   // combined residual force and displacement test
   Teuchos::RCP<::NOX::StatusTest::Combo> combo2 = Teuchos::null;
-  if (combdisifres_ == INPAR::STR::bop_and)
+  if (combdisifres_ == Inpar::STR::bop_and)
   {
     combo2 = Teuchos::rcp(new ::NOX::StatusTest::Combo(::NOX::StatusTest::Combo::AND));
   }
-  else if (combdisifres_ == INPAR::STR::bop_or)
+  else if (combdisifres_ == Inpar::STR::bop_or)
   {
     combo2 = Teuchos::rcp(new ::NOX::StatusTest::Combo(::NOX::StatusTest::Combo::OR));
   }
@@ -145,21 +145,21 @@ Teuchos::RCP<::NOX::StatusTest::Combo> STR::TimIntImpl::NoxCreateStatusTest(
 
 
   // convergence tests for force residual
-  if (normtypefres_ == INPAR::STR::convnorm_abs)
+  if (normtypefres_ == Inpar::STR::convnorm_abs)
   {
     // absolute test
     Teuchos::RCP<::NOX::StatusTest::NormF> statusTestNormFres =
         Teuchos::rcp(new ::NOX::StatusTest::NormF(tolfres_, norm, scalefres));
     combo2->addStatusTest(statusTestNormFres);
   }
-  else if (normtypefres_ == INPAR::STR::convnorm_rel)
+  else if (normtypefres_ == Inpar::STR::convnorm_rel)
   {
     // relative
     Teuchos::RCP<::NOX::StatusTest::NormF> statusTestNormFres =
         Teuchos::rcp(new ::NOX::StatusTest::NormF(*grp, tolfres_, norm, scalefres));
     combo2->addStatusTest(statusTestNormFres);
   }
-  else if (normtypefres_ == INPAR::STR::convnorm_mix)
+  else if (normtypefres_ == Inpar::STR::convnorm_mix)
   {
     // mixed
     Teuchos::RCP<::NOX::StatusTest::Combo> combo3 =
@@ -180,20 +180,20 @@ Teuchos::RCP<::NOX::StatusTest::Combo> STR::TimIntImpl::NoxCreateStatusTest(
   }
 
   // convergence tests for residual displacements
-  if (normtypedisi_ == INPAR::STR::convnorm_abs)
+  if (normtypedisi_ == Inpar::STR::convnorm_abs)
   {
     // absolute test
     Teuchos::RCP<::NOX::StatusTest::NormUpdate> statusTestNormDisi =
         Teuchos::rcp(new ::NOX::StatusTest::NormUpdate(toldisi_, norm, scaledisi));
     combo2->addStatusTest(statusTestNormDisi);
   }
-  else if (normtypedisi_ == INPAR::STR::convnorm_rel)
+  else if (normtypedisi_ == Inpar::STR::convnorm_rel)
   {
     // relative test
     // NOT AVAILABLE
     FOUR_C_THROW("Not available");
   }
-  else if (normtypedisi_ == INPAR::STR::convnorm_mix)
+  else if (normtypedisi_ == Inpar::STR::convnorm_mix)
   {
     // mixed
     // Teuchos::RCP<::NOX::StatusTest::Combo> combo3
@@ -403,14 +403,14 @@ int STR::TimIntImpl::NoxErrorCheck(
   // check if nonlinear solver converged
   if (status != ::NOX::StatusTest::Converged)
   {
-    if (divcontype_ == INPAR::STR::divcont_halve_step or
-        divcontype_ == INPAR::STR::divcont_repeat_step or
-        divcontype_ == INPAR::STR::divcont_repeat_simulation)
+    if (divcontype_ == Inpar::STR::divcont_halve_step or
+        divcontype_ == Inpar::STR::divcont_repeat_step or
+        divcontype_ == Inpar::STR::divcont_repeat_simulation)
     {
       if (myrank_ == 0) noxutils_->out() << "Nonlinear solver failed to converge!" << std::endl;
       return 1;
     }
-    else if (divcontype_ == INPAR::STR::divcont_continue)
+    else if (divcontype_ == Inpar::STR::divcont_continue)
     {
       if (myrank_ == 0)
         noxutils_->out() << "Nonlinear solver failed to converge! continuing " << std::endl;

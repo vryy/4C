@@ -35,9 +35,9 @@ namespace
    protected:
     CoupAnisoExpoAnisotropyExtensionGaussPointFiberTest()
         : anisotropy_(),
-          gpFibers_(2, std::vector<CORE::LINALG::Matrix<3, 1>>(2)),
-          gpTensors_(2, std::vector<CORE::LINALG::Matrix<3, 3>>(2)),
-          gpTensors_stress_(2, std::vector<CORE::LINALG::Matrix<6, 1>>(2))
+          gpFibers_(2, std::vector<Core::LinAlg::Matrix<3, 1>>(2)),
+          gpTensors_(2, std::vector<Core::LinAlg::Matrix<3, 3>>(2)),
+          gpTensors_stress_(2, std::vector<Core::LinAlg::Matrix<6, 1>>(2))
     {
       /// initialize dummy fibers
       // gp 0
@@ -63,7 +63,7 @@ namespace
         for (std::size_t i = 0; i < 2; ++i)
         {
           gpTensors_[gp][i].MultiplyNT(gpFibers_[gp][i], gpFibers_[gp][i]);
-          CORE::LINALG::VOIGT::Stresses::MatrixToVector(
+          Core::LinAlg::Voigt::Stresses::MatrixToVector(
               gpTensors_[gp][i], gpTensors_stress_[gp][i]);
         }
       }
@@ -74,13 +74,13 @@ namespace
     void setup_anisotropy_extension()
     {
       int fiber_id = std::get<0>(GetParam());
-      auto strategy = Teuchos::rcp(new MAT::ELASTIC::StructuralTensorStrategyStandard(nullptr));
-      anisotropyExtension_ = std::make_unique<MAT::ELASTIC::CoupAnisoExpoAnisotropyExtension>(
+      auto strategy = Teuchos::rcp(new Mat::Elastic::StructuralTensorStrategyStandard(nullptr));
+      anisotropyExtension_ = std::make_unique<Mat::Elastic::CoupAnisoExpoAnisotropyExtension>(
           3, 0.0, false, strategy, fiber_id);
       anisotropyExtension_->register_needed_tensors(
-          MAT::FiberAnisotropyExtension<1>::FIBER_VECTORS |
-          MAT::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR_STRESS |
-          MAT::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR);
+          Mat::FiberAnisotropyExtension<1>::FIBER_VECTORS |
+          Mat::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR_STRESS |
+          Mat::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR);
       anisotropy_.register_anisotropy_extension(*anisotropyExtension_);
       anisotropy_.set_number_of_gauss_points(2);
 
@@ -92,12 +92,12 @@ namespace
 
     [[nodiscard]] int get_fiber_id() const { return std::get<0>(GetParam()); }
 
-    MAT::Anisotropy anisotropy_;
-    std::unique_ptr<MAT::ELASTIC::CoupAnisoExpoAnisotropyExtension> anisotropyExtension_;
+    Mat::Anisotropy anisotropy_;
+    std::unique_ptr<Mat::Elastic::CoupAnisoExpoAnisotropyExtension> anisotropyExtension_;
 
-    std::vector<std::vector<CORE::LINALG::Matrix<3, 1>>> gpFibers_;
-    std::vector<std::vector<CORE::LINALG::Matrix<3, 3>>> gpTensors_;
-    std::vector<std::vector<CORE::LINALG::Matrix<6, 1>>> gpTensors_stress_;
+    std::vector<std::vector<Core::LinAlg::Matrix<3, 1>>> gpFibers_;
+    std::vector<std::vector<Core::LinAlg::Matrix<3, 3>>> gpTensors_;
+    std::vector<std::vector<Core::LinAlg::Matrix<6, 1>>> gpTensors_stress_;
   };
 
   TEST_P(CoupAnisoExpoAnisotropyExtensionGaussPointFiberTest, GetScalarProduct)

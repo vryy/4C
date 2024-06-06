@@ -19,9 +19,9 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
-  namespace ELASTIC
+  namespace Elastic
   {
     namespace PAR
     {
@@ -31,11 +31,11 @@ namespace MAT
        * MIN_ACTIVATION -20.0 SOURCE_ACTIVATION 1 ACTIVATION_THRES 0 [STRAIN_DEPENDENCY No]
        * [LAMBDA_LOWER 0.707] [LAMBDA_UPPER 1.414]
        */
-      class AnisoActiveStressEvolution : public MAT::PAR::ParameterAniso
+      class AnisoActiveStressEvolution : public Mat::PAR::ParameterAniso
       {
        public:
         /// standard constructor
-        explicit AnisoActiveStressEvolution(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
+        explicit AnisoActiveStressEvolution(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
 
         /// @name material parameters
         //@{
@@ -69,11 +69,11 @@ namespace MAT
 
         /// Override this method and throw error, as the material should be created in within the
         /// Factory method of the elastic summand
-        Teuchos::RCP<CORE::MAT::Material> create_material() override
+        Teuchos::RCP<Core::Mat::Material> create_material() override
         {
           FOUR_C_THROW(
               "Cannot create a material from this method, as it should be created in "
-              "MAT::ELASTIC::Summand::Factory.");
+              "Mat::Elastic::Summand::Factory.");
           return Teuchos::null;
         };
       };  // class AnisoActiveStress_Evolution
@@ -120,12 +120,12 @@ namespace MAT
     {
      public:
       /// constructor with given material parameters
-      explicit AnisoActiveStressEvolution(MAT::ELASTIC::PAR::AnisoActiveStressEvolution* params);
+      explicit AnisoActiveStressEvolution(Mat::Elastic::PAR::AnisoActiveStressEvolution* params);
 
       ///@name Packing and Unpacking
       //@{
 
-      void PackSummand(CORE::COMM::PackBuffer& data) const override;
+      void PackSummand(Core::Communication::PackBuffer& data) const override;
 
       void UnpackSummand(
           const std::vector<char>& data, std::vector<char>::size_type& position) override;
@@ -135,9 +135,9 @@ namespace MAT
       //@{
 
       /// material type
-      CORE::Materials::MaterialType MaterialType() const override
+      Core::Materials::MaterialType MaterialType() const override
       {
-        return CORE::Materials::mes_anisoactivestress_evolution;
+        return Core::Materials::mes_anisoactivestress_evolution;
       }
 
       //@}
@@ -147,10 +147,10 @@ namespace MAT
        *
        * \param anisotropy Reference to the anisotropy manager
        */
-      void register_anisotropy_extensions(MAT::Anisotropy& anisotropy) override;
+      void register_anisotropy_extensions(Mat::Anisotropy& anisotropy) override;
 
       /// Setup of summand
-      void Setup(int numgp, INPUT::LineDefinition* linedef) override;
+      void Setup(int numgp, Input::LineDefinition* linedef) override;
 
       /*!
        * \brief post_setup routine of the element
@@ -163,9 +163,9 @@ namespace MAT
 
       /// Add anisotropic principal stresses
       void add_stress_aniso_principal(
-          const CORE::LINALG::Matrix<6, 1>& rcg,  ///< right Cauchy Green Tensor
-          CORE::LINALG::Matrix<6, 6>& cmat,       ///< material stiffness matrix
-          CORE::LINALG::Matrix<6, 1>& stress,     ///< 2nd PK-stress
+          const Core::LinAlg::Matrix<6, 1>& rcg,  ///< right Cauchy Green Tensor
+          Core::LinAlg::Matrix<6, 6>& cmat,       ///< material stiffness matrix
+          Core::LinAlg::Matrix<6, 1>& stress,     ///< 2nd PK-stress
           Teuchos::ParameterList&
               params,  ///< additional parameters for computation of material properties
           int gp,      ///< Gauss point
@@ -174,13 +174,13 @@ namespace MAT
 
       /// Set fiber directions
       void SetFiberVecs(double newgamma,             ///< new angle
-          const CORE::LINALG::Matrix<3, 3>& locsys,  ///< local coordinate system
-          const CORE::LINALG::Matrix<3, 3>& defgrd   ///< deformation gradient
+          const Core::LinAlg::Matrix<3, 3>& locsys,  ///< local coordinate system
+          const Core::LinAlg::Matrix<3, 3>& defgrd   ///< deformation gradient
           ) override;
 
       /// Get fiber directions
       void GetFiberVecs(
-          std::vector<CORE::LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
+          std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
           ) override;
 
       /// Setup of patient-specific materials
@@ -203,7 +203,7 @@ namespace MAT
 
      private:
       /// my material parameters
-      MAT::ELASTIC::PAR::AnisoActiveStressEvolution* params_;
+      Mat::Elastic::PAR::AnisoActiveStressEvolution* params_;
 
       /// Active stress at current time step
       double tauc_np_;
@@ -214,8 +214,8 @@ namespace MAT
       DefaultAnisotropyExtension<1> anisotropy_extension_;
     };
 
-  }  // namespace ELASTIC
-}  // namespace MAT
+  }  // namespace Elastic
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -25,12 +25,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace CORE::COMM
+namespace Core::Communication
 {
   /*!
    * \brief Add nodal GID on this processor to existing list of GIDs
@@ -39,8 +39,9 @@ namespace CORE::COMM
    * @param[in] nodegid               nodal GID
    * @param[out] my_gid_vec           vector/set with my node GIDs
    */
-  void AddOwnedNodeGID(const DRT::Discretization& dis, int nodegid, std::vector<int>& my_gid_vec);
-  void AddOwnedNodeGID(const DRT::Discretization& dis, int nodegid, std::set<int>& my_gid_set);
+  void AddOwnedNodeGID(
+      const Discret::Discretization& dis, int nodegid, std::vector<int>& my_gid_vec);
+  void AddOwnedNodeGID(const Discret::Discretization& dis, int nodegid, std::set<int>& my_gid_set);
 
   /*!
    * \brief Add nodal GIDs on this processor to existing list from list with global GIDs
@@ -51,7 +52,7 @@ namespace CORE::COMM
    */
   template <typename T, typename U>
   void AddOwnedNodeGIDFromList(
-      const DRT::Discretization& dis, const T& global_node_gid_vec, U& my_gid_list)
+      const Discret::Discretization& dis, const T& global_node_gid_vec, U& my_gid_list)
   {
     for (const int nodegid : global_node_gid_vec) AddOwnedNodeGID(dis, nodegid, my_gid_list);
   }
@@ -63,7 +64,7 @@ namespace CORE::COMM
    * @param[in] node_gid              GID of node to be checked
    * @return                          indicates, whether node is owned by this processor
    */
-  bool IsNodeGIDOnThisProc(const DRT::Discretization& dis, int node_gid);
+  bool IsNodeGIDOnThisProc(const Discret::Discretization& dis, int node_gid);
 
   //! Merge map @p map_in (key of type @p T and value of type @p U) from all procs to a merged
   //! map (key of type @p T and value of type @p U). It is distributed to to all procs.
@@ -86,12 +87,12 @@ namespace CORE::COMM
   //! @p T). The items of are in an unspecified order. It is distributed to to all procs.
   template <typename T>
   std::vector<T> BroadcastVector(const std::vector<T>& vec_in, const Epetra_Comm& comm);
-}  // namespace CORE::COMM
+}  // namespace Core::Communication
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-namespace CORE::COMM::DETAIL
+namespace Core::Communication::DETAIL
 {
   //! Broadcast a map or vector<pair>
   template <typename T, typename U, typename M>
@@ -120,12 +121,13 @@ namespace CORE::COMM::DETAIL
       vec_out2.emplace_back(vec2[i]);
     }
   }
-}  // namespace CORE::COMM::DETAIL
+}  // namespace Core::Communication::DETAIL
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <typename T, typename U>
-std::map<T, U> CORE::COMM::BroadcastMap(const std::map<T, U>& map_in, const Epetra_Comm& comm)
+std::map<T, U> Core::Communication::BroadcastMap(
+    const std::map<T, U>& map_in, const Epetra_Comm& comm)
 {
   std::vector<T> vec1;
   std::vector<U> vec2;
@@ -138,7 +140,7 @@ std::map<T, U> CORE::COMM::BroadcastMap(const std::map<T, U>& map_in, const Epet
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <typename T, typename U>
-std::vector<std::pair<T, U>> CORE::COMM::BroadcastPairVector(
+std::vector<std::pair<T, U>> Core::Communication::BroadcastPairVector(
     const std::vector<std::pair<T, U>>& pairs_in, const Epetra_Comm& comm)
 {
   std::vector<T> vec1;
@@ -153,7 +155,7 @@ std::vector<std::pair<T, U>> CORE::COMM::BroadcastPairVector(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <typename T>
-std::set<T> CORE::COMM::BroadcastSet(const std::set<T>& set_in, const Epetra_Comm& comm)
+std::set<T> Core::Communication::BroadcastSet(const std::set<T>& set_in, const Epetra_Comm& comm)
 {
   std::vector<T> vec_in, vec_out;
   for (const auto& val : set_in) vec_in.emplace_back(val);
@@ -166,7 +168,8 @@ std::set<T> CORE::COMM::BroadcastSet(const std::set<T>& set_in, const Epetra_Com
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <typename T>
-std::vector<T> CORE::COMM::BroadcastVector(const std::vector<T>& vec_in, const Epetra_Comm& comm)
+std::vector<T> Core::Communication::BroadcastVector(
+    const std::vector<T>& vec_in, const Epetra_Comm& comm)
 {
   std::vector<T> vec_out;
   for (int iproc = 0; iproc < comm.NumProc(); ++iproc)

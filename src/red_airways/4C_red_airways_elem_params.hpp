@@ -12,7 +12,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT::REDAIRWAYS
+namespace Discret::ReducedLung
 {
   struct ElemParams
   {
@@ -66,7 +66,7 @@ namespace DRT::REDAIRWAYS
     double volume_init{1.0};
     int generation{-1};
   };
-}  // namespace DRT::REDAIRWAYS
+}  // namespace Discret::ReducedLung
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -26,12 +26,12 @@ FOUR_C_NAMESPACE_OPEN
 using namespace CONTACT;
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
 }
@@ -44,8 +44,8 @@ class Beam3ContactOctTree
 {
  public:
   //!\brief Constructor
-  Beam3ContactOctTree(
-      Teuchos::ParameterList& params, DRT::Discretization& discret, DRT::Discretization& searchdis);
+  Beam3ContactOctTree(Teuchos::ParameterList& params, Discret::Discretization& discret,
+      Discret::Discretization& searchdis);
 
   //!\brief Destructor
   virtual ~Beam3ContactOctTree() = default;
@@ -53,8 +53,8 @@ class Beam3ContactOctTree
   /*!\brief call octtree search routine
    * \param currentposition (in) node positions in column map format (fully overlapping)
    * \param step            (in) time step (needed for output)*/
-  std::vector<std::vector<CORE::Elements::Element*>> OctTreeSearch(
-      std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions, int step = -1);
+  std::vector<std::vector<Core::Elements::Element*>> OctTreeSearch(
+      std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions, int step = -1);
 
   //!\brief checks in which octant a given bounding box lies
   std::vector<int> InWhichOctantLies(const int& thisBBoxID);
@@ -63,13 +63,13 @@ class Beam3ContactOctTree
    * \param nodecoords  (in) nodal coordinates
    * \param nodeLID     (in) local Ids of the nodes */
   bool IntersectBBoxesWith(
-      CORE::LINALG::SerialDenseMatrix& nodecoords, CORE::LINALG::SerialDenseMatrix& nodeLID);
+      Core::LinAlg::SerialDenseMatrix& nodecoords, Core::LinAlg::SerialDenseMatrix& nodeLID);
 
   /*!\brief output of octree discretization, bounding boxes and contact pairs
    * \param contactpairelements (in) vector with contact pairs
    * \param step   (in) time step */
   void OctreeOutput(
-      std::vector<std::vector<CORE::Elements::Element*>> contactpairelements, int step);
+      std::vector<std::vector<Core::Elements::Element*>> contactpairelements, int step);
 
  private:
   // ! \brief Bounding Box Types available for this search routine
@@ -86,26 +86,26 @@ class Beam3ContactOctTree
   /*!\brief generator of extended Bounding Boxes (axis aligned as well as cylindrical oriented)
    * \param currentpositions (in) map holding node positions
    */
-  void create_bounding_boxes(std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions);
+  void create_bounding_boxes(std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions);
   //!\brief get the dimensions of the root octant
-  CORE::LINALG::Matrix<6, 1> get_root_box();
+  Core::LinAlg::Matrix<6, 1> get_root_box();
   /*!\brief create axis aligned bounding boxes
    * \param coord      (in)  coordinates of the element's nodes
    * \param elecolid   (in)  element column map Id
    * \param bboxlimits (out) limits of the bounding box*/
-  void create_aabb(CORE::LINALG::SerialDenseMatrix& coord, const int& elecolid,
-      Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> bboxlimits = Teuchos::null);
+  void create_aabb(Core::LinAlg::SerialDenseMatrix& coord, const int& elecolid,
+      Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> bboxlimits = Teuchos::null);
   /*!\brief create coylindrical oriented bounding boxes
    * \param coord      (in)  coordinates of the element's nodes
    * \param elecolid   (in)  element column map Id
    * \param bboxlimits (out) limits of the bounding box*/
-  void create_cobb(CORE::LINALG::SerialDenseMatrix& coord, const int& elecolid,
-      Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> bboxlimits = Teuchos::null);
+  void create_cobb(Core::LinAlg::SerialDenseMatrix& coord, const int& elecolid,
+      Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> bboxlimits = Teuchos::null);
   /*! \brief create spherical bounding boxes for crosslinker
    * \param coord      (in)  coordinates of the element's nodes
    * \param elecolid   (in)  element column map Id*/
-  void create_spbb(CORE::LINALG::SerialDenseMatrix& coord, const int& elecolid,
-      Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> bboxlimits = Teuchos::null);
+  void create_spbb(Core::LinAlg::SerialDenseMatrix& coord, const int& elecolid,
+      Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> bboxlimits = Teuchos::null);
 
 
   //!\brief base call for octree build. Returns false if no bounding boxes exist
@@ -119,7 +119,7 @@ class Beam3ContactOctTree
    * \param bbox2octant       (in/out) vector mapping bounding boxes to octants they lie in
    * \param treedepth         (in) current tree depth*/
   void locate_box(std::vector<std::vector<double>>& allbboxesstdvec,
-      CORE::LINALG::Matrix<6, 1>& lim, std::vector<CORE::LINALG::Matrix<6, 1>>& octreelimits,
+      Core::LinAlg::Matrix<6, 1>& lim, std::vector<Core::LinAlg::Matrix<6, 1>>& octreelimits,
       std::vector<std::vector<int>>& bboxesinoctants, std::vector<std::vector<int>>& bbox2octant,
       int& treedepth);
 
@@ -127,20 +127,20 @@ class Beam3ContactOctTree
    *  \param parentoctlimits  (in)  limits of the parent octant
    *  \param suboctedgelength (out) edge length of the sub octants
    *  \param suboctlimits     (out) limits of the 8 sub octants*/
-  void create_sub_octants(CORE::LINALG::Matrix<6, 1>& parentoctlimits,
-      CORE::LINALG::Matrix<3, 1>& suboctedgelength,
-      std::vector<CORE::LINALG::Matrix<6, 1>>& suboctlimits);
+  void create_sub_octants(Core::LinAlg::Matrix<6, 1>& parentoctlimits,
+      Core::LinAlg::Matrix<3, 1>& suboctedgelength,
+      std::vector<Core::LinAlg::Matrix<6, 1>>& suboctlimits);
 
   //! \brief Check if axis aligned bounding box is in the current octant
   bool aabb_is_in_this_octant(
-      CORE::LINALG::Matrix<6, 1>& suboctlimits, std::vector<double>& bboxcoords, int& shift);
+      Core::LinAlg::Matrix<6, 1>& suboctlimits, std::vector<double>& bboxcoords, int& shift);
   //! \brief Check if cylindrical oriented bounding box is in the current octant
-  bool cobb_is_in_this_octant(CORE::LINALG::Matrix<3, 1>& octcenter,
-      CORE::LINALG::Matrix<3, 1>& newedgelength, std::vector<double>& bboxcoords,
+  bool cobb_is_in_this_octant(Core::LinAlg::Matrix<3, 1>& octcenter,
+      Core::LinAlg::Matrix<3, 1>& newedgelength, std::vector<double>& bboxcoords,
       double& extrusionvalue, int& lid, int& shift);
   //! \brief Check if spherical bounding box is in the current octant
-  bool spbb_is_in_this_octant(CORE::LINALG::Matrix<3, 1>& octcenter,
-      CORE::LINALG::Matrix<3, 1>& newedgelength, std::vector<double>& bboxcoords, int& lid,
+  bool spbb_is_in_this_octant(Core::LinAlg::Matrix<3, 1>& octcenter,
+      Core::LinAlg::Matrix<3, 1>& newedgelength, std::vector<double>& bboxcoords, int& lid,
       int& shift);
 
   /*!\brief Manages the intersection of bounding boxes of an octant
@@ -148,24 +148,24 @@ class Beam3ContactOctTree
    * \param contactpaits      (out) vector holding all contact pairs considered after octree
    * evaluation
    */
-  void bounding_box_intersection(std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
-      std::vector<std::vector<CORE::Elements::Element*>>& contactpairelements);
+  void bounding_box_intersection(std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions,
+      std::vector<std::vector<Core::Elements::Element*>>& contactpairelements);
 
   /*!\brief intersection method applying axis-aligned bounding boxes when both boxes belong to
    * existing elements \param bboxIDs    (in) vector with bounding box Ids (element GIDs) \param
    * bboxlimits (in) limits of the bounding box */
   bool intersection_aabb(const std::vector<int>& bboxIDs,
-      Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> bboxlimits = Teuchos::null);
+      Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> bboxlimits = Teuchos::null);
   /*!\brief intersection method applying cylindrical oriented bounding boxes when both boxes belong
    * to existing elements \param bboxIDs    (in) vector with bounding box Ids (element GIDs)
    * \param bboxlimits (in) limits of the bounding box */
   bool intersection_cobb(const std::vector<int>& bboxIDs,
-      Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> bboxlimits = Teuchos::null);
+      Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> bboxlimits = Teuchos::null);
   /* !\brief intersection method applying spherical bounding boxes for crosslinker when both boxes
    * belong to existing elements \param bboxIDs    (in) vector with bounding box Ids (element GIDs)
    *  \param bboxlimits (in) limits of the bounding box */
   bool intersection_spbb(const std::vector<int>& bboxIDs,
-      Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> bboxlimits = Teuchos::null);
+      Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> bboxlimits = Teuchos::null);
 
   /*! \brief communicate Vector to all participating processors
    *  \param InVec    (in) Source/Input vector
@@ -183,13 +183,13 @@ class Beam3ContactOctTree
       bool zerofy = false, bool doexport = true, bool doimport = true);
 
   /*! \brief Calculate maximal and minimal x-, y- and z-value of a solid elements nodes */
-  void calc_corner_pos(CORE::Elements::Element* element,
-      std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
-      CORE::LINALG::SerialDenseMatrix& coord);
+  void calc_corner_pos(Core::Elements::Element* element,
+      std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions,
+      Core::LinAlg::SerialDenseMatrix& coord);
 
   /*! \brief Undo the shifts due periodic BCs and make coord continuous */
   void undo_effect_of_periodic_boundary_condition(
-      CORE::LINALG::SerialDenseMatrix& coord, std::vector<int>& cut, int& numshifts);
+      Core::LinAlg::SerialDenseMatrix& coord, std::vector<int>& cut, int& numshifts);
 
   /*! \brief Retrieve bounding box specific extrusion value*/
   double get_bounding_box_extrusion_value();
@@ -249,16 +249,16 @@ class Beam3ContactOctTree
   Teuchos::RCP<std::vector<double>> periodlength_;
 
   //!\brief Matrix holding the spatial limits of the root box
-  CORE::LINALG::Matrix<6, 1> rootbox_;
+  Core::LinAlg::Matrix<6, 1> rootbox_;
 
   //!\brief Matrix holding the spatial limits of the root box in reference configuration
-  CORE::LINALG::Matrix<6, 1> initbox_;
+  Core::LinAlg::Matrix<6, 1> initbox_;
 
   //!\brief problem discretization
-  DRT::Discretization& discret_;
+  Discret::Discretization& discret_;
 
   //!\brief contact discretization
-  DRT::Discretization& searchdis_;
+  Discret::Discretization& searchdis_;
 
   //!\brief number of initial nodes
   int basisnodes_;
@@ -285,7 +285,7 @@ class Beam3ContactOctTree
   Teuchos::RCP<Epetra_MultiVector> bbox2octant_;
 
   //!\brief storage vector for octree octant limits
-  std::vector<CORE::LINALG::Matrix<6, 1>> octreelimits_;
+  std::vector<Core::LinAlg::Matrix<6, 1>> octreelimits_;
 
   //!\brief vector holding information on how many times a bounding box is shifted due to periodic
   //! boundary conditions

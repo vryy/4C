@@ -23,14 +23,14 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-PARTICLEINTERACTION::SPHBoundaryParticleBase::SPHBoundaryParticleBase(
+ParticleInteraction::SPHBoundaryParticleBase::SPHBoundaryParticleBase(
     const Teuchos::ParameterList& params)
     : params_sph_(params)
 {
   // empty constructor
 }
 
-void PARTICLEINTERACTION::SPHBoundaryParticleBase::Init()
+void ParticleInteraction::SPHBoundaryParticleBase::Init()
 {
   // init with potential fluid particle types
   fluidtypes_ = {PARTICLEENGINE::Phase1, PARTICLEENGINE::Phase2, PARTICLEENGINE::DirichletPhase,
@@ -40,9 +40,9 @@ void PARTICLEINTERACTION::SPHBoundaryParticleBase::Init()
   boundarytypes_ = {PARTICLEENGINE::BoundaryPhase, PARTICLEENGINE::RigidPhase};
 }
 
-void PARTICLEINTERACTION::SPHBoundaryParticleBase::Setup(
+void ParticleInteraction::SPHBoundaryParticleBase::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-    const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs)
+    const std::shared_ptr<ParticleInteraction::SPHNeighborPairs> neighborpairs)
 {
   // set interface to particle engine
   particleengineinterface_ = particleengineinterface;
@@ -70,16 +70,16 @@ void PARTICLEINTERACTION::SPHBoundaryParticleBase::Setup(
         "no boundary or rigid particles defined but a boundary particle formulation is set!");
 }
 
-PARTICLEINTERACTION::SPHBoundaryParticleAdami::SPHBoundaryParticleAdami(
+ParticleInteraction::SPHBoundaryParticleAdami::SPHBoundaryParticleAdami(
     const Teuchos::ParameterList& params)
-    : PARTICLEINTERACTION::SPHBoundaryParticleBase(params)
+    : ParticleInteraction::SPHBoundaryParticleBase(params)
 {
   // empty constructor
 }
 
-void PARTICLEINTERACTION::SPHBoundaryParticleAdami::Setup(
+void ParticleInteraction::SPHBoundaryParticleAdami::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-    const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs)
+    const std::shared_ptr<ParticleInteraction::SPHNeighborPairs> neighborpairs)
 {
   // call base class setup
   SPHBoundaryParticleBase::Setup(particleengineinterface, neighborpairs);
@@ -103,11 +103,11 @@ void PARTICLEINTERACTION::SPHBoundaryParticleAdami::Setup(
   sumj_vel_j_wij_.resize(typevectorsize);
 }
 
-void PARTICLEINTERACTION::SPHBoundaryParticleAdami::init_boundary_particle_states(
+void ParticleInteraction::SPHBoundaryParticleAdami::init_boundary_particle_states(
     std::vector<double>& gravity)
 {
   TEUCHOS_FUNC_TIME_MONITOR(
-      "PARTICLEINTERACTION::SPHBoundaryParticleAdami::init_boundary_particle_states");
+      "ParticleInteraction::SPHBoundaryParticleAdami::init_boundary_particle_states");
 
   // iterate over boundary particle types
   for (const auto& type_i : boundarytypes_)

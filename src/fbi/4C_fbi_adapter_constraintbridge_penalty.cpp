@@ -22,8 +22,8 @@ approach for Fluid-beam interaction.
 
 FOUR_C_NAMESPACE_OPEN
 
-void ADAPTER::FBIConstraintBridgePenalty::Setup(const Epetra_Map* beam_map,
-    const Epetra_Map* fluid_map, Teuchos::RCP<CORE::LINALG::SparseOperator> fluidmatrix,
+void Adapter::FBIConstraintBridgePenalty::Setup(const Epetra_Map* beam_map,
+    const Epetra_Map* fluid_map, Teuchos::RCP<Core::LinAlg::SparseOperator> fluidmatrix,
     bool fluidmeshtying)
 {
   // Initialize all necessary vectors and matrices
@@ -34,9 +34,9 @@ void ADAPTER::FBIConstraintBridgePenalty::Setup(const Epetra_Map* beam_map,
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FBIConstraintBridgePenalty::Evaluate(
-    Teuchos::RCP<const DRT::Discretization> discretization1,
-    Teuchos::RCP<const DRT::Discretization> discretization2,
+void Adapter::FBIConstraintBridgePenalty::Evaluate(
+    Teuchos::RCP<const Discret::Discretization> discretization1,
+    Teuchos::RCP<const Discret::Discretization> discretization2,
     Teuchos::RCP<const Epetra_Vector> fluid_vel, Teuchos::RCP<const Epetra_Vector> beam_vel)
 {
   // Create assembly manager..
@@ -54,7 +54,7 @@ void ADAPTER::FBIConstraintBridgePenalty::Evaluate(
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FBIConstraintBridgePenalty::ResetBridge()
+void Adapter::FBIConstraintBridgePenalty::ResetBridge()
 {
   fs_->PutScalar(0.0);
   cff_->Reset();
@@ -64,20 +64,20 @@ void ADAPTER::FBIConstraintBridgePenalty::ResetBridge()
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FBIConstraintBridgePenalty::set_weak_dirichlet_flag()
+void Adapter::FBIConstraintBridgePenalty::set_weak_dirichlet_flag()
 {
   beam_interaction_params_->set_weak_dirichlet_flag();
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FBIConstraintBridgePenalty::unset_weak_dirichlet_flag()
+void Adapter::FBIConstraintBridgePenalty::unset_weak_dirichlet_flag()
 {
   beam_interaction_params_->unset_weak_dirichlet_flag();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FBIConstraintBridgePenalty::scale_penalty_structure_contributions()
+void Adapter::FBIConstraintBridgePenalty::scale_penalty_structure_contributions()
 {
   if (!structure_scaled_)
   {
@@ -89,7 +89,7 @@ void ADAPTER::FBIConstraintBridgePenalty::scale_penalty_structure_contributions(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FBIConstraintBridgePenalty::scale_penalty_fluid_contributions()
+void Adapter::FBIConstraintBridgePenalty::scale_penalty_fluid_contributions()
 {
   if (!fluid_scaled_)
   {

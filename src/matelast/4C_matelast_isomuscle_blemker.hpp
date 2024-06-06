@@ -23,17 +23,17 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
-  namespace ELASTIC
+  namespace Elastic
   {
     namespace PAR
     {
-      class IsoMuscleBlemker : public CORE::MAT::PAR::Parameter
+      class IsoMuscleBlemker : public Core::Mat::PAR::Parameter
       {
        public:
         /// standard constructor
-        IsoMuscleBlemker(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
+        IsoMuscleBlemker(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
 
         //! @name muscle shear moduli
         //! @{
@@ -58,7 +58,7 @@ namespace MAT
         //! @}
 
         /// Create material instance of matching type with my parameters
-        Teuchos::RCP<CORE::MAT::Material> create_material() override { return Teuchos::null; };
+        Teuchos::RCP<Core::Mat::Material> create_material() override { return Teuchos::null; };
       };  // class IsoMuscleBlemker
     }     // namespace PAR
 
@@ -82,19 +82,19 @@ namespace MAT
     {
      public:
       /// constructor with given material parameters
-      IsoMuscleBlemker(MAT::ELASTIC::PAR::IsoMuscleBlemker* params);
+      IsoMuscleBlemker(Mat::Elastic::PAR::IsoMuscleBlemker* params);
 
       /// Pack anisotropy
-      void PackSummand(CORE::COMM::PackBuffer& data) const override;
+      void PackSummand(Core::Communication::PackBuffer& data) const override;
 
       /// Unpack anisotropy
       void UnpackSummand(
           const std::vector<char>& data, std::vector<char>::size_type& position) override;
 
       /// Provide the material type
-      [[nodiscard]] CORE::Materials::MaterialType MaterialType() const override
+      [[nodiscard]] Core::Materials::MaterialType MaterialType() const override
       {
-        return CORE::Materials::mes_isomuscleblemker;
+        return Core::Materials::mes_isomuscleblemker;
       }
 
       void register_anisotropy_extensions(Anisotropy& anisotropy) override;
@@ -105,12 +105,12 @@ namespace MAT
        * Computation of the 2nd PK-stress and elasticity tensor with respect to the modified strains
        */
       void add_stress_aniso_modified(
-          const CORE::LINALG::Matrix<6, 1>& rcg,  ///< right Cauchy Green Tensor
+          const Core::LinAlg::Matrix<6, 1>& rcg,  ///< right Cauchy Green Tensor
                                                   ///< in strain-like-voigt-Notation
-          const CORE::LINALG::Matrix<6, 1>& icg,  ///< inverse of right Cauchy Green Tensor
+          const Core::LinAlg::Matrix<6, 1>& icg,  ///< inverse of right Cauchy Green Tensor
                                                   ///< in stress-like-voigt-notation
-          CORE::LINALG::Matrix<6, 6>& cmat,       ///< material stiffness matrix
-          CORE::LINALG::Matrix<6, 1>& stress,     ///< 2nd PK-stress
+          Core::LinAlg::Matrix<6, 6>& cmat,       ///< material stiffness matrix
+          Core::LinAlg::Matrix<6, 1>& stress,     ///< 2nd PK-stress
           double I3,                              ///< third principal invariant
           int gp,                                 ///< Gauss point
           int eleGID,                             ///< element GID
@@ -126,11 +126,11 @@ namespace MAT
 
      protected:
       /// Blemker material parameters
-      MAT::ELASTIC::PAR::IsoMuscleBlemker* params_;
+      Mat::Elastic::PAR::IsoMuscleBlemker* params_;
 
      private:
       /// Anisotropy extension holder
-      MAT::DefaultAnisotropyExtension<1> anisotropy_extension_;
+      Mat::DefaultAnisotropyExtension<1> anisotropy_extension_;
 
       /*!
        * \brief Evaluate total fiber cauchy stress and derivative w.r.t the fibre stretch
@@ -152,8 +152,8 @@ namespace MAT
       void evaluate_total_fiber_cauchy_stress_and_derivative(double lambdaM, double sigma_max_ft,
           double& sigma_fiber_total, double& deriv_sigma_fiber_total);
     };
-  }  // namespace ELASTIC
-}  // namespace MAT
+  }  // namespace Elastic
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

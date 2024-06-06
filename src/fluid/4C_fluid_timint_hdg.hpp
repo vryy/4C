@@ -31,10 +31,10 @@ namespace FLD
   {
    public:
     /// Standard Constructor
-    TimIntHDG(const Teuchos::RCP<DRT::Discretization>& actdis,
-        const Teuchos::RCP<CORE::LINALG::Solver>& solver,
+    TimIntHDG(const Teuchos::RCP<Discret::Discretization>& actdis,
+        const Teuchos::RCP<Core::LinAlg::Solver>& solver,
         const Teuchos::RCP<Teuchos::ParameterList>& params,
-        const Teuchos::RCP<CORE::IO::DiscretizationWriter>& output, bool alefluid = false);
+        const Teuchos::RCP<Core::IO::DiscretizationWriter>& output, bool alefluid = false);
 
     /*!
     \brief initialization
@@ -110,7 +110,7 @@ namespace FLD
 
     */
     void SetInitialFlowField(
-        const INPAR::FLUID::InitialField initfield, const int startfuncno) override;
+        const Inpar::FLUID::InitialField initfield, const int startfuncno) override;
 
     /*!
     \brief calculate error between a analytical solution and the
@@ -194,7 +194,7 @@ namespace FLD
     void print_stabilization_details() const override {}
 
     ///< time algorithm flag actually set (we internally reset it)
-    INPAR::FLUID::TimeIntegrationScheme timealgoset_;
+    Inpar::FLUID::TimeIntegrationScheme timealgoset_;
 
     ///< Keep track of whether we do the first assembly of a time step because we reconstruct the
     ///< local HDG solution as part of assembly

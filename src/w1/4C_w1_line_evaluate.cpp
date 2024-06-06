@@ -29,10 +29,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Integrate a Line Neumann boundary condition (public)      popp 06/13|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Wall1Line::evaluate_neumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
-    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
-    CORE::LINALG::SerialDenseMatrix* elemat1)
+int Discret::ELEMENTS::Wall1Line::evaluate_neumann(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
+    Core::LinAlg::SerialDenseMatrix* elemat1)
 {
   // set the interface pointer in the parent element
   parent_element()->set_params_interface_ptr(params);
@@ -86,19 +86,19 @@ int DRT::ELEMENTS::Wall1Line::evaluate_neumann(Teuchos::ParameterList& params,
 
   // set number of nodes
   const int numnod = num_node();
-  const CORE::FE::CellType distype = Shape();
+  const Core::FE::CellType distype = Shape();
 
   // gaussian points
-  const CORE::FE::GaussRule1D gaussrule = get_optimal_gaussrule(distype);
-  const CORE::FE::IntegrationPoints1D intpoints(gaussrule);
+  const Core::FE::GaussRule1D gaussrule = get_optimal_gaussrule(distype);
+  const Core::FE::IntegrationPoints1D intpoints(gaussrule);
 
   // allocate vector for shape functions and for derivatives
-  CORE::LINALG::SerialDenseVector shapefcts(numnod);
-  CORE::LINALG::SerialDenseMatrix deriv(1, numnod);
+  Core::LinAlg::SerialDenseVector shapefcts(numnod);
+  Core::LinAlg::SerialDenseMatrix deriv(1, numnod);
 
   // prepare element geometry 1
   // --> we always need the material configuration
-  CORE::LINALG::SerialDenseMatrix xye(Wall1::numdim_, numnod);
+  Core::LinAlg::SerialDenseMatrix xye(Wall1::numdim_, numnod);
   for (int i = 0; i < numnod; ++i)
   {
     xye(0, i) = Nodes()[i]->X()[0];
@@ -109,7 +109,7 @@ int DRT::ELEMENTS::Wall1Line::evaluate_neumann(Teuchos::ParameterList& params,
   // --> depending on the type of Neumann condition, we might not need a spatial
   // configuration at all (standard Neumann), we might need the last converged
   // spatial position (pseudo-orthopressure) or the true current geometry (orthopressure).
-  CORE::LINALG::SerialDenseMatrix xyecurr(Wall1::numdim_, numnod);
+  Core::LinAlg::SerialDenseMatrix xyecurr(Wall1::numdim_, numnod);
 
   // (1) standard Neumann --> we need only material configuration
   if (ltype == neum_live)
@@ -125,7 +125,7 @@ int DRT::ELEMENTS::Wall1Line::evaluate_neumann(Teuchos::ParameterList& params,
     Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
     if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
     std::vector<double> mydisp(lm.size());
-    CORE::FE::ExtractMyValues(*disp, mydisp, lm);
+    Core::FE::ExtractMyValues(*disp, mydisp, lm);
 
     for (int i = 0; i < numnod; ++i)
     {
@@ -144,7 +144,7 @@ int DRT::ELEMENTS::Wall1Line::evaluate_neumann(Teuchos::ParameterList& params,
     Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement new");
     if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement new'");
     std::vector<double> mydisp(lm.size());
-    CORE::FE::ExtractMyValues(*disp, mydisp, lm);
+    Core::FE::ExtractMyValues(*disp, mydisp, lm);
 
     for (int i = 0; i < numnod; ++i)
     {
@@ -159,19 +159,19 @@ int DRT::ELEMENTS::Wall1Line::evaluate_neumann(Teuchos::ParameterList& params,
     const double e1 = intpoints.qxg[gpid][0];
 
     // get shape functions and derivatives in the line
-    if (distype == CORE::FE::CellType::line2 || distype == CORE::FE::CellType::line3)
+    if (distype == Core::FE::CellType::line2 || distype == Core::FE::CellType::line3)
     {
-      CORE::FE::shape_function_1D(shapefcts, e1, distype);
-      CORE::FE::shape_function_1D_deriv1(deriv, e1, distype);
+      Core::FE::shape_function_1D(shapefcts, e1, distype);
+      Core::FE::shape_function_1D_deriv1(deriv, e1, distype);
     }
-    else if (distype == CORE::FE::CellType::nurbs2 || distype == CORE::FE::CellType::nurbs3)
+    else if (distype == Core::FE::CellType::nurbs2 || distype == Core::FE::CellType::nurbs3)
     {
-      DRT::NURBS::NurbsDiscretization* nurbsdis =
-          dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+      Discret::Nurbs::NurbsDiscretization* nurbsdis =
+          dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(discretization));
 
-      Teuchos::RCP<DRT::NURBS::Knotvector> knots = (*nurbsdis).GetKnotVector();
-      std::vector<CORE::LINALG::SerialDenseVector> parentknots(2);
-      std::vector<CORE::LINALG::SerialDenseVector> boundknots(1);
+      Teuchos::RCP<Discret::Nurbs::Knotvector> knots = (*nurbsdis).GetKnotVector();
+      std::vector<Core::LinAlg::SerialDenseVector> parentknots(2);
+      std::vector<Core::LinAlg::SerialDenseVector> boundknots(1);
 
       double normalfac = 0.0;
       bool zero_size = knots->get_boundary_ele_and_parent_knots(
@@ -179,14 +179,15 @@ int DRT::ELEMENTS::Wall1Line::evaluate_neumann(Teuchos::ParameterList& params,
 
       if (zero_size) return (0);
 
-      CORE::LINALG::SerialDenseVector weights(num_node());
+      Core::LinAlg::SerialDenseVector weights(num_node());
       for (int inode = 0; inode < num_node(); ++inode)
       {
-        DRT::NURBS::ControlPoint* cp = dynamic_cast<DRT::NURBS::ControlPoint*>(Nodes()[inode]);
+        Discret::Nurbs::ControlPoint* cp =
+            dynamic_cast<Discret::Nurbs::ControlPoint*>(Nodes()[inode]);
         weights(inode) = cp->W();
       }
 
-      CORE::FE::NURBS::nurbs_get_1D_funct_deriv(
+      Core::FE::Nurbs::nurbs_get_1D_funct_deriv(
           shapefcts, deriv, e1, boundknots[0], weights, distype);
     }
     else
@@ -213,7 +214,7 @@ int DRT::ELEMENTS::Wall1Line::evaluate_neumann(Teuchos::ParameterList& params,
             if (functnum > 0)
             {
               // calculate reference position of GP
-              CORE::LINALG::SerialDenseMatrix gp_coord(1, Wall1::numdim_);
+              Core::LinAlg::SerialDenseMatrix gp_coord(1, Wall1::numdim_);
               gp_coord.multiply(Teuchos::TRANS, Teuchos::TRANS, 1.0, shapefcts, xye, 0.0);
 
               // write coordinates in another datatype
@@ -226,8 +227,8 @@ int DRT::ELEMENTS::Wall1Line::evaluate_neumann(Teuchos::ParameterList& params,
               const double* coordgpref = gp_coord2;  // needed for function evaluation
 
               // evaluate function at current gauss point
-              functfac = GLOBAL::Problem::Instance()
-                             ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
+              functfac = Global::Problem::Instance()
+                             ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
                              .Evaluate(coordgpref, time, i);
             }
             else
@@ -269,7 +270,7 @@ int DRT::ELEMENTS::Wall1Line::evaluate_neumann(Teuchos::ParameterList& params,
         if (functnum > 0)
         {
           // calculate reference position of GP
-          CORE::LINALG::SerialDenseMatrix gp_coord(1, Wall1::numdim_);
+          Core::LinAlg::SerialDenseMatrix gp_coord(1, Wall1::numdim_);
           gp_coord.multiply(Teuchos::TRANS, Teuchos::TRANS, 1.0, shapefcts, xye, 0.0);
 
           // write coordinates in another datatype
@@ -281,8 +282,8 @@ int DRT::ELEMENTS::Wall1Line::evaluate_neumann(Teuchos::ParameterList& params,
           const double* coordgpref = gp_coord2;  // needed for function evaluation
 
           // evaluate function at current gauss point
-          functfac = GLOBAL::Problem::Instance()
-                         ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
+          functfac = Global::Problem::Instance()
+                         ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
                          .Evaluate(coordgpref, time, 0);
         }
 
@@ -301,14 +302,14 @@ int DRT::ELEMENTS::Wall1Line::evaluate_neumann(Teuchos::ParameterList& params,
           int numdof = noddof * numnod;
 
           // directional derivative of surface
-          CORE::LINALG::SerialDenseMatrix a_Dnormal(Wall1::numdim_, numdof);
+          Core::LinAlg::SerialDenseMatrix a_Dnormal(Wall1::numdim_, numdof);
 
           //******************************************************************
           // compute directional derivative
           //******************************************************************
 
           // linearization of basis vector
-          CORE::LINALG::SerialDenseMatrix dg(Wall1::numdim_, numdof);
+          Core::LinAlg::SerialDenseMatrix dg(Wall1::numdim_, numdof);
           for (int node = 0; node < numnod; ++node)
             for (int k = 0; k < Wall1::numdim_; ++k) dg(k, node * noddof + k) = deriv(0, node);
 
@@ -347,10 +348,10 @@ int DRT::ELEMENTS::Wall1Line::evaluate_neumann(Teuchos::ParameterList& params,
   case neum_orthopressure:
   {
     // prepare FD check
-    CORE::LINALG::SerialDenseMatrix fd_deriv(numnod*noddof,numnod*noddof);
-    CORE::LINALG::SerialDenseMatrix an_deriv = *elemat1;
-    CORE::LINALG::SerialDenseVector eleforce_ref = elevec1;
-    CORE::LINALG::SerialDenseVector eleforce_curr(numnod*noddof);
+    Core::LinAlg::SerialDenseMatrix fd_deriv(numnod*noddof,numnod*noddof);
+    Core::LinAlg::SerialDenseMatrix an_deriv = *elemat1;
+    Core::LinAlg::SerialDenseVector eleforce_ref = elevec1;
+    Core::LinAlg::SerialDenseVector eleforce_curr(numnod*noddof);
     double eps = 1.0e-8;
 
     // do FD step for all DOFs
@@ -367,8 +368,8 @@ int DRT::ELEMENTS::Wall1Line::evaluate_neumann(Teuchos::ParameterList& params,
           const double e1 = intpoints.qxg[gpid][0];
 
           // get shape functions and derivatives in the line
-          CORE::FE::shape_function_1D(shapefcts, e1, distype);
-          CORE::FE::shape_function_1D_deriv1(deriv, e1, distype);
+          Core::FE::shape_function_1D(shapefcts, e1, distype);
+          Core::FE::shape_function_1D_deriv1(deriv, e1, distype);
           double ortho_value = (*val)[0];
 
           // outward normal vector (unit vector)
@@ -420,23 +421,23 @@ int DRT::ELEMENTS::Wall1Line::evaluate_neumann(Teuchos::ParameterList& params,
   return 0;
 }
 
-CORE::FE::GaussRule1D DRT::ELEMENTS::Wall1Line::get_optimal_gaussrule(
-    const CORE::FE::CellType& distype)
+Core::FE::GaussRule1D Discret::ELEMENTS::Wall1Line::get_optimal_gaussrule(
+    const Core::FE::CellType& distype)
 {
-  CORE::FE::GaussRule1D rule = CORE::FE::GaussRule1D::undefined;
+  Core::FE::GaussRule1D rule = Core::FE::GaussRule1D::undefined;
   switch (distype)
   {
-    case CORE::FE::CellType::line2:
-      rule = CORE::FE::GaussRule1D::line_2point;
+    case Core::FE::CellType::line2:
+      rule = Core::FE::GaussRule1D::line_2point;
       break;
-    case CORE::FE::CellType::line3:
-      rule = CORE::FE::GaussRule1D::line_3point;
+    case Core::FE::CellType::line3:
+      rule = Core::FE::GaussRule1D::line_3point;
       break;
-    case CORE::FE::CellType::nurbs2:
-      rule = CORE::FE::GaussRule1D::line_2point;
+    case Core::FE::CellType::nurbs2:
+      rule = Core::FE::GaussRule1D::line_2point;
       break;
-    case CORE::FE::CellType::nurbs3:
-      rule = CORE::FE::GaussRule1D::line_3point;
+    case Core::FE::CellType::nurbs3:
+      rule = Core::FE::GaussRule1D::line_3point;
       break;
     default:
       FOUR_C_THROW("unknown number of nodes for gaussrule initialization");
@@ -447,8 +448,8 @@ CORE::FE::GaussRule1D DRT::ELEMENTS::Wall1Line::get_optimal_gaussrule(
 
 // determinant of jacobian matrix
 
-double DRT::ELEMENTS::Wall1Line::w1_substitution(const CORE::LINALG::SerialDenseMatrix& xyze,
-    const CORE::LINALG::SerialDenseMatrix& deriv,
+double Discret::ELEMENTS::Wall1Line::w1_substitution(const Core::LinAlg::SerialDenseMatrix& xyze,
+    const Core::LinAlg::SerialDenseMatrix& deriv,
     std::vector<double>* unrm,  // unit normal
     const int iel)
 {
@@ -476,8 +477,8 @@ double DRT::ELEMENTS::Wall1Line::w1_substitution(const CORE::LINALG::SerialDense
    */
   // compute derivative of parametrization
   double dr = 0.0;
-  CORE::LINALG::SerialDenseMatrix der_par(1, 2);
-  int err = CORE::LINALG::multiplyNT(der_par, deriv, xyze);
+  Core::LinAlg::SerialDenseMatrix der_par(1, 2);
+  int err = Core::LinAlg::multiplyNT(der_par, deriv, xyze);
   if (err != 0) FOUR_C_THROW("Multiply failed");
   dr = sqrt(der_par(0, 0) * der_par(0, 0) + der_par(0, 1) * der_par(0, 1));
   if (unrm != nullptr)
@@ -489,19 +490,19 @@ double DRT::ELEMENTS::Wall1Line::w1_substitution(const CORE::LINALG::SerialDense
 }
 
 /*======================================================================*/
-int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix& elematrix1, CORE::LINALG::SerialDenseMatrix& elematrix2,
-    CORE::LINALG::SerialDenseVector& elevector1, CORE::LINALG::SerialDenseVector& elevector2,
-    CORE::LINALG::SerialDenseVector& elevector3)
+int Discret::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix& elematrix1, Core::LinAlg::SerialDenseMatrix& elematrix2,
+    Core::LinAlg::SerialDenseVector& elevector1, Core::LinAlg::SerialDenseVector& elevector2,
+    Core::LinAlg::SerialDenseVector& elevector3)
 {
-  const CORE::FE::CellType distype = Shape();
+  const Core::FE::CellType distype = Shape();
 
   // set number of dofs per node
   const int noddof = NumDofPerNode(*Nodes()[0]);
 
   // start with "none"
-  DRT::ELEMENTS::Wall1Line::ActionType act = Wall1Line::none;
+  Discret::ELEMENTS::Wall1Line::ActionType act = Wall1Line::none;
 
   // get the required action
   std::string action = params.get<std::string>("action", "none");
@@ -523,7 +524,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
     // just compute the enclosed volume (e.g. for initialization)
     case calc_struct_constrarea:
     {
-      if (distype != CORE::FE::CellType::line2)
+      if (distype != Core::FE::CellType::line2)
       {
         FOUR_C_THROW("Area Constraint only works for line2 curves!");
       }
@@ -534,11 +535,11 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
         Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
         if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
         std::vector<double> mydisp(lm.size());
-        CORE::FE::ExtractMyValues(*disp, mydisp, lm);
+        Core::FE::ExtractMyValues(*disp, mydisp, lm);
         const int numnod = num_node();
-        CORE::LINALG::SerialDenseMatrix xsrefe(
+        Core::LinAlg::SerialDenseMatrix xsrefe(
             numnod, Wall1::numdim_);  // material coord. of element
-        CORE::LINALG::SerialDenseMatrix xscurr(
+        Core::LinAlg::SerialDenseMatrix xscurr(
             numnod, Wall1::numdim_);  // material coord. of element
         for (int i = 0; i < numnod; ++i)
         {
@@ -562,11 +563,11 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
         Teuchos::RCP<const Epetra_Vector> disptotal = discretization.GetState("displacementtotal");
         if (disptotal == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacementtotal'");
         std::vector<double> mydisp(lm.size());
-        CORE::FE::ExtractMyValues(*disptotal, mydisp, lm);
+        Core::FE::ExtractMyValues(*disptotal, mydisp, lm);
         const int numnod = num_node();
-        CORE::LINALG::SerialDenseMatrix xsrefe(
+        Core::LinAlg::SerialDenseMatrix xsrefe(
             Wall1::numdim_, numnod);  // material coord. of element
-        CORE::LINALG::SerialDenseMatrix xscurr(
+        Core::LinAlg::SerialDenseMatrix xscurr(
             Wall1::numdim_, numnod);  // current coord. of element
         for (int i = 0; i < numnod; ++i)
         {
@@ -579,19 +580,19 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
 
         // integration of the displacements over the surface
         const int dim = Wall1::numdim_;
-        const CORE::FE::CellType distype = Shape();
+        const Core::FE::CellType distype = Shape();
 
         // gaussian points
-        const CORE::FE::GaussRule1D gaussrule = get_optimal_gaussrule(distype);
-        const CORE::FE::IntegrationPoints1D intpoints(gaussrule);  //
+        const Core::FE::GaussRule1D gaussrule = get_optimal_gaussrule(distype);
+        const Core::FE::IntegrationPoints1D intpoints(gaussrule);  //
 
         // allocate vector for shape functions and for derivatives
-        CORE::LINALG::SerialDenseVector funct(numnod);
-        CORE::LINALG::SerialDenseMatrix deriv(1, numnod);
+        Core::LinAlg::SerialDenseVector funct(numnod);
+        Core::LinAlg::SerialDenseMatrix deriv(1, numnod);
 
         Teuchos::RCP<const Epetra_Vector> dispincr = discretization.GetState("displacementincr");
         std::vector<double> edispincr(lm.size());
-        CORE::FE::ExtractMyValues(*dispincr, edispincr, lm);
+        Core::FE::ExtractMyValues(*dispincr, edispincr, lm);
 
         elevector2[0] = 0;
 
@@ -600,8 +601,8 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
           const double e1 = intpoints.qxg[gpid][0];  // coordinate of GP
 
           // get values of shape functions and derivatives in the line at specific GP
-          CORE::FE::shape_function_1D(funct, e1, distype);
-          CORE::FE::shape_function_1D_deriv1(deriv, e1, distype);
+          Core::FE::shape_function_1D(funct, e1, distype);
+          Core::FE::shape_function_1D_deriv1(deriv, e1, distype);
 
           double dr = w1_substitution(xscurr, deriv, nullptr, numnod);
 
@@ -623,7 +624,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
 
     case calc_struct_areaconstrstiff:
     {
-      if (distype != CORE::FE::CellType::line2)
+      if (distype != Core::FE::CellType::line2)
       {
         FOUR_C_THROW("Area Constraint only works for line2 curves!");
       }  // element geometry update
@@ -633,10 +634,10 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
         FOUR_C_THROW("Cannot get state vector 'displacement'");
       }
       std::vector<double> mydisp(lm.size());
-      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::ExtractMyValues(*disp, mydisp, lm);
       const int numnod = num_node();
-      CORE::LINALG::SerialDenseMatrix xsrefe(numnod, Wall1::numdim_);  // material coord. of element
-      CORE::LINALG::SerialDenseMatrix xscurr(numnod, Wall1::numdim_);  // material coord. of element
+      Core::LinAlg::SerialDenseMatrix xsrefe(numnod, Wall1::numdim_);  // material coord. of element
+      Core::LinAlg::SerialDenseMatrix xscurr(numnod, Wall1::numdim_);  // material coord. of element
       for (int i = 0; i < numnod; ++i)
       {
         xsrefe(i, 0) = Nodes()[i]->X()[0];
@@ -664,11 +665,11 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  * Evaluate method on mutliple dofsets                       vuong 11/12*
  * ---------------------------------------------------------------------*/
-int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, LocationArray& la,
-    CORE::LINALG::SerialDenseMatrix& elematrix1, CORE::LINALG::SerialDenseMatrix& elematrix2,
-    CORE::LINALG::SerialDenseVector& elevector1, CORE::LINALG::SerialDenseVector& elevector2,
-    CORE::LINALG::SerialDenseVector& elevector3)
+int Discret::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, LocationArray& la,
+    Core::LinAlg::SerialDenseMatrix& elematrix1, Core::LinAlg::SerialDenseMatrix& elematrix2,
+    Core::LinAlg::SerialDenseVector& elevector1, Core::LinAlg::SerialDenseVector& elevector2,
+    Core::LinAlg::SerialDenseVector& elevector3)
 {
   if (la.Size() == 1)
   {
@@ -677,10 +678,10 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
         elematrix1, elematrix2, elevector1, elevector2, elevector3);
   }
 
-  const CORE::FE::CellType distype = Shape();
+  const Core::FE::CellType distype = Shape();
 
   // start with "none"
-  DRT::ELEMENTS::Wall1Line::ActionType act = Wall1Line::none;
+  Discret::ELEMENTS::Wall1Line::ActionType act = Wall1Line::none;
 
   // get the required action
   std::string action = params.get<std::string>("action", "none");
@@ -697,7 +698,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
     case calc_struct_area_poro:
     {
       // get the parent element
-      const CORE::Elements::Element* parentele = parent_element();
+      const Core::Elements::Element* parentele = parent_element();
       const int nenparent = parentele->num_node();
       // get element location vector and ownerships
       std::vector<int> lmpar;
@@ -706,13 +707,13 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
       parentele->LocationVector(discretization, lmpar, lmowner, lmstride);
 
       // gaussian points
-      const CORE::FE::GaussRule1D gaussrule = get_optimal_gaussrule(distype);
+      const Core::FE::GaussRule1D gaussrule = get_optimal_gaussrule(distype);
       // get integration rule
-      const CORE::FE::IntPointsAndWeights<1> intpoints(gaussrule);
+      const Core::FE::IntPointsAndWeights<1> intpoints(gaussrule);
 
       const int ngp = intpoints.IP().nquad;
-      Teuchos::RCP<CORE::LINALG::SerialDenseVector> poro =
-          Teuchos::rcp(new CORE::LINALG::SerialDenseVector(ngp));
+      Teuchos::RCP<Core::LinAlg::SerialDenseVector> poro =
+          Teuchos::rcp(new Core::LinAlg::SerialDenseVector(ngp));
       const int numdim = 2;
       const int numnode = num_node();
       const int noddof = NumDofPerNode(*(Nodes()[0]));
@@ -721,13 +722,13 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lmpar.size());
-      CORE::FE::ExtractMyValues(*disp, mydisp, lmpar);
+      Core::FE::ExtractMyValues(*disp, mydisp, lmpar);
 
       // update element geometry
-      CORE::LINALG::SerialDenseMatrix xrefe(numdim, nenparent);  // material coord. of element
-      CORE::LINALG::SerialDenseMatrix xcurr(numdim, nenparent);  // current  coord. of element
+      Core::LinAlg::SerialDenseMatrix xrefe(numdim, nenparent);  // material coord. of element
+      Core::LinAlg::SerialDenseMatrix xcurr(numdim, nenparent);  // current  coord. of element
 
-      const CORE::Nodes::Node* const* nodes = parentele->Nodes();
+      const Core::Nodes::Node* const* nodes = parentele->Nodes();
       for (int i = 0; i < nenparent; ++i)
       {
         const auto& x = nodes[i]->X();
@@ -745,40 +746,40 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
       if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'fluidvel'");
       // extract local values of the global vectors
       std::vector<double> myvelpres(la[1].lm_.size());
-      CORE::FE::ExtractMyValues(*velnp, myvelpres, la[1].lm_);
+      Core::FE::ExtractMyValues(*velnp, myvelpres, la[1].lm_);
 
-      CORE::LINALG::SerialDenseVector mypres(numnode);
+      Core::LinAlg::SerialDenseVector mypres(numnode);
       for (int inode = 0; inode < numnode; ++inode)  // number of nodes
       {
         (mypres)(inode) = myvelpres[numdim + (inode * numdofpernode)];
       }
 
-      CORE::LINALG::SerialDenseMatrix pqxg;
-      CORE::LINALG::SerialDenseMatrix derivtrafo;
+      Core::LinAlg::SerialDenseMatrix pqxg;
+      Core::LinAlg::SerialDenseMatrix derivtrafo;
 
-      CORE::FE::BoundaryGPToParentGP<2>(
+      Core::FE::BoundaryGPToParentGP<2>(
           pqxg, derivtrafo, intpoints, parentele->Shape(), distype, FaceParentNumber());
 
       for (int gp = 0; gp < ngp; ++gp)
       {
         // get shape functions and derivatives in the plane of the element
-        CORE::LINALG::SerialDenseVector funct(nenparent);
-        CORE::LINALG::SerialDenseMatrix deriv(2, nenparent);
-        CORE::FE::shape_function_2D(funct, pqxg(gp, 0), pqxg(gp, 1), parentele->Shape());
-        CORE::FE::shape_function_2D_deriv1(deriv, pqxg(gp, 0), pqxg(gp, 1), parentele->Shape());
+        Core::LinAlg::SerialDenseVector funct(nenparent);
+        Core::LinAlg::SerialDenseMatrix deriv(2, nenparent);
+        Core::FE::shape_function_2D(funct, pqxg(gp, 0), pqxg(gp, 1), parentele->Shape());
+        Core::FE::shape_function_2D_deriv1(deriv, pqxg(gp, 0), pqxg(gp, 1), parentele->Shape());
 
-        CORE::LINALG::SerialDenseVector funct1D(numnode);
-        CORE::FE::shape_function_1D(funct1D, intpoints.IP().qxg[gp][0], Shape());
+        Core::LinAlg::SerialDenseVector funct1D(numnode);
+        Core::FE::shape_function_1D(funct1D, intpoints.IP().qxg[gp][0], Shape());
 
         // pressure at integration point
         double press = funct1D.dot(mypres);
 
         // get Jacobian matrix and determinant w.r.t. spatial configuration
         //! transposed jacobian "dx/ds"
-        CORE::LINALG::SerialDenseMatrix xjm(numdim, numdim);
-        CORE::LINALG::multiplyNT(xjm, deriv, xcurr);
-        CORE::LINALG::SerialDenseMatrix Jmat(numdim, numdim);
-        CORE::LINALG::multiplyNT(Jmat, deriv, xrefe);
+        Core::LinAlg::SerialDenseMatrix xjm(numdim, numdim);
+        Core::LinAlg::multiplyNT(xjm, deriv, xcurr);
+        Core::LinAlg::SerialDenseMatrix Jmat(numdim, numdim);
+        Core::LinAlg::multiplyNT(Jmat, deriv, xrefe);
 
         double det = 0.0;
         double detJ = 0.0;
@@ -794,8 +795,8 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
         const double J = det / detJ;
 
         // get structure material
-        Teuchos::RCP<MAT::StructPoro> structmat =
-            Teuchos::rcp_static_cast<MAT::StructPoro>(parentele->Material());
+        Teuchos::RCP<Mat::StructPoro> structmat =
+            Teuchos::rcp_static_cast<Mat::StructPoro>(parentele->Material());
         if (structmat == Teuchos::null)
           FOUR_C_THROW("invalid structure material for poroelasticity");
         double porosity = 0.0;
@@ -814,8 +815,8 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
  * Compute first derivatives of area                            tk 10/07*
  * with respect to the displacements                                    *
  * ---------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1Line::compute_area_constr_deriv(
-    CORE::LINALG::SerialDenseMatrix xscurr, CORE::LINALG::SerialDenseVector& elevector)
+void Discret::ELEMENTS::Wall1Line::compute_area_constr_deriv(
+    Core::LinAlg::SerialDenseMatrix xscurr, Core::LinAlg::SerialDenseVector& elevector)
 {
   if (elevector.length() != 4)
   {
@@ -835,8 +836,8 @@ void DRT::ELEMENTS::Wall1Line::compute_area_constr_deriv(
  * Compute influence of area constraint on stiffness matrix.    tk 10/07*
  * Second derivatives of areas with respect to the displacements        *
  * ---------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1Line::compute_area_constr_stiff(
-    CORE::LINALG::SerialDenseMatrix xscurr, CORE::LINALG::SerialDenseMatrix& elematrix)
+void Discret::ELEMENTS::Wall1Line::compute_area_constr_stiff(
+    Core::LinAlg::SerialDenseMatrix xscurr, Core::LinAlg::SerialDenseMatrix& elematrix)
 {
   elematrix(0, 0) = 0.0;
   elematrix(0, 1) = -0.5;

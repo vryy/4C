@@ -21,9 +21,9 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::GEO
+namespace Core::Geo
 {
-  namespace CUT
+  namespace Cut
   {
     class Element;
     class Facet;
@@ -38,7 +38,7 @@ namespace CORE::GEO
     {
      public:
       DirectDivergence(VolumeCell* volcell, Element* elem,
-          const CORE::GEO::CUT::Point::PointPosition posi, Mesh& mesh)
+          const Core::Geo::Cut::Point::PointPosition posi, Mesh& mesh)
           : volcell_(volcell), elem1_(elem), position_(posi), mesh_(mesh)
       {
       }
@@ -46,20 +46,20 @@ namespace CORE::GEO
       /*!
       \brief Generate integration points on the facets of the volumecell
       */
-      Teuchos::RCP<CORE::FE::GaussPoints> VCIntegrationRule(std::vector<double>& RefPlaneEqn);
+      Teuchos::RCP<Core::FE::GaussPoints> VCIntegrationRule(std::vector<double>& RefPlaneEqn);
 
       /*!
       \brief Compute and set correspondingly the volume of the considered volumecell from the
       generated integration rule and compare it with full application of divergence theorem
        */
-      void DebugVolume(const CORE::FE::GaussIntegration& gpv, bool& isNeg);
+      void DebugVolume(const Core::FE::GaussIntegration& gpv, bool& isNeg);
 
       /*!
       \brief Geometry of volumecell, reference facet, main and internal gauss points for gmsh
       output.
        */
       void DivengenceCellsGMSH(
-          const CORE::FE::GaussIntegration& gpv, Teuchos::RCP<CORE::FE::GaussPoints>& gpmain);
+          const Core::FE::GaussIntegration& gpv, Teuchos::RCP<Core::FE::GaussPoints>& gpmain);
 
      private:
       /*!
@@ -79,7 +79,7 @@ namespace CORE::GEO
       Element* elem1_;
 
       //! position of this volumecell
-      const CORE::GEO::CUT::Point::PointPosition position_;
+      const Core::Geo::Cut::Point::PointPosition position_;
 
       //! mesh that contains the background element
       Mesh& mesh_;
@@ -93,8 +93,8 @@ namespace CORE::GEO
       //! Points that define the reference plane used for this volumecell
       std::vector<Point*> ref_pts_gmsh_;
     };
-  }  // namespace CUT
-}  // namespace CORE::GEO
+  }  // namespace Cut
+}  // namespace Core::Geo
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -19,32 +19,32 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-PARTICLEINTERACTION::DEMContactTangentialBase::DEMContactTangentialBase(
+ParticleInteraction::DEMContactTangentialBase::DEMContactTangentialBase(
     const Teuchos::ParameterList& params)
     : params_dem_(params), dt_(0.0)
 {
   // empty constructor
 }
 
-void PARTICLEINTERACTION::DEMContactTangentialBase::Init()
+void ParticleInteraction::DEMContactTangentialBase::Init()
 {
   // nothing to do
 }
 
-void PARTICLEINTERACTION::DEMContactTangentialBase::Setup(const double& k_normal)
+void ParticleInteraction::DEMContactTangentialBase::Setup(const double& k_normal)
 {
   // nothing to do
 }
 
-void PARTICLEINTERACTION::DEMContactTangentialBase::set_current_step_size(
+void ParticleInteraction::DEMContactTangentialBase::set_current_step_size(
     const double currentstepsize)
 {
   dt_ = currentstepsize;
 }
 
-PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp::DEMContactTangentialLinearSpringDamp(
+ParticleInteraction::DEMContactTangentialLinearSpringDamp::DEMContactTangentialLinearSpringDamp(
     const Teuchos::ParameterList& params)
-    : PARTICLEINTERACTION::DEMContactTangentialBase(params),
+    : ParticleInteraction::DEMContactTangentialBase(params),
       e_(params_dem_.get<double>("COEFF_RESTITUTION")),
       nue_(params_dem_.get<double>("POISSON_RATIO")),
       k_tangential_(0.0),
@@ -53,7 +53,7 @@ PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp::DEMContactTangentialL
   // empty constructor
 }
 
-void PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp::Init()
+void ParticleInteraction::DEMContactTangentialLinearSpringDamp::Init()
 {
   // call base class init
   DEMContactTangentialBase::Init();
@@ -66,7 +66,7 @@ void PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp::Init()
     FOUR_C_THROW("invalid input parameter FRICT_COEFF_TANG for this kind of contact law!");
 }
 
-void PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp::Setup(const double& k_normal)
+void ParticleInteraction::DEMContactTangentialLinearSpringDamp::Setup(const double& k_normal)
 {
   // call base class setup
   DEMContactTangentialBase::Setup(k_normal);
@@ -88,7 +88,7 @@ void PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp::Setup(const doub
     d_tangential_fac_ = 2.0 * std::sqrt(k_normal);
 }
 
-void PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp::tangential_contact_force(
+void ParticleInteraction::DEMContactTangentialLinearSpringDamp::tangential_contact_force(
     double* gap_tangential, bool& stick_tangential, const double* normal,
     const double* v_rel_tangential, const double& m_eff, const double& mu_tangential,
     const double& normalcontactforce, double* tangentialcontactforce) const
@@ -143,7 +143,7 @@ void PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp::tangential_conta
   }
 }
 
-void PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp::tangential_potential_energy(
+void ParticleInteraction::DEMContactTangentialLinearSpringDamp::tangential_potential_energy(
     const double* gap_tangential, double& tangentialpotentialenergy) const
 {
   tangentialpotentialenergy = 0.5 * k_tangential_ * UTILS::VecDot(gap_tangential, gap_tangential);

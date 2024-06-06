@@ -19,9 +19,9 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace MAT
+namespace Mat
 {
-  namespace ELASTIC
+  namespace Elastic
   {
     /*!
      * \brief Container class for communication with the base material
@@ -40,7 +40,7 @@ namespace MAT
        * \param fiber_id Id of the fiber to be used for the fiber (0 for FIBER1)
        */
       CoupAnisoExpoAnisotropyExtension(int init_mode, double gamma, bool adapt_angle,
-          const Teuchos::RCP<ELASTIC::StructuralTensorStrategyBase>& structuralTensorStrategy,
+          const Teuchos::RCP<Elastic::StructuralTensorStrategyBase>& structuralTensorStrategy,
           int fiber_id);
 
       /*!
@@ -54,11 +54,11 @@ namespace MAT
        * \brief Returns the fiber at the Gauss point
        *
        * \param gp Gauss point
-       * \return const CORE::LINALG::Matrix<3, 1>& Constant reference to the fiber
+       * \return const Core::LinAlg::Matrix<3, 1>& Constant reference to the fiber
        */
-      const CORE::LINALG::Matrix<3, 1>& GetFiber(int gp) const;
-      const CORE::LINALG::Matrix<3, 3>& GetStructuralTensor(int gp) const override;
-      const CORE::LINALG::Matrix<6, 1>& get_structural_tensor_stress(int gp) const override;
+      const Core::LinAlg::Matrix<3, 1>& GetFiber(int gp) const;
+      const Core::LinAlg::Matrix<3, 3>& GetStructuralTensor(int gp) const override;
+      const Core::LinAlg::Matrix<6, 1>& get_structural_tensor_stress(int gp) const override;
 
       // Tell the compiler that we still want the methods from FiberAnisotropyExtension with a
       // different signature
@@ -77,14 +77,14 @@ namespace MAT
        * MAT 1 ELAST_CoupAnisoExpo K1 10.0 K2 1.0 GAMMA 35.0 K1COMP 0.0 K2COMP 1.0 INIT 0
        * ADAPT_ANGLE 0
        */
-      class CoupAnisoExpo : public MAT::PAR::ParameterAniso,
-                            public MAT::ELASTIC::PAR::CoupAnisoExpoBase
+      class CoupAnisoExpo : public Mat::PAR::ParameterAniso,
+                            public Mat::Elastic::PAR::CoupAnisoExpoBase
       {
        public:
         /// standard constructor
-        explicit CoupAnisoExpo(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
+        explicit CoupAnisoExpo(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
 
-        Teuchos::RCP<CORE::MAT::Material> create_material() override { return Teuchos::null; };
+        Teuchos::RCP<Core::Mat::Material> create_material() override { return Teuchos::null; };
 
         /// @name material parameters
         //@{
@@ -118,27 +118,27 @@ namespace MAT
      *          and a comparative study of material models, J. of Elasticity 61 (2000) 1-48.
      * </ul>
      */
-    class CoupAnisoExpo : public MAT::ELASTIC::CoupAnisoExpoBase,
+    class CoupAnisoExpo : public Mat::Elastic::CoupAnisoExpoBase,
                           public FiberAnisotropyExtensionProvider<1>
     {
      public:
       /// constructor with given material parameters
-      explicit CoupAnisoExpo(MAT::ELASTIC::PAR::CoupAnisoExpo* params);
+      explicit CoupAnisoExpo(Mat::Elastic::PAR::CoupAnisoExpo* params);
 
       /// @name Access material constants
       //@{
 
       /// material type
-      CORE::Materials::MaterialType MaterialType() const override
+      Core::Materials::MaterialType MaterialType() const override
       {
-        return CORE::Materials::mes_coupanisoexpo;
+        return Core::Materials::mes_coupanisoexpo;
       }
 
       //@}
 
       /// @name Methods for Packing and Unpacking
       ///@{
-      void PackSummand(CORE::COMM::PackBuffer& data) const override;
+      void PackSummand(Core::Communication::PackBuffer& data) const override;
 
       void UnpackSummand(
           const std::vector<char>& data, std::vector<char>::size_type& position) override;
@@ -149,27 +149,27 @@ namespace MAT
        *
        * \param anisotropy anisotropy manager
        */
-      void register_anisotropy_extensions(MAT::Anisotropy& anisotropy) override;
+      void register_anisotropy_extensions(Mat::Anisotropy& anisotropy) override;
 
       /// Set fiber directions
       void SetFiberVecs(double newgamma,             ///< new angle
-          const CORE::LINALG::Matrix<3, 3>& locsys,  ///< local coordinate system
-          const CORE::LINALG::Matrix<3, 3>& defgrd   ///< deformation gradient
+          const Core::LinAlg::Matrix<3, 3>& locsys,  ///< local coordinate system
+          const Core::LinAlg::Matrix<3, 3>& defgrd   ///< deformation gradient
           ) override;
 
       /// Set fiber directions
-      void SetFiberVecs(const CORE::LINALG::Matrix<3, 1>& fibervec  ///< new fiber vector
+      void SetFiberVecs(const Core::LinAlg::Matrix<3, 1>& fibervec  ///< new fiber vector
           ) override;
 
       /// Get fiber directions
       void GetFiberVecs(
-          std::vector<CORE::LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
+          std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
           ) override;
 
       /*!
-       * \brief Returns the reference to the MAT::FiberAnisotropyExtension
+       * \brief Returns the reference to the Mat::FiberAnisotropyExtension
        *
-       * \return FiberAnisotropyExtension& Reference to the used MAT::FiberAnisotropyExtension
+       * \return FiberAnisotropyExtension& Reference to the used Mat::FiberAnisotropyExtension
        */
       FiberAnisotropyExtension<1>& get_fiber_anisotropy_extension() override
       {
@@ -184,14 +184,14 @@ namespace MAT
 
      private:
       /// my material parameters
-      MAT::ELASTIC::PAR::CoupAnisoExpo* params_;
+      Mat::Elastic::PAR::CoupAnisoExpo* params_;
 
       /// Internal ansotropy information
-      MAT::ELASTIC::CoupAnisoExpoAnisotropyExtension anisotropy_extension_;
+      Mat::Elastic::CoupAnisoExpoAnisotropyExtension anisotropy_extension_;
     };  // namespace PAR
 
-  }  // namespace ELASTIC
-}  // namespace MAT
+  }  // namespace Elastic
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

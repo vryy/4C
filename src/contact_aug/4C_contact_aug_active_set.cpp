@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::ActiveSet::Update(const CONTACT::ParamsInterface& cparams)
+void CONTACT::Aug::ActiveSet::Update(const CONTACT::ParamsInterface& cparams)
 {
   if (skip_update()) return;
 
@@ -36,7 +36,7 @@ void CONTACT::AUG::ActiveSet::Update(const CONTACT::ParamsInterface& cparams)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CONTACT::AUG::ActiveSet::skip_update() const
+bool CONTACT::Aug::ActiveSet::skip_update() const
 {
   const DataContainer& data = strategy_.data();
   const plain_interface_set& interfaces = strategy_.interfaces();
@@ -55,7 +55,7 @@ bool CONTACT::AUG::ActiveSet::skip_update() const
       for (int j = 0; j < interface.SlaveRowNodes()->NumMyElements(); ++j)
       {
         int gid = interface.SlaveRowNodes()->GID(j);
-        CORE::Nodes::Node* node = interface.Discret().gNode(gid);
+        Core::Nodes::Node* node = interface.Discret().gNode(gid);
         if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
         Node* cnode = static_cast<Node*>(node);
 
@@ -79,7 +79,7 @@ bool CONTACT::AUG::ActiveSet::skip_update() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::ActiveSet::post_update(
+void CONTACT::Aug::ActiveSet::post_update(
     const CONTACT::ParamsInterface& cparams, const enum Status gstatus)
 {
   DataContainer& data = strategy_.data();
@@ -131,11 +131,11 @@ void CONTACT::AUG::ActiveSet::post_update(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CONTACT::AUG::ActiveSet::Status CONTACT::AUG::ActiveSet::update_status(
+CONTACT::Aug::ActiveSet::Status CONTACT::Aug::ActiveSet::update_status(
     const CONTACT::ParamsInterface& cparams) const
 {
   plain_interface_set& interfaces = strategy_.interfaces();
-  CONTACT::AUG::DataContainer& data = strategy_.data();
+  CONTACT::Aug::DataContainer& data = strategy_.data();
 
   // assume that active set has converged and check for opposite
   strategy_.data().is_active_set_converged() = true;
@@ -213,7 +213,7 @@ CONTACT::AUG::ActiveSet::Status CONTACT::AUG::ActiveSet::update_status(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CONTACT::AUG::ActiveSet::Status CONTACT::AUG::ActiveSet::update_initial_status(
+CONTACT::Aug::ActiveSet::Status CONTACT::Aug::ActiveSet::update_initial_status(
     const CONTACT::ParamsInterface& cparams, const std::vector<enum Status>& istatus) const
 {
   static std::vector<std::vector<std::pair<int, bool>>> init_active_list;
@@ -234,9 +234,9 @@ CONTACT::AUG::ActiveSet::Status CONTACT::AUG::ActiveSet::update_initial_status(
   unsigned ilid = 0;
   for (auto cit = interfaces.cbegin(); cit != interfaces.cend(); ++cit, ++ilid)
   {
-    Teuchos::RCP<const CONTACT::AUG::Interface> aug_i_ptr =
-        Teuchos::rcp_dynamic_cast<const CONTACT::AUG::Interface>(*cit, true);
-    const CONTACT::AUG::Interface& interface = *aug_i_ptr;
+    Teuchos::RCP<const CONTACT::Aug::Interface> aug_i_ptr =
+        Teuchos::rcp_dynamic_cast<const CONTACT::Aug::Interface>(*cit, true);
+    const CONTACT::Aug::Interface& interface = *aug_i_ptr;
 
     enum class InitStatus
     {
@@ -308,7 +308,7 @@ CONTACT::AUG::ActiveSet::Status CONTACT::AUG::ActiveSet::update_initial_status(
       }
     }
 
-    CORE::IO::cout << std::string(60, '*') << "\n"
+    Core::IO::cout << std::string(60, '*') << "\n"
                    << set_init_active << " slave nodes of interface #" << ilid
                    << " have been set initially active "
                       "via condition line or INITCONTACTBYGAP.\n"
@@ -320,7 +320,7 @@ CONTACT::AUG::ActiveSet::Status CONTACT::AUG::ActiveSet::update_initial_status(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CONTACT::AUG::ActiveSet::Status CONTACT::AUG::ActiveSet::merge(
+CONTACT::Aug::ActiveSet::Status CONTACT::Aug::ActiveSet::merge(
     const std::vector<Status>& istatus) const
 {
   Status status = Status::unevaluated;
@@ -349,7 +349,7 @@ CONTACT::AUG::ActiveSet::Status CONTACT::AUG::ActiveSet::merge(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::ActiveSet::Print(std::ostream& os) const
+void CONTACT::Aug::ActiveSet::Print(std::ostream& os) const
 {
   plain_interface_set& interfaces = strategy_.interfaces();
 
@@ -390,7 +390,7 @@ void CONTACT::AUG::ActiveSet::Print(std::ostream& os) const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::ActiveSet::update_maps(const CONTACT::ParamsInterface& cparams)
+void CONTACT::Aug::ActiveSet::update_maps(const CONTACT::ParamsInterface& cparams)
 {
   DataContainer& data = strategy_.data();
   plain_interface_set& interfaces = strategy_.interfaces();
@@ -405,8 +405,8 @@ void CONTACT::AUG::ActiveSet::update_maps(const CONTACT::ParamsInterface& cparam
       data.g_old_active_slave_nodes_ptr() = Teuchos::rcp(new Epetra_Map(0, 0, strategy_.Comm()));
   }
   else
-    CORE::IO::cout << "This is no default step! History information stays untouched."
-                   << CORE::IO::endl;
+    Core::IO::cout << "This is no default step! History information stays untouched."
+                   << Core::IO::endl;
 
   // (re)setup of the global Epetra_maps
   data.g_active_node_row_map_ptr() = Teuchos::null;
@@ -424,19 +424,19 @@ void CONTACT::AUG::ActiveSet::update_maps(const CONTACT::ParamsInterface& cparam
 
     // Update Active set
     data.g_active_node_row_map_ptr() =
-        CORE::LINALG::MergeMap(data.g_active_node_row_map_ptr(), interface.ActiveNodes(), false);
+        Core::LinAlg::MergeMap(data.g_active_node_row_map_ptr(), interface.ActiveNodes(), false);
     data.GActiveDofRowMapPtr() =
-        CORE::LINALG::MergeMap(data.GActiveDofRowMapPtr(), interface.ActiveDofs(), false);
+        Core::LinAlg::MergeMap(data.GActiveDofRowMapPtr(), interface.ActiveDofs(), false);
     data.g_active_n_dof_row_map_ptr() =
-        CORE::LINALG::MergeMap(data.g_active_n_dof_row_map_ptr(), interface.ActiveNDofs(), false);
+        Core::LinAlg::MergeMap(data.g_active_n_dof_row_map_ptr(), interface.ActiveNDofs(), false);
     data.g_active_t_dof_row_map_ptr() =
-        CORE::LINALG::MergeMap(data.g_active_t_dof_row_map_ptr(), interface.ActiveTDofs(), false);
+        Core::LinAlg::MergeMap(data.g_active_t_dof_row_map_ptr(), interface.ActiveTDofs(), false);
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::ActiveSet::sanity_check(
+void CONTACT::Aug::ActiveSet::sanity_check(
     const CONTACT::ParamsInterface& cparams, const enum Status gstatus) const
 {
   const DataContainer& data = strategy_.data();
@@ -447,10 +447,10 @@ void CONTACT::AUG::ActiveSet::sanity_check(
         "detected: %s",
         status2_string(gstatus).c_str());
 
-  CORE::IO::cout << "old number of active nodes:     "
-                 << data.g_old_active_slave_nodes_ptr()->NumGlobalElements() << CORE::IO::endl;
-  CORE::IO::cout << "current number of active nodes: "
-                 << data.g_active_node_row_map_ptr()->NumGlobalElements() << CORE::IO::endl;
+  Core::IO::cout << "old number of active nodes:     "
+                 << data.g_old_active_slave_nodes_ptr()->NumGlobalElements() << Core::IO::endl;
+  Core::IO::cout << "current number of active nodes: "
+                 << data.g_active_node_row_map_ptr()->NumGlobalElements() << Core::IO::endl;
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -20,11 +20,11 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace ADAPTER
+namespace Adapter
 {
   class ArtNet;
 }
-namespace AIRWAY
+namespace Airway
 {
   class RedAirwayImplicitTimeInt;
 }
@@ -48,10 +48,10 @@ namespace FLD
   {
    public:
     /// Standard Constructor
-    TimIntRedModels(const Teuchos::RCP<DRT::Discretization>& actdis,
-        const Teuchos::RCP<CORE::LINALG::Solver>& solver,
+    TimIntRedModels(const Teuchos::RCP<Discret::Discretization>& actdis,
+        const Teuchos::RCP<Core::LinAlg::Solver>& solver,
         const Teuchos::RCP<Teuchos::ParameterList>& params,
-        const Teuchos::RCP<CORE::IO::DiscretizationWriter>& output, bool alefluid = false);
+        const Teuchos::RCP<Core::IO::DiscretizationWriter>& output, bool alefluid = false);
 
 
     /*!
@@ -148,13 +148,13 @@ namespace FLD
     Teuchos::RCP<UTILS::FluidCouplingWrapperBase> coupled3D_redDbc_art_;
 
     /// 1D arterial network time integration
-    Teuchos::RCP<ADAPTER::ArtNet> ART_timeInt_;
+    Teuchos::RCP<Adapter::ArtNet> ART_timeInt_;
 
     /// bio related, 3D to reduced-D coupling
     Teuchos::RCP<UTILS::FluidCouplingWrapperBase> coupled3D_redDbc_airways_;
 
     /// 1D arterial network time integration
-    Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt> airway_imp_timeInt_;
+    Teuchos::RCP<Airway::RedAirwayImplicitTimeInt> airway_imp_timeInt_;
 
     /// bio related special (in/outflow) boundaries
     Teuchos::RCP<UTILS::FluidVolumetricSurfaceFlowWrapper> vol_surf_flow_bc_;

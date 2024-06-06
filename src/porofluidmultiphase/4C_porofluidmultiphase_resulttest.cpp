@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
  | ctor                                                     vuong 08/16 |
  *----------------------------------------------------------------------*/
 POROFLUIDMULTIPHASE::ResultTest::ResultTest(TimIntImpl& porotimint)
-    : CORE::UTILS::ResultTest("POROFLUIDMULTIPHASE"), porotimint_(porotimint)
+    : Core::UTILS::ResultTest("POROFLUIDMULTIPHASE"), porotimint_(porotimint)
 {
   return;
 }
@@ -32,7 +32,7 @@ POROFLUIDMULTIPHASE::ResultTest::ResultTest(TimIntImpl& porotimint)
  | test node                                                vuong 08/16 |
  *----------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::ResultTest::test_node(
-    INPUT::LineDefinition& res, int& nerr, int& test_count)
+    Input::LineDefinition& res, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;
@@ -56,7 +56,7 @@ void POROFLUIDMULTIPHASE::ResultTest::test_node(
   {
     if (porotimint_.discretization()->HaveGlobalNode(node))
     {
-      CORE::Nodes::Node* actnode = porotimint_.discretization()->gNode(node);
+      Core::Nodes::Node* actnode = porotimint_.discretization()->gNode(node);
 
       // Here we are just interested in the nodes that we own (i.e. a row node)!
       if (actnode->Owner() != porotimint_.discretization()->Comm().MyPID()) return;
@@ -80,7 +80,7 @@ void POROFLUIDMULTIPHASE::ResultTest::test_node(
  | test element                                        kremheller 10/19 |
  *----------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::ResultTest::TestElement(
-    INPUT::LineDefinition& res, int& nerr, int& test_count)
+    Input::LineDefinition& res, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;
@@ -105,7 +105,7 @@ void POROFLUIDMULTIPHASE::ResultTest::TestElement(
   {
     if (porotimint_.discretization()->HaveGlobalElement(element))
     {
-      const CORE::Elements::Element* actelement = porotimint_.discretization()->gElement(element);
+      const Core::Elements::Element* actelement = porotimint_.discretization()->gElement(element);
 
       // Here we are just interested in the elements that we own (i.e. a row element)!
       if (actelement->Owner() != porotimint_.discretization()->Comm().MyPID()) return;
@@ -130,7 +130,7 @@ void POROFLUIDMULTIPHASE::ResultTest::TestElement(
  | get nodal result to be tested                            vuong 08/16 |
  *----------------------------------------------------------------------*/
 double POROFLUIDMULTIPHASE::ResultTest::result_node(
-    const std::string quantity, CORE::Nodes::Node* node) const
+    const std::string quantity, Core::Nodes::Node* node) const
 {
   // initialize variable for result
   double result(0.);
@@ -211,7 +211,7 @@ double POROFLUIDMULTIPHASE::ResultTest::result_node(
  | get element result to be tested                     kremheller 10/19 |
  *----------------------------------------------------------------------*/
 double POROFLUIDMULTIPHASE::ResultTest::result_element(
-    const std::string quantity, const CORE::Elements::Element* element) const
+    const std::string quantity, const Core::Elements::Element* element) const
 {
   // initialize variable for result
   double result(0.);
@@ -223,7 +223,7 @@ double POROFLUIDMULTIPHASE::ResultTest::result_element(
   }
   else if (!quantity.compare(0, 13, "phasevelocity"))
   {
-    const int num_dim = GLOBAL::Problem::Instance()->NDim();
+    const int num_dim = Global::Problem::Instance()->NDim();
     // get phase ID
     // example: "phasevelocity3x" -> k = 2 (phase IDs start at index 0)
     std::string k_string = quantity.substr(13);
@@ -254,7 +254,7 @@ double POROFLUIDMULTIPHASE::ResultTest::result_element(
  | test special quantity not associated with a particular element or node  vuong 08/16 |
  *-------------------------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::ResultTest::TestSpecial(
-    INPUT::LineDefinition& res, int& nerr, int& test_count)
+    Input::LineDefinition& res, int& nerr, int& test_count)
 {
   // make sure that quantity is tested only once
   if (porotimint_.discretization()->Comm().MyPID() == 0)

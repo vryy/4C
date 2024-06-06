@@ -28,17 +28,17 @@ active strain approach) with variable time-dependent activation
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
-    class MuscleCombo : public CORE::MAT::PAR::Parameter
+    class MuscleCombo : public Core::Mat::PAR::Parameter
     {
      public:
       /// constructor
-      MuscleCombo(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      MuscleCombo(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       /// @name material parameters
       //@{
@@ -66,7 +66,7 @@ namespace MAT
       //! @name time-/space-dependent activation
 
       //! type of activation prescription
-      const INPAR::MAT::ActivationType activationType_;
+      const Inpar::Mat::ActivationType activationType_;
 
       /*!
        * @brief type-dependent parameters for activation
@@ -88,14 +88,14 @@ namespace MAT
   }     // end namespace PAR
 
 
-  class MuscleComboType : public CORE::COMM::ParObjectType
+  class MuscleComboType : public Core::Communication::ParObjectType
   {
    public:
     [[nodiscard]] std::string Name() const override { return "Muscle_ComboType"; }
 
     static MuscleComboType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static MuscleComboType instance_;
@@ -134,23 +134,23 @@ namespace MAT
     MuscleCombo();
 
     // Constructor for the material given the material parameters
-    explicit MuscleCombo(MAT::PAR::MuscleCombo* params);
+    explicit MuscleCombo(Mat::PAR::MuscleCombo* params);
 
-    [[nodiscard]] Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    [[nodiscard]] Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new MuscleCombo(*this));
     }
 
-    [[nodiscard]] CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
+    [[nodiscard]] Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
-    [[nodiscard]] CORE::Materials::MaterialType MaterialType() const override
+    [[nodiscard]] Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_muscle_combo;
+      return Core::Materials::m_muscle_combo;
     };
 
-    void ValidKinematics(INPAR::STR::KinemType kinem) override
+    void ValidKinematics(Inpar::STR::KinemType kinem) override
     {
-      if (kinem != INPAR::STR::KinemType::linear && kinem != INPAR::STR::KinemType::nonlinearTotLag)
+      if (kinem != Inpar::STR::KinemType::linear && kinem != Inpar::STR::KinemType::nonlinearTotLag)
         FOUR_C_THROW("element and material kinematics are not compatible");
     }
 
@@ -161,24 +161,24 @@ namespace MAT
       return MuscleComboType::Instance().UniqueParObjectId();
     }
 
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     void Unpack(const std::vector<char>& data) override;
 
-    void Setup(int numgp, INPUT::LineDefinition* linedef) override;
+    void Setup(int numgp, Input::LineDefinition* linedef) override;
 
     bool UsesExtendedUpdate() override { return true; };
 
-    void Update(CORE::LINALG::Matrix<3, 3> const& defgrd, int const gp,
+    void Update(Core::LinAlg::Matrix<3, 3> const& defgrd, int const gp,
         Teuchos::ParameterList& params, int const eleGID) override;
 
-    void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
-        const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-        CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, int gp,
+    void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+        const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+        Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, int gp,
         int eleGID) override;
 
     using ActivationEvaluatorVariant =
-        std::variant<std::monostate, const CORE::UTILS::FunctionOfSpaceTime*,
+        std::variant<std::monostate, const Core::UTILS::FunctionOfSpaceTime*,
             const std::unordered_map<int, std::vector<std::pair<double, double>>>*>;
 
    private:
@@ -213,20 +213,20 @@ namespace MAT
         const double derivPa, double& omegaa, double& derivOmegaa, double& derivDerivOmegaa);
 
     /// Combo material parameters
-    MAT::PAR::MuscleCombo* params_{};
+    Mat::PAR::MuscleCombo* params_{};
 
     /// Holder for anisotropic behavior
-    MAT::Anisotropy anisotropy_;
+    Mat::Anisotropy anisotropy_;
 
     /// Anisotropy extension holder
-    MAT::DefaultAnisotropyExtension<1> anisotropy_extension_;
+    Mat::DefaultAnisotropyExtension<1> anisotropy_extension_;
 
     /// Activation evaluator, either analytical symbolic function of space and time or discrete
     /// activation map
     ActivationEvaluatorVariant activation_evaluator_;
   };  // end class Muscle_Combo
 
-}  // end namespace MAT
+}  // end namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

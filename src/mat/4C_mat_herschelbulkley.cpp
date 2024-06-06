@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::HerschelBulkley::HerschelBulkley(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::HerschelBulkley::HerschelBulkley(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : Parameter(matdata),
       tau0_(matdata->Get<double>("TAU_0")),
       kfac_(matdata->Get<double>("KFAC")),
@@ -31,18 +31,18 @@ MAT::PAR::HerschelBulkley::HerschelBulkley(Teuchos::RCP<CORE::MAT::PAR::Material
 {
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::HerschelBulkley::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::HerschelBulkley::create_material()
 {
-  return Teuchos::rcp(new MAT::HerschelBulkley(this));
+  return Teuchos::rcp(new Mat::HerschelBulkley(this));
 }
 
 
-MAT::HerschelBulkleyType MAT::HerschelBulkleyType::instance_;
+Mat::HerschelBulkleyType Mat::HerschelBulkleyType::instance_;
 
 
-CORE::COMM::ParObject* MAT::HerschelBulkleyType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::HerschelBulkleyType::Create(const std::vector<char>& data)
 {
-  MAT::HerschelBulkley* herbul = new MAT::HerschelBulkley();
+  Mat::HerschelBulkley* herbul = new Mat::HerschelBulkley();
   herbul->Unpack(data);
   return herbul;
 }
@@ -50,18 +50,18 @@ CORE::COMM::ParObject* MAT::HerschelBulkleyType::Create(const std::vector<char>&
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::HerschelBulkley::HerschelBulkley() : params_(nullptr) {}
+Mat::HerschelBulkley::HerschelBulkley() : params_(nullptr) {}
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::HerschelBulkley::HerschelBulkley(MAT::PAR::HerschelBulkley* params) : params_(params) {}
+Mat::HerschelBulkley::HerschelBulkley(Mat::PAR::HerschelBulkley* params) : params_(params) {}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::HerschelBulkley::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::HerschelBulkley::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -76,24 +76,24 @@ void MAT::HerschelBulkley::Pack(CORE::COMM::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::HerschelBulkley::Unpack(const std::vector<char>& data)
+void Mat::HerschelBulkley::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::HerschelBulkley*>(mat);
+        params_ = static_cast<Mat::PAR::HerschelBulkley*>(mat);
       else
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());

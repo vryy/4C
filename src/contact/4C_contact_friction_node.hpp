@@ -15,14 +15,14 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace CONTACT
 {
-  class FriNodeType : public CORE::COMM::ParObjectType
+  class FriNodeType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const final { return "FriNodeType"; }
 
     static FriNodeType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static FriNodeType instance_;
@@ -61,7 +61,7 @@ namespace CONTACT
      class exists.
 
      */
-    virtual void Pack(CORE::COMM::PackBuffer& data) const;
+    virtual void Pack(Core::Communication::PackBuffer& data) const;
 
     /*!
      \brief Unpack data from a vector into this class
@@ -95,7 +95,7 @@ namespace CONTACT
     /*!
      \brief Return the old 'D' map (vector) of this node (last converged state)
      */
-    virtual inline CORE::GEN::Pairedvector<int, double>& GetDOld() { return drowsold_; }
+    virtual inline Core::Gen::Pairedvector<int, double>& GetDOld() { return drowsold_; }
 
     /*!
      \brief Return the old 'M' map (vector) of this node (last converged state)
@@ -105,7 +105,7 @@ namespace CONTACT
     /*!
      \brief Return the old 'D' map (vector) of this node (last converged state)
      */
-    virtual inline CORE::GEN::Pairedvector<int, double>& GetDOldLTL() { return drowsoldLTL_; }
+    virtual inline Core::Gen::Pairedvector<int, double>& GetDOldLTL() { return drowsoldLTL_; }
 
     /*!
      \brief Return the old 'M' map (vector) of this node (last converged state)
@@ -197,13 +197,13 @@ namespace CONTACT
     bool slipold_;
 
     //! Nodal rows of old D matrix
-    CORE::GEN::Pairedvector<int, double> drowsold_;
+    Core::Gen::Pairedvector<int, double> drowsold_;
 
     //! Nodal rows of old M matrix
     std::map<int, double> mrowsold_;
 
     //! Nodal rows of old D matrix for line-to-line contact
-    CORE::GEN::Pairedvector<int, double> drowsoldLTL_;
+    Core::Gen::Pairedvector<int, double> drowsoldLTL_;
 
     //! Nodal rows of old M matrix for line-to-line contact
     std::map<int, double> mrowsoldLTL_;
@@ -270,7 +270,7 @@ namespace CONTACT
 
     //! @name Access methods
 
-    virtual void Pack(CORE::COMM::PackBuffer& data) const;
+    virtual void Pack(Core::Communication::PackBuffer& data) const;
     virtual void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
 
     /*!
@@ -378,7 +378,7 @@ namespace CONTACT
     /*!
      \brief The discretization is a friend of FriNode
      */
-    friend class DRT::Discretization;
+    friend class Discret::Discretization;
 
     //@}
 
@@ -430,7 +430,7 @@ namespace CONTACT
      \ref Pack and \ref Unpack are used to communicate this node
 
      */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class

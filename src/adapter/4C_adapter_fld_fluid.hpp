@@ -27,31 +27,31 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
   class BlockSparseMatrixBase;
   class MapExtractor;
   class Solver;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace CORE::Dofsets
+namespace Core::DOFSets
 {
   class DofSet;
 }
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
   class ResultTest;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationWriter;
 }
@@ -67,7 +67,7 @@ namespace FLD
   }
 }  // namespace FLD
 
-namespace ADAPTER
+namespace Adapter
 {
   /// general fluid field interface for multiphysics (FSI, ELCH, ...)
   /*!
@@ -194,33 +194,33 @@ namespace ADAPTER
     virtual Teuchos::RCP<const Epetra_Map> dof_row_map(unsigned nds) = 0;
 
     /// direct access to system matrix
-    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() = 0;
+    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() = 0;
 
     /// direct access to merged system matrix
-    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemSparseMatrix() = 0;
+    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemSparseMatrix() = 0;
 
     /// direct access to system matrix
-    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() = 0;
+    virtual Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> BlockSystemMatrix() = 0;
 
     /// linearization of Navier-Stokes with respect to mesh movement
-    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> ShapeDerivatives() = 0;
+    virtual Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> ShapeDerivatives() = 0;
 
     /// direct access to discretization
-    virtual const Teuchos::RCP<DRT::Discretization>& discretization() = 0;
+    virtual const Teuchos::RCP<Discret::Discretization>& discretization() = 0;
 
     /// direct access to dofset
-    virtual Teuchos::RCP<const CORE::Dofsets::DofSet> DofSet() = 0;
+    virtual Teuchos::RCP<const Core::DOFSets::DofSet> DofSet() = 0;
 
     /// Return MapExtractor for Dirichlet boundary conditions
-    virtual Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor() = 0;
 
     /// set initial flow field
     virtual void SetInitialFlowField(
-        const INPAR::FLUID::InitialField initfield, const int startfuncno) = 0;
+        const Inpar::FLUID::InitialField initfield, const int startfuncno) = 0;
 
     /// set initial flow field
     virtual void set_initial_porosity_field(
-        const INPAR::POROELAST::InitialField initfield, const int startfuncno) = 0;
+        const Inpar::PoroElast::InitialField initfield, const int startfuncno) = 0;
 
     /// apply external forces to the fluid
     virtual void ApplyExternalForces(Teuchos::RCP<Epetra_MultiVector> fext) = 0;
@@ -239,19 +239,19 @@ namespace ADAPTER
     ///  set scalar fields within outer iteration loop
     virtual void SetIterScalarFields(Teuchos::RCP<const Epetra_Vector> scalaraf,
         Teuchos::RCP<const Epetra_Vector> scalaram, Teuchos::RCP<const Epetra_Vector> scalardtam,
-        Teuchos::RCP<DRT::Discretization> scatradis, int dofset = 0) = 0;
+        Teuchos::RCP<Discret::Discretization> scatradis, int dofset = 0) = 0;
 
     /// set scalar fields within outer iteration loop for low-Mach-number flow
     virtual void set_loma_iter_scalar_fields(Teuchos::RCP<const Epetra_Vector> scalaraf,
         Teuchos::RCP<const Epetra_Vector> scalaram, Teuchos::RCP<const Epetra_Vector> scalardtam,
         Teuchos::RCP<const Epetra_Vector> fsscalaraf, const double thermpressaf,
         const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
-        Teuchos::RCP<DRT::Discretization> scatradis) = 0;
+        Teuchos::RCP<Discret::Discretization> scatradis) = 0;
 
     /// set scalar fields
     virtual void SetScalarFields(Teuchos::RCP<const Epetra_Vector> scalarnp,
         const double thermpressnp, Teuchos::RCP<const Epetra_Vector> scatraresidual,
-        Teuchos::RCP<DRT::Discretization> scatradis, const int whichscalar = -1) = 0;
+        Teuchos::RCP<Discret::Discretization> scatradis, const int whichscalar = -1) = 0;
 
     /// set velocity field (separate computation)
     virtual void set_velocity_field(Teuchos::RCP<const Epetra_Vector> velnp) = 0;
@@ -320,10 +320,10 @@ namespace ADAPTER
     virtual void StatisticsOutput() = 0;
 
     /// access to output
-    virtual const Teuchos::RCP<CORE::IO::DiscretizationWriter>& DiscWriter() = 0;
+    virtual const Teuchos::RCP<Core::IO::DiscretizationWriter>& DiscWriter() = 0;
 
     /// access to map extractor for velocity and pressure
-    virtual Teuchos::RCP<CORE::LINALG::MapExtractor> GetVelPressSplitter() = 0;
+    virtual Teuchos::RCP<Core::LinAlg::MapExtractor> GetVelPressSplitter() = 0;
 
     /// read restart information for given time step
     virtual void read_restart(int step) = 0;
@@ -429,7 +429,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel) = 0;
 
     /// get the linear solver object used for this field
-    virtual Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() = 0;
+    virtual Teuchos::RCP<Core::LinAlg::Solver> LinearSolver() = 0;
 
     /// do an intermediate solution step
     virtual void calc_intermediate_solution() = 0;
@@ -476,7 +476,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<FLD::UTILS::MapExtractor> const& FPSIInterface() const = 0;
 
     /// return type of time integration scheme
-    virtual INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const = 0;
+    virtual Inpar::FLUID::TimeIntegrationScheme TimIntScheme() const = 0;
 
     //! @name Extract the velocity-related part of a fluid vector (e.g. velnp, veln, residual)
     /// The idea is to have one function that does the extraction and call it
@@ -570,15 +570,15 @@ namespace ADAPTER
     virtual void use_block_matrix(bool splitmatrix) = 0;
 
     /// create result test for encapulated fluid algorithm
-    virtual Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() = 0;
+    virtual Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() = 0;
 
     /// calculate error in comparison to analytical solution
     virtual void CalculateError() = 0;
 
     /// return physical type of fluid algorithm
-    virtual INPAR::FLUID::PhysicalType PhysicalType() const = 0;
+    virtual Inpar::FLUID::PhysicalType PhysicalType() const = 0;
   };
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -14,17 +14,17 @@ thesis)
 FOUR_C_NAMESPACE_OPEN
 
 
-MAT::ELASTIC::PAR::VolPenalty::VolPenalty(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
+Mat::Elastic::PAR::VolPenalty::VolPenalty(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
     : Parameter(matdata), eps_(matdata->Get<double>("EPSILON")), gam_(matdata->Get<double>("GAMMA"))
 {
   if (eps_ < 0. || gam_ <= 0.)
     FOUR_C_THROW("VolPenalty parameters EPSILON and GAMMA have to be greater zero");
 }
 
-MAT::ELASTIC::VolPenalty::VolPenalty(MAT::ELASTIC::PAR::VolPenalty* params) : params_(params) {}
+Mat::Elastic::VolPenalty::VolPenalty(Mat::Elastic::PAR::VolPenalty* params) : params_(params) {}
 
-void MAT::ELASTIC::VolPenalty::AddStrainEnergy(double& psi, const CORE::LINALG::Matrix<3, 1>& prinv,
-    const CORE::LINALG::Matrix<3, 1>& modinv, const CORE::LINALG::Matrix<6, 1>& glstrain,
+void Mat::Elastic::VolPenalty::AddStrainEnergy(double& psi, const Core::LinAlg::Matrix<3, 1>& prinv,
+    const Core::LinAlg::Matrix<3, 1>& modinv, const Core::LinAlg::Matrix<6, 1>& glstrain,
     const int gp, const int eleGID)
 {
   const double eps = params_->eps_;
@@ -35,8 +35,8 @@ void MAT::ELASTIC::VolPenalty::AddStrainEnergy(double& psi, const CORE::LINALG::
   psi += eps * (pow(modinv(2), gam) + pow(modinv(2), -gam) - 2.);
 }
 
-void MAT::ELASTIC::VolPenalty::add_derivatives_modified(CORE::LINALG::Matrix<3, 1>& dPmodI,
-    CORE::LINALG::Matrix<6, 1>& ddPmodII, const CORE::LINALG::Matrix<3, 1>& modinv, const int gp,
+void Mat::Elastic::VolPenalty::add_derivatives_modified(Core::LinAlg::Matrix<3, 1>& dPmodI,
+    Core::LinAlg::Matrix<6, 1>& ddPmodII, const Core::LinAlg::Matrix<3, 1>& modinv, const int gp,
     const int eleGID)
 {
   const double eps = params_->eps_;
@@ -48,8 +48,8 @@ void MAT::ELASTIC::VolPenalty::add_derivatives_modified(CORE::LINALG::Matrix<3, 
       eps * gam * ((gam - 1.) * pow(modinv(2), gam - 2.) + (gam + 1.) * pow(modinv(2), -gam - 2.));
 }
 
-void MAT::ELASTIC::VolPenalty::Add3rdVolDeriv(
-    const CORE::LINALG::Matrix<3, 1>& modinv, double& d3PsiVolDJ3)
+void Mat::Elastic::VolPenalty::Add3rdVolDeriv(
+    const Core::LinAlg::Matrix<3, 1>& modinv, double& d3PsiVolDJ3)
 {
   const double eps = params_->eps_;
   const double gam = params_->gam_;

@@ -17,39 +17,39 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::StructPoroReaction::StructPoroReaction(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::StructPoroReaction::StructPoroReaction(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : StructPoro(matdata), dofIDReacScalar_(matdata->Get<int>("DOFIDREACSCALAR"))
 {
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::StructPoroReaction::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::StructPoroReaction::create_material()
 {
-  return Teuchos::rcp(new MAT::StructPoroReaction(this));
+  return Teuchos::rcp(new Mat::StructPoroReaction(this));
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::StructPoroReactionType MAT::StructPoroReactionType::instance_;
+Mat::StructPoroReactionType Mat::StructPoroReactionType::instance_;
 
-CORE::COMM::ParObject* MAT::StructPoroReactionType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::StructPoroReactionType::Create(const std::vector<char>& data)
 {
-  MAT::StructPoroReaction* struct_poro = new MAT::StructPoroReaction();
+  Mat::StructPoroReaction* struct_poro = new Mat::StructPoroReaction();
   struct_poro->Unpack(data);
   return struct_poro;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::StructPoroReaction::StructPoroReaction()
+Mat::StructPoroReaction::StructPoroReaction()
     : params_(nullptr), refporosity_(-1.0), dphiDphiref_(0.0), refporositydot_(0.0)
 {
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::StructPoroReaction::StructPoroReaction(MAT::PAR::StructPoroReaction* params)
+Mat::StructPoroReaction::StructPoroReaction(Mat::PAR::StructPoroReaction* params)
     : StructPoro(params),
       params_(params),
       refporosity_(-1.0),
@@ -60,7 +60,7 @@ MAT::StructPoroReaction::StructPoroReaction(MAT::PAR::StructPoroReaction* params
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::StructPoroReaction::Setup(int numgp, INPUT::LineDefinition* linedef)
+void Mat::StructPoroReaction::Setup(int numgp, Input::LineDefinition* linedef)
 {
   StructPoro::Setup(numgp, linedef);
   refporosity_ = params_->init_porosity_;
@@ -68,9 +68,9 @@ void MAT::StructPoroReaction::Setup(int numgp, INPUT::LineDefinition* linedef)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::StructPoroReaction::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::StructPoroReaction::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -91,24 +91,24 @@ void MAT::StructPoroReaction::Pack(CORE::COMM::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::StructPoroReaction::Unpack(const std::vector<char>& data)
+void Mat::StructPoroReaction::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::StructPoroReaction*>(mat);
+        params_ = static_cast<Mat::PAR::StructPoroReaction*>(mat);
       else
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
@@ -125,7 +125,7 @@ void MAT::StructPoroReaction::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::StructPoroReaction::compute_porosity(Teuchos::ParameterList& params, double press,
+void Mat::StructPoroReaction::compute_porosity(Teuchos::ParameterList& params, double press,
     double J, int gp, double& porosity, double* dphi_dp, double* dphi_dJ, double* dphi_dJdp,
     double* dphi_dJJ, double* dphi_dpp, bool save)
 {
@@ -146,7 +146,7 @@ void MAT::StructPoroReaction::compute_porosity(Teuchos::ParameterList& params, d
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::StructPoroReaction::constitutive_derivatives(Teuchos::ParameterList& params, double press,
+void Mat::StructPoroReaction::constitutive_derivatives(Teuchos::ParameterList& params, double press,
     double J, double porosity, double* dW_dp, double* dW_dphi, double* dW_dJ, double* dW_dphiref,
     double* W)
 {
@@ -174,7 +174,7 @@ void MAT::StructPoroReaction::constitutive_derivatives(Teuchos::ParameterList& p
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::StructPoroReaction::reaction(const double porosity, const double J,
+void Mat::StructPoroReaction::reaction(const double porosity, const double J,
     Teuchos::RCP<std::vector<double>> scalars, Teuchos::ParameterList& params)
 {
   // double dt = params.get<double>("delta time",-1.0);
@@ -202,9 +202,9 @@ void MAT::StructPoroReaction::reaction(const double porosity, const double J,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::StructPoroReaction::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
-    const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-    CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, const int gp,
+void Mat::StructPoroReaction::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+    const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+    Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
 {
   // call base class
@@ -217,12 +217,12 @@ void MAT::StructPoroReaction::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::StructPoroReaction::RefPorosityAv() const { return refporosity_; }
+double Mat::StructPoroReaction::RefPorosityAv() const { return refporosity_; }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::StructPoroReaction::VisNames(std::map<std::string, int>& names)
+void Mat::StructPoroReaction::VisNames(std::map<std::string, int>& names)
 {
   // call base class
   StructPoro::VisNames(names);
@@ -232,7 +232,7 @@ void MAT::StructPoroReaction::VisNames(std::map<std::string, int>& names)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool MAT::StructPoroReaction::VisData(
+bool Mat::StructPoroReaction::VisData(
     const std::string& name, std::vector<double>& data, int numgp, int eleID)
 {
   // call base class

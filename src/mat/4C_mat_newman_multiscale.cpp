@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 /*--------------------------------------------------------------------*
  | constructor                                             fang 07/17 |
  *--------------------------------------------------------------------*/
-MAT::PAR::NewmanMultiScale::NewmanMultiScale(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::NewmanMultiScale::NewmanMultiScale(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : Newman(matdata),
       ScatraMicroMacroCoupling(matdata),
       electronic_cond_(matdata->Get<double>("ELECTRONIC_COND")),
@@ -29,21 +29,21 @@ MAT::PAR::NewmanMultiScale::NewmanMultiScale(Teuchos::RCP<CORE::MAT::PAR::Materi
 /*--------------------------------------------------------------------*
  | create instance of Newman multi-scale material          fang 07/17 |
  *--------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::NewmanMultiScale::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::NewmanMultiScale::create_material()
 {
-  return Teuchos::rcp(new MAT::NewmanMultiScale(this));
+  return Teuchos::rcp(new Mat::NewmanMultiScale(this));
 }
 
 
-MAT::NewmanMultiScaleType MAT::NewmanMultiScaleType::instance_;
+Mat::NewmanMultiScaleType Mat::NewmanMultiScaleType::instance_;
 
 
 /*--------------------------------------------------------------------*
  | unpack instance of Newman multi-scale material          fang 07/17 |
  *--------------------------------------------------------------------*/
-CORE::COMM::ParObject* MAT::NewmanMultiScaleType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::NewmanMultiScaleType::Create(const std::vector<char>& data)
 {
-  MAT::NewmanMultiScale* NewmanMultiScale = new MAT::NewmanMultiScale();
+  Mat::NewmanMultiScale* NewmanMultiScale = new Mat::NewmanMultiScale();
   NewmanMultiScale->Unpack(data);
   return NewmanMultiScale;
 }
@@ -52,13 +52,13 @@ CORE::COMM::ParObject* MAT::NewmanMultiScaleType::Create(const std::vector<char>
 /*--------------------------------------------------------------------*
  | construct empty Newman multi-scale material             fang 07/17 |
  *--------------------------------------------------------------------*/
-MAT::NewmanMultiScale::NewmanMultiScale() : params_(nullptr) {}
+Mat::NewmanMultiScale::NewmanMultiScale() : params_(nullptr) {}
 
 
 /*--------------------------------------------------------------------------------------*
  | construct Newman multi-scale material with specific material parameters   fang 07/17 |
  *--------------------------------------------------------------------------------------*/
-MAT::NewmanMultiScale::NewmanMultiScale(MAT::PAR::NewmanMultiScale* params)
+Mat::NewmanMultiScale::NewmanMultiScale(Mat::PAR::NewmanMultiScale* params)
     : Newman(params), params_(params)
 {
 }
@@ -67,9 +67,9 @@ MAT::NewmanMultiScale::NewmanMultiScale(MAT::PAR::NewmanMultiScale* params)
 /*--------------------------------------------------------------------*
  | pack material for communication purposes                fang 07/17 |
  *--------------------------------------------------------------------*/
-void MAT::NewmanMultiScale::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::NewmanMultiScale::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -88,25 +88,25 @@ void MAT::NewmanMultiScale::Pack(CORE::COMM::PackBuffer& data) const
 /*--------------------------------------------------------------------*
  | unpack data from a char vector                          fang 07/17 |
  *--------------------------------------------------------------------*/
-void MAT::NewmanMultiScale::Unpack(const std::vector<char>& data)
+void Mat::NewmanMultiScale::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
   {
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::NewmanMultiScale*>(mat);
+        params_ = static_cast<Mat::PAR::NewmanMultiScale*>(mat);
       else
         FOUR_C_THROW("Type of parameter material %d does not match calling type %d!", mat->Type(),
             MaterialType());
@@ -125,13 +125,13 @@ void MAT::NewmanMultiScale::Unpack(const std::vector<char>& data)
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-double MAT::NewmanMultiScale::electronic_cond(const int gp) const
+double Mat::NewmanMultiScale::electronic_cond(const int gp) const
 {
   const int func_num = params_->conc_dep_scale_func_num();
   if (func_num > 0)
   {
-    return GLOBAL::Problem::Instance()
-               ->FunctionById<CORE::UTILS::FunctionOfAnything>(func_num - 1)
+    return Global::Problem::Instance()
+               ->FunctionById<Core::UTILS::FunctionOfAnything>(func_num - 1)
                .Evaluate({{"c", evaluate_mean_concentration(gp)}}, {}, 0) *
            params_->electronic_cond();
   }

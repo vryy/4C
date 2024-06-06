@@ -16,17 +16,17 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
     //! interface class for generic viscosity law
-    class FluidPoroViscosityLaw : public CORE::MAT::PAR::Parameter
+    class FluidPoroViscosityLaw : public Core::Mat::PAR::Parameter
     {
      public:
       /// standard constructor
       explicit FluidPoroViscosityLaw(
-          Teuchos::RCP<CORE::MAT::PAR::Material> matdata, bool constviscosity)
+          Teuchos::RCP<Core::Mat::PAR::Material> matdata, bool constviscosity)
           : Parameter(matdata), constviscosity_(constviscosity){};
 
       // get viscosity
@@ -39,7 +39,7 @@ namespace MAT
       bool has_constant_viscosity() const { return constviscosity_; }
 
       /// factory method
-      static MAT::PAR::FluidPoroViscosityLaw* CreateViscosityLaw(int matID);
+      static Mat::PAR::FluidPoroViscosityLaw* CreateViscosityLaw(int matID);
 
      private:
       const bool constviscosity_;
@@ -50,10 +50,10 @@ namespace MAT
     {
      public:
       /// standard constructor
-      explicit FluidPoroViscosityLawConstant(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      explicit FluidPoroViscosityLawConstant(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override { return Teuchos::null; };
+      Teuchos::RCP<Core::Mat::Material> create_material() override { return Teuchos::null; };
 
       // get viscosity
       double GetViscosity(const double abspressgrad) const override { return viscosity_; };
@@ -81,10 +81,10 @@ namespace MAT
     {
      public:
       /// standard constructor
-      explicit FluidPoroViscosityLawCellAdherence(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      explicit FluidPoroViscosityLawCellAdherence(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override { return Teuchos::null; };
+      Teuchos::RCP<Core::Mat::Material> create_material() override { return Teuchos::null; };
 
       // get viscosity
       double GetViscosity(const double abspressgrad) const override;
@@ -106,7 +106,7 @@ namespace MAT
 
 
   }  // namespace PAR
-}  // namespace MAT
+}  // namespace Mat
 
 
 

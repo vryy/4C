@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace INPAR
+namespace Inpar
 {
   namespace BINSTRATEGY
   {
@@ -37,7 +37,7 @@ namespace INPAR
 
   }  // namespace BINSTRATEGY
 
-}  // namespace INPAR
+}  // namespace Inpar
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

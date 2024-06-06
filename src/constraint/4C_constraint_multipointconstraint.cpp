@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               tk 07/08|
  *----------------------------------------------------------------------*/
-CONSTRAINTS::MPConstraint::MPConstraint(Teuchos::RCP<DRT::Discretization> discr,
+CONSTRAINTS::MPConstraint::MPConstraint(Teuchos::RCP<Discret::Discretization> discr,
     const std::string& conditionname, int& minID, int& maxID)
     : CONSTRAINTS::Constraint(discr, conditionname, minID, maxID)
 {
@@ -31,7 +31,7 @@ CONSTRAINTS::MPConstraint::MPConstraint(Teuchos::RCP<DRT::Discretization> discr,
  |  ctor (public)                                               tk 07/08|
  *----------------------------------------------------------------------*/
 CONSTRAINTS::MPConstraint::MPConstraint(
-    Teuchos::RCP<DRT::Discretization> discr, const std::string& conditionname)
+    Teuchos::RCP<Discret::Discretization> discr, const std::string& conditionname)
     : CONSTRAINTS::Constraint(discr, conditionname)
 {
   return;
@@ -44,12 +44,12 @@ void CONSTRAINTS::MPConstraint::SetConstrState(const std::string& state,  ///< n
 {
   if (constrtype_ != none)
   {
-    std::map<int, Teuchos::RCP<DRT::Discretization>>::iterator discrit;
+    std::map<int, Teuchos::RCP<Discret::Discretization>>::iterator discrit;
     for (discrit = constraintdis_.begin(); discrit != constraintdis_.end(); ++discrit)
     {
       Teuchos::RCP<Epetra_Vector> tmp =
-          CORE::LINALG::CreateVector(*(discrit->second)->DofColMap(), false);
-      CORE::LINALG::Export(*V, *tmp);
+          Core::LinAlg::CreateVector(*(discrit->second)->DofColMap(), false);
+      Core::LinAlg::Export(*V, *tmp);
       (discrit->second)->ClearState();
       (discrit->second)->set_state(state, tmp);
     }

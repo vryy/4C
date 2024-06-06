@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief Bundle holds all read-in materials of a #GLOBAL::Problem
+\brief Bundle holds all read-in materials of a #Global::Problem
 
 \level 1
 
@@ -23,12 +23,12 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
     /*----------------------------------------------------------------------*/
-    /// bundle holds all read-in materials of a #GLOBAL::Problem
+    /// bundle holds all read-in materials of a #Global::Problem
     ///
     /// <h4>About</h4>
     /// The bundle provides an interface between unique material IDs and
@@ -37,12 +37,12 @@ namespace MAT
     /// Material ID and data are hold in #matmap_.
     ///
     /// <h4>Special issues for multi-problem-instance applications</h4>
-    /// We have for each GLOBAL::Problem instance an individual material bundle.
+    /// We have for each Global::Problem instance an individual material bundle.
     /// However, this fact is not transparanet at the read time of the elements
     /// which are only aware of their material ID. The variable #materialreadfromproblem_
-    /// of the material bundle of the 0th GLOBAL::Problem instance make it possible to switch
-    /// among different GLOBAL::Problem. (The variable #materialreadfromproblem_ is redundant
-    /// in the material bundles of all non-0th GLOBAL::Problem instances.)
+    /// of the material bundle of the 0th Global::Problem instance make it possible to switch
+    /// among different Global::Problem. (The variable #materialreadfromproblem_ is redundant
+    /// in the material bundles of all non-0th Global::Problem instances.)
     ///
     /// \author bborn
     /// \date 02/09
@@ -53,7 +53,7 @@ namespace MAT
        * Insert new pair of material ID and the input data. The input data is set up for lazy
        * construction the first time the material is accessed.
        */
-      void insert(int matid, CORE::UTILS::LazyPtr<CORE::MAT::PAR::Parameter> mat);
+      void insert(int matid, Core::UTILS::LazyPtr<Core::Mat::PAR::Parameter> mat);
 
       /**
        * Check whether material parameters exist for provided @p id.
@@ -64,7 +64,7 @@ namespace MAT
       [[nodiscard]] bool id_exists(int id) const;
 
       /// provide access to material map (a li'l dirty)
-      [[nodiscard]] const std::map<int, CORE::UTILS::LazyPtr<CORE::MAT::PAR::Parameter>>& Map()
+      [[nodiscard]] const std::map<int, Core::UTILS::LazyPtr<Core::Mat::PAR::Parameter>>& Map()
           const
       {
         return matmap_;
@@ -74,7 +74,7 @@ namespace MAT
       int Num() const { return matmap_.size(); }
 
       /// return material parameters
-      CORE::MAT::PAR::Parameter* ParameterById(
+      Core::Mat::PAR::Parameter* ParameterById(
           const int num  ///< request is made for this material ID
       ) const;
 
@@ -82,13 +82,13 @@ namespace MAT
       ///
       /// \return The ID of seached for material type.
       ///         If the search is unsuccessful -1 is returned
-      int FirstIdByType(const CORE::Materials::MaterialType type) const;
+      int FirstIdByType(const Core::Materials::MaterialType type) const;
 
       /// return problem index to read from
       int GetReadFromProblem() const { return materialreadfromproblem_; }
 
       /// set problem index to read from
-      void SetReadFromProblem(const int p  ///< index of GLOBAL::Problem instance to read for
+      void SetReadFromProblem(const int p  ///< index of Global::Problem instance to read for
       )
       {
         materialreadfromproblem_ = p;
@@ -100,7 +100,7 @@ namespace MAT
      private:
       /// The map linking material IDs to input paramters. The data is stored as a lazy pointer to
       /// allow for lazy construction of material parameters in arbitrary order.
-      std::map<int, CORE::UTILS::LazyPtr<CORE::MAT::PAR::Parameter>> matmap_;
+      std::map<int, Core::UTILS::LazyPtr<Core::Mat::PAR::Parameter>> matmap_;
 
       /// the index of problem instance of which material read-in shall be performed
       int materialreadfromproblem_{};
@@ -108,7 +108,7 @@ namespace MAT
 
   }  // namespace PAR
 
-}  // namespace MAT
+}  // namespace Mat
 
 
 FOUR_C_NAMESPACE_CLOSE

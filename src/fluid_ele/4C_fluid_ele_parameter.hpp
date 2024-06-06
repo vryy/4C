@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
@@ -65,7 +65,7 @@ namespace DRT
 
       //! Flag for physical type of the fluid flow (incompressible, loma, varying_density,
       //! Boussinesq, poro)
-      INPAR::FLUID::PhysicalType PhysicalType() const { return physicaltype_; };
+      Inpar::FLUID::PhysicalType PhysicalType() const { return physicaltype_; };
       //! flag to (de)activate conservative formulation
       bool IsConservative() const { return is_conservative_; };
       //! flag to (de)activate Newton linearization
@@ -84,32 +84,32 @@ namespace DRT
       /*----------------------------------------------------*/
 
       //! get the stabtype
-      INPAR::FLUID::StabType StabType() const { return stabtype_; };
+      Inpar::FLUID::StabType StabType() const { return stabtype_; };
       /// parameter for residual stabilization
       //! Flag to (de)activate time-dependent subgrid stabilization
-      INPAR::FLUID::SubscalesTD Tds() const { return tds_; };
+      Inpar::FLUID::SubscalesTD Tds() const { return tds_; };
       //! Flag to (de)activate time-dependent term in large-scale momentum equation
-      INPAR::FLUID::Transient Transient() const { return transient_; };
+      Inpar::FLUID::Transient Transient() const { return transient_; };
       //! Flag to (de)activate PSPG stabilization
       bool PSPG() const { return pspg_; };
       //! Flag to (de)activate SUPG stabilization
       bool SUPG() const { return supg_; };
       //! Flag to (de)activate viscous term in residual-based stabilization
-      INPAR::FLUID::VStab VStab() const { return vstab_; };
+      Inpar::FLUID::VStab VStab() const { return vstab_; };
       //! Flag to (de)activate reactive term in residual-based stabilization
-      INPAR::FLUID::RStab RStab() const { return rstab_; };
+      Inpar::FLUID::RStab RStab() const { return rstab_; };
       //! Flag to (de)activate least-squares stabilization of continuity equation
       bool CStab() const { return graddiv_; };
       //! Flag to (de)activate cross-stress term -> residual-based VMM
-      INPAR::FLUID::CrossStress Cross() const { return cross_; };
+      Inpar::FLUID::CrossStress Cross() const { return cross_; };
       //! Flag to (de)activate Reynolds-stress term -> residual-based VMM
-      INPAR::FLUID::ReynoldsStress Reynolds() const { return reynolds_; };
+      Inpar::FLUID::ReynoldsStress Reynolds() const { return reynolds_; };
       //! Flag to define tau
-      INPAR::FLUID::TauType WhichTau() const { return whichtau_; };
+      Inpar::FLUID::TauType WhichTau() const { return whichtau_; };
       //! Flag to define characteristic element length for tau_Mu
-      INPAR::FLUID::CharEleLengthU CharEleLengthU() const { return charelelengthu_; };
+      Inpar::FLUID::CharEleLengthU CharEleLengthU() const { return charelelengthu_; };
       //! Flag to define characteristic element length for tau_Mp and tau_C
-      INPAR::FLUID::CharEleLengthPC CharEleLengthPC() const { return charelelengthpc_; };
+      Inpar::FLUID::CharEleLengthPC CharEleLengthPC() const { return charelelengthpc_; };
       //! (sign) factor for viscous and reactive stabilization terms
       double ViscReaStabFac() const { return viscreastabfac_; };
 
@@ -136,7 +136,7 @@ namespace DRT
       /// constant parameters for the turbulence formulation
       /// subgrid viscosity models
       //! flag to define turbulence model
-      INPAR::FLUID::TurbModelAction TurbModAction() const { return turb_mod_action_; };
+      Inpar::FLUID::TurbModelAction TurbModAction() const { return turb_mod_action_; };
       double Cs() const { return Cs_; };
       bool CsAveraged() const { return Cs_averaged_; };
       double Ci() const { return Ci_; };
@@ -149,9 +149,9 @@ namespace DRT
       bool IncludeCi() const { return include_Ci_; };
       double ltau() const { return l_tau_; };
       //! flag to (de)activate fine-scale subgrid viscosity
-      INPAR::FLUID::FineSubgridVisc Fssgv() const { return fssgv_; };
+      Inpar::FLUID::FineSubgridVisc Fssgv() const { return fssgv_; };
       // Flag to Vreman filter method
-      INPAR::FLUID::VremanFiMethod Vrfi() const { return vrfi_; };
+      Inpar::FLUID::VremanFiMethod Vrfi() const { return vrfi_; };
       /// multifractal subgrid-scales
       double Csgs() const { return Csgs_; };
       double CsgsPhi() const
@@ -166,8 +166,8 @@ namespace DRT
       double Alpha() const { return alpha_; };
       bool CalcN() const { return CalcN_; };
       double N() const { return N_; };
-      enum INPAR::FLUID::RefVelocity RefVel() const { return refvel_; };
-      enum INPAR::FLUID::RefLength RefLength() const { return reflength_; };
+      enum Inpar::FLUID::RefVelocity RefVel() const { return refvel_; };
+      enum Inpar::FLUID::RefLength RefLength() const { return reflength_; };
       double CNu() const { return c_nu_; };
       double CDiff() const { return c_diff_; };
       bool NearWallLimit() const { return near_wall_limit_; };
@@ -192,9 +192,9 @@ namespace DRT
       //! flag to (de)activate continuity SUPG term
       virtual bool ContiSUPG() const { return conti_supg_; };
       //! flag to (de)activate continuity cross-stress term -> residual-based VMM
-      virtual INPAR::FLUID::CrossStress ContiCross() const { return conti_cross_; };
+      virtual Inpar::FLUID::CrossStress ContiCross() const { return conti_cross_; };
       //! flag to (de)activate continuity Reynolds-stress term -> residual-based VMM
-      virtual INPAR::FLUID::ReynoldsStress ContiReynolds() const { return conti_reynolds_; };
+      virtual Inpar::FLUID::ReynoldsStress ContiReynolds() const { return conti_reynolds_; };
       //! flag to (de)activate cross- and Reynolds-stress terms in loma continuity equation
       virtual bool MultiFracLomaConti() const { return multifrac_loma_conti_; };
 
@@ -208,9 +208,9 @@ namespace DRT
 
       //! Flag for physical type of the fluid flow (incompressible, loma, varying_density,
       //! Boussinesq, Poro)
-      INPAR::FLUID::PhysicalType physicaltype_;
+      Inpar::FLUID::PhysicalType physicaltype_;
       //! parameter to switch the stabilization
-      INPAR::FLUID::StabType stabtype_;
+      Inpar::FLUID::StabType stabtype_;
       /// Flags to switch on/off the different fluid formulations
       //! flag to (de)activate conservative formulation
       bool is_conservative_;
@@ -231,29 +231,29 @@ namespace DRT
 
       /// parameter for residual based stabilizations
       //! Flag to (de)activate time-dependent subgrid stabilization
-      INPAR::FLUID::SubscalesTD tds_;
+      Inpar::FLUID::SubscalesTD tds_;
       //! Flag to (de)activate time-dependent term in large-scale momentum equation
-      INPAR::FLUID::Transient transient_;
+      Inpar::FLUID::Transient transient_;
       //! Flag to (de)activate PSPG stabilization
       bool pspg_;
       //! Flag to (de)activate SUPG stabilization
       bool supg_;
       //! Flag to (de)activate viscous term in residual-based stabilization
-      INPAR::FLUID::VStab vstab_;
+      Inpar::FLUID::VStab vstab_;
       //! Flag to (de)activate reactive term in residual-based stabilization
-      INPAR::FLUID::RStab rstab_;
+      Inpar::FLUID::RStab rstab_;
       //! Flag to (de)activate least-squares stabilization of continuity equation
       bool graddiv_;
       //! Flag to (de)activate cross-stress term -> residual-based VMM
-      INPAR::FLUID::CrossStress cross_;
+      Inpar::FLUID::CrossStress cross_;
       //! Flag to (de)activate Reynolds-stress term -> residual-based VMM
-      INPAR::FLUID::ReynoldsStress reynolds_;
+      Inpar::FLUID::ReynoldsStress reynolds_;
       //! Flag to define tau
-      INPAR::FLUID::TauType whichtau_;
+      Inpar::FLUID::TauType whichtau_;
       //! Flag to define characteristic element length for tau_Mu
-      INPAR::FLUID::CharEleLengthU charelelengthu_;
+      Inpar::FLUID::CharEleLengthU charelelengthu_;
       //! Flag to define characteristic element length for tau_Mp and tau_C
-      INPAR::FLUID::CharEleLengthPC charelelengthpc_;
+      Inpar::FLUID::CharEleLengthPC charelelengthpc_;
       //! (sign) factor for viscous and reactive stabilization terms
       double viscreastabfac_;
 
@@ -281,7 +281,7 @@ namespace DRT
       /// constant parameters for the turbulence formulation
       /// subgrid viscosity models
       //! flag to define turbulence model
-      INPAR::FLUID::TurbModelAction turb_mod_action_;
+      Inpar::FLUID::TurbModelAction turb_mod_action_;
       //! smagorinsky constant
       double Cs_;
       bool Cs_averaged_;
@@ -293,17 +293,17 @@ namespace DRT
       //! channel length to normalize the normal wall distance
       double l_tau_;
       //! flag to (de)activate fine-scale subgrid viscosity
-      INPAR::FLUID::FineSubgridVisc fssgv_;
+      Inpar::FLUID::FineSubgridVisc fssgv_;
       // flag to Vreman filter method
-      INPAR::FLUID::VremanFiMethod vrfi_;
+      Inpar::FLUID::VremanFiMethod vrfi_;
       /// multifractal subgrid-scales
       double Csgs_;
       double Csgs_phi_;
       double alpha_;
       bool CalcN_;
       double N_;
-      enum INPAR::FLUID::RefVelocity refvel_;
-      enum INPAR::FLUID::RefLength reflength_;
+      enum Inpar::FLUID::RefVelocity refvel_;
+      enum Inpar::FLUID::RefLength reflength_;
       double c_nu_;
       double c_diff_;
       bool near_wall_limit_;
@@ -324,9 +324,9 @@ namespace DRT
       //! flag to (de)activate continuity SUPG term
       bool conti_supg_;
       //! flag to (de)activate continuity cross-stress term -> residual-based VMM
-      INPAR::FLUID::CrossStress conti_cross_;
+      Inpar::FLUID::CrossStress conti_cross_;
       //! flag to (de)activate continuity Reynolds-stress term -> residual-based VMM
-      INPAR::FLUID::ReynoldsStress conti_reynolds_;
+      Inpar::FLUID::ReynoldsStress conti_reynolds_;
       //! flag to (de)activate cross- and Reynolds-stress terms in loma continuity equation
       bool multifrac_loma_conti_;
 
@@ -337,11 +337,11 @@ namespace DRT
 
      private:
       //! access time-integration parameters
-      DRT::ELEMENTS::FluidEleParameterTimInt* fldparatimint_;
+      Discret::ELEMENTS::FluidEleParameterTimInt* fldparatimint_;
     };
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -13,18 +13,22 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-DRT::ELEMENTS::FluidBoundaryType DRT::ELEMENTS::FluidBoundaryType::instance_;
+Discret::ELEMENTS::FluidBoundaryType Discret::ELEMENTS::FluidBoundaryType::instance_;
 
-DRT::ELEMENTS::FluidBoundaryType& DRT::ELEMENTS::FluidBoundaryType::Instance() { return instance_; }
-
-CORE::COMM::ParObject* DRT::ELEMENTS::FluidBoundaryType::Create(const std::vector<char>& data)
+Discret::ELEMENTS::FluidBoundaryType& Discret::ELEMENTS::FluidBoundaryType::Instance()
 {
-  DRT::ELEMENTS::FluidBoundary* object = new DRT::ELEMENTS::FluidBoundary(-1, -1);
+  return instance_;
+}
+
+Core::Communication::ParObject* Discret::ELEMENTS::FluidBoundaryType::Create(
+    const std::vector<char>& data)
+{
+  Discret::ELEMENTS::FluidBoundary* object = new Discret::ELEMENTS::FluidBoundary(-1, -1);
   object->Unpack(data);
   return object;
 }
 
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::FluidBoundaryType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidBoundaryType::Create(
     const int id, const int owner)
 {
   return Teuchos::null;
@@ -35,16 +39,16 @@ Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::FluidBoundaryType::Create(
  |  ctor (public)                                            mwgee 01/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::FluidBoundary::FluidBoundary(int id, int owner, int nnode, const int* nodeids,
-    CORE::Nodes::Node** nodes, DRT::ELEMENTS::Fluid* parent, const int lsurface)
-    : CORE::Elements::FaceElement(id, owner),
-      distype_(CORE::FE::CellType::dis_none),
+Discret::ELEMENTS::FluidBoundary::FluidBoundary(int id, int owner, int nnode, const int* nodeids,
+    Core::Nodes::Node** nodes, Discret::ELEMENTS::Fluid* parent, const int lsurface)
+    : Core::Elements::FaceElement(id, owner),
+      distype_(Core::FE::CellType::dis_none),
       numdofpernode_(-1)
 {
   set_parent_master_element(parent, lsurface);
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
-  distype_ = CORE::FE::getShapeOfBoundaryElement(num_node(), ParentMasterElement()->Shape());
+  distype_ = Core::FE::getShapeOfBoundaryElement(num_node(), ParentMasterElement()->Shape());
 
   numdofpernode_ = ParentMasterElement()->NumDofPerNode(*Nodes()[0]);
   // Safety check if all nodes have the same number of dofs!
@@ -61,9 +65,9 @@ DRT::ELEMENTS::FluidBoundary::FluidBoundary(int id, int owner, int nnode, const 
 /*------------------------------------------------------------------------*
  |  ctor (private) - used by FluidBoundaryType                  ager 12/16|
  *-----------------------------------------------------------------------*/
-DRT::ELEMENTS::FluidBoundary::FluidBoundary(int id, int owner)
-    : CORE::Elements::FaceElement(id, owner),
-      distype_(CORE::FE::CellType::dis_none),
+Discret::ELEMENTS::FluidBoundary::FluidBoundary(int id, int owner)
+    : Core::Elements::FaceElement(id, owner),
+      distype_(Core::FE::CellType::dis_none),
       numdofpernode_(-1)
 {
   return;
@@ -72,8 +76,8 @@ DRT::ELEMENTS::FluidBoundary::FluidBoundary(int id, int owner)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 01/07|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::FluidBoundary::FluidBoundary(const DRT::ELEMENTS::FluidBoundary& old)
-    : CORE::Elements::FaceElement(old), distype_(old.distype_), numdofpernode_(old.numdofpernode_)
+Discret::ELEMENTS::FluidBoundary::FluidBoundary(const Discret::ELEMENTS::FluidBoundary& old)
+    : Core::Elements::FaceElement(old), distype_(old.distype_), numdofpernode_(old.numdofpernode_)
 {
   return;
 }
@@ -82,9 +86,9 @@ DRT::ELEMENTS::FluidBoundary::FluidBoundary(const DRT::ELEMENTS::FluidBoundary& 
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            gee 01/07 |
  *----------------------------------------------------------------------*/
-CORE::Elements::Element* DRT::ELEMENTS::FluidBoundary::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::FluidBoundary::Clone() const
 {
-  DRT::ELEMENTS::FluidBoundary* newelement = new DRT::ELEMENTS::FluidBoundary(*this);
+  Discret::ELEMENTS::FluidBoundary* newelement = new Discret::ELEMENTS::FluidBoundary(*this);
   return newelement;
 }
 
@@ -92,9 +96,9 @@ CORE::Elements::Element* DRT::ELEMENTS::FluidBoundary::Clone() const
  |  Pack data                                                  (public) |
  |                                                           ager 12/16 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidBoundary::Pack(CORE::COMM::PackBuffer& data) const
+void Discret::ELEMENTS::FluidBoundary::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -113,18 +117,18 @@ void DRT::ELEMENTS::FluidBoundary::Pack(CORE::COMM::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                           ager 12/16 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidBoundary::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::FluidBoundary::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
   FaceElement::Unpack(basedata);
   // distype
-  distype_ = static_cast<CORE::FE::CellType>(ExtractInt(position, data));
+  distype_ = static_cast<Core::FE::CellType>(ExtractInt(position, data));
   // numdofpernode_
   numdofpernode_ = ExtractInt(position, data);
 
@@ -138,7 +142,7 @@ void DRT::ELEMENTS::FluidBoundary::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mwgee 01/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidBoundary::Print(std::ostream& os) const
+void Discret::ELEMENTS::FluidBoundary::Print(std::ostream& os) const
 {
   os << "FluidBoundary ";
   Element::Print(os);
@@ -148,7 +152,7 @@ void DRT::ELEMENTS::FluidBoundary::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                             gammi 04/07|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::FluidBoundary::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::FluidBoundary::Lines()
 {
   FOUR_C_THROW("Lines of FluidBoundary not implemented");
 }
@@ -156,7 +160,7 @@ std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::FluidBoundary:
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                          ager 12/16 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::FluidBoundary::Surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::FluidBoundary::Surfaces()
 {
   return {Teuchos::rcpFromRef(*this)};
 }

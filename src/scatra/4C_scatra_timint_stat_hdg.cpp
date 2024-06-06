@@ -16,10 +16,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                               berardocco 05/20 |
  *----------------------------------------------------------------------*/
-SCATRA::TimIntStationaryHDG::TimIntStationaryHDG(Teuchos::RCP<DRT::Discretization> actdis,
-    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+ScaTra::TimIntStationaryHDG::TimIntStationaryHDG(Teuchos::RCP<Discret::Discretization> actdis,
+    Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> extraparams,
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, params, extraparams, output),
       TimIntHDG(actdis, solver, params, extraparams, output)
 {
@@ -33,7 +33,7 @@ SCATRA::TimIntStationaryHDG::TimIntStationaryHDG(Teuchos::RCP<DRT::Discretizatio
 /*----------------------------------------------------------------------*
  |  initialize time integration                        berardocco 05/20 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntStationaryHDG::Init()
+void ScaTra::TimIntStationaryHDG::Init()
 {
   // initialize base class
   TimIntHDG::Init();
@@ -45,12 +45,12 @@ void SCATRA::TimIntStationaryHDG::Init()
 /*----------------------------------------------------------------------*
  | set time parameter for element evaluation           berardocco 05/20 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntStationaryHDG::set_element_time_parameter(bool forcedincrementalsolver) const
+void ScaTra::TimIntStationaryHDG::set_element_time_parameter(bool forcedincrementalsolver) const
 {
   Teuchos::ParameterList eleparams;
 
-  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
-      "action", SCATRA::Action::set_time_parameter, eleparams);
+  Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+      "action", ScaTra::Action::set_time_parameter, eleparams);
   eleparams.set<bool>("using generalized-alpha time integration", false);
   eleparams.set<bool>("using stationary formulation", true);
   if (forcedincrementalsolver == false)
@@ -76,7 +76,7 @@ void SCATRA::TimIntStationaryHDG::set_element_time_parameter(bool forcedincremen
  | set time for evaluation of Neumann boundary conditions               |
  |                                                     berardocco 05/20 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntStationaryHDG::set_time_for_neumann_evaluation(Teuchos::ParameterList& params)
+void ScaTra::TimIntStationaryHDG::set_time_for_neumann_evaluation(Teuchos::ParameterList& params)
 {
   params.set("total time", time_);
   return;

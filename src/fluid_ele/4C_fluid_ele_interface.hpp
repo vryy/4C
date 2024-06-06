@@ -28,19 +28,19 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   class Material;
 }
 
-namespace CORE::GEO
+namespace Core::Geo
 {
-  namespace CUT
+  namespace Cut
   {
     class BoundaryCell;
     class VolumeCell;
-  }  // namespace CUT
-}  // namespace CORE::GEO
+  }  // namespace Cut
+}  // namespace Core::Geo
 
 namespace XFEM
 {
@@ -48,7 +48,7 @@ namespace XFEM
   class MeshCouplingFluidFluid;
 }  // namespace XFEM
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 
@@ -78,127 +78,131 @@ namespace DRT
         This class does not provide a definition for this function; it
         must be defined in FluidEleCalc.
        */
-      virtual int Evaluate(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
+      virtual int Evaluate(Discret::ELEMENTS::Fluid* ele, Discret::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra,
-          CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra, bool offdiag = false) = 0;
+          Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec1_epetra,
+          Core::LinAlg::SerialDenseVector& elevec2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec3_epetra, bool offdiag = false) = 0;
 
       /// evaluate element at specified Gauss points
-      virtual int Evaluate(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
+      virtual int Evaluate(Discret::ELEMENTS::Fluid* ele, Discret::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra,
-          CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra,
-          const CORE::FE::GaussIntegration& intpoints, bool offdiag = false) = 0;
+          Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec1_epetra,
+          Core::LinAlg::SerialDenseVector& elevec2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec3_epetra,
+          const Core::FE::GaussIntegration& intpoints, bool offdiag = false) = 0;
 
       /// Evaluate the XFEM cut element
-      virtual int EvaluateXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
-          const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra,
-          CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra,
-          const std::vector<CORE::FE::GaussIntegration>& intpoints,
-          const CORE::GEO::CUT::plain_volumecell_set& cells, bool offdiag = false) = 0;
+      virtual int EvaluateXFEM(Discret::ELEMENTS::Fluid* ele,
+          Discret::Discretization& discretization, const std::vector<int>& lm,
+          Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec1_epetra,
+          Core::LinAlg::SerialDenseVector& elevec2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec3_epetra,
+          const std::vector<Core::FE::GaussIntegration>& intpoints,
+          const Core::Geo::Cut::plain_volumecell_set& cells, bool offdiag = false) = 0;
 
-      virtual int integrate_shape_function(DRT::ELEMENTS::Fluid* ele,
-          DRT::Discretization& discretization, const std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1,
-          const CORE::FE::GaussIntegration& intpoints) = 0;
+      virtual int integrate_shape_function(Discret::ELEMENTS::Fluid* ele,
+          Discret::Discretization& discretization, const std::vector<int>& lm,
+          Core::LinAlg::SerialDenseVector& elevec1,
+          const Core::FE::GaussIntegration& intpoints) = 0;
 
-      virtual int integrate_shape_function_xfem(DRT::ELEMENTS::Fluid* ele,
-          DRT::Discretization& discretization, const std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1,
-          const std::vector<CORE::FE::GaussIntegration>& intpoints,
-          const CORE::GEO::CUT::plain_volumecell_set& cells) = 0;
+      virtual int integrate_shape_function_xfem(Discret::ELEMENTS::Fluid* ele,
+          Discret::Discretization& discretization, const std::vector<int>& lm,
+          Core::LinAlg::SerialDenseVector& elevec1,
+          const std::vector<Core::FE::GaussIntegration>& intpoints,
+          const Core::Geo::Cut::plain_volumecell_set& cells) = 0;
 
       /// Evaluate supporting methods of the element
-      virtual int EvaluateService(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-          Teuchos::RCP<CORE::MAT::Material>& mat, DRT::Discretization& discretization,
-          std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
-          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3) = 0;
+      virtual int EvaluateService(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+          Teuchos::RCP<Core::Mat::Material>& mat, Discret::Discretization& discretization,
+          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
+          Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseVector& elevec2, Core::LinAlg::SerialDenseVector& elevec3) = 0;
 
-      virtual int compute_error(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-          Teuchos::RCP<CORE::MAT::Material>& mat, DRT::Discretization& discretization,
-          std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
-          const CORE::FE::GaussIntegration& intpoints2) = 0;
+      virtual int compute_error(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+          Teuchos::RCP<Core::Mat::Material>& mat, Discret::Discretization& discretization,
+          std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
+          const Core::FE::GaussIntegration& intpoints2) = 0;
 
-      virtual int compute_error_interface(DRT::ELEMENTS::Fluid* ele,  ///< fluid element
-          DRT::Discretization& dis,                                   ///< background discretization
-          const std::vector<int>& lm,                                 ///< element local map
-          const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,   ///< XFEM condition manager
-          Teuchos::RCP<CORE::MAT::Material>& mat,                     ///< material
-          CORE::LINALG::SerialDenseVector& ele_interf_norms,  /// squared element interface norms
-          const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>&
+      virtual int compute_error_interface(Discret::ELEMENTS::Fluid* ele,  ///< fluid element
+          Discret::Discretization& dis,                              ///< background discretization
+          const std::vector<int>& lm,                                ///< element local map
+          const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
+          Teuchos::RCP<Core::Mat::Material>& mat,                    ///< material
+          Core::LinAlg::SerialDenseVector& ele_interf_norms,  /// squared element interface norms
+          const std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>&
               bcells,  ///< boundary cells
-          const std::map<int, std::vector<CORE::FE::GaussIntegration>>&
+          const std::map<int, std::vector<Core::FE::GaussIntegration>>&
               bintpoints,                                     ///< boundary integration points
-          const CORE::GEO::CUT::plain_volumecell_set& vcSet,  ///< set of plain volume cells
+          const Core::Geo::Cut::plain_volumecell_set& vcSet,  ///< set of plain volume cells
           Teuchos::ParameterList& params                      ///< parameter list
           ) = 0;
 
-      virtual void element_xfem_interface_hybrid_lm(DRT::ELEMENTS::Fluid* ele,  ///< fluid element
-          DRT::Discretization& dis,                                  ///< background discretization
+      virtual void element_xfem_interface_hybrid_lm(
+          Discret::ELEMENTS::Fluid* ele,                             ///< fluid element
+          Discret::Discretization& dis,                              ///< background discretization
           const std::vector<int>& lm,                                ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
-          const std::vector<CORE::FE::GaussIntegration>& intpoints,  ///< element gauss points
-          const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>&
+          const std::vector<Core::FE::GaussIntegration>& intpoints,  ///< element gauss points
+          const std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>&
               bcells,  ///< boundary cells
-          const std::map<int, std::vector<CORE::FE::GaussIntegration>>&
+          const std::map<int, std::vector<Core::FE::GaussIntegration>>&
               bintpoints,  ///< boundary integration points
           const std::map<int, std::vector<int>>&
               patchcouplm,  ///< lm vectors for coupling elements, key= global coupling side-Id
-          std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>&
+          std::map<int, std::vector<Core::LinAlg::SerialDenseMatrix>>&
               side_coupling,                       ///< side coupling matrices
           Teuchos::ParameterList& params,          ///< parameter list
-          Teuchos::RCP<CORE::MAT::Material>& mat,  ///< material
-          CORE::LINALG::SerialDenseMatrix&
+          Teuchos::RCP<Core::Mat::Material>& mat,  ///< material
+          Core::LinAlg::SerialDenseMatrix&
               elemat1_epetra,  ///< local system matrix of intersected element
-          CORE::LINALG::SerialDenseVector&
+          Core::LinAlg::SerialDenseVector&
               elevec1_epetra,                      ///< local element vector of intersected element
-          CORE::LINALG::SerialDenseMatrix& Cuiui,  ///< coupling matrix of a side with itself
-          const CORE::GEO::CUT::plain_volumecell_set& vcSet  ///< set of plain volume cells
+          Core::LinAlg::SerialDenseMatrix& Cuiui,  ///< coupling matrix of a side with itself
+          const Core::Geo::Cut::plain_volumecell_set& vcSet  ///< set of plain volume cells
           ) = 0;
 
       /// add interface condition at cut to element matrix and rhs (two-sided Nitsche coupling)
-      virtual void element_xfem_interface_nit(DRT::ELEMENTS::Fluid* ele,  ///< fluid element
-          DRT::Discretization& dis,                                  ///< background discretization
+      virtual void element_xfem_interface_nit(Discret::ELEMENTS::Fluid* ele,  ///< fluid element
+          Discret::Discretization& dis,                              ///< background discretization
           const std::vector<int>& lm,                                ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
-          const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>&
+          const std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>&
               bcells,  ///< boundary cells
-          const std::map<int, std::vector<CORE::FE::GaussIntegration>>&
+          const std::map<int, std::vector<Core::FE::GaussIntegration>>&
               bintpoints,  ///< boundary integration points
           const std::map<int, std::vector<int>>& patchcouplm,
           Teuchos::ParameterList& params,                     ///< parameter list
-          Teuchos::RCP<CORE::MAT::Material>& mat_master,      ///< material for the coupled side
-          Teuchos::RCP<CORE::MAT::Material>& mat_slave,       ///< material for the coupled side
-          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,    ///< element matrix
-          CORE::LINALG::SerialDenseVector& elevec1_epetra,    ///< element vector
-          const CORE::GEO::CUT::plain_volumecell_set& vcSet,  ///< volumecell sets in this element
-          std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>&
+          Teuchos::RCP<Core::Mat::Material>& mat_master,      ///< material for the coupled side
+          Teuchos::RCP<Core::Mat::Material>& mat_slave,       ///< material for the coupled side
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,    ///< element matrix
+          Core::LinAlg::SerialDenseVector& elevec1_epetra,    ///< element vector
+          const Core::Geo::Cut::plain_volumecell_set& vcSet,  ///< volumecell sets in this element
+          std::map<int, std::vector<Core::LinAlg::SerialDenseMatrix>>&
               side_coupling,                       ///< side coupling matrices
-          CORE::LINALG::SerialDenseMatrix& Cuiui,  ///< ui-ui coupling matrix
+          Core::LinAlg::SerialDenseMatrix& Cuiui,  ///< ui-ui coupling matrix
           bool evaluated_cut  ///< the CUT was updated before this evaluation is called
           ) = 0;
 
-      virtual void calculate_continuity_xfem(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& dis,
-          const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1_epetra,
-          const CORE::FE::GaussIntegration& intpoints) = 0;
+      virtual void calculate_continuity_xfem(Discret::ELEMENTS::Fluid* ele,
+          Discret::Discretization& dis, const std::vector<int>& lm,
+          Core::LinAlg::SerialDenseVector& elevec1_epetra,
+          const Core::FE::GaussIntegration& intpoints) = 0;
 
-      virtual void calculate_continuity_xfem(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& dis,
-          const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1_epetra) = 0;
+      virtual void calculate_continuity_xfem(Discret::ELEMENTS::Fluid* ele,
+          Discret::Discretization& dis, const std::vector<int>& lm,
+          Core::LinAlg::SerialDenseVector& elevec1_epetra) = 0;
     };
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

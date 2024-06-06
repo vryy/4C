@@ -22,21 +22,21 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationWriter;
   class DiscretizationReader;
-}  // namespace CORE::IO
+}  // namespace Core::IO
 
 namespace CONSTRAINTS
 {
@@ -48,7 +48,7 @@ namespace CONSTRAINTS
     /*!
       \brief Constructor
     */
-    SpringDashpotManager(Teuchos::RCP<DRT::Discretization> dis);
+    SpringDashpotManager(Teuchos::RCP<Discret::Discretization> dis);
 
     /*!
      \brief Return if there are spring dashpots
@@ -56,7 +56,7 @@ namespace CONSTRAINTS
     bool HaveSpringDashpot() const { return havespringdashpot_; };
 
     //! add contribution of spring dashpot BC to residual vector and stiffness matrix
-    void stiffness_and_internal_forces(Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff,
+    void stiffness_and_internal_forces(Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff,
         Teuchos::RCP<Epetra_Vector> fint, Teuchos::RCP<Epetra_Vector> disn,
         Teuchos::RCP<Epetra_Vector> veln, Teuchos::ParameterList parlist);
 
@@ -64,23 +64,23 @@ namespace CONSTRAINTS
     void Update();
 
     //! output of gap, normal, and nodal stiffness
-    void Output(Teuchos::RCP<CORE::IO::DiscretizationWriter> output,
-        Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<Epetra_Vector> disp);
+    void Output(Teuchos::RCP<Core::IO::DiscretizationWriter> output,
+        Teuchos::RCP<Discret::Discretization> discret, Teuchos::RCP<Epetra_Vector> disp);
 
     //! output of prestressing offset for restart
-    void output_restart(Teuchos::RCP<CORE::IO::DiscretizationWriter> output,
-        Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<Epetra_Vector> disp);
+    void output_restart(Teuchos::RCP<Core::IO::DiscretizationWriter> output,
+        Teuchos::RCP<Discret::Discretization> discret, Teuchos::RCP<Epetra_Vector> disp);
 
     /*!
      \brief Read restart information
     */
-    void read_restart(CORE::IO::DiscretizationReader& reader, const double& time);
+    void read_restart(Core::IO::DiscretizationReader& reader, const double& time);
 
     //! reset spring after having done a MULF prestressing update (mhv 12/2015)
     void ResetPrestress(Teuchos::RCP<Epetra_Vector> disold);
 
    private:
-    Teuchos::RCP<DRT::Discretization> actdisc_;         ///< standard discretization
+    Teuchos::RCP<Discret::Discretization> actdisc_;     ///< standard discretization
     std::vector<Teuchos::RCP<SpringDashpot>> springs_;  ///< all spring dashpot instances
 
     bool havespringdashpot_;  ///< are there any spring dashpot BCs at all?

@@ -17,7 +17,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 // constructor of the parameters
-MAT::PAR::Mixture::Mixture(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
+Mat::PAR::Mixture::Mixture(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
     : Parameter(matdata), constituents_(0)
 {
   const int num_constituents = matdata->Get<int>("NUMCONST");
@@ -44,24 +44,24 @@ MAT::PAR::Mixture::Mixture(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata
 }
 
 // Create a material instance from parameters
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::Mixture::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::Mixture::create_material()
 {
-  return Teuchos::rcp(new MAT::Mixture(this));
+  return Teuchos::rcp(new Mat::Mixture(this));
 }
 
-MAT::MixtureType MAT::MixtureType::instance_;
+Mat::MixtureType Mat::MixtureType::instance_;
 
 // Create a material instance from packed data
-CORE::COMM::ParObject* MAT::MixtureType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::MixtureType::Create(const std::vector<char>& data)
 {
-  auto* mix_elhy = new MAT::Mixture();
+  auto* mix_elhy = new Mat::Mixture();
   mix_elhy->Unpack(data);
 
   return mix_elhy;
 }
 
 // constructor
-MAT::Mixture::Mixture()
+Mat::Mixture::Mixture()
     : params_(nullptr),
       constituents_(std::make_shared<std::vector<std::unique_ptr<MIXTURE::MixtureConstituent>>>(0)),
       setup_(false),
@@ -70,7 +70,7 @@ MAT::Mixture::Mixture()
 }
 
 // constructor
-MAT::Mixture::Mixture(MAT::PAR::Mixture* params)
+Mat::Mixture::Mixture(Mat::PAR::Mixture* params)
     : params_(params),
       constituents_(std::make_shared<std::vector<std::unique_ptr<MIXTURE::MixtureConstituent>>>(0)),
       setup_(false),
@@ -93,9 +93,9 @@ MAT::Mixture::Mixture(MAT::PAR::Mixture* params)
 }
 
 // Pack data
-void MAT::Mixture::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::Mixture::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -136,7 +136,7 @@ void MAT::Mixture::Pack(CORE::COMM::PackBuffer& data) const
 }
 
 // Unpack data
-void MAT::Mixture::Unpack(const std::vector<char>& data)
+void Mat::Mixture::Unpack(const std::vector<char>& data)
 {
   params_ = nullptr;
   constituents_->clear();
@@ -144,21 +144,21 @@ void MAT::Mixture::Unpack(const std::vector<char>& data)
 
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
   ExtractfromPack(position, data, matid);
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
   {
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
       {
-        params_ = dynamic_cast<MAT::PAR::Mixture*>(mat);
+        params_ = dynamic_cast<Mat::PAR::Mixture*>(mat);
       }
       else
       {
@@ -173,7 +173,7 @@ void MAT::Mixture::Unpack(const std::vector<char>& data)
 
     // Extract is isPreEvaluated
     std::vector<int> isPreEvaluatedInt(0);
-    CORE::COMM::ParObject::ExtractfromPack(position, data, isPreEvaluatedInt);
+    Core::Communication::ParObject::ExtractfromPack(position, data, isPreEvaluatedInt);
     is_pre_evaluated_.resize(isPreEvaluatedInt.size());
     for (unsigned i = 0; i < isPreEvaluatedInt.size(); ++i)
     {
@@ -220,7 +220,7 @@ void MAT::Mixture::Unpack(const std::vector<char>& data)
 }
 
 // Read element and create arrays for the quantities at the Gauss points
-void MAT::Mixture::Setup(const int numgp, INPUT::LineDefinition* linedef)
+void Mat::Mixture::Setup(const int numgp, Input::LineDefinition* linedef)
 {
   So3Material::Setup(numgp, linedef);
 
@@ -241,7 +241,7 @@ void MAT::Mixture::Setup(const int numgp, INPUT::LineDefinition* linedef)
 }
 
 // Post setup routine -> Call Setup of constituents and mixture rule
-void MAT::Mixture::post_setup(Teuchos::ParameterList& params, const int eleGID)
+void Mat::Mixture::post_setup(Teuchos::ParameterList& params, const int eleGID)
 {
   So3Material::post_setup(params, eleGID);
   anisotropy_.read_anisotropy_from_parameter_list(params);
@@ -262,7 +262,7 @@ void MAT::Mixture::post_setup(Teuchos::ParameterList& params, const int eleGID)
 }
 
 // This method is called between two timesteps
-void MAT::Mixture::Update(CORE::LINALG::Matrix<3, 3> const& defgrd, const int gp,
+void Mat::Mixture::Update(Core::LinAlg::Matrix<3, 3> const& defgrd, const int gp,
     Teuchos::ParameterList& params, const int eleGID)
 {
   // Update all constituents
@@ -275,9 +275,9 @@ void MAT::Mixture::Update(CORE::LINALG::Matrix<3, 3> const& defgrd, const int gp
 }
 
 // Evaluates the material
-void MAT::Mixture::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
-    const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-    CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, const int gp,
+void Mat::Mixture::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+    const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+    Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
 {
   // check, whether the post_setup method was already called
@@ -298,7 +298,7 @@ void MAT::Mixture::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   mixture_rule_->Evaluate(*defgrd, *glstrain, params, *stress, *cmat, gp, eleGID);
 }
 
-void MAT::Mixture::register_output_data_names(
+void Mat::Mixture::register_output_data_names(
     std::unordered_map<std::string, int>& names_and_size) const
 {
   mixture_rule_->register_output_data_names(names_and_size);
@@ -308,8 +308,8 @@ void MAT::Mixture::register_output_data_names(
   }
 }
 
-bool MAT::Mixture::EvaluateOutputData(
-    const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const
+bool Mat::Mixture::EvaluateOutputData(
+    const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const
 {
   bool out = mixture_rule_->EvaluateOutputData(name, data);
   for (const auto& constituent : *constituents_)

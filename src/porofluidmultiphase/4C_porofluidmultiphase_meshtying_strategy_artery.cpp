@@ -35,20 +35,20 @@ POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::MeshtyingStrategyArtery(
     const Teuchos::ParameterList& poroparams)
     : MeshtyingStrategyBase(porofluidmultitimint, probparams, poroparams)
 {
-  const Teuchos::ParameterList& artdyn = GLOBAL::Problem::Instance()->arterial_dynamic_params();
+  const Teuchos::ParameterList& artdyn = Global::Problem::Instance()->arterial_dynamic_params();
 
-  arterydis_ = GLOBAL::Problem::Instance()->GetDis("artery");
+  arterydis_ = Global::Problem::Instance()->GetDis("artery");
 
   if (!arterydis_->Filled()) arterydis_->fill_complete();
 
-  INPAR::ARTDYN::TimeIntegrationScheme timintscheme =
-      CORE::UTILS::IntegralValue<INPAR::ARTDYN::TimeIntegrationScheme>(artdyn, "DYNAMICTYP");
+  Inpar::ArtDyn::TimeIntegrationScheme timintscheme =
+      Core::UTILS::IntegralValue<Inpar::ArtDyn::TimeIntegrationScheme>(artdyn, "DYNAMICTYP");
 
-  Teuchos::RCP<CORE::IO::DiscretizationWriter> artery_output = arterydis_->Writer();
+  Teuchos::RCP<Core::IO::DiscretizationWriter> artery_output = arterydis_->Writer();
   artery_output->WriteMesh(0, 0.0);
 
   // build art net time integrator
-  artnettimint_ = ART::UTILS::CreateAlgorithm(timintscheme, arterydis_,
+  artnettimint_ = Arteries::UTILS::CreateAlgorithm(timintscheme, arterydis_,
       artdyn.get<int>("LINEAR_SOLVER"), probparams, artdyn, artery_output);
 
   // set to false
@@ -66,17 +66,18 @@ POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::MeshtyingStrategyArtery(
     std::cout << "<    Coupling with 1D Artery Network activated     >" << std::endl;
   }
 
-  const bool evaluate_on_lateral_surface = CORE::UTILS::IntegralValue<int>(
+  const bool evaluate_on_lateral_surface = Core::UTILS::IntegralValue<int>(
       poroparams.sublist("ARTERY COUPLING"), "LATERAL_SURFACE_COUPLING");
 
   const std::string couplingcondname = std::invoke(
       [&]()
       {
-        if (CORE::UTILS::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(
-                GLOBAL::Problem::Instance()->poro_fluid_multi_phase_dynamic_params().sublist(
+        if (Core::UTILS::IntegralValue<
+                Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod>(
+                Global::Problem::Instance()->poro_fluid_multi_phase_dynamic_params().sublist(
                     "ARTERY COUPLING"),
                 "ARTERY_COUPLING_METHOD") ==
-            INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::ntp)
+            Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod::ntp)
         {
           return "ArtPorofluidCouplConNodeToPoint";
         }
@@ -87,7 +88,7 @@ POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::MeshtyingStrategyArtery(
       });
 
   // initialize mesh tying object
-  arttoporofluidcoupling_ = POROMULTIPHASESCATRA::UTILS::CreateAndInitArteryCouplingStrategy(
+  arttoporofluidcoupling_ = PoroMultiPhaseScaTra::UTILS::CreateAndInitArteryCouplingStrategy(
       arterydis_, porofluidmultitimint->discretization(), poroparams.sublist("ARTERY COUPLING"),
       couplingcondname, "COUPLEDDOFS_ART", "COUPLEDDOFS_PORO", evaluate_on_lateral_surface);
 
@@ -101,7 +102,7 @@ POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::MeshtyingStrategyArtery(
 
   // initialize Poromultiphase-elasticity-systemmatrix_
   comb_systemmatrix_ =
-      Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
+      Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
           *arttoporofluidcoupling_->GlobalExtractor(), *arttoporofluidcoupling_->GlobalExtractor(),
           81, false, true));
 
@@ -142,30 +143,30 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::Update()
  | initialize the linear solver                            kremheller 07/20 |
  *--------------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::initialize_linear_solver(
-    Teuchos::RCP<CORE::LINALG::Solver> solver)
+    Teuchos::RCP<Core::LinAlg::Solver> solver)
 {
   const Teuchos::ParameterList& porofluidparams =
-      GLOBAL::Problem::Instance()->poro_fluid_multi_phase_dynamic_params();
+      Global::Problem::Instance()->poro_fluid_multi_phase_dynamic_params();
   const int linsolvernumber = porofluidparams.get<int>("LINEAR_SOLVER");
   const Teuchos::ParameterList& solverparams =
-      GLOBAL::Problem::Instance()->SolverParams(linsolvernumber);
+      Global::Problem::Instance()->SolverParams(linsolvernumber);
   const auto solvertype =
-      Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::SolverType>(solverparams, "SOLVER");
+      Teuchos::getIntegralValue<Core::LinearSolver::SolverType>(solverparams, "SOLVER");
   // no need to do the rest for direct solvers
-  if (solvertype == CORE::LINEAR_SOLVER::SolverType::umfpack or
-      solvertype == CORE::LINEAR_SOLVER::SolverType::superlu)
+  if (solvertype == Core::LinearSolver::SolverType::umfpack or
+      solvertype == Core::LinearSolver::SolverType::superlu)
     return;
 
-  if (solvertype != CORE::LINEAR_SOLVER::SolverType::belos)
+  if (solvertype != Core::LinearSolver::SolverType::belos)
     FOUR_C_THROW("Iterative solver expected");
 
   const auto azprectype =
-      Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::PreconditionerType>(solverparams, "AZPREC");
+      Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(solverparams, "AZPREC");
 
   // plausibility check
   switch (azprectype)
   {
-    case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_nxn:
+    case Core::LinearSolver::PreconditionerType::multigrid_nxn:
     {
       // no plausibility checks here
       // if you forget to declare an xml file you will get an error message anyway
@@ -195,9 +196,9 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::initialize_linear_solver(
  | solve linear system of equations                        kremheller 04/18 |
  *--------------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::linear_solve(
-    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat,
+    Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat,
     Teuchos::RCP<Epetra_Vector> increment, Teuchos::RCP<Epetra_Vector> residual,
-    CORE::LINALG::SolverParams& solver_params)
+    Core::LinAlg::SolverParams& solver_params)
 {
   comb_systemmatrix_->Complete();
 
@@ -251,8 +252,8 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::CalculateNorms(std::vector<do
  *----------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::CreateFieldTest()
 {
-  Teuchos::RCP<CORE::UTILS::ResultTest> arteryresulttest = artnettimint_->CreateFieldTest();
-  GLOBAL::Problem::Instance()->AddFieldTest(arteryresulttest);
+  Teuchos::RCP<Core::UTILS::ResultTest> arteryresulttest = artnettimint_->CreateFieldTest();
+  Global::Problem::Instance()->AddFieldTest(arteryresulttest);
   return;
 }
 
@@ -329,7 +330,7 @@ Teuchos::RCP<const Epetra_Map> POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::Art
 /*-----------------------------------------------------------------------*
  | access to block system matrix of artery poro problem kremheller 04/18 |
  *-----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>
+Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>
 POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::artery_porofluid_sysmat() const
 {
   return comb_systemmatrix_;

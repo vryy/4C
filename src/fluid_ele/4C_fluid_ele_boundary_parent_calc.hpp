@@ -23,7 +23,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 
@@ -46,38 +46,38 @@ namespace DRT
 
       //! empty destructor
       virtual ~FluidBoundaryParentInterface() = default;
-      virtual void FlowDepPressureBC(DRT::ELEMENTS::FluidBoundary* ele1,
-          Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseMatrix::Base& elemat1,
-          CORE::LINALG::SerialDenseVector::Base& elevec1) = 0;
+      virtual void FlowDepPressureBC(Discret::ELEMENTS::FluidBoundary* ele1,
+          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix::Base& elemat1,
+          Core::LinAlg::SerialDenseVector::Base& elevec1) = 0;
 
-      virtual void SlipSuppBC(DRT::ELEMENTS::FluidBoundary* ele1, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseMatrix::Base& elemat1,
-          CORE::LINALG::SerialDenseVector::Base& elevec1) = 0;
+      virtual void SlipSuppBC(Discret::ELEMENTS::FluidBoundary* ele1,
+          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix::Base& elemat1,
+          Core::LinAlg::SerialDenseVector::Base& elevec1) = 0;
 
-      virtual void NavierSlipBC(DRT::ELEMENTS::FluidBoundary* ele1, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseMatrix::Base& elemat1,
-          CORE::LINALG::SerialDenseVector::Base& elevec1) = 0;
+      virtual void NavierSlipBC(Discret::ELEMENTS::FluidBoundary* ele1,
+          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix::Base& elemat1,
+          Core::LinAlg::SerialDenseVector::Base& elevec1) = 0;
 
-      virtual void EvaluateWeakDBC(DRT::ELEMENTS::FluidBoundary* ele1,
-          Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseMatrix::Base& elemat1,
-          CORE::LINALG::SerialDenseVector::Base& elevec1) = 0;
+      virtual void EvaluateWeakDBC(Discret::ELEMENTS::FluidBoundary* ele1,
+          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix::Base& elemat1,
+          Core::LinAlg::SerialDenseVector::Base& elevec1) = 0;
 
-      virtual void estimate_nitsche_trace_max_eigenvalue(CORE::Elements::FaceElement* ele1,
-          Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseMatrix::Base& elemat1,
-          CORE::LINALG::SerialDenseMatrix::Base& elemat2) = 0;
+      virtual void estimate_nitsche_trace_max_eigenvalue(Core::Elements::FaceElement* ele1,
+          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix::Base& elemat1,
+          Core::LinAlg::SerialDenseMatrix::Base& elemat2) = 0;
 
-      virtual void MixHybDirichlet(DRT::ELEMENTS::FluidBoundary* ele1,
-          Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseMatrix::Base& elemat1,
-          CORE::LINALG::SerialDenseVector::Base& elevec1) = 0;
+      virtual void MixHybDirichlet(Discret::ELEMENTS::FluidBoundary* ele1,
+          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix::Base& elemat1,
+          Core::LinAlg::SerialDenseVector::Base& elevec1) = 0;
 
       /// Internal implementation class for FluidBoundaryParent elements
-      static FluidBoundaryParentInterface* Impl(CORE::Elements::FaceElement* ele);
+      static FluidBoundaryParentInterface* Impl(Core::Elements::FaceElement* ele);
     };
 
 
@@ -88,7 +88,7 @@ namespace DRT
       provides a clean and fast element implementation.
 
     */
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     class FluidBoundaryParent : public FluidBoundaryParentInterface
     {
       friend class FluidEleParameter;
@@ -96,86 +96,86 @@ namespace DRT
      public:
       //! Singleton access method
       static FluidBoundaryParentInterface* Instance(
-          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
+          Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
       /// Constructor with number of nodes
       FluidBoundaryParent();
 
-      void FlowDepPressureBC(DRT::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseMatrix::Base& elemat,
-          CORE::LINALG::SerialDenseVector::Base& elevec) override;
+      void FlowDepPressureBC(Discret::ELEMENTS::FluidBoundary* surfele,
+          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix::Base& elemat,
+          Core::LinAlg::SerialDenseVector::Base& elevec) override;
 
-      void SlipSuppBC(DRT::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseMatrix::Base& elemat,
-          CORE::LINALG::SerialDenseVector::Base& elevec) override;
+      void SlipSuppBC(Discret::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
+          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::LinAlg::SerialDenseMatrix::Base& elemat,
+          Core::LinAlg::SerialDenseVector::Base& elevec) override;
 
-      void NavierSlipBC(DRT::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseMatrix::Base& elemat,
-          CORE::LINALG::SerialDenseVector::Base& elevec) override;
+      void NavierSlipBC(Discret::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
+          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::LinAlg::SerialDenseMatrix::Base& elemat,
+          Core::LinAlg::SerialDenseVector::Base& elevec) override;
 
-      void EvaluateWeakDBC(DRT::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseMatrix::Base& elemat,
-          CORE::LINALG::SerialDenseVector::Base& elevec) override;
+      void EvaluateWeakDBC(Discret::ELEMENTS::FluidBoundary* surfele,
+          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix::Base& elemat,
+          Core::LinAlg::SerialDenseVector::Base& elevec) override;
 
-      void estimate_nitsche_trace_max_eigenvalue(CORE::Elements::FaceElement* surfele,
-          Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseMatrix::Base& elemat1,
-          CORE::LINALG::SerialDenseMatrix::Base& elemat2) override;
+      void estimate_nitsche_trace_max_eigenvalue(Core::Elements::FaceElement* surfele,
+          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix::Base& elemat1,
+          Core::LinAlg::SerialDenseMatrix::Base& elemat2) override;
 
-      void MixHybDirichlet(DRT::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseMatrix::Base& elemat,
-          CORE::LINALG::SerialDenseVector::Base& elevec) override;
+      void MixHybDirichlet(Discret::ELEMENTS::FluidBoundary* surfele,
+          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix::Base& elemat,
+          Core::LinAlg::SerialDenseVector::Base& elevec) override;
 
 
      private:
-      template <CORE::FE::CellType bdistype, CORE::FE::CellType pdistype>
-      void FlowDepPressureBC(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseMatrix::Base& elemat,
-          CORE::LINALG::SerialDenseVector::Base& elevec);
+      template <Core::FE::CellType bdistype, Core::FE::CellType pdistype>
+      void FlowDepPressureBC(Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::LinAlg::SerialDenseMatrix::Base& elemat,
+          Core::LinAlg::SerialDenseVector::Base& elevec);
 
-      template <CORE::FE::CellType bdistype, CORE::FE::CellType pdistype>
-      void SlipSuppBC(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseMatrix::Base& elemat,
-          CORE::LINALG::SerialDenseVector::Base& elevec);
+      template <Core::FE::CellType bdistype, Core::FE::CellType pdistype>
+      void SlipSuppBC(Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::LinAlg::SerialDenseMatrix::Base& elemat,
+          Core::LinAlg::SerialDenseVector::Base& elevec);
 
-      template <CORE::FE::CellType bdistype, CORE::FE::CellType pdistype>
-      void NavierSlipBC(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseMatrix::Base& elemat,
-          CORE::LINALG::SerialDenseVector::Base& elevec);
+      template <Core::FE::CellType bdistype, Core::FE::CellType pdistype>
+      void NavierSlipBC(Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::LinAlg::SerialDenseMatrix::Base& elemat,
+          Core::LinAlg::SerialDenseVector::Base& elevec);
 
-      template <CORE::FE::CellType bdistype, CORE::FE::CellType pdistype>
-      void EvaluateWeakDBC(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseMatrix::Base& elemat,
-          CORE::LINALG::SerialDenseVector::Base& elevec);
+      template <Core::FE::CellType bdistype, Core::FE::CellType pdistype>
+      void EvaluateWeakDBC(Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::LinAlg::SerialDenseMatrix::Base& elemat,
+          Core::LinAlg::SerialDenseVector::Base& elevec);
 
-      template <CORE::FE::CellType bdistype, CORE::FE::CellType pdistype>
-      void estimate_nitsche_trace_max_eigenvalue(CORE::Elements::FaceElement* ele,
-          Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseMatrix::Base& elemat_epetra1,
-          CORE::LINALG::SerialDenseMatrix::Base& elemat_epetra2);
+      template <Core::FE::CellType bdistype, Core::FE::CellType pdistype>
+      void estimate_nitsche_trace_max_eigenvalue(Core::Elements::FaceElement* ele,
+          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix::Base& elemat_epetra1,
+          Core::LinAlg::SerialDenseMatrix::Base& elemat_epetra2);
 
-      template <CORE::FE::CellType bdistype, CORE::FE::CellType pdistype>
-      void MixHybDirichlet(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseMatrix::Base& elemat,
-          CORE::LINALG::SerialDenseVector::Base& elevec);
+      template <Core::FE::CellType bdistype, Core::FE::CellType pdistype>
+      void MixHybDirichlet(Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::LinAlg::SerialDenseMatrix::Base& elemat,
+          Core::LinAlg::SerialDenseVector::Base& elevec);
 
-      void get_density_and_viscosity(Teuchos::RCP<const CORE::MAT::Material> material,
+      void get_density_and_viscosity(Teuchos::RCP<const Core::Mat::Material> material,
           const double pscaaf, const double thermpressaf, const double rateofstrain);
 
 
       //! pointer to parameter list
-      DRT::ELEMENTS::FluidEleParameter* fldpara_;
-      DRT::ELEMENTS::FluidEleParameterTimInt* fldparatimint_;
+      Discret::ELEMENTS::FluidEleParameter* fldpara_;
+      Discret::ELEMENTS::FluidEleParameterTimInt* fldparatimint_;
 
 
       //! infinitesimal area element drs
@@ -364,7 +364,7 @@ namespace DRT
       }
     };  // end class fluid3boundaryImpl
   }     // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -22,14 +22,14 @@ with different parameters in more than one fluid field is not yet supported.
 
 FOUR_C_NAMESPACE_OPEN
 
-DRT::ELEMENTS::FluidEleParameterTimInt* DRT::ELEMENTS::FluidEleParameterTimInt::Instance(
-    CORE::UTILS::SingletonAction action)
+Discret::ELEMENTS::FluidEleParameterTimInt* Discret::ELEMENTS::FluidEleParameterTimInt::Instance(
+    Core::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = CORE::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
       []()
       {
-        return std::unique_ptr<DRT::ELEMENTS::FluidEleParameterTimInt>(
-            new DRT::ELEMENTS::FluidEleParameterTimInt());
+        return std::unique_ptr<Discret::ELEMENTS::FluidEleParameterTimInt>(
+            new Discret::ELEMENTS::FluidEleParameterTimInt());
       });
 
   return singleton_owner.Instance(action);
@@ -38,7 +38,7 @@ DRT::ELEMENTS::FluidEleParameterTimInt* DRT::ELEMENTS::FluidEleParameterTimInt::
 //----------------------------------------------------------------------*/
 // private constructor of FluidEleParameterTimInt
 //----------------------------------------------------------------------*/
-DRT::ELEMENTS::FluidEleParameterTimInt::FluidEleParameterTimInt()
+Discret::ELEMENTS::FluidEleParameterTimInt::FluidEleParameterTimInt()
     : set_general_fluid_timeparameter_(false),
       is_genalpha_(false),
       is_genalpha_np_(false),
@@ -64,7 +64,7 @@ DRT::ELEMENTS::FluidEleParameterTimInt::FluidEleParameterTimInt()
 //----------------------------------------------------------------------*/
 // set time parameters which are equal for every fluid  rasthofer 11/13 |
 //----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidEleParameterTimInt::set_element_time_parameter(
+void Discret::ELEMENTS::FluidEleParameterTimInt::set_element_time_parameter(
     Teuchos::ParameterList& params)
 {
   // second check: timealgo
@@ -76,24 +76,24 @@ void DRT::ELEMENTS::FluidEleParameterTimInt::set_element_time_parameter(
 
   // set flag, time integration scheme
   timealgo_ =
-      CORE::UTILS::GetAsEnum<INPAR::FLUID::TimeIntegrationScheme>(params, "TimeIntegrationScheme");
+      Core::UTILS::GetAsEnum<Inpar::FLUID::TimeIntegrationScheme>(params, "TimeIntegrationScheme");
 
   // set time integration scheme-specific element parameters
-  if (timealgo_ == INPAR::FLUID::timeint_stationary)
+  if (timealgo_ == Inpar::FLUID::timeint_stationary)
   {
     is_genalpha_ = false;
     is_stationary_ = true;
     is_genalpha_np_ = false;
     is_one_step_theta_ = false;
   }
-  else if (timealgo_ == INPAR::FLUID::timeint_afgenalpha)
+  else if (timealgo_ == Inpar::FLUID::timeint_afgenalpha)
   {
     is_genalpha_ = true;
     is_stationary_ = false;
     is_genalpha_np_ = false;
     is_one_step_theta_ = false;
   }
-  else if (timealgo_ == INPAR::FLUID::timeint_npgenalpha)
+  else if (timealgo_ == Inpar::FLUID::timeint_npgenalpha)
   {
     is_genalpha_ = true;
     is_stationary_ = false;
@@ -167,13 +167,13 @@ void DRT::ELEMENTS::FluidEleParameterTimInt::set_element_time_parameter(
     afgdt_ = alpha_f_ * gamma_ * dt_;
 
     // timeint_gen_alpha = p(n+1) (Peter's genalpha)
-    if (timealgo_ == INPAR::FLUID::timeint_npgenalpha)
+    if (timealgo_ == Inpar::FLUID::timeint_npgenalpha)
     {
       // if not generalized-alpha: timefacrhs_=theta * dt_ = timefac_
       timefacpre_ = gamma_ / alpha_m_ * dt_;
       timefacrhs_ = gamma_ / alpha_m_ * dt_;
     }
-    else if (timealgo_ == INPAR::FLUID::timeint_afgenalpha)
+    else if (timealgo_ == Inpar::FLUID::timeint_afgenalpha)
     {
       timefacpre_ = gamma_ * alpha_f_ / alpha_m_ * dt_;
       timefacrhs_ = gamma_ / alpha_m_ * dt_;
@@ -187,18 +187,18 @@ void DRT::ELEMENTS::FluidEleParameterTimInt::set_element_time_parameter(
 
       // set flag, time integration scheme
       ostalgo_ =
-          CORE::UTILS::GetAsEnum<INPAR::FLUID::OstContAndPress>(params, "ost cont and press");
+          Core::UTILS::GetAsEnum<Inpar::FLUID::OstContAndPress>(params, "ost cont and press");
       ostnew_ = params.get<bool>("ost new", false);
 
       if (ostnew_)
       {
         // set time integration scheme-specific element parameters
-        if (ostalgo_ == INPAR::FLUID::Cont_impl_Press_impl)
+        if (ostalgo_ == Inpar::FLUID::Cont_impl_Press_impl)
         {
           is_cont_impl_press_impl_ = true;
           is_cont_impl_press_normal_ = false;
         }
-        else if (ostalgo_ == INPAR::FLUID::Cont_impl_Press_normal)
+        else if (ostalgo_ == Inpar::FLUID::Cont_impl_Press_normal)
         {
           is_cont_impl_press_impl_ = false;
           is_cont_impl_press_normal_ = true;
@@ -235,7 +235,7 @@ void DRT::ELEMENTS::FluidEleParameterTimInt::set_element_time_parameter(
 //----------------------------------------------------------------------*/
 // print fluid time parameter to screen                 rasthofer 11/13 |
 //----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidEleParameterTimInt::print_fluid_time_parameter()
+void Discret::ELEMENTS::FluidEleParameterTimInt::print_fluid_time_parameter()
 {
   std::cout << std::endl
             << "|-----------------------------------------------------------" << std::endl;

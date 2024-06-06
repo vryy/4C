@@ -30,7 +30,7 @@ namespace BEAMINTERACTION
 {
   class BeamToSolidOutputWriterVisualization;
 }
-namespace STR::TIMINT
+namespace STR::TimeInt
 {
   class ParamsRuntimeOutput;
 }
@@ -54,8 +54,8 @@ namespace BEAMINTERACTION
      * @param visualization_params (in) visualization parameters
      */
     BeamToSolidVisualizationOutputWriterBase(const std::string& base_output_name,
-        Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params,
-        CORE::IO::VisualizationParameters visualization_params);
+        Teuchos::RCP<const STR::TimeInt::ParamsRuntimeOutput> visualization_output_params,
+        Core::IO::VisualizationParameters visualization_params);
 
     /**
      * \brief Destructor.
@@ -104,10 +104,10 @@ namespace BEAMINTERACTION
         visualization_writers_;
 
     //! Pointer to the global visualization input file options.
-    Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params_;
+    Teuchos::RCP<const STR::TimeInt::ParamsRuntimeOutput> visualization_output_params_;
 
     //! visualization parameters
-    const CORE::IO::VisualizationParameters visualization_params_;
+    const Core::IO::VisualizationParameters visualization_params_;
   };
 
 }  // namespace BEAMINTERACTION

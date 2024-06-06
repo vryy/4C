@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
     namespace StatusTest
     {
@@ -37,7 +37,7 @@ namespace NOX
          *  At the moment we support only scalar \c ATOL input values for each quantity.
          *  Extensions to a vector-based ATOL are possible. See \c ::NOX::StatusTest::NormWRMS
          *  for more information. */
-        NormWRMS(const std::vector<NOX::NLN::StatusTest::QuantityType>& checkList,
+        NormWRMS(const std::vector<NOX::Nln::StatusTest::QuantityType>& checkList,
             const std::vector<double>& rtol, const std::vector<double>& atol,
             const std::vector<double>& BDFMultiplier, const std::vector<double>& tolerance,
             const double& alpha, const double& beta,
@@ -47,15 +47,15 @@ namespace NOX
             const ::NOX::Solver::Generic& problem, ::NOX::StatusTest::CheckType checkType) override;
 
         //! Check for the given quantity
-        bool IsQuantity(const NOX::NLN::StatusTest::QuantityType& qType) const;
+        bool IsQuantity(const NOX::Nln::StatusTest::QuantityType& qType) const;
 
         ::NOX::StatusTest::StatusType getStatus() const override;
 
         //! returns the absolute tolerance of the given quantity
-        double get_absolute_tolerance(const NOX::NLN::StatusTest::QuantityType& qType) const;
+        double get_absolute_tolerance(const NOX::Nln::StatusTest::QuantityType& qType) const;
 
         //! returns the relative tolerance of the given quantity
-        double get_relative_tolerance(const NOX::NLN::StatusTest::QuantityType& qType) const;
+        double get_relative_tolerance(const NOX::Nln::StatusTest::QuantityType& qType) const;
 
         std::ostream& print(std::ostream& stream, int indent) const override;
 
@@ -67,7 +67,7 @@ namespace NOX
         std::size_t n_checks_;
 
         //! nox_nln_statustest quantities which are checked
-        std::vector<NOX::NLN::StatusTest::QuantityType> check_list_;
+        std::vector<NOX::Nln::StatusTest::QuantityType> check_list_;
 
         //! relative tolerance
         std::vector<double> rtol_;
@@ -109,7 +109,7 @@ namespace NOX
         std::vector<bool> disable_implicit_weighting_;
       };
     }  // namespace StatusTest
-  }    // namespace NLN
+  }    // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

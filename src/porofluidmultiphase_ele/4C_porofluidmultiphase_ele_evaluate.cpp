@@ -20,11 +20,11 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                           vuong 08/16 |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::PoroFluidMultiPhase::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, LocationArray& la,
-    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
-    CORE::LINALG::SerialDenseVector& elevec3)
+int Discret::ELEMENTS::PoroFluidMultiPhase::Evaluate(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, LocationArray& la,
+    Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
+    Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
+    Core::LinAlg::SerialDenseVector& elevec3)
 {
   // we assume here, that numdofpernode is equal for every node within
   // the element and does not change during the computations
@@ -32,7 +32,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhase::Evaluate(Teuchos::ParameterList& params,
 
   // check for the action parameter
   const POROFLUIDMULTIPHASE::Action action =
-      CORE::UTILS::GetAsEnum<POROFLUIDMULTIPHASE::Action>(params, "action");
+      Core::UTILS::GetAsEnum<POROFLUIDMULTIPHASE::Action>(params, "action");
   switch (action)
   {
     // all physics-related stuff is included in the implementation class(es) that can
@@ -50,16 +50,16 @@ int DRT::ELEMENTS::PoroFluidMultiPhase::Evaluate(Teuchos::ParameterList& params,
     case POROFLUIDMULTIPHASE::calc_valid_dofs:
     case POROFLUIDMULTIPHASE::calc_domain_integrals:
     {
-      std::vector<CORE::LINALG::SerialDenseMatrix*> elemat(2);
+      std::vector<Core::LinAlg::SerialDenseMatrix*> elemat(2);
       elemat[0] = &elemat1;
       elemat[1] = &elemat2;
 
-      std::vector<CORE::LINALG::SerialDenseVector*> elevec(3);
+      std::vector<Core::LinAlg::SerialDenseVector*> elevec(3);
       elevec[0] = &elevec1;
       elevec[1] = &elevec2;
       elevec[2] = &elevec3;
 
-      return DRT::ELEMENTS::PoroFluidMultiPhaseFactory::ProvideImpl(
+      return Discret::ELEMENTS::PoroFluidMultiPhaseFactory::ProvideImpl(
           Shape(), numdofpernode, discretization.Name())
           ->Evaluate(this, params, discretization, la, elemat, elevec);
       break;
@@ -76,16 +76,16 @@ int DRT::ELEMENTS::PoroFluidMultiPhase::Evaluate(Teuchos::ParameterList& params,
   }  // switch(action)
 
   return 0;
-}  // DRT::ELEMENTS::PoroFluidMultiPhase::Evaluate
+}  // Discret::ELEMENTS::PoroFluidMultiPhase::Evaluate
 
 
 /*----------------------------------------------------------------------*
  |  dummy                                                   vuong 08/16 |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::PoroFluidMultiPhase::evaluate_neumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
-    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
-    CORE::LINALG::SerialDenseMatrix* elemat1)
+int Discret::ELEMENTS::PoroFluidMultiPhase::evaluate_neumann(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
+    Core::LinAlg::SerialDenseMatrix* elemat1)
 {
   FOUR_C_THROW("evaluate_neumann for PoroFluidMultiPhase  not yet implemented!");
   //    The function is just a dummy. For PoroFluidMultiPhase elements, the integration
@@ -97,20 +97,20 @@ int DRT::ELEMENTS::PoroFluidMultiPhase::evaluate_neumann(Teuchos::ParameterList&
 /*---------------------------------------------------------------------*
 |  Call the element to set all basic parameter             vuong 08/16 |
 *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::PoroFluidMultiPhaseType::pre_evaluate(DRT::Discretization& dis,
-    Teuchos::ParameterList& p, Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
-    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
+void Discret::ELEMENTS::PoroFluidMultiPhaseType::pre_evaluate(Discret::Discretization& dis,
+    Teuchos::ParameterList& p, Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
+    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
     Teuchos::RCP<Epetra_Vector> systemvector3)
 {
   const POROFLUIDMULTIPHASE::Action action =
-      CORE::UTILS::GetAsEnum<POROFLUIDMULTIPHASE::Action>(p, "action");
+      Core::UTILS::GetAsEnum<POROFLUIDMULTIPHASE::Action>(p, "action");
 
   switch (action)
   {
     case POROFLUIDMULTIPHASE::set_general_parameter:
     {
-      DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter::Instance(dis.Name())
+      Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter::Instance(dis.Name())
           ->set_general_parameters(p);
 
       break;
@@ -118,7 +118,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseType::pre_evaluate(DRT::Discretization& d
 
     case POROFLUIDMULTIPHASE::set_timestep_parameter:
     {
-      DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter::Instance(dis.Name())
+      Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter::Instance(dis.Name())
           ->set_time_step_parameters(p);
 
       break;

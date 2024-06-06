@@ -14,7 +14,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-MAT::ELASTIC::PAR::CoupExpPol::CoupExpPol(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
+Mat::Elastic::PAR::CoupExpPol::CoupExpPol(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
     : Parameter(matdata),
       a_(matdata->Get<double>("A")),
       b_(matdata->Get<double>("B")),
@@ -22,10 +22,10 @@ MAT::ELASTIC::PAR::CoupExpPol::CoupExpPol(const Teuchos::RCP<CORE::MAT::PAR::Mat
 {
 }
 
-MAT::ELASTIC::CoupExpPol::CoupExpPol(MAT::ELASTIC::PAR::CoupExpPol* params) : params_(params) {}
+Mat::Elastic::CoupExpPol::CoupExpPol(Mat::Elastic::PAR::CoupExpPol* params) : params_(params) {}
 
-void MAT::ELASTIC::CoupExpPol::AddStrainEnergy(double& psi, const CORE::LINALG::Matrix<3, 1>& prinv,
-    const CORE::LINALG::Matrix<3, 1>& modinv, const CORE::LINALG::Matrix<6, 1>& glstrain,
+void Mat::Elastic::CoupExpPol::AddStrainEnergy(double& psi, const Core::LinAlg::Matrix<3, 1>& prinv,
+    const Core::LinAlg::Matrix<3, 1>& modinv, const Core::LinAlg::Matrix<6, 1>& glstrain,
     const int gp, const int eleGID)
 {
   const double a = params_->a_;
@@ -39,8 +39,8 @@ void MAT::ELASTIC::CoupExpPol::AddStrainEnergy(double& psi, const CORE::LINALG::
          a;
 }
 
-void MAT::ELASTIC::CoupExpPol::add_derivatives_principal(CORE::LINALG::Matrix<3, 1>& dPI,
-    CORE::LINALG::Matrix<6, 1>& ddPII, const CORE::LINALG::Matrix<3, 1>& prinv, const int gp,
+void Mat::Elastic::CoupExpPol::add_derivatives_principal(Core::LinAlg::Matrix<3, 1>& dPI,
+    Core::LinAlg::Matrix<6, 1>& ddPII, const Core::LinAlg::Matrix<3, 1>& prinv, const int gp,
     const int eleGID)
 {
   const double a = params_->a_;

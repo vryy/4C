@@ -20,12 +20,12 @@ namespace
   class TensorTransformationTest : public testing::Test
   {
    public:
-    CORE::LINALG::Matrix<3, 3> tens1_;
-    CORE::LINALG::Matrix<3, 3> tens2_;
-    CORE::LINALG::Matrix<3, 3> rotatedTens1_;
-    CORE::LINALG::Matrix<3, 3> rotatedTens2_;
-    CORE::LINALG::Matrix<3, 3> rotationMatrix1_;
-    CORE::LINALG::Matrix<3, 3> rotationMatrix2_;
+    Core::LinAlg::Matrix<3, 3> tens1_;
+    Core::LinAlg::Matrix<3, 3> tens2_;
+    Core::LinAlg::Matrix<3, 3> rotatedTens1_;
+    Core::LinAlg::Matrix<3, 3> rotatedTens2_;
+    Core::LinAlg::Matrix<3, 3> rotationMatrix1_;
+    Core::LinAlg::Matrix<3, 3> rotationMatrix2_;
 
     TensorTransformationTest()
     {
@@ -93,21 +93,21 @@ namespace
 
   TEST_F(TensorTransformationTest, TensorRotation)
   {
-    CORE::LINALG::Matrix<3, 3> tmp;
-    CORE::LINALG::TENSOR::TensorRotation(rotationMatrix1_, tens1_, tmp);
+    Core::LinAlg::Matrix<3, 3> tmp;
+    Core::LinAlg::Tensor::TensorRotation(rotationMatrix1_, tens1_, tmp);
     FOUR_C_EXPECT_NEAR(tmp, rotatedTens1_, 1e-9);
 
-    CORE::LINALG::TENSOR::TensorRotation(rotationMatrix2_, tens2_, tmp);
+    Core::LinAlg::Tensor::TensorRotation(rotationMatrix2_, tens2_, tmp);
     FOUR_C_EXPECT_NEAR(tmp, rotatedTens2_, 1e-9);
   }
 
   TEST_F(TensorTransformationTest, InverseTensorRotation)
   {
-    CORE::LINALG::Matrix<3, 3> tmp;
-    CORE::LINALG::TENSOR::InverseTensorRotation(rotationMatrix1_, rotatedTens1_, tmp);
+    Core::LinAlg::Matrix<3, 3> tmp;
+    Core::LinAlg::Tensor::InverseTensorRotation(rotationMatrix1_, rotatedTens1_, tmp);
     FOUR_C_EXPECT_NEAR(tmp, tens1_, 1e-9);
 
-    CORE::LINALG::TENSOR::InverseTensorRotation(rotationMatrix2_, rotatedTens2_, tmp);
+    Core::LinAlg::Tensor::InverseTensorRotation(rotationMatrix2_, rotatedTens2_, tmp);
     FOUR_C_EXPECT_NEAR(tmp, tens2_, 1e-9);
   }
 }  // namespace

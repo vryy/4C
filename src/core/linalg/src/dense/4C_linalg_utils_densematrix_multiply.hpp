@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief A collection of multiplication methods for namespace LINALG
+\brief A collection of multiplication methods for namespace LinAlg
 
 \level 0
 */
@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG::INTERNAL
+namespace Core::LinAlg::INTERNAL
 {
   /*!
    \brief Utility function to get type string of a matrix/vector object
@@ -27,13 +27,13 @@ namespace CORE::LINALG::INTERNAL
   inline std::string GetMatrixOrVectorString();
 
   template <>
-  inline std::string GetMatrixOrVectorString<CORE::LINALG::SerialDenseMatrix::Base>()
+  inline std::string GetMatrixOrVectorString<Core::LinAlg::SerialDenseMatrix::Base>()
   {
     return "Matrix";
   }
 
   template <>
-  inline std::string GetMatrixOrVectorString<CORE::LINALG::SerialDenseVector::Base>()
+  inline std::string GetMatrixOrVectorString<Core::LinAlg::SerialDenseVector::Base>()
   {
     return "Vector";
   }
@@ -45,7 +45,7 @@ namespace CORE::LINALG::INTERNAL
   inline std::string GetMatrixOrVectorCase(char ch);
 
   template <>
-  inline std::string GetMatrixOrVectorCase<CORE::LINALG::SerialDenseMatrix::Base>(char ch)
+  inline std::string GetMatrixOrVectorCase<Core::LinAlg::SerialDenseMatrix::Base>(char ch)
   {
     char c = std::toupper(ch);
     std::string s;
@@ -54,7 +54,7 @@ namespace CORE::LINALG::INTERNAL
   }
 
   template <>
-  inline std::string GetMatrixOrVectorCase<CORE::LINALG::SerialDenseVector::Base>(char ch)
+  inline std::string GetMatrixOrVectorCase<Core::LinAlg::SerialDenseVector::Base>(char ch)
   {
     char c = std::tolower(ch);
     std::string s;
@@ -104,9 +104,9 @@ namespace CORE::LINALG::INTERNAL
             std::to_string(c.numCols()) + ") respectively.")
             .c_str());
   }
-}  // namespace CORE::LINALG::INTERNAL
+}  // namespace Core::LinAlg::INTERNAL
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   /*!
    \brief Matrix-vector multiplication c = A*b
@@ -287,7 +287,7 @@ namespace CORE::LINALG
     INTERNAL::CheckErrorCodeInDebug<true, true>(err, A, B, C);
     return err;
   }
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 FOUR_C_NAMESPACE_CLOSE
 

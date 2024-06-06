@@ -17,14 +17,14 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
     template <int NSD>
     class ScaTraEleDiffManagerAniso;
 
-    template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype>>
+    template <Core::FE::CellType distype, int probdim = Core::FE::dim<distype>>
     class ScaTraEleCalcAniso : public virtual ScaTraEleCalc<distype, probdim>
     {
      protected:
@@ -65,12 +65,12 @@ namespace DRT
 
       //! calculate the Laplacian for all shape functions(strong form)
       void get_laplacian_strong_form(
-          CORE::LINALG::Matrix<nen_, 1>& diff  //!< laplace term to be computed
+          Core::LinAlg::Matrix<nen_, 1>& diff  //!< laplace term to be computed
       );
 
       //! calculate the Laplacian (weak form)
       void get_laplacian_weak_form(double& val,                //!< ?
-          const CORE::LINALG::Matrix<nsd_, nsd_>& difftensor,  //!< ?
+          const Core::LinAlg::Matrix<nsd_, nsd_>& difftensor,  //!< ?
           const int vi,                                        //!< ?
           const int ui                                         //!< ?
       )
@@ -88,8 +88,8 @@ namespace DRT
 
       //! calculate the Laplacian (weak form)
       void get_laplacian_weak_form_rhs(double& val,            //!< ?
-          const CORE::LINALG::Matrix<nsd_, nsd_>& difftensor,  //!< ?
-          const CORE::LINALG::Matrix<nsd_, 1>& gradphi,        //!< ?
+          const Core::LinAlg::Matrix<nsd_, nsd_>& difftensor,  //!< ?
+          const Core::LinAlg::Matrix<nsd_, 1>& gradphi,        //!< ?
           const int vi                                         //!< ?
       )
       {
@@ -105,13 +105,13 @@ namespace DRT
       };
 
       //! calculation of diffusive element matrix
-      void calc_mat_diff(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+      void calc_mat_diff(Core::LinAlg::SerialDenseMatrix& emat,  //!< element matrix to be filled
           const int k,                                           //!< index of current scalar
           const double timefacfac  //!< domain-integration factor times time-integration factor
           ) override;
 
       //! standard Galerkin diffusive term on right hand side
-      void calc_rhs_diff(CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
+      void calc_rhs_diff(Core::LinAlg::SerialDenseVector& erhs,  //!< element vector to be filled
           const int k,                                           //!< index of current scalar
           const double rhsfac  //!< time-integration factor for rhs times domain-integration factor
           ) override;
@@ -134,25 +134,25 @@ namespace DRT
       }
 
       //! Set the anisotropic diffusion coefficient
-      virtual void SetAnisotropicDiff(const CORE::LINALG::Matrix<NSD, NSD> difftensor, const int k)
+      virtual void SetAnisotropicDiff(const Core::LinAlg::Matrix<NSD, NSD> difftensor, const int k)
       {
         difftensor_[k] = difftensor;
         return;
       }
 
       //! Return the stored anisotropic diffusion coefficient
-      virtual CORE::LINALG::Matrix<NSD, NSD> GetAnisotropicDiff(const int k)
+      virtual Core::LinAlg::Matrix<NSD, NSD> GetAnisotropicDiff(const int k)
       {
         return difftensor_[k];
       }
 
      protected:
       //! tensor valued diffusion coefficient
-      std::vector<CORE::LINALG::Matrix<NSD, NSD>> difftensor_;
+      std::vector<Core::LinAlg::Matrix<NSD, NSD>> difftensor_;
     };
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 
 FOUR_C_NAMESPACE_CLOSE

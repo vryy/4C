@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
 /*----------------------------------------------------------------------*/
-namespace INPAR
+namespace Inpar
 {
   namespace BEAMINTERACTION
   {
@@ -178,18 +178,18 @@ namespace INPAR
      * \brief Get all available beam interaction conditions, excluding the default value.
      */
     void BeamInteractionConditionsGetAll(
-        std::vector<INPAR::BEAMINTERACTION::BeamInteractionConditions>& interactions);
+        std::vector<Inpar::BEAMINTERACTION::BeamInteractionConditions>& interactions);
 
     /// set the beam interaction parameters
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
     /// set beam interaction specific conditions
     void SetValidConditions(
-        std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist);
+        std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist);
 
   }  // namespace BEAMINTERACTION
 
-}  // namespace INPAR
+}  // namespace Inpar
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

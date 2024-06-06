@@ -20,10 +20,10 @@ FOUR_C_NAMESPACE_OPEN
  |  Constructor (public)                                       bk 11/13 |
  *----------------------------------------------------------------------*/
 FLD::TimIntRedModelsGenAlpha::TimIntRedModelsGenAlpha(
-    const Teuchos::RCP<DRT::Discretization>& actdis,
-    const Teuchos::RCP<CORE::LINALG::Solver>& solver,
+    const Teuchos::RCP<Discret::Discretization>& actdis,
+    const Teuchos::RCP<Core::LinAlg::Solver>& solver,
     const Teuchos::RCP<Teuchos::ParameterList>& params,
-    const Teuchos::RCP<CORE::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
+    const Teuchos::RCP<Core::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
     : FluidImplicitTimeInt(actdis, solver, params, output, alefluid),
       TimIntGenAlpha(actdis, solver, params, output, alefluid),
       TimIntRedModels(actdis, solver, params, output, alefluid)

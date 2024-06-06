@@ -19,16 +19,17 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-CROSSLINKING::CrosslinkerNodeType CROSSLINKING::CrosslinkerNodeType::instance_;
+CrossLinking::CrosslinkerNodeType CrossLinking::CrosslinkerNodeType::instance_;
 
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::COMM::ParObject* CROSSLINKING::CrosslinkerNodeType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* CrossLinking::CrosslinkerNodeType::Create(
+    const std::vector<char>& data)
 {
   std::vector<double> dummycoord(3, 999.0);
-  auto* crosslinker = new CROSSLINKING::CrosslinkerNode(-1, dummycoord, -1);
+  auto* crosslinker = new CrossLinking::CrosslinkerNode(-1, dummycoord, -1);
   crosslinker->Unpack(data);
   return crosslinker;
 }
@@ -36,7 +37,7 @@ CORE::COMM::ParObject* CROSSLINKING::CrosslinkerNodeType::Create(const std::vect
 /*----------------------------------------------------------------------------*
  |  ctor (public)                                              eichinger 10/16|
  *----------------------------------------------------------------------------*/
-CROSSLINKING::CrosslinkerNodeDataContainer::CrosslinkerNodeDataContainer() : numbond_(0)
+CrossLinking::CrosslinkerNodeDataContainer::CrosslinkerNodeDataContainer() : numbond_(0)
 {
   clbspots_.clear();
   std::pair<int, int> pair;
@@ -52,12 +53,12 @@ CROSSLINKING::CrosslinkerNodeDataContainer::CrosslinkerNodeDataContainer() : num
  |  Pack data                                                        (public) |
  |                                                             eichinger 10/16|
  *----------------------------------------------------------------------------*/
-void CROSSLINKING::CrosslinkerNodeDataContainer::Pack(CORE::COMM::PackBuffer& data) const
+void CrossLinking::CrosslinkerNodeDataContainer::Pack(Core::Communication::PackBuffer& data) const
 {
   // add numbond
-  CORE::COMM::ParObject::AddtoPack(data, numbond_);
+  Core::Communication::ParObject::AddtoPack(data, numbond_);
   // add clbspots_
-  CORE::COMM::ParObject::AddtoPack(data, clbspots_);
+  Core::Communication::ParObject::AddtoPack(data, clbspots_);
 
   return;
 }
@@ -66,13 +67,13 @@ void CROSSLINKING::CrosslinkerNodeDataContainer::Pack(CORE::COMM::PackBuffer& da
  |  Unpack data                                                      (public) |
  |                                                             eichinger 10/16|
  *----------------------------------------------------------------------------*/
-void CROSSLINKING::CrosslinkerNodeDataContainer::Unpack(
+void CrossLinking::CrosslinkerNodeDataContainer::Unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   // numbond
-  CORE::COMM::ParObject::ExtractfromPack(position, data, numbond_);
+  Core::Communication::ParObject::ExtractfromPack(position, data, numbond_);
   // clbspots_
-  CORE::COMM::ParObject::ExtractfromPack(position, data, clbspots_);
+  Core::Communication::ParObject::ExtractfromPack(position, data, clbspots_);
 
   return;
 }
@@ -80,9 +81,9 @@ void CROSSLINKING::CrosslinkerNodeDataContainer::Unpack(
 /*----------------------------------------------------------------------------*
  *  ctor (public)                                              eichinger 10/16|
  *----------------------------------------------------------------------------*/
-CROSSLINKING::CrosslinkerNode::CrosslinkerNode(
+CrossLinking::CrosslinkerNode::CrosslinkerNode(
     int id, const std::vector<double>& coords, const int owner)
-    : CORE::Nodes::Node(id, coords, owner), mat_(Teuchos::null)
+    : Core::Nodes::Node(id, coords, owner), mat_(Teuchos::null)
 {
   return;
 }
@@ -90,8 +91,8 @@ CROSSLINKING::CrosslinkerNode::CrosslinkerNode(
 /*----------------------------------------------------------------------------*
  |  copy-ctor (public)                                         eichinger 10/16|
  *----------------------------------------------------------------------------*/
-CROSSLINKING::CrosslinkerNode::CrosslinkerNode(const CROSSLINKING::CrosslinkerNode& old)
-    : CORE::Nodes::Node(old)
+CrossLinking::CrosslinkerNode::CrosslinkerNode(const CrossLinking::CrosslinkerNode& old)
+    : Core::Nodes::Node(old)
 {
   FOUR_C_THROW(
       "Copy constructor of CrosslinkerNodeDataContainer needs to "
@@ -103,16 +104,16 @@ CROSSLINKING::CrosslinkerNode::CrosslinkerNode(const CROSSLINKING::CrosslinkerNo
  |  Deep copy this instance and return pointer to it (public)                 |
  |                                                             eichinger 10/16|
  *----------------------------------------------------------------------------*/
-CROSSLINKING::CrosslinkerNode* CROSSLINKING::CrosslinkerNode::Clone() const
+CrossLinking::CrosslinkerNode* CrossLinking::CrosslinkerNode::Clone() const
 {
-  CROSSLINKING::CrosslinkerNode* newnode = new CROSSLINKING::CrosslinkerNode(*this);
+  CrossLinking::CrosslinkerNode* newnode = new CrossLinking::CrosslinkerNode(*this);
   return newnode;
 }
 
 /*----------------------------------------------------------------------------*
  |  << operator                                                eichinger 10/16|
  *----------------------------------------------------------------------------*/
-std::ostream& operator<<(std::ostream& os, const CROSSLINKING::CrosslinkerNode& crosslinker_node)
+std::ostream& operator<<(std::ostream& os, const CrossLinking::CrosslinkerNode& crosslinker_node)
 {
   crosslinker_node.Print(os);
   return os;
@@ -121,11 +122,11 @@ std::ostream& operator<<(std::ostream& os, const CROSSLINKING::CrosslinkerNode& 
 /*----------------------------------------------------------------------------*
  |  print this CrossslinkerNode (public)                       eichinger 10/16|
  *----------------------------------------------------------------------------*/
-void CROSSLINKING::CrosslinkerNode::Print(std::ostream& os) const
+void CrossLinking::CrosslinkerNode::Print(std::ostream& os) const
 {
   // Print id and coordinates
   os << "Crosslinker ";
-  CORE::Nodes::Node::Print(os);
+  Core::Nodes::Node::Print(os);
 
 
   return;
@@ -135,16 +136,16 @@ void CROSSLINKING::CrosslinkerNode::Print(std::ostream& os) const
  |  Pack data                                                        (public) |
  |                                                             eichinger 10/16|
  *----------------------------------------------------------------------------*/
-void CROSSLINKING::CrosslinkerNode::Pack(CORE::COMM::PackBuffer& data) const
+void CrossLinking::CrosslinkerNode::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data, type);
-  // add base class CORE::Nodes::Node
-  CORE::Nodes::Node::Pack(data);
+  // add base class Core::Nodes::Node
+  Core::Nodes::Node::Pack(data);
 
   // add material
   bool hasmat = (mat_ != Teuchos::null);
@@ -158,16 +159,16 @@ void CROSSLINKING::CrosslinkerNode::Pack(CORE::COMM::PackBuffer& data) const
  |  Unpack data                                                      (public) |
  |                                                             eichinger 10/16|
  *----------------------------------------------------------------------------*/
-void CROSSLINKING::CrosslinkerNode::Unpack(const std::vector<char>& data)
+void CrossLinking::CrosslinkerNode::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
-  // extract base class CORE::Nodes::Node
+  // extract base class Core::Nodes::Node
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
-  CORE::Nodes::Node::Unpack(basedata);
+  Core::Nodes::Node::Unpack(basedata);
 
   // mat
   bool hasmat = ExtractInt(position, data);
@@ -175,8 +176,8 @@ void CROSSLINKING::CrosslinkerNode::Unpack(const std::vector<char>& data)
   {
     std::vector<char> tmp;
     ExtractfromPack(position, data, tmp);
-    CORE::COMM::ParObject* o = CORE::COMM::Factory(tmp);
-    MAT::CrosslinkerMat* mat = dynamic_cast<MAT::CrosslinkerMat*>(o);
+    Core::Communication::ParObject* o = Core::Communication::Factory(tmp);
+    Mat::CrosslinkerMat* mat = dynamic_cast<Mat::CrosslinkerMat*>(o);
     if (mat == nullptr) FOUR_C_THROW("failed to unpack material");
     // unpack material
     mat_ = Teuchos::rcp(mat);
@@ -194,11 +195,11 @@ void CROSSLINKING::CrosslinkerNode::Unpack(const std::vector<char>& data)
 ///*----------------------------------------------------------------------------*
 // |  Initialize data container                                  eichinger 10/16|
 // *----------------------------------------------------------------------------*/
-// void CROSSLINKING::CrosslinkerNode::initialize_data_container()
+// void CrossLinking::CrosslinkerNode::initialize_data_container()
 //{
 //  // only initialize if not yet done
 //  if (cldata_ ==Teuchos::null)
-//    cldata_ = Teuchos::rcp(new CROSSLINKING::CrosslinkerNodeDataContainer());
+//    cldata_ = Teuchos::rcp(new CrossLinking::CrosslinkerNodeDataContainer());
 //
 //  return;
 //}
@@ -206,10 +207,10 @@ void CROSSLINKING::CrosslinkerNode::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------------*
  |  create material class (public)                             eichinger 10/16|
  *---------------------------------------------------------------------------*/
-void CROSSLINKING::CrosslinkerNode::SetMaterial(int const matnum)
+void CrossLinking::CrosslinkerNode::SetMaterial(int const matnum)
 {
-  Teuchos::RCP<MAT::CrosslinkerMat> mat =
-      Teuchos::rcp_dynamic_cast<MAT::CrosslinkerMat>(MAT::Factory(matnum));
+  Teuchos::RCP<Mat::CrosslinkerMat> mat =
+      Teuchos::rcp_dynamic_cast<Mat::CrosslinkerMat>(Mat::Factory(matnum));
   if (mat == Teuchos::null) FOUR_C_THROW("Invalid material given to crosslinker node. \n");
   mat_ = mat;
 }
@@ -217,9 +218,9 @@ void CROSSLINKING::CrosslinkerNode::SetMaterial(int const matnum)
 /*----------------------------------------------------------------------------*
  |  create material class (public)                             eichinger 10/16|
  *---------------------------------------------------------------------------*/
-void CROSSLINKING::CrosslinkerNode::SetMaterial(Teuchos::RCP<CORE::MAT::Material> material)
+void CrossLinking::CrosslinkerNode::SetMaterial(Teuchos::RCP<Core::Mat::Material> material)
 {
-  Teuchos::RCP<MAT::CrosslinkerMat> mat = Teuchos::rcp_dynamic_cast<MAT::CrosslinkerMat>(material);
+  Teuchos::RCP<Mat::CrosslinkerMat> mat = Teuchos::rcp_dynamic_cast<Mat::CrosslinkerMat>(material);
   if (mat == Teuchos::null) FOUR_C_THROW("Invalid material given to crosslinker node. \n");
   mat_ = mat;
 }
@@ -227,7 +228,7 @@ void CROSSLINKING::CrosslinkerNode::SetMaterial(Teuchos::RCP<CORE::MAT::Material
 ///*----------------------------------------------------------------------------*
 // |  Reset data container                                       eichinger 10/16|
 // *----------------------------------------------------------------------------*/
-// void CROSSLINKING::CrosslinkerNode::ResetDataContainer()
+// void CrossLinking::CrosslinkerNode::ResetDataContainer()
 //{
 //  // reset to Teuchos::null
 //  cldata_  = Teuchos::null;

@@ -24,12 +24,12 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::Nodes
+namespace Core::Nodes
 {
   class Node;
 }
@@ -44,20 +44,20 @@ namespace FLD
   );
 
   //! Is given node a slave node of rotationally symmetric periodic boundary conditions?
-  bool IsSlaveNodeOfRotSymPBC(const CORE::Nodes::Node* node,  ///< the node
+  bool IsSlaveNodeOfRotSymPBC(const Core::Nodes::Node* node,  ///< the node
       double& rotangle  ///< the angle of slave plane rotation (RAD)
   );
 
   //! Access angle of rotation and convert it to RAD
   inline double GetRotAngleFromCondition(
-      const CORE::Conditions::Condition* cond  ///< pointer to desired periodic boundary condition
+      const Core::Conditions::Condition* cond  ///< pointer to desired periodic boundary condition
   );
 
   //! Get all relevant slave nodes of rotationally symmetric periodic bc's
   void GetRelevantSlaveNodesOfRotSymPBC(
       std::map<int, double>&
           pbcslavenodemap,  ///< map to be filled with node gids and rotation angles
-      Teuchos::RCP<DRT::Discretization> dis);  ///< discretization
+      Teuchos::RCP<Discret::Discretization> dis);  ///< discretization
 
 }  // namespace FLD
 

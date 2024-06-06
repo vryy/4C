@@ -15,142 +15,142 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-template class CONTACT::AUG::Integrator<2, CORE::FE::CellType::line2, CORE::FE::CellType::line2,
-    CONTACT::AUG::DebugCompleteIntPolicy<2, CORE::FE::CellType::line2, CORE::FE::CellType::line2>>;
-template class CONTACT::AUG::Integrator<2, CORE::FE::CellType::line2, CORE::FE::CellType::line2,
-    CONTACT::AUG::DebugIncompleteIntPolicy<2, CORE::FE::CellType::line2,
-        CORE::FE::CellType::line2>>;
-template class CONTACT::AUG::Integrator<2, CORE::FE::CellType::line2, CORE::FE::CellType::nurbs2,
-    CONTACT::AUG::DebugCompleteIntPolicy<2, CORE::FE::CellType::line2, CORE::FE::CellType::nurbs2>>;
-template class CONTACT::AUG::Integrator<2, CORE::FE::CellType::line2, CORE::FE::CellType::nurbs2,
-    CONTACT::AUG::DebugIncompleteIntPolicy<2, CORE::FE::CellType::line2,
-        CORE::FE::CellType::nurbs2>>;
-template class CONTACT::AUG::Integrator<2, CORE::FE::CellType::line2, CORE::FE::CellType::nurbs3,
-    CONTACT::AUG::DebugCompleteIntPolicy<2, CORE::FE::CellType::line2, CORE::FE::CellType::nurbs3>>;
-template class CONTACT::AUG::Integrator<2, CORE::FE::CellType::line2, CORE::FE::CellType::nurbs3,
-    CONTACT::AUG::DebugIncompleteIntPolicy<2, CORE::FE::CellType::line2,
-        CORE::FE::CellType::nurbs3>>;
+template class CONTACT::Aug::Integrator<2, Core::FE::CellType::line2, Core::FE::CellType::line2,
+    CONTACT::Aug::DebugCompleteIntPolicy<2, Core::FE::CellType::line2, Core::FE::CellType::line2>>;
+template class CONTACT::Aug::Integrator<2, Core::FE::CellType::line2, Core::FE::CellType::line2,
+    CONTACT::Aug::DebugIncompleteIntPolicy<2, Core::FE::CellType::line2,
+        Core::FE::CellType::line2>>;
+template class CONTACT::Aug::Integrator<2, Core::FE::CellType::line2, Core::FE::CellType::nurbs2,
+    CONTACT::Aug::DebugCompleteIntPolicy<2, Core::FE::CellType::line2, Core::FE::CellType::nurbs2>>;
+template class CONTACT::Aug::Integrator<2, Core::FE::CellType::line2, Core::FE::CellType::nurbs2,
+    CONTACT::Aug::DebugIncompleteIntPolicy<2, Core::FE::CellType::line2,
+        Core::FE::CellType::nurbs2>>;
+template class CONTACT::Aug::Integrator<2, Core::FE::CellType::line2, Core::FE::CellType::nurbs3,
+    CONTACT::Aug::DebugCompleteIntPolicy<2, Core::FE::CellType::line2, Core::FE::CellType::nurbs3>>;
+template class CONTACT::Aug::Integrator<2, Core::FE::CellType::line2, Core::FE::CellType::nurbs3,
+    CONTACT::Aug::DebugIncompleteIntPolicy<2, Core::FE::CellType::line2,
+        Core::FE::CellType::nurbs3>>;
 
-template class CONTACT::AUG::Integrator<2, CORE::FE::CellType::nurbs2, CORE::FE::CellType::nurbs2,
-    CONTACT::AUG::DebugCompleteIntPolicy<2, CORE::FE::CellType::nurbs2,
-        CORE::FE::CellType::nurbs2>>;
-template class CONTACT::AUG::Integrator<2, CORE::FE::CellType::nurbs2, CORE::FE::CellType::nurbs2,
-    CONTACT::AUG::DebugIncompleteIntPolicy<2, CORE::FE::CellType::nurbs2,
-        CORE::FE::CellType::nurbs2>>;
-template class CONTACT::AUG::Integrator<2, CORE::FE::CellType::nurbs2, CORE::FE::CellType::line2,
-    CONTACT::AUG::DebugCompleteIntPolicy<2, CORE::FE::CellType::nurbs2, CORE::FE::CellType::line2>>;
-template class CONTACT::AUG::Integrator<2, CORE::FE::CellType::nurbs2, CORE::FE::CellType::line2,
-    CONTACT::AUG::DebugIncompleteIntPolicy<2, CORE::FE::CellType::nurbs2,
-        CORE::FE::CellType::line2>>;
-template class CONTACT::AUG::Integrator<2, CORE::FE::CellType::nurbs2, CORE::FE::CellType::nurbs3,
-    CONTACT::AUG::DebugCompleteIntPolicy<2, CORE::FE::CellType::nurbs2,
-        CORE::FE::CellType::nurbs3>>;
-template class CONTACT::AUG::Integrator<2, CORE::FE::CellType::nurbs2, CORE::FE::CellType::nurbs3,
-    CONTACT::AUG::DebugIncompleteIntPolicy<2, CORE::FE::CellType::nurbs2,
-        CORE::FE::CellType::nurbs3>>;
+template class CONTACT::Aug::Integrator<2, Core::FE::CellType::nurbs2, Core::FE::CellType::nurbs2,
+    CONTACT::Aug::DebugCompleteIntPolicy<2, Core::FE::CellType::nurbs2,
+        Core::FE::CellType::nurbs2>>;
+template class CONTACT::Aug::Integrator<2, Core::FE::CellType::nurbs2, Core::FE::CellType::nurbs2,
+    CONTACT::Aug::DebugIncompleteIntPolicy<2, Core::FE::CellType::nurbs2,
+        Core::FE::CellType::nurbs2>>;
+template class CONTACT::Aug::Integrator<2, Core::FE::CellType::nurbs2, Core::FE::CellType::line2,
+    CONTACT::Aug::DebugCompleteIntPolicy<2, Core::FE::CellType::nurbs2, Core::FE::CellType::line2>>;
+template class CONTACT::Aug::Integrator<2, Core::FE::CellType::nurbs2, Core::FE::CellType::line2,
+    CONTACT::Aug::DebugIncompleteIntPolicy<2, Core::FE::CellType::nurbs2,
+        Core::FE::CellType::line2>>;
+template class CONTACT::Aug::Integrator<2, Core::FE::CellType::nurbs2, Core::FE::CellType::nurbs3,
+    CONTACT::Aug::DebugCompleteIntPolicy<2, Core::FE::CellType::nurbs2,
+        Core::FE::CellType::nurbs3>>;
+template class CONTACT::Aug::Integrator<2, Core::FE::CellType::nurbs2, Core::FE::CellType::nurbs3,
+    CONTACT::Aug::DebugIncompleteIntPolicy<2, Core::FE::CellType::nurbs2,
+        Core::FE::CellType::nurbs3>>;
 
-template class CONTACT::AUG::Integrator<2, CORE::FE::CellType::nurbs3, CORE::FE::CellType::nurbs3,
-    CONTACT::AUG::DebugCompleteIntPolicy<2, CORE::FE::CellType::nurbs3,
-        CORE::FE::CellType::nurbs3>>;
-template class CONTACT::AUG::Integrator<2, CORE::FE::CellType::nurbs3, CORE::FE::CellType::nurbs3,
-    CONTACT::AUG::DebugIncompleteIntPolicy<2, CORE::FE::CellType::nurbs3,
-        CORE::FE::CellType::nurbs3>>;
-template class CONTACT::AUG::Integrator<2, CORE::FE::CellType::nurbs3, CORE::FE::CellType::line2,
-    CONTACT::AUG::DebugCompleteIntPolicy<2, CORE::FE::CellType::nurbs3, CORE::FE::CellType::line2>>;
-template class CONTACT::AUG::Integrator<2, CORE::FE::CellType::nurbs3, CORE::FE::CellType::line2,
-    CONTACT::AUG::DebugIncompleteIntPolicy<2, CORE::FE::CellType::nurbs3,
-        CORE::FE::CellType::line2>>;
-template class CONTACT::AUG::Integrator<2, CORE::FE::CellType::nurbs3, CORE::FE::CellType::nurbs2,
-    CONTACT::AUG::DebugCompleteIntPolicy<2, CORE::FE::CellType::nurbs3,
-        CORE::FE::CellType::nurbs2>>;
-template class CONTACT::AUG::Integrator<2, CORE::FE::CellType::nurbs3, CORE::FE::CellType::nurbs2,
-    CONTACT::AUG::DebugIncompleteIntPolicy<2, CORE::FE::CellType::nurbs3,
-        CORE::FE::CellType::nurbs2>>;
+template class CONTACT::Aug::Integrator<2, Core::FE::CellType::nurbs3, Core::FE::CellType::nurbs3,
+    CONTACT::Aug::DebugCompleteIntPolicy<2, Core::FE::CellType::nurbs3,
+        Core::FE::CellType::nurbs3>>;
+template class CONTACT::Aug::Integrator<2, Core::FE::CellType::nurbs3, Core::FE::CellType::nurbs3,
+    CONTACT::Aug::DebugIncompleteIntPolicy<2, Core::FE::CellType::nurbs3,
+        Core::FE::CellType::nurbs3>>;
+template class CONTACT::Aug::Integrator<2, Core::FE::CellType::nurbs3, Core::FE::CellType::line2,
+    CONTACT::Aug::DebugCompleteIntPolicy<2, Core::FE::CellType::nurbs3, Core::FE::CellType::line2>>;
+template class CONTACT::Aug::Integrator<2, Core::FE::CellType::nurbs3, Core::FE::CellType::line2,
+    CONTACT::Aug::DebugIncompleteIntPolicy<2, Core::FE::CellType::nurbs3,
+        Core::FE::CellType::line2>>;
+template class CONTACT::Aug::Integrator<2, Core::FE::CellType::nurbs3, Core::FE::CellType::nurbs2,
+    CONTACT::Aug::DebugCompleteIntPolicy<2, Core::FE::CellType::nurbs3,
+        Core::FE::CellType::nurbs2>>;
+template class CONTACT::Aug::Integrator<2, Core::FE::CellType::nurbs3, Core::FE::CellType::nurbs2,
+    CONTACT::Aug::DebugIncompleteIntPolicy<2, Core::FE::CellType::nurbs3,
+        Core::FE::CellType::nurbs2>>;
 
-template class CONTACT::AUG::Integrator<3, CORE::FE::CellType::quad4, CORE::FE::CellType::quad4,
-    CONTACT::AUG::DebugCompleteIntPolicy<3, CORE::FE::CellType::quad4, CORE::FE::CellType::quad4>>;
-template class CONTACT::AUG::Integrator<3, CORE::FE::CellType::quad4, CORE::FE::CellType::quad4,
-    CONTACT::AUG::DebugIncompleteIntPolicy<3, CORE::FE::CellType::quad4,
-        CORE::FE::CellType::quad4>>;
-template class CONTACT::AUG::Integrator<3, CORE::FE::CellType::quad4, CORE::FE::CellType::tri3,
-    CONTACT::AUG::DebugCompleteIntPolicy<3, CORE::FE::CellType::quad4, CORE::FE::CellType::tri3>>;
-template class CONTACT::AUG::Integrator<3, CORE::FE::CellType::quad4, CORE::FE::CellType::tri3,
-    CONTACT::AUG::DebugIncompleteIntPolicy<3, CORE::FE::CellType::quad4, CORE::FE::CellType::tri3>>;
-template class CONTACT::AUG::Integrator<3, CORE::FE::CellType::quad4, CORE::FE::CellType::nurbs4,
-    CONTACT::AUG::DebugCompleteIntPolicy<3, CORE::FE::CellType::quad4, CORE::FE::CellType::nurbs4>>;
-template class CONTACT::AUG::Integrator<3, CORE::FE::CellType::quad4, CORE::FE::CellType::nurbs4,
-    CONTACT::AUG::DebugIncompleteIntPolicy<3, CORE::FE::CellType::quad4,
-        CORE::FE::CellType::nurbs4>>;
-template class CONTACT::AUG::Integrator<3, CORE::FE::CellType::quad4, CORE::FE::CellType::nurbs9,
-    CONTACT::AUG::DebugCompleteIntPolicy<3, CORE::FE::CellType::quad4, CORE::FE::CellType::nurbs9>>;
-template class CONTACT::AUG::Integrator<3, CORE::FE::CellType::quad4, CORE::FE::CellType::nurbs9,
-    CONTACT::AUG::DebugIncompleteIntPolicy<3, CORE::FE::CellType::quad4,
-        CORE::FE::CellType::nurbs9>>;
+template class CONTACT::Aug::Integrator<3, Core::FE::CellType::quad4, Core::FE::CellType::quad4,
+    CONTACT::Aug::DebugCompleteIntPolicy<3, Core::FE::CellType::quad4, Core::FE::CellType::quad4>>;
+template class CONTACT::Aug::Integrator<3, Core::FE::CellType::quad4, Core::FE::CellType::quad4,
+    CONTACT::Aug::DebugIncompleteIntPolicy<3, Core::FE::CellType::quad4,
+        Core::FE::CellType::quad4>>;
+template class CONTACT::Aug::Integrator<3, Core::FE::CellType::quad4, Core::FE::CellType::tri3,
+    CONTACT::Aug::DebugCompleteIntPolicy<3, Core::FE::CellType::quad4, Core::FE::CellType::tri3>>;
+template class CONTACT::Aug::Integrator<3, Core::FE::CellType::quad4, Core::FE::CellType::tri3,
+    CONTACT::Aug::DebugIncompleteIntPolicy<3, Core::FE::CellType::quad4, Core::FE::CellType::tri3>>;
+template class CONTACT::Aug::Integrator<3, Core::FE::CellType::quad4, Core::FE::CellType::nurbs4,
+    CONTACT::Aug::DebugCompleteIntPolicy<3, Core::FE::CellType::quad4, Core::FE::CellType::nurbs4>>;
+template class CONTACT::Aug::Integrator<3, Core::FE::CellType::quad4, Core::FE::CellType::nurbs4,
+    CONTACT::Aug::DebugIncompleteIntPolicy<3, Core::FE::CellType::quad4,
+        Core::FE::CellType::nurbs4>>;
+template class CONTACT::Aug::Integrator<3, Core::FE::CellType::quad4, Core::FE::CellType::nurbs9,
+    CONTACT::Aug::DebugCompleteIntPolicy<3, Core::FE::CellType::quad4, Core::FE::CellType::nurbs9>>;
+template class CONTACT::Aug::Integrator<3, Core::FE::CellType::quad4, Core::FE::CellType::nurbs9,
+    CONTACT::Aug::DebugIncompleteIntPolicy<3, Core::FE::CellType::quad4,
+        Core::FE::CellType::nurbs9>>;
 
-template class CONTACT::AUG::Integrator<3, CORE::FE::CellType::tri3, CORE::FE::CellType::tri3,
-    CONTACT::AUG::DebugCompleteIntPolicy<3, CORE::FE::CellType::tri3, CORE::FE::CellType::tri3>>;
-template class CONTACT::AUG::Integrator<3, CORE::FE::CellType::tri3, CORE::FE::CellType::tri3,
-    CONTACT::AUG::DebugIncompleteIntPolicy<3, CORE::FE::CellType::tri3, CORE::FE::CellType::tri3>>;
-template class CONTACT::AUG::Integrator<3, CORE::FE::CellType::tri3, CORE::FE::CellType::quad4,
-    CONTACT::AUG::DebugCompleteIntPolicy<3, CORE::FE::CellType::tri3, CORE::FE::CellType::quad4>>;
-template class CONTACT::AUG::Integrator<3, CORE::FE::CellType::tri3, CORE::FE::CellType::quad4,
-    CONTACT::AUG::DebugIncompleteIntPolicy<3, CORE::FE::CellType::tri3, CORE::FE::CellType::quad4>>;
-template class CONTACT::AUG::Integrator<3, CORE::FE::CellType::tri3, CORE::FE::CellType::nurbs4,
-    CONTACT::AUG::DebugCompleteIntPolicy<3, CORE::FE::CellType::tri3, CORE::FE::CellType::nurbs4>>;
-template class CONTACT::AUG::Integrator<3, CORE::FE::CellType::tri3, CORE::FE::CellType::nurbs4,
-    CONTACT::AUG::DebugIncompleteIntPolicy<3, CORE::FE::CellType::tri3,
-        CORE::FE::CellType::nurbs4>>;
-template class CONTACT::AUG::Integrator<3, CORE::FE::CellType::tri3, CORE::FE::CellType::nurbs9,
-    CONTACT::AUG::DebugCompleteIntPolicy<3, CORE::FE::CellType::tri3, CORE::FE::CellType::nurbs9>>;
-template class CONTACT::AUG::Integrator<3, CORE::FE::CellType::tri3, CORE::FE::CellType::nurbs9,
-    CONTACT::AUG::DebugIncompleteIntPolicy<3, CORE::FE::CellType::tri3,
-        CORE::FE::CellType::nurbs9>>;
+template class CONTACT::Aug::Integrator<3, Core::FE::CellType::tri3, Core::FE::CellType::tri3,
+    CONTACT::Aug::DebugCompleteIntPolicy<3, Core::FE::CellType::tri3, Core::FE::CellType::tri3>>;
+template class CONTACT::Aug::Integrator<3, Core::FE::CellType::tri3, Core::FE::CellType::tri3,
+    CONTACT::Aug::DebugIncompleteIntPolicy<3, Core::FE::CellType::tri3, Core::FE::CellType::tri3>>;
+template class CONTACT::Aug::Integrator<3, Core::FE::CellType::tri3, Core::FE::CellType::quad4,
+    CONTACT::Aug::DebugCompleteIntPolicy<3, Core::FE::CellType::tri3, Core::FE::CellType::quad4>>;
+template class CONTACT::Aug::Integrator<3, Core::FE::CellType::tri3, Core::FE::CellType::quad4,
+    CONTACT::Aug::DebugIncompleteIntPolicy<3, Core::FE::CellType::tri3, Core::FE::CellType::quad4>>;
+template class CONTACT::Aug::Integrator<3, Core::FE::CellType::tri3, Core::FE::CellType::nurbs4,
+    CONTACT::Aug::DebugCompleteIntPolicy<3, Core::FE::CellType::tri3, Core::FE::CellType::nurbs4>>;
+template class CONTACT::Aug::Integrator<3, Core::FE::CellType::tri3, Core::FE::CellType::nurbs4,
+    CONTACT::Aug::DebugIncompleteIntPolicy<3, Core::FE::CellType::tri3,
+        Core::FE::CellType::nurbs4>>;
+template class CONTACT::Aug::Integrator<3, Core::FE::CellType::tri3, Core::FE::CellType::nurbs9,
+    CONTACT::Aug::DebugCompleteIntPolicy<3, Core::FE::CellType::tri3, Core::FE::CellType::nurbs9>>;
+template class CONTACT::Aug::Integrator<3, Core::FE::CellType::tri3, Core::FE::CellType::nurbs9,
+    CONTACT::Aug::DebugIncompleteIntPolicy<3, Core::FE::CellType::tri3,
+        Core::FE::CellType::nurbs9>>;
 
-template class CONTACT::AUG::Integrator<3, CORE::FE::CellType::nurbs4, CORE::FE::CellType::nurbs4,
-    CONTACT::AUG::DebugCompleteIntPolicy<3, CORE::FE::CellType::nurbs4,
-        CORE::FE::CellType::nurbs4>>;
-template class CONTACT::AUG::Integrator<3, CORE::FE::CellType::nurbs4, CORE::FE::CellType::nurbs4,
-    CONTACT::AUG::DebugIncompleteIntPolicy<3, CORE::FE::CellType::nurbs4,
-        CORE::FE::CellType::nurbs4>>;
-template class CONTACT::AUG::Integrator<3, CORE::FE::CellType::nurbs4, CORE::FE::CellType::tri3,
-    CONTACT::AUG::DebugCompleteIntPolicy<3, CORE::FE::CellType::nurbs4, CORE::FE::CellType::tri3>>;
-template class CONTACT::AUG::Integrator<3, CORE::FE::CellType::nurbs4, CORE::FE::CellType::tri3,
-    CONTACT::AUG::DebugIncompleteIntPolicy<3, CORE::FE::CellType::nurbs4,
-        CORE::FE::CellType::tri3>>;
-template class CONTACT::AUG::Integrator<3, CORE::FE::CellType::nurbs4, CORE::FE::CellType::quad4,
-    CONTACT::AUG::DebugCompleteIntPolicy<3, CORE::FE::CellType::nurbs4, CORE::FE::CellType::quad4>>;
-template class CONTACT::AUG::Integrator<3, CORE::FE::CellType::nurbs4, CORE::FE::CellType::quad4,
-    CONTACT::AUG::DebugIncompleteIntPolicy<3, CORE::FE::CellType::nurbs4,
-        CORE::FE::CellType::quad4>>;
-template class CONTACT::AUG::Integrator<3, CORE::FE::CellType::nurbs4, CORE::FE::CellType::nurbs9,
-    CONTACT::AUG::DebugCompleteIntPolicy<3, CORE::FE::CellType::nurbs4,
-        CORE::FE::CellType::nurbs9>>;
-template class CONTACT::AUG::Integrator<3, CORE::FE::CellType::nurbs4, CORE::FE::CellType::nurbs9,
-    CONTACT::AUG::DebugIncompleteIntPolicy<3, CORE::FE::CellType::nurbs4,
-        CORE::FE::CellType::nurbs9>>;
+template class CONTACT::Aug::Integrator<3, Core::FE::CellType::nurbs4, Core::FE::CellType::nurbs4,
+    CONTACT::Aug::DebugCompleteIntPolicy<3, Core::FE::CellType::nurbs4,
+        Core::FE::CellType::nurbs4>>;
+template class CONTACT::Aug::Integrator<3, Core::FE::CellType::nurbs4, Core::FE::CellType::nurbs4,
+    CONTACT::Aug::DebugIncompleteIntPolicy<3, Core::FE::CellType::nurbs4,
+        Core::FE::CellType::nurbs4>>;
+template class CONTACT::Aug::Integrator<3, Core::FE::CellType::nurbs4, Core::FE::CellType::tri3,
+    CONTACT::Aug::DebugCompleteIntPolicy<3, Core::FE::CellType::nurbs4, Core::FE::CellType::tri3>>;
+template class CONTACT::Aug::Integrator<3, Core::FE::CellType::nurbs4, Core::FE::CellType::tri3,
+    CONTACT::Aug::DebugIncompleteIntPolicy<3, Core::FE::CellType::nurbs4,
+        Core::FE::CellType::tri3>>;
+template class CONTACT::Aug::Integrator<3, Core::FE::CellType::nurbs4, Core::FE::CellType::quad4,
+    CONTACT::Aug::DebugCompleteIntPolicy<3, Core::FE::CellType::nurbs4, Core::FE::CellType::quad4>>;
+template class CONTACT::Aug::Integrator<3, Core::FE::CellType::nurbs4, Core::FE::CellType::quad4,
+    CONTACT::Aug::DebugIncompleteIntPolicy<3, Core::FE::CellType::nurbs4,
+        Core::FE::CellType::quad4>>;
+template class CONTACT::Aug::Integrator<3, Core::FE::CellType::nurbs4, Core::FE::CellType::nurbs9,
+    CONTACT::Aug::DebugCompleteIntPolicy<3, Core::FE::CellType::nurbs4,
+        Core::FE::CellType::nurbs9>>;
+template class CONTACT::Aug::Integrator<3, Core::FE::CellType::nurbs4, Core::FE::CellType::nurbs9,
+    CONTACT::Aug::DebugIncompleteIntPolicy<3, Core::FE::CellType::nurbs4,
+        Core::FE::CellType::nurbs9>>;
 
-template class CONTACT::AUG::Integrator<3, CORE::FE::CellType::nurbs9, CORE::FE::CellType::nurbs9,
-    CONTACT::AUG::DebugCompleteIntPolicy<3, CORE::FE::CellType::nurbs9,
-        CORE::FE::CellType::nurbs9>>;
-template class CONTACT::AUG::Integrator<3, CORE::FE::CellType::nurbs9, CORE::FE::CellType::nurbs9,
-    CONTACT::AUG::DebugIncompleteIntPolicy<3, CORE::FE::CellType::nurbs9,
-        CORE::FE::CellType::nurbs9>>;
-template class CONTACT::AUG::Integrator<3, CORE::FE::CellType::nurbs9, CORE::FE::CellType::tri3,
-    CONTACT::AUG::DebugCompleteIntPolicy<3, CORE::FE::CellType::nurbs9, CORE::FE::CellType::tri3>>;
-template class CONTACT::AUG::Integrator<3, CORE::FE::CellType::nurbs9, CORE::FE::CellType::tri3,
-    CONTACT::AUG::DebugIncompleteIntPolicy<3, CORE::FE::CellType::nurbs9,
-        CORE::FE::CellType::tri3>>;
-template class CONTACT::AUG::Integrator<3, CORE::FE::CellType::nurbs9, CORE::FE::CellType::quad4,
-    CONTACT::AUG::DebugCompleteIntPolicy<3, CORE::FE::CellType::nurbs9, CORE::FE::CellType::quad4>>;
-template class CONTACT::AUG::Integrator<3, CORE::FE::CellType::nurbs9, CORE::FE::CellType::quad4,
-    CONTACT::AUG::DebugIncompleteIntPolicy<3, CORE::FE::CellType::nurbs9,
-        CORE::FE::CellType::quad4>>;
-template class CONTACT::AUG::Integrator<3, CORE::FE::CellType::nurbs9, CORE::FE::CellType::nurbs4,
-    CONTACT::AUG::DebugCompleteIntPolicy<3, CORE::FE::CellType::nurbs9,
-        CORE::FE::CellType::nurbs4>>;
-template class CONTACT::AUG::Integrator<3, CORE::FE::CellType::nurbs9, CORE::FE::CellType::nurbs4,
-    CONTACT::AUG::DebugIncompleteIntPolicy<3, CORE::FE::CellType::nurbs9,
-        CORE::FE::CellType::nurbs4>>;
+template class CONTACT::Aug::Integrator<3, Core::FE::CellType::nurbs9, Core::FE::CellType::nurbs9,
+    CONTACT::Aug::DebugCompleteIntPolicy<3, Core::FE::CellType::nurbs9,
+        Core::FE::CellType::nurbs9>>;
+template class CONTACT::Aug::Integrator<3, Core::FE::CellType::nurbs9, Core::FE::CellType::nurbs9,
+    CONTACT::Aug::DebugIncompleteIntPolicy<3, Core::FE::CellType::nurbs9,
+        Core::FE::CellType::nurbs9>>;
+template class CONTACT::Aug::Integrator<3, Core::FE::CellType::nurbs9, Core::FE::CellType::tri3,
+    CONTACT::Aug::DebugCompleteIntPolicy<3, Core::FE::CellType::nurbs9, Core::FE::CellType::tri3>>;
+template class CONTACT::Aug::Integrator<3, Core::FE::CellType::nurbs9, Core::FE::CellType::tri3,
+    CONTACT::Aug::DebugIncompleteIntPolicy<3, Core::FE::CellType::nurbs9,
+        Core::FE::CellType::tri3>>;
+template class CONTACT::Aug::Integrator<3, Core::FE::CellType::nurbs9, Core::FE::CellType::quad4,
+    CONTACT::Aug::DebugCompleteIntPolicy<3, Core::FE::CellType::nurbs9, Core::FE::CellType::quad4>>;
+template class CONTACT::Aug::Integrator<3, Core::FE::CellType::nurbs9, Core::FE::CellType::quad4,
+    CONTACT::Aug::DebugIncompleteIntPolicy<3, Core::FE::CellType::nurbs9,
+        Core::FE::CellType::quad4>>;
+template class CONTACT::Aug::Integrator<3, Core::FE::CellType::nurbs9, Core::FE::CellType::nurbs4,
+    CONTACT::Aug::DebugCompleteIntPolicy<3, Core::FE::CellType::nurbs9,
+        Core::FE::CellType::nurbs4>>;
+template class CONTACT::Aug::Integrator<3, Core::FE::CellType::nurbs9, Core::FE::CellType::nurbs4,
+    CONTACT::Aug::DebugIncompleteIntPolicy<3, Core::FE::CellType::nurbs9,
+        Core::FE::CellType::nurbs4>>;
 
 FOUR_C_NAMESPACE_CLOSE
 

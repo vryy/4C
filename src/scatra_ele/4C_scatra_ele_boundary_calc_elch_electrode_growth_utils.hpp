@@ -21,14 +21,14 @@ FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
 
-namespace DRT::ELEMENTS
+namespace Discret::ELEMENTS
 {
   class ScaTraEleParameterStd;
   class ScaTraEleParameterBoundary;
-}  // namespace DRT::ELEMENTS
+}  // namespace Discret::ELEMENTS
 
 
-namespace DRT::ELEMENTS
+namespace Discret::ELEMENTS
 {
   /*!
    * @brief Calculate the exchange mass flux density of the growth kinetics
@@ -41,7 +41,7 @@ namespace DRT::ELEMENTS
    * @return exchange mass flux density of growth reaction
    */
   double CalculateGrowthExchangeMassFluxDensity(double kr, double alpha_a, double c_el,
-      int kinetic_model, const CORE::Conditions::ConditionType& s2i_condition_type);
+      int kinetic_model, const Core::Conditions::ConditionType& s2i_condition_type);
 
   /*!
    * \brief compute the mass flux density of growth kinetics via local Newton-Raphson iteration
@@ -60,8 +60,8 @@ namespace DRT::ELEMENTS
    */
   double CalculateGrowthMassFluxDensity(double j0, double frt, double pot_ed, double pot_el,
       double epd, double resistance, double thickness, double faraday,
-      const DRT::ELEMENTS::ScaTraEleParameterStd* const scatraparameterstd,
-      const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleparamsboundary);
+      const Discret::ELEMENTS::ScaTraEleParameterStd* const scatraparameterstd,
+      const Discret::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleparamsboundary);
 
   /*!
    * \brief calculate the linearizations associated with Butler-Volmer mass flux density leading
@@ -90,7 +90,7 @@ namespace DRT::ELEMENTS
    */
   void CalculateS2IGrowthElchLinearizations(double j0, double frt, double epdderiv, double eta,
       double resistance, double regfac, double emasterphiint, double eslavephiint, double cmax,
-      const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleparamsboundary,
+      const Discret::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleparamsboundary,
       double& dj_dc_slave, double& dj_dc_master, double& dj_dpot_slave, double& dj_dpot_master);
 
   /*!
@@ -112,7 +112,7 @@ namespace DRT::ELEMENTS
    */
   double CalculateS2IElchGrowthLinearizations(double j0, double j, double frt, double resistivity,
       double resistance, double regfac, double regfacderiv, double expterm1, double expterm2,
-      const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleparamsboundary);
+      const Discret::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleparamsboundary);
 
   /*!
    * \brief compute regularization factor for lithium stripping
@@ -123,7 +123,7 @@ namespace DRT::ELEMENTS
    * @return  return the regularization factor if regularization is applied
    */
   double GetRegularizationFactor(const double thickness, const double eta,
-      const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleparamsboundary);
+      const Discret::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleparamsboundary);
 
 
   /*!
@@ -137,9 +137,9 @@ namespace DRT::ELEMENTS
    *          material if regularization is applied
    */
   double GetRegularizationFactorDerivative(const double thickness, const double eta,
-      const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleparamsboundary);
+      const Discret::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleparamsboundary);
 
-}  // namespace DRT::ELEMENTS
+}  // namespace Discret::ELEMENTS
 
 FOUR_C_NAMESPACE_CLOSE
 

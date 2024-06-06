@@ -49,7 +49,7 @@ namespace GEOMETRYPAIR
      * \brief Get the segmentation strategy.
      * @return flag for segmentation strategy.
      */
-    inline INPAR::GEOMETRYPAIR::LineTo3DStrategy GetStrategy() const { return strategy_; }
+    inline Inpar::GEOMETRYPAIR::LineTo3DStrategy GetStrategy() const { return strategy_; }
 
     /**
      * \brief Get the number of search points for segmentation search.
@@ -60,7 +60,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Get the flaf on what to do if not all Gauss points of a segment project valid.
      */
-    inline INPAR::GEOMETRYPAIR::NotAllGaussPointsProjectValidAction
+    inline Inpar::GEOMETRYPAIR::NotAllGaussPointsProjectValidAction
     get_not_all_gauss_points_project_valid_action() const
     {
       return not_all_gauss_points_project_valid_action_;
@@ -70,15 +70,15 @@ namespace GEOMETRYPAIR
      * \brief Get the Gauss rule to be used for Gauss point projection method.
      * @return Gauss rule
      */
-    inline CORE::FE::GaussRule1D get_gauss_rule() const { return gauss_rule_; };
+    inline Core::FE::GaussRule1D get_gauss_rule() const { return gauss_rule_; };
 
     /**
      * \brief Get the Gauss rule to be used for Gauss point projection method.
      * @return Gauss rule
      */
-    inline CORE::FE::IntegrationPoints1D GetGaussPoints() const
+    inline Core::FE::IntegrationPoints1D GetGaussPoints() const
     {
-      return CORE::FE::IntegrationPoints1D(gauss_rule_);
+      return Core::FE::IntegrationPoints1D(gauss_rule_);
     };
 
     /**
@@ -114,10 +114,10 @@ namespace GEOMETRYPAIR
 
    private:
     //! Strategy to be used for contact search.
-    INPAR::GEOMETRYPAIR::LineTo3DStrategy strategy_;
+    Inpar::GEOMETRYPAIR::LineTo3DStrategy strategy_;
 
     //! Gauss rule for Gauss point projection method.
-    CORE::FE::GaussRule1D gauss_rule_;
+    Core::FE::GaussRule1D gauss_rule_;
 
     //! Number of integration points in the circumferencial direction of the line cross section.
     unsigned int integration_points_circumference_;
@@ -129,7 +129,7 @@ namespace GEOMETRYPAIR
     unsigned int n_search_points_;
 
     //! What to do if not all Gauss points of a segment project valid
-    INPAR::GEOMETRYPAIR::NotAllGaussPointsProjectValidAction
+    Inpar::GEOMETRYPAIR::NotAllGaussPointsProjectValidAction
         not_all_gauss_points_project_valid_action_;
 
     //! Segment tracking vector for segmentation. We use double in this case, because otherwise the

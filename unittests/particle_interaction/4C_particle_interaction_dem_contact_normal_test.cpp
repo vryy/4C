@@ -19,7 +19,7 @@ namespace
   class DEMContactNormalLinearSpringTest : public ::testing::Test
   {
    protected:
-    std::unique_ptr<PARTICLEINTERACTION::DEMContactNormalLinearSpring> contactnormal_;
+    std::unique_ptr<ParticleInteraction::DEMContactNormalLinearSpring> contactnormal_;
 
     const double r_max_ = 1.5;
     const double v_max_ = 1.25;
@@ -38,7 +38,7 @@ namespace
 
       // create normal contact handler
       contactnormal_ =
-          std::make_unique<PARTICLEINTERACTION::DEMContactNormalLinearSpring>(params_dem);
+          std::make_unique<ParticleInteraction::DEMContactNormalLinearSpring>(params_dem);
 
       // init normal contact handler
       contactnormal_->Init();
@@ -54,8 +54,8 @@ namespace
   TEST_F(DEMContactNormalLinearSpringTest, get_normal_contact_stiffness)
   {
     const double k_normal = 2.0 / 3.0 * r_max_ * M_PI * dens_max_ *
-                            PARTICLEINTERACTION::UTILS::Pow<2>(v_max_) /
-                            PARTICLEINTERACTION::UTILS::Pow<2>(c_);
+                            ParticleInteraction::UTILS::Pow<2>(v_max_) /
+                            ParticleInteraction::UTILS::Pow<2>(c_);
 
     EXPECT_NEAR(contactnormal_->get_normal_contact_stiffness(), k_normal, 1.0e-12);
   }
@@ -63,8 +63,8 @@ namespace
   TEST_F(DEMContactNormalLinearSpringTest, GetTimeCriticalStiffness)
   {
     const double k_normal = 2.0 / 3.0 * r_max_ * M_PI * dens_max_ *
-                            PARTICLEINTERACTION::UTILS::Pow<2>(v_max_) /
-                            PARTICLEINTERACTION::UTILS::Pow<2>(c_);
+                            ParticleInteraction::UTILS::Pow<2>(v_max_) /
+                            ParticleInteraction::UTILS::Pow<2>(c_);
 
     const double k_normal_crit = k_normal;
 
@@ -93,7 +93,7 @@ namespace
     const double gap = -0.15;
 
     const double normalpotentialenergy_ref = 0.5 * contactnormal_->get_normal_contact_stiffness() *
-                                             PARTICLEINTERACTION::UTILS::Pow<2>(gap);
+                                             ParticleInteraction::UTILS::Pow<2>(gap);
 
     double normalpotentialenergy = 0.0;
     contactnormal_->normal_potential_energy(gap, normalpotentialenergy);
@@ -105,8 +105,8 @@ namespace
   class DEMContactNormalLinearSpringDampTest : public ::testing::Test
   {
    protected:
-    std::unique_ptr<PARTICLEINTERACTION::DEMContactNormalLinearSpringDamp> contactnormal_;
-    std::unique_ptr<PARTICLEINTERACTION::DEMContactNormalLinearSpringDamp> contactnormal_ezero_;
+    std::unique_ptr<ParticleInteraction::DEMContactNormalLinearSpringDamp> contactnormal_;
+    std::unique_ptr<ParticleInteraction::DEMContactNormalLinearSpringDamp> contactnormal_ezero_;
 
     const double r_max_ = 1.5;
     const double v_max_ = 1.25;
@@ -128,11 +128,11 @@ namespace
 
       // create normal contact handler
       contactnormal_ =
-          std::make_unique<PARTICLEINTERACTION::DEMContactNormalLinearSpringDamp>(params_dem);
+          std::make_unique<ParticleInteraction::DEMContactNormalLinearSpringDamp>(params_dem);
 
       params_dem.set("COEFF_RESTITUTION", 0.0);
       contactnormal_ezero_ =
-          std::make_unique<PARTICLEINTERACTION::DEMContactNormalLinearSpringDamp>(params_dem);
+          std::make_unique<ParticleInteraction::DEMContactNormalLinearSpringDamp>(params_dem);
 
       // init normal contact handler
       contactnormal_->Init();
@@ -149,8 +149,8 @@ namespace
   TEST_F(DEMContactNormalLinearSpringDampTest, get_normal_contact_stiffness)
   {
     const double k_normal = 2.0 / 3.0 * r_max_ * M_PI * dens_max_ *
-                            PARTICLEINTERACTION::UTILS::Pow<2>(v_max_) /
-                            PARTICLEINTERACTION::UTILS::Pow<2>(c_);
+                            ParticleInteraction::UTILS::Pow<2>(v_max_) /
+                            ParticleInteraction::UTILS::Pow<2>(c_);
 
     EXPECT_NEAR(contactnormal_->get_normal_contact_stiffness(), k_normal, 1.0e-12);
   }
@@ -158,8 +158,8 @@ namespace
   TEST_F(DEMContactNormalLinearSpringDampTest, GetTimeCriticalStiffness)
   {
     const double k_normal = 2.0 / 3.0 * r_max_ * M_PI * dens_max_ *
-                            PARTICLEINTERACTION::UTILS::Pow<2>(v_max_) /
-                            PARTICLEINTERACTION::UTILS::Pow<2>(c_);
+                            ParticleInteraction::UTILS::Pow<2>(v_max_) /
+                            ParticleInteraction::UTILS::Pow<2>(c_);
 
     const double k_normal_crit = k_normal;
 
@@ -177,8 +177,8 @@ namespace
     const double k_normal = contactnormal_->get_normal_contact_stiffness();
     const double lne = std::log(e_);
     const double d_normal_fac = 2.0 * std::abs(lne) *
-                                std::sqrt(k_normal / (PARTICLEINTERACTION::UTILS::Pow<2>(lne) +
-                                                         PARTICLEINTERACTION::UTILS::Pow<2>(M_PI)));
+                                std::sqrt(k_normal / (ParticleInteraction::UTILS::Pow<2>(lne) +
+                                                         ParticleInteraction::UTILS::Pow<2>(M_PI)));
     const double d_normal = d_normal_fac * std::sqrt(m_eff);
     const double normalcontactforce_ref = k_normal * gap - d_normal * v_rel_normal;
 
@@ -203,7 +203,7 @@ namespace
   class DEMContactNormalHertzTest : public ::testing::Test
   {
    protected:
-    std::unique_ptr<PARTICLEINTERACTION::DEMContactNormalHertz> contactnormal_;
+    std::unique_ptr<ParticleInteraction::DEMContactNormalHertz> contactnormal_;
 
     const double r_max_ = 1.5;
     const double v_max_ = 1.25;
@@ -221,7 +221,7 @@ namespace
       params_dem.set("NORMAL_STIFF", -1.0);
 
       // create normal contact handler
-      contactnormal_ = std::make_unique<PARTICLEINTERACTION::DEMContactNormalHertz>(params_dem);
+      contactnormal_ = std::make_unique<ParticleInteraction::DEMContactNormalHertz>(params_dem);
 
       // init normal contact handler
       contactnormal_->Init();
@@ -237,7 +237,7 @@ namespace
   TEST_F(DEMContactNormalHertzTest, get_normal_contact_stiffness)
   {
     const double k_normal = 10.0 / 3.0 * M_PI * dens_max_ *
-                            PARTICLEINTERACTION::UTILS::Pow<2>(v_max_) * std::pow(r_max_, 0.5) /
+                            ParticleInteraction::UTILS::Pow<2>(v_max_) * std::pow(r_max_, 0.5) /
                             std::pow(2.0 * c_, 2.5);
 
     EXPECT_NEAR(contactnormal_->get_normal_contact_stiffness(), k_normal, 1.0e-12);
@@ -246,8 +246,8 @@ namespace
   TEST_F(DEMContactNormalHertzTest, GetTimeCriticalStiffness)
   {
     const double k_normal_crit = 2.0 / 3.0 * r_max_ * M_PI * dens_max_ *
-                                 PARTICLEINTERACTION::UTILS::Pow<2>(v_max_) /
-                                 PARTICLEINTERACTION::UTILS::Pow<2>(c_);
+                                 ParticleInteraction::UTILS::Pow<2>(v_max_) /
+                                 ParticleInteraction::UTILS::Pow<2>(c_);
 
     EXPECT_NEAR(contactnormal_->get_critical_normal_contact_stiffness(), k_normal_crit, 1.0e-12);
   }
@@ -275,7 +275,7 @@ namespace
     const double gap = -0.15;
 
     const double normalpotentialenergy_ref = 0.4 * contactnormal_->get_normal_contact_stiffness() *
-                                             PARTICLEINTERACTION::UTILS::Pow<2>(gap) *
+                                             ParticleInteraction::UTILS::Pow<2>(gap) *
                                              std::sqrt(-gap);
 
     double normalpotentialenergy = 0.0;
@@ -287,7 +287,7 @@ namespace
   class DEMContactNormalLeeHerrmannTest : public ::testing::Test
   {
    protected:
-    std::unique_ptr<PARTICLEINTERACTION::DEMContactNormalLeeHerrmann> contactnormal_;
+    std::unique_ptr<ParticleInteraction::DEMContactNormalLeeHerrmann> contactnormal_;
 
     const double r_max_ = 1.5;
     const double v_max_ = 1.25;
@@ -308,7 +308,7 @@ namespace
 
       // create normal contact handler
       contactnormal_ =
-          std::make_unique<PARTICLEINTERACTION::DEMContactNormalLeeHerrmann>(params_dem);
+          std::make_unique<ParticleInteraction::DEMContactNormalLeeHerrmann>(params_dem);
 
       // init normal contact handler
       contactnormal_->Init();
@@ -323,7 +323,7 @@ namespace
   TEST_F(DEMContactNormalLeeHerrmannTest, get_normal_contact_stiffness)
   {
     const double k_normal = 10.0 / 3.0 * M_PI * dens_max_ *
-                            PARTICLEINTERACTION::UTILS::Pow<2>(v_max_) * std::pow(r_max_, 0.5) /
+                            ParticleInteraction::UTILS::Pow<2>(v_max_) * std::pow(r_max_, 0.5) /
                             std::pow(2.0 * c_, 2.5);
 
     EXPECT_NEAR(contactnormal_->get_normal_contact_stiffness(), k_normal, 1.0e-12);
@@ -332,8 +332,8 @@ namespace
   TEST_F(DEMContactNormalLeeHerrmannTest, GetTimeCriticalStiffness)
   {
     const double k_normal_crit = 2.0 / 3.0 * r_max_ * M_PI * dens_max_ *
-                                 PARTICLEINTERACTION::UTILS::Pow<2>(v_max_) /
-                                 PARTICLEINTERACTION::UTILS::Pow<2>(c_);
+                                 ParticleInteraction::UTILS::Pow<2>(v_max_) /
+                                 ParticleInteraction::UTILS::Pow<2>(c_);
 
     EXPECT_NEAR(contactnormal_->get_critical_normal_contact_stiffness(), k_normal_crit, 1.0e-12);
   }
@@ -360,7 +360,7 @@ namespace
   class DEMContactNormalKuwabaraKonoTest : public ::testing::Test
   {
    protected:
-    std::unique_ptr<PARTICLEINTERACTION::DEMContactNormalKuwabaraKono> contactnormal_;
+    std::unique_ptr<ParticleInteraction::DEMContactNormalKuwabaraKono> contactnormal_;
 
     const double r_max_ = 1.5;
     const double v_max_ = 1.25;
@@ -381,7 +381,7 @@ namespace
 
       // create normal contact handler
       contactnormal_ =
-          std::make_unique<PARTICLEINTERACTION::DEMContactNormalKuwabaraKono>(params_dem);
+          std::make_unique<ParticleInteraction::DEMContactNormalKuwabaraKono>(params_dem);
 
       // init normal contact handler
       contactnormal_->Init();
@@ -396,7 +396,7 @@ namespace
   TEST_F(DEMContactNormalKuwabaraKonoTest, get_normal_contact_stiffness)
   {
     const double k_normal = 10.0 / 3.0 * M_PI * dens_max_ *
-                            PARTICLEINTERACTION::UTILS::Pow<2>(v_max_) * std::pow(r_max_, 0.5) /
+                            ParticleInteraction::UTILS::Pow<2>(v_max_) * std::pow(r_max_, 0.5) /
                             std::pow(2.0 * c_, 2.5);
 
     EXPECT_NEAR(contactnormal_->get_normal_contact_stiffness(), k_normal, 1.0e-12);
@@ -405,8 +405,8 @@ namespace
   TEST_F(DEMContactNormalKuwabaraKonoTest, GetTimeCriticalStiffness)
   {
     const double k_normal_crit = 2.0 / 3.0 * r_max_ * M_PI * dens_max_ *
-                                 PARTICLEINTERACTION::UTILS::Pow<2>(v_max_) /
-                                 PARTICLEINTERACTION::UTILS::Pow<2>(c_);
+                                 ParticleInteraction::UTILS::Pow<2>(v_max_) /
+                                 ParticleInteraction::UTILS::Pow<2>(c_);
 
     EXPECT_NEAR(contactnormal_->get_critical_normal_contact_stiffness(), k_normal_crit, 1.0e-12);
   }
@@ -433,7 +433,7 @@ namespace
   class DEMContactNormalTsujiTest : public ::testing::Test
   {
    protected:
-    std::unique_ptr<PARTICLEINTERACTION::DEMContactNormalTsuji> contactnormal_;
+    std::unique_ptr<ParticleInteraction::DEMContactNormalTsuji> contactnormal_;
 
     const double r_max_ = 1.5;
     const double v_max_ = 1.25;
@@ -453,7 +453,7 @@ namespace
       params_dem.set("NORMAL_DAMP", d_normal_);
 
       // create normal contact handler
-      contactnormal_ = std::make_unique<PARTICLEINTERACTION::DEMContactNormalTsuji>(params_dem);
+      contactnormal_ = std::make_unique<ParticleInteraction::DEMContactNormalTsuji>(params_dem);
 
       // init normal contact handler
       contactnormal_->Init();
@@ -468,7 +468,7 @@ namespace
   TEST_F(DEMContactNormalTsujiTest, get_normal_contact_stiffness)
   {
     const double k_normal = 10.0 / 3.0 * M_PI * dens_max_ *
-                            PARTICLEINTERACTION::UTILS::Pow<2>(v_max_) * std::pow(r_max_, 0.5) /
+                            ParticleInteraction::UTILS::Pow<2>(v_max_) * std::pow(r_max_, 0.5) /
                             std::pow(2.0 * c_, 2.5);
 
     EXPECT_NEAR(contactnormal_->get_normal_contact_stiffness(), k_normal, 1.0e-12);
@@ -477,8 +477,8 @@ namespace
   TEST_F(DEMContactNormalTsujiTest, GetTimeCriticalStiffness)
   {
     const double k_normal_crit = 2.0 / 3.0 * r_max_ * M_PI * dens_max_ *
-                                 PARTICLEINTERACTION::UTILS::Pow<2>(v_max_) /
-                                 PARTICLEINTERACTION::UTILS::Pow<2>(c_);
+                                 ParticleInteraction::UTILS::Pow<2>(v_max_) /
+                                 ParticleInteraction::UTILS::Pow<2>(c_);
 
     EXPECT_NEAR(contactnormal_->get_critical_normal_contact_stiffness(), k_normal_crit, 1.0e-12);
   }

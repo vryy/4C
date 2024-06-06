@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
-  static void SendToNextProc(const int p, CORE::COMM::Exporter& exporter,
+  static void SendToNextProc(const int p, Core::Communication::Exporter& exporter,
       const std::vector<int>& mysize, const std::vector<char>& mydata,
       std::vector<int>& receivedsize, std::vector<char>& receiveddata)
   {
@@ -91,7 +91,7 @@ namespace
     {
       // the set gets cleared at the beginning of the ExtractfromPack routine!
       T rs;
-      CORE::COMM::ParObject::ExtractfromPack(index, receiveddata, rs);
+      Core::Communication::ParObject::ExtractfromPack(index, receiveddata, rs);
       collected_data.insert(rs.begin(), rs.end());
     }
     // sanity check
@@ -104,7 +104,7 @@ namespace
 
   template <typename T>
   static void RoundRobinLoop(
-      const Epetra_Comm& comm, CORE::COMM::PackBuffer& pack_data, T& collected_data)
+      const Epetra_Comm& comm, Core::Communication::PackBuffer& pack_data, T& collected_data)
   {
     // collect the information over all procs
     std::vector<char> mydata;
@@ -118,7 +118,7 @@ namespace
     std::vector<char> receiveddata;
 
     // create an exporter for point to point communication
-    CORE::COMM::Exporter exporter(comm);
+    Core::Communication::Exporter exporter(comm);
     const int numprocs = comm.NumProc();
 
     for (int p = 0; p < numprocs; ++p)
@@ -155,11 +155,11 @@ namespace
   template <typename T>
   static void CollectData(const Epetra_Comm& comm, const T& my_data, T& collected_data)
   {
-    CORE::COMM::PackBuffer pack_data;
+    Core::Communication::PackBuffer pack_data;
 
-    CORE::COMM::ParObject::AddtoPack(pack_data, my_data);
+    Core::Communication::ParObject::AddtoPack(pack_data, my_data);
     pack_data.StartPacking();
-    CORE::COMM::ParObject::AddtoPack(pack_data, my_data);
+    Core::Communication::ParObject::AddtoPack(pack_data, my_data);
 
     RoundRobinLoop(comm, pack_data, collected_data);
   }
@@ -174,8 +174,8 @@ STR::MODELEVALUATOR::Data::Data()
     : isinit_(false),
       issetup_(false),
       isntmaps_filled_(false),
-      ele_action_(CORE::Elements::none),
-      predict_type_(INPAR::STR::pred_vague),
+      ele_action_(Core::Elements::none),
+      predict_type_(Inpar::STR::pred_vague),
       ele_eval_error_flag_(STR::ELEMENTS::ele_error_none),
       is_tolerate_errors_(false),
       total_time_(-1.0),
@@ -183,7 +183,7 @@ STR::MODELEVALUATOR::Data::Data()
       step_length_(-1.0),
       is_default_step_(true),
       num_corr_mod_newton_(0),
-      corr_type_(NOX::NLN::CorrectionType::vague),
+      corr_type_(NOX::Nln::CorrectionType::vague),
       timintfactor_disp_(-1.0),
       timintfactor_vel_(-1.0),
       stressdata_ptr_(Teuchos::null),
@@ -209,7 +209,7 @@ STR::MODELEVALUATOR::Data::Data()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Data::Init(const Teuchos::RCP<const STR::TIMINT::Base>& timint_ptr)
+void STR::MODELEVALUATOR::Data::Init(const Teuchos::RCP<const STR::TimeInt::Base>& timint_ptr)
 {
   sdyn_ptr_ = timint_ptr->GetDataSDynPtr();
   io_ptr_ = timint_ptr->GetDataIOPtr();
@@ -225,21 +225,21 @@ void STR::MODELEVALUATOR::Data::Setup()
 {
   check_init();
 
-  const std::set<enum INPAR::STR::ModelType>& mt = sdyn_ptr_->GetModelTypes();
-  std::set<enum INPAR::STR::ModelType>::const_iterator it;
+  const std::set<enum Inpar::STR::ModelType>& mt = sdyn_ptr_->GetModelTypes();
+  std::set<enum Inpar::STR::ModelType>::const_iterator it;
   // setup model type specific data containers
   for (it = mt.begin(); it != mt.end(); ++it)
   {
     switch (*it)
     {
-      case INPAR::STR::model_contact:
+      case Inpar::STR::model_contact:
       {
         contact_data_ptr_ = Teuchos::rcp(new ContactData());
         contact_data_ptr_->Init(Teuchos::rcp(this, false));
         contact_data_ptr_->Setup();
         break;
       }
-      case INPAR::STR::model_browniandyn:
+      case Inpar::STR::model_browniandyn:
       {
         browniandyn_data_ptr_ = Teuchos::rcp(new BrownianDynData());
         browniandyn_data_ptr_->Init(Teuchos::rcp(this, false));
@@ -256,7 +256,7 @@ void STR::MODELEVALUATOR::Data::Setup()
 
   /* so far, we need the special parameter data container for beams only if
    * the applied beam elements have non-additive rotation vector DOFs */
-  if (sdyn_ptr_->HaveEleTech(INPAR::STR::EleTech::rotvec))
+  if (sdyn_ptr_->HaveEleTech(Inpar::STR::EleTech::rotvec))
   {
     beam_data_ptr_ = Teuchos::rcp(new BeamData());
     beam_data_ptr_->Init();
@@ -273,52 +273,52 @@ void STR::MODELEVALUATOR::Data::fill_norm_type_maps()
   // we have to do all this only once...
   if (isntmaps_filled_) return;
 
-  std::set<enum NOX::NLN::StatusTest::QuantityType> qtypes;
-  STR::NLN::SOLVER::CreateQuantityTypes(qtypes, *sdyn_ptr_);
+  std::set<enum NOX::Nln::StatusTest::QuantityType> qtypes;
+  STR::Nln::SOLVER::CreateQuantityTypes(qtypes, *sdyn_ptr_);
 
   // --- check if the nox nln solver is active ---------------------------------
   bool isnox = false;
-  Teuchos::RCP<const STR::NLN::SOLVER::Nox> nox_nln_ptr = Teuchos::null;
-  Teuchos::RCP<const STR::TIMINT::Implicit> timint_impl_ptr =
-      Teuchos::rcp_dynamic_cast<const STR::TIMINT::Implicit>(timint_ptr_);
+  Teuchos::RCP<const STR::Nln::SOLVER::Nox> nox_nln_ptr = Teuchos::null;
+  Teuchos::RCP<const STR::TimeInt::Implicit> timint_impl_ptr =
+      Teuchos::rcp_dynamic_cast<const STR::TimeInt::Implicit>(timint_ptr_);
   if (not timint_impl_ptr.is_null())
   {
     nox_nln_ptr =
-        Teuchos::rcp_dynamic_cast<const STR::NLN::SOLVER::Nox>(timint_impl_ptr->GetNlnSolverPtr());
+        Teuchos::rcp_dynamic_cast<const STR::Nln::SOLVER::Nox>(timint_impl_ptr->GetNlnSolverPtr());
     if (not nox_nln_ptr.is_null()) isnox = true;
   }
 
   // --- get the normtypes for the different quantities -------------------------
-  std::set<enum NOX::NLN::StatusTest::QuantityType>::const_iterator qiter;
+  std::set<enum NOX::Nln::StatusTest::QuantityType>::const_iterator qiter;
   if (isnox)
   {
     const ::NOX::StatusTest::Generic& ostatus = nox_nln_ptr->GetOStatusTest();
     for (qiter = qtypes.begin(); qiter != qtypes.end(); ++qiter)
     {
       // fill the normtype_force map
-      int inormtype = NOX::NLN::AUX::GetNormType<NOX::NLN::StatusTest::NormF>(ostatus, *qiter);
+      int inormtype = NOX::Nln::Aux::GetNormType<NOX::Nln::StatusTest::NormF>(ostatus, *qiter);
       if (inormtype != -100)
         normtype_force_[*qiter] = static_cast<::NOX::Abstract::Vector::NormType>(inormtype);
       // fill the normtype_update map
-      inormtype = NOX::NLN::AUX::GetNormType<NOX::NLN::StatusTest::NormUpdate>(ostatus, *qiter);
+      inormtype = NOX::Nln::Aux::GetNormType<NOX::Nln::StatusTest::NormUpdate>(ostatus, *qiter);
       if (inormtype != -100)
         normtype_update_[*qiter] = static_cast<::NOX::Abstract::Vector::NormType>(inormtype);
 
       // check for the root mean square test (wrms)
-      if (NOX::NLN::AUX::IsQuantity<NOX::NLN::StatusTest::NormWRMS>(ostatus, *qiter))
+      if (NOX::Nln::Aux::IsQuantity<NOX::Nln::StatusTest::NormWRMS>(ostatus, *qiter))
       {
         /* get the absolute and relative tolerances, since we have to use them
          * during the summation. */
-        double atol = NOX::NLN::AUX::GetNormWRMSClassVariable(ostatus, *qiter, "ATOL");
+        double atol = NOX::Nln::Aux::GetNormWRMSClassVariable(ostatus, *qiter, "ATOL");
         if (atol < 0.0)
           FOUR_C_THROW("The absolute wrms tolerance of the quantity %s is missing.",
-              NOX::NLN::StatusTest::QuantityType2String(*qiter).c_str());
+              NOX::Nln::StatusTest::QuantityType2String(*qiter).c_str());
         else
           atol_wrms_[*qiter] = atol;
-        double rtol = NOX::NLN::AUX::GetNormWRMSClassVariable(ostatus, *qiter, "RTOL");
+        double rtol = NOX::Nln::Aux::GetNormWRMSClassVariable(ostatus, *qiter, "RTOL");
         if (rtol < 0.0)
           FOUR_C_THROW("The relative wrms tolerance of the quantity %s is missing.",
-              NOX::NLN::StatusTest::QuantityType2String(*qiter).c_str());
+              NOX::Nln::StatusTest::QuantityType2String(*qiter).c_str());
         else
           rtol_wrms_[*qiter] = rtol;
       }
@@ -352,13 +352,13 @@ void STR::MODELEVALUATOR::Data::collect_norm_types_over_all_procs(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::Data::get_update_norm_type(
-    const enum NOX::NLN::StatusTest::QuantityType& qtype,
+    const enum NOX::Nln::StatusTest::QuantityType& qtype,
     enum ::NOX::Abstract::Vector::NormType& normtype)
 {
   fill_norm_type_maps();
 
   // check if there is a normtype for the corresponding quantity type
-  std::map<enum NOX::NLN::StatusTest::QuantityType,
+  std::map<enum NOX::Nln::StatusTest::QuantityType,
       enum ::NOX::Abstract::Vector::NormType>::const_iterator miter;
   miter = normtype_update_.find(qtype);
   if (miter == normtype_update_.end()) return false;
@@ -372,12 +372,12 @@ bool STR::MODELEVALUATOR::Data::get_update_norm_type(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::Data::get_wrms_tolerances(
-    const enum NOX::NLN::StatusTest::QuantityType& qtype, double& atol, double& rtol)
+    const enum NOX::Nln::StatusTest::QuantityType& qtype, double& atol, double& rtol)
 {
   fill_norm_type_maps();
 
   // check if there is a wrms test for the corresponding quantity type
-  std::map<enum NOX::NLN::StatusTest::QuantityType, double>::const_iterator iter;
+  std::map<enum NOX::Nln::StatusTest::QuantityType, double>::const_iterator iter;
   iter = atol_wrms_.find(qtype);
   if (iter == atol_wrms_.end()) return false;
 
@@ -391,7 +391,7 @@ bool STR::MODELEVALUATOR::Data::get_wrms_tolerances(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Data::SumIntoMyUpdateNorm(
-    const enum NOX::NLN::StatusTest::QuantityType& qtype, const int& numentries,
+    const enum NOX::Nln::StatusTest::QuantityType& qtype, const int& numentries,
     const double* my_update_values, const double* my_new_sol_values, const double& step_length,
     const int& owner)
 {
@@ -414,7 +414,7 @@ void STR::MODELEVALUATOR::Data::SumIntoMyUpdateNorm(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Data::sum_into_my_previous_sol_norm(
-    const enum NOX::NLN::StatusTest::QuantityType& qtype, const int& numentries,
+    const enum NOX::Nln::StatusTest::QuantityType& qtype, const int& numentries,
     const double* my_old_sol_values, const int& owner)
 {
   if (owner != comm_ptr_->MyPID()) return;
@@ -478,7 +478,7 @@ void STR::MODELEVALUATOR::Data::sum_into_my_norm(const int& numentries, const do
 void STR::MODELEVALUATOR::Data::ResetMyNorms(const bool& isdefaultstep)
 {
   check_init_setup();
-  std::map<enum NOX::NLN::StatusTest::QuantityType, double>::iterator it;
+  std::map<enum NOX::Nln::StatusTest::QuantityType, double>::iterator it;
   for (it = my_update_norm_.begin(); it != my_update_norm_.end(); ++it) it->second = 0.0;
   for (it = my_rms_norm_.begin(); it != my_rms_norm_.end(); ++it) it->second = 0.0;
 
@@ -488,7 +488,7 @@ void STR::MODELEVALUATOR::Data::ResetMyNorms(const bool& isdefaultstep)
     // Newton step
     for (it = my_prev_sol_norm_.begin(); it != my_prev_sol_norm_.end(); ++it) it->second = 0.0;
     // reset the dof number
-    std::map<enum NOX::NLN::StatusTest::QuantityType, std::size_t>::iterator dit;
+    std::map<enum NOX::Nln::StatusTest::QuantityType, std::size_t>::iterator dit;
     for (dit = my_dof_number_.begin(); dit != my_dof_number_.end(); ++dit) dit->second = 0;
   }
 }
@@ -516,7 +516,7 @@ bool STR::MODELEVALUATOR::Data::IsPredictorState() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum INPAR::STR::DampKind STR::MODELEVALUATOR::Data::GetDampingType() const
+enum Inpar::STR::DampKind STR::MODELEVALUATOR::Data::GetDampingType() const
 {
   check_init_setup();
   return sdyn_ptr_->GetDampingType();
@@ -614,7 +614,7 @@ const std::vector<char>& STR::MODELEVALUATOR::Data::OptQuantityData() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum INPAR::STR::StressType STR::MODELEVALUATOR::Data::GetStressOutputType() const
+enum Inpar::STR::StressType STR::MODELEVALUATOR::Data::GetStressOutputType() const
 {
   check_init_setup();
   return io_ptr_->GetStressOutputType();
@@ -622,7 +622,7 @@ enum INPAR::STR::StressType STR::MODELEVALUATOR::Data::GetStressOutputType() con
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum INPAR::STR::StrainType STR::MODELEVALUATOR::Data::GetStrainOutputType() const
+enum Inpar::STR::StrainType STR::MODELEVALUATOR::Data::GetStrainOutputType() const
 {
   check_init_setup();
   return io_ptr_->GetStrainOutputType();
@@ -630,7 +630,7 @@ enum INPAR::STR::StrainType STR::MODELEVALUATOR::Data::GetStrainOutputType() con
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum INPAR::STR::StrainType STR::MODELEVALUATOR::Data::get_plastic_strain_output_type() const
+enum Inpar::STR::StrainType STR::MODELEVALUATOR::Data::get_plastic_strain_output_type() const
 {
   check_init_setup();
   return io_ptr_->get_plastic_strain_output_type();
@@ -638,7 +638,7 @@ enum INPAR::STR::StrainType STR::MODELEVALUATOR::Data::get_plastic_strain_output
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum INPAR::STR::StressType STR::MODELEVALUATOR::Data::get_coupling_stress_output_type() const
+enum Inpar::STR::StressType STR::MODELEVALUATOR::Data::get_coupling_stress_output_type() const
 {
   check_init_setup();
   return io_ptr_->get_coupling_stress_output_type();
@@ -646,7 +646,7 @@ enum INPAR::STR::StressType STR::MODELEVALUATOR::Data::get_coupling_stress_outpu
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum INPAR::STR::OptQuantityType STR::MODELEVALUATOR::Data::get_opt_quantity_output_type() const
+enum Inpar::STR::OptQuantityType STR::MODELEVALUATOR::Data::get_opt_quantity_output_type() const
 {
   check_init_setup();
   return io_ptr_->get_opt_quantity_output_type();
@@ -735,17 +735,17 @@ int STR::MODELEVALUATOR::Data::GetNlnIter() const
   if (IsPredictor()) return 0;
 
   bool isnox = false;
-  Teuchos::RCP<const STR::NLN::SOLVER::Nox> nox_nln_ptr = Teuchos::null;
-  const STR::TIMINT::Implicit* timint_impl_ptr =
-      dynamic_cast<const STR::TIMINT::Implicit*>(&TimInt());
+  Teuchos::RCP<const STR::Nln::SOLVER::Nox> nox_nln_ptr = Teuchos::null;
+  const STR::TimeInt::Implicit* timint_impl_ptr =
+      dynamic_cast<const STR::TimeInt::Implicit*>(&TimInt());
   if (timint_impl_ptr != nullptr)
   {
-    Teuchos::RCP<const STR::NLN::SOLVER::Generic> nlnsolver_ptr =
+    Teuchos::RCP<const STR::Nln::SOLVER::Generic> nlnsolver_ptr =
         timint_impl_ptr->GetNlnSolverPtr();
     /* If we are still in the setup process we return -1. This will happen
      * for the equilibrate_initial_state() call in dynamic simulations. */
     if (nlnsolver_ptr.is_null()) return -1;
-    nox_nln_ptr = Teuchos::rcp_dynamic_cast<const STR::NLN::SOLVER::Nox>(nlnsolver_ptr);
+    nox_nln_ptr = Teuchos::rcp_dynamic_cast<const STR::Nln::SOLVER::Nox>(nlnsolver_ptr);
     if (not nox_nln_ptr.is_null()) isnox = true;
   }
   if (not isnox)

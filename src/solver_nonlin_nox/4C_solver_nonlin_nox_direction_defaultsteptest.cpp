@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::NLN::Direction::Test::VolumeChange::checkTest(
+bool NOX::Nln::Direction::Test::VolumeChange::checkTest(
     ::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp)
 {
   compute_element_volumes(dir, grp);
@@ -37,7 +37,7 @@ bool NOX::NLN::Direction::Test::VolumeChange::checkTest(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::NLN::Direction::Test::VolumeChange::initAndCheckTest(
+bool NOX::Nln::Direction::Test::VolumeChange::initAndCheckTest(
     ::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp)
 {
   my_bad_dofs_.clear();
@@ -46,7 +46,7 @@ bool NOX::NLN::Direction::Test::VolumeChange::initAndCheckTest(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::NLN::Direction::Test::VolumeChange::is_accepted()
+bool NOX::Nln::Direction::Test::VolumeChange::is_accepted()
 {
   utils_->out() << '\n'
                 << ::NOX::Utils::fill(40, '=') << "\n"
@@ -64,16 +64,16 @@ bool NOX::NLN::Direction::Test::VolumeChange::is_accepted()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Direction::Test::VolumeChange::compute_primal_direction_measures(
+void NOX::Nln::Direction::Test::VolumeChange::compute_primal_direction_measures(
     ::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp)
 {
-  NOX::NLN::Group& nln_grp = dynamic_cast<NOX::NLN::Group&>(grp);
+  NOX::Nln::Group& nln_grp = dynamic_cast<NOX::Nln::Group&>(grp);
   const ::NOX::Epetra::Vector& dir_epetra = dynamic_cast<const ::NOX::Epetra::Vector&>(dir);
 
   // range map and domain map are expected to coincide
   const Epetra_Map& rangemap = nln_grp.getJacobianRangeMap(0, 0);
   Teuchos::RCP<Epetra_Vector> primal_dir =
-      CORE::LINALG::ExtractMyVector(dir_epetra.getEpetraVector(), rangemap);
+      Core::LinAlg::ExtractMyVector(dir_epetra.getEpetraVector(), rangemap);
   ::NOX::Epetra::Vector nox_primal_dir(primal_dir, ::NOX::Epetra::Vector::CreateView);
 
   Teuchos::RCP<::NOX::Epetra::Vector> result_ptr;
@@ -88,10 +88,10 @@ void NOX::NLN::Direction::Test::VolumeChange::compute_primal_direction_measures(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-::NOX::Abstract::Group::ReturnType NOX::NLN::Direction::Test::VolumeChange::compute_element_volumes(
+::NOX::Abstract::Group::ReturnType NOX::Nln::Direction::Test::VolumeChange::compute_element_volumes(
     ::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp)
 {
-  NOX::NLN::Group& nln_grp = dynamic_cast<NOX::NLN::Group&>(grp);
+  NOX::Nln::Group& nln_grp = dynamic_cast<NOX::Nln::Group&>(grp);
 
   const ::NOX::Abstract::Group::ReturnType eval_status =
       nln_grp.compute_element_volumes(ref_ele_vols_);
@@ -104,10 +104,10 @@ void NOX::NLN::Direction::Test::VolumeChange::compute_primal_direction_measures(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Direction::Test::VolumeChange::identify_bad_elements(
+void NOX::Nln::Direction::Test::VolumeChange::identify_bad_elements(
     ::NOX::Abstract::Group& grp, int& gnew_num_bad_eles)
 {
-  NOX::NLN::Group& nln_grp = dynamic_cast<NOX::NLN::Group&>(grp);
+  NOX::Nln::Group& nln_grp = dynamic_cast<NOX::Nln::Group&>(grp);
   const Epetra_Comm& comm = ref_ele_vols_->Map().Comm();
 
   gnew_num_bad_eles = fill_my_bad_dofs(nln_grp);
@@ -121,16 +121,16 @@ void NOX::NLN::Direction::Test::VolumeChange::identify_bad_elements(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> NOX::NLN::Direction::Test::VolumeChange::getCurrentDiagonal(
+Teuchos::RCP<Epetra_Vector> NOX::Nln::Direction::Test::VolumeChange::getCurrentDiagonal(
     const ::NOX::Abstract::Group& grp) const
 {
-  return getCurrentDiagonal(dynamic_cast<const NLN::Group&>(grp));
+  return getCurrentDiagonal(dynamic_cast<const Nln::Group&>(grp));
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> NOX::NLN::Direction::Test::VolumeChange::getCurrentDiagonal(
-    const NOX::NLN::Group& grp) const
+Teuchos::RCP<Epetra_Vector> NOX::Nln::Direction::Test::VolumeChange::getCurrentDiagonal(
+    const NOX::Nln::Group& grp) const
 {
   Teuchos::RCP<Epetra_Vector> diagonal = get_empty_diagonal(grp);
   fill_diagonal_at_bad_dofs(*diagonal);
@@ -140,7 +140,7 @@ Teuchos::RCP<Epetra_Vector> NOX::NLN::Direction::Test::VolumeChange::getCurrentD
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Direction::Test::VolumeChange::fill_diagonal_at_bad_dofs(
+void NOX::Nln::Direction::Test::VolumeChange::fill_diagonal_at_bad_dofs(
     Epetra_Vector& diagonal) const
 {
   for (int i : my_bad_dofs_)
@@ -154,8 +154,8 @@ void NOX::NLN::Direction::Test::VolumeChange::fill_diagonal_at_bad_dofs(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> NOX::NLN::Direction::Test::VolumeChange::get_empty_diagonal(
-    const NOX::NLN::Group& grp) const
+Teuchos::RCP<Epetra_Vector> NOX::Nln::Direction::Test::VolumeChange::get_empty_diagonal(
+    const NOX::Nln::Group& grp) const
 {
   const Epetra_Map& jac_rmap = grp.getJacobianRangeMap(0, 0);
   Teuchos::RCP<Epetra_Vector> diagonal = Teuchos::rcp(new Epetra_Vector(jac_rmap, true));
@@ -165,7 +165,7 @@ Teuchos::RCP<Epetra_Vector> NOX::NLN::Direction::Test::VolumeChange::get_empty_d
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int NOX::NLN::Direction::Test::VolumeChange::fill_my_bad_dofs(NOX::NLN::Group& grp)
+int NOX::Nln::Direction::Test::VolumeChange::fill_my_bad_dofs(NOX::Nln::Group& grp)
 {
   const unsigned num_my_eles = ref_ele_vols_->Map().NumMyElements();
   const int* my_egids = ref_ele_vols_->Map().MyGlobalElements();
@@ -199,7 +199,7 @@ int NOX::NLN::Direction::Test::VolumeChange::fill_my_bad_dofs(NOX::NLN::Group& g
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::NLN::Direction::Test::VolumeChange::is_valid_element_volumes() const
+bool NOX::Nln::Direction::Test::VolumeChange::is_valid_element_volumes() const
 {
   const bool isvalidev = (gnum_bad_eles_ == 0);
 
@@ -213,7 +213,7 @@ bool NOX::NLN::Direction::Test::VolumeChange::is_valid_element_volumes() const
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::NLN::Direction::Test::VolumeChange::is_valid_direction_length() const
+bool NOX::Nln::Direction::Test::VolumeChange::is_valid_direction_length() const
 {
   bool isvalidlength = (dirres_ > dirdir_ and dirdir_ < dirdir_last_);
 
@@ -232,7 +232,7 @@ bool NOX::NLN::Direction::Test::VolumeChange::is_valid_direction_length() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::NLN::Direction::Test::VolumeChange::is_positive_definite() const
+bool NOX::Nln::Direction::Test::VolumeChange::is_positive_definite() const
 {
   const double fac = 10 * std::numeric_limits<double>::epsilon();
   const bool isposdef = dirres_ > fac * dirdir_;

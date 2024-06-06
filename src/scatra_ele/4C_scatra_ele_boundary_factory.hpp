@@ -19,7 +19,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
@@ -35,19 +35,19 @@ namespace DRT
       virtual ~ScaTraBoundaryFactory() = default;
 
       //! ProvideImpl
-      static ScaTraBoundaryInterface* ProvideImpl(const CORE::Elements::Element* ele,
-          const enum INPAR::SCATRA::ImplType impltype, const int numdofpernode, const int numscal,
+      static ScaTraBoundaryInterface* ProvideImpl(const Core::Elements::Element* ele,
+          const enum Inpar::ScaTra::ImplType impltype, const int numdofpernode, const int numscal,
           const std::string& disname);
 
      private:
       //! return instance of element evaluation class depending on implementation type
-      template <CORE::FE::CellType distype, int probdim>
+      template <Core::FE::CellType distype, int probdim>
       static ScaTraBoundaryInterface* define_problem_type(
-          const enum INPAR::SCATRA::ImplType impltype, const int numdofpernode, const int numscal,
+          const enum Inpar::ScaTra::ImplType impltype, const int numdofpernode, const int numscal,
           const std::string& disname);
     };  // class ScaTraBoundaryFactory
   }     // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

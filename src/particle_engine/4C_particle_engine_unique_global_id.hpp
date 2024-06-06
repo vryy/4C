@@ -29,11 +29,11 @@ FOUR_C_NAMESPACE_OPEN
  *---------------------------------------------------------------------------*/
 class RuntimeVtpWriter;
 
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationWriter;
   class DiscretizationReader;
-}  // namespace CORE::IO
+}  // namespace Core::IO
 
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
@@ -85,7 +85,7 @@ namespace PARTICLEENGINE
      *
      * \param[in] writer discretization writer
      */
-    void write_restart(std::shared_ptr<CORE::IO::DiscretizationWriter> writer) const;
+    void write_restart(std::shared_ptr<Core::IO::DiscretizationWriter> writer) const;
 
     /*!
      * \brief read restart of unique global identifier handler
@@ -94,7 +94,7 @@ namespace PARTICLEENGINE
      *
      * \param[in] reader discretization reader
      */
-    void read_restart(const std::shared_ptr<CORE::IO::DiscretizationReader> reader);
+    void read_restart(const std::shared_ptr<Core::IO::DiscretizationReader> reader);
 
     /*!
      * \brief return maximum global id

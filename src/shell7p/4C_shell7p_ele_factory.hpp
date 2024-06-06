@@ -15,7 +15,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT::ELEMENTS
+namespace Discret::ELEMENTS
 {
   // forward declaration
   class Shell7pEleCalcInterface;
@@ -28,15 +28,15 @@ namespace DRT::ELEMENTS
     Shell7pFactory() = default;
 
     static std::unique_ptr<Shell7pEleCalcInterface> provide_shell7p_calculation_interface(
-        const CORE::Elements::Element& ele, const std::set<INPAR::STR::EleTech>& eletech);
+        const Core::Elements::Element& ele, const std::set<Inpar::STR::EleTech>& eletech);
 
    private:
     //! define shell calculation instances dependent on element technology
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     static std::unique_ptr<Shell7pEleCalcInterface> define_calculation_interface_type(
-        const std::set<INPAR::STR::EleTech>& eletech);
+        const std::set<Inpar::STR::EleTech>& eletech);
   };  // class Shell7pFactory
-}  // namespace DRT::ELEMENTS
+}  // namespace Discret::ELEMENTS
 
 FOUR_C_NAMESPACE_CLOSE
 

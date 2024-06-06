@@ -28,9 +28,9 @@ Functions to catch implementation erros in debug mode
 */
 namespace
 {
-  [[maybe_unused]] bool IsUniqueInBoundaryCell(const std::vector<CORE::GEO::CUT::Point*>& points)
+  [[maybe_unused]] bool IsUniqueInBoundaryCell(const std::vector<Core::Geo::Cut::Point*>& points)
   {
-    CORE::GEO::CUT::plain_point_set pointtest;
+    Core::Geo::Cut::plain_point_set pointtest;
     pointtest.insert(points.begin(), points.end());
     return points.size() == pointtest.size();
   }
@@ -40,7 +40,7 @@ namespace
 /*-------------------------------------------------------------------------------------*
  * constructor
  *-------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::Mesh::Mesh(
+Core::Geo::Cut::Mesh::Mesh(
     Options& options, double norm, Teuchos::RCP<PointPool> pp, bool cutmesh, int myrank)
     : options_(options),
       norm_(norm),
@@ -60,28 +60,28 @@ CORE::GEO::CUT::Mesh::Mesh(
 /*-------------------------------------------------------------------------------------*
  * creates a new element, dependent on distype
  *-------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::create_element(
-    int eid, const std::vector<int>& nids, CORE::FE::CellType distype)
+Core::Geo::Cut::Element* Core::Geo::Cut::Mesh::create_element(
+    int eid, const std::vector<int>& nids, Core::FE::CellType distype)
 {
   switch (distype)
   {
-    case CORE::FE::CellType::line2:
+    case Core::FE::CellType::line2:
       return CreateLine2(eid, nids);
-    case CORE::FE::CellType::tri3:
+    case Core::FE::CellType::tri3:
       return CreateTri3(eid, nids);
-    case CORE::FE::CellType::quad4:
+    case Core::FE::CellType::quad4:
       return CreateQuad4(eid, nids);
-    case CORE::FE::CellType::hex8:
+    case Core::FE::CellType::hex8:
       return CreateHex8(eid, nids);
-    case CORE::FE::CellType::tet4:
+    case Core::FE::CellType::tet4:
       return CreateTet4(eid, nids);
-    case CORE::FE::CellType::pyramid5:
+    case Core::FE::CellType::pyramid5:
       return CreatePyramid5(eid, nids);
-    case CORE::FE::CellType::wedge6:
+    case Core::FE::CellType::wedge6:
       return CreateWedge6(eid, nids);
     default:
       FOUR_C_THROW(
-          "unsupported distype ( distype = %s )", CORE::FE::CellTypeToString(distype).c_str());
+          "unsupported distype ( distype = %s )", Core::FE::CellTypeToString(distype).c_str());
       exit(EXIT_FAILURE);
   }
   return nullptr;
@@ -91,18 +91,18 @@ CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::create_element(
 /*-------------------------------------------------------------------------------------*
  * creates a new side, dependent on distype
  *-------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::Side* CORE::GEO::CUT::Mesh::create_side(
-    int sid, const std::vector<int>& nids, CORE::FE::CellType distype)
+Core::Geo::Cut::Side* Core::Geo::Cut::Mesh::create_side(
+    int sid, const std::vector<int>& nids, Core::FE::CellType distype)
 {
   switch (distype)
   {
-    case CORE::FE::CellType::quad4:
+    case Core::FE::CellType::quad4:
       return CreateQuad4Side(sid, nids);
-    case CORE::FE::CellType::tri3:
+    case Core::FE::CellType::tri3:
       return CreateTri3Side(sid, nids);
     default:
       FOUR_C_THROW(
-          "unsupported distype ( distype = %s )", CORE::FE::CellTypeToString(distype).c_str());
+          "unsupported distype ( distype = %s )", Core::FE::CellTypeToString(distype).c_str());
       exit(EXIT_FAILURE);
   }
   return nullptr;
@@ -112,7 +112,7 @@ CORE::GEO::CUT::Side* CORE::GEO::CUT::Mesh::create_side(
 /*-------------------------------------------------------------------------------------*
  * creates a new line2 element based on element id and node ids
  *-------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::CreateLine2(int eid, const std::vector<int>& nids)
+Core::Geo::Cut::Element* Core::Geo::Cut::Mesh::CreateLine2(int eid, const std::vector<int>& nids)
 {
   const CellTopologyData* top_data = shards::getCellTopologyData<shards::Line<2>>();
   Element* e = GetElement(eid, nids, *top_data);
@@ -123,7 +123,7 @@ CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::CreateLine2(int eid, const std::v
 /*-------------------------------------------------------------------------------------*
  * creates a new tri3 element based on element id and node ids
  *-------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::CreateTri3(int eid, const std::vector<int>& nids)
+Core::Geo::Cut::Element* Core::Geo::Cut::Mesh::CreateTri3(int eid, const std::vector<int>& nids)
 {
   const CellTopologyData* top_data = shards::getCellTopologyData<shards::Triangle<3>>();
   Element* e = GetElement(eid, nids, *top_data);
@@ -134,7 +134,7 @@ CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::CreateTri3(int eid, const std::ve
 /*-------------------------------------------------------------------------------------*
  * creates a new quad4 element based on element id and node ids
  *-------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::CreateQuad4(int eid, const std::vector<int>& nids)
+Core::Geo::Cut::Element* Core::Geo::Cut::Mesh::CreateQuad4(int eid, const std::vector<int>& nids)
 {
   const CellTopologyData* top_data = shards::getCellTopologyData<shards::Quadrilateral<4>>();
   Element* e = GetElement(eid, nids, *top_data);
@@ -145,7 +145,7 @@ CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::CreateQuad4(int eid, const std::v
 /*-------------------------------------------------------------------------------------*
  * creates a new tet4 element based on element id and node ids
  *-------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::CreateTet4(int eid, const std::vector<int>& nids)
+Core::Geo::Cut::Element* Core::Geo::Cut::Mesh::CreateTet4(int eid, const std::vector<int>& nids)
 {
   const CellTopologyData* top_data = shards::getCellTopologyData<shards::Tetrahedron<4>>();
 
@@ -158,7 +158,7 @@ CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::CreateTet4(int eid, const std::ve
 /*-------------------------------------------------------------------------------------*
  * creates a new pyramid5 element based on element id and node ids
  *-------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::CreatePyramid5(int eid, const std::vector<int>& nids)
+Core::Geo::Cut::Element* Core::Geo::Cut::Mesh::CreatePyramid5(int eid, const std::vector<int>& nids)
 {
   const CellTopologyData* top_data = shards::getCellTopologyData<shards::Pyramid<5>>();
 
@@ -171,7 +171,7 @@ CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::CreatePyramid5(int eid, const std
 /*-------------------------------------------------------------------------------------*
  * creates a new wedge6 element based on element id and node ids
  *-------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::CreateWedge6(int eid, const std::vector<int>& nids)
+Core::Geo::Cut::Element* Core::Geo::Cut::Mesh::CreateWedge6(int eid, const std::vector<int>& nids)
 {
   const CellTopologyData* top_data = shards::getCellTopologyData<shards::Wedge<6>>();
 
@@ -184,7 +184,7 @@ CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::CreateWedge6(int eid, const std::
 /*-------------------------------------------------------------------------------------*
  * creates a new hex8 element based on element id and node ids
  *-------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::CreateHex8(int eid, const std::vector<int>& nids)
+Core::Geo::Cut::Element* Core::Geo::Cut::Mesh::CreateHex8(int eid, const std::vector<int>& nids)
 {
   const CellTopologyData* top_data = shards::getCellTopologyData<shards::Hexahedron<8>>();
 
@@ -197,7 +197,7 @@ CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::CreateHex8(int eid, const std::ve
 /*-------------------------------------------------------------------------------------*
  * creates a new tri3 side based on side id and node ids
  *-------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::Side* CORE::GEO::CUT::Mesh::CreateTri3Side(int sid, const std::vector<int>& nids)
+Core::Geo::Cut::Side* Core::Geo::Cut::Mesh::CreateTri3Side(int sid, const std::vector<int>& nids)
 {
   const CellTopologyData* top_data = shards::getCellTopologyData<shards::Triangle<3>>();
   return get_side(sid, nids, top_data);
@@ -207,7 +207,7 @@ CORE::GEO::CUT::Side* CORE::GEO::CUT::Mesh::CreateTri3Side(int sid, const std::v
 /*-------------------------------------------------------------------------------------*
  * creates a new quad4 side based on side id and node ids
  *-------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::Side* CORE::GEO::CUT::Mesh::CreateQuad4Side(int sid, const std::vector<int>& nids)
+Core::Geo::Cut::Side* Core::Geo::Cut::Mesh::CreateQuad4Side(int sid, const std::vector<int>& nids)
 {
   const CellTopologyData* top_data = shards::getCellTopologyData<shards::Quadrilateral<4>>();
   return get_side(sid, nids, top_data);
@@ -217,7 +217,7 @@ CORE::GEO::CUT::Side* CORE::GEO::CUT::Mesh::CreateQuad4Side(int sid, const std::
 /*-------------------------------------------------------------------------------------*
  * creates a new point, optional information about cut-edge and cut-side
  *-------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::Point* CORE::GEO::CUT::Mesh::NewPoint(
+Core::Geo::Cut::Point* Core::Geo::Cut::Mesh::NewPoint(
     const double* x, Edge* cut_edge, Side* cut_side, double tolerance, double tol_scale)
 {
   bb_->AddPoint(x);  // add the point to the mesh's bounding box
@@ -230,7 +230,7 @@ CORE::GEO::CUT::Point* CORE::GEO::CUT::Mesh::NewPoint(
 /*-------------------------------------------------------------------------------------*
  * creates a new line
  *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Mesh::NewLine(Point* p1, Point* p2, Side* cut_side1, Side* cut_side2,
+void Core::Geo::Cut::Mesh::NewLine(Point* p1, Point* p2, Side* cut_side1, Side* cut_side2,
     Element* cut_element, std::vector<Line*>* newlines)
 {
   if (p1 == p2) FOUR_C_THROW("no line between same point");
@@ -291,9 +291,9 @@ void CORE::GEO::CUT::Mesh::NewLine(Point* p1, Point* p2, Side* cut_side1, Side* 
 
               std::stringstream section_name;
               section_name << "CutPoint" << (*jt)->Id();
-              CORE::GEO::CUT::OUTPUT::GmshNewSection(file, section_name.str());
-              CORE::GEO::CUT::OUTPUT::GmshPointDump(file, *jt, (*jt)->Id(), false, nullptr);
-              CORE::GEO::CUT::OUTPUT::GmshEndSection(file, false);
+              Core::Geo::Cut::Output::GmshNewSection(file, section_name.str());
+              Core::Geo::Cut::Output::GmshPointDump(file, *jt, (*jt)->Id(), false, nullptr);
+              Core::Geo::Cut::Output::GmshEndSection(file, false);
               if ((*it) == (*jt)) file << " //Wrong point!!" << std::endl;
             }
 
@@ -305,16 +305,16 @@ void CORE::GEO::CUT::Mesh::NewLine(Point* p1, Point* p2, Side* cut_side1, Side* 
                     << std::endl;
 
 
-            CORE::GEO::CUT::OUTPUT::GmshNewSection(file, "CutSide1");
-            CORE::GEO::CUT::OUTPUT::GmshSideDump(file, cut_side1, false, nullptr);
-            CORE::GEO::CUT::OUTPUT::GmshEndSection(file, false);
-            CORE::GEO::CUT::OUTPUT::GmshNewSection(file, "CutSide2");
-            CORE::GEO::CUT::OUTPUT::GmshSideDump(file, cut_side2, false, nullptr);
-            CORE::GEO::CUT::OUTPUT::GmshEndSection(file, false);
+            Core::Geo::Cut::Output::GmshNewSection(file, "CutSide1");
+            Core::Geo::Cut::Output::GmshSideDump(file, cut_side1, false, nullptr);
+            Core::Geo::Cut::Output::GmshEndSection(file, false);
+            Core::Geo::Cut::Output::GmshNewSection(file, "CutSide2");
+            Core::Geo::Cut::Output::GmshSideDump(file, cut_side2, false, nullptr);
+            Core::Geo::Cut::Output::GmshEndSection(file, false);
 
-            CORE::GEO::CUT::OUTPUT::GmshNewSection(file, "CommonEdge");
-            CORE::GEO::CUT::OUTPUT::GmshEdgeDump(file, e, false, nullptr);
-            CORE::GEO::CUT::OUTPUT::GmshEndSection(file, true);
+            Core::Geo::Cut::Output::GmshNewSection(file, "CommonEdge");
+            Core::Geo::Cut::Output::GmshEdgeDump(file, e, false, nullptr);
+            Core::Geo::Cut::Output::GmshEndSection(file, true);
 
             // it = line_points.erase(it);
             // ++it;
@@ -338,7 +338,7 @@ void CORE::GEO::CUT::Mesh::NewLine(Point* p1, Point* p2, Side* cut_side1, Side* 
 /*-------------------------------------------------------------------------------------------------*
  * Create new line between the two given cut points that are in given two cut sides
  *-------------------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::Line* CORE::GEO::CUT::Mesh::new_line_internal(
+Core::Geo::Cut::Line* Core::Geo::Cut::Mesh::new_line_internal(
     Point* p1, Point* p2, Side* cut_side1, Side* cut_side2, Element* cut_element)
 {
   if (p1 == p2) FOUR_C_THROW("no line between same point");
@@ -363,7 +363,7 @@ CORE::GEO::CUT::Line* CORE::GEO::CUT::Mesh::new_line_internal(
 
 /*-------------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::Mesh::NewLinesBetween(const std::vector<Point*>& line, Side* cut_side1,
+bool Core::Geo::Cut::Mesh::NewLinesBetween(const std::vector<Point*>& line, Side* cut_side1,
     Side* cut_side2, Element* cut_element, std::vector<Line*>* newlines)
 {
   bool hasnewlines = false;
@@ -388,7 +388,7 @@ bool CORE::GEO::CUT::Mesh::NewLinesBetween(const std::vector<Point*>& line, Side
  * creates a new facet, consists of points, additional bool if it is a facet on a
  * cutsurface
  *-------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::Facet* CORE::GEO::CUT::Mesh::NewFacet(
+Core::Geo::Cut::Facet* Core::Geo::Cut::Mesh::NewFacet(
     const std::vector<Point*>& points, Side* side, bool cutsurface)
 {
   if (points.size() == 0) FOUR_C_THROW("empty facet");
@@ -428,7 +428,7 @@ CORE::GEO::CUT::Facet* CORE::GEO::CUT::Mesh::NewFacet(
 /*-------------------------------------------------------------------------------------*
  * creates a new volumecell, consists of facets
  *-------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::VolumeCell* CORE::GEO::CUT::Mesh::NewVolumeCell(const plain_facet_set& facets,
+Core::Geo::Cut::VolumeCell* Core::Geo::Cut::Mesh::NewVolumeCell(const plain_facet_set& facets,
     const std::map<std::pair<Point*, Point*>, plain_facet_set>& volume_lines, Element* element)
 {
   VolumeCell* c = new VolumeCell(facets, volume_lines, element);
@@ -439,13 +439,13 @@ CORE::GEO::CUT::VolumeCell* CORE::GEO::CUT::Mesh::NewVolumeCell(const plain_face
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::GEO::CUT::Point1BoundaryCell* CORE::GEO::CUT::Mesh::NewPoint1Cell(
+Core::Geo::Cut::Point1BoundaryCell* Core::Geo::Cut::Mesh::NewPoint1Cell(
     VolumeCell* volume, Facet* facet, const std::vector<Point*>& points)
 {
-  const unsigned num_nodes = CORE::FE::num_nodes<CORE::FE::CellType::point1>;
+  const unsigned num_nodes = Core::FE::num_nodes<Core::FE::CellType::point1>;
   if (points.size() != num_nodes) FOUR_C_THROW("Mismatch of point and node number!");
 
-  CORE::LINALG::SerialDenseMatrix xyz(3, 1);
+  Core::LinAlg::SerialDenseMatrix xyz(3, 1);
   points[0]->Coordinates(&xyz(0, 0));
 
   Point1BoundaryCell* bc = new Point1BoundaryCell(xyz, facet, points);
@@ -456,13 +456,13 @@ CORE::GEO::CUT::Point1BoundaryCell* CORE::GEO::CUT::Mesh::NewPoint1Cell(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::GEO::CUT::Line2BoundaryCell* CORE::GEO::CUT::Mesh::NewLine2Cell(
+Core::Geo::Cut::Line2BoundaryCell* Core::Geo::Cut::Mesh::NewLine2Cell(
     VolumeCell* volume, Facet* facet, const std::vector<Point*>& points)
 {
-  const unsigned num_nodes = CORE::FE::num_nodes<CORE::FE::CellType::line2>;
+  const unsigned num_nodes = Core::FE::num_nodes<Core::FE::CellType::line2>;
   if (points.size() != num_nodes) FOUR_C_THROW("Mismatch of point and node number!");
 
-  CORE::LINALG::SerialDenseMatrix xyze(3, num_nodes);
+  Core::LinAlg::SerialDenseMatrix xyze(3, num_nodes);
   for (unsigned i = 0; i < static_cast<unsigned>(xyze.numCols()); ++i)
   {
     points[i]->Coordinates(&xyze(0, i));
@@ -477,14 +477,14 @@ CORE::GEO::CUT::Line2BoundaryCell* CORE::GEO::CUT::Mesh::NewLine2Cell(
 /*-------------------------------------------------------------------------------------*
  * creates a new tri3 boundary cell
  *-------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::Tri3BoundaryCell* CORE::GEO::CUT::Mesh::NewTri3Cell(
+Core::Geo::Cut::Tri3BoundaryCell* Core::Geo::Cut::Mesh::NewTri3Cell(
     VolumeCell* volume, Facet* facet, const std::vector<Point*>& points)
 {
   if (points.size() != 3) FOUR_C_THROW("expect 3 points");
 
   FOUR_C_ASSERT(IsUniqueInBoundaryCell(points), "point used more than once in boundary cell");
 
-  CORE::LINALG::SerialDenseMatrix xyz(3, 3);
+  Core::LinAlg::SerialDenseMatrix xyz(3, 3);
   for (int i = 0; i < 3; ++i)
   {
     points[i]->Coordinates(&xyz(0, i));
@@ -500,14 +500,14 @@ CORE::GEO::CUT::Tri3BoundaryCell* CORE::GEO::CUT::Mesh::NewTri3Cell(
 /*-------------------------------------------------------------------------------------*
  * creates a new quad4 boundary cell
  *-------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::Quad4BoundaryCell* CORE::GEO::CUT::Mesh::NewQuad4Cell(
+Core::Geo::Cut::Quad4BoundaryCell* Core::Geo::Cut::Mesh::NewQuad4Cell(
     VolumeCell* volume, Facet* facet, const std::vector<Point*>& points)
 {
   if (points.size() != 4) FOUR_C_THROW("expect 4 points");
 
   FOUR_C_ASSERT(IsUniqueInBoundaryCell(points), "point used more than once in boundary cell");
 
-  CORE::LINALG::SerialDenseMatrix xyz(3, 4);
+  Core::LinAlg::SerialDenseMatrix xyz(3, 4);
   for (int i = 0; i < 4; ++i)
   {
     points[i]->Coordinates(&xyz(0, i));
@@ -523,13 +523,13 @@ CORE::GEO::CUT::Quad4BoundaryCell* CORE::GEO::CUT::Mesh::NewQuad4Cell(
 /*-------------------------------------------------------------------------------------*
  * creates a new ??? boundary cell
  *-------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::ArbitraryBoundaryCell* CORE::GEO::CUT::Mesh::NewArbitraryCell(VolumeCell* volume,
-    Facet* facet, const std::vector<Point*>& points, const CORE::FE::GaussIntegration& gaussRule,
-    const CORE::LINALG::Matrix<3, 1>& normal)
+Core::Geo::Cut::ArbitraryBoundaryCell* Core::Geo::Cut::Mesh::NewArbitraryCell(VolumeCell* volume,
+    Facet* facet, const std::vector<Point*>& points, const Core::FE::GaussIntegration& gaussRule,
+    const Core::LinAlg::Matrix<3, 1>& normal)
 {
   FOUR_C_ASSERT(IsUniqueInBoundaryCell(points), "point used more than once in boundary cell");
 
-  CORE::LINALG::SerialDenseMatrix xyz(3, points.size());
+  Core::LinAlg::SerialDenseMatrix xyz(3, points.size());
   for (unsigned i = 0; i < points.size(); ++i)
   {
     points[i]->Coordinates(&xyz(0, i));
@@ -543,13 +543,13 @@ CORE::GEO::CUT::ArbitraryBoundaryCell* CORE::GEO::CUT::Mesh::NewArbitraryCell(Vo
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::GEO::CUT::Line2IntegrationCell* CORE::GEO::CUT::Mesh::NewLine2Cell(
+Core::Geo::Cut::Line2IntegrationCell* Core::Geo::Cut::Mesh::NewLine2Cell(
     Point::PointPosition position, const std::vector<Point*>& points, VolumeCell* cell)
 {
-  const unsigned num_nodes = CORE::FE::num_nodes<CORE::FE::CellType::line2>;
+  const unsigned num_nodes = Core::FE::num_nodes<Core::FE::CellType::line2>;
   if (points.size() != num_nodes) FOUR_C_THROW("Mismatch of point and node number!");
 
-  CORE::LINALG::SerialDenseMatrix xyze(3, num_nodes);
+  Core::LinAlg::SerialDenseMatrix xyze(3, num_nodes);
   for (unsigned i = 0; i < static_cast<unsigned>(xyze.numCols()); ++i)
   {
     points[i]->Coordinates(&xyze(0, i));
@@ -562,13 +562,13 @@ CORE::GEO::CUT::Line2IntegrationCell* CORE::GEO::CUT::Mesh::NewLine2Cell(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::GEO::CUT::Tri3IntegrationCell* CORE::GEO::CUT::Mesh::NewTri3Cell(
+Core::Geo::Cut::Tri3IntegrationCell* Core::Geo::Cut::Mesh::NewTri3Cell(
     Point::PointPosition position, const std::vector<Point*>& points, VolumeCell* cell)
 {
-  const unsigned num_nodes = CORE::FE::num_nodes<CORE::FE::CellType::tri3>;
+  const unsigned num_nodes = Core::FE::num_nodes<Core::FE::CellType::tri3>;
   if (points.size() != num_nodes) FOUR_C_THROW("Mismatch of point and node number!");
 
-  CORE::LINALG::SerialDenseMatrix xyze(3, num_nodes);
+  Core::LinAlg::SerialDenseMatrix xyze(3, num_nodes);
   for (unsigned i = 0; i < static_cast<unsigned>(xyze.numCols()); ++i)
   {
     points[i]->Coordinates(&xyze(0, i));
@@ -581,13 +581,13 @@ CORE::GEO::CUT::Tri3IntegrationCell* CORE::GEO::CUT::Mesh::NewTri3Cell(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::GEO::CUT::Quad4IntegrationCell* CORE::GEO::CUT::Mesh::NewQuad4Cell(
+Core::Geo::Cut::Quad4IntegrationCell* Core::Geo::Cut::Mesh::NewQuad4Cell(
     Point::PointPosition position, const std::vector<Point*>& points, VolumeCell* cell)
 {
-  const unsigned num_nodes = CORE::FE::num_nodes<CORE::FE::CellType::quad4>;
+  const unsigned num_nodes = Core::FE::num_nodes<Core::FE::CellType::quad4>;
   if (points.size() != num_nodes) FOUR_C_THROW("Mismatch of point and node number!");
 
-  CORE::LINALG::SerialDenseMatrix xyze(3, num_nodes);
+  Core::LinAlg::SerialDenseMatrix xyze(3, num_nodes);
   for (unsigned i = 0; i < static_cast<unsigned>(xyze.numCols()); ++i)
   {
     points[i]->Coordinates(&xyze(0, i));
@@ -601,10 +601,10 @@ CORE::GEO::CUT::Quad4IntegrationCell* CORE::GEO::CUT::Mesh::NewQuad4Cell(
 /*-------------------------------------------------------------------------------------*
  * creates a new hex8 integration cell
  *-------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::Hex8IntegrationCell* CORE::GEO::CUT::Mesh::NewHex8Cell(
+Core::Geo::Cut::Hex8IntegrationCell* Core::Geo::Cut::Mesh::NewHex8Cell(
     Point::PointPosition position, const std::vector<Point*>& points, VolumeCell* cell)
 {
-  CORE::LINALG::SerialDenseMatrix xyz(3, points.size());
+  Core::LinAlg::SerialDenseMatrix xyz(3, points.size());
   for (unsigned i = 0; i < points.size(); ++i)
   {
     points[i]->Coordinates(&xyz(0, i));
@@ -620,11 +620,11 @@ CORE::GEO::CUT::Hex8IntegrationCell* CORE::GEO::CUT::Mesh::NewHex8Cell(
 /*-------------------------------------------------------------------------------------*
  * creates a new tet4 integration cell, based on points
  *-------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::Tet4IntegrationCell* CORE::GEO::CUT::Mesh::NewTet4Cell(
+Core::Geo::Cut::Tet4IntegrationCell* Core::Geo::Cut::Mesh::NewTet4Cell(
     Point::PointPosition position, const std::vector<Point*>& points, VolumeCell* cell)
 {
   if (points.size() != 4) FOUR_C_THROW("wrong number of cell points");
-  CORE::LINALG::SerialDenseMatrix xyz(3, points.size());
+  Core::LinAlg::SerialDenseMatrix xyz(3, points.size());
   for (unsigned i = 0; i < points.size(); ++i)
   {
     points[i]->Coordinates(&xyz(0, i));
@@ -640,8 +640,8 @@ CORE::GEO::CUT::Tet4IntegrationCell* CORE::GEO::CUT::Mesh::NewTet4Cell(
 /*-------------------------------------------------------------------------------------*
  * creates a new tet4 integration cell, based on xyz coordinates
  *-------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::Tet4IntegrationCell* CORE::GEO::CUT::Mesh::NewTet4Cell(
-    Point::PointPosition position, const CORE::LINALG::SerialDenseMatrix& xyz, VolumeCell* cell)
+Core::Geo::Cut::Tet4IntegrationCell* Core::Geo::Cut::Mesh::NewTet4Cell(
+    Point::PointPosition position, const Core::LinAlg::SerialDenseMatrix& xyz, VolumeCell* cell)
 {
   std::vector<Point*> points;  // empty list of points
   Tet4IntegrationCell* c = new Tet4IntegrationCell(position, xyz, points, cell);
@@ -653,10 +653,10 @@ CORE::GEO::CUT::Tet4IntegrationCell* CORE::GEO::CUT::Mesh::NewTet4Cell(
 /*-------------------------------------------------------------------------------------*
  * creates a new wedge6 integration cell
  *-------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::Wedge6IntegrationCell* CORE::GEO::CUT::Mesh::NewWedge6Cell(
+Core::Geo::Cut::Wedge6IntegrationCell* Core::Geo::Cut::Mesh::NewWedge6Cell(
     Point::PointPosition position, const std::vector<Point*>& points, VolumeCell* cell)
 {
-  CORE::LINALG::SerialDenseMatrix xyz(3, points.size());
+  Core::LinAlg::SerialDenseMatrix xyz(3, points.size());
   for (unsigned i = 0; i < points.size(); ++i)
   {
     points[i]->Coordinates(&xyz(0, i));
@@ -672,10 +672,10 @@ CORE::GEO::CUT::Wedge6IntegrationCell* CORE::GEO::CUT::Mesh::NewWedge6Cell(
 /*-------------------------------------------------------------------------------------*
  * creates a new pyramid5 integration cell
  *-------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::Pyramid5IntegrationCell* CORE::GEO::CUT::Mesh::NewPyramid5Cell(
+Core::Geo::Cut::Pyramid5IntegrationCell* Core::Geo::Cut::Mesh::NewPyramid5Cell(
     Point::PointPosition position, const std::vector<Point*>& points, VolumeCell* cell)
 {
-  CORE::LINALG::SerialDenseMatrix xyz(3, points.size());
+  Core::LinAlg::SerialDenseMatrix xyz(3, points.size());
   for (unsigned i = 0; i < points.size(); ++i)
   {
     points[i]->Coordinates(&xyz(0, i));
@@ -690,20 +690,20 @@ CORE::GEO::CUT::Pyramid5IntegrationCell* CORE::GEO::CUT::Mesh::NewPyramid5Cell(
 /*------------------------------------------------------------------------------------------------*
  * build the static search tree for the collision detection in the self cut           wirtz 08/14 *
  *------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Mesh::BuildSelfCutTree()
+void Core::Geo::Cut::Mesh::BuildSelfCutTree()
 {
   // constructor for the search tree of the background mesh
   selfcuttree_ =
-      Teuchos::rcp(new CORE::GEO::SearchTree(5));  // tree_depth_ 4 is reasonable, 5 is possible
+      Teuchos::rcp(new Core::Geo::SearchTree(5));  // tree_depth_ 4 is reasonable, 5 is possible
 
   // extent the bounding volume of the root of the search tree to prevent symmetry issues
-  CORE::LINALG::Matrix<3, 2> boundingvolume = bb_->GetBoundingVolume();
+  Core::LinAlg::Matrix<3, 2> boundingvolume = bb_->GetBoundingVolume();
   //  boundingvolume(0,1) += 1e-4;
   //  boundingvolume(1,1) += 1e-4;
   //  boundingvolume(2,1) += 1e-4;
 
   // initializes the search tree of the background mesh
-  selfcuttree_->initializeTree(boundingvolume, CORE::GEO::TreeType(CORE::GEO::OCTTREE));
+  selfcuttree_->initializeTree(boundingvolume, Core::Geo::TreeType(Core::Geo::OCTTREE));
 
   // inserts all linear elements into the search tree of the cutter mesh
   for (std::map<int, Side*>::iterator i = shadow_sides_.begin(); i != shadow_sides_.end(); ++i)
@@ -726,20 +726,20 @@ void CORE::GEO::CUT::Mesh::BuildSelfCutTree()
 /*------------------------------------------------------------------------------------------------*
  * build the static search tree for the collision detection                           wirtz 08/14 *
  *------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Mesh::build_static_search_tree()
+void Core::Geo::Cut::Mesh::build_static_search_tree()
 {
   // constructor for the search tree of the background mesh
   searchtree_ =
-      Teuchos::rcp(new CORE::GEO::SearchTree(5));  // tree_depth_ 4 is reasonable, 5 is possible
+      Teuchos::rcp(new Core::Geo::SearchTree(5));  // tree_depth_ 4 is reasonable, 5 is possible
 
   // extent the bounding volume of the root of the search tree to prevent symmetry issues
-  CORE::LINALG::Matrix<3, 2> boundingvolume = bb_->GetBoundingVolume();
+  Core::LinAlg::Matrix<3, 2> boundingvolume = bb_->GetBoundingVolume();
   boundingvolume(0, 1) += 1e-4;
   boundingvolume(1, 1) += 1e-4;
   boundingvolume(2, 1) += 1e-4;
 
   // initializes the search tree of the background mesh
-  searchtree_->initializeTree(boundingvolume, CORE::GEO::TreeType(CORE::GEO::OCTTREE));
+  searchtree_->initializeTree(boundingvolume, Core::Geo::TreeType(Core::Geo::OCTTREE));
 
   // inserts all linear elements into the search tree of the background mesh
   for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
@@ -774,9 +774,9 @@ void CORE::GEO::CUT::Mesh::build_static_search_tree()
  * Cuts the background elements of the mesh with all the cut sides     *
  * Called by Tetmeshintersection (but not for normal meshintersection) *
  *---------------------------------------------------------------------*/
-void CORE::GEO::CUT::Mesh::Cut(Mesh& mesh, plain_element_set& elements_done)
+void Core::Geo::Cut::Mesh::Cut(Mesh& mesh, plain_element_set& elements_done)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 6/6 --- Cut_Finalize --- CUT (incl. tetmesh-cut)");
+  TEUCHOS_FUNC_TIME_MONITOR("Core::Geo::CUT --- 6/6 --- Cut_Finalize --- CUT (incl. tetmesh-cut)");
 
   plain_element_set my_elements_done;
 
@@ -797,7 +797,7 @@ void CORE::GEO::CUT::Mesh::Cut(Mesh& mesh, plain_element_set& elements_done)
  * Cuts the background elements of the mesh with this considered cut side *
  * Called by Tetmeshintersection (but not for normal meshintersection)    *
  *-----------------------------------------------------------------------*/
-void CORE::GEO::CUT::Mesh::Cut(
+void Core::Geo::Cut::Mesh::Cut(
     Side& side, const plain_element_set& done, plain_element_set& elements_done)
 {
   // define a bounding box around the maybe twisted side to determine a
@@ -817,7 +817,7 @@ void CORE::GEO::CUT::Mesh::Cut(
 
   {
     TEUCHOS_FUNC_TIME_MONITOR(
-        "CORE::GEO::CUT --- 6/6 --- Cut_Finalize --- preselection of possible cut between");
+        "Core::Geo::CUT --- 6/6 --- Cut_Finalize --- preselection of possible cut between");
 
     // preselection of possible cut between linear elements and the current side
     for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
@@ -854,7 +854,7 @@ void CORE::GEO::CUT::Mesh::Cut(
 
   {
     TEUCHOS_FUNC_TIME_MONITOR(
-        "CORE::GEO::CUT --- 6/6 --- Cut_Finalize --- cutting sides with elements");
+        "Core::Geo::CUT --- 6/6 --- Cut_Finalize --- cutting sides with elements");
 
 
     // perform the cut of this side for each involved element
@@ -876,7 +876,7 @@ void CORE::GEO::CUT::Mesh::Cut(
 /*-------------------------------------------------------------------------------------*
  * Cuts the background elements with this levelset side
  *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Mesh::Cut(Side& side)
+void Core::Geo::Cut::Mesh::Cut(Side& side)
 {
   if (not side.IsLevelSetSide()) FOUR_C_THROW("This function expects a level set side!");
 
@@ -888,7 +888,7 @@ void CORE::GEO::CUT::Mesh::Cut(Side& side)
     {
       e.Cut(*this, side);
     }
-    catch (CORE::Exception& err)
+    catch (Core::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
       throw;
@@ -902,7 +902,7 @@ void CORE::GEO::CUT::Mesh::Cut(Side& side)
     {
       e.Cut(*this, side);
     }
-    catch (CORE::Exception& err)
+    catch (Core::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
       throw;
@@ -914,7 +914,7 @@ void CORE::GEO::CUT::Mesh::Cut(Side& side)
 /*-------------------------------------------------------------------------------------*
  * ???
  *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Mesh::RectifyCutNumerics()
+void Core::Geo::Cut::Mesh::RectifyCutNumerics()
 {
   for (std::map<plain_int_set, Teuchos::RCP<Edge>>::iterator i = edges_.begin(); i != edges_.end();
        ++i)
@@ -928,14 +928,14 @@ void CORE::GEO::CUT::Mesh::RectifyCutNumerics()
  * detects if a side of the cut mesh possibly collides with an element of the background mesh     *
  *                                                                                    wirtz 08/14 *
  *------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Mesh::SearchCollisions(Mesh& cutmesh)
+void Core::Geo::Cut::Mesh::SearchCollisions(Mesh& cutmesh)
 {
   const std::map<plain_int_set, Teuchos::RCP<Side>>& cutsides = cutmesh.Sides();
   for (std::map<plain_int_set, Teuchos::RCP<Side>>::const_iterator i = cutsides.begin();
        i != cutsides.end(); ++i)
   {
     Side* cutside = &*i->second;
-    CORE::LINALG::Matrix<3, 2> cutsideBV = cutside->GetBoundingVolume().GetBoundingVolume();
+    Core::LinAlg::Matrix<3, 2> cutsideBV = cutside->GetBoundingVolume().GetBoundingVolume();
     if (boundingvolumes_.size() !=
         0)  // ******************************************************* possible in case of parallel
             // computing and using only relevant elements
@@ -968,9 +968,9 @@ void CORE::GEO::CUT::Mesh::SearchCollisions(Mesh& cutmesh)
  * finds intersections between sides and edges                                         *
  *                                                                         wirtz 08/14 *
  *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Mesh::find_cut_points()
+void Core::Geo::Cut::Mesh::find_cut_points()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 4/6 --- cut_mesh_intersection --- find_cut_points");
+  TEUCHOS_FUNC_TIME_MONITOR("Core::Geo::CUT --- 4/6 --- cut_mesh_intersection --- find_cut_points");
 
   for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
        ++i)
@@ -980,7 +980,7 @@ void CORE::GEO::CUT::Mesh::find_cut_points()
     {
       e.find_cut_points(*this);
     }
-    catch (CORE::Exception& err)
+    catch (Core::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
       throw;
@@ -994,7 +994,7 @@ void CORE::GEO::CUT::Mesh::find_cut_points()
     {
       e.find_cut_points(*this);
     }
-    catch (CORE::Exception& err)
+    catch (Core::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
       throw;
@@ -1005,9 +1005,9 @@ void CORE::GEO::CUT::Mesh::find_cut_points()
 /*-------------------------------------------------------------------------------------*
  * create cut lines based on the point cloud
  *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Mesh::MakeCutLines()
+void Core::Geo::Cut::Mesh::MakeCutLines()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 4/6 --- cut_mesh_intersection --- MakeCutLines");
+  TEUCHOS_FUNC_TIME_MONITOR("Core::Geo::CUT --- 4/6 --- cut_mesh_intersection --- MakeCutLines");
 
   for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
        ++i)
@@ -1021,7 +1021,7 @@ void CORE::GEO::CUT::Mesh::MakeCutLines()
     {
       e.MakeCutLines(*this);
     }
-    catch (CORE::Exception& err)
+    catch (Core::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
       throw;
@@ -1039,7 +1039,7 @@ void CORE::GEO::CUT::Mesh::MakeCutLines()
     {
       e.MakeCutLines(*this);
     }
-    catch (CORE::Exception& err)
+    catch (Core::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
       throw;
@@ -1051,9 +1051,9 @@ void CORE::GEO::CUT::Mesh::MakeCutLines()
 /*-------------------------------------------------------------------------------------*
  * create facets based on the cut lines
  *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Mesh::MakeFacets()
+void Core::Geo::Cut::Mesh::MakeFacets()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 4/6 --- cut_mesh_intersection --- MakeFacets");
+  TEUCHOS_FUNC_TIME_MONITOR("Core::Geo::CUT --- 4/6 --- cut_mesh_intersection --- MakeFacets");
 
   for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
        ++i)
@@ -1063,7 +1063,7 @@ void CORE::GEO::CUT::Mesh::MakeFacets()
     {
       e.MakeFacets(*this);
     }
-    catch (CORE::Exception& err)
+    catch (Core::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
       throw;
@@ -1077,7 +1077,7 @@ void CORE::GEO::CUT::Mesh::MakeFacets()
     {
       e.MakeFacets(*this);
     }
-    catch (CORE::Exception& err)
+    catch (Core::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
       throw;
@@ -1089,9 +1089,9 @@ void CORE::GEO::CUT::Mesh::MakeFacets()
 /*-------------------------------------------------------------------------------------*
  * create volumecells based on created facets
  *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Mesh::MakeVolumeCells()
+void Core::Geo::Cut::Mesh::MakeVolumeCells()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 4/6 --- cut_mesh_intersection --- MakeVolumeCells");
+  TEUCHOS_FUNC_TIME_MONITOR("Core::Geo::CUT --- 4/6 --- cut_mesh_intersection --- MakeVolumeCells");
 
   for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
        ++i)
@@ -1101,7 +1101,7 @@ void CORE::GEO::CUT::Mesh::MakeVolumeCells()
     {
       e.MakeVolumeCells(*this);
     }
-    catch (CORE::Exception& err)
+    catch (Core::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
       throw;
@@ -1115,7 +1115,7 @@ void CORE::GEO::CUT::Mesh::MakeVolumeCells()
     {
       e.MakeVolumeCells(*this);
     }
-    catch (CORE::Exception& err)
+    catch (Core::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
       throw;
@@ -1127,10 +1127,10 @@ void CORE::GEO::CUT::Mesh::MakeVolumeCells()
 /*-------------------------------------------------------------------------------------*
  * find node positions and propagate the positions to facets, points and volumecells
  *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Mesh::FindNodePositions()
+void Core::Geo::Cut::Mesh::FindNodePositions()
 {
   TEUCHOS_FUNC_TIME_MONITOR(
-      "CORE::GEO::CUT --- 5/6 --- cut_positions_dofsets --- FindNodePositions");
+      "Core::Geo::CUT --- 5/6 --- cut_positions_dofsets --- FindNodePositions");
 
 
   // On multiple cuts former outside positions can become inside
@@ -1146,7 +1146,7 @@ void CORE::GEO::CUT::Mesh::FindNodePositions()
     {
       e.FindNodePositions();
     }
-    catch (CORE::Exception& err)
+    catch (Core::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
       throw;
@@ -1160,7 +1160,7 @@ void CORE::GEO::CUT::Mesh::FindNodePositions()
     {
       e.FindNodePositions();
     }
-    catch (CORE::Exception& err)
+    catch (Core::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
       throw;
@@ -1177,7 +1177,7 @@ void CORE::GEO::CUT::Mesh::FindNodePositions()
  * Find node positions and propagate the positions to points.
  * Might need modification for more difficult cut situations with shadow elements.
  *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Mesh::FindLSNodePositions()
+void Core::Geo::Cut::Mesh::FindLSNodePositions()
 {
   for (std::map<int, Teuchos::RCP<Node>>::iterator i = nodes_.begin(); i != nodes_.end(); ++i)
   {
@@ -1212,10 +1212,10 @@ void CORE::GEO::CUT::Mesh::FindLSNodePositions()
  * find facet positions for remaining facets, points, volumecells that have not been found
  * using FindNodePositions()
  *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Mesh::FindFacetPositions()
+void Core::Geo::Cut::Mesh::FindFacetPositions()
 {
   TEUCHOS_FUNC_TIME_MONITOR(
-      "CORE::GEO::CUT --- 5/6 --- cut_positions_dofsets --- FindFacetPositions");
+      "Core::Geo::CUT --- 5/6 --- cut_positions_dofsets --- FindFacetPositions");
 
 
   plain_volumecell_set undecided;
@@ -1334,22 +1334,22 @@ void CORE::GEO::CUT::Mesh::FindFacetPositions()
 
   //     bool haveundecided = false;
   //     bool havecutsurface = false;
-  //     CORE::GEO::CUT::Point::PointPosition position = CORE::GEO::CUT::Point::undecided;
+  //     Core::Geo::Cut::Point::PointPosition position = Core::Geo::Cut::Point::undecided;
   //     for ( plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); ++i )
   //     {
   //       Facet * f = *i;
-  //       CORE::GEO::CUT::Point::PointPosition fp = f->Position();
+  //       Core::Geo::Cut::Point::PointPosition fp = f->Position();
   //       switch ( fp )
   //       {
-  //       case CORE::GEO::CUT::Point::undecided:
+  //       case Core::Geo::Cut::Point::undecided:
   //         haveundecided = true;
   //         break;
-  //       case CORE::GEO::CUT::Point::oncutsurface:
+  //       case Core::Geo::Cut::Point::oncutsurface:
   //         havecutsurface = true;
   //         break;
-  //       case CORE::GEO::CUT::Point::inside:
-  //       case CORE::GEO::CUT::Point::outside:
-  //         if ( position!=CORE::GEO::CUT::Point::undecided and position!=fp )
+  //       case Core::Geo::Cut::Point::inside:
+  //       case Core::Geo::Cut::Point::outside:
+  //         if ( position!=Core::Geo::Cut::Point::undecided and position!=fp )
   //         {
   //           FOUR_C_THROW( "mixed facet set" );
   //         }
@@ -1359,23 +1359,23 @@ void CORE::GEO::CUT::Mesh::FindFacetPositions()
 
   // this is a bold assumption.
 
-  //     if ( position == CORE::GEO::CUT::Point::undecided )
+  //     if ( position == Core::Geo::Cut::Point::undecided )
   //     {
   //       if ( havecutsurface )
-  //         position = CORE::GEO::CUT::Point::inside;
+  //         position = Core::Geo::Cut::Point::inside;
   //       else
-  //         position = CORE::GEO::CUT::Point::outside;
+  //         position = Core::Geo::Cut::Point::outside;
   //     }
 
   // set any undecided facets in a decided volume cell
 
-  //     if ( haveundecided and position != CORE::GEO::CUT::Point::undecided )
+  //     if ( haveundecided and position != Core::Geo::Cut::Point::undecided )
   //     {
   //       for ( plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); ++i )
   //       {
   //         Facet * f = *i;
-  //         CORE::GEO::CUT::Point::PointPosition fp = f->Position();
-  //         if ( fp==CORE::GEO::CUT::Point::undecided )
+  //         Core::Geo::Cut::Point::PointPosition fp = f->Position();
+  //         if ( fp==Core::Geo::Cut::Point::undecided )
   //         {
   //           f->Position( position );
   //         }
@@ -1388,7 +1388,7 @@ void CORE::GEO::CUT::Mesh::FindFacetPositions()
 /*-------------------------------------------------------------------------------*
  | fill the vector with nids of nodes with undecided position,       schott 03/12 |
  *-------------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::Mesh::check_for_undecided_node_positions(
+bool Core::Geo::Cut::Mesh::check_for_undecided_node_positions(
     std::map<int, int>& undecided_nodes, std::map<plain_int_set, int>& undecided_shadow_nodes)
 {
   // return whether undecided node positions available
@@ -1459,7 +1459,7 @@ bool CORE::GEO::CUT::Mesh::check_for_undecided_node_positions(
 /*-------------------------------------------------------------------------------------*
  * still used???
  *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Mesh::FindNodalDOFSets(bool include_inner)
+void Core::Geo::Cut::Mesh::FindNodalDOFSets(bool include_inner)
 {
   for (std::map<int, Teuchos::RCP<Node>>::iterator i = nodes_.begin(); i != nodes_.end(); ++i)
   {
@@ -1478,7 +1478,7 @@ void CORE::GEO::CUT::Mesh::FindNodalDOFSets(bool include_inner)
 /*-------------------------------------------------------------------------------------*
  * Execute Tessellation with QHULL for each element to generate integrationcells
  *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Mesh::create_integration_cells(int count, bool tetcellsonly)
+void Core::Geo::Cut::Mesh::create_integration_cells(int count, bool tetcellsonly)
 {
   for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
        ++i)
@@ -1488,7 +1488,7 @@ void CORE::GEO::CUT::Mesh::create_integration_cells(int count, bool tetcellsonly
     {
       e.create_integration_cells(*this, count + 1, tetcellsonly);
     }
-    catch (CORE::Exception& err)
+    catch (Core::Exception& err)
     {
       if (count > 0)
       {
@@ -1514,7 +1514,7 @@ void CORE::GEO::CUT::Mesh::create_integration_cells(int count, bool tetcellsonly
     {
       e.create_integration_cells(*this, count + 1, tetcellsonly);
     }
-    catch (CORE::Exception& err)
+    catch (Core::Exception& err)
     {
       if (count > 0)
         std::cout << "Error occurred in a recursive call i.e. in a call from TetMeshIntersection."
@@ -1530,8 +1530,8 @@ void CORE::GEO::CUT::Mesh::create_integration_cells(int count, bool tetcellsonly
 /*-------------------------------------------------------------------------------------*
  * Call the moment fitting method for each element to generate the Gaussian integration rule
  *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Mesh::moment_fit_gauss_weights(
-    bool include_inner, INPAR::CUT::BCellGaussPts Bcellgausstype)
+void Core::Geo::Cut::Mesh::moment_fit_gauss_weights(
+    bool include_inner, Inpar::Cut::BCellGaussPts Bcellgausstype)
 {
   for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
        ++i)
@@ -1541,7 +1541,7 @@ void CORE::GEO::CUT::Mesh::moment_fit_gauss_weights(
     {
       e.moment_fit_gauss_weights(*this, include_inner, Bcellgausstype);
     }
-    catch (CORE::Exception& err)
+    catch (Core::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
       throw;
@@ -1555,7 +1555,7 @@ void CORE::GEO::CUT::Mesh::moment_fit_gauss_weights(
     {
       e.moment_fit_gauss_weights(*this, include_inner, Bcellgausstype);
     }
-    catch (CORE::Exception& err)
+    catch (Core::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
       throw;
@@ -1567,8 +1567,8 @@ void CORE::GEO::CUT::Mesh::moment_fit_gauss_weights(
 /*-------------------------------------------------------------------------------------*
  * Call the DirectDivergence method for each element to generate the Gaussian integration rule
  *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Mesh::direct_divergence_gauss_rule(
-    bool include_inner, INPAR::CUT::BCellGaussPts Bcellgausstype)
+void Core::Geo::Cut::Mesh::direct_divergence_gauss_rule(
+    bool include_inner, Inpar::Cut::BCellGaussPts Bcellgausstype)
 {
   for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
        ++i)
@@ -1578,7 +1578,7 @@ void CORE::GEO::CUT::Mesh::direct_divergence_gauss_rule(
     {
       e.direct_divergence_gauss_rule(*this, include_inner, Bcellgausstype);
     }
-    catch (CORE::Exception& err)
+    catch (Core::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
       throw;
@@ -1592,7 +1592,7 @@ void CORE::GEO::CUT::Mesh::direct_divergence_gauss_rule(
     {
       e.direct_divergence_gauss_rule(*this, include_inner, Bcellgausstype);
     }
-    catch (CORE::Exception& err)
+    catch (Core::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
       throw;
@@ -1604,7 +1604,7 @@ void CORE::GEO::CUT::Mesh::direct_divergence_gauss_rule(
 /*-------------------------------------------------------------------------------------*
  * ?
  *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Mesh::remove_empty_volume_cells()
+void Core::Geo::Cut::Mesh::remove_empty_volume_cells()
 {
   for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
        ++i)
@@ -1614,7 +1614,7 @@ void CORE::GEO::CUT::Mesh::remove_empty_volume_cells()
     {
       e.remove_empty_volume_cells();
     }
-    catch (CORE::Exception& err)
+    catch (Core::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
       throw;
@@ -1628,7 +1628,7 @@ void CORE::GEO::CUT::Mesh::remove_empty_volume_cells()
     {
       e.remove_empty_volume_cells();
     }
-    catch (CORE::Exception& err)
+    catch (Core::Exception& err)
     {
       DebugDump(&e, __FILE__, __LINE__);
       throw;
@@ -1640,7 +1640,7 @@ void CORE::GEO::CUT::Mesh::remove_empty_volume_cells()
 /*-------------------------------------------------------------------------------------*
  * test if for all elements the element volume is equal to the volume of all integration cells
  *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Mesh::TestElementVolume(bool fatal, INPAR::CUT::VCellGaussPts VCellGP)
+void Core::Geo::Cut::Mesh::TestElementVolume(bool fatal, Inpar::Cut::VCellGaussPts VCellGP)
 {
   for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
        ++i)
@@ -1661,23 +1661,23 @@ void CORE::GEO::CUT::Mesh::TestElementVolume(bool fatal, INPAR::CUT::VCellGaussP
  * Find the difference between the volume of background element and the sum of volume
  * of all integration cells. There should be no difference between these two
  *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Mesh::TestElementVolume(
-    CORE::FE::CellType shape, Element& e, bool fatal, INPAR::CUT::VCellGaussPts VCellGP)
+void Core::Geo::Cut::Mesh::TestElementVolume(
+    Core::FE::CellType shape, Element& e, bool fatal, Inpar::Cut::VCellGaussPts VCellGP)
 {
   if (e.IsCut())
   {
     const std::vector<Node*>& nodes = e.Nodes();
-    CORE::LINALG::SerialDenseMatrix xyze(3, nodes.size());
+    Core::LinAlg::SerialDenseMatrix xyze(3, nodes.size());
     double max_norm = 0.0;
     for (unsigned i = 0; i < nodes.size(); ++i)
     {
       nodes[i]->Coordinates(&xyze(0, i));
-      CORE::LINALG::Matrix<3, 1> vec;
+      Core::LinAlg::Matrix<3, 1> vec;
       nodes[i]->Coordinates(&vec(0, 0));
       if (vec.Norm2() > max_norm) max_norm = vec.Norm2();
     }
 
-    double ev = CORE::GEO::ElementVolume(e.Shape(), xyze);
+    double ev = Core::Geo::ElementVolume(e.Shape(), xyze);
 
     [[maybe_unused]] int numgp = 0;
     [[maybe_unused]] int numic = 0;
@@ -1685,7 +1685,7 @@ void CORE::GEO::CUT::Mesh::TestElementVolume(
     double cv = 0;
     [[maybe_unused]] double ba = 0;
     const plain_volumecell_set& cells = e.VolumeCells();
-    if (VCellGP == INPAR::CUT::VCellGaussPts_Tessellation)
+    if (VCellGP == Inpar::Cut::VCellGaussPts_Tessellation)
     {
       for (plain_volumecell_set::const_iterator i = cells.begin(); i != cells.end(); ++i)
       {
@@ -1703,7 +1703,7 @@ void CORE::GEO::CUT::Mesh::TestElementVolume(
         }
       }
     }
-    else if (VCellGP == INPAR::CUT::VCellGaussPts_DirectDivergence)
+    else if (VCellGP == Inpar::Cut::VCellGaussPts_DirectDivergence)
     {
       for (plain_volumecell_set::const_iterator i = cells.begin(); i != cells.end(); ++i)
       {
@@ -1745,12 +1745,12 @@ void CORE::GEO::CUT::Mesh::TestElementVolume(
 /*-------------------------------------------------------------------------------------*
  * ?
  *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Mesh::print_cell_stats()
+void Core::Geo::Cut::Mesh::print_cell_stats()
 {
   const int vectorlength = 21;
   unsigned cut = 0;
   std::vector<int> numvc(vectorlength, 0);
-  std::map<CORE::FE::CellType, std::vector<int>> numcells;
+  std::map<Core::FE::CellType, std::vector<int>> numcells;
 
   // loop over elements
   for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
@@ -1767,7 +1767,7 @@ void CORE::GEO::CUT::Mesh::print_cell_stats()
            ++i)
       {
         VolumeCell* vc = *i;
-        std::map<CORE::FE::CellType, int> cell_count;
+        std::map<Core::FE::CellType, int> cell_count;
         const plain_integrationcell_set& cells = vc->IntegrationCells();
         for (plain_integrationcell_set::const_iterator i = cells.begin(); i != cells.end(); ++i)
         {
@@ -1780,12 +1780,12 @@ void CORE::GEO::CUT::Mesh::print_cell_stats()
           BoundaryCell* bcell = *i;
           cell_count[bcell->Shape()] += 1;
         }
-        for (std::map<CORE::FE::CellType, int>::iterator i = cell_count.begin();
+        for (std::map<Core::FE::CellType, int>::iterator i = cell_count.begin();
              i != cell_count.end(); ++i)
         {
-          CORE::FE::CellType shape = i->first;
+          Core::FE::CellType shape = i->first;
           int count = i->second;
-          std::map<CORE::FE::CellType, std::vector<int>>::iterator j = numcells.find(shape);
+          std::map<Core::FE::CellType, std::vector<int>>::iterator j = numcells.find(shape);
           if (j == numcells.end())
           {
             numcells[shape] = std::vector<int>(vectorlength, 0);
@@ -1811,7 +1811,7 @@ void CORE::GEO::CUT::Mesh::print_cell_stats()
            ++i)
       {
         VolumeCell* vc = *i;
-        std::map<CORE::FE::CellType, int> cell_count;
+        std::map<Core::FE::CellType, int> cell_count;
         const plain_integrationcell_set& cells = vc->IntegrationCells();
         for (plain_integrationcell_set::const_iterator i = cells.begin(); i != cells.end(); ++i)
         {
@@ -1824,12 +1824,12 @@ void CORE::GEO::CUT::Mesh::print_cell_stats()
           BoundaryCell* bcell = *i;
           cell_count[bcell->Shape()] += 1;
         }
-        for (std::map<CORE::FE::CellType, int>::iterator i = cell_count.begin();
+        for (std::map<Core::FE::CellType, int>::iterator i = cell_count.begin();
              i != cell_count.end(); ++i)
         {
-          CORE::FE::CellType shape = i->first;
+          Core::FE::CellType shape = i->first;
           int count = i->second;
-          std::map<CORE::FE::CellType, std::vector<int>>::iterator j = numcells.find(shape);
+          std::map<Core::FE::CellType, std::vector<int>>::iterator j = numcells.find(shape);
           if (j == numcells.end())
           {
             numcells[shape] = std::vector<int>(vectorlength, 0);
@@ -1867,12 +1867,12 @@ void CORE::GEO::CUT::Mesh::print_cell_stats()
   }
   std::cout << "   *\n";
 
-  for (std::map<CORE::FE::CellType, std::vector<int>>::iterator i = numcells.begin();
+  for (std::map<Core::FE::CellType, std::vector<int>>::iterator i = numcells.begin();
        i != numcells.end(); ++i)
   {
-    CORE::FE::CellType shape = i->first;
+    Core::FE::CellType shape = i->first;
     std::vector<int>& nc = i->second;
-    std::cout << CORE::FE::CellTypeToString(shape) << "\tcells: ";
+    std::cout << Core::FE::CellTypeToString(shape) << "\tcells: ";
     // std::copy( nc.begin(), nc.end(), std::ostream_iterator<int>( std::cout, " " ) );
     for (std::vector<int>::iterator i = nc.begin(); i != nc.end(); ++i)
     {
@@ -1893,7 +1893,7 @@ void CORE::GEO::CUT::Mesh::print_cell_stats()
 /*-------------------------------------------------------------------------------------*
  * print all facets
  *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Mesh::PrintFacets()
+void Core::Geo::Cut::Mesh::PrintFacets()
 {
   //   for ( std::list<Teuchos::RCP<Point> >::iterator i=points_.begin();
   //         i!=points_.end();
@@ -1915,7 +1915,7 @@ void CORE::GEO::CUT::Mesh::PrintFacets()
 /*-------------------------------------------------------------------------------------*
  * Write full Gmsh Output
  *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Mesh::DumpGmsh(std::string name)
+void Core::Geo::Cut::Mesh::DumpGmsh(std::string name)
 {
   std::ofstream file(name.c_str());
   // file.precision(32); //higher precision!
@@ -1923,103 +1923,103 @@ void CORE::GEO::CUT::Mesh::DumpGmsh(std::string name)
   // ###############write all elements & shadow elements###############
   if (elements_.size() > 0 || shadow_elements_.size() > 0)
   {
-    CORE::GEO::CUT::OUTPUT::GmshNewSection(file, "Elements");
+    Core::Geo::Cut::Output::GmshNewSection(file, "Elements");
     for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
          ++i)
-      CORE::GEO::CUT::OUTPUT::GmshElementDump(file, &(*i->second));
+      Core::Geo::Cut::Output::GmshElementDump(file, &(*i->second));
 
     for (std::map<int, Teuchos::RCP<Element>>::iterator i = shadow_elements_.begin();
          i != shadow_elements_.end(); ++i)
-      CORE::GEO::CUT::OUTPUT::GmshElementDump(file, &(*i->second));
-    CORE::GEO::CUT::OUTPUT::GmshEndSection(file);
+      Core::Geo::Cut::Output::GmshElementDump(file, &(*i->second));
+    Core::Geo::Cut::Output::GmshEndSection(file);
   }
 
   // ###############write all sides###############
   if (sides_.size() > 0)
   {
-    CORE::GEO::CUT::OUTPUT::GmshNewSection(file, "Sides");
+    Core::Geo::Cut::Output::GmshNewSection(file, "Sides");
     for (std::map<plain_int_set, Teuchos::RCP<Side>>::iterator i = sides_.begin();
          i != sides_.end(); ++i)
-      CORE::GEO::CUT::OUTPUT::GmshSideDump(file, &(*i->second));
-    CORE::GEO::CUT::OUTPUT::GmshEndSection(file);
+      Core::Geo::Cut::Output::GmshSideDump(file, &(*i->second));
+    Core::Geo::Cut::Output::GmshEndSection(file);
   }
 
   // ###############write all nodes###############
   if (sides_.size() > 0)
   {
-    CORE::GEO::CUT::OUTPUT::GmshNewSection(file, "Nodes");
+    Core::Geo::Cut::Output::GmshNewSection(file, "Nodes");
     for (std::map<int, Teuchos::RCP<Node>>::iterator i = nodes_.begin(); i != nodes_.end(); ++i)
-      CORE::GEO::CUT::OUTPUT::GmshNodeDump(file, &(*i->second));
-    CORE::GEO::CUT::OUTPUT::GmshEndSection(file);
+      Core::Geo::Cut::Output::GmshNodeDump(file, &(*i->second));
+    Core::Geo::Cut::Output::GmshEndSection(file);
   }
 
   // ###############write all points in pointpool###############
   if (pp_->GetPoints().size() > 0)
   {
-    CORE::GEO::CUT::OUTPUT::GmshNewSection(file, "PoolPoints");
+    Core::Geo::Cut::Output::GmshNewSection(file, "PoolPoints");
     const RCPPointSet& points = pp_->GetPoints();
     for (RCPPointSet::const_iterator i = points.begin(); i != points.end(); ++i)
-      CORE::GEO::CUT::OUTPUT::GmshPointDump(file, &(*(*i)), (*i)->Id());
-    CORE::GEO::CUT::OUTPUT::GmshEndSection(file);
+      Core::Geo::Cut::Output::GmshPointDump(file, &(*(*i)), (*i)->Id());
+    Core::Geo::Cut::Output::GmshEndSection(file);
   }
 
   // ###############write all edges###############
   if (edges_.size() > 0)
   {
-    CORE::GEO::CUT::OUTPUT::GmshNewSection(file, "Edges");
+    Core::Geo::Cut::Output::GmshNewSection(file, "Edges");
     for (std::map<plain_int_set, Teuchos::RCP<Edge>>::iterator i = edges_.begin();
          i != edges_.end(); ++i)
-      CORE::GEO::CUT::OUTPUT::GmshEdgeDump(file, &(*i->second));
-    CORE::GEO::CUT::OUTPUT::GmshEndSection(file);
+      Core::Geo::Cut::Output::GmshEdgeDump(file, &(*i->second));
+    Core::Geo::Cut::Output::GmshEndSection(file);
   }
 
   // ###############write all lines###############
   if (lines_.size() > 0)
   {
-    CORE::GEO::CUT::OUTPUT::GmshNewSection(file, "Lines");
+    Core::Geo::Cut::Output::GmshNewSection(file, "Lines");
     for (std::list<Teuchos::RCP<Line>>::iterator i = lines_.begin(); i != lines_.end(); ++i)
-      CORE::GEO::CUT::OUTPUT::GmshLineDump(file, &(**i));
-    CORE::GEO::CUT::OUTPUT::GmshEndSection(file);
+      Core::Geo::Cut::Output::GmshLineDump(file, &(**i));
+    Core::Geo::Cut::Output::GmshEndSection(file);
   }
 
   // ###############write all facets (or basically the facet points)###############
   if (facets_.size() > 0)
   {
-    //    CORE::GEO::CUT::OUTPUT::GmshNewSection(file,"Facet_Points");
+    //    Core::Geo::Cut::Output::GmshNewSection(file,"Facet_Points");
     //    for ( std::list<Teuchos::RCP<Facet > >::iterator i=facets_.begin(); i!=facets_.end(); ++i
     //    )
-    //      CORE::GEO::CUT::OUTPUT::GmshFacetDump(file,&(**i),"points");
-    //    CORE::GEO::CUT::OUTPUT::GmshEndSection(file);
+    //      Core::Geo::Cut::Output::GmshFacetDump(file,&(**i),"points");
+    //    Core::Geo::Cut::Output::GmshEndSection(file);
 
     // ###############write all facets (or basically the facet lines)###############
-    CORE::GEO::CUT::OUTPUT::GmshNewSection(file, "Facet_Lines");
+    Core::Geo::Cut::Output::GmshNewSection(file, "Facet_Lines");
     for (std::list<Teuchos::RCP<Facet>>::iterator i = facets_.begin(); i != facets_.end(); ++i)
-      CORE::GEO::CUT::OUTPUT::GmshFacetDump(file, &(**i), "lines");
-    CORE::GEO::CUT::OUTPUT::GmshEndSection(file);
+      Core::Geo::Cut::Output::GmshFacetDump(file, &(**i), "lines");
+    Core::Geo::Cut::Output::GmshEndSection(file);
 
     // ###############write all triangulated facets ###############
-    CORE::GEO::CUT::OUTPUT::GmshNewSection(file, "Facets");
+    Core::Geo::Cut::Output::GmshNewSection(file, "Facets");
     for (std::list<Teuchos::RCP<Facet>>::iterator i = facets_.begin(); i != facets_.end(); ++i)
-      CORE::GEO::CUT::OUTPUT::GmshFacetDump(file, &(**i), "sides");
-    CORE::GEO::CUT::OUTPUT::GmshEndSection(file);
+      Core::Geo::Cut::Output::GmshFacetDump(file, &(**i), "sides");
+    Core::Geo::Cut::Output::GmshEndSection(file);
 
     // ###############write all cut facets all ###############
-    CORE::GEO::CUT::OUTPUT::GmshNewSection(file, "cut_Facets");
+    Core::Geo::Cut::Output::GmshNewSection(file, "cut_Facets");
     for (std::list<Teuchos::RCP<Facet>>::iterator i = facets_.begin(); i != facets_.end(); ++i)
     {
       if ((*i)->ParentSide()->IsCutSide())
-        CORE::GEO::CUT::OUTPUT::GmshFacetDump(file, &(**i), "sides", true);
+        Core::Geo::Cut::Output::GmshFacetDump(file, &(**i), "sides", true);
     }
-    CORE::GEO::CUT::OUTPUT::GmshEndSection(file);
+    Core::Geo::Cut::Output::GmshEndSection(file);
 
     // ###############write all triangulated facets all ###############
-    CORE::GEO::CUT::OUTPUT::GmshNewSection(file, "ele_Facets");
+    Core::Geo::Cut::Output::GmshNewSection(file, "ele_Facets");
     for (std::list<Teuchos::RCP<Facet>>::iterator i = facets_.begin(); i != facets_.end(); ++i)
     {
       if (!(*i)->ParentSide()->IsCutSide())
-        CORE::GEO::CUT::OUTPUT::GmshFacetDump(file, &(**i), "sides", true);
+        Core::Geo::Cut::Output::GmshFacetDump(file, &(**i), "sides", true);
     }
-    CORE::GEO::CUT::OUTPUT::GmshEndSection(file);
+    Core::Geo::Cut::Output::GmshEndSection(file);
   }
 
   // #############write level set information from cut if level set side exists ################
@@ -2035,30 +2035,30 @@ void CORE::GEO::CUT::Mesh::DumpGmsh(std::string name)
 
   if (haslevelsetside)
   {
-    CORE::GEO::CUT::OUTPUT::GmshNewSection(file, "LevelSetValues");
+    Core::Geo::Cut::Output::GmshNewSection(file, "LevelSetValues");
     for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
          i++)
-      CORE::GEO::CUT::OUTPUT::GmshLevelSetValueDump(file, &(*i->second));
-    CORE::GEO::CUT::OUTPUT::GmshEndSection(file);
+      Core::Geo::Cut::Output::GmshLevelSetValueDump(file, &(*i->second));
+    Core::Geo::Cut::Output::GmshEndSection(file);
 
-    CORE::GEO::CUT::OUTPUT::GmshNewSection(file, "LevelSetGradient");
+    Core::Geo::Cut::Output::GmshNewSection(file, "LevelSetGradient");
     for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
          i++)
-      CORE::GEO::CUT::OUTPUT::GmshLevelSetGradientDump(file, &(*i->second));
-    CORE::GEO::CUT::OUTPUT::GmshEndSection(file);
+      Core::Geo::Cut::Output::GmshLevelSetGradientDump(file, &(*i->second));
+    Core::Geo::Cut::Output::GmshEndSection(file);
 
-    CORE::GEO::CUT::OUTPUT::GmshNewSection(file, "LevelSetOrientation");
+    Core::Geo::Cut::Output::GmshNewSection(file, "LevelSetOrientation");
     for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
          i++)
-      CORE::GEO::CUT::OUTPUT::GmshLevelSetOrientationDump(file, &(*i->second));
-    CORE::GEO::CUT::OUTPUT::GmshEndSection(file);
+      Core::Geo::Cut::Output::GmshLevelSetOrientationDump(file, &(*i->second));
+    Core::Geo::Cut::Output::GmshEndSection(file);
   }
 }
 
 /*-------------------------------------------------------------------------------------*
  * ?
  *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Mesh::dump_gmsh_volume_cells(std::string name, bool include_inner)
+void Core::Geo::Cut::Mesh::dump_gmsh_volume_cells(std::string name, bool include_inner)
 {
   std::ofstream file(name.c_str());
   int count = 0;
@@ -2171,7 +2171,7 @@ void CORE::GEO::CUT::Mesh::dump_gmsh_volume_cells(std::string name, bool include
          i++)
     {
       Element* ele = &*i->second;
-      CORE::GEO::CUT::OUTPUT::GmshLevelSetValueDump(file, ele);
+      Core::Geo::Cut::Output::GmshLevelSetValueDump(file, ele);
     }
     file << "};\n";
 
@@ -2180,7 +2180,7 @@ void CORE::GEO::CUT::Mesh::dump_gmsh_volume_cells(std::string name, bool include
          i++)
     {
       Element* ele = &*i->second;
-      CORE::GEO::CUT::OUTPUT::GmshLevelSetGradientDump(file, ele);
+      Core::Geo::Cut::Output::GmshLevelSetGradientDump(file, ele);
     }
     file << "};\n";
 
@@ -2189,7 +2189,7 @@ void CORE::GEO::CUT::Mesh::dump_gmsh_volume_cells(std::string name, bool include
          i++)
     {
       Element* ele = &*i->second;
-      CORE::GEO::CUT::OUTPUT::GmshLevelSetOrientationDump(file, ele);
+      Core::Geo::Cut::Output::GmshLevelSetOrientationDump(file, ele);
     }
     file << "};\n";
   }
@@ -2199,7 +2199,7 @@ void CORE::GEO::CUT::Mesh::dump_gmsh_volume_cells(std::string name, bool include
 /*-------------------------------------------------------------------------------------*
  * Write all integration cells and boundarycells intro GMSH output file
  *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Mesh::dump_gmsh_integration_cells(std::string name)
+void Core::Geo::Cut::Mesh::dump_gmsh_integration_cells(std::string name)
 {
   std::ofstream file(name.c_str());
   file << "View \"IntegrationCells\" {\n";
@@ -2218,7 +2218,7 @@ void CORE::GEO::CUT::Mesh::dump_gmsh_integration_cells(std::string name)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Mesh::dump_gmsh_boundary_cells(std::ofstream& file, Point::PointPosition pos)
+void Core::Geo::Cut::Mesh::dump_gmsh_boundary_cells(std::ofstream& file, Point::PointPosition pos)
 {
   // Write BCs for "pos" VolumeCell:
   file << "View \"BoundaryCells " << Point::point_position2_string(pos) << "\" {\n";
@@ -2258,7 +2258,7 @@ void CORE::GEO::CUT::Mesh::dump_gmsh_boundary_cells(std::ofstream& file, Point::
 /*-------------------------------------------------------------------------------------*
  * ?
  *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Mesh::dump_gmsh_volume_cells(std::string name)
+void Core::Geo::Cut::Mesh::dump_gmsh_volume_cells(std::string name)
 {
   std::ofstream file(name.c_str());
   file << "View \"VolumeCells\" {\n";
@@ -2302,7 +2302,7 @@ void CORE::GEO::CUT::Mesh::dump_gmsh_volume_cells(std::string name)
 
         if (facet->OnCutSide())
         {
-          CORE::LINALG::Matrix<3, 1> facet_triang_midpoint_coord(true);
+          Core::LinAlg::Matrix<3, 1> facet_triang_midpoint_coord(true);
 
           if (facet->IsTriangulated())
           {
@@ -2314,7 +2314,7 @@ void CORE::GEO::CUT::Mesh::dump_gmsh_volume_cells(std::string name)
           }
           else
           {
-            CORE::LINALG::Matrix<3, 1> cur;
+            Core::LinAlg::Matrix<3, 1> cur;
             std::vector<Point*> pts = facet->Points();
             for (std::vector<Point*>::iterator i = pts.begin(); i != pts.end(); i++)
             {
@@ -2346,17 +2346,17 @@ void CORE::GEO::CUT::Mesh::dump_gmsh_volume_cells(std::string name)
 /*-------------------------------------------------------------------------------------*
  * DebugDump to call before runtime error                                     ager 04/15
  *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Mesh::DebugDump(CORE::GEO::CUT::Element* ele, std::string file, int line)
+void Core::Geo::Cut::Mesh::DebugDump(Core::Geo::Cut::Element* ele, std::string file, int line)
 {
   if (file != "" || line != -1)
-    std::cout << "CORE::GEO::CUT::Mesh::DebugDump called in " << file << " in line " << line
+    std::cout << "Core::Geo::Cut::Mesh::DebugDump called in " << file << " in line " << line
               << std::endl;
 
-  //  std::cout << "Skip CORE::GEO::CUT::Mesh::DebugDump for now -- hiermeier" << std::endl;
+  //  std::cout << "Skip Core::Geo::Cut::Mesh::DebugDump for now -- hiermeier" << std::endl;
   //  return;
   std::stringstream str;
   str << ".full_debug_cut_output." << myrank_ << "_CUTFAIL.pos";
-  std::string filename(CORE::GEO::CUT::OUTPUT::GenerateGmshOutputFilename(str.str()));
+  std::string filename(Core::Geo::Cut::Output::GenerateGmshOutputFilename(str.str()));
   DumpGmsh(filename);
 
   ele->DebugDump();
@@ -2365,7 +2365,7 @@ void CORE::GEO::CUT::Mesh::DebugDump(CORE::GEO::CUT::Element* ele, std::string f
 /*-------------------------------------------------------------------------------------*
  * ? -> used in cut_tetmeshintersection
  *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Mesh::NewNodesFromPoints(std::map<Point*, Node*>& nodemap)
+void Core::Geo::Cut::Mesh::NewNodesFromPoints(std::map<Point*, Node*>& nodemap)
 {
   int nid = nodes_.size();
   for (std::map<Point*, Node*>::iterator i = nodemap.begin(); i != nodemap.end(); ++i)
@@ -2382,7 +2382,7 @@ void CORE::GEO::CUT::Mesh::NewNodesFromPoints(std::map<Point*, Node*>& nodemap)
 /*-------------------------------------------------------------------------------------*
  * get a map of node id and the pointer to the node
  *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Mesh::GetNodeMap(std::map<int, Node*>& nodemap)
+void Core::Geo::Cut::Mesh::GetNodeMap(std::map<int, Node*>& nodemap)
 {
   for (std::map<int, Teuchos::RCP<Node>>::iterator i = nodes_.begin(); i != nodes_.end(); i++)
   {
@@ -2396,7 +2396,7 @@ void CORE::GEO::CUT::Mesh::GetNodeMap(std::map<int, Node*>& nodemap)
 /*-------------------------------------------------------------------------------------*
     Returns the node with given id
  *-------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::Node* CORE::GEO::CUT::Mesh::GetNode(int nid) const
+Core::Geo::Cut::Node* Core::Geo::Cut::Mesh::GetNode(int nid) const
 {
   std::map<int, Teuchos::RCP<Node>>::const_iterator i = nodes_.find(nid);
   if (i != nodes_.end())
@@ -2412,7 +2412,7 @@ CORE::GEO::CUT::Node* CORE::GEO::CUT::Mesh::GetNode(int nid) const
     for the inner shadow node
     Remark: Do not identify a shadow node via its Id, since it is not unique over processors
  *-------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::Node* CORE::GEO::CUT::Mesh::GetNode(const plain_int_set& nids) const
+Core::Geo::Cut::Node* Core::Geo::Cut::Mesh::GetNode(const plain_int_set& nids) const
 {
   std::map<plain_int_set, Node*>::const_iterator i = shadow_nodes_.find(nids);
   if (i != shadow_nodes_.end())
@@ -2427,7 +2427,7 @@ CORE::GEO::CUT::Node* CORE::GEO::CUT::Mesh::GetNode(const plain_int_set& nids) c
     If node with the given id exists return the node, else create a new node with
     given coordinates and levelset value
  *-------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::Node* CORE::GEO::CUT::Mesh::GetNode(
+Core::Geo::Cut::Node* Core::Geo::Cut::Mesh::GetNode(
     int nid, const double* xyz, double lsv, double tolerance)
 {
   std::map<int, Teuchos::RCP<Node>>::iterator i = nodes_.find(nid);
@@ -2477,7 +2477,7 @@ CORE::GEO::CUT::Node* CORE::GEO::CUT::Mesh::GetNode(
  * in case of a boundary center node, and use the 20 nodes of the hex20 element to identify the
  * inner shadow/center node of the hex20 element
  *-------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::Node* CORE::GEO::CUT::Mesh::GetNode(
+Core::Geo::Cut::Node* Core::Geo::Cut::Mesh::GetNode(
     const plain_int_set& nids, const double* xyz, double lsv)
 {
   std::map<plain_int_set, Node*>::iterator i = shadow_nodes_.find(nids);
@@ -2502,7 +2502,7 @@ CORE::GEO::CUT::Node* CORE::GEO::CUT::Mesh::GetNode(
 /*-------------------------------------------------------------------------------------*
  * get the edge with begin node and end node
  *-------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::Edge* CORE::GEO::CUT::Mesh::get_edge(Node* begin, Node* end)
+Core::Geo::Cut::Edge* Core::Geo::Cut::Mesh::get_edge(Node* begin, Node* end)
 {
   if (begin->point() == end->point()) FOUR_C_THROW("edge between same point");
 
@@ -2521,7 +2521,7 @@ CORE::GEO::CUT::Edge* CORE::GEO::CUT::Mesh::get_edge(Node* begin, Node* end)
 /*-------------------------------------------------------------------------------------*
  * ?
  *-------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::Edge* CORE::GEO::CUT::Mesh::get_edge(const plain_int_set& nids,
+Core::Geo::Cut::Edge* Core::Geo::Cut::Mesh::get_edge(const plain_int_set& nids,
     const std::vector<Node*>& nodes, const CellTopologyData& edge_topology)
 {
   std::map<plain_int_set, Teuchos::RCP<Edge>>::iterator i = edges_.find(nids);
@@ -2567,7 +2567,7 @@ CORE::GEO::CUT::Edge* CORE::GEO::CUT::Mesh::get_edge(const plain_int_set& nids,
 /*----------------------------------------------------------------------------*
  * get the side that contains the nodes with the following node ids
  *----------------------------------------------------------------------------*/
-CORE::GEO::CUT::Side* CORE::GEO::CUT::Mesh::get_side(std::vector<int>& nids) const
+Core::Geo::Cut::Side* Core::Geo::Cut::Mesh::get_side(std::vector<int>& nids) const
 {
   // create a sorted vector
   plain_int_set node_ids;
@@ -2589,7 +2589,7 @@ CORE::GEO::CUT::Side* CORE::GEO::CUT::Mesh::get_side(std::vector<int>& nids) con
 /*----------------------------------------------------------------------------*
  * ???
  *----------------------------------------------------------------------------*/
-CORE::GEO::CUT::Side* CORE::GEO::CUT::Mesh::get_side(
+Core::Geo::Cut::Side* Core::Geo::Cut::Mesh::get_side(
     int sid, const std::vector<int>& nids, const CellTopologyData* top_data)
 {
   unsigned nc = top_data->node_count;
@@ -2608,7 +2608,7 @@ CORE::GEO::CUT::Side* CORE::GEO::CUT::Mesh::get_side(
 /*----------------------------------------------------------------------------*
  * ???
  *----------------------------------------------------------------------------*/
-CORE::GEO::CUT::Side* CORE::GEO::CUT::Mesh::get_side(
+Core::Geo::Cut::Side* Core::Geo::Cut::Mesh::get_side(
     int sid, const std::vector<Node*>& nodes, const CellTopologyData* top_data)
 {
   unsigned ec = top_data->edge_count;
@@ -2644,7 +2644,7 @@ CORE::GEO::CUT::Side* CORE::GEO::CUT::Mesh::get_side(
 /*----------------------------------------------------------------------------*
  * ?
  *----------------------------------------------------------------------------*/
-CORE::GEO::CUT::Side* CORE::GEO::CUT::Mesh::get_side(int sid, const plain_int_set& nids,
+Core::Geo::Cut::Side* Core::Geo::Cut::Mesh::get_side(int sid, const plain_int_set& nids,
     const std::vector<Node*>& nodes, const std::vector<Edge*>& edges,
     const CellTopologyData& side_topology)
 {
@@ -2655,7 +2655,7 @@ CORE::GEO::CUT::Side* CORE::GEO::CUT::Mesh::get_side(int sid, const plain_int_se
   }
   // Facet * f = new Facet;
   // facets_.push_back( Teuchos::rcp( f ) );
-  sides_[nids] = Teuchos::rcp(CORE::GEO::CUT::Side::Create(side_topology.key, sid, nodes, edges));
+  sides_[nids] = Teuchos::rcp(Core::Geo::Cut::Side::Create(side_topology.key, sid, nodes, edges));
 
   int seid = -shadow_sides_.size() - 1;
   /* Remark: the seid of a shadow node is not unique over processors, consequently
@@ -2668,7 +2668,7 @@ CORE::GEO::CUT::Side* CORE::GEO::CUT::Mesh::get_side(int sid, const plain_int_se
 /*----------------------------------------------------------------------------*
  * Returns the element with given id
  *----------------------------------------------------------------------------*/
-CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::GetElement(int eid)
+Core::Geo::Cut::Element* Core::Geo::Cut::Mesh::GetElement(int eid)
 {
   std::map<int, Teuchos::RCP<Element>>::iterator ie = elements_.find(eid);
   if (ie != elements_.end())
@@ -2684,7 +2684,7 @@ CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::GetElement(int eid)
  * element with given node ids. All details of the element are in cell
  * topology data
  *----------------------------------------------------------------------------*/
-CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::GetElement(
+Core::Geo::Cut::Element* Core::Geo::Cut::Mesh::GetElement(
     int eid, const std::vector<int>& nids, const CellTopologyData& top_data, bool active)
 {
   std::map<int, Teuchos::RCP<Element>>::iterator ie = elements_.find(eid);
@@ -2712,7 +2712,7 @@ CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::GetElement(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::GetElement(
+Core::Geo::Cut::Element* Core::Geo::Cut::Mesh::GetElement(
     int eid, const std::vector<Node*>& nodes, const CellTopologyData& top_data, bool active)
 {
   switch (top_data.dimension)
@@ -2733,7 +2733,7 @@ CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::GetElement(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <>
-CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::GetElement<1>(
+Core::Geo::Cut::Element* Core::Geo::Cut::Mesh::GetElement<1>(
     int eid, const std::vector<Node*>& nodes, const CellTopologyData& top_data, bool active)
 {
   /* put the actual element into the sides vector and into the edge vector
@@ -2791,7 +2791,7 @@ CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::GetElement<1>(
   Element* e = nullptr;
   if (eid > -1)
   {
-    elements_[eid] = CORE::GEO::CUT::Element::Create(top_data.key, eid, sides, nodes, active);
+    elements_[eid] = Core::Geo::Cut::Element::Create(top_data.key, eid, sides, nodes, active);
     e = elements_[eid].get();
   }
   else
@@ -2800,7 +2800,7 @@ CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::GetElement<1>(
     /* Remark: the seid of a shadow node is not unique over processors,
      * consequently numbered with negative integers on each proc */
     shadow_elements_[seid] =
-        CORE::GEO::CUT::Element::Create(top_data.key, eid, sides, nodes, active);
+        Core::Geo::Cut::Element::Create(top_data.key, eid, sides, nodes, active);
     e = shadow_elements_[seid].get();
   }
   return e;
@@ -2809,7 +2809,7 @@ CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::GetElement<1>(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <>
-CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::GetElement<2>(
+Core::Geo::Cut::Element* Core::Geo::Cut::Mesh::GetElement<2>(
     int eid, const std::vector<Node*>& nodes, const CellTopologyData& top_data, bool active)
 {
   std::vector<Side*> side(1, nullptr);
@@ -2862,7 +2862,7 @@ CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::GetElement<2>(
   Element* e = nullptr;
   if (eid > -1)
   {
-    elements_[eid] = CORE::GEO::CUT::Element::Create(top_data.key, eid, side, nodes, active);
+    elements_[eid] = Core::Geo::Cut::Element::Create(top_data.key, eid, side, nodes, active);
     e = elements_[eid].get();
   }
   else
@@ -2871,7 +2871,7 @@ CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::GetElement<2>(
     // Remark: the seid of a shadow node is not unique over processors, consequently numbered with
     // negative integers on each proc
     shadow_elements_[seid] =
-        CORE::GEO::CUT::Element::Create(top_data.key, eid, side, nodes, active);
+        Core::Geo::Cut::Element::Create(top_data.key, eid, side, nodes, active);
     e = shadow_elements_[seid].get();
   }
   return e;
@@ -2880,7 +2880,7 @@ CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::GetElement<2>(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <>
-CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::GetElement<3>(
+Core::Geo::Cut::Element* Core::Geo::Cut::Mesh::GetElement<3>(
     int eid, const std::vector<Node*>& nodes, const CellTopologyData& top_data, bool active)
 {
   static int shards_to_fourc[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18,
@@ -2936,7 +2936,7 @@ CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::GetElement<3>(
   Element* e = nullptr;
   if (eid > -1)
   {
-    elements_[eid] = CORE::GEO::CUT::Element::Create(top_data.key, eid, sides, nodes, active);
+    elements_[eid] = Core::Geo::Cut::Element::Create(top_data.key, eid, sides, nodes, active);
     e = elements_[eid].get();
   }
   else
@@ -2945,7 +2945,7 @@ CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::GetElement<3>(
     // Remark: the seid of a shadow node is not unique over processors, consequently numbered with
     // negative integers on each proc
     shadow_elements_[seid] =
-        CORE::GEO::CUT::Element::Create(top_data.key, eid, sides, nodes, active);
+        Core::Geo::Cut::Element::Create(top_data.key, eid, sides, nodes, active);
     e = shadow_elements_[seid].get();
   }
   return e;
@@ -2955,7 +2955,7 @@ CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::GetElement<3>(
 /*----------------------------------------------------------------------------*
  * check if xyz-coordinates lie within the mesh's bounding box
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::Mesh::WithinBB(const CORE::LINALG::SerialDenseMatrix& xyz)
+bool Core::Geo::Cut::Mesh::WithinBB(const Core::LinAlg::SerialDenseMatrix& xyz)
 {
   return bb_->Within(norm_, xyz);
 }
@@ -2964,13 +2964,13 @@ bool CORE::GEO::CUT::Mesh::WithinBB(const CORE::LINALG::SerialDenseMatrix& xyz)
 /*----------------------------------------------------------------------------*
  * check if the element lies within the bounding box
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::Mesh::WithinBB(Element& element) { return bb_->Within(norm_, element); }
+bool Core::Geo::Cut::Mesh::WithinBB(Element& element) { return bb_->Within(norm_, element); }
 
 
 /*----------------------------------------------------------------------------*
  * ?
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Mesh::create_side_ids_cut_test(int lastid)
+void Core::Geo::Cut::Mesh::create_side_ids_cut_test(int lastid)
 {
   for (std::map<plain_int_set, Teuchos::RCP<Side>>::iterator i = sides_.begin(); i != sides_.end();
        ++i)
@@ -2988,7 +2988,7 @@ void CORE::GEO::CUT::Mesh::create_side_ids_cut_test(int lastid)
 
 
 // used just for testing, in order to track down ids of the sides that are failing
-int CORE::GEO::CUT::Mesh::create_side_ids_all_cut_test(int lastid)
+int Core::Geo::Cut::Mesh::create_side_ids_all_cut_test(int lastid)
 {
   for (std::map<plain_int_set, Teuchos::RCP<Side>>::iterator i = sides_.begin(); i != sides_.end();
        ++i)
@@ -3006,7 +3006,7 @@ int CORE::GEO::CUT::Mesh::create_side_ids_all_cut_test(int lastid)
 /*----------------------------------------------------------------------------*
  * ?
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Mesh::assign_other_volume_cells_cut_test(const Mesh& other)
+void Core::Geo::Cut::Mesh::assign_other_volume_cells_cut_test(const Mesh& other)
 {
   const std::list<Teuchos::RCP<VolumeCell>>& other_cells = other.VolumeCells();
   plain_volumecell_set cells;
@@ -3057,7 +3057,7 @@ void CORE::GEO::CUT::Mesh::assign_other_volume_cells_cut_test(const Mesh& other)
  *          fail for Combust, cut is done in local coordinates. Thus this makes
  *          it likely that the cut is sensitive to 10^-11? Why?
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Mesh::TestFacetArea(bool istetmeshintersection)
+void Core::Geo::Cut::Mesh::TestFacetArea(bool istetmeshintersection)
 {
   for (std::list<Teuchos::RCP<Facet>>::iterator i = facets_.begin(); i != facets_.end(); ++i)
   {

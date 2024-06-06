@@ -42,16 +42,16 @@ namespace
       iCinM_.MultiplyNT(iFinM_, iFinM_);
     }
 
-    CORE::LINALG::Matrix<3, 3> FM_;
-    CORE::LINALG::Matrix<3, 3> iFinM_;
+    Core::LinAlg::Matrix<3, 3> FM_;
+    Core::LinAlg::Matrix<3, 3> iFinM_;
 
-    CORE::LINALG::Matrix<3, 3> CM_;
-    CORE::LINALG::Matrix<3, 3> iCinM_;
+    Core::LinAlg::Matrix<3, 3> CM_;
+    Core::LinAlg::Matrix<3, 3> iCinM_;
   };
 
   TEST_F(MultiplicativeSplitDefgradElastHyperServiceTest, TestEvaluateCe)
   {
-    CORE::LINALG::Matrix<3, 3> CeM_target(false);
+    Core::LinAlg::Matrix<3, 3> CeM_target(false);
     CeM_target(0, 0) = 1.3107725000000006;
     CeM_target(1, 1) = 1.5284889394999996;
     CeM_target(2, 2) = 1.7604995235000003;
@@ -59,15 +59,15 @@ namespace
     CeM_target(0, 2) = CeM_target(2, 0) = 0.091697784;
     CeM_target(1, 2) = CeM_target(2, 1) = 0.0564151401;
 
-    CORE::LINALG::Matrix<3, 3> CeM(false);
-    MAT::EvaluateCe(FM_, iFinM_, CeM);
+    Core::LinAlg::Matrix<3, 3> CeM(false);
+    Mat::EvaluateCe(FM_, iFinM_, CeM);
 
     FOUR_C_EXPECT_NEAR(CeM, CeM_target, 1.0e-10);
   }
 
   TEST_F(MultiplicativeSplitDefgradElastHyperServiceTest, TestEvaluateiCinCiCin)
   {
-    CORE::LINALG::Matrix<3, 3> iCinCiCinM_target(false);
+    Core::LinAlg::Matrix<3, 3> iCinCiCinM_target(false);
     iCinCiCinM_target(0, 0) = 1.418955902138138;
     iCinCiCinM_target(1, 1) = 1.6219134553554275;
     iCinCiCinM_target(2, 2) = 1.832708744871652;
@@ -75,8 +75,8 @@ namespace
     iCinCiCinM_target(0, 2) = iCinCiCinM_target(2, 0) = 0.113283079933819;
     iCinCiCinM_target(1, 2) = iCinCiCinM_target(2, 1) = 0.0631150197598975;
 
-    CORE::LINALG::Matrix<3, 3> iCinCiCinM(false);
-    MAT::EvaluateiCinCiCin(CM_, iCinM_, iCinCiCinM);
+    Core::LinAlg::Matrix<3, 3> iCinCiCinM(false);
+    Mat::EvaluateiCinCiCin(CM_, iCinM_, iCinCiCinM);
 
     FOUR_C_EXPECT_NEAR(iCinCiCinM, iCinCiCinM_target, 1.0e-10);
   }
@@ -84,31 +84,31 @@ namespace
 
   TEST_F(MultiplicativeSplitDefgradElastHyperServiceTest, TestElastHyperEvaluateElasticPart)
   {
-    CORE::LINALG::Matrix<6, 1> S_stress;
-    CORE::LINALG::Matrix<6, 6> cmat;
+    Core::LinAlg::Matrix<6, 1> S_stress;
+    Core::LinAlg::Matrix<6, 6> cmat;
 
     // Create parameter of IsoNeoHooke material
-    CORE::IO::InputParameterContainer iso_neo_hooke_data;
+    Core::IO::InputParameterContainer iso_neo_hooke_data;
     iso_neo_hooke_data.Add("MUE", 1.3);
 
     auto iso_neo_hooke_params =
-        MAT::make_parameter(1, CORE::Materials::MaterialType::mes_isoneohooke, iso_neo_hooke_data);
+        Mat::make_parameter(1, Core::Materials::MaterialType::mes_isoneohooke, iso_neo_hooke_data);
 
     // Create summand vector
-    std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>> potsum(0);
-    potsum.emplace_back(Teuchos::rcp(new MAT::ELASTIC::IsoNeoHooke(
-        dynamic_cast<MAT::ELASTIC::PAR::IsoNeoHooke *>(iso_neo_hooke_params.get()))));
+    std::vector<Teuchos::RCP<Mat::Elastic::Summand>> potsum(0);
+    potsum.emplace_back(Teuchos::rcp(new Mat::Elastic::IsoNeoHooke(
+        dynamic_cast<Mat::Elastic::PAR::IsoNeoHooke *>(iso_neo_hooke_params.get()))));
 
     // Read summand properties
-    MAT::SummandProperties properties;
-    MAT::ElastHyperProperties(potsum, properties);
+    Mat::SummandProperties properties;
+    Mat::ElastHyperProperties(potsum, properties);
 
     // Evaluate method to test
-    MAT::ElastHyperEvaluateElasticPart(FM_, iFinM_, S_stress, cmat, potsum, properties, 0, 0);
+    Mat::ElastHyperEvaluateElasticPart(FM_, iFinM_, S_stress, cmat, potsum, properties, 0, 0);
 
     // Build matrices with the correct solution
-    CORE::LINALG::Matrix<6, 1> S_stress_target;
-    CORE::LINALG::Matrix<6, 6> cmat_target;
+    Core::LinAlg::Matrix<6, 1> S_stress_target;
+    Core::LinAlg::Matrix<6, 6> cmat_target;
 
     S_stress_target(0) = -0.16087311035295149;
     S_stress_target(1) = -0.0041652481745947378;

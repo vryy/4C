@@ -30,11 +30,11 @@ namespace FPSI
   class MonolithicPlain;
 }
 
-namespace ADAPTER
+namespace Adapter
 {
   class Coupling;
   class ScaTraBaseAlgorithm;
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 namespace FSI
 {
@@ -48,13 +48,13 @@ namespace FSI
   }  // namespace UTILS
 }  // namespace FSI
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class MultiMapExtractor;
   class BlockSparseMatrixBase;
   class SparseMatrix;
   class Solver;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 
 namespace FS3I
@@ -135,10 +135,10 @@ namespace FS3I
     const Epetra_Comm& comm_;
 
     /// scatra field on fluid
-    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> fluidscatra_;
+    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> fluidscatra_;
 
     /// scatra field on structure
-    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> structscatra_;
+    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> structscatra_;
   };
 }  // namespace FS3I
 

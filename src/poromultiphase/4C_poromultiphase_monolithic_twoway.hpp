@@ -20,7 +20,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
   class SparseOperator;
@@ -29,14 +29,14 @@ namespace CORE::LINALG
   class Solver;
   class Equilibration;
   enum class EquilibrationMethod;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace CORE::LINEAR_SOLVER
+namespace Core::LinearSolver
 {
   enum class SolverType;
 }
 
-namespace CORE::Conditions
+namespace Core::Conditions
 {
   class LocsysManager;
 }
@@ -66,7 +66,7 @@ namespace POROMULTIPHASE
     void TimeStep() override;
 
     //! extractor to communicate between full monolithic map and block maps
-    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> Extractor() const override
+    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> Extractor() const override
     {
       return blockrowdofmap_;
     }
@@ -84,7 +84,7 @@ namespace POROMULTIPHASE
     Teuchos::RCP<const Epetra_Vector> RHS() const override { return rhs_; }
 
     // access to monolithic block system matrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() const override
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> BlockSystemMatrix() const override
     {
       return systemmatrix_;
     }
@@ -138,7 +138,7 @@ namespace POROMULTIPHASE
     virtual void setup_system_matrix() { setup_system_matrix(*systemmatrix_); }
 
     /// setup composed system matrix from field solvers
-    virtual void setup_system_matrix(CORE::LINALG::BlockSparseMatrixBase& mat);
+    virtual void setup_system_matrix(Core::LinAlg::BlockSparseMatrixBase& mat);
 
     /// setup composed system matrix from field solvers
     virtual void setup_maps();
@@ -147,33 +147,33 @@ namespace POROMULTIPHASE
     bool SetupSolver() override;
 
     //! build the block null spaces
-    void build_block_null_spaces(Teuchos::RCP<CORE::LINALG::Solver>& solver) override;
+    void build_block_null_spaces(Teuchos::RCP<Core::LinAlg::Solver>& solver) override;
 
     //! Evaluate mechanical-fluid system matrix
     virtual void apply_str_coupl_matrix(
-        Teuchos::RCP<CORE::LINALG::SparseOperator> k_sf  //!< mechanical-fluid stiffness matrix
+        Teuchos::RCP<Core::LinAlg::SparseOperator> k_sf  //!< mechanical-fluid stiffness matrix
     );
 
     //! Evaluate fluid-mechanical system matrix
     virtual void apply_fluid_coupl_matrix(
-        Teuchos::RCP<CORE::LINALG::SparseOperator> k_fs  //!< fluid-mechanical tangent matrix
+        Teuchos::RCP<Core::LinAlg::SparseOperator> k_fs  //!< fluid-mechanical tangent matrix
     );
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
     virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> iterinc);
 
     //! return structure fluid coupling sparse matrix
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> struct_fluid_coupling_matrix();
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> struct_fluid_coupling_matrix();
 
     //! return fluid structure coupling sparse matrix
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> fluid_struct_coupling_matrix();
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> fluid_struct_coupling_matrix();
 
     //! Solve the linear system of equations
     void linear_solve();
 
     //! Create the linear solver
     virtual void create_linear_solver(const Teuchos::ParameterList& solverparams,
-        const CORE::LINEAR_SOLVER::SolverType solvertype);
+        const Core::LinearSolver::SolverType solvertype);
 
     //! Setup Newton-Raphson
     void setup_newton();
@@ -214,7 +214,7 @@ namespace POROMULTIPHASE
 
     Teuchos::RCP<Epetra_Vector> rhs_;  //!< rhs of Poroelasticity system
 
-    Teuchos::RCP<CORE::LINALG::Solver> solver_;  //!< linear algebraic solver
+    Teuchos::RCP<Core::LinAlg::Solver> solver_;  //!< linear algebraic solver
     double solveradaptolbetter_;                 //!< tolerance to which is adpated ?
     bool solveradapttol_;                        //!< adapt solver tolerance
 
@@ -224,12 +224,12 @@ namespace POROMULTIPHASE
     //! @name Global matrixes
 
     //! block systemmatrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> systemmatrix_;
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> systemmatrix_;
 
     //! structure-fluid coupling matrix
-    Teuchos::RCP<CORE::LINALG::SparseOperator> k_sf_;
+    Teuchos::RCP<Core::LinAlg::SparseOperator> k_sf_;
     //! fluid-structure coupling matrix
-    Teuchos::RCP<CORE::LINALG::SparseOperator> k_fs_;
+    Teuchos::RCP<Core::LinAlg::SparseOperator> k_fs_;
 
     //@}
 
@@ -237,13 +237,13 @@ namespace POROMULTIPHASE
     Teuchos::RCP<Epetra_Map> fullmap_;
 
     //! dof row map splitted in (field) blocks
-    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> blockrowdofmap_;
+    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> blockrowdofmap_;
 
     //! all equilibration of global system matrix and RHS is done in here
-    Teuchos::RCP<CORE::LINALG::Equilibration> equilibration_;
+    Teuchos::RCP<Core::LinAlg::Equilibration> equilibration_;
 
     //! equilibration method applied to system matrix
-    CORE::LINALG::EquilibrationMethod equilibration_method_;
+    Core::LinAlg::EquilibrationMethod equilibration_method_;
 
     //! dirichlet map of monolithic system
     Teuchos::RCP<Epetra_Map> combinedDBCMap_;
@@ -272,18 +272,18 @@ namespace POROMULTIPHASE
     double maxinc_;  //!< maximum increment
     double maxres_;  //!< maximum residual
 
-    enum INPAR::POROMULTIPHASE::VectorNorm vectornormfres_;  //!< type of norm for residual
-    enum INPAR::POROMULTIPHASE::VectorNorm vectornorminc_;   //!< type of norm for increments
+    enum Inpar::POROMULTIPHASE::VectorNorm vectornormfres_;  //!< type of norm for residual
+    enum Inpar::POROMULTIPHASE::VectorNorm vectornorminc_;   //!< type of norm for increments
 
     Teuchos::Time timernewton_;  //!< timer for measurement of solution time of newton iterations
     double dtsolve_;             //!< linear solver time
     double dtele_;               //!< time for element evaluation + build-up of system matrix
 
     //! Dirichlet BCs with local co-ordinate system
-    Teuchos::RCP<CORE::Conditions::LocsysManager> locsysman_;
+    Teuchos::RCP<Core::Conditions::LocsysManager> locsysman_;
 
     //! flag for finite difference check
-    INPAR::POROMULTIPHASE::FdCheck fdcheck_;
+    Inpar::POROMULTIPHASE::FdCheck fdcheck_;
 
   };  // PoroMultiPhasePartitioned
 
@@ -314,7 +314,7 @@ namespace POROMULTIPHASE
     void setup_maps() override;
 
     /// setup composed system matrix from field solvers
-    void setup_system_matrix(CORE::LINALG::BlockSparseMatrixBase& mat) override;
+    void setup_system_matrix(Core::LinAlg::BlockSparseMatrixBase& mat) override;
 
     /// setup global rhs
     void setup_rhs() override;
@@ -324,17 +324,17 @@ namespace POROMULTIPHASE
 
     //! Create the linear solver
     void create_linear_solver(const Teuchos::ParameterList& solverparams,
-        const CORE::LINEAR_SOLVER::SolverType solvertype) override;
+        const Core::LinearSolver::SolverType solvertype) override;
 
     //! build the block null spaces
     void build_artery_block_null_space(
-        Teuchos::RCP<CORE::LINALG::Solver>& solver, const int& arteryblocknum) override;
+        Teuchos::RCP<Core::LinAlg::Solver>& solver, const int& arteryblocknum) override;
 
     //! dof row map (not splitted)
     Teuchos::RCP<Epetra_Map> fullmap_artporo_;
 
     //! dof row map splitted in (field) blocks
-    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> blockrowdofmap_artporo_;
+    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> blockrowdofmap_artporo_;
   };
 
 

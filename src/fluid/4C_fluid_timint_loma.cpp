@@ -25,10 +25,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       bk 11/13 |
  *----------------------------------------------------------------------*/
-FLD::TimIntLoma::TimIntLoma(const Teuchos::RCP<DRT::Discretization>& actdis,
-    const Teuchos::RCP<CORE::LINALG::Solver>& solver,
+FLD::TimIntLoma::TimIntLoma(const Teuchos::RCP<Discret::Discretization>& actdis,
+    const Teuchos::RCP<Core::LinAlg::Solver>& solver,
     const Teuchos::RCP<Teuchos::ParameterList>& params,
-    const Teuchos::RCP<CORE::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
+    const Teuchos::RCP<Core::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
     : FluidImplicitTimeInt(actdis, solver, params, output, alefluid),
       thermpressaf_(1.0),
       thermpressam_(1.0),
@@ -57,14 +57,14 @@ void FLD::TimIntLoma::Init()
   // ---------------------------------------------------------------------
 
   // get gas constant
-  int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(CORE::Materials::m_sutherland);
+  int id = Global::Problem::Instance()->Materials()->FirstIdByType(Core::Materials::m_sutherland);
   if (id == -1)
     FOUR_C_THROW("Could not find sutherland material");
   else
   {
-    const CORE::MAT::PAR::Parameter* mat =
-        GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
-    const MAT::PAR::Sutherland* actmat = static_cast<const MAT::PAR::Sutherland*>(mat);
+    const Core::Mat::PAR::Parameter* mat =
+        Global::Problem::Instance()->Materials()->ParameterById(id);
+    const Mat::PAR::Sutherland* actmat = static_cast<const Mat::PAR::Sutherland*>(mat);
     // we need the kinematic viscosity here
     gasconstant_ = actmat->gasconst_;
   }
@@ -87,7 +87,7 @@ void FLD::TimIntLoma::set_loma_iter_scalar_fields(Teuchos::RCP<const Epetra_Vect
     Teuchos::RCP<const Epetra_Vector> scalaram, Teuchos::RCP<const Epetra_Vector> scalardtam,
     Teuchos::RCP<const Epetra_Vector> fsscalaraf, const double thermpressaf,
     const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
-    Teuchos::RCP<DRT::Discretization> scatradis)
+    Teuchos::RCP<Discret::Discretization> scatradis)
 {
   // initializations
   int err(0);
@@ -109,7 +109,7 @@ void FLD::TimIntLoma::set_loma_iter_scalar_fields(Teuchos::RCP<const Epetra_Vect
   for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
   {
     // get the processor's local scatra node
-    CORE::Nodes::Node* lscatranode = scatradis->lRowNode(lnodeid);
+    Core::Nodes::Node* lscatranode = scatradis->lRowNode(lnodeid);
 
     // find out the global dof id of the last(!) dof at the scatra node
     const int numscatradof = scatradis->NumDof(0, lscatranode);
@@ -118,7 +118,7 @@ void FLD::TimIntLoma::set_loma_iter_scalar_fields(Teuchos::RCP<const Epetra_Vect
     if (localscatradofid < 0) FOUR_C_THROW("localdofid not found in map for given globaldofid");
 
     // get the processor's local fluid node
-    CORE::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
+    Core::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
     // get the global ids of degrees of freedom associated with this node
     nodedofs = discret_->Dof(0, lnode);
     // get global and processor's local pressure dof id (using the map!)
@@ -147,7 +147,7 @@ void FLD::TimIntLoma::set_loma_iter_scalar_fields(Teuchos::RCP<const Epetra_Vect
     err = accam_->ReplaceMyValue(localdofid, 0, value);
     if (err != 0) FOUR_C_THROW("error while inserting value into accam_");
 
-    if (turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
+    if (turbmodel_ == Inpar::FLUID::multifractal_subgrid_scales)
     {
       if (fsscalaraf != Teuchos::null)
         value = (*fsscalaraf)[localscatradofid];
@@ -177,7 +177,7 @@ void FLD::TimIntLoma::set_loma_iter_scalar_fields(Teuchos::RCP<const Epetra_Vect
  *----------------------------------------------------------------------*/
 void FLD::TimIntLoma::SetScalarFields(Teuchos::RCP<const Epetra_Vector> scalarnp,
     const double thermpressnp, Teuchos::RCP<const Epetra_Vector> scatraresidual,
-    Teuchos::RCP<DRT::Discretization> scatradis, const int whichscalar)
+    Teuchos::RCP<Discret::Discretization> scatradis, const int whichscalar)
 {
   FluidImplicitTimeInt::SetScalarFields(
       scalarnp, thermpressnp, scatraresidual, scatradis, whichscalar);
@@ -221,9 +221,9 @@ void FLD::TimIntLoma::print_turbulence_model()
 {
   FluidImplicitTimeInt::print_turbulence_model();
 
-  if (physicaltype_ == INPAR::FLUID::loma and turbmodel_ == INPAR::FLUID::smagorinsky)
+  if (physicaltype_ == Inpar::FLUID::loma and turbmodel_ == Inpar::FLUID::smagorinsky)
   {
-    if (CORE::UTILS::IntegralValue<int>(params_->sublist("SUBGRID VISCOSITY"), "C_INCLUDE_CI"))
+    if (Core::UTILS::IntegralValue<int>(params_->sublist("SUBGRID VISCOSITY"), "C_INCLUDE_CI"))
     {
       if (params_->sublist("SUBGRID VISCOSITY").get<double>("C_YOSHIZAWA") > 0.0)
       {
@@ -319,7 +319,7 @@ void FLD::TimIntLoma::av_m3_preparation()
 
   // perform initial separation to initialize fsvelaf_
   // required for loma
-  if (physicaltype_ == INPAR::FLUID::loma)
+  if (physicaltype_ == Inpar::FLUID::loma)
   {
     UpdateVelafGenAlpha();
     Sep_Multiply();

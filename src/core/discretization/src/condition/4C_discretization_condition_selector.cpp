@@ -22,8 +22,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-CORE::Conditions::ConditionSelector::ConditionSelector(
-    const DRT::Discretization& dis, std::string condname)
+Core::Conditions::ConditionSelector::ConditionSelector(
+    const Discret::Discretization& dis, std::string condname)
     : dis_(dis)
 {
   dis.GetCondition(condname, conds_);
@@ -34,8 +34,8 @@ CORE::Conditions::ConditionSelector::ConditionSelector(
 /*----------------------------------------------------------------------*
  | construct a selector from a given vector of conditions    fang 07/16 |
  *----------------------------------------------------------------------*/
-CORE::Conditions::ConditionSelector::ConditionSelector(
-    const DRT::Discretization& dis,       //!< discretization
+Core::Conditions::ConditionSelector::ConditionSelector(
+    const Discret::Discretization& dis,   //!< discretization
     const std::vector<Condition*>& conds  //!< given vector of conditions
     )
     : dis_(dis), conds_(conds)
@@ -46,8 +46,8 @@ CORE::Conditions::ConditionSelector::ConditionSelector(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool CORE::Conditions::ConditionSelector::SelectDofs(
-    CORE::Nodes::Node* node, std::set<int>& conddofset)
+bool Core::Conditions::ConditionSelector::SelectDofs(
+    Core::Nodes::Node* node, std::set<int>& conddofset)
 {
   bool found = false;
 
@@ -70,7 +70,7 @@ bool CORE::Conditions::ConditionSelector::SelectDofs(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool CORE::Conditions::ConditionSelector::ContainsNode(int ngid)
+bool Core::Conditions::ConditionSelector::ContainsNode(int ngid)
 {
   for (const auto& cond : conds_)
   {
@@ -84,12 +84,12 @@ bool CORE::Conditions::ConditionSelector::ContainsNode(int ngid)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-CORE::Conditions::MultiConditionSelector::MultiConditionSelector() : overlapping_(false) {}
+Core::Conditions::MultiConditionSelector::MultiConditionSelector() : overlapping_(false) {}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::Conditions::MultiConditionSelector::SetupExtractor(const DRT::Discretization& dis,
-    const Epetra_Map& fullmap, CORE::LINALG::MultiMapExtractor& extractor)
+void Core::Conditions::MultiConditionSelector::SetupExtractor(const Discret::Discretization& dis,
+    const Epetra_Map& fullmap, Core::LinAlg::MultiMapExtractor& extractor)
 {
   setup_cond_dof_sets(dis);
 
@@ -112,10 +112,10 @@ void CORE::Conditions::MultiConditionSelector::SetupExtractor(const DRT::Discret
   std::vector<Teuchos::RCP<const Epetra_Map>> maps;
   maps.reserve(conddofset_.size() + 1);
 
-  maps.emplace_back(CORE::LINALG::CreateMap(otherdofset, dis.Comm()));
+  maps.emplace_back(Core::LinAlg::CreateMap(otherdofset, dis.Comm()));
   for (auto& conddofset : conddofset_)
   {
-    maps.emplace_back(CORE::LINALG::CreateMap(conddofset, dis.Comm()));
+    maps.emplace_back(Core::LinAlg::CreateMap(conddofset, dis.Comm()));
   }
 
   // MultiMapExtractor setup
@@ -127,7 +127,8 @@ void CORE::Conditions::MultiConditionSelector::SetupExtractor(const DRT::Discret
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::Conditions::MultiConditionSelector::setup_cond_dof_sets(const DRT::Discretization& dis)
+void Core::Conditions::MultiConditionSelector::setup_cond_dof_sets(
+    const Discret::Discretization& dis)
 {
   // we get as many sets as we have selectors
   conddofset_.resize(selectors_.size());
@@ -136,7 +137,7 @@ void CORE::Conditions::MultiConditionSelector::setup_cond_dof_sets(const DRT::Di
   int numrownodes = dis.NumMyRowNodes();
   for (int i = 0; i < numrownodes; ++i)
   {
-    CORE::Nodes::Node* node = dis.lRowNode(i);
+    Core::Nodes::Node* node = dis.lRowNode(i);
 
     // test each selector
     for (unsigned j = 0; j < selectors_.size(); ++j)

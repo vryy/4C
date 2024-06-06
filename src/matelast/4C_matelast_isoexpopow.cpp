@@ -13,7 +13,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-MAT::ELASTIC::PAR::IsoExpoPow::IsoExpoPow(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
+Mat::Elastic::PAR::IsoExpoPow::IsoExpoPow(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
     : Parameter(matdata),
       k1_(matdata->Get<double>("K1")),
       k2_(matdata->Get<double>("K2")),
@@ -21,10 +21,10 @@ MAT::ELASTIC::PAR::IsoExpoPow::IsoExpoPow(const Teuchos::RCP<CORE::MAT::PAR::Mat
 {
 }
 
-MAT::ELASTIC::IsoExpoPow::IsoExpoPow(MAT::ELASTIC::PAR::IsoExpoPow* params) : params_(params) {}
+Mat::Elastic::IsoExpoPow::IsoExpoPow(Mat::Elastic::PAR::IsoExpoPow* params) : params_(params) {}
 
-void MAT::ELASTIC::IsoExpoPow::AddStrainEnergy(double& psi, const CORE::LINALG::Matrix<3, 1>& prinv,
-    const CORE::LINALG::Matrix<3, 1>& modinv, const CORE::LINALG::Matrix<6, 1>& glstrain,
+void Mat::Elastic::IsoExpoPow::AddStrainEnergy(double& psi, const Core::LinAlg::Matrix<3, 1>& prinv,
+    const Core::LinAlg::Matrix<3, 1>& modinv, const Core::LinAlg::Matrix<6, 1>& glstrain,
     const int gp, const int eleGID)
 {
   const double k1 = params_->k1_;
@@ -36,8 +36,8 @@ void MAT::ELASTIC::IsoExpoPow::AddStrainEnergy(double& psi, const CORE::LINALG::
   if (k2 != 0) psi += k1 / (2. * k2) * (exp(k2 * pow(modinv(0) - 3., d)) - 1.);
 }
 
-void MAT::ELASTIC::IsoExpoPow::add_derivatives_modified(CORE::LINALG::Matrix<3, 1>& dPmodI,
-    CORE::LINALG::Matrix<6, 1>& ddPmodII, const CORE::LINALG::Matrix<3, 1>& modinv, const int gp,
+void Mat::Elastic::IsoExpoPow::add_derivatives_modified(Core::LinAlg::Matrix<3, 1>& dPmodI,
+    Core::LinAlg::Matrix<6, 1>& ddPmodII, const Core::LinAlg::Matrix<3, 1>& modinv, const int gp,
     const int eleGID)
 {
   const double k1 = params_->k1_;

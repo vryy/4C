@@ -20,7 +20,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::IO
+namespace Core::IO
 {
   /**
    * @brief Add a polyhedron cell to a visualization data object
@@ -32,9 +32,9 @@ namespace CORE::IO
    */
   template <unsigned int n_dim>
   void AppendPolyhedronToVisualizationData(VisualizationData& visualization_data,
-      const std::vector<CORE::LINALG::Matrix<n_dim, 1>>& point_coordinates,
+      const std::vector<Core::LinAlg::Matrix<n_dim, 1>>& point_coordinates,
       const std::vector<std::vector<int>>& face_connectivity);
-}  // namespace CORE::IO
+}  // namespace Core::IO
 
 
 FOUR_C_NAMESPACE_CLOSE

@@ -23,14 +23,14 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                             gjb 01/09 |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::FluidBoundary::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
-    CORE::LINALG::SerialDenseVector& elevec3)
+int Discret::ELEMENTS::FluidBoundary::Evaluate(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
+    Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
+    Core::LinAlg::SerialDenseVector& elevec3)
 {
   // get the action required
-  const FLD::BoundaryAction act = CORE::UTILS::GetAsEnum<FLD::BoundaryAction>(params, "action");
+  const FLD::BoundaryAction act = Core::UTILS::GetAsEnum<FLD::BoundaryAction>(params, "action");
 
   switch (act)
   {
@@ -49,7 +49,7 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(Teuchos::ParameterList& params,
     case FLD::traction_velocity_component:
     case FLD::traction_Uv_integral_component:
     {
-      DRT::ELEMENTS::FluidBoundaryFactory::ProvideImpl(Shape(), "std")
+      Discret::ELEMENTS::FluidBoundaryFactory::ProvideImpl(Shape(), "std")
           ->evaluate_action(
               this, params, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3);
       break;
@@ -60,45 +60,45 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(Teuchos::ParameterList& params,
       // implemented there.
       // Todo: One could think about splitting this method in pure fluid and poro fluid part...
       // vuong 11/13
-      DRT::ELEMENTS::FluidBoundaryFactory::ProvideImpl(Shape(), "poro")
+      Discret::ELEMENTS::FluidBoundaryFactory::ProvideImpl(Shape(), "poro")
           ->evaluate_action(
               this, params, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3);
       break;
     }
     case FLD::enforce_weak_dbc:
     {
-      DRT::ELEMENTS::FluidBoundaryParentInterface::Impl(this)->EvaluateWeakDBC(
+      Discret::ELEMENTS::FluidBoundaryParentInterface::Impl(this)->EvaluateWeakDBC(
           this, params, discretization, lm, elemat1, elevec1);
       break;
     }
     case FLD::estimate_Nitsche_trace_maxeigenvalue_:
     {
-      DRT::ELEMENTS::FluidBoundaryParentInterface::Impl(this)
+      Discret::ELEMENTS::FluidBoundaryParentInterface::Impl(this)
           ->estimate_nitsche_trace_max_eigenvalue(
               this, params, discretization, lm, elemat1, elemat2);
       break;
     }
     case FLD::mixed_hybrid_dbc:
     {
-      DRT::ELEMENTS::FluidBoundaryParentInterface::Impl(this)->MixHybDirichlet(
+      Discret::ELEMENTS::FluidBoundaryParentInterface::Impl(this)->MixHybDirichlet(
           this, params, discretization, lm, elemat1, elevec1);
       break;
     }
     case FLD::flow_dep_pressure_bc:
     {
-      DRT::ELEMENTS::FluidBoundaryParentInterface::Impl(this)->FlowDepPressureBC(
+      Discret::ELEMENTS::FluidBoundaryParentInterface::Impl(this)->FlowDepPressureBC(
           this, params, discretization, lm, elemat1, elevec1);
       break;
     }
     case FLD::slip_supp_bc:
     {
-      DRT::ELEMENTS::FluidBoundaryParentInterface::Impl(this)->SlipSuppBC(
+      Discret::ELEMENTS::FluidBoundaryParentInterface::Impl(this)->SlipSuppBC(
           this, params, discretization, lm, elemat1, elevec1);
       break;
     }
     case FLD::navier_slip_bc:
     {
-      DRT::ELEMENTS::FluidBoundaryParentInterface::Impl(this)->NavierSlipBC(
+      Discret::ELEMENTS::FluidBoundaryParentInterface::Impl(this)->NavierSlipBC(
           this, params, discretization, lm, elemat1, elevec1);
       break;
     }
@@ -115,23 +115,23 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  Integrate a surface/line Neumann boundary condition       gjb 01/09 |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::FluidBoundary::evaluate_neumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
-    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
-    CORE::LINALG::SerialDenseMatrix* elemat1)
+int Discret::ELEMENTS::FluidBoundary::evaluate_neumann(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
+    Core::LinAlg::SerialDenseMatrix* elemat1)
 {
-  return DRT::ELEMENTS::FluidBoundaryFactory::ProvideImpl(Shape(), "std")
+  return Discret::ELEMENTS::FluidBoundaryFactory::ProvideImpl(Shape(), "std")
       ->evaluate_neumann(this, params, discretization, condition, lm, elevec1, elemat1);
 }
 
 /*----------------------------------------------------------------------*
  |  Get degrees of freedom used by this element                (public) |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidBoundary::LocationVector(const Discretization& dis, LocationArray& la,
+void Discret::ELEMENTS::FluidBoundary::LocationVector(const Discretization& dis, LocationArray& la,
     bool doDirichlet, const std::string& condstring, Teuchos::ParameterList& params) const
 {
   // get the action required
-  const FLD::BoundaryAction act = CORE::UTILS::GetAsEnum<FLD::BoundaryAction>(params, "action");
+  const FLD::BoundaryAction act = Core::UTILS::GetAsEnum<FLD::BoundaryAction>(params, "action");
 
   switch (act)
   {
@@ -152,7 +152,7 @@ void DRT::ELEMENTS::FluidBoundary::LocationVector(const Discretization& dis, Loc
       break;
     default:
       // standard case: element assembles into its own dofs only
-      CORE::Elements::Element::LocationVector(dis, la, doDirichlet);
+      Core::Elements::Element::LocationVector(dis, la, doDirichlet);
       break;
   }
   return;

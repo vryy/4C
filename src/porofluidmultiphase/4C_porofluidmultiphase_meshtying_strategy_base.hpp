@@ -17,12 +17,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace ADAPTER
+namespace Adapter
 {
   class ArtNet;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   struct SolverParams;
 }
@@ -38,9 +38,9 @@ namespace POROFLUIDMULTIPHASE
         : porofluidmultitimint_(porofluidmultitimint),
           params_(probparams),
           poroparams_(poroparams),
-          vectornormfres_(CORE::UTILS::IntegralValue<INPAR::POROFLUIDMULTIPHASE::VectorNorm>(
+          vectornormfres_(Core::UTILS::IntegralValue<Inpar::POROFLUIDMULTIPHASE::VectorNorm>(
               poroparams_, "VECTORNORM_RESF")),
-          vectornorminc_(CORE::UTILS::IntegralValue<INPAR::POROFLUIDMULTIPHASE::VectorNorm>(
+          vectornorminc_(Core::UTILS::IntegralValue<Inpar::POROFLUIDMULTIPHASE::VectorNorm>(
               poroparams_, "VECTORNORM_INC"))
     {
       return;
@@ -62,12 +62,12 @@ namespace POROFLUIDMULTIPHASE
     virtual void Output() = 0;
 
     //! Initialize the linear solver
-    virtual void initialize_linear_solver(Teuchos::RCP<CORE::LINALG::Solver> solver) = 0;
+    virtual void initialize_linear_solver(Teuchos::RCP<Core::LinAlg::Solver> solver) = 0;
 
     //! solve linear system of equations
-    virtual void linear_solve(Teuchos::RCP<CORE::LINALG::Solver> solver,
-        Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat, Teuchos::RCP<Epetra_Vector> increment,
-        Teuchos::RCP<Epetra_Vector> residual, CORE::LINALG::SolverParams& solver_params) = 0;
+    virtual void linear_solve(Teuchos::RCP<Core::LinAlg::Solver> solver,
+        Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat, Teuchos::RCP<Epetra_Vector> increment,
+        Teuchos::RCP<Epetra_Vector> residual, Core::LinAlg::SolverParams& solver_params) = 0;
 
     //! calculate norms for convergence checks
     virtual void CalculateNorms(std::vector<double>& preresnorm, std::vector<double>& incprenorm,
@@ -87,7 +87,7 @@ namespace POROFLUIDMULTIPHASE
         const Teuchos::RCP<const Epetra_Vector> inc) = 0;
 
     // return arterial network time integrator
-    virtual Teuchos::RCP<ADAPTER::ArtNet> ArtNetTimInt()
+    virtual Teuchos::RCP<Adapter::ArtNet> ArtNetTimInt()
     {
       FOUR_C_THROW("ArtNetTimInt() not implemented in base class, wrong mesh tying object?");
       return Teuchos::null;
@@ -101,7 +101,7 @@ namespace POROFLUIDMULTIPHASE
     }
 
     //! access to block system matrix of artery poro problem
-    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> artery_porofluid_sysmat() const
+    virtual Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> artery_porofluid_sysmat() const
     {
       FOUR_C_THROW(
           "artery_porofluid_sysmat() not implemented in base class, wrong mesh tying object?");
@@ -150,10 +150,10 @@ namespace POROFLUIDMULTIPHASE
     const Teuchos::ParameterList& poroparams_;
 
     // vector norm for residuals
-    enum INPAR::POROFLUIDMULTIPHASE::VectorNorm vectornormfres_;
+    enum Inpar::POROFLUIDMULTIPHASE::VectorNorm vectornormfres_;
 
     // vector norm for increments
-    enum INPAR::POROFLUIDMULTIPHASE::VectorNorm vectornorminc_;
+    enum Inpar::POROFLUIDMULTIPHASE::VectorNorm vectornorminc_;
   };
 
 }  // namespace POROFLUIDMULTIPHASE

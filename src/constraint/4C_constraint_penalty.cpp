@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 CONSTRAINTS::ConstraintPenalty::ConstraintPenalty(
-    Teuchos::RCP<DRT::Discretization> discr, const std::string& conditionname)
+    Teuchos::RCP<Discret::Discretization> discr, const std::string& conditionname)
     : Constraint(discr, conditionname)
 {
   if (constrcond_.size())
@@ -53,7 +53,7 @@ CONSTRAINTS::ConstraintPenalty::ConstraintPenalty(
     }
     // initialize maps and importer
     errormap_ = Teuchos::rcp(new Epetra_Map(numele, nummyele, 0, actdisc_->Comm()));
-    rederrormap_ = CORE::LINALG::AllreduceEMap(*errormap_);
+    rederrormap_ = Core::LinAlg::AllreduceEMap(*errormap_);
     errorexport_ = Teuchos::rcp(new Epetra_Export(*rederrormap_, *errormap_));
     errorimport_ = Teuchos::rcp(new Epetra_Import(*rederrormap_, *errormap_));
     acterror_ = Teuchos::rcp(new Epetra_Vector(*rederrormap_));
@@ -123,8 +123,8 @@ void CONSTRAINTS::ConstraintPenalty::Initialize(const double& time)
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
 void CONSTRAINTS::ConstraintPenalty::Evaluate(Teuchos::ParameterList& params,
-    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
-    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
+    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
+    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
     Teuchos::RCP<Epetra_Vector> systemvector3)
 {
@@ -173,8 +173,8 @@ void CONSTRAINTS::ConstraintPenalty::Evaluate(Teuchos::ParameterList& params,
 /*-----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CONSTRAINTS::ConstraintPenalty::evaluate_constraint(Teuchos::ParameterList& params,
-    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
-    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
+    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
+    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
     Teuchos::RCP<Epetra_Vector> systemvector3)
 {
@@ -216,8 +216,8 @@ void CONSTRAINTS::ConstraintPenalty::evaluate_constraint(Teuchos::ParameterList&
       if (curve) curvenum = *curve;
       double curvefac = 1.0;
       if (curvenum >= 0)
-        curvefac = GLOBAL::Problem::Instance()
-                       ->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum)
+        curvefac = Global::Problem::Instance()
+                       ->FunctionById<Core::UTILS::FunctionOfTime>(curvenum)
                        .Evaluate(time);
 
       double diff = (curvefac * (*initerror_)[condID - 1] - (*acterror_)[condID - 1]);
@@ -229,21 +229,21 @@ void CONSTRAINTS::ConstraintPenalty::evaluate_constraint(Teuchos::ParameterList&
         (*lagrvalues_force_)[condID - 1] = (*lagrvalues_)[condID - 1] + rho_[condID] * diff;
 
       // elements might need condition
-      params.set<Teuchos::RCP<CORE::Conditions::Condition>>("condition", Teuchos::rcp(cond, false));
+      params.set<Teuchos::RCP<Core::Conditions::Condition>>("condition", Teuchos::rcp(cond, false));
 
       // define element matrices and vectors
-      CORE::LINALG::SerialDenseMatrix elematrix1;
-      CORE::LINALG::SerialDenseMatrix elematrix2;
-      CORE::LINALG::SerialDenseVector elevector1;
-      CORE::LINALG::SerialDenseVector elevector2;
-      CORE::LINALG::SerialDenseVector elevector3;
+      Core::LinAlg::SerialDenseMatrix elematrix1;
+      Core::LinAlg::SerialDenseMatrix elematrix2;
+      Core::LinAlg::SerialDenseVector elevector1;
+      Core::LinAlg::SerialDenseVector elevector2;
+      Core::LinAlg::SerialDenseVector elevector3;
 
-      std::map<int, Teuchos::RCP<CORE::Elements::Element>>& geom = cond->Geometry();
+      std::map<int, Teuchos::RCP<Core::Elements::Element>>& geom = cond->Geometry();
       // if (geom.empty()) FOUR_C_THROW("evaluation of condition with empty geometry");
       // no check for empty geometry here since in parallel computations
       // can exist processors which do not own a portion of the elements belonging
       // to the condition geometry
-      std::map<int, Teuchos::RCP<CORE::Elements::Element>>::iterator curr;
+      std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator curr;
       for (curr = geom.begin(); curr != geom.end(); ++curr)
       {
         // get element location vector and ownerships
@@ -292,8 +292,8 @@ void CONSTRAINTS::ConstraintPenalty::evaluate_constraint(Teuchos::ParameterList&
           // force+stiff)
           if (!assemblemat1) elevector2.scale((*lagrvalues_force_)[condID - 1]);
           if (assemblemat1) elevector2.scale((*lagrvalues_)[condID - 1]);
-          CORE::LINALG::Assemble(*systemvector1, elevector1, lm, lmowner);
-          CORE::LINALG::Assemble(*systemvector1, elevector2, lm, lmowner);
+          Core::LinAlg::Assemble(*systemvector1, elevector1, lm, lmowner);
+          Core::LinAlg::Assemble(*systemvector1, elevector2, lm, lmowner);
         }
       }
     }
@@ -323,20 +323,20 @@ void CONSTRAINTS::ConstraintPenalty::evaluate_error(
     // if current time is larger than initialization time of the condition, start computing
     if (inittimes_.find(condID)->second <= time)
     {
-      params.set<Teuchos::RCP<CORE::Conditions::Condition>>("condition", Teuchos::rcp(cond, false));
+      params.set<Teuchos::RCP<Core::Conditions::Condition>>("condition", Teuchos::rcp(cond, false));
 
       // define element matrices and vectors
-      CORE::LINALG::SerialDenseMatrix elematrix1;
-      CORE::LINALG::SerialDenseMatrix elematrix2;
-      CORE::LINALG::SerialDenseVector elevector1;
-      CORE::LINALG::SerialDenseVector elevector2;
-      CORE::LINALG::SerialDenseVector elevector3;
+      Core::LinAlg::SerialDenseMatrix elematrix1;
+      Core::LinAlg::SerialDenseMatrix elematrix2;
+      Core::LinAlg::SerialDenseVector elevector1;
+      Core::LinAlg::SerialDenseVector elevector2;
+      Core::LinAlg::SerialDenseVector elevector3;
 
-      std::map<int, Teuchos::RCP<CORE::Elements::Element>>& geom = cond->Geometry();
+      std::map<int, Teuchos::RCP<Core::Elements::Element>>& geom = cond->Geometry();
       // no check for empty geometry here since in parallel computations
       // can exist processors which do not own a portion of the elements belonging
       // to the condition geometry
-      std::map<int, Teuchos::RCP<CORE::Elements::Element>>::iterator curr;
+      std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator curr;
       for (curr = geom.begin(); curr != geom.end(); ++curr)
       {
         // get element location vector and ownerships
@@ -360,7 +360,7 @@ void CONSTRAINTS::ConstraintPenalty::evaluate_error(
         std::vector<int> constrowner;
         constrlm.push_back(condID - 1);
         constrowner.push_back(curr->second->Owner());
-        CORE::LINALG::Assemble(*systemvector, elevector3, constrlm, constrowner);
+        Core::LinAlg::Assemble(*systemvector, elevector3, constrlm, constrowner);
       }
 
       if (actdisc_->Comm().MyPID() == 0 && (!(activecons_.find(condID)->second)))

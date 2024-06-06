@@ -24,10 +24,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       bk 11/13 |
  *----------------------------------------------------------------------*/
-FLD::TimIntOneStepTheta::TimIntOneStepTheta(const Teuchos::RCP<DRT::Discretization>& actdis,
-    const Teuchos::RCP<CORE::LINALG::Solver>& solver,
+FLD::TimIntOneStepTheta::TimIntOneStepTheta(const Teuchos::RCP<Discret::Discretization>& actdis,
+    const Teuchos::RCP<Core::LinAlg::Solver>& solver,
     const Teuchos::RCP<Teuchos::ParameterList>& params,
-    const Teuchos::RCP<CORE::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
+    const Teuchos::RCP<Core::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
     : FluidImplicitTimeInt(actdis, solver, params, output, alefluid),
       startalgo_(false),
       external_loadsn_(Teuchos::null),
@@ -151,7 +151,7 @@ void FLD::TimIntOneStepTheta::OutputofFilteredVel(
   row_finescaleveltmp = Teuchos::rcp(new Epetra_Vector(*dofrowmap, true));
 
   // get fine scale velocity
-  if (scale_sep_ == INPAR::FLUID::algebraic_multigrid_operator)
+  if (scale_sep_ == Inpar::FLUID::algebraic_multigrid_operator)
     Sep_->Multiply(false, *velnp_, *row_finescaleveltmp);
   else
     FOUR_C_THROW("Unknown separation type!");
@@ -227,8 +227,8 @@ void FLD::TimIntOneStepTheta::ApplyExternalForces(Teuchos::RCP<Epetra_MultiVecto
   if (step_ <= numstasteps_)
   {
     external_loadsn_ = Teuchos::rcp(new Epetra_Vector(*(*fext)(0)));
-    external_loadsnp_ = CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);
-    external_loads_ = CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);
+    external_loadsnp_ = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
+    external_loads_ = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
   }
 
   if (external_loadsn_ == Teuchos::null)
@@ -269,14 +269,14 @@ void FLD::TimIntOneStepTheta::read_restart(int step)
   // call base class
   FLD::FluidImplicitTimeInt::read_restart(step);
 
-  CORE::IO::DiscretizationReader reader(
-      discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
+  Core::IO::DiscretizationReader reader(
+      discret_, Global::Problem::Instance()->InputControlFile(), step);
   // check whether external forces were written
   const int have_fexternal = reader.ReadInt("have_fexternal");
   if (have_fexternal != -1)
   {
-    external_loadsn_ = CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);
-    external_loadsnp_ = CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);
+    external_loadsn_ = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
+    external_loadsnp_ = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
     if (step_ > numstasteps_ && params_->get<double>("theta") != 1.0)
     {
       reader.ReadVector(external_loadsn_, "fexternal_n");

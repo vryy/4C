@@ -23,27 +23,27 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
 
-namespace DRT
+namespace Discret
 {
   // forward declarations
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::Nodes
+namespace Core::Nodes
 {
-  class NodeType : public CORE::COMM::ParObjectType
+  class NodeType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "NodeType"; }
 
     static NodeType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static NodeType instance_;
@@ -53,7 +53,7 @@ namespace CORE::Nodes
   \brief A virtual class all nodes that are used in DRT have to implement
 
   */
-  class Node : public CORE::COMM::ParObject
+  class Node : public Core::Communication::ParObject
   {
    public:
     //! @name Enums and Friends
@@ -107,7 +107,7 @@ namespace CORE::Nodes
     \ref Pack and \ref Unpack are used to communicate this node
 
     */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class
@@ -154,7 +154,7 @@ namespace CORE::Nodes
     /*!
     \brief Return ptr to vector of element ptrs
     */
-    inline CORE::Elements::Element** Elements()
+    inline Core::Elements::Element** Elements()
     {
       if (NumElement())
         return element_.data();
@@ -165,10 +165,10 @@ namespace CORE::Nodes
     /*!
     \brief Return const ptr to vector of const element ptrs
     */
-    inline const CORE::Elements::Element* const* Elements() const
+    inline const Core::Elements::Element* const* Elements() const
     {
       if (NumElement())
-        return (const CORE::Elements::Element* const*)(element_.data());
+        return (const Core::Elements::Element* const*)(element_.data());
       else
         return nullptr;
     }
@@ -217,10 +217,10 @@ namespace CORE::Nodes
              NOT be overwritten but stored twice in the element
 
     */
-    void SetCondition(const std::string& name, Teuchos::RCP<CORE::Conditions::Condition> cond)
+    void SetCondition(const std::string& name, Teuchos::RCP<Core::Conditions::Condition> cond)
     {
       condition_.insert(
-          std::pair<std::string, Teuchos::RCP<CORE::Conditions::Condition>>(name, cond));
+          std::pair<std::string, Teuchos::RCP<Core::Conditions::Condition>>(name, cond));
     }
 
     /*!
@@ -235,7 +235,7 @@ namespace CORE::Nodes
 
     */
     void GetCondition(
-        const std::string& name, std::vector<CORE::Conditions::Condition*>& out) const;
+        const std::string& name, std::vector<Core::Conditions::Condition*>& out) const;
 
     /*!
     \brief Get a condition with a certain name
@@ -249,7 +249,7 @@ namespace CORE::Nodes
 
     \return Returns nullptr if condition with that name does not exist
     */
-    CORE::Conditions::Condition* GetCondition(const std::string& name) const;
+    Core::Conditions::Condition* GetCondition(const std::string& name) const;
 
     /*!
     \brief Delete all conditions set to this node
@@ -315,7 +315,7 @@ namespace CORE::Nodes
 
     Resizes the element ptr vector and adds ptr at the end of vector
     */
-    inline void add_element_ptr(CORE::Elements::Element* eleptr)
+    inline void add_element_ptr(Core::Elements::Element* eleptr)
     {
       const int size = element_.size();
       element_.resize(size + 1);
@@ -332,16 +332,16 @@ namespace CORE::Nodes
     //! nodal coords
     std::vector<double> x_;
     //! pointers to adjacent elements
-    std::vector<CORE::Elements::Element*> element_;
+    std::vector<Core::Elements::Element*> element_;
     //! some conditions e.g. BCs
-    std::multimap<std::string, Teuchos::RCP<CORE::Conditions::Condition>> condition_;
+    std::multimap<std::string, Teuchos::RCP<Core::Conditions::Condition>> condition_;
 
   };  // class Node
-}  // namespace CORE::Nodes
+}  // namespace Core::Nodes
 
 
 // << operator
-std::ostream& operator<<(std::ostream& os, const CORE::Nodes::Node& node);
+std::ostream& operator<<(std::ostream& os, const Core::Nodes::Node& node);
 
 
 

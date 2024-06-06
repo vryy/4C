@@ -21,33 +21,33 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE
+namespace Core
 {
-  namespace LINALG
+  namespace LinAlg
   {
     class SerialDenseMatrix;
     class SerialDenseVector;
-  }  // namespace LINALG
+  }  // namespace LinAlg
   namespace UTILS
   {
     class FunctionOfAnything;
   }
-}  // namespace CORE
+}  // namespace Core
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
     class PoroFluidMultiPhaseEleParameter;
 
-    namespace POROFLUIDMANAGER
+    namespace PoroFluidManager
     {
       class PhaseManagerInterface;
       template <int, int>
       class VariableManagerInterface;
-    }  // namespace POROFLUIDMANAGER
+    }  // namespace PoroFluidManager
 
-    namespace POROFLUIDEVALUATOR
+    namespace PoroFluidEvaluator
     {
       template <int, int>
       class EvaluatorInterface;
@@ -179,19 +179,19 @@ namespace DRT
 
         //! factory method
         static Teuchos::RCP<EvaluatorInterface<nsd, nen>> CreateEvaluator(
-            const DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter& para,
+            const Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter& para,
             const POROFLUIDMULTIPHASE::Action& action, int numdofpernode, int numfluidphases,
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager);
+            const PoroFluidManager::PhaseManagerInterface& phasemanager);
 
         //! evaluate matrixes (stiffness)
         virtual void EvaluateMatrix(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor times time-integration factor
             double fac            //!< domain-integration factor
@@ -199,14 +199,14 @@ namespace DRT
 
         //! evaluate vectors (RHS vector)
         virtual void EvaluateVector(
-            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            const Core::LinAlg::Matrix<nsd, nen>& xyze,  //!< current element coordinates
             int numdofpernode,                           //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
             double fac      //!< domain-integration factor
@@ -214,16 +214,16 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         virtual void evaluate_matrix_od_struct(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const CORE::LINALG::Matrix<nsd, nen>&
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+            const Core::LinAlg::Matrix<nsd, nsd>& xjm,
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor times time-integration factor
             double fac,           //!< domain-integration factor
@@ -231,13 +231,13 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with scatra
         virtual void evaluate_matrix_od_scatra(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor times time-integration factor
             double fac            //!< domain-integration factor
@@ -264,13 +264,13 @@ namespace DRT
 
         //! evaluate matrixes (stiffness)
         void EvaluateMatrix(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
@@ -285,14 +285,14 @@ namespace DRT
 
         //! evaluate vectors (RHS vector)
         void EvaluateVector(
-            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            const Core::LinAlg::Matrix<nsd, nen>& xyze,  //!< current element coordinates
             int numdofpernode,                           //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
             double fac      //!< domain-integration factor
@@ -307,16 +307,16 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_struct(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const CORE::LINALG::Matrix<nsd, nen>&
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+            const Core::LinAlg::Matrix<nsd, nsd>& xjm,
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -333,13 +333,13 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_scatra(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
@@ -389,13 +389,13 @@ namespace DRT
 
         //! evaluate matrixes (stiffness)
         void EvaluateMatrix(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
@@ -415,14 +415,14 @@ namespace DRT
 
         //! evaluate vectors (RHS vector)
         void EvaluateVector(
-            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            const Core::LinAlg::Matrix<nsd, nen>& xyze,  //!< current element coordinates
             int numdofpernode,                           //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
             double fac      //!< domain-integration factor
@@ -442,16 +442,16 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_struct(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const CORE::LINALG::Matrix<nsd, nen>&
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+            const Core::LinAlg::Matrix<nsd, nsd>& xjm,
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -471,13 +471,13 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_scatra(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
@@ -499,15 +499,15 @@ namespace DRT
         // actual evaluation and assembly of the respective term in the stiffness matrix (defined by
         // derived class)
         virtual void evaluate_matrix_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of phase to add into
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -517,16 +517,16 @@ namespace DRT
         // actual evaluation and assembly of the respective term in the RHS vector (defined by
         // derived class)
         virtual void evaluate_vector_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            const Core::LinAlg::Matrix<nsd, nen>& xyze,  //!< current element coordinates
             int curphase,                                //!< index of current phase
             int phasetoadd,                              //!< index of phase to add into
             int numdofpernode,                           //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
@@ -536,18 +536,18 @@ namespace DRT
         // actual evaluation and assembly of the respective term in the off-diagonal matrix (defined
         // by derived class)
         virtual void evaluate_matrix_od_struct_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const CORE::LINALG::Matrix<nsd, nen>&
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+            const Core::LinAlg::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of phase to add into
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -556,15 +556,15 @@ namespace DRT
         // actual evaluation and assembly of the respective term in the off-diagonal matrix (defined
         // by derived class)
         virtual void evaluate_matrix_od_scatra_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of phase to add into
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
@@ -572,40 +572,40 @@ namespace DRT
 
         // OD-mesh linearization of diffusive term
         void calc_diff_od_mesh(
-            CORE::LINALG::SerialDenseMatrix& mymat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nsd, nen>& deriv,
-            const CORE::LINALG::Matrix<nsd, nen>& derxy, const CORE::LINALG::Matrix<nsd, nsd>& xjm,
-            const CORE::LINALG::Matrix<nsd, 1>& diffflux,
-            const CORE::LINALG::Matrix<nsd, 1>& refgrad, const CORE::LINALG::Matrix<nsd, 1>& grad,
+            Core::LinAlg::SerialDenseMatrix& mymat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nsd, nen>& deriv,
+            const Core::LinAlg::Matrix<nsd, nen>& derxy, const Core::LinAlg::Matrix<nsd, nsd>& xjm,
+            const Core::LinAlg::Matrix<nsd, 1>& diffflux,
+            const Core::LinAlg::Matrix<nsd, 1>& refgrad, const Core::LinAlg::Matrix<nsd, 1>& grad,
             const double timefacfac, const double difffac, const int numdofpernode,
             const int phasetoadd);
 
         // OD-mesh linearization of fac (Jacobian)
         void calc_lin_fac_od_mesh(
-            CORE::LINALG::SerialDenseMatrix& mymat,     //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,  //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>& derxy, const double vrhs, const int numdofpernode,
+            Core::LinAlg::SerialDenseMatrix& mymat,     //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,  //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>& derxy, const double vrhs, const int numdofpernode,
             const int phasetoadd);
 
         // OD-mesh linearization of divergence term
         void calc_div_vel_od_mesh(
-            CORE::LINALG::SerialDenseMatrix& mymat,     //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,  //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>& deriv,
-            const CORE::LINALG::Matrix<nsd, nen>& derxy, const CORE::LINALG::Matrix<nsd, nsd>& xjm,
-            const CORE::LINALG::Matrix<nsd, nsd>& gridvelderiv, const double timefacfac,
+            Core::LinAlg::SerialDenseMatrix& mymat,     //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,  //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>& deriv,
+            const Core::LinAlg::Matrix<nsd, nen>& derxy, const Core::LinAlg::Matrix<nsd, nsd>& xjm,
+            const Core::LinAlg::Matrix<nsd, nsd>& gridvelderiv, const double timefacfac,
             const double fac, const double det, const int numdofpernode, const int phasetoadd);
 
         // linearization of a term scaled with saturation after fluid dofs
-        void saturation_linearization_fluid(CORE::LINALG::SerialDenseMatrix& mymat,
-            const CORE::LINALG::Matrix<nen, 1>& funct, const double prefac, const int numdofpernode,
+        void saturation_linearization_fluid(Core::LinAlg::SerialDenseMatrix& mymat,
+            const Core::LinAlg::Matrix<nen, 1>& funct, const double prefac, const int numdofpernode,
             const int numfluidphases, const int curphase, const int phasetoadd,
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager);
+            const PoroFluidManager::PhaseManagerInterface& phasemanager);
 
         // linearization of a term scaled with porosity after fluid dofs
-        void porosity_linearization_fluid(CORE::LINALG::SerialDenseMatrix& mymat,
-            const CORE::LINALG::Matrix<nen, 1>& funct, const double prefac, const int numdofpernode,
-            const int phasetoadd, const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager);
+        void porosity_linearization_fluid(Core::LinAlg::SerialDenseMatrix& mymat,
+            const Core::LinAlg::Matrix<nen, 1>& funct, const double prefac, const int numdofpernode,
+            const int phasetoadd, const PoroFluidManager::PhaseManagerInterface& phasemanager);
 
        private:
         //! assemble strategy
@@ -641,15 +641,15 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void evaluate_matrix_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -658,16 +658,16 @@ namespace DRT
 
         //! evaluate element RHS vector
         void evaluate_vector_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            const Core::LinAlg::Matrix<nsd, nen>& xyze,  //!< current element coordinates
             int curphase,                                //!< index of current phase
             int phasetoadd,                              //!< index of current phase
             int numdofpernode,                           //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
@@ -676,18 +676,18 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_struct_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const CORE::LINALG::Matrix<nsd, nen>&
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+            const Core::LinAlg::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -695,15 +695,15 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_scatra_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
@@ -731,15 +731,15 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void evaluate_matrix_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -748,16 +748,16 @@ namespace DRT
 
         //! evaluate element RHS vector
         void evaluate_vector_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            const Core::LinAlg::Matrix<nsd, nen>& xyze,  //!< current element coordinates
             int curphase,                                //!< index of current phase
             int phasetoadd,                              //!< index of current phase
             int numdofpernode,                           //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
@@ -766,18 +766,18 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_struct_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const CORE::LINALG::Matrix<nsd, nen>&
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+            const Core::LinAlg::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -785,15 +785,15 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_scatra_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
@@ -821,15 +821,15 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void evaluate_matrix_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -838,16 +838,16 @@ namespace DRT
 
         //! evaluate element RHS vector
         void evaluate_vector_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            const Core::LinAlg::Matrix<nsd, nen>& xyze,  //!< current element coordinates
             int curphase,                                //!< index of current phase
             int phasetoadd,                              //!< index of current phase
             int numdofpernode,                           //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
@@ -856,18 +856,18 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_struct_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const CORE::LINALG::Matrix<nsd, nen>&
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+            const Core::LinAlg::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -875,15 +875,15 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_scatra_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
@@ -911,15 +911,15 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void evaluate_matrix_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -928,16 +928,16 @@ namespace DRT
 
         //! evaluate element RHS vector
         void evaluate_vector_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            const Core::LinAlg::Matrix<nsd, nen>& xyze,  //!< current element coordinates
             int curphase,                                //!< index of current phase
             int phasetoadd,                              //!< index of current phase
             int numdofpernode,                           //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
@@ -946,18 +946,18 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_struct_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const CORE::LINALG::Matrix<nsd, nen>&
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+            const Core::LinAlg::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -965,15 +965,15 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_scatra_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
@@ -1002,15 +1002,15 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void evaluate_matrix_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -1019,16 +1019,16 @@ namespace DRT
 
         //! evaluate element RHS vector
         void evaluate_vector_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            const Core::LinAlg::Matrix<nsd, nen>& xyze,  //!< current element coordinates
             int curphase,                                //!< index of current phase
             int phasetoadd,                              //!< index of current phase
             int numdofpernode,                           //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
@@ -1037,18 +1037,18 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_struct_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const CORE::LINALG::Matrix<nsd, nen>&
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+            const Core::LinAlg::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -1056,15 +1056,15 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_scatra_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
@@ -1092,15 +1092,15 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void evaluate_matrix_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -1109,16 +1109,16 @@ namespace DRT
 
         //! evaluate element RHS vector
         void evaluate_vector_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            const Core::LinAlg::Matrix<nsd, nen>& xyze,  //!< current element coordinates
             int curphase,                                //!< index of current phase
             int phasetoadd,                              //!< index of current phase
             int numdofpernode,                           //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
@@ -1127,18 +1127,18 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_struct_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const CORE::LINALG::Matrix<nsd, nen>&
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+            const Core::LinAlg::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -1146,15 +1146,15 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_scatra_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
@@ -1182,15 +1182,15 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void evaluate_matrix_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -1199,16 +1199,16 @@ namespace DRT
 
         //! evaluate element RHS vector
         void evaluate_vector_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            const Core::LinAlg::Matrix<nsd, nen>& xyze,  //!< current element coordinates
             int curphase,                                //!< index of current phase
             int phasetoadd,                              //!< index of current phase
             int numdofpernode,                           //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
@@ -1217,18 +1217,18 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_struct_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const CORE::LINALG::Matrix<nsd, nen>&
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+            const Core::LinAlg::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -1236,15 +1236,15 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_scatra_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
@@ -1254,8 +1254,8 @@ namespace DRT
         double get_rhs_trans(int curphase,  //!< index of current phase
             int phasetoadd,                 //!< index of current phase
             int numdofpernode,              //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
             double fac      //!< domain-integration factor);
@@ -1284,15 +1284,15 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void evaluate_matrix_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -1301,16 +1301,16 @@ namespace DRT
 
         //! evaluate element RHS vector
         void evaluate_vector_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            const Core::LinAlg::Matrix<nsd, nen>& xyze,  //!< current element coordinates
             int curphase,                                //!< index of current phase
             int phasetoadd,                              //!< index of current phase
             int numdofpernode,                           //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
@@ -1319,18 +1319,18 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_struct_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const CORE::LINALG::Matrix<nsd, nen>&
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+            const Core::LinAlg::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -1338,15 +1338,15 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_scatra_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
@@ -1356,8 +1356,8 @@ namespace DRT
         double get_rhs_trans(int curphase,  //!< index of current phase
             int phasetoadd,                 //!< index of current phase
             int numdofpernode,              //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
             double fac      //!< domain-integration factor);
@@ -1388,15 +1388,15 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void evaluate_matrix_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -1405,16 +1405,16 @@ namespace DRT
 
         //! evaluate element RHS vector
         void evaluate_vector_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            const Core::LinAlg::Matrix<nsd, nen>& xyze,  //!< current element coordinates
             int curphase,                                //!< index of current phase
             int phasetoadd,                              //!< index of current phase
             int numdofpernode,                           //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
@@ -1423,18 +1423,18 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_struct_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const CORE::LINALG::Matrix<nsd, nen>&
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+            const Core::LinAlg::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -1442,15 +1442,15 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_scatra_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
@@ -1478,15 +1478,15 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void evaluate_matrix_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -1495,16 +1495,16 @@ namespace DRT
 
         //! evaluate element RHS vector
         void evaluate_vector_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            const Core::LinAlg::Matrix<nsd, nen>& xyze,  //!< current element coordinates
             int curphase,                                //!< index of current phase
             int phasetoadd,                              //!< index of current phase
             int numdofpernode,                           //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
@@ -1513,18 +1513,18 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_struct_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const CORE::LINALG::Matrix<nsd, nen>&
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+            const Core::LinAlg::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -1532,15 +1532,15 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_scatra_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
@@ -1550,8 +1550,8 @@ namespace DRT
         double get_rhs_trans(int curphase,  //!< index of current phase
             int phasetoadd,                 //!< index of current phase
             int numdofpernode,              //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
             double fac      //!< domain-integration factor);
@@ -1580,15 +1580,15 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void evaluate_matrix_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -1597,16 +1597,16 @@ namespace DRT
 
         //! evaluate element RHS vector
         void evaluate_vector_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            const Core::LinAlg::Matrix<nsd, nen>& xyze,  //!< current element coordinates
             int curphase,                                //!< index of current phase
             int phasetoadd,                              //!< index of current phase
             int numdofpernode,                           //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
@@ -1615,18 +1615,18 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_struct_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const CORE::LINALG::Matrix<nsd, nen>&
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+            const Core::LinAlg::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -1634,15 +1634,15 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_scatra_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
@@ -1670,15 +1670,15 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void evaluate_matrix_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -1687,16 +1687,16 @@ namespace DRT
 
         //! evaluate element RHS vector
         void evaluate_vector_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            const Core::LinAlg::Matrix<nsd, nen>& xyze,  //!< current element coordinates
             int curphase,                                //!< index of current phase
             int phasetoadd,                              //!< index of current phase
             int numdofpernode,                           //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
@@ -1705,18 +1705,18 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_struct_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const CORE::LINALG::Matrix<nsd, nen>&
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+            const Core::LinAlg::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -1724,15 +1724,15 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_scatra_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
@@ -1763,15 +1763,15 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void evaluate_matrix_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -1780,16 +1780,16 @@ namespace DRT
 
         //! evaluate element RHS vector
         void evaluate_vector_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            const Core::LinAlg::Matrix<nsd, nen>& xyze,  //!< current element coordinates
             int curphase,                                //!< index of current phase
             int phasetoadd,                              //!< index of current phase
             int numdofpernode,                           //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
@@ -1798,18 +1798,18 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_struct_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const CORE::LINALG::Matrix<nsd, nen>&
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+            const Core::LinAlg::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -1817,15 +1817,15 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_scatra_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
@@ -1853,15 +1853,15 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void evaluate_matrix_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -1870,16 +1870,16 @@ namespace DRT
 
         //! evaluate element RHS vector
         void evaluate_vector_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            const Core::LinAlg::Matrix<nsd, nen>& xyze,  //!< current element coordinates
             int curphase,                                //!< index of current phase
             int phasetoadd,                              //!< index of current phase
             int numdofpernode,                           //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
@@ -1888,18 +1888,18 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_struct_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const CORE::LINALG::Matrix<nsd, nen>&
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+            const Core::LinAlg::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -1907,15 +1907,15 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_scatra_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
@@ -1946,15 +1946,15 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void evaluate_matrix_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -1963,16 +1963,16 @@ namespace DRT
 
         //! evaluate element RHS vector
         void evaluate_vector_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            const Core::LinAlg::Matrix<nsd, nen>& xyze,  //!< current element coordinates
             int curphase,                                //!< index of current phase
             int phasetoadd,                              //!< index of current phase
             int numdofpernode,                           //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
@@ -1981,18 +1981,18 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_struct_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const CORE::LINALG::Matrix<nsd, nen>&
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+            const Core::LinAlg::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -2000,22 +2000,22 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_scatra_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
             ) override;
 
         //! cast to VarExp-function
-        [[nodiscard]] const CORE::UTILS::FunctionOfAnything& function(int functnum) const;
+        [[nodiscard]] const Core::UTILS::FunctionOfAnything& function(int functnum) const;
 
         //! vector holding the functions to be integrated
         std::vector<int> domainint_funct_;
@@ -2046,15 +2046,15 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void evaluate_matrix_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -2063,16 +2063,16 @@ namespace DRT
 
         //! evaluate element RHS vector
         void evaluate_vector_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            const Core::LinAlg::Matrix<nsd, nen>& xyze,  //!< current element coordinates
             int curphase,                                //!< index of current phase
             int phasetoadd,                              //!< index of current phase
             int numdofpernode,                           //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
@@ -2081,18 +2081,18 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_struct_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const CORE::LINALG::Matrix<nsd, nen>&
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+            const Core::LinAlg::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -2100,15 +2100,15 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_scatra_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
@@ -2137,15 +2137,15 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void evaluate_matrix_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -2154,16 +2154,16 @@ namespace DRT
 
         //! evaluate element RHS vector
         void evaluate_vector_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            const Core::LinAlg::Matrix<nsd, nen>& xyze,  //!< current element coordinates
             int curphase,                                //!< index of current phase
             int phasetoadd,                              //!< index of current phase
             int numdofpernode,                           //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
@@ -2172,18 +2172,18 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_struct_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const CORE::LINALG::Matrix<nsd, nen>&
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+            const Core::LinAlg::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -2191,15 +2191,15 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_scatra_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
@@ -2221,15 +2221,15 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void evaluate_matrix_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -2238,16 +2238,16 @@ namespace DRT
 
         //! evaluate element vector
         void evaluate_vector_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            const Core::LinAlg::Matrix<nsd, nen>& xyze,  //!< current element coordinates
             int curphase,                                //!< index of current phase
             int phasetoadd,                              //!< index of current phase
             int numdofpernode,                           //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
@@ -2256,18 +2256,18 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_struct_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const CORE::LINALG::Matrix<nsd, nen>&
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+            const Core::LinAlg::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -2275,15 +2275,15 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_scatra_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
@@ -2317,15 +2317,15 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void evaluate_matrix_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -2334,16 +2334,16 @@ namespace DRT
 
         //! evaluate element RHS vector
         void evaluate_vector_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            const Core::LinAlg::Matrix<nsd, nen>& xyze,  //!< current element coordinates
             int curphase,                                //!< index of current phase
             int phasetoadd,                              //!< index of current phase
             int numdofpernode,                           //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
@@ -2352,18 +2352,18 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_struct_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const CORE::LINALG::Matrix<nsd, nen>&
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+            const Core::LinAlg::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -2371,15 +2371,15 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_scatra_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
@@ -2389,8 +2389,8 @@ namespace DRT
         double get_rhs(int curphase,  //!< index of current phase
             int phasetoadd,           //!< index of current phase
             int numdofpernode,        //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
             double fac      //!< domain-integration factor);
@@ -2420,15 +2420,15 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void evaluate_matrix_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -2437,16 +2437,16 @@ namespace DRT
 
         //! evaluate element RHS vector
         void evaluate_vector_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            const Core::LinAlg::Matrix<nsd, nen>& xyze,  //!< current element coordinates
             int curphase,                                //!< index of current phase
             int phasetoadd,                              //!< index of current phase
             int numdofpernode,                           //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
@@ -2455,18 +2455,18 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_struct_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const CORE::LINALG::Matrix<nsd, nen>&
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+            const Core::LinAlg::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -2474,15 +2474,15 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_scatra_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
@@ -2513,15 +2513,15 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void evaluate_matrix_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -2530,16 +2530,16 @@ namespace DRT
 
         //! evaluate element RHS vector
         void evaluate_vector_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            const Core::LinAlg::Matrix<nsd, nen>& xyze,  //!< current element coordinates
             int curphase,                                //!< index of current phase
             int phasetoadd,                              //!< index of current phase
             int numdofpernode,                           //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
@@ -2548,18 +2548,18 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_struct_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const CORE::LINALG::Matrix<nsd, nen>&
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+            const Core::LinAlg::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -2567,15 +2567,15 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_scatra_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
@@ -2606,15 +2606,15 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void evaluate_matrix_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -2623,16 +2623,16 @@ namespace DRT
 
         //! evaluate element RHS vector
         void evaluate_vector_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            const Core::LinAlg::Matrix<nsd, nen>& xyze,  //!< current element coordinates
             int curphase,                                //!< index of current phase
             int phasetoadd,                              //!< index of current phase
             int numdofpernode,                           //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
@@ -2641,18 +2641,18 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_struct_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const CORE::LINALG::Matrix<nsd, nen>&
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+            const Core::LinAlg::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -2660,15 +2660,15 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_scatra_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
@@ -2697,15 +2697,15 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void evaluate_matrix_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -2714,16 +2714,16 @@ namespace DRT
 
         //! evaluate element RHS vector
         void evaluate_vector_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            const Core::LinAlg::Matrix<nsd, nen>& xyze,  //!< current element coordinates
             int curphase,                                //!< index of current phase
             int phasetoadd,                              //!< index of current phase
             int numdofpernode,                           //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
@@ -2732,18 +2732,18 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_struct_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const CORE::LINALG::Matrix<nsd, nen>&
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+            const Core::LinAlg::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -2751,15 +2751,15 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_scatra_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
@@ -2788,15 +2788,15 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void evaluate_matrix_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -2805,16 +2805,16 @@ namespace DRT
 
         //! evaluate element RHS vector
         void evaluate_vector_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            const Core::LinAlg::Matrix<nsd, nen>& xyze,  //!< current element coordinates
             int curphase,                                //!< index of current phase
             int phasetoadd,                              //!< index of current phase
             int numdofpernode,                           //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
@@ -2823,18 +2823,18 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_struct_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const CORE::LINALG::Matrix<nsd, nen>&
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+            const Core::LinAlg::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -2842,15 +2842,15 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_scatra_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
@@ -2878,15 +2878,15 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void evaluate_matrix_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -2895,16 +2895,16 @@ namespace DRT
 
         //! evaluate element RHS vector
         void evaluate_vector_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            const Core::LinAlg::Matrix<nsd, nen>& xyze,  //!< current element coordinates
             int curphase,                                //!< index of current phase
             int phasetoadd,                              //!< index of current phase
             int numdofpernode,                           //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
@@ -2913,18 +2913,18 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_struct_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const CORE::LINALG::Matrix<nsd, nen>&
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+            const Core::LinAlg::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -2932,15 +2932,15 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_scatra_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
@@ -2968,15 +2968,15 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void evaluate_matrix_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -2985,16 +2985,16 @@ namespace DRT
 
         //! evaluate element RHS vector
         void evaluate_vector_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            const Core::LinAlg::Matrix<nsd, nen>& xyze,  //!< current element coordinates
             int curphase,                                //!< index of current phase
             int phasetoadd,                              //!< index of current phase
             int numdofpernode,                           //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
@@ -3003,18 +3003,18 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_struct_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const CORE::LINALG::Matrix<nsd, nen>&
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+            const Core::LinAlg::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -3022,15 +3022,15 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_scatra_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
@@ -3058,15 +3058,15 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void evaluate_matrix_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -3075,16 +3075,16 @@ namespace DRT
 
         //! evaluate element RHS vector
         void evaluate_vector_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            const Core::LinAlg::Matrix<nsd, nen>& xyze,  //!< current element coordinates
             int curphase,                                //!< index of current phase
             int phasetoadd,                              //!< index of current phase
             int numdofpernode,                           //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
@@ -3093,18 +3093,18 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_struct_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const CORE::LINALG::Matrix<nsd, nen>&
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+            const Core::LinAlg::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -3112,15 +3112,15 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_scatra_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
@@ -3148,15 +3148,15 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void evaluate_matrix_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -3165,16 +3165,16 @@ namespace DRT
 
         //! evaluate element RHS vector
         void evaluate_vector_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            const Core::LinAlg::Matrix<nsd, nen>& xyze,  //!< current element coordinates
             int curphase,                                //!< index of current phase
             int phasetoadd,                              //!< index of current phase
             int numdofpernode,                           //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
@@ -3183,18 +3183,18 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_struct_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const CORE::LINALG::Matrix<nsd, nen>&
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+            const Core::LinAlg::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -3202,15 +3202,15 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_scatra_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
@@ -3239,15 +3239,15 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void evaluate_matrix_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -3256,16 +3256,16 @@ namespace DRT
 
         //! evaluate element RHS vector
         void evaluate_vector_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            const Core::LinAlg::Matrix<nsd, nen>& xyze,  //!< current element coordinates
             int curphase,                                //!< index of current phase
             int phasetoadd,                              //!< index of current phase
             int numdofpernode,                           //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
             double fac,         //!< domain-integration factor
@@ -3274,18 +3274,18 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_struct_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const CORE::LINALG::Matrix<nsd, nen>&
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+            const Core::LinAlg::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac,           //!< domain-integration factor times time-integration factor
@@ -3293,25 +3293,25 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void evaluate_matrix_od_scatra_and_assemble(
-            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
-            const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
-            const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
+            const PoroFluidManager::PhaseManagerInterface& phasemanager,  //!< phase manager
+            const PoroFluidManager::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
             double timefacfac,    //!< domain-integration factor
             double fac            //!< domain-integration factor times time-integration factor
             ) override;
       };
 
-    }  // namespace POROFLUIDEVALUATOR
+    }  // namespace PoroFluidEvaluator
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 
 FOUR_C_NAMESPACE_CLOSE

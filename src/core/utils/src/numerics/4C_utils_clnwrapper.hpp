@@ -38,7 +38,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::CLN
+namespace Core::CLN
 {
   /// Wrapper around CLN long floating point type, that gives better conversion operators,
   /// maintains precision across instances, caches converted double values and
@@ -152,7 +152,7 @@ namespace CORE::CLN
       cln::cl_inhibit_floating_point_underflow = true;
       static std::ios_base::Init StreamInitializer;
       // id in the cache containers
-      int prec_id = (CORE::CLN::ClnWrapper::precision_ - CLN_START_PRECISION) / CLN_INCREMENT_STEP;
+      int prec_id = (Core::CLN::ClnWrapper::precision_ - CLN_START_PRECISION) / CLN_INCREMENT_STEP;
       // we create special vector for zeroes, for faster lookup in the table, since they are
       // needed more often
       static std::vector<std::pair<cln::cl_F, bool>> zeros_cache(
@@ -165,7 +165,7 @@ namespace CORE::CLN
         {
           // convert from the string representation
           std::stringstream string_buffer;
-          int nsize = CORE::CLN::ClnWrapper::precision_;
+          int nsize = Core::CLN::ClnWrapper::precision_;
           string_buffer << nsize;
           std::string clnumstr = "0e+1_" + string_buffer.str();
           zeros_cache[prec_id].first = clnumstr.c_str();
@@ -205,7 +205,7 @@ namespace CORE::CLN
       }
     }
 
-    friend ::std::ostream& operator<<(std::ostream& stream, const CORE::CLN::ClnWrapper& a)
+    friend ::std::ostream& operator<<(std::ostream& stream, const Core::CLN::ClnWrapper& a)
     {
       stream << a.Value();
       return stream;
@@ -256,7 +256,7 @@ namespace CORE::CLN
   MAKE_OPERATOR(bool, <=);
   MAKE_OPERATOR(bool, >=);
 
-}  // namespace CORE::CLN
+}  // namespace Core::CLN
 
 FOUR_C_NAMESPACE_CLOSE
 

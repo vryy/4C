@@ -36,10 +36,10 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface,
  */
 template <typename beam, typename surface, typename mortar>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface,
-    mortar>::evaluate_and_assemble_mortar_contributions(const DRT::Discretization& discret,
-    const BeamToSolidMortarManager* mortar_manager, CORE::LINALG::SparseMatrix& global_G_B,
-    CORE::LINALG::SparseMatrix& global_G_S, CORE::LINALG::SparseMatrix& global_FB_L,
-    CORE::LINALG::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
+    mortar>::evaluate_and_assemble_mortar_contributions(const Discret::Discretization& discret,
+    const BeamToSolidMortarManager* mortar_manager, Core::LinAlg::SparseMatrix& global_G_B,
+    Core::LinAlg::SparseMatrix& global_G_S, Core::LinAlg::SparseMatrix& global_FB_L,
+    Core::LinAlg::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
     Epetra_FEVector& global_kappa, Epetra_FEVector& global_lambda_active,
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
 {
@@ -55,10 +55,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface,
   if (this->line_to_3D_segments_.size() == 0) return;
 
   // Initialize variables for local mortar matrices.
-  CORE::LINALG::Matrix<mortar::n_dof_, beam::n_dof_, double> local_D(false);
-  CORE::LINALG::Matrix<mortar::n_dof_, surface::n_dof_, double> local_M(false);
-  CORE::LINALG::Matrix<mortar::n_dof_, 1, double> local_kappa(false);
-  CORE::LINALG::Matrix<mortar::n_dof_, 1, double> local_constraint(false);
+  Core::LinAlg::Matrix<mortar::n_dof_, beam::n_dof_, double> local_D(false);
+  Core::LinAlg::Matrix<mortar::n_dof_, surface::n_dof_, double> local_M(false);
+  Core::LinAlg::Matrix<mortar::n_dof_, 1, double> local_kappa(false);
+  Core::LinAlg::Matrix<mortar::n_dof_, 1, double> local_constraint(false);
 
   // Evaluate the local mortar contributions.
   evaluate_dm(local_D, local_M, local_kappa, local_constraint);
@@ -74,10 +74,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface,
  */
 template <typename beam, typename surface, typename mortar>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface, mortar>::evaluate_dm(
-    CORE::LINALG::Matrix<mortar::n_dof_, beam::n_dof_, double>& local_D,
-    CORE::LINALG::Matrix<mortar::n_dof_, surface::n_dof_, double>& local_M,
-    CORE::LINALG::Matrix<mortar::n_dof_, 1, double>& local_kappa,
-    CORE::LINALG::Matrix<mortar::n_dof_, 1, double>& local_constraint) const
+    Core::LinAlg::Matrix<mortar::n_dof_, beam::n_dof_, double>& local_D,
+    Core::LinAlg::Matrix<mortar::n_dof_, surface::n_dof_, double>& local_M,
+    Core::LinAlg::Matrix<mortar::n_dof_, 1, double>& local_kappa,
+    Core::LinAlg::Matrix<mortar::n_dof_, 1, double>& local_constraint) const
 {
   // Initialize the local mortar matrices.
   local_D.PutScalar(0.0);
@@ -86,12 +86,12 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface, morta
   local_constraint.PutScalar(0.0);
 
   // Initialize variables for shape function values.
-  CORE::LINALG::Matrix<1, mortar::n_nodes_ * mortar::n_val_, double> N_mortar(true);
-  CORE::LINALG::Matrix<1, beam::n_nodes_ * beam::n_val_, double> N_beam(true);
-  CORE::LINALG::Matrix<1, surface::n_nodes_ * surface::n_val_, double> N_surface(true);
+  Core::LinAlg::Matrix<1, mortar::n_nodes_ * mortar::n_val_, double> N_mortar(true);
+  Core::LinAlg::Matrix<1, beam::n_nodes_ * beam::n_val_, double> N_beam(true);
+  Core::LinAlg::Matrix<1, surface::n_nodes_ * surface::n_val_, double> N_surface(true);
 
   // Initialize variable for beam position derivative.
-  CORE::LINALG::Matrix<3, 1, double> dr_beam_ref(true);
+  Core::LinAlg::Matrix<3, 1, double> dr_beam_ref(true);
 
   // Initialize scalar variables.Clear
   double segment_jacobian = 0.0;
@@ -169,23 +169,23 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface, morta
 
   // Add the local constraint contributions. For this we multiply the local mortar matrices with the
   // positions / displacements to get the actual constraint terms for this pair.
-  CORE::LINALG::Matrix<beam::n_dof_, 1, double> beam_coupling_dof(true);
-  CORE::LINALG::Matrix<surface::n_dof_, 1, double> surface_coupling_dof(true);
+  Core::LinAlg::Matrix<beam::n_dof_, 1, double> beam_coupling_dof(true);
+  Core::LinAlg::Matrix<surface::n_dof_, 1, double> surface_coupling_dof(true);
   switch (this->Params()->beam_to_solid_surface_meshtying_params()->GetCouplingType())
   {
-    case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::reference_configuration_forced_to_zero:
+    case Inpar::BeamToSolid::BeamToSolidSurfaceCoupling::reference_configuration_forced_to_zero:
     {
-      beam_coupling_dof = CORE::FADUTILS::CastToDouble(this->ele1pos_.element_position_);
+      beam_coupling_dof = Core::FADUtils::CastToDouble(this->ele1pos_.element_position_);
       surface_coupling_dof =
-          CORE::FADUTILS::CastToDouble(this->face_element_->GetFaceElementData().element_position_);
+          Core::FADUtils::CastToDouble(this->face_element_->GetFaceElementData().element_position_);
       break;
     }
-    case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::displacement:
+    case Inpar::BeamToSolid::BeamToSolidSurfaceCoupling::displacement:
     {
-      beam_coupling_dof = CORE::FADUTILS::CastToDouble(this->ele1pos_.element_position_);
+      beam_coupling_dof = Core::FADUtils::CastToDouble(this->ele1pos_.element_position_);
       beam_coupling_dof -= this->ele1posref_.element_position_;
       surface_coupling_dof =
-          CORE::FADUTILS::CastToDouble(this->face_element_->GetFaceElementData().element_position_);
+          Core::FADUtils::CastToDouble(this->face_element_->GetFaceElementData().element_position_);
       surface_coupling_dof -=
           this->face_element_->get_face_reference_element_data().element_position_;
       break;
@@ -208,33 +208,33 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface, morta
  */
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
 BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFactory(
-    const CORE::FE::CellType surface_shape,
-    const INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions mortar_shapefunction)
+    const Core::FE::CellType surface_shape,
+    const Inpar::BeamToSolid::BeamToSolidMortarShapefunctions mortar_shapefunction)
 {
   using namespace GEOMETRYPAIR;
 
   switch (mortar_shapefunction)
   {
-    case INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::line2:
+    case Inpar::BeamToSolid::BeamToSolidMortarShapefunctions::line2:
     {
       switch (surface_shape)
       {
-        case CORE::FE::CellType::tri3:
+        case Core::FE::CellType::tri3:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri3, t_line2>());
-        case CORE::FE::CellType::tri6:
+        case Core::FE::CellType::tri6:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri6, t_line2>());
-        case CORE::FE::CellType::quad4:
+        case Core::FE::CellType::quad4:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad4, t_line2>());
-        case CORE::FE::CellType::quad8:
+        case Core::FE::CellType::quad8:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad8, t_line2>());
-        case CORE::FE::CellType::quad9:
+        case Core::FE::CellType::quad9:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad9, t_line2>());
-        case CORE::FE::CellType::nurbs9:
+        case Core::FE::CellType::nurbs9:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_nurbs9, t_line2>());
         default:
@@ -242,26 +242,26 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFactory(
       }
       break;
     }
-    case INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::line3:
+    case Inpar::BeamToSolid::BeamToSolidMortarShapefunctions::line3:
     {
       switch (surface_shape)
       {
-        case CORE::FE::CellType::tri3:
+        case Core::FE::CellType::tri3:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri3, t_line3>());
-        case CORE::FE::CellType::tri6:
+        case Core::FE::CellType::tri6:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri6, t_line3>());
-        case CORE::FE::CellType::quad4:
+        case Core::FE::CellType::quad4:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad4, t_line3>());
-        case CORE::FE::CellType::quad8:
+        case Core::FE::CellType::quad8:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad8, t_line3>());
-        case CORE::FE::CellType::quad9:
+        case Core::FE::CellType::quad9:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad9, t_line3>());
-        case CORE::FE::CellType::nurbs9:
+        case Core::FE::CellType::nurbs9:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_nurbs9, t_line3>());
         default:
@@ -269,26 +269,26 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFactory(
       }
       break;
     }
-    case INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::line4:
+    case Inpar::BeamToSolid::BeamToSolidMortarShapefunctions::line4:
     {
       switch (surface_shape)
       {
-        case CORE::FE::CellType::tri3:
+        case Core::FE::CellType::tri3:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri3, t_line4>());
-        case CORE::FE::CellType::tri6:
+        case Core::FE::CellType::tri6:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri6, t_line4>());
-        case CORE::FE::CellType::quad4:
+        case Core::FE::CellType::quad4:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad4, t_line4>());
-        case CORE::FE::CellType::quad8:
+        case Core::FE::CellType::quad8:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad8, t_line4>());
-        case CORE::FE::CellType::quad9:
+        case Core::FE::CellType::quad9:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad9, t_line4>());
-        case CORE::FE::CellType::nurbs9:
+        case Core::FE::CellType::nurbs9:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_nurbs9, t_line4>());
         default:

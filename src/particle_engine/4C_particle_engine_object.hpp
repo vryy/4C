@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
-namespace CORE::COMM
+namespace Core::Communication
 {
   class PackBuffer;
 }
@@ -41,7 +41,7 @@ namespace PARTICLEENGINE
    *
    * \author Sebastian Fuchs \date 03/2018
    */
-  class ParticleObjectType final : public CORE::COMM::ParObjectType
+  class ParticleObjectType final : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "ParticleObjectType"; };
@@ -55,7 +55,7 @@ namespace PARTICLEENGINE
      */
     static ParticleObjectType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     //! particle object type instance
@@ -76,7 +76,7 @@ namespace PARTICLEENGINE
    *
    * \author Sebastian Fuchs \date 03/2018
    */
-  class ParticleObject : public CORE::COMM::ParObject
+  class ParticleObject : public Core::Communication::ParObject
   {
    public:
     /*!
@@ -109,7 +109,7 @@ namespace PARTICLEENGINE
       return ParticleObjectType::Instance().UniqueParObjectId();
     };
 
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     void Unpack(const std::vector<char>& data) override;
 

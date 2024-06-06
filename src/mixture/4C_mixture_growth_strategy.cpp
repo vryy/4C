@@ -17,43 +17,43 @@
 FOUR_C_NAMESPACE_OPEN
 
 MIXTURE::PAR::MixtureGrowthStrategy::MixtureGrowthStrategy(
-    const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
-    : CORE::MAT::PAR::Parameter(matdata)
+    const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
+    : Core::Mat::PAR::Parameter(matdata)
 {
 }
 
 MIXTURE::PAR::MixtureGrowthStrategy* MIXTURE::PAR::MixtureGrowthStrategy::Factory(const int matid)
 {
   // for the sake of safety
-  if (GLOBAL::Problem::Instance()->Materials() == Teuchos::null)
+  if (Global::Problem::Instance()->Materials() == Teuchos::null)
   {
     FOUR_C_THROW("List of materials cannot be accessed in the global problem instance.");
   }
 
   // yet another safety check
-  if (GLOBAL::Problem::Instance()->Materials()->Num() == 0)
+  if (Global::Problem::Instance()->Materials()->Num() == 0)
   {
     FOUR_C_THROW("List of materials in the global problem instance is empty.");
   }
 
   // retrieve problem instance to read from
-  const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
+  const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
   // retrieve validated input line of material ID in question
-  auto* curmat = GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+  auto* curmat = Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
 
   switch (curmat->Type())
   {
-    case CORE::Materials::mix_growth_strategy_isotropic:
+    case Core::Materials::mix_growth_strategy_isotropic:
     {
-      return MAT::CreateMaterialParameterInstance<MIXTURE::PAR::IsotropicGrowthStrategy>(curmat);
+      return Mat::CreateMaterialParameterInstance<MIXTURE::PAR::IsotropicGrowthStrategy>(curmat);
     }
-    case CORE::Materials::mix_growth_strategy_anisotropic:
+    case Core::Materials::mix_growth_strategy_anisotropic:
     {
-      return MAT::CreateMaterialParameterInstance<MIXTURE::PAR::AnisotropicGrowthStrategy>(curmat);
+      return Mat::CreateMaterialParameterInstance<MIXTURE::PAR::AnisotropicGrowthStrategy>(curmat);
     }
-    case CORE::Materials::mix_growth_strategy_stiffness:
+    case Core::Materials::mix_growth_strategy_stiffness:
     {
-      return MAT::CreateMaterialParameterInstance<MIXTURE::PAR::StiffnessGrowthStrategy>(curmat);
+      return Mat::CreateMaterialParameterInstance<MIXTURE::PAR::StiffnessGrowthStrategy>(curmat);
     }
     default:
       FOUR_C_THROW(

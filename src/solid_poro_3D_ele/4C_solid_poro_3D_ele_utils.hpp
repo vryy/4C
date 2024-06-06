@@ -17,63 +17,63 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace STR::UTILS::READELEMENT
+namespace STR::UTILS::ReadElement
 {
-  INPAR::SCATRA::ImplType ReadType(INPUT::LineDefinition* linedef)
+  Inpar::ScaTra::ImplType ReadType(Input::LineDefinition* linedef)
   {
     std::string impltype;
     linedef->ExtractString("TYPE", impltype);
 
     if (impltype == "Undefined")
-      return INPAR::SCATRA::impltype_undefined;
+      return Inpar::ScaTra::impltype_undefined;
     else if (impltype == "AdvReac")
-      return INPAR::SCATRA::impltype_advreac;
+      return Inpar::ScaTra::impltype_advreac;
     else if (impltype == "CardMono")
-      return INPAR::SCATRA::impltype_cardiac_monodomain;
+      return Inpar::ScaTra::impltype_cardiac_monodomain;
     else if (impltype == "Chemo")
-      return INPAR::SCATRA::impltype_chemo;
+      return Inpar::ScaTra::impltype_chemo;
     else if (impltype == "ChemoReac")
-      return INPAR::SCATRA::impltype_chemoreac;
+      return Inpar::ScaTra::impltype_chemoreac;
     else if (impltype == "Loma")
-      return INPAR::SCATRA::impltype_loma;
+      return Inpar::ScaTra::impltype_loma;
     else if (impltype == "Poro")
-      return INPAR::SCATRA::impltype_poro;
+      return Inpar::ScaTra::impltype_poro;
     else if (impltype == "PoroReac")
-      return INPAR::SCATRA::impltype_pororeac;
+      return Inpar::ScaTra::impltype_pororeac;
     else if (impltype == "PoroReacECM")
-      return INPAR::SCATRA::impltype_pororeacECM;
+      return Inpar::ScaTra::impltype_pororeacECM;
     else if (impltype == "PoroMultiReac")
-      return INPAR::SCATRA::impltype_multipororeac;
+      return Inpar::ScaTra::impltype_multipororeac;
     else if (impltype == "RefConcReac")
-      return INPAR::SCATRA::impltype_refconcreac;
+      return Inpar::ScaTra::impltype_refconcreac;
     else if (impltype == "Std")
-      return INPAR::SCATRA::impltype_std;
+      return Inpar::ScaTra::impltype_std;
     else
     {
       FOUR_C_THROW("Invalid TYPE for SOLIDPORO elements!");
-      return INPAR::SCATRA::impltype_undefined;
+      return Inpar::ScaTra::impltype_undefined;
     }
   }
 
-  INPAR::PORO::PoroType ReadPoroType(INPUT::LineDefinition* linedef)
+  Inpar::Poro::PoroType ReadPoroType(Input::LineDefinition* linedef)
   {
     std::string impltype;
     linedef->ExtractString("POROTYPE", impltype);
 
     if (impltype == "PressureVelocityBased")
-      return INPAR::PORO::PoroType::pressure_velocity_based;
+      return Inpar::Poro::PoroType::pressure_velocity_based;
     else if (impltype == "PressureBased")
-      return INPAR::PORO::PoroType::pressure_based;
+      return Inpar::Poro::PoroType::pressure_based;
     else
     {
       FOUR_C_THROW("Invalid POROTYPE for SolidPoro elements!");
-      return INPAR::PORO::PoroType::undefined;
+      return Inpar::Poro::PoroType::undefined;
     }
   }
 
 
 
-}  // namespace STR::UTILS::READELEMENT
+}  // namespace STR::UTILS::ReadElement
 
 FOUR_C_NAMESPACE_CLOSE
 

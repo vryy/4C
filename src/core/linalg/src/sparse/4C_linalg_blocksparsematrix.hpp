@@ -16,7 +16,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   /// Internal base class of BlockSparseMatrix that contains the non-template stuff
   /*!
@@ -105,7 +105,7 @@ namespace CORE::LINALG
 
     /// derived
     bool IsDbcApplied(const Epetra_Map& dbcmap, bool diagonalblock = true,
-        const CORE::LINALG::SparseMatrix* trafo = nullptr) const override;
+        const Core::LinAlg::SparseMatrix* trafo = nullptr) const override;
 
     //@}
 
@@ -139,7 +139,7 @@ namespace CORE::LINALG
     const Epetra_Map& FullDomainMap() const { return *domainmaps_.FullMap(); }
 
     /// total matrix domain map with all blocks (this is needed for
-    /// consistency with CORE::LINALG::SparseMatrix)
+    /// consistency with Core::LinAlg::SparseMatrix)
     const Epetra_Map& DomainMap() const override { return *domainmaps_.FullMap(); }
 
     /// total matrix row map with all blocks
@@ -293,24 +293,24 @@ namespace CORE::LINALG
     /// clone the full block sparse matrix
 
     /** Do not forget to call Complete() after cloning, even if you
-     *  use CORE::LINALG::View! */
+     *  use Core::LinAlg::View! */
     Teuchos::RCP<BlockSparseMatrixBase> Clone(DataAccess access) override;
 
     /// clone only a part of the block sparse matrix
     /** Do not forget to call Complete() after cloning, even if you
-     *  use CORE::LINALG::View!
+     *  use Core::LinAlg::View!
      *
      *  \param[in] access : consider copy or view of block matrices
      *  \param[in] row_block_ids : ID's of the row blocks to clone
      *  \param[in] col_block_ids : ID's of the column blocks to clone
      *
      *  \author hiermeier \date 04/17 */
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> Clone(DataAccess access,
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> Clone(DataAccess access,
         const std::vector<unsigned>& row_block_ids, const std::vector<unsigned>& col_block_ids);
 
     /// just a dummy that switches from strided assembly to standard assembly
     void Assemble(int eid, const std::vector<int>& lmstride,
-        const CORE::LINALG::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
+        const Core::LinAlg::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
         const std::vector<int>& lmrowowner, const std::vector<int>& lmcol) override
     {
       const int myrank = Comm().MyPID();
@@ -343,7 +343,7 @@ namespace CORE::LINALG
      *  \param[in] range_extractor : necessary range extractor
      *
      *  \author hiermeier \date 04/17 */
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> Clone(DataAccess access,
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> Clone(DataAccess access,
         const std::vector<unsigned>& row_block_ids, const std::vector<unsigned>& col_block_ids,
         const MultiMapExtractor& domain_extractor, const MultiMapExtractor& range_extractor);
   };
@@ -374,7 +374,7 @@ namespace CORE::LINALG
 
     /// assemble into the given block using nodal strides
     void Assemble(int eid, int myrank, const std::vector<int>& lmstride,
-        const CORE::LINALG::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
+        const Core::LinAlg::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
         const std::vector<int>& lmrowowner, const std::vector<int>& lmcol);
 
     /// assemble into the given block
@@ -411,7 +411,7 @@ namespace CORE::LINALG
    *----------------------------------------------------------------------*/
 
   /// output of BlockSparseMatrixBase
-  std::ostream& operator<<(std::ostream& os, const CORE::LINALG::BlockSparseMatrixBase& mat);
+  std::ostream& operator<<(std::ostream& os, const Core::LinAlg::BlockSparseMatrixBase& mat);
 
 
   //////////////////////////////////
@@ -448,30 +448,30 @@ namespace CORE::LINALG
 
   //! Cast matrix of type SparseOperator to BlockSparseMatrixBase and check in debug mode if cast
   //! was successful
-  Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> CastToBlockSparseMatrixBaseAndCheckSuccess(
-      Teuchos::RCP<CORE::LINALG::SparseOperator> input_matrix);
+  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> CastToBlockSparseMatrixBaseAndCheckSuccess(
+      Teuchos::RCP<Core::LinAlg::SparseOperator> input_matrix);
 
   //! Cast matrix of type SparseOperator to const BlockSparseMatrixBase and check in debug mode if
   //! cast was successful
-  Teuchos::RCP<const CORE::LINALG::BlockSparseMatrixBase>
+  Teuchos::RCP<const Core::LinAlg::BlockSparseMatrixBase>
   CastToConstBlockSparseMatrixBaseAndCheckSuccess(
-      Teuchos::RCP<const CORE::LINALG::SparseOperator> input_matrix);
+      Teuchos::RCP<const Core::LinAlg::SparseOperator> input_matrix);
 
   //////////////////////////////////
 
 
 
-}  // end of namespace CORE::LINALG
+}  // end of namespace Core::LinAlg
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <class Strategy>
-CORE::LINALG::BlockSparseMatrix<Strategy>::BlockSparseMatrix(const MultiMapExtractor& domainmaps,
+Core::LinAlg::BlockSparseMatrix<Strategy>::BlockSparseMatrix(const MultiMapExtractor& domainmaps,
     const MultiMapExtractor& rangemaps, int npr, bool explicitdirichlet, bool savegraph)
     : BlockSparseMatrixBase(domainmaps, rangemaps, npr, explicitdirichlet, savegraph),
       // this was necessary, otherwise ambiguous with copy constructor of Strategy
-      Strategy((CORE::LINALG::BlockSparseMatrixBase&)(*this))
+      Strategy((Core::LinAlg::BlockSparseMatrixBase&)(*this))
 {
 }
 
@@ -479,7 +479,7 @@ CORE::LINALG::BlockSparseMatrix<Strategy>::BlockSparseMatrix(const MultiMapExtra
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <class Strategy>
-Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> CORE::LINALG::BlockSparseMatrix<Strategy>::Clone(
+Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> Core::LinAlg::BlockSparseMatrix<Strategy>::Clone(
     DataAccess access)
 {
   std::vector<unsigned> row_block_ids(Rows());
@@ -494,7 +494,7 @@ Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> CORE::LINALG::BlockSparseMatri
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <class Strategy>
-Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> CORE::LINALG::BlockSparseMatrix<Strategy>::Clone(
+Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> Core::LinAlg::BlockSparseMatrix<Strategy>::Clone(
     DataAccess access, const std::vector<unsigned>& row_block_ids,
     const std::vector<unsigned>& col_block_ids, const MultiMapExtractor& domain_extractor,
     const MultiMapExtractor& range_extractor)
@@ -520,7 +520,7 @@ Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> CORE::LINALG::BlockSparseMatri
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <class Strategy>
-Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> CORE::LINALG::BlockSparseMatrix<Strategy>::Clone(
+Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> Core::LinAlg::BlockSparseMatrix<Strategy>::Clone(
     DataAccess access, const std::vector<unsigned>& row_block_ids,
     const std::vector<unsigned>& col_block_ids)
 {
@@ -549,7 +549,7 @@ Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> CORE::LINALG::BlockSparseMatri
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <class Strategy>
-void CORE::LINALG::BlockSparseMatrix<Strategy>::Complete(bool enforce_complete)
+void Core::LinAlg::BlockSparseMatrix<Strategy>::Complete(bool enforce_complete)
 {
   Strategy::Complete();
   BlockSparseMatrixBase::Complete(enforce_complete);
@@ -558,7 +558,7 @@ void CORE::LINALG::BlockSparseMatrix<Strategy>::Complete(bool enforce_complete)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-inline int CORE::LINALG::DefaultBlockMatrixStrategy::row_block(int rgid)
+inline int Core::LinAlg::DefaultBlockMatrixStrategy::row_block(int rgid)
 {
   int rows = mat_.Rows();
   for (int rblock = 0; rblock < rows; ++rblock)
@@ -574,7 +574,7 @@ inline int CORE::LINALG::DefaultBlockMatrixStrategy::row_block(int rgid)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-inline int CORE::LINALG::DefaultBlockMatrixStrategy::col_block(int rblock, int cgid)
+inline int Core::LinAlg::DefaultBlockMatrixStrategy::col_block(int rblock, int cgid)
 {
   int cols = mat_.Cols();
   for (int cblock = 0; cblock < cols; ++cblock)
@@ -605,8 +605,8 @@ inline int CORE::LINALG::DefaultBlockMatrixStrategy::col_block(int rblock, int c
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-inline void CORE::LINALG::DefaultBlockMatrixStrategy::Assemble(int eid, int myrank,
-    const std::vector<int>& lmstride, const CORE::LINALG::SerialDenseMatrix& Aele,
+inline void Core::LinAlg::DefaultBlockMatrixStrategy::Assemble(int eid, int myrank,
+    const std::vector<int>& lmstride, const Core::LinAlg::SerialDenseMatrix& Aele,
     const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
     const std::vector<int>& lmcol)
 {
@@ -648,7 +648,7 @@ inline void CORE::LINALG::DefaultBlockMatrixStrategy::Assemble(int eid, int myra
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-inline void CORE::LINALG::DefaultBlockMatrixStrategy::Assemble(double val, int rgid, int cgid)
+inline void Core::LinAlg::DefaultBlockMatrixStrategy::Assemble(double val, int rgid, int cgid)
 {
   int rblock = row_block(rgid);
   int cblock = col_block(rblock, cgid);
@@ -659,7 +659,7 @@ inline void CORE::LINALG::DefaultBlockMatrixStrategy::Assemble(double val, int r
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-inline void CORE::LINALG::DefaultBlockMatrixStrategy::assemble(
+inline void Core::LinAlg::DefaultBlockMatrixStrategy::assemble(
     double val, int lrow, int rgid, int rblock, int lcol, int cgid, int cblock)
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS

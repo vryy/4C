@@ -19,14 +19,14 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::NLN::SOLVER::PseudoTransient::PseudoTransient()
+STR::Nln::SOLVER::PseudoTransient::PseudoTransient()
 {
   // empty constructor
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::NLN::SOLVER::PseudoTransient::Setup()
+void STR::Nln::SOLVER::PseudoTransient::Setup()
 {
   check_init();
 
@@ -42,7 +42,7 @@ void STR::NLN::SOLVER::PseudoTransient::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::NLN::SOLVER::PseudoTransient::set_pseudo_transient_params()
+void STR::Nln::SOLVER::PseudoTransient::set_pseudo_transient_params()
 {
   check_init();
 
@@ -75,7 +75,7 @@ void STR::NLN::SOLVER::PseudoTransient::set_pseudo_transient_params()
               << "WARNING: The Full Step length is " << fullstep << " (default=1.0)" << std::endl
               << markerline << std::endl;
   }
-  /* The following parameters create a NOX::NLN::Solver::PseudoTransient
+  /* The following parameters create a NOX::Nln::Solver::PseudoTransient
    * solver which is equivalent to the old 4C implementation.
    *
    * If you are keen on using the new features, please use the corresponding
@@ -101,7 +101,7 @@ void STR::NLN::SOLVER::PseudoTransient::set_pseudo_transient_params()
    */
   if (not IsXMLStatusTestFile(data_s_dyn().GetNoxParams().sublist("Status Test")))
   {
-    std::set<enum NOX::NLN::StatusTest::QuantityType> qtypes;
+    std::set<enum NOX::Nln::StatusTest::QuantityType> qtypes;
     CreateQuantityTypes(qtypes, data_s_dyn());
     SetStatusTestParams(data_s_dyn().GetNoxParams().sublist("Status Test"), data_s_dyn(), qtypes);
   }

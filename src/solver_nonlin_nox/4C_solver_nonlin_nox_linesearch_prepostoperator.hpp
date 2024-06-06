@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
     namespace LineSearch
     {
@@ -33,7 +33,7 @@ namespace NOX
       class PrePostOperator
       {
        public:
-        typedef std::map<enum PrePostOpType, Teuchos::RCP<NOX::NLN::Abstract::PrePostOperator>> map;
+        typedef std::map<enum PrePostOpType, Teuchos::RCP<NOX::Nln::Abstract::PrePostOperator>> map;
 
         /// disallow the following
         PrePostOperator() = delete;
@@ -81,7 +81,7 @@ namespace NOX
         }
       }
     }  // namespace LineSearch
-  }    // namespace NLN
+  }    // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

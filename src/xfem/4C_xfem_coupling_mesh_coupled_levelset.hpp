@@ -31,10 +31,10 @@ namespace XFEM
    public:
     //! constructor
     explicit MeshCouplingNavierSlipTwoPhase(
-        Teuchos::RCP<DRT::Discretization>& bg_dis,  ///< background discretization
+        Teuchos::RCP<Discret::Discretization>& bg_dis,  ///< background discretization
         const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                        ///< discretization is identified
-        Teuchos::RCP<DRT::Discretization>&
+        Teuchos::RCP<Discret::Discretization>&
             cond_dis,           ///< discretization from which cutter discretization can be derived
         const int coupling_id,  ///< id of composite of coupling conditions
         const double time,      ///< time
@@ -47,12 +47,12 @@ namespace XFEM
     Return prescribed velocities and traction vectors for a GNBC boundary condition.
     Also returns the projection matrix (to the plane of the surface) needed for the GNBC condition.
     */
-    template <CORE::FE::CellType DISTYPE, class V1, class V2, class X1, class T1, class M1,
+    template <Core::FE::CellType DISTYPE, class V1, class V2, class X1, class T1, class M1,
         class M2, class M3>
     void evaluate_coupling_conditions(V1& ivel,   ///< prescribed velocity at interface
         V2& itraction,                            ///< prescribed traction at interface
         X1& x,                                    ///< coordinates of gauss point
-        const CORE::Conditions::Condition* cond,  ///< condition prescribed to this surface
+        const Core::Conditions::Condition* cond,  ///< condition prescribed to this surface
         T1& proj_matrix,  ///< Laplace-Beltrami matrix for surface tension calculations
         int eid,          ///< element ID
         M1& funct,        ///< local shape function for Gauss Point (from fluid element)
@@ -109,7 +109,7 @@ namespace XFEM
               itraction, x, conditionsmap_robin_neumann_.find(robin_id_dirch)->second, time_);
 
           double sl_visc_fac = sliplength / (kappa_m * visc_m + (1.0 - kappa_m) * visc_s);
-          CORE::LINALG::Matrix<3, 1> tmp_itraction(true);
+          Core::LinAlg::Matrix<3, 1> tmp_itraction(true);
           tmp_itraction.MultiplyTN(proj_matrix, itraction);
           // Project this into tangential direction!!!
 
@@ -121,7 +121,7 @@ namespace XFEM
 
       if (force_tangvel_map_.find(cond->Id())->second)
       {
-        CORE::LINALG::Matrix<3, 1> tmp_ivel(true);
+        Core::LinAlg::Matrix<3, 1> tmp_ivel(true);
         tmp_ivel.MultiplyTN(
             proj_matrix, ivel);  // apply Projection matrix from the right. (u_0 * P^t)
         ivel.Update(1.0, tmp_ivel, 0.0);
@@ -147,7 +147,7 @@ namespace XFEM
     };
 
 
-    // template <CORE::FE::CellType DISTYPE>//,class M1, class M2>
+    // template <Core::FE::CellType DISTYPE>//,class M1, class M2>
     //! Updates configurationmap for specific Gausspoint
     void update_configuration_map_gp(double& kappa_m,  //< fluid sided weighting
         double& visc_m,                                //< master sided dynamic viscosity
@@ -155,47 +155,47 @@ namespace XFEM
         double& density_m,                             //< master sided density
         double& visc_stab_tang,                        //< viscous tangential NIT Penalty scaling
         double& full_stab,                             //< full NIT Penalty scaling
-        const CORE::LINALG::Matrix<3, 1>& x,           //< Position x in global coordinates
-        const CORE::Conditions::Condition* cond,       //< Condition
-        CORE::Elements::Element* ele,                  //< Element
-        CORE::Elements::Element* bele,                 //< Boundary Element
+        const Core::LinAlg::Matrix<3, 1>& x,           //< Position x in global coordinates
+        const Core::Conditions::Condition* cond,       //< Condition
+        Core::Elements::Element* ele,                  //< Element
+        Core::Elements::Element* bele,                 //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
-        CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
-        CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
-        CORE::LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+        Core::LinAlg::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+        Core::LinAlg::Matrix<3, 1>& normal,     //< normal at gp
+        Core::LinAlg::Matrix<3, 1>& vel_m,      //< master velocity at gp
         double* fulltraction  //< precomputed fsi traction (sigmaF n + gamma relvel)
         ) override
     {
       double dynvisc = (kappa_m * visc_m + (1.0 - kappa_m) * visc_s);
       double sliplength = 0.0;
 
-      if (ele->Shape() == CORE::FE::CellType::hex8)
+      if (ele->Shape() == Core::FE::CellType::hex8)
       {
-        const CORE::FE::CellType shape = CORE::FE::CellType::hex8;
+        const Core::FE::CellType shape = Core::FE::CellType::hex8;
         //
-        const size_t nsd = CORE::FE::dim<shape>;
-        const size_t nen = CORE::FE::num_nodes<shape>;
-        CORE::LINALG::Matrix<nen, 1> funct_(funct, true);
-        CORE::LINALG::Matrix<nen, nsd> derxy_(derxy, true);
+        const size_t nsd = Core::FE::dim<shape>;
+        const size_t nen = Core::FE::num_nodes<shape>;
+        Core::LinAlg::Matrix<nen, 1> funct_(funct, true);
+        Core::LinAlg::Matrix<nen, nsd> derxy_(derxy, true);
       }
-      else if (ele->Shape() == CORE::FE::CellType::hex27)
+      else if (ele->Shape() == Core::FE::CellType::hex27)
       {
-        const CORE::FE::CellType shape = CORE::FE::CellType::hex27;
+        const Core::FE::CellType shape = Core::FE::CellType::hex27;
         //
-        const size_t nsd = CORE::FE::dim<shape>;
-        const size_t nen = CORE::FE::num_nodes<shape>;
-        CORE::LINALG::Matrix<nen, 1> funct_(funct, true);
-        CORE::LINALG::Matrix<nen, nsd> derxy_(derxy, true);
+        const size_t nsd = Core::FE::dim<shape>;
+        const size_t nen = Core::FE::num_nodes<shape>;
+        Core::LinAlg::Matrix<nen, 1> funct_(funct, true);
+        Core::LinAlg::Matrix<nen, nsd> derxy_(derxy, true);
       }
-      else if (ele->Shape() == CORE::FE::CellType::hex20)
+      else if (ele->Shape() == Core::FE::CellType::hex20)
       {
-        const CORE::FE::CellType shape = CORE::FE::CellType::hex20;
+        const Core::FE::CellType shape = Core::FE::CellType::hex20;
         //
-        const size_t nsd = CORE::FE::dim<shape>;
-        const size_t nen = CORE::FE::num_nodes<shape>;
-        CORE::LINALG::Matrix<nen, 1> funct_(funct, true);
-        CORE::LINALG::Matrix<nen, nsd> derxy_(derxy, true);
+        const size_t nsd = Core::FE::dim<shape>;
+        const size_t nen = Core::FE::num_nodes<shape>;
+        Core::LinAlg::Matrix<nen, 1> funct_(funct, true);
+        Core::LinAlg::Matrix<nen, nsd> derxy_(derxy, true);
       }
       else
         FOUR_C_THROW("Element not considered.");
@@ -208,21 +208,21 @@ namespace XFEM
         double stabadj = 0.0;
         XFEM::UTILS::GetNavierSlipStabilizationParameters(
             visc_stab_tang, dynvisc, sliplength, stabnit, stabadj);
-        configuration_map_[INPAR::XFEM::F_Pen_t_Row].second = stabnit;
-        configuration_map_[INPAR::XFEM::F_Con_t_Row] =
+        configuration_map_[Inpar::XFEM::F_Pen_t_Row].second = stabnit;
+        configuration_map_[Inpar::XFEM::F_Con_t_Row] =
             std::pair<bool, double>(true, -stabnit);  //+sign for penalty!
-        configuration_map_[INPAR::XFEM::F_Con_t_Col] =
+        configuration_map_[Inpar::XFEM::F_Con_t_Col] =
             std::pair<bool, double>(true, sliplength / dynvisc);
-        configuration_map_[INPAR::XFEM::F_Adj_t_Row].second = stabadj;
-        configuration_map_[INPAR::XFEM::FStr_Adj_t_Col] = std::pair<bool, double>(true, sliplength);
+        configuration_map_[Inpar::XFEM::F_Adj_t_Row].second = stabadj;
+        configuration_map_[Inpar::XFEM::FStr_Adj_t_Col] = std::pair<bool, double>(true, sliplength);
       }
       else
       {
-        configuration_map_[INPAR::XFEM::F_Pen_t_Row].second = full_stab;
-        configuration_map_[INPAR::XFEM::F_Con_t_Row] = std::pair<bool, double>(false, 0.0);
-        configuration_map_[INPAR::XFEM::F_Con_t_Col] = std::pair<bool, double>(false, 0.0);
-        configuration_map_[INPAR::XFEM::F_Adj_t_Row].second = 1.0;
-        configuration_map_[INPAR::XFEM::FStr_Adj_t_Col] = std::pair<bool, double>(false, 0.0);
+        configuration_map_[Inpar::XFEM::F_Pen_t_Row].second = full_stab;
+        configuration_map_[Inpar::XFEM::F_Con_t_Row] = std::pair<bool, double>(false, 0.0);
+        configuration_map_[Inpar::XFEM::F_Con_t_Col] = std::pair<bool, double>(false, 0.0);
+        configuration_map_[Inpar::XFEM::F_Adj_t_Row].second = 1.0;
+        configuration_map_[Inpar::XFEM::FStr_Adj_t_Col] = std::pair<bool, double>(false, 0.0);
       }
     };
 

@@ -21,17 +21,17 @@ Nonlinear viscosity according to a modified power law
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
     /*----------------------------------------------------------------------*/
     /// material parameters
-    class ModPowerLaw : public CORE::MAT::PAR::Parameter
+    class ModPowerLaw : public Core::Mat::PAR::Parameter
     {
      public:
       /// standard constructor
-      ModPowerLaw(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      ModPowerLaw(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -42,20 +42,20 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
     };  // class ModPowerLaw
 
   }  // namespace PAR
 
-  class ModPowerLawType : public CORE::COMM::ParObjectType
+  class ModPowerLawType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "ModPowerLawType"; }
 
     static ModPowerLawType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ModPowerLawType instance_;
@@ -63,14 +63,14 @@ namespace MAT
 
   /*----------------------------------------------------------------------*/
   /// Nonlinear viscosity according to a modified power law
-  class ModPowerLaw : public CORE::MAT::Material
+  class ModPowerLaw : public Core::Mat::Material
   {
    public:
     /// construct empty material object
     ModPowerLaw();
 
     /// construct the material object given material parameters
-    explicit ModPowerLaw(MAT::PAR::ModPowerLaw* params);
+    explicit ModPowerLaw(Mat::PAR::ModPowerLaw* params);
 
     //! @name Packing and Unpacking
 
@@ -96,7 +96,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -115,13 +115,13 @@ namespace MAT
     //@}
 
     /// material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_modpowerlaw;
+      return Core::Materials::m_modpowerlaw;
     }
 
     /// return copy of this material object
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new ModPowerLaw(*this));
     }
@@ -138,14 +138,14 @@ namespace MAT
     double Density() const override { return params_->density_; }
 
     /// Return quick accessible material parameter data
-    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
    private:
     /// my material parameters
-    MAT::PAR::ModPowerLaw* params_;
+    Mat::PAR::ModPowerLaw* params_;
   };
 
-}  // namespace MAT
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

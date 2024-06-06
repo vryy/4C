@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief A collection of algebraic mathematical methods for namespace CORE::LINALG
+\brief A collection of algebraic mathematical methods for namespace Core::LinAlg
 
 \level 0
 */
@@ -16,7 +16,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   namespace
   {
@@ -53,7 +53,7 @@ namespace CORE::LINALG
           const int myRowB = B.RowMap().LID(A.RowMap().GID(i));
           if (myRowB == -1)
             FOUR_C_THROW(
-                "CORE::LINALG::Add: The row map of matrix B must be a superset of the row map of "
+                "Core::LinAlg::Add: The row map of matrix B must be a superset of the row map of "
                 "Matrix "
                 "A.");
 
@@ -131,7 +131,7 @@ namespace CORE::LINALG
       return NumMyRows;
     }
   }  // namespace
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 
 
@@ -139,8 +139,8 @@ namespace CORE::LINALG
  |  Add a sparse matrix to another                     kronbichler 11/15|
  |  B = B*scalarB + A(transposed)*scalarA                               |
  *----------------------------------------------------------------------*/
-void CORE::LINALG::Add(const Epetra_CrsMatrix& A, const bool transposeA, const double scalarA,
-    CORE::LINALG::SparseMatrixBase& B, const double scalarB)
+void Core::LinAlg::Add(const Epetra_CrsMatrix& A, const bool transposeA, const double scalarA,
+    Core::LinAlg::SparseMatrixBase& B, const double scalarB)
 {
   if (!A.Filled()) FOUR_C_THROW("fill_complete was not called on A");
 
@@ -184,7 +184,7 @@ void CORE::LINALG::Add(const Epetra_CrsMatrix& A, const bool transposeA, const d
  |  Add a sparse matrix to another                           mwgee 12/06|
  |  B = B*scalarB + A(transposed)*scalarA                               |
  *----------------------------------------------------------------------*/
-void CORE::LINALG::Add(const Epetra_CrsMatrix& A, const bool transposeA, const double scalarA,
+void Core::LinAlg::Add(const Epetra_CrsMatrix& A, const bool transposeA, const double scalarA,
     Epetra_CrsMatrix& B, const double scalarB)
 {
   if (!A.Filled()) FOUR_C_THROW("fill_complete was not called on A");
@@ -209,14 +209,14 @@ void CORE::LINALG::Add(const Epetra_CrsMatrix& A, const bool transposeA, const d
 
   int rowsAdded = DoAdd(*Aprime, scalarA, B, scalarB);
   if (rowsAdded != Aprime->RowMap().NumMyElements())
-    FOUR_C_THROW("CORE::LINALG::Add: Could not add all entries from A into B in row %d",
+    FOUR_C_THROW("Core::LinAlg::Add: Could not add all entries from A into B in row %d",
         Aprime->RowMap().GID(rowsAdded));
 }
 
 /*----------------------------------------------------------------------*
  | Transpose matrix A                                         popp 02/08|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_CrsMatrix> CORE::LINALG::Transpose(const Epetra_CrsMatrix& A)
+Teuchos::RCP<Epetra_CrsMatrix> Core::LinAlg::Transpose(const Epetra_CrsMatrix& A)
 {
   if (!A.Filled()) FOUR_C_THROW("fill_complete was not called on A");
 
@@ -231,14 +231,14 @@ Teuchos::RCP<Epetra_CrsMatrix> CORE::LINALG::Transpose(const Epetra_CrsMatrix& A
 /*----------------------------------------------------------------------*
  | Multiply matrices A*B                                     mwgee 01/06|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_CrsMatrix> CORE::LINALG::Multiply(
+Teuchos::RCP<Epetra_CrsMatrix> Core::LinAlg::Multiply(
     const Epetra_CrsMatrix& A, bool transA, const Epetra_CrsMatrix& B, bool transB, bool complete)
 {
   /* ATTENTION (Q1/2013 and later)
    *
-   * Be careful with CORE::LINALG::Multiply when using Trilinos Q1/2013.
+   * Be careful with Core::LinAlg::Multiply when using Trilinos Q1/2013.
    * The new EpetraExt MMM routines are very fast, but not well tested and
-   * sometimes crash. To be on the safe side consider to use CORE::LINALG::MLMultiply
+   * sometimes crash. To be on the safe side consider to use Core::LinAlg::MLMultiply
    * which is based on ML and well tested over several years.
    *
    * For improving speed of MM operations (even beyond MLMultiply) we probably
@@ -284,16 +284,16 @@ Teuchos::RCP<Epetra_CrsMatrix> CORE::LINALG::Multiply(
 /*----------------------------------------------------------------------*
  | Multiply matrices A*B*C                                   mwgee 02/08|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_CrsMatrix> CORE::LINALG::Multiply(const Epetra_CrsMatrix& A, bool transA,
+Teuchos::RCP<Epetra_CrsMatrix> Core::LinAlg::Multiply(const Epetra_CrsMatrix& A, bool transA,
     const Epetra_CrsMatrix& B, bool transB, const Epetra_CrsMatrix& C, bool transC, bool complete)
 {
-  Teuchos::RCP<Epetra_CrsMatrix> tmp = CORE::LINALG::Multiply(B, transB, C, transC, true);
-  return CORE::LINALG::Multiply(A, transA, *tmp, false, complete);
+  Teuchos::RCP<Epetra_CrsMatrix> tmp = Core::LinAlg::Multiply(B, transB, C, transC, true);
+  return Core::LinAlg::Multiply(A, transA, *tmp, false, complete);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::SymmetriseMatrix(CORE::LINALG::SerialDenseMatrix& A)
+void Core::LinAlg::SymmetriseMatrix(Core::LinAlg::SerialDenseMatrix& A)
 {
   const int n = A.numCols();
   if (n != A.numRows()) FOUR_C_THROW("Cannot symmetrize non-square matrix");

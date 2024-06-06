@@ -16,9 +16,9 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void INPAR::ELEMAG::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::EleMag::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
-  using namespace INPUT;
+  using namespace Input;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
@@ -26,22 +26,22 @@ void INPAR::ELEMAG::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
       "ELECTROMAGNETIC DYNAMIC", false, "control parameters for electromagnetic problems\n");
 
   // general settings for time-integration scheme
-  CORE::UTILS::DoubleParameter("TIMESTEP", 0.01, "Time-step length dt", &electromagneticdyn);
-  CORE::UTILS::DoubleParameter("TAU", 1, "Stabilization parameter", &electromagneticdyn);
-  CORE::UTILS::IntParameter("NUMSTEP", 100, "Number of time steps", &electromagneticdyn);
-  CORE::UTILS::DoubleParameter("MAXTIME", 1.0, "Total simulation time", &electromagneticdyn);
+  Core::UTILS::DoubleParameter("TIMESTEP", 0.01, "Time-step length dt", &electromagneticdyn);
+  Core::UTILS::DoubleParameter("TAU", 1, "Stabilization parameter", &electromagneticdyn);
+  Core::UTILS::IntParameter("NUMSTEP", 100, "Number of time steps", &electromagneticdyn);
+  Core::UTILS::DoubleParameter("MAXTIME", 1.0, "Total simulation time", &electromagneticdyn);
 
   // additional parameters
-  CORE::UTILS::IntParameter(
+  Core::UTILS::IntParameter(
       "RESULTSEVRY", 1, "Increment for writing solution", &electromagneticdyn);
-  CORE::UTILS::IntParameter("RESTARTEVRY", 1, "Increment for writing restart", &electromagneticdyn);
-  CORE::UTILS::IntParameter("LINEAR_SOLVER", -1,
+  Core::UTILS::IntParameter("RESTARTEVRY", 1, "Increment for writing restart", &electromagneticdyn);
+  Core::UTILS::IntParameter("LINEAR_SOLVER", -1,
       "Number of linear solver used for electromagnetic problem", &electromagneticdyn);
-  CORE::UTILS::IntParameter("STARTFUNCNO", -1, "Function for initial field", &electromagneticdyn);
-  CORE::UTILS::IntParameter(
+  Core::UTILS::IntParameter("STARTFUNCNO", -1, "Function for initial field", &electromagneticdyn);
+  Core::UTILS::IntParameter(
       "SOURCEFUNCNO", -1, "Function for source term in volume", &electromagneticdyn);
-  // CORE::UTILS::BoolParameter("DOUBLEORFLOAT","Yes","Yes, if evaluation with double, no if with
-  // float",&electromagneticdyn); CORE::UTILS::BoolParameter("ALLELESEQUAL","No","Yes, if all
+  // Core::UTILS::BoolParameter("DOUBLEORFLOAT","Yes","Yes, if evaluation with double, no if with
+  // float",&electromagneticdyn); Core::UTILS::BoolParameter("ALLELESEQUAL","No","Yes, if all
   // elements have same shape and material",&electromagneticdyn);
 
   {
@@ -87,69 +87,69 @@ void INPAR::ELEMAG::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
         name, label, &electromagneticdyn);
 
     // Error calculation
-    CORE::UTILS::BoolParameter(
+    Core::UTILS::BoolParameter(
         "CALCERR", "No", "Calc the error wrt ERRORFUNCNO?", &electromagneticdyn);
 
     // Post process solution?
-    CORE::UTILS::BoolParameter(
+    Core::UTILS::BoolParameter(
         "POSTPROCESS", "No", "Postprocess solution? (very slow)", &electromagneticdyn);
   }
 
-  CORE::UTILS::IntParameter(
+  Core::UTILS::IntParameter(
       "ERRORFUNCNO", -1, "Function for error calculation", &electromagneticdyn);
 
   // flag for equilibration of global system of equations
-  setStringToIntegralParameter<CORE::LINALG::EquilibrationMethod>("EQUILIBRATION", "none",
+  setStringToIntegralParameter<Core::LinAlg::EquilibrationMethod>("EQUILIBRATION", "none",
       "flag for equilibration of global system of equations",
       tuple<std::string>("none", "rows_full", "rows_maindiag", "columns_full", "columns_maindiag",
           "rowsandcolumns_full", "rowsandcolumns_maindiag"),
-      tuple<CORE::LINALG::EquilibrationMethod>(CORE::LINALG::EquilibrationMethod::none,
-          CORE::LINALG::EquilibrationMethod::rows_full,
-          CORE::LINALG::EquilibrationMethod::rows_maindiag,
-          CORE::LINALG::EquilibrationMethod::columns_full,
-          CORE::LINALG::EquilibrationMethod::columns_maindiag,
-          CORE::LINALG::EquilibrationMethod::rowsandcolumns_full,
-          CORE::LINALG::EquilibrationMethod::rowsandcolumns_maindiag),
+      tuple<Core::LinAlg::EquilibrationMethod>(Core::LinAlg::EquilibrationMethod::none,
+          Core::LinAlg::EquilibrationMethod::rows_full,
+          Core::LinAlg::EquilibrationMethod::rows_maindiag,
+          Core::LinAlg::EquilibrationMethod::columns_full,
+          Core::LinAlg::EquilibrationMethod::columns_maindiag,
+          Core::LinAlg::EquilibrationMethod::rowsandcolumns_full,
+          Core::LinAlg::EquilibrationMethod::rowsandcolumns_maindiag),
       &electromagneticdyn);
 
   // PML
-  // CORE::UTILS::StringParameter("PML_DEFINITION_FILE","none.txt","Filename of file containing the
+  // Core::UTILS::StringParameter("PML_DEFINITION_FILE","none.txt","Filename of file containing the
   // pml definition",&electromagneticdyn);
 }
 
 /// set specific electromagnetic conditions
-void INPAR::ELEMAG::SetValidConditions(
-    std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist)
+void Inpar::EleMag::SetValidConditions(
+    std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist)
 {
-  using namespace INPUT;
+  using namespace Input;
 
-  std::vector<Teuchos::RCP<INPUT::LineComponent>> abcbundcomponents;
+  std::vector<Teuchos::RCP<Input::LineComponent>> abcbundcomponents;
 
-  abcbundcomponents.emplace_back(Teuchos::rcp(new INPUT::SeparatorComponent("NUMDOF")));
-  abcbundcomponents.emplace_back(Teuchos::rcp(new INPUT::IntComponent("numdof")));
-  abcbundcomponents.emplace_back(Teuchos::rcp(new INPUT::SeparatorComponent("ONOFF")));
+  abcbundcomponents.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("NUMDOF")));
+  abcbundcomponents.emplace_back(Teuchos::rcp(new Input::IntComponent("numdof")));
+  abcbundcomponents.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("ONOFF")));
   abcbundcomponents.emplace_back(
-      Teuchos::rcp(new INPUT::IntVectorComponent("onoff", INPUT::LengthFromInt("numdof"))));
-  abcbundcomponents.emplace_back(Teuchos::rcp(new INPUT::SeparatorComponent("FUNCT")));
-  abcbundcomponents.emplace_back(Teuchos::rcp(new INPUT::IntVectorComponent(
-      "funct", INPUT::LengthFromInt("numdof"), {0, false, true, false})));
-  abcbundcomponents.emplace_back(Teuchos::rcp(new INPUT::SeparatorComponent("VAL")));
+      Teuchos::rcp(new Input::IntVectorComponent("onoff", Input::LengthFromInt("numdof"))));
+  abcbundcomponents.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("FUNCT")));
+  abcbundcomponents.emplace_back(Teuchos::rcp(new Input::IntVectorComponent(
+      "funct", Input::LengthFromInt("numdof"), {0, false, true, false})));
+  abcbundcomponents.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("VAL")));
   abcbundcomponents.emplace_back(
-      Teuchos::rcp(new INPUT::RealVectorComponent("val", INPUT::LengthFromInt("numdof"))));
+      Teuchos::rcp(new Input::RealVectorComponent("val", Input::LengthFromInt("numdof"))));
 
   //*--------------------------------------------------------------------* /
   // absorbing boundary condition for electromagnetic problems
   // line
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> silvermueller_line = Teuchos::rcp(
-      new CORE::Conditions::ConditionDefinition("DESIGN LINE SILVER-MUELLER CONDITIONS",
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> silvermueller_line = Teuchos::rcp(
+      new Core::Conditions::ConditionDefinition("DESIGN LINE SILVER-MUELLER CONDITIONS",
           "Silver-Mueller", "Absorbing-emitting line for electromagnetics",
-          CORE::Conditions::SilverMueller, true, CORE::Conditions::geometry_type_line));
+          Core::Conditions::SilverMueller, true, Core::Conditions::geometry_type_line));
 
   // surface
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> silvermueller_surface = Teuchos::rcp(
-      new CORE::Conditions::ConditionDefinition("DESIGN SURF SILVER-MUELLER CONDITIONS",
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> silvermueller_surface = Teuchos::rcp(
+      new Core::Conditions::ConditionDefinition("DESIGN SURF SILVER-MUELLER CONDITIONS",
           "Silver-Mueller", "Absorbing-emitting surface for electromagnetics",
-          CORE::Conditions::SilverMueller, true, CORE::Conditions::geometry_type_surface));
+          Core::Conditions::SilverMueller, true, Core::Conditions::geometry_type_surface));
 
   for (unsigned i = 0; i < abcbundcomponents.size(); ++i)
   {

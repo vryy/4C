@@ -31,7 +31,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
-void CORE::LINEAR_SOLVER::AMGNXN::GenericSmoother::Richardson(Teuchos::RCP<GenericSmoother> Ainv,
+void Core::LinearSolver::AMGNxN::GenericSmoother::Richardson(Teuchos::RCP<GenericSmoother> Ainv,
     const BlockedMatrix& A, const BlockedVector& X, BlockedVector& Y, int iters, double omega,
     bool InitialGuessIsZero) const
 {
@@ -59,10 +59,10 @@ void CORE::LINEAR_SOLVER::AMGNXN::GenericSmoother::Richardson(Teuchos::RCP<Gener
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void CORE::LINEAR_SOLVER::AMGNXN::BgsSmoother::Solve(
+void Core::LinearSolver::AMGNxN::BgsSmoother::Solve(
     const BlockedVector& X, BlockedVector& Y, bool InitialGuessIsZero) const
 {
-  TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::SOLVER::AMGNXN::BgsSmoother::Solve");
+  TEUCHOS_FUNC_TIME_MONITOR("Core::LinAlg::SOLVER::AMGNxN::BgsSmoother::Solve");
 
   unsigned NumSuperBlocks = superblocks_.size();
 
@@ -101,10 +101,10 @@ void CORE::LINEAR_SOLVER::AMGNXN::BgsSmoother::Solve(
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void CORE::LINEAR_SOLVER::AMGNXN::SimpleSmoother::Solve(
+void Core::LinearSolver::AMGNxN::SimpleSmoother::Solve(
     const BlockedVector& X, BlockedVector& Y, bool InitialGuessIsZero) const
 {
-  TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::SOLVER::AMGNXN::SimpleSmoother::Solve");
+  TEUCHOS_FUNC_TIME_MONITOR("Core::LinAlg::SOLVER::AMGNxN::SimpleSmoother::Solve");
 
   BlockedVector Yp = Y.GetBlockedVector(blocks_pred_);
   BlockedVector Ys = Y.GetBlockedVector(blocks_schur_);
@@ -172,21 +172,21 @@ void CORE::LINEAR_SOLVER::AMGNXN::SimpleSmoother::Solve(
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void CORE::LINEAR_SOLVER::AMGNXN::MergeAndSolve::Setup(BlockedMatrix matrix)
+void Core::LinearSolver::AMGNxN::MergeAndSolve::Setup(BlockedMatrix matrix)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::SOLVER::AMGNXN::MergeAndSolve::Setup");
+  TEUCHOS_FUNC_TIME_MONITOR("Core::LinAlg::SOLVER::AMGNxN::MergeAndSolve::Setup");
 
   if (matrix.GetMatrix(0, 0)->Comm().MyPID() == 0)
   {
     std::cout
-        << "Warning!!!: We are going to build a CORE::LINALG::BlockSparseMatrix. If this is a "
+        << "Warning!!!: We are going to build a Core::LinAlg::BlockSparseMatrix. If this is a "
            "coarse level matrix, make sure that you have fixed the coarse maps of your AMG "
            "hierarchies (for all the blocks). Otherwise expect problems."
         << std::endl;
   }
 
   // Set matrix
-  block_sparse_matrix_ = matrix.get_block_sparse_matrix(CORE::LINALG::View);
+  block_sparse_matrix_ = matrix.get_block_sparse_matrix(Core::LinAlg::View);
   sparse_matrix_ = block_sparse_matrix_->Merge();
   a_ = Teuchos::rcp_dynamic_cast<Epetra_Operator>(sparse_matrix_->EpetraMatrix());
   Teuchos::RCP<Epetra_CrsMatrix> crsA = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(a_);
@@ -199,12 +199,12 @@ void CORE::LINEAR_SOLVER::AMGNXN::MergeAndSolve::Setup(BlockedMatrix matrix)
 
   // Create linear solver
   Teuchos::ParameterList solvparams;
-  CORE::UTILS::AddEnumClassToParameterList<CORE::LINEAR_SOLVER::SolverType>(
-      "SOLVER", CORE::LINEAR_SOLVER::SolverType::umfpack, solvparams);
-  solver_ = Teuchos::rcp(new CORE::LINALG::Solver(solvparams, a_->Comm()));
+  Core::UTILS::AddEnumClassToParameterList<Core::LinearSolver::SolverType>(
+      "SOLVER", Core::LinearSolver::SolverType::umfpack, solvparams);
+  solver_ = Teuchos::rcp(new Core::LinAlg::Solver(solvparams, a_->Comm()));
 
   // Set up solver
-  CORE::LINALG::SolverParams solver_params;
+  Core::LinAlg::SolverParams solver_params;
   solver_params.refactor = true;
   solver_params.reset = true;
   solver_->Setup(a_, x_, b_, solver_params);
@@ -214,18 +214,18 @@ void CORE::LINEAR_SOLVER::AMGNXN::MergeAndSolve::Setup(BlockedMatrix matrix)
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
-void CORE::LINEAR_SOLVER::AMGNXN::MergeAndSolve::Solve(
+void Core::LinearSolver::AMGNxN::MergeAndSolve::Solve(
     const BlockedVector& X, BlockedVector& Y, bool InitialGuessIsZero) const
 {
   // TODO the memory allocation in this function can be improved
   // Seems that we are allocating too many vectors
 
-  TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::SOLVER::AMGNXN::MergeAndSolve::Solve");
+  TEUCHOS_FUNC_TIME_MONITOR("Core::LinAlg::SOLVER::AMGNxN::MergeAndSolve::Solve");
   if (not(is_set_up_))
     FOUR_C_THROW("The MergeAndSolve class should be set up before calling Apply");
 
-  const CORE::LINALG::MultiMapExtractor& range_ex = block_sparse_matrix_->RangeExtractor();
-  const CORE::LINALG::MultiMapExtractor& domain_ex = block_sparse_matrix_->DomainExtractor();
+  const Core::LinAlg::MultiMapExtractor& range_ex = block_sparse_matrix_->RangeExtractor();
+  const Core::LinAlg::MultiMapExtractor& domain_ex = block_sparse_matrix_->DomainExtractor();
 
   int NV = X.GetVector(0)->NumVectors();
   Epetra_MultiVector Xmv(*(range_ex.FullMap()), NV);
@@ -234,7 +234,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::MergeAndSolve::Solve(
   for (int i = 0; i < X.GetNumBlocks(); i++) range_ex.InsertVector(*(X.GetVector(i)), i, Xmv);
 
   b_->Update(1., Xmv, 0.);
-  CORE::LINALG::SolverParams solver_params;
+  Core::LinAlg::SolverParams solver_params;
   solver_->Solve(a_, x_, b_, solver_params);
   Ymv.Update(1., *x_, 0.);
 
@@ -245,7 +245,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::MergeAndSolve::Solve(
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-CORE::LINEAR_SOLVER::AMGNXN::CoupledAmg::CoupledAmg(Teuchos::RCP<AMGNXN::BlockedMatrix> A,
+Core::LinearSolver::AMGNxN::CoupledAmg::CoupledAmg(Teuchos::RCP<AMGNxN::BlockedMatrix> A,
     std::vector<int> num_pdes, std::vector<int> null_spaces_dim,
     std::vector<Teuchos::RCP<std::vector<double>>> null_spaces_data,
     const Teuchos::ParameterList& amgnxn_params, const Teuchos::ParameterList& smoothers_params,
@@ -265,9 +265,9 @@ CORE::LINEAR_SOLVER::AMGNXN::CoupledAmg::CoupledAmg(Teuchos::RCP<AMGNXN::Blocked
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void CORE::LINEAR_SOLVER::AMGNXN::CoupledAmg::setup()
+void Core::LinearSolver::AMGNxN::CoupledAmg::setup()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::SOLVER::AMGNXN::CoupledAmg::Setup");
+  TEUCHOS_FUNC_TIME_MONITOR("Core::LinAlg::SOLVER::AMGNxN::CoupledAmg::Setup");
 
   std::string verbosity = amgnxn_params_.get<std::string>("verbosity", "off");
 
@@ -278,7 +278,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::CoupledAmg::setup()
   if (verbosity == "on")
   {
     std::cout << "===============================================" << std::endl;
-    std::cout << "CORE::LINALG::SOLVER::AMGNXN::CoupledAmg : debug info  (begin)" << std::endl;
+    std::cout << "Core::LinAlg::SOLVER::AMGNxN::CoupledAmg : debug info  (begin)" << std::endl;
     std::cout << std::endl;
     std::cout << ">>>>>> Creating MueLu AMG Hierarchies for each one of the blocks" << std::endl;
     std::cout << std::endl;
@@ -324,7 +324,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::CoupledAmg::setup()
   int num_levels_amg = amgnxn_params_.get<int>("number of levels", 20);
   // if(num_levels_amg==-1)
   //  FOUR_C_THROW("Missing \"number of levels\" in your xml file");
-  h_ = Teuchos::rcp(new AMGNXN::Hierarchies(
+  h_ = Teuchos::rcp(new AMGNxN::Hierarchies(
       a_, muelu_lists_, num_pdes_, null_spaces_dim_, null_spaces_data_, num_levels_amg, verbosity));
 
   if (verbosity == "on")
@@ -334,13 +334,13 @@ void CORE::LINEAR_SOLVER::AMGNXN::CoupledAmg::setup()
     std::cout << std::endl;
   }
 
-  m_ = Teuchos::rcp(new AMGNXN::MonolithicHierarchy(h_, amgnxn_params_, smoothers_params_));
+  m_ = Teuchos::rcp(new AMGNxN::MonolithicHierarchy(h_, amgnxn_params_, smoothers_params_));
   v_ = m_->BuildVCycle();
 
   if (verbosity == "on")
   {
     std::cout << std::endl;
-    std::cout << "CORE::LINALG::SOLVER::AMGNXN::CoupledAmg : debug info  (end)" << std::endl;
+    std::cout << "Core::LinAlg::SOLVER::AMGNxN::CoupledAmg : debug info  (end)" << std::endl;
     std::cout << "===============================================" << std::endl;
   }
 
@@ -350,7 +350,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::CoupledAmg::setup()
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void CORE::LINEAR_SOLVER::AMGNXN::CoupledAmg::Solve(
+void Core::LinearSolver::AMGNxN::CoupledAmg::Solve(
     const BlockedVector& X, BlockedVector& Y, bool InitialGuessIsZero) const
 {
   if (!is_setup_flag_) FOUR_C_THROW("Solve cannot be called without a previous set up");
@@ -362,7 +362,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::CoupledAmg::Solve(
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void CORE::LINEAR_SOLVER::AMGNXN::MueluSmootherWrapper::Apply(
+void Core::LinearSolver::AMGNxN::MueluSmootherWrapper::Apply(
     const Epetra_MultiVector& X, Epetra_MultiVector& Y, bool InitialGuessIsZero) const
 {
   if (InitialGuessIsZero)
@@ -400,7 +400,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::MueluSmootherWrapper::Apply(
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
-CORE::LINEAR_SOLVER::AMGNXN::MueluHierarchyWrapper::MueluHierarchyWrapper(
+Core::LinearSolver::AMGNxN::MueluHierarchyWrapper::MueluHierarchyWrapper(
     Teuchos::RCP<MueLu::Hierarchy<Scalar, LocalOrdinal, GlobalOrdinal, Node>> H)
     : h_(std::move(H))
 {
@@ -410,7 +410,7 @@ CORE::LINEAR_SOLVER::AMGNXN::MueluHierarchyWrapper::MueluHierarchyWrapper(
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
-void CORE::LINEAR_SOLVER::AMGNXN::MueluHierarchyWrapper::Apply(
+void Core::LinearSolver::AMGNxN::MueluHierarchyWrapper::Apply(
     const Epetra_MultiVector& X, Epetra_MultiVector& Y, bool InitialGuessIsZero) const
 {
   if (InitialGuessIsZero)
@@ -420,8 +420,8 @@ void CORE::LINEAR_SOLVER::AMGNXN::MueluHierarchyWrapper::Apply(
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
-CORE::LINEAR_SOLVER::AMGNXN::MueluAMGWrapper::MueluAMGWrapper(
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> A, int num_pde, int null_space_dim,
+Core::LinearSolver::AMGNxN::MueluAMGWrapper::MueluAMGWrapper(
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> A, int num_pde, int null_space_dim,
     Teuchos::RCP<std::vector<double>> null_space_data, const Teuchos::ParameterList& muelu_list)
     : A_(std::move(A)),
       num_pde_(num_pde),
@@ -433,7 +433,7 @@ CORE::LINEAR_SOLVER::AMGNXN::MueluAMGWrapper::MueluAMGWrapper(
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
-void CORE::LINEAR_SOLVER::AMGNXN::MueluAMGWrapper::build_hierarchy()
+void Core::LinearSolver::AMGNxN::MueluAMGWrapper::build_hierarchy()
 {
   // Prepare operator for MueLu
   Teuchos::RCP<Epetra_CrsMatrix> A_crs =
@@ -497,9 +497,9 @@ void CORE::LINEAR_SOLVER::AMGNXN::MueluAMGWrapper::build_hierarchy()
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
-void CORE::LINEAR_SOLVER::AMGNXN::MueluAMGWrapper::Setup()
+void Core::LinearSolver::AMGNxN::MueluAMGWrapper::Setup()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::SOLVER::MueluAMGWrapper::Setup");
+  TEUCHOS_FUNC_TIME_MONITOR("Core::LinAlg::SOLVER::MueluAMGWrapper::Setup");
 
   Teuchos::Time timer("", true);
   timer.reset();
@@ -513,13 +513,13 @@ void CORE::LINEAR_SOLVER::AMGNXN::MueluAMGWrapper::Setup()
   double elaptime = timer.totalElapsedTime(true);
   if (muelu_list_.sublist("Hierarchy").get<std::string>("verbosity", "None") != "None" and
       A_->Comm().MyPID() == 0)
-    std::cout << "       Calling CORE::LINALG::SOLVER::AMGNXN::MueluAMGWrapper::Setup takes "
+    std::cout << "       Calling Core::LinAlg::SOLVER::AMGNxN::MueluAMGWrapper::Setup takes "
               << std::setw(16) << std::setprecision(6) << elaptime << " s" << std::endl;
 }
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
-void CORE::LINEAR_SOLVER::AMGNXN::MueluAMGWrapper::Apply(
+void Core::LinearSolver::AMGNxN::MueluAMGWrapper::Apply(
     const Epetra_MultiVector& X, Epetra_MultiVector& Y, bool InitialGuessIsZero) const
 {
   if (InitialGuessIsZero)
@@ -530,8 +530,8 @@ void CORE::LINEAR_SOLVER::AMGNXN::MueluAMGWrapper::Apply(
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
-CORE::LINEAR_SOLVER::AMGNXN::SingleFieldAMG::SingleFieldAMG(
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> A, int num_pde, int null_space_dim,
+Core::LinearSolver::AMGNxN::SingleFieldAMG::SingleFieldAMG(
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> A, int num_pde, int null_space_dim,
     Teuchos::RCP<std::vector<double>> null_space_data, const Teuchos::ParameterList& muelu_list,
     const Teuchos::ParameterList& fine_smoother_list)
     : MueluAMGWrapper(A, num_pde, null_space_dim, null_space_data, muelu_list),
@@ -543,9 +543,9 @@ CORE::LINEAR_SOLVER::AMGNXN::SingleFieldAMG::SingleFieldAMG(
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
-void CORE::LINEAR_SOLVER::AMGNXN::SingleFieldAMG::Setup()
+void Core::LinearSolver::AMGNxN::SingleFieldAMG::Setup()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::SOLVER::SingleFieldAMG::Setup");
+  TEUCHOS_FUNC_TIME_MONITOR("Core::LinAlg::SOLVER::SingleFieldAMG::Setup");
 
   using MueLuUtils = MueLu::Utilities<double, int, int, Node>;
 
@@ -565,13 +565,13 @@ void CORE::LINEAR_SOLVER::AMGNXN::SingleFieldAMG::Setup()
 
   Teuchos::RCP<Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node>> myA = Teuchos::null;
   Teuchos::RCP<Epetra_CrsMatrix> myAcrs = Teuchos::null;
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> myAspa = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> myAspa = Teuchos::null;
   Teuchos::RCP<MueLu::SmootherBase<Scalar, LocalOrdinal, GlobalOrdinal, Node>> myS = Teuchos::null;
-  Teuchos::RCP<CORE::LINEAR_SOLVER::AMGNXN::MueluSmootherWrapper> mySWrap = Teuchos::null;
+  Teuchos::RCP<Core::LinearSolver::AMGNxN::MueluSmootherWrapper> mySWrap = Teuchos::null;
 
-  std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>> Avec(NumLevels, Teuchos::null);
-  std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>> Pvec(NumLevels - 1, Teuchos::null);
-  std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>> Rvec(NumLevels - 1, Teuchos::null);
+  std::vector<Teuchos::RCP<Core::LinAlg::SparseMatrix>> Avec(NumLevels, Teuchos::null);
+  std::vector<Teuchos::RCP<Core::LinAlg::SparseMatrix>> Pvec(NumLevels - 1, Teuchos::null);
+  std::vector<Teuchos::RCP<Core::LinAlg::SparseMatrix>> Rvec(NumLevels - 1, Teuchos::null);
   std::vector<Teuchos::RCP<SingleFieldSmoother>> SvecPre(NumLevels, Teuchos::null);
   std::vector<Teuchos::RCP<SingleFieldSmoother>> SvecPos(NumLevels - 1, Teuchos::null);
 
@@ -589,7 +589,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::SingleFieldAMG::Setup()
               "A");
       myAcrs = MueLuUtils::Op2NonConstEpetraCrs(myA);
       myAspa = Teuchos::rcp(
-          new CORE::LINALG::SparseMatrix(myAcrs, CORE::LINALG::Copy, explicitdirichlet, savegraph));
+          new Core::LinAlg::SparseMatrix(myAcrs, Core::LinAlg::Copy, explicitdirichlet, savegraph));
       Avec[level] = myAspa;
     }
     else
@@ -603,8 +603,8 @@ void CORE::LINEAR_SOLVER::AMGNXN::SingleFieldAMG::Setup()
             this_level
                 ->Get<Teuchos::RCP<Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node>>>("P");
         myAcrs = MueLuUtils::Op2NonConstEpetraCrs(myA);
-        myAspa = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
-            myAcrs, CORE::LINALG::Copy, explicitdirichlet, savegraph));
+        myAspa = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+            myAcrs, Core::LinAlg::Copy, explicitdirichlet, savegraph));
         Pvec[level - 1] = myAspa;
       }
       else
@@ -616,8 +616,8 @@ void CORE::LINEAR_SOLVER::AMGNXN::SingleFieldAMG::Setup()
             this_level
                 ->Get<Teuchos::RCP<Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node>>>("R");
         myAcrs = MueLuUtils::Op2NonConstEpetraCrs(myA);
-        myAspa = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
-            myAcrs, CORE::LINALG::Copy, explicitdirichlet, savegraph));
+        myAspa = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+            myAcrs, Core::LinAlg::Copy, explicitdirichlet, savegraph));
         Rvec[level - 1] = myAspa;
       }
       else
@@ -633,7 +633,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::SingleFieldAMG::Setup()
             this_level
                 ->Get<Teuchos::RCP<MueLu::SmootherBase<Scalar, LocalOrdinal, GlobalOrdinal, Node>>>(
                     "PreSmoother");
-        mySWrap = Teuchos::rcp(new CORE::LINEAR_SOLVER::AMGNXN::MueluSmootherWrapper(myS));
+        mySWrap = Teuchos::rcp(new Core::LinearSolver::AMGNxN::MueluSmootherWrapper(myS));
         SvecPre[level] = mySWrap;
       }
       else
@@ -645,7 +645,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::SingleFieldAMG::Setup()
   // Build smoothers
   for (int level = 0; level < NumLevels - 1; level++)
   {
-    SvecPre[level] = Teuchos::rcp(new AMGNXN::IfpackWrapper(Avec[level], fine_smoother_list_));
+    SvecPre[level] = Teuchos::rcp(new AMGNxN::IfpackWrapper(Avec[level], fine_smoother_list_));
     SvecPos[level] = SvecPre[level];
   }
 
@@ -663,14 +663,14 @@ void CORE::LINEAR_SOLVER::AMGNXN::SingleFieldAMG::Setup()
 
   double elaptime = timer.totalElapsedTime(true);
   if (A_->Comm().MyPID() == 0)
-    std::cout << "       Calling CORE::LINALG::SOLVER::AMGNXN::SingleFieldAMG::Setup takes "
+    std::cout << "       Calling Core::LinAlg::SOLVER::AMGNxN::SingleFieldAMG::Setup takes "
               << std::setw(16) << std::setprecision(6) << elaptime << " s" << std::endl;
 }
 
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
-void CORE::LINEAR_SOLVER::AMGNXN::SingleFieldAMG::Apply(
+void Core::LinearSolver::AMGNxN::SingleFieldAMG::Apply(
     const Epetra_MultiVector& X, Epetra_MultiVector& Y, bool InitialGuessIsZero) const
 {
   if (InitialGuessIsZero)
@@ -681,8 +681,8 @@ void CORE::LINEAR_SOLVER::AMGNXN::SingleFieldAMG::Apply(
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
-CORE::LINEAR_SOLVER::AMGNXN::IfpackWrapper::IfpackWrapper(
-    Teuchos::RCP<CORE::LINALG::SparseMatrixBase> A, Teuchos::ParameterList& list)
+Core::LinearSolver::AMGNxN::IfpackWrapper::IfpackWrapper(
+    Teuchos::RCP<Core::LinAlg::SparseMatrixBase> A, Teuchos::ParameterList& list)
     : a_(std::move(A))
 {
   // Determine the preconditioner type
@@ -727,7 +727,7 @@ CORE::LINEAR_SOLVER::AMGNXN::IfpackWrapper::IfpackWrapper(
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
-void CORE::LINEAR_SOLVER::AMGNXN::IfpackWrapper::Apply(
+void Core::LinearSolver::AMGNxN::IfpackWrapper::Apply(
     const Epetra_MultiVector& X, Epetra_MultiVector& Y, bool InitialGuessIsZero) const
 {
   // We assume that ifpack is always setting the initial guess to zero
@@ -750,7 +750,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::IfpackWrapper::Apply(
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
-CORE::LINEAR_SOLVER::AMGNXN::DirectSolverWrapper::DirectSolverWrapper()
+Core::LinearSolver::AMGNxN::DirectSolverWrapper::DirectSolverWrapper()
     : solver_(Teuchos::null),
       a_(Teuchos::null),
       x_(Teuchos::null),
@@ -763,8 +763,8 @@ CORE::LINEAR_SOLVER::AMGNXN::DirectSolverWrapper::DirectSolverWrapper()
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void CORE::LINEAR_SOLVER::AMGNXN::DirectSolverWrapper::Setup(
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> matrix, Teuchos::RCP<Teuchos::ParameterList> params)
+void Core::LinearSolver::AMGNxN::DirectSolverWrapper::Setup(
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> matrix, Teuchos::RCP<Teuchos::ParameterList> params)
 {
   // Set matrix
   a_ = Teuchos::rcp_dynamic_cast<Epetra_Operator>(matrix->EpetraMatrix());
@@ -780,21 +780,21 @@ void CORE::LINEAR_SOLVER::AMGNXN::DirectSolverWrapper::Setup(
 
   if (solvertype == "umfpack")
   {
-    CORE::UTILS::AddEnumClassToParameterList<CORE::LINEAR_SOLVER::SolverType>(
-        "SOLVER", CORE::LINEAR_SOLVER::SolverType::umfpack, *params);
+    Core::UTILS::AddEnumClassToParameterList<Core::LinearSolver::SolverType>(
+        "SOLVER", Core::LinearSolver::SolverType::umfpack, *params);
   }
   else if (solvertype == "superlu")
   {
-    CORE::UTILS::AddEnumClassToParameterList<CORE::LINEAR_SOLVER::SolverType>(
-        "SOLVER", CORE::LINEAR_SOLVER::SolverType::superlu, *params);
+    Core::UTILS::AddEnumClassToParameterList<Core::LinearSolver::SolverType>(
+        "SOLVER", Core::LinearSolver::SolverType::superlu, *params);
   }
   else
     FOUR_C_THROW("Solver type not supported as direct solver in AMGNXN framework");
 
-  solver_ = Teuchos::rcp(new CORE::LINALG::Solver(*params, a_->Comm()));
+  solver_ = Teuchos::rcp(new Core::LinAlg::Solver(*params, a_->Comm()));
 
   // Set up solver
-  CORE::LINALG::SolverParams solver_params;
+  Core::LinAlg::SolverParams solver_params;
   solver_params.refactor = true;
   solver_params.reset = true;
   solver_->Setup(a_, x_, b_, solver_params);
@@ -805,14 +805,14 @@ void CORE::LINEAR_SOLVER::AMGNXN::DirectSolverWrapper::Setup(
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
-void CORE::LINEAR_SOLVER::AMGNXN::DirectSolverWrapper::Apply(
+void Core::LinearSolver::AMGNxN::DirectSolverWrapper::Apply(
     const Epetra_MultiVector& X, Epetra_MultiVector& Y, bool InitialGuessIsZero) const
 {
   if (not(is_set_up_))
     FOUR_C_THROW("The DirectSolverWrapper class should be set up before calling Apply");
 
   b_->Update(1., X, 0.);
-  CORE::LINALG::SolverParams solver_params;
+  Core::LinAlg::SolverParams solver_params;
   solver_->Solve(a_, x_, b_, solver_params);
   Y.Update(1., *x_, 0.);
 }
@@ -823,7 +823,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::DirectSolverWrapper::Apply(
 /*------------------------------------------------------------------------------*/
 
 
-CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::SmootherManager()
+Core::LinearSolver::AMGNxN::SmootherManager::SmootherManager()
     : set_operator_(false),
       set_params_(false),
       set_params_subsolver_(false),
@@ -841,8 +841,8 @@ CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::SmootherManager()
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-Teuchos::RCP<CORE::LINEAR_SOLVER::AMGNXN::BlockedMatrix>
-CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::GetOperator()
+Teuchos::RCP<Core::LinearSolver::AMGNxN::BlockedMatrix>
+Core::LinearSolver::AMGNxN::SmootherManager::GetOperator()
 {
   return operator_;
 }
@@ -850,12 +850,12 @@ CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::GetOperator()
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-Teuchos::ParameterList CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::GetParams() { return params_; }
+Teuchos::ParameterList Core::LinearSolver::AMGNxN::SmootherManager::GetParams() { return params_; }
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-Teuchos::ParameterList CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::GetParamsSmoother()
+Teuchos::ParameterList Core::LinearSolver::AMGNxN::SmootherManager::GetParamsSmoother()
 {
   return params_subsolver_;
 }
@@ -863,8 +863,8 @@ Teuchos::ParameterList CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::GetParamsSm
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-Teuchos::RCP<CORE::LINEAR_SOLVER::AMGNXN::Hierarchies>
-CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::GetHierarchies()
+Teuchos::RCP<Core::LinearSolver::AMGNxN::Hierarchies>
+Core::LinearSolver::AMGNxN::SmootherManager::GetHierarchies()
 {
   return hierarchies_;
 }
@@ -872,22 +872,22 @@ CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::GetHierarchies()
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-int CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::GetLevel() { return level_; }
+int Core::LinearSolver::AMGNxN::SmootherManager::GetLevel() { return level_; }
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-int CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::GetBlock() { return block_; }
+int Core::LinearSolver::AMGNxN::SmootherManager::GetBlock() { return block_; }
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-std::vector<int> CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::GetBlocks() { return blocks_; }
+std::vector<int> Core::LinearSolver::AMGNxN::SmootherManager::GetBlocks() { return blocks_; }
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-std::string CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::GetSmootherName()
+std::string Core::LinearSolver::AMGNxN::SmootherManager::GetSmootherName()
 {
   return subsolver_name_;
 }
@@ -895,18 +895,18 @@ std::string CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::GetSmootherName()
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-std::string CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::GetType() { return type_; }
+std::string Core::LinearSolver::AMGNxN::SmootherManager::GetType() { return type_; }
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-std::string CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::GetVerbosity() { return verbosity_; }
+std::string Core::LinearSolver::AMGNxN::SmootherManager::GetVerbosity() { return verbosity_; }
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-CORE::LINEAR_SOLVER::AMGNXN::NullSpaceInfo
-CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::GetNullSpace()
+Core::LinearSolver::AMGNxN::NullSpaceInfo
+Core::LinearSolver::AMGNxN::SmootherManager::GetNullSpace()
 {
   return null_space_;
 }
@@ -914,8 +914,8 @@ CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::GetNullSpace()
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-std::vector<CORE::LINEAR_SOLVER::AMGNXN::NullSpaceInfo>
-CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::get_null_space_all_blocks()
+std::vector<Core::LinearSolver::AMGNxN::NullSpaceInfo>
+Core::LinearSolver::AMGNxN::SmootherManager::get_null_space_all_blocks()
 {
   return null_space_all_blocks_;
 }
@@ -923,7 +923,7 @@ CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::get_null_space_all_blocks()
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::SetOperator(Teuchos::RCP<BlockedMatrix> in)
+void Core::LinearSolver::AMGNxN::SmootherManager::SetOperator(Teuchos::RCP<BlockedMatrix> in)
 {
   set_operator_ = true;
   operator_ = in;
@@ -932,7 +932,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::SetOperator(Teuchos::RCP<Bloc
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::SetParams(const Teuchos::ParameterList& in)
+void Core::LinearSolver::AMGNxN::SmootherManager::SetParams(const Teuchos::ParameterList& in)
 {
   set_params_ = true;
   params_ = in;
@@ -941,7 +941,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::SetParams(const Teuchos::Para
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::SetParamsSmoother(
+void Core::LinearSolver::AMGNxN::SmootherManager::SetParamsSmoother(
     const Teuchos::ParameterList& in)
 {
   set_params_subsolver_ = true;
@@ -951,7 +951,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::SetParamsSmoother(
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::SetHierarchies(Teuchos::RCP<Hierarchies> in)
+void Core::LinearSolver::AMGNxN::SmootherManager::SetHierarchies(Teuchos::RCP<Hierarchies> in)
 {
   set_hierarchies_ = true;
   hierarchies_ = in;
@@ -960,7 +960,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::SetHierarchies(Teuchos::RCP<H
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::SetLevel(int in)
+void Core::LinearSolver::AMGNxN::SmootherManager::SetLevel(int in)
 {
   set_level_ = true;
   level_ = in;
@@ -969,7 +969,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::SetLevel(int in)
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::SetBlock(int in)
+void Core::LinearSolver::AMGNxN::SmootherManager::SetBlock(int in)
 {
   set_block_ = true;
   block_ = in;
@@ -978,7 +978,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::SetBlock(int in)
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::SetBlocks(std::vector<int> in)
+void Core::LinearSolver::AMGNxN::SmootherManager::SetBlocks(std::vector<int> in)
 {
   set_blocks_ = true;
   blocks_ = std::move(in);
@@ -987,7 +987,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::SetBlocks(std::vector<int> in
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::SetSmootherName(std::string in)
+void Core::LinearSolver::AMGNxN::SmootherManager::SetSmootherName(std::string in)
 {
   set_subsolver_name_ = true;
   subsolver_name_ = std::move(in);
@@ -996,7 +996,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::SetSmootherName(std::string i
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::set_type(std::string in)
+void Core::LinearSolver::AMGNxN::SmootherManager::set_type(std::string in)
 {
   set_type_ = true;
   type_ = std::move(in);
@@ -1005,7 +1005,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::set_type(std::string in)
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::SetVerbosity(std::string in)
+void Core::LinearSolver::AMGNxN::SmootherManager::SetVerbosity(std::string in)
 {
   set_verbosity_ = true;
   verbosity_ = std::move(in);
@@ -1014,7 +1014,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::SetVerbosity(std::string in)
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::SetNullSpace(const NullSpaceInfo& in)
+void Core::LinearSolver::AMGNxN::SmootherManager::SetNullSpace(const NullSpaceInfo& in)
 {
   set_null_space_ = true;
   null_space_ = in;
@@ -1023,7 +1023,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::SetNullSpace(const NullSpaceI
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::set_null_space_all_blocks(
+void Core::LinearSolver::AMGNxN::SmootherManager::set_null_space_all_blocks(
     const std::vector<NullSpaceInfo>& in)
 {
   set_null_space_all_blocks_ = true;
@@ -1033,17 +1033,17 @@ void CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::set_null_space_all_blocks(
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-bool CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::IsSetOperator() { return set_operator_; }
+bool Core::LinearSolver::AMGNxN::SmootherManager::IsSetOperator() { return set_operator_; }
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-bool CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::IsSetParams() { return set_params_; }
+bool Core::LinearSolver::AMGNxN::SmootherManager::IsSetParams() { return set_params_; }
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-bool CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::IsSetParamsSmoother()
+bool Core::LinearSolver::AMGNxN::SmootherManager::IsSetParamsSmoother()
 {
   return set_params_subsolver_;
 }
@@ -1051,27 +1051,27 @@ bool CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::IsSetParamsSmoother()
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-bool CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::IsSetHierarchies() { return set_hierarchies_; }
+bool Core::LinearSolver::AMGNxN::SmootherManager::IsSetHierarchies() { return set_hierarchies_; }
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-bool CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::IsSetLevel() { return set_level_; }
+bool Core::LinearSolver::AMGNxN::SmootherManager::IsSetLevel() { return set_level_; }
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-bool CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::IsSetBlock() { return set_block_; }
+bool Core::LinearSolver::AMGNxN::SmootherManager::IsSetBlock() { return set_block_; }
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-bool CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::IsSetBlocks() { return set_blocks_; }
+bool Core::LinearSolver::AMGNxN::SmootherManager::IsSetBlocks() { return set_blocks_; }
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-bool CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::IsSetSmootherName()
+bool Core::LinearSolver::AMGNxN::SmootherManager::IsSetSmootherName()
 {
   return set_subsolver_name_;
 }
@@ -1079,22 +1079,22 @@ bool CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::IsSetSmootherName()
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-bool CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::IsSetType() { return set_type_; }
+bool Core::LinearSolver::AMGNxN::SmootherManager::IsSetType() { return set_type_; }
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-bool CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::IsSetVerbosity() { return set_verbosity_; }
+bool Core::LinearSolver::AMGNxN::SmootherManager::IsSetVerbosity() { return set_verbosity_; }
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-bool CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::IsSetNullSpace() { return set_null_space_; }
+bool Core::LinearSolver::AMGNxN::SmootherManager::IsSetNullSpace() { return set_null_space_; }
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-bool CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::is_set_null_space_all_blocks()
+bool Core::LinearSolver::AMGNxN::SmootherManager::is_set_null_space_all_blocks()
 {
   return set_null_space_all_blocks_;
 }
@@ -1103,7 +1103,7 @@ bool CORE::LINEAR_SOLVER::AMGNXN::SmootherManager::is_set_null_space_all_blocks(
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void CORE::LINEAR_SOLVER::AMGNXN::SmootherFactory::set_type_and_params()
+void Core::LinearSolver::AMGNxN::SmootherFactory::set_type_and_params()
 {
   // Valid types
   std::vector<std::string> valid_types;
@@ -1139,8 +1139,8 @@ void CORE::LINEAR_SOLVER::AMGNXN::SmootherFactory::set_type_and_params()
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-Teuchos::RCP<CORE::LINEAR_SOLVER::AMGNXN::GenericSmoother>
-CORE::LINEAR_SOLVER::AMGNXN::SmootherFactory::Create()
+Teuchos::RCP<Core::LinearSolver::AMGNxN::GenericSmoother>
+Core::LinearSolver::AMGNxN::SmootherFactory::Create()
 {
   // Expected parameters in GetParamsSmoother()
   //
@@ -1259,8 +1259,8 @@ CORE::LINEAR_SOLVER::AMGNXN::SmootherFactory::Create()
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-Teuchos::RCP<CORE::LINEAR_SOLVER::AMGNXN::GenericSmoother>
-CORE::LINEAR_SOLVER::AMGNXN::IfpackWrapperFactory::Create()
+Teuchos::RCP<Core::LinearSolver::AMGNxN::GenericSmoother>
+Core::LinearSolver::AMGNxN::IfpackWrapperFactory::Create()
 {
   // Expected parameters with default values
   //
@@ -1318,7 +1318,7 @@ CORE::LINEAR_SOLVER::AMGNXN::IfpackWrapperFactory::Create()
   // Build the smoother
   if (not GetOperator()->HasOnlyOneBlock())
     FOUR_C_THROW("This smoother can be built only for single block matrices");
-  Teuchos::RCP<CORE::LINALG::SparseMatrixBase> Op = GetOperator()->GetMatrix(0, 0);
+  Teuchos::RCP<Core::LinAlg::SparseMatrixBase> Op = GetOperator()->GetMatrix(0, 0);
   if (Op == Teuchos::null) FOUR_C_THROW("I dont want a null pointer here");
   Teuchos::ParameterList myParams = GetParams();
   return Teuchos::rcp(new IfpackWrapper(Op, myParams));
@@ -1327,8 +1327,8 @@ CORE::LINEAR_SOLVER::AMGNXN::IfpackWrapperFactory::Create()
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-Teuchos::RCP<CORE::LINEAR_SOLVER::AMGNXN::GenericSmoother>
-CORE::LINEAR_SOLVER::AMGNXN::MueluSmootherWrapperFactory::Create()
+Teuchos::RCP<Core::LinearSolver::AMGNxN::GenericSmoother>
+Core::LinearSolver::AMGNxN::MueluSmootherWrapperFactory::Create()
 {
   // Check input
   if (not IsSetLevel()) FOUR_C_THROW("IsSetLevel() returns false");
@@ -1347,8 +1347,8 @@ CORE::LINEAR_SOLVER::AMGNXN::MueluSmootherWrapperFactory::Create()
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-Teuchos::RCP<CORE::LINEAR_SOLVER::AMGNXN::GenericSmoother>
-CORE::LINEAR_SOLVER::AMGNXN::MueluAMGWrapperFactory::Create()
+Teuchos::RCP<Core::LinearSolver::AMGNxN::GenericSmoother>
+Core::LinearSolver::AMGNxN::MueluAMGWrapperFactory::Create()
 {
   // Expected parameters (example)
   // <ParameterList name="parameters">
@@ -1438,7 +1438,7 @@ CORE::LINEAR_SOLVER::AMGNXN::MueluAMGWrapperFactory::Create()
   // Recover info
   if (not GetOperator()->HasOnlyOneBlock())
     FOUR_C_THROW("This smoother can be built only for single block matrices");
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> Op2 = GetOperator()->GetMatrix(0, 0);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> Op2 = GetOperator()->GetMatrix(0, 0);
   if (Op2 == Teuchos::null) FOUR_C_THROW("I dont want a null pointer here");
   int num_pde = GetNullSpace().GetNumPDEs();
   int null_space_dim = GetNullSpace().GetNullSpaceDim();
@@ -1448,7 +1448,7 @@ CORE::LINEAR_SOLVER::AMGNXN::MueluAMGWrapperFactory::Create()
       Teuchos::rcp(new MueluAMGWrapper(Op2, num_pde, null_space_dim, null_space_data, myList));
   PtrOut->Setup();
 
-  return Teuchos::rcp_dynamic_cast<CORE::LINEAR_SOLVER::AMGNXN::GenericSmoother>(PtrOut);
+  return Teuchos::rcp_dynamic_cast<Core::LinearSolver::AMGNxN::GenericSmoother>(PtrOut);
 }
 
 
@@ -1456,8 +1456,8 @@ CORE::LINEAR_SOLVER::AMGNXN::MueluAMGWrapperFactory::Create()
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-Teuchos::RCP<CORE::LINEAR_SOLVER::AMGNXN::GenericSmoother>
-CORE::LINEAR_SOLVER::AMGNXN::SingleFieldAMGFactory::Create()
+Teuchos::RCP<Core::LinearSolver::AMGNxN::GenericSmoother>
+Core::LinearSolver::AMGNxN::SingleFieldAMGFactory::Create()
 {
   // Expected parameters (example)
   // <ParameterList name="parameters">
@@ -1549,7 +1549,7 @@ CORE::LINEAR_SOLVER::AMGNXN::SingleFieldAMGFactory::Create()
   // Recover info
   if (not GetOperator()->HasOnlyOneBlock())
     FOUR_C_THROW("This smoother can be built only for single block matrices");
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> Op2 = GetOperator()->GetMatrix(0, 0);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> Op2 = GetOperator()->GetMatrix(0, 0);
   if (Op2 == Teuchos::null) FOUR_C_THROW("I dont want a null pointer here");
   int num_pde = GetNullSpace().GetNumPDEs();
   int null_space_dim = GetNullSpace().GetNullSpaceDim();
@@ -1563,8 +1563,8 @@ CORE::LINEAR_SOLVER::AMGNXN::SingleFieldAMGFactory::Create()
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-Teuchos::RCP<CORE::LINEAR_SOLVER::AMGNXN::GenericSmoother>
-CORE::LINEAR_SOLVER::AMGNXN::HierarchyRemainderWrapperFactory::Create()
+Teuchos::RCP<Core::LinearSolver::AMGNxN::GenericSmoother>
+Core::LinearSolver::AMGNxN::HierarchyRemainderWrapperFactory::Create()
 {
   // Check input
   if (not IsSetLevel()) FOUR_C_THROW("IsSetLevel() returns false");
@@ -1616,8 +1616,8 @@ CORE::LINEAR_SOLVER::AMGNXN::HierarchyRemainderWrapperFactory::Create()
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-Teuchos::RCP<CORE::LINEAR_SOLVER::AMGNXN::GenericSmoother>
-CORE::LINEAR_SOLVER::AMGNXN::MergeAndSolveFactory::Create()
+Teuchos::RCP<Core::LinearSolver::AMGNxN::GenericSmoother>
+Core::LinearSolver::AMGNxN::MergeAndSolveFactory::Create()
 {
   // Check input
   if (not IsSetOperator()) FOUR_C_THROW("IsSetOperator() returns false");
@@ -1649,8 +1649,8 @@ CORE::LINEAR_SOLVER::AMGNXN::MergeAndSolveFactory::Create()
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-Teuchos::RCP<CORE::LINEAR_SOLVER::AMGNXN::GenericSmoother>
-CORE::LINEAR_SOLVER::AMGNXN::CoupledAmgFactory::Create()
+Teuchos::RCP<Core::LinearSolver::AMGNxN::GenericSmoother>
+Core::LinearSolver::AMGNxN::CoupledAmgFactory::Create()
 {
   //<ParameterList name="parameters">
   //
@@ -1703,8 +1703,8 @@ CORE::LINEAR_SOLVER::AMGNXN::CoupledAmgFactory::Create()
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-Teuchos::RCP<CORE::LINEAR_SOLVER::AMGNXN::GenericSmoother>
-CORE::LINEAR_SOLVER::AMGNXN::BgsSmootherFactory::Create()
+Teuchos::RCP<Core::LinearSolver::AMGNxN::GenericSmoother>
+Core::LinearSolver::AMGNxN::BgsSmootherFactory::Create()
 {
   // Expected parameters (example)
   // <ParameterList name="parameters">
@@ -1873,7 +1873,7 @@ CORE::LINEAR_SOLVER::AMGNXN::BgsSmootherFactory::Create()
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void CORE::LINEAR_SOLVER::AMGNXN::BgsSmootherFactory::parse_smoother_names(
+void Core::LinearSolver::AMGNxN::BgsSmootherFactory::parse_smoother_names(
     const std::string& smoothers_string, std::vector<std::string>& smoothers_vector,
     std::vector<std::vector<int>> superblocks)
 {
@@ -1918,8 +1918,8 @@ void CORE::LINEAR_SOLVER::AMGNXN::BgsSmootherFactory::parse_smoother_names(
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-Teuchos::RCP<CORE::LINEAR_SOLVER::AMGNXN::GenericSmoother>
-CORE::LINEAR_SOLVER::AMGNXN::SimpleSmootherFactory::Create()
+Teuchos::RCP<Core::LinearSolver::AMGNxN::GenericSmoother>
+Core::LinearSolver::AMGNxN::SimpleSmootherFactory::Create()
 {
   // Expected parameters (example)
   // <ParameterList name="parameters">
@@ -2136,8 +2136,8 @@ CORE::LINEAR_SOLVER::AMGNXN::SimpleSmootherFactory::Create()
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINEAR_SOLVER::AMGNXN::BlockedMatrix>
-CORE::LINEAR_SOLVER::AMGNXN::SimpleSmootherFactory::compute_schur_complement(
+Teuchos::RCP<Core::LinearSolver::AMGNxN::BlockedMatrix>
+Core::LinearSolver::AMGNxN::SimpleSmootherFactory::compute_schur_complement(
     const BlockedMatrix& invApp, const BlockedMatrix& Aps, const BlockedMatrix& Asp,
     const BlockedMatrix& Ass)
 {
@@ -2147,14 +2147,14 @@ CORE::LINEAR_SOLVER::AMGNXN::SimpleSmootherFactory::compute_schur_complement(
   {
     if (Ass.HasOnlyOneBlock())
     {
-      Teuchos::RCP<CORE::LINALG::SparseMatrix> invApp_sp = invApp.GetMatrix(0, 0);
-      Teuchos::RCP<CORE::LINALG::SparseMatrix> Asp_sp = Asp.GetMatrix(0, 0);
-      Teuchos::RCP<CORE::LINALG::SparseMatrix> Aps_sp = Aps.GetMatrix(0, 0);
-      Teuchos::RCP<CORE::LINALG::SparseMatrix> Ass_sp = Ass.GetMatrix(0, 0);
-      Teuchos::RCP<CORE::LINALG::SparseMatrix> temp =
-          CORE::LINALG::MLMultiply(*Asp_sp, *invApp_sp, true);
-      Teuchos::RCP<CORE::LINALG::SparseMatrix> S_sp =
-          CORE::LINALG::MLMultiply(*temp, *Aps_sp, false);
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> invApp_sp = invApp.GetMatrix(0, 0);
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> Asp_sp = Asp.GetMatrix(0, 0);
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> Aps_sp = Aps.GetMatrix(0, 0);
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> Ass_sp = Ass.GetMatrix(0, 0);
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> temp =
+          Core::LinAlg::MLMultiply(*Asp_sp, *invApp_sp, true);
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> S_sp =
+          Core::LinAlg::MLMultiply(*temp, *Aps_sp, false);
       S_sp->Add(*Ass_sp, false, 1.0, -1.0);
       S_sp->Complete();
       Sout = Teuchos::rcp(new BlockedMatrix(1, 1));
@@ -2173,21 +2173,21 @@ CORE::LINEAR_SOLVER::AMGNXN::SimpleSmootherFactory::compute_schur_complement(
     if (Ass.HasOnlyOneBlock())
     {
       int NumBlocks_pp = invApp.GetNumRows();
-      Teuchos::RCP<CORE::LINALG::SparseMatrix> S_sp = Teuchos::null;
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> S_sp = Teuchos::null;
       for (int b = 0; b < NumBlocks_pp; b++)
       {
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> temp =
-            CORE::LINALG::MLMultiply(*(Asp.GetMatrix(0, b)), *(invApp.GetMatrix(b, b)), true);
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> temp =
+            Core::LinAlg::MLMultiply(*(Asp.GetMatrix(0, b)), *(invApp.GetMatrix(b, b)), true);
         if (b == 0)
-          S_sp = CORE::LINALG::MLMultiply(*temp, *(Aps.GetMatrix(b, 0)), false);
+          S_sp = Core::LinAlg::MLMultiply(*temp, *(Aps.GetMatrix(b, 0)), false);
         else
         {
-          Teuchos::RCP<CORE::LINALG::SparseMatrix> S_sp_tmp =
-              CORE::LINALG::MLMultiply(*temp, *(Aps.GetMatrix(b, 0)), true);
+          Teuchos::RCP<Core::LinAlg::SparseMatrix> S_sp_tmp =
+              Core::LinAlg::MLMultiply(*temp, *(Aps.GetMatrix(b, 0)), true);
           S_sp->Add(*S_sp_tmp, false, 1.0, 1.0);
         }
       }
-      Teuchos::RCP<CORE::LINALG::SparseMatrix> Ass_sp = Ass.GetMatrix(0, 0);
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> Ass_sp = Ass.GetMatrix(0, 0);
       S_sp->Add(*Ass_sp, false, 1.0, -1.0);
       S_sp->Complete();
       Sout = Teuchos::rcp(new BlockedMatrix(1, 1));
@@ -2211,9 +2211,9 @@ CORE::LINEAR_SOLVER::AMGNXN::SimpleSmootherFactory::compute_schur_complement(
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-Teuchos::RCP<CORE::LINALG::SparseMatrix>
-CORE::LINEAR_SOLVER::AMGNXN::SimpleSmootherFactory::approximate_inverse(
-    const CORE::LINALG::SparseMatrixBase& A, const std::string& method)
+Teuchos::RCP<Core::LinAlg::SparseMatrix>
+Core::LinearSolver::AMGNxN::SimpleSmootherFactory::approximate_inverse(
+    const Core::LinAlg::SparseMatrixBase& A, const std::string& method)
 {
   Teuchos::RCP<Epetra_Vector> invAVector = Teuchos::rcp(new Epetra_Vector(A.RowMap()));
   if (method == "diagonal")
@@ -2229,8 +2229,8 @@ CORE::LINEAR_SOLVER::AMGNXN::SimpleSmootherFactory::approximate_inverse(
   }
   else
     FOUR_C_THROW("Invalid value for \"predictor inverse\". Fix your xml file.");
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> S =
-      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*invAVector));
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> S =
+      Teuchos::rcp(new Core::LinAlg::SparseMatrix(*invAVector));
   S->Complete(A.RowMap(), A.RowMap());
   return S;
 }
@@ -2239,8 +2239,8 @@ CORE::LINEAR_SOLVER::AMGNXN::SimpleSmootherFactory::approximate_inverse(
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-Teuchos::RCP<CORE::LINEAR_SOLVER::AMGNXN::GenericSmoother>
-CORE::LINEAR_SOLVER::AMGNXN::DirectSolverWrapperFactory::Create()
+Teuchos::RCP<Core::LinearSolver::AMGNxN::GenericSmoother>
+Core::LinearSolver::AMGNxN::DirectSolverWrapperFactory::Create()
 {
   // Check input
   if (not IsSetOperator()) FOUR_C_THROW("IsSetOperator() returns false");
@@ -2255,7 +2255,7 @@ CORE::LINEAR_SOLVER::AMGNXN::DirectSolverWrapperFactory::Create()
   Teuchos::RCP<DirectSolverWrapper> S = Teuchos::rcp(new DirectSolverWrapper);
   if (not GetOperator()->HasOnlyOneBlock())
     FOUR_C_THROW("We spect here a matrix with only one block");
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> matrix = GetOperator()->GetMatrix(0, 0);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> matrix = GetOperator()->GetMatrix(0, 0);
   if (matrix == Teuchos::null) FOUR_C_THROW("We expect here a sparse matrix");
   S->Setup(matrix, Teuchos::rcp(new Teuchos::ParameterList(GetParams())));
 

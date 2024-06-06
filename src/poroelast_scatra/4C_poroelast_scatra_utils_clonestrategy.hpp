@@ -20,24 +20,24 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
 
-namespace POROELASTSCATRA
+namespace PoroElastScaTra
 {
   namespace UTILS
   {
 
-    class PoroelastCloneStrategyforScatraElements : public POROELAST::UTILS::PoroelastCloneStrategy
+    class PoroelastCloneStrategyforScatraElements : public PoroElast::UTILS::PoroelastCloneStrategy
     {
      public:
       //! constructor
       explicit PoroelastCloneStrategyforScatraElements() = default;
       //! determine element type string and whether element is copied or not
       bool determine_ele_type(
-          CORE::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype);
+          Core::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype);
     };
 
     //! \brief implementation of special clone strategy for automatic generation
@@ -50,23 +50,23 @@ namespace POROELASTSCATRA
       //! destructor
       virtual ~PoroScatraCloneStrategy() = default;
 
-      //! return SCATRA::ImplType of the element
-      INPAR::SCATRA::ImplType GetImplType(
-          CORE::Elements::Element* ele  //! element whose SCATRA::ImplType shall be determined
+      //! return ScaTra::ImplType of the element
+      Inpar::ScaTra::ImplType GetImplType(
+          Core::Elements::Element* ele  //! element whose ScaTra::ImplType shall be determined
       );
 
      protected:
       //! determine element type string and whether element is copied or not
       bool determine_ele_type(
-          CORE::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype);
+          Core::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype);
 
       //! check for correct material
       void check_material_type(const int matid);
 
       //! provide cloned element with element specific data (material etc.)
-      void set_element_data(Teuchos::RCP<CORE::Elements::Element>
+      void set_element_data(Teuchos::RCP<Core::Elements::Element>
                                 newele,     //! current cloned element on target discretization
-          CORE::Elements::Element* oldele,  //! current element on source discretization
+          Core::Elements::Element* oldele,  //! current element on source discretization
           const int matid,                  //! material of cloned element
           const bool isnurbs                //! nurbs flag
       );
@@ -75,7 +75,7 @@ namespace POROELASTSCATRA
       std::map<std::string, std::string> conditions_to_copy() const;
     };
   }  // namespace UTILS
-}  // namespace POROELASTSCATRA
+}  // namespace PoroElastScaTra
 
 FOUR_C_NAMESPACE_CLOSE
 

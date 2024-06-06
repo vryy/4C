@@ -17,7 +17,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINEAR_SOLVER
+namespace Core::LinearSolver
 {
   /* A very good tutorial and explanation on how to choose your linear solver and the related
    * parameters can be found here:
@@ -101,7 +101,7 @@ namespace CORE::LINEAR_SOLVER
      */
     virtual void Setup(Teuchos::RCP<MatrixType> A, Teuchos::RCP<VectorType> x,
         Teuchos::RCP<VectorType> b, const bool refactor, const bool reset,
-        Teuchos::RCP<CORE::LINALG::KrylovProjector> projector) = 0;
+        Teuchos::RCP<Core::LinAlg::KrylovProjector> projector) = 0;
 
     virtual int Solve() = 0;
 
@@ -112,7 +112,7 @@ namespace CORE::LINEAR_SOLVER
       return -1;
     };
   };
-}  // namespace CORE::LINEAR_SOLVER
+}  // namespace Core::LinearSolver
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -44,7 +44,7 @@ FOUR_C_NAMESPACE_OPEN
 void scatra_cardiac_monodomain_dyn(int restart)
 {
   // pointer to problem
-  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
+  Global::Problem* problem = Global::Problem::Instance();
 
   // access the communicator
   const Epetra_Comm& comm = problem->GetDis("fluid")->Comm();
@@ -53,7 +53,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
   if (comm.MyPID() == 0)
   {
     std::cout << "###################################################" << std::endl;
-    std::cout << "# YOUR PROBLEM TYPE: " << GLOBAL::Problem::Instance()->ProblemName() << std::endl;
+    std::cout << "# YOUR PROBLEM TYPE: " << Global::Problem::Instance()->ProblemName() << std::endl;
     std::cout << "###################################################" << std::endl;
   }
 
@@ -65,9 +65,9 @@ void scatra_cardiac_monodomain_dyn(int restart)
   const Teuchos::ParameterList& scatradyn = problem->scalar_transport_dynamic_params();
 
   // access the fluid discretization
-  Teuchos::RCP<DRT::Discretization> fluiddis = problem->GetDis("fluid");
+  Teuchos::RCP<Discret::Discretization> fluiddis = problem->GetDis("fluid");
   // access the scatra discretization
-  Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis("scatra");
+  Teuchos::RCP<Discret::Discretization> scatradis = problem->GetDis("scatra");
 
   // ensure that all dofs are assigned in the right order; this creates dof numbers with
   //       fluid dof < scatra dof
@@ -75,12 +75,12 @@ void scatra_cardiac_monodomain_dyn(int restart)
   scatradis->fill_complete();
 
   // set velocity field
-  const INPAR::SCATRA::VelocityField veltype =
-      CORE::UTILS::IntegralValue<INPAR::SCATRA::VelocityField>(scatradyn, "VELOCITYFIELD");
+  const Inpar::ScaTra::VelocityField veltype =
+      Core::UTILS::IntegralValue<Inpar::ScaTra::VelocityField>(scatradyn, "VELOCITYFIELD");
   switch (veltype)
   {
-    case INPAR::SCATRA::velocity_zero:      // zero  (see case 1)
-    case INPAR::SCATRA::velocity_function:  // function
+    case Inpar::ScaTra::velocity_zero:      // zero  (see case 1)
+    case Inpar::ScaTra::velocity_function:  // function
     {
       // we directly use the elements from the scalar transport elements section
       if (scatradis->NumGlobalNodes() == 0)
@@ -96,14 +96,14 @@ void scatra_cardiac_monodomain_dyn(int restart)
       }
 
       // create instance of scalar transport basis algorithm (empty fluid discretization)
-      Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly =
-          Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(
-              scatradyn, scatradyn, GLOBAL::Problem::Instance()->SolverParams(linsolvernumber)));
+      Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatraonly =
+          Teuchos::rcp(new Adapter::ScaTraBaseAlgorithm(
+              scatradyn, scatradyn, Global::Problem::Instance()->SolverParams(linsolvernumber)));
 
       // add proxy of velocity related degrees of freedom to scatra discretization
-      Teuchos::RCP<CORE::Dofsets::DofSetInterface> dofsetaux =
-          Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(
-              GLOBAL::Problem::Instance()->NDim() + 1, 0, 0, true));
+      Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux =
+          Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(
+              Global::Problem::Instance()->NDim() + 1, 0, 0, true));
       if (scatradis->AddDofSet(dofsetaux) != 1)
         FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
       scatraonly->ScaTraField()->set_number_of_dof_set_velocity(1);
@@ -117,7 +117,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
           {"TransportLineNeumann", "LineNeumann"}, {"TransportSurfaceNeumann", "SurfaceNeumann"},
           {"TransportVolumeNeumann", "VolumeNeumann"}};
 
-      CORE::FE::DiscretizationCreatorBase creator;
+      Core::FE::DiscretizationCreatorBase creator;
       creator.CopyConditions(*scatradis, *scatradis, conditions_to_copy);
 
       // finalize discretization
@@ -130,13 +130,13 @@ void scatra_cardiac_monodomain_dyn(int restart)
       // one face is shared with the neighboring element (which is owned by an other processor =
       // ghosted element) which again is sharing other faces with elements on other processors
       // (extended ghosted element)
-      if (CORE::UTILS::IntegralValue<bool>(scatradyn, "PADAPTIVITY"))
+      if (Core::UTILS::IntegralValue<bool>(scatradyn, "PADAPTIVITY"))
       {
         // redistribute discr. with help of binning strategy
         if (scatradis->Comm().NumProc() > 1)
         {
           // create vector of discr.
-          std::vector<Teuchos::RCP<DRT::Discretization>> dis;
+          std::vector<Teuchos::RCP<Discret::Discretization>> dis;
           dis.push_back(scatradis);
 
           // binning strategy for parallel redistribution
@@ -177,12 +177,12 @@ void scatra_cardiac_monodomain_dyn(int restart)
       (scatraonly->ScaTraField())->TimeLoop();
 
       // perform the result test if required
-      GLOBAL::Problem::Instance()->AddFieldTest(scatraonly->create_sca_tra_field_test());
-      GLOBAL::Problem::Instance()->TestAll(comm);
+      Global::Problem::Instance()->AddFieldTest(scatraonly->create_sca_tra_field_test());
+      Global::Problem::Instance()->TestAll(comm);
 
       break;
     }
-    case INPAR::SCATRA::velocity_Navier_Stokes:  // Navier_Stokes
+    case Inpar::ScaTra::velocity_Navier_Stokes:  // Navier_Stokes
     {
       FOUR_C_THROW(
           "Navier Stokes case not implemented for cardiac monodomain scalar transport problem");
@@ -190,14 +190,14 @@ void scatra_cardiac_monodomain_dyn(int restart)
       // we use the fluid discretization as layout for the scalar transport discretization
       if (fluiddis->NumGlobalNodes() == 0) FOUR_C_THROW("Fluid discretization is empty!");
 
-      const INPAR::SCATRA::FieldCoupling fieldcoupling =
-          CORE::UTILS::IntegralValue<INPAR::SCATRA::FieldCoupling>(
-              GLOBAL::Problem::Instance()->scalar_transport_dynamic_params(), "FIELDCOUPLING");
+      const Inpar::ScaTra::FieldCoupling fieldcoupling =
+          Core::UTILS::IntegralValue<Inpar::ScaTra::FieldCoupling>(
+              Global::Problem::Instance()->scalar_transport_dynamic_params(), "FIELDCOUPLING");
 
       // create scatra elements if the scatra discretization is empty
       if (scatradis->NumGlobalNodes() == 0)
       {
-        if (fieldcoupling != INPAR::SCATRA::coupling_match)
+        if (fieldcoupling != Inpar::ScaTra::coupling_match)
           FOUR_C_THROW(
               "If you want matching fluid and scatra meshes, do clone you fluid mesh and use "
               "FIELDCOUPLING match!");
@@ -206,18 +206,18 @@ void scatra_cardiac_monodomain_dyn(int restart)
         scatradis->fill_complete();
 
         // fill scatra discretization by cloning fluid discretization
-        CORE::FE::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(
-            fluiddis, scatradis, GLOBAL::Problem::Instance()->CloningMaterialMap());
+        Core::FE::CloneDiscretization<ScaTra::ScatraFluidCloneStrategy>(
+            fluiddis, scatradis, Global::Problem::Instance()->CloningMaterialMap());
 
         // set implementation type of cloned scatra elements
         for (int i = 0; i < scatradis->NumMyColElements(); ++i)
         {
-          DRT::ELEMENTS::Transport* element =
-              dynamic_cast<DRT::ELEMENTS::Transport*>(scatradis->lColElement(i));
+          Discret::ELEMENTS::Transport* element =
+              dynamic_cast<Discret::ELEMENTS::Transport*>(scatradis->lColElement(i));
           if (element == nullptr)
             FOUR_C_THROW("Invalid element type!");
           else
-            element->SetImplType(INPAR::SCATRA::impltype_std);
+            element->SetImplType(Inpar::ScaTra::impltype_std);
         }
 
         // add proxy of fluid transport degrees of freedom to scatra discretization
@@ -226,15 +226,15 @@ void scatra_cardiac_monodomain_dyn(int restart)
       }
       else
       {
-        if (fieldcoupling != INPAR::SCATRA::coupling_volmortar)
+        if (fieldcoupling != Inpar::ScaTra::coupling_volmortar)
           FOUR_C_THROW(
               "If you want non-matching fluid and scatra meshes, you need to use FIELDCOUPLING "
               "volmortar!");
 
         // allow TRANSPORT conditions, too
-        SCATRA::ScatraFluidCloneStrategy clonestrategy;
+        ScaTra::ScatraFluidCloneStrategy clonestrategy;
         const auto conditions_to_copy = clonestrategy.conditions_to_copy();
-        CORE::FE::DiscretizationCreatorBase creator;
+        Core::FE::DiscretizationCreatorBase creator;
         creator.CopyConditions(*scatradis, *scatradis, conditions_to_copy);
 
         // first call fill_complete for single discretizations.
@@ -247,11 +247,11 @@ void scatra_cardiac_monodomain_dyn(int restart)
         const int ndofperelement_scatra = 0;
         const int ndofpernode_fluid = fluiddis->NumDof(0, fluiddis->lRowNode(0));
         const int ndofperelement_fluid = 0;
-        Teuchos::RCP<CORE::Dofsets::DofSetInterface> dofsetaux;
-        dofsetaux = Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(
+        Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux;
+        dofsetaux = Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(
             ndofpernode_scatra, ndofperelement_scatra, 0, true));
         if (fluiddis->AddDofSet(dofsetaux) != 1) FOUR_C_THROW("unexpected dof sets in fluid field");
-        dofsetaux = Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(
+        dofsetaux = Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(
             ndofpernode_fluid, ndofperelement_fluid, 0, true));
         if (scatradis->AddDofSet(dofsetaux) != 1)
           FOUR_C_THROW("unexpected dof sets in scatra field");
@@ -276,7 +276,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
           if (fluiddis->Comm().NumProc() > 1)
           {
             // create vector of discr.
-            std::vector<Teuchos::RCP<DRT::Discretization>> dis;
+            std::vector<Teuchos::RCP<Discret::Discretization>> dis;
             dis.push_back(fluiddis);
             dis.push_back(scatradis);
 
@@ -297,7 +297,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
       }
 
       // support for turbulent flow statistics
-      const Teuchos::ParameterList& fdyn = (GLOBAL::Problem::Instance()->FluidDynamicParams());
+      const Teuchos::ParameterList& fdyn = (Global::Problem::Instance()->FluidDynamicParams());
 
       // get linear solver id from SCALAR TRANSPORT DYNAMIC
       const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
@@ -307,8 +307,8 @@ void scatra_cardiac_monodomain_dyn(int restart)
             "SCALAR TRANSPORT DYNAMIC to a valid number!");
 
       // create a scalar transport algorithm instance
-      Teuchos::RCP<SCATRA::ScaTraAlgorithm> algo = Teuchos::rcp(new SCATRA::ScaTraAlgorithm(comm,
-          scatradyn, fdyn, "scatra", GLOBAL::Problem::Instance()->SolverParams(linsolvernumber)));
+      Teuchos::RCP<ScaTra::ScaTraAlgorithm> algo = Teuchos::rcp(new ScaTra::ScaTraAlgorithm(comm,
+          scatradyn, fdyn, "scatra", Global::Problem::Instance()->SolverParams(linsolvernumber)));
 
       // init algo (init fluid time integrator and scatra time integrator inside)
       algo->Init();
@@ -321,14 +321,14 @@ void scatra_cardiac_monodomain_dyn(int restart)
       // scatra results available and the initial field is used
       if (restart)
       {
-        if ((CORE::UTILS::IntegralValue<int>(fdyn.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW") ==
+        if ((Core::UTILS::IntegralValue<int>(fdyn.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW") ==
                 true) and
             (restart == fdyn.sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP")))
           algo->ReadInflowRestart(restart);
         else
           algo->read_restart(restart);
       }
-      else if (CORE::UTILS::IntegralValue<int>(
+      else if (Core::UTILS::IntegralValue<int>(
                    fdyn.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW") == true)
         FOUR_C_THROW(
             "Turbulent inflow generation for passive scalar transport should be performed as fluid "
@@ -341,9 +341,9 @@ void scatra_cardiac_monodomain_dyn(int restart)
       Teuchos::TimeMonitor::summarize();
 
       // perform the result test
-      GLOBAL::Problem::Instance()->AddFieldTest(algo->fluid_field()->CreateFieldTest());
-      GLOBAL::Problem::Instance()->AddFieldTest(algo->create_sca_tra_field_test());
-      GLOBAL::Problem::Instance()->TestAll(comm);
+      Global::Problem::Instance()->AddFieldTest(algo->fluid_field()->CreateFieldTest());
+      Global::Problem::Instance()->AddFieldTest(algo->create_sca_tra_field_test());
+      Global::Problem::Instance()->TestAll(comm);
 
       break;
     }  // case 2

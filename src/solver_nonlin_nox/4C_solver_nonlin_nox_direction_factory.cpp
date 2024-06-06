@@ -16,14 +16,14 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::Direction::Factory::Factory()
+NOX::Nln::Direction::Factory::Factory()
 {
   // empty constructor
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<::NOX::Direction::Generic> NOX::NLN::Direction::Factory::buildDirection(
+Teuchos::RCP<::NOX::Direction::Generic> NOX::Nln::Direction::Factory::buildDirection(
     const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params) const
 {
   Teuchos::RCP<::NOX::Direction::Generic> direction;
@@ -36,7 +36,7 @@ Teuchos::RCP<::NOX::Direction::Generic> NOX::NLN::Direction::Factory::buildDirec
   else
   {
     std::ostringstream msg;
-    msg << "Error - NOX::NLN::Direction::Facotry::buildDirection() - Invalid "
+    msg << "Error - NOX::Nln::Direction::Facotry::buildDirection() - Invalid "
            "choice for \"Method\" or \"User Defined Method\" in \"Direction\" sublist!\n";
     msg << "The \"Direction\"-\"(User Defined) Method\" = " << method
         << " is "
@@ -49,7 +49,7 @@ Teuchos::RCP<::NOX::Direction::Generic> NOX::NLN::Direction::Factory::buildDirec
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<::NOX::Direction::Generic> NOX::NLN::Direction::BuildDirection(
+Teuchos::RCP<::NOX::Direction::Generic> NOX::Nln::Direction::BuildDirection(
     const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params)
 {
   Factory factory;

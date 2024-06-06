@@ -18,8 +18,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-BEAMINTERACTION::B3CNeighbor::B3CNeighbor(const CORE::Elements::Element* left_neighbor,
-    const CORE::Elements::Element* right_neighbor, int connecting_node_left,
+BEAMINTERACTION::B3CNeighbor::B3CNeighbor(const Core::Elements::Element* left_neighbor,
+    const Core::Elements::Element* right_neighbor, int connecting_node_left,
     int connecting_node_right)
     : left_neighbor_(left_neighbor),
       right_neighbor_(right_neighbor),
@@ -31,11 +31,11 @@ BEAMINTERACTION::B3CNeighbor::B3CNeighbor(const CORE::Elements::Element* left_ne
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<BEAMINTERACTION::B3CNeighbor> BEAMINTERACTION::B3TANGENTSMOOTHING::DetermineNeigbors(
-    const CORE::Elements::Element* element1)
+Teuchos::RCP<BEAMINTERACTION::B3CNeighbor>
+BEAMINTERACTION::Beam3TangentSmoothing::DetermineNeigbors(const Core::Elements::Element* element1)
 {
-  const CORE::Elements::Element* left_neighbor = nullptr;
-  const CORE::Elements::Element* right_neighbor = nullptr;
+  const Core::Elements::Element* left_neighbor = nullptr;
+  const Core::Elements::Element* right_neighbor = nullptr;
   int connecting_node_left = 0;
   int connecting_node_right = 0;
 
@@ -127,7 +127,7 @@ Teuchos::RCP<BEAMINTERACTION::B3CNeighbor> BEAMINTERACTION::B3TANGENTSMOOTHING::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int BEAMINTERACTION::B3TANGENTSMOOTHING::GetBoundaryNode(const int nnode)
+int BEAMINTERACTION::Beam3TangentSmoothing::GetBoundaryNode(const int nnode)
 {
   if (nnode == 2)
     return 1;
@@ -138,8 +138,8 @@ int BEAMINTERACTION::B3TANGENTSMOOTHING::GetBoundaryNode(const int nnode)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double BEAMINTERACTION::B3TANGENTSMOOTHING::GetEleLength(
-    const CORE::LINALG::SerialDenseMatrix& elepos, const int nright)
+double BEAMINTERACTION::Beam3TangentSmoothing::GetEleLength(
+    const Core::LinAlg::SerialDenseMatrix& elepos, const int nright)
 {
   double length = 0.0;
   for (int i = 0; i < 3; i++)
@@ -151,19 +151,19 @@ double BEAMINTERACTION::B3TANGENTSMOOTHING::GetEleLength(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::LINALG::SerialDenseMatrix BEAMINTERACTION::B3TANGENTSMOOTHING::GetNodalDerivatives(
-    const int node, const int nnode, const double length, const CORE::FE::CellType distype)
+Core::LinAlg::SerialDenseMatrix BEAMINTERACTION::Beam3TangentSmoothing::GetNodalDerivatives(
+    const int node, const int nnode, const double length, const Core::FE::CellType distype)
 {
-  CORE::LINALG::SerialDenseMatrix deriv1(1, nnode);
+  Core::LinAlg::SerialDenseMatrix deriv1(1, nnode);
 
   if (node == nnode)
-    CORE::FE::shape_function_1D_deriv1(deriv1, -1.0 + 2.0 / (nnode - 1), distype);
+    Core::FE::shape_function_1D_deriv1(deriv1, -1.0 + 2.0 / (nnode - 1), distype);
   else
   {
     if (node == 1)
-      CORE::FE::shape_function_1D_deriv1(deriv1, -1.0, distype);
+      Core::FE::shape_function_1D_deriv1(deriv1, -1.0, distype);
     else
-      CORE::FE::shape_function_1D_deriv1(deriv1, -1.0 + node * 2.0 / (nnode - 1), distype);
+      Core::FE::shape_function_1D_deriv1(deriv1, -1.0 + node * 2.0 / (nnode - 1), distype);
   }
 
   for (int i = 0; i < nnode; i++) deriv1(0, i) = 2.0 * deriv1(0, i) / length;

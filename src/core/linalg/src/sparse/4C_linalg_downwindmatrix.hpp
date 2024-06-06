@@ -26,7 +26,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   /*!
 
@@ -155,7 +155,7 @@ namespace CORE::LINALG
     Teuchos::RCP<Epetra_Export> rexporter_;  // export the other direction
 
   };  // class  DownwindMatrix
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 
 FOUR_C_NAMESPACE_CLOSE

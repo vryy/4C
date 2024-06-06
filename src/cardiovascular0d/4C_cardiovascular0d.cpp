@@ -29,27 +29,27 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              mhv 10/13|
  *----------------------------------------------------------------------*/
-UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<DRT::Discretization> discr,
+UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<Discret::Discretization> discr,
     const std::string& conditionname, std::vector<int>& curID)
     : actdisc_(discr),
       cardiovascular0dcond_(0),
       cardiovascular0dstructcoupcond_(0),
       cardiovascular0dtype_(none),
-      atrium_model_(CORE::UTILS::IntegralValue<INPAR::CARDIOVASCULAR0D::Cardvasc0DAtriumModel>(
-          GLOBAL::Problem::Instance()->cardiovascular0_d_structural_params().sublist(
+      atrium_model_(Core::UTILS::IntegralValue<Inpar::CARDIOVASCULAR0D::Cardvasc0DAtriumModel>(
+          Global::Problem::Instance()->cardiovascular0_d_structural_params().sublist(
               "SYS-PUL CIRCULATION PARAMETERS"),
           "ATRIUM_MODEL")),
       ventricle_model_(
-          CORE::UTILS::IntegralValue<INPAR::CARDIOVASCULAR0D::Cardvasc0DVentricleModel>(
-              GLOBAL::Problem::Instance()->cardiovascular0_d_structural_params().sublist(
+          Core::UTILS::IntegralValue<Inpar::CARDIOVASCULAR0D::Cardvasc0DVentricleModel>(
+              Global::Problem::Instance()->cardiovascular0_d_structural_params().sublist(
                   "SYS-PUL CIRCULATION PARAMETERS"),
               "VENTRICLE_MODEL")),
       respiratory_model_(
-          CORE::UTILS::IntegralValue<INPAR::CARDIOVASCULAR0D::Cardvasc0DRespiratoryModel>(
-              GLOBAL::Problem::Instance()->cardiovascular0_d_structural_params().sublist(
+          Core::UTILS::IntegralValue<Inpar::CARDIOVASCULAR0D::Cardvasc0DRespiratoryModel>(
+              Global::Problem::Instance()->cardiovascular0_d_structural_params().sublist(
                   "RESPIRATORY PARAMETERS"),
               "RESPIRATORY_MODEL")),
-      gaussrule_(CORE::FE::GaussRule2D::undefined)
+      gaussrule_(Core::FE::GaussRule2D::undefined)
 {
   actdisc_->GetCondition(conditionname, cardiovascular0dcond_);
   if (cardiovascular0dcond_.size())
@@ -61,7 +61,8 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<DRT::Discretization> disc
       curID.push_back(i->parameters().Get<int>("id"));
     }
 
-    Teuchos::RCP<DRT::Discretization> structdis = GLOBAL::Problem::Instance()->GetDis("structure");
+    Teuchos::RCP<Discret::Discretization> structdis =
+        Global::Problem::Instance()->GetDis("structure");
     if (structdis == Teuchos::null) FOUR_C_THROW("no structure discretization available");
 
     // first get all Neumann conditions on structure
@@ -85,8 +86,8 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<DRT::Discretization> disc
       {
         condtype[i] = &cardiovascular0dcond_[i]->parameters().Get<std::string>("type");
 
-        if (atrium_model_ == INPAR::CARDIOVASCULAR0D::atr_elastance_0d or
-            atrium_model_ == INPAR::CARDIOVASCULAR0D::atr_prescribed)
+        if (atrium_model_ == Inpar::CARDIOVASCULAR0D::atr_elastance_0d or
+            atrium_model_ == Inpar::CARDIOVASCULAR0D::atr_prescribed)
         {
           if (*condtype[i] == "atrium_left" or *condtype[i] == "atrium_right")
             FOUR_C_THROW(
@@ -97,10 +98,10 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<DRT::Discretization> disc
 
       switch (atrium_model_)
       {
-        case INPAR::CARDIOVASCULAR0D::atr_elastance_0d:
-        case INPAR::CARDIOVASCULAR0D::atr_prescribed:
+        case Inpar::CARDIOVASCULAR0D::atr_elastance_0d:
+        case Inpar::CARDIOVASCULAR0D::atr_prescribed:
         {
-          if (ventricle_model_ == INPAR::CARDIOVASCULAR0D::ventr_structure_3d)
+          if (ventricle_model_ == Inpar::CARDIOVASCULAR0D::ventr_structure_3d)
           {
             if (cardiovascular0dcond_.size() == 2)
             {
@@ -112,8 +113,8 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<DRT::Discretization> disc
             else
               FOUR_C_THROW("You need 2 conditions (left + right ventricle)!");
           }
-          if (ventricle_model_ == INPAR::CARDIOVASCULAR0D::ventr_elastance_0d or
-              ventricle_model_ == INPAR::CARDIOVASCULAR0D::ventr_prescribed)
+          if (ventricle_model_ == Inpar::CARDIOVASCULAR0D::ventr_elastance_0d or
+              ventricle_model_ == Inpar::CARDIOVASCULAR0D::ventr_prescribed)
           {
             if (cardiovascular0dcond_.size() == 1)
             {
@@ -124,9 +125,9 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<DRT::Discretization> disc
           }
         }
         break;
-        case INPAR::CARDIOVASCULAR0D::atr_structure_3d:
+        case Inpar::CARDIOVASCULAR0D::atr_structure_3d:
         {
-          if (ventricle_model_ == INPAR::CARDIOVASCULAR0D::ventr_elastance_0d)
+          if (ventricle_model_ == Inpar::CARDIOVASCULAR0D::ventr_elastance_0d)
             FOUR_C_THROW("You cannot use 3D atria with 0D ventricles!");
 
           if (cardiovascular0dcond_.size() == 4)
@@ -241,9 +242,9 @@ void UTILS::Cardiovascular0D::Initialize(Teuchos::ParameterList& params,
 |Evaluate Cardiovascular0D functions, choose the right action based on type    |
  *-----------------------------------------------------------------------*/
 void UTILS::Cardiovascular0D::Evaluate(Teuchos::ParameterList& params,
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat1,
-    Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat2,
-    Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat3, Teuchos::RCP<Epetra_Vector> sysvec1,
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat1,
+    Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat2,
+    Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat3, Teuchos::RCP<Epetra_Vector> sysvec1,
     Teuchos::RCP<Epetra_Vector> sysvec2, Teuchos::RCP<Epetra_Vector> sysvec3,
     const Teuchos::RCP<Epetra_Vector> sysvec4, Teuchos::RCP<Epetra_Vector> sysvec5)
 {
@@ -253,7 +254,7 @@ void UTILS::Cardiovascular0D::Evaluate(Teuchos::ParameterList& params,
 
 
 void UTILS::Cardiovascular0D::EvaluateDStructDp(
-    Teuchos::ParameterList& params, Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat)
+    Teuchos::ParameterList& params, Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat)
 {
   // get structural time-integrator dependent values
   double sc_strtimint = params.get("scale_timint", 1.0);
@@ -309,12 +310,12 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
     gindex[0] = numdof_per_cond * coupcondID + offsetID;
     for (int j = 1; j < numdof_per_cond; j++) gindex[j] = gindex[0] + j;
 
-    std::map<int, Teuchos::RCP<CORE::Elements::Element>>& geom = coupcond->Geometry();
+    std::map<int, Teuchos::RCP<Core::Elements::Element>>& geom = coupcond->Geometry();
     // if (geom.empty()) FOUR_C_THROW("evaluation of condition with empty geometry");
     // no check for empty geometry here since in parallel computations
     // can exist processors which do not own a portion of the elements belonging
     // to the condition geometry
-    std::map<int, Teuchos::RCP<CORE::Elements::Element>>::iterator curr;
+    std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator curr;
     for (curr = geom.begin(); curr != geom.end(); ++curr)
     {
       // get element location vector and ownerships
@@ -327,23 +328,23 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
       // Reshape element matrices and vectors and init to zero
       const int eledim = (int)lm.size();
 
-      CORE::LINALG::SerialDenseVector elevector;
+      Core::LinAlg::SerialDenseVector elevector;
       elevector.size(eledim);
 
-      CORE::Elements::Element* element = curr->second.get();
+      Core::Elements::Element* element = curr->second.get();
       int numnode = element->num_node();
 
       // allocate vector for shape functions and matrix for derivatives
-      CORE::LINALG::SerialDenseVector funct(numnode);
-      CORE::LINALG::SerialDenseMatrix deriv(2, numnode);
-      CORE::LINALG::SerialDenseMatrix xc;
+      Core::LinAlg::SerialDenseVector funct(numnode);
+      Core::LinAlg::SerialDenseMatrix deriv(2, numnode);
+      Core::LinAlg::SerialDenseMatrix xc;
 
       xc.shape(numnode, 3);
 
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement new'");
       Teuchos::RCP<const Epetra_Vector> curdispl = actdisc_->GetState("displacement");
       std::vector<double> mydisp(lm.size());
-      CORE::FE::ExtractMyValues(*curdispl, mydisp, lm);
+      Core::FE::ExtractMyValues(*curdispl, mydisp, lm);
 
       for (int j = 0; j < numnode; ++j)
       {
@@ -355,56 +356,56 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
       /*----------------------------------------------------------------------*
       |               start loop over integration points                     |
       *----------------------------------------------------------------------*/
-      CORE::FE::CellType shape = element->Shape();
+      Core::FE::CellType shape = element->Shape();
       // type of gaussian integration
       switch (shape)
       {
-        case CORE::FE::CellType::tri3:
-          gaussrule_ = CORE::FE::GaussRule2D::tri_3point;
+        case Core::FE::CellType::tri3:
+          gaussrule_ = Core::FE::GaussRule2D::tri_3point;
           break;
-        case CORE::FE::CellType::tri6:
-          gaussrule_ = CORE::FE::GaussRule2D::tri_6point;
+        case Core::FE::CellType::tri6:
+          gaussrule_ = Core::FE::GaussRule2D::tri_6point;
           break;
-        case CORE::FE::CellType::quad4:
-          gaussrule_ = CORE::FE::GaussRule2D::quad_4point;
+        case Core::FE::CellType::quad4:
+          gaussrule_ = Core::FE::GaussRule2D::quad_4point;
           break;
-        case CORE::FE::CellType::quad8:
-          gaussrule_ = CORE::FE::GaussRule2D::quad_9point;
+        case Core::FE::CellType::quad8:
+          gaussrule_ = Core::FE::GaussRule2D::quad_9point;
           break;
-        case CORE::FE::CellType::quad9:
-          gaussrule_ = CORE::FE::GaussRule2D::quad_9point;
+        case Core::FE::CellType::quad9:
+          gaussrule_ = Core::FE::GaussRule2D::quad_9point;
           break;
-        case CORE::FE::CellType::nurbs9:
-          gaussrule_ = CORE::FE::GaussRule2D::quad_9point;
+        case Core::FE::CellType::nurbs9:
+          gaussrule_ = Core::FE::GaussRule2D::quad_9point;
           break;
         default:
           FOUR_C_THROW("shape type unknown!\n");
           break;
       }
 
-      const CORE::FE::IntegrationPoints2D intpoints(gaussrule_);
+      const Core::FE::IntegrationPoints2D intpoints(gaussrule_);
       for (int gp = 0; gp < intpoints.nquad; gp++)
       {
         // set gausspoints from integration rule
-        CORE::LINALG::SerialDenseVector e(2);
+        Core::LinAlg::SerialDenseVector e(2);
         e(0) = intpoints.qxg[gp][0];
         e(1) = intpoints.qxg[gp][1];
 
         // get shape functions and derivatives in the plane of the element
 
-        CORE::FE::shape_function_2D(funct, e(0), e(1), shape);
-        CORE::FE::shape_function_2D_deriv1(deriv, e(0), e(1), shape);
+        Core::FE::shape_function_2D(funct, e(0), e(1), shape);
+        Core::FE::shape_function_2D_deriv1(deriv, e(0), e(1), shape);
 
         // stuff to get spatial Neumann
         const int numdim = 3;
-        CORE::LINALG::SerialDenseMatrix gp_coord(1, numdim);
+        Core::LinAlg::SerialDenseMatrix gp_coord(1, numdim);
 
         std::vector<double> normal(3);
 
         // note that the length of this normal is the area dA
         // compute dXYZ / drs
-        CORE::LINALG::SerialDenseMatrix dxyzdrs(2, 3);
-        CORE::LINALG::multiply(dxyzdrs, deriv, xc);
+        Core::LinAlg::SerialDenseMatrix dxyzdrs(2, 3);
+        Core::LinAlg::multiply(dxyzdrs, deriv, xc);
 
         normal[0] = dxyzdrs(0, 1) * dxyzdrs(1, 2) - dxyzdrs(0, 2) * dxyzdrs(1, 1);
         normal[1] = dxyzdrs(0, 2) * dxyzdrs(1, 0) - dxyzdrs(0, 0) * dxyzdrs(1, 2);
@@ -435,7 +436,7 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
         {
           for (unsigned int j = 0; j < cardiovascular0dcond_.size(); ++j)
           {
-            CORE::Conditions::Condition& cond = *(cardiovascular0dcond_[j]);
+            Core::Conditions::Condition& cond = *(cardiovascular0dcond_[j]);
             int id_cardvasc0d = cond.parameters().Get<int>("id");
             if (coupcondID == id_cardvasc0d)
             {
@@ -455,7 +456,7 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
         {
           for (unsigned int j = 0; j < cardiovascular0dcond_.size(); ++j)
           {
-            CORE::Conditions::Condition& cond = *(cardiovascular0dcond_[j]);
+            Core::Conditions::Condition& cond = *(cardiovascular0dcond_[j]);
             int id_cardvasc0d = cond.parameters().Get<int>("id");
             if (coupcondID == id_cardvasc0d)
             {

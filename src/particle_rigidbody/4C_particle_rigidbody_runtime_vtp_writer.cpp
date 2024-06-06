@@ -21,34 +21,34 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-PARTICLERIGIDBODY::RigidBodyRuntimeVtpWriter::RigidBodyRuntimeVtpWriter(const Epetra_Comm& comm)
+ParticleRigidBody::RigidBodyRuntimeVtpWriter::RigidBodyRuntimeVtpWriter(const Epetra_Comm& comm)
     : comm_(comm), setuptime_(0.0)
 {
   // empty constructor
 }
 
-void PARTICLERIGIDBODY::RigidBodyRuntimeVtpWriter::Init(
-    const std::shared_ptr<PARTICLERIGIDBODY::RigidBodyDataState> rigidbodydatastate)
+void ParticleRigidBody::RigidBodyRuntimeVtpWriter::Init(
+    const std::shared_ptr<ParticleRigidBody::RigidBodyDataState> rigidbodydatastate)
 {
   // set rigid body data state container
   rigidbodydatastate_ = rigidbodydatastate;
 
   // construct the writer object
-  visualization_manager_ = std::make_shared<CORE::IO::VisualizationManager>(
-      CORE::IO::VisualizationParametersFactory(
-          GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
-          *GLOBAL::Problem::Instance()->OutputControlFile(), setuptime_),
+  visualization_manager_ = std::make_shared<Core::IO::VisualizationManager>(
+      Core::IO::VisualizationParametersFactory(
+          Global::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
+          *Global::Problem::Instance()->OutputControlFile(), setuptime_),
       comm_, "rigidbody");
 }
 
-void PARTICLERIGIDBODY::RigidBodyRuntimeVtpWriter::read_restart(
-    const std::shared_ptr<CORE::IO::DiscretizationReader> reader)
+void ParticleRigidBody::RigidBodyRuntimeVtpWriter::read_restart(
+    const std::shared_ptr<Core::IO::DiscretizationReader> reader)
 {
   // get restart time
   setuptime_ = reader->ReadDouble("time");
 }
 
-void PARTICLERIGIDBODY::RigidBodyRuntimeVtpWriter::set_rigid_body_positions_and_states(
+void ParticleRigidBody::RigidBodyRuntimeVtpWriter::set_rigid_body_positions_and_states(
     const std::vector<int>& ownedrigidbodies)
 {
   auto& visualization_data = visualization_manager_->get_visualization_data();
@@ -211,7 +211,7 @@ void PARTICLERIGIDBODY::RigidBodyRuntimeVtpWriter::set_rigid_body_positions_and_
   }
 }
 
-void PARTICLERIGIDBODY::RigidBodyRuntimeVtpWriter::WriteToDisk(
+void ParticleRigidBody::RigidBodyRuntimeVtpWriter::WriteToDisk(
     const double time, const unsigned int timestep_number)
 {
   visualization_manager_->WriteToDisk(time, timestep_number);

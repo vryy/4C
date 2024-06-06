@@ -23,14 +23,14 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
   class MultiMapExtractor;
   class BlockSparseMatrixBase;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace CORE::Conditions
+namespace Core::Conditions
 {
   /*!
   \brief Class controlling local coordinate systems on points, lines and surfaces
@@ -95,7 +95,7 @@ namespace CORE::Conditions
      *                                to be applied on sysmatrix, if true
      *
      */
-    explicit LocsysManager(DRT::Discretization& discret, int dim);
+    explicit LocsysManager(Discret::Discretization& discret, int dim);
 
     /*!
      * Set current @p time and @p nodenormals to the locsys manager. The vector of @p
@@ -103,7 +103,7 @@ namespace CORE::Conditions
      * calc_rotation_vector_for_normal_system().
      */
     void Update(double time, std::vector<Teuchos::RCP<Epetra_Vector>> nodenormals,
-        const CORE::UTILS::FunctionManager& function_manager);
+        const Core::UTILS::FunctionManager& function_manager);
 
     /*!
      *\brief Print this Manager
@@ -123,7 +123,7 @@ namespace CORE::Conditions
      * \brief Get discretization
      *
      */
-    inline DRT::Discretization& Discret() const { return discret_; };
+    inline Discret::Discretization& Discret() const { return discret_; };
 
     /*!
      * \brief Get problem dimension
@@ -135,13 +135,13 @@ namespace CORE::Conditions
      * \brief Get local system conditions
      *
      */
-    inline std::vector<CORE::Conditions::Condition*> Conditions() const { return locsysconds_; };
+    inline std::vector<Core::Conditions::Condition*> Conditions() const { return locsysconds_; };
 
     /*!
      * \brief Get a specific local system condition
      *
      */
-    inline CORE::Conditions::Condition* Conditions(int k) const
+    inline Core::Conditions::Condition* Conditions(int k) const
     {
       if (k >= numlocsys_)
       {
@@ -164,13 +164,13 @@ namespace CORE::Conditions
      * \brief Get types of local system conditions
      *
      */
-    inline std::vector<CORE::Conditions::ConditionType> TypeLocsys() const { return typelocsys_; };
+    inline std::vector<Core::Conditions::ConditionType> TypeLocsys() const { return typelocsys_; };
 
     /*!
      * \brief Get type of a specific local system condition
      *
      */
-    inline CORE::Conditions::ConditionType TypeLocsys(int k) const
+    inline Core::Conditions::ConditionType TypeLocsys(int k) const
     {
       if (k >= numlocsys_) FOUR_C_THROW("Invalid vector index");
       return typelocsys_[k];
@@ -180,7 +180,7 @@ namespace CORE::Conditions
      * \brief Retrieve the global transformation matrix
      *
      */
-    Teuchos::RCP<const CORE::LINALG::SparseMatrix> Trafo() const { return trafo_; }
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> Trafo() const { return trafo_; }
 
     //@}
 
@@ -198,7 +198,7 @@ namespace CORE::Conditions
      *   \f[ \tilde{R} = Q \cdot R \f]
      */
     void RotateGlobalToLocal(
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat,  ///< systemmatrix, will be transformed
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat,  ///< systemmatrix, will be transformed
         Teuchos::RCP<Epetra_Vector> rhs  ///< right-hand-side vector, will be transformed
     ) const;
 
@@ -206,7 +206,7 @@ namespace CORE::Conditions
      * \brief Apply forward transformation of a single matrix
      *
      */
-    void RotateGlobalToLocal(Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat) const;
+    void RotateGlobalToLocal(Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat) const;
 
     /*!
      * \brief Apply forward transformation of a single vector
@@ -219,7 +219,7 @@ namespace CORE::Conditions
      *
      */
     void RotateLocalToGlobal(Teuchos::RCP<Epetra_Vector> result,
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat, Teuchos::RCP<Epetra_Vector> rhs) const;
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat, Teuchos::RCP<Epetra_Vector> rhs) const;
 
     /*!
      * \brief Apply backward transformation of a single vector
@@ -231,7 +231,7 @@ namespace CORE::Conditions
      * \brief Apply backward transformation of a matrix
      *
      */
-    void RotateLocalToGlobal(Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat) const;
+    void RotateLocalToGlobal(Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat) const;
 
     /*!
      * \brief Calculate rotation vector for (mass-consistent) normal system
@@ -250,7 +250,7 @@ namespace CORE::Conditions
     //@{
 
     /// current discretization
-    DRT::Discretization& discret_;
+    Discret::Discretization& discret_;
 
     /// id of locsys condition
     std::vector<int> id_;
@@ -259,7 +259,7 @@ namespace CORE::Conditions
     int dim_;
 
     /// local system conditions
-    std::vector<CORE::Conditions::Condition*> locsysconds_;
+    std::vector<Core::Conditions::Condition*> locsysconds_;
 
     /// number of local systems
     int numlocsys_;
@@ -268,7 +268,7 @@ namespace CORE::Conditions
     std::vector<Teuchos::RCP<Epetra_Vector>> nodenormals_;
 
     /// types of local system conditions
-    std::vector<CORE::Conditions::ConditionType> typelocsys_;
+    std::vector<Core::Conditions::ConditionType> typelocsys_;
 
     /// vector that indicates the existence of time curves or functions within the locsys
     /// condition
@@ -276,7 +276,7 @@ namespace CORE::Conditions
 
     /// maps the GID of a node onto the pseudo-rotation vector which rotates the global xyz system
     /// onto local system of the node
-    std::map<int, CORE::LINALG::Matrix<3, 1>> nodalrotvectors_;
+    std::map<int, Core::LinAlg::Matrix<3, 1>> nodalrotvectors_;
 
     /// assignment of local systems to nodes
     Teuchos::RCP<Epetra_Vector> locsystoggle_;
@@ -291,20 +291,20 @@ namespace CORE::Conditions
     /// one should be aware of that it is treated like a rotational
     /// transformation matrix. This means: The inverse (or 'backward') mapping
     /// is simply implemented as its transpose rather than a general inverse.
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> trafo_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> trafo_;
 
     /// Transformation 'sub'-matrix with non-identity entries
     ///
     /// This is actually not a sub-matrix, but a global matrix
     /// with nil entries at (a lot) places
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> subtrafo_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> subtrafo_;
 
     // Boolean, which is yes if a locsys warning has already been thrown
     bool warning_thrown_;
     //@}
 
   };  // class LocsysManager
-}  // namespace CORE::Conditions
+}  // namespace Core::Conditions
 
 
 FOUR_C_NAMESPACE_CLOSE

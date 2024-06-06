@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace STR
 {
-  namespace NLN
+  namespace Nln
   {
     namespace SOLVER
     {
@@ -61,7 +61,7 @@ namespace STR
 
       };  // class PTC
     }     // namespace SOLVER
-  }       // namespace NLN
+  }       // namespace Nln
 }  // namespace STR
 
 

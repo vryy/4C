@@ -17,12 +17,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace INPAR::GEOMETRICSEARCH
+namespace Inpar::GeometricSearch
 {
   //! set the parameters for the geometric search strategy
   void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
-}  // namespace INPAR::GEOMETRICSEARCH
+}  // namespace Inpar::GeometricSearch
 
 FOUR_C_NAMESPACE_CLOSE
 

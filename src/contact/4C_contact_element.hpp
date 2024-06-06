@@ -21,22 +21,22 @@ namespace CONTACT
 {
   // forward declarations
 
-  class ElementType : public CORE::Elements::ElementType
+  class ElementType : public Core::Elements::ElementType
   {
    public:
     std::string Name() const override { return "CONTACT::ElementType"; }
 
     static ElementType& Instance();
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
-    Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+    Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
     void nodal_block_information(
-        CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+        Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-    CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-        CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
+    Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+        Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
    private:
     static ElementType instance_;
@@ -47,7 +47,7 @@ namespace CONTACT
 
 
    */
-  class Element : public MORTAR::Element
+  class Element : public Mortar::Element
   {
    public:
     //! @name Constructors and destructors and related methods
@@ -63,7 +63,7 @@ namespace CONTACT
      \param isslave (in): flag indicating whether element is slave or master side
      \param isnurbs (in): flag indicating whether element is nurbs element or not
      */
-    Element(int id, int owner, const CORE::FE::CellType& shape, const int numnode,
+    Element(int id, int owner, const Core::FE::CellType& shape, const int numnode,
         const int* nodeids, const bool isslave, bool isnurbs = false);
 
     /*!
@@ -80,7 +80,7 @@ namespace CONTACT
      \brief Deep copy the derived class and return pointer to it
 
      */
-    CORE::Elements::Element* Clone() const override;
+    Core::Elements::Element* Clone() const override;
 
     /*!
      \brief Return unique ParObject id
@@ -97,7 +97,7 @@ namespace CONTACT
      \ref Pack and \ref Unpack are used to communicate this element
 
      */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class
@@ -120,7 +120,7 @@ namespace CONTACT
      standard Node objects!
 
      */
-    int NumDofPerNode(const CORE::Nodes::Node& node) const override;
+    int NumDofPerNode(const Core::Nodes::Node& node) const override;
 
     /*!
      \brief Print this element
@@ -156,11 +156,11 @@ namespace CONTACT
      given in params
      \return 0 if successful, negative otherwise
      */
-    int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-        std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
-        CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-        CORE::LINALG::SerialDenseVector& elevec2,
-        CORE::LINALG::SerialDenseVector& elevec3) override;
+    int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+        std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
+        Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
+        Core::LinAlg::SerialDenseVector& elevec2,
+        Core::LinAlg::SerialDenseVector& elevec3) override;
 
     /*!
      \brief Evaluate a Neumann boundary condition dummy
@@ -181,10 +181,10 @@ namespace CONTACT
 
      \return 0 if successful, negative otherwise
      */
-    int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-        CORE::Conditions::Condition& condition, std::vector<int>& lm,
-        CORE::LINALG::SerialDenseVector& elevec1,
-        CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override
+    int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+        Core::Conditions::Condition& condition, std::vector<int>& lm,
+        Core::LinAlg::SerialDenseVector& elevec1,
+        Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override
     {
       return 0;
     }
@@ -192,25 +192,25 @@ namespace CONTACT
     /*!
      \brief Build element normal derivative at node passed in
      */
-    virtual void DerivNormalAtNode(int nid, int& i, CORE::LINALG::SerialDenseMatrix& elens,
-        std::vector<CORE::GEN::Pairedvector<int, double>>& derivn);
+    virtual void DerivNormalAtNode(int nid, int& i, Core::LinAlg::SerialDenseMatrix& elens,
+        std::vector<Core::Gen::Pairedvector<int, double>>& derivn);
 
-    virtual void OldUnitNormalAtXi(const double* xi, CORE::LINALG::Matrix<3, 1>& n_old,
-        CORE::LINALG::Matrix<3, 2>& d_n_old_dxi);
+    virtual void OldUnitNormalAtXi(const double* xi, Core::LinAlg::Matrix<3, 1>& n_old,
+        Core::LinAlg::Matrix<3, 2>& d_n_old_dxi);
 
     /*!
      \brief Evaluate derivative J,xi of Jacobian determinant
      */
     virtual void DJacDXi(
-        double* djacdxi, double* xi, const CORE::LINALG::SerialDenseMatrix& secderiv);
+        double* djacdxi, double* xi, const Core::LinAlg::SerialDenseMatrix& secderiv);
 
     /*! \brief Evaluate derivative J,xi of Jacobian determinant
      *
      *  \author hiermeier \date 03/17 */
     template <unsigned elenumnode>
-    inline void DJacDXi(double* djacdxi, double* xi, CORE::LINALG::Matrix<elenumnode, 3>& secderiv)
+    inline void DJacDXi(double* djacdxi, double* xi, Core::LinAlg::Matrix<elenumnode, 3>& secderiv)
     {
-      CORE::LINALG::SerialDenseMatrix sdm_secderiv(
+      Core::LinAlg::SerialDenseMatrix sdm_secderiv(
           Teuchos::View, secderiv.A(), elenumnode, elenumnode, 3);
       DJacDXi(djacdxi, xi, sdm_secderiv);
     }
@@ -218,17 +218,17 @@ namespace CONTACT
     /*!
      \brief Prepare D-Matrix deriv integration of contribution of one slave element
      */
-    virtual void PrepareDderiv(const std::vector<MORTAR::Element*>& meles);
+    virtual void PrepareDderiv(const std::vector<Mortar::Element*>& meles);
 
     /*!
      \brief Prepare D-Matrix deriv integration of contribution of one slave element
      */
-    virtual void PrepareMderiv(const std::vector<MORTAR::Element*>& meles, const int m);
+    virtual void PrepareMderiv(const std::vector<Mortar::Element*>& meles, const int m);
 
     /*!
      \brief Access to D-Matrix deriv to add Gauss point contribution
      */
-    CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>& GetDderiv()
+    Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>& GetDderiv()
     {
       if (d_matrix_deriv_ == Teuchos::null)
         FOUR_C_THROW("trying to get Dderiv, but not initialized");
@@ -238,7 +238,7 @@ namespace CONTACT
     /*!
      \brief Access to M-Matrix deriv to add Gauss point contribution
      */
-    CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>& GetMderiv()
+    Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>& GetMderiv()
     {
       if (m_matrix_deriv_ == Teuchos::null)
         FOUR_C_THROW("trying to get Mderiv, but not initialized");
@@ -253,7 +253,7 @@ namespace CONTACT
     /*!
      \brief Assemble M-Matrix deriv contribution of one slave/master pair into the adjacent nodes
      */
-    virtual void assemble_mderiv_to_nodes(MORTAR::Element& mele);
+    virtual void assemble_mderiv_to_nodes(Mortar::Element& mele);
 
     //@}
    private:
@@ -262,13 +262,13 @@ namespace CONTACT
      Caution: This function cannot be called stand-alone! It is
      integrated into the whole nodal normal calculation process.
      */
-    virtual void deriv_normal_at_xi(double* xi, int& i, CORE::LINALG::SerialDenseMatrix& elens,
-        std::vector<CORE::GEN::Pairedvector<int, double>>& derivn);
+    virtual void deriv_normal_at_xi(double* xi, int& i, Core::LinAlg::SerialDenseMatrix& elens,
+        std::vector<Core::Gen::Pairedvector<int, double>>& derivn);
 
    private:
-    Teuchos::RCP<CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>>
+    Teuchos::RCP<Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>>
         d_matrix_deriv_;  //< temporary matrix for D linearization during integration
-    Teuchos::RCP<CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>>
+    Teuchos::RCP<Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>>
         m_matrix_deriv_;  //< temporary matrix for M linearization during integration
   };
   // class Element

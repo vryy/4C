@@ -67,17 +67,17 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::Setup(bool write_ghosted_particle
 
       // construct visualiation manager object for current particle type and status
       (runtime_visualization_managers_[type])[status] =
-          std::make_shared<CORE::IO::VisualizationManager>(
-              CORE::IO::VisualizationParametersFactory(
-                  GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
-                  *GLOBAL::Problem::Instance()->OutputControlFile(), setuptime_),
+          std::make_shared<Core::IO::VisualizationManager>(
+              Core::IO::VisualizationParametersFactory(
+                  Global::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
+                  *Global::Problem::Instance()->OutputControlFile(), setuptime_),
               comm_, fieldname.str());
     }
   }
 }
 
 void PARTICLEENGINE::ParticleRuntimeVtpWriter::read_restart(
-    const std::shared_ptr<CORE::IO::DiscretizationReader> reader)
+    const std::shared_ptr<Core::IO::DiscretizationReader> reader)
 {
   // get restart time
   setuptime_ = reader->ReadDouble("time");

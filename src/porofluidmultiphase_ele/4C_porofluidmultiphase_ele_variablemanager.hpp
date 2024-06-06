@@ -22,11 +22,11 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace MAT
+namespace Mat
 {
   class Material;
 }
-namespace DRT
+namespace Discret
 {
   class Discretization;
 
@@ -34,7 +34,7 @@ namespace DRT
   {
     class PoroFluidMultiPhaseEleParameter;
 
-    namespace POROFLUIDMANAGER
+    namespace PoroFluidManager
     {
       template <int, int>
       class VariableManagerInterface;
@@ -86,7 +86,7 @@ namespace DRT
       to the gauss points.
       All other methods are (more or less) constant access methods.
 
-      As fixed sized CORE::LINALG::Matrix is used for saving the values, almost
+      As fixed sized Core::LinAlg::Matrix is used for saving the values, almost
       all variables managers are templated by the number of space dimensions 'nsd'
       and the number of element nodes 'nen'.
 
@@ -105,22 +105,23 @@ namespace DRT
 
         //! factory method
         static Teuchos::RCP<VariableManagerInterface<nsd, nen>> create_variable_manager(
-            const DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter& para,
-            const POROFLUIDMULTIPHASE::Action& action, Teuchos::RCP<CORE::MAT::Material> mat,
+            const Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter& para,
+            const POROFLUIDMULTIPHASE::Action& action, Teuchos::RCP<Core::Mat::Material> mat,
             const int numdofpernode, const int numfluidphases);
 
         //! extract element and node values from the discretization
         //! dofsetnum is the number of the porofluid-dofset on the current element
         //! default is set to zero, if called from a porofluidmultiphase-element
         //! otherwise it has to be explicitly passed from the caller
-        virtual void extract_element_and_node_values(const CORE::Elements::Element& ele,
-            const DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
-            CORE::LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum = 0) = 0;
+        virtual void extract_element_and_node_values(const Core::Elements::Element& ele,
+            const Discret::Discretization& discretization,
+            Core::Elements::Element::LocationArray& la, Core::LinAlg::Matrix<nsd, nen>& xyze,
+            const int dofsetnum = 0) = 0;
 
         //! evaluate variables at gauss point
         virtual void EvaluateGPVariables(
-            const CORE::LINALG::Matrix<nen, 1>& funct,  //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            const Core::LinAlg::Matrix<nen, 1>& funct,  //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy  //! array for shape function derivatives w.r.t x,y,z
             ) = 0;
 
@@ -133,18 +134,18 @@ namespace DRT
 
         //! @name Access methods
         const std::vector<double>* Phinp() const override = 0;
-        virtual const CORE::LINALG::Matrix<nen, 1>* ElementPhinp(const int k) const = 0;
+        virtual const Core::LinAlg::Matrix<nen, 1>* ElementPhinp(const int k) const = 0;
         virtual bool element_has_valid_vol_frac_pressure(const int ivolfrac) const = 0;
         virtual bool element_has_valid_vol_frac_species(const int ivolfrac) const = 0;
-        virtual const std::vector<CORE::LINALG::Matrix<nsd, 1>>* GradPhinp() const = 0;
+        virtual const std::vector<Core::LinAlg::Matrix<nsd, 1>>* GradPhinp() const = 0;
         virtual const std::vector<double>* Phidtnp() const = 0;
         virtual const std::vector<double>* Hist() const = 0;
-        virtual const CORE::LINALG::Matrix<nsd, 1>* ConVelnp() const = 0;
+        virtual const Core::LinAlg::Matrix<nsd, 1>* ConVelnp() const = 0;
         virtual double DivConVelnp() const = 0;
-        virtual const CORE::LINALG::Matrix<nsd, nen>* EConVelnp() const = 0;
-        virtual const CORE::LINALG::Matrix<nsd, 1>* Dispnp() const = 0;
+        virtual const Core::LinAlg::Matrix<nsd, nen>* EConVelnp() const = 0;
+        virtual const Core::LinAlg::Matrix<nsd, 1>* Dispnp() const = 0;
         const std::vector<double>* Scalarnp() const override = 0;
-        virtual const std::vector<CORE::LINALG::Matrix<nsd, 1>>* GradScalarnp() const = 0;
+        virtual const std::vector<Core::LinAlg::Matrix<nsd, 1>>* GradScalarnp() const = 0;
         //@}
       };
 
@@ -195,7 +196,7 @@ namespace DRT
           FOUR_C_THROW("Access method Phinp() not implemented! Wrong VariableManager?");
           return nullptr;
         };
-        const CORE::LINALG::Matrix<nen, 1>* ElementPhinp(const int k) const override
+        const Core::LinAlg::Matrix<nen, 1>* ElementPhinp(const int k) const override
         {
           FOUR_C_THROW("Access method ElementPhinp() not implemented! Wrong VariableManager?");
           return nullptr;
@@ -214,7 +215,7 @@ namespace DRT
               "VariableManager?");
           return 0.0;
         };
-        const std::vector<CORE::LINALG::Matrix<nsd, 1>>* GradPhinp() const override
+        const std::vector<Core::LinAlg::Matrix<nsd, 1>>* GradPhinp() const override
         {
           FOUR_C_THROW("Access method GradPhinp() not implemented! Wrong VariableManager?");
           return nullptr;
@@ -230,7 +231,7 @@ namespace DRT
           FOUR_C_THROW("Access method Hist() not implemented! Wrong VariableManager?");
           return nullptr;
         };
-        const CORE::LINALG::Matrix<nsd, 1>* ConVelnp() const override
+        const Core::LinAlg::Matrix<nsd, 1>* ConVelnp() const override
         {
           FOUR_C_THROW("Access method ConVelnp() not implemented! Wrong VariableManager?");
           return nullptr;
@@ -240,12 +241,12 @@ namespace DRT
           FOUR_C_THROW("Access method DivConVelnp() not implemented! Wrong VariableManager?");
           return 0.0;
         };
-        const CORE::LINALG::Matrix<nsd, nen>* EConVelnp() const override
+        const Core::LinAlg::Matrix<nsd, nen>* EConVelnp() const override
         {
           FOUR_C_THROW("Access method EConVelnp() not implemented! Wrong VariableManager?");
           return nullptr;
         };
-        const CORE::LINALG::Matrix<nsd, 1>* Dispnp() const override
+        const Core::LinAlg::Matrix<nsd, 1>* Dispnp() const override
         {
           FOUR_C_THROW("Access method Dispnp() not implemented! Wrong VariableManager?");
           return nullptr;
@@ -255,7 +256,7 @@ namespace DRT
           FOUR_C_THROW("Access method Salarnp() not implemented! Wrong VariableManager?");
           return nullptr;
         };
-        const std::vector<CORE::LINALG::Matrix<nsd, 1>>* GradScalarnp() const override
+        const std::vector<Core::LinAlg::Matrix<nsd, 1>>* GradScalarnp() const override
         {
           FOUR_C_THROW("Access method GradScalarnp() not implemented! Wrong VariableManager?");
           return nullptr;
@@ -300,14 +301,15 @@ namespace DRT
         //! dofsetnum is the number of the porofluid-dofset on the current element
         //! default is set to zero, if called from a porofluidmultiphase-element
         //! otherwise it has to be explicitly passed from the caller
-        void extract_element_and_node_values(const CORE::Elements::Element& ele,
-            const DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
-            CORE::LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum = 0) override;
+        void extract_element_and_node_values(const Core::Elements::Element& ele,
+            const Discret::Discretization& discretization,
+            Core::Elements::Element::LocationArray& la, Core::LinAlg::Matrix<nsd, nen>& xyze,
+            const int dofsetnum = 0) override;
 
         //! evaluate state vector at gauss point
         void EvaluateGPVariables(
-            const CORE::LINALG::Matrix<nen, 1>& funct,  //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            const Core::LinAlg::Matrix<nen, 1>& funct,  //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy  //! array for shape function derivatives w.r.t x,y,z
             ) override;
 
@@ -319,14 +321,14 @@ namespace DRT
         }
 
        protected:
-        const CORE::LINALG::Matrix<nen, 1>* ElementPhinp(const int k) const override
+        const Core::LinAlg::Matrix<nen, 1>* ElementPhinp(const int k) const override
         {
           this->CheckIsExtracted();
           return &ephinp_[k];
         }
 
         //! state variables at t_(n+1) or t_(n+alpha_F)
-        std::vector<CORE::LINALG::Matrix<nen, 1>> ephinp_;
+        std::vector<Core::LinAlg::Matrix<nen, 1>> ephinp_;
 
         //! scalar at t_(n+1) or t_(n+alpha_F)
         std::vector<double> phinp_;
@@ -354,13 +356,13 @@ namespace DRT
 
         //! evaluate phi and its gradient at gauss point
         void EvaluateGPVariables(
-            const CORE::LINALG::Matrix<nen, 1>& funct,  //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            const Core::LinAlg::Matrix<nen, 1>& funct,  //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy  //! array for shape function derivatives w.r.t x,y,z
             ) override;
 
         //! access method
-        const std::vector<CORE::LINALG::Matrix<nsd, 1>>* GradPhinp() const override
+        const std::vector<Core::LinAlg::Matrix<nsd, 1>>* GradPhinp() const override
         {
           this->CheckIsEvaluated();
           return &gradphi_;
@@ -368,7 +370,7 @@ namespace DRT
 
        private:
         //! spatial gradient of current scalar value
-        std::vector<CORE::LINALG::Matrix<nsd, 1>> gradphi_;
+        std::vector<Core::LinAlg::Matrix<nsd, 1>> gradphi_;
       };
 
       /*----------------------------------------------------------------------*
@@ -396,19 +398,19 @@ namespace DRT
 
         //! @name Access methods
         const std::vector<double>* Phinp() const override { return varmanager_->Phinp(); };
-        const CORE::LINALG::Matrix<nen, 1>* ElementPhinp(const int k) const override
+        const Core::LinAlg::Matrix<nen, 1>* ElementPhinp(const int k) const override
         {
           return varmanager_->ElementPhinp(k);
         };
         double DivConVelnp() const override { return varmanager_->DivConVelnp(); };
-        const std::vector<CORE::LINALG::Matrix<nsd, 1>>* GradPhinp() const override
+        const std::vector<Core::LinAlg::Matrix<nsd, 1>>* GradPhinp() const override
         {
           return varmanager_->GradPhinp();
         };
         const std::vector<double>* Phidtnp() const override { return varmanager_->Phidtnp(); };
 
         const std::vector<double>* Hist() const override { return varmanager_->Hist(); };
-        const CORE::LINALG::Matrix<nsd, 1>* ConVelnp() const override
+        const Core::LinAlg::Matrix<nsd, 1>* ConVelnp() const override
         {
           return varmanager_->ConVelnp();
         };
@@ -420,16 +422,16 @@ namespace DRT
         {
           return varmanager_->element_has_valid_vol_frac_species(ivolfrac);
         };
-        const CORE::LINALG::Matrix<nsd, nen>* EConVelnp() const override
+        const Core::LinAlg::Matrix<nsd, nen>* EConVelnp() const override
         {
           return varmanager_->EConVelnp();
         };
-        const CORE::LINALG::Matrix<nsd, 1>* Dispnp() const override
+        const Core::LinAlg::Matrix<nsd, 1>* Dispnp() const override
         {
           return varmanager_->Dispnp();
         };
         const std::vector<double>* Scalarnp() const override { return varmanager_->Scalarnp(); };
-        const std::vector<CORE::LINALG::Matrix<nsd, 1>>* GradScalarnp() const override
+        const std::vector<Core::LinAlg::Matrix<nsd, 1>>* GradScalarnp() const override
         {
           return varmanager_->GradScalarnp();
         };
@@ -479,14 +481,15 @@ namespace DRT
         //! dofsetnum is the number of the porofluid-dofset on the current element
         //! default is set to zero, if called from a porofluidmultiphase-element
         //! otherwise it has to be explicitly passed from the caller
-        void extract_element_and_node_values(const CORE::Elements::Element& ele,
-            const DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
-            CORE::LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum = 0) override;
+        void extract_element_and_node_values(const Core::Elements::Element& ele,
+            const Discret::Discretization& discretization,
+            Core::Elements::Element::LocationArray& la, Core::LinAlg::Matrix<nsd, nen>& xyze,
+            const int dofsetnum = 0) override;
 
         //! evaluate variables at gauss point
         void EvaluateGPVariables(
-            const CORE::LINALG::Matrix<nen, 1>& funct,  //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            const Core::LinAlg::Matrix<nen, 1>& funct,  //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy  //! array for shape function derivatives w.r.t x,y,z
             ) override;
 
@@ -508,9 +511,9 @@ namespace DRT
 
        private:
         //! time derivatives of state variables at t_(n+1)
-        std::vector<CORE::LINALG::Matrix<nen, 1>> ephidtnp_;
+        std::vector<Core::LinAlg::Matrix<nen, 1>> ephidtnp_;
         //! history vector of transported scalars
-        std::vector<CORE::LINALG::Matrix<nen, 1>> ehist_;
+        std::vector<Core::LinAlg::Matrix<nen, 1>> ehist_;
 
         //! time derivative of scalar at t_(n+1)
         std::vector<double> phidtnp_;
@@ -551,24 +554,25 @@ namespace DRT
         //! dofsetnum is the number of the porofluid-dofset on the current element
         //! default is set to zero, if called from a porofluidmultiphase-element
         //! otherwise it has to be explicitly passed from the caller
-        void extract_element_and_node_values(const CORE::Elements::Element& ele,
-            const DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
-            CORE::LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum = 0) override;
+        void extract_element_and_node_values(const Core::Elements::Element& ele,
+            const Discret::Discretization& discretization,
+            Core::Elements::Element::LocationArray& la, Core::LinAlg::Matrix<nsd, nen>& xyze,
+            const int dofsetnum = 0) override;
 
         //! evaluate variables at gauss point
         void EvaluateGPVariables(
-            const CORE::LINALG::Matrix<nen, 1>& funct,  //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            const Core::LinAlg::Matrix<nen, 1>& funct,  //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy  //! array for shape function derivatives w.r.t x,y,z
             ) override;
 
         //! @name Access methods
-        const CORE::LINALG::Matrix<nsd, 1>* ConVelnp() const override
+        const Core::LinAlg::Matrix<nsd, 1>* ConVelnp() const override
         {
           this->varmanager_->CheckIsEvaluated();
           return &convelint_;
         }
-        const CORE::LINALG::Matrix<nsd, 1>* Dispnp() const override
+        const Core::LinAlg::Matrix<nsd, 1>* Dispnp() const override
         {
           this->varmanager_->CheckIsEvaluated();
           return &dispint_;
@@ -578,7 +582,7 @@ namespace DRT
           this->varmanager_->CheckIsEvaluated();
           return divconvelint_;
         }
-        const CORE::LINALG::Matrix<nsd, nen>* EConVelnp() const override
+        const Core::LinAlg::Matrix<nsd, nen>* EConVelnp() const override
         {
           this->varmanager_->CheckIsEvaluated();
           return &econvelnp_;
@@ -593,18 +597,18 @@ namespace DRT
         const int ndsdisp_;
 
         //! nodal velocity values at t_(n+1) or t_(n+alpha_F)
-        CORE::LINALG::Matrix<nsd, nen> econvelnp_;
+        Core::LinAlg::Matrix<nsd, nen> econvelnp_;
         //! nodal displacement values for ALE
-        CORE::LINALG::Matrix<nsd, nen> edispnp_;
+        Core::LinAlg::Matrix<nsd, nen> edispnp_;
 
         // velocity divergence required for conservative form
         double divconvelint_;
 
         // structure velocity
-        CORE::LINALG::Matrix<nsd, 1> convelint_;
+        Core::LinAlg::Matrix<nsd, 1> convelint_;
 
         // gauss point displacements
-        CORE::LINALG::Matrix<nsd, 1> dispint_;
+        Core::LinAlg::Matrix<nsd, 1> dispint_;
       };
 
 
@@ -637,13 +641,14 @@ namespace DRT
         //! dofsetnum is the number of the porofluid-dofset on the current element
         //! default is set to zero, if called from a porofluidmultiphase-element
         //! otherwise it has to be explicitly passed from the caller
-        void extract_element_and_node_values(const CORE::Elements::Element& ele,
-            const DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
-            CORE::LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum = 0) override;
+        void extract_element_and_node_values(const Core::Elements::Element& ele,
+            const Discret::Discretization& discretization,
+            Core::Elements::Element::LocationArray& la, Core::LinAlg::Matrix<nsd, nen>& xyze,
+            const int dofsetnum = 0) override;
 
         void EvaluateGPVariables(
-            const CORE::LINALG::Matrix<nen, 1>& funct,  //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            const Core::LinAlg::Matrix<nen, 1>& funct,  //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy  //! array for shape function derivatives w.r.t x,y,z
             ) override;
 
@@ -655,7 +660,7 @@ namespace DRT
         };
 
         //! access method
-        const std::vector<CORE::LINALG::Matrix<nsd, 1>>* GradScalarnp() const override
+        const std::vector<Core::LinAlg::Matrix<nsd, 1>>* GradScalarnp() const override
         {
           this->varmanager_->CheckIsEvaluated();
           return &gradscalarnp_;
@@ -666,13 +671,13 @@ namespace DRT
         const int ndsscalar_;
 
         //! nodal scalar values for scatra coupling
-        std::vector<CORE::LINALG::Matrix<nen, 1>> escalarnp_;
+        std::vector<Core::LinAlg::Matrix<nen, 1>> escalarnp_;
 
         //! scalar values
         std::vector<double> scalarnp_;
 
         //! spatial gradient of current scalar value
-        std::vector<CORE::LINALG::Matrix<nsd, 1>> gradscalarnp_;
+        std::vector<Core::LinAlg::Matrix<nsd, 1>> gradscalarnp_;
       };
 
       /*----------------------------------------------------------------------*
@@ -697,7 +702,7 @@ namespace DRT
         //! constructor
         VariableManagerMaximumNodalVolFracValue(const int numvolfrac,
             Teuchos::RCP<VariableManagerInterface<nsd, nen>> varmanager,
-            Teuchos::RCP<CORE::MAT::Material> multiphasemat)
+            Teuchos::RCP<Core::Mat::Material> multiphasemat)
             : VariableManagerDecorator<nsd, nen>(varmanager),
               numvolfrac_(numvolfrac),
               ele_has_valid_volfrac_press_(numvolfrac_, false),
@@ -708,14 +713,15 @@ namespace DRT
         //! dofsetnum is the number of the porofluid-dofset on the current element
         //! default is set to zero, if called from a porofluidmultiphase-element
         //! otherwise it has to be explicitly passed from the caller
-        void extract_element_and_node_values(const CORE::Elements::Element& ele,
-            const DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
-            CORE::LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum = 0) override;
+        void extract_element_and_node_values(const Core::Elements::Element& ele,
+            const Discret::Discretization& discretization,
+            Core::Elements::Element::LocationArray& la, Core::LinAlg::Matrix<nsd, nen>& xyze,
+            const int dofsetnum = 0) override;
 
         //! evaluate variables at gauss point
         void EvaluateGPVariables(
-            const CORE::LINALG::Matrix<nen, 1>& funct,  //! array for shape functions
-            const CORE::LINALG::Matrix<nsd, nen>&
+            const Core::LinAlg::Matrix<nen, 1>& funct,  //! array for shape functions
+            const Core::LinAlg::Matrix<nsd, nen>&
                 derxy  //! array for shape function derivatives w.r.t x,y,z
             ) override;
 
@@ -753,13 +759,13 @@ namespace DRT
         //! check if volume fraction species equation can be evaluated within this element
         std::vector<bool> ele_has_valid_volfrac_spec_;
 
-        Teuchos::RCP<CORE::MAT::Material> multiphasemat_;
+        Teuchos::RCP<Core::Mat::Material> multiphasemat_;
       };
 
-    }  // namespace POROFLUIDMANAGER
+    }  // namespace PoroFluidManager
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 
 

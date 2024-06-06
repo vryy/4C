@@ -17,23 +17,23 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-int DRT::ELEMENTS::FluidPoroBoundary::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
-    CORE::LINALG::SerialDenseVector& elevec3)
+int Discret::ELEMENTS::FluidPoroBoundary::Evaluate(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
+    Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
+    Core::LinAlg::SerialDenseVector& elevec3)
 {
   // get the action required
-  const auto act = CORE::UTILS::GetAsEnum<FLD::BoundaryAction>(params, "action");
+  const auto act = Core::UTILS::GetAsEnum<FLD::BoundaryAction>(params, "action");
 
   // switch between different physical types as used below
   std::string impltype = "poro";
-  switch (params.get<int>("Physical Type", INPAR::FLUID::poro))
+  switch (params.get<int>("Physical Type", Inpar::FLUID::poro))
   {
-    case INPAR::FLUID::poro:
+    case Inpar::FLUID::poro:
       impltype = "poro";
       break;
-    case INPAR::FLUID::poro_p1:
+    case Inpar::FLUID::poro_p1:
       impltype = "poro_p1";
       break;
     default:
@@ -54,7 +54,7 @@ int DRT::ELEMENTS::FluidPoroBoundary::Evaluate(Teuchos::ParameterList& params,
     case FLD::poro_splitnopenetration_ODpres:
     case FLD::fpsi_coupling:
     {
-      DRT::ELEMENTS::FluidBoundaryFactory::ProvideImpl(Shape(), impltype)
+      Discret::ELEMENTS::FluidBoundaryFactory::ProvideImpl(Shape(), impltype)
           ->evaluate_action(
               this, params, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3);
       break;
@@ -70,11 +70,12 @@ int DRT::ELEMENTS::FluidPoroBoundary::Evaluate(Teuchos::ParameterList& params,
   return 0;
 }
 
-void DRT::ELEMENTS::FluidPoroBoundary::LocationVector(const Discretization& dis, LocationArray& la,
-    bool doDirichlet, const std::string& condstring, Teuchos::ParameterList& params) const
+void Discret::ELEMENTS::FluidPoroBoundary::LocationVector(const Discretization& dis,
+    LocationArray& la, bool doDirichlet, const std::string& condstring,
+    Teuchos::ParameterList& params) const
 {
   // get the action required
-  const auto act = CORE::UTILS::GetAsEnum<FLD::BoundaryAction>(params, "action");
+  const auto act = Core::UTILS::GetAsEnum<FLD::BoundaryAction>(params, "action");
   switch (act)
   {
     case FLD::poro_boundary:

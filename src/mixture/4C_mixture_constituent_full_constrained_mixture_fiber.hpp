@@ -34,7 +34,7 @@ namespace MIXTURE
     {
      public:
       explicit MixtureConstituentFullConstrainedMixtureFiber(
-          const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
+          const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
       /// create material instance of matching type with my parameters
       std::unique_ptr<MIXTURE::MixtureConstituent> CreateConstituent(int id) override;
 
@@ -65,47 +65,47 @@ namespace MIXTURE
     MixtureConstituentFullConstrainedMixtureFiber(
         MIXTURE::PAR::MixtureConstituentFullConstrainedMixtureFiber* params, int id);
 
-    [[nodiscard]] CORE::Materials::MaterialType MaterialType() const override;
+    [[nodiscard]] Core::Materials::MaterialType MaterialType() const override;
 
-    void PackConstituent(CORE::COMM::PackBuffer& data) const override;
+    void PackConstituent(Core::Communication::PackBuffer& data) const override;
 
     void UnpackConstituent(
         std::vector<char>::size_type& position, const std::vector<char>& data) override;
 
-    void register_anisotropy_extensions(MAT::Anisotropy& anisotropy) override;
+    void register_anisotropy_extensions(Mat::Anisotropy& anisotropy) override;
 
-    void ReadElement(int numgp, INPUT::LineDefinition* linedef) override;
+    void ReadElement(int numgp, Input::LineDefinition* linedef) override;
 
     void Setup(Teuchos::ParameterList& params, int eleGID) override;
 
-    void Update(const CORE::LINALG::Matrix<3, 3>& F, Teuchos::ParameterList& params, int gp,
+    void Update(const Core::LinAlg::Matrix<3, 3>& F, Teuchos::ParameterList& params, int gp,
         int eleGID) override;
 
-    void Evaluate(const CORE::LINALG::Matrix<3, 3>& F, const CORE::LINALG::Matrix<6, 1>& E_strain,
-        Teuchos::ParameterList& params, CORE::LINALG::Matrix<6, 1>& S_stress,
-        CORE::LINALG::Matrix<6, 6>& cmat, int gp, int eleGID) override;
+    void Evaluate(const Core::LinAlg::Matrix<3, 3>& F, const Core::LinAlg::Matrix<6, 1>& E_strain,
+        Teuchos::ParameterList& params, Core::LinAlg::Matrix<6, 1>& S_stress,
+        Core::LinAlg::Matrix<6, 6>& cmat, int gp, int eleGID) override;
 
-    void EvaluateElasticPart(const CORE::LINALG::Matrix<3, 3>& FM,
-        const CORE::LINALG::Matrix<3, 3>& iFextin, Teuchos::ParameterList& params,
-        CORE::LINALG::Matrix<6, 1>& S_stress, CORE::LINALG::Matrix<6, 6>& cmat, int gp,
+    void EvaluateElasticPart(const Core::LinAlg::Matrix<3, 3>& FM,
+        const Core::LinAlg::Matrix<3, 3>& iFextin, Teuchos::ParameterList& params,
+        Core::LinAlg::Matrix<6, 1>& S_stress, Core::LinAlg::Matrix<6, 6>& cmat, int gp,
         int eleGID) override;
 
     [[nodiscard]] double GetGrowthScalar(int gp) const override;
-    [[nodiscard]] CORE::LINALG::Matrix<1, 6> GetDGrowthScalarDC(int gp, int eleGID) const override;
+    [[nodiscard]] Core::LinAlg::Matrix<1, 6> GetDGrowthScalarDC(int gp, int eleGID) const override;
 
     void register_output_data_names(
         std::unordered_map<std::string, int>& names_and_size) const override;
 
     bool EvaluateOutputData(
-        const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const override;
+        const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const override;
 
    private:
     [[nodiscard]] double evaluate_lambdaf(
-        const CORE::LINALG::Matrix<3, 3>& C, int gp, int eleGID) const;
-    [[nodiscard]] CORE::LINALG::Matrix<1, 6> evaluate_d_lambdafsq_dc(int gp, int eleGID) const;
+        const Core::LinAlg::Matrix<3, 3>& C, int gp, int eleGID) const;
+    [[nodiscard]] Core::LinAlg::Matrix<1, 6> evaluate_d_lambdafsq_dc(int gp, int eleGID) const;
 
-    [[nodiscard]] CORE::LINALG::Matrix<6, 1> evaluate_current_p_k2(int gp, int eleGID) const;
-    [[nodiscard]] CORE::LINALG::Matrix<6, 6> evaluate_current_cmat(int gp, int eleGID) const;
+    [[nodiscard]] Core::LinAlg::Matrix<6, 1> evaluate_current_p_k2(int gp, int eleGID) const;
+    [[nodiscard]] Core::LinAlg::Matrix<6, 6> evaluate_current_cmat(int gp, int eleGID) const;
     [[nodiscard]] double evaluate_initial_deposition_stretch(double time) const;
 
     void initialize();
@@ -120,7 +120,7 @@ namespace MIXTURE
     std::vector<double> last_lambda_f_;
 
     /// Handler for anisotropic input
-    MAT::DefaultAnisotropyExtension<1> anisotropy_extension_;
+    Mat::DefaultAnisotropyExtension<1> anisotropy_extension_;
   };
 }  // namespace MIXTURE
 

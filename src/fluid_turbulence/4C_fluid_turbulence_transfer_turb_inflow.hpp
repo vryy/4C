@@ -26,7 +26,7 @@ to)
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
@@ -40,8 +40,8 @@ namespace FLD
     \brief Standard Constructor
 
     */
-    TransferTurbulentInflowCondition(
-        Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps);
+    TransferTurbulentInflowCondition(Teuchos::RCP<Discret::Discretization> dis,
+        Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps);
 
     /*!
     \brief Destructor
@@ -72,15 +72,15 @@ namespace FLD
     };
 
     //! get all data from condtion
-    void get_data(int& id, int& direction, ToggleType& type, const CORE::Conditions::Condition*);
+    void get_data(int& id, int& direction, ToggleType& type, const Core::Conditions::Condition*);
 
     //! receive a block in the round robin communication pattern
     void receive_block(
-        std::vector<char>& rblock, CORE::COMM::Exporter& exporter, MPI_Request& request);
+        std::vector<char>& rblock, Core::Communication::Exporter& exporter, MPI_Request& request);
 
     //! send a block in the round robin communication pattern
     void send_block(
-        std::vector<char>& sblock, CORE::COMM::Exporter& exporter, MPI_Request& request);
+        std::vector<char>& sblock, Core::Communication::Exporter& exporter, MPI_Request& request);
 
     //! unpack all master values contained in receive block
     void unpack_local_master_values(std::vector<int>& mymasters,
@@ -88,7 +88,7 @@ namespace FLD
 
     //! pack all master values into a send block
     void pack_local_master_values(std::vector<int>& mymasters,
-        std::vector<std::vector<double>>& mymasters_vel, CORE::COMM::PackBuffer& sblock);
+        std::vector<std::vector<double>>& mymasters_vel, Core::Communication::PackBuffer& sblock);
 
     //! for all values avaible on the processor, do the final setting of the value
     virtual void set_values_available_on_this_proc(std::vector<int>& mymasters,
@@ -98,10 +98,10 @@ namespace FLD
     bool active_;
 
     //! the discretisation
-    Teuchos::RCP<DRT::Discretization> dis_;
+    Teuchos::RCP<Discret::Discretization> dis_;
 
     //! info on DIirchlet boundary
-    Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps_;
+    Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps_;
 
     //! the connectivity of the boundary condition
     std::map<int, std::vector<int>> midtosid_;
@@ -119,8 +119,8 @@ namespace FLD
     \brief Standard Constructor
 
     */
-    TransferTurbulentInflowConditionXW(
-        Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps);
+    TransferTurbulentInflowConditionXW(Teuchos::RCP<Discret::Discretization> dis,
+        Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps);
 
 
     /*!
@@ -150,8 +150,8 @@ namespace FLD
     \brief Standard Constructor
 
     */
-    TransferTurbulentInflowConditionNodal(
-        Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps);
+    TransferTurbulentInflowConditionNodal(Teuchos::RCP<Discret::Discretization> dis,
+        Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps);
 
 
     /*!

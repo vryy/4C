@@ -17,42 +17,42 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
-    namespace NURBS
+    namespace Nurbs
     {
-      class Wall1NurbsType : public CORE::Elements::ElementType
+      class Wall1NurbsType : public Core::Elements::ElementType
       {
        public:
         std::string Name() const override { return "Wall1NurbsType"; }
 
         static Wall1NurbsType& Instance();
 
-        CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+        Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
-        Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+        Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
             const std::string eledistype, const int id, const int owner) override;
 
-        Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+        Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
         void setup_element_definition(
-            std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+            std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
             override;
 
         void nodal_block_information(
-            CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+            Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-        CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-            CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
+        Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+            Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
        private:
         static Wall1NurbsType instance_;
       };
 
 
-      class Wall1Nurbs : public DRT::ELEMENTS::Wall1
+      class Wall1Nurbs : public Discret::ELEMENTS::Wall1
       {
        public:
         /*!
@@ -76,7 +76,7 @@ namespace DRT
         \brief Deep copy this instance of Wall1 and return pointer to it
         */
 
-        CORE::Elements::Element* Clone() const override;
+        Core::Elements::Element* Clone() const override;
 
 
         /*!
@@ -96,7 +96,7 @@ namespace DRT
         /// Print this element
         void Print(std::ostream& os) const override;
 
-        CORE::Elements::ElementType& ElementType() const override
+        Core::Elements::ElementType& ElementType() const override
         {
           return Wall1NurbsType::Instance();
         }
@@ -107,7 +107,7 @@ namespace DRT
         \return nurbs4 or nurbs9
 
         */
-        CORE::FE::CellType Shape() const override;
+        Core::FE::CellType Shape() const override;
 
 
         /*!
@@ -130,21 +130,21 @@ namespace DRT
         /*!
         \brief Get vector of Teuchos::RCPs to the lines of this element
         */
-        std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
+        std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
 
 
         /*!
         \brief Get vector of Teuchos::RCPs to the surfaces of this element
         */
-        std::vector<Teuchos::RCP<CORE::Elements::Element>> Surfaces() override;
+        std::vector<Teuchos::RCP<Core::Elements::Element>> Surfaces() override;
 
 
        private:
       };
 
-    }  // namespace NURBS
+    }  // namespace Nurbs
   }    // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 
 FOUR_C_NAMESPACE_CLOSE

@@ -29,15 +29,15 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
-  std::vector<const CORE::UTILS::FunctionOfSpaceTime*> CreateFunctionsFromFunctionIds(
+  std::vector<const Core::UTILS::FunctionOfSpaceTime*> CreateFunctionsFromFunctionIds(
       const std::vector<int>& funct_ids)
   {
-    std::vector<const CORE::UTILS::FunctionOfSpaceTime*> functions;
+    std::vector<const Core::UTILS::FunctionOfSpaceTime*> functions;
     // get function handles from function ids
     for (int id : funct_ids)
     {
       const auto* function =
-          &GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(id - 1);
+          &Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfSpaceTime>(id - 1);
 
       const std::string errorMessage =
           "pointer to mass fraction function with id " + std::to_string(id) + " is nullptr!";
@@ -50,7 +50,7 @@ namespace
 }  // namespace
 
 MIXTURE::PAR::FunctionMixtureRule::FunctionMixtureRule(
-    const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
+    const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
     : MixtureRule(matdata),
       initial_reference_density_(matdata->Get<double>("DENS")),
       mass_fractions_funct_ids_(matdata->Get<std::vector<int>>("MASSFRACFUNCT")){};
@@ -82,14 +82,14 @@ void MIXTURE::FunctionMixtureRule::UnpackMixtureRule(
   mass_fractions_functions_ = CreateFunctionsFromFunctionIds(params_->mass_fractions_funct_ids_);
 }
 
-void MIXTURE::FunctionMixtureRule::Evaluate(const CORE::LINALG::Matrix<3, 3>& F,
-    const CORE::LINALG::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
-    CORE::LINALG::Matrix<6, 1>& S_stress, CORE::LINALG::Matrix<6, 6>& cmat, const int gp,
+void MIXTURE::FunctionMixtureRule::Evaluate(const Core::LinAlg::Matrix<3, 3>& F,
+    const Core::LinAlg::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
+    Core::LinAlg::Matrix<6, 1>& S_stress, Core::LinAlg::Matrix<6, 6>& cmat, const int gp,
     const int eleGID)
 {
   // define temporary matrices
-  CORE::LINALG::Matrix<6, 1> cstress;
-  CORE::LINALG::Matrix<6, 6> ccmat;
+  Core::LinAlg::Matrix<6, 1> cstress;
+  Core::LinAlg::Matrix<6, 6> ccmat;
 
   // initialize sum of mass fractions for validity check
   double sum = 0.0;
@@ -101,7 +101,7 @@ void MIXTURE::FunctionMixtureRule::Evaluate(const CORE::LINALG::Matrix<3, 3>& F,
     // coordinates (and the current time)
 
     // get gauss point reference coordinates and current time
-    const auto& reference_coordinates = params.get<CORE::LINALG::Matrix<3, 1>>("gp_coords_ref");
+    const auto& reference_coordinates = params.get<Core::LinAlg::Matrix<3, 1>>("gp_coords_ref");
     const double time = params.get<double>("total time");
 
     // evaluate the mass fraction function at the gauss point reference coordinates and current time

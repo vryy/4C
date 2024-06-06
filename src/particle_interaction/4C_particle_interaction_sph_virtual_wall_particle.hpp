@@ -36,16 +36,16 @@ namespace PARTICLEWALL
   class WallHandlerInterface;
 }
 
-namespace PARTICLEINTERACTION
+namespace ParticleInteraction
 {
   class SPHKernelBase;
   class SPHNeighborPairs;
-}  // namespace PARTICLEINTERACTION
+}  // namespace ParticleInteraction
 
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
  *---------------------------------------------------------------------------*/
-namespace PARTICLEINTERACTION
+namespace ParticleInteraction
 {
   class SPHVirtualWallParticle
   {
@@ -60,8 +60,8 @@ namespace PARTICLEINTERACTION
     void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
         const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface,
-        const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel,
-        const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs);
+        const std::shared_ptr<ParticleInteraction::SPHKernelBase> kernel,
+        const std::shared_ptr<ParticleInteraction::SPHNeighborPairs> neighborpairs);
 
     //! get reference to relative positions of virtual particles
     inline const std::vector<std::vector<double>>& get_relative_positions_of_virtual_particles()
@@ -111,10 +111,10 @@ namespace PARTICLEINTERACTION
     std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface_;
 
     //! kernel handler
-    std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel_;
+    std::shared_ptr<ParticleInteraction::SPHKernelBase> kernel_;
 
     //! neighbor pair handler
-    std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs_;
+    std::shared_ptr<ParticleInteraction::SPHNeighborPairs> neighborpairs_;
 
     //! relative positions of virtual particles
     std::vector<std::vector<double>> virtualparticles_;
@@ -138,7 +138,7 @@ namespace PARTICLEINTERACTION
     std::set<PARTICLEENGINE::TypeEnum> intfluidtypes_;
   };
 
-}  // namespace PARTICLEINTERACTION
+}  // namespace ParticleInteraction
 
 /*---------------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

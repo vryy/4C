@@ -18,14 +18,14 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
-namespace ADAPTER
+namespace Adapter
 {
   class ArtNet;
 }
 
 void dyn_art_net_drt();
 
-Teuchos::RCP<ADAPTER::ArtNet> dyn_art_net_drt(bool CoupledTo3D);
+Teuchos::RCP<Adapter::ArtNet> dyn_art_net_drt(bool CoupledTo3D);
 
 
 FOUR_C_NAMESPACE_CLOSE

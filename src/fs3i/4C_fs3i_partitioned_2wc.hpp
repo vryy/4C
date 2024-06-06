@@ -64,8 +64,8 @@ namespace FS3I
     std::string consthermpress_;
 
     /// fluid- and structure-based scalar transport problem
-    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> fluidscatra_;
-    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> structurescatra_;
+    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> fluidscatra_;
+    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> structurescatra_;
   };
 }  // namespace FS3I
 

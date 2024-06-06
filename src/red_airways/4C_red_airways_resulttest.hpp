@@ -23,12 +23,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace AIRWAY
+namespace Airway
 {
   // Forward declaration
   class RedAirwayImplicitTimeInt;
@@ -36,7 +36,7 @@ namespace AIRWAY
   /*!
     \brief red_airways specific result test class
   */
-  class RedAirwayResultTest : public CORE::UTILS::ResultTest
+  class RedAirwayResultTest : public Core::UTILS::ResultTest
   {
    public:
     /*!
@@ -45,16 +45,16 @@ namespace AIRWAY
     RedAirwayResultTest(RedAirwayImplicitTimeInt& red_airways);
 
 
-    void test_node(INPUT::LineDefinition& res, int& nerr, int& test_count) override;
+    void test_node(Input::LineDefinition& res, int& nerr, int& test_count) override;
 
     /*!
       Element test routine, our version of element value tests
     */
-    void TestElement(INPUT::LineDefinition& res, int& nerr, int& test_count) override;
+    void TestElement(Input::LineDefinition& res, int& nerr, int& test_count) override;
 
    private:
     /// Teuchos::RCP to scalar transport discretization
-    Teuchos::RCP<DRT::Discretization> dis_;
+    Teuchos::RCP<Discret::Discretization> dis_;
     /// Teuchos::RCP to nodal solution vector containing pressure
     Teuchos::RCP<Epetra_Vector> mynodesol_pressure_;
     /// Teuchos::RCP to nodal solution vector containing flow in
@@ -74,7 +74,7 @@ namespace AIRWAY
     Teuchos::RCP<Epetra_Vector> myelemsol_opening_trajectory_;
   };
 
-}  // namespace AIRWAY
+}  // namespace Airway
 
 FOUR_C_NAMESPACE_CLOSE
 

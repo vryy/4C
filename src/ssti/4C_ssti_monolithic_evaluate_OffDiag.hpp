@@ -16,21 +16,21 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace ADAPTER
+namespace Adapter
 {
   class Coupling;
   class CouplingSlaveConverter;
   class ScaTraBaseAlgorithm;
   class SSIStructureWrapper;
-}  // namespace ADAPTER
+}  // namespace Adapter
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseOperator;
   class MultiMapExtractor;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace SCATRA
+namespace ScaTra
 {
   class MeshtyingStrategyS2I;
 }
@@ -50,39 +50,39 @@ namespace SSTI
    public:
     //! constructor
     explicit ThermoStructureOffDiagCoupling(
-        Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> blockmapstructure,
-        Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> blockmapthermo,
+        Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> blockmapstructure,
+        Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> blockmapthermo,
         Teuchos::RCP<const Epetra_Map> full_map_structure,
         Teuchos::RCP<const Epetra_Map> full_map_thermo,
         Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssti_structure_meshtying,
-        Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_thermo,
-        Teuchos::RCP<ADAPTER::SSIStructureWrapper> structure,
-        Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> thermo);
+        Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> meshtying_strategy_thermo,
+        Teuchos::RCP<Adapter::SSIStructureWrapper> structure,
+        Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> thermo);
 
     //! derivative of structure residuals w.r.t. thermo dofs in domain
     void evaluate_off_diag_block_structure_thermo_domain(
-        Teuchos::RCP<CORE::LINALG::SparseOperator> structurethermodomain);
+        Teuchos::RCP<Core::LinAlg::SparseOperator> structurethermodomain);
 
     //! derivative of thermo residuals w.r.t. structure dofs in domain
     void evaluate_off_diag_block_thermo_structure_domain(
-        Teuchos::RCP<CORE::LINALG::SparseOperator> thermostructuredomain);
+        Teuchos::RCP<Core::LinAlg::SparseOperator> thermostructuredomain);
 
     //! derivative of thermo residuals w.r.t. structure dofs on interface
     void evaluate_off_diag_block_thermo_structure_interface(
-        Teuchos::RCP<CORE::LINALG::SparseOperator> thermostructureinterface);
+        Teuchos::RCP<Core::LinAlg::SparseOperator> thermostructureinterface);
 
    private:
     void copy_slave_to_master_thermo_structure_interface(
-        Teuchos::RCP<const CORE::LINALG::SparseOperator> slavematrix,
-        Teuchos::RCP<CORE::LINALG::SparseOperator>& mastermatrix);
+        Teuchos::RCP<const Core::LinAlg::SparseOperator> slavematrix,
+        Teuchos::RCP<Core::LinAlg::SparseOperator>& mastermatrix);
 
     void evaluate_thermo_structure_interface_slave_side(
-        Teuchos::RCP<CORE::LINALG::SparseOperator> slavematrix);
+        Teuchos::RCP<Core::LinAlg::SparseOperator> slavematrix);
 
     //! map extractor associated with all degrees of freedom inside structure field
-    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> blockmapstructure_;
+    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> blockmapstructure_;
 
-    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> blockmapthermo_;
+    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> blockmapthermo_;
 
     //! map extractor associated with all degrees of freedom inside structural field
     Teuchos::RCP<const Epetra_Map> full_map_structure_;
@@ -91,16 +91,16 @@ namespace SSTI
     Teuchos::RCP<const Epetra_Map> full_map_thermo_;
 
     //! meshtying strategy for scatra-scatra interface coupling on scatra discretization
-    Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_thermo_;
+    Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> meshtying_strategy_thermo_;
 
     //! SSTI structure meshtying object containing coupling adapters, converters and maps
     Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssti_structure_meshtying_;
 
     //! structure problem
-    Teuchos::RCP<ADAPTER::SSIStructureWrapper> structure_;
+    Teuchos::RCP<Adapter::SSIStructureWrapper> structure_;
 
     //! thermo problem
-    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> thermo_;
+    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> thermo_;
   };
 }  // namespace SSTI
 

@@ -71,9 +71,9 @@ namespace CONTACT
       //! @name Access methods
 
       /// contact constitutive law type
-      INPAR::CONTACT::ConstitutiveLawType get_constitutive_law_type() const override
+      Inpar::CONTACT::ConstitutiveLawType get_constitutive_law_type() const override
       {
-        return INPAR::CONTACT::ConstitutiveLawType::colaw_linear;
+        return Inpar::CONTACT::ConstitutiveLawType::colaw_linear;
       }
 
       /// Get slope of linear polynomial

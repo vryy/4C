@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | constructor (public)                                      			|
  *----------------------------------------------------------------------*/
-MAT::PAR::CrystalPlasticity::CrystalPlasticity(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::CrystalPlasticity::CrystalPlasticity(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : Parameter(matdata),
       tol_(matdata->Get<double>("TOL")),
       youngs_(matdata->Get<double>("YOUNG")),
@@ -162,23 +162,23 @@ MAT::PAR::CrystalPlasticity::CrystalPlasticity(Teuchos::RCP<CORE::MAT::PAR::Mate
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from ReadMaterials()       			|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::CrystalPlasticity::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::CrystalPlasticity::create_material()
 {
-  return Teuchos::rcp(new MAT::CrystalPlasticity(this));
+  return Teuchos::rcp(new Mat::CrystalPlasticity(this));
 }
 
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from ReadMaterials()       			|
  *----------------------------------------------------------------------*/
 
-MAT::CrystalPlasticityType MAT::CrystalPlasticityType::instance_;
+Mat::CrystalPlasticityType Mat::CrystalPlasticityType::instance_;
 
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from ReadMaterials()       			|
  *----------------------------------------------------------------------*/
-CORE::COMM::ParObject* MAT::CrystalPlasticityType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::CrystalPlasticityType::Create(const std::vector<char>& data)
 {
-  MAT::CrystalPlasticity* cp = new MAT::CrystalPlasticity();
+  Mat::CrystalPlasticity* cp = new Mat::CrystalPlasticity();
   cp->Unpack(data);
   return cp;
 }
@@ -186,19 +186,19 @@ CORE::COMM::ParObject* MAT::CrystalPlasticityType::Create(const std::vector<char
 /*----------------------------------------------------------------------*
  | constructor (public)                                                 |
  *----------------------------------------------------------------------*/
-MAT::CrystalPlasticity::CrystalPlasticity() : params_(nullptr) {}
+Mat::CrystalPlasticity::CrystalPlasticity() : params_(nullptr) {}
 
 /*----------------------------------------------------------------------*
  | copy-constructor (public)                                            |
  *----------------------------------------------------------------------*/
-MAT::CrystalPlasticity::CrystalPlasticity(MAT::PAR::CrystalPlasticity* params) : params_(params) {}
+Mat::CrystalPlasticity::CrystalPlasticity(Mat::PAR::CrystalPlasticity* params) : params_(params) {}
 
 /*----------------------------------------------------------------------*
  | pack (public)                                                        |
  *----------------------------------------------------------------------*/
-void MAT::CrystalPlasticity::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::CrystalPlasticity::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -237,24 +237,24 @@ void MAT::CrystalPlasticity::Pack(CORE::COMM::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  | unpack (public)                                                      |
  *----------------------------------------------------------------------*/
-void MAT::CrystalPlasticity::Unpack(const std::vector<char>& data)
+void Mat::CrystalPlasticity::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // recover matid and params_
   int matid;
   ExtractfromPack(position, data, matid);
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
   {
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const unsigned int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const unsigned int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::CrystalPlasticity*>(mat);
+        params_ = static_cast<Mat::PAR::CrystalPlasticity*>(mat);
       else
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
@@ -270,14 +270,14 @@ void MAT::CrystalPlasticity::Unpack(const std::vector<char>& data)
 
   if (params_ != nullptr)
   {
-    deform_grad_last_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<3, 3>>);
-    plastic_deform_grad_last_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<3, 3>>);
+    deform_grad_last_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<3, 3>>);
+    plastic_deform_grad_last_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<3, 3>>);
     gamma_last_ = Teuchos::rcp(new std::vector<std::vector<double>>);
     defect_densities_last_ = Teuchos::rcp(new std::vector<std::vector<double>>);
 
     for (int var = 0; var < histsize; ++var)
     {
-      CORE::LINALG::Matrix<3, 3> tmp_matrix(true);
+      Core::LinAlg::Matrix<3, 3> tmp_matrix(true);
       std::vector<double> tmp_vect(def_system_count_);
 
       ExtractfromPack(position, data, tmp_matrix);
@@ -303,7 +303,7 @@ void MAT::CrystalPlasticity::Unpack(const std::vector<char>& data)
 /*---------------------------------------------------------------------*
  | initialize / allocate internal variables (public)                   |
  *---------------------------------------------------------------------*/
-void MAT::CrystalPlasticity::Setup(int numgp, INPUT::LineDefinition* linedef)
+void Mat::CrystalPlasticity::Setup(int numgp, Input::LineDefinition* linedef)
 {
   // import material / model parameters and calculate derived values
 
@@ -339,8 +339,8 @@ void MAT::CrystalPlasticity::Setup(int numgp, INPUT::LineDefinition* linedef)
   // rotate lattice vectors according to lattice orientation
   for (int i = 0; i < slip_system_count_; i++)
   {
-    CORE::LINALG::Matrix<3, 1> unrotated_slip_normal = slip_plane_normal_[i];
-    CORE::LINALG::Matrix<3, 1> unrotated_slip_direction = slip_direction_[i];
+    Core::LinAlg::Matrix<3, 1> unrotated_slip_normal = slip_plane_normal_[i];
+    Core::LinAlg::Matrix<3, 1> unrotated_slip_direction = slip_direction_[i];
 
     slip_plane_normal_[i].MultiplyNN(lattice_orientation_, unrotated_slip_normal);
     slip_direction_[i].MultiplyNN(lattice_orientation_, unrotated_slip_direction);
@@ -349,8 +349,8 @@ void MAT::CrystalPlasticity::Setup(int numgp, INPUT::LineDefinition* linedef)
   {
     for (int i = 0; i < twin_system_count_; i++)
     {
-      CORE::LINALG::Matrix<3, 1> unrotated_twin_normal = twin_plane_normal_[i];
-      CORE::LINALG::Matrix<3, 1> unrotated_twin_direction = twin_direction_[i];
+      Core::LinAlg::Matrix<3, 1> unrotated_twin_normal = twin_plane_normal_[i];
+      Core::LinAlg::Matrix<3, 1> unrotated_twin_direction = twin_direction_[i];
 
       twin_plane_normal_[i].MultiplyNN(lattice_orientation_, unrotated_twin_normal);
       twin_direction_[i].MultiplyNN(lattice_orientation_, unrotated_twin_direction);
@@ -413,14 +413,14 @@ void MAT::CrystalPlasticity::Setup(int numgp, INPUT::LineDefinition* linedef)
   }
 
   // set up 3x3 identity matrix
-  const CORE::LINALG::Matrix<3, 3> identity3 = CORE::LINALG::IdentityMatrix<3>();
+  const Core::LinAlg::Matrix<3, 3> identity3 = Core::LinAlg::IdentityMatrix<3>();
 
   // initialize history variables
-  deform_grad_last_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<3, 3>>);
-  deform_grad_current_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<3, 3>>);
+  deform_grad_last_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<3, 3>>);
+  deform_grad_current_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<3, 3>>);
 
-  plastic_deform_grad_last_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<3, 3>>);
-  plastic_deform_grad_current_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<3, 3>>);
+  plastic_deform_grad_last_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<3, 3>>);
+  plastic_deform_grad_current_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<3, 3>>);
 
   gamma_last_ = Teuchos::rcp(new std::vector<std::vector<double>>);
   gamma_current_ = Teuchos::rcp(new std::vector<std::vector<double>>);
@@ -492,7 +492,7 @@ void MAT::CrystalPlasticity::Setup(int numgp, INPUT::LineDefinition* linedef)
 /*----------------------------------------------------------------------*
  | update internal variables (public)                                   |
  *----------------------------------------------------------------------*/
-void MAT::CrystalPlasticity::Update()
+void Mat::CrystalPlasticity::Update()
 {
   // update values of last step t_n to current values at time step t_n+1
   deform_grad_last_ = deform_grad_current_;
@@ -502,8 +502,8 @@ void MAT::CrystalPlasticity::Update()
   defect_densities_last_ = defect_densities_current_;
 
   // empty vectors of current data
-  deform_grad_current_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<3, 3>>);
-  plastic_deform_grad_current_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<3, 3>>);
+  deform_grad_current_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<3, 3>>);
+  plastic_deform_grad_current_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<3, 3>>);
   gamma_current_ = Teuchos::rcp(new std::vector<std::vector<double>>);
   defect_densities_current_ = Teuchos::rcp(new std::vector<std::vector<double>>);
 
@@ -515,7 +515,7 @@ void MAT::CrystalPlasticity::Update()
   gamma_current_->resize(histsize);
   defect_densities_current_->resize(histsize);
 
-  CORE::LINALG::Matrix<3, 3> emptymat(true);
+  Core::LinAlg::Matrix<3, 3> emptymat(true);
   std::vector<double> emptyvect(def_system_count_);
   for (int i = 0; i < def_system_count_; i++) emptyvect[i] = 0.0;
 
@@ -532,9 +532,9 @@ void MAT::CrystalPlasticity::Update()
 /*-------------------------------------------------------------------------------*
  | calculate stress, material stiffness matrix and evolution internal variables  |
  *-------------------------------------------------------------------------------*/
-void MAT::CrystalPlasticity::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
-    const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-    CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, const int gp,
+void Mat::CrystalPlasticity::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+    const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+    Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
 {
   // simulation parameters
@@ -551,7 +551,7 @@ void MAT::CrystalPlasticity::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   //--------------------------------------------------------------------------
 
   // define result output from NR
-  CORE::LINALG::Matrix<3, 3> second_pk_stress_result;
+  Core::LinAlg::Matrix<3, 3> second_pk_stress_result;
 
   // call Newton-Raphson method with current deformation gradient
   this->NewtonRaphson((*deform_grad_current_)[gp], (*gamma_current_)[gp],
@@ -574,7 +574,7 @@ void MAT::CrystalPlasticity::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
 /*---------------------------------------------------------------------------------*
  | Setup slip directions and slip plane normals                                    |
  *---------------------------------------------------------------------------------*/
-void MAT::CrystalPlasticity::SetupLatticeVectors()
+void Mat::CrystalPlasticity::SetupLatticeVectors()
 {
   // extract lattice type from user input
   lattice_type_ = params_->lattice_;
@@ -818,8 +818,8 @@ void MAT::CrystalPlasticity::SetupLatticeVectors()
   else if (lattice_type_ == "D019")
   {
     // initialize slip plane normals and directions for Miller-Bravais indices
-    std::vector<CORE::LINALG::Matrix<4, 1>> slip_plane_normal_hex(slip_system_count_);
-    std::vector<CORE::LINALG::Matrix<4, 1>> slip_direction_hex(slip_system_count_);
+    std::vector<Core::LinAlg::Matrix<4, 1>> slip_plane_normal_hex(slip_system_count_);
+    std::vector<Core::LinAlg::Matrix<4, 1>> slip_direction_hex(slip_system_count_);
 
     // NOTE: the c to a ratio is incorporated during transformation from Miller-Bravais to
     // Miller
@@ -975,7 +975,7 @@ void MAT::CrystalPlasticity::SetupLatticeVectors()
 
     // transform Miller-Bravais index notation of hexagonal lattices to Miller index notation of
     // cubic lattices
-    MAT::CrystalPlasticity::miller_bravais_to_miller(
+    Mat::CrystalPlasticity::miller_bravais_to_miller(
         slip_plane_normal_hex, slip_direction_hex, slip_plane_normal_, slip_direction_);
   }
   else if (lattice_type_ == "HCP" or lattice_type_ == "BCC" or lattice_type_ == "FCC")
@@ -1016,7 +1016,7 @@ void MAT::CrystalPlasticity::SetupLatticeVectors()
   {
     // check for each system whether or not its direction and normal vector are perpendicular!
     bool is_perpendicular_ =
-        MAT::CrystalPlasticity::CheckOrthogonal(slip_direction_[i], slip_plane_normal_[i]);
+        Mat::CrystalPlasticity::CheckOrthogonal(slip_direction_[i], slip_plane_normal_[i]);
     if (!is_perpendicular_)
       FOUR_C_THROW(
           "Warning, slip direction and slip plane normal of slip system "
@@ -1030,7 +1030,7 @@ void MAT::CrystalPlasticity::SetupLatticeVectors()
     {
       // check for each system whether or not its direction and normal vector are perpendicular!
       bool is_perpendicular_ =
-          MAT::CrystalPlasticity::CheckOrthogonal(twin_direction_[i], twin_plane_normal_[i]);
+          Mat::CrystalPlasticity::CheckOrthogonal(twin_direction_[i], twin_plane_normal_[i]);
       if (!is_perpendicular_)
         FOUR_C_THROW(
             "Warning, twinning direction and twinning plane normal of twinning system "
@@ -1043,7 +1043,7 @@ void MAT::CrystalPlasticity::SetupLatticeVectors()
       for (int j = 0; j < slip_system_count_; j++)
       {
         bool is_coplanar_ =
-            MAT::CrystalPlasticity::CheckParallel(twin_plane_normal_[i], slip_plane_normal_[j]);
+            Mat::CrystalPlasticity::CheckParallel(twin_plane_normal_[i], slip_plane_normal_[j]);
         if (is_coplanar_)
           is_non_coplanar_[i][j] = false;
         else
@@ -1052,7 +1052,7 @@ void MAT::CrystalPlasticity::SetupLatticeVectors()
       // check which twinning systems are non-coplanar to twinning system i
       for (int j = slip_system_count_; j < def_system_count_; j++)
       {
-        bool is_coplanar_ = MAT::CrystalPlasticity::CheckParallel(
+        bool is_coplanar_ = Mat::CrystalPlasticity::CheckParallel(
             twin_plane_normal_[i], twin_plane_normal_[j - slip_system_count_]);
         if (is_coplanar_)
           is_non_coplanar_[i][j] = false;
@@ -1069,7 +1069,7 @@ void MAT::CrystalPlasticity::SetupLatticeVectors()
   // import lattice constant from user input
   lattice_constant_ = params_->lattice_const_;
 
-  CORE::LINALG::Matrix<3, 1> tmp_scale;
+  Core::LinAlg::Matrix<3, 1> tmp_scale;
 
   for (int i = 0; i < slip_system_count_; i++)
   {
@@ -1108,7 +1108,7 @@ void MAT::CrystalPlasticity::SetupLatticeVectors()
  | Read Lattice orientation matrix from .dat file                                    |
  *---------------------------------------------------------------------------------*/
 
-void MAT::CrystalPlasticity::setup_lattice_orientation(INPUT::LineDefinition* linedef)
+void Mat::CrystalPlasticity::setup_lattice_orientation(Input::LineDefinition* linedef)
 {
   std::vector<double> fiber1;
   std::vector<double> fiber2;
@@ -1143,11 +1143,11 @@ void MAT::CrystalPlasticity::setup_lattice_orientation(INPUT::LineDefinition* li
  | Transform Miller Bravais to Miller index notation                               |
  *---------------------------------------------------------------------------------*/
 
-void MAT::CrystalPlasticity::miller_bravais_to_miller(
-    const std::vector<CORE::LINALG::Matrix<4, 1>>& plane_normal_hex,
-    const std::vector<CORE::LINALG::Matrix<4, 1>>& direction_hex,
-    std::vector<CORE::LINALG::Matrix<3, 1>>& plane_normal,
-    std::vector<CORE::LINALG::Matrix<3, 1>>& direction)
+void Mat::CrystalPlasticity::miller_bravais_to_miller(
+    const std::vector<Core::LinAlg::Matrix<4, 1>>& plane_normal_hex,
+    const std::vector<Core::LinAlg::Matrix<4, 1>>& direction_hex,
+    std::vector<Core::LinAlg::Matrix<3, 1>>& plane_normal,
+    std::vector<Core::LinAlg::Matrix<3, 1>>& direction)
 {
   for (int unsigned i = 0; i < plane_normal_hex.size(); i++)
   {
@@ -1168,10 +1168,10 @@ void MAT::CrystalPlasticity::miller_bravais_to_miller(
  | Check if two vectors are parallel			                                   |
  *---------------------------------------------------------------------------------*/
 
-bool MAT::CrystalPlasticity::CheckParallel(
-    const CORE::LINALG::Matrix<3, 1>& vector_1, const CORE::LINALG::Matrix<3, 1>& vector_2)
+bool Mat::CrystalPlasticity::CheckParallel(
+    const Core::LinAlg::Matrix<3, 1>& vector_1, const Core::LinAlg::Matrix<3, 1>& vector_2)
 {
-  CORE::LINALG::Matrix<1, 1> parallel_test;
+  Core::LinAlg::Matrix<1, 1> parallel_test;
   parallel_test.MultiplyTN(vector_1, vector_2);
   if (parallel_test(0, 0) - 1.0 < 1.0e-8)
     return true;
@@ -1183,10 +1183,10 @@ bool MAT::CrystalPlasticity::CheckParallel(
  | Check if two vectors are orthogonal                                             |
  *---------------------------------------------------------------------------------*/
 
-bool MAT::CrystalPlasticity::CheckOrthogonal(
-    const CORE::LINALG::Matrix<3, 1>& vector_1, const CORE::LINALG::Matrix<3, 1>& vector_2)
+bool Mat::CrystalPlasticity::CheckOrthogonal(
+    const Core::LinAlg::Matrix<3, 1>& vector_1, const Core::LinAlg::Matrix<3, 1>& vector_2)
 {
-  CORE::LINALG::Matrix<1, 1> ortho_test;
+  Core::LinAlg::Matrix<1, 1> ortho_test;
   ortho_test.MultiplyTN(vector_1, vector_2);
   if (ortho_test(0, 0) < 1.0e-8)
     return true;
@@ -1197,10 +1197,10 @@ bool MAT::CrystalPlasticity::CheckOrthogonal(
 /*---------------------------------------------------------------------------------*
  | local Newton-Raphson iteration                                                  |
  *---------------------------------------------------------------------------------*/
-void MAT::CrystalPlasticity::NewtonRaphson(CORE::LINALG::Matrix<3, 3>& deform_grad,
+void Mat::CrystalPlasticity::NewtonRaphson(Core::LinAlg::Matrix<3, 3>& deform_grad,
     std::vector<double>& gamma_result, std::vector<double>& defect_densites_result,
-    CORE::LINALG::Matrix<3, 3>& second_pk_stress_result,
-    CORE::LINALG::Matrix<3, 3>& plastic_deform_grad_result)
+    Core::LinAlg::Matrix<3, 3>& second_pk_stress_result,
+    Core::LinAlg::Matrix<3, 3>& plastic_deform_grad_result)
 {
   // initialize iteration
   // ----------------------------------
@@ -1219,8 +1219,8 @@ void MAT::CrystalPlasticity::NewtonRaphson(CORE::LINALG::Matrix<3, 3>& deform_gr
   // trial values of internal variables
   std::vector<double> defect_densities_trial(def_system_count_);
 
-  CORE::LINALG::Matrix<3, 3> second_pk_stress_trial;
-  CORE::LINALG::Matrix<3, 3> plastic_deform_grad_trial;
+  Core::LinAlg::Matrix<3, 3> second_pk_stress_trial;
+  Core::LinAlg::Matrix<3, 3> plastic_deform_grad_trial;
 
   // residuals
   std::vector<double> residuals_trial(def_system_count_);
@@ -1228,7 +1228,7 @@ void MAT::CrystalPlasticity::NewtonRaphson(CORE::LINALG::Matrix<3, 3>& deform_gr
   double total_residual;
 
   // empty matrix
-  CORE::LINALG::Matrix<3, 3> emptymat(true);
+  Core::LinAlg::Matrix<3, 3> emptymat(true);
 
   // iteration
   //--------------------------------------------------------------------------
@@ -1270,26 +1270,26 @@ void MAT::CrystalPlasticity::NewtonRaphson(CORE::LINALG::Matrix<3, 3>& deform_gr
 
       // depending on total number of deformation systems the equation system has a different
       // size def_system_count_ = 1
-      CORE::LINALG::Matrix<1, 1> residual_tangent_1x1;
-      CORE::LINALG::Matrix<1, 1> d_gamma_trial_1(true);
-      CORE::LINALG::Matrix<1, 1> residuals_trial_LIN_1;
-      CORE::LINALG::FixedSizeSerialDenseSolver<1, 1, 1> newton_raphson_solver_1x1;
+      Core::LinAlg::Matrix<1, 1> residual_tangent_1x1;
+      Core::LinAlg::Matrix<1, 1> d_gamma_trial_1(true);
+      Core::LinAlg::Matrix<1, 1> residuals_trial_LIN_1;
+      Core::LinAlg::FixedSizeSerialDenseSolver<1, 1, 1> newton_raphson_solver_1x1;
       // depending on total number of deformation systems the equation system has a different
       // size def_system_count_ = 2
-      CORE::LINALG::Matrix<2, 2> residual_tangent_2x2;
-      CORE::LINALG::Matrix<2, 1> d_gamma_trial_2(true);
-      CORE::LINALG::Matrix<2, 1> residuals_trial_LIN_2;
-      CORE::LINALG::FixedSizeSerialDenseSolver<2, 2, 1> newton_raphson_solver_2x2;
+      Core::LinAlg::Matrix<2, 2> residual_tangent_2x2;
+      Core::LinAlg::Matrix<2, 1> d_gamma_trial_2(true);
+      Core::LinAlg::Matrix<2, 1> residuals_trial_LIN_2;
+      Core::LinAlg::FixedSizeSerialDenseSolver<2, 2, 1> newton_raphson_solver_2x2;
       // def_system_count_ = 12
-      CORE::LINALG::Matrix<12, 12> residual_tangent_12x12;
-      CORE::LINALG::Matrix<12, 1> d_gamma_trial_12(true);
-      CORE::LINALG::Matrix<12, 1> residuals_trial_LIN_12;
-      CORE::LINALG::FixedSizeSerialDenseSolver<12, 12, 1> newton_raphson_solver_12x12;
+      Core::LinAlg::Matrix<12, 12> residual_tangent_12x12;
+      Core::LinAlg::Matrix<12, 1> d_gamma_trial_12(true);
+      Core::LinAlg::Matrix<12, 1> residuals_trial_LIN_12;
+      Core::LinAlg::FixedSizeSerialDenseSolver<12, 12, 1> newton_raphson_solver_12x12;
       // def_system_count_ = 16
-      CORE::LINALG::Matrix<16, 16> residual_tangent_16x16;
-      CORE::LINALG::Matrix<16, 1> d_gamma_trial_16(true);
-      CORE::LINALG::Matrix<16, 1> residuals_trial_LIN_16;
-      CORE::LINALG::FixedSizeSerialDenseSolver<16, 16, 1> newton_raphson_solver_16x16;
+      Core::LinAlg::Matrix<16, 16> residual_tangent_16x16;
+      Core::LinAlg::Matrix<16, 1> d_gamma_trial_16(true);
+      Core::LinAlg::Matrix<16, 1> residuals_trial_LIN_16;
+      Core::LinAlg::FixedSizeSerialDenseSolver<16, 16, 1> newton_raphson_solver_16x16;
 
       // differentiate Residuum with respect to gamma_trial by perturbation DEFAULT:
       // gamma_epsilon = 1.0e-9
@@ -1310,10 +1310,10 @@ void MAT::CrystalPlasticity::NewtonRaphson(CORE::LINALG::Matrix<3, 3>& deform_gr
         std::vector<double> defect_densities_perturbed(def_system_count_);
 
         // resultant 2nd PK stress
-        CORE::LINALG::Matrix<3, 3> second_pk_stress_perturbed(true);
+        Core::LinAlg::Matrix<3, 3> second_pk_stress_perturbed(true);
 
         // resultant plastic part of deformation gradient
-        CORE::LINALG::Matrix<3, 3> plastic_deform_grad_perturbed;
+        Core::LinAlg::Matrix<3, 3> plastic_deform_grad_perturbed;
 
         // initially unperturbed
         gamma_perturbed = gamma_trial;
@@ -1423,9 +1423,9 @@ void MAT::CrystalPlasticity::NewtonRaphson(CORE::LINALG::Matrix<3, 3>& deform_gr
  | Evaluate flow rule for a  given increment of plastic shear and set up residuum  |
  *---------------------------------------------------------------------------------*/
 
-void MAT::CrystalPlasticity::SetupFlowRule(CORE::LINALG::Matrix<3, 3> deform_grad,
-    std::vector<double> gamma_trial, CORE::LINALG::Matrix<3, 3>& plastic_deform_grad_trial,
-    std::vector<double>& defect_densities_trial, CORE::LINALG::Matrix<3, 3>& second_pk_stress_trial,
+void Mat::CrystalPlasticity::SetupFlowRule(Core::LinAlg::Matrix<3, 3> deform_grad,
+    std::vector<double> gamma_trial, Core::LinAlg::Matrix<3, 3>& plastic_deform_grad_trial,
+    std::vector<double>& defect_densities_trial, Core::LinAlg::Matrix<3, 3>& second_pk_stress_trial,
     std::vector<double>& residuals_trial)
 {
   // set up trial increment of plastic shear for each slip and twinning system
@@ -1489,8 +1489,8 @@ void MAT::CrystalPlasticity::SetupFlowRule(CORE::LINALG::Matrix<3, 3> deform_gra
 
   // determine trial plastic velocity gradient L_p
   // set up L_p_trial
-  CORE::LINALG::Matrix<3, 3> plastic_velocity_grad_trial(true);
-  CORE::LINALG::Matrix<3, 3> temp_mat;
+  Core::LinAlg::Matrix<3, 3> plastic_velocity_grad_trial(true);
+  Core::LinAlg::Matrix<3, 3> temp_mat;
 
   // slip system contributions
   for (int i = 0; i < slip_system_count_; i++)
@@ -1510,10 +1510,10 @@ void MAT::CrystalPlasticity::SetupFlowRule(CORE::LINALG::Matrix<3, 3> deform_gra
   }
 
   // take unimodular part of I + L_p to ensure plastic incompressibility
-  CORE::LINALG::Matrix<3, 3> unimod_identity_plus_plastic_velocity_grad_trial(true);
+  Core::LinAlg::Matrix<3, 3> unimod_identity_plus_plastic_velocity_grad_trial(true);
 
   unimod_identity_plus_plastic_velocity_grad_trial.Update(
-      CORE::LINALG::IdentityMatrix<3>(), plastic_velocity_grad_trial);
+      Core::LinAlg::IdentityMatrix<3>(), plastic_velocity_grad_trial);
   unimod_identity_plus_plastic_velocity_grad_trial.Scale(
       std::pow(unimod_identity_plus_plastic_velocity_grad_trial.Determinant(), -1.0 / 3.0));
 
@@ -1525,9 +1525,9 @@ void MAT::CrystalPlasticity::SetupFlowRule(CORE::LINALG::Matrix<3, 3> deform_gra
   //--------------------------------------------------------------------------
   // determine trial elastic deformation gradient
   // get the inverse FP^{-1}
-  CORE::LINALG::Matrix<3, 3> inv_plastic_deform_grad_trial;
+  Core::LinAlg::Matrix<3, 3> inv_plastic_deform_grad_trial;
   inv_plastic_deform_grad_trial.Invert(plastic_deform_grad_trial);
-  CORE::LINALG::Matrix<3, 3> elastic_deform_grad_trial;
+  Core::LinAlg::Matrix<3, 3> elastic_deform_grad_trial;
   elastic_deform_grad_trial.MultiplyNN(deform_grad, inv_plastic_deform_grad_trial);
 
   // calculate the Jacobi-determinant J = det(FE_{n+1}) and the logarithm of it
@@ -1535,9 +1535,9 @@ void MAT::CrystalPlasticity::SetupFlowRule(CORE::LINALG::Matrix<3, 3> deform_gra
   double ln_jacobi_det_trial = std::log(jacobi_det_trial);
 
   // set up elastic right cauchy green and its inverse
-  CORE::LINALG::Matrix<3, 3> elastic_right_cauchy_green;
+  Core::LinAlg::Matrix<3, 3> elastic_right_cauchy_green;
   elastic_right_cauchy_green.MultiplyTN(elastic_deform_grad_trial, elastic_deform_grad_trial);
-  CORE::LINALG::Matrix<3, 3> inv_elastic_right_cauchy_green;
+  Core::LinAlg::Matrix<3, 3> inv_elastic_right_cauchy_green;
   inv_elastic_right_cauchy_green.Invert(elastic_right_cauchy_green);
 
   // 2nd Piola-Kirchhoff stress
@@ -1545,11 +1545,11 @@ void MAT::CrystalPlasticity::SetupFlowRule(CORE::LINALG::Matrix<3, 3> deform_gra
   // - inv_elastic_right_cauchy_green)
 
   second_pk_stress_trial.Update(lambda_ * ln_jacobi_det_trial, inv_elastic_right_cauchy_green, 1.0);
-  second_pk_stress_trial.Update(mue_, CORE::LINALG::IdentityMatrix<3>(), 1.0);
+  second_pk_stress_trial.Update(mue_, Core::LinAlg::IdentityMatrix<3>(), 1.0);
   second_pk_stress_trial.Update(-mue_, inv_elastic_right_cauchy_green, 1.0);
 
   // Mandel stress
-  CORE::LINALG::Matrix<3, 3> mandel_stress_trial;
+  Core::LinAlg::Matrix<3, 3> mandel_stress_trial;
   mandel_stress_trial.MultiplyNN(elastic_right_cauchy_green, second_pk_stress_trial);
 
   // determine current slip systems strengths
@@ -1599,9 +1599,9 @@ void MAT::CrystalPlasticity::SetupFlowRule(CORE::LINALG::Matrix<3, 3> deform_gra
     //--------------------------------------------------------------------------
 
     // resolved shear stress/Schmid stress
-    CORE::LINALG::Matrix<1, 1> resolved_shear_stress(true);
+    Core::LinAlg::Matrix<1, 1> resolved_shear_stress(true);
 
-    CORE::LINALG::Matrix<3, 1> TempVec(true);
+    Core::LinAlg::Matrix<3, 1> TempVec(true);
 
     TempVec.MultiplyNN(mandel_stress_trial, slip_plane_normal_[i]);
 
@@ -1670,9 +1670,9 @@ void MAT::CrystalPlasticity::SetupFlowRule(CORE::LINALG::Matrix<3, 3> deform_gra
       //--------------------------------------------------------------------------
 
       // resolved shear stress/Schmid stress
-      CORE::LINALG::Matrix<1, 1> resolved_shear_stress(true);
+      Core::LinAlg::Matrix<1, 1> resolved_shear_stress(true);
 
-      CORE::LINALG::Matrix<3, 1> TempVec(true);
+      Core::LinAlg::Matrix<3, 1> TempVec(true);
 
       TempVec.MultiplyNN(mandel_stress_trial, twin_plane_normal_[i - slip_system_count_]);
 
@@ -1697,7 +1697,7 @@ void MAT::CrystalPlasticity::SetupFlowRule(CORE::LINALG::Matrix<3, 3> deform_gra
 /*---------------------------------------------------------------------*
  | return names of visualization data (public)                         |
  *---------------------------------------------------------------------*/
-void MAT::CrystalPlasticity::VisNames(std::map<std::string, int>& names)
+void Mat::CrystalPlasticity::VisNames(std::map<std::string, int>& names)
 {
   // temporary string variable for assembling the output names
   std::string ID;
@@ -1748,7 +1748,7 @@ void MAT::CrystalPlasticity::VisNames(std::map<std::string, int>& names)
 /*---------------------------------------------------------------------*
  | return visualization data (public)                                  |
  *---------------------------------------------------------------------*/
-bool MAT::CrystalPlasticity::VisData(
+bool Mat::CrystalPlasticity::VisData(
     const std::string& name, std::vector<double>& data, int numgp, int eleID)
 {
   // plastic shears gamma

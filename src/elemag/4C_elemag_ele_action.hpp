@@ -14,7 +14,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace ELEMAG
+namespace EleMag
 {
   /*!
     \brief Enum that provides all possible elemag actions
@@ -57,7 +57,7 @@ namespace ELEMAG
     compute_error
   };  // enum Action
 
-}  // namespace ELEMAG
+}  // namespace EleMag
 
 
 FOUR_C_NAMESPACE_CLOSE

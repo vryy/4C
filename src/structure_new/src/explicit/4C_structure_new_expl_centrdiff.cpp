@@ -108,14 +108,14 @@ void STR::EXPLICIT::CentrDiff::set_state(const Epetra_Vector& x)
 void STR::EXPLICIT::CentrDiff::add_visco_mass_contributions(Epetra_Vector& f) const
 {
   // viscous damping forces at t_{n+1}
-  CORE::LINALG::AssembleMyVector(1.0, f, 1.0, *fvisconp_ptr_);
+  Core::LinAlg::AssembleMyVector(1.0, f, 1.0, *fvisconp_ptr_);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::CentrDiff::add_visco_mass_contributions(CORE::LINALG::SparseOperator& jac) const
+void STR::EXPLICIT::CentrDiff::add_visco_mass_contributions(Core::LinAlg::SparseOperator& jac) const
 {
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_ptr = global_state().ExtractDisplBlock(jac);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_ptr = global_state().ExtractDisplBlock(jac);
   // set mass matrix
   stiff_ptr->Add(*global_state().GetMassMatrix(), false, 1.0, 0.0);
 }
@@ -123,7 +123,7 @@ void STR::EXPLICIT::CentrDiff::add_visco_mass_contributions(CORE::LINALG::Sparse
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::EXPLICIT::CentrDiff::write_restart(
-    CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
+    Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   check_init_setup();
   // write dynamic forces
@@ -135,7 +135,7 @@ void STR::EXPLICIT::CentrDiff::write_restart(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::CentrDiff::read_restart(CORE::IO::DiscretizationReader& ioreader)
+void STR::EXPLICIT::CentrDiff::read_restart(Core::IO::DiscretizationReader& ioreader)
 {
   check_init_setup();
   ioreader.ReadVector(finertian_ptr_, "finert");

@@ -33,12 +33,12 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace CORE::Dofsets
+namespace Core::DOFSets
 {
 
 
@@ -79,7 +79,7 @@ namespace CORE::Dofsets
 
     /// Assign dof numbers using all elements and nodes of the discretization.
     int assign_degrees_of_freedom(
-        const DRT::Discretization& dis, const unsigned dspos, const int start) override;
+        const Discret::Discretization& dis, const unsigned dspos, const int start) override;
 
     /// Update the coupled nodes map of dofset
     virtual void SetCoupledNodes(Teuchos::RCP<std::map<int, std::vector<int>>> couplednodes);
@@ -95,7 +95,7 @@ namespace CORE::Dofsets
 
    protected:
     /// get number of nodal dofs for this element at this node
-    int NumDofPerNode(const CORE::Nodes::Node& node) const override
+    int NumDofPerNode(const Core::Nodes::Node& node) const override
     {
       if (slavenodeids_->count(node.Id()) == 0)
       {
@@ -125,7 +125,7 @@ namespace CORE::Dofsets
 
   };  // class PBCDofSet
 
-}  // namespace CORE::Dofsets
+}  // namespace Core::DOFSets
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -20,9 +20,9 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace CORE::GEO
+namespace Core::Geo
 {
-  namespace CUT
+  namespace Cut
   {
     class Point;
     class Node;
@@ -62,21 +62,21 @@ namespace CORE::GEO
       //! @name access to basic element data
 
       //! get the shape of the element
-      virtual CORE::FE::CellType Shape() = 0;
+      virtual Core::FE::CellType Shape() = 0;
 
       //! get the nodes of the element
       virtual const std::vector<Node*>& Nodes() = 0;
 
       //! compute local coordinates of the element for a given point
-      const CORE::LINALG::Matrix<3, 1>& local_coordinates(Point* p)
+      const Core::LinAlg::Matrix<3, 1>& local_coordinates(Point* p)
       {
-        std::map<Point*, CORE::LINALG::Matrix<3, 1>>::iterator i = local_coordinates_.find(p);
+        std::map<Point*, Core::LinAlg::Matrix<3, 1>>::iterator i = local_coordinates_.find(p);
         if (i != local_coordinates_.end())
         {
           return i->second;
         }
-        CORE::LINALG::Matrix<3, 1>& rst = local_coordinates_[p];
-        CORE::LINALG::Matrix<3, 1> xyz;
+        Core::LinAlg::Matrix<3, 1>& rst = local_coordinates_[p];
+        Core::LinAlg::Matrix<3, 1> xyz;
         p->Coordinates(xyz.A());
         local_coordinates(xyz, rst);
         return rst;
@@ -84,13 +84,13 @@ namespace CORE::GEO
 
       //! compute local coordinates of the element for given global coordinates
       virtual void local_coordinates(
-          const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<3, 1>& rst) = 0;
+          const Core::LinAlg::Matrix<3, 1>& xyz, Core::LinAlg::Matrix<3, 1>& rst) = 0;
 
 
       //@}
 
       //--------------------------------------------------------------------------//
-      //! @name access to the element's CORE::GEO::CUT::Elements (sub-elements)
+      //! @name access to the element's Core::Geo::Cut::Elements (sub-elements)
 
       virtual void CollectElements(plain_element_set& elements) = 0;
 
@@ -120,24 +120,24 @@ namespace CORE::GEO
        way that Gaussian rule for every volume-cell can be separated
         */
       void volume_cell_gauss_points(
-          plain_volumecell_set& cells, std::vector<CORE::FE::GaussIntegration>& intpoints);
+          plain_volumecell_set& cells, std::vector<Core::FE::GaussIntegration>& intpoints);
 
       void append_volume_cell_gauss_points_tessellation(
-          Teuchos::RCP<CORE::FE::GaussPointsComposite> gpc, CORE::GEO::CUT::VolumeCell* vc);
+          Teuchos::RCP<Core::FE::GaussPointsComposite> gpc, Core::Geo::Cut::VolumeCell* vc);
 
       void append_volume_cell_gauss_points_moment_fitting(
-          Teuchos::RCP<CORE::FE::GaussPointsComposite> gpc, CORE::GEO::CUT::VolumeCell* vc);
+          Teuchos::RCP<Core::FE::GaussPointsComposite> gpc, Core::Geo::Cut::VolumeCell* vc);
 
       void append_volume_cell_gauss_points_direct_divergence(
-          Teuchos::RCP<CORE::FE::GaussPointsComposite> gpc, CORE::GEO::CUT::VolumeCell* vc);
+          Teuchos::RCP<Core::FE::GaussPointsComposite> gpc, Core::Geo::Cut::VolumeCell* vc);
 
 
       /*!
        \brief Collect the Gaussian points of all the volume-cells belonging to this element.
               The integration rules over all the volume-cells are connected.
        */
-      Teuchos::RCP<CORE::FE::GaussPointsComposite> gauss_points_connected(
-          plain_volumecell_set& cells, INPAR::CUT::VCellGaussPts gausstype);
+      Teuchos::RCP<Core::FE::GaussPointsComposite> gauss_points_connected(
+          plain_volumecell_set& cells, Inpar::Cut::VCellGaussPts gausstype);
 
 
       //! ...
@@ -157,8 +157,8 @@ namespace CORE::GEO
       This is the method used now in the new implementation
        */
       void boundary_cell_gauss_points_lin(
-          const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>& bcells,
-          std::map<int, std::vector<CORE::FE::GaussIntegration>>& intpoints,
+          const std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>& bcells,
+          std::map<int, std::vector<Core::FE::GaussIntegration>>& intpoints,
           const int bc_cubaturedegree);
 
       //@}
@@ -170,7 +170,7 @@ namespace CORE::GEO
       //! get all the element' sets of volume-cells, nds-vectors and integration points
       virtual bool get_cell_sets_dof_sets_gauss_points(std::vector<plain_volumecell_set>& cell_sets,
           std::vector<std::vector<int>>& nds_sets,
-          std::vector<std::vector<CORE::FE::GaussIntegration>>& intpoints_sets, bool include_inner);
+          std::vector<std::vector<Core::FE::GaussIntegration>>& intpoints_sets, bool include_inner);
 
 
       //! get the element's sets of volume-cells ordered by inside/outside position
@@ -181,13 +181,13 @@ namespace CORE::GEO
           std::vector<std::vector<int>>& nds_sets, bool include_inner);
 
       void GetBoundaryCellSets(
-          const std::vector<CORE::GEO::CUT::Point::PointPosition>& desired_positions,
+          const std::vector<Core::Geo::Cut::Point::PointPosition>& desired_positions,
           std::vector<plain_boundarycell_set>& bcellsets);
 
-      void GetBoundaryCellSets(CORE::GEO::CUT::Point::PointPosition desired_position,
+      void GetBoundaryCellSets(Core::Geo::Cut::Point::PointPosition desired_position,
           std::vector<plain_boundarycell_set>& bcellsets)
       {
-        const std::vector<CORE::GEO::CUT::Point::PointPosition> desired_positions(
+        const std::vector<Core::Geo::Cut::Point::PointPosition> desired_positions(
             1, desired_position);
         GetBoundaryCellSets(desired_positions, bcellsets);
       }
@@ -239,12 +239,12 @@ namespace CORE::GEO
        \brief Project the integration rule available in the local coordinates of the
        integation-cells to the local coordinates of background element
        */
-      template <CORE::FE::CellType distype>
-      Teuchos::RCP<CORE::FE::GaussPoints> create_projected(
-          const std::vector<CORE::GEO::CUT::Point*>& cpoints,
-          Teuchos::RCP<CORE::FE::GaussPoints> gp_ic);
+      template <Core::FE::CellType distype>
+      Teuchos::RCP<Core::FE::GaussPoints> create_projected(
+          const std::vector<Core::Geo::Cut::Point*>& cpoints,
+          Teuchos::RCP<Core::FE::GaussPoints> gp_ic);
 
-      std::map<Point*, CORE::LINALG::Matrix<3, 1>> local_coordinates_;
+      std::map<Point*, Core::LinAlg::Matrix<3, 1>> local_coordinates_;
 
      protected:
       /// dof set number of all element nodes, contains the dofset numbers for all nodes of the
@@ -297,14 +297,14 @@ namespace CORE::GEO
       //! @name access to basic element data
 
       //! get the shape of the element
-      CORE::FE::CellType Shape() override { return element_->Shape(); }
+      Core::FE::CellType Shape() override { return element_->Shape(); }
 
       //! get the nodes of the element
       const std::vector<Node*>& Nodes() override { return element_->Nodes(); }
 
       //! compute local coordinates of the element for given global coordinates
       void local_coordinates(
-          const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<3, 1>& rst) override
+          const Core::LinAlg::Matrix<3, 1>& xyz, Core::LinAlg::Matrix<3, 1>& rst) override
       {
         element_->local_coordinates(xyz, rst);
       }
@@ -313,7 +313,7 @@ namespace CORE::GEO
 
 
       //--------------------------------------------------------------------------//
-      //! @name access to the element's CORE::GEO::CUT::Elements (subelements)
+      //! @name access to the element's Core::Geo::Cut::Elements (subelements)
 
       //! collect all sub-elements
       void CollectElements(plain_element_set& elements) override { elements.insert(element_); }
@@ -422,7 +422,7 @@ namespace CORE::GEO
           vc_sets_outside_;  ///< connected sets of volume-cells with outside position
 
 
-      CORE::GEN::Pairedvector<Point::PointPosition, std::vector<plain_boundarycell_set>>
+      Core::Gen::Pairedvector<Point::PointPosition, std::vector<plain_boundarycell_set>>
           bcell_sets_;
     };
 
@@ -465,7 +465,7 @@ namespace CORE::GEO
 
 
       //--------------------------------------------------------------------------//
-      //! @name access to the element's CORE::GEO::CUT::Elements (subelements)
+      //! @name access to the element's Core::Geo::Cut::Elements (subelements)
 
       //! collect all sub-elements
       void CollectElements(plain_element_set& elements) override
@@ -615,7 +615,7 @@ namespace CORE::GEO
       std::vector<plain_volumecell_set>
           connected_vc_sets_outside_;  ///< connected volume-cells with outside position
 
-      CORE::GEN::Pairedvector<Point::PointPosition, std::vector<plain_boundarycell_set>>
+      Core::Gen::Pairedvector<Point::PointPosition, std::vector<plain_boundarycell_set>>
           connected_bcell_sets_;
 
       std::vector<Element*> subelements_;  ///< the quadratic element's linear sub-elements
@@ -630,11 +630,11 @@ namespace CORE::GEO
       Hex20ElementHandle(Mesh& mesh, int eid, const std::vector<int>& node_ids);
 
       //! get the shape of the element
-      CORE::FE::CellType Shape() override { return CORE::FE::CellType::hex20; }
+      Core::FE::CellType Shape() override { return Core::FE::CellType::hex20; }
 
       //! compute local coordinates of the element for given global coordinates
       void local_coordinates(
-          const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<3, 1>& rst) override;
+          const Core::LinAlg::Matrix<3, 1>& xyz, Core::LinAlg::Matrix<3, 1>& rst) override;
     };
 
     /// hex27 element handle
@@ -645,11 +645,11 @@ namespace CORE::GEO
       Hex27ElementHandle(Mesh& mesh, int eid, const std::vector<int>& node_ids);
 
       //! get the shape of the element
-      CORE::FE::CellType Shape() override { return CORE::FE::CellType::hex27; }
+      Core::FE::CellType Shape() override { return Core::FE::CellType::hex27; }
 
       //! compute local coordinates of the element for given global coordinates
       void local_coordinates(
-          const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<3, 1>& rst) override;
+          const Core::LinAlg::Matrix<3, 1>& xyz, Core::LinAlg::Matrix<3, 1>& rst) override;
     };
 
     /// tet10 element handle
@@ -660,11 +660,11 @@ namespace CORE::GEO
       Tet10ElementHandle(Mesh& mesh, int eid, const std::vector<int>& nids);
 
       //! get the shape of the element
-      CORE::FE::CellType Shape() override { return CORE::FE::CellType::tet10; }
+      Core::FE::CellType Shape() override { return Core::FE::CellType::tet10; }
 
       //! compute local coordinates of the element for given global coordinates
       void local_coordinates(
-          const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<3, 1>& rst) override;
+          const Core::LinAlg::Matrix<3, 1>& xyz, Core::LinAlg::Matrix<3, 1>& rst) override;
     };
 
     /// wedge15 element handle
@@ -675,15 +675,15 @@ namespace CORE::GEO
       Wedge15ElementHandle(Mesh& mesh, int eid, const std::vector<int>& node_ids);
 
       //! get the shape of the element
-      CORE::FE::CellType Shape() override { return CORE::FE::CellType::wedge15; }
+      Core::FE::CellType Shape() override { return Core::FE::CellType::wedge15; }
 
       //! compute local coordinates of the element for given global coordinates
       void local_coordinates(
-          const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<3, 1>& rst) override;
+          const Core::LinAlg::Matrix<3, 1>& xyz, Core::LinAlg::Matrix<3, 1>& rst) override;
     };
 
-  }  // namespace CUT
-}  // namespace CORE::GEO
+  }  // namespace Cut
+}  // namespace Core::Geo
 
 FOUR_C_NAMESPACE_CLOSE
 

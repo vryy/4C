@@ -44,9 +44,9 @@ BEAMINTERACTION::BeamLinkPinJointed::BeamLinkPinJointed(
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamLinkPinJointed::Init(int id,
     const std::vector<std::pair<int, int>>& eleids,
-    const std::vector<CORE::LINALG::Matrix<3, 1>>& initpos,
-    const std::vector<CORE::LINALG::Matrix<3, 3>>& inittriad,
-    INPAR::BEAMINTERACTION::CrosslinkerType linkertype, double timelinkwasset)
+    const std::vector<Core::LinAlg::Matrix<3, 1>>& initpos,
+    const std::vector<Core::LinAlg::Matrix<3, 3>>& inittriad,
+    Inpar::BEAMINTERACTION::CrosslinkerType linkertype, double timelinkwasset)
 {
   issetup_ = false;
 
@@ -66,9 +66,9 @@ void BEAMINTERACTION::BeamLinkPinJointed::Setup(const int matnum)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkPinJointed::Pack(CORE::COMM::PackBuffer& data) const
+void BEAMINTERACTION::BeamLinkPinJointed::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -86,7 +86,7 @@ void BEAMINTERACTION::BeamLinkPinJointed::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -102,8 +102,8 @@ void BEAMINTERACTION::BeamLinkPinJointed::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamLinkPinJointed::ResetState(
-    std::vector<CORE::LINALG::Matrix<3, 1>>& bspotpos,
-    std::vector<CORE::LINALG::Matrix<3, 3>>& bspottriad)
+    std::vector<Core::LinAlg::Matrix<3, 1>>& bspotpos,
+    std::vector<Core::LinAlg::Matrix<3, 3>>& bspottriad)
 {
   check_init_setup();
 
@@ -113,11 +113,11 @@ void BEAMINTERACTION::BeamLinkPinJointed::ResetState(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<BEAMINTERACTION::BeamLinkPinJointed> BEAMINTERACTION::BeamLinkPinJointed::Create(
-    INPAR::BEAMINTERACTION::JointType type)
+    Inpar::BEAMINTERACTION::JointType type)
 {
-  if (type == INPAR::BEAMINTERACTION::beam3r_line2_pin)
+  if (type == Inpar::BEAMINTERACTION::beam3r_line2_pin)
     return Teuchos::rcp(new BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed());
-  else if (type == INPAR::BEAMINTERACTION::truss)
+  else if (type == Inpar::BEAMINTERACTION::truss)
     return Teuchos::rcp(new BEAMINTERACTION::BeamLinkTruss());
   else
     FOUR_C_THROW(

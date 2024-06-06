@@ -18,19 +18,19 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class MatrixRowTransform;
   class MatrixColTransform;
   class MatrixRowColTransform;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace ADAPTER
+namespace Adapter
 {
   class CouplingNonLinMortar;
 }
 
-namespace POROELAST
+namespace PoroElast
 {
   //! monolithic structure split for condensing DOFs, when using the brinkman-equation
   class MonolithicSplitNoPenetration : public MonolithicSplit
@@ -39,7 +39,7 @@ namespace POROELAST
     //! create using a Epetra_Comm
     explicit MonolithicSplitNoPenetration(const Epetra_Comm& comm,
         const Teuchos::ParameterList& timeparams,
-        Teuchos::RCP<CORE::LINALG::MapExtractor> porosity_splitter);
+        Teuchos::RCP<Core::LinAlg::MapExtractor> porosity_splitter);
 
     //! Setup the monolithic system
     void SetupSystem() override;
@@ -48,7 +48,7 @@ namespace POROELAST
     void setup_rhs(bool firstcall = false) override;
 
     //! setup composed system matrix from field solvers
-    void setup_system_matrix(CORE::LINALG::BlockSparseMatrixBase& mat) override;
+    void setup_system_matrix(Core::LinAlg::BlockSparseMatrixBase& mat) override;
 
     //! take current results for converged and save for next time step
     void Update() override;
@@ -68,12 +68,12 @@ namespace POROELAST
 
     //! Evaluate mechanical-fluid system matrix
     void apply_str_coupl_matrix(
-        Teuchos::RCP<CORE::LINALG::SparseOperator> k_sf  //!< mechanical-fluid stiffness matrix
+        Teuchos::RCP<Core::LinAlg::SparseOperator> k_sf  //!< mechanical-fluid stiffness matrix
         ) override;
 
     //! Evaluate fluid-mechanical system matrix
     void apply_fluid_coupl_matrix(
-        Teuchos::RCP<CORE::LINALG::SparseOperator> k_fs  //!< fluid-mechanical tangent matrix
+        Teuchos::RCP<Core::LinAlg::SparseOperator> k_fs  //!< fluid-mechanical tangent matrix
         ) override;
 
     //! recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each
@@ -107,29 +107,29 @@ namespace POROELAST
 
     //! @name Global matrices and vectors
 
-    Teuchos::RCP<CORE::LINALG::SparseOperator> k_struct_;
-    Teuchos::RCP<CORE::LINALG::SparseOperator> k_fluid_;
+    Teuchos::RCP<Core::LinAlg::SparseOperator> k_struct_;
+    Teuchos::RCP<Core::LinAlg::SparseOperator> k_fluid_;
 
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> k_lambda_;
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> k_d_;
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> k_inv_d_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> k_lambda_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> k_d_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> k_inv_d_;
 
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> k_dn_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> k_dn_;
 
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> k_lambdainv_d_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> k_lambdainv_d_;
 
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> k_porodisp_;
-    Teuchos::RCP<CORE::LINALG::SparseOperator> k_porofluid_;
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> k_porodisp_;
+    Teuchos::RCP<Core::LinAlg::SparseOperator> k_porofluid_;
 
     Teuchos::RCP<Epetra_Vector> nopenetration_rhs_;
 
     //! transform object for k_D matrix \f$D\f$
-    Teuchos::RCP<CORE::LINALG::MatrixColTransform> k_d_transform_;
+    Teuchos::RCP<Core::LinAlg::MatrixColTransform> k_d_transform_;
     //! transform object for k_D matrix \f$D\f$
-    Teuchos::RCP<CORE::LINALG::MatrixRowTransform> k_inv_d_transform_;
+    Teuchos::RCP<Core::LinAlg::MatrixRowTransform> k_inv_d_transform_;
 
     //! transform object for linearization of k_D matrix \f$D\f$
-    Teuchos::RCP<CORE::LINALG::MatrixColTransform> k_d_lin_transform_;
+    Teuchos::RCP<Core::LinAlg::MatrixColTransform> k_d_lin_transform_;
 
     //! Lagrange multiplier \f$\lambda_\Gamma^{n+1}\f$ at the interface (ie condensed forces onto
     //! the structure) evaluated at actual iteration step \f$t_{n+1}\f$ but needed for next
@@ -141,16 +141,16 @@ namespace POROELAST
     //! @name Some quantities to recover the Langrange multiplier at the end of each iteration step
 
     //! block \f$F_{\Gamma I,i+1}\f$ of fluid matrix at current iteration \f$i+1\f$
-    Teuchos::RCP<const CORE::LINALG::SparseMatrix> fgicur_;
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> fgicur_;
 
     //! block \f$S_{\Gamma\Gamma,i+1}\f$ of fluid matrix at current iteration \f$i+1\f$
-    Teuchos::RCP<const CORE::LINALG::SparseMatrix> fggcur_;
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> fggcur_;
 
     //! block \f$Cfs_{\Gamma\Gamma,i+1}\f$ of fs-coupling matrix at current iteration \f$i+1\f$
-    Teuchos::RCP<const CORE::LINALG::SparseMatrix> cfsgicur_;
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> cfsgicur_;
 
     //! block \f$Cfs_{\Gamma\Gamma,i+1}\f$ of fs-coupling matrix at current iteration \f$i+1\f$
-    Teuchos::RCP<const CORE::LINALG::SparseMatrix> cfsggcur_;
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> cfsggcur_;
 
     Teuchos::RCP<Epetra_Vector> rhs_fgcur_;
 
@@ -162,10 +162,10 @@ namespace POROELAST
     double normrhs_nopenetration_;
     //!@}
 
-    Teuchos::RCP<ADAPTER::CouplingNonLinMortar> mortar_adapter_;
+    Teuchos::RCP<Adapter::CouplingNonLinMortar> mortar_adapter_;
   };
 
-}  // namespace POROELAST
+}  // namespace PoroElast
 
 
 FOUR_C_NAMESPACE_CLOSE

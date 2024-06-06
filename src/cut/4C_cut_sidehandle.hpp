@@ -19,9 +19,9 @@ subsides
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::GEO
+namespace Core::Geo
 {
-  namespace CUT
+  namespace Cut
   {
     class Node;
     class Side;
@@ -37,19 +37,19 @@ namespace CORE::GEO
       /*!
       \brief Get the shape of this sides
        */
-      virtual CORE::FE::CellType Shape() = 0;
+      virtual Core::FE::CellType Shape() = 0;
 
       /*!
       \brief Get the coordinates of the nodes of this side
        */
-      virtual void Coordinates(CORE::LINALG::SerialDenseMatrix& xyze) = 0;
+      virtual void Coordinates(Core::LinAlg::SerialDenseMatrix& xyze) = 0;
 
       /*!
       \brief Get the local coordinates "rst"from the global coordinates "xyz" with respect to this
       side. Since side is 2D, the local coordinates will have only two coordinates
       */
       virtual void local_coordinates(
-          const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<2, 1>& rst) = 0;
+          const Core::LinAlg::Matrix<3, 1>& xyz, Core::LinAlg::Matrix<2, 1>& rst) = 0;
 
       /*!
       \brief For a quadratic side, get the resulting linear sides
@@ -65,25 +65,25 @@ namespace CORE::GEO
       /*!
       \brief Get the Gaussian rule projected on the side. Not used now
        */
-      template <CORE::FE::CellType distype>
-      Teuchos::RCP<CORE::FE::GaussPoints> create_projected(BoundaryCell* bc)
+      template <Core::FE::CellType distype>
+      Teuchos::RCP<Core::FE::GaussPoints> create_projected(BoundaryCell* bc)
       {
-        const unsigned nen = CORE::FE::num_nodes<distype>;
+        const unsigned nen = Core::FE::num_nodes<distype>;
 
-        CORE::LINALG::Matrix<2, nen> xie;
+        Core::LinAlg::Matrix<2, nen> xie;
 
-        const std::vector<CORE::GEO::CUT::Point*>& cpoints = bc->Points();
+        const std::vector<Core::Geo::Cut::Point*>& cpoints = bc->Points();
         if (cpoints.size() != nen) FOUR_C_THROW("non-matching number of points");
 
         for (unsigned i = 0; i < nen; ++i)
         {
-          CORE::GEO::CUT::Point* p = cpoints[i];
-          const CORE::LINALG::Matrix<2, 1>& xi = local_coordinates(p);
+          Core::Geo::Cut::Point* p = cpoints[i];
+          const Core::LinAlg::Matrix<2, 1>& xi = local_coordinates(p);
           std::copy(xi.A(), xi.A() + 2, &xie(0, i));
         }
 
-        Teuchos::RCP<CORE::FE::GaussPoints> gp =
-            CORE::FE::GaussIntegration::create_projected<distype>(xie, bc->CubatureDegree());
+        Teuchos::RCP<Core::FE::GaussPoints> gp =
+            Core::FE::GaussIntegration::create_projected<distype>(xie, bc->CubatureDegree());
         return gp;
       }
 
@@ -91,15 +91,15 @@ namespace CORE::GEO
       \brief Get the local coordinates of point p with respect to this side. Since side is 2D, the
       local coordinates will have only two coordinates
        */
-      const CORE::LINALG::Matrix<2, 1>& local_coordinates(Point* p)
+      const Core::LinAlg::Matrix<2, 1>& local_coordinates(Point* p)
       {
-        std::map<Point*, CORE::LINALG::Matrix<2, 1>>::iterator i = local_coordinates_.find(p);
+        std::map<Point*, Core::LinAlg::Matrix<2, 1>>::iterator i = local_coordinates_.find(p);
         if (i != local_coordinates_.end())
         {
           return i->second;
         }
-        CORE::LINALG::Matrix<2, 1>& rst = local_coordinates_[p];
-        CORE::LINALG::Matrix<3, 1> xyz;
+        Core::LinAlg::Matrix<2, 1>& rst = local_coordinates_[p];
+        Core::LinAlg::Matrix<3, 1> xyz;
         p->Coordinates(xyz.A());
         local_coordinates(xyz, rst);
         return rst;
@@ -145,7 +145,7 @@ namespace CORE::GEO
       }
 
      private:
-      std::map<Point*, CORE::LINALG::Matrix<2, 1>> local_coordinates_;
+      std::map<Point*, Core::LinAlg::Matrix<2, 1>> local_coordinates_;
     };
 
     /// linear side handle
@@ -156,18 +156,18 @@ namespace CORE::GEO
 
       explicit LinearSideHandle(Side* s) : side_(s) {}
 
-      CORE::FE::CellType Shape() override { return side_->Shape(); }
+      Core::FE::CellType Shape() override { return side_->Shape(); }
 
-      void Coordinates(CORE::LINALG::SerialDenseMatrix& xyze) override
+      void Coordinates(Core::LinAlg::SerialDenseMatrix& xyze) override
       {
         xyze.reshape(3, side_->Nodes().size());
         side_->Coordinates(xyze.values());
       }
 
       void local_coordinates(
-          const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<2, 1>& rs) override
+          const Core::LinAlg::Matrix<3, 1>& xyz, Core::LinAlg::Matrix<2, 1>& rs) override
       {
-        CORE::LINALG::Matrix<3, 1> rst;
+        Core::LinAlg::Matrix<3, 1> rst;
         side_->local_coordinates(xyz, rst);
         rs(0) = rst(0);
         rs(1) = rst(1);
@@ -198,7 +198,7 @@ namespace CORE::GEO
     class QuadraticSideHandle : public SideHandle
     {
      public:
-      void Coordinates(CORE::LINALG::SerialDenseMatrix& xyze) override
+      void Coordinates(Core::LinAlg::SerialDenseMatrix& xyze) override
       {
         xyze.reshape(3, nodes_.size());
         for (std::vector<Node*>::iterator i = nodes_.begin(); i != nodes_.end(); ++i)
@@ -318,10 +318,10 @@ namespace CORE::GEO
      public:
       Tri6SideHandle(Mesh& mesh, int sid, const std::vector<int>& node_ids);
 
-      CORE::FE::CellType Shape() override { return CORE::FE::CellType::tri6; }
+      Core::FE::CellType Shape() override { return Core::FE::CellType::tri6; }
 
       void local_coordinates(
-          const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<2, 1>& rst) override;
+          const Core::LinAlg::Matrix<3, 1>& xyz, Core::LinAlg::Matrix<2, 1>& rst) override;
     };
 
     /// quad4 side handle
@@ -333,10 +333,10 @@ namespace CORE::GEO
      public:
       Quad4SideHandle(Mesh& mesh, int sid, const std::vector<int>& node_ids);
 
-      CORE::FE::CellType Shape() override { return CORE::FE::CellType::quad4; }
+      Core::FE::CellType Shape() override { return Core::FE::CellType::quad4; }
 
       void local_coordinates(
-          const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<2, 1>& rst) override;
+          const Core::LinAlg::Matrix<3, 1>& xyz, Core::LinAlg::Matrix<2, 1>& rst) override;
     };
 
     /// quad8 side handle
@@ -345,10 +345,10 @@ namespace CORE::GEO
      public:
       Quad8SideHandle(Mesh& mesh, int sid, const std::vector<int>& node_ids, bool iscutside = true);
 
-      CORE::FE::CellType Shape() override { return CORE::FE::CellType::quad8; }
+      Core::FE::CellType Shape() override { return Core::FE::CellType::quad8; }
 
       void local_coordinates(
-          const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<2, 1>& rst) override;
+          const Core::LinAlg::Matrix<3, 1>& xyz, Core::LinAlg::Matrix<2, 1>& rst) override;
     };
 
     /// quad9 side handle
@@ -357,14 +357,14 @@ namespace CORE::GEO
      public:
       Quad9SideHandle(Mesh& mesh, int sid, const std::vector<int>& node_ids, bool iscutside = true);
 
-      CORE::FE::CellType Shape() override { return CORE::FE::CellType::quad9; }
+      Core::FE::CellType Shape() override { return Core::FE::CellType::quad9; }
 
       void local_coordinates(
-          const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<2, 1>& rst) override;
+          const Core::LinAlg::Matrix<3, 1>& xyz, Core::LinAlg::Matrix<2, 1>& rst) override;
     };
 
-  }  // namespace CUT
-}  // namespace CORE::GEO
+  }  // namespace Cut
+}  // namespace Core::Geo
 
 FOUR_C_NAMESPACE_CLOSE
 

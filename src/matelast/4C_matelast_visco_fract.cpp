@@ -12,7 +12,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-MAT::ELASTIC::PAR::Fract::Fract(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
+Mat::Elastic::PAR::Fract::Fract(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
     : Parameter(matdata),
       tau_(matdata->Get<double>("TAU")),
       alpha_(matdata->Get<double>("ALPHA")),
@@ -20,9 +20,9 @@ MAT::ELASTIC::PAR::Fract::Fract(const Teuchos::RCP<CORE::MAT::PAR::Material>& ma
 {
 }
 
-MAT::ELASTIC::Fract::Fract(MAT::ELASTIC::PAR::Fract* params) : params_(params) {}
+Mat::Elastic::Fract::Fract(Mat::Elastic::PAR::Fract* params) : params_(params) {}
 
-void MAT::ELASTIC::Fract::read_material_parameters_visco(
+void Mat::Elastic::Fract::read_material_parameters_visco(
     double& tau, double& beta, double& alpha, std::string& solve)
 {
   tau = params_->tau_;

@@ -31,7 +31,7 @@ namespace FLD
   /*--------------------------------------------------------------*
    | constructor                                  rasthofer 04/13 |
    *--------------------------------------------------------------*/
-  TurbulenceStatisticsHit::TurbulenceStatisticsHit(Teuchos::RCP<DRT::Discretization> actdis,
+  TurbulenceStatisticsHit::TurbulenceStatisticsHit(Teuchos::RCP<Discret::Discretization> actdis,
       Teuchos::ParameterList& params, const std::string& statistics_outfilename, const bool forced)
       : discret_(actdis), params_(params), statistics_outfilename_(statistics_outfilename)
   {
@@ -116,7 +116,7 @@ namespace FLD
     // loop all nodes and store x1-coordinate
     for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
     {
-      CORE::Nodes::Node* node = discret_->lRowNode(inode);
+      Core::Nodes::Node* node = discret_->lRowNode(inode);
       if ((node->X()[1] < 2e-9 && node->X()[1] > -2e-9) and
           (node->X()[2] < 2e-9 && node->X()[2] > -2e-9))
         coords.insert(node->X()[0]);
@@ -131,23 +131,23 @@ namespace FLD
       std::vector<char> rblock;
 
       // create an exporter for point to point communication
-      CORE::COMM::Exporter exporter(discret_->Comm());
+      Core::Communication::Exporter exporter(discret_->Comm());
 
       // communicate coordinates
       for (int np = 0; np < numprocs; ++np)
       {
-        CORE::COMM::PackBuffer data;
+        Core::Communication::PackBuffer data;
 
         for (std::set<double, LineSortCriterion>::iterator x1line = coords.begin();
              x1line != coords.end(); ++x1line)
         {
-          CORE::COMM::ParObject::AddtoPack(data, *x1line);
+          Core::Communication::ParObject::AddtoPack(data, *x1line);
         }
         data.StartPacking();
         for (std::set<double, LineSortCriterion>::iterator x1line = coords.begin();
              x1line != coords.end(); ++x1line)
         {
-          CORE::COMM::ParObject::AddtoPack(data, *x1line);
+          Core::Communication::ParObject::AddtoPack(data, *x1line);
         }
         std::swap(sblock, data());
 
@@ -189,7 +189,7 @@ namespace FLD
           while (index < rblock.size())
           {
             double onecoord;
-            CORE::COMM::ParObject::ExtractfromPack(index, rblock, onecoord);
+            Core::Communication::ParObject::ExtractfromPack(index, rblock, onecoord);
             coords.insert(onecoord);
           }
         }
@@ -253,9 +253,9 @@ namespace FLD
 
     // allocate some (toggle) vectors
     const Epetra_Map* dofrowmap = discret_->dof_row_map();
-    toggleu_ = CORE::LINALG::CreateVector(*dofrowmap, true);
-    togglev_ = CORE::LINALG::CreateVector(*dofrowmap, true);
-    togglew_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+    toggleu_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    togglev_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    togglew_ = Core::LinAlg::CreateVector(*dofrowmap, true);
 
     // set number of samples to zero
     numsamp_ = 0;
@@ -264,14 +264,14 @@ namespace FLD
     dt_ = params_.get<double>("time step size");
 
     // get fluid viscosity from material definition
-    int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(CORE::Materials::m_fluid);
+    int id = Global::Problem::Instance()->Materials()->FirstIdByType(Core::Materials::m_fluid);
     if (id == -1)
       FOUR_C_THROW("Could not find Newtonian fluid material");
     else
     {
-      const CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
-      const MAT::PAR::NewtonianFluid* actmat = static_cast<const MAT::PAR::NewtonianFluid*>(mat);
+      const Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance()->Materials()->ParameterById(id);
+      const Mat::PAR::NewtonianFluid* actmat = static_cast<const Mat::PAR::NewtonianFluid*>(mat);
       // we need the kinematic viscosity here
       double dens = actmat->density_;
       visc_ = actmat->viscosity_ / dens;
@@ -394,10 +394,10 @@ namespace FLD
     for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
     {
       // get node
-      CORE::Nodes::Node* node = discret_->lRowNode(inode);
+      Core::Nodes::Node* node = discret_->lRowNode(inode);
 
       // get coordinates
-      CORE::LINALG::Matrix<3, 1> xyz(true);
+      Core::LinAlg::Matrix<3, 1> xyz(true);
       for (int idim = 0; idim < 3; idim++) xyz(idim, 0) = node->X()[idim];
 
       // get global ids of all dofs of the node
@@ -643,7 +643,7 @@ namespace FLD
     for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
     {
       // get node
-      CORE::Nodes::Node* node = discret_->lRowNode(nn);
+      Core::Nodes::Node* node = discret_->lRowNode(nn);
 
       // get global dof ids
       std::vector<int> dof = discret_->Dof(node);
@@ -657,7 +657,7 @@ namespace FLD
 
     // compute squared values of velocity
     const Epetra_Map* dofrowmap = discret_->dof_row_map();
-    Teuchos::RCP<Epetra_Vector> squaredvelnp = CORE::LINALG::CreateVector(*dofrowmap, true);
+    Teuchos::RCP<Epetra_Vector> squaredvelnp = Core::LinAlg::CreateVector(*dofrowmap, true);
     squaredvelnp->Multiply(1.0, *velnp, *velnp, 0.0);
 
     //----------------------------------
@@ -756,10 +756,10 @@ namespace FLD
     for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
     {
       // get node
-      CORE::Nodes::Node* node = discret_->lRowNode(inode);
+      Core::Nodes::Node* node = discret_->lRowNode(inode);
 
       // get coordinates
-      CORE::LINALG::Matrix<3, 1> xyz(true);
+      Core::LinAlg::Matrix<3, 1> xyz(true);
       for (int idim = 0; idim < 3; idim++) xyz(idim, 0) = node->X()[idim];
 
       // get global ids of all dofs of the node
@@ -806,10 +806,10 @@ namespace FLD
     for (int inode = 0; inode < scatradiscret_->NumMyRowNodes(); inode++)
     {
       // get node
-      CORE::Nodes::Node* node = scatradiscret_->lRowNode(inode);
+      Core::Nodes::Node* node = scatradiscret_->lRowNode(inode);
 
       // get coordinates
-      CORE::LINALG::Matrix<3, 1> xyz(true);
+      Core::LinAlg::Matrix<3, 1> xyz(true);
       for (int idim = 0; idim < 3; idim++) xyz(idim, 0) = node->X()[idim];
 
       // get global ids of all dofs of the node
@@ -1065,7 +1065,7 @@ namespace FLD
     for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
     {
       // get node
-      CORE::Nodes::Node* node = discret_->lRowNode(nn);
+      Core::Nodes::Node* node = discret_->lRowNode(nn);
 
       // get global dof ids
       std::vector<int> dof = discret_->Dof(node);
@@ -1079,7 +1079,7 @@ namespace FLD
 
     // compute squared values of velocity
     const Epetra_Map* dofrowmap = discret_->dof_row_map();
-    Teuchos::RCP<Epetra_Vector> squaredvelnp = CORE::LINALG::CreateVector(*dofrowmap, true);
+    Teuchos::RCP<Epetra_Vector> squaredvelnp = Core::LinAlg::CreateVector(*dofrowmap, true);
     squaredvelnp->Multiply(1.0, *velnp, *velnp, 0.0);
 
     //----------------------------------
@@ -1714,8 +1714,9 @@ namespace FLD
   /*--------------------------------------------------------------*
    | constructor                                         bk 03/15 |
    *--------------------------------------------------------------*/
-  TurbulenceStatisticsHitHDG::TurbulenceStatisticsHitHDG(Teuchos::RCP<DRT::Discretization> actdis,
-      Teuchos::ParameterList& params, const std::string& statistics_outfilename, const bool forced)
+  TurbulenceStatisticsHitHDG::TurbulenceStatisticsHitHDG(
+      Teuchos::RCP<Discret::Discretization> actdis, Teuchos::ParameterList& params,
+      const std::string& statistics_outfilename, const bool forced)
       : TurbulenceStatisticsHit(actdis, params, statistics_outfilename, forced)
   {
     //-----------------------------------
@@ -1877,13 +1878,13 @@ namespace FLD
     discret_->set_state(1, "intvelnp", velnp);
 
     std::vector<int> dummy;
-    CORE::LINALG::SerialDenseMatrix dummyMat;
-    CORE::LINALG::SerialDenseVector dummyVec;
+    Core::LinAlg::SerialDenseMatrix dummyMat;
+    Core::LinAlg::SerialDenseVector dummyVec;
 
     for (int el = 0; el < discret_->NumMyRowElements(); ++el)
     {
-      CORE::LINALG::SerialDenseVector interpolVec;
-      CORE::Elements::Element* ele = discret_->lRowElement(el);
+      Core::LinAlg::SerialDenseVector interpolVec;
+      Core::Elements::Element* ele = discret_->lRowElement(el);
 
       interpolVec.resize(5 * 5 * 5 * 6);  // 5*5*5 points: velx, vely, velz, x, y, z
 
@@ -1893,7 +1894,7 @@ namespace FLD
       for (int i = 0; i < 5 * 5 * 5; ++i)
       {
         // get coordinates
-        CORE::LINALG::Matrix<3, 1> xyz(true);
+        Core::LinAlg::Matrix<3, 1> xyz(true);
         for (int d = 0; d < 3; ++d) xyz(d) = interpolVec(i * 6 + d + 3);
         // determine position
         std::vector<int> loc(3);
@@ -2133,7 +2134,7 @@ namespace FLD
     //  for (int nn=0; nn<discret_->NumMyRowNodes(); ++nn)
     //  {
     //    // get node
-    //    CORE::Nodes::Node* node = discret_->lRowNode(nn);
+    //    Core::Nodes::Node* node = discret_->lRowNode(nn);
     //
     //    // get global dof ids
     //    std::vector<int> dof = discret_->Dof(node);
@@ -2147,7 +2148,7 @@ namespace FLD
     //
     //  // compute squared values of velocity
     //  const Epetra_Map* dofrowmap = discret_->dof_row_map();
-    //  Teuchos::RCP<Epetra_Vector> squaredvelnp = CORE::LINALG::CreateVector(*dofrowmap,true);
+    //  Teuchos::RCP<Epetra_Vector> squaredvelnp = Core::LinAlg::CreateVector(*dofrowmap,true);
     //  squaredvelnp->Multiply(1.0,*velnp,*velnp,0.0);
     //
     //  //----------------------------------

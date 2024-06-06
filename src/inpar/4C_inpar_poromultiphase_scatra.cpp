@@ -17,9 +17,9 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-void INPAR::POROMULTIPHASESCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::PoroMultiPhaseScaTra::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
-  using namespace INPUT;
+  using namespace Input;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
@@ -29,19 +29,19 @@ void INPAR::POROMULTIPHASESCATRA::SetValidParameters(Teuchos::RCP<Teuchos::Param
       false, "Control paramters for scatra porous multiphase media coupling");
 
   // Output type
-  CORE::UTILS::IntParameter("RESTARTEVRY", 1, "write restart possibility every RESTARTEVRY steps",
+  Core::UTILS::IntParameter("RESTARTEVRY", 1, "write restart possibility every RESTARTEVRY steps",
       &poromultiphasescatradyn);
   // Time loop control
-  CORE::UTILS::IntParameter(
+  Core::UTILS::IntParameter(
       "NUMSTEP", 200, "maximum number of Timesteps", &poromultiphasescatradyn);
-  CORE::UTILS::DoubleParameter(
+  Core::UTILS::DoubleParameter(
       "MAXTIME", 1000.0, "total simulation time", &poromultiphasescatradyn);
-  CORE::UTILS::DoubleParameter("TIMESTEP", 0.05, "time step size dt", &poromultiphasescatradyn);
-  CORE::UTILS::IntParameter(
+  Core::UTILS::DoubleParameter("TIMESTEP", 0.05, "time step size dt", &poromultiphasescatradyn);
+  Core::UTILS::IntParameter(
       "RESULTSEVRY", 1, "increment for writing solution", &poromultiphasescatradyn);
-  CORE::UTILS::IntParameter(
+  Core::UTILS::IntParameter(
       "ITEMAX", 10, "maximum number of iterations over fields", &poromultiphasescatradyn);
-  CORE::UTILS::IntParameter(
+  Core::UTILS::IntParameter(
       "ITEMIN", 1, "minimal number of iterations over fields", &poromultiphasescatradyn);
 
   // Coupling strategy for poroscatra solvers
@@ -54,7 +54,7 @@ void INPAR::POROMULTIPHASESCATRA::SetValidParameters(Teuchos::RCP<Teuchos::Param
       &poromultiphasescatradyn);
 
   // coupling with 1D artery network active
-  CORE::UTILS::BoolParameter(
+  Core::UTILS::BoolParameter(
       "ARTERY_COUPLING", "No", "Coupling with 1D blood vessels.", &poromultiphasescatradyn);
 
   // no convergence of coupling scheme
@@ -71,36 +71,36 @@ void INPAR::POROMULTIPHASESCATRA::SetValidParameters(Teuchos::RCP<Teuchos::Param
   setStringToIntegralParameter<int>("VECTORNORM_RESF", "L2",
       "type of norm to be applied to residuals",
       tuple<std::string>("L1", "L1_Scaled", "L2", "Rms", "Inf"),
-      tuple<int>(INPAR::POROMULTIPHASESCATRA::norm_l1, INPAR::POROMULTIPHASESCATRA::norm_l1_scaled,
-          INPAR::POROMULTIPHASESCATRA::norm_l2, INPAR::POROMULTIPHASESCATRA::norm_rms,
-          INPAR::POROMULTIPHASESCATRA::norm_inf),
+      tuple<int>(Inpar::PoroMultiPhaseScaTra::norm_l1, Inpar::PoroMultiPhaseScaTra::norm_l1_scaled,
+          Inpar::PoroMultiPhaseScaTra::norm_l2, Inpar::PoroMultiPhaseScaTra::norm_rms,
+          Inpar::PoroMultiPhaseScaTra::norm_inf),
       &poromultiphasescatradynmono);
 
   setStringToIntegralParameter<int>("VECTORNORM_INC", "L2",
       "type of norm to be applied to residuals",
       tuple<std::string>("L1", "L1_Scaled", "L2", "Rms", "Inf"),
-      tuple<int>(INPAR::POROMULTIPHASESCATRA::norm_l1, INPAR::POROMULTIPHASESCATRA::norm_l1_scaled,
-          INPAR::POROMULTIPHASESCATRA::norm_l2, INPAR::POROMULTIPHASESCATRA::norm_rms,
-          INPAR::POROMULTIPHASESCATRA::norm_inf),
+      tuple<int>(Inpar::PoroMultiPhaseScaTra::norm_l1, Inpar::PoroMultiPhaseScaTra::norm_l1_scaled,
+          Inpar::PoroMultiPhaseScaTra::norm_l2, Inpar::PoroMultiPhaseScaTra::norm_rms,
+          Inpar::PoroMultiPhaseScaTra::norm_inf),
       &poromultiphasescatradynmono);
 
   // convergence criteria adaptivity --> note ADAPTCONV_BETTER set pretty small
-  CORE::UTILS::BoolParameter("ADAPTCONV", "No",
+  Core::UTILS::BoolParameter("ADAPTCONV", "No",
       "Switch on adaptive control of linear solver tolerance for nonlinear solution",
       &poromultiphasescatradynmono);
-  CORE::UTILS::DoubleParameter("ADAPTCONV_BETTER", 0.001,
+  Core::UTILS::DoubleParameter("ADAPTCONV_BETTER", 0.001,
       "The linear solver shall be this much better "
       "than the current nonlinear residual in the nonlinear convergence limit",
       &poromultiphasescatradynmono);
 
   // Iterationparameters
-  CORE::UTILS::DoubleParameter("TOLRES_GLOBAL", 1e-8,
+  Core::UTILS::DoubleParameter("TOLRES_GLOBAL", 1e-8,
       "tolerance in the residual norm for the Newton iteration", &poromultiphasescatradynmono);
-  CORE::UTILS::DoubleParameter("TOLINC_GLOBAL", 1e-8,
+  Core::UTILS::DoubleParameter("TOLINC_GLOBAL", 1e-8,
       "tolerance in the increment norm for the Newton iteration", &poromultiphasescatradynmono);
 
   // number of linear solver used for poroelasticity
-  CORE::UTILS::IntParameter("LINEAR_SOLVER", -1,
+  Core::UTILS::IntParameter("LINEAR_SOLVER", -1,
       "number of linear solver used for monolithic poroscatra problems",
       &poromultiphasescatradynmono);
 
@@ -112,17 +112,17 @@ void INPAR::POROMULTIPHASESCATRA::SetValidParameters(Teuchos::RCP<Teuchos::Param
       tuple<int>(fdcheck_none, fdcheck_global), &poromultiphasescatradynmono);
 
   // flag for equilibration of global system of equations
-  setStringToIntegralParameter<CORE::LINALG::EquilibrationMethod>("EQUILIBRATION", "none",
+  setStringToIntegralParameter<Core::LinAlg::EquilibrationMethod>("EQUILIBRATION", "none",
       "flag for equilibration of global system of equations",
       tuple<std::string>("none", "rows_full", "rows_maindiag", "columns_full", "columns_maindiag",
           "rowsandcolumns_full", "rowsandcolumns_maindiag"),
-      tuple<CORE::LINALG::EquilibrationMethod>(CORE::LINALG::EquilibrationMethod::none,
-          CORE::LINALG::EquilibrationMethod::rows_full,
-          CORE::LINALG::EquilibrationMethod::rows_maindiag,
-          CORE::LINALG::EquilibrationMethod::columns_full,
-          CORE::LINALG::EquilibrationMethod::columns_maindiag,
-          CORE::LINALG::EquilibrationMethod::rowsandcolumns_full,
-          CORE::LINALG::EquilibrationMethod::rowsandcolumns_maindiag),
+      tuple<Core::LinAlg::EquilibrationMethod>(Core::LinAlg::EquilibrationMethod::none,
+          Core::LinAlg::EquilibrationMethod::rows_full,
+          Core::LinAlg::EquilibrationMethod::rows_maindiag,
+          Core::LinAlg::EquilibrationMethod::columns_full,
+          Core::LinAlg::EquilibrationMethod::columns_maindiag,
+          Core::LinAlg::EquilibrationMethod::rowsandcolumns_full,
+          Core::LinAlg::EquilibrationMethod::rowsandcolumns_maindiag),
       &poromultiphasescatradynmono);
 
   // ----------------------------------------------------------------------
@@ -131,59 +131,59 @@ void INPAR::POROMULTIPHASESCATRA::SetValidParameters(Teuchos::RCP<Teuchos::Param
       "PARTITIONED", false, "Parameters for partitioned Poro-Multiphase-Scatra Interaction");
 
   // convergence tolerance of outer iteration loop
-  CORE::UTILS::DoubleParameter("CONVTOL", 1e-6,
+  Core::UTILS::DoubleParameter("CONVTOL", 1e-6,
       "tolerance for convergence check of outer iteration", &poromultiphasescatradynpart);
 }
 
-void INPAR::POROMULTIPHASESCATRA::SetValidConditions(
-    std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist)
+void Inpar::PoroMultiPhaseScaTra::SetValidConditions(
+    std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist)
 {
-  using namespace INPUT;
+  using namespace Input;
 
   /*--------------------------------------------------------------------*/
   // oxygen partial pressure calculation condition
   {
     // definition of oxygen partial pressure calculation condition
-    Teuchos::RCP<CORE::Conditions::ConditionDefinition> oxypartpressline =
-        Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+    Teuchos::RCP<Core::Conditions::ConditionDefinition> oxypartpressline =
+        Teuchos::rcp(new Core::Conditions::ConditionDefinition(
             "DESIGN OXYGEN PARTIAL PRESSURE CALCULATION LINE CONDITIONS",
             "PoroMultiphaseScatraOxyPartPressCalcCond",
             "PoroMultiphaseScatra Oxygen Partial Pressure Calculation line condition",
-            CORE::Conditions::PoroMultiphaseScatraOxyPartPressCalcCond, true,
-            CORE::Conditions::geometry_type_line));
-    Teuchos::RCP<CORE::Conditions::ConditionDefinition> oxypartpresssurf =
-        Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+            Core::Conditions::PoroMultiphaseScatraOxyPartPressCalcCond, true,
+            Core::Conditions::geometry_type_line));
+    Teuchos::RCP<Core::Conditions::ConditionDefinition> oxypartpresssurf =
+        Teuchos::rcp(new Core::Conditions::ConditionDefinition(
             "DESIGN OXYGEN PARTIAL PRESSURE CALCULATION SURF CONDITIONS",
             "PoroMultiphaseScatraOxyPartPressCalcCond",
             "PoroMultiphaseScatra Oxygen Partial Pressure Calculation surface condition",
-            CORE::Conditions::PoroMultiphaseScatraOxyPartPressCalcCond, true,
-            CORE::Conditions::geometry_type_surface));
-    Teuchos::RCP<CORE::Conditions::ConditionDefinition> oxypartpressvol =
-        Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+            Core::Conditions::PoroMultiphaseScatraOxyPartPressCalcCond, true,
+            Core::Conditions::geometry_type_surface));
+    Teuchos::RCP<Core::Conditions::ConditionDefinition> oxypartpressvol =
+        Teuchos::rcp(new Core::Conditions::ConditionDefinition(
             "DESIGN OXYGEN PARTIAL PRESSURE CALCULATION VOL CONDITIONS",
             "PoroMultiphaseScatraOxyPartPressCalcCond",
             "PoroMultiphaseScatra Oxygen Partial Pressure Calculation volume condition",
-            CORE::Conditions::PoroMultiphaseScatraOxyPartPressCalcCond, true,
-            CORE::Conditions::geometry_type_volume));
+            Core::Conditions::PoroMultiphaseScatraOxyPartPressCalcCond, true,
+            Core::Conditions::geometry_type_volume));
 
     // equip condition definitions with input file line components
-    std::vector<Teuchos::RCP<INPUT::LineComponent>> oxypartpresscomponents;
+    std::vector<Teuchos::RCP<Input::LineComponent>> oxypartpresscomponents;
 
     {
-      oxypartpresscomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("SCALARID")));
-      oxypartpresscomponents.push_back(Teuchos::rcp(new INPUT::IntComponent("SCALARID")));
-      oxypartpresscomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("n")));
-      oxypartpresscomponents.push_back(Teuchos::rcp(new INPUT::RealComponent("n")));
-      oxypartpresscomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("Pb50")));
-      oxypartpresscomponents.push_back(Teuchos::rcp(new INPUT::RealComponent("Pb50")));
-      oxypartpresscomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("CaO2_max")));
-      oxypartpresscomponents.push_back(Teuchos::rcp(new INPUT::RealComponent("CaO2_max")));
-      oxypartpresscomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("alpha_bl_eff")));
-      oxypartpresscomponents.push_back(Teuchos::rcp(new INPUT::RealComponent("alpha_bl_eff")));
-      oxypartpresscomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("rho_oxy")));
-      oxypartpresscomponents.push_back(Teuchos::rcp(new INPUT::RealComponent("rho_oxy")));
-      oxypartpresscomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("rho_bl")));
-      oxypartpresscomponents.push_back(Teuchos::rcp(new INPUT::RealComponent("rho_bl")));
+      oxypartpresscomponents.push_back(Teuchos::rcp(new Input::SeparatorComponent("SCALARID")));
+      oxypartpresscomponents.push_back(Teuchos::rcp(new Input::IntComponent("SCALARID")));
+      oxypartpresscomponents.push_back(Teuchos::rcp(new Input::SeparatorComponent("n")));
+      oxypartpresscomponents.push_back(Teuchos::rcp(new Input::RealComponent("n")));
+      oxypartpresscomponents.push_back(Teuchos::rcp(new Input::SeparatorComponent("Pb50")));
+      oxypartpresscomponents.push_back(Teuchos::rcp(new Input::RealComponent("Pb50")));
+      oxypartpresscomponents.push_back(Teuchos::rcp(new Input::SeparatorComponent("CaO2_max")));
+      oxypartpresscomponents.push_back(Teuchos::rcp(new Input::RealComponent("CaO2_max")));
+      oxypartpresscomponents.push_back(Teuchos::rcp(new Input::SeparatorComponent("alpha_bl_eff")));
+      oxypartpresscomponents.push_back(Teuchos::rcp(new Input::RealComponent("alpha_bl_eff")));
+      oxypartpresscomponents.push_back(Teuchos::rcp(new Input::SeparatorComponent("rho_oxy")));
+      oxypartpresscomponents.push_back(Teuchos::rcp(new Input::RealComponent("rho_oxy")));
+      oxypartpresscomponents.push_back(Teuchos::rcp(new Input::SeparatorComponent("rho_bl")));
+      oxypartpresscomponents.push_back(Teuchos::rcp(new Input::RealComponent("rho_bl")));
     }
 
     // insert input file line components into condition definitions

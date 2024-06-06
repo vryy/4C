@@ -26,14 +26,14 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
 }
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
     namespace Interface
     {
@@ -59,11 +59,11 @@ namespace NOX
           return false;
         };
 
-        virtual Teuchos::RCP<CORE::LINALG::SparseMatrix>
+        virtual Teuchos::RCP<Core::LinAlg::SparseMatrix>
         calc_jacobian_contributions_from_element_level_for_ptc() = 0;
       };
     }  // end namespace Interface
-  }    // end namespace NLN
+  }    // end namespace Nln
 }  // end namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

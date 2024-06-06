@@ -15,7 +15,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
@@ -24,11 +24,11 @@ namespace MAT
     {
      public:
       //! constructor
-      Soret(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      Soret(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
 
       //! create instance of Soret material
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       //! return Soret coefficient
       double SoretCoefficient() const { return soretcoefficient_; };
@@ -39,19 +39,19 @@ namespace MAT
       //! Soret coefficient
       const double soretcoefficient_;
       //@}
-    };  // class MAT::PAR::Soret
+    };  // class Mat::PAR::Soret
   }     // namespace PAR
 
 
   /*----------------------------------------------------------------------*/
-  class SoretType : public CORE::COMM::ParObjectType
+  class SoretType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "SoretType"; };
 
     static SoretType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static SoretType instance_;
@@ -67,7 +67,7 @@ namespace MAT
     Soret();
 
     //! construct Soret material with specific material parameters
-    explicit Soret(MAT::PAR::Soret* params);
+    explicit Soret(Mat::PAR::Soret* params);
 
     //! @name packing and unpacking
     /*!
@@ -88,7 +88,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -105,13 +105,13 @@ namespace MAT
     //@}
 
     //! return material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_soret;
+      return Core::Materials::m_soret;
     };
 
     //! clone Soret material
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new Soret(*this));
     };
@@ -121,12 +121,12 @@ namespace MAT
 
    private:
     //! return material parameters
-    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
     //! material parameters
-    MAT::PAR::Soret* params_;
+    Mat::PAR::Soret* params_;
   };
-}  // namespace MAT
+}  // namespace Mat
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

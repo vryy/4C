@@ -19,15 +19,15 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::FluidEleCalcLoma<distype>* DRT::ELEMENTS::FluidEleCalcLoma<distype>::Instance(
-    CORE::UTILS::SingletonAction action)
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::FluidEleCalcLoma<distype>*
+Discret::ELEMENTS::FluidEleCalcLoma<distype>::Instance(Core::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = CORE::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
       []()
       {
-        return std::unique_ptr<DRT::ELEMENTS::FluidEleCalcLoma<distype>>(
-            new DRT::ELEMENTS::FluidEleCalcLoma<distype>());
+        return std::unique_ptr<Discret::ELEMENTS::FluidEleCalcLoma<distype>>(
+            new Discret::ELEMENTS::FluidEleCalcLoma<distype>());
       });
 
   return singleton_owner.Instance(action);
@@ -36,26 +36,27 @@ DRT::ELEMENTS::FluidEleCalcLoma<distype>* DRT::ELEMENTS::FluidEleCalcLoma<distyp
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::FluidEleCalcLoma<distype>::FluidEleCalcLoma()
-    : DRT::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc()
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::FluidEleCalcLoma<distype>::FluidEleCalcLoma()
+    : Discret::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc()
 {
   // we use the standard parameter list here, since there are not any additional
   // loma-specific parameters required in this derived class
-  my::fldpara_ = DRT::ELEMENTS::FluidEleParameterStd::Instance();
+  my::fldpara_ = Discret::ELEMENTS::FluidEleParameterStd::Instance();
 }
 
 /*----------------------------------------------------------------------*
  * Action type: Evaluate
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::FluidEleCalcLoma<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
-    DRT::Discretization& discretization, const std::vector<int>& lm, Teuchos::ParameterList& params,
-    Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec1_epetra,
-    CORE::LINALG::SerialDenseVector& elevec2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec3_epetra, bool offdiag)
+template <Core::FE::CellType distype>
+int Discret::ELEMENTS::FluidEleCalcLoma<distype>::Evaluate(Discret::ELEMENTS::Fluid* ele,
+    Discret::Discretization& discretization, const std::vector<int>& lm,
+    Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
+    Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+    Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec1_epetra,
+    Core::LinAlg::SerialDenseVector& elevec2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec3_epetra, bool offdiag)
 {
   if (not offdiag)
     return my::Evaluate(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
@@ -69,20 +70,21 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele
 /*----------------------------------------------------------------------*
  * evaluation of off-diagonal matrix block for monolithic loma solver (2)
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::FluidEleCalcLoma<distype>::evaluate_od(DRT::ELEMENTS::Fluid* ele,
-    DRT::Discretization& discretization, const std::vector<int>& lm, Teuchos::ParameterList& params,
-    Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec1_epetra,
-    CORE::LINALG::SerialDenseVector& elevec2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec3_epetra, const CORE::FE::GaussIntegration& intpoints)
+template <Core::FE::CellType distype>
+int Discret::ELEMENTS::FluidEleCalcLoma<distype>::evaluate_od(Discret::ELEMENTS::Fluid* ele,
+    Discret::Discretization& discretization, const std::vector<int>& lm,
+    Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
+    Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+    Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec1_epetra,
+    Core::LinAlg::SerialDenseVector& elevec2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec3_epetra, const Core::FE::GaussIntegration& intpoints)
 {
   // rotationally symmetric periodic bc's: do setup for current element
   my::rotsymmpbc_->Setup(ele);
 
   // construct view
-  CORE::LINALG::Matrix<(nsd_ + 1) * nen_, nen_> elemat1(elemat1_epetra, true);
+  Core::LinAlg::Matrix<(nsd_ + 1) * nen_, nen_> elemat1(elemat1_epetra, true);
 
   // ---------------------------------------------------------------------
   // call routine for calculation of body force in element nodes,
@@ -91,9 +93,9 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::evaluate_od(DRT::ELEMENTS::Fluid* 
   // (evaluation at time n+alpha_F for generalized-alpha scheme,
   //  and at time n+1 otherwise)
   // ---------------------------------------------------------------------
-  CORE::LINALG::Matrix<nsd_, nen_> ebofoaf(true);
-  CORE::LINALG::Matrix<nsd_, nen_> eprescpgaf(true);
-  CORE::LINALG::Matrix<nen_, 1> escabofoaf(true);
+  Core::LinAlg::Matrix<nsd_, nen_> ebofoaf(true);
+  Core::LinAlg::Matrix<nsd_, nen_> eprescpgaf(true);
+  Core::LinAlg::Matrix<nen_, 1> escabofoaf(true);
   my::body_force(ele, ebofoaf, eprescpgaf, escabofoaf);
 
   // ---------------------------------------------------------------------
@@ -108,41 +110,41 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::evaluate_od(DRT::ELEMENTS::Fluid* 
   // af_genalpha: velocity/pressure at time n+alpha_F and n+alpha_M
   // np_genalpha: velocity at time n+alpha_F, pressure at time n+1
   // ost:         velocity/pressure at time n+1
-  CORE::LINALG::Matrix<nsd_, nen_> evelaf(true);
-  CORE::LINALG::Matrix<nen_, 1> epreaf(true);
+  Core::LinAlg::Matrix<nsd_, nen_> evelaf(true);
+  Core::LinAlg::Matrix<nen_, 1> epreaf(true);
   my::extract_values_from_global_vector(
       discretization, lm, *my::rotsymmpbc_, &evelaf, &epreaf, "velaf");
 
-  CORE::LINALG::Matrix<nsd_, nen_> evelam(true);
-  CORE::LINALG::Matrix<nen_, 1> epream(true);
-  if (my::fldpara_->PhysicalType() == INPAR::FLUID::weakly_compressible &&
+  Core::LinAlg::Matrix<nsd_, nen_> evelam(true);
+  Core::LinAlg::Matrix<nen_, 1> epream(true);
+  if (my::fldpara_->PhysicalType() == Inpar::FLUID::weakly_compressible &&
       my::fldparatimint_->IsGenalpha())
   {
     my::extract_values_from_global_vector(
         discretization, lm, *my::rotsymmpbc_, &evelam, &epream, "velam");
   }
-  if (my::fldpara_->PhysicalType() == INPAR::FLUID::weakly_compressible_stokes &&
+  if (my::fldpara_->PhysicalType() == Inpar::FLUID::weakly_compressible_stokes &&
       my::fldparatimint_->IsGenalpha())
   {
     my::extract_values_from_global_vector(
         discretization, lm, *my::rotsymmpbc_, &evelam, &epream, "velam");
   }
 
-  CORE::LINALG::Matrix<nen_, 1> escaaf(true);
+  Core::LinAlg::Matrix<nen_, 1> escaaf(true);
   my::extract_values_from_global_vector(
       discretization, lm, *my::rotsymmpbc_, nullptr, &escaaf, "scaaf");
 
-  CORE::LINALG::Matrix<nsd_, nen_> emhist(true);
+  Core::LinAlg::Matrix<nsd_, nen_> emhist(true);
   my::extract_values_from_global_vector(
       discretization, lm, *my::rotsymmpbc_, &emhist, nullptr, "hist");
 
-  CORE::LINALG::Matrix<nsd_, nen_> eaccam(true);
-  CORE::LINALG::Matrix<nen_, 1> escadtam(true);
+  Core::LinAlg::Matrix<nsd_, nen_> eaccam(true);
+  Core::LinAlg::Matrix<nen_, 1> escadtam(true);
   my::extract_values_from_global_vector(
       discretization, lm, *my::rotsymmpbc_, &eaccam, &escadtam, "accam");
 
-  CORE::LINALG::Matrix<nsd_, nen_> eveln(true);
-  CORE::LINALG::Matrix<nen_, 1> escaam(true);
+  Core::LinAlg::Matrix<nsd_, nen_> eveln(true);
+  Core::LinAlg::Matrix<nen_, 1> escaam(true);
   my::extract_values_from_global_vector(
       discretization, lm, *my::rotsymmpbc_, &eveln, &escaam, "scaam");
 
@@ -151,8 +153,8 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::evaluate_od(DRT::ELEMENTS::Fluid* 
   // ---------------------------------------------------------------------
   // get additional state vectors for ALE case: grid displacement and vel.
   // ---------------------------------------------------------------------
-  CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
-  CORE::LINALG::Matrix<nsd_, nen_> egridv(true);
+  Core::LinAlg::Matrix<nsd_, nen_> edispnp(true);
+  Core::LinAlg::Matrix<nsd_, nen_> egridv(true);
 
   if (ele->IsAle())
   {
@@ -163,7 +165,7 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::evaluate_od(DRT::ELEMENTS::Fluid* 
   }
 
   // get node coordinates and number of elements per node
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(
+  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
       ele, my::xyze_);
 
   //----------------------------------------------------------------
@@ -173,7 +175,7 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::evaluate_od(DRT::ELEMENTS::Fluid* 
   {
     // access knots and weights for this element
     bool zero_size =
-        DRT::NURBS::GetMyNurbsKnotsAndWeights(discretization, ele, my::myknots_, my::weights_);
+        Discret::Nurbs::GetMyNurbsKnotsAndWeights(discretization, ele, my::myknots_, my::weights_);
 
     // if we have a zero sized element due to a interpolated point -> exit here
     if (zero_size) return (0);
@@ -184,7 +186,7 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::evaluate_od(DRT::ELEMENTS::Fluid* 
   //----------------------------------------------------------------
   double CsDeltaSq = 0.0;
   double CiDeltaSq = 0.0;
-  if (my::fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
+  if (my::fldpara_->TurbModAction() == Inpar::FLUID::dynamic_smagorinsky)
   {
     Teuchos::RCP<Epetra_Vector> ele_CsDeltaSq =
         params.sublist("TURBULENCE MODEL").get<Teuchos::RCP<Epetra_Vector>>("col_Cs_delta_sq");
@@ -209,19 +211,19 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::evaluate_od(DRT::ELEMENTS::Fluid* 
 /*----------------------------------------------------------------------*
  * evaluation of off-diagonal matrix block for monolithic loma solver (3)
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::FluidEleCalcLoma<distype>::evaluate_od(Teuchos::ParameterList& params,
-    const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf,
-    const CORE::LINALG::Matrix<nsd_, nen_>& eprescpgaf,
-    CORE::LINALG::Matrix<(nsd_ + 1) * nen_, nen_>& elemat1,
-    const CORE::LINALG::Matrix<nsd_, nen_>& evelaf, const CORE::LINALG::Matrix<nen_, 1>& epreaf,
-    const CORE::LINALG::Matrix<nen_, 1>& epream, const CORE::LINALG::Matrix<nen_, 1>& escaaf,
-    const CORE::LINALG::Matrix<nsd_, nen_>& emhist, const CORE::LINALG::Matrix<nsd_, nen_>& eaccam,
-    const CORE::LINALG::Matrix<nen_, 1>& escadtam, const CORE::LINALG::Matrix<nen_, 1>& escabofoaf,
-    const CORE::LINALG::Matrix<nsd_, nen_>& eveln, const CORE::LINALG::Matrix<nen_, 1>& escaam,
-    const CORE::LINALG::Matrix<nsd_, nen_>& edispnp, const CORE::LINALG::Matrix<nsd_, nen_>& egridv,
-    Teuchos::RCP<CORE::MAT::Material> mat, bool isale, double CsDeltaSq, double CiDeltaSq,
-    const CORE::FE::GaussIntegration& intpoints)
+template <Core::FE::CellType distype>
+int Discret::ELEMENTS::FluidEleCalcLoma<distype>::evaluate_od(Teuchos::ParameterList& params,
+    const Core::LinAlg::Matrix<nsd_, nen_>& ebofoaf,
+    const Core::LinAlg::Matrix<nsd_, nen_>& eprescpgaf,
+    Core::LinAlg::Matrix<(nsd_ + 1) * nen_, nen_>& elemat1,
+    const Core::LinAlg::Matrix<nsd_, nen_>& evelaf, const Core::LinAlg::Matrix<nen_, 1>& epreaf,
+    const Core::LinAlg::Matrix<nen_, 1>& epream, const Core::LinAlg::Matrix<nen_, 1>& escaaf,
+    const Core::LinAlg::Matrix<nsd_, nen_>& emhist, const Core::LinAlg::Matrix<nsd_, nen_>& eaccam,
+    const Core::LinAlg::Matrix<nen_, 1>& escadtam, const Core::LinAlg::Matrix<nen_, 1>& escabofoaf,
+    const Core::LinAlg::Matrix<nsd_, nen_>& eveln, const Core::LinAlg::Matrix<nen_, 1>& escaam,
+    const Core::LinAlg::Matrix<nsd_, nen_>& edispnp, const Core::LinAlg::Matrix<nsd_, nen_>& egridv,
+    Teuchos::RCP<Core::Mat::Material> mat, bool isale, double CsDeltaSq, double CiDeltaSq,
+    const Core::FE::GaussIntegration& intpoints)
 {
   // flag for higher order elements
   my::is_higher_order_ele_ = IsHigherOrder<distype>::ishigherorder;
@@ -271,25 +273,25 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::evaluate_od(Teuchos::ParameterList
  |  calculate element matrix for off-diagonal matrix block              |
  |  for monolithic low-Mach-number solver                      vg 10/11 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcLoma<distype>::sysmat_od(
-    const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf,
-    const CORE::LINALG::Matrix<nsd_, nen_>& eprescpgaf,
-    const CORE::LINALG::Matrix<nsd_, nen_>& evelaf, const CORE::LINALG::Matrix<nsd_, nen_>& eveln,
-    const CORE::LINALG::Matrix<nen_, 1>& epreaf, const CORE::LINALG::Matrix<nen_, 1>& epream,
-    const CORE::LINALG::Matrix<nsd_, nen_>& eaccam, const CORE::LINALG::Matrix<nen_, 1>& escaaf,
-    const CORE::LINALG::Matrix<nen_, 1>& escaam, const CORE::LINALG::Matrix<nen_, 1>& escadtam,
-    const CORE::LINALG::Matrix<nen_, 1>& escabofoaf, const CORE::LINALG::Matrix<nsd_, nen_>& emhist,
-    const CORE::LINALG::Matrix<nsd_, nen_>& edispnp, const CORE::LINALG::Matrix<nsd_, nen_>& egridv,
-    CORE::LINALG::Matrix<(nsd_ + 1) * nen_, nen_>& estif, const double thermpressaf,
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::FluidEleCalcLoma<distype>::sysmat_od(
+    const Core::LinAlg::Matrix<nsd_, nen_>& ebofoaf,
+    const Core::LinAlg::Matrix<nsd_, nen_>& eprescpgaf,
+    const Core::LinAlg::Matrix<nsd_, nen_>& evelaf, const Core::LinAlg::Matrix<nsd_, nen_>& eveln,
+    const Core::LinAlg::Matrix<nen_, 1>& epreaf, const Core::LinAlg::Matrix<nen_, 1>& epream,
+    const Core::LinAlg::Matrix<nsd_, nen_>& eaccam, const Core::LinAlg::Matrix<nen_, 1>& escaaf,
+    const Core::LinAlg::Matrix<nen_, 1>& escaam, const Core::LinAlg::Matrix<nen_, 1>& escadtam,
+    const Core::LinAlg::Matrix<nen_, 1>& escabofoaf, const Core::LinAlg::Matrix<nsd_, nen_>& emhist,
+    const Core::LinAlg::Matrix<nsd_, nen_>& edispnp, const Core::LinAlg::Matrix<nsd_, nen_>& egridv,
+    Core::LinAlg::Matrix<(nsd_ + 1) * nen_, nen_>& estif, const double thermpressaf,
     const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
-    Teuchos::RCP<const CORE::MAT::Material> material, double& Cs_delta_sq, double& Ci_delta_sq,
-    bool isale, const CORE::FE::GaussIntegration& intpoints)
+    Teuchos::RCP<const Core::Mat::Material> material, double& Cs_delta_sq, double& Ci_delta_sq,
+    bool isale, const Core::FE::GaussIntegration& intpoints)
 {
   // definition of temperature-based residual vector for continuity
   // and energy-conservation equation
-  CORE::LINALG::Matrix<nen_, 1> lin_resC_DT(true);
-  CORE::LINALG::Matrix<nen_, 1> lin_resE_DT(true);
+  Core::LinAlg::Matrix<nen_, 1> lin_resC_DT(true);
+  Core::LinAlg::Matrix<nen_, 1> lin_resE_DT(true);
 
   // add displacement when fluid nodes move in the ALE case
   if (isale) my::xyze_ += edispnp;
@@ -312,9 +314,9 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::sysmat_od(
 
     // calculate all-scale subgrid viscosity at element center
     my::visceff_ = my::visc_;
-    if (my::fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or
-        my::fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky or
-        my::fldpara_->TurbModAction() == INPAR::FLUID::vreman)
+    if (my::fldpara_->TurbModAction() == Inpar::FLUID::smagorinsky or
+        my::fldpara_->TurbModAction() == Inpar::FLUID::dynamic_smagorinsky or
+        my::fldpara_->TurbModAction() == Inpar::FLUID::vreman)
     {
       my::calc_subgr_visc(evelaf, vol, Cs_delta_sq, Ci_delta_sq);
       // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
@@ -338,7 +340,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::sysmat_od(
   //------------------------------------------------------------------------
   //  start loop over integration points
   //------------------------------------------------------------------------
-  for (CORE::FE::GaussIntegration::const_iterator iquad = intpoints.begin();
+  for (Core::FE::GaussIntegration::const_iterator iquad = intpoints.begin();
        iquad != intpoints.end(); ++iquad)
   {
     // evaluate shape functions and derivatives at integration point
@@ -365,9 +367,9 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::sysmat_od(
           thermpressaf, thermpressam, thermpressdtaf, thermpressdtam, vol);
       // calculate all-scale or fine-scale subgrid viscosity at integration point
       my::visceff_ = my::visc_;
-      if (my::fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or
-          my::fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky or
-          my::fldpara_->TurbModAction() == INPAR::FLUID::vreman)
+      if (my::fldpara_->TurbModAction() == Inpar::FLUID::smagorinsky or
+          my::fldpara_->TurbModAction() == Inpar::FLUID::dynamic_smagorinsky or
+          my::fldpara_->TurbModAction() == Inpar::FLUID::vreman)
       {
         my::calc_subgr_visc(evelaf, vol, Cs_delta_sq, Ci_delta_sq);
         // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
@@ -392,16 +394,16 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::sysmat_od(
     // update material parameters including subgrid-scale part of scalar
     if (my::fldpara_->UpdateMat())
     {
-      if (my::fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or
-          my::fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky or
-          my::fldpara_->TurbModAction() == INPAR::FLUID::vreman)
+      if (my::fldpara_->TurbModAction() == Inpar::FLUID::smagorinsky or
+          my::fldpara_->TurbModAction() == Inpar::FLUID::dynamic_smagorinsky or
+          my::fldpara_->TurbModAction() == Inpar::FLUID::vreman)
         FOUR_C_THROW("No material update in combination with smagorinsky model!");
       my::update_material_params(material, evelaf, epreaf, epream, escaaf, escaam, thermpressaf,
           thermpressam, my::sgscaint_);
       my::visceff_ = my::visc_;
-      if (my::fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or
-          my::fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky or
-          my::fldpara_->TurbModAction() == INPAR::FLUID::vreman)
+      if (my::fldpara_->TurbModAction() == Inpar::FLUID::smagorinsky or
+          my::fldpara_->TurbModAction() == Inpar::FLUID::dynamic_smagorinsky or
+          my::fldpara_->TurbModAction() == Inpar::FLUID::vreman)
         my::visceff_ += my::sgvisc_;
     }
     //----------------------------------------------------------------------
@@ -431,8 +433,8 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::sysmat_od(
     //----------------------------------------------------------------------
     // subgrid-scale-velocity term (governed by cross-stress flag here)
     //----------------------------------------------------------------------
-    if (my::fldpara_->ContiCross() == INPAR::FLUID::cross_stress_stab or
-        my::fldpara_->ContiReynolds() == INPAR::FLUID::reynolds_stress_stab)
+    if (my::fldpara_->ContiCross() == Inpar::FLUID::cross_stress_stab or
+        my::fldpara_->ContiReynolds() == Inpar::FLUID::reynolds_stress_stab)
     {
       //----------------------------------------------------------------------
       //  evaluation of various values at integration point:
@@ -483,7 +485,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::sysmat_od(
       my::compute_subgrid_scale_velocity(
           eaccam, fac1, fac2, fac3, facMtau, *iquad, saccn, sveln, svelnp);
 
-      if (my::fldpara_->ContiCross() == INPAR::FLUID::cross_stress_stab)
+      if (my::fldpara_->ContiCross() == Inpar::FLUID::cross_stress_stab)
       {
         // evaluate subgrid-scale-velocity term
         for (int ui = 0; ui < nen_; ++ui)
@@ -520,7 +522,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::sysmat_od(
     if (my::fldpara_->SUPG())
     {
       // weighting functions for SUPG term
-      CORE::LINALG::Matrix<nen_, 1> supg_rey_weight;
+      Core::LinAlg::Matrix<nen_, 1> supg_rey_weight;
       const double prefac = my::scaconvfacaf_ * my::tau_(0);
       for (int vi = 0; vi < nen_; ++vi)
       {
@@ -528,7 +530,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::sysmat_od(
       }
 
       // weighting functions for Reynolds-stress term
-      if (my::fldpara_->Reynolds() == INPAR::FLUID::reynolds_stress_stab)
+      if (my::fldpara_->Reynolds() == Inpar::FLUID::reynolds_stress_stab)
       {
         for (int vi = 0; vi < nen_; ++vi)
         {
@@ -563,7 +565,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::sysmat_od(
       if (my::is_higher_order_ele_)
       {
         // compute second derivatives of shape functions
-        CORE::LINALG::Matrix<nen_, 1> diff;
+        Core::LinAlg::Matrix<nen_, 1> diff;
         diff.Clear();
         // compute N,xx + N,yy + N,zz for each shape function
         for (int i = 0; i < nen_; ++i)
@@ -607,20 +609,20 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::sysmat_od(
 
 
 // Ursula is responsible for this comment!
-template class DRT::ELEMENTS::FluidEleCalcLoma<CORE::FE::CellType::hex8>;
-template class DRT::ELEMENTS::FluidEleCalcLoma<CORE::FE::CellType::hex20>;
-template class DRT::ELEMENTS::FluidEleCalcLoma<CORE::FE::CellType::hex27>;
-template class DRT::ELEMENTS::FluidEleCalcLoma<CORE::FE::CellType::tet4>;
-template class DRT::ELEMENTS::FluidEleCalcLoma<CORE::FE::CellType::tet10>;
-template class DRT::ELEMENTS::FluidEleCalcLoma<CORE::FE::CellType::wedge6>;
-template class DRT::ELEMENTS::FluidEleCalcLoma<CORE::FE::CellType::wedge15>;
-template class DRT::ELEMENTS::FluidEleCalcLoma<CORE::FE::CellType::pyramid5>;
-template class DRT::ELEMENTS::FluidEleCalcLoma<CORE::FE::CellType::quad4>;
-template class DRT::ELEMENTS::FluidEleCalcLoma<CORE::FE::CellType::quad8>;
-template class DRT::ELEMENTS::FluidEleCalcLoma<CORE::FE::CellType::quad9>;
-template class DRT::ELEMENTS::FluidEleCalcLoma<CORE::FE::CellType::tri3>;
-template class DRT::ELEMENTS::FluidEleCalcLoma<CORE::FE::CellType::tri6>;
-template class DRT::ELEMENTS::FluidEleCalcLoma<CORE::FE::CellType::nurbs9>;
-template class DRT::ELEMENTS::FluidEleCalcLoma<CORE::FE::CellType::nurbs27>;
+template class Discret::ELEMENTS::FluidEleCalcLoma<Core::FE::CellType::hex8>;
+template class Discret::ELEMENTS::FluidEleCalcLoma<Core::FE::CellType::hex20>;
+template class Discret::ELEMENTS::FluidEleCalcLoma<Core::FE::CellType::hex27>;
+template class Discret::ELEMENTS::FluidEleCalcLoma<Core::FE::CellType::tet4>;
+template class Discret::ELEMENTS::FluidEleCalcLoma<Core::FE::CellType::tet10>;
+template class Discret::ELEMENTS::FluidEleCalcLoma<Core::FE::CellType::wedge6>;
+template class Discret::ELEMENTS::FluidEleCalcLoma<Core::FE::CellType::wedge15>;
+template class Discret::ELEMENTS::FluidEleCalcLoma<Core::FE::CellType::pyramid5>;
+template class Discret::ELEMENTS::FluidEleCalcLoma<Core::FE::CellType::quad4>;
+template class Discret::ELEMENTS::FluidEleCalcLoma<Core::FE::CellType::quad8>;
+template class Discret::ELEMENTS::FluidEleCalcLoma<Core::FE::CellType::quad9>;
+template class Discret::ELEMENTS::FluidEleCalcLoma<Core::FE::CellType::tri3>;
+template class Discret::ELEMENTS::FluidEleCalcLoma<Core::FE::CellType::tri6>;
+template class Discret::ELEMENTS::FluidEleCalcLoma<Core::FE::CellType::nurbs9>;
+template class Discret::ELEMENTS::FluidEleCalcLoma<Core::FE::CellType::nurbs27>;
 
 FOUR_C_NAMESPACE_CLOSE

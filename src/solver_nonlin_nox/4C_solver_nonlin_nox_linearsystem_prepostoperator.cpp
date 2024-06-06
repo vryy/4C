@@ -16,14 +16,14 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::LinSystem::PrePostOperator::PrePostOperator() : havePrePostOperator_(false)
+NOX::Nln::LinSystem::PrePostOperator::PrePostOperator() : havePrePostOperator_(false)
 {
   // Disallowed constructor
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::LinSystem::PrePostOperator::PrePostOperator(const PrePostOperator& ppo)
+NOX::Nln::LinSystem::PrePostOperator::PrePostOperator(const PrePostOperator& ppo)
     : havePrePostOperator_(false)
 {
   // Disallowed copy constructor
@@ -31,7 +31,7 @@ NOX::NLN::LinSystem::PrePostOperator::PrePostOperator(const PrePostOperator& ppo
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::LinSystem::PrePostOperator& NOX::NLN::LinSystem::PrePostOperator::operator=(
+NOX::Nln::LinSystem::PrePostOperator& NOX::Nln::LinSystem::PrePostOperator::operator=(
     const PrePostOperator& ppo)
 {
   // disallowed assignment operator
@@ -40,7 +40,7 @@ NOX::NLN::LinSystem::PrePostOperator& NOX::NLN::LinSystem::PrePostOperator::oper
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::LinSystem::PrePostOperator::PrePostOperator(Teuchos::ParameterList& linearSolverSubList)
+NOX::Nln::LinSystem::PrePostOperator::PrePostOperator(Teuchos::ParameterList& linearSolverSubList)
     : havePrePostOperator_(false)
 {
   reset(linearSolverSubList);
@@ -48,7 +48,7 @@ NOX::NLN::LinSystem::PrePostOperator::PrePostOperator(Teuchos::ParameterList& li
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::LinSystem::PrePostOperator::reset(Teuchos::ParameterList& linearSolverSubList)
+void NOX::Nln::LinSystem::PrePostOperator::reset(Teuchos::ParameterList& linearSolverSubList)
 {
   havePrePostOperator_ = false;
 
@@ -66,13 +66,13 @@ void NOX::NLN::LinSystem::PrePostOperator::reset(Teuchos::ParameterList& linearS
 // non-member function
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::LinSystem::PrePostOperator::Map& NOX::NLN::LinSystem::PrePostOp::GetMap(
+NOX::Nln::LinSystem::PrePostOperator::Map& NOX::Nln::LinSystem::PrePostOp::GetMap(
     Teuchos::ParameterList& p_linsolver)
 {
-  Teuchos::RCP<NOX::NLN::LinSystem::PrePostOperator::Map>& mapptr =
-      p_linsolver.get<Teuchos::RCP<NOX::NLN::LinSystem::PrePostOperator::Map>>(
+  Teuchos::RCP<NOX::Nln::LinSystem::PrePostOperator::Map>& mapptr =
+      p_linsolver.get<Teuchos::RCP<NOX::Nln::LinSystem::PrePostOperator::Map>>(
           "User Defined Pre/Post Operator",
-          Teuchos::rcp(new NOX::NLN::LinSystem::PrePostOperator::Map()));
+          Teuchos::rcp(new NOX::Nln::LinSystem::PrePostOperator::Map()));
 
   return *mapptr;
 }

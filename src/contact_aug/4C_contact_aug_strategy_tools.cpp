@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AUG::Strategy::aug_fd_check_global(CONTACT::ParamsInterface& cparams)
+void CONTACT::Aug::Strategy::aug_fd_check_global(CONTACT::ParamsInterface& cparams)
 {
   // *** linearization w.r.t. displ. *********************************
 #ifdef CONTACTFD_DLMGAPLINMATRIX
@@ -50,8 +50,8 @@ void CONTACT::AUG::Strategy::aug_fd_check_global(CONTACT::ParamsInterface& cpara
   static Teuchos::RCP<Epetra_Vector> dGLm = Teuchos::null;
   dGLm = Teuchos::rcp(new Epetra_Vector(*Data().GSlMaDofRowMapPtr(), true));
 
-  CORE::LINALG::AssembleMyVector(0.0, *dGLm, 1.0, Data().SlForceLm());
-  CORE::LINALG::AssembleMyVector(1.0, *dGLm, 1.0, Data().MaForceLm());
+  Core::LinAlg::AssembleMyVector(0.0, *dGLm, 1.0, Data().SlForceLm());
+  Core::LinAlg::AssembleMyVector(1.0, *dGLm, 1.0, Data().MaForceLm());
 
   double nrm2 = 0.0;
   dGLm->Norm2(&nrm2);
@@ -75,8 +75,8 @@ void CONTACT::AUG::Strategy::aug_fd_check_global(CONTACT::ParamsInterface& cpara
   static Teuchos::RCP<Epetra_Vector> dGG = Teuchos::null;
   dGG = Teuchos::rcp(new Epetra_Vector(*Data().GSlMaDofRowMapPtr(), true));
 
-  CORE::LINALG::AssembleMyVector(0.0, *dGG, 1.0, Data().SlForceG());
-  CORE::LINALG::AssembleMyVector(1.0, *dGG, 1.0, Data().MaForceG());
+  Core::LinAlg::AssembleMyVector(0.0, *dGG, 1.0, Data().SlForceG());
+  Core::LinAlg::AssembleMyVector(1.0, *dGG, 1.0, Data().MaForceG());
 
   static bool first_attempt = true;
   if (first_attempt)
@@ -94,13 +94,13 @@ void CONTACT::AUG::Strategy::aug_fd_check_global(CONTACT::ParamsInterface& cpara
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CONTACT::AUG::Strategy::FdDebug* CONTACT::AUG::Strategy::FdDebug::Instance(
-    Strategy* strat, const double delta, CORE::UTILS::SingletonAction action)
+CONTACT::Aug::Strategy::FdDebug* CONTACT::Aug::Strategy::FdDebug::Instance(
+    Strategy* strat, const double delta, Core::UTILS::SingletonAction action)
 {
-  static CORE::UTILS::SingletonOwner<CONTACT::AUG::Strategy::FdDebug> owner(
+  static Core::UTILS::SingletonOwner<CONTACT::Aug::Strategy::FdDebug> owner(
       [=]()
       {
-        std::unique_ptr<CONTACT::AUG::Strategy::FdDebug> instance(new FdDebug);
+        std::unique_ptr<CONTACT::Aug::Strategy::FdDebug> instance(new FdDebug);
         instance->init(strat, delta);
         return instance;
       });
@@ -110,7 +110,7 @@ CONTACT::AUG::Strategy::FdDebug* CONTACT::AUG::Strategy::FdDebug::Instance(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AUG::Strategy::FdDebug::init(Strategy* strat, const double delta)
+void CONTACT::Aug::Strategy::FdDebug::init(Strategy* strat, const double delta)
 {
   if (not strat) FOUR_C_THROW("nullptr pointer!");
 
@@ -121,8 +121,8 @@ void CONTACT::AUG::Strategy::FdDebug::init(Strategy* strat, const double delta)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AUG::Strategy::FdDebug::Evaluate(
-    const Teuchos::RCP<CORE::LINALG::SparseMatrix>& derivMatrixPtr,
+void CONTACT::Aug::Strategy::FdDebug::Evaluate(
+    const Teuchos::RCP<Core::LinAlg::SparseMatrix>& derivMatrixPtr,
     Teuchos::RCP<Epetra_Vector>& rhsVector, CONTACT::ParamsInterface& cparams)
 {
   if (is_fd_check_)
@@ -132,15 +132,15 @@ void CONTACT::AUG::Strategy::FdDebug::Evaluate(
 
   if (strat_->Comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
-  CORE::LINALG::SparseMatrix derivMatrix(*derivMatrixPtr);
+  Core::LinAlg::SparseMatrix derivMatrix(*derivMatrixPtr);
 
   const Epetra_Map rowMap = derivMatrix.RowMap();
   const Epetra_Map colMap = derivMatrix.ColMap();
 
   const Epetra_BlockMap rhsMap = rhsVector->Map();
 
-  CORE::LINALG::SparseMatrix fdMatrixRef = CORE::LINALG::SparseMatrix(rowMap, 100);
-  CORE::LINALG::SparseMatrix fdMatrixNew = CORE::LINALG::SparseMatrix(rowMap, 100);
+  Core::LinAlg::SparseMatrix fdMatrixRef = Core::LinAlg::SparseMatrix(rowMap, 100);
+  Core::LinAlg::SparseMatrix fdMatrixNew = Core::LinAlg::SparseMatrix(rowMap, 100);
   int dim = strat_->Dim();
 
   // create reference Matrix:
@@ -304,14 +304,14 @@ void CONTACT::AUG::Strategy::FdDebug::Evaluate(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Strategy::FdDebug::do_perturbation(const int gid, const int dof)
+void CONTACT::Aug::Strategy::FdDebug::do_perturbation(const int gid, const int dof)
 {
-  CORE::Nodes::Node* node = find_i_node(gid);
+  Core::Nodes::Node* node = find_i_node(gid);
 
   Node* cnode = dynamic_cast<Node*>(node);
 
   // store current position
-  CORE::LINALG::Matrix<3, 1>& x = ref_x_[gid];
+  Core::LinAlg::Matrix<3, 1>& x = ref_x_[gid];
   std::copy(cnode->xspatial(), cnode->xspatial() + 3, x.A());
 
   // change forward step to backward step
@@ -334,22 +334,22 @@ void CONTACT::AUG::Strategy::FdDebug::do_perturbation(const int gid, const int d
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Strategy::FdDebug::undo_perturbation(const int gid, const int dof) const
+void CONTACT::Aug::Strategy::FdDebug::undo_perturbation(const int gid, const int dof) const
 {
-  CORE::Nodes::Node* node = find_i_node(gid);
+  Core::Nodes::Node* node = find_i_node(gid);
 
   Node* cnode = dynamic_cast<Node*>(node);
 
   // get stored position
-  const CORE::LINALG::Matrix<3, 1>& x = ref_x_.at(gid);
+  const Core::LinAlg::Matrix<3, 1>& x = ref_x_.at(gid);
   std::copy(x.A(), x.A() + 3, cnode->xspatial());
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::Nodes::Node* CONTACT::AUG::Strategy::FdDebug::find_i_node(const int gid) const
+Core::Nodes::Node* CONTACT::Aug::Strategy::FdDebug::find_i_node(const int gid) const
 {
-  CORE::Nodes::Node* node = nullptr;
+  Core::Nodes::Node* node = nullptr;
 
   // do the finite difference step
   for (auto& interface : strat_->interfaces())
@@ -363,20 +363,20 @@ CORE::Nodes::Node* CONTACT::AUG::Strategy::FdDebug::find_i_node(const int gid) c
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::AUG::ExtractMatrix(
-    const CORE::LINALG::SparseMatrix& source, const Epetra_Map& target_range_map,
+Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::Aug::ExtractMatrix(
+    const Core::LinAlg::SparseMatrix& source, const Epetra_Map& target_range_map,
     const Epetra_Map& target_domain_map)
 {
   if (not source.Filled()) FOUR_C_THROW("The source matrix must be filled!");
 
   const int maxnumentries = source.MaxNumEntries();
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> target_ptr =
-      Teuchos::rcp(new CORE::LINALG::SparseMatrix(target_range_map, maxnumentries));
-  CORE::LINALG::SparseMatrix& target = *target_ptr;
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> target_ptr =
+      Teuchos::rcp(new Core::LinAlg::SparseMatrix(target_range_map, maxnumentries));
+  Core::LinAlg::SparseMatrix& target = *target_ptr;
 
   if (target_range_map.NumGlobalElements())
   {
-    CORE::LINALG::MatrixLogicalSplitAndTransform extractor;
+    Core::LinAlg::MatrixLogicalSplitAndTransform extractor;
     extractor(source, target_range_map, target_domain_map, 1.0, nullptr, nullptr, target);
   }
 
@@ -387,7 +387,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::AUG::ExtractMatrix(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AUG::MultiplyElementwise(const Epetra_Vector& source,
+void CONTACT::Aug::MultiplyElementwise(const Epetra_Vector& source,
     const Epetra_Map& source2targetMap, Epetra_Vector& target, const bool inverse)
 {
   // consistency check
@@ -408,7 +408,7 @@ void CONTACT::AUG::MultiplyElementwise(const Epetra_Vector& source,
   if (source2targetMap.NumGlobalElements() == 0) return;
 
   Teuchos::RCP<Epetra_Vector> source_exp_ptr =
-      CORE::LINALG::ExtractMyVector(source, source2targetMap);
+      Core::LinAlg::ExtractMyVector(source, source2targetMap);
 
   Epetra_Vector& source_exp = *source_exp_ptr;
   int error = source_exp.ReplaceMap(target.Map());
@@ -429,7 +429,7 @@ void CONTACT::AUG::MultiplyElementwise(const Epetra_Vector& source,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::RedistributeRowMap(const Epetra_Map& ref_map, Epetra_Map& red_map)
+void CONTACT::Aug::RedistributeRowMap(const Epetra_Map& ref_map, Epetra_Map& red_map)
 {
   const Epetra_Comm& comm = ref_map.Comm();
 
@@ -439,7 +439,7 @@ void CONTACT::AUG::RedistributeRowMap(const Epetra_Map& ref_map, Epetra_Map& red
   int count = 0;
   std::vector<int> myGids(nummyelements, -1);
 
-  const Teuchos::RCP<Epetra_Map> allreducedMap = CORE::LINALG::AllreduceEMap(red_map);
+  const Teuchos::RCP<Epetra_Map> allreducedMap = Core::LinAlg::AllreduceEMap(red_map);
 
   for (int i = 0; i < nummyelements; ++i)
   {

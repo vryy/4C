@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace ADAPTER
+namespace Adapter
 {
   /*! \brief Time loop for stuctural simulations
    *
@@ -55,7 +55,7 @@ namespace ADAPTER
     void PostOutput() override{};
   };
 
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 FOUR_C_NAMESPACE_CLOSE
 

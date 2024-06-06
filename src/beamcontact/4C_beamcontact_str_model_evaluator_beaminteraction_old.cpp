@@ -45,7 +45,7 @@ void STR::MODELEVALUATOR::BeamInteractionOld::Setup()
   // setup the pointers for displacement and stiffness
   disnp_ptr_ = g_state().GetDisNp();
   stiff_beaminteract_ptr_ =
-      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*g_state().DofRowMapView(), 81, true, true));
+      Teuchos::rcp(new Core::LinAlg::SparseMatrix(*g_state().DofRowMapView(), 81, true, true));
   f_beaminteract_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*g_state().dof_row_map(), true));
 
   // create beam contact manager
@@ -144,16 +144,16 @@ bool STR::MODELEVALUATOR::BeamInteractionOld::assemble_force(
     Epetra_Vector& f, const double& timefac_np) const
 {
   // Todo take care of the minus sign in front of timefac_np
-  CORE::LINALG::AssembleMyVector(1.0, f, -timefac_np, *f_beaminteract_np_ptr_);
+  Core::LinAlg::AssembleMyVector(1.0, f, -timefac_np, *f_beaminteract_np_ptr_);
   return true;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::BeamInteractionOld::assemble_jacobian(
-    CORE::LINALG::SparseOperator& jac, const double& timefac_np) const
+    Core::LinAlg::SparseOperator& jac, const double& timefac_np) const
 {
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> jac_dd_ptr = GState().ExtractDisplBlock(jac);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> jac_dd_ptr = GState().ExtractDisplBlock(jac);
   jac_dd_ptr->Add(*stiff_beaminteract_ptr_, false, timefac_np, 1.0);
   // no need to keep it
   stiff_beaminteract_ptr_->Zero();
@@ -164,7 +164,7 @@ bool STR::MODELEVALUATOR::BeamInteractionOld::assemble_jacobian(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::BeamInteractionOld::write_restart(
-    CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
+    Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   beamcman_->write_restart(iowriter);  // ToDo
 
@@ -176,7 +176,7 @@ void STR::MODELEVALUATOR::BeamInteractionOld::write_restart(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteractionOld::read_restart(CORE::IO::DiscretizationReader& ioreader)
+void STR::MODELEVALUATOR::BeamInteractionOld::read_restart(Core::IO::DiscretizationReader& ioreader)
 {
   beamcman_->read_restart(ioreader);  // ToDo
   return;
@@ -238,7 +238,7 @@ void STR::MODELEVALUATOR::BeamInteractionOld::determine_optional_quantity()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::BeamInteractionOld::OutputStepState(
-    CORE::IO::DiscretizationWriter& iowriter) const
+    Core::IO::DiscretizationWriter& iowriter) const
 {
   return;
 }

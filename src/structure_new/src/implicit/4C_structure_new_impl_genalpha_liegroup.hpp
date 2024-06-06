@@ -104,10 +104,10 @@ namespace STR
 
       //! [derived]
       void write_restart(
-          CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
+          Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
 
       //! [derived]
-      void read_restart(CORE::IO::DiscretizationReader& ioreader) override;
+      void read_restart(Core::IO::DiscretizationReader& ioreader) override;
 
       //! [derived]
       double GetIntParam() const override;
@@ -159,7 +159,7 @@ namespace STR
        *                                + \frac{\gamma}{\beta \Delta t} \boldsymbol{C}
        *                                + \boldsymbol{K}_{T}
        *  \f] */
-      void add_visco_mass_contributions(CORE::LINALG::SparseOperator& jac) const override;
+      void add_visco_mass_contributions(Core::LinAlg::SparseOperator& jac) const override;
 
       /*! \brief Update constant contributions of the current state for the new time step
        * \f$ t_{n+1} \f$ based on the generalized alpha scheme for Lie group extensions:

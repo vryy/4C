@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
     namespace Solver
     {
@@ -27,7 +27,7 @@ namespace NOX
       {
         /*! \brief Non-linear solver helper class
          *
-         * The NOX::NLN::Solver s are supposed to use this helper class to save
+         * The NOX::Nln::Solver s are supposed to use this helper class to save
          * solver dependent things, such as the number of nonlinear solver steps.
          *
          * ToDo Extend the functionality to non-linear solvers which are not
@@ -47,7 +47,7 @@ namespace NOX
         };
       }  // namespace PrePostOp
     }    // namespace Solver
-  }      // namespace NLN
+  }      // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

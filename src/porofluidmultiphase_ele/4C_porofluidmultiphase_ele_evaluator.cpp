@@ -21,11 +21,11 @@ FOUR_C_NAMESPACE_OPEN
  | factory method                                           vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-Teuchos::RCP<DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorInterface<nsd, nen>>
-DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorInterface<nsd, nen>::CreateEvaluator(
-    const DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter& para,
+Teuchos::RCP<Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorInterface<nsd, nen>>
+Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorInterface<nsd, nen>::CreateEvaluator(
+    const Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter& para,
     const POROFLUIDMULTIPHASE::Action& action, int numdofpernode, int numfluidphases,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager)
+    const PoroFluidManager::PhaseManagerInterface& phasemanager)
 {
   // the evaluator
   Teuchos::RCP<EvaluatorInterface<nsd, nen>> evaluator = Teuchos::null;
@@ -414,10 +414,10 @@ DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorInterface<nsd, nen>::CreateEvaluator
  | linearization of a term scaled with saturation after fluid dofs  kremheller 03/18 |
  *-----------------------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorBase<nsd, nen>::saturation_linearization_fluid(
-    CORE::LINALG::SerialDenseMatrix& mymat, const CORE::LINALG::Matrix<nen, 1>& funct,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorBase<nsd, nen>::saturation_linearization_fluid(
+    Core::LinAlg::SerialDenseMatrix& mymat, const Core::LinAlg::Matrix<nen, 1>& funct,
     const double prefac, const int numdofpernode, const int numfluidphases, const int curphase,
-    const int phasetoadd, const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager)
+    const int phasetoadd, const PoroFluidManager::PhaseManagerInterface& phasemanager)
 {
   for (int vi = 0; vi < nen; ++vi)
   {
@@ -442,10 +442,10 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorBase<nsd, nen>::saturation_line
  | linearization of a term scaled with porosity after fluid dofs    kremheller 03/18 |
  *-----------------------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorBase<nsd, nen>::porosity_linearization_fluid(
-    CORE::LINALG::SerialDenseMatrix& mymat, const CORE::LINALG::Matrix<nen, 1>& funct,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorBase<nsd, nen>::porosity_linearization_fluid(
+    Core::LinAlg::SerialDenseMatrix& mymat, const Core::LinAlg::Matrix<nen, 1>& funct,
     const double prefac, const int numdofpernode, const int phasetoadd,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager)
+    const PoroFluidManager::PhaseManagerInterface& phasemanager)
 {
   for (int vi = 0; vi < nen; ++vi)
   {
@@ -472,10 +472,10 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorBase<nsd, nen>::porosity_linear
  | of a term scaled with div (v^s)                     kremheller 03/18 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorBase<nsd, nen>::calc_div_vel_od_mesh(
-    CORE::LINALG::SerialDenseMatrix& mymat, const CORE::LINALG::Matrix<nen, 1>& funct,
-    const CORE::LINALG::Matrix<nsd, nen>& deriv, const CORE::LINALG::Matrix<nsd, nen>& derxy,
-    const CORE::LINALG::Matrix<nsd, nsd>& xjm, const CORE::LINALG::Matrix<nsd, nsd>& gridvelderiv,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorBase<nsd, nen>::calc_div_vel_od_mesh(
+    Core::LinAlg::SerialDenseMatrix& mymat, const Core::LinAlg::Matrix<nen, 1>& funct,
+    const Core::LinAlg::Matrix<nsd, nen>& deriv, const Core::LinAlg::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nsd, nsd>& xjm, const Core::LinAlg::Matrix<nsd, nsd>& gridvelderiv,
     const double timefacfac, const double fac, const double det, const int numdofpernode,
     const int phasetoadd)
 {
@@ -597,9 +597,9 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorBase<nsd, nen>::calc_div_vel_od
  | (Fac = Jacobian determinant)                        kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorBase<nsd, nen>::calc_lin_fac_od_mesh(
-    CORE::LINALG::SerialDenseMatrix& mymat, const CORE::LINALG::Matrix<nen, 1>& funct,
-    const CORE::LINALG::Matrix<nsd, nen>& derxy, const double vrhs, const int numdofpernode,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorBase<nsd, nen>::calc_lin_fac_od_mesh(
+    Core::LinAlg::SerialDenseMatrix& mymat, const Core::LinAlg::Matrix<nen, 1>& funct,
+    const Core::LinAlg::Matrix<nsd, nen>& derxy, const double vrhs, const int numdofpernode,
     const int phasetoadd)
 {
   // linearization of mesh motion
@@ -633,11 +633,11 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorBase<nsd, nen>::calc_lin_fac_od
  | (diffusive term)                                    kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorBase<nsd, nen>::calc_diff_od_mesh(
-    CORE::LINALG::SerialDenseMatrix& mymat, const CORE::LINALG::Matrix<nsd, nen>& deriv,
-    const CORE::LINALG::Matrix<nsd, nen>& derxy, const CORE::LINALG::Matrix<nsd, nsd>& xjm,
-    const CORE::LINALG::Matrix<nsd, 1>& diffflux, const CORE::LINALG::Matrix<nsd, 1>& refgrad,
-    const CORE::LINALG::Matrix<nsd, 1>& grad, const double timefacfac, const double difffac,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorBase<nsd, nen>::calc_diff_od_mesh(
+    Core::LinAlg::SerialDenseMatrix& mymat, const Core::LinAlg::Matrix<nsd, nen>& deriv,
+    const Core::LinAlg::Matrix<nsd, nen>& derxy, const Core::LinAlg::Matrix<nsd, nsd>& xjm,
+    const Core::LinAlg::Matrix<nsd, 1>& diffflux, const Core::LinAlg::Matrix<nsd, 1>& refgrad,
+    const Core::LinAlg::Matrix<nsd, 1>& grad, const double timefacfac, const double difffac,
     const int numdofpernode, const int phasetoadd)
 {
   // linearization of mesh motion
@@ -823,16 +823,16 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorBase<nsd, nen>::calc_diff_od_me
  | evaluate element matrix                                   vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorConv<nsd, nen>::evaluate_matrix_and_assemble(
-    std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorConv<nsd, nen>::evaluate_matrix_and_assemble(
+    std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, bool inittimederiv)
 {
   // get matrix to fill
-  CORE::LINALG::SerialDenseMatrix& mymat = *elemat[0];
+  Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
   const int numfluidphases = phasemanager.NumFluidPhases();
 
@@ -846,7 +846,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorConv<nsd, nen>::evaluate_matrix
   */
   const double prefac = timefacfac;
 
-  static CORE::LINALG::Matrix<nen, 1> conv;
+  static Core::LinAlg::Matrix<nen, 1> conv;
   // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
   conv.MultiplyTN(derxy, *variablemanager.ConVelnp());
 
@@ -870,16 +870,16 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorConv<nsd, nen>::evaluate_matrix
  | evaluate RHS vector                                      vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorConv<nsd, nen>::evaluate_vector_and_assemble(
-    std::vector<CORE::LINALG::SerialDenseVector*>& elevec,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
-    const CORE::LINALG::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorConv<nsd, nen>::evaluate_vector_and_assemble(
+    std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
     double fac, bool inittimederiv)
 {
   // get matrix to fill
-  CORE::LINALG::SerialDenseVector& myvec = *elevec[0];
+  Core::LinAlg::SerialDenseVector& myvec = *elevec[0];
 
   const int numfluidphases = phasemanager.NumFluidPhases();
   double conv_sat = 0.0;
@@ -903,14 +903,14 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorConv<nsd, nen>::evaluate_vector
  | evaluate off-diagonal coupling matrix with structure kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorConv<nsd,
-    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorConv<nsd,
+    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& deriv,
-    const CORE::LINALG::Matrix<nsd, nen>& derxy, const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
+    const Core::LinAlg::Matrix<nsd, nen>& derxy, const Core::LinAlg::Matrix<nsd, nsd>& xjm,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, double det)
 {
   // nothing to do
@@ -921,13 +921,13 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorConv<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 06/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorConv<nsd,
-    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorConv<nsd,
+    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac)
 {
   // nothing to do
@@ -941,12 +941,12 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorConv<nsd,
  | evaluate element matrix                                   vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDivVel<nsd, nen>::evaluate_matrix_and_assemble(
-    std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDivVel<nsd, nen>::evaluate_matrix_and_assemble(
+    std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, bool inittimederiv)
 {
   // nothing to do
@@ -957,16 +957,16 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDivVel<nsd, nen>::evaluate_matr
  | evaluate RHS vector                                      vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDivVel<nsd, nen>::evaluate_vector_and_assemble(
-    std::vector<CORE::LINALG::SerialDenseVector*>& elevec,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
-    const CORE::LINALG::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDivVel<nsd, nen>::evaluate_vector_and_assemble(
+    std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
     double fac, bool inittimederiv)
 {
   // get matrix to fill
-  CORE::LINALG::SerialDenseVector& myvec = *elevec[0];
+  Core::LinAlg::SerialDenseVector& myvec = *elevec[0];
 
   double vrhs = rhsfac * variablemanager.DivConVelnp();
 
@@ -984,20 +984,20 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDivVel<nsd, nen>::evaluate_vect
  | evaluate off-diagonal coupling matrix with structure kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDivVel<nsd,
-    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDivVel<nsd,
+    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& deriv,
-    const CORE::LINALG::Matrix<nsd, nen>& derxy, const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
+    const Core::LinAlg::Matrix<nsd, nen>& derxy, const Core::LinAlg::Matrix<nsd, nsd>& xjm,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, double det)
 {
   // get matrix to fill
-  CORE::LINALG::SerialDenseMatrix& mymat = *elemat[0];
+  Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
-  static CORE::LINALG::Matrix<nsd, nsd> gridvelderiv(true);
+  static Core::LinAlg::Matrix<nsd, nsd> gridvelderiv(true);
   gridvelderiv.MultiplyNT(*(variablemanager.EConVelnp()), deriv);
 
   // OD mesh - div vel term
@@ -1011,13 +1011,13 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDivVel<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 06/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDivVel<nsd,
-    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDivVel<nsd,
+    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac)
 {
   // nothing to do
@@ -1031,12 +1031,12 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDivVel<nsd,
  | evaluate element matrix                                   vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorSatDivVel<nsd, nen>::evaluate_matrix_and_assemble(
-    std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorSatDivVel<nsd,
+    nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, bool inittimederiv)
 {
   // call base class
@@ -1048,7 +1048,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorSatDivVel<nsd, nen>::evaluate_m
   {
     const int numfluidphases = phasemanager.NumFluidPhases();
     // get matrix to fill
-    CORE::LINALG::SerialDenseMatrix& mymat = *elemat[0];
+    Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
     const double consfac = timefacfac * variablemanager.DivConVelnp();
 
@@ -1064,12 +1064,12 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorSatDivVel<nsd, nen>::evaluate_m
  | evaluate RHS vector                                      vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorSatDivVel<nsd, nen>::evaluate_vector_and_assemble(
-    std::vector<CORE::LINALG::SerialDenseVector*>& elevec,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
-    const CORE::LINALG::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorSatDivVel<nsd,
+    nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
     double fac, bool inittimederiv)
 {
   // call base class with scaled factors
@@ -1085,14 +1085,14 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorSatDivVel<nsd, nen>::evaluate_v
  | evaluate off-diagonal coupling matrix with structure kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorSatDivVel<nsd,
-    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorSatDivVel<nsd,
+    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& deriv,
-    const CORE::LINALG::Matrix<nsd, nen>& derxy, const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
+    const Core::LinAlg::Matrix<nsd, nen>& derxy, const Core::LinAlg::Matrix<nsd, nsd>& xjm,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, double det)
 {
   // call base class with scaled factors
@@ -1107,13 +1107,13 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorSatDivVel<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 06/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorSatDivVel<nsd,
-    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorSatDivVel<nsd,
+    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac)
 {
   // nothing to do
@@ -1127,12 +1127,12 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorSatDivVel<nsd,
  | evaluate element matrix                             kremheller 06/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorBiotStab<nsd, nen>::evaluate_matrix_and_assemble(
-    std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorBiotStab<nsd,
+    nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, bool inittimederiv)
 {
   FOUR_C_THROW("Biot stabilization is still missing");
@@ -1143,12 +1143,12 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorBiotStab<nsd, nen>::evaluate_ma
  | evaluate RHS vector                                 kremheller 06/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorBiotStab<nsd, nen>::evaluate_vector_and_assemble(
-    std::vector<CORE::LINALG::SerialDenseVector*>& elevec,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
-    const CORE::LINALG::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorBiotStab<nsd,
+    nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
     double fac, bool inittimederiv)
 {
   FOUR_C_THROW("Biot stabilization is still missing");
@@ -1160,14 +1160,14 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorBiotStab<nsd, nen>::evaluate_ve
  | evaluate off-diagonal coupling matrix with structure kremheller 06/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorBiotStab<nsd,
-    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorBiotStab<nsd,
+    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& deriv,
-    const CORE::LINALG::Matrix<nsd, nen>& derxy, const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
+    const Core::LinAlg::Matrix<nsd, nen>& derxy, const Core::LinAlg::Matrix<nsd, nsd>& xjm,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, double det)
 {
   FOUR_C_THROW("Biot stabilization is still missing");
@@ -1178,13 +1178,13 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorBiotStab<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 06/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorBiotStab<nsd,
-    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorBiotStab<nsd,
+    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac)
 {
   // nothing to do
@@ -1199,26 +1199,26 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorBiotStab<nsd,
  | evaluate element matrix                                   vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDiff<nsd, nen>::evaluate_matrix_and_assemble(
-    std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDiff<nsd, nen>::evaluate_matrix_and_assemble(
+    std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, bool inittimederiv)
 {
   // we do not need the matrix if we calculate the initial time derivative
   if (!inittimederiv)
   {
     // get matrix to fill
-    CORE::LINALG::SerialDenseMatrix& mymat = *elemat[0];
+    Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
     const int numfluidphases = phasemanager.NumFluidPhases();
 
-    const std::vector<CORE::LINALG::Matrix<nsd, 1>>& gradphi = *variablemanager.GradPhinp();
+    const std::vector<Core::LinAlg::Matrix<nsd, 1>>& gradphi = *variablemanager.GradPhinp();
 
     // current pressure gradient
-    static CORE::LINALG::Matrix<nsd, 1> gradpres(true);
+    static Core::LinAlg::Matrix<nsd, 1> gradpres(true);
     gradpres.Clear();
 
     // compute the pressure gradient from the phi gradients
@@ -1230,16 +1230,16 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDiff<nsd, nen>::evaluate_matrix
     abspressgrad = sqrt(abspressgrad);
 
     // permeability tensor
-    static CORE::LINALG::Matrix<nsd, nsd> permeabilitytensor(true);
+    static Core::LinAlg::Matrix<nsd, nsd> permeabilitytensor(true);
     phasemanager.PermeabilityTensor(curphase, permeabilitytensor);
 
-    static CORE::LINALG::Matrix<nsd, nen> diffflux(true);
+    static Core::LinAlg::Matrix<nsd, nen> diffflux(true);
     diffflux.Multiply(permeabilitytensor, derxy);
     diffflux.Scale(
         phasemanager.RelPermeability(curphase) / phasemanager.DynViscosity(curphase, abspressgrad));
 
     // helper variable for linearization
-    static CORE::LINALG::Matrix<nsd, 1> diffflux_relpermeability(true);
+    static Core::LinAlg::Matrix<nsd, 1> diffflux_relpermeability(true);
 
     if (not phasemanager.has_constant_rel_permeability(curphase))
     {
@@ -1283,13 +1283,13 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDiff<nsd, nen>::evaluate_matrix
     if (not phasemanager.has_constant_dyn_viscosity(curphase))
     {
       // derivative of abspressgrad w.r.t. pressure gradient
-      static CORE::LINALG::Matrix<nsd, 1> dabspressgraddpresgradp(true);
+      static Core::LinAlg::Matrix<nsd, 1> dabspressgraddpresgradp(true);
       dabspressgraddpresgradp.putScalar(0.0);
       // avoid division by zero
       if (abspressgrad > 1.0e-12)
         for (int i = 0; i < nsd; i++) dabspressgraddpresgradp(i) = gradpres(i) / abspressgrad;
 
-      static CORE::LINALG::Matrix<nsd, 1> diffflux2(true);
+      static Core::LinAlg::Matrix<nsd, 1> diffflux2(true);
       diffflux2.Multiply(permeabilitytensor, gradpres);
       // d (1/visc) / d abspressgrad = -1.0 * visc^(-2) * d visc / d abspressgrad
       diffflux2.Scale(-1.0 * phasemanager.RelPermeability(curphase) /
@@ -1328,23 +1328,23 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDiff<nsd, nen>::evaluate_matrix
  | evaluate RHS vector                                      vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDiff<nsd, nen>::evaluate_vector_and_assemble(
-    std::vector<CORE::LINALG::SerialDenseVector*>& elevec,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
-    const CORE::LINALG::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDiff<nsd, nen>::evaluate_vector_and_assemble(
+    std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
     double fac, bool inittimederiv)
 {
   // get matrix to fill
-  CORE::LINALG::SerialDenseVector& myvec = *elevec[0];
+  Core::LinAlg::SerialDenseVector& myvec = *elevec[0];
 
   const int numfluidphases = phasemanager.NumFluidPhases();
 
-  const std::vector<CORE::LINALG::Matrix<nsd, 1>>& gradphi = *variablemanager.GradPhinp();
+  const std::vector<Core::LinAlg::Matrix<nsd, 1>>& gradphi = *variablemanager.GradPhinp();
 
   // current pressure gradient
-  static CORE::LINALG::Matrix<nsd, 1> gradpres(true);
+  static Core::LinAlg::Matrix<nsd, 1> gradpres(true);
   gradpres.Clear();
 
   // compute the pressure gradient from the phi gradients
@@ -1356,12 +1356,12 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDiff<nsd, nen>::evaluate_vector
   abspressgrad = sqrt(abspressgrad);
 
   // diffusion tensor
-  static CORE::LINALG::Matrix<nsd, nsd> difftensor(true);
+  static Core::LinAlg::Matrix<nsd, nsd> difftensor(true);
   phasemanager.PermeabilityTensor(curphase, difftensor);
   difftensor.Scale(
       phasemanager.RelPermeability(curphase) / phasemanager.DynViscosity(curphase, abspressgrad));
 
-  static CORE::LINALG::Matrix<nsd, 1> diffflux(true);
+  static Core::LinAlg::Matrix<nsd, 1> diffflux(true);
   diffflux.Multiply(difftensor, gradpres);
 
   for (int vi = 0; vi < nen; ++vi)
@@ -1381,25 +1381,25 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDiff<nsd, nen>::evaluate_vector
  | evaluate off-diagonal coupling matrix with structure kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDiff<nsd,
-    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDiff<nsd,
+    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& deriv,
-    const CORE::LINALG::Matrix<nsd, nen>& derxy, const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
+    const Core::LinAlg::Matrix<nsd, nen>& derxy, const Core::LinAlg::Matrix<nsd, nsd>& xjm,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, double det)
 {
   // get matrix to fill
-  CORE::LINALG::SerialDenseMatrix& mymat = *elemat[0];
+  Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
   const int numfluidphases = phasemanager.NumFluidPhases();
 
-  const std::vector<CORE::LINALG::Matrix<nsd, 1>>& gradphi = *variablemanager.GradPhinp();
+  const std::vector<Core::LinAlg::Matrix<nsd, 1>>& gradphi = *variablemanager.GradPhinp();
 
   // current pressure gradient
-  static CORE::LINALG::Matrix<nsd, 1> gradpres(true);
+  static Core::LinAlg::Matrix<nsd, 1> gradpres(true);
   gradpres.Clear();
 
   // compute the pressure gradient from the phi gradients
@@ -1411,26 +1411,26 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDiff<nsd,
   abspressgrad = sqrt(abspressgrad);
 
   // diffusion tensor
-  static CORE::LINALG::Matrix<nsd, nsd> difftensor(true);
+  static Core::LinAlg::Matrix<nsd, nsd> difftensor(true);
   phasemanager.PermeabilityTensor(curphase, difftensor);
   difftensor.Scale(
       phasemanager.RelPermeability(curphase) / phasemanager.DynViscosity(curphase, abspressgrad));
 
   // TODO: anisotropic difftensor and
   //       non-constant viscosity (because of pressure gradient, probably not really necessary)
-  static CORE::LINALG::Matrix<nsd, 1> diffflux(true);
+  static Core::LinAlg::Matrix<nsd, 1> diffflux(true);
   diffflux.Multiply(difftensor, gradpres);
 
   // diffusive pre-factor for linearization
   const double v = difftensor(0, 0) * timefacfac / det;
 
   // gradient of pressure w.r.t. reference coordinates
-  static CORE::LINALG::Matrix<nsd, 1> refgradpres(true);
+  static Core::LinAlg::Matrix<nsd, 1> refgradpres(true);
   refgradpres.Clear();
 
   // gradient of phi w.r.t. reference coordinates
-  std::vector<CORE::LINALG::Matrix<nsd, 1>> refgradphi(numfluidphases,
-      CORE::LINALG::Matrix<nsd, 1>(true));  // static CORE::LINALG::Matrix<nsd,1> refgradphi;
+  std::vector<Core::LinAlg::Matrix<nsd, 1>> refgradphi(numfluidphases,
+      Core::LinAlg::Matrix<nsd, 1>(true));  // static Core::LinAlg::Matrix<nsd,1> refgradphi;
   for (int idof = 0; idof < numfluidphases; ++idof) refgradphi[idof].Multiply(xjm, gradphi[idof]);
 
   // compute the pressure gradient from the phi gradients
@@ -1448,13 +1448,13 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDiff<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 06/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDiff<nsd,
-    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDiff<nsd,
+    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac)
 {
   // nothing to do
@@ -1468,19 +1468,19 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDiff<nsd,
  | evaluate element matrix                                   vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorReac<nsd, nen>::evaluate_matrix_and_assemble(
-    std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorReac<nsd, nen>::evaluate_matrix_and_assemble(
+    std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, bool inittimederiv)
 {
   // we do not need the matrix if we calculate the initial time derivative
   if (!inittimederiv)
   {
     // get matrix to fill
-    CORE::LINALG::SerialDenseMatrix& mymat = *elemat[0];
+    Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
     // TODO a constant density is assumed here
     double scaledtimefacfac = timefacfac / phasemanager.Density(curphase);
@@ -1514,16 +1514,16 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorReac<nsd, nen>::evaluate_matrix
  | evaluate RHS vector                                      vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorReac<nsd, nen>::evaluate_vector_and_assemble(
-    std::vector<CORE::LINALG::SerialDenseVector*>& elevec,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
-    const CORE::LINALG::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorReac<nsd, nen>::evaluate_vector_and_assemble(
+    std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
     double fac, bool inittimederiv)
 {
   // get matrix to fill
-  CORE::LINALG::SerialDenseVector& myvec = *elevec[0];
+  Core::LinAlg::SerialDenseVector& myvec = *elevec[0];
 
   if (not phasemanager.IsReactive(curphase)) return;
 
@@ -1545,18 +1545,18 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorReac<nsd, nen>::evaluate_vector
  | evaluate off-diagonal coupling matrix with structure kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorReac<nsd,
-    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorReac<nsd,
+    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& deriv,
-    const CORE::LINALG::Matrix<nsd, nen>& derxy, const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
+    const Core::LinAlg::Matrix<nsd, nen>& derxy, const Core::LinAlg::Matrix<nsd, nsd>& xjm,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, double det)
 {
   // get matrix to fill
-  CORE::LINALG::SerialDenseMatrix& mymat = *elemat[0];
+  Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
   if (not phasemanager.IsReactive(curphase)) return;
 
@@ -1590,17 +1590,17 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorReac<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 06/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorReac<nsd,
-    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorReac<nsd,
+    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac)
 {
   // get matrix to fill
-  CORE::LINALG::SerialDenseMatrix& mymat = *elemat[0];
+  Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
   if (not phasemanager.IsReactive(curphase)) return;
 
@@ -1636,12 +1636,12 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorReac<nsd,
  | evaluate element matrix                                   vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassPressure<nsd,
-    nen>::evaluate_matrix_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassPressure<nsd,
+    nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, bool inittimederiv)
 {
   // in case of an incompressible fluid phase 'curphase' (1/K = 0) the term cancels out
@@ -1650,7 +1650,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassPressure<nsd,
   const int numfluidphases = phasemanager.NumFluidPhases();
 
   // get matrix to fill
-  CORE::LINALG::SerialDenseMatrix& mymat = *elemat[0];
+  Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
   // saturation
   const double saturation = phasemanager.Saturation(curphase);
@@ -1745,12 +1745,12 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassPressure<nsd,
  | evaluate RHS vector                                      vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassPressure<nsd,
-    nen>::evaluate_vector_and_assemble(std::vector<CORE::LINALG::SerialDenseVector*>& elevec,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
-    const CORE::LINALG::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassPressure<nsd,
+    nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
     double fac, bool inittimederiv)
 {
   // in case of an incompressible fluid phase 'curphase' (1/K = 0) the term cancels out
@@ -1760,7 +1760,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassPressure<nsd,
   if (!inittimederiv)
   {
     // get vector to fill
-    CORE::LINALG::SerialDenseVector& myvec = *elevec[0];
+    Core::LinAlg::SerialDenseVector& myvec = *elevec[0];
 
     double vtrans = get_rhs_trans(
         curphase, phasetoadd, numdofpernode, phasemanager, variablemanager, rhsfac, fac);
@@ -1779,21 +1779,21 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassPressure<nsd,
  | evaluate off-diagonal coupling matrix with structure kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassPressure<nsd,
-    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassPressure<nsd,
+    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& deriv,
-    const CORE::LINALG::Matrix<nsd, nen>& derxy, const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
+    const Core::LinAlg::Matrix<nsd, nen>& derxy, const Core::LinAlg::Matrix<nsd, nsd>& xjm,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, double det)
 {
   // in case of an incompressible fluid phase 'curphase' (1/K = 0) the term cancels out
   if (phasemanager.incompressible_fluid_phase(curphase)) return;
 
   // get matrix to fill
-  CORE::LINALG::SerialDenseMatrix& mymat = *elemat[0];
+  Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
   double vtrans = get_rhs_trans(
       curphase, phasetoadd, numdofpernode, phasemanager, variablemanager, timefacfac, fac);
@@ -1822,13 +1822,13 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassPressure<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 06/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassPressure<nsd,
-    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassPressure<nsd,
+    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac)
 {
   // nothing to do
@@ -1839,10 +1839,10 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassPressure<nsd,
  | evaluate transient term at GP                       kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-double DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassPressure<nsd, nen>::get_rhs_trans(
+double Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassPressure<nsd, nen>::get_rhs_trans(
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
     double fac)
 {
   const int numfluidphases = phasemanager.NumFluidPhases();
@@ -1882,12 +1882,12 @@ double DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassPressure<nsd, nen>::get_r
  | evaluate element matrix                                   vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSolidPressure<nsd,
-    nen>::evaluate_matrix_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSolidPressure<nsd,
+    nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, bool inittimederiv)
 {
   // in case of an incompressible solid (1/K_s = 0) the term cancels out
@@ -1896,7 +1896,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSolidPressure<nsd,
   const int numfluidphases = phasemanager.NumFluidPhases();
 
   // get matrix to fill
-  CORE::LINALG::SerialDenseMatrix& mymat = *elemat[0];
+  Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
   //  get inverse bulkmodulus (=compressiblity)
   // TODO linearization of bulkmodulus
@@ -2026,12 +2026,12 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSolidPressure<nsd,
  | evaluate RHS vector                                      vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSolidPressure<nsd,
-    nen>::evaluate_vector_and_assemble(std::vector<CORE::LINALG::SerialDenseVector*>& elevec,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
-    const CORE::LINALG::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSolidPressure<nsd,
+    nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
     double fac, bool inittimederiv)
 {
   // in case of an incompressible solid (1/K_s = 0) the term cancels out
@@ -2041,7 +2041,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSolidPressure<nsd,
   if (!inittimederiv)
   {
     // get vector to fill
-    CORE::LINALG::SerialDenseVector& myvec = *elevec[0];
+    Core::LinAlg::SerialDenseVector& myvec = *elevec[0];
 
     double vtrans = get_rhs_trans(
         curphase, phasetoadd, numdofpernode, phasemanager, variablemanager, rhsfac, fac);
@@ -2061,21 +2061,21 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSolidPressure<nsd,
  | evaluate off-diagonal coupling matrix with structure kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSolidPressure<nsd,
-    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSolidPressure<nsd,
+    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& deriv,
-    const CORE::LINALG::Matrix<nsd, nen>& derxy, const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
+    const Core::LinAlg::Matrix<nsd, nen>& derxy, const Core::LinAlg::Matrix<nsd, nsd>& xjm,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, double det)
 {
   // in case of an incompressible solid (1/K_s = 0) the term cancels out
   if (phasemanager.IncompressibleSolid()) return;
 
   // get matrix to fill
-  CORE::LINALG::SerialDenseMatrix& mymat = *elemat[0];
+  Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
   double vtrans = get_rhs_trans(
       curphase, phasetoadd, numdofpernode, phasemanager, variablemanager, timefacfac, fac);
@@ -2104,13 +2104,13 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSolidPressure<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 06/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSolidPressure<nsd,
-    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSolidPressure<nsd,
+    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac)
 {
   // nothing to do
@@ -2121,10 +2121,10 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSolidPressure<nsd,
  | evaluate transient term at GP                       kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-double DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSolidPressure<nsd, nen>::get_rhs_trans(
+double Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSolidPressure<nsd, nen>::get_rhs_trans(
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
     double fac)
 {
   const int numfluidphases = phasemanager.NumFluidPhases();
@@ -2163,12 +2163,12 @@ double DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSolidPressure<nsd, nen>::
  | evaluate element matrix                                   vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSolidPressureSat<nsd,
-    nen>::evaluate_matrix_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSolidPressureSat<nsd,
+    nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, bool inittimederiv)
 {
   // call base class with scaled factors
@@ -2183,7 +2183,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSolidPressureSat<nsd,
   {
     const int numfluidphases = phasemanager.NumFluidPhases();
     // get matrix to fill
-    CORE::LINALG::SerialDenseMatrix& mymat = *elemat[0];
+    Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
     //  get inverse bulkmodulus (=compressiblity)
     // TODO linearization of bulkmodulus
@@ -2223,12 +2223,12 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSolidPressureSat<nsd,
  | evaluate RHS vector                                      vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSolidPressureSat<nsd,
-    nen>::evaluate_vector_and_assemble(std::vector<CORE::LINALG::SerialDenseVector*>& elevec,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
-    const CORE::LINALG::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSolidPressureSat<nsd,
+    nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
     double fac, bool inittimederiv)
 {
   // call base class with scaled factors
@@ -2244,14 +2244,14 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSolidPressureSat<nsd,
  | evaluate off-diagonal coupling matrix with structure kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSolidPressureSat<nsd,
-    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSolidPressureSat<nsd,
+    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& deriv,
-    const CORE::LINALG::Matrix<nsd, nen>& derxy, const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
+    const Core::LinAlg::Matrix<nsd, nen>& derxy, const Core::LinAlg::Matrix<nsd, nsd>& xjm,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, double det)
 {
   // call base class with scaled factors
@@ -2266,13 +2266,13 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSolidPressureSat<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 06/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSolidPressureSat<nsd,
-    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSolidPressureSat<nsd,
+    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac)
 {
   // nothing to do
@@ -2286,16 +2286,16 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSolidPressureSat<nsd,
  | evaluate element matrix                                   vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSaturation<nsd,
-    nen>::evaluate_matrix_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSaturation<nsd,
+    nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, bool inittimederiv)
 {
   // get matrix to fill
-  CORE::LINALG::SerialDenseMatrix& mymat = *elemat[0];
+  Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
   const int numfluidphases = phasemanager.NumFluidPhases();
 
@@ -2406,19 +2406,19 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSaturation<nsd,
  | evaluate RHS vector                                      vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSaturation<nsd,
-    nen>::evaluate_vector_and_assemble(std::vector<CORE::LINALG::SerialDenseVector*>& elevec,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
-    const CORE::LINALG::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSaturation<nsd,
+    nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
     double fac, bool inittimederiv)
 {
   // for the initial time derivative calculation no transient terms enter the rhs
   if (!inittimederiv)
   {
     // get vector to fill
-    CORE::LINALG::SerialDenseVector& myvec = *elevec[0];
+    Core::LinAlg::SerialDenseVector& myvec = *elevec[0];
 
     double vtrans = get_rhs_trans(
         curphase, phasetoadd, numdofpernode, phasemanager, variablemanager, rhsfac, fac);
@@ -2438,18 +2438,18 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSaturation<nsd,
  | evaluate off-diagonal coupling matrix with structure kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSaturation<nsd,
-    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSaturation<nsd,
+    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& deriv,
-    const CORE::LINALG::Matrix<nsd, nen>& derxy, const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
+    const Core::LinAlg::Matrix<nsd, nen>& derxy, const Core::LinAlg::Matrix<nsd, nsd>& xjm,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, double det)
 {
   // get matrix to fill
-  CORE::LINALG::SerialDenseMatrix& mymat = *elemat[0];
+  Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
   double vtrans = get_rhs_trans(
       curphase, phasetoadd, numdofpernode, phasemanager, variablemanager, timefacfac, fac);
@@ -2478,13 +2478,13 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSaturation<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 06/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSaturation<nsd,
-    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSaturation<nsd,
+    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac)
 {
   // nothing to do
@@ -2495,10 +2495,10 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSaturation<nsd,
  | evaluate transient term at GP                       kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-double DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSaturation<nsd, nen>::get_rhs_trans(
+double Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSaturation<nsd, nen>::get_rhs_trans(
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
     double fac)
 {
   const int numfluidphases = phasemanager.NumFluidPhases();
@@ -2533,12 +2533,12 @@ double DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSaturation<nsd, nen>::get
  | evaluate element matrix                                   vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorPressureAndSaturation<nsd,
-    nen>::evaluate_matrix_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorPressureAndSaturation<nsd,
+    nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, bool inittimederiv)
 {
   // do nothing
@@ -2549,21 +2549,21 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorPressureAndSaturation<nsd,
  | evaluate RHS vector                                      vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorPressureAndSaturation<nsd,
-    nen>::evaluate_vector_and_assemble(std::vector<CORE::LINALG::SerialDenseVector*>& elevec,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
-    const CORE::LINALG::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorPressureAndSaturation<nsd,
+    nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
     double fac, bool inittimederiv)
 {
   // get vectors to be filled
   // pressure
-  CORE::LINALG::SerialDenseVector& pressure = *elevec[0];
+  Core::LinAlg::SerialDenseVector& pressure = *elevec[0];
   // saturation
-  CORE::LINALG::SerialDenseVector& saturation = *elevec[1];
+  Core::LinAlg::SerialDenseVector& saturation = *elevec[1];
   // counter
-  CORE::LINALG::SerialDenseVector& counter = *elevec[2];
+  Core::LinAlg::SerialDenseVector& counter = *elevec[2];
 
   const int numfluidphases = phasemanager.NumFluidPhases();
   const int numvolfrac = phasemanager.NumVolFrac();
@@ -2622,14 +2622,14 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorPressureAndSaturation<nsd,
  | evaluate off-diagonal coupling matrix with structure kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorPressureAndSaturation<nsd,
-    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorPressureAndSaturation<nsd,
+    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& deriv,
-    const CORE::LINALG::Matrix<nsd, nen>& derxy, const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
+    const Core::LinAlg::Matrix<nsd, nen>& derxy, const Core::LinAlg::Matrix<nsd, nsd>& xjm,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, double det)
 {
   // nothing to do
@@ -2640,13 +2640,13 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorPressureAndSaturation<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 06/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorPressureAndSaturation<nsd,
-    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorPressureAndSaturation<nsd,
+    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac)
 {
   // nothing to do
@@ -2660,12 +2660,12 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorPressureAndSaturation<nsd,
  | evaluate element matrix                                   vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorSolidPressure<nsd,
-    nen>::evaluate_matrix_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorSolidPressure<nsd,
+    nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, bool inittimederiv)
 {
   // do nothing
@@ -2676,17 +2676,17 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorSolidPressure<nsd,
  | evaluate RHS vector                                      vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorSolidPressure<nsd,
-    nen>::evaluate_vector_and_assemble(std::vector<CORE::LINALG::SerialDenseVector*>& elevec,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
-    const CORE::LINALG::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorSolidPressure<nsd,
+    nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
     double fac, bool inittimederiv)
 {
   // get vectors to be filled
-  CORE::LINALG::SerialDenseVector& solidpressure = *elevec[0];
-  CORE::LINALG::SerialDenseVector& counter = *elevec[1];
+  Core::LinAlg::SerialDenseVector& solidpressure = *elevec[0];
+  Core::LinAlg::SerialDenseVector& counter = *elevec[1];
 
   for (int inode = 0; inode < nen; inode++)
   {
@@ -2701,14 +2701,14 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorSolidPressure<nsd,
  | evaluate off-diagonal coupling matrix with structure kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorSolidPressure<nsd,
-    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorSolidPressure<nsd,
+    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& deriv,
-    const CORE::LINALG::Matrix<nsd, nen>& derxy, const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
+    const Core::LinAlg::Matrix<nsd, nen>& derxy, const Core::LinAlg::Matrix<nsd, nsd>& xjm,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, double det)
 {
   // nothing to do
@@ -2719,13 +2719,13 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorSolidPressure<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 06/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorSolidPressure<nsd,
-    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorSolidPressure<nsd,
+    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac)
 {
   // nothing to do
@@ -2739,12 +2739,12 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorSolidPressure<nsd,
  | evaluate element matrix                             kremheller 03/18 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorValidVolFracPressures<nsd,
-    nen>::evaluate_matrix_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorValidVolFracPressures<nsd,
+    nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, bool inittimederiv)
 {
   // do nothing
@@ -2755,19 +2755,19 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorValidVolFracPressures<nsd,
  | evaluate RHS vector                                 kremheller 03/18 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorValidVolFracPressures<nsd,
-    nen>::evaluate_vector_and_assemble(std::vector<CORE::LINALG::SerialDenseVector*>& elevec,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
-    const CORE::LINALG::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorValidVolFracPressures<nsd,
+    nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
     double fac, bool inittimederiv)
 {
   const int numfluidphases = phasemanager.NumFluidPhases();
   const int numvolfrac = phasemanager.NumVolFrac();
 
-  CORE::LINALG::SerialDenseVector& valid_volfracpress = *elevec[1];
-  CORE::LINALG::SerialDenseVector& valid_volfracspec = *elevec[2];
+  Core::LinAlg::SerialDenseVector& valid_volfracpress = *elevec[1];
+  Core::LinAlg::SerialDenseVector& valid_volfracspec = *elevec[2];
 
   for (int inode = 0; inode < nen; inode++)
   {
@@ -2793,14 +2793,14 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorValidVolFracPressures<nsd,
  | evaluate off-diagonal coupling matrix with structure kremheller 03/18 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorValidVolFracPressures<nsd,
-    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorValidVolFracPressures<nsd,
+    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& deriv,
-    const CORE::LINALG::Matrix<nsd, nen>& derxy, const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
+    const Core::LinAlg::Matrix<nsd, nen>& derxy, const Core::LinAlg::Matrix<nsd, nsd>& xjm,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, double det)
 {
   // nothing to do
@@ -2811,13 +2811,13 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorValidVolFracPressures<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 06/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorValidVolFracPressures<nsd,
-    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorValidVolFracPressures<nsd,
+    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac)
 {
   // nothing to do
@@ -2831,12 +2831,12 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorValidVolFracPressures<nsd,
  | evaluate element matrix                             kremheller 04/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorPorosity<nsd, nen>::evaluate_matrix_and_assemble(
-    std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorPorosity<nsd,
+    nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, bool inittimederiv)
 {
   // do nothing
@@ -2847,17 +2847,17 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorPorosity<nsd, nen>::evaluate_ma
  | evaluate RHS vector                                 kremheller 04/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorPorosity<nsd, nen>::evaluate_vector_and_assemble(
-    std::vector<CORE::LINALG::SerialDenseVector*>& elevec,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
-    const CORE::LINALG::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorPorosity<nsd,
+    nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
     double fac, bool inittimederiv)
 {
   // get vectors to be filled
-  CORE::LINALG::SerialDenseVector& porosity = *elevec[0];
-  CORE::LINALG::SerialDenseVector& counter = *elevec[1];
+  Core::LinAlg::SerialDenseVector& porosity = *elevec[0];
+  Core::LinAlg::SerialDenseVector& counter = *elevec[1];
 
   for (int inode = 0; inode < nen; inode++)
   {
@@ -2872,14 +2872,14 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorPorosity<nsd, nen>::evaluate_ve
  | evaluate off-diagonal coupling matrix with structure kremheller 04/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorPorosity<nsd,
-    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorPorosity<nsd,
+    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& deriv,
-    const CORE::LINALG::Matrix<nsd, nen>& derxy, const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
+    const Core::LinAlg::Matrix<nsd, nen>& derxy, const Core::LinAlg::Matrix<nsd, nsd>& xjm,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, double det)
 {
   // nothing to do
@@ -2890,13 +2890,13 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorPorosity<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 06/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorPorosity<nsd,
-    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorPorosity<nsd,
+    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac)
 {
   // nothing to do
@@ -2910,12 +2910,12 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorPorosity<nsd,
  | evaluate element matrix                             kremheller 03/19 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDomainIntegrals<nsd,
-    nen>::evaluate_matrix_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDomainIntegrals<nsd,
+    nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, bool inittimederiv)
 {
   // do nothing
@@ -2925,16 +2925,16 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDomainIntegrals<nsd,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDomainIntegrals<nsd,
-    nen>::evaluate_vector_and_assemble(std::vector<CORE::LINALG::SerialDenseVector*>& elevec,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
-    const CORE::LINALG::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDomainIntegrals<nsd,
+    nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
     double fac, bool inittimederiv)
 {
   // get vector to fill
-  CORE::LINALG::SerialDenseVector& myvec = *elevec[0];
+  Core::LinAlg::SerialDenseVector& myvec = *elevec[0];
 
   const int numfluidphases = phasemanager.NumFluidPhases();
   const int numvolfrac = phasemanager.NumVolFrac();
@@ -3010,11 +3010,12 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDomainIntegrals<nsd,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-inline const CORE::UTILS::FunctionOfAnything&
-DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDomainIntegrals<nsd, nen>::function(int functnum) const
+inline const Core::UTILS::FunctionOfAnything&
+Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDomainIntegrals<nsd, nen>::function(
+    int functnum) const
 {
   const auto& funct =
-      GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfAnything>(functnum);
+      Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfAnything>(functnum);
   if (funct.NumberComponents() != 1)
     FOUR_C_THROW("only one component allowed for domain integral functions");
   return funct;
@@ -3024,14 +3025,14 @@ DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDomainIntegrals<nsd, nen>::function(
  | evaluate off-diagonal coupling matrix with structure kremheller 03/19 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDomainIntegrals<nsd,
-    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDomainIntegrals<nsd,
+    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& deriv,
-    const CORE::LINALG::Matrix<nsd, nen>& derxy, const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
+    const Core::LinAlg::Matrix<nsd, nen>& derxy, const Core::LinAlg::Matrix<nsd, nsd>& xjm,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, double det)
 {
   // nothing to do
@@ -3042,13 +3043,13 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDomainIntegrals<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 03/19 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDomainIntegrals<nsd,
-    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDomainIntegrals<nsd,
+    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac)
 {
   // nothing to do
@@ -3062,16 +3063,16 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDomainIntegrals<nsd,
  | evaluate element matrix                                   vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::ReconstructFluxLinearization<nsd,
-    nen>::evaluate_matrix_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+void Discret::ELEMENTS::PoroFluidEvaluator::ReconstructFluxLinearization<nsd,
+    nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, bool inittimederiv)
 {
   // get matrixes to fill
-  CORE::LINALG::SerialDenseMatrix& linearization = *elemat[0];
+  Core::LinAlg::SerialDenseMatrix& linearization = *elemat[0];
   // Compute element matrix. For L2-projection
   for (int vi = 0; vi < nen; ++vi)
   {
@@ -3088,12 +3089,12 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::ReconstructFluxLinearization<nsd,
  | evaluate RHS vector                                      vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::ReconstructFluxLinearization<nsd,
-    nen>::evaluate_vector_and_assemble(std::vector<CORE::LINALG::SerialDenseVector*>& elevec,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
-    const CORE::LINALG::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
+void Discret::ELEMENTS::PoroFluidEvaluator::ReconstructFluxLinearization<nsd,
+    nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
     double fac, bool inittimederiv)
 {
   // nothing to do
@@ -3104,14 +3105,14 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::ReconstructFluxLinearization<nsd,
  | evaluate off-diagonal coupling matrix with structure kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::ReconstructFluxLinearization<nsd,
-    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::ReconstructFluxLinearization<nsd,
+    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& deriv,
-    const CORE::LINALG::Matrix<nsd, nen>& derxy, const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
+    const Core::LinAlg::Matrix<nsd, nen>& derxy, const Core::LinAlg::Matrix<nsd, nsd>& xjm,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, double det)
 {
   // nothing to do
@@ -3122,13 +3123,13 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::ReconstructFluxLinearization<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 06/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::ReconstructFluxLinearization<nsd,
-    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::ReconstructFluxLinearization<nsd,
+    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac)
 {
   // nothing to do
@@ -3142,23 +3143,23 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::ReconstructFluxLinearization<nsd,
  | evaluate element matrix                                   vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::ReconstructFluxRHS<nsd, nen>::evaluate_matrix_and_assemble(
-    std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+void Discret::ELEMENTS::PoroFluidEvaluator::ReconstructFluxRHS<nsd,
+    nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, bool inittimederiv)
 {
   // get matrixes to fill
-  CORE::LINALG::SerialDenseMatrix& rhs = *elemat[1];
+  Core::LinAlg::SerialDenseMatrix& rhs = *elemat[1];
 
   const int numfluidphases = phasemanager.NumFluidPhases();
 
-  const std::vector<CORE::LINALG::Matrix<nsd, 1>>& gradphi = *variablemanager.GradPhinp();
+  const std::vector<Core::LinAlg::Matrix<nsd, 1>>& gradphi = *variablemanager.GradPhinp();
 
   // current pressure gradient
-  CORE::LINALG::Matrix<nsd, 1> gradpres(true);
+  Core::LinAlg::Matrix<nsd, 1> gradpres(true);
   gradpres.Clear();
 
   // compute the pressure gradient from the phi gradients
@@ -3170,13 +3171,13 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::ReconstructFluxRHS<nsd, nen>::evaluate_m
   abspressgrad = sqrt(abspressgrad);
 
   // diffusion tensor
-  CORE::LINALG::Matrix<nsd, nsd> difftensor(true);
+  Core::LinAlg::Matrix<nsd, nsd> difftensor(true);
   phasemanager.PermeabilityTensor(curphase, difftensor);
   difftensor.Scale(
       phasemanager.RelPermeability(curphase) / phasemanager.DynViscosity(curphase, abspressgrad));
 
   // diffusive flux
-  static CORE::LINALG::Matrix<nsd, 1> diffflux(true);
+  static Core::LinAlg::Matrix<nsd, 1> diffflux(true);
   diffflux.Multiply(-1.0, difftensor, gradpres);
 
   // Compute element vectors. For L2-Projection
@@ -3194,12 +3195,12 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::ReconstructFluxRHS<nsd, nen>::evaluate_m
  | evaluate RHS vector                                      vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::ReconstructFluxRHS<nsd, nen>::evaluate_vector_and_assemble(
-    std::vector<CORE::LINALG::SerialDenseVector*>& elevec,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
-    const CORE::LINALG::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
+void Discret::ELEMENTS::PoroFluidEvaluator::ReconstructFluxRHS<nsd,
+    nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
     double fac, bool inittimederiv)
 {
   // nothing to do
@@ -3210,14 +3211,14 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::ReconstructFluxRHS<nsd, nen>::evaluate_v
  | evaluate off-diagonal coupling matrix with structure kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::ReconstructFluxRHS<nsd,
-    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::ReconstructFluxRHS<nsd,
+    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& deriv,
-    const CORE::LINALG::Matrix<nsd, nen>& derxy, const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
+    const Core::LinAlg::Matrix<nsd, nen>& derxy, const Core::LinAlg::Matrix<nsd, nsd>& xjm,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, double det)
 {
   // nothing to do
@@ -3228,13 +3229,13 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::ReconstructFluxRHS<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 06/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::ReconstructFluxRHS<nsd,
-    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::ReconstructFluxRHS<nsd,
+    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac)
 {
   // nothing to do
@@ -3247,22 +3248,22 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::ReconstructFluxRHS<nsd,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorPhaseVelocities<nsd,
-    nen>::evaluate_vector_and_assemble(std::vector<CORE::LINALG::SerialDenseVector*>& elevec,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
-    const CORE::LINALG::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorPhaseVelocities<nsd,
+    nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
     double fac, bool inittimederiv)
 {
-  CORE::LINALG::SerialDenseVector& phase_velocity = *elevec[0];
+  Core::LinAlg::SerialDenseVector& phase_velocity = *elevec[0];
 
   const int numfluidphases = phasemanager.NumFluidPhases();
   const int numvolfrac = phasemanager.NumVolFrac();
 
-  const std::vector<CORE::LINALG::Matrix<nsd, 1>>& gradient_phi = *variablemanager.GradPhinp();
+  const std::vector<Core::LinAlg::Matrix<nsd, 1>>& gradient_phi = *variablemanager.GradPhinp();
 
-  CORE::LINALG::Matrix<nsd, 1> structure_velocity(0.0);
+  Core::LinAlg::Matrix<nsd, 1> structure_velocity(0.0);
   if (is_ale_) structure_velocity = *variablemanager.ConVelnp();
 
   // FLUID phases
@@ -3283,17 +3284,17 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorPhaseVelocities<nsd,
         // the generic primary variable psi can be pressure, pressure difference or saturation, and
         // hence we need to employ the chain rule:
         // d p(psi_1, psi_2, psi_3)/dx = sum_i ( (p(psi_1, psi_2, psi_3)/d psi_i) * (d psi_i/dx) )
-        CORE::LINALG::Matrix<nsd, 1> pressure_gradient(true);
+        Core::LinAlg::Matrix<nsd, 1> pressure_gradient(true);
         pressure_gradient.Clear();
         for (int i = 0; i < numfluidphases; ++i)
           pressure_gradient.Update(phasemanager.PressureDeriv(curphase, i), gradient_phi[i], 1.0);
 
-        CORE::LINALG::Matrix<nsd, nsd> diffusion_tensor(true);
+        Core::LinAlg::Matrix<nsd, nsd> diffusion_tensor(true);
         phasemanager.PermeabilityTensor(curphase, diffusion_tensor);
         diffusion_tensor.Scale(phasemanager.RelPermeability(curphase) /
                                phasemanager.DynViscosity(curphase, pressure_gradient.Norm2()));
 
-        static CORE::LINALG::Matrix<nsd, 1> diffusive_velocity(true);
+        static Core::LinAlg::Matrix<nsd, 1> diffusive_velocity(true);
         diffusive_velocity.Multiply(
             -1.0 / phase_volume_fraction, diffusion_tensor, pressure_gradient);
 
@@ -3327,12 +3328,12 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorPhaseVelocities<nsd,
         // of the primary variable directly is the pressure gradient.
         auto pressure_gradient = gradient_phi[curphase];
 
-        CORE::LINALG::Matrix<nsd, nsd> diffusion_tensor(true);
+        Core::LinAlg::Matrix<nsd, nsd> diffusion_tensor(true);
         phasemanager.permeability_tensor_vol_frac_pressure(i_volfrac_pressure, diffusion_tensor);
         diffusion_tensor.Scale(1.0 / phasemanager.dyn_viscosity_vol_frac_pressure(
                                          i_volfrac_pressure, pressure_gradient.Norm2()));
 
-        static CORE::LINALG::Matrix<nsd, 1> diffusive_velocity(true);
+        static Core::LinAlg::Matrix<nsd, 1> diffusive_velocity(true);
         diffusive_velocity.Multiply(
             -1.0 / phase_volume_fraction, diffusion_tensor, pressure_gradient);
 
@@ -3351,16 +3352,16 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorPhaseVelocities<nsd,
  | evaluate element matrix                             kremheller 09/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddInstatTerms<nsd,
-    nen>::evaluate_matrix_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddInstatTerms<nsd,
+    nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, bool inittimederiv)
 {
   // get matrix to fill
-  CORE::LINALG::SerialDenseMatrix& mymat = *elemat[0];
+  Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
   const int numfluidphases = phasemanager.NumFluidPhases();
   const int numvolfrac = phasemanager.NumVolFrac();
 
@@ -3513,16 +3514,16 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddInstatTerms<nsd,
  | evaluate RHS vector                                 kremheller 09/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddInstatTerms<nsd,
-    nen>::evaluate_vector_and_assemble(std::vector<CORE::LINALG::SerialDenseVector*>& elevec,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
-    const CORE::LINALG::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddInstatTerms<nsd,
+    nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
     double fac, bool inittimederiv)
 {
   // get vector to fill
-  CORE::LINALG::SerialDenseVector& myvec = *elevec[0];
+  Core::LinAlg::SerialDenseVector& myvec = *elevec[0];
 
   // for the initial time derivative calculation no transient terms enter the rhs
   if (!inittimederiv)
@@ -3545,18 +3546,18 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddInstatTerms<nsd,
  | evaluate off-diagonal coupling matrix with structure kremheller 09/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddInstatTerms<nsd,
-    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddInstatTerms<nsd,
+    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& deriv,
-    const CORE::LINALG::Matrix<nsd, nen>& derxy, const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
+    const Core::LinAlg::Matrix<nsd, nen>& derxy, const Core::LinAlg::Matrix<nsd, nsd>& xjm,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, double det)
 {
   // get matrix to fill
-  CORE::LINALG::SerialDenseMatrix& mymat = *elemat[0];
+  Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
   const double vrhs =
       get_rhs(curphase, phasetoadd, numdofpernode, phasemanager, variablemanager, timefacfac, fac);
@@ -3572,13 +3573,13 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddInstatTerms<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 09/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddInstatTerms<nsd,
-    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddInstatTerms<nsd,
+    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac)
 {
   // nothing to do
@@ -3589,10 +3590,10 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddInstatTerms<nsd,
  | evaluate rhs term at GP                             kremheller 09/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-double DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddInstatTerms<nsd, nen>::get_rhs(
+double Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddInstatTerms<nsd, nen>::get_rhs(
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
     double fac)
 {
   const int numfluidphases = phasemanager.NumFluidPhases();
@@ -3643,19 +3644,19 @@ double DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddInstatTerms<nsd, ne
  | evaluate element matrix                             kremheller 09/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddDivVelTerm<nsd,
-    nen>::evaluate_matrix_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTerm<nsd,
+    nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, bool inittimederiv)
 {
   // we do not need the matrix if we calculate the initial time derivative
   if (!inittimederiv)
   {
     // get matrix to fill
-    CORE::LINALG::SerialDenseMatrix& mymat = *elemat[0];
+    Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
     const int numfluidphases = phasemanager.NumFluidPhases();
     const int numvolfrac = phasemanager.NumVolFrac();
 
@@ -3690,16 +3691,16 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddDivVelTerm<nsd,
  | evaluate RHS vector                                 kremheller 09/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddDivVelTerm<nsd,
-    nen>::evaluate_vector_and_assemble(std::vector<CORE::LINALG::SerialDenseVector*>& elevec,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
-    const CORE::LINALG::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTerm<nsd,
+    nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
     double fac, bool inittimederiv)
 {
   // get vector to fill
-  CORE::LINALG::SerialDenseVector& myvec = *elevec[0];
+  Core::LinAlg::SerialDenseVector& myvec = *elevec[0];
 
   const double vrhs = -rhsfac * phasemanager.SumAddVolFrac() * variablemanager.DivConVelnp();
 
@@ -3717,22 +3718,22 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddDivVelTerm<nsd,
  | evaluate off-diagonal coupling matrix with structure kremheller 09/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddDivVelTerm<nsd,
-    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTerm<nsd,
+    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& deriv,
-    const CORE::LINALG::Matrix<nsd, nen>& derxy, const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
+    const Core::LinAlg::Matrix<nsd, nen>& derxy, const Core::LinAlg::Matrix<nsd, nsd>& xjm,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, double det)
 {
   // get matrix to fill
-  CORE::LINALG::SerialDenseMatrix& mymat = *elemat[0];
+  Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
   const double sumaddvolfrac = phasemanager.SumAddVolFrac();
 
-  CORE::LINALG::Matrix<nsd, nsd> gridvelderiv(true);
+  Core::LinAlg::Matrix<nsd, nsd> gridvelderiv(true);
   gridvelderiv.MultiplyNT(*(variablemanager.EConVelnp()), deriv);
 
   // OD mesh - div vel term
@@ -3747,13 +3748,13 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddDivVelTerm<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 09/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddDivVelTerm<nsd,
-    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTerm<nsd,
+    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac)
 {
   // nothing to do
@@ -3767,12 +3768,12 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddDivVelTerm<nsd,
  | evaluate element matrix                             kremheller 09/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddInstatTermsSat<nsd,
-    nen>::evaluate_matrix_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddInstatTermsSat<nsd,
+    nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, bool inittimederiv)
 {
   // call base class with scaled factors
@@ -3786,7 +3787,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddInstatTermsSat<nsd,
   {
     const int numfluidphases = phasemanager.NumFluidPhases();
     // get matrix to fill
-    CORE::LINALG::SerialDenseMatrix& mymat = *elemat[0];
+    Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
     //----------------------------------------------------------------
     // linearization of saturation w.r.t. dof
@@ -3808,12 +3809,12 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddInstatTermsSat<nsd,
  | evaluate RHS vector                                 kremheller 09/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddInstatTermsSat<nsd,
-    nen>::evaluate_vector_and_assemble(std::vector<CORE::LINALG::SerialDenseVector*>& elevec,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
-    const CORE::LINALG::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddInstatTermsSat<nsd,
+    nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
     double fac, bool inittimederiv)
 {
   // call base class with scaled factors
@@ -3829,14 +3830,14 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddInstatTermsSat<nsd,
  | evaluate off-diagonal coupling matrix with structure kremheller 09/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddInstatTermsSat<nsd,
-    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddInstatTermsSat<nsd,
+    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& deriv,
-    const CORE::LINALG::Matrix<nsd, nen>& derxy, const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
+    const Core::LinAlg::Matrix<nsd, nen>& derxy, const Core::LinAlg::Matrix<nsd, nsd>& xjm,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, double det)
 {
   // call base class with scaled factors
@@ -3851,13 +3852,13 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddInstatTermsSat<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 09/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddInstatTermsSat<nsd,
-    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddInstatTermsSat<nsd,
+    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac)
 {
   // nothing to do
@@ -3871,12 +3872,12 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddInstatTermsSat<nsd,
  | evaluate element matrix                             kremheller 09/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddDivVelTermSat<nsd,
-    nen>::evaluate_matrix_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTermSat<nsd,
+    nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, bool inittimederiv)
 {
   // call base class with scaled factors
@@ -3890,7 +3891,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddDivVelTermSat<nsd,
   {
     const int numfluidphases = phasemanager.NumFluidPhases();
     // get matrix to fill
-    CORE::LINALG::SerialDenseMatrix& mymat = *elemat[0];
+    Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
     const double vrhs = -timefacfac * phasemanager.SumAddVolFrac() * variablemanager.DivConVelnp();
 
@@ -3906,12 +3907,12 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddDivVelTermSat<nsd,
  | evaluate RHS vector                                 kremheller 09/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddDivVelTermSat<nsd,
-    nen>::evaluate_vector_and_assemble(std::vector<CORE::LINALG::SerialDenseVector*>& elevec,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
-    const CORE::LINALG::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTermSat<nsd,
+    nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
     double fac, bool inittimederiv)
 {
   // call base class with scaled factors
@@ -3927,14 +3928,14 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddDivVelTermSat<nsd,
  | evaluate off-diagonal coupling matrix with structure kremheller 09/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddDivVelTermSat<nsd,
-    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTermSat<nsd,
+    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& deriv,
-    const CORE::LINALG::Matrix<nsd, nen>& derxy, const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
+    const Core::LinAlg::Matrix<nsd, nen>& derxy, const Core::LinAlg::Matrix<nsd, nsd>& xjm,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, double det)
 {
   // call base class with scaled factors
@@ -3949,13 +3950,13 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddDivVelTermSat<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 09/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddDivVelTermSat<nsd,
-    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTermSat<nsd,
+    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac)
 {
   // nothing to do
@@ -3969,16 +3970,16 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddDivVelTermSat<nsd,
  | evaluate element matrix                             kremheller 08/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracInstat<nsd,
-    nen>::evaluate_matrix_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracInstat<nsd,
+    nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, bool inittimederiv)
 {
   // get matrix to fill
-  CORE::LINALG::SerialDenseMatrix& mymat = *elemat[0];
+  Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
   const int numfluidphases = phasemanager.NumFluidPhases();
   const int numvolfrac = phasemanager.NumVolFrac();
@@ -4016,19 +4017,19 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracInstat<nsd,
  | evaluate RHS vector                                 kremheller 08/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracInstat<nsd,
-    nen>::evaluate_vector_and_assemble(std::vector<CORE::LINALG::SerialDenseVector*>& elevec,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
-    const CORE::LINALG::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracInstat<nsd,
+    nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
     double fac, bool inittimederiv)
 {
   // for the initial time derivative calculation no transient terms enter the rhs
   if (!inittimederiv)
   {
     // get vector to fill
-    CORE::LINALG::SerialDenseVector& myvec = *elevec[0];
+    Core::LinAlg::SerialDenseVector& myvec = *elevec[0];
 
     const int numfluidphases = phasemanager.NumFluidPhases();
     const int numvolfrac = phasemanager.NumVolFrac();
@@ -4061,18 +4062,18 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracInstat<nsd,
  | evaluate off-diagonal coupling matrix with structure kremheller 08/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracInstat<nsd,
-    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracInstat<nsd,
+    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& deriv,
-    const CORE::LINALG::Matrix<nsd, nen>& derxy, const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
+    const Core::LinAlg::Matrix<nsd, nen>& derxy, const Core::LinAlg::Matrix<nsd, nsd>& xjm,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, double det)
 {
   // get matrix to fill
-  CORE::LINALG::SerialDenseMatrix& mymat = *elemat[0];
+  Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
   const int numfluidphases = phasemanager.NumFluidPhases();
   const int numvolfrac = phasemanager.NumVolFrac();
@@ -4121,13 +4122,13 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracInstat<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 08/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracInstat<nsd,
-    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracInstat<nsd,
+    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac)
 {
   // nothing to do
@@ -4141,12 +4142,12 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracInstat<nsd,
  | evaluate element matrix                             kremheller 08/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracDivVel<nsd,
-    nen>::evaluate_matrix_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracDivVel<nsd,
+    nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, bool inittimederiv)
 {
   // no linearization needed in case of initial time derivative calculation
@@ -4155,7 +4156,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracDivVel<nsd,
     const int numfluidphases = phasemanager.NumFluidPhases();
     const int numvolfrac = phasemanager.NumVolFrac();
     // get matrix to fill
-    CORE::LINALG::SerialDenseMatrix& mymat = *elemat[0];
+    Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
     const double consfac = timefacfac * variablemanager.DivConVelnp();
 
@@ -4189,16 +4190,16 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracDivVel<nsd,
  | evaluate RHS vector                                 kremheller 08/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracDivVel<nsd,
-    nen>::evaluate_vector_and_assemble(std::vector<CORE::LINALG::SerialDenseVector*>& elevec,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
-    const CORE::LINALG::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracDivVel<nsd,
+    nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
     double fac, bool inittimederiv)
 {
   // get matrix to fill
-  CORE::LINALG::SerialDenseVector& myvec = *elevec[0];
+  Core::LinAlg::SerialDenseVector& myvec = *elevec[0];
 
   const int numfluidphases = phasemanager.NumFluidPhases();
   const int numvolfrac = phasemanager.NumVolFrac();
@@ -4229,18 +4230,18 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracDivVel<nsd,
  | evaluate off-diagonal coupling matrix with structure kremheller 08/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracDivVel<nsd,
-    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracDivVel<nsd,
+    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& deriv,
-    const CORE::LINALG::Matrix<nsd, nen>& derxy, const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
+    const Core::LinAlg::Matrix<nsd, nen>& derxy, const Core::LinAlg::Matrix<nsd, nsd>& xjm,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, double det)
 {
   // get matrix to fill
-  CORE::LINALG::SerialDenseMatrix& mymat = *elemat[0];
+  Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
   const int numfluidphases = phasemanager.NumFluidPhases();
   const int numvolfrac = phasemanager.NumVolFrac();
@@ -4273,7 +4274,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracDivVel<nsd,
     }
 
     // shapederivatives see fluid_ele_calc_poro.cpp
-    CORE::LINALG::Matrix<nsd, nsd> gridvelderiv(true);
+    Core::LinAlg::Matrix<nsd, nsd> gridvelderiv(true);
     gridvelderiv.MultiplyNT(*(variablemanager.EConVelnp()), deriv);
 
     if (nsd == 3)
@@ -4375,13 +4376,13 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracDivVel<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 08/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracDivVel<nsd,
-    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracDivVel<nsd,
+    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac)
 {
   // nothing to do
@@ -4395,19 +4396,19 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracDivVel<nsd,
  | evaluate element matrix                             kremheller 08/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracDiff<nsd,
-    nen>::evaluate_matrix_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracDiff<nsd,
+    nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, bool inittimederiv)
 {
   // we do not need the matrix if we calculate the initial time derivative
   if (!inittimederiv)
   {
     // get matrix to fill
-    CORE::LINALG::SerialDenseMatrix& mymat = *elemat[0];
+    Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
     const int numfluidphases = phasemanager.NumFluidPhases();
     const int numvolfrac = phasemanager.NumVolFrac();
@@ -4416,10 +4417,10 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracDiff<nsd,
     for (int ivolfrac = numfluidphases; ivolfrac < numfluidphases + numvolfrac; ivolfrac++)
     {
       // get difftensor and diffusive flux
-      CORE::LINALG::Matrix<nsd, nsd> difftensor(true);
+      Core::LinAlg::Matrix<nsd, nsd> difftensor(true);
       phasemanager.DiffTensorVolFrac(ivolfrac - numfluidphases, difftensor);
 
-      static CORE::LINALG::Matrix<nsd, nen> diffflux(true);
+      static Core::LinAlg::Matrix<nsd, nen> diffflux(true);
       diffflux.Multiply(difftensor, derxy);
 
       // diffusive term
@@ -4447,30 +4448,30 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracDiff<nsd,
  | evaluate RHS vector                                 kremheller 08/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracDiff<nsd,
-    nen>::evaluate_vector_and_assemble(std::vector<CORE::LINALG::SerialDenseVector*>& elevec,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
-    const CORE::LINALG::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracDiff<nsd,
+    nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
     double fac, bool inittimederiv)
 {
   // get matrix to fill
-  CORE::LINALG::SerialDenseVector& myvec = *elevec[0];
+  Core::LinAlg::SerialDenseVector& myvec = *elevec[0];
 
   const int numfluidphases = phasemanager.NumFluidPhases();
   const int numvolfrac = phasemanager.NumVolFrac();
 
-  const std::vector<CORE::LINALG::Matrix<nsd, 1>>& gradphi = *variablemanager.GradPhinp();
+  const std::vector<Core::LinAlg::Matrix<nsd, 1>>& gradphi = *variablemanager.GradPhinp();
 
   // loop over all volume fractions
   for (int ivolfrac = numfluidphases; ivolfrac < numfluidphases + numvolfrac; ivolfrac++)
   {
     // diffusion tensor
-    CORE::LINALG::Matrix<nsd, nsd> difftensor(true);
+    Core::LinAlg::Matrix<nsd, nsd> difftensor(true);
     phasemanager.DiffTensorVolFrac(ivolfrac - numfluidphases, difftensor);
 
-    static CORE::LINALG::Matrix<nsd, 1> diffflux(true);
+    static Core::LinAlg::Matrix<nsd, 1> diffflux(true);
     diffflux.Multiply(difftensor, gradphi[ivolfrac]);
 
     for (int vi = 0; vi < nen; ++vi)
@@ -4491,39 +4492,39 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracDiff<nsd,
  | evaluate off-diagonal coupling matrix with structure kremheller 08/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracDiff<nsd,
-    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracDiff<nsd,
+    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& deriv,
-    const CORE::LINALG::Matrix<nsd, nen>& derxy, const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
+    const Core::LinAlg::Matrix<nsd, nen>& derxy, const Core::LinAlg::Matrix<nsd, nsd>& xjm,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, double det)
 {
   // get matrix to fill
-  CORE::LINALG::SerialDenseMatrix& mymat = *elemat[0];
+  Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
   const int numfluidphases = phasemanager.NumFluidPhases();
   const int numvolfrac = phasemanager.NumVolFrac();
 
-  const std::vector<CORE::LINALG::Matrix<nsd, 1>>& gradphi = *variablemanager.GradPhinp();
+  const std::vector<Core::LinAlg::Matrix<nsd, 1>>& gradphi = *variablemanager.GradPhinp();
 
   // loop over all volume fractions
   for (int ivolfrac = numfluidphases; ivolfrac < numfluidphases + numvolfrac; ivolfrac++)
   {
     // diffusion tensor
-    CORE::LINALG::Matrix<nsd, nsd> difftensor(true);
+    Core::LinAlg::Matrix<nsd, nsd> difftensor(true);
     phasemanager.DiffTensorVolFrac(ivolfrac - numfluidphases, difftensor);
 
-    static CORE::LINALG::Matrix<nsd, 1> diffflux(true);
+    static Core::LinAlg::Matrix<nsd, 1> diffflux(true);
     diffflux.Multiply(difftensor, gradphi[ivolfrac]);
 
     // TODO: anisotropic difftensor
     const double v = difftensor(0, 0) * timefacfac / det;
 
     // gradient of phi w.r.t. reference coordinates
-    CORE::LINALG::Matrix<nsd, 1> refgradphi(true);
+    Core::LinAlg::Matrix<nsd, 1> refgradphi(true);
     refgradphi.Multiply(xjm, gradphi[ivolfrac]);
 
     // OD mesh - diffusive term
@@ -4537,13 +4538,13 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracDiff<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 08/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracDiff<nsd,
-    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracDiff<nsd,
+    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac)
 {
   // nothing to do
@@ -4557,19 +4558,19 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracDiff<nsd,
  | evaluate element matrix                             kremheller 08/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracReac<nsd,
-    nen>::evaluate_matrix_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracReac<nsd,
+    nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, bool inittimederiv)
 {
   // we do not need the matrix if we calculate the initial time derivative
   if (!inittimederiv)
   {
     // get matrix to fill
-    CORE::LINALG::SerialDenseMatrix& mymat = *elemat[0];
+    Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
     const int numfluidphases = phasemanager.NumFluidPhases();
     const int numvolfrac = phasemanager.NumVolFrac();
@@ -4612,16 +4613,16 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracReac<nsd,
  | evaluate RHS vector                                 kremheller 08/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracReac<nsd,
-    nen>::evaluate_vector_and_assemble(std::vector<CORE::LINALG::SerialDenseVector*>& elevec,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
-    const CORE::LINALG::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracReac<nsd,
+    nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
     double fac, bool inittimederiv)
 {
   // get matrix to fill
-  CORE::LINALG::SerialDenseVector& myvec = *elevec[0];
+  Core::LinAlg::SerialDenseVector& myvec = *elevec[0];
 
   const int numfluidphases = phasemanager.NumFluidPhases();
   const int numvolfrac = phasemanager.NumVolFrac();
@@ -4651,18 +4652,18 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracReac<nsd,
  | evaluate off-diagonal coupling matrix with structure kremheller 08/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracReac<nsd,
-    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracReac<nsd,
+    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& deriv,
-    const CORE::LINALG::Matrix<nsd, nen>& derxy, const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
+    const Core::LinAlg::Matrix<nsd, nen>& derxy, const Core::LinAlg::Matrix<nsd, nsd>& xjm,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, double det)
 {
   // get matrix to fill
-  CORE::LINALG::SerialDenseMatrix& mymat = *elemat[0];
+  Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
   const int numfluidphases = phasemanager.NumFluidPhases();
   const int numvolfrac = phasemanager.NumVolFrac();
@@ -4705,17 +4706,17 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracReac<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 08/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracReac<nsd,
-    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracReac<nsd,
+    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac)
 {
   // get matrix to fill
-  CORE::LINALG::SerialDenseMatrix& mymat = *elemat[0];
+  Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
   const int numfluidphases = phasemanager.NumFluidPhases();
   const int numvolfrac = phasemanager.NumVolFrac();
@@ -4758,19 +4759,19 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracReac<nsd,
  | evaluate element matrix                             kremheller 08/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddFlux<nsd,
-    nen>::evaluate_matrix_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
+    nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, bool inittimederiv)
 {
   // we do not need the matrix if we calculate the initial time derivative
   if (!inittimederiv)
   {
     // get matrix to fill
-    CORE::LINALG::SerialDenseMatrix& mymat = *elemat[0];
+    Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
     const int numfluidphases = phasemanager.NumFluidPhases();
     const int numvolfrac = phasemanager.NumVolFrac();
@@ -4782,7 +4783,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddFlux<nsd,
       {
         // only in case of additional flux we have access to numscal
         const int numscal = phasemanager.NumScal();
-        const std::vector<CORE::LINALG::Matrix<nsd, 1>>& gradscalarnp =
+        const std::vector<Core::LinAlg::Matrix<nsd, 1>>& gradscalarnp =
             *variablemanager.GradScalarnp();
 
         // loop over scalars
@@ -4791,11 +4792,11 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddFlux<nsd,
           if (phasemanager.has_add_scalar_dependent_flux(ivolfrac - numfluidphases, iscal))
           {
             // diffusion tensor and diffusive flux
-            CORE::LINALG::Matrix<nsd, nsd> difftensoraddflux(true);
+            Core::LinAlg::Matrix<nsd, nsd> difftensoraddflux(true);
             for (int i = 0; i < nsd; i++)
               difftensoraddflux(i, i) = phasemanager.ScalarDiff(ivolfrac - numfluidphases, iscal);
 
-            static CORE::LINALG::Matrix<nsd, 1> diffflux(true);
+            static Core::LinAlg::Matrix<nsd, 1> diffflux(true);
             diffflux.Multiply(difftensoraddflux, gradscalarnp[iscal]);
 
             for (int vi = 0; vi < nen; ++vi)
@@ -4813,7 +4814,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddFlux<nsd,
 
                   // chemotaxis
                   if (phasemanager.ScalarToPhase(iscal).species_type ==
-                      MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid)
+                      Mat::ScaTraMatMultiPoro::SpeciesType::species_in_fluid)
                   {
                     if (phasemanager.ScalarToPhase(iscal).phaseID > phasemanager.NumFluidPhases())
                       FOUR_C_THROW("Wrong PhaseID");
@@ -4831,7 +4832,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddFlux<nsd,
                   }
                   // haptotaxis
                   else if (phasemanager.ScalarToPhase(iscal).species_type ==
-                           MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid)
+                           Mat::ScaTraMatMultiPoro::SpeciesType::species_in_solid)
                     // derivative of solid phase volume fraction w.r.t. all fluid phases = 0
                     break;
                   else
@@ -4844,7 +4845,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddFlux<nsd,
                   const int fui = ui * numdofpernode + jvolfrac;
                   // haptotaxis
                   if (phasemanager.ScalarToPhase(iscal).species_type ==
-                      MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid)
+                      Mat::ScaTraMatMultiPoro::SpeciesType::species_in_solid)
                   {
                     // 1) derivative w.r.t. current volume fraction ivolfrac
                     if (ivolfrac == jvolfrac)
@@ -4854,7 +4855,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddFlux<nsd,
                   }
                   // chemotaxis
                   else if (phasemanager.ScalarToPhase(iscal).species_type ==
-                           MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid)
+                           Mat::ScaTraMatMultiPoro::SpeciesType::species_in_fluid)
                   {
                     // 1) derivative w.r.t. current volume fraction ivolfrac
                     if (ivolfrac == jvolfrac)
@@ -4887,16 +4888,16 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddFlux<nsd,
  | evaluate RHS vector                                 kremheller 08/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddFlux<nsd,
-    nen>::evaluate_vector_and_assemble(std::vector<CORE::LINALG::SerialDenseVector*>& elevec,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
-    const CORE::LINALG::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
+    nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
     double fac, bool inittimederiv)
 {
   // get matrix to fill
-  CORE::LINALG::SerialDenseVector& myvec = *elevec[0];
+  Core::LinAlg::SerialDenseVector& myvec = *elevec[0];
 
   const int numfluidphases = phasemanager.NumFluidPhases();
   const int numvolfrac = phasemanager.NumVolFrac();
@@ -4908,7 +4909,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddFlux<nsd,
     {
       // only in case of additional flux we have access to numscal
       const int numscal = phasemanager.NumScal();
-      const std::vector<CORE::LINALG::Matrix<nsd, 1>>& gradscalarnp =
+      const std::vector<Core::LinAlg::Matrix<nsd, 1>>& gradscalarnp =
           *variablemanager.GradScalarnp();
 
       // loop over scalars
@@ -4917,20 +4918,20 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddFlux<nsd,
         if (phasemanager.has_add_scalar_dependent_flux(ivolfrac - numfluidphases, iscal))
         {
           // diffusion tensor
-          CORE::LINALG::Matrix<nsd, nsd> difftensoraddflux(true);
+          Core::LinAlg::Matrix<nsd, nsd> difftensoraddflux(true);
           for (int i = 0; i < nsd; i++)
             difftensoraddflux(i, i) = phasemanager.ScalarDiff(ivolfrac - numfluidphases, iscal);
 
           // haptotaxis: scale with volfrac * (1 - porosity - sumaddvolfrac)
           if (phasemanager.ScalarToPhase(iscal).species_type ==
-              MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid)
+              Mat::ScaTraMatMultiPoro::SpeciesType::species_in_solid)
           {
             difftensoraddflux.Scale(phasemanager.VolFrac(ivolfrac - numfluidphases) *
                                     (1.0 - phasemanager.Porosity() - phasemanager.SumAddVolFrac()));
           }
           // chemotaxis: scale with volfrac * S * porosity
           else if (phasemanager.ScalarToPhase(iscal).species_type ==
-                   MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid)
+                   Mat::ScaTraMatMultiPoro::SpeciesType::species_in_fluid)
           {
             difftensoraddflux.Scale(
                 phasemanager.VolFrac(ivolfrac - numfluidphases) * phasemanager.Porosity() *
@@ -4939,7 +4940,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddFlux<nsd,
           else
             FOUR_C_THROW("AddScalarDependentFlux only possible for species in fluid or solid!");
 
-          static CORE::LINALG::Matrix<nsd, 1> diffflux(true);
+          static Core::LinAlg::Matrix<nsd, 1> diffflux(true);
           diffflux.Multiply(difftensoraddflux, gradscalarnp[iscal]);
           for (int vi = 0; vi < nen; ++vi)
           {
@@ -4961,18 +4962,18 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddFlux<nsd,
  | evaluate off-diagonal coupling matrix with structure kremheller 08/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddFlux<nsd,
-    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
+    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& deriv,
-    const CORE::LINALG::Matrix<nsd, nen>& derxy, const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
+    const Core::LinAlg::Matrix<nsd, nen>& derxy, const Core::LinAlg::Matrix<nsd, nsd>& xjm,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, double det)
 {
   // get matrix to fill
-  CORE::LINALG::SerialDenseMatrix& mymat = *elemat[0];
+  Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
   const int numfluidphases = phasemanager.NumFluidPhases();
   const int numvolfrac = phasemanager.NumVolFrac();
@@ -4984,7 +4985,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddFlux<nsd,
     {
       // only in case of additional flux we have access to numscal
       const int numscal = phasemanager.NumScal();
-      const std::vector<CORE::LINALG::Matrix<nsd, 1>>& gradscalarnp =
+      const std::vector<Core::LinAlg::Matrix<nsd, 1>>& gradscalarnp =
           *variablemanager.GradScalarnp();
 
       // loop over all scalars
@@ -4993,14 +4994,14 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddFlux<nsd,
         if (phasemanager.has_add_scalar_dependent_flux(ivolfrac - numfluidphases, iscal))
         {
           // diffusion tensor
-          CORE::LINALG::Matrix<nsd, nsd> difftensoraddflux(true);
+          Core::LinAlg::Matrix<nsd, nsd> difftensoraddflux(true);
           for (int i = 0; i < nsd; i++)
             difftensoraddflux(i, i) = phasemanager.ScalarDiff(ivolfrac - numfluidphases, iscal);
 
-          static CORE::LINALG::Matrix<nsd, 1> diffflux(true);
+          static Core::LinAlg::Matrix<nsd, 1> diffflux(true);
           // haptotaxis: scale with volfrac * (1 - porosity - sumaddvolfrac)
           if (phasemanager.ScalarToPhase(iscal).species_type ==
-              MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid)
+              Mat::ScaTraMatMultiPoro::SpeciesType::species_in_solid)
           {
             diffflux.Multiply(phasemanager.VolFrac(ivolfrac - numfluidphases) *
                                   (1 - phasemanager.Porosity() - phasemanager.SumAddVolFrac()),
@@ -5008,7 +5009,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddFlux<nsd,
           }
           // chemotaxis: scale with volfrac * S * porosity
           else if (phasemanager.ScalarToPhase(iscal).species_type ==
-                   MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid)
+                   Mat::ScaTraMatMultiPoro::SpeciesType::species_in_fluid)
           {
             diffflux.Multiply(
                 phasemanager.VolFrac(ivolfrac - numfluidphases) * phasemanager.Porosity() *
@@ -5022,7 +5023,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddFlux<nsd,
           // TODO: anisotropic difftensor
           // haptotaxis: scale with volfrac * (1 - porosity - sumaddvolfrac)
           if (phasemanager.ScalarToPhase(iscal).species_type ==
-              MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid)
+              Mat::ScaTraMatMultiPoro::SpeciesType::species_in_solid)
           {
             v = difftensoraddflux(0, 0) * timefacfac / det *
                 phasemanager.VolFrac(ivolfrac - numfluidphases) *
@@ -5030,7 +5031,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddFlux<nsd,
           }
           // chemotaxis: scale with volfrac * S * porosity
           else if (phasemanager.ScalarToPhase(iscal).species_type ==
-                   MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid)
+                   Mat::ScaTraMatMultiPoro::SpeciesType::species_in_fluid)
           {
             v = difftensoraddflux(0, 0) * timefacfac / det *
                 phasemanager.VolFrac(ivolfrac - numfluidphases) * phasemanager.Porosity() *
@@ -5040,7 +5041,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddFlux<nsd,
             FOUR_C_THROW("AddScalarDependentFlux only possible for species in fluid or solid!");
 
           // gradient of phi w.r.t. reference coordinates
-          CORE::LINALG::Matrix<nsd, 1> refgradscalarnp(true);
+          Core::LinAlg::Matrix<nsd, 1> refgradscalarnp(true);
           refgradscalarnp.Multiply(xjm, gradscalarnp[iscal]);
 
           // 1)
@@ -5059,11 +5060,11 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddFlux<nsd,
 
           if (phasemanager.porosity_depends_on_struct())
           {
-            static CORE::LINALG::Matrix<nsd, 1> diffflux2(true);
+            static Core::LinAlg::Matrix<nsd, 1> diffflux2(true);
 
             // haptotaxis
             if (phasemanager.ScalarToPhase(iscal).species_type ==
-                MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid)
+                Mat::ScaTraMatMultiPoro::SpeciesType::species_in_solid)
             {
               diffflux2.Multiply(phasemanager.VolFrac(ivolfrac - numfluidphases) * (-1.0) *
                                      phasemanager.JacobianDefGrad() *
@@ -5072,7 +5073,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddFlux<nsd,
             }
             // chemotaxis
             else if (phasemanager.ScalarToPhase(iscal).species_type ==
-                     MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid)
+                     Mat::ScaTraMatMultiPoro::SpeciesType::species_in_fluid)
             {
               diffflux2.Multiply(
                   phasemanager.VolFrac(ivolfrac - numfluidphases) *
@@ -5113,17 +5114,17 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddFlux<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 08/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddFlux<nsd,
-    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
+    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac)
 {
   // get matrix to fill
-  CORE::LINALG::SerialDenseMatrix& mymat = *elemat[0];
+  Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
   const int numfluidphases = phasemanager.NumFluidPhases();
   const int numvolfrac = phasemanager.NumVolFrac();
@@ -5140,25 +5141,25 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddFlux<nsd,
         if (phasemanager.has_add_scalar_dependent_flux(ivolfrac - numfluidphases, iscal))
         {
           // diffusion tensor
-          CORE::LINALG::Matrix<nsd, nsd> difftensoraddflux(true);
+          Core::LinAlg::Matrix<nsd, nsd> difftensoraddflux(true);
           for (int i = 0; i < nsd; i++)
             difftensoraddflux(i, i) = phasemanager.ScalarDiff(ivolfrac - numfluidphases, iscal);
 
           // haptotaxis: scale with volfrac * (1 - porosity - sumaddvolfrac)
           if (phasemanager.ScalarToPhase(iscal).species_type ==
-              MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid)
+              Mat::ScaTraMatMultiPoro::SpeciesType::species_in_solid)
             difftensoraddflux.Scale(phasemanager.VolFrac(ivolfrac - numfluidphases) *
                                     (1.0 - phasemanager.Porosity() - phasemanager.SumAddVolFrac()));
           // chemotaxis: scale with volfrac * S * porosity
           else if (phasemanager.ScalarToPhase(iscal).species_type ==
-                   MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid)
+                   Mat::ScaTraMatMultiPoro::SpeciesType::species_in_fluid)
             difftensoraddflux.Scale(
                 phasemanager.VolFrac(ivolfrac - numfluidphases) * phasemanager.Porosity() *
                 phasemanager.Saturation(phasemanager.ScalarToPhase(iscal).phaseID));
           else
             FOUR_C_THROW("AddScalarDependentFlux only possible for species in fluid or solid!");
 
-          static CORE::LINALG::Matrix<nsd, nen> diffflux(true);
+          static Core::LinAlg::Matrix<nsd, nen> diffflux(true);
           diffflux.Multiply(difftensoraddflux, derxy);
 
           // diffusive term
@@ -5181,7 +5182,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddFlux<nsd,
           {
             // get scalars
             const std::vector<double> scalars = *variablemanager.Scalarnp();
-            const std::vector<CORE::LINALG::Matrix<nsd, 1>>& gradscalarnp =
+            const std::vector<Core::LinAlg::Matrix<nsd, 1>>& gradscalarnp =
                 *variablemanager.GradScalarnp();
 
             // corrrectly scale difftensor
@@ -5190,7 +5191,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddFlux<nsd,
             difftensoraddflux.Scale(
                 -1.0 / (phasemanager.OmegaHalf(ivolfrac - numfluidphases, iscal) + scalars[iscal]));
 
-            static CORE::LINALG::Matrix<nsd, 1> diffflux2(true);
+            static Core::LinAlg::Matrix<nsd, 1> diffflux2(true);
             diffflux2.Multiply(difftensoraddflux, gradscalarnp[iscal]);
 
             for (int vi = 0; vi < nen; ++vi)
@@ -5221,19 +5222,19 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddFlux<nsd,
  | evaluate element matrix                             kremheller 02/18 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracPressureDiff<nsd,
-    nen>::evaluate_matrix_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracPressureDiff<nsd,
+    nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, bool inittimederiv)
 {
   // we do not need the matrix if we calculate the initial time derivative
   if (!inittimederiv)
   {
     // get matrix to fill
-    CORE::LINALG::SerialDenseMatrix& mymat = *elemat[0];
+    Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
     const int numfluidphases = phasemanager.NumFluidPhases();
     const int numvolfrac = phasemanager.NumVolFrac();
@@ -5248,14 +5249,14 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracPressureDiff<nsd,
       if (evaluatevolfracpress)
       {
         // get permeability tensor and diffusive flux
-        CORE::LINALG::Matrix<nsd, nsd> permeabilitytensorvolfracpress(true);
+        Core::LinAlg::Matrix<nsd, nsd> permeabilitytensorvolfracpress(true);
         phasemanager.permeability_tensor_vol_frac_pressure(
             ivolfracpress - numfluidphases - numvolfrac, permeabilitytensorvolfracpress);
         permeabilitytensorvolfracpress.Scale(
             1.0 / phasemanager.dyn_viscosity_vol_frac_pressure(
                       ivolfracpress - numfluidphases - numvolfrac, -1.0));  // TODO: change -1.0
 
-        static CORE::LINALG::Matrix<nsd, nen> diffflux(true);
+        static Core::LinAlg::Matrix<nsd, nen> diffflux(true);
         diffflux.Multiply(permeabilitytensorvolfracpress, derxy);
 
         // diffusive term
@@ -5289,21 +5290,21 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracPressureDiff<nsd,
  | evaluate RHS vector                                 kremheller 02/18 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracPressureDiff<nsd,
-    nen>::evaluate_vector_and_assemble(std::vector<CORE::LINALG::SerialDenseVector*>& elevec,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
-    const CORE::LINALG::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracPressureDiff<nsd,
+    nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
     double fac, bool inittimederiv)
 {
   // get matrix to fill
-  CORE::LINALG::SerialDenseVector& myvec = *elevec[0];
+  Core::LinAlg::SerialDenseVector& myvec = *elevec[0];
 
   const int numfluidphases = phasemanager.NumFluidPhases();
   const int numvolfrac = phasemanager.NumVolFrac();
 
-  const std::vector<CORE::LINALG::Matrix<nsd, 1>>& gradphi = *variablemanager.GradPhinp();
+  const std::vector<Core::LinAlg::Matrix<nsd, 1>>& gradphi = *variablemanager.GradPhinp();
 
   // loop over all volume fractions
   for (int ivolfracpress = numfluidphases + numvolfrac; ivolfracpress < numdofpernode;
@@ -5320,14 +5321,14 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracPressureDiff<nsd,
     if (evaluatevolfracpress)
     {
       // get permeability tensor
-      CORE::LINALG::Matrix<nsd, nsd> permeabilitytensorvolfracpress(true);
+      Core::LinAlg::Matrix<nsd, nsd> permeabilitytensorvolfracpress(true);
       phasemanager.permeability_tensor_vol_frac_pressure(
           ivolfracpress - numfluidphases - numvolfrac, permeabilitytensorvolfracpress);
       permeabilitytensorvolfracpress.Scale(
           1.0 / phasemanager.dyn_viscosity_vol_frac_pressure(
                     ivolfracpress - numfluidphases - numvolfrac, -1.0));
 
-      static CORE::LINALG::Matrix<nsd, 1> diffflux(true);
+      static Core::LinAlg::Matrix<nsd, 1> diffflux(true);
       diffflux.Multiply(permeabilitytensorvolfracpress, gradphi[ivolfracpress]);
 
       for (int vi = 0; vi < nen; ++vi)
@@ -5349,23 +5350,23 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracPressureDiff<nsd,
  | evaluate off-diagonal coupling matrix with structure kremheller 02/18 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracPressureDiff<nsd,
-    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracPressureDiff<nsd,
+    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& deriv,
-    const CORE::LINALG::Matrix<nsd, nen>& derxy, const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
+    const Core::LinAlg::Matrix<nsd, nen>& derxy, const Core::LinAlg::Matrix<nsd, nsd>& xjm,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, double det)
 {
   // get matrix to fill
-  CORE::LINALG::SerialDenseMatrix& mymat = *elemat[0];
+  Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
   const int numfluidphases = phasemanager.NumFluidPhases();
   const int numvolfrac = phasemanager.NumVolFrac();
 
-  const std::vector<CORE::LINALG::Matrix<nsd, 1>>& gradphi = *variablemanager.GradPhinp();
+  const std::vector<Core::LinAlg::Matrix<nsd, 1>>& gradphi = *variablemanager.GradPhinp();
 
   // loop over all volume fractions
   for (int ivolfracpress = numfluidphases + numvolfrac; ivolfracpress < numdofpernode;
@@ -5377,21 +5378,21 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracPressureDiff<nsd,
     if (evaluatevolfracpress)
     {
       // get permeability tensor
-      CORE::LINALG::Matrix<nsd, nsd> permeabilitytensorvolfracpress(true);
+      Core::LinAlg::Matrix<nsd, nsd> permeabilitytensorvolfracpress(true);
       phasemanager.permeability_tensor_vol_frac_pressure(
           ivolfracpress - numfluidphases - numvolfrac, permeabilitytensorvolfracpress);
       permeabilitytensorvolfracpress.Scale(
           1.0 / phasemanager.dyn_viscosity_vol_frac_pressure(
                     ivolfracpress - numfluidphases - numvolfrac, -1.0));
 
-      static CORE::LINALG::Matrix<nsd, 1> diffflux(true);
+      static Core::LinAlg::Matrix<nsd, 1> diffflux(true);
       diffflux.Multiply(permeabilitytensorvolfracpress, gradphi[ivolfracpress]);
 
       // TODO: anisotropic difftensor
       const double v = permeabilitytensorvolfracpress(0, 0) * timefacfac / det;
 
       // gradient of phi w.r.t. reference coordinates
-      CORE::LINALG::Matrix<nsd, 1> refgradphi(true);
+      Core::LinAlg::Matrix<nsd, 1> refgradphi(true);
       refgradphi.Multiply(xjm, gradphi[ivolfracpress]);
 
       // OD mesh - diffusive term
@@ -5406,13 +5407,13 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracPressureDiff<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 02/18 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracPressureDiff<nsd,
-    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracPressureDiff<nsd,
+    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac)
 {
   // nothing to do
@@ -5426,19 +5427,19 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracPressureDiff<nsd,
  | evaluate element matrix                             kremheller 02/18 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracPressureReac<nsd,
-    nen>::evaluate_matrix_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracPressureReac<nsd,
+    nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, bool inittimederiv)
 {
   // we do not need the matrix if we calculate the initial time derivative
   if (!inittimederiv)
   {
     // get matrix to fill
-    CORE::LINALG::SerialDenseMatrix& mymat = *elemat[0];
+    Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
     const int numfluidphases = phasemanager.NumFluidPhases();
     const int numvolfrac = phasemanager.NumVolFrac();
@@ -5486,16 +5487,16 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracPressureReac<nsd,
  | evaluate RHS vector                                 kremheller 02/18 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracPressureReac<nsd,
-    nen>::evaluate_vector_and_assemble(std::vector<CORE::LINALG::SerialDenseVector*>& elevec,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
-    const CORE::LINALG::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracPressureReac<nsd,
+    nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
     double fac, bool inittimederiv)
 {
   // get matrix to fill
-  CORE::LINALG::SerialDenseVector& myvec = *elevec[0];
+  Core::LinAlg::SerialDenseVector& myvec = *elevec[0];
 
   const int numfluidphases = phasemanager.NumFluidPhases();
   const int numvolfrac = phasemanager.NumVolFrac();
@@ -5530,18 +5531,18 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracPressureReac<nsd,
  | evaluate off-diagonal coupling matrix with structure kremheller 02/18 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracPressureReac<nsd,
-    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracPressureReac<nsd,
+    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& deriv,
-    const CORE::LINALG::Matrix<nsd, nen>& derxy, const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
+    const Core::LinAlg::Matrix<nsd, nen>& derxy, const Core::LinAlg::Matrix<nsd, nsd>& xjm,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, double det)
 {
   // get matrix to fill
-  CORE::LINALG::SerialDenseMatrix& mymat = *elemat[0];
+  Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
   const int numfluidphases = phasemanager.NumFluidPhases();
   const int numvolfrac = phasemanager.NumVolFrac();
@@ -5589,17 +5590,17 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracPressureReac<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 02/18 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracPressureReac<nsd,
-    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<CORE::LINALG::SerialDenseMatrix*>&
+void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracPressureReac<nsd,
+    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
-    const CORE::LINALG::Matrix<nen, 1>& funct, const CORE::LINALG::Matrix<nsd, nen>& derxy,
+    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
-    const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,
-    const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
+    const PoroFluidManager::PhaseManagerInterface& phasemanager,
+    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac)
 {
   // get matrix to fill
-  CORE::LINALG::SerialDenseMatrix& mymat = *elemat[0];
+  Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
   const int numfluidphases = phasemanager.NumFluidPhases();
   const int numvolfrac = phasemanager.NumVolFrac();
@@ -5646,31 +5647,31 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracPressureReac<nsd,
 
 // 1D elements
 // line 2
-template class DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorInterface<1, 2>;
+template class Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorInterface<1, 2>;
 
 // line 3
-template class DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorInterface<1, 3>;
+template class Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorInterface<1, 3>;
 
 // 2D elements
 // tri3
-template class DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorInterface<2, 3>;
+template class Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorInterface<2, 3>;
 // quad4
-template class DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorInterface<2, 4>;
+template class Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorInterface<2, 4>;
 
 // quad9 and nurbs9
-template class DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorInterface<2, 9>;
+template class Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorInterface<2, 9>;
 
 // 3D elements
 // hex8
-template class DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorInterface<3, 8>;
+template class Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorInterface<3, 8>;
 
 // hex27
-template class DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorInterface<3, 27>;
+template class Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorInterface<3, 27>;
 // tet4
-template class DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorInterface<3, 4>;
+template class Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorInterface<3, 4>;
 // tet10
-template class DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorInterface<3, 10>;
+template class Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorInterface<3, 10>;
 // pyramid5
-template class DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorInterface<3, 5>;
+template class Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorInterface<3, 5>;
 
 FOUR_C_NAMESPACE_CLOSE

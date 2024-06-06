@@ -16,9 +16,9 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
-  namespace ELASTIC
+  namespace Elastic
   {
     namespace PAR
     {
@@ -28,11 +28,11 @@ namespace MAT
        * <h3>Input line</h3>
        * MAT 1 ELAST_IsoVarga MUE 1.0 BETA 1.0
        */
-      class IsoVarga : public CORE::MAT::PAR::Parameter
+      class IsoVarga : public Core::Mat::PAR::Parameter
       {
        public:
         /// standard constructor
-        IsoVarga(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
+        IsoVarga(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
 
         /// @name material parameters
         //@{
@@ -46,11 +46,11 @@ namespace MAT
 
         /// Override this method and throw error, as the material should be created in within the
         /// Factory method of the elastic summand
-        Teuchos::RCP<CORE::MAT::Material> create_material() override
+        Teuchos::RCP<Core::Mat::Material> create_material() override
         {
           FOUR_C_THROW(
               "Cannot create a material from this method, as it should be created in "
-              "MAT::ELASTIC::Summand::Factory.");
+              "Mat::Elastic::Summand::Factory.");
           return Teuchos::null;
         };
 
@@ -85,15 +85,15 @@ namespace MAT
     {
      public:
       /// constructor with given material parameters
-      IsoVarga(MAT::ELASTIC::PAR::IsoVarga* params);
+      IsoVarga(Mat::Elastic::PAR::IsoVarga* params);
 
       /// @name Access material constants
       //@{
 
       /// material type
-      CORE::Materials::MaterialType MaterialType() const override
+      Core::Materials::MaterialType MaterialType() const override
       {
-        return CORE::Materials::mes_isovarga;
+        return Core::Materials::mes_isovarga;
       }
 
       /// add shear modulus equivalent
@@ -108,12 +108,12 @@ namespace MAT
 
       /// Add coefficients with respect to modified principal stretches (or zeros)
       void add_coefficients_stretches_modified(
-          CORE::LINALG::Matrix<3, 1>&
+          Core::LinAlg::Matrix<3, 1>&
               modgamma,  ///< [\bar{\gamma}_1, \bar{\gamma}_2, \bar{\gamma}_3]
-          CORE::LINALG::Matrix<6, 1>&
+          Core::LinAlg::Matrix<6, 1>&
               moddelta,  ///< [\bar{\delta}_11, \bar{\delta}_22, \bar{\delta}_33,
                          ///< \bar{\delta}_12,\bar{\delta}_23, \bar{\delta}_31]
-          const CORE::LINALG::Matrix<3, 1>&
+          const Core::LinAlg::Matrix<3, 1>&
               modstr  ///< modified principal stretches, [\bar{\lambda}_1,
                       ///< \bar{\lambda}_2, \bar{\lambda}_3]
           ) override;
@@ -132,11 +132,11 @@ namespace MAT
 
      private:
       /// Varga material parameters
-      MAT::ELASTIC::PAR::IsoVarga* params_;
+      Mat::Elastic::PAR::IsoVarga* params_;
     };
 
-  }  // namespace ELASTIC
-}  // namespace MAT
+  }  // namespace Elastic
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

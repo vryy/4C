@@ -36,7 +36,7 @@ namespace PARTICLEWALL
   class WallHandlerInterface;
 }
 
-namespace PARTICLEINTERACTION
+namespace ParticleInteraction
 {
   class MaterialHandler;
   class InteractionWriter;
@@ -45,12 +45,12 @@ namespace PARTICLEINTERACTION
   class DEMContactNormalBase;
   class DEMContactTangentialBase;
   class DEMContactRollingBase;
-}  // namespace PARTICLEINTERACTION
+}  // namespace ParticleInteraction
 
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
  *---------------------------------------------------------------------------*/
-namespace PARTICLEINTERACTION
+namespace ParticleInteraction
 {
   class DEMContact final
   {
@@ -75,10 +75,10 @@ namespace PARTICLEINTERACTION
     void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
         const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface,
-        const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
-        const std::shared_ptr<PARTICLEINTERACTION::InteractionWriter> particleinteractionwriter,
-        const std::shared_ptr<PARTICLEINTERACTION::DEMNeighborPairs> neighborpairs,
-        const std::shared_ptr<PARTICLEINTERACTION::DEMHistoryPairs> historypairs);
+        const std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial,
+        const std::shared_ptr<ParticleInteraction::InteractionWriter> particleinteractionwriter,
+        const std::shared_ptr<ParticleInteraction::DEMNeighborPairs> neighborpairs,
+        const std::shared_ptr<ParticleInteraction::DEMHistoryPairs> historypairs);
 
     //! set current step size
     void set_current_step_size(const double currentstepsize);
@@ -141,25 +141,25 @@ namespace PARTICLEINTERACTION
     std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface_;
 
     //! particle material handler
-    std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial_;
+    std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial_;
 
     //! particle interaction writer
-    std::shared_ptr<PARTICLEINTERACTION::InteractionWriter> particleinteractionwriter_;
+    std::shared_ptr<ParticleInteraction::InteractionWriter> particleinteractionwriter_;
 
     //! neighbor pair handler
-    std::shared_ptr<PARTICLEINTERACTION::DEMNeighborPairs> neighborpairs_;
+    std::shared_ptr<ParticleInteraction::DEMNeighborPairs> neighborpairs_;
 
     //! history pair handler
-    std::shared_ptr<PARTICLEINTERACTION::DEMHistoryPairs> historypairs_;
+    std::shared_ptr<ParticleInteraction::DEMHistoryPairs> historypairs_;
 
     //! normal contact handler
-    std::unique_ptr<PARTICLEINTERACTION::DEMContactNormalBase> contactnormal_;
+    std::unique_ptr<ParticleInteraction::DEMContactNormalBase> contactnormal_;
 
     //! tangential contact handler
-    std::unique_ptr<PARTICLEINTERACTION::DEMContactTangentialBase> contacttangential_;
+    std::unique_ptr<ParticleInteraction::DEMContactTangentialBase> contacttangential_;
 
     //! rolling contact handler
-    std::unique_ptr<PARTICLEINTERACTION::DEMContactRollingBase> contactrolling_;
+    std::unique_ptr<ParticleInteraction::DEMContactRollingBase> contactrolling_;
 
     //! time step size
     double dt_;
@@ -171,7 +171,7 @@ namespace PARTICLEINTERACTION
     const bool writeparticlewallinteraction_;
   };
 
-}  // namespace PARTICLEINTERACTION
+}  // namespace ParticleInteraction
 
 /*---------------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

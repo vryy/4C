@@ -22,13 +22,13 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
   class BlockSparseMatrixBase;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace ADAPTER
+namespace Adapter
 {
   class Coupling;
 }
@@ -86,12 +86,12 @@ namespace CONTACT
       \param statetype (in): enumerator defining which quantity to set (see mortar_interface.H for
       an overview) \param vec (in): current global state of the quantity defined by statetype
      */
-    void set_state(const enum MORTAR::StateType& statetype, const Epetra_Vector& vec) override;
+    void set_state(const enum Mortar::StateType& statetype, const Epetra_Vector& vec) override;
 
     // Overload CONTACT::AbstractStrategy::ApplyForceStiffCmt as this is called in the structure
     // --> to early for monolithically coupled algorithms!
     void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
-        Teuchos::RCP<CORE::LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f,
+        Teuchos::RCP<Core::LinAlg::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f,
         const int step, const int iter, bool predictor) override
     {
       // structure single-field predictors (e.g.TangDis) may evaluate the structural contact part
@@ -104,15 +104,15 @@ namespace CONTACT
       In the TSI case, the contact terms are applied to the global system here.
       The "usual" place, i.e. the
       Evaluate(
-        Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
+        Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis)
       in the Contact_lagrange_strategy is overloaded to do nothing, since
       in a coupled problem, we need to be very careful, when condensating
       the Lagrange multipliers.
 
      */
-    virtual void Evaluate(Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat,
-        Teuchos::RCP<Epetra_Vector>& combined_RHS, Teuchos::RCP<CORE::ADAPTER::Coupling> coupST,
+    virtual void Evaluate(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
+        Teuchos::RCP<Epetra_Vector>& combined_RHS, Teuchos::RCP<Core::Adapter::Coupling> coupST,
         Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<const Epetra_Vector> temp);
 
     /*!
@@ -124,10 +124,10 @@ namespace CONTACT
 
     virtual void RecoverCoupled(Teuchos::RCP<Epetra_Vector> sinc,  /// displacement  increment
         Teuchos::RCP<Epetra_Vector> tinc,                          /// thermal  increment
-        Teuchos::RCP<CORE::ADAPTER::Coupling> coupST);
+        Teuchos::RCP<Core::Adapter::Coupling> coupST);
 
     void store_nodal_quantities(
-        MORTAR::StrategyBase::QuantityType type, Teuchos::RCP<CORE::ADAPTER::Coupling> coupST);
+        Mortar::StrategyBase::QuantityType type, Teuchos::RCP<Core::Adapter::Coupling> coupST);
 
     /*!
      \brief Update contact at end of time step
@@ -163,11 +163,11 @@ namespace CONTACT
     performed on the level of the contact algorithm, for short: here's the right place.
 
     */
-    void DoReadRestart(CORE::IO::DiscretizationReader& reader,
+    void DoReadRestart(Core::IO::DiscretizationReader& reader,
         Teuchos::RCP<const Epetra_Vector> dis,
         Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr) override;
 
-    void SetCoupling(Teuchos::RCP<CORE::ADAPTER::Coupling> coupST) { coupST_ = coupST; };
+    void SetCoupling(Teuchos::RCP<Core::Adapter::Coupling> coupST) { coupST_ = coupST; };
 
     //@}
 
@@ -195,28 +195,28 @@ namespace CONTACT
     Teuchos::RCP<Epetra_Map> thr_act_dofs_;  // active thermo dofs
     Teuchos::RCP<Epetra_Map> thr_s_dofs_;    // slave thermo dofs
 
-    Teuchos::RCP<CORE::LINALG::SparseMatrix>
+    Teuchos::RCP<Core::LinAlg::SparseMatrix>
         dinvA_;  // dinv on active displacement dofs (for recovery)
-    Teuchos::RCP<CORE::LINALG::SparseMatrix>
+    Teuchos::RCP<Core::LinAlg::SparseMatrix>
         dinvAthr_;  // dinv on active thermal dofs (for recovery)
     // recovery of contact LM
-    Teuchos::RCP<CORE::LINALG::SparseMatrix>
+    Teuchos::RCP<Core::LinAlg::SparseMatrix>
         kss_a_;  // Part of structure-stiffness (kss) that corresponds to active slave rows
-    Teuchos::RCP<CORE::LINALG::SparseMatrix>
+    Teuchos::RCP<Core::LinAlg::SparseMatrix>
         kst_a_;  // Part of coupling-stiffness  (kst) that corresponds to active slave rows
     Teuchos::RCP<Epetra_Vector>
         rs_a_;  // Part of structural residual that corresponds to active slave rows
 
     // recovery of thermal LM
-    Teuchos::RCP<CORE::LINALG::SparseMatrix>
+    Teuchos::RCP<Core::LinAlg::SparseMatrix>
         ktt_a_;  // Part of structure-stiffness (ktt) that corresponds to active slave rows
-    Teuchos::RCP<CORE::LINALG::SparseMatrix>
+    Teuchos::RCP<Core::LinAlg::SparseMatrix>
         kts_a_;  // Part of coupling-stiffness  (kts) that corresponds to active slave rows
     Teuchos::RCP<Epetra_Vector>
         rt_a_;  // Part of structural residual that corresponds to active slave rows
 
     // pointer to TSI coupling object
-    Teuchos::RCP<CORE::ADAPTER::Coupling> coupST_;
+    Teuchos::RCP<Core::Adapter::Coupling> coupST_;
   };  // class LagrangeStrategyTsi
 
   namespace UTILS

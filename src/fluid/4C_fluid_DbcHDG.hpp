@@ -19,11 +19,11 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT::UTILS
+namespace Discret::UTILS
 {
   class Dbc;
   // class DbcInfo;
-}  // namespace DRT::UTILS
+}  // namespace Discret::UTILS
 
 namespace FLD
 {
@@ -32,7 +32,7 @@ namespace FLD
     /** \brief Specialized Dbc evaluation class for HDG discretizations
      *
      *  \author hiermeier \date 10/16 */
-    class DbcHdgFluid : public DRT::UTILS::Dbc
+    class DbcHdgFluid : public Discret::UTILS::Dbc
     {
      public:
       /// constructor
@@ -47,12 +47,12 @@ namespace FLD
        * Dirichlet boundary conditions
        *
        *  \author kronbichler \date 06/16 */
-      void read_dirichlet_condition(const CORE::UTILS::FunctionManager& function_manager,
-          const DRT::Discretization& discret, const CORE::Conditions::Condition& cond, double time,
-          DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids,
+      void read_dirichlet_condition(const Core::UTILS::FunctionManager& function_manager,
+          const Discret::Discretization& discret, const Core::Conditions::Condition& cond,
+          double time, DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids,
           int hierarchical_order) const override;
-      void read_dirichlet_condition(const CORE::UTILS::FunctionManager& function_manager,
-          const DRT::DiscretizationFaces& discret, const CORE::Conditions::Condition& cond,
+      void read_dirichlet_condition(const Core::UTILS::FunctionManager& function_manager,
+          const Discret::DiscretizationFaces& discret, const Core::Conditions::Condition& cond,
           double time, DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids,
           int hierarchical_order) const;
 
@@ -69,12 +69,13 @@ namespace FLD
        * Dirichlet boundary conditions
        *
        *  \author kronbichler \date 02/08 */
-      void do_dirichlet_condition(const CORE::UTILS::FunctionManager& function_manager,
-          const DRT::Discretization& discret, const CORE::Conditions::Condition& cond, double time,
-          const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
+      void do_dirichlet_condition(const Core::UTILS::FunctionManager& function_manager,
+          const Discret::Discretization& discret, const Core::Conditions::Condition& cond,
+          double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
+          const Epetra_IntVector& toggle,
           const Teuchos::RCP<std::set<int>>* dbcgids) const override;
-      void do_dirichlet_condition(const CORE::UTILS::FunctionManager& function_manager,
-          const DRT::DiscretizationFaces& discret, const CORE::Conditions::Condition& cond,
+      void do_dirichlet_condition(const Core::UTILS::FunctionManager& function_manager,
+          const Discret::DiscretizationFaces& discret, const Core::Conditions::Condition& cond,
           double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
           const Epetra_IntVector& toggle) const;
     };  // class DbcHDG_Fluid

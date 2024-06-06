@@ -16,12 +16,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace ADAPTER
+namespace Adapter
 {
   class ScaTraBaseAlgorithm;
 }
 
-namespace ART
+namespace Arteries
 {
   /*!
   \brief stationary formulation for arterial network problems
@@ -35,9 +35,9 @@ namespace ART
     \brief Standard Constructor
 
     */
-    ArtNetImplStationary(Teuchos::RCP<DRT::Discretization> dis, const int linsolvernumber,
+    ArtNetImplStationary(Teuchos::RCP<Discret::Discretization> dis, const int linsolvernumber,
         const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& artparams,
-        CORE::IO::DiscretizationWriter& output);
+        Core::IO::DiscretizationWriter& output);
 
 
     // initialization
@@ -48,7 +48,7 @@ namespace ART
     void TestResults() override;
 
     // create field test
-    Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() override;
+    Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() override;
 
     /// setup the variables to do a new time step
     void TimeUpdate() override;
@@ -99,7 +99,7 @@ namespace ART
     void OutputFlow();
 
     //! set the initial field on the artery discretization
-    void SetInitialField(const INPAR::ARTDYN::InitialField init,  //!< type of initial field
+    void SetInitialField(const Inpar::ArtDyn::InitialField init,  //!< type of initial field
         const int startfuncno                                     //!< number of spatial function
         ) override;
 
@@ -152,10 +152,10 @@ namespace ART
     //! element radius (for output)
     Teuchos::RCP<Epetra_Vector> ele_radius_;
     /// underlying scatra problem
-    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_;
+    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra_;
 
   };  // class ArtNetImplStationary
-}  // namespace ART
+}  // namespace Arteries
 
 
 FOUR_C_NAMESPACE_CLOSE

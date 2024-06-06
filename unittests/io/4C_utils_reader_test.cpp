@@ -20,7 +20,7 @@
 namespace
 {
   using namespace FourC;
-  using namespace CORE::UTILS;
+  using namespace Core::UTILS;
 
   TEST(UtilsReaderTests, SplitStringSeparatorInString)
   {

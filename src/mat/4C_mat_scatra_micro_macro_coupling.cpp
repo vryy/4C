@@ -17,8 +17,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-MAT::PAR::ScatraMicroMacroCoupling::ScatraMicroMacroCoupling(
-    Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::ScatraMicroMacroCoupling::ScatraMicroMacroCoupling(
+    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : microfile_((matdata->Get<std::string>("MICROFILE"))),
       microdisnum_(matdata->Get<int>("MICRODIS_NUM")),
       A_s_(matdata->Get<double>("A_s"))
@@ -28,12 +28,12 @@ MAT::PAR::ScatraMicroMacroCoupling::ScatraMicroMacroCoupling(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-MAT::ScatraMicroMacroCoupling::ScatraMicroMacroCoupling() : matgp_() {}
+Mat::ScatraMicroMacroCoupling::ScatraMicroMacroCoupling() : matgp_() {}
 
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::ScatraMicroMacroCoupling::Initialize(const int ele_id, const int gp_id, const bool is_ale)
+void Mat::ScatraMicroMacroCoupling::Initialize(const int ele_id, const int gp_id, const bool is_ale)
 {
   // safety check
   if (gp_id < 0) FOUR_C_THROW("Invalid macro-scale Gauss point ID!");
@@ -51,7 +51,7 @@ void MAT::ScatraMicroMacroCoupling::Initialize(const int ele_id, const int gp_id
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::ScatraMicroMacroCoupling::prepare_time_step(
+void Mat::ScatraMicroMacroCoupling::prepare_time_step(
     const int gp_id, const std::vector<double>& phinp_macro) const
 {
   // safety check
@@ -64,7 +64,7 @@ void MAT::ScatraMicroMacroCoupling::prepare_time_step(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::ScatraMicroMacroCoupling::Evaluate(const int gp_id,
+void Mat::ScatraMicroMacroCoupling::Evaluate(const int gp_id,
     const std::vector<double>& phinp_macro, double& q_micro, std::vector<double>& dq_dphi_micro,
     const double detF, const bool solve) const
 {
@@ -78,7 +78,7 @@ void MAT::ScatraMicroMacroCoupling::Evaluate(const int gp_id,
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-double MAT::ScatraMicroMacroCoupling::evaluate_mean_concentration(const int gp_id) const
+double Mat::ScatraMicroMacroCoupling::evaluate_mean_concentration(const int gp_id) const
 {
   // safety check
   if (gp_id < 0) FOUR_C_THROW("Invalid macro-scale Gauss point ID!");
@@ -90,7 +90,7 @@ double MAT::ScatraMicroMacroCoupling::evaluate_mean_concentration(const int gp_i
 
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
-double MAT::ScatraMicroMacroCoupling::evaluate_mean_concentration_time_derivative(
+double Mat::ScatraMicroMacroCoupling::evaluate_mean_concentration_time_derivative(
     const int gp_id) const
 {
   // safety check
@@ -103,7 +103,7 @@ double MAT::ScatraMicroMacroCoupling::evaluate_mean_concentration_time_derivativ
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::ScatraMicroMacroCoupling::Update(const int gp_id) const
+void Mat::ScatraMicroMacroCoupling::Update(const int gp_id) const
 {
   // safety check
   if (gp_id < 0) FOUR_C_THROW("Invalid macro-scale Gauss point ID!");
@@ -115,7 +115,7 @@ void MAT::ScatraMicroMacroCoupling::Update(const int gp_id) const
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::ScatraMicroMacroCoupling::Output(const int gp_id) const
+void Mat::ScatraMicroMacroCoupling::Output(const int gp_id) const
 {
   // safety check
   if (gp_id < 0) FOUR_C_THROW("Invalid macro-scale Gauss point ID!");
@@ -127,7 +127,7 @@ void MAT::ScatraMicroMacroCoupling::Output(const int gp_id) const
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::ScatraMicroMacroCoupling::read_restart(const int gp_id) const
+void Mat::ScatraMicroMacroCoupling::read_restart(const int gp_id) const
 {
   // safety check
   if (gp_id < 0) FOUR_C_THROW("Invalid macro-scale Gauss point ID!");
@@ -139,7 +139,7 @@ void MAT::ScatraMicroMacroCoupling::read_restart(const int gp_id) const
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::ScatraMicroMacroCoupling::SetTimeStepping(
+void Mat::ScatraMicroMacroCoupling::SetTimeStepping(
     const int gp_id, const double dt, const double time, const int step)
 {
   matgp_.at(gp_id)->SetTimeStepping(dt, time, step);

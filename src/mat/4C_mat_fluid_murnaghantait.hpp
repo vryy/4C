@@ -20,7 +20,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
@@ -28,11 +28,11 @@ namespace MAT
     /// material parameters for weakly compressible fluid according to Murnaghan-Tait
     ///
     /// This object exists only once for each read Murnaghan-Tait fluid.
-    class MurnaghanTaitFluid : public CORE::MAT::PAR::Parameter
+    class MurnaghanTaitFluid : public Core::Mat::PAR::Parameter
     {
      public:
       /// standard constructor
-      MurnaghanTaitFluid(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      MurnaghanTaitFluid(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -53,20 +53,20 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
     };  // class MurnaghanTaitFluid
 
   }  // namespace PAR
 
-  class MurnaghanTaitFluidType : public CORE::COMM::ParObjectType
+  class MurnaghanTaitFluidType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "MurnaghanTaitFluidType"; }
 
     static MurnaghanTaitFluidType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static MurnaghanTaitFluidType instance_;
@@ -76,14 +76,14 @@ namespace MAT
   /// Wrapper for Murnaghan-Tait fluid material
   ///
   /// This object exists (several times) at every element
-  class MurnaghanTaitFluid : public CORE::MAT::Material
+  class MurnaghanTaitFluid : public Core::Mat::Material
   {
    public:
     /// construct empty material object
     MurnaghanTaitFluid();
 
     /// construct the material object given material parameters
-    explicit MurnaghanTaitFluid(MAT::PAR::MurnaghanTaitFluid* params);
+    explicit MurnaghanTaitFluid(Mat::PAR::MurnaghanTaitFluid* params);
 
     //! @name Packing and Unpacking
 
@@ -108,7 +108,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -127,13 +127,13 @@ namespace MAT
     //@}
 
     /// material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_fluid_murnaghantait;
+      return Core::Materials::m_fluid_murnaghantait;
     }
 
     /// return copy of this material object
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new MurnaghanTaitFluid(*this));
     }
@@ -163,14 +163,14 @@ namespace MAT
     double Gamma() const { return params_->gamma_; }
 
     /// Return quick accessible material parameter data
-    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
    private:
     /// my material parameters
-    MAT::PAR::MurnaghanTaitFluid* params_;
+    Mat::PAR::MurnaghanTaitFluid* params_;
   };
 
-}  // namespace MAT
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

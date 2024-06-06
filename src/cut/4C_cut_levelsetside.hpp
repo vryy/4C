@@ -21,9 +21,9 @@ levelset
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::GEO
+namespace Core::Geo
 {
-  namespace CUT
+  namespace Cut
   {
     /*! \brief Class to handle level-set cut side which does not have a regular
      *  geometric shape
@@ -40,7 +40,7 @@ namespace CORE::GEO
       }
 
       /// Returns the geometric shape of this side
-      CORE::FE::CellType Shape() const override { return CORE::FE::CellType::dis_none; }
+      Core::FE::CellType Shape() const override { return Core::FE::CellType::dis_none; }
 
       /// element dimension
       unsigned Dim() const override
@@ -92,7 +92,7 @@ namespace CORE::GEO
      protected:
       /*! \brief is this side closer to the start-point as the other side? */
       bool is_closer_side(
-          const double* startpoint_xyz, CORE::GEO::CUT::Side* other, bool& is_closer) override
+          const double* startpoint_xyz, Core::Geo::Cut::Side* other, bool& is_closer) override
       {
         FOUR_C_THROW("no is_closer_side routine for level set cut side");
         exit(EXIT_FAILURE);
@@ -176,8 +176,8 @@ namespace CORE::GEO
       }
     };  // class LevelSetSide
 
-  }  // namespace CUT
-}  // namespace CORE::GEO
+  }  // namespace Cut
+}  // namespace Core::Geo
 
 FOUR_C_NAMESPACE_CLOSE
 

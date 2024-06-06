@@ -17,9 +17,9 @@ law, modified from Pioletti, 1997
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
-  namespace ELASTIC
+  namespace Elastic
   {
     namespace PAR
     {
@@ -30,11 +30,11 @@ namespace MAT
        * <h3>Input line</h3>
        * MAT 1 VISCO_IsoRateDep N 1
        */
-      class IsoRateDep : public CORE::MAT::PAR::Parameter
+      class IsoRateDep : public Core::Mat::PAR::Parameter
       {
        public:
         /// standard constructor
-        IsoRateDep(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
+        IsoRateDep(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
 
         /// @name material parameters
         //@{
@@ -46,11 +46,11 @@ namespace MAT
 
         /// Override this method and throw error, as the material should be created in within the
         /// Factory method of the elastic summand
-        Teuchos::RCP<CORE::MAT::Material> create_material() override
+        Teuchos::RCP<Core::Mat::Material> create_material() override
         {
           FOUR_C_THROW(
               "Cannot create a material from this method, as it should be created in "
-              "MAT::ELASTIC::Summand::Factory.");
+              "Mat::Elastic::Summand::Factory.");
           return Teuchos::null;
         };
       };  // class IsoRateDep
@@ -74,26 +74,26 @@ namespace MAT
     {
      public:
       /// constructor with given material parameters
-      IsoRateDep(MAT::ELASTIC::PAR::IsoRateDep* params);
+      IsoRateDep(Mat::Elastic::PAR::IsoRateDep* params);
 
       /// @name Access material constants
       //@{
 
       /// material type
-      CORE::Materials::MaterialType MaterialType() const override
+      Core::Materials::MaterialType MaterialType() const override
       {
-        return CORE::Materials::mes_isoratedep;
+        return Core::Materials::mes_isoratedep;
       }
 
       //@}
 
       /// Add modified coeffiencts.
       void add_coefficients_visco_modified(
-          const CORE::LINALG::Matrix<3, 1>&
+          const Core::LinAlg::Matrix<3, 1>&
               modinv,                         ///< modified invariants of right Cauchy-Green tensor
-          CORE::LINALG::Matrix<8, 1>& modmu,  ///< necassary coefficients for piola-kirchhoff-stress
-          CORE::LINALG::Matrix<33, 1>& modxi,  ///< necassary coefficients for viscosity tensor
-          CORE::LINALG::Matrix<7, 1>& modrateinv, Teuchos::ParameterList& params, int gp,
+          Core::LinAlg::Matrix<8, 1>& modmu,  ///< necassary coefficients for piola-kirchhoff-stress
+          Core::LinAlg::Matrix<33, 1>& modxi,  ///< necassary coefficients for viscosity tensor
+          Core::LinAlg::Matrix<7, 1>& modrateinv, Teuchos::ParameterList& params, int gp,
           int eleGID) override;
 
       /// Indicator for formulation
@@ -125,11 +125,11 @@ namespace MAT
 
      private:
       /// my material parameters
-      MAT::ELASTIC::PAR::IsoRateDep* params_;
+      Mat::Elastic::PAR::IsoRateDep* params_;
     };
 
-  }  // namespace ELASTIC
-}  // namespace MAT
+  }  // namespace Elastic
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

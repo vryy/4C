@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::MeritFunction::Infeasibility::Infeasibility(
+NOX::Nln::MeritFunction::Infeasibility::Infeasibility(
     const Teuchos::ParameterList& params, const ::NOX::Utils& u)
     : /* utils_( u ), */
       infeasibility_type_(mrtfct_vague)
@@ -36,8 +36,8 @@ NOX::NLN::MeritFunction::Infeasibility::Infeasibility(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::map<std::string, NOX::NLN::MeritFunction::MeritFctName>
-NOX::NLN::MeritFunction::Infeasibility::get_supported_type_list() const
+std::map<std::string, NOX::Nln::MeritFunction::MeritFctName>
+NOX::Nln::MeritFunction::Infeasibility::get_supported_type_list() const
 {
   std::map<std::string, MeritFctName> type_names;
 
@@ -49,7 +49,7 @@ NOX::NLN::MeritFunction::Infeasibility::get_supported_type_list() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::MeritFunction::Infeasibility::set_type(const std::string& type_name)
+void NOX::Nln::MeritFunction::Infeasibility::set_type(const std::string& type_name)
 {
   static const std::map<std::string, MeritFctName> supported_type_names = get_supported_type_list();
 
@@ -79,7 +79,7 @@ void NOX::NLN::MeritFunction::Infeasibility::set_type(const std::string& type_na
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::NLN::MeritFunction::Infeasibility::computef(const ::NOX::Abstract::Group& grp) const
+double NOX::Nln::MeritFunction::Infeasibility::computef(const ::NOX::Abstract::Group& grp) const
 {
   if (not grp.isF())
     FOUR_C_THROW(
@@ -87,16 +87,16 @@ double NOX::NLN::MeritFunction::Infeasibility::computef(const ::NOX::Abstract::G
         "Please call computeF() on the group passed into this function.");
 
   // cast the nox-group to the constraint group
-  const NOX::NLN::CONSTRAINT::Group* constr_grp_ptr =
-      dynamic_cast<const NOX::NLN::CONSTRAINT::Group*>(&grp);
-  if (not constr_grp_ptr) FOUR_C_THROW("Dynamic cast to NOX::NLN::Constraint::Group failed!");
+  const NOX::Nln::CONSTRAINT::Group* constr_grp_ptr =
+      dynamic_cast<const NOX::Nln::CONSTRAINT::Group*>(&grp);
+  if (not constr_grp_ptr) FOUR_C_THROW("Dynamic cast to NOX::Nln::Constraint::Group failed!");
 
   return constr_grp_ptr->GetModelValue(Type());
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::MeritFunction::Infeasibility::computeGradient(
+void NOX::Nln::MeritFunction::Infeasibility::computeGradient(
     const ::NOX::Abstract::Group& group, ::NOX::Abstract::Vector& result) const
 {
   FOUR_C_THROW("Currently unsupported.");
@@ -105,7 +105,7 @@ void NOX::NLN::MeritFunction::Infeasibility::computeGradient(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::NLN::MeritFunction::Infeasibility::computeSlope(
+double NOX::Nln::MeritFunction::Infeasibility::computeSlope(
     const ::NOX::Abstract::Vector& dir, const ::NOX::Abstract::Group& grp) const
 {
   if (!grp.isF())
@@ -116,9 +116,9 @@ double NOX::NLN::MeritFunction::Infeasibility::computeSlope(
   }
 
   // cast the underlying nox-group to the constraint group
-  const NOX::NLN::CONSTRAINT::Group* constr_grp_ptr =
-      dynamic_cast<const NOX::NLN::CONSTRAINT::Group*>(&grp);
-  if (not constr_grp_ptr) FOUR_C_THROW("Dynamic cast to NOX::NLN::Constraint::Group failed!");
+  const NOX::Nln::CONSTRAINT::Group* constr_grp_ptr =
+      dynamic_cast<const NOX::Nln::CONSTRAINT::Group*>(&grp);
+  if (not constr_grp_ptr) FOUR_C_THROW("Dynamic cast to NOX::Nln::Constraint::Group failed!");
 
   // compute the slope
   return constr_grp_ptr->get_linearized_model_terms(dir, Type(), linorder_first, lin_wrt_all_dofs);
@@ -126,7 +126,7 @@ double NOX::NLN::MeritFunction::Infeasibility::computeSlope(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::NLN::MeritFunction::Infeasibility::computeQuadraticModel(
+double NOX::Nln::MeritFunction::Infeasibility::computeQuadraticModel(
     const ::NOX::Abstract::Vector& dir, const ::NOX::Abstract::Group& grp) const
 {
   FOUR_C_THROW("Currently unsupported.");
@@ -135,7 +135,7 @@ double NOX::NLN::MeritFunction::Infeasibility::computeQuadraticModel(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::MeritFunction::Infeasibility::computeQuadraticMinimizer(
+void NOX::Nln::MeritFunction::Infeasibility::computeQuadraticMinimizer(
     const ::NOX::Abstract::Group& grp, ::NOX::Abstract::Vector& result) const
 {
   FOUR_C_THROW("Currently unsupported.");
@@ -144,14 +144,14 @@ void NOX::NLN::MeritFunction::Infeasibility::computeQuadraticMinimizer(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const std::string& NOX::NLN::MeritFunction::Infeasibility::name() const
+const std::string& NOX::Nln::MeritFunction::Infeasibility::name() const
 {
   return merit_function_name_;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum NOX::NLN::MeritFunction::MeritFctName NOX::NLN::MeritFunction::Infeasibility::Type() const
+enum NOX::Nln::MeritFunction::MeritFctName NOX::Nln::MeritFunction::Infeasibility::Type() const
 {
   return infeasibility_type_;
 }

@@ -42,11 +42,11 @@ namespace BINSTRATEGY
   class BinningStrategy;
 }
 
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationWriter;
   class DiscretizationReader;
-}  // namespace CORE::IO
+}  // namespace Core::IO
 
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
@@ -120,7 +120,7 @@ namespace PARTICLEENGINE
      * \param[in]  reader          discretization reader
      * \param[out] particlestoread particle objects read in from restart
      */
-    void read_restart(const std::shared_ptr<CORE::IO::DiscretizationReader> reader,
+    void read_restart(const std::shared_ptr<Core::IO::DiscretizationReader> reader,
         std::vector<ParticleObjShrdPtr>& particlestoread) const;
 
     /*!
@@ -364,7 +364,7 @@ namespace PARTICLEENGINE
 
     LocalIndexTupleShrdPtr get_local_index_in_specific_container(int globalid) const override;
 
-    std::shared_ptr<CORE::IO::DiscretizationWriter> get_bin_discretization_writer() const override;
+    std::shared_ptr<Core::IO::DiscretizationWriter> get_bin_discretization_writer() const override;
 
     /*!
      * \brief relate all particles to all processors
@@ -408,7 +408,7 @@ namespace PARTICLEENGINE
 
     double length_of_binning_domain_in_a_spatial_direction(const int dim) const override;
 
-    CORE::LINALG::Matrix<3, 2> const& domain_bounding_box_corner_positions() const override;
+    Core::LinAlg::Matrix<3, 2> const& domain_bounding_box_corner_positions() const override;
 
     /*!
      * \brief get distance between particles considering periodic boundaries
@@ -435,7 +435,7 @@ namespace PARTICLEENGINE
      *
      * \return discretization reader
      */
-    std::shared_ptr<CORE::IO::DiscretizationReader> BinDisReader(int restartstep) const;
+    std::shared_ptr<Core::IO::DiscretizationReader> BinDisReader(int restartstep) const;
 
     int get_number_of_particles() const override;
 

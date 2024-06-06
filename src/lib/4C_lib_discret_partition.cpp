@@ -21,14 +21,14 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::Discretization::ExportRowNodes(const Epetra_Map& newmap, bool killdofs, bool killcond)
+void Discret::Discretization::ExportRowNodes(const Epetra_Map& newmap, bool killdofs, bool killcond)
 {
   // test whether newmap is non-overlapping
   if (!newmap.UniqueGIDs()) FOUR_C_THROW("new map not unique");
 
   // destroy all ghosted nodes
   const int myrank = Comm().MyPID();
-  std::map<int, Teuchos::RCP<CORE::Nodes::Node>>::iterator curr;
+  std::map<int, Teuchos::RCP<Core::Nodes::Node>>::iterator curr;
   for (curr = node_.begin(); curr != node_.end();)
   {
     if (curr->second->Owner() != myrank)
@@ -42,7 +42,7 @@ void DRT::Discretization::ExportRowNodes(const Epetra_Map& newmap, bool killdofs
   const Epetra_Map& oldmap = *noderowmap_;
 
   // create an exporter object that will figure out the communication pattern
-  CORE::COMM::Exporter exporter(oldmap, newmap, Comm());
+  Core::Communication::Exporter exporter(oldmap, newmap, Comm());
 
   // Do the communication
   exporter.Export(node_);
@@ -56,11 +56,12 @@ void DRT::Discretization::ExportRowNodes(const Epetra_Map& newmap, bool killdofs
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::Discretization::ExportColumnNodes(const Epetra_Map& newmap, bool killdofs, bool killcond)
+void Discret::Discretization::ExportColumnNodes(
+    const Epetra_Map& newmap, bool killdofs, bool killcond)
 {
   // destroy all ghosted nodes
   const int myrank = Comm().MyPID();
-  std::map<int, Teuchos::RCP<CORE::Nodes::Node>>::iterator curr;
+  std::map<int, Teuchos::RCP<Core::Nodes::Node>>::iterator curr;
   for (curr = node_.begin(); curr != node_.end();)
   {
     if (curr->second->Owner() != myrank)
@@ -83,7 +84,7 @@ void DRT::Discretization::ExportColumnNodes(const Epetra_Map& newmap, bool killd
   }
 
   // create an exporter object that will figure out the communication pattern
-  CORE::COMM::Exporter exporter(oldmap, newmap, Comm());
+  Core::Communication::Exporter exporter(oldmap, newmap, Comm());
   // Do the communication
   exporter.Export(node_);
 
@@ -93,7 +94,7 @@ void DRT::Discretization::ExportColumnNodes(const Epetra_Map& newmap, bool killd
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::Discretization::proc_zero_distribute_elements_to_all(
+void Discret::Discretization::proc_zero_distribute_elements_to_all(
     Epetra_Map& target, std::vector<int>& gidlist)
 {
   const int myrank = Comm().MyPID();
@@ -107,25 +108,25 @@ void DRT::Discretization::proc_zero_distribute_elements_to_all(
   std::map<int, std::vector<char>> sendmap;  // proc to send a set of elements to
   if (!myrank)
   {
-    std::map<int, CORE::COMM::PackBuffer> sendpb;  // proc to send a set of elements to
+    std::map<int, Core::Communication::PackBuffer> sendpb;  // proc to send a set of elements to
     for (int i = 0; i < size; ++i)
     {
       if (pidlist[i] == myrank or pidlist[i] < 0) continue;  // do not send to myself
-      CORE::Elements::Element* actele = gElement(gidlist[i]);
+      Core::Elements::Element* actele = gElement(gidlist[i]);
       if (!actele) FOUR_C_THROW("Cannot find global element %d", gidlist[i]);
       actele->Pack(sendpb[pidlist[i]]);
     }
-    for (std::map<int, CORE::COMM::PackBuffer>::iterator fool = sendpb.begin();
+    for (std::map<int, Core::Communication::PackBuffer>::iterator fool = sendpb.begin();
          fool != sendpb.end(); ++fool)
       fool->second.StartPacking();
     for (int i = 0; i < size; ++i)
     {
       if (pidlist[i] == myrank or pidlist[i] < 0) continue;  // do not send to myself
-      CORE::Elements::Element* actele = gElement(gidlist[i]);
+      Core::Elements::Element* actele = gElement(gidlist[i]);
       actele->Pack(sendpb[pidlist[i]]);
       element_.erase(actele->Id());
     }
-    for (std::map<int, CORE::COMM::PackBuffer>::iterator fool = sendpb.begin();
+    for (std::map<int, Core::Communication::PackBuffer>::iterator fool = sendpb.begin();
          fool != sendpb.end(); ++fool)
       swap(sendmap[fool->first], fool->second());
   }
@@ -151,7 +152,7 @@ void DRT::Discretization::proc_zero_distribute_elements_to_all(
 
   // proc 0 sends out messages
   int tag = 0;
-  CORE::COMM::Exporter exporter(Comm());
+  Core::Communication::Exporter exporter(Comm());
   std::vector<MPI_Request> request(size);
   if (!myrank)
   {
@@ -180,12 +181,12 @@ void DRT::Discretization::proc_zero_distribute_elements_to_all(
     while (index < recvdata.size())
     {
       std::vector<char> data;
-      CORE::COMM::ParObject::ExtractfromPack(index, recvdata, data);
-      CORE::COMM::ParObject* object = CORE::COMM::Factory(data);
-      CORE::Elements::Element* ele = dynamic_cast<CORE::Elements::Element*>(object);
+      Core::Communication::ParObject::ExtractfromPack(index, recvdata, data);
+      Core::Communication::ParObject* object = Core::Communication::Factory(data);
+      Core::Elements::Element* ele = dynamic_cast<Core::Elements::Element*>(object);
       if (!ele) FOUR_C_THROW("Received object is not an element");
       ele->SetOwner(myrank);
-      Teuchos::RCP<CORE::Elements::Element> rcpele = Teuchos::rcp(ele);
+      Teuchos::RCP<Core::Elements::Element> rcpele = Teuchos::rcp(ele);
       add_element(rcpele);
       // printf("proc %d index %d\n",myrank,index); fflush(stdout);
     }
@@ -201,7 +202,7 @@ void DRT::Discretization::proc_zero_distribute_elements_to_all(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::Discretization::proc_zero_distribute_nodes_to_all(Epetra_Map& target)
+void Discret::Discretization::proc_zero_distribute_nodes_to_all(Epetra_Map& target)
 {
   const int myrank = Comm().MyPID();
 
@@ -220,27 +221,27 @@ void DRT::Discretization::proc_zero_distribute_nodes_to_all(Epetra_Map& target)
   std::map<int, std::vector<char>> sendmap;
   if (!myrank)
   {
-    std::map<int, CORE::COMM::PackBuffer> sendpb;
+    std::map<int, Core::Communication::PackBuffer> sendpb;
     for (int i = 0; i < size; ++i)
     {
       // proc 0 does not send to itself
       if (pidlist[i] == myrank || pidlist[i] == -1) continue;
-      CORE::Nodes::Node* node = gNode(oldmap.MyGlobalElements()[i]);
+      Core::Nodes::Node* node = gNode(oldmap.MyGlobalElements()[i]);
       if (!node) FOUR_C_THROW("Proc 0 cannot find global node %d", oldmap.MyGlobalElements()[i]);
       node->Pack(sendpb[pidlist[i]]);
     }
-    for (std::map<int, CORE::COMM::PackBuffer>::iterator fool = sendpb.begin();
+    for (std::map<int, Core::Communication::PackBuffer>::iterator fool = sendpb.begin();
          fool != sendpb.end(); ++fool)
       fool->second.StartPacking();
     for (int i = 0; i < size; ++i)
     {
       // proc 0 does not send to itself
       if (pidlist[i] == myrank || pidlist[i] == -1) continue;
-      CORE::Nodes::Node* node = gNode(oldmap.MyGlobalElements()[i]);
+      Core::Nodes::Node* node = gNode(oldmap.MyGlobalElements()[i]);
       node->Pack(sendpb[pidlist[i]]);
       node_.erase(node->Id());
     }
-    for (std::map<int, CORE::COMM::PackBuffer>::iterator fool = sendpb.begin();
+    for (std::map<int, Core::Communication::PackBuffer>::iterator fool = sendpb.begin();
          fool != sendpb.end(); ++fool)
       swap(sendmap[fool->first], fool->second());
   }
@@ -265,7 +266,7 @@ void DRT::Discretization::proc_zero_distribute_nodes_to_all(Epetra_Map& target)
 
   // proc 0 sends out messages
   int tag = 0;
-  CORE::COMM::Exporter exporter(Comm());
+  Core::Communication::Exporter exporter(Comm());
   std::vector<MPI_Request> request(size);
   if (!myrank)
   {
@@ -295,12 +296,12 @@ void DRT::Discretization::proc_zero_distribute_nodes_to_all(Epetra_Map& target)
     while (index < recvdata.size())
     {
       std::vector<char> data;
-      CORE::COMM::ParObject::ExtractfromPack(index, recvdata, data);
-      CORE::COMM::ParObject* object = CORE::COMM::Factory(data);
-      CORE::Nodes::Node* node = dynamic_cast<CORE::Nodes::Node*>(object);
+      Core::Communication::ParObject::ExtractfromPack(index, recvdata, data);
+      Core::Communication::ParObject* object = Core::Communication::Factory(data);
+      Core::Nodes::Node* node = dynamic_cast<Core::Nodes::Node*>(object);
       if (!node) FOUR_C_THROW("Received object is not a node");
       node->SetOwner(myrank);
-      Teuchos::RCP<CORE::Nodes::Node> rcpnode = Teuchos::rcp(node);
+      Teuchos::RCP<Core::Nodes::Node> rcpnode = Teuchos::rcp(node);
       AddNode(rcpnode);
     }
   }
@@ -316,14 +317,15 @@ void DRT::Discretization::proc_zero_distribute_nodes_to_all(Epetra_Map& target)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::Discretization::ExportRowElements(const Epetra_Map& newmap, bool killdofs, bool killcond)
+void Discret::Discretization::ExportRowElements(
+    const Epetra_Map& newmap, bool killdofs, bool killcond)
 {
   // test whether newmap is non-overlapping
   if (!newmap.UniqueGIDs()) FOUR_C_THROW("new map not unique");
 
   // destroy all ghosted elements
   const int myrank = Comm().MyPID();
-  std::map<int, Teuchos::RCP<CORE::Elements::Element>>::iterator curr;
+  std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator curr;
   for (curr = element_.begin(); curr != element_.end();)
   {
     if (curr->second->Owner() != myrank)
@@ -337,7 +339,7 @@ void DRT::Discretization::ExportRowElements(const Epetra_Map& newmap, bool killd
   const Epetra_Map& oldmap = *elerowmap_;
 
   // create an exporter object that will figure out the communication pattern
-  CORE::COMM::Exporter exporter(oldmap, newmap, Comm());
+  Core::Communication::Exporter exporter(oldmap, newmap, Comm());
 
   exporter.Export(element_);
 
@@ -350,12 +352,12 @@ void DRT::Discretization::ExportRowElements(const Epetra_Map& newmap, bool killd
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::Discretization::export_column_elements(
+void Discret::Discretization::export_column_elements(
     const Epetra_Map& newmap, bool killdofs, bool killcond)
 {
   // destroy all ghosted elements
   const int myrank = Comm().MyPID();
-  std::map<int, Teuchos::RCP<CORE::Elements::Element>>::iterator curr;
+  std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator curr;
   for (curr = element_.begin(); curr != element_.end();)
   {
     if (curr->second->Owner() != myrank)
@@ -378,7 +380,7 @@ void DRT::Discretization::export_column_elements(
   }
 
   // create an exporter object that will figure out the communication pattern
-  CORE::COMM::Exporter exporter(oldmap, newmap, Comm());
+  Core::Communication::Exporter exporter(oldmap, newmap, Comm());
   exporter.Export(element_);
 
   // maps and pointers are no longer correct and need rebuilding
@@ -387,7 +389,7 @@ void DRT::Discretization::export_column_elements(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_CrsGraph> DRT::Discretization::BuildNodeGraph() const
+Teuchos::RCP<Epetra_CrsGraph> Discret::Discretization::BuildNodeGraph() const
 {
   if (!Filled()) FOUR_C_THROW("fill_complete() was not called on this discretization");
 
@@ -403,7 +405,7 @@ Teuchos::RCP<Epetra_CrsGraph> DRT::Discretization::BuildNodeGraph() const
   // if a proc stores the appropiate ghosted elements, the resulting
   // graph will be the correct and complete graph of the distributed
   // discretization even if nodes are not ghosted.
-  std::map<int, Teuchos::RCP<CORE::Elements::Element>>::const_iterator curr;
+  std::map<int, Teuchos::RCP<Core::Elements::Element>>::const_iterator curr;
   for (curr = element_.begin(); curr != element_.end(); ++curr)
   {
     const int nnode = curr->second->num_node();
@@ -430,7 +432,7 @@ Teuchos::RCP<Epetra_CrsGraph> DRT::Discretization::BuildNodeGraph() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> DRT::Discretization::build_node_coordinates(
+Teuchos::RCP<Epetra_MultiVector> Discret::Discretization::build_node_coordinates(
     Teuchos::RCP<const Epetra_Map> noderowmap) const
 {
   // get nodal row map if not given
@@ -453,7 +455,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::Discretization::build_node_coordinates(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 std::pair<Teuchos::RCP<Epetra_Map>, Teuchos::RCP<Epetra_Map>>
-DRT::Discretization::build_element_row_column(
+Discret::Discretization::build_element_row_column(
     const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap) const
 {
   const int myrank = Comm().MyPID();
@@ -479,10 +481,10 @@ DRT::Discretization::build_element_row_column(
   int stoposize = 2000;
   int count = 0;
   std::vector<int> stopo(stoposize);
-  std::map<int, Teuchos::RCP<CORE::Elements::Element>>::const_iterator ecurr;
+  std::map<int, Teuchos::RCP<Core::Elements::Element>>::const_iterator ecurr;
   for (ecurr = element_.begin(); ecurr != element_.end(); ++ecurr)
   {
-    const CORE::Elements::Element& actele = *(ecurr->second);
+    const Core::Elements::Element& actele = *(ecurr->second);
     int gid = actele.Id();
     int nnode = actele.num_node();
     const int* nodeids = actele.NodeIds();
@@ -623,9 +625,9 @@ DRT::Discretization::build_element_row_column(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::Discretization::Redistribute(const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap,
-    bool assigndegreesoffreedom, bool initelements, bool doboundaryconditions, bool killdofs,
-    bool killcond)
+void Discret::Discretization::Redistribute(const Epetra_Map& noderowmap,
+    const Epetra_Map& nodecolmap, bool assigndegreesoffreedom, bool initelements,
+    bool doboundaryconditions, bool killdofs, bool killcond)
 {
   // build the overlapping and non-overlapping element maps
   const auto& [elerowmap, elecolmap] = build_element_row_column(noderowmap, nodecolmap);
@@ -644,9 +646,10 @@ void DRT::Discretization::Redistribute(const Epetra_Map& noderowmap, const Epetr
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::Discretization::Redistribute(const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap,
-    const Epetra_Map& elerowmap, const Epetra_Map& elecolmap, bool assigndegreesoffreedom,
-    bool initelements, bool doboundaryconditions, bool killdofs, bool killcond)
+void Discret::Discretization::Redistribute(const Epetra_Map& noderowmap,
+    const Epetra_Map& nodecolmap, const Epetra_Map& elerowmap, const Epetra_Map& elecolmap,
+    bool assigndegreesoffreedom, bool initelements, bool doboundaryconditions, bool killdofs,
+    bool killcond)
 {
   // export nodes and elements to the new maps
   ExportRowNodes(noderowmap, killdofs, killcond);
@@ -662,8 +665,8 @@ void DRT::Discretization::Redistribute(const Epetra_Map& noderowmap, const Epetr
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::Discretization::ExtendedGhosting(const Epetra_Map& elecolmap, bool assigndegreesoffreedom,
-    bool initelements, bool doboundaryconditions, bool checkghosting)
+void Discret::Discretization::ExtendedGhosting(const Epetra_Map& elecolmap,
+    bool assigndegreesoffreedom, bool initelements, bool doboundaryconditions, bool checkghosting)
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   if (Filled())
@@ -694,7 +697,7 @@ void DRT::Discretization::ExtendedGhosting(const Epetra_Map& elecolmap, bool ass
   // if node of pbc set is contained in list of owned and ghosted elements
   // in case of pbcs, this has to be restored
   bool have_pbc = false;
-  Teuchos::RCP<CORE::Dofsets::PBCDofSet> pbcdofset = Teuchos::null;
+  Teuchos::RCP<Core::DOFSets::PBCDofSet> pbcdofset = Teuchos::null;
   // map of master nodes and corresponding slave nodes
   std::map<int, std::set<int>> pbcmap;
   // create the inverse map --- slavenode -> masternode
@@ -705,7 +708,7 @@ void DRT::Discretization::ExtendedGhosting(const Epetra_Map& elecolmap, bool ass
   // check for pbcs
   for (int nds = 0; nds < NumDofSets(); nds++)
   {
-    pbcdofset = Teuchos::rcp_dynamic_cast<CORE::Dofsets::PBCDofSet>(dofsets_[nds]);
+    pbcdofset = Teuchos::rcp_dynamic_cast<Core::DOFSets::PBCDofSet>(dofsets_[nds]);
 
     if (pbcdofset != Teuchos::null)
     {
@@ -727,7 +730,7 @@ void DRT::Discretization::ExtendedGhosting(const Epetra_Map& elecolmap, bool ass
   {
     // communicate all master and slave pairs
     // caution: we build redundant maps here, containing all master nodes
-    CORE::LINALG::GatherAll(pbcmap, *comm_);
+    Core::LinAlg::GatherAll(pbcmap, *comm_);
 
     // and build slave master pairs
     for (std::map<int, std::set<int>>::iterator curr = pbcmap.begin(); curr != pbcmap.end(); ++curr)
@@ -740,7 +743,7 @@ void DRT::Discretization::ExtendedGhosting(const Epetra_Map& elecolmap, bool ass
   std::set<int> nodes;
   for (int lid = 0; lid < elecolmap.NumMyElements(); ++lid)
   {
-    CORE::Elements::Element* ele = this->gElement(elecolmap.GID(lid));
+    Core::Elements::Element* ele = this->gElement(elecolmap.GID(lid));
     const int* nodeids = ele->NodeIds();
     for (int inode = 0; inode < ele->num_node(); ++inode)
     {
@@ -805,7 +808,7 @@ void DRT::Discretization::ExtendedGhosting(const Epetra_Map& elecolmap, bool ass
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::Discretization::SetupGhosting(
+void Discret::Discretization::SetupGhosting(
     bool assigndegreesoffreedom, bool initelements, bool doboundaryconditions)
 {
   if (Filled())
@@ -814,7 +817,7 @@ void DRT::Discretization::SetupGhosting(
 
   // build the graph ourselves
   std::map<int, std::set<int>> localgraph;
-  for (std::map<int, Teuchos::RCP<CORE::Elements::Element>>::iterator i = element_.begin();
+  for (std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator i = element_.begin();
        i != element_.end(); ++i)
   {
     int numnodes = i->second->num_node();
@@ -836,7 +839,7 @@ void DRT::Discretization::SetupGhosting(
   gids.reserve(localgraph.size());
   entriesperrow.reserve(localgraph.size());
 
-  for (std::map<int, Teuchos::RCP<CORE::Nodes::Node>>::iterator i = node_.begin(); i != node_.end();
+  for (std::map<int, Teuchos::RCP<Core::Nodes::Node>>::iterator i = node_.begin(); i != node_.end();
        ++i)
   {
     gids.push_back(i->first);

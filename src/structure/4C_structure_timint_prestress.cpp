@@ -22,10 +22,10 @@ FOUR_C_NAMESPACE_OPEN
 /* constructor */
 STR::TimIntPrestress::TimIntPrestress(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioparams, const Teuchos::ParameterList& sdynparams,
-    const Teuchos::ParameterList& xparams, const Teuchos::RCP<DRT::Discretization>& actdis,
-    const Teuchos::RCP<CORE::LINALG::Solver>& solver,
-    const Teuchos::RCP<CORE::LINALG::Solver>& contactsolver,
-    const Teuchos::RCP<CORE::IO::DiscretizationWriter>& output)
+    const Teuchos::ParameterList& xparams, const Teuchos::RCP<Discret::Discretization>& actdis,
+    const Teuchos::RCP<Core::LinAlg::Solver>& solver,
+    const Teuchos::RCP<Core::LinAlg::Solver>& contactsolver,
+    const Teuchos::RCP<Core::IO::DiscretizationWriter>& output)
     : TimIntStatics(
           timeparams, ioparams, sdynparams, xparams, actdis, solver, contactsolver, output)
 {
@@ -41,11 +41,11 @@ void STR::TimIntPrestress::Setup()
 {
   STR::TimIntStatics::Setup();
   // Check for compatible prestressing algorithms
-  const auto pre_stress = Teuchos::getIntegralValue<INPAR::STR::PreStress>(
-      GLOBAL::Problem::Instance()->structural_dynamic_params(), "PRESTRESS");
+  const auto pre_stress = Teuchos::getIntegralValue<Inpar::STR::PreStress>(
+      Global::Problem::Instance()->structural_dynamic_params(), "PRESTRESS");
   switch (pre_stress)
   {
-    case INPAR::STR::PreStress::mulf:
+    case Inpar::STR::PreStress::mulf:
       break;
     default:
       FOUR_C_THROW(
@@ -62,17 +62,17 @@ void STR::TimIntPrestress::UpdateStepElement()
   // create the parameters for the discretization
   Teuchos::ParameterList p;
 
-  const auto pre_stress = Teuchos::getIntegralValue<INPAR::STR::PreStress>(
-      GLOBAL::Problem::Instance()->structural_dynamic_params(), "PRESTRESS");
+  const auto pre_stress = Teuchos::getIntegralValue<Inpar::STR::PreStress>(
+      Global::Problem::Instance()->structural_dynamic_params(), "PRESTRESS");
   const double pstime =
-      GLOBAL::Problem::Instance()->structural_dynamic_params().get<double>("PRESTRESSTIME");
+      Global::Problem::Instance()->structural_dynamic_params().get<double>("PRESTRESSTIME");
   // MULF, Material iterative prestressing
-  if (pre_stress == INPAR::STR::PreStress::mulf)
+  if (pre_stress == Inpar::STR::PreStress::mulf)
   {
     if ((*time_)[0] <= pstime + 1e-15)
     {
       if (!discret_->Comm().MyPID())
-        CORE::IO::cout << "====== Entering MULF update" << CORE::IO::endl;
+        Core::IO::cout << "====== Entering MULF update" << Core::IO::endl;
       // action for elements
       p.set("action", "calc_struct_prestress_update");
       discret_->ClearState();
@@ -95,7 +95,7 @@ void STR::TimIntPrestress::UpdateStepElement()
   discret_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
 
-  if (pre_stress == INPAR::STR::PreStress::mulf && (*time_)[0] <= pstime + 1e-15)
+  if (pre_stress == Inpar::STR::PreStress::mulf && (*time_)[0] <= pstime + 1e-15)
   {
     // prestressing for spring in spring dashpot - corresponds to storage of deformation gradient
     // in material law (mhv 12/2015) pass current displacement state to spring at end of MULF step

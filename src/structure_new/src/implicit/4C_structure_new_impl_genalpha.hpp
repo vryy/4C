@@ -55,25 +55,25 @@ namespace STR
       bool ApplyForce(const Epetra_Vector& x, Epetra_Vector& f) override;
 
       //! Apply the stiffness only [derived]
-      bool ApplyStiff(const Epetra_Vector& x, CORE::LINALG::SparseOperator& jac) override;
+      bool ApplyStiff(const Epetra_Vector& x, Core::LinAlg::SparseOperator& jac) override;
 
       //! Apply force and stiff at once [derived]
       bool ApplyForceStiff(
-          const Epetra_Vector& x, Epetra_Vector& f, CORE::LINALG::SparseOperator& jac) override;
+          const Epetra_Vector& x, Epetra_Vector& f, Core::LinAlg::SparseOperator& jac) override;
 
       //! [derived]
       bool assemble_force(Epetra_Vector& f,
-          const std::vector<INPAR::STR::ModelType>* without_these_models = nullptr) const override;
+          const std::vector<Inpar::STR::ModelType>* without_these_models = nullptr) const override;
 
-      bool AssembleJac(CORE::LINALG::SparseOperator& jac,
-          const std::vector<INPAR::STR::ModelType>* without_these_models = nullptr) const override;
+      bool AssembleJac(Core::LinAlg::SparseOperator& jac,
+          const std::vector<Inpar::STR::ModelType>* without_these_models = nullptr) const override;
 
       //! [derived]
       void write_restart(
-          CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
+          Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
 
       //! [derived]
-      void read_restart(CORE::IO::DiscretizationReader& ioreader) override;
+      void read_restart(Core::IO::DiscretizationReader& ioreader) override;
 
       //! [derived]
       double CalcRefNormForce(const enum ::NOX::Abstract::Vector::NormType& type) const override;
@@ -149,7 +149,7 @@ namespace STR
       //@{
 
       //! Return name
-      enum INPAR::STR::DynamicType MethodName() const override { return INPAR::STR::dyna_genalpha; }
+      enum Inpar::STR::DynamicType MethodName() const override { return Inpar::STR::dyna_genalpha; }
 
       //! Provide number of steps, e.g. a single-step method returns 1,
       //! a m-multistep method returns m
@@ -275,7 +275,7 @@ namespace STR
        *
        *  \author hiermeier
        *  \date 03/2016 */
-      void add_visco_mass_contributions(CORE::LINALG::SparseOperator& jac) const override;
+      void add_visco_mass_contributions(Core::LinAlg::SparseOperator& jac) const override;
 
       /*! \brief Update constant contributions of the current state for the new time step
        * \f$ t_{n+1} \f$ based on the generalized alpha scheme:

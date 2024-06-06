@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::MurnaghanTaitFluid::MurnaghanTaitFluid(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::MurnaghanTaitFluid::MurnaghanTaitFluid(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : Parameter(matdata),
       viscosity_(matdata->Get<double>("DYNVISCOSITY")),
       refdensity_(matdata->Get<double>("REFDENSITY")),
@@ -32,39 +32,39 @@ MAT::PAR::MurnaghanTaitFluid::MurnaghanTaitFluid(Teuchos::RCP<CORE::MAT::PAR::Ma
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::MurnaghanTaitFluid::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::MurnaghanTaitFluid::create_material()
 {
-  return Teuchos::rcp(new MAT::MurnaghanTaitFluid(this));
+  return Teuchos::rcp(new Mat::MurnaghanTaitFluid(this));
 }
 
 
-MAT::MurnaghanTaitFluidType MAT::MurnaghanTaitFluidType::instance_;
+Mat::MurnaghanTaitFluidType Mat::MurnaghanTaitFluidType::instance_;
 
 
-CORE::COMM::ParObject* MAT::MurnaghanTaitFluidType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::MurnaghanTaitFluidType::Create(const std::vector<char>& data)
 {
-  MAT::MurnaghanTaitFluid* fluid = new MAT::MurnaghanTaitFluid();
+  Mat::MurnaghanTaitFluid* fluid = new Mat::MurnaghanTaitFluid();
   fluid->Unpack(data);
   return fluid;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::MurnaghanTaitFluid::MurnaghanTaitFluid() : params_(nullptr) {}
+Mat::MurnaghanTaitFluid::MurnaghanTaitFluid() : params_(nullptr) {}
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::MurnaghanTaitFluid::MurnaghanTaitFluid(MAT::PAR::MurnaghanTaitFluid* params) : params_(params)
+Mat::MurnaghanTaitFluid::MurnaghanTaitFluid(Mat::PAR::MurnaghanTaitFluid* params) : params_(params)
 {
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::MurnaghanTaitFluid::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::MurnaghanTaitFluid::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -80,24 +80,24 @@ void MAT::MurnaghanTaitFluid::Pack(CORE::COMM::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::MurnaghanTaitFluid::Unpack(const std::vector<char>& data)
+void Mat::MurnaghanTaitFluid::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::MurnaghanTaitFluid*>(mat);
+        params_ = static_cast<Mat::PAR::MurnaghanTaitFluid*>(mat);
       else
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
@@ -110,7 +110,7 @@ void MAT::MurnaghanTaitFluid::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::MurnaghanTaitFluid::ComputeDensity(const double press) const
+double Mat::MurnaghanTaitFluid::ComputeDensity(const double press) const
 {
   // $ \rho=\rho_0[\dfrac{n}{K_0}\left(P-P_0)+1\right]^{\dfrac{1}{n}} $
   const double density =

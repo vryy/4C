@@ -37,7 +37,7 @@ STR::Factory::Factory()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<STR::Integrator> STR::Factory::BuildIntegrator(
-    const STR::TIMINT::BaseDataSDyn& datasdyn) const
+    const STR::TimeInt::BaseDataSDyn& datasdyn) const
 {
   Teuchos::RCP<STR::Integrator> int_ptr = Teuchos::null;
   int_ptr = build_implicit_integrator(datasdyn);
@@ -51,15 +51,15 @@ Teuchos::RCP<STR::Integrator> STR::Factory::BuildIntegrator(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<STR::Integrator> STR::Factory::build_implicit_integrator(
-    const STR::TIMINT::BaseDataSDyn& datasdyn) const
+    const STR::TimeInt::BaseDataSDyn& datasdyn) const
 {
   Teuchos::RCP<STR::IMPLICIT::Generic> impl_int_ptr = Teuchos::null;
 
-  const enum INPAR::STR::DynamicType& dyntype = datasdyn.GetDynamicType();
-  const enum INPAR::STR::PreStress& prestresstype = datasdyn.GetPreStressType();
+  const enum Inpar::STR::DynamicType& dyntype = datasdyn.GetDynamicType();
+  const enum Inpar::STR::PreStress& prestresstype = datasdyn.GetPreStressType();
 
   // check if we have a problem that needs to be prestressed
-  const bool is_prestress = prestresstype != INPAR::STR::PreStress::none;
+  const bool is_prestress = prestresstype != Inpar::STR::PreStress::none;
   if (is_prestress)
   {
     impl_int_ptr = Teuchos::rcp(new STR::IMPLICIT::PreStress());
@@ -69,28 +69,28 @@ Teuchos::RCP<STR::Integrator> STR::Factory::build_implicit_integrator(
   switch (dyntype)
   {
     // Static analysis
-    case INPAR::STR::dyna_statics:
+    case Inpar::STR::dyna_statics:
     {
       impl_int_ptr = Teuchos::rcp(new STR::IMPLICIT::Statics());
       break;
     }
 
     // Generalised-alpha time integration
-    case INPAR::STR::dyna_genalpha:
+    case Inpar::STR::dyna_genalpha:
     {
       impl_int_ptr = Teuchos::rcp(new STR::IMPLICIT::GenAlpha());
       break;
     }
 
     // Generalised-alpha time integration for Lie groups (e.g. SO3 group of rotation matrices)
-    case INPAR::STR::dyna_genalpha_liegroup:
+    case Inpar::STR::dyna_genalpha_liegroup:
     {
       impl_int_ptr = Teuchos::rcp(new STR::IMPLICIT::GenAlphaLieGroup());
       break;
     }
 
     // One-step-theta (OST) time integration
-    case INPAR::STR::dyna_onesteptheta:
+    case Inpar::STR::dyna_onesteptheta:
     {
       impl_int_ptr = Teuchos::rcp(new STR::IMPLICIT::OneStepTheta());
       break;
@@ -110,35 +110,35 @@ Teuchos::RCP<STR::Integrator> STR::Factory::build_implicit_integrator(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<STR::Integrator> STR::Factory::build_explicit_integrator(
-    const STR::TIMINT::BaseDataSDyn& datasdyn) const
+    const STR::TimeInt::BaseDataSDyn& datasdyn) const
 {
   Teuchos::RCP<STR::EXPLICIT::Generic> expl_int_ptr = Teuchos::null;
 
   switch (datasdyn.GetDynamicType())
   {
     // Forward Euler Scheme
-    case INPAR::STR::dyna_expleuler:
+    case Inpar::STR::dyna_expleuler:
     {
       expl_int_ptr = Teuchos::rcp(new STR::EXPLICIT::ForwardEuler());
       break;
     }
 
     // Central Difference Scheme
-    case INPAR::STR::dyna_centrdiff:
+    case Inpar::STR::dyna_centrdiff:
     {
       expl_int_ptr = Teuchos::rcp(new STR::EXPLICIT::CentrDiff());
       break;
     }
 
     // Adams-Bashforth-2 Scheme
-    case INPAR::STR::dyna_ab2:
+    case Inpar::STR::dyna_ab2:
     {
       expl_int_ptr = Teuchos::rcp(new STR::EXPLICIT::AdamsBashforth2());
       break;
     }
 
     // Adams-Bashforth-4 Scheme
-    case INPAR::STR::dyna_ab4:
+    case Inpar::STR::dyna_ab4:
     {
       expl_int_ptr = Teuchos::rcp(new STR::EXPLICIT::AdamsBashforthX<4>());
       break;
@@ -157,7 +157,7 @@ Teuchos::RCP<STR::Integrator> STR::Factory::build_explicit_integrator(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::Integrator> STR::BuildIntegrator(const STR::TIMINT::BaseDataSDyn& datasdyn)
+Teuchos::RCP<STR::Integrator> STR::BuildIntegrator(const STR::TimeInt::BaseDataSDyn& datasdyn)
 {
   STR::Factory factory;
 
@@ -166,7 +166,7 @@ Teuchos::RCP<STR::Integrator> STR::BuildIntegrator(const STR::TIMINT::BaseDataSD
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::Dbc> STR::Factory::BuildDbc(const STR::TIMINT::BaseDataSDyn& datasdyn) const
+Teuchos::RCP<STR::Dbc> STR::Factory::BuildDbc(const STR::TimeInt::BaseDataSDyn& datasdyn) const
 {
   // if you want your model specific dbc object, check here if your model type is
   // active ( datasdyn.GetModelTypes() )and build your own dbc object
@@ -178,7 +178,7 @@ Teuchos::RCP<STR::Dbc> STR::Factory::BuildDbc(const STR::TIMINT::BaseDataSDyn& d
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::Dbc> STR::BuildDbc(const STR::TIMINT::BaseDataSDyn& datasdyn)
+Teuchos::RCP<STR::Dbc> STR::BuildDbc(const STR::TimeInt::BaseDataSDyn& datasdyn)
 {
   STR::Factory factory;
 

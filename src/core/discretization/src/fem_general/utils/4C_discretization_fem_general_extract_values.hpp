@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------*/
 /*! \file
 
-\brief A collection of helper methods for namespace DRT
+\brief A collection of helper methods for namespace Discret
 
 \level 0
 
@@ -19,7 +19,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::FE
+namespace Core::FE
 {
   /*!
   \brief Locally extract a subset of values from an Epetra_Vector
@@ -37,7 +37,7 @@ namespace CORE::FE
   void ExtractMyValues(
       const Epetra_Vector& global, std::vector<double>& local, const std::vector<int>& lm);
 
-  void ExtractMyValues(const Epetra_Vector& global, CORE::LINALG::SerialDenseVector& local,
+  void ExtractMyValues(const Epetra_Vector& global, Core::LinAlg::SerialDenseVector& local,
       const std::vector<int>& lm);
 
   void ExtractMyValues(
@@ -106,7 +106,7 @@ namespace CORE::FE
   /*  \author henke
    *  \date 06/09
    */
-  void ExtractMyNodeBasedValues(const CORE::Elements::Element* ele,  ///< pointer to current element
+  void ExtractMyNodeBasedValues(const Core::Elements::Element* ele,  ///< pointer to current element
       std::vector<double>& local,       ///< local vector on element-level
       const Epetra_MultiVector& global  ///< global (multi) vector
   );
@@ -116,8 +116,8 @@ namespace CORE::FE
   /*  \author g.bau
    *  \date 08/08
    */
-  void ExtractMyNodeBasedValues(const CORE::Elements::Element* ele,  ///< pointer to current element
-      CORE::LINALG::SerialDenseVector& local,          ///< local vector on element-level
+  void ExtractMyNodeBasedValues(const Core::Elements::Element* ele,  ///< pointer to current element
+      Core::LinAlg::SerialDenseVector& local,          ///< local vector on element-level
       const Teuchos::RCP<Epetra_MultiVector>& global,  ///< global vector
       const int nsd                                    ///< number of space dimensions
   );
@@ -126,8 +126,8 @@ namespace CORE::FE
   /*  \author schott
    *  \date 12/16
    */
-  void ExtractMyNodeBasedValues(const CORE::Nodes::Node* node,  ///< pointer to current element
-      CORE::LINALG::SerialDenseVector& local,                   ///< local vector on node-level
+  void ExtractMyNodeBasedValues(const Core::Nodes::Node* node,  ///< pointer to current element
+      Core::LinAlg::SerialDenseVector& local,                   ///< local vector on node-level
       const Teuchos::RCP<Epetra_MultiVector>& global,           ///< global vector
       const int nsd                                             ///< number of space dimensions
   );
@@ -139,7 +139,7 @@ namespace CORE::FE
    *  \date 04/09
    */
   template <class M>
-  void ExtractMyNodeBasedValues(const CORE::Elements::Element* ele,  ///< pointer to current element
+  void ExtractMyNodeBasedValues(const Core::Elements::Element* ele,  ///< pointer to current element
       M& localmatrix,                                  ///< local matrix on element-level
       const Teuchos::RCP<Epetra_MultiVector>& global,  ///< global vector
       const int nsd                                    ///< number of space dimensions
@@ -179,7 +179,7 @@ namespace CORE::FE
  */
   template <class M>
   void ExtractMyNodeBasedValues(
-      const CORE::Elements::Element* ele, M& local, const Epetra_MultiVector& global)
+      const Core::Elements::Element* ele, M& local, const Epetra_MultiVector& global)
   {
     const int numnode = ele->num_node();
     const int numcol = global.NumVectors();
@@ -203,7 +203,7 @@ namespace CORE::FE
       }
     }
   }
-}  // namespace CORE::FE
+}  // namespace Core::FE
 
 
 FOUR_C_NAMESPACE_CLOSE

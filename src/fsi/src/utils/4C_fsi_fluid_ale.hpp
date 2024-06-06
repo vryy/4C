@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 namespace FSI
 {
   /// Fluid on Ale test algorithm
-  class FluidAleAlgorithm : public ADAPTER::FluidMovingBoundaryBaseAlgorithm
+  class FluidAleAlgorithm : public Adapter::FluidMovingBoundaryBaseAlgorithm
   {
    public:
     explicit FluidAleAlgorithm(const Epetra_Comm& comm);

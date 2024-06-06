@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | class definitions                                          sfuchs 07/2018 |
  *---------------------------------------------------------------------------*/
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
@@ -34,35 +34,35 @@ namespace MAT
     {
      public:
       //! constructor
-      ParticleMaterialDEM(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      ParticleMaterialDEM(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       //! create material instance of matching type with parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
     };
 
   }  // namespace PAR
 
-  class ParticleMaterialDEMType : public CORE::COMM::ParObjectType
+  class ParticleMaterialDEMType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "ParticleMaterialDEMType"; };
 
     static ParticleMaterialDEMType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ParticleMaterialDEMType instance_;
   };
 
-  class ParticleMaterialDEM : public CORE::MAT::Material
+  class ParticleMaterialDEM : public Core::Mat::Material
   {
    public:
     //! constructor (empty material object)
     ParticleMaterialDEM();
 
     //! constructor (with given material parameters)
-    explicit ParticleMaterialDEM(MAT::PAR::ParticleMaterialDEM* params);
+    explicit ParticleMaterialDEM(Mat::PAR::ParticleMaterialDEM* params);
 
     //! @name Packing and Unpacking
 
@@ -89,7 +89,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -108,28 +108,28 @@ namespace MAT
     //@}
 
     //! material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_particle_dem;
+      return Core::Materials::m_particle_dem;
     }
 
     //! return copy of this material object
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new ParticleMaterialDEM(*this));
     }
 
     //! return quick accessible material parameter data
-    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
     //@}
 
    private:
     //! my material parameters
-    MAT::PAR::ParticleMaterialDEM* params_;
+    Mat::PAR::ParticleMaterialDEM* params_;
   };
 
-}  // namespace MAT
+}  // namespace Mat
 
 /*---------------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

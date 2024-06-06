@@ -55,7 +55,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::Setup()
   // Set reference nodal positions for the solid element
   for (unsigned int n = 0; n < solid::n_nodes_; ++n)
   {
-    const CORE::Nodes::Node* node = this->Element2()->Nodes()[n];
+    const Core::Nodes::Node* node = this->Element2()->Nodes()[n];
     for (int d = 0; d < 3; ++d) ele2posref_.element_position_(3 * n + d) = node->X()[d];
   }
 
@@ -68,7 +68,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::Setup()
  */
 template <typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::CreateGeometryPair(
-    const CORE::Elements::Element* element1, const CORE::Elements::Element* element2,
+    const Core::Elements::Element* element1, const Core::Elements::Element* element2,
     const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
 {
   this->geometry_pair_ = GEOMETRYPAIR::GeometryPairLineToVolumeFactory<double, beam, solid>(
@@ -107,7 +107,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::ResetStat
   // Solid element.
   for (unsigned int i = 0; i < solid::n_dof_; i++)
   {
-    ele2pos_.element_position_(i) = CORE::FADUTILS::HigherOrderFadValue<scalar_type>::apply(
+    ele2pos_.element_position_(i) = Core::FADUtils::HigherOrderFadValue<scalar_type>::apply(
         beam::n_dof_ + solid::n_dof_, beam::n_dof_ + i, solid_nodal_dofvec[i]);
   }
 }
@@ -163,9 +163,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::get_pair_
   if (visualization_segmentation != Teuchos::null)
   {
     // Setup variables.
-    CORE::LINALG::Matrix<3, 1, scalar_type> X;
-    CORE::LINALG::Matrix<3, 1, scalar_type> u;
-    CORE::LINALG::Matrix<3, 1, scalar_type> r;
+    Core::LinAlg::Matrix<3, 1, scalar_type> X;
+    Core::LinAlg::Matrix<3, 1, scalar_type> u;
+    Core::LinAlg::Matrix<3, 1, scalar_type> r;
 
     // Get the visualization vectors.
     auto& visualization_data = visualization_segmentation->get_visualization_data();
@@ -192,8 +192,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::get_pair_
         u -= X;
         for (unsigned int dim = 0; dim < 3; dim++)
         {
-          point_coordinates.push_back(CORE::FADUTILS::CastToDouble(X(dim)));
-          displacement.push_back(CORE::FADUTILS::CastToDouble(u(dim)));
+          point_coordinates.push_back(Core::FADUtils::CastToDouble(X(dim)));
+          displacement.push_back(Core::FADUtils::CastToDouble(u(dim)));
         }
 
         if (write_unique_ids)
@@ -209,11 +209,11 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::get_pair_
   if (visualization_integration_points != Teuchos::null)
   {
     // Setup variables.
-    CORE::LINALG::Matrix<3, 1, double> X;
-    CORE::LINALG::Matrix<3, 1, double> u;
-    CORE::LINALG::Matrix<3, 1, double> r;
-    CORE::LINALG::Matrix<3, 1, double> r_solid;
-    CORE::LINALG::Matrix<3, 1, double> force_integration_point;
+    Core::LinAlg::Matrix<3, 1, double> X;
+    Core::LinAlg::Matrix<3, 1, double> u;
+    Core::LinAlg::Matrix<3, 1, double> r;
+    Core::LinAlg::Matrix<3, 1, double> r_solid;
+    Core::LinAlg::Matrix<3, 1, double> force_integration_point;
 
     // Get the visualization vectors.
     auto& visualization_data = visualization_integration_points->get_visualization_data();
@@ -264,9 +264,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::get_pair_
  */
 template <typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam,
-    solid>::evaluate_penalty_force_double(const CORE::LINALG::Matrix<3, 1, double>& r_beam,
-    const CORE::LINALG::Matrix<3, 1, double>& r_solid,
-    CORE::LINALG::Matrix<3, 1, double>& force) const
+    solid>::evaluate_penalty_force_double(const Core::LinAlg::Matrix<3, 1, double>& r_beam,
+    const Core::LinAlg::Matrix<3, 1, double>& r_solid,
+    Core::LinAlg::Matrix<3, 1, double>& force) const
 {
   // The base implementation of the force is a simple linear penalty law.
   force = r_solid;

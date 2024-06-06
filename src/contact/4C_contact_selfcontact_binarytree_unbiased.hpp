@@ -35,7 +35,7 @@ namespace CONTACT
     \param dim (in):        The problem dimension
 
     */
-    UnbiasedSelfBinaryTree(DRT::Discretization& discret, const Teuchos::ParameterList& iparams,
+    UnbiasedSelfBinaryTree(Discret::Discretization& discret, const Teuchos::ParameterList& iparams,
         Teuchos::RCP<Epetra_Map> elements, int dim, double eps);
 
 

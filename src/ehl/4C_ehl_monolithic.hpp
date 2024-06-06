@@ -31,16 +31,16 @@ FOUR_C_NAMESPACE_OPEN
  |                                                          wirtz 01/16 |
  *----------------------------------------------------------------------*/
 // forward declarations
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
   class MultiMapExtractor;
 
   class BlockSparseMatrixBase;
   class Solver;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace CORE::Conditions
+namespace Core::Conditions
 {
   class LocsysManager;
 }
@@ -56,11 +56,11 @@ namespace FSI
   }  // namespace UTILS
 }  // namespace FSI
 
-namespace MORTAR
+namespace Mortar
 {
   class IntCell;
   class Element;
-}  // namespace MORTAR
+}  // namespace Mortar
 
 namespace CONTACT
 {
@@ -131,7 +131,7 @@ namespace EHL
     void apply_dbc();
 
     //! composed system matrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SystemMatrix() const { return systemmatrix_; }
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> SystemMatrix() const { return systemmatrix_; }
 
     //! solve linear EHL system
     void linear_solve();
@@ -141,25 +141,25 @@ namespace EHL
 
     //! Evaluate lubrication-mechanical system matrix
     void apply_lubrication_coupl_matrix(
-        Teuchos::RCP<CORE::LINALG::SparseMatrix>
+        Teuchos::RCP<Core::LinAlg::SparseMatrix>
             matheight,  //!< lubrication matrix associated with linearization wrt height
-        Teuchos::RCP<CORE::LINALG::SparseMatrix>
+        Teuchos::RCP<Core::LinAlg::SparseMatrix>
             matvel  //!< lubrication matrix associated with linearization wrt velocities
     );
 
-    void lin_pressure_force_disp(Teuchos::RCP<CORE::LINALG::SparseMatrix>& ds_dd,
-        Teuchos::RCP<CORE::LINALG::SparseMatrix>& dm_dd);
-    void lin_poiseuille_force_disp(Teuchos::RCP<CORE::LINALG::SparseMatrix>& ds_dd,
-        Teuchos::RCP<CORE::LINALG::SparseMatrix>& dm_dd);
-    void LinCouetteForceDisp(Teuchos::RCP<CORE::LINALG::SparseMatrix>& ds_dd,
-        Teuchos::RCP<CORE::LINALG::SparseMatrix>& dm_dd);
+    void lin_pressure_force_disp(Teuchos::RCP<Core::LinAlg::SparseMatrix>& ds_dd,
+        Teuchos::RCP<Core::LinAlg::SparseMatrix>& dm_dd);
+    void lin_poiseuille_force_disp(Teuchos::RCP<Core::LinAlg::SparseMatrix>& ds_dd,
+        Teuchos::RCP<Core::LinAlg::SparseMatrix>& dm_dd);
+    void LinCouetteForceDisp(Teuchos::RCP<Core::LinAlg::SparseMatrix>& ds_dd,
+        Teuchos::RCP<Core::LinAlg::SparseMatrix>& dm_dd);
 
-    void lin_pressure_force_pres(Teuchos::RCP<CORE::LINALG::SparseMatrix>& ds_dp,
-        Teuchos::RCP<CORE::LINALG::SparseMatrix>& dm_dp);
-    void lin_poiseuille_force_pres(Teuchos::RCP<CORE::LINALG::SparseMatrix>& ds_dp,
-        Teuchos::RCP<CORE::LINALG::SparseMatrix>& dm_dp);
-    void LinCouetteForcePres(Teuchos::RCP<CORE::LINALG::SparseMatrix>& ds_dp,
-        Teuchos::RCP<CORE::LINALG::SparseMatrix>& dm_dp);
+    void lin_pressure_force_pres(Teuchos::RCP<Core::LinAlg::SparseMatrix>& ds_dp,
+        Teuchos::RCP<Core::LinAlg::SparseMatrix>& dm_dp);
+    void lin_poiseuille_force_pres(Teuchos::RCP<Core::LinAlg::SparseMatrix>& ds_dp,
+        Teuchos::RCP<Core::LinAlg::SparseMatrix>& dm_dp);
+    void LinCouetteForcePres(Teuchos::RCP<Core::LinAlg::SparseMatrix>& ds_dp,
+        Teuchos::RCP<Core::LinAlg::SparseMatrix>& dm_dp);
     //@}
 
     //! evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
@@ -193,18 +193,18 @@ namespace EHL
     void print_newton_conv();
 
     //! Determine norm of force residual
-    double calculate_vector_norm(const enum INPAR::EHL::VectorNorm norm,  //!< norm to use
+    double calculate_vector_norm(const enum Inpar::EHL::VectorNorm norm,  //!< norm to use
         const Teuchos::RCP<Epetra_Vector> vect  //!< the vector of interest
     );
 
     //@}
 
     //! apply infnorm scaling to linear block system
-    virtual void scale_system(CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b);
+    virtual void scale_system(Core::LinAlg::BlockSparseMatrixBase& mat, Epetra_Vector& b);
 
     //! undo infnorm scaling from scaled solution
     virtual void unscale_solution(
-        CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b);
+        Core::LinAlg::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b);
 
    protected:
     //! @name Time loop building blocks
@@ -247,7 +247,7 @@ namespace EHL
     Teuchos::RCP<Epetra_Map> combined_dbc_map();
 
     //! extractor to communicate between full monolithic map and block maps
-    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> extractor() const { return blockrowdofmap_; }
+    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> extractor() const { return blockrowdofmap_; }
 
     //! setup list with default parameters
     void set_default_parameters();
@@ -259,7 +259,7 @@ namespace EHL
 
     bool solveradapttol_;                        //!< adapt solver tolerance
     double solveradaptolbetter_;                 //!< tolerance to which is adpated ????
-    Teuchos::RCP<CORE::LINALG::Solver> solver_;  //!< linear algebraic solver
+    Teuchos::RCP<Core::LinAlg::Solver> solver_;  //!< linear algebraic solver
 
     //@}
 
@@ -275,14 +275,14 @@ namespace EHL
     //@}
 
     //! enum for STR time integartion
-    enum INPAR::STR::DynamicType strmethodname_;
+    enum Inpar::STR::DynamicType strmethodname_;
 
    private:
     const Teuchos::ParameterList& ehldyn_;      //!< EHL dynamic parameter list
     const Teuchos::ParameterList& ehldynmono_;  //!< monolithic EHL dynamic parameter list
 
     //! dofrowmap splitted in (field) blocks
-    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> blockrowdofmap_;
+    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> blockrowdofmap_;
 
     //! build block vector from field vectors, e.g. rhs, increment vector
     void setup_vector(Epetra_Vector& f,        //!< vector of length of all dofs
@@ -291,32 +291,32 @@ namespace EHL
     );
 
     //! block systemmatrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> systemmatrix_;
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> systemmatrix_;
 
     //! off diagonal matrixes
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> k_sl_;
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> k_ls_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> k_sl_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> k_ls_;
 
     bool merge_ehl_blockmatrix_;  //!< bool whether EHL block matrix is merged
 
     //! @name iterative solution technique
 
-    enum INPAR::EHL::NlnSolTech soltech_;  //!< kind of iteration technique or
+    enum Inpar::EHL::NlnSolTech soltech_;  //!< kind of iteration technique or
                                            //!< nonlinear solution technique
 
-    enum INPAR::EHL::ConvNorm normtypeinc_;     //!< convergence check for increments
-    enum INPAR::EHL::ConvNorm normtyperhs_;     //!< convergence check for residual forces
-    enum INPAR::STR::ConvNorm normtypedisi_;    //!< convergence check for residual displacements
-    enum INPAR::STR::ConvNorm normtypestrrhs_;  //!< convergence check for residual forces
-    enum INPAR::LUBRICATION::ConvNorm normtypeprei_;  //!< convergence check for residual pressures
-    enum INPAR::LUBRICATION::ConvNorm
+    enum Inpar::EHL::ConvNorm normtypeinc_;     //!< convergence check for increments
+    enum Inpar::EHL::ConvNorm normtyperhs_;     //!< convergence check for residual forces
+    enum Inpar::STR::ConvNorm normtypedisi_;    //!< convergence check for residual displacements
+    enum Inpar::STR::ConvNorm normtypestrrhs_;  //!< convergence check for residual forces
+    enum Inpar::LUBRICATION::ConvNorm normtypeprei_;  //!< convergence check for residual pressures
+    enum Inpar::LUBRICATION::ConvNorm
         normtypelubricationrhs_;  //!< convergence check for residual lubrication forces
 
-    enum INPAR::EHL::BinaryOp combincrhs_;  //!< binary operator to combine increments and forces
+    enum Inpar::EHL::BinaryOp combincrhs_;  //!< binary operator to combine increments and forces
 
-    enum INPAR::EHL::VectorNorm iternorm_;     //!< vector norm to check EHL values with
-    enum INPAR::EHL::VectorNorm iternormstr_;  //!< vector norm to check structural values with
-    enum INPAR::EHL::VectorNorm
+    enum Inpar::EHL::VectorNorm iternorm_;     //!< vector norm to check EHL values with
+    enum Inpar::EHL::VectorNorm iternormstr_;  //!< vector norm to check structural values with
+    enum Inpar::EHL::VectorNorm
         iternormlubrication_;  //!< vector norm to check lubrication values with
 
     double tolinc_;             //!< tolerance for increment

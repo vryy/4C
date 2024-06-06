@@ -15,7 +15,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-void PASI::UTILS::ChangeTimeParameter(const Epetra_Comm& comm,
+void PaSI::UTILS::ChangeTimeParameter(const Epetra_Comm& comm,
     const Teuchos::ParameterList& pasi_params, Teuchos::ParameterList& particle_params,
     Teuchos::ParameterList& struct_params)
 {
@@ -71,7 +71,7 @@ void PASI::UTILS::ChangeTimeParameter(const Epetra_Comm& comm,
   }
 }
 
-void PASI::UTILS::Logo()
+void PaSI::UTILS::Logo()
 {
   std::cout << "============================ Welcome to =============================="
             << std::endl;

@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                    schott 03/12|
  *----------------------------------------------------------------------*/
-DRT::DiscretizationFaces::DiscretizationFaces(
+Discret::DiscretizationFaces::DiscretizationFaces(
     const std::string name, Teuchos::RCP<Epetra_Comm> comm, const unsigned int n_dim)
     : Discretization(name, comm, n_dim),  // use base class constructor
       extension_filled_(false),
@@ -32,12 +32,13 @@ DRT::DiscretizationFaces::DiscretizationFaces(
 /*----------------------------------------------------------------------*
  |  Finalize construction (public)                          schott 03/12|
  *----------------------------------------------------------------------*/
-int DRT::DiscretizationFaces::FillCompleteFaces(bool assigndegreesoffreedom, bool initelements,
+int Discret::DiscretizationFaces::FillCompleteFaces(bool assigndegreesoffreedom, bool initelements,
     bool doboundaryconditions, bool createinternalfaces)
 
 {
   // call standard FillComlete of base class
-  DRT::Discretization::fill_complete(assigndegreesoffreedom, initelements, doboundaryconditions);
+  Discret::Discretization::fill_complete(
+      assigndegreesoffreedom, initelements, doboundaryconditions);
 
   if (createinternalfaces)
   {
@@ -52,9 +53,9 @@ int DRT::DiscretizationFaces::FillCompleteFaces(bool assigndegreesoffreedom, boo
 /*----------------------------------------------------------------------*
  |  Build internal faces extension (public)                 schott 03/12|
  *----------------------------------------------------------------------*/
-void DRT::DiscretizationFaces::create_internal_faces_extension(const bool verbose)
+void Discret::DiscretizationFaces::create_internal_faces_extension(const bool verbose)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("DRT::DiscretizationFaces::CreateInternalFaces");
+  TEUCHOS_FUNC_TIME_MONITOR("Discret::DiscretizationFaces::CreateInternalFaces");
 
   // create internal faces for stabilization along edges
   BuildFaces(verbose);
@@ -83,7 +84,7 @@ void DRT::DiscretizationFaces::create_internal_faces_extension(const bool verbos
 /*----------------------------------------------------------------------*
  |  Build internal faces geometry (public)                  schott 03/12|
  *----------------------------------------------------------------------*/
-void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
+void Discret::DiscretizationFaces::BuildFaces(const bool verbose)
 {
   faces_.clear();
 
@@ -103,25 +104,25 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
   // REMARK: in a first step: find all surfaces and adjacent elements and fill InternalFacesData
   //         without creating the internal faces elements
 
-  std::vector<CORE::Elements::Element*>::iterator fool;
+  std::vector<Core::Elements::Element*>::iterator fool;
 
   for (fool = elecolptr_.begin(); fool != elecolptr_.end(); ++fool)
   {
-    CORE::Elements::Element* ele = *fool;
+    Core::Elements::Element* ele = *fool;
 
     //-------------------------------------------
     // create
 
-    CORE::COMM::BoundaryBuildType buildtype = CORE::COMM::buildNothing;
+    Core::Communication::BoundaryBuildType buildtype = Core::Communication::buildNothing;
 
     // 3D elements
     if (ele->NumSurface() > 1)  // 2D boundary element and 3D parent element
     {
-      buildtype = CORE::COMM::buildSurfaces;
+      buildtype = Core::Communication::buildSurfaces;
     }
     else if (ele->NumSurface() == 1)  // 1D boundary element and 2D parent element
     {
-      buildtype = CORE::COMM::buildLines;
+      buildtype = Core::Communication::buildLines;
     }
     else
       FOUR_C_THROW("creating internal faces for 1D elements (would be points) not implemented yet");
@@ -129,29 +130,29 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
 
     // get node connectivity for specific distype of parent element
     unsigned int nele = 0;
-    const CORE::FE::CellType distype = ele->Shape();
+    const Core::FE::CellType distype = ele->Shape();
     std::vector<std::vector<int>> connectivity;
     switch (buildtype)
     {
-      case CORE::COMM::buildSurfaces:
+      case Core::Communication::buildSurfaces:
       {
         nele = ele->NumSurface();
-        connectivity = CORE::FE::getEleNodeNumberingSurfaces(distype);
+        connectivity = Core::FE::getEleNodeNumberingSurfaces(distype);
         break;
       }
-      case CORE::COMM::buildLines:
+      case Core::Communication::buildLines:
       {
         nele = ele->NumLine();
-        connectivity = CORE::FE::getEleNodeNumberingLines(distype);
+        connectivity = Core::FE::getEleNodeNumberingLines(distype);
         break;
       }
       default:
-        FOUR_C_THROW("DRT::UTILS::build... not supported");
+        FOUR_C_THROW("Discret::UTILS::build... not supported");
         break;
     }
 
 
-    // does DRT::UTILS convention match your implementation of NumSurface() or NumLine()?
+    // does Discret::UTILS convention match your implementation of NumSurface() or NumLine()?
     if (nele != connectivity.size()) FOUR_C_THROW("number of surfaces or lines does not match!");
 
     // now, get the nodal information for the new surface/line faces
@@ -160,7 +161,7 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
       // allocate node vectors
       unsigned int nnode = connectivity[iele].size();  // this number changes for pyramids or wedges
       std::vector<int> nodeids(nnode);
-      std::vector<CORE::Nodes::Node*> nodes(nnode);
+      std::vector<Core::Nodes::Node*> nodes(nnode);
 
       // get connectivity info
       for (unsigned int inode = 0; inode < nnode; inode++)
@@ -191,7 +192,7 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
         std::vector<int> localtrafomap;
 
         // get the face's nodes sorted w.r.t local coordinate system of the parent's face element
-        const std::vector<CORE::Nodes::Node*> nodes_face_master = surf_it->second.GetNodes();
+        const std::vector<Core::Nodes::Node*> nodes_face_master = surf_it->second.GetNodes();
         if (nodes_face_master.size() != nnode)
           FOUR_C_THROW(
               "the number of the face w.r.t parent element and slave element are not the same. "
@@ -236,7 +237,7 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
   //    -> the owner of this node will be the owner for the face
   //       (this criterion is working in the same way on all procs holding this face)
 
-  std::map<std::vector<int>, Teuchos::RCP<CORE::Elements::Element>> faces;
+  std::map<std::vector<int>, Teuchos::RCP<Core::Elements::Element>> faces;
 
   // get pbcs
   std::map<int, std::vector<int>>* col_pbcmapmastertoslave = get_all_pbc_coupled_col_nodes();
@@ -264,7 +265,7 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
         // number of pairs of periodic boundary conditions
         int numpbcpairs;
         // vector of periodic surface boundary conditions
-        std::vector<CORE::Conditions::Condition*> mypbcs;
+        std::vector<Core::Conditions::Condition*> mypbcs;
         GetCondition("SurfacePeriodic", mypbcs);
         if (mypbcs.empty())
         {
@@ -748,7 +749,7 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
           int counter = 0;
           for (std::size_t kk = 0; kk < mymasternodeids.size(); kk++)
           {
-            std::vector<CORE::Nodes::Node*>::iterator nofool;
+            std::vector<Core::Nodes::Node*>::iterator nofool;
             for (nofool = noderowptr_.begin(); nofool != noderowptr_.end(); ++nofool)
             {
               if ((*nofool)->Id() == mymasternodeids[kk]) counter++;
@@ -756,7 +757,7 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
           }
           for (std::size_t kk = 0; kk < myfurthermasternodeids.size(); kk++)
           {
-            std::vector<CORE::Nodes::Node*>::iterator nofool;
+            std::vector<Core::Nodes::Node*>::iterator nofool;
             for (nofool = noderowptr_.begin(); nofool != noderowptr_.end(); ++nofool)
             {
               if ((*nofool)->Id() == myfurthermasternodeids[kk]) counter++;
@@ -771,7 +772,7 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
           if (add_salve_ele_to_face)
           {
             // get master element
-            CORE::Elements::Element* master_ele = elecolptr_[0];
+            Core::Elements::Element* master_ele = elecolptr_[0];
             for (fool = elecolptr_.begin(); fool != elecolptr_.end(); ++fool)
             {
               if ((*fool)->Id() == master_peid) master_ele = *fool;
@@ -802,12 +803,12 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
 
             // get the face's nodes sorted w.r.t local coordinate system of the parent's face
             // element
-            const std::vector<CORE::Nodes::Node*> nodes_face_master = face_it->second.GetNodes();
+            const std::vector<Core::Nodes::Node*> nodes_face_master = face_it->second.GetNodes();
             // get number of nodes
             unsigned int nnode = nodes_face_master.size();
 
             // get slave nodes
-            std::vector<CORE::Nodes::Node*> slave_nodes = pbc_surf_it->second.GetNodes();
+            std::vector<Core::Nodes::Node*> slave_nodes = pbc_surf_it->second.GetNodes();
 
             // find the nodes given with the master element node numbering also for the slave
             // element to define a connectivity map between the local face's coordinate systems
@@ -864,23 +865,23 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
     if (doboundaryfaces_ || (master_peid != -1 && slave_peid != -1))
     {
       FOUR_C_ASSERT(master_peid != -1, "At least the master element should be present");
-      CORE::Elements::Element* parent_master = gElement(master_peid);
-      CORE::Elements::Element* parent_slave = slave_peid != -1 ? gElement(slave_peid) : nullptr;
+      Core::Elements::Element* parent_master = gElement(master_peid);
+      Core::Elements::Element* parent_slave = slave_peid != -1 ? gElement(slave_peid) : nullptr;
 
       FOUR_C_ASSERT(master_peid == parent_master->Id(), "Internal error");
       FOUR_C_ASSERT(slave_peid == -1 || slave_peid == parent_slave->Id(), "Internal error");
 
       // get the unsorted nodes
-      std::vector<CORE::Nodes::Node*> nodes = face_it->second.GetNodes();
+      std::vector<Core::Nodes::Node*> nodes = face_it->second.GetNodes();
 
       // get corresponding nodeids
       std::vector<int> nodeids(nodes.size());
       std::transform(
-          nodes.begin(), nodes.end(), nodeids.begin(), std::mem_fn(&CORE::Nodes::Node::Id));
+          nodes.begin(), nodes.end(), nodeids.begin(), std::mem_fn(&Core::Nodes::Node::Id));
 
       // create the internal face element
-      Teuchos::RCP<CORE::Elements::FaceElement> surf =
-          Teuchos::rcp_dynamic_cast<CORE::Elements::FaceElement>(
+      Teuchos::RCP<Core::Elements::FaceElement> surf =
+          Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(
               parent_master->CreateFaceElement(parent_slave, nodeids.size(), nodeids.data(),
                   nodes.data(), face_it->second.GetLSurfaceMaster(),
                   face_it->second.GetLSurfaceSlave(), face_it->second.get_local_numbering_map()),
@@ -890,8 +891,8 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
 
       // create a clone (the internally created element does not exist anymore when all
       // Teuchos::RCP's finished)
-      Teuchos::RCP<CORE::Elements::FaceElement> surf_clone =
-          Teuchos::rcp(dynamic_cast<CORE::Elements::FaceElement*>(surf->Clone()));
+      Teuchos::RCP<Core::Elements::FaceElement> surf_clone =
+          Teuchos::rcp(dynamic_cast<Core::Elements::FaceElement*>(surf->Clone()));
       if (surf_clone.get() == nullptr)
         FOUR_C_THROW("Invalid element detected. Expected face element");
 
@@ -904,7 +905,7 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
       surf_clone->SetOwner(owner);
 
       // insert the newly created element
-      faces.insert(std::pair<std::vector<int>, Teuchos::RCP<CORE::Elements::Element>>(
+      faces.insert(std::pair<std::vector<int>, Teuchos::RCP<Core::Elements::Element>>(
           face_it->first, surf_clone));
 
       // set face to elements
@@ -919,12 +920,12 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
   // if the discretization has been redistributed (combustion module), we have to
   // rebuild the faces and therefore we have to be sure that the map faces_ is clear
   // therefore, the old faces are deleted and replaced by new ones
-  std::map<int, Teuchos::RCP<CORE::Elements::Element>> finalFaces;
+  std::map<int, Teuchos::RCP<Core::Elements::Element>> finalFaces;
   assign_global_i_ds(Comm(), faces, finalFaces);
-  for (std::map<int, Teuchos::RCP<CORE::Elements::Element>>::iterator faceit = finalFaces.begin();
+  for (std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator faceit = finalFaces.begin();
        faceit != finalFaces.end(); ++faceit)
     faces_[faceit->first] =
-        Teuchos::rcp_dynamic_cast<CORE::Elements::FaceElement>(faceit->second, true);
+        Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(faceit->second, true);
 
   if (verbose and comm_->MyPID() == 0)
   {
@@ -932,18 +933,18 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
   }
 
   return;
-}  // DRT::DiscretizationFaces::BuildInternalFaces
+}  // Discret::DiscretizationFaces::BuildInternalFaces
 
 
 
 /*----------------------------------------------------------------------*
  |  Build intfacerowmap_ (private)                          schott 03/12|
  *----------------------------------------------------------------------*/
-void DRT::DiscretizationFaces::BuildFaceRowMap()
+void Discret::DiscretizationFaces::BuildFaceRowMap()
 {
   const int myrank = Comm().MyPID();
   int nummyeles = 0;
-  std::map<int, Teuchos::RCP<CORE::Elements::FaceElement>>::iterator curr;
+  std::map<int, Teuchos::RCP<Core::Elements::FaceElement>>::iterator curr;
   for (curr = faces_.begin(); curr != faces_.end(); ++curr)
     if (curr->second->Owner() == myrank) nummyeles++;
   std::vector<int> eleids(nummyeles);
@@ -965,12 +966,12 @@ void DRT::DiscretizationFaces::BuildFaceRowMap()
 /*----------------------------------------------------------------------*
  |  Build intfacecolmap_ (private)                          schott 03/12|
  *----------------------------------------------------------------------*/
-void DRT::DiscretizationFaces::BuildFaceColMap()
+void Discret::DiscretizationFaces::BuildFaceColMap()
 {
   int nummyeles = (int)faces_.size();
   std::vector<int> eleids(nummyeles);
   facecolptr_.resize(nummyeles);
-  std::map<int, Teuchos::RCP<CORE::Elements::FaceElement>>::iterator curr;
+  std::map<int, Teuchos::RCP<Core::Elements::FaceElement>>::iterator curr;
   int count = 0;
   for (curr = faces_.begin(); curr != faces_.end(); ++curr)
   {
@@ -988,7 +989,7 @@ void DRT::DiscretizationFaces::BuildFaceColMap()
 /*----------------------------------------------------------------------*
  |  get internal faces row map (public)                     schott 03/12|
  *----------------------------------------------------------------------*/
-const Epetra_Map* DRT::DiscretizationFaces::FaceRowMap() const
+const Epetra_Map* Discret::DiscretizationFaces::FaceRowMap() const
 {
   FOUR_C_ASSERT(Filled(), "fill_complete() must be called before call to FaceRowMap()");
   return facerowmap_.get();
@@ -998,7 +999,7 @@ const Epetra_Map* DRT::DiscretizationFaces::FaceRowMap() const
 /*----------------------------------------------------------------------*
  |  get internal faces col map (public)                     schott 03/12|
  *----------------------------------------------------------------------*/
-const Epetra_Map* DRT::DiscretizationFaces::FaceColMap() const
+const Epetra_Map* Discret::DiscretizationFaces::FaceColMap() const
 {
   FOUR_C_ASSERT(Filled(), "fill_complete() must be called before call to FaceColMap()");
   return facecolmap_.get();
@@ -1008,7 +1009,7 @@ const Epetra_Map* DRT::DiscretizationFaces::FaceColMap() const
 /*----------------------------------------------------------------------*
  |  get global no of internal faces (public)                schott 03/12|
  *----------------------------------------------------------------------*/
-int DRT::DiscretizationFaces::NumGlobalFaces() const
+int Discret::DiscretizationFaces::NumGlobalFaces() const
 {
   FOUR_C_ASSERT(Filled(), "fill_complete() must be called before call to NumGlobalFaces()");
   return FaceRowMap()->NumGlobalElements();
@@ -1018,7 +1019,7 @@ int DRT::DiscretizationFaces::NumGlobalFaces() const
 /*----------------------------------------------------------------------*
  |  get no of my row internal faces (public)                schott 03/12|
  *----------------------------------------------------------------------*/
-int DRT::DiscretizationFaces::NumMyRowFaces() const
+int Discret::DiscretizationFaces::NumMyRowFaces() const
 {
   FOUR_C_ASSERT(Filled(), "fill_complete() must be called before call to NumMyRowFaces()");
   return FaceRowMap()->NumMyElements();
@@ -1028,7 +1029,7 @@ int DRT::DiscretizationFaces::NumMyRowFaces() const
 /*----------------------------------------------------------------------*
  |  get no of my column internal faces (public)             schott 03/12|
  *----------------------------------------------------------------------*/
-int DRT::DiscretizationFaces::NumMyColFaces() const
+int Discret::DiscretizationFaces::NumMyColFaces() const
 {
   if (Filled())
     return FaceColMap()->NumMyElements();
@@ -1041,7 +1042,7 @@ int DRT::DiscretizationFaces::NumMyColFaces() const
 /*----------------------------------------------------------------------*
  |  << operator                                             schott 03/12|
  *----------------------------------------------------------------------*/
-std::ostream& operator<<(std::ostream& os, const DRT::DiscretizationFaces& dis)
+std::ostream& operator<<(std::ostream& os, const Discret::DiscretizationFaces& dis)
 {
   // print standard discretization info
   dis.Print(os);
@@ -1055,7 +1056,7 @@ std::ostream& operator<<(std::ostream& os, const DRT::DiscretizationFaces& dis)
 /*----------------------------------------------------------------------*
  |  Print internal faces discretization (public)            schott 03/12|
  *----------------------------------------------------------------------*/
-void DRT::DiscretizationFaces::PrintFaces(std::ostream& os) const
+void Discret::DiscretizationFaces::PrintFaces(std::ostream& os) const
 {
   int numglobalfaces = 0;
   if (Filled())
@@ -1065,7 +1066,7 @@ void DRT::DiscretizationFaces::PrintFaces(std::ostream& os) const
   else
   {
     int nummyfaces = 0;
-    std::map<int, Teuchos::RCP<CORE::Elements::FaceElement>>::const_iterator ecurr;
+    std::map<int, Teuchos::RCP<Core::Elements::FaceElement>>::const_iterator ecurr;
     for (ecurr = faces_.begin(); ecurr != faces_.end(); ++ecurr)
       if (ecurr->second->Owner() == Comm().MyPID()) nummyfaces++;
 
@@ -1092,7 +1093,7 @@ void DRT::DiscretizationFaces::PrintFaces(std::ostream& os) const
     if (proc == Comm().MyPID())
     {
       if ((int)faces_.size()) os << "-------------------------- Proc " << proc << " :\n";
-      std::map<int, Teuchos::RCP<CORE::Elements::FaceElement>>::const_iterator curr;
+      std::map<int, Teuchos::RCP<Core::Elements::FaceElement>>::const_iterator curr;
       for (curr = faces_.begin(); curr != faces_.end(); ++curr)
       {
         os << *(curr->second);

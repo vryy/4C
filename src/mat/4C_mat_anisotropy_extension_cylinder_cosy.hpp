@@ -2,7 +2,7 @@
 /*! \file
 
 \brief Declaration of a cylinder coordinate system anisotropy extension to be used by anisotropic
-materials with @MAT::Anisotropy
+materials with @Mat::Anisotropy
 
 \level 3
 
@@ -22,11 +22,11 @@ materials with @MAT::Anisotropy
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace CORE::COMM
+namespace Core::Communication
 {
   class PackBuffer;
 }
-namespace MAT
+namespace Mat
 {
   // Forward declaration
   class CoordinateSystemProvider;
@@ -46,7 +46,7 @@ namespace MAT
     GPCosy
   };
 
-  class CylinderCoordinateSystemAnisotropyExtension : public MAT::BaseAnisotropyExtension
+  class CylinderCoordinateSystemAnisotropyExtension : public Mat::BaseAnisotropyExtension
   {
    public:
     CylinderCoordinateSystemAnisotropyExtension();
@@ -58,7 +58,7 @@ namespace MAT
      *
      * \param data
      */
-    void PackAnisotropy(CORE::COMM::PackBuffer& data) const override;
+    void PackAnisotropy(Core::Communication::PackBuffer& data) const override;
 
     /*!
      * \brief Unpack all data from parallel distribution or restart
@@ -71,7 +71,7 @@ namespace MAT
     /// @}
 
     /*!
-     * \brief This method will be called by MAT::Anisotropy if element and Gauss point fibers are
+     * \brief This method will be called by Mat::Anisotropy if element and Gauss point fibers are
      * available
      */
     void on_global_data_initialized() override;
@@ -88,18 +88,18 @@ namespace MAT
      */
     const CylinderCoordinateSystemProvider& get_cylinder_coordinate_system(int gp) const;
 
-    Teuchos::RCP<MAT::CoordinateSystemProvider> get_coordinate_system_provider(int gp) const;
+    Teuchos::RCP<Mat::CoordinateSystemProvider> get_coordinate_system_provider(int gp) const;
 
    private:
     /*!
-     * \brief This method will be called by MAT::Anisotropy to notify that element information is
+     * \brief This method will be called by Mat::Anisotropy to notify that element information is
      * available.
      */
     void on_global_element_data_initialized() override;
 
 
     /*!
-     * \brief This method will be called by MAT::Anisotropy to notify that Gauss point information
+     * \brief This method will be called by Mat::Anisotropy to notify that Gauss point information
      * is available.
      */
     void on_global_gp_data_initialized() override;
@@ -107,7 +107,7 @@ namespace MAT
     /// flag where the coordinate system is located
     CosyLocation cosy_location_;
   };
-}  // namespace MAT
+}  // namespace Mat
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

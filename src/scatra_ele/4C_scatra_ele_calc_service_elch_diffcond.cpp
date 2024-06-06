@@ -23,16 +23,16 @@ FOUR_C_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::check_elch_element_parameter(
-    CORE::Elements::Element* ele)
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::check_elch_element_parameter(
+    Core::Elements::Element* ele)
 {
   // 1) Check material specific options
   // 2) Check if numdofpernode, numscal is set correctly
-  if (ele->Material()->MaterialType() == CORE::Materials::m_elchmat)
+  if (ele->Material()->MaterialType() == Core::Materials::m_elchmat)
   {
-    const Teuchos::RCP<const MAT::ElchMat>& actmat =
-        Teuchos::rcp_dynamic_cast<const MAT::ElchMat>(ele->Material());
+    const Teuchos::RCP<const Mat::ElchMat>& actmat =
+        Teuchos::rcp_dynamic_cast<const Mat::ElchMat>(ele->Material());
 
     int numphase = actmat->NumPhase();
 
@@ -44,11 +44,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::check_elch_elem
     {
       // access phase material
       const int phaseid = actmat->PhaseID(iphase);
-      Teuchos::RCP<const CORE::MAT::Material> singlephase = actmat->PhaseById(phaseid);
+      Teuchos::RCP<const Core::Mat::Material> singlephase = actmat->PhaseById(phaseid);
 
       // dynmic cast: get access to mat_phase
-      const Teuchos::RCP<const MAT::ElchPhase>& actphase =
-          Teuchos::rcp_dynamic_cast<const MAT::ElchPhase>(singlephase);
+      const Teuchos::RCP<const Mat::ElchPhase>& actphase =
+          Teuchos::rcp_dynamic_cast<const Mat::ElchPhase>(singlephase);
 
       // Check if numdofpernode, numscal is set correctly
       int nummat = actphase->NumMat();
@@ -62,9 +62,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::check_elch_elem
 
       int numdofpernode = 0;
       if (diffcondparams_->CurSolVar())
-        numdofpernode = nummat + GLOBAL::Problem::Instance()->NDim() + numphase;
+        numdofpernode = nummat + Global::Problem::Instance()->NDim() + numphase;
       else if (actphase->MatById(actphase->MatID(0))->MaterialType() ==
-               CORE::Materials::m_newman_multiscale)
+               Core::Materials::m_newman_multiscale)
         numdofpernode = 3;
       else
         numdofpernode = nummat + numphase;
@@ -80,12 +80,12 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::check_elch_elem
       for (int imat = 0; imat < actphase->NumMat(); ++imat)
       {
         const int matid = actphase->MatID(imat);
-        Teuchos::RCP<const CORE::MAT::Material> singlemat = actphase->MatById(matid);
+        Teuchos::RCP<const Core::Mat::Material> singlemat = actphase->MatById(matid);
 
-        if (singlemat->MaterialType() == CORE::Materials::m_newman)
+        if (singlemat->MaterialType() == Core::Materials::m_newman)
         {
           // Newman material must be combined with divi closing equation for electric potential
-          if (myelch::elchparams_->EquPot() != INPAR::ELCH::equpot_divi)
+          if (myelch::elchparams_->EquPot() != Inpar::ElCh::equpot_divi)
           {
             FOUR_C_THROW(
                 "Newman material must be combined with divi closing equation for electric "
@@ -108,11 +108,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::check_elch_elem
 
 /*---------------------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_initial_time_derivative(
-    CORE::Elements::Element* ele, CORE::LINALG::SerialDenseMatrix& emat,
-    CORE::LINALG::SerialDenseVector& erhs, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la)
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_initial_time_derivative(
+    Core::Elements::Element* ele, Core::LinAlg::SerialDenseMatrix& emat,
+    Core::LinAlg::SerialDenseVector& erhs, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la)
 {
   // call base class routine
   myelch::calc_initial_time_derivative(ele, emat, erhs, params, discretization, la);
@@ -127,10 +127,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_initial_ti
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::correct_rhs_from_calc_rhs_lin_mass(
-    CORE::LINALG::SerialDenseVector& erhs, const int k, const double fac, const double densnp,
-    const double phinp)
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
+    probdim>::correct_rhs_from_calc_rhs_lin_mass(Core::LinAlg::SerialDenseVector& erhs, const int k,
+    const double fac, const double densnp, const double phinp)
 {
   // fac->-fac to change sign of rhs
   if (my::scatraparatimint_->IsIncremental())
@@ -141,38 +141,38 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::correct_rhs_fro
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::evaluate_action(
-    CORE::Elements::Element* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, const SCATRA::Action& action,
-    CORE::Elements::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec1_epetra,
-    CORE::LINALG::SerialDenseVector& elevec2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec3_epetra)
+template <Core::FE::CellType distype, int probdim>
+int Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::evaluate_action(
+    Core::Elements::Element* ele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, const ScaTra::Action& action,
+    Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+    Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec1_epetra,
+    Core::LinAlg::SerialDenseVector& elevec2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec3_epetra)
 {
   // determine and evaluate action
   switch (action)
   {
-    case SCATRA::Action::calc_elch_boundary_kinetics_point:
+    case ScaTra::Action::calc_elch_boundary_kinetics_point:
     {
       // access material of parent element
-      Teuchos::RCP<CORE::MAT::Material> material = ele->Material();
+      Teuchos::RCP<Core::Mat::Material> material = ele->Material();
 
       // extract porosity from material and store in diffusion manager
-      if (material->MaterialType() == CORE::Materials::m_elchmat)
+      if (material->MaterialType() == Core::Materials::m_elchmat)
       {
-        const auto* elchmat = static_cast<const MAT::ElchMat*>(material.get());
+        const auto* elchmat = static_cast<const Mat::ElchMat*>(material.get());
 
         for (int iphase = 0; iphase < elchmat->NumPhase(); ++iphase)
         {
-          Teuchos::RCP<const CORE::MAT::Material> phase =
+          Teuchos::RCP<const Core::Mat::Material> phase =
               elchmat->PhaseById(elchmat->PhaseID(iphase));
 
-          if (phase->MaterialType() == CORE::Materials::m_elchphase)
+          if (phase->MaterialType() == Core::Materials::m_elchphase)
           {
             diff_manager()->SetPhasePoro(
-                (static_cast<const MAT::ElchPhase*>(phase.get()))->Epsilon(), iphase);
+                (static_cast<const Mat::ElchPhase*>(phase.get()))->Epsilon(), iphase);
           }
           else
             FOUR_C_THROW("Invalid material!");
@@ -189,7 +189,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::evaluate_action(
       break;
     }
 
-    case SCATRA::Action::calc_elch_domain_kinetics:
+    case ScaTra::Action::calc_elch_domain_kinetics:
     {
       calc_elch_domain_kinetics(
           ele, params, discretization, la[0].lm_, elemat1_epetra, elevec1_epetra);
@@ -211,28 +211,28 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::evaluate_action(
 
 /*------------------------------------------------------------------------*
  *------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_elch_domain_kinetics(
-    CORE::Elements::Element* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-    CORE::LINALG::SerialDenseVector& elevec1_epetra)
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_elch_domain_kinetics(
+    Core::Elements::Element* ele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+    Core::LinAlg::SerialDenseVector& elevec1_epetra)
 {
   // from scatra_ele_boundary_calc_elch_diffcond.cpp
-  Teuchos::RCP<CORE::MAT::Material> material = ele->Material();
+  Teuchos::RCP<Core::Mat::Material> material = ele->Material();
 
-  if (material->MaterialType() == CORE::Materials::m_elchmat)
+  if (material->MaterialType() == Core::Materials::m_elchmat)
   {
-    const auto* elchmat = static_cast<const MAT::ElchMat*>(material.get());
+    const auto* elchmat = static_cast<const Mat::ElchMat*>(material.get());
 
     for (int iphase = 0; iphase < elchmat->NumPhase(); ++iphase)
     {
-      Teuchos::RCP<const CORE::MAT::Material> phase = elchmat->PhaseById(elchmat->PhaseID(iphase));
+      Teuchos::RCP<const Core::Mat::Material> phase = elchmat->PhaseById(elchmat->PhaseID(iphase));
 
-      if (phase->MaterialType() == CORE::Materials::m_elchphase)
+      if (phase->MaterialType() == Core::Materials::m_elchphase)
       {
         diff_manager()->SetPhasePoro(
-            (static_cast<const MAT::ElchPhase*>(phase.get()))->Epsilon(), iphase);
+            (static_cast<const Mat::ElchPhase*>(phase.get()))->Epsilon(), iphase);
       }
       else
         FOUR_C_THROW("Invalid material!");
@@ -251,16 +251,16 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_elch_domai
   if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'hist'");
 
   // state and history variables at element nodes
-  std::vector<CORE::LINALG::Matrix<nen_, 1>> ephinp(
-      my::numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
-  std::vector<CORE::LINALG::Matrix<nen_, 1>> ehist(
-      my::numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
-  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, ephinp, lm);
-  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*hist, ehist, lm);
+  std::vector<Core::LinAlg::Matrix<nen_, 1>> ephinp(
+      my::numdofpernode_, Core::LinAlg::Matrix<nen_, 1>(true));
+  std::vector<Core::LinAlg::Matrix<nen_, 1>> ehist(
+      my::numdofpernode_, Core::LinAlg::Matrix<nen_, 1>(true));
+  Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phinp, ephinp, lm);
+  Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*hist, ehist, lm);
 
   // get current condition
-  Teuchos::RCP<CORE::Conditions::Condition> cond =
-      params.get<Teuchos::RCP<CORE::Conditions::Condition>>("condition");
+  Teuchos::RCP<Core::Conditions::Condition> cond =
+      params.get<Teuchos::RCP<Core::Conditions::Condition>>("condition");
   if (cond == Teuchos::null) FOUR_C_THROW("Cannot access condition 'ElchDomainKinetics'");
 
   // access parameters of the condition
@@ -296,9 +296,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_elch_domai
     int reactspecies = 0;
     for (int kk = 0; kk < my::numscal_; ++kk) reactspecies += abs((*stoich)[kk]);
 
-    if (reactspecies > 1 and (kinetics == INPAR::ELCH::butler_volmer or
-                                 kinetics == INPAR::ELCH::butler_volmer_yang1997 or
-                                 kinetics == INPAR::ELCH::tafel or kinetics == INPAR::ELCH::linear))
+    if (reactspecies > 1 and (kinetics == Inpar::ElCh::butler_volmer or
+                                 kinetics == Inpar::ElCh::butler_volmer_yang1997 or
+                                 kinetics == Inpar::ElCh::tafel or kinetics == Inpar::ElCh::linear))
     {
       FOUR_C_THROW(
           "Kinetic model Butler-Volmer / Butler-Volmer-Yang / Tafel and Linear: \n"
@@ -316,7 +316,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_elch_domai
   if (curvenum >= 0)
   {
     const double curvefac =
-        GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum).Evaluate(
+        Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfTime>(curvenum).Evaluate(
             time);
     // adjust potential at metal side accordingly
     pot0 *= curvefac;
@@ -353,9 +353,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_elch_domai
     // get actual values of transported scalars
     Teuchos::RCP<const Epetra_Vector> phidtnp = discretization.GetState("phidtnp");
     if (phidtnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'ephidtnp'");
-    std::vector<CORE::LINALG::Matrix<nen_, 1>> ephidtnp(
-        my::numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
-    CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phidtnp, ephidtnp, lm);
+    std::vector<Core::LinAlg::Matrix<nen_, 1>> ephidtnp(
+        my::numdofpernode_, Core::LinAlg::Matrix<nen_, 1>(true));
+    Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phidtnp, ephidtnp, lm);
 
     if (not is_stationary)
     {
@@ -373,13 +373,13 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_elch_domai
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
-    probdim>::evaluate_elch_boundary_kinetics_point(const CORE::Elements::Element* ele,
-    CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs,
-    const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,
-    const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ehist, double timefac,
-    Teuchos::RCP<CORE::Conditions::Condition> cond, const int nume, const std::vector<int> stoich,
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
+    probdim>::evaluate_elch_boundary_kinetics_point(const Core::Elements::Element* ele,
+    Core::LinAlg::SerialDenseMatrix& emat, Core::LinAlg::SerialDenseVector& erhs,
+    const std::vector<Core::LinAlg::Matrix<nen_, 1>>& ephinp,
+    const std::vector<Core::LinAlg::Matrix<nen_, 1>>& ehist, double timefac,
+    Teuchos::RCP<Core::Conditions::Condition> cond, const int nume, const std::vector<int> stoich,
     const int kinetics, const double pot0, const double frt, const double scalar)
 {
   // call base class routine
@@ -389,13 +389,13 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
   // compute matrix and residual contributions arising from closing equation for electric potential
   switch (myelch::elchparams_->EquPot())
   {
-    case INPAR::ELCH::equpot_enc:
+    case Inpar::ElCh::equpot_enc:
     {
       // do nothing, since no boundary integral present
       break;
     }
 
-    case INPAR::ELCH::equpot_divi:
+    case Inpar::ElCh::equpot_divi:
     {
       for (int k = 0; k < my::numscal_; ++k)
       {
@@ -426,20 +426,20 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::evaluate_elch_domain_kinetics(
-    const CORE::Elements::Element* ele, CORE::LINALG::SerialDenseMatrix& emat,
-    CORE::LINALG::SerialDenseVector& erhs, const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,
-    const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ehist, double timefac,
-    Teuchos::RCP<CORE::Conditions::Condition> cond, const int nume, const std::vector<int> stoich,
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::evaluate_elch_domain_kinetics(
+    const Core::Elements::Element* ele, Core::LinAlg::SerialDenseMatrix& emat,
+    Core::LinAlg::SerialDenseVector& erhs, const std::vector<Core::LinAlg::Matrix<nen_, 1>>& ephinp,
+    const std::vector<Core::LinAlg::Matrix<nen_, 1>>& ehist, double timefac,
+    Teuchos::RCP<Core::Conditions::Condition> cond, const int nume, const std::vector<int> stoich,
     const int kinetics, const double pot0)
 {
   // for pre-multiplication of i0 with 1/(F z_k)
   const double faraday = myelch::elchparams_->Faraday();
 
   // integration points and weights
-  const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
-      SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
+      ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over all scalars
   for (int k = 0; k < my::numscal_; ++k)
@@ -483,13 +483,13 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::evaluate_elch_d
   // compute matrix and residual contributions arising from closing equation for electric potential
   switch (myelch::elchparams_->EquPot())
   {
-    case INPAR::ELCH::equpot_enc:
+    case Inpar::ElCh::equpot_enc:
     {
       // do nothing, since no boundary integral present
       break;
     }
 
-    case INPAR::ELCH::equpot_divi:
+    case Inpar::ElCh::equpot_divi:
     {
       for (int k = 0; k < my::numscal_; ++k)
       {
@@ -520,12 +520,12 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::evaluate_elch_d
 
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::evaluate_electrode_status(
-    const CORE::Elements::Element* ele, CORE::LINALG::SerialDenseVector& scalars,
-    Teuchos::ParameterList& params, Teuchos::RCP<CORE::Conditions::Condition> cond,
-    const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,
-    const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephidtnp, const int kinetics,
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::evaluate_electrode_status(
+    const Core::Elements::Element* ele, Core::LinAlg::SerialDenseVector& scalars,
+    Teuchos::ParameterList& params, Teuchos::RCP<Core::Conditions::Condition> cond,
+    const std::vector<Core::LinAlg::Matrix<nen_, 1>>& ephinp,
+    const std::vector<Core::LinAlg::Matrix<nen_, 1>>& ephidtnp, const int kinetics,
     const std::vector<int> stoich, const int nume, const double pot0, const double timefac)
 {
   // Warning:
@@ -545,8 +545,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::evaluate_electr
   double A_s = cond->parameters().Get<double>("A_s");
 
   // integration points and weights
-  const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
-      SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
+      ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
   bool statistics = false;
 
@@ -591,9 +591,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::evaluate_electr
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calculate_flux(
-    CORE::LINALG::Matrix<nsd_, 1>& q, const INPAR::SCATRA::FluxType fluxtype, const int k)
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calculate_flux(
+    Core::LinAlg::Matrix<nsd_, 1>& q, const Inpar::ScaTra::FluxType fluxtype, const int k)
 {
   /*
   * Actually, we compute here a weighted (and integrated) form of the fluxes!
@@ -610,12 +610,12 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calculate_flux(
   // add different flux contributions as specified by user input
   switch (fluxtype)
   {
-    case INPAR::SCATRA::flux_total:
+    case Inpar::ScaTra::flux_total:
       // convective flux contribution
       q.Update(var_manager()->Phinp(k), var_manager()->ConVel(k));
 
       [[fallthrough]];
-    case INPAR::SCATRA::flux_diffusive:
+    case Inpar::ScaTra::flux_diffusive:
       // diffusive flux contribution
       q.Update(-diff_manager()->GetIsotropicDiff(k) * diff_manager()->GetPhasePoroTort(0),
           var_manager()->GradPhi(k), 1.0);
@@ -640,9 +640,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calculate_flux(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calculate_current(
-    CORE::LINALG::Matrix<nsd_, 1>& q, const INPAR::SCATRA::FluxType fluxtype, const double fac)
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calculate_current(
+    Core::LinAlg::Matrix<nsd_, 1>& q, const Inpar::ScaTra::FluxType fluxtype, const double fac)
 {
   /*
   * Actually, we compute here a weighted (and integrated) form of the fluxes!
@@ -659,8 +659,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calculate_curre
   // add different flux contributions as specified by user input
   switch (fluxtype)
   {
-    case INPAR::SCATRA::flux_total:
-    case INPAR::SCATRA::flux_diffusive:
+    case Inpar::ScaTra::flux_total:
+    case Inpar::ScaTra::flux_diffusive:
       // ohmic flux contribution
       q.Update(-diff_manager()->GetCond(), var_manager()->GradPot());
       // diffusion overpotential flux contribution
@@ -683,14 +683,14 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calculate_curre
 
 /*---------------------------------------------------------------------*
  *---------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
-    probdim>::cal_error_compared_to_analyt_solution(const CORE::Elements::Element* ele,
-    Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector& errors)
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
+    probdim>::cal_error_compared_to_analyt_solution(const Core::Elements::Element* ele,
+    Teuchos::ParameterList& params, Core::LinAlg::SerialDenseVector& errors)
 {
-  switch (CORE::UTILS::GetAsEnum<INPAR::SCATRA::CalcError>(params, "calcerrorflag"))
+  switch (Core::UTILS::GetAsEnum<Inpar::ScaTra::CalcError>(params, "calcerrorflag"))
   {
-    case INPAR::SCATRA::calcerror_Kwok_Wu:
+    case Inpar::ScaTra::calcerror_Kwok_Wu:
     {
       //   References:
       //   Kwok, Yue-Kuen and Wu, Charles C. K.
@@ -703,7 +703,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
       //   electrochemical systems and fluid flow, IJNME, 86 (2011) 1339-1359.
 
       // safety checks
-      if (Teuchos::getIntegralValue<SCATRA::Action>(params, "action") != SCATRA::Action::calc_error)
+      if (Teuchos::getIntegralValue<ScaTra::Action>(params, "action") != ScaTra::Action::calc_error)
         FOUR_C_THROW("How did you get here?");
       if (my::scatrapara_->IsAle()) FOUR_C_THROW("No ALE for Kwok & Wu error calculation allowed.");
       if (my::numscal_ != 1) FOUR_C_THROW("Numscal_ != 1 for desired error calculation.");
@@ -716,16 +716,16 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
 
       // integration points and weights
       // more GP than usual due to (possible) cos/exp fcts in analytical solutions
-      const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
-          SCATRA::DisTypeToGaussRuleForExactSol<distype>::rule);
+      const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
+          ScaTra::DisTypeToGaussRuleForExactSol<distype>::rule);
 
       // working arrays
       double potint(0.0);
-      CORE::LINALG::Matrix<1, 1> conint(true);
-      CORE::LINALG::Matrix<nsd_, 1> xint(true);
-      CORE::LINALG::Matrix<1, 1> c(true);
+      Core::LinAlg::Matrix<1, 1> conint(true);
+      Core::LinAlg::Matrix<nsd_, 1> xint(true);
+      Core::LinAlg::Matrix<1, 1> c(true);
       double deltapot(0.0);
-      CORE::LINALG::Matrix<1, 1> deltacon(true);
+      Core::LinAlg::Matrix<1, 1> deltacon(true);
 
       // start loop over integration points
       for (int iquad = 0; iquad < intpoints.IP().nquad; iquad++)
@@ -821,8 +821,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
 
 /*------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
     probdim>::set_internal_variables_for_mat_and_rhs()
 {
   // set internal variables
@@ -830,11 +830,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
       my::funct_, my::derxy_, my::ephinp_, my::ephin_, my::econvelnp_, my::ehist_);
 }
 
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
-    probdim>::calculate_mean_electrode_concentration(const CORE::Elements::Element* const& ele,
-    const DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
-    CORE::LINALG::SerialDenseVector& conc)
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
+    probdim>::calculate_mean_electrode_concentration(const Core::Elements::Element* const& ele,
+    const Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::LinAlg::SerialDenseVector& conc)
 {
   // for complete 1D simulation of battery:
   // Micro state must exist for electrolyte -> set value to 0.0
@@ -842,25 +842,25 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
 }
 // template classes
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<CORE::FE::CellType::line2, 1>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<CORE::FE::CellType::line2, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<CORE::FE::CellType::line2, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<CORE::FE::CellType::line3, 1>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<Core::FE::CellType::line2, 1>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<Core::FE::CellType::line2, 2>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<Core::FE::CellType::line2, 3>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<Core::FE::CellType::line3, 1>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<CORE::FE::CellType::tri3, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<CORE::FE::CellType::tri3, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<CORE::FE::CellType::tri6, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<CORE::FE::CellType::quad4, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<CORE::FE::CellType::quad4, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<CORE::FE::CellType::quad9, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<CORE::FE::CellType::nurbs9, 2>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<Core::FE::CellType::tri3, 2>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<Core::FE::CellType::tri3, 3>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<Core::FE::CellType::tri6, 2>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<Core::FE::CellType::quad4, 2>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<Core::FE::CellType::quad4, 3>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<Core::FE::CellType::quad9, 2>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<Core::FE::CellType::nurbs9, 2>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<CORE::FE::CellType::hex8, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<CORE::FE::CellType::hex27, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<CORE::FE::CellType::tet4, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<CORE::FE::CellType::tet10, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<CORE::FE::CellType::pyramid5, 3>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<Core::FE::CellType::hex8, 3>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<Core::FE::CellType::hex27, 3>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<Core::FE::CellType::tet4, 3>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<Core::FE::CellType::tet10, 3>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<Core::FE::CellType::pyramid5, 3>;
 
 FOUR_C_NAMESPACE_CLOSE

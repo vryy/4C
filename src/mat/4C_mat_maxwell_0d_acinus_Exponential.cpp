@@ -37,24 +37,25 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::Maxwell0dAcinusExponential::Maxwell0dAcinusExponential(
-    Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::Maxwell0dAcinusExponential::Maxwell0dAcinusExponential(
+    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : Maxwell0dAcinus(matdata)
 {
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::Maxwell0dAcinusExponential::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::Maxwell0dAcinusExponential::create_material()
 {
-  return Teuchos::rcp(new MAT::Maxwell0dAcinusExponential(this));
+  return Teuchos::rcp(new Mat::Maxwell0dAcinusExponential(this));
 }
 
 
-MAT::Maxwell0dAcinusExponentialType MAT::Maxwell0dAcinusExponentialType::instance_;
+Mat::Maxwell0dAcinusExponentialType Mat::Maxwell0dAcinusExponentialType::instance_;
 
 
-CORE::COMM::ParObject* MAT::Maxwell0dAcinusExponentialType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::Maxwell0dAcinusExponentialType::Create(
+    const std::vector<char>& data)
 {
-  MAT::Maxwell0dAcinusExponential* mxwll_0d_acin = new MAT::Maxwell0dAcinusExponential();
+  Mat::Maxwell0dAcinusExponential* mxwll_0d_acin = new Mat::Maxwell0dAcinusExponential();
   mxwll_0d_acin->Unpack(data);
   return mxwll_0d_acin;
 }
@@ -62,12 +63,12 @@ CORE::COMM::ParObject* MAT::Maxwell0dAcinusExponentialType::Create(const std::ve
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::Maxwell0dAcinusExponential::Maxwell0dAcinusExponential() : Maxwell0dAcinus() {}
+Mat::Maxwell0dAcinusExponential::Maxwell0dAcinusExponential() : Maxwell0dAcinus() {}
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::Maxwell0dAcinusExponential::Maxwell0dAcinusExponential(MAT::PAR::Maxwell0dAcinus* params)
+Mat::Maxwell0dAcinusExponential::Maxwell0dAcinusExponential(Mat::PAR::Maxwell0dAcinus* params)
     : Maxwell0dAcinus(params)
 {
 }
@@ -75,9 +76,9 @@ MAT::Maxwell0dAcinusExponential::Maxwell0dAcinusExponential(MAT::PAR::Maxwell0dA
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Maxwell0dAcinusExponential::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::Maxwell0dAcinusExponential::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // Pack type of this instance of ParObject
@@ -98,11 +99,11 @@ void MAT::Maxwell0dAcinusExponential::Pack(CORE::COMM::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Maxwell0dAcinusExponential::Unpack(const std::vector<char>& data)
+void Mat::Maxwell0dAcinusExponential::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // Extract e1_0_, e1_lin_, e1_exp_, tau_
   ExtractfromPack(position, data, e1_0_);
@@ -114,14 +115,14 @@ void MAT::Maxwell0dAcinusExponential::Unpack(const std::vector<char>& data)
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::Maxwell0dAcinusExponential*>(mat);
+        params_ = static_cast<Mat::PAR::Maxwell0dAcinusExponential*>(mat);
       else
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
@@ -136,7 +137,7 @@ void MAT::Maxwell0dAcinusExponential::Unpack(const std::vector<char>& data)
  | Setup routine to add Exponential material specific parameters E1_0   |
  | E1_LIN, E1_EXP, TAU to material                          roth 10/2014|
  *----------------------------------------------------------------------*/
-void MAT::Maxwell0dAcinusExponential::Setup(INPUT::LineDefinition* linedef)
+void Mat::Maxwell0dAcinusExponential::Setup(Input::LineDefinition* linedef)
 {
   linedef->ExtractDouble("E1_0", e1_0_);
   linedef->ExtractDouble("E1_LIN", e1_lin_);
@@ -150,10 +151,10 @@ void MAT::Maxwell0dAcinusExponential::Setup(INPUT::LineDefinition* linedef)
  | Evaluate Exponential material and build system matrix and rhs.       |
  |                                                          roth 10/2014|
  *----------------------------------------------------------------------*/
-void MAT::Maxwell0dAcinusExponential::Evaluate(CORE::LINALG::SerialDenseVector& epnp,
-    CORE::LINALG::SerialDenseVector& epn, CORE::LINALG::SerialDenseVector& epnm,
-    CORE::LINALG::SerialDenseMatrix& sysmat, CORE::LINALG::SerialDenseVector& rhs,
-    const DRT::REDAIRWAYS::ElemParams& params, const double NumOfAcini, const double Vo,
+void Mat::Maxwell0dAcinusExponential::Evaluate(Core::LinAlg::SerialDenseVector& epnp,
+    Core::LinAlg::SerialDenseVector& epn, Core::LinAlg::SerialDenseVector& epnm,
+    Core::LinAlg::SerialDenseMatrix& sysmat, Core::LinAlg::SerialDenseVector& rhs,
+    const Discret::ReducedLung::ElemParams& params, const double NumOfAcini, const double Vo,
     double time, double dt)
 {
   // Set sysmat and rhs to zero

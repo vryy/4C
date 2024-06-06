@@ -29,7 +29,7 @@ void poromultiphase_dyn(int restart)
   const std::string fluid_disname = "porofluid";
 
   // access the problem
-  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
+  Global::Problem* problem = Global::Problem::Instance();
 
   // access the communicator
   const Epetra_Comm& comm = problem->GetDis(struct_disname)->Comm();
@@ -64,11 +64,11 @@ void poromultiphase_dyn(int restart)
   // algorithm construction depending on
   // coupling scheme
   // -------------------------------------------------------------------
-  INPAR::POROMULTIPHASE::SolutionSchemeOverFields solscheme =
-      CORE::UTILS::IntegralValue<INPAR::POROMULTIPHASE::SolutionSchemeOverFields>(
+  Inpar::POROMULTIPHASE::SolutionSchemeOverFields solscheme =
+      Core::UTILS::IntegralValue<Inpar::POROMULTIPHASE::SolutionSchemeOverFields>(
           poroparams, "COUPALGO");
 
-  Teuchos::RCP<ADAPTER::PoroMultiPhase> algo =
+  Teuchos::RCP<Adapter::PoroMultiPhase> algo =
       POROMULTIPHASE::UTILS::CreatePoroMultiPhaseAlgorithm(solscheme, poroparams, comm);
 
   // initialize

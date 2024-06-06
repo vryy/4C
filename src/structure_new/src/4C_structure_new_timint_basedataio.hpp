@@ -36,16 +36,16 @@ namespace Teuchos
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationWriter;
   class EveryIterationWriterInterface;
   class EveryIterationWriter;
-}  // namespace CORE::IO
+}  // namespace Core::IO
 
 namespace STR
 {
-  namespace TIMINT
+  namespace TimeInt
   {
     class ParamsRuntimeOutput;
     class ParamsRuntimeVtpOutput;
@@ -69,7 +69,7 @@ namespace STR
       /// initialize the class variables
       void Init(const Teuchos::ParameterList& IOParams, const Teuchos::ParameterList& sDynParams,
           const Teuchos::ParameterList& xParams,
-          Teuchos::RCP<CORE::IO::DiscretizationWriter> output);
+          Teuchos::RCP<Core::IO::DiscretizationWriter> output);
 
       /// setup new class variables
       void Setup();
@@ -86,14 +86,14 @@ namespace STR
 
      public:
       /// get the binary output writer
-      Teuchos::RCP<CORE::IO::DiscretizationWriter> GetOutputPtr()
+      Teuchos::RCP<Core::IO::DiscretizationWriter> GetOutputPtr()
       {
         check_init_setup();
         return output_;
       };
 
       /// get the binary output writer
-      Teuchos::RCP<const CORE::IO::DiscretizationWriter> GetOutputPtr() const
+      Teuchos::RCP<const Core::IO::DiscretizationWriter> GetOutputPtr() const
       {
         check_init_setup();
         return output_;
@@ -227,7 +227,7 @@ namespace STR
       }
 
       /// Shall we compute and write the condition number?
-      INPAR::STR::ConditionNumber ConditionNumberType() const
+      Inpar::STR::ConditionNumber ConditionNumberType() const
       {
         check_init_setup();
         return conditionnumbertype_;
@@ -283,35 +283,35 @@ namespace STR
       }
 
       /// get stress output type
-      const INPAR::STR::StressType& GetStressOutputType() const
+      const Inpar::STR::StressType& GetStressOutputType() const
       {
         check_init_setup();
         return writestress_;
       }
 
       /// get output type of coupling stress
-      const INPAR::STR::StressType& get_coupling_stress_output_type() const
+      const Inpar::STR::StressType& get_coupling_stress_output_type() const
       {
         check_init_setup();
         return writecouplstress_;
       }
 
       /// get strain output type
-      const INPAR::STR::StrainType& GetStrainOutputType() const
+      const Inpar::STR::StrainType& GetStrainOutputType() const
       {
         check_init_setup();
         return writestrain_;
       }
 
       /// get plastic strain output type
-      const INPAR::STR::StrainType& get_plastic_strain_output_type() const
+      const Inpar::STR::StrainType& get_plastic_strain_output_type() const
       {
         check_init_setup();
         return writeplstrain_;
       };
 
       /// get optional quantity output type
-      const INPAR::STR::OptQuantityType& get_opt_quantity_output_type() const
+      const Inpar::STR::OptQuantityType& get_opt_quantity_output_type() const
       {
         check_init_setup();
         return writeoptquantity_;
@@ -327,7 +327,7 @@ namespace STR
 
       /// Initialize and setup the every iteration output writer
       void init_setup_every_iteration_writer(
-          CORE::IO::EveryIterationWriterInterface* interface, Teuchos::ParameterList& p_nox);
+          Core::IO::EveryIterationWriterInterface* interface, Teuchos::ParameterList& p_nox);
 
       /// initialize the output of system energy
       void setup_energy_output_file();
@@ -346,10 +346,10 @@ namespace STR
       ///@{
 
       /// binary output
-      Teuchos::RCP<CORE::IO::DiscretizationWriter> output_;
+      Teuchos::RCP<Core::IO::DiscretizationWriter> output_;
 
       /// additional output writer for the Newton steps
-      Teuchos::RCP<CORE::IO::EveryIterationWriter> writer_every_iter_;
+      Teuchos::RCP<Core::IO::EveryIterationWriter> writer_every_iter_;
 
       /// data container for input parameters related to VTK output at runtime
       Teuchos::RCP<ParamsRuntimeOutput> params_runtime_vtk_output_;
@@ -414,38 +414,38 @@ namespace STR
       int lastwrittenresultsstep_;
 
       /// stress output type
-      INPAR::STR::StressType writestress_;
+      Inpar::STR::StressType writestress_;
 
       /// output type of coupling stress
-      INPAR::STR::StressType writecouplstress_;
+      Inpar::STR::StressType writecouplstress_;
 
       /// strain output type
-      INPAR::STR::StrainType writestrain_;
+      Inpar::STR::StrainType writestrain_;
 
       /// plastic strain output type
-      INPAR::STR::StrainType writeplstrain_;
+      Inpar::STR::StrainType writeplstrain_;
 
       /// optional quantity type
-      INPAR::STR::OptQuantityType writeoptquantity_;
+      Inpar::STR::OptQuantityType writeoptquantity_;
 
-      INPAR::STR::ConditionNumber conditionnumbertype_;
+      Inpar::STR::ConditionNumber conditionnumbertype_;
 
       Teuchos::RCP<Teuchos::ParameterList> p_io_every_iteration_;
 
       ///@}
     };  // class BaseDataIO
-  }     // namespace TIMINT
+  }     // namespace TimeInt
 }  // namespace STR
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
     namespace Solver
     {
       namespace PrePostOp
       {
-        namespace TIMINT
+        namespace TimeInt
         {
           /*! \brief Helper class to write the output each Newton step
            *
@@ -456,11 +456,11 @@ namespace NOX
            *  NOX::PrePostOperatorVector.
            *
            *  \author Michael Hiermeier \date 03/17 */
-          class WriteOutputEveryIteration : public NOX::NLN::Abstract::PrePostOperator
+          class WriteOutputEveryIteration : public NOX::Nln::Abstract::PrePostOperator
           {
            public:
             /// constructor
-            WriteOutputEveryIteration(CORE::IO::EveryIterationWriter& every_iter_writer);
+            WriteOutputEveryIteration(Core::IO::EveryIterationWriter& every_iter_writer);
 
 
             /// called at the very beginning of a Newton loop
@@ -474,12 +474,12 @@ namespace NOX
                 const ::NOX::LineSearch::Generic& linesearch) override;
 
            private:
-            CORE::IO::EveryIterationWriter& every_iter_writer_;
+            Core::IO::EveryIterationWriter& every_iter_writer_;
           };
-        }  // namespace TIMINT
+        }  // namespace TimeInt
       }    // namespace PrePostOp
     }      // namespace Solver
-  }        // namespace NLN
+  }        // namespace Nln
 }  // namespace NOX
 
 

@@ -33,7 +33,7 @@ namespace CONTACT
   }
 }  // namespace CONTACT
 
-namespace INPUT
+namespace Input
 {
   /// construct list with all contact constitutive laws and documentation
   Teuchos::RCP<std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>>
@@ -47,7 +47,7 @@ namespace INPUT
       std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>&
           contactconstitutivlawlist);
 
-}  // namespace INPUT
+}  // namespace Input
 
 /// print empty contact constitutivelaw sections
 void PrintContactConstitutiveLawDatHeader();

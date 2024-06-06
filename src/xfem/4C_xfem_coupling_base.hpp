@@ -28,7 +28,7 @@ thereby builds the bridge between the xfluid class and the cut-library
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
@@ -36,13 +36,13 @@ namespace DRT
     // in the condition mangager or coupling objects
     class FluidEleParameterXFEM;
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 namespace XFEM
 {
-  typedef std::pair<INPAR::XFEM::EleCouplingCondType, CORE::Conditions::Condition*> EleCoupCond;
+  typedef std::pair<Inpar::XFEM::EleCouplingCondType, Core::Conditions::Condition*> EleCoupCond;
 
-  INPAR::XFEM::EleCouplingCondType CondType_stringToEnum(const std::string& condname);
+  Inpar::XFEM::EleCouplingCondType CondType_stringToEnum(const std::string& condname);
 
   class CouplingBase
   {
@@ -58,10 +58,11 @@ namespace XFEM
     };
 
     //! constructor
-    explicit CouplingBase(Teuchos::RCP<DRT::Discretization>& bg_dis,  ///< background discretization
+    explicit CouplingBase(
+        Teuchos::RCP<Discret::Discretization>& bg_dis,  ///< background discretization
         const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                        ///< discretization is identified
-        Teuchos::RCP<DRT::Discretization>&
+        Teuchos::RCP<Discret::Discretization>&
             cond_dis,  ///< full discretization from which the cutter discretization is derived
         const int coupling_id,  ///< id of composite of coupling conditions
         const double time,      ///< time
@@ -126,46 +127,46 @@ namespace XFEM
       step_ += 1;
     }
 
-    void get_condition_by_coupling_id(const std::vector<CORE::Conditions::Condition*>& mycond,
-        const int coupling_id, std::vector<CORE::Conditions::Condition*>& mynewcond);
+    void get_condition_by_coupling_id(const std::vector<Core::Conditions::Condition*>& mycond,
+        const int coupling_id, std::vector<Core::Conditions::Condition*>& mynewcond);
 
     void Status(const int coupling_idx, const int side_start_gid);
 
 
-    std::string DisNameToString(Teuchos::RCP<DRT::Discretization> dis)
+    std::string DisNameToString(Teuchos::RCP<Discret::Discretization> dis)
     {
       if (dis == Teuchos::null) return "---";
 
       return dis->Name();
     }
 
-    std::string type_to_string_for_print(const INPAR::XFEM::EleCouplingCondType& type)
+    std::string type_to_string_for_print(const Inpar::XFEM::EleCouplingCondType& type)
     {
-      if (type == INPAR::XFEM::CouplingCond_SURF_FSI_PART)
+      if (type == Inpar::XFEM::CouplingCond_SURF_FSI_PART)
         return "XFSI Partitioned";
-      else if (type == INPAR::XFEM::CouplingCond_SURF_FSI_MONO)
+      else if (type == Inpar::XFEM::CouplingCond_SURF_FSI_MONO)
         return "XFSI Monolithic";
-      else if (type == INPAR::XFEM::CouplingCond_SURF_FPI_MONO)
+      else if (type == Inpar::XFEM::CouplingCond_SURF_FPI_MONO)
         return "XFPI Monolithic";
-      else if (type == INPAR::XFEM::CouplingCond_SURF_FLUIDFLUID)
+      else if (type == Inpar::XFEM::CouplingCond_SURF_FLUIDFLUID)
         return "FLUID-FLUID Coupling";
-      else if (type == INPAR::XFEM::CouplingCond_LEVELSET_WEAK_DIRICHLET)
+      else if (type == Inpar::XFEM::CouplingCond_LEVELSET_WEAK_DIRICHLET)
         return "WEAK DIRICHLET BC / LS";
-      else if (type == INPAR::XFEM::CouplingCond_LEVELSET_NEUMANN)
+      else if (type == Inpar::XFEM::CouplingCond_LEVELSET_NEUMANN)
         return "NEUMANN BC        / LS";
-      else if (type == INPAR::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP)
+      else if (type == Inpar::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP)
         return "NAVIER SLIP BC    / LS";
-      else if (type == INPAR::XFEM::CouplingCond_LEVELSET_TWOPHASE)
+      else if (type == Inpar::XFEM::CouplingCond_LEVELSET_TWOPHASE)
         return "TWO-PHASE Coupling";
-      else if (type == INPAR::XFEM::CouplingCond_LEVELSET_COMBUSTION)
+      else if (type == Inpar::XFEM::CouplingCond_LEVELSET_COMBUSTION)
         return "COMBUSTION Coupling";
-      else if (type == INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET)
+      else if (type == Inpar::XFEM::CouplingCond_SURF_WEAK_DIRICHLET)
         return "WEAK DIRICHLET BC / MESH";
-      else if (type == INPAR::XFEM::CouplingCond_SURF_NEUMANN)
+      else if (type == Inpar::XFEM::CouplingCond_SURF_NEUMANN)
         return "NEUMANN BC        / MESH";
-      else if (type == INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP)
+      else if (type == Inpar::XFEM::CouplingCond_SURF_NAVIER_SLIP)
         return "NAVIER SLIP BC    / MESH";
-      else if (type == INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP_TWOPHASE)
+      else if (type == Inpar::XFEM::CouplingCond_SURF_NAVIER_SLIP_TWOPHASE)
         return "NAVIER SLIP TWOPHASE BC    / MESH";
       else
         FOUR_C_THROW("unsupported coupling condition type %i", type);
@@ -173,17 +174,17 @@ namespace XFEM
       return "UNKNOWN";
     }
 
-    std::string averaging_to_string_for_print(const INPAR::XFEM::AveragingStrategy& strategy)
+    std::string averaging_to_string_for_print(const Inpar::XFEM::AveragingStrategy& strategy)
     {
-      if (strategy == INPAR::XFEM::Xfluid_Sided)
+      if (strategy == Inpar::XFEM::Xfluid_Sided)
         return "XFLUID-sided averaging";
-      else if (strategy == INPAR::XFEM::Embedded_Sided)
+      else if (strategy == Inpar::XFEM::Embedded_Sided)
         return "EMBEDDED-sided averaging";
-      else if (strategy == INPAR::XFEM::Mean)
+      else if (strategy == Inpar::XFEM::Mean)
         return "MEAN averaging";
-      else if (strategy == INPAR::XFEM::Harmonic)
+      else if (strategy == Inpar::XFEM::Harmonic)
         return "HARMONIC averaging";
-      else if (strategy == INPAR::XFEM::invalid)
+      else if (strategy == Inpar::XFEM::invalid)
         return "INVALID";
       else
         FOUR_C_THROW("unsupported averaging strategy %i", strategy);
@@ -202,7 +203,7 @@ namespace XFEM
     }
 
     //! get the coupling element (equal to the side for xfluid-sided, mesh-based coupling)
-    virtual CORE::Elements::Element* GetCouplingElement(
+    virtual Core::Elements::Element* GetCouplingElement(
         const int eid  ///< global side element id w.r.t coupling discretization (background element
                        ///< eid for levelset couplings)
     )
@@ -212,67 +213,67 @@ namespace XFEM
 
     virtual const std::string& GetName() { return coupl_name_; }
 
-    Teuchos::RCP<DRT::Discretization> GetCutterDis() { return cutter_dis_; }
-    Teuchos::RCP<DRT::Discretization> GetCouplingDis() { return coupl_dis_; }
-    Teuchos::RCP<DRT::Discretization> GetCondDis() { return cond_dis_; }
+    Teuchos::RCP<Discret::Discretization> GetCutterDis() { return cutter_dis_; }
+    Teuchos::RCP<Discret::Discretization> GetCouplingDis() { return coupl_dis_; }
+    Teuchos::RCP<Discret::Discretization> GetCondDis() { return cond_dis_; }
 
-    INPAR::XFEM::AveragingStrategy get_averaging_strategy() { return averaging_strategy_; }
+    Inpar::XFEM::AveragingStrategy get_averaging_strategy() { return averaging_strategy_; }
 
     virtual void PrepareSolve(){};
 
     virtual bool HasMovingInterface() = 0;
 
-    virtual void evaluate_coupling_conditions(CORE::LINALG::Matrix<3, 1>& ivel,
-        CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
-        const CORE::Conditions::Condition* cond)
+    virtual void evaluate_coupling_conditions(Core::LinAlg::Matrix<3, 1>& ivel,
+        Core::LinAlg::Matrix<3, 1>& itraction, const Core::LinAlg::Matrix<3, 1>& x,
+        const Core::Conditions::Condition* cond)
     {
       FOUR_C_THROW("evaluate_coupling_conditions should be implemented by derived class");
     };
 
-    virtual void evaluate_coupling_conditions(CORE::LINALG::Matrix<3, 1>& ivel,
-        CORE::LINALG::Matrix<6, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
-        const CORE::Conditions::Condition* cond)
+    virtual void evaluate_coupling_conditions(Core::LinAlg::Matrix<3, 1>& ivel,
+        Core::LinAlg::Matrix<6, 1>& itraction, const Core::LinAlg::Matrix<3, 1>& x,
+        const Core::Conditions::Condition* cond)
     {
       FOUR_C_THROW("evaluate_coupling_conditions should be implemented by derived class");
     };
 
-    virtual void evaluate_coupling_conditions_old_state(CORE::LINALG::Matrix<3, 1>& ivel,
-        CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
-        const CORE::Conditions::Condition* cond)
+    virtual void evaluate_coupling_conditions_old_state(Core::LinAlg::Matrix<3, 1>& ivel,
+        Core::LinAlg::Matrix<3, 1>& itraction, const Core::LinAlg::Matrix<3, 1>& x,
+        const Core::Conditions::Condition* cond)
     {
       FOUR_C_THROW("evaluate_coupling_conditions_old_state should be implemented by derived class");
     };
 
     /// set material pointer for coupling slave side
     virtual void get_interface_slave_material(
-        CORE::Elements::Element* actele, Teuchos::RCP<CORE::MAT::Material>& mat)
+        Core::Elements::Element* actele, Teuchos::RCP<Core::Mat::Material>& mat)
     {
       mat = Teuchos::null;
     }
 
     /// get the sliplength for the specific coupling condition
-    virtual void GetSlipCoefficient(double& slipcoeff, const CORE::LINALG::Matrix<3, 1>& x,
-        const CORE::Conditions::Condition* cond)
+    virtual void GetSlipCoefficient(double& slipcoeff, const Core::LinAlg::Matrix<3, 1>& x,
+        const Core::Conditions::Condition* cond)
     {
       slipcoeff = 0.0;
     }
 
-    std::map<INPAR::XFEM::CoupTerm, std::pair<bool, double>>& GetConfigurationmap(
+    std::map<Inpar::XFEM::CoupTerm, std::pair<bool, double>>& GetConfigurationmap(
         double& kappa_m,                          //< fluid sided weighting
         double& visc_m,                           //< master sided dynamic viscosity
         double& visc_s,                           //< slave sided dynamic viscosity
         double& density_m,                        //< master sided density
         double& visc_stab_tang,                   //< viscous tangential NIT Penalty scaling
         double& full_stab,                        //< full NIT Penalty scaling
-        const CORE::LINALG::Matrix<3, 1>& x,      //< Position x
-        const CORE::Conditions::Condition* cond,  //< Condition
-        CORE::Elements::Element* ele,             //< Element
-        CORE::Elements::Element* bele,            //< Boundary Element
+        const Core::LinAlg::Matrix<3, 1>& x,      //< Position x
+        const Core::Conditions::Condition* cond,  //< Condition
+        Core::Elements::Element* ele,             //< Element
+        Core::Elements::Element* bele,            //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
-        CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
-        CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
-        CORE::LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+        Core::LinAlg::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+        Core::LinAlg::Matrix<3, 1>& normal,     //< normal at gp
+        Core::LinAlg::Matrix<3, 1>& vel_m,      //< master velocity at gp
         double* fulltraction  //< precomputed fsi traction (sigmaF n + gamma relvel)
     )
     {
@@ -285,62 +286,62 @@ namespace XFEM
 
       // In Case we do just use Penalty or Adjoint we should still set the scaling on both, to
       // guarantee we the the correct constraint!
-      if (((configuration_map_.at(INPAR::XFEM::F_Adj_Col).first &&
-               !configuration_map_.at(INPAR::XFEM::F_Pen_Col).first) ||
-              (!configuration_map_.at(INPAR::XFEM::F_Adj_Col).first &&
-                  configuration_map_.at(INPAR::XFEM::F_Pen_Col).first)) &&
-          fabs(configuration_map_.at(INPAR::XFEM::F_Adj_Col).second -
-               configuration_map_.at(INPAR::XFEM::F_Pen_Col).second) > 1e-16)
+      if (((configuration_map_.at(Inpar::XFEM::F_Adj_Col).first &&
+               !configuration_map_.at(Inpar::XFEM::F_Pen_Col).first) ||
+              (!configuration_map_.at(Inpar::XFEM::F_Adj_Col).first &&
+                  configuration_map_.at(Inpar::XFEM::F_Pen_Col).first)) &&
+          fabs(configuration_map_.at(Inpar::XFEM::F_Adj_Col).second -
+               configuration_map_.at(Inpar::XFEM::F_Pen_Col).second) > 1e-16)
         FOUR_C_THROW(
             "%s: You should set Scalings for Adjoint and Penalty Column, even if just one is used, "
             "as we support at the moment just equal penalty and adjoint consistent constraints!",
             cond_name_.c_str());
-      if (((configuration_map_.at(INPAR::XFEM::X_Adj_Col).first &&
-               !configuration_map_.at(INPAR::XFEM::X_Pen_Col).first) ||
-              (!configuration_map_.at(INPAR::XFEM::X_Adj_Col).first &&
-                  configuration_map_.at(INPAR::XFEM::X_Pen_Col).first)) &&
-          fabs(configuration_map_.at(INPAR::XFEM::X_Adj_Col).second -
-               configuration_map_.at(INPAR::XFEM::X_Pen_Col).second) > 1e-16)
+      if (((configuration_map_.at(Inpar::XFEM::X_Adj_Col).first &&
+               !configuration_map_.at(Inpar::XFEM::X_Pen_Col).first) ||
+              (!configuration_map_.at(Inpar::XFEM::X_Adj_Col).first &&
+                  configuration_map_.at(Inpar::XFEM::X_Pen_Col).first)) &&
+          fabs(configuration_map_.at(Inpar::XFEM::X_Adj_Col).second -
+               configuration_map_.at(Inpar::XFEM::X_Pen_Col).second) > 1e-16)
         FOUR_C_THROW(
             "%s: You should set Scalings for Adjoint and Penalty Column, even if just one is used, "
             "as we support at the moment just equal penalty and adjoint consistent constraints!",
             cond_name_.c_str());
-      if (((configuration_map_.at(INPAR::XFEM::F_Adj_n_Col).first &&
-               !configuration_map_.at(INPAR::XFEM::F_Pen_n_Col).first) ||
-              (!configuration_map_.at(INPAR::XFEM::F_Adj_n_Col).first &&
-                  configuration_map_.at(INPAR::XFEM::F_Pen_n_Col).first)) &&
-          fabs(configuration_map_.at(INPAR::XFEM::F_Adj_n_Col).second -
-               configuration_map_.at(INPAR::XFEM::F_Pen_n_Col).second) > 1e-16)
+      if (((configuration_map_.at(Inpar::XFEM::F_Adj_n_Col).first &&
+               !configuration_map_.at(Inpar::XFEM::F_Pen_n_Col).first) ||
+              (!configuration_map_.at(Inpar::XFEM::F_Adj_n_Col).first &&
+                  configuration_map_.at(Inpar::XFEM::F_Pen_n_Col).first)) &&
+          fabs(configuration_map_.at(Inpar::XFEM::F_Adj_n_Col).second -
+               configuration_map_.at(Inpar::XFEM::F_Pen_n_Col).second) > 1e-16)
         FOUR_C_THROW(
             "%s: You should set Scalings for Adjoint and Penalty Column, even if just one is used, "
             "as we support at the moment just equal penalty and adjoint consistent constraints!",
             cond_name_.c_str());
-      if (((configuration_map_.at(INPAR::XFEM::X_Adj_n_Col).first &&
-               !configuration_map_.at(INPAR::XFEM::X_Pen_n_Col).first) ||
-              (!configuration_map_.at(INPAR::XFEM::X_Adj_n_Col).first &&
-                  configuration_map_.at(INPAR::XFEM::X_Pen_n_Col).first)) &&
-          fabs(configuration_map_.at(INPAR::XFEM::X_Adj_n_Col).second -
-               configuration_map_.at(INPAR::XFEM::X_Pen_n_Col).second) > 1e-16)
+      if (((configuration_map_.at(Inpar::XFEM::X_Adj_n_Col).first &&
+               !configuration_map_.at(Inpar::XFEM::X_Pen_n_Col).first) ||
+              (!configuration_map_.at(Inpar::XFEM::X_Adj_n_Col).first &&
+                  configuration_map_.at(Inpar::XFEM::X_Pen_n_Col).first)) &&
+          fabs(configuration_map_.at(Inpar::XFEM::X_Adj_n_Col).second -
+               configuration_map_.at(Inpar::XFEM::X_Pen_n_Col).second) > 1e-16)
         FOUR_C_THROW(
             "%s: You should set Scalings for Adjoint and Penalty Column, even if just one is used, "
             "as we support at the moment just equal penalty and adjoint consistent constraints!",
             cond_name_.c_str());
-      if (((configuration_map_.at(INPAR::XFEM::F_Adj_t_Col).first &&
-               !configuration_map_.at(INPAR::XFEM::F_Pen_t_Col).first) ||
-              (!configuration_map_.at(INPAR::XFEM::F_Adj_t_Col).first &&
-                  configuration_map_.at(INPAR::XFEM::F_Pen_t_Col).first)) &&
-          fabs(configuration_map_.at(INPAR::XFEM::F_Adj_t_Col).second -
-               configuration_map_.at(INPAR::XFEM::F_Pen_t_Col).second) > 1e-16)
+      if (((configuration_map_.at(Inpar::XFEM::F_Adj_t_Col).first &&
+               !configuration_map_.at(Inpar::XFEM::F_Pen_t_Col).first) ||
+              (!configuration_map_.at(Inpar::XFEM::F_Adj_t_Col).first &&
+                  configuration_map_.at(Inpar::XFEM::F_Pen_t_Col).first)) &&
+          fabs(configuration_map_.at(Inpar::XFEM::F_Adj_t_Col).second -
+               configuration_map_.at(Inpar::XFEM::F_Pen_t_Col).second) > 1e-16)
         FOUR_C_THROW(
             "%s: You should set Scalings for Adjoint and Penalty Column, even if just one is used, "
             "as we support at the moment just equal penalty and adjoint consistent constraints!",
             cond_name_.c_str());
-      if (((configuration_map_.at(INPAR::XFEM::X_Adj_t_Col).first &&
-               !configuration_map_.at(INPAR::XFEM::X_Pen_t_Col).first) ||
-              (!configuration_map_.at(INPAR::XFEM::X_Adj_t_Col).first &&
-                  configuration_map_.at(INPAR::XFEM::X_Pen_t_Col).first)) &&
-          fabs(configuration_map_.at(INPAR::XFEM::X_Adj_t_Col).second -
-               configuration_map_.at(INPAR::XFEM::X_Pen_t_Col).second) > 1e-16)
+      if (((configuration_map_.at(Inpar::XFEM::X_Adj_t_Col).first &&
+               !configuration_map_.at(Inpar::XFEM::X_Pen_t_Col).first) ||
+              (!configuration_map_.at(Inpar::XFEM::X_Adj_t_Col).first &&
+                  configuration_map_.at(Inpar::XFEM::X_Pen_t_Col).first)) &&
+          fabs(configuration_map_.at(Inpar::XFEM::X_Adj_t_Col).second -
+               configuration_map_.at(Inpar::XFEM::X_Pen_t_Col).second) > 1e-16)
         FOUR_C_THROW(
             "%s: You should set Scalings for Adjoint and Penalty Column, even if just one is used, "
             "as we support at the moment just equal penalty and adjoint consistent constraints!",
@@ -350,35 +351,35 @@ namespace XFEM
       // terms
       // Check if we need a more general implementation (If constraints between Adjoint and Penalty
       // are not the same!)
-      if (fabs(configuration_map_.at(INPAR::XFEM::F_Adj_Col).second -
-               configuration_map_.at(INPAR::XFEM::F_Pen_Col).second) > 1e-16 ||
-          fabs(configuration_map_.at(INPAR::XFEM::F_Adj_n_Col).second -
-               configuration_map_.at(INPAR::XFEM::F_Pen_n_Col).second) > 1e-16 ||
-          fabs(configuration_map_.at(INPAR::XFEM::F_Adj_t_Col).second -
-               configuration_map_.at(INPAR::XFEM::F_Pen_t_Col).second) > 1e-16 ||
-          fabs(configuration_map_.at(INPAR::XFEM::X_Adj_Col).second -
-               configuration_map_.at(INPAR::XFEM::X_Pen_Col).second) > 1e-16 ||
-          fabs(configuration_map_.at(INPAR::XFEM::X_Adj_n_Col).second -
-               configuration_map_.at(INPAR::XFEM::X_Pen_n_Col).second) > 1e-16 ||
-          fabs(configuration_map_.at(INPAR::XFEM::X_Adj_t_Col).second -
-               configuration_map_.at(INPAR::XFEM::X_Pen_t_Col).second) > 1e-16)
+      if (fabs(configuration_map_.at(Inpar::XFEM::F_Adj_Col).second -
+               configuration_map_.at(Inpar::XFEM::F_Pen_Col).second) > 1e-16 ||
+          fabs(configuration_map_.at(Inpar::XFEM::F_Adj_n_Col).second -
+               configuration_map_.at(Inpar::XFEM::F_Pen_n_Col).second) > 1e-16 ||
+          fabs(configuration_map_.at(Inpar::XFEM::F_Adj_t_Col).second -
+               configuration_map_.at(Inpar::XFEM::F_Pen_t_Col).second) > 1e-16 ||
+          fabs(configuration_map_.at(Inpar::XFEM::X_Adj_Col).second -
+               configuration_map_.at(Inpar::XFEM::X_Pen_Col).second) > 1e-16 ||
+          fabs(configuration_map_.at(Inpar::XFEM::X_Adj_n_Col).second -
+               configuration_map_.at(Inpar::XFEM::X_Pen_n_Col).second) > 1e-16 ||
+          fabs(configuration_map_.at(Inpar::XFEM::X_Adj_t_Col).second -
+               configuration_map_.at(Inpar::XFEM::X_Pen_t_Col).second) > 1e-16)
       {
-        std::cout << "F_Adj_Col/F_Pen_Col: " << configuration_map_.at(INPAR::XFEM::F_Adj_Col).second
-                  << "/" << configuration_map_.at(INPAR::XFEM::F_Pen_Col).second << std::endl;
+        std::cout << "F_Adj_Col/F_Pen_Col: " << configuration_map_.at(Inpar::XFEM::F_Adj_Col).second
+                  << "/" << configuration_map_.at(Inpar::XFEM::F_Pen_Col).second << std::endl;
         std::cout << "F_Adj_n_Col/F_Pen_n_Col: "
-                  << configuration_map_.at(INPAR::XFEM::F_Adj_n_Col).second << "/"
-                  << configuration_map_.at(INPAR::XFEM::F_Pen_n_Col).second << std::endl;
+                  << configuration_map_.at(Inpar::XFEM::F_Adj_n_Col).second << "/"
+                  << configuration_map_.at(Inpar::XFEM::F_Pen_n_Col).second << std::endl;
         std::cout << "F_Adj_t_Col/F_Pen_t_Col: "
-                  << configuration_map_.at(INPAR::XFEM::F_Adj_t_Col).second << "/"
-                  << configuration_map_.at(INPAR::XFEM::F_Pen_t_Col).second << std::endl;
-        std::cout << "X_Adj_Col/X_Pen_Col: " << configuration_map_.at(INPAR::XFEM::X_Adj_Col).second
-                  << "/" << configuration_map_.at(INPAR::XFEM::X_Pen_Col).second << std::endl;
+                  << configuration_map_.at(Inpar::XFEM::F_Adj_t_Col).second << "/"
+                  << configuration_map_.at(Inpar::XFEM::F_Pen_t_Col).second << std::endl;
+        std::cout << "X_Adj_Col/X_Pen_Col: " << configuration_map_.at(Inpar::XFEM::X_Adj_Col).second
+                  << "/" << configuration_map_.at(Inpar::XFEM::X_Pen_Col).second << std::endl;
         std::cout << "X_Adj_n_Col/X_Pen_n_Col: "
-                  << configuration_map_.at(INPAR::XFEM::X_Adj_n_Col).second << "/"
-                  << configuration_map_.at(INPAR::XFEM::X_Pen_n_Col).second << std::endl;
+                  << configuration_map_.at(Inpar::XFEM::X_Adj_n_Col).second << "/"
+                  << configuration_map_.at(Inpar::XFEM::X_Pen_n_Col).second << std::endl;
         std::cout << "X_Adj_t_Col/X_Pen_t_Col: "
-                  << configuration_map_.at(INPAR::XFEM::X_Adj_t_Col).second << "/"
-                  << configuration_map_.at(INPAR::XFEM::X_Pen_t_Col).second << std::endl;
+                  << configuration_map_.at(Inpar::XFEM::X_Adj_t_Col).second << "/"
+                  << configuration_map_.at(Inpar::XFEM::X_Pen_t_Col).second << std::endl;
         FOUR_C_THROW(
             "%s: Your consistent constraint for Penalty and Adjoint term is not equal, go to "
             "element level and split up velint_diff_ for penalty and adjoint!",
@@ -393,27 +394,27 @@ namespace XFEM
         const int gmsh_step_diff, const bool gmsh_debug_out_screen){};
 
     /// get viscosity of the master fluid
-    void GetViscosityMaster(CORE::Elements::Element* xfele,  ///< xfluid ele
+    void GetViscosityMaster(Core::Elements::Element* xfele,  ///< xfluid ele
         double& visc_m);                                     ///< viscosity mastersided
 
     /// get scaling of the master side for penalty (viscosity, E-modulus for solids)
-    virtual void get_penalty_scaling_slave(CORE::Elements::Element* coup_ele,  ///< xfluid ele
+    virtual void get_penalty_scaling_slave(Core::Elements::Element* coup_ele,  ///< xfluid ele
         double& penscaling_s)  ///< penalty scaling slavesided
     {
       FOUR_C_THROW("get_penalty_scaling_slave not implemented for this coupling object!");
     }
 
     /// get weighting paramters
-    void GetAverageWeights(CORE::Elements::Element* xfele,  ///< xfluid ele
-        CORE::Elements::Element* coup_ele,                  ///< coup_ele ele
+    void GetAverageWeights(Core::Elements::Element* xfele,  ///< xfluid ele
+        Core::Elements::Element* coup_ele,                  ///< coup_ele ele
         double& kappa_m,  ///< Weight parameter (parameter +/master side)
         double& kappa_s,  ///< Weight parameter (parameter -/slave  side)
         bool& non_xfluid_coupling);
 
     /// get coupling specific weighting paramters (should be overload, whenever required)
     virtual void get_coupling_specific_average_weights(
-        CORE::Elements::Element* xfele,     ///< xfluid ele
-        CORE::Elements::Element* coup_ele,  ///< coup_ele ele
+        Core::Elements::Element* xfele,     ///< xfluid ele
+        Core::Elements::Element* coup_ele,  ///< coup_ele ele
         double& kappa_m)                    ///< Weight parameter (parameter +/master side)
     {
       FOUR_C_THROW(
@@ -423,8 +424,8 @@ namespace XFEM
     }
 
     /// compute viscous part of Nitsche's penalty term scaling for Nitsche's method
-    void get_visc_penalty_stabfac(CORE::Elements::Element* xfele,  ///< xfluid ele
-        CORE::Elements::Element* coup_ele,                         ///< coup_ele ele
+    void get_visc_penalty_stabfac(Core::Elements::Element* xfele,  ///< xfluid ele
+        Core::Elements::Element* coup_ele,                         ///< coup_ele ele
         const double& kappa_m,      ///< Weight parameter (parameter +/master side)
         const double& kappa_s,      ///< Weight parameter (parameter -/slave  side)
         const double& inv_h_k,      ///< the inverse characteristic element length h_k
@@ -435,17 +436,17 @@ namespace XFEM
         const double&
             NITStabScalingTang,  ///< prefactor of Nitsche's scaling in tangential direction
         const bool& IsPseudo2D,  ///< is this a pseudo 2d problem
-        const INPAR::XFEM::ViscStabTraceEstimate
+        const Inpar::XFEM::ViscStabTraceEstimate
             ViscStab_TraceEstimate  ///< trace estimate for visc stab fac
     );
 
     /// compute viscous part of Nitsche's penalty term scaling for Nitsche's method
-    void get_visc_penalty_stabfac(CORE::Elements::Element* xfele,  ///< xfluid ele
-        CORE::Elements::Element* coup_ele,                         ///< coup_ele ele
+    void get_visc_penalty_stabfac(Core::Elements::Element* xfele,  ///< xfluid ele
+        Core::Elements::Element* coup_ele,                         ///< coup_ele ele
         const double& kappa_m,  ///< Weight parameter (parameter +/master side)
         const double& kappa_s,  ///< Weight parameter (parameter -/slave  side)
         const double& inv_h_k,  ///< the inverse characteristic element length h_k
-        const DRT::ELEMENTS::FluidEleParameterXFEM*
+        const Discret::ELEMENTS::FluidEleParameterXFEM*
             params,                 ///< parameterlist which specifies interface configuration
         double& NIT_visc_stab_fac,  ///< viscous part of Nitsche's penalty term
         double&
@@ -486,15 +487,15 @@ namespace XFEM
         double& density_m,                                     //< master sided density
         double& visc_stab_tang,                   //< viscous tangential NIT Penalty scaling
         double& full_stab,                        //< full NIT Penalty scaling
-        const CORE::LINALG::Matrix<3, 1>& x,      //< Position x in global coordinates
-        const CORE::Conditions::Condition* cond,  //< Condition
-        CORE::Elements::Element* ele,             //< Element
-        CORE::Elements::Element* bele,            //< Boundary Element
+        const Core::LinAlg::Matrix<3, 1>& x,      //< Position x in global coordinates
+        const Core::Conditions::Condition* cond,  //< Condition
+        Core::Elements::Element* ele,             //< Element
+        Core::Elements::Element* bele,            //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
-        CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
-        CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
-        CORE::LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+        Core::LinAlg::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+        Core::LinAlg::Matrix<3, 1>& normal,     //< normal at gp
+        Core::LinAlg::Matrix<3, 1>& vel_m,      //< master velocity at gp
         double* fulltraction  //< precomputed fsi traction (sigmaF n + gamma relvel)
     ){};
 
@@ -502,20 +503,20 @@ namespace XFEM
 
     virtual void perpare_cutter_output(){};
 
-    void evaluate_dirichlet_function(CORE::LINALG::Matrix<3, 1>& ivel,
-        const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond, double time);
+    void evaluate_dirichlet_function(Core::LinAlg::Matrix<3, 1>& ivel,
+        const Core::LinAlg::Matrix<3, 1>& x, const Core::Conditions::Condition* cond, double time);
 
-    void evaluate_neumann_function(CORE::LINALG::Matrix<3, 1>& itraction,
-        const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond, double time);
+    void evaluate_neumann_function(Core::LinAlg::Matrix<3, 1>& itraction,
+        const Core::LinAlg::Matrix<3, 1>& x, const Core::Conditions::Condition* cond, double time);
 
-    void evaluate_neumann_function(CORE::LINALG::Matrix<6, 1>& itraction,
-        const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond, double time);
+    void evaluate_neumann_function(Core::LinAlg::Matrix<6, 1>& itraction,
+        const Core::LinAlg::Matrix<3, 1>& x, const Core::Conditions::Condition* cond, double time);
 
     void evaluate_function(std::vector<double>& final_values, const double* x,
-        const CORE::Conditions::Condition* cond, const double time);
+        const Core::Conditions::Condition* cond, const double time);
 
     void evaluate_scalar_function(double& final_value, const double* x, const double& val,
-        const CORE::Conditions::Condition* cond, const double time);
+        const Core::Conditions::Condition* cond, const double time);
 
     //! @name Sets up a projection matrix
     /*!
@@ -540,7 +541,7 @@ namespace XFEM
     size_t nsd_;
 
     ///< background discretization
-    Teuchos::RCP<DRT::Discretization> bg_dis_;
+    Teuchos::RCP<Discret::Discretization> bg_dis_;
 
     ///------------------------
     // CUTTER-DISCRETIZATION specific member
@@ -550,7 +551,7 @@ namespace XFEM
     std::string cond_name_;
 
     ///< discretization from which the cutter discretization is derived
-    Teuchos::RCP<DRT::Discretization> cond_dis_;
+    Teuchos::RCP<Discret::Discretization> cond_dis_;
 
     ///< id of composite of coupling conditions
     const int coupling_id_;
@@ -558,9 +559,9 @@ namespace XFEM
     ///< discretization w.r.t which the interface is described and w.r.t which the state vectors
     ///< describing the interface position are defined (bgdis for LevelSetCoupling and boundary dis
     ///< for MeshCoupling)
-    Teuchos::RCP<DRT::Discretization> cutter_dis_;
+    Teuchos::RCP<Discret::Discretization> cutter_dis_;
 
-    ///< pairs of condition type and pointer to CORE::Conditions::Condition for all column elements
+    ///< pairs of condition type and pointer to Core::Conditions::Condition for all column elements
     ///< of the cutter discretization (bgdis for LevelSetCoupling and boundary dis for MeshCoupling)
     std::vector<EleCoupCond> cutterele_conds_;
 
@@ -569,7 +570,7 @@ namespace XFEM
                               ///< and used to set for each cutter element
 
     //! Output specific
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> cutter_output_;
+    Teuchos::RCP<Core::IO::DiscretizationWriter> cutter_output_;
 
 
     ///------------------------
@@ -579,14 +580,14 @@ namespace XFEM
     ///< discretization with which the background discretization is coupled (structural dis, fluid
     ///< dis, poro dis, scatra dis, boundary dis), Teuchos::null in case that no coupling terms but
     ///< only boundary terms are evaluated
-    Teuchos::RCP<DRT::Discretization> coupl_dis_;
+    Teuchos::RCP<Discret::Discretization> coupl_dis_;
 
     // TODO: be aware of the fact, that accesing the coupling object via Name is unsafe, it assumes
     // that only one coupling of that type is available < name of the mesh/levelset coupling object
     std::string coupl_name_;
 
     ///< averaging strategy, type of weighting
-    INPAR::XFEM::AveragingStrategy averaging_strategy_;
+    Inpar::XFEM::AveragingStrategy averaging_strategy_;
 
     int myrank_;
 
@@ -597,7 +598,7 @@ namespace XFEM
     int step_;
 
     ///< map which configures element level (which terms are evaluated & scaled with which value)
-    std::map<INPAR::XFEM::CoupTerm, std::pair<bool, double>> configuration_map_;
+    std::map<Inpar::XFEM::CoupTerm, std::pair<bool, double>> configuration_map_;
 
     bool issetup_;
 

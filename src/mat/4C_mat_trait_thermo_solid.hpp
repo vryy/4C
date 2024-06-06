@@ -14,9 +14,9 @@
 #define FOUR_C_MAT_TRAIT_THERMO_SOLID_HPP
 
 FOUR_C_NAMESPACE_OPEN
-namespace MAT
+namespace Mat
 {
-  namespace TRAIT
+  namespace Trait
   {
     class ThermoSolid : public Thermo, public Solid
     {
@@ -31,8 +31,8 @@ namespace MAT
        * @param gp
        *
        */
-      virtual void Reinit(const CORE::LINALG::Matrix<3, 3>* defgrd,
-          const CORE::LINALG::Matrix<6, 1>* glstrain, double temperature, unsigned gp) = 0;
+      virtual void Reinit(const Core::LinAlg::Matrix<3, 3>* defgrd,
+          const Core::LinAlg::Matrix<6, 1>* glstrain, double temperature, unsigned gp) = 0;
 
       //! @name Coupled derivatives
       //! @{
@@ -40,7 +40,7 @@ namespace MAT
       /// @brief  get derivative of 2nd PK stress wrt temperature
       ///
       /// this term arises for coupled thermo-mechanical materials
-      virtual void GetdSdT(CORE::LINALG::Matrix<6, 1>* dS_dT) = 0;
+      virtual void GetdSdT(Core::LinAlg::Matrix<6, 1>* dS_dT) = 0;
 
       //! @}
 
@@ -51,10 +51,10 @@ namespace MAT
        * @param stm_deriv tensor to be filled with derivatives
        */
       virtual void stress_temperature_modulus_and_deriv(
-          CORE::LINALG::Matrix<6, 1>& stm, CORE::LINALG::Matrix<6, 1>& stm_dT) = 0;
+          Core::LinAlg::Matrix<6, 1>& stm, Core::LinAlg::Matrix<6, 1>& stm_dT) = 0;
     };
-  }  // namespace TRAIT
-}  // namespace MAT
+  }  // namespace Trait
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

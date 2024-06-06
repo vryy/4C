@@ -30,15 +30,15 @@ FOUR_C_NAMESPACE_OPEN
  |  ctor (public)                                            seitz 08/15|
  *----------------------------------------------------------------------*/
 CONTACT::TSIInterface::TSIInterface(
-    const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData_ptr, const int id,
+    const Teuchos::RCP<Mortar::InterfaceDataContainer>& interfaceData_ptr, const int id,
     const Epetra_Comm& comm, const int dim, const Teuchos::ParameterList& icontact,
     bool selfcontact)
     : CONTACT::Interface(interfaceData_ptr, id, comm, dim, icontact, selfcontact)
 {
   return;
 }
-void CONTACT::TSIInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLMglobal,
-    CORE::LINALG::SparseMatrix& linstickDISglobal, CORE::LINALG::SparseMatrix& linstickTEMPglobal,
+void CONTACT::TSIInterface::AssembleLinStick(Core::LinAlg::SparseMatrix& linstickLMglobal,
+    Core::LinAlg::SparseMatrix& linstickDISglobal, Core::LinAlg::SparseMatrix& linstickTEMPglobal,
     Epetra_Vector& linstickRHSglobal)
 {
   CONTACT::Interface::AssembleLinStick(linstickLMglobal, linstickDISglobal, linstickRHSglobal);
@@ -52,24 +52,24 @@ void CONTACT::TSIInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstic
 
 
   // create map of stick nodes
-  Teuchos::RCP<Epetra_Map> sticknodes = CORE::LINALG::SplitMap(*activenodes_, *slipnodes_);
-  Teuchos::RCP<Epetra_Map> stickt = CORE::LINALG::SplitMap(*activet_, *slipt_);
+  Teuchos::RCP<Epetra_Map> sticknodes = Core::LinAlg::SplitMap(*activenodes_, *slipnodes_);
+  Teuchos::RCP<Epetra_Map> stickt = Core::LinAlg::SplitMap(*activet_, *slipt_);
 
   // nothing to do if no stick nodes
   if (sticknodes->NumMyElements() == 0) return;
 
   // information from interface contact parameter list
-  INPAR::CONTACT::FrictionType ftype =
-      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(interface_params(), "FRICTION");
-  if (ftype != INPAR::CONTACT::friction_coulomb) FOUR_C_THROW("only coulomb friction for CTSI");
+  Inpar::CONTACT::FrictionType ftype =
+      Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
+  if (ftype != Inpar::CONTACT::friction_coulomb) FOUR_C_THROW("only coulomb friction for CTSI");
 
   double frcoeff_in =
       interface_params().get<double>("FRCOEFF");  // the friction coefficient from the input
   double cn = interface_params().get<double>("SEMI_SMOOTH_CN");
 
   // some things that are not implemented
-  bool gp_slip = CORE::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR");
-  bool frilessfirst = CORE::UTILS::IntegralValue<int>(interface_params(), "FRLESS_FIRST");
+  bool gp_slip = Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR");
+  bool frilessfirst = Core::UTILS::IntegralValue<int>(interface_params(), "FRLESS_FIRST");
   if (gp_slip || frilessfirst)
     FOUR_C_THROW("this fancy option for the contact algorithm is not implemented for TSI");
 
@@ -81,20 +81,20 @@ void CONTACT::TSIInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstic
   for (int i = 0; i < sticknodes->NumMyElements(); ++i)
   {
     int gid = sticknodes->GID(i);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
     if (cnode->Owner() != Comm().MyPID())
       FOUR_C_THROW("AssembleLinStick: Node ownership inconsistency!");
 
-    const CORE::LINALG::Matrix<3, 1> n(cnode->MoData().n(), true);
-    const CORE::LINALG::Matrix<3, 1> lm(cnode->MoData().lm(), true);
+    const Core::LinAlg::Matrix<3, 1> n(cnode->MoData().n(), true);
+    const Core::LinAlg::Matrix<3, 1> lm(cnode->MoData().lm(), true);
     const double lm_n = n.Dot(lm);
     const double wgap = cnode->Data().Getg();
-    CORE::LINALG::Matrix<3, 1> txi(cnode->Data().txi(), true);
-    CORE::LINALG::Matrix<3, 1> teta(cnode->Data().teta(), true);
-    CORE::LINALG::Matrix<3, 1> jump(cnode->FriData().jump(), true);
+    Core::LinAlg::Matrix<3, 1> txi(cnode->Data().txi(), true);
+    Core::LinAlg::Matrix<3, 1> teta(cnode->Data().teta(), true);
+    Core::LinAlg::Matrix<3, 1> jump(cnode->FriData().jump(), true);
     double jump_txi = jump.Dot(txi);
     double jump_teta = jump.Dot(teta);
 
@@ -117,7 +117,7 @@ void CONTACT::TSIInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstic
     double fac = lm_n - cn * wgap;
     for (_CI p = dfrdT.begin(); p != dfrdT.end(); ++p)
     {
-      if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+      if (constr_direction_ == Inpar::CONTACT::constr_xyz)
         for (int j = 0; j < Dim(); j++)
         {
           linstickTEMPglobal.Assemble(
@@ -133,7 +133,7 @@ void CONTACT::TSIInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstic
     }
     for (_CI p = dfrdD.begin(); p != dfrdD.end(); ++p)
     {
-      if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+      if (constr_direction_ == Inpar::CONTACT::constr_xyz)
         for (int j = 0; j < Dim(); j++)
         {
           linstickDISglobal.Assemble(
@@ -156,8 +156,8 @@ void CONTACT::TSIInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstic
 
   return;
 }
-void CONTACT::TSIInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMglobal,
-    CORE::LINALG::SparseMatrix& linslipDISglobal, CORE::LINALG::SparseMatrix& linslipTEMPglobal,
+void CONTACT::TSIInterface::AssembleLinSlip(Core::LinAlg::SparseMatrix& linslipLMglobal,
+    Core::LinAlg::SparseMatrix& linslipDISglobal, Core::LinAlg::SparseMatrix& linslipTEMPglobal,
     Epetra_Vector& linslipRHSglobal)
 {
   CONTACT::Interface::AssembleLinSlip(linslipLMglobal, linslipDISglobal, linslipRHSglobal);
@@ -180,9 +180,9 @@ void CONTACT::TSIInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipL
   if (slipnodes->NumMyElements() == 0) return;
 
   // information from interface contact parameter list
-  INPAR::CONTACT::FrictionType ftype =
-      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(interface_params(), "FRICTION");
-  if (ftype != INPAR::CONTACT::friction_coulomb) FOUR_C_THROW("only coulomb friction for CTSI");
+  Inpar::CONTACT::FrictionType ftype =
+      Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
+  if (ftype != Inpar::CONTACT::friction_coulomb) FOUR_C_THROW("only coulomb friction for CTSI");
 
   if (Dim() != 3) FOUR_C_THROW("CTSI only for 3D");
 
@@ -192,8 +192,8 @@ void CONTACT::TSIInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipL
   double cn_input = interface_params().get<double>("SEMI_SMOOTH_CN");
 
   // some things that are not implemented
-  bool gp_slip = CORE::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR");
-  bool frilessfirst = CORE::UTILS::IntegralValue<int>(interface_params(), "FRLESS_FIRST");
+  bool gp_slip = Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR");
+  bool frilessfirst = Core::UTILS::IntegralValue<int>(interface_params(), "FRLESS_FIRST");
   if (gp_slip || frilessfirst)
     FOUR_C_THROW("this fancy option for the contact algorithm is not implemented for TSI");
 
@@ -205,20 +205,20 @@ void CONTACT::TSIInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipL
   for (int i = 0; i < slipnodes->NumMyElements(); ++i)
   {
     int gid = slipnodes->GID(i);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
     if (cnode->Owner() != Comm().MyPID())
       FOUR_C_THROW("AssembleLinStick: Node ownership inconsistency!");
 
-    const CORE::LINALG::Matrix<3, 1> n(cnode->MoData().n(), true);
-    const CORE::LINALG::Matrix<3, 1> lm(cnode->MoData().lm(), true);
+    const Core::LinAlg::Matrix<3, 1> n(cnode->MoData().n(), true);
+    const Core::LinAlg::Matrix<3, 1> lm(cnode->MoData().lm(), true);
     const double lm_n = n.Dot(lm);
     const double wgap = cnode->Data().Getg();
-    CORE::LINALG::Matrix<3, 1> txi(cnode->Data().txi(), true);
-    CORE::LINALG::Matrix<3, 1> teta(cnode->Data().teta(), true);
-    CORE::LINALG::Matrix<3, 1> jump(cnode->FriData().jump(), true);
+    Core::LinAlg::Matrix<3, 1> txi(cnode->Data().txi(), true);
+    Core::LinAlg::Matrix<3, 1> teta(cnode->Data().teta(), true);
+    Core::LinAlg::Matrix<3, 1> jump(cnode->FriData().jump(), true);
     const double jump_txi = jump.Dot(txi);
     const double jump_teta = jump.Dot(teta);
     const double lm_txi = lm.Dot(txi);
@@ -248,7 +248,7 @@ void CONTACT::TSIInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipL
     double fac = lm_n - cn * wgap;
     for (_CI p = dfrdT.begin(); p != dfrdT.end(); ++p)
     {
-      if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+      if (constr_direction_ == Inpar::CONTACT::constr_xyz)
         for (int j = 0; j < Dim(); ++j)
         {
           linslipTEMPglobal.Assemble(
@@ -264,7 +264,7 @@ void CONTACT::TSIInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipL
     }
     for (_CI p = dfrdD.begin(); p != dfrdD.end(); ++p)
     {
-      if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+      if (constr_direction_ == Inpar::CONTACT::constr_xyz)
         for (int j = 0; j < Dim(); ++j)
         {
           linslipDISglobal.Assemble(
@@ -284,10 +284,10 @@ void CONTACT::TSIInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipL
 }
 
 
-void CONTACT::TSIInterface::AssembleLinConduct(CORE::LINALG::SparseMatrix& linConductDISglobal,
-    CORE::LINALG::SparseMatrix& linConductTEMPglobal,
-    CORE::LINALG::SparseMatrix& linConductThermoLMglobal,
-    CORE::LINALG::SparseMatrix& linConductContactLMglobal)
+void CONTACT::TSIInterface::AssembleLinConduct(Core::LinAlg::SparseMatrix& linConductDISglobal,
+    Core::LinAlg::SparseMatrix& linConductTEMPglobal,
+    Core::LinAlg::SparseMatrix& linConductThermoLMglobal,
+    Core::LinAlg::SparseMatrix& linConductContactLMglobal)
 {
   // nothing to do if no active contact nodes
   if (activenodes_->NumMyElements() == 0) return;
@@ -312,14 +312,14 @@ void CONTACT::TSIInterface::AssembleLinConduct(CORE::LINALG::SparseMatrix& linCo
 
 
 void CONTACT::TSIInterface::assemble_dual_mass_lumped(
-    CORE::LINALG::SparseMatrix& dualMassGlobal, CORE::LINALG::SparseMatrix& linDualMassGlobal)
+    Core::LinAlg::SparseMatrix& dualMassGlobal, Core::LinAlg::SparseMatrix& linDualMassGlobal)
 {
   // loop over proc's slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
   for (int i = 0; i < activenodes_->NumMyElements(); ++i)
   {
     int gid = activenodes_->GID(i);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::Node* conode = dynamic_cast<CONTACT::Node*>(node);
 
@@ -329,18 +329,18 @@ void CONTACT::TSIInterface::assemble_dual_mass_lumped(
     double thermo_lm = conode->TSIData().ThermoLM();
     std::map<int, std::map<int, double>>& derivDualMass = conode->Data().GetDerivD();
 
-    if (CORE::UTILS::IntegralValue<INPAR::MORTAR::LagMultQuad>(interface_params(), "LM_QUAD") !=
-        INPAR::MORTAR::lagmult_const)
+    if (Core::UTILS::IntegralValue<Inpar::Mortar::LagMultQuad>(interface_params(), "LM_QUAD") !=
+        Inpar::Mortar::lagmult_const)
     {
       /**********************************************dual mass matrix ******/
       if (conode->MoData().GetD().size() > 0)
       {
-        const CORE::GEN::Pairedvector<int, double>& dualMassmap = conode->MoData().GetD();
-        CORE::GEN::Pairedvector<int, double>::const_iterator colcurr;
+        const Core::Gen::Pairedvector<int, double>& dualMassmap = conode->MoData().GetD();
+        Core::Gen::Pairedvector<int, double>::const_iterator colcurr;
 
         for (colcurr = dualMassmap.begin(); colcurr != dualMassmap.end(); ++colcurr)
         {
-          CORE::Nodes::Node* knode = Discret().gNode(colcurr->first);
+          Core::Nodes::Node* knode = Discret().gNode(colcurr->first);
           if (!knode) FOUR_C_THROW("node not found");
           Node* kcnode = dynamic_cast<Node*>(knode);
           if (!kcnode) FOUR_C_THROW("node not found");
@@ -354,7 +354,7 @@ void CONTACT::TSIInterface::assemble_dual_mass_lumped(
            a != derivDualMass.end(); ++a)
       {
         int sgid = a->first;
-        CORE::Nodes::Node* snode = idiscret_->gNode(sgid);
+        Core::Nodes::Node* snode = idiscret_->gNode(sgid);
         if (!snode) FOUR_C_THROW("Cannot find node with gid %", sgid);
         Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -364,7 +364,7 @@ void CONTACT::TSIInterface::assemble_dual_mass_lumped(
       }
     }
 
-    else  // INPAR::MORTAR::lagmult_const
+    else  // Inpar::Mortar::lagmult_const
     {
       if (conode->NumElement() != 1)
         FOUR_C_THROW(
@@ -374,12 +374,12 @@ void CONTACT::TSIInterface::assemble_dual_mass_lumped(
       CONTACT::Element* coele = dynamic_cast<CONTACT::Element*>(conode->Elements()[0]);
       if (!coele) FOUR_C_THROW("this should be a contact element");
 
-      CORE::GEN::Pairedvector<int, double> derivArea(coele->num_node() * Dim());
+      Core::Gen::Pairedvector<int, double> derivArea(coele->num_node() * Dim());
       double area = coele->compute_area_deriv(derivArea);
 
       dualMassGlobal.FEAssemble(area, conode->Dofs()[0], conode->Dofs()[0]);
 
-      for (CORE::GEN::Pairedvector<int, double>::const_iterator p = derivArea.begin();
+      for (Core::Gen::Pairedvector<int, double>::const_iterator p = derivArea.begin();
            p != derivArea.end(); ++p)
         linDualMassGlobal.FEAssemble(p->second * thermo_lm, conode->Dofs()[0], p->first);
     }
@@ -387,8 +387,8 @@ void CONTACT::TSIInterface::assemble_dual_mass_lumped(
   return;
 }
 
-void CONTACT::TSIInterface::AssembleLinDM_X(CORE::LINALG::SparseMatrix* linD_X,
-    CORE::LINALG::SparseMatrix* linM_X, const double fac, const LinDmXMode mode,
+void CONTACT::TSIInterface::AssembleLinDM_X(Core::LinAlg::SparseMatrix* linD_X,
+    Core::LinAlg::SparseMatrix* linM_X, const double fac, const LinDmXMode mode,
     const Teuchos::RCP<Epetra_Map> node_rowmap)
 {
   // get out if there's nothing to do
@@ -403,7 +403,7 @@ void CONTACT::TSIInterface::AssembleLinDM_X(CORE::LINALG::SparseMatrix* linD_X,
   for (int j = 0; j < node_rowmap->NumMyElements(); ++j)
   {
     int gid = node_rowmap->GID(j);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
@@ -430,9 +430,9 @@ void CONTACT::TSIInterface::AssembleLinDM_X(CORE::LINALG::SparseMatrix* linD_X,
             continue;
           else
             cnode->MoData().GetD()[cnode->Id()];
-          const CORE::LINALG::Matrix<3, 1> lmc(cnode->MoData().lm(), true);
-          const CORE::LINALG::Matrix<3, 1> n(cnode->MoData().n(), true);
-          const CORE::LINALG::Matrix<3, 1> jump(frnode->FriData().jump(), true);
+          const Core::LinAlg::Matrix<3, 1> lmc(cnode->MoData().lm(), true);
+          const Core::LinAlg::Matrix<3, 1> n(cnode->MoData().n(), true);
+          const Core::LinAlg::Matrix<3, 1> jump(frnode->FriData().jump(), true);
           double diss = (-lmc.Dot(jump) + lmc.Dot(n) * jump.Dot(n)) / (dt * dval);
           lm = diss;
         }
@@ -440,8 +440,8 @@ void CONTACT::TSIInterface::AssembleLinDM_X(CORE::LINALG::SparseMatrix* linD_X,
       }
       case linDM_ContactLMnormal:
       {
-        const CORE::LINALG::Matrix<3, 1> contact_LM(cnode->MoData().lm(), true);
-        const CORE::LINALG::Matrix<3, 1> n(cnode->MoData().n(), true);
+        const Core::LinAlg::Matrix<3, 1> contact_LM(cnode->MoData().lm(), true);
+        const Core::LinAlg::Matrix<3, 1> n(cnode->MoData().n(), true);
         lm = contact_LM.Dot(n);
         break;
       }
@@ -465,7 +465,7 @@ void CONTACT::TSIInterface::AssembleLinDM_X(CORE::LINALG::SparseMatrix* linD_X,
         int sgid = scurr->first;
         ++scurr;
 
-        CORE::Nodes::Node* snode = idiscret_->gNode(sgid);
+        Core::Nodes::Node* snode = idiscret_->gNode(sgid);
         if (!snode) FOUR_C_THROW("Cannot find node with gid %", sgid);
         Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -510,7 +510,7 @@ void CONTACT::TSIInterface::AssembleLinDM_X(CORE::LINALG::SparseMatrix* linD_X,
         int mgid = mcurr->first;
         ++mcurr;
 
-        CORE::Nodes::Node* mnode = idiscret_->gNode(mgid);
+        Core::Nodes::Node* mnode = idiscret_->gNode(mgid);
         if (!mnode) FOUR_C_THROW("Cannot find node with gid %", mgid);
         Node* cmnode = dynamic_cast<Node*>(mnode);
 
@@ -549,9 +549,9 @@ void CONTACT::TSIInterface::AssembleLinDM_X(CORE::LINALG::SparseMatrix* linD_X,
   return;
 }
 
-void CONTACT::TSIInterface::AssembleDM_linDiss(CORE::LINALG::SparseMatrix* d_LinDissDISP,
-    CORE::LINALG::SparseMatrix* m_LinDissDISP, CORE::LINALG::SparseMatrix* d_LinDissContactLM,
-    CORE::LINALG::SparseMatrix* m_LinDissContactLM, const double fac)
+void CONTACT::TSIInterface::AssembleDM_linDiss(Core::LinAlg::SparseMatrix* d_LinDissDISP,
+    Core::LinAlg::SparseMatrix* m_LinDissDISP, Core::LinAlg::SparseMatrix* d_LinDissContactLM,
+    Core::LinAlg::SparseMatrix* m_LinDissContactLM, const double fac)
 {
   // get out if there's nothing to do
   if (d_LinDissDISP == nullptr && m_LinDissDISP == nullptr && d_LinDissContactLM == nullptr &&
@@ -562,7 +562,7 @@ void CONTACT::TSIInterface::AssembleDM_linDiss(CORE::LINALG::SparseMatrix* d_Lin
   if (!friction_) return;
 
   typedef std::map<int, double>::const_iterator _cim;
-  typedef CORE::GEN::Pairedvector<int, double>::const_iterator _cip;
+  typedef Core::Gen::Pairedvector<int, double>::const_iterator _cip;
 
   const double dt = interface_params().get<double>("TIMESTEP");
 
@@ -570,7 +570,7 @@ void CONTACT::TSIInterface::AssembleDM_linDiss(CORE::LINALG::SparseMatrix* d_Lin
   for (int j = 0; j < activenodes_->NumMyElements(); ++j)
   {
     int gid = activenodes_->GID(j);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
     FriNode* fnode = dynamic_cast<FriNode*>(cnode);
@@ -578,10 +578,10 @@ void CONTACT::TSIInterface::AssembleDM_linDiss(CORE::LINALG::SparseMatrix* d_Lin
     if (fnode == nullptr) continue;
 
     // get nodal normal
-    const CORE::LINALG::Matrix<3, 1> n(cnode->MoData().n(), true);
+    const Core::LinAlg::Matrix<3, 1> n(cnode->MoData().n(), true);
 
     // projection into tangential plane = 1 - n \otimes n
-    CORE::LINALG::Matrix<3, 3> tang_proj(true);
+    Core::LinAlg::Matrix<3, 3> tang_proj(true);
     for (int i = 0; i < 3; ++i) tang_proj(i, i) = 1.;
     tang_proj.MultiplyNT(-1., n, n, 1.);
 
@@ -592,13 +592,13 @@ void CONTACT::TSIInterface::AssembleDM_linDiss(CORE::LINALG::SparseMatrix* d_Lin
     const double dval = cnode->MoData().GetD()[cnode->Id()];
 
     // get nodal values
-    CORE::LINALG::Matrix<3, 1> jump(fnode->FriData().jump());
-    const CORE::LINALG::Matrix<3, 1> lm(cnode->MoData().lm());
-    CORE::LINALG::Matrix<3, 1> lm_t;
+    Core::LinAlg::Matrix<3, 1> jump(fnode->FriData().jump());
+    const Core::LinAlg::Matrix<3, 1> lm(cnode->MoData().lm());
+    Core::LinAlg::Matrix<3, 1> lm_t;
     lm_t.Multiply(tang_proj, lm);
     const double lm_n = lm.Dot(n);
     const double jump_n = jump.Dot(n);
-    CORE::LINALG::Matrix<3, 1> jump_tan;
+    Core::LinAlg::Matrix<3, 1> jump_tan;
     jump_tan.Multiply(tang_proj, jump);
 
 
@@ -607,7 +607,7 @@ void CONTACT::TSIInterface::AssembleDM_linDiss(CORE::LINALG::SparseMatrix* d_Lin
     {
       // get nodal jump and deriv
       const std::vector<std::map<int, double>>& derivJump = fnode->FriData().GetDerivJump();
-      const std::vector<CORE::GEN::Pairedvector<int, double>>& derivN = cnode->Data().GetDerivN();
+      const std::vector<Core::Gen::Pairedvector<int, double>>& derivN = cnode->Data().GetDerivN();
 
       // calculate derivative of Dissipation *******************************
       std::map<int, double> derivDiss;
@@ -628,7 +628,7 @@ void CONTACT::TSIInterface::AssembleDM_linDiss(CORE::LINALG::SparseMatrix* d_Lin
         if ((cnode->MoData().GetD()).size() > 0)
           for (_cip k = cnode->MoData().GetD().begin(); k != cnode->MoData().GetD().end(); ++k)
           {
-            CORE::Nodes::Node* knode = Discret().gNode(k->first);
+            Core::Nodes::Node* knode = Discret().gNode(k->first);
             if (!knode) FOUR_C_THROW("node not found");
             CONTACT::Node* kcnode = dynamic_cast<CONTACT::Node*>(knode);
             for (_cim currDeriv = derivDiss.begin(); currDeriv != derivDiss.end(); ++currDeriv)
@@ -640,7 +640,7 @@ void CONTACT::TSIInterface::AssembleDM_linDiss(CORE::LINALG::SparseMatrix* d_Lin
         if ((cnode->MoData().GetM()).size() > 0)
           for (_cim k = cnode->MoData().GetM().begin(); k != cnode->MoData().GetM().end(); ++k)
           {
-            CORE::Nodes::Node* knode = Discret().gNode(k->first);
+            Core::Nodes::Node* knode = Discret().gNode(k->first);
             if (!knode) FOUR_C_THROW("node not found");
             CONTACT::Node* kcnode = dynamic_cast<CONTACT::Node*>(knode);
             for (_cim currDeriv = derivDiss.begin(); currDeriv != derivDiss.end(); ++currDeriv)
@@ -656,7 +656,7 @@ void CONTACT::TSIInterface::AssembleDM_linDiss(CORE::LINALG::SparseMatrix* d_Lin
       if ((cnode->MoData().GetD()).size() > 0)
         for (_cip k = cnode->MoData().GetD().begin(); k != cnode->MoData().GetD().end(); ++k)
         {
-          CORE::Nodes::Node* knode = Discret().gNode(k->first);
+          Core::Nodes::Node* knode = Discret().gNode(k->first);
           if (!knode) FOUR_C_THROW("node not found");
           CONTACT::Node* kcnode = dynamic_cast<CONTACT::Node*>(knode);
           for (int d = 0; d < 3; ++d)
@@ -669,7 +669,7 @@ void CONTACT::TSIInterface::AssembleDM_linDiss(CORE::LINALG::SparseMatrix* d_Lin
       if ((cnode->MoData().GetM()).size() > 0)
         for (_cim k = cnode->MoData().GetM().begin(); k != cnode->MoData().GetM().end(); ++k)
         {
-          CORE::Nodes::Node* knode = Discret().gNode(k->first);
+          Core::Nodes::Node* knode = Discret().gNode(k->first);
           if (!knode) FOUR_C_THROW("node not found");
           CONTACT::Node* kcnode = dynamic_cast<CONTACT::Node*>(knode);
           for (int d = 0; d < 3; ++d)
@@ -680,30 +680,30 @@ void CONTACT::TSIInterface::AssembleDM_linDiss(CORE::LINALG::SparseMatrix* d_Lin
 }
 
 void CONTACT::TSIInterface::assemble_lin_l_mn_dm_temp(
-    const double fac, CORE::LINALG::SparseMatrix* lin_disp, CORE::LINALG::SparseMatrix* lin_lm)
+    const double fac, Core::LinAlg::SparseMatrix* lin_disp, Core::LinAlg::SparseMatrix* lin_lm)
 {
   // get out if there's nothing to do
   if (lin_disp == nullptr) FOUR_C_THROW("called to assemble something but didn't provide a matrix");
 
   typedef std::map<int, double>::const_iterator _cim;
-  typedef CORE::GEN::Pairedvector<int, double>::const_iterator _cip;
+  typedef Core::Gen::Pairedvector<int, double>::const_iterator _cip;
   typedef std::map<int, std::map<int, double>>::const_iterator _cimm;
 
   // loop over all LM slave nodes (row map)
   for (int j = 0; j < activenodes_->NumMyElements(); ++j)
   {
     int gid = activenodes_->GID(j);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
-    const CORE::LINALG::Matrix<3, 1> n(cnode->MoData().n(), true);
-    const CORE::LINALG::Matrix<3, 1> lm(cnode->MoData().lm(), true);
+    const Core::LinAlg::Matrix<3, 1> n(cnode->MoData().n(), true);
+    const Core::LinAlg::Matrix<3, 1> lm(cnode->MoData().lm(), true);
     const double lm_n = lm.Dot(n);
 
     for (_cimm k = cnode->Data().GetDerivD().begin(); k != cnode->Data().GetDerivD().end(); ++k)
     {
-      CORE::Nodes::Node* knode = Discret().gNode(k->first);
+      Core::Nodes::Node* knode = Discret().gNode(k->first);
       if (!knode) FOUR_C_THROW("Cannot find node with gid %", gid);
       double temp_k = dynamic_cast<Node*>(knode)->TSIData().Temp();
       for (_cim l = k->second.begin(); l != k->second.end(); ++l)
@@ -712,7 +712,7 @@ void CONTACT::TSIInterface::assemble_lin_l_mn_dm_temp(
     }
     for (_cimm k = cnode->Data().GetDerivM().begin(); k != cnode->Data().GetDerivM().end(); ++k)
     {
-      CORE::Nodes::Node* knode = Discret().gNode(k->first);
+      Core::Nodes::Node* knode = Discret().gNode(k->first);
       if (!knode) FOUR_C_THROW("Cannot find node with gid %", gid);
       double temp_k = dynamic_cast<Node*>(knode)->TSIData().Temp();
       for (_cim l = k->second.begin(); l != k->second.end(); ++l)
@@ -722,7 +722,7 @@ void CONTACT::TSIInterface::assemble_lin_l_mn_dm_temp(
 
     for (_cip k = cnode->MoData().GetD().begin(); k != cnode->MoData().GetD().end(); ++k)
     {
-      CORE::Nodes::Node* knode = Discret().gNode(k->first);
+      Core::Nodes::Node* knode = Discret().gNode(k->first);
       if (!knode) FOUR_C_THROW("Cannot find node with gid %", gid);
       Node* cnodek = dynamic_cast<Node*>(knode);
       double temp_k = cnodek->TSIData().Temp();
@@ -739,7 +739,7 @@ void CONTACT::TSIInterface::assemble_lin_l_mn_dm_temp(
 
     for (_cim k = cnode->MoData().GetM().begin(); k != cnode->MoData().GetM().end(); ++k)
     {
-      CORE::Nodes::Node* knode = Discret().gNode(k->first);
+      Core::Nodes::Node* knode = Discret().gNode(k->first);
       if (!knode) FOUR_C_THROW("Cannot find node with gid %", gid);
       Node* cnodek = dynamic_cast<Node*>(knode);
       double temp_k = cnodek->TSIData().Temp();
@@ -758,30 +758,30 @@ void CONTACT::TSIInterface::assemble_lin_l_mn_dm_temp(
   return;
 }
 
-void CONTACT::TSIInterface::AssembleDM_LMn(const double fac, CORE::LINALG::SparseMatrix* DM_LMn)
+void CONTACT::TSIInterface::AssembleDM_LMn(const double fac, Core::LinAlg::SparseMatrix* DM_LMn)
 {
   // get out if there's nothing to do
   if (DM_LMn == nullptr) FOUR_C_THROW("called to assemble something but didn't provide a matrix");
 
   typedef std::map<int, double>::const_iterator _cim;
-  typedef CORE::GEN::Pairedvector<int, double>::const_iterator _cip;
+  typedef Core::Gen::Pairedvector<int, double>::const_iterator _cip;
 
   // loop over all LM slave nodes (row map)
   for (int j = 0; j < activenodes_->NumMyElements(); ++j)
   {
     int gid = activenodes_->GID(j);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
-    const CORE::LINALG::Matrix<3, 1> n(cnode->MoData().n(), true);
-    const CORE::LINALG::Matrix<3, 1> lm(cnode->MoData().lm(), true);
+    const Core::LinAlg::Matrix<3, 1> n(cnode->MoData().n(), true);
+    const Core::LinAlg::Matrix<3, 1> lm(cnode->MoData().lm(), true);
     const double lm_n = lm.Dot(n);
 
     for (_cip k = cnode->MoData().GetD().begin(); k != cnode->MoData().GetD().end(); ++k)
       if (abs(k->second) > 1.e-12)
       {
-        CORE::Nodes::Node* knode = Discret().gNode(k->first);
+        Core::Nodes::Node* knode = Discret().gNode(k->first);
         if (!knode) FOUR_C_THROW("node not found");
         CONTACT::Node* kcnode = dynamic_cast<CONTACT::Node*>(knode);
         DM_LMn->FEAssemble(fac * lm_n * k->second, cnode->Dofs()[0], kcnode->Dofs()[0]);
@@ -790,7 +790,7 @@ void CONTACT::TSIInterface::AssembleDM_LMn(const double fac, CORE::LINALG::Spars
     for (_cim k = cnode->MoData().GetM().begin(); k != cnode->MoData().GetM().end(); ++k)
       if (abs(k->second) > 1.e-12)
       {
-        CORE::Nodes::Node* knode = Discret().gNode(k->first);
+        Core::Nodes::Node* knode = Discret().gNode(k->first);
         if (!knode) FOUR_C_THROW("node not found");
         CONTACT::Node* kcnode = dynamic_cast<CONTACT::Node*>(knode);
         DM_LMn->FEAssemble(-fac * lm_n * k->second, cnode->Dofs()[0], kcnode->Dofs()[0]);
@@ -800,20 +800,20 @@ void CONTACT::TSIInterface::AssembleDM_LMn(const double fac, CORE::LINALG::Spars
 }
 
 
-void CONTACT::TSIInterface::AssembleInactive(CORE::LINALG::SparseMatrix* linConductThermoLM)
+void CONTACT::TSIInterface::AssembleInactive(Core::LinAlg::SparseMatrix* linConductThermoLM)
 {
   // get out if there's nothing to do
   if (linConductThermoLM == nullptr)
     FOUR_C_THROW("called to assemble something but didn't provide a matrix");
 
   // inactive nodes
-  Teuchos::RCP<Epetra_Map> inactivenodes = CORE::LINALG::SplitMap(*snoderowmap_, *activenodes_);
+  Teuchos::RCP<Epetra_Map> inactivenodes = Core::LinAlg::SplitMap(*snoderowmap_, *activenodes_);
 
   // loop over all LM slave nodes (row map)
   for (int j = 0; j < inactivenodes->NumMyElements(); ++j)
   {
     int gid = inactivenodes->GID(j);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 

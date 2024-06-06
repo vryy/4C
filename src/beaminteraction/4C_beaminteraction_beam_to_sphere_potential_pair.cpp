@@ -68,7 +68,7 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Setup
 
 
   // cast first element to Beam3Base
-  beam_element_ = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(Element1());
+  beam_element_ = dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(Element1());
 
   if (beam_element_ == nullptr)
     FOUR_C_THROW(
@@ -80,7 +80,7 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Setup
   beamele_reflength_ = beam_element_->RefLength();
 
   // cast second element to RigidSphere
-  sphere_element_ = dynamic_cast<const DRT::ELEMENTS::Rigidsphere*>(Element2());
+  sphere_element_ = dynamic_cast<const Discret::ELEMENTS::Rigidsphere*>(Element2());
 
   if (sphere_element_ == nullptr)
     FOUR_C_THROW(
@@ -100,10 +100,10 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Setup
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
 bool BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Evaluate(
-    CORE::LINALG::SerialDenseVector* forcevec1, CORE::LINALG::SerialDenseVector* forcevec2,
-    CORE::LINALG::SerialDenseMatrix* stiffmat11, CORE::LINALG::SerialDenseMatrix* stiffmat12,
-    CORE::LINALG::SerialDenseMatrix* stiffmat21, CORE::LINALG::SerialDenseMatrix* stiffmat22,
-    const std::vector<CORE::Conditions::Condition*> chargeconds, const double k, const double m)
+    Core::LinAlg::SerialDenseVector* forcevec1, Core::LinAlg::SerialDenseVector* forcevec2,
+    Core::LinAlg::SerialDenseMatrix* stiffmat11, Core::LinAlg::SerialDenseMatrix* stiffmat12,
+    Core::LinAlg::SerialDenseMatrix* stiffmat21, Core::LinAlg::SerialDenseMatrix* stiffmat22,
+    const std::vector<Core::Conditions::Condition*> chargeconds, const double k, const double m)
 {
   // nothing to do in case of k==0.0
   if (k == 0.0) return false;
@@ -120,12 +120,12 @@ bool BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Evalu
   // set class variables
   if (chargeconds.size() == 2)
   {
-    if (chargeconds[0]->Type() == CORE::Conditions::BeamPotential_LineChargeDensity)
+    if (chargeconds[0]->Type() == Core::Conditions::BeamPotential_LineChargeDensity)
       chargeconds_[0] = chargeconds[0];
     else
       FOUR_C_THROW("Provided condition is not of correct type BeamPotential_LineChargeDensity!");
 
-    if (chargeconds[1]->Type() == CORE::Conditions::RigidspherePotential_PointCharge)
+    if (chargeconds[1]->Type() == Core::Conditions::RigidspherePotential_PointCharge)
       chargeconds_[1] = chargeconds[1];
     else
       FOUR_C_THROW("Provided condition is not of correct type RigidspherePotential_PointCharge!");
@@ -154,7 +154,7 @@ bool BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Evalu
   // Todo allow for independent choice of strategy for beam-to-sphere potentials
   switch (Params()->Strategy())
   {
-    case INPAR::BEAMPOTENTIAL::strategy_doublelengthspec_largesepapprox:
+    case Inpar::BEAMPOTENTIAL::strategy_doublelengthspec_largesepapprox:
     {
       evaluate_fpotand_stiffpot_large_sep_approx();
       break;
@@ -169,13 +169,13 @@ bool BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Evalu
   {
     forcevec1->size(dim1);
     for (unsigned int i = 0; i < dim1; ++i)
-      (*forcevec1)(i) = CORE::FADUTILS::CastToDouble(fpot1_(i));
+      (*forcevec1)(i) = Core::FADUtils::CastToDouble(fpot1_(i));
   }
   if (forcevec2 != nullptr)
   {
     forcevec2->size(dim2);
     for (unsigned int i = 0; i < dim2; ++i)
-      (*forcevec2)(i) = CORE::FADUTILS::CastToDouble(fpot2_(i));
+      (*forcevec2)(i) = Core::FADUtils::CastToDouble(fpot2_(i));
   }
 
   if (stiffmat11 != nullptr)
@@ -183,28 +183,28 @@ bool BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Evalu
     stiffmat11->shape(dim1, dim1);
     for (unsigned int irow = 0; irow < dim1; ++irow)
       for (unsigned int icol = 0; icol < dim1; ++icol)
-        (*stiffmat11)(irow, icol) = CORE::FADUTILS::CastToDouble(stiffpot1_(irow, icol));
+        (*stiffmat11)(irow, icol) = Core::FADUtils::CastToDouble(stiffpot1_(irow, icol));
   }
   if (stiffmat12 != nullptr)
   {
     stiffmat12->shape(dim1, dim2);
     for (unsigned int irow = 0; irow < dim1; ++irow)
       for (unsigned int icol = 0; icol < dim2; ++icol)
-        (*stiffmat12)(irow, icol) = CORE::FADUTILS::CastToDouble(stiffpot1_(irow, dim1 + icol));
+        (*stiffmat12)(irow, icol) = Core::FADUtils::CastToDouble(stiffpot1_(irow, dim1 + icol));
   }
   if (stiffmat21 != nullptr)
   {
     stiffmat21->shape(dim2, dim1);
     for (unsigned int irow = 0; irow < dim2; ++irow)
       for (unsigned int icol = 0; icol < dim1; ++icol)
-        (*stiffmat21)(irow, icol) = CORE::FADUTILS::CastToDouble(stiffpot2_(irow, icol));
+        (*stiffmat21)(irow, icol) = Core::FADUtils::CastToDouble(stiffpot2_(irow, icol));
   }
   if (stiffmat22 != nullptr)
   {
     stiffmat22->shape(dim2, dim2);
     for (unsigned int irow = 0; irow < dim2; ++irow)
       for (unsigned int icol = 0; icol < dim2; ++icol)
-        (*stiffmat22)(irow, icol) = CORE::FADUTILS::CastToDouble(stiffpot2_(irow, dim1 + icol));
+        (*stiffmat22)(irow, icol) = Core::FADUtils::CastToDouble(stiffpot2_(irow, dim1 + icol));
   }
 
   return (true);
@@ -220,23 +220,23 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes,
   const double cutoff_radius = Params()->CutoffRadius();
 
   // Set gauss integration rule
-  CORE::FE::GaussRule1D gaussrule = get_gauss_rule();
+  Core::FE::GaussRule1D gaussrule = get_gauss_rule();
 
   // Get gauss points (gp) for integration
-  CORE::FE::IntegrationPoints1D gausspoints(gaussrule);
+  Core::FE::IntegrationPoints1D gausspoints(gaussrule);
   // number of gps
   const int numgp = gausspoints.nquad;
 
   // vectors for shape functions and their derivatives
   // Attention: these are individual shape function values, NOT shape function matrices
   // values at all gauss points are stored in advance
-  std::vector<CORE::LINALG::Matrix<1, numnodes * numnodalvalues>> N1_i(numgp);     // = N1_i
-  std::vector<CORE::LINALG::Matrix<1, numnodes * numnodalvalues>> N1_i_xi(numgp);  // = N1_i,xi
+  std::vector<Core::LinAlg::Matrix<1, numnodes * numnodalvalues>> N1_i(numgp);     // = N1_i
+  std::vector<Core::LinAlg::Matrix<1, numnodes * numnodalvalues>> N1_i_xi(numgp);  // = N1_i,xi
 
   // coords and derivatives of the two gauss points
-  CORE::LINALG::Matrix<3, 1, TYPE> r1(true);    // = r1
-  CORE::LINALG::Matrix<3, 1, TYPE> r2(true);    // = r2
-  CORE::LINALG::Matrix<3, 1, TYPE> dist(true);  // = r1-r2
+  Core::LinAlg::Matrix<3, 1, TYPE> r1(true);    // = r1
+  Core::LinAlg::Matrix<3, 1, TYPE> r2(true);    // = r2
+  Core::LinAlg::Matrix<3, 1, TYPE> dist(true);  // = r1-r2
   TYPE norm_dist = 0.0;                         // = |r1-r2|
 
   // Evaluate shape functions at gauss points and store values
@@ -254,30 +254,30 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes,
   int function_number = chargeconds_[0]->parameters().Get<int>("funct");
 
   if (function_number != -1)
-    q1 *= GLOBAL::Problem::Instance()
-              ->FunctionById<CORE::UTILS::FunctionOfTime>(function_number - 1)
+    q1 *= Global::Problem::Instance()
+              ->FunctionById<Core::UTILS::FunctionOfTime>(function_number - 1)
               .Evaluate(time_);
 
   function_number = chargeconds_[1]->parameters().Get<int>("funct");
 
   if (function_number != -1)
-    q2 *= GLOBAL::Problem::Instance()
-              ->FunctionById<CORE::UTILS::FunctionOfTime>(function_number - 1)
+    q2 *= Global::Problem::Instance()
+              ->FunctionById<Core::UTILS::FunctionOfTime>(function_number - 1)
               .Evaluate(time_);
 
 
   // auxiliary variable
-  CORE::LINALG::Matrix<3, 1, TYPE> fpot_tmp(true);
+  Core::LinAlg::Matrix<3, 1, TYPE> fpot_tmp(true);
 
   // determine prefactor of the integral (depends on whether surface or volume potential is applied)
   double prefactor = k_ * m_;
 
   switch (Params()->PotentialType())  // Todo do we need a own Beam-to-sphere potential type here?
   {
-    case INPAR::BEAMPOTENTIAL::beampot_surf:
+    case Inpar::BEAMPOTENTIAL::beampot_surf:
       prefactor *= 2 * radius1_ * M_PI;
       break;
-    case INPAR::BEAMPOTENTIAL::beampot_vol:
+    case Inpar::BEAMPOTENTIAL::beampot_vol:
       prefactor *= std::pow(radius1_, 2) * M_PI;
       break;
     default:
@@ -296,12 +296,12 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes,
   {
     compute_coords(r1, N1_i[gp1], ele1pos_);
 
-    dist = CORE::FADUTILS::DiffVector(r1, r2);
+    dist = Core::FADUtils::DiffVector(r1, r2);
 
-    norm_dist = CORE::FADUTILS::VectorNorm<3>(dist);
+    norm_dist = Core::FADUtils::VectorNorm<3>(dist);
 
     // check cutoff criterion: if specified, contributions are neglected at larger separation
-    if (cutoff_radius != -1.0 and CORE::FADUTILS::CastToDouble(norm_dist) > cutoff_radius) continue;
+    if (cutoff_radius != -1.0 and Core::FADUtils::CastToDouble(norm_dist) > cutoff_radius) continue;
 
 
     // temporary hacks for cell-ecm interaction
@@ -328,12 +328,12 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes,
     //    if( norm_dist < sphere_element_->Radius() )
     //    {
     //      dist.Scale( sphere_element_->Radius() / norm_dist );
-    //      norm_dist = CORE::FADUTILS::VectorNorm<3>(dist);
+    //      norm_dist = Core::FADUtils::VectorNorm<3>(dist);
     //    }
     //
     //    if(norm_dist > 0.5)
     //      dist.Scale(10.0/norm_dist);
-    //    norm_dist = CORE::FADUTILS::VectorNorm<3>(dist);
+    //    norm_dist = Core::FADUtils::VectorNorm<3>(dist);
 
     // auxiliary variables to store pre-calculated common terms
     TYPE norm_dist_exp1 = 0.0;
@@ -384,7 +384,7 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes,
     // auxiliary variables (same for both elements)
     TYPE norm_dist_exp2 = (m_ + 2) * std::pow(norm_dist, -m_ - 4);
 
-    CORE::LINALG::Matrix<3, 3, TYPE> dist_dist_T(true);
+    Core::LinAlg::Matrix<3, 3, TYPE> dist_dist_T(true);
 
     for (unsigned int i = 0; i < 3; ++i)
     {
@@ -462,7 +462,7 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes,
 
     // store for energy output
     interaction_potential_ += prefactor / m_ * q1q2_JacFac_GaussWeights *
-                              std::pow(CORE::FADUTILS::CastToDouble(norm_dist), -m_);
+                              std::pow(Core::FADUtils::CastToDouble(norm_dist), -m_);
   }
 
 
@@ -508,34 +508,34 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes,
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
 void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::get_shape_functions(
-    std::vector<CORE::LINALG::Matrix<1, numnodes * numnodalvalues>>& N1_i,
-    std::vector<CORE::LINALG::Matrix<1, numnodes * numnodalvalues>>& N1_i_xi,
-    CORE::FE::IntegrationPoints1D& gausspoints)
+    std::vector<Core::LinAlg::Matrix<1, numnodes * numnodalvalues>>& N1_i,
+    std::vector<Core::LinAlg::Matrix<1, numnodes * numnodalvalues>>& N1_i_xi,
+    Core::FE::IntegrationPoints1D& gausspoints)
 {
   // get discretization type
-  const CORE::FE::CellType distype1 = Element1()->Shape();
+  const Core::FE::CellType distype1 = Element1()->Shape();
 
   if (numnodalvalues == 1)
   {
     for (int gp = 0; gp < gausspoints.nquad; ++gp)
     {
       // get values and derivatives of shape functions
-      CORE::FE::shape_function_1D(N1_i[gp], gausspoints.qxg[gp][0], distype1);
-      CORE::FE::shape_function_1D_deriv1(N1_i_xi[gp], gausspoints.qxg[gp][0], distype1);
+      Core::FE::shape_function_1D(N1_i[gp], gausspoints.qxg[gp][0], distype1);
+      Core::FE::shape_function_1D_deriv1(N1_i_xi[gp], gausspoints.qxg[gp][0], distype1);
     }
   }
   else if (numnodalvalues == 2)
   {
     /* TODO hard set distype to line2 in case of numnodalvalues_=2 because
      *  only 3rd order Hermite interpolation is used (always 2 nodes) */
-    const CORE::FE::CellType distype1herm = CORE::FE::CellType::line2;
+    const Core::FE::CellType distype1herm = Core::FE::CellType::line2;
 
     for (int gp = 0; gp < gausspoints.nquad; ++gp)
     {
       // get values and derivatives of shape functions
-      CORE::FE::shape_function_hermite_1D(
+      Core::FE::shape_function_hermite_1D(
           N1_i[gp], gausspoints.qxg[gp][0], beamele_reflength_, distype1herm);
-      CORE::FE::shape_function_hermite_1D_deriv1(
+      Core::FE::shape_function_hermite_1D_deriv1(
           N1_i_xi[gp], gausspoints.qxg[gp][0], beamele_reflength_, distype1herm);
     }
   }
@@ -551,9 +551,9 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::get_s
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
 void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::compute_coords(
-    CORE::LINALG::Matrix<3, 1, TYPE>& r,
-    const CORE::LINALG::Matrix<1, numnodes * numnodalvalues>& N_i,
-    const CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE> elepos)
+    Core::LinAlg::Matrix<3, 1, TYPE>& r,
+    const Core::LinAlg::Matrix<1, numnodes * numnodalvalues>& N_i,
+    const Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, TYPE> elepos)
 {
   r.Clear();
 

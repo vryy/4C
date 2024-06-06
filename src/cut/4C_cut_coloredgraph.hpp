@@ -21,11 +21,11 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::GEO
+namespace Core::Geo
 {
-  namespace CUT
+  namespace Cut
   {
-    namespace COLOREDGRAPH
+    namespace ColoredGraph
     {
       class Graph;
       class CycleList;
@@ -245,9 +245,9 @@ namespace CORE::GEO
         std::list<Cycle> cycles_;
       };
 
-    }  // namespace COLOREDGRAPH
-  }    // namespace CUT
-}  // namespace CORE::GEO
+    }  // namespace ColoredGraph
+  }    // namespace Cut
+}  // namespace Core::Geo
 
 FOUR_C_NAMESPACE_CLOSE
 

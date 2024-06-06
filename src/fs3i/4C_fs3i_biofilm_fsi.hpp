@@ -25,17 +25,17 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace ADAPTER
+namespace Adapter
 {
   class AleFsiWrapper;
   class StructureBio;
   class FSIStructureWrapper;
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 namespace ALE
 {
@@ -91,7 +91,7 @@ namespace FS3I
 
     const Epetra_Comm& Comm() { return comm_; }
 
-    void VecToScatravec(Teuchos::RCP<DRT::Discretization> scatradis,
+    void VecToScatravec(Teuchos::RCP<Discret::Discretization> scatradis,
         Teuchos::RCP<Epetra_Vector> vec, Teuchos::RCP<Epetra_MultiVector> scatravec);
 
     void StructGmshOutput();
@@ -103,21 +103,21 @@ namespace FS3I
     const Epetra_Comm& comm_;
 
     /// coupling of fluid and ale (interface only)
-    Teuchos::RCP<CORE::ADAPTER::Coupling> icoupfa_;
+    Teuchos::RCP<Core::Adapter::Coupling> icoupfa_;
 
     /// coupling of fluid and ale (whole field)
-    Teuchos::RCP<CORE::ADAPTER::Coupling> coupfa_;
+    Teuchos::RCP<Core::Adapter::Coupling> coupfa_;
 
     /// coupling of structure and ale (interface only)
-    Teuchos::RCP<CORE::ADAPTER::Coupling> icoupsa_;
+    Teuchos::RCP<Core::Adapter::Coupling> icoupsa_;
 
     /// coupling of structure and ale (whole field)
-    Teuchos::RCP<CORE::ADAPTER::Coupling> coupsa_;
+    Teuchos::RCP<Core::Adapter::Coupling> coupsa_;
 
-    // Teuchos::RCP< ::ADAPTER::FSIStructureWrapper> structure_;
+    // Teuchos::RCP< ::Adapter::FSIStructureWrapper> structure_;
 
     // Teuchos::RCP<ALE::AleBaseAlgorithm> ale_;
-    Teuchos::RCP<ADAPTER::AleFsiWrapper> ale_;
+    Teuchos::RCP<Adapter::AleFsiWrapper> ale_;
 
     //    // total flux at the interface overall the InnerTimeloop
     //    Teuchos::RCP<Epetra_MultiVector> flux;

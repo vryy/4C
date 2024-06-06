@@ -16,7 +16,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   // forward declaration
   class StructPoroReaction;
@@ -25,14 +25,14 @@ namespace MAT
   {
     class StructPoroReaction : public PAR::StructPoro
     {
-      friend class MAT::StructPoroReaction;
+      friend class Mat::StructPoroReaction;
 
      public:
       /// standard constructor
-      StructPoroReaction(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      StructPoroReaction(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       /// @name material parameters
       //@{
@@ -44,14 +44,14 @@ namespace MAT
 
   }  // namespace PAR
 
-  class StructPoroReactionType : public CORE::COMM::ParObjectType
+  class StructPoroReactionType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "StructPoroReactionType"; }
 
     static StructPoroReactionType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static StructPoroReactionType instance_;
@@ -68,7 +68,7 @@ namespace MAT
     StructPoroReaction();
 
     /// construct the material object given material parameters
-    explicit StructPoroReaction(MAT::PAR::StructPoroReaction* params);
+    explicit StructPoroReaction(Mat::PAR::StructPoroReaction* params);
 
     //! @name Packing and Unpacking
 
@@ -93,7 +93,7 @@ namespace MAT
 
      \param data (in/out): char vector to store class information
      */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class
@@ -112,9 +112,9 @@ namespace MAT
     //@}
 
     /// material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_structpororeaction;
+      return Core::Materials::m_structpororeaction;
     }
 
     /// return initial porosity
@@ -147,17 +147,17 @@ namespace MAT
         ) override;
 
     /// return copy of this material object
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new StructPoroReaction(*this));
     }
 
     /// Initialize internal variables
     void Setup(int numgp,  ///< number of Gauss points
-        INPUT::LineDefinition* linedef) override;
+        Input::LineDefinition* linedef) override;
 
     /// Return quick accessible material parameter data
-    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
     /// return reference porosity average
     double RefPorosityAv() const;
@@ -165,11 +165,11 @@ namespace MAT
     //! @name Evaluation methods
 
     /// evaluate material law
-    void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,  ///< (i) deformation gradient
-        const CORE::LINALG::Matrix<6, 1>* glstrain,          ///< (i) green lagrange strain
+    void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,  ///< (i) deformation gradient
+        const Core::LinAlg::Matrix<6, 1>* glstrain,          ///< (i) green lagrange strain
         Teuchos::ParameterList& params,                      ///< (i) parameter list
-        CORE::LINALG::Matrix<6, 1>* stress,                  ///< (o) second piola kirchhoff stress
-        CORE::LINALG::Matrix<6, 6>* cmat,                    ///< (o) constitutive matrix
+        Core::LinAlg::Matrix<6, 1>* stress,                  ///< (o) second piola kirchhoff stress
+        Core::LinAlg::Matrix<6, 6>* cmat,                    ///< (o) constitutive matrix
         int gp,                                              ///< (i) Gauss point
         int eleGID) override;
 
@@ -190,7 +190,7 @@ namespace MAT
         Teuchos::RCP<std::vector<double>> scalars, Teuchos::ParameterList& params);
 
     /// my material parameters
-    MAT::PAR::StructPoroReaction* params_;
+    Mat::PAR::StructPoroReaction* params_;
 
     /// reference porosity
     double refporosity_;
@@ -202,7 +202,7 @@ namespace MAT
     double refporositydot_;
   };
 
-}  // namespace MAT
+}  // namespace Mat
 
 
 FOUR_C_NAMESPACE_CLOSE

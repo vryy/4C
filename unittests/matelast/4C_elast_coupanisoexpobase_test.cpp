@@ -24,14 +24,14 @@ namespace
 {
   using namespace FourC;
 
-  class CoupAnisoExpoBaseInterfaceFake : public MAT::ELASTIC::CoupAnisoExpoBaseInterface
+  class CoupAnisoExpoBaseInterfaceFake : public Mat::Elastic::CoupAnisoExpoBaseInterface
   {
    public:
     CoupAnisoExpoBaseInterfaceFake()
     {
       /// initialize dummy fibers
-      std::array<CORE::LINALG::Matrix<3, 1>, 2> fibersa;
-      std::array<CORE::LINALG::Matrix<3, 1>, 2> fibersb;
+      std::array<Core::LinAlg::Matrix<3, 1>, 2> fibersa;
+      std::array<Core::LinAlg::Matrix<3, 1>, 2> fibersb;
       // gp 0
       fibersa[0](0) = 0.469809238649817;
       fibersa[0](1) = 0.872502871778232;
@@ -54,22 +54,22 @@ namespace
       for (std::size_t i = 0; i < fibersa.size(); ++i)
       {
         scalar_products_[i] = fibersa[i].Dot(fibersb[i]);
-        CORE::LINALG::Matrix<3, 3> tmp;
+        Core::LinAlg::Matrix<3, 3> tmp;
         tmp.MultiplyNT(fibersa[i], fibersb[i]);
         tensors_[i].Update(0.5, tmp);
         tensors_[i].UpdateT(0.5, tmp, 1.0);
-        CORE::LINALG::VOIGT::Stresses::MatrixToVector(tensors_[i], tensors_stress_[i]);
+        Core::LinAlg::Voigt::Stresses::MatrixToVector(tensors_[i], tensors_stress_[i]);
       }
     }
 
     [[nodiscard]] double GetScalarProduct(int gp) const override { return scalar_products_[gp]; }
 
-    [[nodiscard]] const CORE::LINALG::Matrix<3, 3>& GetStructuralTensor(int gp) const override
+    [[nodiscard]] const Core::LinAlg::Matrix<3, 3>& GetStructuralTensor(int gp) const override
     {
       return tensors_.at(gp);
     }
 
-    [[nodiscard]] const CORE::LINALG::Matrix<6, 1>& get_structural_tensor_stress(
+    [[nodiscard]] const Core::LinAlg::Matrix<6, 1>& get_structural_tensor_stress(
         int gp) const override
     {
       return tensors_stress_.at(gp);
@@ -77,26 +77,26 @@ namespace
 
    private:
     std::array<double, 2> scalar_products_;
-    std::array<CORE::LINALG::Matrix<3, 3>, 2> tensors_;
-    std::array<CORE::LINALG::Matrix<6, 1>, 2> tensors_stress_;
+    std::array<Core::LinAlg::Matrix<3, 3>, 2> tensors_;
+    std::array<Core::LinAlg::Matrix<6, 1>, 2> tensors_stress_;
   };
 
-  class CoupAnisoExpoFake : public MAT::ELASTIC::CoupAnisoExpoBase
+  class CoupAnisoExpoFake : public Mat::Elastic::CoupAnisoExpoBase
   {
    public:
-    CoupAnisoExpoFake(MAT::ELASTIC::PAR::CoupAnisoExpoBase* params)
+    CoupAnisoExpoFake(Mat::Elastic::PAR::CoupAnisoExpoBase* params)
         : CoupAnisoExpoBase(params), anisotropy_extension_()
     {
     }
 
-    [[nodiscard]] CORE::Materials::MaterialType MaterialType() const override
+    [[nodiscard]] Core::Materials::MaterialType MaterialType() const override
     {
       FOUR_C_THROW("This is only a Mock. Don't use this here!");
       std::abort();
     }
 
    protected:
-    [[nodiscard]] const MAT::ELASTIC::CoupAnisoExpoBaseInterface&
+    [[nodiscard]] const Mat::Elastic::CoupAnisoExpoBaseInterface&
     get_coup_aniso_expo_base_interface() const override
     {
       return anisotropy_extension_;
@@ -113,7 +113,7 @@ namespace
         : parameters_(std::invoke(
               []()
               {
-                MAT::ELASTIC::PAR::CoupAnisoExpoBase parameters;
+                Mat::Elastic::PAR::CoupAnisoExpoBase parameters;
                 parameters.k1_ = 1.2;
                 parameters.k2_ = 1.3;
                 parameters.k1comp_ = 1.4;
@@ -122,7 +122,7 @@ namespace
               })),
           summand_(&parameters_)
     {
-      const CORE::LINALG::Matrix<3, 3> Id = CORE::LINALG::IdentityMatrix<3>();
+      const Core::LinAlg::Matrix<3, 3> Id = Core::LinAlg::IdentityMatrix<3>();
 
       C1_(0, 0) = 1.484;
       C1_(1, 1) = 2.3;
@@ -141,32 +141,32 @@ namespace
       E1_.Update(0.5, C1_, -0.5, Id);
       E2_.Update(0.5, C2_, -0.5, Id);
 
-      CORE::LINALG::VOIGT::Strains::MatrixToVector(C1_, C1_strain_);
-      CORE::LINALG::VOIGT::Strains::MatrixToVector(C2_, C2_strain_);
-      CORE::LINALG::VOIGT::Strains::MatrixToVector(E1_, E1_strain_);
-      CORE::LINALG::VOIGT::Strains::MatrixToVector(E2_, E2_strain_);
+      Core::LinAlg::Voigt::Strains::MatrixToVector(C1_, C1_strain_);
+      Core::LinAlg::Voigt::Strains::MatrixToVector(C2_, C2_strain_);
+      Core::LinAlg::Voigt::Strains::MatrixToVector(E1_, E1_strain_);
+      Core::LinAlg::Voigt::Strains::MatrixToVector(E2_, E2_strain_);
     }
 
 
-    MAT::ELASTIC::PAR::CoupAnisoExpoBase parameters_;
+    Mat::Elastic::PAR::CoupAnisoExpoBase parameters_;
     CoupAnisoExpoFake summand_;
 
-    CORE::LINALG::Matrix<3, 3> C1_;
-    CORE::LINALG::Matrix<3, 3> C2_;
-    CORE::LINALG::Matrix<3, 3> E1_;
-    CORE::LINALG::Matrix<3, 3> E2_;
+    Core::LinAlg::Matrix<3, 3> C1_;
+    Core::LinAlg::Matrix<3, 3> C2_;
+    Core::LinAlg::Matrix<3, 3> E1_;
+    Core::LinAlg::Matrix<3, 3> E2_;
 
-    CORE::LINALG::Matrix<6, 1> C1_strain_;
-    CORE::LINALG::Matrix<6, 1> C2_strain_;
-    CORE::LINALG::Matrix<6, 1> E1_strain_;
-    CORE::LINALG::Matrix<6, 1> E2_strain_;
+    Core::LinAlg::Matrix<6, 1> C1_strain_;
+    Core::LinAlg::Matrix<6, 1> C2_strain_;
+    Core::LinAlg::Matrix<6, 1> E1_strain_;
+    Core::LinAlg::Matrix<6, 1> E2_strain_;
   };
 
 
   TEST_F(CoupAnisoExpoBaseTest, TestAddStrainEnergy)
   {
-    CORE::LINALG::Matrix<3, 1> prinv(true);
-    CORE::LINALG::Matrix<3, 1> modinv(true);
+    Core::LinAlg::Matrix<3, 1> prinv(true);
+    Core::LinAlg::Matrix<3, 1> modinv(true);
 
     double psi = 3.3;
     summand_.AddStrainEnergy(psi, prinv, modinv, E1_strain_, 0, 0);
@@ -187,8 +187,8 @@ namespace
 
   TEST_F(CoupAnisoExpoBaseTest, TestEvaluateFunc)
   {
-    CORE::LINALG::Matrix<3, 1> prinv(true);
-    CORE::LINALG::Matrix<3, 1> modinv(true);
+    Core::LinAlg::Matrix<3, 1> prinv(true);
+    Core::LinAlg::Matrix<3, 1> modinv(true);
 
     double psi = 3.3;
     summand_.EvaluateFunc(psi, C1_, 0, 0);
@@ -209,7 +209,7 @@ namespace
 
   TEST_F(CoupAnisoExpoBaseTest, EvaluateFistDerivativeAniso)
   {
-    CORE::LINALG::Matrix<2, 1> dPIaniso(true);
+    Core::LinAlg::Matrix<2, 1> dPIaniso(true);
 
     summand_.evaluate_first_derivatives_aniso(dPIaniso, C1_, 0, 0);
     EXPECT_NEAR(dPIaniso(0), 0.6000375695574949, 1e-10);
@@ -233,7 +233,7 @@ namespace
 
   TEST_F(CoupAnisoExpoBaseTest, EvaluateSecondDerivativeAnsio)
   {
-    CORE::LINALG::Matrix<3, 1> ddPIaniso(true);
+    Core::LinAlg::Matrix<3, 1> ddPIaniso(true);
 
     summand_.evaluate_second_derivatives_aniso(ddPIaniso, C1_, 0, 0);
     EXPECT_NEAR(ddPIaniso(0), 2.329771574299716, 1e-10);
@@ -262,9 +262,9 @@ namespace
 
   TEST_F(CoupAnisoExpoBaseTest, GetDerivativesAniso)
   {
-    CORE::LINALG::Matrix<2, 1> dPIaniso(true);
-    CORE::LINALG::Matrix<3, 1> ddPIaniso(true);
-    CORE::LINALG::Matrix<4, 1> dddPIaniso(true);
+    Core::LinAlg::Matrix<2, 1> dPIaniso(true);
+    Core::LinAlg::Matrix<3, 1> ddPIaniso(true);
+    Core::LinAlg::Matrix<4, 1> dddPIaniso(true);
 
     summand_.GetDerivativesAniso(dPIaniso, ddPIaniso, dddPIaniso, C1_, 0, 0);
     EXPECT_NEAR(dPIaniso(0), 0.6000375695574949, 1e-10);
@@ -330,8 +330,8 @@ namespace
 
   TEST_F(CoupAnisoExpoBaseTest, add_stress_aniso_principal)
   {
-    CORE::LINALG::Matrix<6, 1> S_stress;
-    CORE::LINALG::Matrix<6, 6> cmat;
+    Core::LinAlg::Matrix<6, 1> S_stress;
+    Core::LinAlg::Matrix<6, 6> cmat;
     Teuchos::ParameterList dummyParams{};
 
     summand_.add_stress_aniso_principal(C1_strain_, cmat, S_stress, dummyParams, 0, 0);

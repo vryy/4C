@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::ParallelDistributionController::setup(CONTACT::ParamsInterface& cparams)
+void CONTACT::Aug::ParallelDistributionController::setup(CONTACT::ParamsInterface& cparams)
 {
   // time measurement (on each processor)
   global_timer_.setComm(&strat_.Comm());
@@ -42,12 +42,12 @@ void CONTACT::AUG::ParallelDistributionController::setup(CONTACT::ParamsInterfac
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::ParallelDistributionController::check(CONTACT::ParamsInterface& cparams)
+void CONTACT::Aug::ParallelDistributionController::check(CONTACT::ParamsInterface& cparams)
 {
-  cparams.ClearEntry(CORE::GEN::AnyDataContainer::DataType::time_monitor, 0);
-  cparams.ClearEntry(CORE::GEN::AnyDataContainer::DataType::any, 0);
+  cparams.ClearEntry(Core::Gen::AnyDataContainer::DataType::time_monitor, 0);
+  cparams.ClearEntry(Core::Gen::AnyDataContainer::DataType::any, 0);
 
-  global_timer_.write(CORE::IO::cout.os(CORE::IO::verbose));
+  global_timer_.write(Core::IO::cout.os(Core::IO::verbose));
 
   if (data_.GSeleEvalTimesPtr().is_null() or
       not sele_eval_times_->Map().SameAs(data_.GSeleEvalTimesPtr()->Map()))
@@ -58,7 +58,7 @@ void CONTACT::AUG::ParallelDistributionController::check(CONTACT::ParamsInterfac
   // average over the last force/stiff and pure force evaluation
   switch (acttype_)
   {
-    case MORTAR::eval_force_stiff:
+    case Mortar::eval_force_stiff:
     {
       // delete too old information
       data_.unbalance_element_factors().clear();
@@ -68,7 +68,7 @@ void CONTACT::AUG::ParallelDistributionController::check(CONTACT::ParamsInterfac
       data_.GSeleEvalTimesPtr()->Scale(1.0, *sele_eval_times_);
       break;
     }
-    case MORTAR::eval_force:
+    case Mortar::eval_force:
       data_.GSeleEvalTimesPtr()->Update(1.0, *sele_eval_times_, 1.0);
       strat_.spread_global_sele_eval_times_to_interfaces();
       break;
@@ -82,7 +82,7 @@ void CONTACT::AUG::ParallelDistributionController::check(CONTACT::ParamsInterfac
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CONTACT::AUG::ParallelDistributionController::redistribute(
+bool CONTACT::Aug::ParallelDistributionController::redistribute(
     const Teuchos::RCP<const Epetra_Vector>& dis, Teuchos::RCP<const Epetra_Vector> vel,
     const int nlniter)
 {

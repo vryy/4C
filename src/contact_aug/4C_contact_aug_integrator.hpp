@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------*/
 /*! \file
 \brief A class to perform integrations of Mortar matrices on the overlap
-       of two MORTAR::Elements in 1D and 2D (derived version for
+       of two Mortar::Elements in 1D and 2D (derived version for
        augmented contact)
 
 \level 2
@@ -20,14 +20,14 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MORTAR
+namespace Mortar
 {
   enum ActionType : int;
 }
 
 namespace CONTACT
 {
-  namespace AUG
+  namespace Aug
   {
     // forward declaration
     class IntegratorGeneric;
@@ -44,17 +44,17 @@ namespace CONTACT
      public:
       /// constructor
       IntegrationWrapper(
-          Teuchos::ParameterList& params, CORE::FE::CellType eletype, const Epetra_Comm& comm);
+          Teuchos::ParameterList& params, Core::FE::CellType eletype, const Epetra_Comm& comm);
 
       //! @name 2D augmented Lagrange integration methods
       //! @{
       //! [derived]
-      void integrate_deriv_segment2_d(MORTAR::Element& sele, double& sxia, double& sxib,
-          MORTAR::Element& mele, double& mxia, double& mxib, const Epetra_Comm& comm,
+      void integrate_deriv_segment2_d(Mortar::Element& sele, double& sxia, double& sxib,
+          Mortar::Element& mele, double& mxia, double& mxib, const Epetra_Comm& comm,
           const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr) override;
 
       //! [derived]
-      void IntegrateDerivEle2D(MORTAR::Element& sele, std::vector<MORTAR::Element*> meles,
+      void IntegrateDerivEle2D(Mortar::Element& sele, std::vector<Mortar::Element*> meles,
           bool* boundary_ele, const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr) override;
 
       //! @}
@@ -62,21 +62,21 @@ namespace CONTACT
       //! @name 3D augmented Lagrange integration methods
       //! @{
       //! [derived]
-      void integrate_deriv_cell3_d_aux_plane(MORTAR::Element& sele, MORTAR::Element& mele,
-          Teuchos::RCP<MORTAR::IntCell> cell, double* auxn, const Epetra_Comm& comm,
+      void integrate_deriv_cell3_d_aux_plane(Mortar::Element& sele, Mortar::Element& mele,
+          Teuchos::RCP<Mortar::IntCell> cell, double* auxn, const Epetra_Comm& comm,
           const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr) override;
 
       //! [derived]
-      void IntegrateDerivEle3D(MORTAR::Element& sele, std::vector<MORTAR::Element*> meles,
+      void IntegrateDerivEle3D(Mortar::Element& sele, std::vector<Mortar::Element*> meles,
           bool* boundary_ele, bool* proj_, const Epetra_Comm& comm,
           const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr) override;
 
       //! @}
 
       //! Build remaining integrals and linearizations on the 1-D/2-D slave interface
-      void integrate_deriv_slave_element(MORTAR::Element& sele, const Epetra_Comm& comm,
-          const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
-      void integrate_deriv_slave_element(MORTAR::Element& sele, const Epetra_Comm& comm,
+      void integrate_deriv_slave_element(Mortar::Element& sele, const Epetra_Comm& comm,
+          const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr);
+      void integrate_deriv_slave_element(Mortar::Element& sele, const Epetra_Comm& comm,
           const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr);
 
      private:
@@ -90,33 +90,33 @@ namespace CONTACT
     class IntegratorGeneric
     {
      public:
-      static CONTACT::AUG::IntegratorGeneric* Create(int probdim, CORE::FE::CellType slavetype,
-          CORE::FE::CellType mastertype, CONTACT::ParamsInterface& cparams,
+      static CONTACT::Aug::IntegratorGeneric* Create(int probdim, Core::FE::CellType slavetype,
+          Core::FE::CellType mastertype, CONTACT::ParamsInterface& cparams,
           CONTACT::Integrator* wrapper);
 
      private:
-      static CONTACT::AUG::IntegratorGeneric* create2_d(CORE::FE::CellType slavetype,
-          CORE::FE::CellType mastertype, CONTACT::ParamsInterface& cparams,
+      static CONTACT::Aug::IntegratorGeneric* create2_d(Core::FE::CellType slavetype,
+          Core::FE::CellType mastertype, CONTACT::ParamsInterface& cparams,
           CONTACT::Integrator* wrapper);
 
-      template <CORE::FE::CellType slavetype>
-      static CONTACT::AUG::IntegratorGeneric* create2_d(CORE::FE::CellType mastertype,
+      template <Core::FE::CellType slavetype>
+      static CONTACT::Aug::IntegratorGeneric* create2_d(Core::FE::CellType mastertype,
           CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
 
-      template <CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-      static CONTACT::AUG::IntegratorGeneric* create2_d(
+      template <Core::FE::CellType slavetype, Core::FE::CellType mastertype>
+      static CONTACT::Aug::IntegratorGeneric* create2_d(
           CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
 
-      static CONTACT::AUG::IntegratorGeneric* create3_d(CORE::FE::CellType slavetype,
-          CORE::FE::CellType mastertype, CONTACT::ParamsInterface& cparams,
+      static CONTACT::Aug::IntegratorGeneric* create3_d(Core::FE::CellType slavetype,
+          Core::FE::CellType mastertype, CONTACT::ParamsInterface& cparams,
           CONTACT::Integrator* wrapper);
 
-      template <CORE::FE::CellType slavetype>
-      static CONTACT::AUG::IntegratorGeneric* create3_d(CORE::FE::CellType mastertype,
+      template <Core::FE::CellType slavetype>
+      static CONTACT::Aug::IntegratorGeneric* create3_d(Core::FE::CellType mastertype,
           CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
 
-      template <CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-      static CONTACT::AUG::IntegratorGeneric* create3_d(
+      template <Core::FE::CellType slavetype, Core::FE::CellType mastertype>
+      static CONTACT::Aug::IntegratorGeneric* create3_d(
           CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
 
      protected:
@@ -147,23 +147,23 @@ namespace CONTACT
       //! @name segment based integration methods
       //! @{
 
-      virtual void integrate_deriv_segment2_d(MORTAR::Element& sele, double& sxia, double& sxib,
-          MORTAR::Element& mele, double& mxia, double& mxib) = 0;
+      virtual void integrate_deriv_segment2_d(Mortar::Element& sele, double& sxia, double& sxib,
+          Mortar::Element& mele, double& mxia, double& mxib) = 0;
 
       //! [derived]
       virtual void integrate_deriv_cell3_d_aux_plane(
-          MORTAR::Element& sele, MORTAR::Element& mele, MORTAR::IntCell& cell, double* auxn) = 0;
+          Mortar::Element& sele, Mortar::Element& mele, Mortar::IntCell& cell, double* auxn) = 0;
       //! @}
 
-      virtual void Evaluate(MORTAR::Element& sele, MORTAR::Element& mele, bool boundary_ele,
+      virtual void Evaluate(Mortar::Element& sele, Mortar::Element& mele, bool boundary_ele,
           const CONTACT::INTEGRATOR::UniqueProjInfo& projInfo) = 0;
 
 
       //! Build the remaining integrals and linearizations on the 1-D/2-D slave interface
-      virtual void integrate_deriv_slave_element(MORTAR::Element& sele) = 0;
+      virtual void integrate_deriv_slave_element(Mortar::Element& sele) = 0;
 
      protected:
-      INPAR::MORTAR::ShapeFcn shape_fcn() { return wrapper().shapefcn_; }
+      Inpar::Mortar::ShapeFcn shape_fcn() { return wrapper().shapefcn_; }
 
       CONTACT::ParamsInterface& c_params()
       {
@@ -189,11 +189,11 @@ namespace CONTACT
      private:
       CONTACT::ParamsInterface* cparams_;
 
-      CONTACT::AUG::IntegrationWrapper* wrapper_;
+      CONTACT::Aug::IntegrationWrapper* wrapper_;
     };  //
 
     /*--------------------------------------------------------------------------*/
-    template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+    template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype,
         class IntPolicy>
     class Integrator : public IntegratorGeneric, public IntPolicy
     {
@@ -223,15 +223,15 @@ namespace CONTACT
       //! @name segment based integration methods
       //! @{
 
-      void integrate_deriv_segment2_d(MORTAR::Element& sele, double& sxia, double& sxib,
-          MORTAR::Element& mele, double& mxia, double& mxib) override;
+      void integrate_deriv_segment2_d(Mortar::Element& sele, double& sxia, double& sxib,
+          Mortar::Element& mele, double& mxia, double& mxib) override;
 
       //! [derived]
-      void integrate_deriv_cell3_d_aux_plane(MORTAR::Element& sele, MORTAR::Element& mele,
-          MORTAR::IntCell& cell, double* auxn) override;
+      void integrate_deriv_cell3_d_aux_plane(Mortar::Element& sele, Mortar::Element& mele,
+          Mortar::IntCell& cell, double* auxn) override;
 
       //! element based evaluation
-      void Evaluate(MORTAR::Element& sele, MORTAR::Element& mele, bool boundary_ele,
+      void Evaluate(Mortar::Element& sele, Mortar::Element& mele, bool boundary_ele,
           const CONTACT::INTEGRATOR::UniqueProjInfo& projInfo) override;
 
       //! @}
@@ -240,30 +240,30 @@ namespace CONTACT
        *          slave interface
        *
        *  \author hiermeier */
-      void integrate_deriv_slave_element(MORTAR::Element& sele) override;
+      void integrate_deriv_slave_element(Mortar::Element& sele) override;
 
      private:
       class Evaluator;
       class EvaluatorDeriv1stOnly;
       class EvaluatorFull;
 
-      void set_evaluator(const enum MORTAR::ActionType action);
+      void set_evaluator(const enum Mortar::ActionType action);
 
       //! element based integration
-      void integrate_deriv_ele(MORTAR::Element& sele, MORTAR::Element& mele, bool boundary_ele,
+      void integrate_deriv_ele(Mortar::Element& sele, Mortar::Element& mele, bool boundary_ele,
           const CONTACT::INTEGRATOR::UniqueProjInfo& projInfo);
 
-      void integrate_weighted_gap(MORTAR::Element& sele, MORTAR::Element& mele, bool boundary_ele,
+      void integrate_weighted_gap(Mortar::Element& sele, Mortar::Element& mele, bool boundary_ele,
           const CONTACT::INTEGRATOR::UniqueProjInfo& projInfo);
 
       //! integrate the weighted gap gradient error
-      void integrate_weighted_gap_gradient_error(MORTAR::Element& sele, MORTAR::Element& mele,
+      void integrate_weighted_gap_gradient_error(Mortar::Element& sele, Mortar::Element& mele,
           bool boundary_ele, const CONTACT::INTEGRATOR::UniqueProjInfo& projInfo);
 
       void extract_active_slave_node_li_ds(
-          std::vector<unsigned>& active_nlids, const MORTAR::Element& sele) const;
+          std::vector<unsigned>& active_nlids, const Mortar::Element& sele) const;
 
-      int get_lin_size(MORTAR::Element& sele) const;
+      int get_lin_size(Mortar::Element& sele) const;
 
       /// reset member variables at the beginning of each gauss point loop
       void hard_reset(const unsigned linsize);
@@ -271,26 +271,26 @@ namespace CONTACT
       void weak_reset(const unsigned linsize);
 
       //! evaluate the scaling factor kappa at gp
-      void gp_kappa(MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
+      void gp_kappa(Mortar::Element& sele, const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& lmval,
           double wgt, double jac) const;
 
       /// \brief evaluate the lin. of the scaling factor kappa at gp (3-D)
-      void get_deriv1st_kappa(MORTAR::Element& sele,
-          const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, double wgt,
+      void get_deriv1st_kappa(Mortar::Element& sele,
+          const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& lmval, double wgt,
           const Deriv1stMap& d_jac);
 
 
       //! evaluate the weighted element Area at gp
-      void gp_aug_a(MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
+      void gp_aug_a(Mortar::Element& sele, const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& lmval,
           double wgt, double jac) const;
 
       //! evaluate the linearization of weighted element area at gp
-      void get_deriv1st_aug_a(MORTAR::Element& sele,
-          const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, double wgt, double jac,
+      void get_deriv1st_aug_a(Mortar::Element& sele,
+          const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& lmval, double wgt, double jac,
           const Deriv1stMap& derivjac) const;
 
       /// fill unified gauss point normal
-      void gp_normal(MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval,
+      void gp_normal(Mortar::Element& sele, const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& sval,
           double* gpn) const;
 
       /** \brief pure element based variant
@@ -301,43 +301,43 @@ namespace CONTACT
        *  the neglected term wouldn't be equal to zero.
        *
        *  \author hiermeier */
-      void gp_normal_deriv_normal(MORTAR::Element& sele,
-          const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval, double* gpn,
+      void gp_normal_deriv_normal(Mortar::Element& sele,
+          const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& sval, double* gpn,
           Deriv1stVecMap& dn_non_unit, Deriv2ndVecMap& ddn_non_unit, Deriv1stVecMap& dn_unit,
           Deriv2ndVecMap& ddn_unit);
 
       //! evaluate the linearization of weighted element area at gp
-      void get_deriv2nd_kappa(MORTAR::Element& sele,
-          const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, const double wgt,
+      void get_deriv2nd_kappa(Mortar::Element& sele,
+          const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& lmval, const double wgt,
           const Deriv2ndMap& dd_jac) const;
 
       /** \brief Evaluate the discrete gap at the current GP
        *
        *  \author hiermeier \date 06/17 */
-      void gap_n(MORTAR::Element& sele, MORTAR::Element& mele,
-          const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval,
-          const CORE::LINALG::Matrix<my::MASTERNUMNODE, 1>& mval, const double* gpn,
+      void gap_n(Mortar::Element& sele, Mortar::Element& mele,
+          const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& sval,
+          const Core::LinAlg::Matrix<my::MASTERNUMNODE, 1>& mval, const double* gpn,
           double& gapn_sl, double& gapn_ma) const;
 
-      void gp_w_gap(MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
+      void gp_w_gap(Mortar::Element& sele, const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& lmval,
           const double gapn_sl, const double gapn_ma, const double wg, const double jac) const;
 
      private:
       // vectors for shape fct. evaluation
-      CORE::LINALG::Matrix<my::SLAVENUMNODE, 1> sval_;
-      CORE::LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE> sderiv_;
-      CORE::LINALG::Matrix<my::MASTERNUMNODE, 1> mval_;
-      CORE::LINALG::Matrix<my::MASTERDIM, my::MASTERNUMNODE> mderiv_;
-      CORE::LINALG::Matrix<3, my::MASTERNUMNODE> mderiv2nd_;
-      CORE::LINALG::Matrix<my::SLAVENUMNODE, 1> lmval_;
-      CORE::LINALG::Matrix<my::SLAVENUMNODE, my::SLAVEDIM> lmderiv_;
+      Core::LinAlg::Matrix<my::SLAVENUMNODE, 1> sval_;
+      Core::LinAlg::Matrix<my::SLAVEDIM, my::SLAVENUMNODE> sderiv_;
+      Core::LinAlg::Matrix<my::MASTERNUMNODE, 1> mval_;
+      Core::LinAlg::Matrix<my::MASTERDIM, my::MASTERNUMNODE> mderiv_;
+      Core::LinAlg::Matrix<3, my::MASTERNUMNODE> mderiv2nd_;
+      Core::LinAlg::Matrix<my::SLAVENUMNODE, 1> lmval_;
+      Core::LinAlg::Matrix<my::SLAVENUMNODE, my::SLAVEDIM> lmderiv_;
 
       // create empty vectors for shape fct. evaluation
-      CORE::LINALG::Matrix<my::SLAVENUMNODE, 3> ssecderiv_;
+      Core::LinAlg::Matrix<my::SLAVENUMNODE, 3> ssecderiv_;
 
       // slave and master nodal coords for Jacobian / GP evaluation
-      CORE::LINALG::Matrix<3, my::SLAVENUMNODE> scoord_;
-      CORE::LINALG::Matrix<3, my::MASTERNUMNODE> mcoord_;
+      Core::LinAlg::Matrix<3, my::SLAVENUMNODE> scoord_;
+      Core::LinAlg::Matrix<3, my::MASTERNUMNODE> mcoord_;
 
       // directional derivatives of sxia, sxib, mxia, mxib
       Deriv1stVecMap ximaps_;
@@ -372,7 +372,7 @@ namespace CONTACT
       // Jacobian derivative (1-st order)
       Deriv1stMap derivjac_;
 
-      CORE::GEN::Pairedvector<int, CORE::LINALG::Matrix<3, 1>> lingp_;
+      Core::Gen::Pairedvector<int, Core::LinAlg::Matrix<3, 1>> lingp_;
 
       // directional derivative of slave GP normal (non-unit)
       Deriv1stMap dmap_nxsl_gp_;
@@ -389,7 +389,7 @@ namespace CONTACT
     };  // class AugmentedIntegrator
 
     /*--------------------------------------------------------------------------*/
-    template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+    template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype,
         class IntPolicy>
     class Integrator<probdim, slavetype, mastertype, IntPolicy>::Evaluator
     {
@@ -414,19 +414,19 @@ namespace CONTACT
 
       virtual Type GetType() const = 0;
 
-      virtual void Deriv_Jacobian(MORTAR::Element& ele, const double* xi,
-          const CORE::LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
-          const CORE::LINALG::Matrix<3, 2>& stau) = 0;
+      virtual void Deriv_Jacobian(Mortar::Element& ele, const double* xi,
+          const Core::LinAlg::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
+          const Core::LinAlg::Matrix<3, 2>& stau) = 0;
 
-      virtual void Deriv_MXiGP(MORTAR::Element& sele, MORTAR::Element& mele, const double* sxi,
+      virtual void Deriv_MXiGP(Mortar::Element& sele, Mortar::Element& mele, const double* sxi,
           const double* mxi, const double alpha,
-          const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval,
-          const CORE::LINALG::Matrix<my::MASTERNUMNODE, 1>& mval,
-          const CORE::LINALG::Matrix<my::MASTERDIM, my::MASTERNUMNODE>& mderiv,
-          const CORE::LINALG::Matrix<3, 2>& mtau) = 0;
+          const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& sval,
+          const Core::LinAlg::Matrix<my::MASTERNUMNODE, 1>& mval,
+          const Core::LinAlg::Matrix<my::MASTERDIM, my::MASTERNUMNODE>& mderiv,
+          const Core::LinAlg::Matrix<3, 2>& mtau) = 0;
 
-      virtual void Get_Deriv2nd_AugA(MORTAR::Element& sele,
-          const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, const double wgt,
+      virtual void Get_Deriv2nd_AugA(Mortar::Element& sele,
+          const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& lmval, const double wgt,
           const Deriv2ndMap& dd_jac) const = 0;
 
      protected:
@@ -434,7 +434,7 @@ namespace CONTACT
     };
 
     /*--------------------------------------------------------------------------*/
-    template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+    template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype,
         class IntPolicy>
     class Integrator<probdim, slavetype, mastertype, IntPolicy>::EvaluatorDeriv1stOnly
         : public Integrator<probdim, slavetype, mastertype, IntPolicy>::Evaluator
@@ -454,38 +454,38 @@ namespace CONTACT
      protected:
       typename base_type::Type GetType() const override { return base_type::Type::deriv1st_only; };
 
-      void Deriv_Jacobian(MORTAR::Element& ele, const double* xi,
-          const CORE::LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
-          const CORE::LINALG::Matrix<3, 2>& stau) override;
+      void Deriv_Jacobian(Mortar::Element& ele, const double* xi,
+          const Core::LinAlg::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
+          const Core::LinAlg::Matrix<3, 2>& stau) override;
 
-      void deriv1st_jacobian(MORTAR::Element& ele, const double* xi,
-          const CORE::LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
-          const CORE::LINALG::Matrix<3, 2>& stau,
-          CORE::LINALG::Matrix<probdim, my::SLAVENUMNODE, int>& nodal_dofs,
-          CORE::LINALG::Matrix<probdim, 1>& unit_normal, double& length_n_inv,
+      void deriv1st_jacobian(Mortar::Element& ele, const double* xi,
+          const Core::LinAlg::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
+          const Core::LinAlg::Matrix<3, 2>& stau,
+          Core::LinAlg::Matrix<probdim, my::SLAVENUMNODE, int>& nodal_dofs,
+          Core::LinAlg::Matrix<probdim, 1>& unit_normal, double& length_n_inv,
           Deriv1stVecMap& d_non_unit_normal);
 
-      void Deriv_MXiGP(MORTAR::Element& sele, MORTAR::Element& mele, const double* sxi,
+      void Deriv_MXiGP(Mortar::Element& sele, Mortar::Element& mele, const double* sxi,
           const double* mxi, const double alpha,
-          const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval,
-          const CORE::LINALG::Matrix<my::MASTERNUMNODE, 1>& mval,
-          const CORE::LINALG::Matrix<my::MASTERDIM, my::MASTERNUMNODE>& mderiv,
-          const CORE::LINALG::Matrix<3, 2>& mtau) override;
+          const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& sval,
+          const Core::LinAlg::Matrix<my::MASTERNUMNODE, 1>& mval,
+          const Core::LinAlg::Matrix<my::MASTERDIM, my::MASTERNUMNODE>& mderiv,
+          const Core::LinAlg::Matrix<3, 2>& mtau) override;
 
-      void deriv1st_m_xi_gp(MORTAR::Element& sele, MORTAR::Element& mele, const double* sxi,
+      void deriv1st_m_xi_gp(Mortar::Element& sele, Mortar::Element& mele, const double* sxi,
           const double* mxi, const double alpha,
-          const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval,
-          const CORE::LINALG::Matrix<my::MASTERNUMNODE, 1>& mval,
-          const CORE::LINALG::Matrix<my::MASTERDIM, my::MASTERNUMNODE>& mderiv,
-          const CORE::LINALG::Matrix<3, 2>& mtau, CORE::LINALG::Matrix<probdim, probdim>& lmat_inv);
+          const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& sval,
+          const Core::LinAlg::Matrix<my::MASTERNUMNODE, 1>& mval,
+          const Core::LinAlg::Matrix<my::MASTERDIM, my::MASTERNUMNODE>& mderiv,
+          const Core::LinAlg::Matrix<3, 2>& mtau, Core::LinAlg::Matrix<probdim, probdim>& lmat_inv);
 
-      void Get_Deriv2nd_AugA(MORTAR::Element& sele,
-          const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, const double wgt,
+      void Get_Deriv2nd_AugA(Mortar::Element& sele,
+          const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& lmval, const double wgt,
           const Deriv2ndMap& dd_jac) const override{/* do nothing */};
     };
 
     /*--------------------------------------------------------------------------*/
-    template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+    template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype,
         class IntPolicy>
     class Integrator<probdim, slavetype, mastertype, IntPolicy>::EvaluatorFull
         : public Integrator<probdim, slavetype, mastertype, IntPolicy>::EvaluatorDeriv1stOnly
@@ -506,22 +506,22 @@ namespace CONTACT
      private:
       typename base_type::Type GetType() const override { return base_type::Type::full; };
 
-      void Deriv_Jacobian(MORTAR::Element& ele, const double* xi,
-          const CORE::LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
-          const CORE::LINALG::Matrix<3, 2>& stau) override;
+      void Deriv_Jacobian(Mortar::Element& ele, const double* xi,
+          const Core::LinAlg::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
+          const Core::LinAlg::Matrix<3, 2>& stau) override;
 
-      void Deriv_MXiGP(MORTAR::Element& sele, MORTAR::Element& mele, const double* sxi,
+      void Deriv_MXiGP(Mortar::Element& sele, Mortar::Element& mele, const double* sxi,
           const double* mxi, const double alpha,
-          const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval,
-          const CORE::LINALG::Matrix<my::MASTERNUMNODE, 1>& mval,
-          const CORE::LINALG::Matrix<my::MASTERDIM, my::MASTERNUMNODE>& mderiv,
-          const CORE::LINALG::Matrix<3, 2>& mtau) override;
+          const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& sval,
+          const Core::LinAlg::Matrix<my::MASTERNUMNODE, 1>& mval,
+          const Core::LinAlg::Matrix<my::MASTERDIM, my::MASTERNUMNODE>& mderiv,
+          const Core::LinAlg::Matrix<3, 2>& mtau) override;
 
-      void Get_Deriv2nd_AugA(MORTAR::Element& sele,
-          const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, const double wgt,
+      void Get_Deriv2nd_AugA(Mortar::Element& sele,
+          const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& lmval, const double wgt,
           const Deriv2ndMap& dd_jac) const override;
     };
-  }  // namespace AUG
+  }  // namespace Aug
 }  // namespace CONTACT
 
 

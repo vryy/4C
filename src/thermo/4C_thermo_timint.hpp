@@ -72,7 +72,7 @@ namespace THR
    * \author bborn
    * \date 06/08
    */
-  class TimInt : public ADAPTER::Thermo
+  class TimInt : public Adapter::Thermo
   {
    public:
     //! @name Life
@@ -85,9 +85,9 @@ namespace THR
     TimInt(const Teuchos::ParameterList& ioparams,           //!< ioflags
         const Teuchos::ParameterList& tdynparams,            //!< input parameters
         const Teuchos::ParameterList& xparams,               //!< extra flags
-        Teuchos::RCP<DRT::Discretization> actdis,            //!< current discretisation
-        Teuchos::RCP<CORE::LINALG::Solver> solver,           //!< the solver
-        Teuchos::RCP<CORE::IO::DiscretizationWriter> output  //!< the output
+        Teuchos::RCP<Discret::Discretization> actdis,        //!< current discretisation
+        Teuchos::RCP<Core::LinAlg::Solver> solver,           //!< the solver
+        Teuchos::RCP<Core::IO::DiscretizationWriter> output  //!< the output
     );
 
     //! Empty constructor
@@ -152,7 +152,7 @@ namespace THR
     //! Do the nonlinear solve, i.e. (multiple) corrector,
     //! for the time step. All boundary conditions have
     //! been set.
-    INPAR::THR::ConvergenceStatus Solve() override = 0;
+    Inpar::THR::ConvergenceStatus Solve() override = 0;
 
     //! build linear system tangent matrix, rhs/force residual
     //! Monolithic TSI accesses the linearised thermo problem
@@ -192,7 +192,7 @@ namespace THR
     void reset_step() override;
 
     //! set the initial thermal field
-    void SetInitialField(const INPAR::THR::InitialField,  //!< type of initial field
+    void SetInitialField(const Inpar::THR::InitialField,  //!< type of initial field
         const int startfuncno                             //!< number of spatial function
     );
 
@@ -240,7 +240,7 @@ namespace THR
     void output_energy();
 
     //! Write internal and external forces (if necessary for restart)
-    virtual void WriteRestartForce(Teuchos::RCP<CORE::IO::DiscretizationWriter> output) = 0;
+    virtual void WriteRestartForce(Teuchos::RCP<Core::IO::DiscretizationWriter> output) = 0;
 
     //! Check wether energy output file is attached
     bool AttachedEnergyFile()
@@ -257,7 +257,7 @@ namespace THR
       if (not energyfile_)
       {
         std::string energyname =
-            GLOBAL::Problem::Instance()->OutputControlFile()->FileName() + ".thermo.energy";
+            Global::Problem::Instance()->OutputControlFile()->FileName() + ".thermo.energy";
         energyfile_ = new std::ofstream(energyname.c_str());
         *energyfile_ << "# timestep time internal_energy" << std::endl;
       }
@@ -278,7 +278,7 @@ namespace THR
     void prepare_partition_step() override = 0;
 
     //! thermal result test
-    Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() override;
+    Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() override;
 
     //@}
 
@@ -297,7 +297,7 @@ namespace THR
         const Teuchos::RCP<Epetra_Vector> tempn,         //!< old temperature state T_n
         const Teuchos::RCP<Epetra_Vector> temp,          //!< temperature state T_n+1
         Teuchos::RCP<Epetra_Vector>& fext,               //!< external force
-        Teuchos::RCP<CORE::LINALG::SparseOperator> tang  //!< tangent at time n+1
+        Teuchos::RCP<Core::LinAlg::SparseOperator> tang  //!< tangent at time n+1
     );
 
     //! Evaluate ordinary internal force, its tangent at state
@@ -308,7 +308,7 @@ namespace THR
         const Teuchos::RCP<Epetra_Vector> temp,        //!< temperature state
         const Teuchos::RCP<Epetra_Vector> tempi,       //!< residual temperatures
         Teuchos::RCP<Epetra_Vector> fint,              //!< internal force
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> tang  //!< tangent matrix
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> tang  //!< tangent matrix
     );
 
     //! Evaluate ordinary internal force, its tangent and the stored force at state
@@ -320,7 +320,7 @@ namespace THR
         const Teuchos::RCP<Epetra_Vector> tempi,       //!< residual temperatures
         Teuchos::RCP<Epetra_Vector> fcap,              //!< capacity force
         Teuchos::RCP<Epetra_Vector> fint,              //!< internal force
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> tang  //!< tangent matrix
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> tang  //!< tangent matrix
     );
 
     //! Evaluate ordinary internal force
@@ -358,10 +358,10 @@ namespace THR
     //@{
 
     //! Provide Name
-    virtual enum INPAR::THR::DynamicType MethodName() const = 0;
+    virtual enum Inpar::THR::DynamicType MethodName() const = 0;
 
     //! Provide title
-    std::string MethodTitle() const { return INPAR::THR::DynamicTypeString(MethodName()); }
+    std::string MethodTitle() const { return Inpar::THR::DynamicTypeString(MethodName()); }
 
     //! Return true, if time integrator is implicit
     virtual bool MethodImplicit() = 0;
@@ -385,7 +385,7 @@ namespace THR
     //@{
 
     //! Access dicretisation
-    Teuchos::RCP<DRT::Discretization> discretization() override { return discret_; }
+    Teuchos::RCP<Discret::Discretization> discretization() override { return discret_; }
 
     //! non-overlapping DOF map for multiple dofsets
     Teuchos::RCP<const Epetra_Map> dof_row_map(unsigned nds) override
@@ -402,13 +402,13 @@ namespace THR
     }
 
     //! Access solver
-    Teuchos::RCP<CORE::LINALG::Solver> Solver() { return solver_; }
+    Teuchos::RCP<Core::LinAlg::Solver> Solver() { return solver_; }
 
     //! get the linear solver object used for this field
-    Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() override { return solver_; }
+    Teuchos::RCP<Core::LinAlg::Solver> LinearSolver() override { return solver_; }
 
     //! Access output object
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> DiscWriter() override { return output_; }
+    Teuchos::RCP<Core::IO::DiscretizationWriter> DiscWriter() override { return output_; }
 
     //! prepare output (do nothing)
     void prepare_output() override { ; }
@@ -458,7 +458,7 @@ namespace THR
 
     //! Return tangent, i.e. thermal residual differentiated by temperatures
     //! (SystemMatrix()/stiff_ in STR)
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() override { return tang_; }
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() override { return tang_; }
 
     //! Return domain map
     const Epetra_Map& GetDomainMap() { return tang_->DomainMap(); }
@@ -500,10 +500,10 @@ namespace THR
     virtual inline const Epetra_Comm& Comm() const { return discret_->Comm(); }
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() const { return dbcmaps_; }
+    Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor() const { return dbcmaps_; }
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() override
+    Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor() override
     {
       return dbcmaps_;
     }
@@ -523,14 +523,14 @@ namespace THR
     //! @name General purpose algorithm members
     //@{
 
-    Teuchos::RCP<DRT::Discretization> discret_;        //!< attached discretisation
-    Teuchos::RCP<DRT::Discretization> discretstruct_;  //!< structural discretisation
+    Teuchos::RCP<Discret::Discretization> discret_;        //!< attached discretisation
+    Teuchos::RCP<Discret::Discretization> discretstruct_;  //!< structural discretisation
 
     int myrank_;                                        //!< ID of actual processor in parallel
-    Teuchos::RCP<CORE::LINALG::Solver> solver_;         //!< linear algebraic solver
+    Teuchos::RCP<Core::LinAlg::Solver> solver_;         //!< linear algebraic solver
     bool solveradapttol_;                               //!< adapt solver tolerance
     double solveradaptolbetter_;                        //!< tolerance to which is adpated ????
-    Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps_;  //!< map extractor object
+    Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps_;  //!< map extractor object
                                                         //!< containing non-overlapping
                                                         //!< map of global DOFs on Dirichlet
                                                         //!< boundary conditions
@@ -539,7 +539,7 @@ namespace THR
     //! @name Printing and output
     //@{
 
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output_;  //!< binary output
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output_;  //!< binary output
     bool printlogo_;                                       //!< true: enjoy your cuppa
     int printscreen_;        //!< print infos to standard out every n steps
     bool printiter_;         //!< print intermediate iterations during solution
@@ -547,21 +547,21 @@ namespace THR
                              //!< if 0, restart is not written
     bool writeglob_;         //!< write state on/off
     int writeglobevery_;     //!< write state every given step
-    INPAR::THR::HeatFluxType writeheatflux_;
-    INPAR::THR::TempGradType writetempgrad_;
+    Inpar::THR::HeatFluxType writeheatflux_;
+    Inpar::THR::TempGradType writetempgrad_;
     int writeenergyevery_;             //!< write system energy every given step
     std::ofstream* energyfile_;        //!< outputfile for energy
-    INPAR::THR::CalcError calcerror_;  //!< evaluate error compared to analytical solution
+    Inpar::THR::CalcError calcerror_;  //!< evaluate error compared to analytical solution
     int errorfunctno_;  //!< function number of analytical solution for error evaluation
     //@}
 
     //! @name General control parameters
     //@{
 
-    Teuchos::RCP<TIMESTEPPING::TimIntMStep<double>>
+    Teuchos::RCP<TimeStepping::TimIntMStep<double>>
         time_;      //!< time \f$t_{n}\f$ of last converged step
     double timen_;  //!< target time \f$t_{n+1}\f$
-    Teuchos::RCP<TIMESTEPPING::TimIntMStep<double>> dt_;  //!< time step size \f$\Delta t\f$
+    Teuchos::RCP<TimeStepping::TimIntMStep<double>> dt_;  //!< time step size \f$\Delta t\f$
     double timemax_;                                      //!< final time \f$t_\text{fin}\f$
     int stepmax_;                                         //!< final step \f$N\f$
     int step_;                                            //!< time step index \f$n\f$
@@ -583,9 +583,9 @@ namespace THR
     //@{
 
     //! global temperatures \f${T}_{n}, T_{n-1}, ...\f$
-    Teuchos::RCP<TIMESTEPPING::TimIntMStep<Epetra_Vector>> temp_;
+    Teuchos::RCP<TimeStepping::TimIntMStep<Epetra_Vector>> temp_;
     //! global temperature rates \f${R}_{n}, R_{n-1}, ...\f$
-    Teuchos::RCP<TIMESTEPPING::TimIntMStep<Epetra_Vector>> rate_;
+    Teuchos::RCP<TimeStepping::TimIntMStep<Epetra_Vector>> rate_;
     Teuchos::RCP<Epetra_Vector> tempn_;  //!< global temperatures
                                          //!< \f${T}_{n+1}\f$
                                          //!< at \f$t_{n+1}\f$
@@ -605,9 +605,9 @@ namespace THR
     //@{
 
     //! holds eventually effective tangent (STR: stiff_)
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> tang_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> tang_;
     //! capacity matrix (constant)
-    // Teuchos::RCP<CORE::LINALG::SparseMatrix> capa_;
+    // Teuchos::RCP<Core::LinAlg::SparseMatrix> capa_;
 
     //@}
 

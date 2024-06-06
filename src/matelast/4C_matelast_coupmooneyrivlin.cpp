@@ -13,8 +13,8 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-MAT::ELASTIC::PAR::CoupMooneyRivlin::CoupMooneyRivlin(
-    const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
+Mat::Elastic::PAR::CoupMooneyRivlin::CoupMooneyRivlin(
+    const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
     : Parameter(matdata),
       c1_(matdata->Get<double>("C1")),
       c2_(matdata->Get<double>("C2")),
@@ -22,14 +22,14 @@ MAT::ELASTIC::PAR::CoupMooneyRivlin::CoupMooneyRivlin(
 {
 }
 
-MAT::ELASTIC::CoupMooneyRivlin::CoupMooneyRivlin(MAT::ELASTIC::PAR::CoupMooneyRivlin* params)
+Mat::Elastic::CoupMooneyRivlin::CoupMooneyRivlin(Mat::Elastic::PAR::CoupMooneyRivlin* params)
     : params_(params)
 {
 }
 
-void MAT::ELASTIC::CoupMooneyRivlin::AddStrainEnergy(double& psi,
-    const CORE::LINALG::Matrix<3, 1>& prinv, const CORE::LINALG::Matrix<3, 1>& modinv,
-    const CORE::LINALG::Matrix<6, 1>& glstrain, const int gp, const int eleGID)
+void Mat::Elastic::CoupMooneyRivlin::AddStrainEnergy(double& psi,
+    const Core::LinAlg::Matrix<3, 1>& prinv, const Core::LinAlg::Matrix<3, 1>& modinv,
+    const Core::LinAlg::Matrix<6, 1>& glstrain, const int gp, const int eleGID)
 {
   const double c1 = params_->c1_;
   const double c2 = params_->c2_;
@@ -42,8 +42,8 @@ void MAT::ELASTIC::CoupMooneyRivlin::AddStrainEnergy(double& psi,
          c3 * pow((sqrt(prinv(2)) - 1.), 2.);
 }
 
-void MAT::ELASTIC::CoupMooneyRivlin::add_derivatives_principal(CORE::LINALG::Matrix<3, 1>& dPI,
-    CORE::LINALG::Matrix<6, 1>& ddPII, const CORE::LINALG::Matrix<3, 1>& prinv, const int gp,
+void Mat::Elastic::CoupMooneyRivlin::add_derivatives_principal(Core::LinAlg::Matrix<3, 1>& dPI,
+    Core::LinAlg::Matrix<6, 1>& ddPII, const Core::LinAlg::Matrix<3, 1>& prinv, const int gp,
     const int eleGID)
 {
   const double c1 = params_->c1_;
@@ -57,7 +57,7 @@ void MAT::ELASTIC::CoupMooneyRivlin::add_derivatives_principal(CORE::LINALG::Mat
   ddPII(2) += (c1 + 2 * c2) * std::pow(prinv(2), -2.) + 0.5 * c3 * std::pow(prinv(2), -1.5);
 }
 
-void MAT::ELASTIC::CoupMooneyRivlin::AddCoupDerivVol(
+void Mat::Elastic::CoupMooneyRivlin::AddCoupDerivVol(
     const double J, double* dPj1, double* dPj2, double* dPj3, double* dPj4)
 {
   const double c1 = params_->c1_;

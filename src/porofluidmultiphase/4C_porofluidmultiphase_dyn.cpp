@@ -35,17 +35,17 @@ void porofluidmultiphase_dyn(int restart)
   const std::string artery_disname = "artery";
 
   // access the communicator
-  const Epetra_Comm& comm = GLOBAL::Problem::Instance()->GetDis(fluid_disname)->Comm();
+  const Epetra_Comm& comm = Global::Problem::Instance()->GetDis(fluid_disname)->Comm();
 
   // access the problem
-  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
+  Global::Problem* problem = Global::Problem::Instance();
 
   // print problem type and logo
   if (comm.MyPID() == 0)
   {
     POROFLUIDMULTIPHASE::PrintLogo();
     std::cout << "###################################################" << std::endl;
-    std::cout << "# YOUR PROBLEM TYPE: " << GLOBAL::Problem::Instance()->ProblemName() << std::endl;
+    std::cout << "# YOUR PROBLEM TYPE: " << Global::Problem::Instance()->ProblemName() << std::endl;
     std::cout << "###################################################" << std::endl;
   }
 
@@ -60,31 +60,31 @@ void porofluidmultiphase_dyn(int restart)
   // -------------------------------------------------------------------
   // access the discretization(s)
   // -------------------------------------------------------------------
-  Teuchos::RCP<DRT::Discretization> actdis = Teuchos::null;
-  actdis = GLOBAL::Problem::Instance()->GetDis(fluid_disname);
+  Teuchos::RCP<Discret::Discretization> actdis = Teuchos::null;
+  actdis = Global::Problem::Instance()->GetDis(fluid_disname);
 
   // possible interaction partners as seen from the artery elements
   // [artelegid; contelegid_1, ...contelegid_n]
   std::map<int, std::set<int>> nearbyelepairs;
 
-  if (GLOBAL::Problem::Instance()->DoesExistDis(artery_disname))
+  if (Global::Problem::Instance()->DoesExistDis(artery_disname))
   {
-    Teuchos::RCP<DRT::Discretization> arterydis = Teuchos::null;
-    arterydis = GLOBAL::Problem::Instance()->GetDis(artery_disname);
+    Teuchos::RCP<Discret::Discretization> arterydis = Teuchos::null;
+    arterydis = Global::Problem::Instance()->GetDis(artery_disname);
     // get the coupling method
-    INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod arterycoupl =
-        CORE::UTILS::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(
+    Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod arterycoupl =
+        Core::UTILS::IntegralValue<Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod>(
             porodyn.sublist("ARTERY COUPLING"), "ARTERY_COUPLING_METHOD");
 
     // lateral surface coupling active?
-    const bool evaluate_on_lateral_surface = CORE::UTILS::IntegralValue<int>(
+    const bool evaluate_on_lateral_surface = Core::UTILS::IntegralValue<int>(
         porodyn.sublist("ARTERY COUPLING"), "LATERAL_SURFACE_COUPLING");
 
     switch (arterycoupl)
     {
-      case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::gpts:
-      case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp:
-      case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::ntp:
+      case Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod::gpts:
+      case Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod::mp:
+      case Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod::ntp:
       {
         actdis->fill_complete();
         nearbyelepairs = POROFLUIDMULTIPHASE::UTILS::ExtendedGhostingArteryDiscretization(
@@ -101,8 +101,8 @@ void porofluidmultiphase_dyn(int restart)
   // -------------------------------------------------------------------
   // assign dof set for solid pressures
   // -------------------------------------------------------------------
-  Teuchos::RCP<CORE::Dofsets::DofSetInterface> dofsetaux =
-      Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(1, 0, 0, false));
+  Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux =
+      Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(1, 0, 0, false));
   const int nds_solidpressure = actdis->AddDofSet(dofsetaux);
 
   // -------------------------------------------------------------------
@@ -113,19 +113,19 @@ void porofluidmultiphase_dyn(int restart)
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  Teuchos::RCP<CORE::IO::DiscretizationWriter> output = actdis->Writer();
+  Teuchos::RCP<Core::IO::DiscretizationWriter> output = actdis->Writer();
   output->WriteMesh(0, 0.0);
 
   // -------------------------------------------------------------------
   // algorithm construction depending on
   // time-integration (or stationary) scheme
   // -------------------------------------------------------------------
-  INPAR::POROFLUIDMULTIPHASE::TimeIntegrationScheme timintscheme =
-      CORE::UTILS::IntegralValue<INPAR::POROFLUIDMULTIPHASE::TimeIntegrationScheme>(
+  Inpar::POROFLUIDMULTIPHASE::TimeIntegrationScheme timintscheme =
+      Core::UTILS::IntegralValue<Inpar::POROFLUIDMULTIPHASE::TimeIntegrationScheme>(
           porodyn, "TIMEINTEGR");
 
   // build poro fluid time integrator
-  Teuchos::RCP<ADAPTER::PoroFluidMultiphase> algo = POROFLUIDMULTIPHASE::UTILS::CreateAlgorithm(
+  Teuchos::RCP<Adapter::PoroFluidMultiphase> algo = POROFLUIDMULTIPHASE::UTILS::CreateAlgorithm(
       timintscheme, actdis, linsolvernumber, porodyn, porodyn, output);
 
   // initialize

@@ -21,12 +21,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
 
-namespace POROELAST
+namespace PoroElast
 {
   namespace UTILS
   {
@@ -46,27 +46,27 @@ namespace POROELAST
 
       //! determine element type string and whether element is copied or not
       bool determine_ele_type(
-          CORE::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype);
+          Core::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype);
 
      protected:
       //! set element-specific data (material etc.)
-      virtual void set_element_data(Teuchos::RCP<CORE::Elements::Element> newele,
-          CORE::Elements::Element* oldele, const int matid, const bool isnurbs);
+      virtual void set_element_data(Teuchos::RCP<Core::Elements::Element> newele,
+          Core::Elements::Element* oldele, const int matid, const bool isnurbs);
 
       //! check for correct material
       void check_material_type(const int matid);
 
       //! set anisotropic permeability directions onto fluid element
       void set_anisotropic_permeability_directions_onto_fluid(
-          Teuchos::RCP<CORE::Elements::Element> newele, CORE::Elements::Element* oldele);
+          Teuchos::RCP<Core::Elements::Element> newele, Core::Elements::Element* oldele);
 
       //! set anisotropic permeability nodal coefficients onto fluid element
       void set_anisotropic_permeability_nodal_coeffs_onto_fluid(
-          Teuchos::RCP<CORE::Elements::Element> newele, CORE::Elements::Element* oldele);
+          Teuchos::RCP<Core::Elements::Element> newele, Core::Elements::Element* oldele);
     };
 
   }  // namespace UTILS
-}  // namespace POROELAST
+}  // namespace PoroElast
 
 FOUR_C_NAMESPACE_CLOSE
 

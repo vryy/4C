@@ -73,26 +73,26 @@ namespace STR
 
       /*! \brief Add the viscous and mass contributions to the jacobian (TR-rule)
        */
-      void add_visco_mass_contributions(CORE::LINALG::SparseOperator& jac) const override;
+      void add_visco_mass_contributions(Core::LinAlg::SparseOperator& jac) const override;
 
       //! Update configuration after time step (derived)
       void UpdateStepState() override;
 
       //! (derived)
       void write_restart(
-          CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
+          Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
 
       /*! read restart information of the different time integration schemes
        *  and model evaluators (derived) */
-      void read_restart(CORE::IO::DiscretizationReader& ioreader) override;
+      void read_restart(Core::IO::DiscretizationReader& ioreader) override;
 
       //! @name Attribute access functions
       //@{
 
       //! Return time integrator name
-      [[nodiscard]] enum INPAR::STR::DynamicType MethodName() const override
+      [[nodiscard]] enum Inpar::STR::DynamicType MethodName() const override
       {
-        return INPAR::STR::dyna_ab4;
+        return Inpar::STR::dyna_ab4;
       }
 
       //! Provide number of steps, e.g. a single-step method returns 1,
@@ -148,7 +148,7 @@ namespace STR
     struct AdamsBashforthHelper<2>
     {
       static constexpr std::array<double, 2> exc{{1.5, -0.5}};  // extrapolation coefficients
-      static enum INPAR::STR::DynamicType MethodName() { return INPAR::STR::dyna_ab2; }
+      static enum Inpar::STR::DynamicType MethodName() { return Inpar::STR::dyna_ab2; }
     };
 
     template <>
@@ -156,7 +156,7 @@ namespace STR
     {
       static constexpr std::array<double, 4> exc{
           {55.0 / 24.0, -59.0 / 24.0, 37.0 / 24.0, -9.0 / 24.0}};  // extrapolation coefficients
-      static enum INPAR::STR::DynamicType MethodName() { return INPAR::STR::dyna_ab4; }
+      static enum Inpar::STR::DynamicType MethodName() { return Inpar::STR::dyna_ab4; }
     };
 
     //@}

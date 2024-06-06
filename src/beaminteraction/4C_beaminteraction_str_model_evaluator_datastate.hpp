@@ -24,21 +24,21 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseOperator;
   class SparseMatrix;
   class MultiMapExtractor;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
   namespace ELEMENTS
   {
     class Beam3Base;
   }
-}  // namespace DRT
+}  // namespace Discret
 
 namespace STR
 {
@@ -62,7 +62,7 @@ namespace STR
       void Init();
 
       /// setup of the new class variables
-      void Setup(Teuchos::RCP<const DRT::Discretization> const& ia_discret);
+      void Setup(Teuchos::RCP<const Discret::Discretization> const& ia_discret);
 
      protected:
       inline const bool& is_init() const { return isinit_; };
@@ -199,7 +199,7 @@ namespace STR
       /// @name Get system matrices (read only access)
       ///@{
       /// returns the entire structural jacobian
-      Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetStiff() const
+      Teuchos::RCP<const Core::LinAlg::SparseMatrix> GetStiff() const
       {
         check_init_setup();
         return stiff_;
@@ -245,7 +245,7 @@ namespace STR
       }
 
       /// Return multi-displacement vector \f$D_{n}, D_{n-1}, ...\f$
-      Teuchos::RCP<TIMESTEPPING::TimIntMStep<Epetra_Vector>> GetMultiDis()
+      Teuchos::RCP<TimeStepping::TimIntMStep<Epetra_Vector>> GetMultiDis()
       {
         check_init_setup();
         return dis_;
@@ -270,7 +270,7 @@ namespace STR
       /// @name Get mutable system matrices
       ///@{
       /// returns the entire structural jacobian
-      Teuchos::RCP<CORE::LINALG::SparseMatrix>& GetStiff()
+      Teuchos::RCP<Core::LinAlg::SparseMatrix>& GetStiff()
       {
         check_init_setup();
         return stiff_;
@@ -321,14 +321,14 @@ namespace STR
       std::map<int, std::set<int>> roweletobinmap_;
 
       //! element
-      Teuchos::RCP<CORE::LINALG::MultiMapExtractor> rowelemapextractor_;
+      Teuchos::RCP<Core::LinAlg::MultiMapExtractor> rowelemapextractor_;
       ///@}
 
       /// @name Global state vectors
       ///@{
 
       /// global displacements \f${D}_{n}, D_{n-1}, ...\f$
-      Teuchos::RCP<TIMESTEPPING::TimIntMStep<Epetra_Vector>> dis_;
+      Teuchos::RCP<TimeStepping::TimIntMStep<Epetra_Vector>> dis_;
 
       /// global displacements at the restart step \f${D}_{restart}\f$ at \f$t_{restart}\f$
       Teuchos::RCP<Epetra_Vector> dis_restart_;
@@ -358,7 +358,7 @@ namespace STR
       /// @name System matrices
       ///@{
       /// supposed to hold the entire jacobian (saddle point system if desired)
-      Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_;
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_;
 
       ///@}
     };

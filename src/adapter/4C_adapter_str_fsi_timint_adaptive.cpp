@@ -27,15 +27,15 @@ FOUR_C_NAMESPACE_OPEN
 
 /*======================================================================*/
 /* constructor */
-ADAPTER::StructureFSITimIntAda::StructureFSITimIntAda(
+Adapter::StructureFSITimIntAda::StructureFSITimIntAda(
     Teuchos::RCP<STR::TimAda> sta, Teuchos::RCP<Structure> sti)
     : FSIStructureWrapper(sti), StructureTimIntAda(sta, sti), str_time_integrator_(sti)
 {
-  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->structural_dynamic_params();
+  const Teuchos::ParameterList& sdyn = Global::Problem::Instance()->structural_dynamic_params();
   const Teuchos::ParameterList& sada = sdyn.sublist("TIMEADAPTIVITY");
 
   // type of error norm
-  errnorm_ = CORE::UTILS::IntegralValue<INPAR::STR::VectorNorm>(sada, "LOCERRNORM");
+  errnorm_ = Core::UTILS::IntegralValue<Inpar::STR::VectorNorm>(sada, "LOCERRNORM");
 
   //----------------------------------------------------------------------------
   // Handling of Dirichlet BCs in error estimation
@@ -46,7 +46,7 @@ ADAPTER::StructureFSITimIntAda::StructureFSITimIntAda(
   intersectionmaps.push_back(sti->GetDBCMapExtractor()->CondMap());
   intersectionmaps.push_back(Interface()->FSICondMap());
   Teuchos::RCP<Epetra_Map> intersectionmap =
-      CORE::LINALG::MultiMapExtractor::IntersectMaps(intersectionmaps);
+      Core::LinAlg::MultiMapExtractor::IntersectMaps(intersectionmaps);
 
   numdbcdofs_ = sti->GetDBCMapExtractor()->CondMap()->NumGlobalElements();
   numdbcfsidofs_ = intersectionmap->NumGlobalElements();
@@ -55,7 +55,7 @@ ADAPTER::StructureFSITimIntAda::StructureFSITimIntAda(
 
 /*----------------------------------------------------------------------------*/
 /* Indicate norms of local discretization error */
-void ADAPTER::StructureFSITimIntAda::IndicateErrorNorms(double& err, double& errcond,
+void Adapter::StructureFSITimIntAda::IndicateErrorNorms(double& err, double& errcond,
     double& errother, double& errinf, double& errinfcond, double& errinfother)
 {
   // call functionality of adaptive structural time integrator
@@ -69,7 +69,7 @@ void ADAPTER::StructureFSITimIntAda::IndicateErrorNorms(double& err, double& err
 
 /*----------------------------------------------------------------------------*/
 /* Indicate local discretization error */
-void ADAPTER::StructureFSITimIntAda::indicate_errors(double& err, double& errcond, double& errother,
+void Adapter::StructureFSITimIntAda::indicate_errors(double& err, double& errcond, double& errother,
     double& errinf, double& errinfcond, double& errinfother)
 {
   // vector with local discretization error for each DOF
@@ -91,45 +91,45 @@ void ADAPTER::StructureFSITimIntAda::indicate_errors(double& err, double& errcon
   errother = STR::calculate_vector_norm(errnorm_, errorother, numdbcinnerdofs_);
 
   // calculate L-inf-norms of different subsets of local discretization error vector
-  errinf = STR::calculate_vector_norm(INPAR::STR::norm_inf, error);
-  errinfcond = STR::calculate_vector_norm(INPAR::STR::norm_inf, errorcond);
-  errinfother = STR::calculate_vector_norm(INPAR::STR::norm_inf, errorother);
+  errinf = STR::calculate_vector_norm(Inpar::STR::norm_inf, error);
+  errinfcond = STR::calculate_vector_norm(Inpar::STR::norm_inf, errorcond);
+  errinfother = STR::calculate_vector_norm(Inpar::STR::norm_inf, errorother);
 
   return;
 }
 
 /*----------------------------------------------------------------------------*/
 /* Do a single step with auxiliary time integration scheme */
-void ADAPTER::StructureFSITimIntAda::time_step_auxiliar() { str_ada()->integrate_step_auxiliar(); }
+void Adapter::StructureFSITimIntAda::time_step_auxiliar() { str_ada()->integrate_step_auxiliar(); }
 
 /*----------------------------------------------------------------------------*/
 /* Calculate time step size suggestion */
-double ADAPTER::StructureFSITimIntAda::calculate_dt(const double norm)
+double Adapter::StructureFSITimIntAda::calculate_dt(const double norm)
 {
   return str_ada()->calculate_dt(norm);
 }
 
 /*----------------------------------------------------------------------------*/
 /* Get time step size of adaptive structural time integrator */
-double ADAPTER::StructureFSITimIntAda::Dt() const { return str_ada()->Dt(); }
+double Adapter::StructureFSITimIntAda::Dt() const { return str_ada()->Dt(); }
 
 /*----------------------------------------------------------------------------*/
 /* Get target time \f$t_{n+1}\f$ of current time step */
-double ADAPTER::StructureFSITimIntAda::Time() const { return str_ada()->Time(); }
+double Adapter::StructureFSITimIntAda::Time() const { return str_ada()->Time(); }
 
 /*----------------------------------------------------------------------------*/
 /* Set new time step size */
-void ADAPTER::StructureFSITimIntAda::set_dt(const double dtnew) { str_ada()->set_dt(dtnew); }
+void Adapter::StructureFSITimIntAda::set_dt(const double dtnew) { str_ada()->set_dt(dtnew); }
 
 /*----------------------------------------------------------------------------*/
 /* Update step size */
-void ADAPTER::StructureFSITimIntAda::UpdateStepSize(const double dtnew)
+void Adapter::StructureFSITimIntAda::UpdateStepSize(const double dtnew)
 {
   str_ada()->UpdateStepSize(dtnew);
 }
 
 /*----------------------------------------------------------------------------*/
 /*  Reset certain quantities to prepare repetition of current time step */
-void ADAPTER::StructureFSITimIntAda::reset_step() { str_ada()->reset_step(); }
+void Adapter::StructureFSITimIntAda::reset_step() { str_ada()->reset_step(); }
 
 FOUR_C_NAMESPACE_CLOSE

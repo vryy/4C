@@ -21,14 +21,14 @@ FOUR_C_NAMESPACE_OPEN
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-CORE::LINEAR_SOLVER::SimplePreconditioner::SimplePreconditioner(Teuchos::ParameterList& params)
+Core::LinearSolver::SimplePreconditioner::SimplePreconditioner(Teuchos::ParameterList& params)
     : params_(params)
 {
 }
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void CORE::LINEAR_SOLVER::SimplePreconditioner::Setup(
+void Core::LinearSolver::SimplePreconditioner::Setup(
     bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
 {
   if (create)
@@ -54,8 +54,8 @@ void CORE::LINEAR_SOLVER::SimplePreconditioner::Setup(
     if (mt || co || cstr)
     {
       // adapt ML null space for contact/meshtying/constraint problems
-      Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> A =
-          Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(
+      Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> A =
+          Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(
               Teuchos::rcp(matrix, false));
       if (A == Teuchos::null) FOUR_C_THROW("matrix is not a BlockSparseMatrix");
 
@@ -84,7 +84,7 @@ void CORE::LINEAR_SOLVER::SimplePreconditioner::Setup(
             .set<Teuchos::RCP<std::vector<double>>>("pressure nullspace", pnewns);
       }
 
-      p_ = Teuchos::rcp(new CORE::LINEAR_SOLVER::CheapSimpleBlockPreconditioner(A,
+      p_ = Teuchos::rcp(new Core::LinearSolver::CheapSimpleBlockPreconditioner(A,
           params_.sublist("CheapSIMPLE Parameters").sublist("Inverse1"),
           params_.sublist("CheapSIMPLE Parameters").sublist("Inverse2")));
     }
@@ -99,8 +99,8 @@ void CORE::LINEAR_SOLVER::SimplePreconditioner::Setup(
       const Epetra_Map& fullmap = matrix->OperatorRangeMap();
       const int length = fullmap.NumMyElements();
 
-      Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> A =
-          Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(
+      Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> A =
+          Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(
               Teuchos::rcp(matrix, false));
       if (A == Teuchos::null) FOUR_C_THROW("matrix is not a BlockSparseMatrix");
 
@@ -152,7 +152,7 @@ void CORE::LINEAR_SOLVER::SimplePreconditioner::Setup(
 
         Teuchos::RCP<Epetra_MultiVector> nullspace =
             Teuchos::rcp(new Epetra_MultiVector(A->Matrix(0, 0).RowMap(), nv, true));
-        CORE::LINALG::StdVectorToEpetraMultiVector(*vnewns, nullspace, nv);
+        Core::LinAlg::StdVectorToEpetraMultiVector(*vnewns, nullspace, nv);
 
         inv1.sublist("ML Parameters").set("null space: vectors", nullspace->Values());
         inv1.sublist("ML Parameters").remove("nullspace", false);  // necessary??
@@ -177,7 +177,7 @@ void CORE::LINEAR_SOLVER::SimplePreconditioner::Setup(
             .set<Teuchos::RCP<Epetra_MultiVector>>("pressure nullspace", nullspace);
       }
 
-      p_ = Teuchos::rcp(new CORE::LINEAR_SOLVER::CheapSimpleBlockPreconditioner(A,
+      p_ = Teuchos::rcp(new Core::LinearSolver::CheapSimpleBlockPreconditioner(A,
           params_.sublist("CheapSIMPLE Parameters").sublist("Inverse1"),
           params_.sublist("CheapSIMPLE Parameters").sublist("Inverse2")));
     }
@@ -190,8 +190,8 @@ void CORE::LINEAR_SOLVER::SimplePreconditioner::Setup(
       // contain the usual stuff: "xml file","PDE equations","null space: dimension" and "nullspace"
 
 
-      Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> A =
-          Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(
+      Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> A =
+          Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(
               Teuchos::rcp(matrix, false));
       if (A == Teuchos::null) FOUR_C_THROW("matrix is not a BlockSparseMatrix");
 
@@ -231,7 +231,7 @@ void CORE::LINEAR_SOLVER::SimplePreconditioner::Setup(
       }
 
       p_ = Teuchos::rcp(
-          new CORE::LINEAR_SOLVER::CheapSimpleBlockPreconditioner(A, sublist1, sublist2));
+          new Core::LinearSolver::CheapSimpleBlockPreconditioner(A, sublist1, sublist2));
     }
     else
     {
@@ -241,7 +241,7 @@ void CORE::LINEAR_SOLVER::SimplePreconditioner::Setup(
       // Michaels old CheapSIMPLE for Fluid
       // TODO replace me by CheapSIMPLE_BlockPreconditioner
 
-      // P_ = Teuchos::rcp(new CORE::LINALG::SOLVER::SIMPLER_Operator(Teuchos::rcp( matrix, false
+      // P_ = Teuchos::rcp(new Core::LinAlg::SOLVER::SIMPLER_Operator(Teuchos::rcp( matrix, false
       // ),params_,params_.sublist("SIMPLER"),outfile_));
       FOUR_C_THROW("old SIMPLE not supported any more");
     }
@@ -250,7 +250,7 @@ void CORE::LINEAR_SOLVER::SimplePreconditioner::Setup(
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-CORE::LINEAR_SOLVER::BGSPreconditioner::BGSPreconditioner(
+Core::LinearSolver::BGSPreconditioner::BGSPreconditioner(
     Teuchos::ParameterList& params, Teuchos::ParameterList& bgslist)
     : params_(params), bgslist_(bgslist)
 {
@@ -258,7 +258,7 @@ CORE::LINEAR_SOLVER::BGSPreconditioner::BGSPreconditioner(
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void CORE::LINEAR_SOLVER::BGSPreconditioner::Setup(
+void Core::LinearSolver::BGSPreconditioner::Setup(
     bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
 {
   if (create)
@@ -283,7 +283,7 @@ void CORE::LINEAR_SOLVER::BGSPreconditioner::Setup(
       double block2_omega = bgslist_.get<double>("block2_omega");
       bool fliporder = bgslist_.get<bool>("fliporder");
 
-      p_ = Teuchos::rcp(new CORE::LINALG::BgS2x2Operator(Teuchos::rcp(matrix, false),
+      p_ = Teuchos::rcp(new Core::LinAlg::BgS2x2Operator(Teuchos::rcp(matrix, false),
           params_.sublist("Inverse1"), params_.sublist("Inverse2"), global_iter, global_omega,
           block1_iter, block1_omega, block2_iter, block2_omega, fliporder));
     }

@@ -16,13 +16,13 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::SoShw6::ReadElement(
-    const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
+bool Discret::ELEMENTS::SoShw6::ReadElement(
+    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
   // read number of material model
   int material = 0;
   linedef->ExtractInt("MAT", material);
-  SetMaterial(0, MAT::Factory(material));
+  SetMaterial(0, Mat::Factory(material));
 
   SolidMaterial()->Setup(NUMGPT_WEG6, linedef);
 
@@ -33,12 +33,12 @@ bool DRT::ELEMENTS::SoShw6::ReadElement(
   // geometrically non-linear with Total Lagrangean approach
   if (buffer == "nonlinear")
   {
-    kintype_ = INPAR::STR::KinemType::nonlinearTotLag;
+    kintype_ = Inpar::STR::KinemType::nonlinearTotLag;
   }
   // geometrically linear
   else if (buffer == "linear")
   {
-    kintype_ = INPAR::STR::KinemType::linear;
+    kintype_ = Inpar::STR::KinemType::linear;
     FOUR_C_THROW("Reading of SOLIDSHW6 element failed onlz nonlinear kinetmatics implemented");
   }
 

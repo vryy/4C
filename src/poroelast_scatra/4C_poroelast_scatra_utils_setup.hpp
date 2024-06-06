@@ -25,7 +25,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace POROELASTSCATRA
+namespace PoroElastScaTra
 {
   namespace UTILS
   {
@@ -37,16 +37,16 @@ namespace POROELASTSCATRA
       // disc.is cloned from the struct. one.
       //  After that, an ale-scatra disc. is cloned from the structure discretization.
 
-      GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
+      Global::Problem* problem = Global::Problem::Instance();
 
       // 1.-Initialization.
-      Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis("structure");
-      Teuchos::RCP<DRT::Discretization> fluiddis = problem->GetDis("porofluid");
-      Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis("scatra");
+      Teuchos::RCP<Discret::Discretization> structdis = problem->GetDis("structure");
+      Teuchos::RCP<Discret::Discretization> fluiddis = problem->GetDis("porofluid");
+      Teuchos::RCP<Discret::Discretization> scatradis = problem->GetDis("scatra");
 
       // setup of the discretizations, including clone strategy (do not set material pointers, this
       // will be done here)
-      POROELAST::UTILS::SetupPoro<PoroCloneStrategy>(false);
+      PoroElast::UTILS::SetupPoro<PoroCloneStrategy>(false);
 
       // 3.-Access the scatra discretization, make sure it's empty, and fill it by cloning the
       // structural one.
@@ -57,24 +57,24 @@ namespace POROELASTSCATRA
       if (scatradis->NumGlobalNodes() == 0)
       {
         // fill scatra discretization by cloning structure discretization
-        CORE::FE::CloneDiscretization<PoroScatraCloneStrategy>(
-            structdis, scatradis, GLOBAL::Problem::Instance()->CloningMaterialMap());
+        Core::FE::CloneDiscretization<PoroScatraCloneStrategy>(
+            structdis, scatradis, Global::Problem::Instance()->CloningMaterialMap());
         scatradis->fill_complete();
 
         // assign materials. Order is important here!
-        POROELAST::UTILS::SetMaterialPointersMatchingGrid(structdis, fluiddis);
-        POROELAST::UTILS::SetMaterialPointersMatchingGrid(structdis, scatradis);
-        POROELAST::UTILS::SetMaterialPointersMatchingGrid(fluiddis, scatradis);
+        PoroElast::UTILS::SetMaterialPointersMatchingGrid(structdis, fluiddis);
+        PoroElast::UTILS::SetMaterialPointersMatchingGrid(structdis, scatradis);
+        PoroElast::UTILS::SetMaterialPointersMatchingGrid(fluiddis, scatradis);
 
         // the problem is two way coupled, thus each discretization must know the other
         // discretization
 
         // build a proxy of the structure discretization for the scatra field
-        Teuchos::RCP<CORE::Dofsets::DofSetInterface> structdofset = structdis->GetDofSetProxy();
+        Teuchos::RCP<Core::DOFSets::DofSetInterface> structdofset = structdis->GetDofSetProxy();
         // build a proxy of the fluid discretization for the scatra field
-        Teuchos::RCP<CORE::Dofsets::DofSetInterface> fluiddofset = fluiddis->GetDofSetProxy();
+        Teuchos::RCP<Core::DOFSets::DofSetInterface> fluiddofset = fluiddis->GetDofSetProxy();
         // build a proxy of the fluid discretization for the structure/fluid field
-        Teuchos::RCP<CORE::Dofsets::DofSetInterface> scatradofset = scatradis->GetDofSetProxy();
+        Teuchos::RCP<Core::DOFSets::DofSetInterface> scatradofset = scatradis->GetDofSetProxy();
 
         // check if ScatraField has 2 discretizations, so that coupling is possible
         if (scatradis->AddDofSet(structdofset) != 1)
@@ -93,15 +93,15 @@ namespace POROELASTSCATRA
       else
       {
         // create vector of discr.
-        std::vector<Teuchos::RCP<DRT::Discretization>> dis;
+        std::vector<Teuchos::RCP<Discret::Discretization>> dis;
         dis.push_back(structdis);
         dis.push_back(fluiddis);
         dis.push_back(scatradis);
 
-        CORE::REBALANCE::RebalanceDiscretizationsByBinning(dis, false);
+        Core::Rebalance::RebalanceDiscretizationsByBinning(dis, false);
 
         // set material pointers
-        POROELAST::UTILS::SetMaterialPointersMatchingGrid(structdis, fluiddis);
+        PoroElast::UTILS::SetMaterialPointersMatchingGrid(structdis, fluiddis);
 
         // first call fill_complete for single discretizations.
         // This way the physical dofs are numbered successively
@@ -117,19 +117,19 @@ namespace POROELASTSCATRA
         const int ndofpernode_scatra = scatradis->NumDof(0, scatradis->lRowNode(0));
         const int ndofperelement_scatra = 0;
 
-        Teuchos::RCP<CORE::Dofsets::DofSetInterface> dofsetaux;
-        dofsetaux = Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(
+        Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux;
+        dofsetaux = Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(
             ndofpernode_scatra, ndofperelement_scatra, 0, true));
         if (structdis->AddDofSet(dofsetaux) != 2)
           FOUR_C_THROW("unexpected dof sets in structure field");
-        dofsetaux = Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(
+        dofsetaux = Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(
             ndofpernode_scatra, ndofperelement_scatra, 0, true));
         if (fluiddis->AddDofSet(dofsetaux) != 2) FOUR_C_THROW("unexpected dof sets in fluid field");
-        dofsetaux = Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(
+        dofsetaux = Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(
             ndofpernode_struct, ndofperelement_struct, 0, true));
         if (scatradis->AddDofSet(dofsetaux) != 1)
           FOUR_C_THROW("unexpected dof sets in scatra field");
-        dofsetaux = Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(
+        dofsetaux = Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(
             ndofpernode_fluid, ndofperelement_fluid, 0, true));
         if (scatradis->AddDofSet(dofsetaux) != 2)
           FOUR_C_THROW("unexpected dof sets in scatra field");
@@ -146,7 +146,7 @@ namespace POROELASTSCATRA
       }
     }
   }  // namespace UTILS
-}  // namespace POROELASTSCATRA
+}  // namespace PoroElastScaTra
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
                   Standard Constructor (public)
 
   ---------------------------------------------------------------------*/
-FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<DRT::Discretization> actdis,
+FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<Discret::Discretization> actdis,
     bool alefluid, Teuchos::RCP<Epetra_Vector> dispnp, Teuchos::ParameterList& params,
     const std::string& statistics_outfilename, const bool withscatra)
     : discret_(actdis),
@@ -49,11 +49,11 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<DRT::Discreti
   // allocate some vectors
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
-  meanvelnp_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  meanvelnp_ = Core::LinAlg::CreateVector(*dofrowmap, true);
 
   if (withscatra_)
   {
-    meanscanp_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+    meanscanp_ = Core::LinAlg::CreateVector(*dofrowmap, true);
     // meanfullphinp_ is initalized in ApplyScatraResults()
   }
 
@@ -94,8 +94,8 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<DRT::Discreti
   // try to cast discretisation to nurbs variant
   // this tells you what kind of computation of
   // samples is required
-  DRT::NURBS::NurbsDiscretization* nurbsdis =
-      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*actdis));
+  Discret::Nurbs::NurbsDiscretization* nurbsdis =
+      dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(*actdis));
 
   if (nurbsdis == nullptr)
   {
@@ -120,7 +120,7 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<DRT::Discreti
     std::vector<int> nele_x_mele_x_lele(nurbsdis->return_nele_x_mele_x_lele(0));
 
     // get the knotvector itself
-    Teuchos::RCP<DRT::NURBS::Knotvector> knots = nurbsdis->GetKnotVector();
+    Teuchos::RCP<Discret::Nurbs::Knotvector> knots = nurbsdis->GetKnotVector();
 
     // resize and initialise to 0
     {
@@ -152,21 +152,22 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<DRT::Discreti
     for (int iele = 0; iele < elementmap->NumMyElements(); ++iele)
     {
       // get element pointer
-      CORE::Elements::Element* const actele = nurbsdis->gElement(elementmap->GID(iele));
+      Core::Elements::Element* const actele = nurbsdis->gElement(elementmap->GID(iele));
 
       // want to loop all control points of the element,
       // so get the number of points
       const int numnp = actele->num_node();
 
       // get the elements control points/nodes
-      CORE::Nodes::Node** nodes = actele->Nodes();
+      Core::Nodes::Node** nodes = actele->Nodes();
 
       // acquire weights from nodes
-      CORE::LINALG::SerialDenseVector weights(numnp);
+      Core::LinAlg::SerialDenseVector weights(numnp);
 
       for (int inode = 0; inode < numnp; ++inode)
       {
-        DRT::NURBS::ControlPoint* cp = dynamic_cast<DRT::NURBS::ControlPoint*>(nodes[inode]);
+        Discret::Nurbs::ControlPoint* cp =
+            dynamic_cast<Discret::Nurbs::ControlPoint*>(nodes[inode]);
 
         weights(inode) = cp->W();
       }
@@ -180,7 +181,7 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<DRT::Discreti
       knots->convert_ele_gid_to_knot_ids(gid, patchid, ele_cart_id);
 
       // access elements knot span
-      std::vector<CORE::LINALG::SerialDenseVector> knots(3);
+      std::vector<Core::LinAlg::SerialDenseVector> knots(3);
       bool zero_size = (*((*nurbsdis).GetKnotVector())).GetEleKnots(knots, actele->Id());
 
       // zero sized elements have to be skipped
@@ -190,15 +191,15 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<DRT::Discreti
       }
 
       // get shapefunctions, compute all visualisation point positions
-      CORE::LINALG::SerialDenseVector nurbs_shape_funct(numnp);
+      Core::LinAlg::SerialDenseVector nurbs_shape_funct(numnp);
 
       switch (actele->Shape())
       {
-        case CORE::FE::CellType::nurbs8:
-        case CORE::FE::CellType::nurbs27:
+        case Core::FE::CellType::nurbs8:
+        case Core::FE::CellType::nurbs27:
         {
           // element local point position
-          CORE::LINALG::SerialDenseVector uv(3);
+          Core::LinAlg::SerialDenseVector uv(3);
 
           {
             // standard
@@ -226,7 +227,7 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<DRT::Discreti
             uv(0) = 1.0;
             uv(1) = -1.0;
             uv(2) = -1.0;
-            CORE::FE::NURBS::nurbs_get_3D_funct(
+            Core::FE::Nurbs::nurbs_get_3D_funct(
                 nurbs_shape_funct, uv, knots, weights, actele->Shape());
             for (int isd = 0; isd < 3; ++isd)
             {
@@ -250,7 +251,7 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<DRT::Discreti
             {
               uv(1) += 2.0 / (numsubdivisions - 1);
 
-              CORE::FE::NURBS::nurbs_get_3D_funct(
+              Core::FE::Nurbs::nurbs_get_3D_funct(
                   nurbs_shape_funct, uv, knots, weights, actele->Shape());
               for (int isd = 0; isd < 3; ++isd)
               {
@@ -274,7 +275,7 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<DRT::Discreti
               uv(0) = 1.0;
               uv(1) = 1.0;
               uv(2) = -1.0;
-              CORE::FE::NURBS::nurbs_get_3D_funct(
+              Core::FE::Nurbs::nurbs_get_3D_funct(
                   nurbs_shape_funct, uv, knots, weights, actele->Shape());
               for (int isd = 0; isd < 3; ++isd)
               {
@@ -570,19 +571,19 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
   // try to cast discretisation to nurbs variant
   // this tells you what kind of computation of
   // samples is required
-  DRT::NURBS::NurbsDiscretization* nurbsdis =
-      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*discret_));
+  Discret::Nurbs::NurbsDiscretization* nurbsdis =
+      dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(*discret_));
 
   if (nurbsdis == nullptr) FOUR_C_THROW("Oops. Your discretization is not a NurbsDiscretization.");
 
   nurbsdis->set_state("velnp", meanvelnp_);
 
-  DRT::NURBS::NurbsDiscretization* scatranurbsdis(nullptr);
+  Discret::Nurbs::NurbsDiscretization* scatranurbsdis(nullptr);
   if (withscatra_)
   {
     nurbsdis->set_state("scanp", meanscanp_);
 
-    scatranurbsdis = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*scatradis_));
+    scatranurbsdis = dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(*scatradis_));
     if (scatranurbsdis == nullptr)
       FOUR_C_THROW("Oops. Your discretization is not a NurbsDiscretization.");
 
@@ -606,7 +607,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
   std::vector<int> nele_x_mele_x_lele(nurbsdis->return_nele_x_mele_x_lele(0));
 
   // get the knotvector itself
-  Teuchos::RCP<DRT::NURBS::Knotvector> knots = nurbsdis->GetKnotVector();
+  Teuchos::RCP<Discret::Nurbs::Knotvector> knots = nurbsdis->GetKnotVector();
 
   // get element map
   const Epetra_Map* elementmap = nurbsdis->ElementRowMap();
@@ -615,21 +616,21 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
   for (int iele = 0; iele < elementmap->NumMyElements(); ++iele)
   {
     // get element pointer
-    CORE::Elements::Element* const actele = nurbsdis->gElement(elementmap->GID(iele));
+    Core::Elements::Element* const actele = nurbsdis->gElement(elementmap->GID(iele));
 
     // want to loop all control points of the element,
     // so get the number of points
     const int numnp = actele->num_node();
 
     // get the elements control points/nodes
-    CORE::Nodes::Node** nodes = actele->Nodes();
+    Core::Nodes::Node** nodes = actele->Nodes();
 
     // acquire weights from nodes
-    CORE::LINALG::SerialDenseVector weights(numnp);
+    Core::LinAlg::SerialDenseVector weights(numnp);
 
     for (int inode = 0; inode < numnp; ++inode)
     {
-      DRT::NURBS::ControlPoint* cp = dynamic_cast<DRT::NURBS::ControlPoint*>(nodes[inode]);
+      Discret::Nurbs::ControlPoint* cp = dynamic_cast<Discret::Nurbs::ControlPoint*>(nodes[inode]);
 
       weights(inode) = cp->W();
     }
@@ -642,7 +643,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
     knots->convert_ele_gid_to_knot_ids(gid, patchid, ele_cart_id);
 
     // access elements knot span
-    std::vector<CORE::LINALG::SerialDenseVector> knots(3);
+    std::vector<Core::LinAlg::SerialDenseVector> knots(3);
     bool zero_size = (*((*nurbsdis).GetKnotVector())).GetEleKnots(knots, actele->Id());
 
     // zero sized elements have to be skipped
@@ -652,7 +653,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
     }
 
     // get shapefunctions, compute all visualisation point positions
-    CORE::LINALG::SerialDenseVector nurbs_shape_funct(numnp);
+    Core::LinAlg::SerialDenseVector nurbs_shape_funct(numnp);
 
     // extract local values from the global vectors
     std::vector<int> lm;
@@ -663,11 +664,11 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
 
     // extract local values from global vector
     std::vector<double> myvelnp(lm.size());
-    CORE::FE::ExtractMyValues(*(nurbsdis->GetState("velnp")), myvelnp, lm);
+    Core::FE::ExtractMyValues(*(nurbsdis->GetState("velnp")), myvelnp, lm);
 
     // create Matrix objects
-    CORE::LINALG::Matrix<3, 27> evelnp;
-    CORE::LINALG::Matrix<27, 1> eprenp;
+    Core::LinAlg::Matrix<3, 27> evelnp;
+    Core::LinAlg::Matrix<27, 1> eprenp;
 
     // insert velocity  into element array
     for (int i = 0; i < 27; ++i)
@@ -681,17 +682,17 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
       eprenp(i) = myvelnp[3 + fi];
     }
 
-    CORE::LINALG::Matrix<1, 27> escanp(true);
+    Core::LinAlg::Matrix<1, 27> escanp(true);
 
     //! scalar at t_(n+1) or t_(n+alpha_F)
     const int nen = 27;  // only quadratic nurbs elements are supported!!
-    std::vector<CORE::LINALG::Matrix<nen, 1>> ephinp_(numscatradofpernode_);
+    std::vector<Core::LinAlg::Matrix<nen, 1>> ephinp_(numscatradofpernode_);
 
     if (withscatra_)
     {
       // extract local values from global vector
       std::vector<double> myscanp(lm.size());
-      CORE::FE::ExtractMyValues(*(nurbsdis->GetState("scanp")), myscanp, lm);
+      Core::FE::ExtractMyValues(*(nurbsdis->GetState("scanp")), myscanp, lm);
 
       // insert data into element array (scalar field is stored at pressure dofs)
       for (int i = 0; i < 27; ++i)
@@ -701,7 +702,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
       }
 
       // get pointer to corresponding scatra element with identical global id
-      CORE::Elements::Element* const actscatraele = scatranurbsdis->gElement(gid);
+      Core::Elements::Element* const actscatraele = scatranurbsdis->gElement(gid);
       if (actscatraele == nullptr)
         FOUR_C_THROW("could not access transport element with gid %d", gid);
 
@@ -715,7 +716,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
       Teuchos::RCP<const Epetra_Vector> phinp = scatranurbsdis->GetState("phinp_for_statistics");
       if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp' for statistics");
       std::vector<double> myphinp(scatralm.size());
-      CORE::FE::ExtractMyValues(*phinp, myphinp, scatralm);
+      Core::FE::ExtractMyValues(*phinp, myphinp, scatralm);
 
       // fill all element arrays
       for (int i = 0; i < nen; ++i)
@@ -730,12 +731,12 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
 
     switch (actele->Shape())
     {
-      case CORE::FE::CellType::nurbs27:
+      case Core::FE::CellType::nurbs27:
       {
-        CORE::LINALG::Matrix<3, 1> vel;
+        Core::LinAlg::Matrix<3, 1> vel;
 
         // element local point position
-        CORE::LINALG::SerialDenseVector uv(3);
+        Core::LinAlg::SerialDenseVector uv(3);
 
         {
           // standard
@@ -763,7 +764,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
           uv(0) = 1.0;
           uv(1) = -1.0;
           uv(2) = -1.0;
-          CORE::FE::NURBS::nurbs_get_3D_funct(
+          Core::FE::Nurbs::nurbs_get_3D_funct(
               nurbs_shape_funct, uv, knots, weights, actele->Shape());
           for (int isd = 0; isd < 3; ++isd)
           {
@@ -859,7 +860,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
           {
             uv(1) += 2.0 / (numsubdivisions - 1);
 
-            CORE::FE::NURBS::nurbs_get_3D_funct(
+            Core::FE::Nurbs::nurbs_get_3D_funct(
                 nurbs_shape_funct, uv, knots, weights, actele->Shape());
             for (int isd = 0; isd < 3; ++isd)
             {
@@ -959,7 +960,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
             uv(0) = 1.0;
             uv(1) = 1.0;
             uv(2) = -1.0;
-            CORE::FE::NURBS::nurbs_get_3D_funct(
+            Core::FE::Nurbs::nurbs_get_3D_funct(
                 nurbs_shape_funct, uv, knots, weights, actele->Shape());
             for (int isd = 0; isd < 3; ++isd)
             {
@@ -1490,7 +1491,7 @@ Add results from scalar transport fields to statistics
 
 ----------------------------------------------------------------------*/
 void FLD::TurbulenceStatisticsCcy::AddScaTraResults(
-    Teuchos::RCP<DRT::Discretization> scatradis, Teuchos::RCP<Epetra_Vector> phinp)
+    Teuchos::RCP<Discret::Discretization> scatradis, Teuchos::RCP<Epetra_Vector> phinp)
 {
   if (withscatra_)
   {
@@ -1500,13 +1501,13 @@ void FLD::TurbulenceStatisticsCcy::AddScaTraResults(
       scatradis_ = scatradis;  // now we have access
 
     // we do not have to cast to a NURBSDiscretization here!
-    meanfullphinp_ = CORE::LINALG::CreateVector(*(scatradis_->dof_row_map()), true);
+    meanfullphinp_ = Core::LinAlg::CreateVector(*(scatradis_->dof_row_map()), true);
     numscatradofpernode_ = scatradis_->NumDof(scatradis_->lRowNode(0));
 
     // now we know about the number of scatra dofs and can allocate:
     int size = shellcoordinates_->size();
-    pointsumphi_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(size, numscatradofpernode_));
-    pointsumphiphi_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(size, numscatradofpernode_));
+    pointsumphi_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(size, numscatradofpernode_));
+    pointsumphiphi_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(size, numscatradofpernode_));
 
     if (discret_->Comm().MyPID() == 0)
     {

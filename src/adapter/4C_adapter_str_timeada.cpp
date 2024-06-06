@@ -26,13 +26,13 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ADAPTER::StructureTimeAda::StructureTimeAda(Teuchos::RCP<Structure> structure)
+Adapter::StructureTimeAda::StructureTimeAda(Teuchos::RCP<Structure> structure)
     : StructureWrapper(structure)
 {
-  stm_ = Teuchos::rcp_dynamic_cast<STR::TIMINT::Base>(structure_);
+  stm_ = Teuchos::rcp_dynamic_cast<STR::TimeInt::Base>(structure_);
 
   if (stm_ == Teuchos::null)
-    FOUR_C_THROW("cast from ADAPTER::Structure to STR::TIMINT::Base failed");
+    FOUR_C_THROW("cast from Adapter::Structure to STR::TimeInt::Base failed");
 
   // call the setup once if stm_ has been setup
   if (stm_->is_setup()) setup_time_ada();
@@ -40,20 +40,20 @@ ADAPTER::StructureTimeAda::StructureTimeAda(Teuchos::RCP<Structure> structure)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<ADAPTER::Structure> ADAPTER::StructureTimeAda::Create(
+Teuchos::RCP<Adapter::Structure> Adapter::StructureTimeAda::Create(
     const Teuchos::ParameterList& taflags,  //!< adaptive input flags
-    Teuchos::RCP<STR::TIMINT::Base> ti_strategy)
+    Teuchos::RCP<STR::TimeInt::Base> ti_strategy)
 {
-  auto kind = CORE::UTILS::IntegralValue<INPAR::STR::TimAdaKind>(taflags, "KIND");
+  auto kind = Core::UTILS::IntegralValue<Inpar::STR::TimAdaKind>(taflags, "KIND");
   switch (kind)
   {
-    case INPAR::STR::timada_kind_zienxie:
+    case Inpar::STR::timada_kind_zienxie:
       // Adaptive time integration with Zienkiewicz-Xie error indicator
-      return Teuchos::rcp(new ADAPTER::StructureTimeAdaZienXie(ti_strategy));
+      return Teuchos::rcp(new Adapter::StructureTimeAdaZienXie(ti_strategy));
 
-    case INPAR::STR::timada_kind_joint_explicit:
+    case Inpar::STR::timada_kind_joint_explicit:
       // Adaptive time integration using auxiliary time integrator
-      return Teuchos::rcp(new ADAPTER::StructureTimeAdaJoint(ti_strategy));
+      return Teuchos::rcp(new Adapter::StructureTimeAdaJoint(ti_strategy));
 
     default:
       // Unknown adaptive time integration
@@ -65,7 +65,7 @@ Teuchos::RCP<ADAPTER::Structure> ADAPTER::StructureTimeAda::Create(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::StructureTimeAda::Setup()
+void Adapter::StructureTimeAda::Setup()
 {
   // call the wrapper setup
   StructureWrapper::Setup();
@@ -76,10 +76,10 @@ void ADAPTER::StructureTimeAda::Setup()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::StructureTimeAda::setup_time_ada()
+void Adapter::StructureTimeAda::setup_time_ada()
 {
   const Teuchos::ParameterList& sdynparams =
-      GLOBAL::Problem::Instance()->structural_dynamic_params();
+      Global::Problem::Instance()->structural_dynamic_params();
 
   // initialize the local variables
   timeinitial_ = 0.0;
@@ -98,7 +98,7 @@ void ADAPTER::StructureTimeAda::setup_time_ada()
   sizeratiomin_ = tap.get<double>("SIZERATIOMIN");
   sizeratioscale_ = tap.get<double>("SIZERATIOSCALE");
   errctrl_ = ctrl_dis;  // PROVIDE INPUT PARAMETER
-  errnorm_ = CORE::UTILS::IntegralValue<INPAR::STR::VectorNorm>(tap, "LOCERRNORM");
+  errnorm_ = Core::UTILS::IntegralValue<Inpar::STR::VectorNorm>(tap, "LOCERRNORM");
   errtol_ = tap.get<double>("LOCERRTOL");
   errorder_ = 1;  // CHANGE THIS CONSTANT
   adaptstepmax_ = tap.get<int>("ADAPTSTEPMAX");
@@ -125,18 +125,18 @@ void ADAPTER::StructureTimeAda::setup_time_ada()
   outsizefile_ = Teuchos::null;
 
   // allocate displacement local error vector
-  locerrdisn_ = CORE::LINALG::CreateVector(*(stm_->dof_row_map()), true);
+  locerrdisn_ = Core::LinAlg::CreateVector(*(stm_->dof_row_map()), true);
 
   // enable restart for adaptive timestepping
-  const int restart = GLOBAL::Problem::Instance()->Restart();
+  const int restart = Global::Problem::Instance()->Restart();
   if (restart)
   {
     // read restart of marching time-integrator and reset initial time and step for adaptive loop
     stm_->read_restart(restart);
     timeinitial_ = stm_->TimeOld();
     timestepinitial_ = stm_->StepOld();
-    CORE::IO::DiscretizationReader ioreader(
-        stm_->discretization(), GLOBAL::Problem::Instance()->InputControlFile(), timestepinitial_);
+    Core::IO::DiscretizationReader ioreader(
+        stm_->discretization(), Global::Problem::Instance()->InputControlFile(), timestepinitial_);
     stepsizepre_ = ioreader.ReadDouble("next_delta_time");
     time_ = timeinitial_;
 
@@ -151,7 +151,7 @@ void ADAPTER::StructureTimeAda::setup_time_ada()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::StructureTimeAda::read_restart(int step)
+void Adapter::StructureTimeAda::read_restart(int step)
 {
   setup_time_ada();
   setup_auxiliar();
@@ -159,16 +159,16 @@ void ADAPTER::StructureTimeAda::read_restart(int step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int ADAPTER::StructureTimeAda::Integrate()
+int Adapter::StructureTimeAda::Integrate()
 {
   // error checking variables
-  INPAR::STR::ConvergenceStatus convergencestatus = INPAR::STR::conv_success;
+  Inpar::STR::ConvergenceStatus convergencestatus = Inpar::STR::conv_success;
 
   int myrank = stm_->discretization()->Comm().MyPID();
 
   // finalize initialization
   // (only relevant if an auxiliary time integrator is used)
-  // buih STR:TIMINT::Base should be initialized outside
+  // buih STR:TimeInt::Base should be initialized outside
   // stm_->Init();
 
   // Richardson extrapolation to no avail
@@ -213,18 +213,18 @@ int ADAPTER::StructureTimeAda::Integrate()
       PreSolve();
       convergencestatus = Solve();
 
-      if (convergencestatus != INPAR::STR::conv_success)
+      if (convergencestatus != Inpar::STR::conv_success)
       {
         // if not converged, then we have to restart the step over
         accepted = false;
 
         // get the divergence action
-        enum INPAR::STR::DivContAct div_action = stm_->DataSDyn().GetDivergenceAction();
+        enum Inpar::STR::DivContAct div_action = stm_->DataSDyn().GetDivergenceAction();
 
         convergencestatus = PerformErrorAction(div_action, stpsiznew);
       }
 
-      if (convergencestatus == INPAR::STR::conv_success)
+      if (convergencestatus == Inpar::STR::conv_success)
       {
         // get local error vector on locerrdisn_
         evaluate_local_error_dis();
@@ -322,7 +322,7 @@ int ADAPTER::StructureTimeAda::Integrate()
 
 /*----------------------------------------------------------------------*/
 /*  Modify step size to hit precisely output period */
-void ADAPTER::StructureTimeAda::size_for_output()
+void Adapter::StructureTimeAda::size_for_output()
 {
   // check output of restart data first
   if ((fabs(time_ + stepsize_) >= fabs(outresttime_)) and (outrestperiod_ != 0.0))
@@ -364,10 +364,10 @@ void ADAPTER::StructureTimeAda::size_for_output()
 
 /*----------------------------------------------------------------------*/
 /* Output action */
-void ADAPTER::StructureTimeAda::Output(bool forced_writerestart)
+void Adapter::StructureTimeAda::Output(bool forced_writerestart)
 {
-  STR::TIMINT::BaseDataIO& dataio = stm_->data_io();
-  Teuchos::RCP<CORE::IO::DiscretizationWriter> output_ptr = dataio.GetOutputPtr();
+  STR::TimeInt::BaseDataIO& dataio = stm_->data_io();
+  Teuchos::RCP<Core::IO::DiscretizationWriter> output_ptr = dataio.GetOutputPtr();
 
   StructureWrapper::Output(forced_writerestart);
   output_ptr->WriteDouble("next_delta_time", stepsize_);
@@ -375,9 +375,9 @@ void ADAPTER::StructureTimeAda::Output(bool forced_writerestart)
 
 /*----------------------------------------------------------------------*/
 /* Evaluate local error vector */
-void ADAPTER::StructureTimeAda::evaluate_local_error_dis()
+void Adapter::StructureTimeAda::evaluate_local_error_dis()
 {
-  const STR::TIMINT::Base& sti = *stm_;
+  const STR::TimeInt::Base& sti = *stm_;
   const auto& gstate = sti.data_global_state();
 
   if (MethodAdaptDis() == ada_orderequal)
@@ -399,7 +399,7 @@ void ADAPTER::StructureTimeAda::evaluate_local_error_dis()
 
 /*----------------------------------------------------------------------*/
 /* Indicate error and determine new step size */
-void ADAPTER::StructureTimeAda::indicate(bool& accepted, double& stpsiznew)
+void Adapter::StructureTimeAda::indicate(bool& accepted, double& stpsiznew)
 {
   // norm of local discretisation error vector
   const int numneglect = stm_->GetDBCMapExtractor()->CondMap()->NumGlobalElements();
@@ -421,7 +421,7 @@ void ADAPTER::StructureTimeAda::indicate(bool& accepted, double& stpsiznew)
 
 /*----------------------------------------------------------------------*/
 /* Prepare repetition of current time step */
-void ADAPTER::StructureTimeAda::reset_step()
+void Adapter::StructureTimeAda::reset_step()
 {
   outrest_ = outsys_ = outstr_ = outene_ = false;
   // set current step size
@@ -433,7 +433,7 @@ void ADAPTER::StructureTimeAda::reset_step()
 
 /*----------------------------------------------------------------------*/
 /* Indicate error and determine new step size */
-double ADAPTER::StructureTimeAda::calculate_dt(const double norm)
+double Adapter::StructureTimeAda::calculate_dt(const double norm)
 {
   // get error order
   if (MethodAdaptDis() == ada_upward)
@@ -489,32 +489,32 @@ double ADAPTER::StructureTimeAda::calculate_dt(const double norm)
 
 /*----------------------------------------------------------------------*/
 /* Calculate vector norm */
-double ADAPTER::StructureTimeAda::calculate_vector_norm(const enum INPAR::STR::VectorNorm norm,
+double Adapter::StructureTimeAda::calculate_vector_norm(const enum Inpar::STR::VectorNorm norm,
     const Teuchos::RCP<Epetra_Vector> vect, const int numneglect)
 {
   // L1 norm
-  if (norm == INPAR::STR::norm_l1)
+  if (norm == Inpar::STR::norm_l1)
   {
     double vectnorm;
     vect->Norm1(&vectnorm);
     return vectnorm;
   }
   // L2/Euclidian norm
-  else if (norm == INPAR::STR::norm_l2)
+  else if (norm == Inpar::STR::norm_l2)
   {
     double vectnorm;
     vect->Norm2(&vectnorm);
     return vectnorm;
   }
   // RMS norm
-  else if (norm == INPAR::STR::norm_rms)
+  else if (norm == Inpar::STR::norm_rms)
   {
     double vectnorm;
     vect->Norm2(&vectnorm);
     return vectnorm / sqrt((double)(vect->GlobalLength() - numneglect));
   }
   // infinity/maximum norm
-  else if (norm == INPAR::STR::norm_inf)
+  else if (norm == Inpar::STR::norm_inf)
   {
     double vectnorm;
     vect->NormInf(&vectnorm);
@@ -529,7 +529,7 @@ double ADAPTER::StructureTimeAda::calculate_vector_norm(const enum INPAR::STR::V
 
 /*----------------------------------------------------------------------*/
 /* Update output periods */
-void ADAPTER::StructureTimeAda::update_period()
+void Adapter::StructureTimeAda::update_period()
 {
   if (outrest_) outresttime_ += outrestperiod_;
   if (outsys_) outsystime_ += outsysperiod_;
@@ -540,8 +540,8 @@ void ADAPTER::StructureTimeAda::update_period()
 }
 
 /*----------------------------------------------------------------------*/
-INPAR::STR::ConvergenceStatus ADAPTER::StructureTimeAda::PerformErrorAction(
-    const INPAR::STR::DivContAct& action, double& stepsizenew)
+Inpar::STR::ConvergenceStatus Adapter::StructureTimeAda::PerformErrorAction(
+    const Inpar::STR::DivContAct& action, double& stepsizenew)
 {
   int myrank = stm_->discretization()->Comm().MyPID();
 
@@ -558,7 +558,7 @@ INPAR::STR::ConvergenceStatus ADAPTER::StructureTimeAda::PerformErrorAction(
   // + adapt_3D0Dptc_ele_err ??
   switch (action)
   {
-    case INPAR::STR::divcont_stop:
+    case Inpar::STR::divcont_stop:
       // write output
       Output();
 
@@ -566,46 +566,46 @@ INPAR::STR::ConvergenceStatus ADAPTER::StructureTimeAda::PerformErrorAction(
       FOUR_C_THROW("Nonlinear solver did not converge! ");
       break;
 
-    case INPAR::STR::divcont_halve_step:
+    case Inpar::STR::divcont_halve_step:
       if (myrank == 0)
       {
-        CORE::IO::cout << "Nonlinear solver failed to converge at time t= " << stm_->GetTimeNp()
+        Core::IO::cout << "Nonlinear solver failed to converge at time t= " << stm_->GetTimeNp()
                        << ". Divide timestep in half. "
-                       << "Old time step: " << stepsize_ << CORE::IO::endl
-                       << "New time step: " << 0.5 * stepsize_ << CORE::IO::endl
-                       << CORE::IO::endl;
+                       << "Old time step: " << stepsize_ << Core::IO::endl
+                       << "New time step: " << 0.5 * stepsize_ << Core::IO::endl
+                       << Core::IO::endl;
       }
 
       stepsizenew = 0.5 * stepsize_;
-      return INPAR::STR::conv_fail_repeat;
+      return Inpar::STR::conv_fail_repeat;
 
-    case INPAR::STR::divcont_continue:
+    case Inpar::STR::divcont_continue:
       if (myrank == 0)
       {
-        CORE::IO::cout
+        Core::IO::cout
             << "\n WARNING: We are continuing your simulation although the nonlinear solver\n"
                " did not converge in the current time step. We rely on the error estimator "
                "to \n"
                "give a good step size."
-            << CORE::IO::endl;
+            << Core::IO::endl;
       }
 
-      return INPAR::STR::conv_success;  // Do not surprise. We enforce successful
+      return Inpar::STR::conv_success;  // Do not surprise. We enforce successful
                                         // status flag to force the error estimator
                                         // to compute new step size later on.
 
-    case INPAR::STR::divcont_adapt_step:
-    case INPAR::STR::divcont_rand_adapt_step:
-    case INPAR::STR::divcont_rand_adapt_step_ele_err:
+    case Inpar::STR::divcont_adapt_step:
+    case Inpar::STR::divcont_rand_adapt_step:
+    case Inpar::STR::divcont_rand_adapt_step_ele_err:
       FOUR_C_THROW(
           "Adapt the time step is handled by the adaptive time marching integrator. Use\n"
           "DIVERCONT = continue if you want to adapt the step size.");
       break;
-    case INPAR::STR::divcont_repeat_simulation:
+    case Inpar::STR::divcont_repeat_simulation:
       FOUR_C_THROW("No use to repeat a simulation when it failed. Get a coffee instead.");
       break;
-    case INPAR::STR::divcont_adapt_penaltycontact:
-    case INPAR::STR::divcont_adapt_3D0Dptc_ele_err:
+    case Inpar::STR::divcont_adapt_penaltycontact:
+    case Inpar::STR::divcont_adapt_3D0Dptc_ele_err:
       FOUR_C_THROW(
           "DIVERCONT = adapt_penaltycontact/adapt_3D0Dptc_ele_err is yet to be implemented. "
           "Stay tune.");
@@ -614,7 +614,7 @@ INPAR::STR::ConvergenceStatus ADAPTER::StructureTimeAda::PerformErrorAction(
       FOUR_C_THROW("I don't know what to do.");
       break;
   }
-  return INPAR::STR::conv_success;  // make compiler happy
+  return Inpar::STR::conv_success;  // make compiler happy
 }
 
 FOUR_C_NAMESPACE_CLOSE

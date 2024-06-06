@@ -19,59 +19,59 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-DRT::ELEMENTS::Wall1Type DRT::ELEMENTS::Wall1Type::instance_;
+Discret::ELEMENTS::Wall1Type Discret::ELEMENTS::Wall1Type::instance_;
 
-DRT::ELEMENTS::Wall1Type& DRT::ELEMENTS::Wall1Type::Instance() { return instance_; }
+Discret::ELEMENTS::Wall1Type& Discret::ELEMENTS::Wall1Type::Instance() { return instance_; }
 
-CORE::COMM::ParObject* DRT::ELEMENTS::Wall1Type::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Discret::ELEMENTS::Wall1Type::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::Wall1* object = new DRT::ELEMENTS::Wall1(-1, -1);
+  Discret::ELEMENTS::Wall1* object = new Discret::ELEMENTS::Wall1(-1, -1);
   object->Unpack(data);
   return object;
 }
 
 
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Wall1Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Wall1Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "WALL")
   {
     if (eledistype != "NURBS4" and eledistype != "NURBS9")
     {
-      return Teuchos::rcp(new DRT::ELEMENTS::Wall1(id, owner));
+      return Teuchos::rcp(new Discret::ELEMENTS::Wall1(id, owner));
     }
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Wall1Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Wall1Type::Create(
     const int id, const int owner)
 {
-  return Teuchos::rcp(new DRT::ELEMENTS::Wall1(id, owner));
+  return Teuchos::rcp(new Discret::ELEMENTS::Wall1(id, owner));
 }
 
 
-void DRT::ELEMENTS::Wall1Type::nodal_block_information(
-    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+void Discret::ELEMENTS::Wall1Type::nodal_block_information(
+    Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 2;
   dimns = 3;
   nv = 2;
 }
 
-CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Wall1Type::ComputeNullSpace(
-    CORE::Nodes::Node& node, const double* x0, int const numdof, int const dimnsp)
+Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::Wall1Type::ComputeNullSpace(
+    Core::Nodes::Node& node, const double* x0, int const numdof, int const dimnsp)
 {
   return ComputeSolid2DNullSpace(node, x0);
 }
 
-void DRT::ELEMENTS::Wall1Type::setup_element_definition(
-    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+void Discret::ELEMENTS::Wall1Type::setup_element_definition(
+    std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
-  std::map<std::string, INPUT::LineDefinition>& defs = definitions["WALL"];
+  std::map<std::string, Input::LineDefinition>& defs = definitions["WALL"];
 
-  defs["QUAD4"] = INPUT::LineDefinition::Builder()
+  defs["QUAD4"] = Input::LineDefinition::Builder()
                       .AddIntVector("QUAD4", 4)
                       .AddNamedInt("MAT")
                       .AddNamedString("KINEM")
@@ -81,7 +81,7 @@ void DRT::ELEMENTS::Wall1Type::setup_element_definition(
                       .AddNamedIntVector("GP", 2)
                       .Build();
 
-  defs["QUAD8"] = INPUT::LineDefinition::Builder()
+  defs["QUAD8"] = Input::LineDefinition::Builder()
                       .AddIntVector("QUAD8", 8)
                       .AddNamedInt("MAT")
                       .AddNamedString("KINEM")
@@ -91,7 +91,7 @@ void DRT::ELEMENTS::Wall1Type::setup_element_definition(
                       .AddNamedIntVector("GP", 2)
                       .Build();
 
-  defs["QUAD9"] = INPUT::LineDefinition::Builder()
+  defs["QUAD9"] = Input::LineDefinition::Builder()
                       .AddIntVector("QUAD9", 9)
                       .AddNamedInt("MAT")
                       .AddNamedString("KINEM")
@@ -101,7 +101,7 @@ void DRT::ELEMENTS::Wall1Type::setup_element_definition(
                       .AddNamedIntVector("GP", 2)
                       .Build();
 
-  defs["TRI3"] = INPUT::LineDefinition::Builder()
+  defs["TRI3"] = Input::LineDefinition::Builder()
                      .AddIntVector("TRI3", 3)
                      .AddNamedInt("MAT")
                      .AddNamedString("KINEM")
@@ -111,7 +111,7 @@ void DRT::ELEMENTS::Wall1Type::setup_element_definition(
                      .AddNamedIntVector("GP", 2)
                      .Build();
 
-  defs["TRI6"] = INPUT::LineDefinition::Builder()
+  defs["TRI6"] = Input::LineDefinition::Builder()
                      .AddIntVector("TRI6", 6)
                      .AddNamedInt("MAT")
                      .AddNamedString("KINEM")
@@ -121,7 +121,7 @@ void DRT::ELEMENTS::Wall1Type::setup_element_definition(
                      .AddNamedIntVector("GP", 2)
                      .Build();
 
-  defs["NURBS4"] = INPUT::LineDefinition::Builder()
+  defs["NURBS4"] = Input::LineDefinition::Builder()
                        .AddIntVector("NURBS4", 4)
                        .AddNamedInt("MAT")
                        .AddNamedString("KINEM")
@@ -131,7 +131,7 @@ void DRT::ELEMENTS::Wall1Type::setup_element_definition(
                        .AddNamedIntVector("GP", 2)
                        .Build();
 
-  defs["NURBS9"] = INPUT::LineDefinition::Builder()
+  defs["NURBS9"] = Input::LineDefinition::Builder()
                        .AddIntVector("NURBS9", 9)
                        .AddNamedInt("MAT")
                        .AddNamedString("KINEM")
@@ -143,7 +143,7 @@ void DRT::ELEMENTS::Wall1Type::setup_element_definition(
 }
 
 
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Wall1LineType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Wall1LineType::Create(
     const int id, const int owner)
 {
   // return Teuchos::rcp( new Wall1Line( id, owner ) );
@@ -154,21 +154,21 @@ Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Wall1LineType::Create(
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mgit 01/08/|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Wall1::Wall1(int id, int owner)
+Discret::ELEMENTS::Wall1::Wall1(int id, int owner)
     : SoBase(id, owner),
       material_(0),
       thickness_(0.0),
       old_step_length_(0.0),
-      gaussrule_(CORE::FE::GaussRule2D::undefined),
+      gaussrule_(Core::FE::GaussRule2D::undefined),
       wtype_(plane_none),
       stresstype_(w1_none),
       iseas_(false),
       eastype_(eas_vague),
       easdata_(EASData()),
       structale_(false),
-      distype_(CORE::FE::CellType::dis_none)
+      distype_(Core::FE::CellType::dis_none)
 {
-  if (GLOBAL::Problem::Instance()->GetProblemType() == CORE::ProblemType::struct_ale)
+  if (Global::Problem::Instance()->GetProblemType() == Core::ProblemType::struct_ale)
     structale_ = true;
   return;
 }
@@ -176,7 +176,7 @@ DRT::ELEMENTS::Wall1::Wall1(int id, int owner)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mgit 01/08|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Wall1::Wall1(const DRT::ELEMENTS::Wall1& old)
+Discret::ELEMENTS::Wall1::Wall1(const Discret::ELEMENTS::Wall1& old)
     : SoBase(old),
       material_(old.material_),
       thickness_(old.thickness_),
@@ -199,9 +199,9 @@ DRT::ELEMENTS::Wall1::Wall1(const DRT::ELEMENTS::Wall1& old)
  |  Deep copy this instance of Wall1 and return pointer to it (public) |
  |                                                            mgit 03/07 |
  *----------------------------------------------------------------------*/
-CORE::Elements::Element* DRT::ELEMENTS::Wall1::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::Wall1::Clone() const
 {
-  DRT::ELEMENTS::Wall1* newelement = new DRT::ELEMENTS::Wall1(*this);
+  Discret::ELEMENTS::Wall1* newelement = new Discret::ELEMENTS::Wall1(*this);
   return newelement;
 }
 
@@ -209,16 +209,16 @@ CORE::Elements::Element* DRT::ELEMENTS::Wall1::Clone() const
  |                                                             (public) |
  |                                                          mgit 04/07 |
  *----------------------------------------------------------------------*/
-CORE::FE::CellType DRT::ELEMENTS::Wall1::Shape() const { return distype_; }
+Core::FE::CellType Discret::ELEMENTS::Wall1::Shape() const { return distype_; }
 
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  |                                                            mgit 03/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1::Pack(CORE::COMM::PackBuffer& data) const
+void Discret::ELEMENTS::Wall1::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -257,11 +257,11 @@ void DRT::ELEMENTS::Wall1::Pack(CORE::COMM::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                            mgit 03/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Wall1::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -286,7 +286,7 @@ void DRT::ELEMENTS::Wall1::Unpack(const std::vector<char>& data)
   // structale_
   structale_ = ExtractInt(position, data);
   // distype_
-  distype_ = static_cast<CORE::FE::CellType>(ExtractInt(position, data));
+  distype_ = static_cast<Core::FE::CellType>(ExtractInt(position, data));
   // line search
   ExtractfromPack(position, data, old_step_length_);
   if (position != data.size())
@@ -299,16 +299,17 @@ void DRT::ELEMENTS::Wall1::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                             mgit 07/07|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Wall1::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Wall1::Lines()
 {
-  return CORE::COMM::ElementBoundaryFactory<Wall1Line, Wall1>(CORE::COMM::buildLines, *this);
+  return Core::Communication::ElementBoundaryFactory<Wall1Line, Wall1>(
+      Core::Communication::buildLines, *this);
 }
 
 
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                          mgit 03/07|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Wall1::Surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Wall1::Surfaces()
 {
   return {Teuchos::rcpFromRef(*this)};
 }
@@ -316,8 +317,8 @@ std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Wall1::Surface
 /*-----------------------------------------------------------------------------*
 | Map plane Green-Lagrange strains to 3d                       mayr.mt 05/2014 |
 *-----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1::green_lagrange_plane3d(
-    const CORE::LINALG::SerialDenseVector& glplane, CORE::LINALG::Matrix<6, 1>& gl3d)
+void Discret::ELEMENTS::Wall1::green_lagrange_plane3d(
+    const Core::LinAlg::SerialDenseVector& glplane, Core::LinAlg::Matrix<6, 1>& gl3d)
 {
   gl3d(0) = glplane(0);               // E_{11}
   gl3d(1) = glplane(1);               // E_{22}

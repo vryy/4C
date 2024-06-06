@@ -35,27 +35,27 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | forward declarations                                      dano 02/11 |
  *----------------------------------------------------------------------*/
-namespace DRT
+namespace Discret
 {
   class Discretization;
   class ResultTest;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationWriter;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class Solver;
   class SparseMatrix;
   class BlockSparseMatrixBase;
   class MapExtractor;
   class MultiMapExtractor;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace CORE::Conditions
+namespace Core::Conditions
 {
   class LocsysManager;
 }
@@ -67,7 +67,7 @@ namespace CONTACT
   class ParamsInterface;
 }  // namespace CONTACT
 
-namespace ADAPTER
+namespace Adapter
 {
   /// general thermal field interface
   /*!
@@ -141,13 +141,13 @@ namespace ADAPTER
     virtual const Epetra_Map& DomainMap() = 0;
 
     /// direct access to system matrix
-    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() = 0;
+    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() = 0;
 
     /// direct access to discretization
-    virtual Teuchos::RCP<DRT::Discretization> discretization() = 0;
+    virtual Teuchos::RCP<Discret::Discretization> discretization() = 0;
 
     /// Return MapExtractor for Dirichlet boundary conditions
-    virtual Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor() = 0;
 
     //@}
 
@@ -205,7 +205,7 @@ namespace ADAPTER
     virtual void PrintStep() = 0;
 
     //! Access to output object
-    virtual Teuchos::RCP<CORE::IO::DiscretizationWriter> DiscWriter() = 0;
+    virtual Teuchos::RCP<Core::IO::DiscretizationWriter> DiscWriter() = 0;
 
     /// prepare output
     virtual void prepare_output() = 0;
@@ -243,10 +243,10 @@ namespace ADAPTER
      *
      * @return status of the solve, which can be used for adaptivity
      */
-    virtual INPAR::THR::ConvergenceStatus Solve() = 0;
+    virtual Inpar::THR::ConvergenceStatus Solve() = 0;
 
     /// get the linear solver object used for this field
-    virtual Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() = 0;
+    virtual Teuchos::RCP<Core::LinAlg::Solver> LinearSolver() = 0;
 
     //@}
 
@@ -268,7 +268,7 @@ namespace ADAPTER
     virtual void prepare_partition_step() = 0;
 
     /// create result test for encapulated thermo algorithm
-    virtual Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() = 0;
+    virtual Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() = 0;
   };
 
 
@@ -278,7 +278,7 @@ namespace ADAPTER
    public:
     /// constructor
     explicit ThermoBaseAlgorithm(
-        const Teuchos::ParameterList& prbdyn, Teuchos::RCP<DRT::Discretization> actdis);
+        const Teuchos::ParameterList& prbdyn, Teuchos::RCP<Discret::Discretization> actdis);
 
     /// virtual destructor to support polymorph destruction
     virtual ~ThermoBaseAlgorithm() = default;
@@ -293,18 +293,18 @@ namespace ADAPTER
    private:
     /// setup thermo algorithm
     void setup_thermo(
-        const Teuchos::ParameterList& prbdyn, Teuchos::RCP<DRT::Discretization> actdis);
+        const Teuchos::ParameterList& prbdyn, Teuchos::RCP<Discret::Discretization> actdis);
 
     /// setup thermo algorithm of THR::TimIntImpl type
-    void setup_tim_int(const Teuchos::ParameterList& prbdyn, INPAR::THR::DynamicType timinttype,
-        Teuchos::RCP<DRT::Discretization> actdis);
+    void setup_tim_int(const Teuchos::ParameterList& prbdyn, Inpar::THR::DynamicType timinttype,
+        Teuchos::RCP<Discret::Discretization> actdis);
 
     /// thermal field solver
     Teuchos::RCP<Thermo> thermo_;
 
   };  // class ThermoBaseAlgorithm
 
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 
 /*----------------------------------------------------------------------*/

@@ -29,9 +29,9 @@ MAT 0   MAT_ElastHyper   NUMMAT 2 MATIDS 1 2 DENS 0
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration due to avoid header definition
-namespace MAT
+namespace Mat
 {
-  namespace ELASTIC
+  namespace Elastic
   {
     class Summand;
   }
@@ -49,22 +49,22 @@ namespace MAT
     /// \author rausch,tk,bborn
     /// \date 05/09
 
-    class ElastHyper : public CORE::MAT::PAR::Parameter
+    class ElastHyper : public Core::Mat::PAR::Parameter
     {
-      friend class MAT::ElastHyper;
+      friend class Mat::ElastHyper;
 
      public:
       /// standard constructor
       ///
       /// This constructor recursively calls the constructors of the
       /// parameter sets of the hyperelastic summands.
-      explicit ElastHyper(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
+      explicit ElastHyper(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
 
       /// @name material parameters
       //@{
 
       //       /// provide access to material/summand by its ID
-      //       Teuchos::RCP<const MAT::ELASTIC::Summand> MaterialById(
+      //       Teuchos::RCP<const Mat::Elastic::Summand> MaterialById(
       //         const int id  ///< ID to look for in collection of summands
       //         ) const;
 
@@ -81,7 +81,7 @@ namespace MAT
       const int polyconvex_;
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       //@}
 
@@ -89,14 +89,14 @@ namespace MAT
 
   }  // namespace PAR
 
-  class ElastHyperType : public CORE::COMM::ParObjectType
+  class ElastHyperType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "ElastHyperType"; }
 
     static ElastHyperType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ElastHyperType instance_;
@@ -113,7 +113,7 @@ namespace MAT
   ///\f[
   ///  \Psi(\boldsymbol{C}) = \sum_i \Psi_i(\boldsymbol{C})
   ///\f]
-  /// in which the individual \f$\Psi_i\f$ is implemented as #MAT::ELASTIC::Summand.
+  /// in which the individual \f$\Psi_i\f$ is implemented as #Mat::Elastic::Summand.
   ///
   /// Quite often the right Cauchy-Green 2-tensor \f$\boldsymbol{C}\f$
   /// is replaced by its various invariant forms as argument.
@@ -138,13 +138,13 @@ namespace MAT
   class ElastHyper : public So3Material
   {
    public:
-    friend class MAT::PAR::ElastHyper;
+    friend class Mat::PAR::ElastHyper;
 
     /// construct empty material object
     ElastHyper();
 
     /// construct the material object given material parameters
-    explicit ElastHyper(MAT::PAR::ElastHyper* params);
+    explicit ElastHyper(Mat::PAR::ElastHyper* params);
 
     ///@name Packing and Unpacking
     //@{
@@ -166,7 +166,7 @@ namespace MAT
     /// identify the exact class on the receiving processor.
     ///
     /// \param data (in/out) : char vector to store class information
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /// \brief Unpack data from a char vector into this class
     ///
@@ -183,20 +183,20 @@ namespace MAT
     //@}
 
     /// material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_elasthyper;
+      return Core::Materials::m_elasthyper;
     }
 
     /// check if element kinematics and material kinematics are compatible
-    void ValidKinematics(INPAR::STR::KinemType kinem) override
+    void ValidKinematics(Inpar::STR::KinemType kinem) override
     {
-      if (kinem != INPAR::STR::KinemType::nonlinearTotLag)
+      if (kinem != Inpar::STR::KinemType::nonlinearTotLag)
         FOUR_C_THROW("element and material kinematics are not compatible");
     }
 
     /// return copy of this material object
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new ElastHyper(*this));
     }
@@ -222,7 +222,7 @@ namespace MAT
     virtual double GetYoung();
 
     /// evaluate strain energy function
-    void StrainEnergy(const CORE::LINALG::Matrix<6, 1>& glstrain,  ///< Green-Lagrange strain
+    void StrainEnergy(const Core::LinAlg::Matrix<6, 1>& glstrain,  ///< Green-Lagrange strain
         double& psi,                                               ///< Strain energy function
         int gp,                                                    ///< Gauss point
         int eleGID                                                 ///< Element GID
@@ -239,20 +239,20 @@ namespace MAT
      * \param gp(in) : Gauss point
      * \param eleGID(in) : Element GID
      */
-    void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
-        const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-        CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, int gp,
+    void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+        const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+        Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, int gp,
         int eleGID) override;
 
-    void evaluate_cauchy_n_dir_and_derivatives(const CORE::LINALG::Matrix<3, 3>& defgrd,
-        const CORE::LINALG::Matrix<3, 1>& n, const CORE::LINALG::Matrix<3, 1>& dir,
-        double& cauchy_n_dir, CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dn,
-        CORE::LINALG::Matrix<3, 1>* d_cauchyndir_ddir, CORE::LINALG::Matrix<9, 1>* d_cauchyndir_dF,
-        CORE::LINALG::Matrix<9, 9>* d2_cauchyndir_dF2,
-        CORE::LINALG::Matrix<9, 3>* d2_cauchyndir_dF_dn,
-        CORE::LINALG::Matrix<9, 3>* d2_cauchyndir_dF_ddir, int gp, int eleGID,
+    void evaluate_cauchy_n_dir_and_derivatives(const Core::LinAlg::Matrix<3, 3>& defgrd,
+        const Core::LinAlg::Matrix<3, 1>& n, const Core::LinAlg::Matrix<3, 1>& dir,
+        double& cauchy_n_dir, Core::LinAlg::Matrix<3, 1>* d_cauchyndir_dn,
+        Core::LinAlg::Matrix<3, 1>* d_cauchyndir_ddir, Core::LinAlg::Matrix<9, 1>* d_cauchyndir_dF,
+        Core::LinAlg::Matrix<9, 9>* d2_cauchyndir_dF2,
+        Core::LinAlg::Matrix<9, 3>* d2_cauchyndir_dF_dn,
+        Core::LinAlg::Matrix<9, 3>* d2_cauchyndir_dF_ddir, int gp, int eleGID,
         const double* concentration, const double* temp, double* d_cauchyndir_dT,
-        CORE::LINALG::Matrix<9, 1>* d2_cauchyndir_dF_dT) override;
+        Core::LinAlg::Matrix<9, 1>* d2_cauchyndir_dF_dT) override;
 
     /**
      * \brief The derivatives of the strain energy function w.r.t. the principle invariants are
@@ -266,9 +266,9 @@ namespace MAT
      * \param dddPIII(in,out) : 3rd derivative of strain energy function w.r.t. principle invariants
      * \param temp(in) : temperature
      */
-    virtual void evaluate_cauchy_derivs(const CORE::LINALG::Matrix<3, 1>& prinv, int gp, int eleGID,
-        CORE::LINALG::Matrix<3, 1>& dPI, CORE::LINALG::Matrix<6, 1>& ddPII,
-        CORE::LINALG::Matrix<10, 1>& dddPIII, const double* temp);
+    virtual void evaluate_cauchy_derivs(const Core::LinAlg::Matrix<3, 1>& prinv, int gp, int eleGID,
+        Core::LinAlg::Matrix<3, 1>& dPI, Core::LinAlg::Matrix<6, 1>& ddPII,
+        Core::LinAlg::Matrix<10, 1>& dddPIII, const double* temp);
 
     /**
      * \brief Evaluate the thermal dependency of the linearizations of the cauchy stress, to be
@@ -297,17 +297,17 @@ namespace MAT
               w.r.t. temperature and deformation gradient (\f[ \frac{\mathrm{d}^2 \mathbf{\sigma}
               \cdot \mathbf{n} \cdot \mathbf{t}} {\mathrm{d} \mathbf{F} \mathrm{d} T } \f])
      */
-    virtual void evaluate_cauchy_temp_deriv(const CORE::LINALG::Matrix<3, 1>& prinv,
+    virtual void evaluate_cauchy_temp_deriv(const Core::LinAlg::Matrix<3, 1>& prinv,
         const double ndt, const double bdndt, const double ibdndt, const double* temp,
-        double* DsntDT, const CORE::LINALG::Matrix<9, 1>& iFTV,
-        const CORE::LINALG::Matrix<9, 1>& DbdndtDFV, const CORE::LINALG::Matrix<9, 1>& DibdndtDFV,
-        const CORE::LINALG::Matrix<9, 1>& DI1DF, const CORE::LINALG::Matrix<9, 1>& DI2DF,
-        const CORE::LINALG::Matrix<9, 1>& DI3DF, CORE::LINALG::Matrix<9, 1>* D2sntDFDT)
+        double* DsntDT, const Core::LinAlg::Matrix<9, 1>& iFTV,
+        const Core::LinAlg::Matrix<9, 1>& DbdndtDFV, const Core::LinAlg::Matrix<9, 1>& DibdndtDFV,
+        const Core::LinAlg::Matrix<9, 1>& DI1DF, const Core::LinAlg::Matrix<9, 1>& DI2DF,
+        const Core::LinAlg::Matrix<9, 1>& DI3DF, Core::LinAlg::Matrix<9, 1>* D2sntDFDT)
     {
     }
 
     /// setup
-    void Setup(int numgp, INPUT::LineDefinition* linedef) override;
+    void Setup(int numgp, Input::LineDefinition* linedef) override;
 
     /*!
      * Post setup routine that is executed after the input. This class will forward the call to all
@@ -331,20 +331,20 @@ namespace MAT
     virtual bool AnisotropicModified() const { return summandProperties_.anisomod; }
 
     /// get fiber vectors
-    virtual void GetFiberVecs(std::vector<CORE::LINALG::Matrix<3, 1>>& fibervecs);
+    virtual void GetFiberVecs(std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs);
 
     /// evaluate fiber directions from locsys and alignment angle, pull back
     virtual void EvaluateFiberVecs(double newgamma,  ///< new angle
-        const CORE::LINALG::Matrix<3, 3>& locsys,    ///< local coordinate system
-        const CORE::LINALG::Matrix<3, 3>& defgrd     ///< deformation gradient
+        const Core::LinAlg::Matrix<3, 3>& locsys,    ///< local coordinate system
+        const Core::LinAlg::Matrix<3, 3>& defgrd     ///< deformation gradient
     );
 
     /// Return potential summand pointer for the given material type
-    Teuchos::RCP<const MAT::ELASTIC::Summand> GetPotSummandPtr(
-        const CORE::Materials::MaterialType& materialtype) const;
+    Teuchos::RCP<const Mat::Elastic::Summand> GetPotSummandPtr(
+        const Core::Materials::MaterialType& materialtype) const;
 
     /// Return quick accessible material parameter data
-    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
     /// Return names of visualization data
     void VisNames(std::map<std::string, int>& names) override;
@@ -368,16 +368,16 @@ namespace MAT
     //@}
 
     /// my material parameters
-    MAT::PAR::ElastHyper* params_;
+    Mat::PAR::ElastHyper* params_;
 
     /// map to materials/potential summands
-    std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>> potsum_;
+    std::vector<Teuchos::RCP<Mat::Elastic::Summand>> potsum_;
 
     /// Holder of anisotropy
-    MAT::Anisotropy anisotropy_;
+    Mat::Anisotropy anisotropy_;
   };
 
-}  // namespace MAT
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

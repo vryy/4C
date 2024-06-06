@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
     namespace StatusTest
     {
@@ -36,7 +36,7 @@ namespace NOX
       {
        public:
         //! constructor
-        ActiveSet(const NOX::NLN::StatusTest::QuantityType& qtype, const int& max_cycle_size);
+        ActiveSet(const NOX::Nln::StatusTest::QuantityType& qtype, const int& max_cycle_size);
 
         ::NOX::StatusTest::StatusType checkStatus(
             const ::NOX::Solver::Generic& problem, ::NOX::StatusTest::CheckType checkType) override;
@@ -48,7 +48,7 @@ namespace NOX
 
        private:
         //! current quantity type
-        NOX::NLN::StatusTest::QuantityType qtype_;
+        NOX::Nln::StatusTest::QuantityType qtype_;
 
         //! status of the active set test
         ::NOX::StatusTest::StatusType status_;
@@ -65,7 +65,7 @@ namespace NOX
         std::deque<Teuchos::RCP<const Epetra_Map>> cycling_maps_;
       };  // class ActiveSet
     }     // namespace StatusTest
-  }       // namespace NLN
+  }       // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

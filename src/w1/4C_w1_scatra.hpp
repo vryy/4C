@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   // forward declarations
   class Discretization;
@@ -32,15 +32,15 @@ namespace DRT
 
       static Wall1ScatraType& Instance();
 
-      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
       void setup_element_definition(
-          std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+          std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
           override;
 
      private:
@@ -65,7 +65,7 @@ namespace DRT
       ///
       /// The Clone() method is used from the virtual base class Element in cases
       /// where the type of the derived class is unknown and a copy-ctor is needed
-      CORE::Elements::Element* Clone() const override;
+      Core::Elements::Element* Clone() const override;
 
       /// Return unique ParObject id
       ///
@@ -79,7 +79,7 @@ namespace DRT
       /// Pack this class so it can be communicated
       ///
       /// \ref Pack and \ref Unpack are used to communicate this element
-      void Pack(CORE::COMM::PackBuffer& data) const override;
+      void Pack(Core::Communication::PackBuffer& data) const override;
 
       /// Unpack data from a char vector into this class
       ///
@@ -89,7 +89,7 @@ namespace DRT
       //@}
 
       virtual int NumDofPerNode(
-          const unsigned nds, const CORE::Nodes::Node& node, const std::string disname) const
+          const unsigned nds, const Core::Nodes::Node& node, const std::string disname) const
       {
         if (nds != 0) return 1;
         return Wall1::NumDofPerNode(node);
@@ -98,7 +98,7 @@ namespace DRT
       /// Print this element
       void Print(std::ostream& os) const override;
 
-      CORE::Elements::ElementType& ElementType() const override
+      Core::Elements::ElementType& ElementType() const override
       {
         return Wall1ScatraType::Instance();
       }
@@ -110,7 +110,7 @@ namespace DRT
 
       /// Read input for this element
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          INPUT::LineDefinition* linedef) override;
+          Input::LineDefinition* linedef) override;
 
       //@}
 
@@ -120,8 +120,8 @@ namespace DRT
       void pre_evaluate(
           Teuchos::ParameterList&
               params,  ///< ParameterList for communication between control routine and elements
-          DRT::Discretization& discretization,        ///< pointer to discretization for de-assembly
-          CORE::Elements::Element::LocationArray& la  ///< location array for de-assembly
+          Discret::Discretization& discretization,    ///< pointer to discretization for de-assembly
+          Core::Elements::Element::LocationArray& la  ///< location array for de-assembly
       );
 
       /// Evaluate an element
@@ -132,25 +132,25 @@ namespace DRT
       int Evaluate(
           Teuchos::ParameterList&
               params,  ///< ParameterList for communication between control routine and elements
-          DRT::Discretization& discretization,  ///< pointer to discretization for de-assembly
-          CORE::Elements::Element::LocationArray& la,  ///< location array for de-assembly
-          CORE::LINALG::SerialDenseMatrix&
+          Discret::Discretization& discretization,  ///< pointer to discretization for de-assembly
+          Core::Elements::Element::LocationArray& la,  ///< location array for de-assembly
+          Core::LinAlg::SerialDenseMatrix&
               elemat1,  ///< (stiffness-)matrix to be filled by element.
-          CORE::LINALG::SerialDenseMatrix& elemat2,  ///< (mass-)matrix to be filled by element.
-          CORE::LINALG::SerialDenseVector&
+          Core::LinAlg::SerialDenseMatrix& elemat2,  ///< (mass-)matrix to be filled by element.
+          Core::LinAlg::SerialDenseVector&
               elevec1,  ///< (internal force-)vector to be filled by element
-          CORE::LINALG::SerialDenseVector& elevec2,  ///< vector to be filled by element
-          CORE::LINALG::SerialDenseVector& elevec3   ///< vector to be filled by element
+          Core::LinAlg::SerialDenseVector& elevec2,  ///< vector to be filled by element
+          Core::LinAlg::SerialDenseVector& elevec3   ///< vector to be filled by element
           ) override;
 
       /// @name params
-      /// return SCATRA::ImplType
-      const INPAR::SCATRA::ImplType& ImplType() const { return impltype_; };
+      /// return ScaTra::ImplType
+      const Inpar::ScaTra::ImplType& ImplType() const { return impltype_; };
 
      private:
       //@{
       //! scalar transport implementation type (physics)
-      INPAR::SCATRA::ImplType impltype_;
+      Inpar::ScaTra::ImplType impltype_;
       //@}
 
      protected:
@@ -160,21 +160,21 @@ namespace DRT
       int my_evaluate(
           Teuchos::ParameterList&
               params,  ///< ParameterList for communication between control routine and elements
-          DRT::Discretization& discretization,  ///< pointer to discretization for de-assembly
-          CORE::Elements::Element::LocationArray& la,  ///< location array for de-assembly
-          CORE::LINALG::SerialDenseMatrix&
+          Discret::Discretization& discretization,  ///< pointer to discretization for de-assembly
+          Core::Elements::Element::LocationArray& la,  ///< location array for de-assembly
+          Core::LinAlg::SerialDenseMatrix&
               elemat1,  ///< (stiffness-)matrix to be filled by element.
-          CORE::LINALG::SerialDenseMatrix& elemat2,  ///< (mass-)matrix to be filled by element.
-          CORE::LINALG::SerialDenseVector&
+          Core::LinAlg::SerialDenseMatrix& elemat2,  ///< (mass-)matrix to be filled by element.
+          Core::LinAlg::SerialDenseVector&
               elevec1,  ///< (internal force-)vector to be filled by element
-          CORE::LINALG::SerialDenseVector& elevec2,  ///< vector to be filled by element
-          CORE::LINALG::SerialDenseVector& elevec3   ///< vector to be filled by element
+          Core::LinAlg::SerialDenseVector& elevec2,  ///< vector to be filled by element
+          Core::LinAlg::SerialDenseVector& elevec3   ///< vector to be filled by element
       );
     };
 
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 
 FOUR_C_NAMESPACE_CLOSE

@@ -30,13 +30,13 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::GEO
+namespace Core::Geo
 {
-  namespace CUT
+  namespace Cut
   {
     class Point;
 
-    namespace IMPL
+    namespace Impl
     {
       typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS,
           boost::property<boost::vertex_name_t, Point*,
@@ -194,9 +194,9 @@ namespace CORE::GEO
 
       void find_cycles(graph_t& g, plain_cycle_set& base_cycles);
 
-    }  // namespace IMPL
-  }    // namespace CUT
-}  // namespace CORE::GEO
+    }  // namespace Impl
+  }    // namespace Cut
+}  // namespace Core::Geo
 
 FOUR_C_NAMESPACE_CLOSE
 

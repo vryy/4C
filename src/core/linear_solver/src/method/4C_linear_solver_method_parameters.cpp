@@ -22,8 +22,8 @@ FOUR_C_NAMESPACE_OPEN
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 
-void CORE::LINEAR_SOLVER::Parameters::compute_solver_parameters(
-    DRT::Discretization& dis, Teuchos::ParameterList& solverlist)
+void Core::LinearSolver::Parameters::compute_solver_parameters(
+    Discret::Discretization& dis, Teuchos::ParameterList& solverlist)
 {
   Teuchos::RCP<Epetra_Map> nullspaceMap =
       solverlist.get<Teuchos::RCP<Epetra_Map>>("null space: map", Teuchos::null);
@@ -38,7 +38,7 @@ void CORE::LINEAR_SOLVER::Parameters::compute_solver_parameters(
     if (nullspaceMap == Teuchos::null and dis.NumMyRowNodes() > 0)
     {
       // no map given, just grab the block information on the first element that appears
-      CORE::Elements::Element* dwele = dis.lRowElement(0);
+      Core::Elements::Element* dwele = dis.lRowElement(0);
       dwele->ElementType().nodal_block_information(dwele, numdf, dimns, nv, np);
     }
     else
@@ -46,14 +46,14 @@ void CORE::LINEAR_SOLVER::Parameters::compute_solver_parameters(
       // if a map is given, grab the block information of the first element in that map
       for (int i = 0; i < dis.NumMyRowNodes(); ++i)
       {
-        CORE::Nodes::Node* actnode = dis.lRowNode(i);
+        Core::Nodes::Node* actnode = dis.lRowNode(i);
         std::vector<int> dofs = dis.Dof(0, actnode);
 
         const int localIndex = nullspaceMap->LID(dofs[0]);
 
         if (localIndex == -1) continue;
 
-        CORE::Elements::Element* dwele = dis.lRowElement(localIndex);
+        Core::Elements::Element* dwele = dis.lRowElement(localIndex);
         actnode->Elements()[0]->ElementType().nodal_block_information(dwele, numdf, dimns, nv, np);
         break;
       }
@@ -95,7 +95,7 @@ void CORE::LINEAR_SOLVER::Parameters::compute_solver_parameters(
       nullspaceMap = Teuchos::rcp(new Epetra_Map(*dis.dof_row_map()));
     }
 
-    auto nullspace = DRT::ComputeNullSpace(dis, numdf, dimns, nullspaceMap);
+    auto nullspace = Discret::ComputeNullSpace(dis, numdf, dimns, nullspaceMap);
 
     solverlist.set<Teuchos::RCP<Epetra_MultiVector>>("nullspace", nullspace);
     solverlist.set("null space: vectors", nullspace->Values());
@@ -105,7 +105,7 @@ void CORE::LINEAR_SOLVER::Parameters::compute_solver_parameters(
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void CORE::LINEAR_SOLVER::Parameters::FixNullSpace(std::string field, const Epetra_Map& oldmap,
+void Core::LinearSolver::Parameters::FixNullSpace(std::string field, const Epetra_Map& oldmap,
     const Epetra_Map& newmap, Teuchos::ParameterList& solveparams)
 {
   if (!oldmap.Comm().MyPID()) printf("Fixing %s Nullspace\n", field.c_str());
@@ -167,20 +167,20 @@ void CORE::LINEAR_SOLVER::Parameters::FixNullSpace(std::string field, const Epet
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 Teuchos::RCP<Xpetra::MultiVector<Scalar, LocalOrdinal, GlobalOrdinal, Node>>
-CORE::LINEAR_SOLVER::Parameters::extract_nullspace_from_parameterlist(
+Core::LinearSolver::Parameters::extract_nullspace_from_parameterlist(
     const Teuchos::RCP<const Xpetra::Map<LocalOrdinal, GlobalOrdinal, Node>>& row_map,
     Teuchos::ParameterList& list)
 {
   if (!list.isParameter("null space: dimension"))
     FOUR_C_THROW(
-        "CORE::LINEAR_SOLVER::Parameters::extract_nullspace_from_parameterlist: Multigrid "
+        "Core::LinearSolver::Parameters::extract_nullspace_from_parameterlist: Multigrid "
         "parameter "
         "'null space: dimension' missing  in solver parameter list.");
 
   const int nullspace_dimension = list.get<int>("null space: dimension");
   if (nullspace_dimension < 1)
     FOUR_C_THROW(
-        "CORE::LINEAR_SOLVER::Parameters::extract_nullspace_from_parameterlist: Multigrid "
+        "Core::LinearSolver::Parameters::extract_nullspace_from_parameterlist: Multigrid "
         "parameter "
         "'null space: dimension' wrong. It has to be > 0.");
 
@@ -188,7 +188,7 @@ CORE::LINEAR_SOLVER::Parameters::extract_nullspace_from_parameterlist(
       list.get<Teuchos::RCP<Epetra_MultiVector>>("nullspace", Teuchos::null);
   if (nullspace_data.is_null())
     FOUR_C_THROW(
-        "CORE::LINEAR_SOLVER::Parameters::extract_nullspace_from_parameterlist: Nullspace data is "
+        "Core::LinearSolver::Parameters::extract_nullspace_from_parameterlist: Nullspace data is "
         "null.");
 
   Teuchos::RCP<Xpetra::MultiVector<Scalar, LocalOrdinal, GlobalOrdinal, Node>> nullspace =

@@ -53,7 +53,7 @@
 // Default: 3
 
 #define mygaussruleeb \
-  CORE::FE::GaussRule1D::line_4point  // define gauss rule; intrule_line_1point -
+  Core::FE::GaussRule1D::line_4point  // define gauss rule; intrule_line_1point -
                                       // intrule_line_10point
                                       // is implemented
 // Default: 4
@@ -97,32 +97,32 @@ FOUR_C_THROW(Flag INEXTENSIBLE only possible in combination with flag ANS_BEAM3E
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT::ELEMENTS
+namespace Discret::ELEMENTS
 {
-  class Beam3ebType : public CORE::Elements::ElementType
+  class Beam3ebType : public Core::Elements::ElementType
   {
    public:
     std::string Name() const override { return "Beam3ebType"; }
 
     static Beam3ebType& Instance();
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
-    Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+    Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
         const std::string eledistype, const int id, const int owner) override;
 
-    Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+    Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-    int Initialize(DRT::Discretization& dis) override;
+    int Initialize(Discret::Discretization& dis) override;
 
     void nodal_block_information(
-        CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+        Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-    CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-        CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
+    Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+        Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
     void setup_element_definition(
-        std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions) override;
+        std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions) override;
 
    private:
     static Beam3ebType instance_;
@@ -169,10 +169,10 @@ namespace DRT::ELEMENTS
     where the type of the derived class is unknown and a copy-ctor is needed
   .
     */
-    CORE::Elements::Element* Clone() const override;
+    Core::Elements::Element* Clone() const override;
 
     //! \brief Get shape type of element
-    CORE::FE::CellType Shape() const override;
+    Core::FE::CellType Shape() const override;
 
     /*!
     \brief Return unique ParObject id
@@ -188,7 +188,7 @@ namespace DRT::ELEMENTS
     \ref Pack and \ref Unpack are used to communicate this element
 
     */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class
@@ -198,7 +198,7 @@ namespace DRT::ELEMENTS
     */
     void Unpack(const std::vector<char>& data) override;
 
-    CORE::Elements::ElementType& ElementType() const override { return Beam3ebType::Instance(); }
+    Core::Elements::ElementType& ElementType() const override { return Beam3ebType::Instance(); }
 
     //@}
 
@@ -209,7 +209,7 @@ namespace DRT::ELEMENTS
     inline int NumCenterlineNodes() const override { return 2; }
 
     //! \brief find out whether given node is used for centerline interpolation
-    inline bool IsCenterlineNode(const CORE::Nodes::Node& node) const override { return true; }
+    inline bool IsCenterlineNode(const Core::Nodes::Node& node) const override { return true; }
 
     //! \brief Get jacobian this element
     const double& get_jacobi() const { return jacobi_; }
@@ -220,7 +220,7 @@ namespace DRT::ELEMENTS
     /** \brief get unit tangent vector in reference configuration at i-th node of beam element
      * (element-internal numbering)
      */
-    inline void GetRefTangentAtNode(CORE::LINALG::Matrix<3, 1>& Tref_i, const int& i) const override
+    inline void GetRefTangentAtNode(Core::LinAlg::Matrix<3, 1>& Tref_i, const int& i) const override
     {
       Tref_i = Tref()[i];
     }
@@ -266,15 +266,15 @@ namespace DRT::ELEMENTS
     }
 
     //! \brief get centerline position at xi \in [-1,1] (element parameter space)
-    void GetPosAtXi(CORE::LINALG::Matrix<3, 1>& pos, const double& xi,
+    void GetPosAtXi(Core::LinAlg::Matrix<3, 1>& pos, const double& xi,
         const std::vector<double>& disp) const override;
 
     //! \brief get triad at xi \in [-1,1] (element parameter space)
-    void GetTriadAtXi(CORE::LINALG::Matrix<3, 3>& triad, const double& xi,
+    void GetTriadAtXi(Core::LinAlg::Matrix<3, 3>& triad, const double& xi,
         const std::vector<double>& disp) const override;
 
     //! \brief Get axial strain at xi for given nodal displacements
-    double GetAxialStrain(double& xi, const CORE::LINALG::Matrix<12, 1>& disp_totlag) const;
+    double GetAxialStrain(double& xi, const Core::LinAlg::Matrix<12, 1>& disp_totlag) const;
 
     //! get internal (elastic) energy of element
     double GetInternalEnergy() const override { return eint_; };
@@ -283,10 +283,10 @@ namespace DRT::ELEMENTS
     double GetKineticEnergy() const override { return ekin_; };
 
     //! \brief Get vector of Teuchos::RCPs to the lines of this element
-    std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
+    std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
 
     //! \brief Get number of degrees of freedom of a single node
-    int NumDofPerNode(const CORE::Nodes::Node& node) const override
+    int NumDofPerNode(const Core::Nodes::Node& node) const override
     {
 /*note: this is not necessarily the number of DOF assigned to this node by the discretization
  *finally, but only the number of DOF requested for this node by this element; the discretization
@@ -313,7 +313,7 @@ namespace DRT::ELEMENTS
     void Print(std::ostream& os) const override;
 
     //! \brief get reference triad i.e. Tref_
-    std::vector<CORE::LINALG::Matrix<3, 1>> Tref() const;
+    std::vector<Core::LinAlg::Matrix<3, 1>> Tref() const;
 
     //! \brief get jacobi factor jacobi_
     double jacobi() const;
@@ -340,7 +340,7 @@ namespace DRT::ELEMENTS
 
     //! \brief Read input for this element
     bool ReadElement(const std::string& eletype, const std::string& distype,
-        INPUT::LineDefinition* linedef) override;
+        Input::LineDefinition* linedef) override;
 
     //@}
 
@@ -373,11 +373,11 @@ namespace DRT::ELEMENTS
                                 given in params
     \return 0 if successful, negative otherwise
     */
-    int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-        std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
-        CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-        CORE::LINALG::SerialDenseVector& elevec2,
-        CORE::LINALG::SerialDenseVector& elevec3) override;
+    int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+        std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
+        Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
+        Core::LinAlg::SerialDenseVector& elevec2,
+        Core::LinAlg::SerialDenseVector& elevec3) override;
 
     /*!
     \brief Evaluate a Neumann boundary condition
@@ -398,10 +398,10 @@ namespace DRT::ELEMENTS
 
     \return 0 if successful, negative otherwise
     */
-    int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-        CORE::Conditions::Condition& condition, std::vector<int>& lm,
-        CORE::LINALG::SerialDenseVector& elevec1,
-        CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
+    int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+        Core::Conditions::Condition& condition, std::vector<int>& lm,
+        Core::LinAlg::SerialDenseVector& elevec1,
+        Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;
 
     /*!
     \brief Evaluate PTC addition to stiffness for free Brownian motion
@@ -417,7 +417,7 @@ namespace DRT::ELEMENTS
     \return 0 if successful, negative otherwise
     */
     template <int nnode>
-    void EvaluatePTC(Teuchos::ParameterList& params, CORE::LINALG::SerialDenseMatrix& elemat1);
+    void EvaluatePTC(Teuchos::ParameterList& params, Core::LinAlg::SerialDenseMatrix& elemat1);
 
     //@}
 
@@ -433,7 +433,7 @@ namespace DRT::ELEMENTS
 
     //! \brief add indices of those DOFs of a given node that are positions
     inline void PositionDofIndices(
-        std::vector<int>& posdofs, const CORE::Nodes::Node& node) const override
+        std::vector<int>& posdofs, const Core::Nodes::Node& node) const override
     {
       posdofs.push_back(0);
       posdofs.push_back(1);
@@ -444,7 +444,7 @@ namespace DRT::ELEMENTS
      * interpolation)
      */
     inline void TangentDofIndices(
-        std::vector<int>& tangdofs, const CORE::Nodes::Node& node) const override
+        std::vector<int>& tangdofs, const Core::Nodes::Node& node) const override
     {
       tangdofs.push_back(3);
       tangdofs.push_back(4);
@@ -455,7 +455,7 @@ namespace DRT::ELEMENTS
      * rotation vectors)
      */
     inline void rotation_vec_dof_indices(
-        std::vector<int>& rotvecdofs, const CORE::Nodes::Node& node) const override
+        std::vector<int>& rotvecdofs, const Core::Nodes::Node& node) const override
     {
     }
 
@@ -464,7 +464,7 @@ namespace DRT::ELEMENTS
      *          rotvec=false)
      */
     inline void rotation1_d_dof_indices(
-        std::vector<int>& twistdofs, const CORE::Nodes::Node& node) const override
+        std::vector<int>& twistdofs, const Core::Nodes::Node& node) const override
     {
     }
 
@@ -472,7 +472,7 @@ namespace DRT::ELEMENTS
      *         (additive, e.g. in case of beam3k with rotvec=true)
      */
     inline void tangent_length_dof_indices(
-        std::vector<int>& tangnormdofs, const CORE::Nodes::Node& node) const override
+        std::vector<int>& tangnormdofs, const Core::Nodes::Node& node) const override
     {
     }
 
@@ -514,7 +514,7 @@ namespace DRT::ELEMENTS
 
    private:
     //! vector storing the internal force vector
-    CORE::LINALG::SerialDenseVector internalforces_;
+    Core::LinAlg::SerialDenseVector internalforces_;
 
     //! variable saving whether element has already been initialized (then isinit_ == true)
     bool isinit_;
@@ -535,13 +535,13 @@ namespace DRT::ELEMENTS
     double eint_axial_;
 
     //! angular momentum of the element
-    CORE::LINALG::Matrix<3, 1> l_;
+    Core::LinAlg::Matrix<3, 1> l_;
     //! linear momentum of the element
-    CORE::LINALG::Matrix<3, 1> p_;
+    Core::LinAlg::Matrix<3, 1> p_;
     //! nodal tangents of last time step (necessary for PTC scheme)
-    CORE::LINALG::Matrix<3, 2> t0_;
+    Core::LinAlg::Matrix<3, 2> t0_;
     //! nodal tangents of current time step (necessary for PTC scheme)
-    CORE::LINALG::Matrix<3, 2> t_;
+    Core::LinAlg::Matrix<3, 2> t_;
     //! norm of maximal curvature occuring in this element
     double kappa_max_;
     //! norm of maximal axial tension occuring in this element
@@ -557,7 +557,7 @@ namespace DRT::ELEMENTS
 
 #if NODALDOFS == 3
     //! Matrix holding the derivatives of the tangents at each node in reference configuration
-    std::vector<CORE::LINALG::Matrix<3, 1>> Kref_;
+    std::vector<Core::LinAlg::Matrix<3, 1>> Kref_;
 #endif
 
     //! @name Internal calculation methods
@@ -565,32 +565,32 @@ namespace DRT::ELEMENTS
     //! calculation of nonlinear stiffness and mass matrix
     void calc_internal_and_inertia_forces_and_stiff(Teuchos::ParameterList& params,
         std::vector<double>& vel, std::vector<double>& disp,
-        CORE::LINALG::SerialDenseMatrix* stiffmatrix, CORE::LINALG::SerialDenseMatrix* massmatrix,
-        CORE::LINALG::SerialDenseVector* force);
+        Core::LinAlg::SerialDenseMatrix* stiffmatrix, Core::LinAlg::SerialDenseMatrix* massmatrix,
+        Core::LinAlg::SerialDenseVector* force);
 
     template <unsigned int nnode, unsigned int dofpn>
     void update_disp_totlag(
-        const std::vector<double>& disp, CORE::LINALG::Matrix<dofpn * nnode, 1>& disp_totlag) const;
+        const std::vector<double>& disp, Core::LinAlg::Matrix<dofpn * nnode, 1>& disp_totlag) const;
 
     //! lump mass matrix
-    void lumpmass(CORE::LINALG::SerialDenseMatrix* emass);
+    void lumpmass(Core::LinAlg::SerialDenseMatrix* emass);
 
     //! computes translational damping forces and stiffness
     template <unsigned int nnode, unsigned int vpernode, int ndim>
     void evaluate_translational_damping(Teuchos::ParameterList& params,  //!< parameter list
-        const CORE::LINALG::Matrix<ndim * vpernode * nnode, 1>& vel,
-        const CORE::LINALG::Matrix<ndim * vpernode * nnode, 1>& disp_totlag,
-        CORE::LINALG::SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-        CORE::LINALG::SerialDenseVector* force);       //!< element internal force vector
+        const Core::LinAlg::Matrix<ndim * vpernode * nnode, 1>& vel,
+        const Core::LinAlg::Matrix<ndim * vpernode * nnode, 1>& disp_totlag,
+        Core::LinAlg::SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+        Core::LinAlg::SerialDenseVector* force);       //!< element internal force vector
 
 
     //! computes stochastic forces and resulting stiffness
     template <unsigned int nnode, unsigned int vpernode, unsigned int ndim,
         unsigned int randompergauss>
     void evaluate_stochastic_forces(Teuchos::ParameterList& params,  //!< parameter list
-        const CORE::LINALG::Matrix<ndim * vpernode * nnode, 1>& disp_totlag,
-        CORE::LINALG::SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-        CORE::LINALG::SerialDenseVector* force);       //!< element internal force vector
+        const Core::LinAlg::Matrix<ndim * vpernode * nnode, 1>& disp_totlag,
+        Core::LinAlg::SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+        Core::LinAlg::SerialDenseVector* force);       //!< element internal force vector
 
 
     /*! \brief Assemble stochastic and viscous forces and respective stiffness according to
@@ -600,17 +600,17 @@ namespace DRT::ELEMENTS
     void calc_brownian_forces_and_stiff(Teuchos::ParameterList& params,
         std::vector<double>& vel,                      //!< element velocity vector
         std::vector<double>& disp,                     //!< element displacement vector
-        CORE::LINALG::SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-        CORE::LINALG::SerialDenseVector* force);       //!< element internal force vector
+        Core::LinAlg::SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+        Core::LinAlg::SerialDenseVector* force);       //!< element internal force vector
 
     // don't want = operator
     Beam3eb& operator=(const Beam3eb& old) = delete;
   };
 
   // << operator
-  std::ostream& operator<<(std::ostream& os, const CORE::Elements::Element& ele);
+  std::ostream& operator<<(std::ostream& os, const Core::Elements::Element& ele);
 
-}  // namespace DRT::ELEMENTS
+}  // namespace Discret::ELEMENTS
 
 FOUR_C_NAMESPACE_CLOSE
 

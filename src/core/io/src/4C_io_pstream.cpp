@@ -15,17 +15,17 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::IO
+namespace Core::IO
 {
-  /// this is the CORE::IO::cout that everyone can refer to
+  /// this is the Core::IO::cout that everyone can refer to
   Pstream cout;
-}  // namespace CORE::IO
+}  // namespace Core::IO
 
 
 /*----------------------------------------------------------------------*
  * empty constructor                                          wic 11/12 *
  *----------------------------------------------------------------------*/
-CORE::IO::Pstream::Pstream()
+Core::IO::Pstream::Pstream()
     : is_initialized_(false),
       comm_(Teuchos::null),
       targetpid_(-2),
@@ -44,7 +44,7 @@ CORE::IO::Pstream::Pstream()
 /*----------------------------------------------------------------------*
  * destructor                                                 wic 09/16 *
  *----------------------------------------------------------------------*/
-CORE::IO::Pstream::~Pstream()
+Core::IO::Pstream::~Pstream()
 {
   if (level_) delete level_;
   level_ = nullptr;
@@ -60,8 +60,8 @@ CORE::IO::Pstream::~Pstream()
 /*----------------------------------------------------------------------*
  * configure the output                                       wic 11/12 *
  *----------------------------------------------------------------------*/
-void CORE::IO::Pstream::setup(const bool writetoscreen, const bool writetofile,
-    const bool prefixgroupID, const CORE::IO::Verbositylevel level, Teuchos::RCP<Epetra_Comm> comm,
+void Core::IO::Pstream::setup(const bool writetoscreen, const bool writetofile,
+    const bool prefixgroupID, const Core::IO::Verbositylevel level, Teuchos::RCP<Epetra_Comm> comm,
     const int targetpid, const int groupID, const std::string fileprefix)
 {
   // make sure that setup is called only once or we get unpredictable behavior
@@ -103,7 +103,7 @@ void CORE::IO::Pstream::setup(const bool writetoscreen, const bool writetofile,
 /*-----------------------------------------------------------------------*
  * return a std::ostream following the restrictions      hiermeier 12/17 *
  *-----------------------------------------------------------------------*/
-std::ostream& CORE::IO::Pstream::os(const Verbositylevel level) const
+std::ostream& Core::IO::Pstream::os(const Verbositylevel level) const
 {
   if (not is_initialized_) FOUR_C_THROW("Setup the output before you use it!");
 
@@ -119,7 +119,7 @@ std::ostream& CORE::IO::Pstream::os(const Verbositylevel level) const
 /*----------------------------------------------------------------------*
  * close open file handles and reset pstream                  wic 11/12 *
  *----------------------------------------------------------------------*/
-void CORE::IO::Pstream::close()
+void Core::IO::Pstream::close()
 {
   if (not is_initialized_) return;
 
@@ -157,7 +157,7 @@ void CORE::IO::Pstream::close()
 /*----------------------------------------------------------------------*
  * writes the buffer to screen                                wic 11/12 *
  *----------------------------------------------------------------------*/
-void CORE::IO::Pstream::flush()
+void Core::IO::Pstream::flush()
 {
   if (not is_initialized_) FOUR_C_THROW("Setup the output before you use it!");
 
@@ -175,7 +175,7 @@ void CORE::IO::Pstream::flush()
 /*----------------------------------------------------------------------*
  * return whether this is a target processor                  wic 11/12 *
  *----------------------------------------------------------------------*/
-bool CORE::IO::Pstream::on_pid()
+bool Core::IO::Pstream::on_pid()
 {
   if (targetpid_ < 0) return true;
   return (comm_->MyPID() == targetpid_);
@@ -185,7 +185,7 @@ bool CORE::IO::Pstream::on_pid()
 /*----------------------------------------------------------------------*
  * set output level                                           wic 09/16 *
  *----------------------------------------------------------------------*/
-CORE::IO::Level& CORE::IO::Pstream::operator()(const Verbositylevel level)
+Core::IO::Level& Core::IO::Pstream::operator()(const Verbositylevel level)
 {
   return level_->SetLevel(level);
 }
@@ -194,7 +194,7 @@ CORE::IO::Level& CORE::IO::Pstream::operator()(const Verbositylevel level)
 /*----------------------------------------------------------------------*
  * Imitate the std::endl behavior w/out the flush             wic 11/12 *
  *----------------------------------------------------------------------*/
-CORE::IO::Pstream& CORE::IO::endl(CORE::IO::Pstream& out)
+Core::IO::Pstream& Core::IO::endl(Core::IO::Pstream& out)
 {
   out << "\n";
   return out;
@@ -203,7 +203,7 @@ CORE::IO::Pstream& CORE::IO::endl(CORE::IO::Pstream& out)
 /*----------------------------------------------------------------------*
  * Imitate the std::endl behavior w/out the flush             wic 09/16 *
  *----------------------------------------------------------------------*/
-CORE::IO::Level& CORE::IO::endl(CORE::IO::Level& out)
+Core::IO::Level& Core::IO::endl(Core::IO::Level& out)
 {
   out << "\n";
   return out;
@@ -212,7 +212,7 @@ CORE::IO::Level& CORE::IO::endl(CORE::IO::Level& out)
 /*----------------------------------------------------------------------*
  * Imitate the std::flush behavior                            wic 11/12 *
  *----------------------------------------------------------------------*/
-CORE::IO::Pstream& CORE::IO::flush(CORE::IO::Pstream& out)
+Core::IO::Pstream& Core::IO::flush(Core::IO::Pstream& out)
 {
   out.flush();
   return out;
@@ -222,7 +222,7 @@ CORE::IO::Pstream& CORE::IO::flush(CORE::IO::Pstream& out)
 /*----------------------------------------------------------------------*
  * Imitate the std::flush behavior                            wic 11/12 *
  *----------------------------------------------------------------------*/
-CORE::IO::Level& CORE::IO::flush(CORE::IO::Level& out)
+Core::IO::Level& Core::IO::flush(Core::IO::Level& out)
 {
   out.flush();
   return out;
@@ -232,7 +232,7 @@ CORE::IO::Level& CORE::IO::flush(CORE::IO::Level& out)
 /*----------------------------------------------------------------------*
  * writes the buffer to screen                                wic 09/16 *
  *----------------------------------------------------------------------*/
-void CORE::IO::Level::flush()
+void Core::IO::Level::flush()
 {
   if (level_ <= pstream_->requested_output_level()) pstream_->flush();
 
@@ -243,8 +243,8 @@ void CORE::IO::Level::flush()
 /*----------------------------------------------------------------------*
  * Handle special manipulators                                wic 11/12 *
  *----------------------------------------------------------------------*/
-CORE::IO::Pstream& CORE::IO::operator<<(
-    CORE::IO::Pstream& out, CORE::IO::Pstream& (*pf)(CORE::IO::Pstream&))
+Core::IO::Pstream& Core::IO::operator<<(
+    Core::IO::Pstream& out, Core::IO::Pstream& (*pf)(Core::IO::Pstream&))
 {
   return pf(out);
 }
@@ -252,8 +252,8 @@ CORE::IO::Pstream& CORE::IO::operator<<(
 /*----------------------------------------------------------------------*
  * Handle special manipulators                                wic 09/16 *
  *----------------------------------------------------------------------*/
-CORE::IO::Level& CORE::IO::operator<<(
-    CORE::IO::Level& out, CORE::IO::Level& (*pf)(CORE::IO::Level&))
+Core::IO::Level& Core::IO::operator<<(
+    Core::IO::Level& out, Core::IO::Level& (*pf)(Core::IO::Level&))
 {
   return pf(out);
 }

@@ -15,7 +15,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void CORE::REBALANCE::UTILS::print_parallel_distribution(const DRT::Discretization& dis)
+void Core::Rebalance::UTILS::print_parallel_distribution(const Discret::Discretization& dis)
 {
   const int numproc = dis.Comm().NumProc();
   const int myrank = dis.Comm().MyPID();
@@ -43,28 +43,28 @@ void CORE::REBALANCE::UTILS::print_parallel_distribution(const DRT::Discretizati
 
     if (myrank == 0)
     {
-      CORE::IO::cout(CORE::IO::verbose) << "\n   discretization: " << dis.Name() << CORE::IO::endl;
-      CORE::IO::cout(CORE::IO::verbose)
+      Core::IO::cout(Core::IO::verbose) << "\n   discretization: " << dis.Name() << Core::IO::endl;
+      Core::IO::cout(Core::IO::verbose)
           << "   +-----+---------------+--------------+-----------------+----------------+"
-          << CORE::IO::endl;
-      CORE::IO::cout(CORE::IO::verbose)
+          << Core::IO::endl;
+      Core::IO::cout(Core::IO::verbose)
           << "   | PID |  n_rownodes   | n_ghostnodes |  n_rowelements  |   n_ghostele   |"
-          << CORE::IO::endl;
-      CORE::IO::cout(CORE::IO::verbose)
+          << Core::IO::endl;
+      Core::IO::cout(Core::IO::verbose)
           << "   +-----+---------------+--------------+-----------------+----------------+"
-          << CORE::IO::endl;
+          << Core::IO::endl;
 
       for (int npid = 0; npid < numproc; ++npid)
       {
-        CORE::IO::cout(CORE::IO::verbose)
+        Core::IO::cout(Core::IO::verbose)
             << "   | " << std::setw(3) << npid << " | " << std::setw(13) << n_nodes[npid] << " | "
             << std::setw(12) << n_ghostnodes[npid] << " | " << std::setw(15) << n_elements[npid]
-            << " | " << std::setw(14) << n_ghostele[npid] << " | " << CORE::IO::endl;
-        CORE::IO::cout(CORE::IO::verbose)
+            << " | " << std::setw(14) << n_ghostele[npid] << " | " << Core::IO::endl;
+        Core::IO::cout(Core::IO::verbose)
             << "   +-----+---------------+--------------+-----------------+----------------+"
-            << CORE::IO::endl;
+            << Core::IO::endl;
       }
-      CORE::IO::cout(CORE::IO::verbose) << CORE::IO::endl;
+      Core::IO::cout(Core::IO::verbose) << Core::IO::endl;
     }
   }
 }

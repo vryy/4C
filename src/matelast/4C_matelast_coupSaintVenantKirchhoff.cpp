@@ -14,7 +14,7 @@ Implementation of a coupled Saint-Venant-Kirchhoff material
 FOUR_C_NAMESPACE_OPEN
 
 
-MAT::ELASTIC::PAR::CoupSVK::CoupSVK(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
+Mat::Elastic::PAR::CoupSVK::CoupSVK(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
     : Parameter(matdata)
 {
   double c1 = matdata->Get<double>("YOUNG");
@@ -29,10 +29,10 @@ MAT::ELASTIC::PAR::CoupSVK::CoupSVK(const Teuchos::RCP<CORE::MAT::PAR::Material>
     FOUR_C_THROW("Poisson's ratio must be between -1.0 and 0.5!");
 }
 
-MAT::ELASTIC::CoupSVK::CoupSVK(MAT::ELASTIC::PAR::CoupSVK* params) : params_(params) {}
+Mat::Elastic::CoupSVK::CoupSVK(Mat::Elastic::PAR::CoupSVK* params) : params_(params) {}
 
-void MAT::ELASTIC::CoupSVK::AddStrainEnergy(double& psi, const CORE::LINALG::Matrix<3, 1>& prinv,
-    const CORE::LINALG::Matrix<3, 1>& modinv, const CORE::LINALG::Matrix<6, 1>& glstrain,
+void Mat::Elastic::CoupSVK::AddStrainEnergy(double& psi, const Core::LinAlg::Matrix<3, 1>& prinv,
+    const Core::LinAlg::Matrix<3, 1>& modinv, const Core::LinAlg::Matrix<6, 1>& glstrain,
     const int gp, const int eleGID)
 {
   const double lambda = params_->lambda_;
@@ -45,8 +45,8 @@ void MAT::ELASTIC::CoupSVK::AddStrainEnergy(double& psi, const CORE::LINALG::Mat
          0.75 * mue;
 }
 
-void MAT::ELASTIC::CoupSVK::add_derivatives_principal(CORE::LINALG::Matrix<3, 1>& dPI,
-    CORE::LINALG::Matrix<6, 1>& ddPII, const CORE::LINALG::Matrix<3, 1>& prinv, const int gp,
+void Mat::Elastic::CoupSVK::add_derivatives_principal(Core::LinAlg::Matrix<3, 1>& dPI,
+    Core::LinAlg::Matrix<6, 1>& ddPII, const Core::LinAlg::Matrix<3, 1>& prinv, const int gp,
     const int eleGID)
 {
   const double lambda = params_->lambda_;
@@ -58,14 +58,14 @@ void MAT::ELASTIC::CoupSVK::add_derivatives_principal(CORE::LINALG::Matrix<3, 1>
   ddPII(0) += 0.5 * mue + 0.25 * lambda;
 }
 
-void MAT::ELASTIC::CoupSVK::add_third_derivatives_principal_iso(
-    CORE::LINALG::Matrix<10, 1>& dddPIII_iso, const CORE::LINALG::Matrix<3, 1>& prinv_iso,
+void Mat::Elastic::CoupSVK::add_third_derivatives_principal_iso(
+    Core::LinAlg::Matrix<10, 1>& dddPIII_iso, const Core::LinAlg::Matrix<3, 1>& prinv_iso,
     const int gp, const int eleGID)
 {
   // do nothing
 }
 
-void MAT::ELASTIC::CoupSVK::AddCoupDerivVol(
+void Mat::Elastic::CoupSVK::AddCoupDerivVol(
     const double J, double* dPj1, double* dPj2, double* dPj3, double* dPj4)
 {
   const double lambda = params_->lambda_;

@@ -18,14 +18,15 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 08/15 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::ScaTraEleUtilsElch<distype>* DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::Instance(
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::ScaTraEleUtilsElch<distype>*
+Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::Instance(
     const int numdofpernode,    ///< number of degrees of freedom per node
     const int numscal,          ///< number of transported scalars per node
     const std::string& disname  ///< name of discretization
 )
 {
-  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
       [](const int numdofpernode, const int numscal, const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleUtilsElch<distype>>(
@@ -33,15 +34,15 @@ DRT::ELEMENTS::ScaTraEleUtilsElch<distype>* DRT::ELEMENTS::ScaTraEleUtilsElch<di
       });
 
   return singleton_map[disname].Instance(
-      CORE::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
+      Core::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 
 /*----------------------------------------------------------------------*
  | private constructor for singletons                        fang 07/15 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::ScaTraEleUtilsElch(
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::ScaTraEleUtilsElch(
     const int numdofpernode,    ///< number of degrees of freedom per node
     const int numscal,          ///< number of transported scalars per node
     const std::string& disname  ///< name of discretization
@@ -56,18 +57,18 @@ DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::ScaTraEleUtilsElch(
  | evaluation of electrochemistry kinetics at integration point on domain or boundary element   fang
  07/15 |
  *---------------------------------------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_elch_kinetics_at_integration_point(
-    const CORE::Elements::Element* ele,                        ///< current element
-    CORE::LINALG::SerialDenseMatrix& emat,                     ///< element matrix
-    CORE::LINALG::SerialDenseVector& erhs,                     ///< element right-hand side vector
-    const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,  ///< state variables at element nodes
-    const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_elch_kinetics_at_integration_point(
+    const Core::Elements::Element* ele,                        ///< current element
+    Core::LinAlg::SerialDenseMatrix& emat,                     ///< element matrix
+    Core::LinAlg::SerialDenseVector& erhs,                     ///< element right-hand side vector
+    const std::vector<Core::LinAlg::Matrix<nen_, 1>>& ephinp,  ///< state variables at element nodes
+    const std::vector<Core::LinAlg::Matrix<nen_, 1>>&
         ehist,                                              ///< history variables at element nodes
     const double timefac,                                   ///< time factor
     const double fac,                                       ///< Gauss integration factor
-    const CORE::LINALG::Matrix<nen_, 1>& funct,             ///< shape functions at int. point
-    const Teuchos::RCP<CORE::Conditions::Condition>& cond,  ///< condition
+    const Core::LinAlg::Matrix<nen_, 1>& funct,             ///< shape functions at int. point
+    const Teuchos::RCP<Core::Conditions::Condition>& cond,  ///< condition
     const int nume,                                         ///< number of transferred electrons
     const std::vector<int>& stoich,                         ///< stoichiometry of the reaction
     const double valence_k,                                 ///< valence of the single reactant
@@ -81,7 +82,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_elch_kinetics_at_integ
 ) const
 {
   // for pre-multiplication of i0 with 1/(F z_k)
-  const double faraday = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
+  const double faraday = Discret::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
 
   // concentration of active species at integration point
   std::vector<double> conint(numscal_, 0.0);
@@ -101,8 +102,8 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_elch_kinetics_at_integ
   // concentration-dependent Butler-Volmer law(s)
   switch (kinetics)
   {
-    case INPAR::ELCH::butler_volmer:
-    case INPAR::ELCH::butler_volmer_yang1997:
+    case Inpar::ElCh::butler_volmer:
+    case Inpar::ElCh::butler_volmer_yang1997:
     {
       // read model-specific parameters
       const auto alphaa = cond->parameters().Get<double>("alpha_a");
@@ -156,7 +157,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_elch_kinetics_at_integ
       else
         pow_conint_gamma_k = std::pow(conint[k] / refcon, gamma);
 
-      if (kinetics == INPAR::ELCH::butler_volmer)
+      if (kinetics == Inpar::ElCh::butler_volmer)
       {
         // note: gamma==0 deactivates concentration dependency in Butler-Volmer!
         const double expterm = exp(alphaa * frt * eta) - exp((-alphac) * frt * eta);
@@ -204,7 +205,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_elch_kinetics_at_integ
         }
       }  // end if(kinetics=="Butler-Volmer")
 
-      else if (kinetics == INPAR::ELCH::butler_volmer_yang1997)
+      else if (kinetics == Inpar::ElCh::butler_volmer_yang1997)
       {
         if (dlcap != 0.0)
           FOUR_C_THROW(
@@ -250,7 +251,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_elch_kinetics_at_integ
     // implementation of cathodic path: i_n = i_0 * (-exp(-alpha * frt* eta)
     // -> cathodic reaction path: i_0 > 0 and alpha > 0
     // -> anodic reacton path:    i_0 < 0 and alpha < 0
-    case INPAR::ELCH::tafel:
+    case Inpar::ElCh::tafel:
     {
       // read model-specific parameter
       const auto alpha = cond->parameters().Get<double>("alpha");
@@ -327,7 +328,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_elch_kinetics_at_integ
     // previously implemented: i_n = i_0*(alphaa*frt*(V_M - phi) + 1.0)
     //                         -> linearization in respect to anodic branch!!
     //                         this is not the classical verion of a linear electrode kinetics law
-    case INPAR::ELCH::linear:
+    case Inpar::ElCh::linear:
     {
       // read model-specific parameter
       const auto alphaa = cond->parameters().Get<double>("alpha");
@@ -408,7 +409,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_elch_kinetics_at_integ
       break;
     }
 
-    case INPAR::ELCH::butler_volmer_newman:
+    case Inpar::ElCh::butler_volmer_newman:
     {
       // "Electrochemical systems"
       // Newman and Thomas-Alyea, 2004
@@ -529,7 +530,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_elch_kinetics_at_integ
       break;
     }
 
-    case INPAR::ELCH::butler_volmer_bard:
+    case Inpar::ElCh::butler_volmer_bard:
     {
       // "Electrochemical Methods Fundamentals and Applications"
       // Bard and Faulkner, 2001, pp. 94 ff; pp. 99 eq. 3.4.10
@@ -655,7 +656,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_elch_kinetics_at_integ
       break;
     }
 
-    case INPAR::ELCH::nernst:
+    case Inpar::ElCh::nernst:
       break;
 
     default:
@@ -666,23 +667,23 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_elch_kinetics_at_integ
   }
 
   return;
-}  // DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_elch_kinetics_at_integration_point
+}  // Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_elch_kinetics_at_integration_point
 
 
 /*----------------------------------------------------------------------------------------------------------------*
  | evaluate electrode kinetics status information at integration point on domain or boundary element
  fang 07/15 |
  *----------------------------------------------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_electrode_status_at_integration_point(
-    const CORE::Elements::Element* ele,                     ///< current element
-    CORE::LINALG::SerialDenseVector& scalars,               ///< scalars to be computed
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_electrode_status_at_integration_point(
+    const Core::Elements::Element* ele,                     ///< current element
+    Core::LinAlg::SerialDenseVector& scalars,               ///< scalars to be computed
     const Teuchos::ParameterList& params,                   ///< parameter list
-    const Teuchos::RCP<CORE::Conditions::Condition>& cond,  ///< condition
-    const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
+    const Teuchos::RCP<Core::Conditions::Condition>& cond,  ///< condition
+    const std::vector<Core::LinAlg::Matrix<nen_, 1>>&
         ephinp,  ///< nodal values of concentration and electric potential
-    const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephidtnp,  ///< nodal time derivative vector
-    const CORE::LINALG::Matrix<nen_, 1>& funct,  ///< shape functions at integration point
+    const std::vector<Core::LinAlg::Matrix<nen_, 1>>& ephidtnp,  ///< nodal time derivative vector
+    const Core::LinAlg::Matrix<nen_, 1>& funct,  ///< shape functions at integration point
     const int zerocur,                           ///< flag for zero current
     const int kinetics,                          ///< desired electrode kinetics model
     const std::vector<int>& stoich,              ///< stoichiometry of the reaction
@@ -696,7 +697,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_electrode_status_at_in
 ) const
 {
   // get Faraday constant
-  const double faraday = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
+  const double faraday = Discret::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
 
   // get variables with their current values
   // current integrals: (i = epsilon i^E ) is calculated in case of porous media
@@ -733,8 +734,8 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_electrode_status_at_in
   // concentration-dependent Butler-Volmer law(s)
   switch (kinetics)
   {
-    case INPAR::ELCH::butler_volmer:
-    case INPAR::ELCH::butler_volmer_yang1997:
+    case Inpar::ElCh::butler_volmer:
+    case Inpar::ElCh::butler_volmer_yang1997:
     {
       // read model-specific parameter
       const auto alphaa = cond->parameters().Get<double>("alpha_a");
@@ -780,7 +781,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_electrode_status_at_in
             "The electrode kinetics flag zero_cur has only two options: false (=0) or true (=1).");
 
       double expterm(0.0);
-      if (kinetics == INPAR::ELCH::butler_volmer)
+      if (kinetics == Inpar::ElCh::butler_volmer)
       {
         // general Butler-Volmer
         expterm = std::pow(conint[k] / refcon, gamma) *
@@ -788,7 +789,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_electrode_status_at_in
         linea = std::pow(conint[k] / refcon, gamma) * frt *
                 ((alphaa * exp(alphaa * frt * eta)) + (alphac * exp((-alphac) * frt * eta)));
       }
-      if (kinetics == INPAR::ELCH::butler_volmer_yang1997)
+      if (kinetics == Inpar::ElCh::butler_volmer_yang1997)
       {
         if (((conint[k] / refcon) < 1e-13) && (gamma < 1.0))
         {  // prevents NaN's in the current density evaluation
@@ -840,7 +841,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_electrode_status_at_in
     // implementation of cathodic path: i_n = i_0 * (-exp(-alpha * frt* eta)
     // -> cathodic reaction path: i_0 > 0 and alpha > 0
     // -> anodic reacton path:    i_0 < 0 and alpha < 0
-    case INPAR::ELCH::tafel:
+    case Inpar::ElCh::tafel:
     {
       // read model-specific parameter
       const auto alpha = cond->parameters().Get<double>("alpha");
@@ -897,7 +898,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_electrode_status_at_in
     // previously implemented: i_n = i_0*(alphaa*frt*(V_M - phi) + 1.0)
     //                         -> linearization in respect to anodic branch!!
     //                         this is not the classical version of a linear electrode kinetics law
-    case INPAR::ELCH::linear:
+    case Inpar::ElCh::linear:
     {
       // read model-specific parameter
       const auto alphaa = cond->parameters().Get<double>("alpha");
@@ -970,7 +971,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_electrode_status_at_in
       break;
     }
 
-    case INPAR::ELCH::butler_volmer_newman:
+    case Inpar::ElCh::butler_volmer_newman:
     {
       // "Electrochemical systems"
       // Newman ad Thomas-Alyea, 2004
@@ -1101,7 +1102,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_electrode_status_at_in
       break;
     }
 
-    case INPAR::ELCH::butler_volmer_bard:
+    case Inpar::ElCh::butler_volmer_bard:
     {
       // "Electrochemical Methods Fundamentals and Applications"
       // Bard and Faulkner, 2001, pp. 94 ff; pp. 99 eq. 3.4.10
@@ -1209,7 +1210,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_electrode_status_at_in
       break;
     }  // end Butler-Volmer-Bard
 
-    case INPAR::ELCH::nernst:
+    case Inpar::ElCh::nernst:
     {
       const auto e0 = cond->parameters().Get<double>("e0");
       const auto c0 = cond->parameters().Get<double>("c0");
@@ -1248,22 +1249,22 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_electrode_status_at_in
   scalars(8) += currderiv;
   scalars(9) += currentresidual;
   scalars(10) += boundaryint_porous;
-}  // DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_electrode_status_at_integration_point
+}  // Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_electrode_status_at_integration_point
 
 
 /*----------------------------------------------------------------------*
  | evaluate ion material                                     fang 07/15 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::MatIon(
-    const Teuchos::RCP<const CORE::MAT::Material> material,  //!< ion material
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::MatIon(
+    const Teuchos::RCP<const Core::Mat::Material> material,  //!< ion material
     const int k,                                             //!< ID of ion material
-    const INPAR::ELCH::EquPot equpot,  //!< type of closing equation for electric potential
+    const Inpar::ElCh::EquPot equpot,  //!< type of closing equation for electric potential
     const Teuchos::RCP<ScaTraEleDiffManagerElch>& diffmanager  //!< diffusion manager
 )
 {
   // cast material to ion material
-  const Teuchos::RCP<const MAT::Ion> mation = Teuchos::rcp_static_cast<const MAT::Ion>(material);
+  const Teuchos::RCP<const Mat::Ion> mation = Teuchos::rcp_static_cast<const Mat::Ion>(material);
 
   // valence of ionic species
   diffmanager->SetValence(mation->Valence(), k);
@@ -1276,7 +1277,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::MatIon(
   {
     // Material data of eliminated ion species is read from the LAST ion material
     // in the matlist!
-    if (equpot == INPAR::ELCH::equpot_enc_pde_elim)
+    if (equpot == Inpar::ElCh::equpot_enc_pde_elim)
     {
       diffmanager->increase_length_vector(k, numscal_);
 
@@ -1292,26 +1293,26 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::MatIon(
 
 // template classes
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleUtilsElch<CORE::FE::CellType::line2>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElch<CORE::FE::CellType::line3>;
+template class Discret::ELEMENTS::ScaTraEleUtilsElch<Core::FE::CellType::line2>;
+template class Discret::ELEMENTS::ScaTraEleUtilsElch<Core::FE::CellType::line3>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleUtilsElch<CORE::FE::CellType::quad4>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElch<CORE::FE::CellType::quad8>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElch<CORE::FE::CellType::quad9>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElch<CORE::FE::CellType::tri3>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElch<CORE::FE::CellType::tri6>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElch<CORE::FE::CellType::nurbs3>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElch<CORE::FE::CellType::nurbs9>;
+template class Discret::ELEMENTS::ScaTraEleUtilsElch<Core::FE::CellType::quad4>;
+template class Discret::ELEMENTS::ScaTraEleUtilsElch<Core::FE::CellType::quad8>;
+template class Discret::ELEMENTS::ScaTraEleUtilsElch<Core::FE::CellType::quad9>;
+template class Discret::ELEMENTS::ScaTraEleUtilsElch<Core::FE::CellType::tri3>;
+template class Discret::ELEMENTS::ScaTraEleUtilsElch<Core::FE::CellType::tri6>;
+template class Discret::ELEMENTS::ScaTraEleUtilsElch<Core::FE::CellType::nurbs3>;
+template class Discret::ELEMENTS::ScaTraEleUtilsElch<Core::FE::CellType::nurbs9>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleUtilsElch<CORE::FE::CellType::hex8>;
-// template class DRT::ELEMENTS::ScaTraEleUtilsElch<CORE::FE::CellType::hex20>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElch<CORE::FE::CellType::hex27>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElch<CORE::FE::CellType::tet4>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElch<CORE::FE::CellType::tet10>;
-// template class DRT::ELEMENTS::ScaTraEleUtilsElch<CORE::FE::CellType::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElch<CORE::FE::CellType::pyramid5>;
-// template class DRT::ELEMENTS::ScaTraEleUtilsElch<CORE::FE::CellType::nurbs27>;
+template class Discret::ELEMENTS::ScaTraEleUtilsElch<Core::FE::CellType::hex8>;
+// template class Discret::ELEMENTS::ScaTraEleUtilsElch<Core::FE::CellType::hex20>;
+template class Discret::ELEMENTS::ScaTraEleUtilsElch<Core::FE::CellType::hex27>;
+template class Discret::ELEMENTS::ScaTraEleUtilsElch<Core::FE::CellType::tet4>;
+template class Discret::ELEMENTS::ScaTraEleUtilsElch<Core::FE::CellType::tet10>;
+// template class Discret::ELEMENTS::ScaTraEleUtilsElch<Core::FE::CellType::wedge6>;
+template class Discret::ELEMENTS::ScaTraEleUtilsElch<Core::FE::CellType::pyramid5>;
+// template class Discret::ELEMENTS::ScaTraEleUtilsElch<Core::FE::CellType::nurbs27>;
 
 FOUR_C_NAMESPACE_CLOSE

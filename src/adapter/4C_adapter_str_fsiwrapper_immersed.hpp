@@ -24,14 +24,14 @@ namespace STR
 {
   class Dbc;
 
-  namespace AUX
+  namespace Aux
   {
     class MapExtractor;
   }
 }  // namespace STR
 
 
-namespace ADAPTER
+namespace Adapter
 {
   class FSIStructureWrapperImmersed : public FPSIStructureWrapper
   {
@@ -40,7 +40,7 @@ namespace ADAPTER
     explicit FSIStructureWrapperImmersed(Teuchos::RCP<Structure> structure);
 
     /// return the combined interface (matching fsi + immersed)
-    Teuchos::RCP<CORE::LINALG::MapExtractor> CombinedInterface() { return combinedinterface_; };
+    Teuchos::RCP<Core::LinAlg::MapExtractor> CombinedInterface() { return combinedinterface_; };
 
     /// extract interface displacements at \f$t_{n+1}\f$ of immersed interface
     virtual Teuchos::RCP<Epetra_Vector> extract_immersed_interface_dispnp();
@@ -97,12 +97,12 @@ namespace ADAPTER
 
    protected:
     /// the interface map setup for immersed interface <-> fsi interface distinction
-    Teuchos::RCP<CORE::LINALG::MapExtractor> combinedinterface_;
+    Teuchos::RCP<Core::LinAlg::MapExtractor> combinedinterface_;
 
     /// combined matching FSI - IMMERSED interface map
     Teuchos::RCP<Epetra_Map> combinedmap_;
   };
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 FOUR_C_NAMESPACE_CLOSE
 

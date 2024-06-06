@@ -40,7 +40,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingCondition::Clear() {}
  */
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
 BEAMINTERACTION::BeamToBeamPointCouplingCondition::CreateContactPair(
-    const std::vector<CORE::Elements::Element const*>& ele_ptrs)
+    const std::vector<Core::Elements::Element const*>& ele_ptrs)
 {
   {
     // Check if the given elements are in this condition.
@@ -59,7 +59,7 @@ BEAMINTERACTION::BeamToBeamPointCouplingCondition::CreateContactPair(
  *
  */
 void BEAMINTERACTION::BeamToBeamPointCouplingCondition::BuildIdSets(
-    const Teuchos::RCP<const DRT::Discretization>& discretization)
+    const Teuchos::RCP<const Discret::Discretization>& discretization)
 {
   // Set the IDs of the nodes to be coupled
   const std::vector<int> node_ids = *(condition_line_->GetNodes());
@@ -77,11 +77,11 @@ void BEAMINTERACTION::BeamToBeamPointCouplingCondition::BuildIdSets(
   for (auto node_id : node_ids)
   {
     i++;
-    CORE::Nodes::Node* node = discretization->gNode(node_id);
+    Core::Nodes::Node* node = discretization->gNode(node_id);
     // This means that the node is not in the column map of this proc and the element pair will thus
     // be created on a different processor
     if (node == nullptr) return;
-    CORE::Elements::Element* element = node->Elements()[0];
+    Core::Elements::Element* element = node->Elements()[0];
     element_ids[i - 1] = element->Id();
     if (element->NodeIds()[0] == node_id)
       position_in_parameter_space[i - 1] = -1;

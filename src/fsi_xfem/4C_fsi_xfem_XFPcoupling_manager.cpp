@@ -20,7 +20,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 XFEM::XfpCouplingManager::XfpCouplingManager(Teuchos::RCP<XFEM::ConditionManager> condmanager,
-    Teuchos::RCP<POROELAST::PoroBase> poro, Teuchos::RCP<FLD::XFluid> xfluid, std::vector<int> idx)
+    Teuchos::RCP<PoroElast::PoroBase> poro, Teuchos::RCP<FLD::XFluid> xfluid, std::vector<int> idx)
     : CouplingCommManager(poro->structure_field()->discretization(),
           poro->fluid_field()->discretization(), "XFEMSurfFPIMono", 0, 3),
       poro_(poro),
@@ -97,13 +97,13 @@ void XFEM::XfpCouplingManager::SetCouplingStates()
 
   // As interfaces embedded into the background mesh are fully ghosted, we don't know which
   Teuchos::RCP<Epetra_Map> sfulldofmap =
-      CORE::LINALG::AllreduceEMap(*poro_->structure_field()->discretization()->dof_row_map());
+      Core::LinAlg::AllreduceEMap(*poro_->structure_field()->discretization()->dof_row_map());
   Teuchos::RCP<Epetra_Vector> dispnp_col = Teuchos::rcp(new Epetra_Vector(*sfulldofmap, true));
-  CORE::LINALG::Export(*poro_->structure_field()->Dispnp(), *dispnp_col);
+  Core::LinAlg::Export(*poro_->structure_field()->Dispnp(), *dispnp_col);
   Teuchos::RCP<Epetra_Map> ffulldofmap =
-      CORE::LINALG::AllreduceEMap(*poro_->fluid_field()->discretization()->dof_row_map());
+      Core::LinAlg::AllreduceEMap(*poro_->fluid_field()->discretization()->dof_row_map());
   Teuchos::RCP<Epetra_Vector> velnp_col = Teuchos::rcp(new Epetra_Vector(*ffulldofmap, true));
-  CORE::LINALG::Export(*poro_->fluid_field()->Velnp(), *velnp_col);
+  Core::LinAlg::Export(*poro_->fluid_field()->Velnp(), *velnp_col);
 
   mcfpi_ps_ps_->SetFullState(dispnp_col, velnp_col);
   mcfpi_ps_pf_->SetFullState(dispnp_col, velnp_col);
@@ -128,7 +128,7 @@ void XFEM::XfpCouplingManager::SetCouplingStates()
 }
 
 void XFEM::XfpCouplingManager::AddCouplingMatrix(
-    CORE::LINALG::BlockSparseMatrixBase& systemmatrix, double scaling)
+    Core::LinAlg::BlockSparseMatrixBase& systemmatrix, double scaling)
 {
   const double scaling_disp_vel =
       1 / ((1 - poro_->structure_field()->TimIntParam()) * poro_->structure_field()->Dt());
@@ -136,9 +136,9 @@ void XFEM::XfpCouplingManager::AddCouplingMatrix(
   if (idx_.size() == 2)  // assum that the poro field is not split and we just have a blockmatrix
                          // P/F
   {
-    CORE::LINALG::SparseMatrix& C_ss_block = (systemmatrix)(idx_[0], idx_[0]);
-    CORE::LINALG::SparseMatrix& C_fs_block = (systemmatrix)(idx_[1], idx_[0]);
-    CORE::LINALG::SparseMatrix& C_sf_block = (systemmatrix)(idx_[0], idx_[1]);
+    Core::LinAlg::SparseMatrix& C_ss_block = (systemmatrix)(idx_[0], idx_[0]);
+    Core::LinAlg::SparseMatrix& C_fs_block = (systemmatrix)(idx_[1], idx_[0]);
+    Core::LinAlg::SparseMatrix& C_sf_block = (systemmatrix)(idx_[0], idx_[1]);
 
     // 1// Add Blocks f-ps(2), ps-f(3), ps-ps(4)
     C_ss_block.Add(*xfluid_->C_ss_Matrix(cond_name_ps_ps_), false, scaling * scaling_disp_vel, 1.0);
@@ -146,12 +146,12 @@ void XFEM::XfpCouplingManager::AddCouplingMatrix(
     C_fs_block.Add(*xfluid_->C_xs_Matrix(cond_name_ps_ps_), false, scaling * scaling_disp_vel, 1.0);
 
     // 2// Add Blocks f-pf(5), ps-pf(6)
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> C_ps_pf = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> C_ps_pf = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
         xfluid_->C_ss_Matrix(cond_name_ps_pf_)->RowMap(), 81, false));
     InsertMatrix(-1, 0, *xfluid_->C_ss_Matrix(cond_name_ps_pf_), 1, *C_ps_pf,
         CouplingCommManager::col, 1, true, false);
     C_ps_pf->Complete(*GetMapExtractor(1)->Map(1), *GetMapExtractor(0)->Map(1));
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> C_f_pf = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> C_f_pf = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
         xfluid_->C_xs_Matrix(cond_name_ps_pf_)->RowMap(), 81, false));
     InsertMatrix(-1, 0, *xfluid_->C_xs_Matrix(cond_name_ps_pf_), 1, *C_f_pf,
         CouplingCommManager::col, 1, true, false);
@@ -160,10 +160,10 @@ void XFEM::XfpCouplingManager::AddCouplingMatrix(
     C_ss_block.Add(*C_ps_pf, false, scaling, 1.0);
 
     // 3// Add Blocks pf-f(7), pf-ps(8)
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> C_pf_ps =
-        Teuchos::rcp(new CORE::LINALG::SparseMatrix(*GetMapExtractor(1)->Map(1), 81, false));
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> C_pf_f =
-        Teuchos::rcp(new CORE::LINALG::SparseMatrix(*GetMapExtractor(1)->Map(1), 81, false));
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> C_pf_ps =
+        Teuchos::rcp(new Core::LinAlg::SparseMatrix(*GetMapExtractor(1)->Map(1), 81, false));
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> C_pf_f =
+        Teuchos::rcp(new Core::LinAlg::SparseMatrix(*GetMapExtractor(1)->Map(1), 81, false));
     InsertMatrix(-1, 0, *xfluid_->C_ss_Matrix(cond_name_pf_ps_), 1, *C_pf_ps,
         CouplingCommManager::row, 1, true, false);
     C_pf_ps->Complete(*GetMapExtractor(0)->Map(1), *GetMapExtractor(1)->Map(1));
@@ -174,8 +174,8 @@ void XFEM::XfpCouplingManager::AddCouplingMatrix(
     C_sf_block.Add(*C_pf_f, false, scaling * dt, 1.0);
 
     // 4// Add Block pf-pf(9)
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> C_pf_pf =
-        Teuchos::rcp(new CORE::LINALG::SparseMatrix(*GetMapExtractor(1)->Map(1), 81, false));
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> C_pf_pf =
+        Teuchos::rcp(new Core::LinAlg::SparseMatrix(*GetMapExtractor(1)->Map(1), 81, false));
     InsertMatrix(-1, 0, *xfluid_->C_ss_Matrix(cond_name_pf_pf_), 1, *C_pf_pf,
         CouplingCommManager::row_and_col);
     C_pf_pf->Complete(*GetMapExtractor(1)->Map(1), *GetMapExtractor(1)->Map(1));
@@ -183,16 +183,16 @@ void XFEM::XfpCouplingManager::AddCouplingMatrix(
   }
   else if (idx_.size() == 3)
   {
-    CORE::LINALG::SparseMatrix& C_ss_block = (systemmatrix)(idx_[0], idx_[0]);
-    CORE::LINALG::SparseMatrix& C_fs_block = (systemmatrix)(idx_[1], idx_[0]);
-    CORE::LINALG::SparseMatrix& C_sf_block = (systemmatrix)(idx_[0], idx_[1]);
+    Core::LinAlg::SparseMatrix& C_ss_block = (systemmatrix)(idx_[0], idx_[0]);
+    Core::LinAlg::SparseMatrix& C_fs_block = (systemmatrix)(idx_[1], idx_[0]);
+    Core::LinAlg::SparseMatrix& C_sf_block = (systemmatrix)(idx_[0], idx_[1]);
 
-    CORE::LINALG::SparseMatrix& C_pfpfblock = (systemmatrix)(idx_[2], idx_[2]);
-    CORE::LINALG::SparseMatrix& C_fpf_block = (systemmatrix)(idx_[1], idx_[2]);
-    CORE::LINALG::SparseMatrix& C_pff_block = (systemmatrix)(idx_[2], idx_[1]);
+    Core::LinAlg::SparseMatrix& C_pfpfblock = (systemmatrix)(idx_[2], idx_[2]);
+    Core::LinAlg::SparseMatrix& C_fpf_block = (systemmatrix)(idx_[1], idx_[2]);
+    Core::LinAlg::SparseMatrix& C_pff_block = (systemmatrix)(idx_[2], idx_[1]);
 
-    CORE::LINALG::SparseMatrix& C_pfs_block = (systemmatrix)(idx_[2], idx_[0]);
-    CORE::LINALG::SparseMatrix& C_spf_block = (systemmatrix)(idx_[0], idx_[2]);
+    Core::LinAlg::SparseMatrix& C_pfs_block = (systemmatrix)(idx_[2], idx_[0]);
+    Core::LinAlg::SparseMatrix& C_spf_block = (systemmatrix)(idx_[0], idx_[2]);
 
     // 1// Add Blocks f-ps(2), ps-f(3), ps-ps(4)
     C_ss_block.Add(*xfluid_->C_ss_Matrix(cond_name_ps_ps_), false, scaling * scaling_disp_vel, 1.0);
@@ -225,7 +225,7 @@ void XFEM::XfpCouplingManager::AddCouplingMatrix(
 //| Add the coupling rhs                                                        ager 06/2016 |
 //*-----------------------------------------------------------------------------------------*/
 void XFEM::XfpCouplingManager::AddCouplingRHS(
-    Teuchos::RCP<Epetra_Vector> rhs, const CORE::LINALG::MultiMapExtractor& me, double scaling)
+    Teuchos::RCP<Epetra_Vector> rhs, const Core::LinAlg::MultiMapExtractor& me, double scaling)
 {
   const double dt = poro_->fluid_field()->Dt();
   if (idx_.size() == 2)  // assum that the poro field is not split and we just have a blockmatrix
@@ -346,7 +346,7 @@ void XFEM::XfpCouplingManager::Update(double scaling)
 /*----------------------------------------------------------------------*/
 /* Write Output                                             ager 06/2016 |
  *-----------------------------------------------------------------------*/
-void XFEM::XfpCouplingManager::Output(CORE::IO::DiscretizationWriter& writer)
+void XFEM::XfpCouplingManager::Output(Core::IO::DiscretizationWriter& writer)
 {
   //--------------------------------
   // output for Lagrange multiplier field (ie forces onto the structure, Robin-type forces
@@ -365,7 +365,7 @@ void XFEM::XfpCouplingManager::Output(CORE::IO::DiscretizationWriter& writer)
 /*----------------------------------------------------------------------*/
 /* Read Restart on the interface                            ager 06/2016 |
  *-----------------------------------------------------------------------*/
-void XFEM::XfpCouplingManager::read_restart(CORE::IO::DiscretizationReader& reader)
+void XFEM::XfpCouplingManager::read_restart(Core::IO::DiscretizationReader& reader)
 {
   Teuchos::RCP<Epetra_Vector> lambdafull =
       Teuchos::rcp(new Epetra_Vector(*GetMapExtractor(0)->FullMap(), true));

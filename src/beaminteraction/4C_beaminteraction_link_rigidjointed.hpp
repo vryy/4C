@@ -21,33 +21,33 @@ FOUR_C_NAMESPACE_OPEN
 
 
 // forward declarations
-namespace CORE::COMM
+namespace Core::Communication
 {
   class PackBuffer;
 }
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
     class Beam3Base;
     class Beam3r;
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SerialDenseVector;
   class SerialDenseMatrix;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 namespace BEAMINTERACTION
 {
-  class BeamLinkRigidJointedType : public CORE::COMM::ParObjectType
+  class BeamLinkRigidJointedType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "BeamLinkRigidJointedType"; };
@@ -80,9 +80,9 @@ namespace BEAMINTERACTION
 
     //! Initialization
     void Init(const int id, const std::vector<std::pair<int, int>>& eleids,
-        const std::vector<CORE::LINALG::Matrix<3, 1>>& initpos,
-        const std::vector<CORE::LINALG::Matrix<3, 3>>& inittriad,
-        INPAR::BEAMINTERACTION::CrosslinkerType linkertype, double timelinkwasset) override;
+        const std::vector<Core::LinAlg::Matrix<3, 1>>& initpos,
+        const std::vector<Core::LinAlg::Matrix<3, 3>>& inittriad,
+        Inpar::BEAMINTERACTION::CrosslinkerType linkertype, double timelinkwasset) override;
 
     //! Setup
     void Setup(const int matnum) override;
@@ -101,7 +101,7 @@ namespace BEAMINTERACTION
     \ref Pack and \ref Unpack are used to communicate this element
 
     */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class
@@ -116,20 +116,20 @@ namespace BEAMINTERACTION
     //! @name Access methods
 
     //! return orientation of first connection site as quaternion
-    inline const CORE::LINALG::Matrix<4, 1, double>& get_bind_spot_quaternion1() const
+    inline const Core::LinAlg::Matrix<4, 1, double>& get_bind_spot_quaternion1() const
     {
       return bspottriad1_;
     }
 
     //! return orientation of first connection site as quaternion
-    inline const CORE::LINALG::Matrix<4, 1, double>& get_bind_spot_quaternion2() const
+    inline const Core::LinAlg::Matrix<4, 1, double>& get_bind_spot_quaternion2() const
     {
       return bspottriad2_;
     }
 
     //! get force in first or second binding spot
     void GetBindingSpotForce(
-        int bspotid, CORE::LINALG::SerialDenseVector& bspotforce) const override
+        int bspotid, Core::LinAlg::SerialDenseVector& bspotforce) const override
     {
       FOUR_C_THROW(" needs to be implemented in derived classes.");
     }
@@ -142,29 +142,29 @@ namespace BEAMINTERACTION
     /*!
     \brief Evaluate forces
     */
-    bool evaluate_force(CORE::LINALG::SerialDenseVector& forcevec1,
-        CORE::LINALG::SerialDenseVector& forcevec2) override = 0;
+    bool evaluate_force(Core::LinAlg::SerialDenseVector& forcevec1,
+        Core::LinAlg::SerialDenseVector& forcevec2) override = 0;
 
     /*!
     \brief Evaluate stiffness contribution
     */
-    bool evaluate_stiff(CORE::LINALG::SerialDenseMatrix& stiffmat11,
-        CORE::LINALG::SerialDenseMatrix& stiffmat12, CORE::LINALG::SerialDenseMatrix& stiffmat21,
-        CORE::LINALG::SerialDenseMatrix& stiffmat22) override = 0;
+    bool evaluate_stiff(Core::LinAlg::SerialDenseMatrix& stiffmat11,
+        Core::LinAlg::SerialDenseMatrix& stiffmat12, Core::LinAlg::SerialDenseMatrix& stiffmat21,
+        Core::LinAlg::SerialDenseMatrix& stiffmat22) override = 0;
 
     /*!
     \brief Evaluate forces and stiffness contribution
     */
-    bool evaluate_force_stiff(CORE::LINALG::SerialDenseVector& forcevec1,
-        CORE::LINALG::SerialDenseVector& forcevec2, CORE::LINALG::SerialDenseMatrix& stiffmat11,
-        CORE::LINALG::SerialDenseMatrix& stiffmat12, CORE::LINALG::SerialDenseMatrix& stiffmat21,
-        CORE::LINALG::SerialDenseMatrix& stiffmat22) override = 0;
+    bool evaluate_force_stiff(Core::LinAlg::SerialDenseVector& forcevec1,
+        Core::LinAlg::SerialDenseVector& forcevec2, Core::LinAlg::SerialDenseMatrix& stiffmat11,
+        Core::LinAlg::SerialDenseMatrix& stiffmat12, Core::LinAlg::SerialDenseMatrix& stiffmat21,
+        Core::LinAlg::SerialDenseMatrix& stiffmat22) override = 0;
 
     /*
     \brief Update position and triad of both connection sites (a.k.a. binding spots)
     */
-    void ResetState(std::vector<CORE::LINALG::Matrix<3, 1>>& bspotpos,
-        std::vector<CORE::LINALG::Matrix<3, 3>>& bspottriad) override;
+    void ResetState(std::vector<Core::LinAlg::Matrix<3, 1>>& bspotpos,
+        std::vector<Core::LinAlg::Matrix<3, 3>>& bspottriad) override;
 
     //! return appropriate instance of the desired class (acts as a simple factory)
     static Teuchos::RCP<BeamLinkRigidJointed> Create();
@@ -173,14 +173,14 @@ namespace BEAMINTERACTION
 
    private:
     //! current triad of the two connection sites as quaternions
-    CORE::LINALG::Matrix<4, 1> bspottriad1_;
-    CORE::LINALG::Matrix<4, 1> bspottriad2_;
+    Core::LinAlg::Matrix<4, 1> bspottriad1_;
+    Core::LinAlg::Matrix<4, 1> bspottriad2_;
 
     //! triads representing the (constant) relative rotation between the two nodal triads of the
     //! linker element
     // and cross-section orientation of its connection sites (a.k.a. binding spots)
-    CORE::LINALG::Matrix<3, 3> lambdarel1_;
-    CORE::LINALG::Matrix<3, 3> lambdarel2_;
+    Core::LinAlg::Matrix<3, 3> lambdarel1_;
+    Core::LinAlg::Matrix<3, 3> lambdarel2_;
 
     //@}
   };

@@ -12,7 +12,7 @@
 
 namespace
 {
-  using namespace FourC::CORE::UTILS;
+  using namespace FourC::Core::UTILS;
 
   struct MoveOnlyType
   {

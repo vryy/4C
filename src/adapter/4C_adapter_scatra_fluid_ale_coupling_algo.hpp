@@ -22,7 +22,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace ADAPTER
+namespace Adapter
 {
   // forward declarations
 
@@ -42,8 +42,8 @@ namespace ADAPTER
     \author gjb
     \date 05/09
    */
-  class ScaTraFluidAleCouplingAlgorithm : public ADAPTER::ScaTraFluidCouplingAlgorithm,
-                                          public ADAPTER::AleBaseAlgorithm
+  class ScaTraFluidAleCouplingAlgorithm : public Adapter::ScaTraFluidCouplingAlgorithm,
+                                          public Adapter::AleBaseAlgorithm
   {
    public:
     /// constructor using a Epetra_Comm
@@ -68,7 +68,7 @@ namespace ADAPTER
         Teuchos::RCP<Epetra_Vector> ivel, const bool pseudotransient);
 
     /// access to ale field
-    const Teuchos::RCP<ADAPTER::AleFluidWrapper>& ale_field() { return ale_; }
+    const Teuchos::RCP<Adapter::AleFluidWrapper>& ale_field() { return ale_; }
 
    protected:
     //! @name Transfer helpers
@@ -91,19 +91,19 @@ namespace ADAPTER
     Teuchos::RCP<AleFluidWrapper> ale_;
 
     /// coupling of fluid and ale (whole field)
-    Teuchos::RCP<CORE::ADAPTER::Coupling> coupfa_;
+    Teuchos::RCP<Core::Adapter::Coupling> coupfa_;
 
     /// coupling of fluid and ale (interface only)
-    Teuchos::RCP<CORE::ADAPTER::Coupling> icoupfa_;
+    Teuchos::RCP<Core::Adapter::Coupling> icoupfa_;
 
     /// coupling of fluid and ale at the free surface
-    Teuchos::RCP<CORE::ADAPTER::Coupling> fscoupfa_;
+    Teuchos::RCP<Core::Adapter::Coupling> fscoupfa_;
 
     /// condition name
     const std::string condname_;
   };
 
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 FOUR_C_NAMESPACE_CLOSE
 

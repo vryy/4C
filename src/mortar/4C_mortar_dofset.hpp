@@ -16,18 +16,18 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace MORTAR
+namespace Mortar
 {
   /*!
   \brief A set of degrees of freedom special for mortar coupling
 
   */
-  class DofSet : public CORE::Dofsets::DofSet
+  class DofSet : public Core::DOFSets::DofSet
   {
    public:
     //! @name Constructors and destructors and related methods
@@ -42,9 +42,9 @@ namespace MORTAR
 
 
     /// create a copy of this object
-    Teuchos::RCP<CORE::Dofsets::DofSet> Clone() override
+    Teuchos::RCP<Core::DOFSets::DofSet> Clone() override
     {
-      return Teuchos::rcp(new MORTAR::DofSet(*this));
+      return Teuchos::rcp(new Mortar::DofSet(*this));
     }
 
     //! @}
@@ -65,13 +65,13 @@ namespace MORTAR
     @return Maximum dof number of this dofset
     */
     int assign_degrees_of_freedom(
-        const DRT::Discretization& dis, const unsigned dspos, const int start) override;
+        const Discret::Discretization& dis, const unsigned dspos, const int start) override;
 
     //! @}
 
    protected:
   };  // class DofSet
-}  // namespace MORTAR
+}  // namespace Mortar
 
 FOUR_C_NAMESPACE_CLOSE
 

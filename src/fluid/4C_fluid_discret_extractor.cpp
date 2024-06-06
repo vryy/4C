@@ -26,11 +26,11 @@ FOUR_C_NAMESPACE_OPEN
  | Constructor (public)                                  rasthofer 05/11|
  *----------------------------------------------------------------------*/
 FLD::FluidDiscretExtractor::FluidDiscretExtractor(
-    Teuchos::RCP<DRT::Discretization> actdis, const std::string& condition, bool yescondition)
+    Teuchos::RCP<Discret::Discretization> actdis, const std::string& condition, bool yescondition)
     : parentdiscret_(actdis)
 {
   // get condition, i.e., do we have nodes that belong to a separate section of the domain
-  std::vector<CORE::Conditions::Condition*> sepcond;
+  std::vector<Core::Conditions::Condition*> sepcond;
   parentdiscret_->GetCondition(condition, sepcond);
 
   std::vector<int> allcnd_sepcondnodeids;
@@ -58,11 +58,11 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
         childdiscret_ = Teuchos::rcp(new XFEM::DiscretizationXWall(
             (std::string) "inflow", Teuchos::rcp(parentdiscret_->Comm().Clone()), actdis->n_dim()));
       else
-        childdiscret_ = Teuchos::rcp(new DRT::Discretization(
+        childdiscret_ = Teuchos::rcp(new Discret::Discretization(
             (std::string) "inflow", Teuchos::rcp(parentdiscret_->Comm().Clone()), actdis->n_dim()));
     }
     else  // dummy discretization
-      childdiscret_ = Teuchos::rcp(new DRT::Discretization(
+      childdiscret_ = Teuchos::rcp(new Discret::Discretization(
           (std::string) "none", Teuchos::rcp(parentdiscret_->Comm().Clone()), actdis->n_dim()));
 
     // get set of ids of all child nodes
@@ -124,7 +124,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
     // loop all column elements and label all row nodes of the separate section
     for (int i = 0; i < parentdiscret_->NumMyColElements(); ++i)
     {
-      CORE::Elements::Element* actele = parentdiscret_->lColElement(i);
+      Core::Elements::Element* actele = parentdiscret_->lColElement(i);
 
       // get the node ids of this element
       const int numnode = actele->num_node();
@@ -174,9 +174,9 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
     for (std::set<int>::iterator id = sepcondelenodes_row.begin(); id != sepcondelenodes_row.end();
          ++id)
     {
-      CORE::Nodes::Node* actnode = parentdiscret_->gNode(*id);
+      Core::Nodes::Node* actnode = parentdiscret_->gNode(*id);
 
-      Teuchos::RCP<CORE::Nodes::Node> sepcondnode = Teuchos::rcp(actnode->Clone());
+      Teuchos::RCP<Core::Nodes::Node> sepcondnode = Teuchos::rcp(actnode->Clone());
 
       childdiscret_->AddNode(sepcondnode);
     }
@@ -184,7 +184,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
     // loop all row elements and add all elements with a separation node
     for (int i = 0; i < parentdiscret_->NumMyRowElements(); ++i)
     {
-      CORE::Elements::Element* actele = parentdiscret_->lRowElement(i);
+      Core::Elements::Element* actele = parentdiscret_->lRowElement(i);
 
       // get the node ids of this element
       const int numnode = actele->num_node();
@@ -215,7 +215,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
       // yes, we have a turbulent separation condition (for this element)
       if (found == true)
       {
-        Teuchos::RCP<CORE::Elements::Element> sepcondele = Teuchos::rcp(actele->Clone());
+        Teuchos::RCP<Core::Elements::Element> sepcondele = Teuchos::rcp(actele->Clone());
 
         childdiscret_->add_element(sepcondele);
       }
@@ -278,7 +278,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
       for (unsigned numcond = 0; numcond < allcond.size(); ++numcond)
       {
         // get condition
-        std::vector<CORE::Conditions::Condition*> actcond;
+        std::vector<Core::Conditions::Condition*> actcond;
         parentdiscret_->GetCondition(allcond[numcond], actcond);
         // loop all condition of the current type
         for (unsigned numactcond = 0; numactcond < actcond.size(); ++numactcond)
@@ -327,7 +327,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
         // master and slave nodes are owned by one proc afterwards
         if (allcond[numcond] == "SurfacePeriodic")
         {
-          CORE::Conditions::PeriodicBoundaryConditions pbc(childdiscret_, false);
+          Core::Conditions::PeriodicBoundaryConditions pbc(childdiscret_, false);
           pbc.update_dofs_for_periodic_boundary_conditions();
         }
       }
@@ -348,7 +348,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
     // idea: use a transparent dofset and hand through the dof numbering
     // get dof form parent discretization for child discretization
     childdiscret_->ReplaceDofSet(Teuchos::rcp(
-        new CORE::Dofsets::TransparentDofSet(parentdiscret_, true)));  // true: parallel
+        new Core::DOFSets::TransparentDofSet(parentdiscret_, true)));  // true: parallel
     // and assign the dofs to nodes
     // remark: nothing is redistributed here
     childdiscret_->Redistribute(*newrownodemap, *newcolnodemap, true, true, true);
@@ -374,13 +374,13 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
     // Starting from the current partitioning of the discretization, compute nodal maps with a
     // hopefully better partitioning
     Teuchos::RCP<const Epetra_CrsGraph> sepcondnodemap =
-        CORE::REBALANCE::BuildGraph(childdiscret_, sepcondelenodesmap);
+        Core::Rebalance::BuildGraph(childdiscret_, sepcondelenodesmap);
 
     Teuchos::ParameterList rebalanceParams;
     rebalanceParams.set<std::string>("num parts", std::to_string(comm->NumProc()));
 
     const auto& [sepcondrownodes, sepcondcolnodes] =
-        CORE::REBALANCE::RebalanceNodeMaps(sepcondnodemap, rebalanceParams);
+        Core::Rebalance::RebalanceNodeMaps(sepcondnodemap, rebalanceParams);
 
     if (childdiscret_->Comm().MyPID() == 0)
     {
@@ -403,7 +403,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
         std::cout << " discretization and fetch slave nodes to the master's proc\n";
       }
 
-      CORE::Conditions::PeriodicBoundaryConditions pbc(childdiscret_, false);
+      Core::Conditions::PeriodicBoundaryConditions pbc(childdiscret_, false);
       pbc.update_dofs_for_periodic_boundary_conditions();
 
       // get node to node coupling
@@ -422,12 +422,12 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
 
     // idea: use a transparent dofset and hand through the dof numbering
     childdiscret_->ReplaceDofSet(
-        Teuchos::rcp(new CORE::Dofsets::TransparentDofSet(parentdiscret_, true)));
+        Teuchos::rcp(new Core::DOFSets::TransparentDofSet(parentdiscret_, true)));
 
     // set discretization writer
-    childdiscret_->SetWriter(Teuchos::rcp(new CORE::IO::DiscretizationWriter(childdiscret_,
-        GLOBAL::Problem::Instance()->OutputControlFile(),
-        GLOBAL::Problem::Instance()->spatial_approximation_type())));
+    childdiscret_->SetWriter(Teuchos::rcp(new Core::IO::DiscretizationWriter(childdiscret_,
+        Global::Problem::Instance()->OutputControlFile(),
+        Global::Problem::Instance()->spatial_approximation_type())));
 
     // call fill_complete() to assign the dof
     // remark: equal Redistribute(*newrownodemap,*newcolnodemap,true,true,true) as
@@ -491,7 +491,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
       // loop all column eles, check dofs for each node
       for (int i = 0; i < childdiscret_->NumMyColElements(); ++i)
       {
-        CORE::Elements::Element* actele = childdiscret_->lColElement(i);
+        Core::Elements::Element* actele = childdiscret_->lColElement(i);
 
         // get the node ids of this element
         const int numnode = actele->num_node();
@@ -500,7 +500,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
         // loop nodeids, check if a separation condition is active
         for (int rr = 0; rr < numnode; ++rr)
         {
-          CORE::Nodes::Node* node = childdiscret_->gNode(nodeids[rr]);
+          Core::Nodes::Node* node = childdiscret_->gNode(nodeids[rr]);
           std::vector<int> nodedofset = childdiscret_->Dof(node);
 
           for (unsigned index = 0; index < nodedofset.size(); ++index)

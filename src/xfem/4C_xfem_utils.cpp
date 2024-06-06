@@ -23,23 +23,23 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void XFEM::UTILS::extract_node_vectors(Teuchos::RCP<DRT::Discretization> dis,
-    std::map<int, CORE::LINALG::Matrix<3, 1>>& nodevecmap, Teuchos::RCP<Epetra_Vector> idispnp)
+void XFEM::UTILS::extract_node_vectors(Teuchos::RCP<Discret::Discretization> dis,
+    std::map<int, Core::LinAlg::Matrix<3, 1>>& nodevecmap, Teuchos::RCP<Epetra_Vector> idispnp)
 {
   Teuchos::RCP<const Epetra_Vector> dispcol =
-      CORE::REBALANCE::GetColVersionOfRowVector(dis, idispnp);
+      Core::Rebalance::GetColVersionOfRowVector(dis, idispnp);
   nodevecmap.clear();
 
   for (int lid = 0; lid < dis->NumMyColNodes(); ++lid)
   {
-    const CORE::Nodes::Node* node = dis->lColNode(lid);
+    const Core::Nodes::Node* node = dis->lColNode(lid);
     std::vector<int> lm;
     dis->Dof(node, lm);
     std::vector<double> mydisp;
-    CORE::FE::ExtractMyValues(*dispcol, mydisp, lm);
+    Core::FE::ExtractMyValues(*dispcol, mydisp, lm);
     if (mydisp.size() < 3) FOUR_C_THROW("we need at least 3 dofs here");
 
-    CORE::LINALG::Matrix<3, 1> currpos;
+    Core::LinAlg::Matrix<3, 1> currpos;
     currpos(0) = node->X()[0] + mydisp[0];
     currpos(1) = node->X()[1] + mydisp[1];
     currpos(2) = node->X()[2] + mydisp[2];
@@ -50,21 +50,21 @@ void XFEM::UTILS::extract_node_vectors(Teuchos::RCP<DRT::Discretization> dis,
 // -------------------------------------------------------------------
 // set master and slave parameters (winter 01/2015)
 // -------------------------------------------------------------------
-void XFEM::UTILS::get_volume_cell_material(CORE::Elements::Element* actele,
-    Teuchos::RCP<CORE::MAT::Material>& mat, CORE::GEO::CUT::Point::PointPosition position)
+void XFEM::UTILS::get_volume_cell_material(Core::Elements::Element* actele,
+    Teuchos::RCP<Core::Mat::Material>& mat, Core::Geo::Cut::Point::PointPosition position)
 {
   int position_id = 0;
-  if (position == CORE::GEO::CUT::Point::inside)  // minus domain, Omega^i with i<j
+  if (position == Core::Geo::Cut::Point::inside)  // minus domain, Omega^i with i<j
     position_id = 1;
-  else if (position != CORE::GEO::CUT::Point::outside)  // plus domain, \Omega^j with j>i
+  else if (position != Core::Geo::Cut::Point::outside)  // plus domain, \Omega^j with j>i
     FOUR_C_THROW("Volume cell is either undecided or on surface. That can't be good....");
 
-  Teuchos::RCP<CORE::MAT::Material> material = actele->Material();
+  Teuchos::RCP<Core::Mat::Material> material = actele->Material();
 
-  if (material->MaterialType() == CORE::Materials::m_matlist)
+  if (material->MaterialType() == Core::Materials::m_matlist)
   {
     // get material list for this element
-    const MAT::MatList* matlist = static_cast<const MAT::MatList*>(material.get());
+    const Mat::MatList* matlist = static_cast<const Mat::MatList*>(material.get());
     int numofmaterials = matlist->NumMat();
 
     // Error messages
@@ -91,32 +91,32 @@ void XFEM::UTILS::get_volume_cell_material(CORE::Elements::Element* actele,
  |                                                         winter 01/15 |
  *----------------------------------------------------------------------*/
 void XFEM::UTILS::SafetyCheckMaterials(
-    Teuchos::RCP<CORE::MAT::Material>& pmat, Teuchos::RCP<CORE::MAT::Material>& nmat)
+    Teuchos::RCP<Core::Mat::Material>& pmat, Teuchos::RCP<Core::Mat::Material>& nmat)
 {
   //------------------------------ see whether materials in patch are equal
 
   if (pmat->MaterialType() != nmat->MaterialType())
     FOUR_C_THROW(" not the same material for master and slave parent element");
 
-  if (pmat->MaterialType() == CORE::Materials::m_matlist)
+  if (pmat->MaterialType() == Core::Materials::m_matlist)
     FOUR_C_THROW(
         "A matlist has been found in edge based stabilization! If you are running XTPF, check "
         "calls as this should NOT happen!!!");
 
-  if (pmat->MaterialType() != CORE::Materials::m_carreauyasuda &&
-      pmat->MaterialType() != CORE::Materials::m_modpowerlaw &&
-      pmat->MaterialType() != CORE::Materials::m_herschelbulkley &&
-      pmat->MaterialType() != CORE::Materials::m_fluid)
+  if (pmat->MaterialType() != Core::Materials::m_carreauyasuda &&
+      pmat->MaterialType() != Core::Materials::m_modpowerlaw &&
+      pmat->MaterialType() != Core::Materials::m_herschelbulkley &&
+      pmat->MaterialType() != Core::Materials::m_fluid)
     FOUR_C_THROW("Material law for parent element is not a fluid");
 
-  if (pmat->MaterialType() == CORE::Materials::m_fluid)
+  if (pmat->MaterialType() == Core::Materials::m_fluid)
   {
     {
-      const MAT::NewtonianFluid* actmat_p = static_cast<const MAT::NewtonianFluid*>(pmat.get());
+      const Mat::NewtonianFluid* actmat_p = static_cast<const Mat::NewtonianFluid*>(pmat.get());
       const double pvisc = actmat_p->Viscosity();
       const double pdens = actmat_p->Density();
 
-      const MAT::NewtonianFluid* actmat_m = static_cast<const MAT::NewtonianFluid*>(nmat.get());
+      const Mat::NewtonianFluid* actmat_m = static_cast<const Mat::NewtonianFluid*>(nmat.get());
       const double nvisc = actmat_m->Viscosity();
       const double ndens = actmat_m->Density();
 
@@ -143,13 +143,13 @@ void XFEM::UTILS::SafetyCheckMaterials(
 }
 
 //! Extract a quantity for an element
-void XFEM::UTILS::ExtractQuantityAtElement(CORE::LINALG::SerialDenseMatrix::Base& element_vector,
-    const CORE::Elements::Element* element,
+void XFEM::UTILS::ExtractQuantityAtElement(Core::LinAlg::SerialDenseMatrix::Base& element_vector,
+    const Core::Elements::Element* element,
     const Teuchos::RCP<const Epetra_MultiVector>& global_col_vector,
-    Teuchos::RCP<DRT::Discretization>& dis, const int nds_vector, const int nsd)
+    Teuchos::RCP<Discret::Discretization>& dis, const int nds_vector, const int nsd)
 {
   // get the other nds-set which is connected to the current one via this boundary-cell
-  CORE::Elements::Element::LocationArray la(dis->NumDofSets());
+  Core::Elements::Element::LocationArray la(dis->NumDofSets());
   element->LocationVector(*dis, la, false);
 
   const size_t numnode = element->num_node();
@@ -161,31 +161,31 @@ void XFEM::UTILS::ExtractQuantityAtElement(CORE::LINALG::SerialDenseMatrix::Base
   }
 
   std::vector<double> local_vector(nsd * numnode);
-  CORE::FE::ExtractMyValues(*global_col_vector, local_vector, la[nds_vector].lm_);
+  Core::FE::ExtractMyValues(*global_col_vector, local_vector, la[nds_vector].lm_);
 
   if (local_vector.size() != nsd * numnode)
     FOUR_C_THROW("wrong size of (potentially resized) local matrix!");
 
   // copy local to normal....
-  CORE::LINALG::copy(local_vector.data(), element_vector);
+  Core::LinAlg::copy(local_vector.data(), element_vector);
 }
 
 
 //! Extract a quantity for a node
-void XFEM::UTILS::ExtractQuantityAtNode(CORE::LINALG::SerialDenseMatrix::Base& element_vector,
-    const CORE::Nodes::Node* node, const Teuchos::RCP<const Epetra_MultiVector>& global_col_vector,
-    Teuchos::RCP<DRT::Discretization>& dis, const int nds_vector, const unsigned int nsd)
+void XFEM::UTILS::ExtractQuantityAtNode(Core::LinAlg::SerialDenseMatrix::Base& element_vector,
+    const Core::Nodes::Node* node, const Teuchos::RCP<const Epetra_MultiVector>& global_col_vector,
+    Teuchos::RCP<Discret::Discretization>& dis, const int nds_vector, const unsigned int nsd)
 {
   const std::vector<int> lm = dis->Dof(nds_vector, node);
   if (lm.size() != 1) FOUR_C_THROW("assume a unique level-set dof in cutterdis-Dofset");
 
   std::vector<double> local_vector(nsd);
-  CORE::FE::ExtractMyValues(*global_col_vector, local_vector, lm);
+  Core::FE::ExtractMyValues(*global_col_vector, local_vector, lm);
 
   if (local_vector.size() != nsd) FOUR_C_THROW("wrong size of (potentially resized) local matrix!");
 
   // copy local to nvec....
-  CORE::LINALG::copy(local_vector.data(), element_vector);
+  Core::LinAlg::copy(local_vector.data(), element_vector);
 }
 
 FOUR_C_NAMESPACE_CLOSE

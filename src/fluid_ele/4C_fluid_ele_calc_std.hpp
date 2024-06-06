@@ -19,26 +19,26 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     class FluidEleCalcStd : public FluidEleCalc<distype>
     {
-      typedef DRT::ELEMENTS::FluidEleCalc<distype> my;
+      typedef Discret::ELEMENTS::FluidEleCalc<distype> my;
 
      public:
       /// Singleton access method
       static FluidEleCalcStd<distype>* Instance(
-          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
+          Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
      private:
       /// private constructor, since we are a Singleton.
       FluidEleCalcStd();
     };
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

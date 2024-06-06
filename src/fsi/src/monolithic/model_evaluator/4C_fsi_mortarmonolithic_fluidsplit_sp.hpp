@@ -39,17 +39,17 @@ namespace Teuchos
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace CORE::ADAPTER
+namespace Core::Adapter
 {
   class Coupling;
   class CouplingMortar;
-}  // namespace CORE::ADAPTER
+}  // namespace Core::Adapter
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class BlockSparseMatrixBase;
   class MatrixColTransform;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 namespace FSI
 {
@@ -76,12 +76,12 @@ namespace FSI
     //! @name Apply current field state to system
 
     /// setup composed system matrix from field solvers
-    void setup_system_matrix(CORE::LINALG::BlockSparseMatrixBase& mat) final;
+    void setup_system_matrix(Core::LinAlg::BlockSparseMatrixBase& mat) final;
 
     //@}
 
     /// the composed system matrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SystemMatrix() const override;
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> SystemMatrix() const override;
 
     /// read restart
     void read_restart(int step) final;
@@ -120,10 +120,11 @@ namespace FSI
      */
     void create_node_owner_relationship(std::map<int, int>* nodeOwner,
         std::map<int, std::list<int>>* inverseNodeOwner,
-        std::map<int, CORE::Nodes::Node*>* fluidnodesPtr,
-        std::map<int, CORE::Nodes::Node*>* structuregnodesPtr,
-        Teuchos::RCP<DRT::Discretization> structuredis, Teuchos::RCP<DRT::Discretization> fluiddis,
-        const INPAR::FSI::Redistribute domain) final;
+        std::map<int, Core::Nodes::Node*>* fluidnodesPtr,
+        std::map<int, Core::Nodes::Node*>* structuregnodesPtr,
+        Teuchos::RCP<Discret::Discretization> structuredis,
+        Teuchos::RCP<Discret::Discretization> fluiddis,
+        const Inpar::FSI::Redistribute domain) final;
 
    protected:
     void create_system_matrix();
@@ -212,11 +213,11 @@ namespace FSI
     //!@{
 
     /// apply infnorm scaling to linear block system
-    void scale_system(CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b) override;
+    void scale_system(Core::LinAlg::BlockSparseMatrixBase& mat, Epetra_Vector& b) override;
 
     /// undo infnorm scaling from scaled solution
     void unscale_solution(
-        CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b) override;
+        Core::LinAlg::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b) override;
 
     //!@}
 
@@ -228,7 +229,7 @@ namespace FSI
      *
      * As for the code, we have a 4x4 system.
      */
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> systemmatrix_;
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> systemmatrix_;
 
     /// communicator
     const Epetra_Comm& comm_;
@@ -236,13 +237,13 @@ namespace FSI
     /// @name Matrix block transform objects to handle row and column map exchange for matrix blocks
 
     /// Coupling of structure and fluid at the interface
-    Teuchos::RCP<CORE::ADAPTER::CouplingMortar> coupling_solid_fluid_mortar_;
+    Teuchos::RCP<Core::Adapter::CouplingMortar> coupling_solid_fluid_mortar_;
 
     /// Helper variable for the transformation of aleunknowns onto the slave side
-    Teuchos::RCP<CORE::LINALG::MatrixColTransform> ale_inner_interf_transform_;
+    Teuchos::RCP<Core::LinAlg::MatrixColTransform> ale_inner_interf_transform_;
 
     /// Helper variable for the transformation of fluid unknowns onto the slave side
-    Teuchos::RCP<CORE::LINALG::MatrixColTransform> fluid_mesh_inner_inner_transform_;
+    Teuchos::RCP<Core::LinAlg::MatrixColTransform> fluid_mesh_inner_inner_transform_;
 
     ///@}
 

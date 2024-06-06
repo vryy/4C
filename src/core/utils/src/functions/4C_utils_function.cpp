@@ -59,7 +59,7 @@ namespace
   /// sets the values of the variables in second derivative of expression
   template <int dim>
   void SetValuesInExpressionSecondDeriv(
-      const std::vector<Teuchos::RCP<CORE::UTILS::FunctionVariable>>& variables, const double* x,
+      const std::vector<Teuchos::RCP<Core::UTILS::FunctionVariable>>& variables, const double* x,
       const double t,
       std::map<std::string, Sacado::Fad::DFad<Sacado::Fad::DFad<double>>>& variable_values)
   {
@@ -127,7 +127,7 @@ namespace
   std::vector<double> EvaluateAndAssembleExpressionToResultVector(
       const std::map<std::string, Sacado::Fad::DFad<double>>& variables,
       const std::size_t component,
-      std::vector<Teuchos::RCP<CORE::UTILS::SymbolicExpression<double>>> expr,
+      std::vector<Teuchos::RCP<Core::UTILS::SymbolicExpression<double>>> expr,
       const std::map<std::string, double>& constant_values)
   {
     // number of variables
@@ -147,7 +147,7 @@ namespace
 
   /// modifies the component to zero in case the expression is of size one
   std::size_t FindModifiedComponent(const std::size_t component,
-      const std::vector<Teuchos::RCP<CORE::UTILS::SymbolicExpression<double>>>& expr)
+      const std::vector<Teuchos::RCP<Core::UTILS::SymbolicExpression<double>>>& expr)
   {
     return (expr.size() == 1) ? 0 : component;
   }
@@ -183,8 +183,8 @@ namespace
 
 
 template <int dim>
-Teuchos::RCP<CORE::UTILS::FunctionOfAnything> CORE::UTILS::TryCreateSymbolicFunctionOfAnything(
-    const std::vector<INPUT::LineDefinition>& function_line_defs)
+Teuchos::RCP<Core::UTILS::FunctionOfAnything> Core::UTILS::TryCreateSymbolicFunctionOfAnything(
+    const std::vector<Input::LineDefinition>& function_line_defs)
 {
   if (function_line_defs.size() != 1) return Teuchos::null;
 
@@ -201,7 +201,7 @@ Teuchos::RCP<CORE::UTILS::FunctionOfAnything> CORE::UTILS::TryCreateSymbolicFunc
       function_lin_def.extract_pair_of_string_and_double_vector("CONSTANTS", constants);
     }
 
-    return Teuchos::rcp(new CORE::UTILS::SymbolicFunctionOfAnything<dim>(component, constants));
+    return Teuchos::rcp(new Core::UTILS::SymbolicFunctionOfAnything<dim>(component, constants));
   }
   else
   {
@@ -212,8 +212,8 @@ Teuchos::RCP<CORE::UTILS::FunctionOfAnything> CORE::UTILS::TryCreateSymbolicFunc
 
 
 template <int dim>
-Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime> CORE::UTILS::TryCreateSymbolicFunctionOfSpaceTime(
-    const std::vector<INPUT::LineDefinition>& function_line_defs)
+Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime> Core::UTILS::TryCreateSymbolicFunctionOfSpaceTime(
+    const std::vector<Input::LineDefinition>& function_line_defs)
 {
   // Work around a design flaw in the input line for SymbolicFunctionOfSpaceTime.
   // This line accepts optional components in the beginning although this is not directly supported
@@ -225,7 +225,7 @@ Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime> CORE::UTILS::TryCreateSymbolicFun
     {
       call();
     }
-    catch (const CORE::Exception& e)
+    catch (const Core::Exception& e)
     {
     }
   };
@@ -254,7 +254,7 @@ Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime> CORE::UTILS::TryCreateSymbolicFun
   for (int n = 0; n <= maxcomp; ++n)
   {
     // update the current row
-    const INPUT::LineDefinition& functcomp = function_line_defs[n];
+    const Input::LineDefinition& functcomp = function_line_defs[n];
 
     // check the validity of the n-th component
     int compid = 0;
@@ -272,14 +272,14 @@ Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime> CORE::UTILS::TryCreateSymbolicFun
   for (std::size_t j = 1; j <= numrowsvar; ++j)
   {
     // update the current row
-    const INPUT::LineDefinition& line = function_line_defs[maxcomp + j];
+    const Input::LineDefinition& line = function_line_defs[maxcomp + j];
 
     // read the number of the variable
     int varid;
     ignore_errors_in([&]() { line.ExtractInt("VARIABLE", varid); });
 
     const auto variable = std::invoke(
-        [&]() -> Teuchos::RCP<CORE::UTILS::FunctionVariable>
+        [&]() -> Teuchos::RCP<Core::UTILS::FunctionVariable>
         {
           // read the name of the variable
           std::string varname;
@@ -396,7 +396,7 @@ Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime> CORE::UTILS::TryCreateSymbolicFun
 }
 
 template <int dim>
-CORE::UTILS::SymbolicFunctionOfSpaceTime<dim>::SymbolicFunctionOfSpaceTime(
+Core::UTILS::SymbolicFunctionOfSpaceTime<dim>::SymbolicFunctionOfSpaceTime(
     const std::vector<std::string>& expressions,
     std::vector<Teuchos::RCP<FunctionVariable>> variables)
     : variables_(std::move(variables))
@@ -405,14 +405,14 @@ CORE::UTILS::SymbolicFunctionOfSpaceTime<dim>::SymbolicFunctionOfSpaceTime(
   {
     {
       auto symbolicexpression =
-          Teuchos::rcp(new CORE::UTILS::SymbolicExpression<ValueType>(expression));
+          Teuchos::rcp(new Core::UTILS::SymbolicExpression<ValueType>(expression));
       expr_.push_back(symbolicexpression);
     }
   }
 }
 
 template <int dim>
-double CORE::UTILS::SymbolicFunctionOfSpaceTime<dim>::Evaluate(
+double Core::UTILS::SymbolicFunctionOfSpaceTime<dim>::Evaluate(
     const double* x, const double t, const std::size_t component) const
 {
   std::size_t component_mod = FindModifiedComponent(component, expr_);
@@ -443,7 +443,7 @@ double CORE::UTILS::SymbolicFunctionOfSpaceTime<dim>::Evaluate(
 }
 
 template <int dim>
-std::vector<double> CORE::UTILS::SymbolicFunctionOfSpaceTime<dim>::evaluate_spatial_derivative(
+std::vector<double> Core::UTILS::SymbolicFunctionOfSpaceTime<dim>::evaluate_spatial_derivative(
     const double* x, const double t, const std::size_t component) const
 {
   std::size_t component_mod = FindModifiedComponent(component, expr_);
@@ -466,7 +466,7 @@ std::vector<double> CORE::UTILS::SymbolicFunctionOfSpaceTime<dim>::evaluate_spat
 }
 
 template <int dim>
-std::vector<double> CORE::UTILS::SymbolicFunctionOfSpaceTime<dim>::evaluate_time_derivative(
+std::vector<double> Core::UTILS::SymbolicFunctionOfSpaceTime<dim>::evaluate_time_derivative(
     const double* x, const double t, const unsigned deg, const std::size_t component) const
 {
   // result vector
@@ -554,12 +554,12 @@ std::vector<double> CORE::UTILS::SymbolicFunctionOfSpaceTime<dim>::evaluate_time
 
 
 template <int dim>
-CORE::UTILS::SymbolicFunctionOfAnything<dim>::SymbolicFunctionOfAnything(
+Core::UTILS::SymbolicFunctionOfAnything<dim>::SymbolicFunctionOfAnything(
     const std::string& component, std::vector<std::pair<std::string, double>> constants)
     : constants_from_input_(std::move(constants))
 {
   // build the parser for the function evaluation
-  auto symbolicexpression = Teuchos::rcp(new CORE::UTILS::SymbolicExpression<double>(component));
+  auto symbolicexpression = Teuchos::rcp(new Core::UTILS::SymbolicExpression<double>(component));
 
   // save the parsers
   expr_.push_back(symbolicexpression);
@@ -568,7 +568,7 @@ CORE::UTILS::SymbolicFunctionOfAnything<dim>::SymbolicFunctionOfAnything(
 
 
 template <int dim>
-double CORE::UTILS::SymbolicFunctionOfAnything<dim>::Evaluate(
+double Core::UTILS::SymbolicFunctionOfAnything<dim>::Evaluate(
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants, const std::size_t component) const
 {
@@ -599,7 +599,7 @@ double CORE::UTILS::SymbolicFunctionOfAnything<dim>::Evaluate(
 
 
 template <int dim>
-std::vector<double> CORE::UTILS::SymbolicFunctionOfAnything<dim>::EvaluateDerivative(
+std::vector<double> Core::UTILS::SymbolicFunctionOfAnything<dim>::EvaluateDerivative(
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants, const std::size_t component) const
 {
@@ -634,32 +634,32 @@ std::vector<double> CORE::UTILS::SymbolicFunctionOfAnything<dim>::EvaluateDeriva
 
 // explicit instantiations
 
-template class CORE::UTILS::SymbolicFunctionOfSpaceTime<1>;
-template class CORE::UTILS::SymbolicFunctionOfSpaceTime<2>;
-template class CORE::UTILS::SymbolicFunctionOfSpaceTime<3>;
+template class Core::UTILS::SymbolicFunctionOfSpaceTime<1>;
+template class Core::UTILS::SymbolicFunctionOfSpaceTime<2>;
+template class Core::UTILS::SymbolicFunctionOfSpaceTime<3>;
 
-template class CORE::UTILS::SymbolicFunctionOfAnything<1>;
-template class CORE::UTILS::SymbolicFunctionOfAnything<2>;
-template class CORE::UTILS::SymbolicFunctionOfAnything<3>;
+template class Core::UTILS::SymbolicFunctionOfAnything<1>;
+template class Core::UTILS::SymbolicFunctionOfAnything<2>;
+template class Core::UTILS::SymbolicFunctionOfAnything<3>;
 
-template Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime>
-CORE::UTILS::TryCreateSymbolicFunctionOfSpaceTime<1>(
-    const std::vector<INPUT::LineDefinition>& function_line_defs);
-template Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime>
-CORE::UTILS::TryCreateSymbolicFunctionOfSpaceTime<2>(
-    const std::vector<INPUT::LineDefinition>& function_line_defs);
-template Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime>
-CORE::UTILS::TryCreateSymbolicFunctionOfSpaceTime<3>(
-    const std::vector<INPUT::LineDefinition>& function_line_defs);
+template Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime>
+Core::UTILS::TryCreateSymbolicFunctionOfSpaceTime<1>(
+    const std::vector<Input::LineDefinition>& function_line_defs);
+template Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime>
+Core::UTILS::TryCreateSymbolicFunctionOfSpaceTime<2>(
+    const std::vector<Input::LineDefinition>& function_line_defs);
+template Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime>
+Core::UTILS::TryCreateSymbolicFunctionOfSpaceTime<3>(
+    const std::vector<Input::LineDefinition>& function_line_defs);
 
-template Teuchos::RCP<CORE::UTILS::FunctionOfAnything>
-CORE::UTILS::TryCreateSymbolicFunctionOfAnything<1>(
-    const std::vector<INPUT::LineDefinition>& function_line_defs);
-template Teuchos::RCP<CORE::UTILS::FunctionOfAnything>
-CORE::UTILS::TryCreateSymbolicFunctionOfAnything<2>(
-    const std::vector<INPUT::LineDefinition>& function_line_defs);
-template Teuchos::RCP<CORE::UTILS::FunctionOfAnything>
-CORE::UTILS::TryCreateSymbolicFunctionOfAnything<3>(
-    const std::vector<INPUT::LineDefinition>& function_line_defs);
+template Teuchos::RCP<Core::UTILS::FunctionOfAnything>
+Core::UTILS::TryCreateSymbolicFunctionOfAnything<1>(
+    const std::vector<Input::LineDefinition>& function_line_defs);
+template Teuchos::RCP<Core::UTILS::FunctionOfAnything>
+Core::UTILS::TryCreateSymbolicFunctionOfAnything<2>(
+    const std::vector<Input::LineDefinition>& function_line_defs);
+template Teuchos::RCP<Core::UTILS::FunctionOfAnything>
+Core::UTILS::TryCreateSymbolicFunctionOfAnything<3>(
+    const std::vector<Input::LineDefinition>& function_line_defs);
 
 FOUR_C_NAMESPACE_CLOSE

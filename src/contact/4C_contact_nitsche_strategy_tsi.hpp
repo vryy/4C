@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace ADAPTER
+namespace Adapter
 {
   class Coupling;
 }
@@ -59,7 +59,7 @@ namespace CONTACT
     }
 
     void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
-        Teuchos::RCP<CORE::LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f,
+        Teuchos::RCP<Core::LinAlg::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f,
         const int step, const int iter, bool predictor) override
     {
       FOUR_C_THROW("not implemented");
@@ -75,14 +75,14 @@ namespace CONTACT
     void Setup(bool redistributed, bool init) override;
 
     void update_trace_ineq_etimates() override;
-    void set_state(const enum MORTAR::StateType& statename, const Epetra_Vector& vec) override;
+    void set_state(const enum Mortar::StateType& statename, const Epetra_Vector& vec) override;
 
-    void SetParentState(const enum MORTAR::StateType& statename, const Epetra_Vector& vec) override;
+    void SetParentState(const enum Mortar::StateType& statename, const Epetra_Vector& vec) override;
 
     Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
         const enum CONTACT::VecBlockType& bt) const override;
 
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrixBlockPtr(const enum CONTACT::MatBlockType& bt,
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> GetMatrixBlockPtr(const enum CONTACT::MatBlockType& bt,
         const CONTACT::ParamsInterface* cparams = nullptr) const override;
 
     //! [derived]
@@ -105,12 +105,12 @@ namespace CONTACT
         const enum CONTACT::VecBlockType& bt) const override;
 
     // create an appropriate matrix block
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> setup_matrix_block_ptr(
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> setup_matrix_block_ptr(
         const enum CONTACT::MatBlockType& bt) override;
 
     // complete matrix block with correct maps
     void complete_matrix_block_ptr(
-        const enum CONTACT::MatBlockType& bt, Teuchos::RCP<CORE::LINALG::SparseMatrix> kc) override;
+        const enum CONTACT::MatBlockType& bt, Teuchos::RCP<Core::LinAlg::SparseMatrix> kc) override;
 
     // do not reditribute (during constructor phase)
     bool fix_redistribution_;
@@ -118,9 +118,9 @@ namespace CONTACT
     Teuchos::RCP<Epetra_Vector> curr_state_temp_;
 
     Teuchos::RCP<Epetra_FEVector> ft_;
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> ktt_;
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> ktd_;
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> kdt_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> ktt_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> ktd_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> kdt_;
   };
 }  // namespace CONTACT
 FOUR_C_NAMESPACE_CLOSE

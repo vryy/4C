@@ -30,12 +30,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::Conditions
+namespace Core::Conditions
 {
 
   //--------------------------------------------------------------
@@ -48,15 +48,15 @@ namespace CORE::Conditions
     like, how to read it and how to write it. In particular given a
     ConditionDefinition object it is possible to (a) write an empty dat file
     section that describes this condition, (b) read a dat file and create
-    CORE::Conditions::Condition objects for each line in this section and (c) write the dat
+    Core::Conditions::Condition objects for each line in this section and (c) write the dat
     file section filled with all corresponding conditions from a given
-    DRT::Discretization.
+    Discret::Discretization.
 
     So this is quite sophisticated internal stuff here. If you want to
     introduce a new condition to 4C, all you have to do is add an
     appropriate definition in ValidConditions(). This will take care of the
-    reading part and you will get your DRT::Discretization filled with proper
-    CORE::Conditions::Condition objects.
+    reading part and you will get your Discret::Discretization filled with proper
+    Core::Conditions::Condition objects.
 
     \author u.kue
     \date 01/08
@@ -67,15 +67,15 @@ namespace CORE::Conditions
     /// construction of a condition definition
     /*!
       \param sectionname name of dat file section
-      \param conditionname name of conditions in DRT::Discretization
+      \param conditionname name of conditions in Discret::Discretization
       \param description description of condition type
       \param condtype type of conditions to be build
       \param buildgeometry whether we need conditions elements
       \param gtype type of geometry the condition lives on
      */
     ConditionDefinition(std::string sectionname, std::string conditionname, std::string description,
-        CORE::Conditions::ConditionType condtype, bool buildgeometry,
-        CORE::Conditions::GeometryType gtype);
+        Core::Conditions::ConditionType condtype, bool buildgeometry,
+        Core::Conditions::GeometryType gtype);
 
     /// add a concrete component to the condition line definition
     /*!
@@ -83,7 +83,7 @@ namespace CORE::Conditions
       right. The order is important! On reading we try and read component
       after component.
      */
-    void AddComponent(const Teuchos::RCP<INPUT::LineComponent>& c);
+    void AddComponent(const Teuchos::RCP<Input::LineComponent>& c);
 
     /// read all conditions from my input file section
     /*!
@@ -91,11 +91,11 @@ namespace CORE::Conditions
       \param reader (i) the actual dat file reader that has access to the dat file
       \param cmap (o) the conditions we read here
      */
-    void Read(CORE::IO::DatFileReader& reader,
-        std::multimap<int, Teuchos::RCP<CORE::Conditions::Condition>>& cmap);
+    void Read(Core::IO::DatFileReader& reader,
+        std::multimap<int, Teuchos::RCP<Core::Conditions::Condition>>& cmap);
 
     /// print my dat file section and possible conditions from the discretization
-    std::ostream& Print(std::ostream& stream, const DRT::Discretization* dis = nullptr);
+    std::ostream& Print(std::ostream& stream, const Discret::Discretization* dis = nullptr);
 
     /// name of my section in input file
     std::string SectionName() const { return sectionname_; }
@@ -107,24 +107,24 @@ namespace CORE::Conditions
     std::string Description() const { return description_; }
 
     /// my condition inputline
-    std::vector<Teuchos::RCP<INPUT::LineComponent>> Inputline() const { return inputline_; }
+    std::vector<Teuchos::RCP<Input::LineComponent>> Inputline() const { return inputline_; }
 
     /// my GeometryType
-    CORE::Conditions::GeometryType GeometryType() const { return gtype_; }
+    Core::Conditions::GeometryType GeometryType() const { return gtype_; }
 
    private:
     std::string sectionname_;
     std::string conditionname_;
     std::string description_;
-    CORE::Conditions::ConditionType condtype_;
+    Core::Conditions::ConditionType condtype_;
     bool buildgeometry_;
-    CORE::Conditions::GeometryType gtype_;
+    Core::Conditions::GeometryType gtype_;
 
     ///
-    std::vector<Teuchos::RCP<INPUT::LineComponent>> inputline_;
+    std::vector<Teuchos::RCP<Input::LineComponent>> inputline_;
   };
 
-}  // namespace CORE::Conditions
+}  // namespace Core::Conditions
 
 
 FOUR_C_NAMESPACE_CLOSE

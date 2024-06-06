@@ -25,12 +25,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT::ELEMENTS
+namespace Discret::ELEMENTS
 {
-  namespace DETAILS
+  namespace Details
   {
-    template <CORE::FE::CellType celltype>
-    inline static constexpr int num_str = CORE::FE::dim<celltype>*(CORE::FE::dim<celltype> + 1) / 2;
+    template <Core::FE::CellType celltype>
+    inline static constexpr int num_str = Core::FE::dim<celltype>*(Core::FE::dim<celltype> + 1) / 2;
 
     /*!
      * @brief Assemble a vector into a matrix row
@@ -41,12 +41,12 @@ namespace DRT::ELEMENTS
      * @param row (in) : Matrix row
      */
     template <unsigned num_str>
-    void AssembleVectorToMatrixRow(CORE::LINALG::Matrix<num_str, 1> vector,
-        CORE::LINALG::SerialDenseMatrix& data, const int row)
+    void AssembleVectorToMatrixRow(Core::LinAlg::Matrix<num_str, 1> vector,
+        Core::LinAlg::SerialDenseMatrix& data, const int row)
     {
       for (unsigned i = 0; i < num_str; ++i) data(row, static_cast<int>(i)) = vector(i);
     }
-  }  // namespace DETAILS
+  }  // namespace Details
 
   template <typename T>
   inline std::vector<char>& GetStressData(const T& ele, const Teuchos::ParameterList& params)
@@ -75,7 +75,7 @@ namespace DRT::ELEMENTS
   }
 
   template <typename T>
-  inline INPAR::STR::StressType GetIOStressType(const T& ele, const Teuchos::ParameterList& params)
+  inline Inpar::STR::StressType GetIOStressType(const T& ele, const Teuchos::ParameterList& params)
   {
     if (ele.IsParamsInterface())
     {
@@ -83,12 +83,12 @@ namespace DRT::ELEMENTS
     }
     else
     {
-      return CORE::UTILS::GetAsEnum<INPAR::STR::StressType>(params, "iostress");
+      return Core::UTILS::GetAsEnum<Inpar::STR::StressType>(params, "iostress");
     }
   }
 
   template <typename T>
-  inline INPAR::STR::StrainType GetIOStrainType(const T& ele, const Teuchos::ParameterList& params)
+  inline Inpar::STR::StrainType GetIOStrainType(const T& ele, const Teuchos::ParameterList& params)
   {
     if (ele.IsParamsInterface())
     {
@@ -96,7 +96,7 @@ namespace DRT::ELEMENTS
     }
     else
     {
-      return CORE::UTILS::GetAsEnum<INPAR::STR::StrainType>(params, "iostrain");
+      return Core::UTILS::GetAsEnum<Inpar::STR::StrainType>(params, "iostrain");
     }
   }
 
@@ -111,41 +111,41 @@ namespace DRT::ELEMENTS
    * @param data (in/out) : Matrix the strains are assembled into
    * @param row (in) : Matrix row
    */
-  template <CORE::FE::CellType celltype>
+  template <Core::FE::CellType celltype>
   void AssembleStrainTypeToMatrixRow(
-      const CORE::LINALG::Matrix<DETAILS::num_str<celltype>, 1>& gl_strain,
-      const CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::dim<celltype>>& defgrd,
-      const INPAR::STR::StrainType strain_type, CORE::LINALG::SerialDenseMatrix& data,
+      const Core::LinAlg::Matrix<Details::num_str<celltype>, 1>& gl_strain,
+      const Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>>& defgrd,
+      const Inpar::STR::StrainType strain_type, Core::LinAlg::SerialDenseMatrix& data,
       const int row)
   {
     switch (strain_type)
     {
-      case INPAR::STR::strain_gl:
+      case Inpar::STR::strain_gl:
       {
-        CORE::LINALG::Matrix<DETAILS::num_str<celltype>, 1> gl_strain_stress_like;
-        CORE::LINALG::VOIGT::Strains::ToStressLike(gl_strain, gl_strain_stress_like);
-        DETAILS::AssembleVectorToMatrixRow(gl_strain_stress_like, data, row);
+        Core::LinAlg::Matrix<Details::num_str<celltype>, 1> gl_strain_stress_like;
+        Core::LinAlg::Voigt::Strains::ToStressLike(gl_strain, gl_strain_stress_like);
+        Details::AssembleVectorToMatrixRow(gl_strain_stress_like, data, row);
         return;
       }
-      case INPAR::STR::strain_ea:
+      case Inpar::STR::strain_ea:
       {
-        const CORE::LINALG::Matrix<DETAILS::num_str<celltype>, 1> ea =
+        const Core::LinAlg::Matrix<Details::num_str<celltype>, 1> ea =
             STR::UTILS::GreenLagrangeToEulerAlmansi(gl_strain, defgrd);
-        CORE::LINALG::Matrix<DETAILS::num_str<celltype>, 1> ea_stress_like;
-        CORE::LINALG::VOIGT::Strains::ToStressLike(ea, ea_stress_like);
-        DETAILS::AssembleVectorToMatrixRow(ea_stress_like, data, row);
+        Core::LinAlg::Matrix<Details::num_str<celltype>, 1> ea_stress_like;
+        Core::LinAlg::Voigt::Strains::ToStressLike(ea, ea_stress_like);
+        Details::AssembleVectorToMatrixRow(ea_stress_like, data, row);
         return;
       }
-      case INPAR::STR::strain_log:
+      case Inpar::STR::strain_log:
       {
-        const CORE::LINALG::Matrix<DETAILS::num_str<celltype>, 1> log_strain =
+        const Core::LinAlg::Matrix<Details::num_str<celltype>, 1> log_strain =
             STR::UTILS::GreenLagrangeToLogStrain(gl_strain);
-        CORE::LINALG::Matrix<DETAILS::num_str<celltype>, 1> log_strain_stress_like;
-        CORE::LINALG::VOIGT::Strains::ToStressLike(log_strain, log_strain_stress_like);
-        DETAILS::AssembleVectorToMatrixRow(log_strain_stress_like, data, row);
+        Core::LinAlg::Matrix<Details::num_str<celltype>, 1> log_strain_stress_like;
+        Core::LinAlg::Voigt::Strains::ToStressLike(log_strain, log_strain_stress_like);
+        Details::AssembleVectorToMatrixRow(log_strain_stress_like, data, row);
         return;
       }
-      case INPAR::STR::strain_none:
+      case Inpar::STR::strain_none:
         return;
       default:
         FOUR_C_THROW("strain type not supported");
@@ -164,27 +164,27 @@ namespace DRT::ELEMENTS
    * @param data (in/out) : Matrix the stresses are assembled into
    * @param row (in) : Matrix row
    */
-  template <CORE::FE::CellType celltype>
+  template <Core::FE::CellType celltype>
   void AssembleStressTypeToMatrixRow(
-      const CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::dim<celltype>>& defgrd,
-      const Stress<celltype>& stress, const INPAR::STR::StressType stress_type,
-      CORE::LINALG::SerialDenseMatrix& data, const int row)
+      const Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>>& defgrd,
+      const Stress<celltype>& stress, const Inpar::STR::StressType stress_type,
+      Core::LinAlg::SerialDenseMatrix& data, const int row)
   {
     switch (stress_type)
     {
-      case INPAR::STR::stress_2pk:
+      case Inpar::STR::stress_2pk:
       {
-        DETAILS::AssembleVectorToMatrixRow(stress.pk2_, data, row);
+        Details::AssembleVectorToMatrixRow(stress.pk2_, data, row);
         return;
       }
-      case INPAR::STR::stress_cauchy:
+      case Inpar::STR::stress_cauchy:
       {
-        CORE::LINALG::Matrix<DETAIL::num_str<celltype>, 1> cauchy;
+        Core::LinAlg::Matrix<DETAIL::num_str<celltype>, 1> cauchy;
         STR::UTILS::Pk2ToCauchy(stress.pk2_, defgrd, cauchy);
-        DETAILS::AssembleVectorToMatrixRow(cauchy, data, row);
+        Details::AssembleVectorToMatrixRow(cauchy, data, row);
         return;
       }
-      case INPAR::STR::stress_none:
+      case Inpar::STR::stress_none:
 
         return;
       default:
@@ -200,12 +200,12 @@ namespace DRT::ELEMENTS
    * @param serialized_matrix (in/out) : Serialized matrix
    */
   inline void Serialize(
-      const CORE::LINALG::SerialDenseMatrix& matrix, std::vector<char>& serialized_matrix)
+      const Core::LinAlg::SerialDenseMatrix& matrix, std::vector<char>& serialized_matrix)
   {
-    CORE::COMM::PackBuffer packBuffer;
-    CORE::COMM::ParObject::AddtoPack(packBuffer, matrix);
+    Core::Communication::PackBuffer packBuffer;
+    Core::Communication::ParObject::AddtoPack(packBuffer, matrix);
     packBuffer.StartPacking();
-    CORE::COMM::ParObject::AddtoPack(packBuffer, matrix);
+    Core::Communication::ParObject::AddtoPack(packBuffer, matrix);
     std::copy(packBuffer().begin(), packBuffer().end(), std::back_inserter(serialized_matrix));
   }
 
@@ -219,7 +219,7 @@ namespace DRT::ELEMENTS
    *                                          (only for new structure time integration)
    */
   inline void AskAndAddQuantitiesToGaussPointDataOutput(const int num_gp,
-      const MAT::So3Material& solid_material,
+      const Mat::So3Material& solid_material,
       STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager)
   {
     // Save number of Gauss Points of the element for gauss point data output
@@ -246,10 +246,10 @@ namespace DRT::ELEMENTS
    * @param gp_data_output_manager (in/out) : Gauss point data output manager
    *                                          (only for new structure time integration)
    */
-  template <CORE::FE::CellType celltype>
+  template <Core::FE::CellType celltype>
   inline void CollectAndAssembleGaussPointDataOutput(
-      const CORE::FE::GaussIntegration& stiffness_matrix_integration,
-      const MAT::So3Material& solid_material, const CORE::Elements::Element& ele,
+      const Core::FE::GaussIntegration& stiffness_matrix_integration,
+      const Mat::So3Material& solid_material, const Core::Elements::Element& ele,
       STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager)
   {
     // Collection and assembly of gauss point data
@@ -259,7 +259,7 @@ namespace DRT::ELEMENTS
       const int quantity_size = quantity.second;
 
       // Step 1: Collect the data for each Gauss point for the material
-      CORE::LINALG::SerialDenseMatrix gp_data(
+      Core::LinAlg::SerialDenseMatrix gp_data(
           stiffness_matrix_integration.NumPoints(), quantity_size, true);
       bool data_available = solid_material.EvaluateOutputData(quantity_name, gp_data);
 
@@ -269,15 +269,15 @@ namespace DRT::ELEMENTS
       {
         switch (gp_data_output_manager.GetOutputType())
         {
-          case INPAR::STR::GaussPointDataOutputType::element_center:
+          case Inpar::STR::GaussPointDataOutputType::element_center:
           {
             // compute average of the quantities
             Teuchos::RCP<Epetra_MultiVector> global_data =
                 gp_data_output_manager.get_element_center_data().at(quantity_name);
-            CORE::FE::AssembleAveragedElementValues(*global_data, gp_data, ele);
+            Core::FE::AssembleAveragedElementValues(*global_data, gp_data, ele);
             break;
           }
-          case INPAR::STR::GaussPointDataOutputType::nodes:
+          case Inpar::STR::GaussPointDataOutputType::nodes:
           {
             Teuchos::RCP<Epetra_MultiVector> global_data =
                 gp_data_output_manager.GetNodalData().at(quantity_name);
@@ -285,19 +285,19 @@ namespace DRT::ELEMENTS
             Epetra_IntVector& global_nodal_element_count =
                 *gp_data_output_manager.GetNodalDataCount().at(quantity_name);
 
-            CORE::FE::ExtrapolateGPQuantityToNodesAndAssemble<celltype>(
+            Core::FE::ExtrapolateGPQuantityToNodesAndAssemble<celltype>(
                 ele, gp_data, *global_data, false, stiffness_matrix_integration);
-            DRT::ELEMENTS::AssembleNodalElementCount(global_nodal_element_count, ele);
+            Discret::ELEMENTS::AssembleNodalElementCount(global_nodal_element_count, ele);
             break;
           }
-          case INPAR::STR::GaussPointDataOutputType::gauss_points:
+          case Inpar::STR::GaussPointDataOutputType::gauss_points:
           {
             std::vector<Teuchos::RCP<Epetra_MultiVector>>& global_data =
                 gp_data_output_manager.GetGaussPointData().at(quantity_name);
-            DRT::ELEMENTS::AssembleGaussPointValues(global_data, gp_data, ele);
+            Discret::ELEMENTS::AssembleGaussPointValues(global_data, gp_data, ele);
             break;
           }
-          case INPAR::STR::GaussPointDataOutputType::none:
+          case Inpar::STR::GaussPointDataOutputType::none:
             FOUR_C_THROW(
                 "You specified a Gauss point data output type of none, so you should not end up "
                 "here.");
@@ -307,7 +307,7 @@ namespace DRT::ELEMENTS
       }
     }
   }
-}  // namespace DRT::ELEMENTS
+}  // namespace Discret::ELEMENTS
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

@@ -23,22 +23,22 @@ class Epetra_FEVector;
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SerialDenseMatrix;
 }
 
-namespace ADAPTER
+namespace Adapter
 {
   class Coupling;
 }
 
-namespace CORE::Nodes
+namespace Core::Nodes
 {
   class Node;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
 }
@@ -59,7 +59,7 @@ namespace CONTACT
    *  data between different interface objects w/o the need of copying them.
    *
    *  \author hiermeier \date 03/17 */
-  class InterfaceDataContainer : public MORTAR::InterfaceDataContainer
+  class InterfaceDataContainer : public Mortar::InterfaceDataContainer
   {
    public:
     /// constructor
@@ -84,12 +84,12 @@ namespace CONTACT
 
     inline bool& IsTwoHalfPass() { return two_half_pass_; }
 
-    inline enum INPAR::CONTACT::ConstraintDirection& ConstraintDirection()
+    inline enum Inpar::CONTACT::ConstraintDirection& ConstraintDirection()
     {
       return constr_direction_;
     }
 
-    inline enum INPAR::CONTACT::ConstraintDirection ConstraintDirection() const
+    inline enum Inpar::CONTACT::ConstraintDirection ConstraintDirection() const
     {
       return constr_direction_;
     }
@@ -210,7 +210,7 @@ namespace CONTACT
     bool two_half_pass_;
 
     //! direction in which the contact constraints are formulated
-    INPAR::CONTACT::ConstraintDirection constr_direction_;
+    Inpar::CONTACT::ConstraintDirection constr_direction_;
 
     //! @name Maps
     //! @{
@@ -296,7 +296,7 @@ namespace CONTACT
   \brief One contact interface
 
   */
-  class Interface : public MORTAR::Interface
+  class Interface : public Mortar::Interface
   {
    protected:
     /// constructor ( only for derived classes )
@@ -333,7 +333,7 @@ namespace CONTACT
     \param selfcontact (in): Flag for self contact status
 
     */
-    Interface(const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData_ptr, const int id,
+    Interface(const Teuchos::RCP<Mortar::InterfaceDataContainer>& interfaceData_ptr, const int id,
         const Epetra_Comm& comm, const int spatialDim, const Teuchos::ParameterList& icontact,
         bool selfcontact);
 
@@ -768,8 +768,8 @@ namespace CONTACT
     Derived version!
 
     */
-    bool MortarCoupling(MORTAR::Element* sele, std::vector<MORTAR::Element*> mele,
-        const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) final;
+    bool MortarCoupling(Mortar::Element* sele, std::vector<Mortar::Element*> mele,
+        const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr) final;
 
     /*!
     \brief evaluate coupling terms for nts coupling + lin
@@ -830,8 +830,8 @@ namespace CONTACT
 
     */
     virtual void EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmod,
-        const Teuchos::RCP<CORE::LINALG::SparseMatrix> dmatrixmod,
-        const Teuchos::RCP<CORE::LINALG::SparseMatrix> doldmod);
+        const Teuchos::RCP<Core::LinAlg::SparseMatrix> dmatrixmod,
+        const Teuchos::RCP<Core::LinAlg::SparseMatrix> doldmod);
 
     /*!
       \brief Evaluate nodal distances and linearization
@@ -839,7 +839,7 @@ namespace CONTACT
     */
     virtual void EvaluateDistances(const Teuchos::RCP<const Epetra_Vector>& vec,
         std::map<int, std::vector<double>>& mynormals,
-        std::map<int, std::vector<CORE::GEN::Pairedvector<int, double>>>& dmynormals,
+        std::map<int, std::vector<Core::Gen::Pairedvector<int, double>>>& dmynormals,
         std::map<int, double>& mygap, std::map<int, std::map<int, double>>& dmygap);
 
     /*!
@@ -894,14 +894,14 @@ namespace CONTACT
 
     \param[in/out] lambdaglobal Matrix to be assembled into
     */
-    virtual void AssembleLinZ(CORE::LINALG::SparseMatrix& linzglobal);
+    virtual void AssembleLinZ(Core::LinAlg::SparseMatrix& linzglobal);
 
     /*!
     \brief Assemble matrix T containing nodal tangents and/or matrix N containing nodal normals!
 
     */
-    virtual void AssembleTN(Teuchos::RCP<CORE::LINALG::SparseMatrix> tglobal = Teuchos::null,
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> nglobal = Teuchos::null);
+    virtual void AssembleTN(Teuchos::RCP<Core::LinAlg::SparseMatrix> tglobal = Teuchos::null,
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> nglobal = Teuchos::null);
 
     /*!
     \brief Assemble matrix S containing linearizations
@@ -912,7 +912,7 @@ namespace CONTACT
     nodal normals and of the Mortar matrices D  and M.
 
     */
-    virtual void AssembleS(CORE::LINALG::SparseMatrix& sglobal);
+    virtual void AssembleS(Core::LinAlg::SparseMatrix& sglobal);
 
     /*!
     \brief Assemble matrix Tderiv and Nderiv containing linearizations
@@ -929,8 +929,8 @@ namespace CONTACT
 
     */
     virtual void AssembleTNderiv(
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> tderivglobal = Teuchos::null,
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> nderivglobal = Teuchos::null,
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> tderivglobal = Teuchos::null,
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> nderivglobal = Teuchos::null,
         bool usePoroLM = false);
 
     /*!
@@ -946,18 +946,18 @@ namespace CONTACT
      - false -> standard contact lagrange multiplier!
 
     */
-    virtual void AssembleLinDM(CORE::LINALG::SparseMatrix& lindglobal,
-        CORE::LINALG::SparseMatrix& linmglobal, bool usePoroLM = false);
+    virtual void AssembleLinDM(Core::LinAlg::SparseMatrix& lindglobal,
+        Core::LinAlg::SparseMatrix& linmglobal, bool usePoroLM = false);
 
     /*!
     \brief subroutine assemble lin d
     */
-    virtual void AssembleLinD(CORE::LINALG::SparseMatrix& lindglobal, bool usePoroLM = false);
+    virtual void AssembleLinD(Core::LinAlg::SparseMatrix& lindglobal, bool usePoroLM = false);
 
     /*!
     \brief subroutine assemble lin m
     */
-    virtual void AssembleLinM(CORE::LINALG::SparseMatrix& linmglobal, bool usePoroLM = false);
+    virtual void AssembleLinM(Core::LinAlg::SparseMatrix& linmglobal, bool usePoroLM = false);
 
 
     /*!
@@ -965,7 +965,7 @@ namespace CONTACT
 
     Derived version! It is very important to note that g has a different
     meaning here in contact than in standard mortar meshtying applications,
-    thus we need a derived method. Referring to MORTAR::Interface::AssembleG(),
+    thus we need a derived method. Referring to Mortar::Interface::AssembleG(),
     we notice that g is a vector-quantity at each node there. Yet, in
     (frictionless) we are only interested in the normal part, which makes
     g a scalar quantity here. Compare also the different definitions of g_
@@ -994,8 +994,8 @@ namespace CONTACT
     nodal tangents and of the Mortar matrices D  and M.
 
     */
-    virtual void AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLMglobal,
-        CORE::LINALG::SparseMatrix& linstickDISglobal, Epetra_Vector& linstickRHSglobal);
+    virtual void AssembleLinStick(Core::LinAlg::SparseMatrix& linstickLMglobal,
+        Core::LinAlg::SparseMatrix& linstickDISglobal, Epetra_Vector& linstickRHSglobal);
     /*!
     \brief Assemble matrix LinSlip containing linearizations
 
@@ -1005,20 +1005,20 @@ namespace CONTACT
     nodal tangents and of the Mortar matrices D  and M.
 
     */
-    virtual void AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMglobal,
-        CORE::LINALG::SparseMatrix& linslipDISglobal, Epetra_Vector& linslipRHSglobal);
+    virtual void AssembleLinSlip(Core::LinAlg::SparseMatrix& linslipLMglobal,
+        Core::LinAlg::SparseMatrix& linslipDISglobal, Epetra_Vector& linslipRHSglobal);
 
     /*!
       \brief Assemble linearization of regularized normal constraint
     */
     virtual void assemble_normal_contact_regularization(
-        CORE::LINALG::SparseMatrix& d_disp, CORE::LINALG::SparseMatrix& d_lm, Epetra_Vector& f);
+        Core::LinAlg::SparseMatrix& d_disp, Core::LinAlg::SparseMatrix& d_lm, Epetra_Vector& f);
 
     /*!
       \brief Assemble linearization of slip condition with regularized normal constraint
     */
     virtual void assemble_lin_slip_normal_regularization(
-        CORE::LINALG::SparseMatrix& linslipLMglobal, CORE::LINALG::SparseMatrix& linslipDISglobal,
+        Core::LinAlg::SparseMatrix& linslipLMglobal, Core::LinAlg::SparseMatrix& linslipDISglobal,
         Epetra_Vector& linslipRHSglobal);
 
 
@@ -1093,7 +1093,7 @@ namespace CONTACT
 
     */
     virtual void AssembleNCoupLin(
-        CORE::LINALG::SparseMatrix& sglobal, CORE::ADAPTER::Coupling& coupfs,
+        Core::LinAlg::SparseMatrix& sglobal, Core::Adapter::Coupling& coupfs,
         bool AssembleVelocityLin = false  // if true velocity linearisation will be assembled into
                                           // sglobal, otherwise lin. w.r.t. displacements!
     );
@@ -1107,7 +1107,7 @@ namespace CONTACT
     @param x ??
     */
     virtual void AssembleCoupLinD(
-        CORE::LINALG::SparseMatrix& CoupLin, const Teuchos::RCP<Epetra_Vector> x);
+        Core::LinAlg::SparseMatrix& CoupLin, const Teuchos::RCP<Epetra_Vector> x);
 
     /*! \brief Derivative of (transposed) M-matrix multiplied with a slave dof vector
 
@@ -1117,7 +1117,7 @@ namespace CONTACT
     @param x ??
     */
     virtual void AssembleCoupLinM(
-        CORE::LINALG::SparseMatrix& CoupLin, const Teuchos::RCP<Epetra_Vector> x);
+        Core::LinAlg::SparseMatrix& CoupLin, const Teuchos::RCP<Epetra_Vector> x);
 
     /*!
     \brief Store current (contact) nodal entries to old ones
@@ -1130,7 +1130,7 @@ namespace CONTACT
 
     \param type ??
     */
-    virtual void StoreToOld(MORTAR::StrategyBase::QuantityType type);
+    virtual void StoreToOld(Mortar::StrategyBase::QuantityType type);
 
     //@}
 
@@ -1143,7 +1143,7 @@ namespace CONTACT
 
     */
     void EvalResultantMoment(const Epetra_Vector& fs, const Epetra_Vector& fm,
-        CORE::LINALG::SerialDenseMatrix* conservation_data_ptr = nullptr) const;
+        Core::LinAlg::SerialDenseMatrix* conservation_data_ptr = nullptr) const;
 
     /*!
     \brief Get the nodal interface force
@@ -1154,8 +1154,8 @@ namespace CONTACT
     @param force ??
     @param node Node that is queried
     */
-    void GetForceOfNode(CORE::LINALG::Matrix<3, 1>& nodal_force, const Epetra_Vector& force,
-        const CORE::Nodes::Node& node) const;
+    void GetForceOfNode(Core::LinAlg::Matrix<3, 1>& nodal_force, const Epetra_Vector& force,
+        const Core::Nodes::Node& node) const;
 
     /*!
     \brief Visualize contact stuff with gmsh
@@ -1234,15 +1234,15 @@ namespace CONTACT
     \brief Check stick condition derivatives with finite differences
 
     */
-    virtual void FDCheckStickDeriv(CORE::LINALG::SparseMatrix& linstickLMglobal,
-        CORE::LINALG::SparseMatrix& linstickDISglobal);
+    virtual void FDCheckStickDeriv(Core::LinAlg::SparseMatrix& linstickLMglobal,
+        Core::LinAlg::SparseMatrix& linstickDISglobal);
 
     /*!
     \brief Check slip condition derivatives with finite differences
 
     */
     virtual void FDCheckSlipDeriv(
-        CORE::LINALG::SparseMatrix& linslipLMglobal, CORE::LINALG::SparseMatrix& linslipDISglobal);
+        Core::LinAlg::SparseMatrix& linslipLMglobal, Core::LinAlg::SparseMatrix& linslipDISglobal);
 
     /*!
     \brief Check penalty approach with finite differences
@@ -1289,26 +1289,26 @@ namespace CONTACT
     \brief Add line to line penalty stiffness contribution
 
     */
-    void AddLTLstiffness(Teuchos::RCP<CORE::LINALG::SparseMatrix> kteff);
+    void AddLTLstiffness(Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff);
 
     /*!
     \brief Add line to segment penalty stiffness contribution master side
 
     */
-    void add_lt_sstiffness_master(Teuchos::RCP<CORE::LINALG::SparseMatrix> kteff);
+    void add_lt_sstiffness_master(Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff);
 
     /*!
     \brief Add line to segment penalty stiffness contribution master side
 
     */
-    void add_nt_sstiffness_master(Teuchos::RCP<CORE::LINALG::SparseMatrix> kteff);
+    void add_nt_sstiffness_master(Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff);
 
 
     /*!
     \brief Add line to line penalty stiffness contribution
 
     */
-    void AddLTLstiffnessFric(Teuchos::RCP<CORE::LINALG::SparseMatrix> kteff);
+    void AddLTLstiffnessFric(Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff);
 
     Teuchos::RCP<Epetra_Vector>& GetCn() { return cnValues_; };
 
@@ -1384,8 +1384,8 @@ namespace CONTACT
     Derived version!
 
     */
-    virtual void set_cpp_normal(MORTAR::Node& snode, double* normal,
-        std::vector<CORE::GEN::Pairedvector<int, double>>& normallin);
+    virtual void set_cpp_normal(Mortar::Node& snode, double* normal,
+        std::vector<Core::Gen::Pairedvector<int, double>>& normallin);
 
     /*!
     \brief do calculations which are required for contact term evaluation:
@@ -1404,14 +1404,14 @@ namespace CONTACT
 
     */
     void evaluate_coupling(const Epetra_Map& selecolmap, const Epetra_Map* snoderowmap,
-        const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) final;
+        const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr) final;
 
     /*!
     \brief Evaluate segment-to-segment coupling (mortar...)
 
     */
     void evaluate_sts(const Epetra_Map& selecolmap,
-        const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) final;
+        const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr) final;
 
     /*!
     \brief export master nodal normals for cpp calculation
@@ -1438,38 +1438,38 @@ namespace CONTACT
     \brief Compute cpp normal based on averaged nodal normal field on master side.
 
     */
-    virtual double compute_cpp_normal(MORTAR::Node& mrtrnode, std::vector<MORTAR::Element*> meles,
-        double* normal, std::vector<CORE::GEN::Pairedvector<int, double>>& normaltolineLin);
+    virtual double compute_cpp_normal(Mortar::Node& mrtrnode, std::vector<Mortar::Element*> meles,
+        double* normal, std::vector<Core::Gen::Pairedvector<int, double>>& normaltolineLin);
 
     /*!
     \brief 2D routine for cpp normal
 
     */
-    virtual double compute_cpp_normal2_d(MORTAR::Node& mrtrnode,
-        std::vector<MORTAR::Element*> meles, double* normal,
-        std::vector<CORE::GEN::Pairedvector<int, double>>& normaltolineLin);
+    virtual double compute_cpp_normal2_d(Mortar::Node& mrtrnode,
+        std::vector<Mortar::Element*> meles, double* normal,
+        std::vector<Core::Gen::Pairedvector<int, double>>& normaltolineLin);
 
     /*!
     \brief 3D routine for cpp normal
 
     */
-    virtual double compute_cpp_normal3_d(MORTAR::Node& mrtrnode,
-        std::vector<MORTAR::Element*> meles, double* normal,
-        std::vector<CORE::GEN::Pairedvector<int, double>>& normaltolineLin);
+    virtual double compute_cpp_normal3_d(Mortar::Node& mrtrnode,
+        std::vector<Mortar::Element*> meles, double* normal,
+        std::vector<Core::Gen::Pairedvector<int, double>>& normaltolineLin);
 
     /*!
     \brief Compute normal between slave and master node
 
     */
-    virtual double compute_normal_node_to_node(MORTAR::Node& snode, MORTAR::Node& mnode,
-        double* normal, std::vector<CORE::GEN::Pairedvector<int, double>>& normaltonodelin);
+    virtual double compute_normal_node_to_node(Mortar::Node& snode, Mortar::Node& mnode,
+        double* normal, std::vector<Core::Gen::Pairedvector<int, double>>& normaltonodelin);
 
     /*!
     \brief Compute normal between slave node and master edge ele
 
     */
-    virtual double compute_normal_node_to_edge(MORTAR::Node& snode, MORTAR::Element& mele,
-        double* normal, std::vector<CORE::GEN::Pairedvector<int, double>>& normaltonodelin);
+    virtual double compute_normal_node_to_edge(Mortar::Node& snode, Mortar::Element& mele,
+        double* normal, std::vector<Core::Gen::Pairedvector<int, double>>& normaltonodelin);
 
     /*!
     \brief Compute scaling factors for transition between nts, mortar etc.
@@ -1573,8 +1573,8 @@ namespace CONTACT
     ghosting.
 
     If we have arrived at the final parallel distribution, we have to ask the underlying
-    DRT::Discretization to assign degrees of freedom. Since this is very expensive, let's do this
-    only if requested by the user/algorithm.
+    Discret::Discretization to assign degrees of freedom. Since this is very expensive, let's do
+    this only if requested by the user/algorithm.
 
     \sa extend_interface_ghosting_safely()
 
@@ -1647,7 +1647,7 @@ namespace CONTACT
     bool& friction_;          ///< ref. to flag for frictional contact
     bool& nonSmoothContact_;  ///< ref. to flag for non-smooth contact algorithm
     bool& two_half_pass_;     ///< ref. to flag for two half pass contact algorithm
-    INPAR::CONTACT::ConstraintDirection&
+    Inpar::CONTACT::ConstraintDirection&
         constr_direction_;  ///< ref. to direction in which the contact constraints are formulated
 
     Teuchos::RCP<Epetra_Map>& activenodes_;    ///< ref. to row map of all active slave nodes

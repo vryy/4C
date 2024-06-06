@@ -18,22 +18,22 @@ to disk
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
-namespace CORE::Elements
+}  // namespace Discret
+namespace Core::Elements
 {
   class Element;
 }
 
-namespace CORE::IO
+namespace Core::IO
 {
   class VisualizationManager;
   struct VisualizationParameters;
-}  // namespace CORE::IO
+}  // namespace Core::IO
 
-namespace CORE::IO
+namespace Core::IO
 {
   /*!
    * \brief This object allows to write visualization output for a discretization, i.e., write the
@@ -52,10 +52,10 @@ namespace CORE::IO
      *   included.
      */
     DiscretizationVisualizationWriterMesh(
-        const Teuchos::RCP<const DRT::Discretization>& discretization,
+        const Teuchos::RCP<const Discret::Discretization>& discretization,
         VisualizationParameters parameters,
-        std::function<bool(const CORE::Elements::Element* element)> element_filter =
-            [](const CORE::Elements::Element*) { return true; });
+        std::function<bool(const Core::Elements::Element* element)> element_filter =
+            [](const Core::Elements::Element*) { return true; });
 
     /**
      * @brief Destructor
@@ -141,7 +141,7 @@ namespace CORE::IO
     /**
      * \brief Write ghosting information to the elements
      *
-     * For more details look at the documentation to CORE::IO::append_element_ghosting_information
+     * For more details look at the documentation to Core::IO::append_element_ghosting_information
      */
     void append_element_ghosting_information();
 
@@ -170,13 +170,13 @@ namespace CORE::IO
 
    private:
     //! discretization containing elements of which geometry and result data shall be visualized
-    Teuchos::RCP<const DRT::Discretization> discretization_;
+    Teuchos::RCP<const Discret::Discretization> discretization_;
 
     //! The actual visualization writer object that additionally stores the geometry and result data
     Teuchos::RCP<VisualizationManager> visualization_manager_;
 
     //! A filter function that returns true for all elements that should be visualized.
-    std::function<bool(const CORE::Elements::Element* element)> element_filter_;
+    std::function<bool(const Core::Elements::Element* element)> element_filter_;
 
     //! Node row and col maps the geometry of visualization writer is based on
     Teuchos::RCP<Epetra_Map> noderowmap_last_geometry_set_;
@@ -191,11 +191,11 @@ namespace CORE::IO
    * @param element_predicate (in) A predicate function which returns whether a given element
    * should be included in the output.
    */
-  void append_element_ghosting_information(const DRT::Discretization& discretization,
+  void append_element_ghosting_information(const Discret::Discretization& discretization,
       VisualizationManager& visualization_manager,
-      const std::function<bool(const CORE::Elements::Element* ele)>& element_predicate);
+      const std::function<bool(const Core::Elements::Element* ele)>& element_predicate);
 
-}  // namespace CORE::IO
+}  // namespace Core::IO
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

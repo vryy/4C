@@ -37,7 +37,7 @@ namespace CONTACT
     {
      public:
       /// return type of this constitutive law
-      virtual INPAR::CONTACT::ConstitutiveLawType get_constitutive_law_type() const = 0;
+      virtual Inpar::CONTACT::ConstitutiveLawType get_constitutive_law_type() const = 0;
 
       /// Return quick accessible Contact Constitutive Law parameter data
       virtual CONTACT::CONSTITUTIVELAW::Parameter* Parameter() const = 0;

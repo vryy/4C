@@ -19,7 +19,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MORTAR
+namespace Mortar
 {
   class ParamsInterface;
 }
@@ -49,9 +49,9 @@ namespace CONTACT
      performed in parallel by individual processes.
 
      */
-    LineToSurfaceCoupling3d(DRT::Discretization& idiscret, int dim, Teuchos::ParameterList& params,
-        Element& pEle, Teuchos::RCP<MORTAR::Element>& lEle, std::vector<Element*> surfEles,
-        LineToSurfaceCoupling3d::IntType itype);
+    LineToSurfaceCoupling3d(Discret::Discretization& idiscret, int dim,
+        Teuchos::ParameterList& params, Element& pEle, Teuchos::RCP<Mortar::Element>& lEle,
+        std::vector<Element*> surfEles, LineToSurfaceCoupling3d::IntType itype);
 
     /*!
      \brief Destructor
@@ -111,13 +111,13 @@ namespace CONTACT
 
      */
     virtual void create_integration_lines(
-        std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& linvertex);
+        std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& linvertex);
 
     /*!
      \brief Get interface discretization
 
      */
-    virtual DRT::Discretization& discret() const { return idiscret_; };
+    virtual Discret::Discretization& discret() const { return idiscret_; };
 
     /*!
      \brief Get problem dimension (here: 3D)
@@ -141,32 +141,32 @@ namespace CONTACT
      \brief create intersections
 
      */
-    virtual bool line_to_line_clipping(MORTAR::Vertex& edgeVertex1, MORTAR::Vertex& edgeVertex0,
-        MORTAR::Vertex& lineVertex1, MORTAR::Vertex& lineVertex0);
+    virtual bool line_to_line_clipping(Mortar::Vertex& edgeVertex1, Mortar::Vertex& edgeVertex0,
+        Mortar::Vertex& lineVertex1, Mortar::Vertex& lineVertex0);
 
     /*!
      \brief check if all vertices are along a line
 
      */
-    virtual bool check_line_on_line(MORTAR::Vertex& edgeVertex1, MORTAR::Vertex& edgeVertex0,
-        MORTAR::Vertex& lineVertex1, MORTAR::Vertex& lineVertex0);
+    virtual bool check_line_on_line(Mortar::Vertex& edgeVertex1, Mortar::Vertex& edgeVertex0,
+        Mortar::Vertex& lineVertex1, Mortar::Vertex& lineVertex0);
 
     /*!
      \brief perform linearization
 
      */
     virtual void linearize_vertices(
-        std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& linvertex);
+        std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& linvertex);
 
     /*!
      \brief perform linearization of line clip
 
      */
-    virtual void lineclip_vertex_linearization(MORTAR::Vertex& currv,
-        std::vector<CORE::GEN::Pairedvector<int, double>>& currlin, MORTAR::Vertex* sv1,
-        MORTAR::Vertex* sv2, MORTAR::Vertex* mv1, MORTAR::Vertex* mv2,
-        std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& linsnodes,
-        std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& linmnodes);
+    virtual void lineclip_vertex_linearization(Mortar::Vertex& currv,
+        std::vector<Core::Gen::Pairedvector<int, double>>& currlin, Mortar::Vertex* sv1,
+        Mortar::Vertex* sv2, Mortar::Vertex* mv1, Mortar::Vertex* mv2,
+        std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& linsnodes,
+        std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& linmnodes);
 
     /*!
      \brief Get coupling slave element
@@ -178,7 +178,7 @@ namespace CONTACT
      \brief Get coupling slave element
 
      */
-    virtual Teuchos::RCP<MORTAR::Element>& line_element() const { return l_ele_; }
+    virtual Teuchos::RCP<Mortar::Element>& line_element() const { return l_ele_; }
 
     /*!
      \brief Get coupling master elements
@@ -220,13 +220,13 @@ namespace CONTACT
      \brief Return vector of (projected) slave node vertex objects
 
      */
-    virtual std::vector<MORTAR::Vertex>& inter_sections() { return intersections_; }
+    virtual std::vector<Mortar::Vertex>& inter_sections() { return intersections_; }
 
     /*!
       \brief Return vector of (projected) slave node vertex objects
 
     */
-    virtual std::vector<MORTAR::Vertex>& temp_inter_sections() { return temp_intersections_; }
+    virtual std::vector<Mortar::Vertex>& temp_inter_sections() { return temp_intersections_; }
 
     /*!
       \brief Return set which guarantee uniqueness of master lines
@@ -238,19 +238,19 @@ namespace CONTACT
      \brief Return vector of (projected) slave node vertex objects
 
      */
-    virtual std::vector<MORTAR::Vertex>& slave_vertices() { return svertices_; }
+    virtual std::vector<Mortar::Vertex>& slave_vertices() { return svertices_; }
 
     /*!
      \brief Return vector of projected master node vertex objects
 
      */
-    virtual std::vector<MORTAR::Vertex>& master_vertices() { return mvertices_; }
+    virtual std::vector<Mortar::Vertex>& master_vertices() { return mvertices_; }
 
     /*!
      \brief Return vector of integration line
 
      */
-    virtual Teuchos::RCP<MORTAR::IntCell>& int_line() { return int_cell_; }
+    virtual Teuchos::RCP<Mortar::IntCell>& int_line() { return int_cell_; }
 
     /*!
      \brief perform integration for line to segment contact
@@ -280,7 +280,7 @@ namespace CONTACT
      \brief Return the 'DerivAuxn' map (vector) of this coupling pair
 
      */
-    virtual std::vector<CORE::GEN::Pairedvector<int, double>>& get_deriv_auxn()
+    virtual std::vector<Core::Gen::Pairedvector<int, double>>& get_deriv_auxn()
     {
       return derivauxn_;
     }
@@ -288,7 +288,7 @@ namespace CONTACT
      \brief Return the 'DerivAuxc' map (vector) of this coupling pair
 
      */
-    virtual std::vector<CORE::GEN::Pairedvector<int, double>>& get_deriv_auxc()
+    virtual std::vector<Core::Gen::Pairedvector<int, double>>& get_deriv_auxc()
     {
       return derivauxc_;
     }
@@ -296,7 +296,7 @@ namespace CONTACT
     //   \brief Return the 'DerivAuxnLine' map (vector) of this coupling pair
     //
     //   */
-    //  virtual std::vector<CORE::GEN::Pairedvector<int, double> >& GetDerivAuxnLine()
+    //  virtual std::vector<Core::Gen::Pairedvector<int, double> >& GetDerivAuxnLine()
     //  {
     //    return derivauxnLine_;
     //  }
@@ -306,14 +306,14 @@ namespace CONTACT
 
      */
     void master_vertex_linearization(
-        std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& currlin);
+        std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& currlin);
 
     /*!
      \brief perform linearization of slave vertices
 
      */
     void slave_vertex_linearization(
-        std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& currlin);
+        std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& currlin);
 
     /*!
      \brief Check / set projection status of slave nodes (3D)
@@ -363,11 +363,11 @@ namespace CONTACT
     LineToSurfaceCoupling3d operator=(const LineToSurfaceCoupling3d& old) = delete;
     LineToSurfaceCoupling3d(const LineToSurfaceCoupling3d& old) = delete;
 
-    DRT::Discretization& idiscret_;  //< discretization of the contact interface
-    int dim_;                        //< problem dimension (here: 3D)
+    Discret::Discretization& idiscret_;  //< discretization of the contact interface
+    int dim_;                            //< problem dimension (here: 3D)
 
     Element& p_ele_;                        //< parent element connected to line element
-    Teuchos::RCP<MORTAR::Element>& l_ele_;  //< line element to perform coupling for
+    Teuchos::RCP<Mortar::Element>& l_ele_;  //< line element to perform coupling for
     std::vector<Element*> surf_eles_;       //< surface elements to perform coupling for
     int curr_ele_;                          //< number of current element
 
@@ -377,18 +377,18 @@ namespace CONTACT
     double lauxn_;                           //< length of interpolated Auxn() before normalization
     double auxn_surf_[3];                    //< normal of auxiliary plane of surface element
     int linsize_;                            //< size of lin entries
-    std::vector<MORTAR::Vertex> svertices_;  //< slave node vertex objects
-    std::vector<MORTAR::Vertex> mvertices_;  //< master node vertex objects
-    std::vector<MORTAR::Vertex> intersections_;       //< vertex objects for intline
-    std::vector<MORTAR::Vertex> temp_intersections_;  //< vertex objects for intline temporary
+    std::vector<Mortar::Vertex> svertices_;  //< slave node vertex objects
+    std::vector<Mortar::Vertex> mvertices_;  //< master node vertex objects
+    std::vector<Mortar::Vertex> intersections_;       //< vertex objects for intline
+    std::vector<Mortar::Vertex> temp_intersections_;  //< vertex objects for intline temporary
     std::set<std::pair<int, int>>
         donebefore_;  //< set of master node pairs to guarantee uniqueness of line-line clipping
-    Teuchos::RCP<MORTAR::IntCell> int_cell_;  //< vector of integration lines
-    std::vector<CORE::GEN::Pairedvector<int, double>>
+    Teuchos::RCP<Mortar::IntCell> int_cell_;  //< vector of integration lines
+    std::vector<Core::Gen::Pairedvector<int, double>>
         derivauxn_;  //< derivatives of auxiliary plane normal
-    std::vector<CORE::GEN::Pairedvector<int, double>>
+    std::vector<Core::Gen::Pairedvector<int, double>>
         derivauxn_line_;  //< derivatives of auxiliary line normal
-    std::vector<CORE::GEN::Pairedvector<int, double>>
+    std::vector<Core::Gen::Pairedvector<int, double>>
         derivauxc_;  //< derivatives of auxiliary plane normal
 
     // integration type:
@@ -409,9 +409,9 @@ namespace CONTACT
      performed in parallel by individual processes.
 
      */
-    LineToLineCouplingPoint3d(DRT::Discretization& idiscret, int dim,
-        Teuchos::ParameterList& params, Teuchos::RCP<MORTAR::Element>& lsele,
-        Teuchos::RCP<MORTAR::Element>& lmele);
+    LineToLineCouplingPoint3d(Discret::Discretization& idiscret, int dim,
+        Teuchos::ParameterList& params, Teuchos::RCP<Mortar::Element>& lsele,
+        Teuchos::RCP<Mortar::Element>& lmele);
 
     /*!
      \brief Destructor
@@ -429,7 +429,7 @@ namespace CONTACT
 
      */
     virtual void LineIntersection(double* sxi, double* mxi,
-        CORE::GEN::Pairedvector<int, double>& dsxi, CORE::GEN::Pairedvector<int, double>& dmxi);
+        Core::Gen::Pairedvector<int, double>& dsxi, Core::Gen::Pairedvector<int, double>& dmxi);
 
     /*!
      \brief Checks validity
@@ -441,7 +441,7 @@ namespace CONTACT
      \brief calculate angle between line elements
 
      */
-    virtual double CalcCurrentAngle(CORE::GEN::Pairedvector<int, double>& lineAngle);
+    virtual double CalcCurrentAngle(Core::Gen::Pairedvector<int, double>& lineAngle);
 
     /*!
      \brief Checks parallelity
@@ -456,7 +456,7 @@ namespace CONTACT
 
      */
     virtual void evaluate_terms(double* sxi, double* mxi,
-        CORE::GEN::Pairedvector<int, double>& dsxi, CORE::GEN::Pairedvector<int, double>& dmxi);
+        Core::Gen::Pairedvector<int, double>& dsxi, Core::Gen::Pairedvector<int, double>& dmxi);
 
     /*!
      \brief Get communicator
@@ -468,7 +468,7 @@ namespace CONTACT
      \brief Get interface discretization
 
      */
-    virtual DRT::Discretization& discret() const { return idiscret_; };
+    virtual Discret::Discretization& discret() const { return idiscret_; };
 
     /*!
      \brief Get problem dimension (here: 3D)
@@ -487,24 +487,24 @@ namespace CONTACT
      \brief Get coupling slave element
 
      */
-    virtual Teuchos::RCP<MORTAR::Element>& line_slave_element() const { return l_sele_; }
+    virtual Teuchos::RCP<Mortar::Element>& line_slave_element() const { return l_sele_; }
 
     /*!
      \brief Get coupling master element
 
      */
-    virtual Teuchos::RCP<MORTAR::Element>& line_master_element() const { return l_mele_; }
+    virtual Teuchos::RCP<Mortar::Element>& line_master_element() const { return l_mele_; }
 
    private:
     // don't want = operator and cctor
     LineToLineCouplingPoint3d operator=(const LineToLineCouplingPoint3d& old) = delete;
     LineToLineCouplingPoint3d(const LineToLineCouplingPoint3d& old) = delete;
 
-    DRT::Discretization& idiscret_;          //< discretization of the contact interface
+    Discret::Discretization& idiscret_;      //< discretization of the contact interface
     int dim_;                                //< problem dimension (here: 3D)
     Teuchos::ParameterList& imortar_;        //< containing contact input parameters
-    Teuchos::RCP<MORTAR::Element>& l_sele_;  //< line element to perform coupling for
-    Teuchos::RCP<MORTAR::Element>& l_mele_;  //< line element to perform coupling for
+    Teuchos::RCP<Mortar::Element>& l_sele_;  //< line element to perform coupling for
+    Teuchos::RCP<Mortar::Element>& l_mele_;  //< line element to perform coupling for
   };
 
 }  // namespace CONTACT

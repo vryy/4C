@@ -23,20 +23,20 @@
 FOUR_C_NAMESPACE_OPEN
 
 // Forward declarations.
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   template <unsigned int rows, unsigned int cols, class value_type>
   class Matrix;
 }
-namespace DRT
+namespace Discret
 {
   namespace UTILS
   {
     struct IntegrationPoints1D;
   }
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
@@ -73,8 +73,8 @@ namespace GEOMETRYPAIR
     /**
      * \brief Constructor.
      */
-    GeometryPairLineToVolume(const CORE::Elements::Element* element1,
-        const CORE::Elements::Element* element2,
+    GeometryPairLineToVolume(const Core::Elements::Element* element1,
+        const Core::Elements::Element* element2,
         const Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData>& line_to_3d_evaluation_data);
 
 
@@ -117,9 +117,9 @@ namespace GEOMETRYPAIR
      * @param projection_result (out) Flag for the result of the projection.
      * @return
      */
-    void ProjectPointToOther(const CORE::LINALG::Matrix<3, 1, scalar_type>& point,
+    void ProjectPointToOther(const Core::LinAlg::Matrix<3, 1, scalar_type>& point,
         const ElementData<volume, scalar_type>& element_data_volume,
-        CORE::LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result) const;
+        Core::LinAlg::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result) const;
 
     /**
      * \brief Get the intersection between the line and a surface in the volume.
@@ -137,7 +137,7 @@ namespace GEOMETRYPAIR
     void intersect_line_with_surface(const ElementData<line, scalar_type>& element_data_line,
         const ElementData<volume, scalar_type>& element_data_volume,
         const unsigned int& fixed_parameter, const double& fixed_value, scalar_type& eta,
-        CORE::LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result) const;
+        Core::LinAlg::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result) const;
 
     /**
      * \brief Intersect a line with all surfaces of a volume.
@@ -151,7 +151,7 @@ namespace GEOMETRYPAIR
         const ElementData<volume, scalar_type>& element_data_volume,
         std::vector<ProjectionPoint1DTo3D<scalar_type>>& intersection_points,
         const scalar_type& eta_start,
-        const CORE::LINALG::Matrix<3, 1, scalar_type>& xi_start) const;
+        const Core::LinAlg::Matrix<3, 1, scalar_type>& xi_start) const;
 
    protected:
     //! Link to the geometry evaluation container.
@@ -167,9 +167,9 @@ namespace GEOMETRYPAIR
    * @param projection_result (out) Flag for the result of the projection.
    */
   template <typename scalar_type, typename volume>
-  void ProjectPointToVolume(const CORE::LINALG::Matrix<3, 1, scalar_type>& point,
+  void ProjectPointToVolume(const Core::LinAlg::Matrix<3, 1, scalar_type>& point,
       const ElementData<volume, scalar_type>& element_data_volume,
-      CORE::LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result);
+      Core::LinAlg::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result);
 }  // namespace GEOMETRYPAIR
 
 FOUR_C_NAMESPACE_CLOSE

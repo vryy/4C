@@ -29,34 +29,34 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT::ELEMENTS
+namespace Discret::ELEMENTS
 {
-  template <CORE::FE::CellType celltype, typename Enable = void>
+  template <Core::FE::CellType celltype, typename Enable = void>
   struct ElementNodes;
-}  // namespace DRT::ELEMENTS
+}  // namespace Discret::ELEMENTS
 
-namespace DRT::ELEMENTS::DETAIL
+namespace Discret::ELEMENTS::DETAIL
 {
-  template <CORE::FE::CellType celltype>
-  inline static constexpr int num_nodes = CORE::FE::num_nodes<celltype>;
+  template <Core::FE::CellType celltype>
+  inline static constexpr int num_nodes = Core::FE::num_nodes<celltype>;
 
-  template <CORE::FE::CellType celltype>
-  inline static constexpr int num_dim = CORE::FE::dim<celltype>;
+  template <Core::FE::CellType celltype>
+  inline static constexpr int num_dim = Core::FE::dim<celltype>;
 
-  template <CORE::FE::CellType celltype>
+  template <Core::FE::CellType celltype>
   inline static constexpr int num_str = num_dim<celltype>*(num_dim<celltype> + 1) / 2;
 
-  template <CORE::FE::CellType celltype>
+  template <Core::FE::CellType celltype>
   inline static constexpr int num_dof_per_ele = num_nodes<celltype>* num_dim<celltype>;
-}  // namespace DRT::ELEMENTS::DETAIL
+}  // namespace Discret::ELEMENTS::DETAIL
 
-namespace DRT::ELEMENTS
+namespace Discret::ELEMENTS
 {
 
   /*!
    * @brief Calculate the lumped mass matrix
    */
-  inline void LumpMatrix(CORE::LINALG::SerialDenseMatrix& matrix)
+  inline void LumpMatrix(Core::LinAlg::SerialDenseMatrix& matrix)
   {
     FOUR_C_ASSERT(
         matrix.numRows() == matrix.numCols(), "The provided mass matrix is not a square matrix!");
@@ -81,44 +81,44 @@ namespace DRT::ELEMENTS
    *
    * @tparam celltype
    */
-  template <CORE::FE::CellType celltype, typename Enable>
+  template <Core::FE::CellType celltype, typename Enable>
   struct ElementNodes
   {
     /*!
      * @brief Position of nodes in the reference configuration
      */
-    CORE::LINALG::Matrix<DETAIL::num_nodes<celltype>, DETAIL::num_dim<celltype>>
+    Core::LinAlg::Matrix<DETAIL::num_nodes<celltype>, DETAIL::num_dim<celltype>>
         reference_coordinates_;
 
     /*!
      * @brief Displacements of the element nodes
      */
-    CORE::LINALG::Matrix<DETAIL::num_nodes<celltype>, DETAIL::num_dim<celltype>> displacements_;
+    Core::LinAlg::Matrix<DETAIL::num_nodes<celltype>, DETAIL::num_dim<celltype>> displacements_;
   };
 
-  template <CORE::FE::CellType celltype>
-  struct ElementNodes<celltype, std::enable_if_t<CORE::FE::is_nurbs<celltype>>>
+  template <Core::FE::CellType celltype>
+  struct ElementNodes<celltype, std::enable_if_t<Core::FE::is_nurbs<celltype>>>
   {
     /*!
      * @brief Position of nodes in the reference configuration
      */
-    CORE::LINALG::Matrix<DETAIL::num_nodes<celltype>, DETAIL::num_dim<celltype>>
+    Core::LinAlg::Matrix<DETAIL::num_nodes<celltype>, DETAIL::num_dim<celltype>>
         reference_coordinates_;
 
     /*!
      * @brief Displacements of the element nodes
      */
-    CORE::LINALG::Matrix<DETAIL::num_nodes<celltype>, DETAIL::num_dim<celltype>> displacements_;
+    Core::LinAlg::Matrix<DETAIL::num_nodes<celltype>, DETAIL::num_dim<celltype>> displacements_;
 
     /*!
      * @brief Knot span of a NURBS element
      */
-    std::vector<CORE::LINALG::SerialDenseVector> knots_;
+    std::vector<Core::LinAlg::SerialDenseVector> knots_;
 
     /*!
      * @brief Weights of control points
      */
-    CORE::LINALG::Matrix<DETAIL::num_nodes<celltype>, 1, double> weights_;
+    Core::LinAlg::Matrix<DETAIL::num_nodes<celltype>, 1, double> weights_;
   };
 
   /*!
@@ -129,11 +129,11 @@ namespace DRT::ELEMENTS
    * @param disp (in) : Vector of nodal displacements of the element
    * @return ElementNodes<celltype>
    */
-  template <CORE::FE::CellType celltype>
+  template <Core::FE::CellType celltype>
   ElementNodes<celltype> EvaluateElementNodes(
-      const CORE::Elements::Element& ele, const std::vector<double>& disp)
+      const Core::Elements::Element& ele, const std::vector<double>& disp)
   {
-    DRT::ELEMENTS::ElementNodes<celltype> element_nodes;
+    Discret::ELEMENTS::ElementNodes<celltype> element_nodes;
     for (int i = 0; i < DETAIL::num_nodes<celltype>; ++i)
     {
       for (int d = 0; d < DETAIL::num_dim<celltype>; ++d)
@@ -153,22 +153,22 @@ namespace DRT::ELEMENTS
    * @param discretization (in) : discretization
    * @param lm (in) : Location vector of the element, i.e., global dof numbers of elemental dofs
    */
-  template <CORE::FE::CellType celltype>
-  ElementNodes<celltype> EvaluateElementNodes(const CORE::Elements::Element& ele,
-      const DRT::Discretization& discretization, const std::vector<int>& lm)
+  template <Core::FE::CellType celltype>
+  ElementNodes<celltype> EvaluateElementNodes(const Core::Elements::Element& ele,
+      const Discret::Discretization& discretization, const std::vector<int>& lm)
   {
     const Epetra_Vector& displacements = *discretization.GetState("displacement");
 
     std::vector<double> mydisp(lm.size());
-    CORE::FE::ExtractMyValues(displacements, mydisp, lm);
+    Core::FE::ExtractMyValues(displacements, mydisp, lm);
 
-    DRT::ELEMENTS::ElementNodes<celltype> element_nodes =
+    Discret::ELEMENTS::ElementNodes<celltype> element_nodes =
         EvaluateElementNodes<celltype>(ele, mydisp);
 
-    if constexpr (CORE::FE::is_nurbs<celltype>)
+    if constexpr (Core::FE::is_nurbs<celltype>)
     {
       // Obtain the information required for a NURBS element
-      bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(
+      bool zero_size = Discret::Nurbs::GetMyNurbsKnotsAndWeights(
           discretization, &ele, element_nodes.knots_, element_nodes.weights_);
       if (zero_size)
         FOUR_C_THROW("GetMyNurbsKnotsAndWeights has to return a non zero size NURBS element.");
@@ -183,14 +183,14 @@ namespace DRT::ELEMENTS
    * @tparam celltype : Cell type
    * @param intpoints (in) : Gauss integration points
    * @param gp (in) : id of the Gauss point
-   * @return CORE::LINALG::Matrix<num_dim<celltype>, 1> : Coordinates of the Gauss Point in the
+   * @return Core::LinAlg::Matrix<num_dim<celltype>, 1> : Coordinates of the Gauss Point in the
    * parameter space
    */
-  template <CORE::FE::CellType celltype>
-  CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1> EvaluateParameterCoordinate(
-      const CORE::FE::GaussIntegration& intpoints, const int gp)
+  template <Core::FE::CellType celltype>
+  Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1> EvaluateParameterCoordinate(
+      const Core::FE::GaussIntegration& intpoints, const int gp)
   {
-    CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1> xi;
+    Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1> xi;
     for (int d = 0; d < DETAIL::num_dim<celltype>; ++d) xi(d) = intpoints.Point(gp)[d];
 
     return xi;
@@ -202,14 +202,14 @@ namespace DRT::ELEMENTS
    * Returns xi = [0 0 0].
    *
    * @tparam celltype : Cell type
-   * @return CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1> : Coordinates of the centroid in the
+   * @return Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1> : Coordinates of the centroid in the
    * parameter space
    */
-  template <CORE::FE::CellType celltype,
-      std::enable_if_t<CORE::FE::is_hex<celltype> | CORE::FE::is_nurbs<celltype>, int> = 0>
-  CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1> EvaluateParameterCoordinateCentroid()
+  template <Core::FE::CellType celltype,
+      std::enable_if_t<Core::FE::is_hex<celltype> | Core::FE::is_nurbs<celltype>, int> = 0>
+  Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1> EvaluateParameterCoordinateCentroid()
   {
-    CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1> xi;
+    Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1> xi;
     for (int d = 0; d < DETAIL::num_dim<celltype>; ++d) xi(d) = 0;
 
     return xi;
@@ -221,13 +221,13 @@ namespace DRT::ELEMENTS
    * Returns xi = [0.25 0.25 0.25].
    *
    * @tparam celltype : Cell type
-   * @return CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1> : Coordinates of the centroid in the
+   * @return Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1> : Coordinates of the centroid in the
    * parameter space
    */
-  template <CORE::FE::CellType celltype, std::enable_if_t<CORE::FE::is_tet<celltype>, int> = 0>
-  CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1> EvaluateParameterCoordinateCentroid()
+  template <Core::FE::CellType celltype, std::enable_if_t<Core::FE::is_tet<celltype>, int> = 0>
+  Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1> EvaluateParameterCoordinateCentroid()
   {
-    CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1> xi;
+    Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1> xi;
     for (int d = 0; d < DETAIL::num_dim<celltype>; ++d) xi(d) = 0.25;
 
     return xi;
@@ -239,13 +239,13 @@ namespace DRT::ELEMENTS
    * Returns xi = [0 0 0.25].
    *
    * @tparam celltype : Cell type
-   * @return CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1> : Coordinates of the centroid in the
+   * @return Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1> : Coordinates of the centroid in the
    * parameter space
    */
-  template <CORE::FE::CellType celltype, std::enable_if_t<CORE::FE::is_pyramid<celltype>, int> = 0>
-  CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1> EvaluateParameterCoordinateCentroid()
+  template <Core::FE::CellType celltype, std::enable_if_t<Core::FE::is_pyramid<celltype>, int> = 0>
+  Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1> EvaluateParameterCoordinateCentroid()
   {
-    CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1> xi(true);
+    Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1> xi(true);
     xi(2) = 0.25;
 
     return xi;
@@ -257,13 +257,13 @@ namespace DRT::ELEMENTS
    * Returns xi = [1/3 1/3 0].
    *
    * @tparam celltype : Cell type
-   * @return CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1> : Coordinates of the centroid in the
+   * @return Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1> : Coordinates of the centroid in the
    * parameter space
    */
-  template <CORE::FE::CellType celltype, std::enable_if_t<CORE::FE::is_wedge<celltype>, int> = 0>
-  CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1> EvaluateParameterCoordinateCentroid()
+  template <Core::FE::CellType celltype, std::enable_if_t<Core::FE::is_wedge<celltype>, int> = 0>
+  Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1> EvaluateParameterCoordinateCentroid()
   {
-    CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1> xi(true);
+    Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1> xi(true);
     xi(0) = 1.0 / 3.0;
     xi(1) = 1.0 / 3.0;
 
@@ -276,15 +276,15 @@ namespace DRT::ELEMENTS
    * @tparam celltype : Cell type
    * @param nodal_coordinates_reference (in) : Reference coordinates of the nodes of the element
    * @param shape_functions_point (in) : Shape functions evaluated at the specific point
-   * @return CORE::LINALG::Matrix<CORE::FE::dim<celltype>, 1> : point's reference coordinates
+   * @return Core::LinAlg::Matrix<Core::FE::dim<celltype>, 1> : point's reference coordinates
    */
-  template <CORE::FE::CellType celltype>
-  CORE::LINALG::Matrix<CORE::FE::dim<celltype>, 1> EvaluateReferenceCoordinate(
-      const CORE::LINALG::Matrix<DETAIL::num_nodes<celltype>, DETAIL::num_dim<celltype>>&
+  template <Core::FE::CellType celltype>
+  Core::LinAlg::Matrix<Core::FE::dim<celltype>, 1> EvaluateReferenceCoordinate(
+      const Core::LinAlg::Matrix<DETAIL::num_nodes<celltype>, DETAIL::num_dim<celltype>>&
           nodal_coordinates_reference,
-      const CORE::LINALG::Matrix<DETAIL::num_nodes<celltype>, 1>& shape_functions_point)
+      const Core::LinAlg::Matrix<DETAIL::num_nodes<celltype>, 1>& shape_functions_point)
   {
-    CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1> coordinates_reference(true);
+    Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1> coordinates_reference(true);
     coordinates_reference.MultiplyTN(nodal_coordinates_reference, shape_functions_point);
 
     return coordinates_reference;
@@ -295,33 +295,33 @@ namespace DRT::ELEMENTS
    *
    * @tparam celltype : Cell type
    * @param nodal_coordinates (in) : Reference coordinates of the nodes of the element
-   * @return CORE::LINALG::Matrix<CORE::FE::dim<celltype>, 1> : Element centroid's coordinates in
+   * @return Core::LinAlg::Matrix<Core::FE::dim<celltype>, 1> : Element centroid's coordinates in
    * reference configuration
    */
-  template <CORE::FE::CellType celltype,
-      std::enable_if_t<CORE::FE::use_lagrange_shapefnct<celltype>, int> = 0>
-  CORE::LINALG::Matrix<CORE::FE::dim<celltype>, 1> EvaluateReferenceCoordinateCentroid(
+  template <Core::FE::CellType celltype,
+      std::enable_if_t<Core::FE::use_lagrange_shapefnct<celltype>, int> = 0>
+  Core::LinAlg::Matrix<Core::FE::dim<celltype>, 1> EvaluateReferenceCoordinateCentroid(
       const ElementNodes<celltype>& nodal_coordinates)
   {
-    const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1> xi_centroid =
+    const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1> xi_centroid =
         EvaluateParameterCoordinateCentroid<celltype>();
 
-    CORE::LINALG::Matrix<DETAIL::num_nodes<celltype>, 1> shape_functions_centroid(true);
-    CORE::FE::shape_function<celltype>(xi_centroid, shape_functions_centroid);
+    Core::LinAlg::Matrix<DETAIL::num_nodes<celltype>, 1> shape_functions_centroid(true);
+    Core::FE::shape_function<celltype>(xi_centroid, shape_functions_centroid);
 
     return EvaluateReferenceCoordinate<celltype>(
         nodal_coordinates.reference_coordinates_, shape_functions_centroid);
   }
 
-  template <CORE::FE::CellType celltype, std::enable_if_t<CORE::FE::is_nurbs<celltype>, int> = 0>
-  CORE::LINALG::Matrix<CORE::FE::dim<celltype>, 1> EvaluateReferenceCoordinateCentroid(
+  template <Core::FE::CellType celltype, std::enable_if_t<Core::FE::is_nurbs<celltype>, int> = 0>
+  Core::LinAlg::Matrix<Core::FE::dim<celltype>, 1> EvaluateReferenceCoordinateCentroid(
       const ElementNodes<celltype>& nodal_coordinates)
   {
-    const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1> xi_centroid =
+    const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1> xi_centroid =
         EvaluateParameterCoordinateCentroid<celltype>();
 
-    CORE::LINALG::Matrix<DETAIL::num_nodes<celltype>, 1> shape_functions_centroid(true);
-    CORE::FE::NURBS::nurbs_shape_function_dim(shape_functions_centroid, xi_centroid,
+    Core::LinAlg::Matrix<DETAIL::num_nodes<celltype>, 1> shape_functions_centroid(true);
+    Core::FE::Nurbs::nurbs_shape_function_dim(shape_functions_centroid, xi_centroid,
         nodal_coordinates.knots_, nodal_coordinates.weights_, celltype);
 
     return EvaluateReferenceCoordinate<celltype>(
@@ -334,11 +334,11 @@ namespace DRT::ELEMENTS
    *
    * @tparam celltype
    */
-  template <CORE::FE::CellType celltype>
+  template <Core::FE::CellType celltype>
   struct ShapeFunctionsAndDerivatives
   {
-    CORE::LINALG::Matrix<DETAIL::num_nodes<celltype>, 1> shapefunctions_;
-    CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_nodes<celltype>> derivatives_;
+    Core::LinAlg::Matrix<DETAIL::num_nodes<celltype>, 1> shapefunctions_;
+    Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_nodes<celltype>> derivatives_;
   };
 
   /*!
@@ -350,46 +350,46 @@ namespace DRT::ELEMENTS
    * @return ShapeFunctionsAndDerivatives<celltype> : An object holding the shape functions and the
    * first derivatives evaluated at the respective point in the parameter space
    */
-  template <CORE::FE::CellType celltype,
-      std::enable_if_t<CORE::FE::use_lagrange_shapefnct<celltype>, bool> = true>
+  template <Core::FE::CellType celltype,
+      std::enable_if_t<Core::FE::use_lagrange_shapefnct<celltype>, bool> = true>
   ShapeFunctionsAndDerivatives<celltype> EvaluateShapeFunctionsAndDerivs(
-      const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
+      const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
       const ElementNodes<celltype>& nodal_coordinates)
   {
     ShapeFunctionsAndDerivatives<celltype> shapefcns;
-    CORE::FE::shape_function<celltype>(xi, shapefcns.shapefunctions_);
-    CORE::FE::shape_function_deriv1<celltype>(xi, shapefcns.derivatives_);
+    Core::FE::shape_function<celltype>(xi, shapefcns.shapefunctions_);
+    Core::FE::shape_function_deriv1<celltype>(xi, shapefcns.derivatives_);
 
     return shapefcns;
   }
 
-  template <CORE::FE::CellType celltype,
-      std::enable_if_t<CORE::FE::is_nurbs<celltype>, bool> = true>
+  template <Core::FE::CellType celltype,
+      std::enable_if_t<Core::FE::is_nurbs<celltype>, bool> = true>
   ShapeFunctionsAndDerivatives<celltype> EvaluateShapeFunctionsAndDerivs(
-      const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
+      const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
       const ElementNodes<celltype>& nodal_coordinates)
   {
     ShapeFunctionsAndDerivatives<celltype> shapefcns;
-    CORE::FE::NURBS::nurbs_get_funct_deriv(shapefcns.shapefunctions_, shapefcns.derivatives_, xi,
+    Core::FE::Nurbs::nurbs_get_funct_deriv(shapefcns.shapefunctions_, shapefcns.derivatives_, xi,
         nodal_coordinates.knots_, nodal_coordinates.weights_, celltype);
 
     return shapefcns;
   }
 
-  template <CORE::FE::CellType celltype>
+  template <Core::FE::CellType celltype>
   struct JacobianMapping
   {
     /// Determinant of the jacobian
     double determinant_;
 
     /// Jacobian matrix at a specific point
-    CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>> jacobian_;
+    Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>> jacobian_;
 
     /// Inverse jacobian matrix at a specific point
-    CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>> inverse_jacobian_;
+    Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>> inverse_jacobian_;
 
     /// Derivative of the shape functions w.r.t. the reference coordinates
-    CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_nodes<celltype>> N_XYZ_;
+    Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_nodes<celltype>> N_XYZ_;
   };
 
   /*!
@@ -404,7 +404,7 @@ namespace DRT::ELEMENTS
    * (inverse Jacobian, determinant, derivatives of the shape functions w.r.t. XYZ, integration
    * factor)
    */
-  template <CORE::FE::CellType celltype>
+  template <Core::FE::CellType celltype>
   JacobianMapping<celltype> EvaluateJacobianMapping(
       const ShapeFunctionsAndDerivatives<celltype>& shapefcns,
       const ElementNodes<celltype>& nodal_coordinates)
@@ -428,11 +428,11 @@ namespace DRT::ELEMENTS
    * @param nodal_coordinates (in) : Reference and current coordinates of the nodes of the element
    * @return double : Jacobian determinant
    */
-  template <CORE::FE::CellType celltype>
+  template <Core::FE::CellType celltype>
   double EvaluateJacobianDeterminant(const ShapeFunctionsAndDerivatives<celltype>& shapefcns,
       const ElementNodes<celltype>& nodal_coordinates)
   {
-    CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>> jacobian;
+    Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>> jacobian;
     jacobian.Multiply(shapefcns.derivatives_, nodal_coordinates.reference_coordinates_);
 
     return jacobian.Determinant();
@@ -445,12 +445,12 @@ namespace DRT::ELEMENTS
    * @param nodal_coordinates (in) : Reference and current coordinates of the nodes of the element
    * @return JacobianMapping<celltype> : jacobian mapping at the element centroid
    */
-  template <CORE::FE::CellType celltype, std::enable_if_t<DETAIL::num_dim<celltype> == 3, int> = 0>
+  template <Core::FE::CellType celltype, std::enable_if_t<DETAIL::num_dim<celltype> == 3, int> = 0>
   JacobianMapping<celltype> EvaluateJacobianMappingCentroid(
       const ElementNodes<celltype>& nodal_coordinates)
   {
     // set coordinates in parameter space at centroid as zero -> xi = [0; 0; 0]
-    CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1> xi_centroid =
+    Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1> xi_centroid =
         EvaluateParameterCoordinateCentroid<celltype>();
 
     // shape functions and derivatives evaluated at element centroid
@@ -464,13 +464,13 @@ namespace DRT::ELEMENTS
     return jacobian_mapping_centroid;
   }
 
-  template <CORE::FE::CellType celltype>
+  template <Core::FE::CellType celltype>
   struct SpatialMaterialMapping
   {
     double determinant_deformation_gradient_{};
-    CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>>
+    Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>>
         deformation_gradient_{};
-    CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>>
+    Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>>
         inverse_deformation_gradient_{};
   };
 
@@ -487,17 +487,17 @@ namespace DRT::ELEMENTS
    * mapping (deformation_gradient, inverse_deformation_gradient,
    * determinant_deformation_gradient)
    */
-  template <CORE::FE::CellType celltype>
+  template <Core::FE::CellType celltype>
   SpatialMaterialMapping<celltype> EvaluateSpatialMaterialMapping(
       const JacobianMapping<celltype>& jacobian_mapping,
       const ElementNodes<celltype>& nodal_coordinates, const double scale_defgrd = 1.0,
-      const INPAR::STR::KinemType& kinematictype = INPAR::STR::KinemType::nonlinearTotLag)
+      const Inpar::STR::KinemType& kinematictype = Inpar::STR::KinemType::nonlinearTotLag)
   {
     SpatialMaterialMapping<celltype> spatial_material_mapping;
     spatial_material_mapping.deformation_gradient_ =
-        CORE::LINALG::IdentityMatrix<CORE::FE::dim<celltype>>();
+        Core::LinAlg::IdentityMatrix<Core::FE::dim<celltype>>();
 
-    if (kinematictype == INPAR::STR::KinemType::nonlinearTotLag)
+    if (kinematictype == Inpar::STR::KinemType::nonlinearTotLag)
     {
       spatial_material_mapping.deformation_gradient_.MultiplyTT(
           scale_defgrd, nodal_coordinates.displacements_, jacobian_mapping.N_XYZ_, scale_defgrd);
@@ -518,7 +518,7 @@ namespace DRT::ELEMENTS
    * @param nodal_coordinates (in) : Reference and current coordinates of the nodes of the element
    * @return double : Determinant of the deformation gradient at the centroid
    */
-  template <CORE::FE::CellType celltype, std::enable_if_t<DETAIL::num_dim<celltype> == 3, int> = 0>
+  template <Core::FE::CellType celltype, std::enable_if_t<DETAIL::num_dim<celltype> == 3, int> = 0>
   double EvaluateDeformationGradientDeterminantCentroid(
       const ElementNodes<celltype>& nodal_coordinates)
   {
@@ -527,7 +527,7 @@ namespace DRT::ELEMENTS
         EvaluateJacobianMappingCentroid(nodal_coordinates);
 
     // deformation gradient and strains at centroid of element
-    const DRT::ELEMENTS::SpatialMaterialMapping<celltype> spatial_material_mapping_centroid =
+    const Discret::ELEMENTS::SpatialMaterialMapping<celltype> spatial_material_mapping_centroid =
         EvaluateSpatialMaterialMapping(jacobian_mapping_centroid, nodal_coordinates);
 
     return spatial_material_mapping_centroid.determinant_deformation_gradient_;
@@ -539,13 +539,13 @@ namespace DRT::ELEMENTS
    * GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
    *
    * @param cauchygreen (in) : Right Cauchy-Green deformation tensor
-   * @return CORE::LINALG::Matrix<DETAIL::num_str<celltype>, 1> : Green-Lagrange strain tensor in
+   * @return Core::LinAlg::Matrix<DETAIL::num_str<celltype>, 1> : Green-Lagrange strain tensor in
    * strain-like Voigt notation
    */
-  inline CORE::LINALG::Matrix<6, 1> EvaluateGreenLagrangeStrain(
-      const CORE::LINALG::Matrix<3, 3>& cauchygreen)
+  inline Core::LinAlg::Matrix<6, 1> EvaluateGreenLagrangeStrain(
+      const Core::LinAlg::Matrix<3, 3>& cauchygreen)
   {
-    CORE::LINALG::Matrix<6, 1> gl_strain;
+    Core::LinAlg::Matrix<6, 1> gl_strain;
 
     gl_strain(0) = 0.5 * (cauchygreen(0, 0) - 1.0);
     gl_strain(1) = 0.5 * (cauchygreen(1, 1) - 1.0);
@@ -564,14 +564,14 @@ namespace DRT::ELEMENTS
    * @param spatial_material_mapping (in) : An object holding quantities of the spatial material
    * mapping (deformation_gradient, inverse_deformation_gradient,
    * determinant_deformation_gradient)
-   * @return CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>> : Right
+   * @return Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>> : Right
    * Cauchy-Green deformation tensor
    */
-  template <CORE::FE::CellType celltype, std::enable_if_t<DETAIL::num_dim<celltype> == 3, int> = 0>
-  CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>> EvaluateCauchyGreen(
+  template <Core::FE::CellType celltype, std::enable_if_t<DETAIL::num_dim<celltype> == 3, int> = 0>
+  Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>> EvaluateCauchyGreen(
       const SpatialMaterialMapping<celltype>& spatial_material_mapping)
   {
-    CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>> cauchygreen(false);
+    Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>> cauchygreen(false);
 
     cauchygreen.MultiplyTN(spatial_material_mapping.deformation_gradient_,
         spatial_material_mapping.deformation_gradient_);
@@ -587,17 +587,17 @@ namespace DRT::ELEMENTS
    * @param spatial_material_mapping (in) :An object holding quantities of the spatial material
    * mapping (deformation_gradient, inverse_deformation_gradient,
    * determinant_deformation_gradient)
-   * @return CORE::LINALG::Matrix<num_str<celltype>, num_dim<celltype> * num_nodes<celltype>> :
+   * @return Core::LinAlg::Matrix<num_str<celltype>, num_dim<celltype> * num_nodes<celltype>> :
    * B-Operator
    */
-  template <CORE::FE::CellType celltype, std::enable_if_t<DETAIL::num_dim<celltype> == 3, int> = 0>
-  CORE::LINALG::Matrix<DETAIL::num_str<celltype>,
+  template <Core::FE::CellType celltype, std::enable_if_t<DETAIL::num_dim<celltype> == 3, int> = 0>
+  Core::LinAlg::Matrix<DETAIL::num_str<celltype>,
       DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>>
   EvaluateStrainGradient(const JacobianMapping<celltype>& jacobian_mapping,
       const SpatialMaterialMapping<celltype>& spatial_material_mapping)
   {
     // B-operator
-    CORE::LINALG::Matrix<DETAIL::num_str<celltype>,
+    Core::LinAlg::Matrix<DETAIL::num_str<celltype>,
         DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>>
         Bop;
     for (int i = 0; i < DETAIL::num_nodes<celltype>; ++i)
@@ -643,15 +643,15 @@ namespace DRT::ELEMENTS
     return Bop;
   }
 
-  template <CORE::FE::CellType celltype>
+  template <Core::FE::CellType celltype>
   struct Stress
   {
     /// Second Piola-Kirchhoff stress tensor in stress-like voigt notation
-    CORE::LINALG::Matrix<DETAIL::num_str<celltype>, 1> pk2_;
+    Core::LinAlg::Matrix<DETAIL::num_str<celltype>, 1> pk2_;
 
     /// Linearization of the 2. Piola Kirchhoff stress tensor w.r.t. Green-Lagrange strain tensor in
     /// mixed Voigt notation
-    CORE::LINALG::Matrix<DETAIL::num_str<celltype>, DETAIL::num_str<celltype>> cmat_;
+    Core::LinAlg::Matrix<DETAIL::num_str<celltype>, DETAIL::num_str<celltype>> cmat_;
   };
 
   /*!
@@ -671,10 +671,10 @@ namespace DRT::ELEMENTS
    * @return Stress<celltype> : Object holding the 2. Piola-Kirchhoff stress tensor and the
    * linearization w.r.t. Green-Lagrange strain tensor
    */
-  template <CORE::FE::CellType celltype>
-  Stress<celltype> EvaluateMaterialStress(MAT::So3Material& material,
-      const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>>& defgrd,
-      const CORE::LINALG::Matrix<DETAIL::num_str<celltype>, 1>& gl_strain,
+  template <Core::FE::CellType celltype>
+  Stress<celltype> EvaluateMaterialStress(Mat::So3Material& material,
+      const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>>& defgrd,
+      const Core::LinAlg::Matrix<DETAIL::num_str<celltype>, 1>& gl_strain,
       Teuchos::ParameterList& params, const int gp, const int eleGID)
   {
     Stress<celltype> stress;
@@ -693,11 +693,11 @@ namespace DRT::ELEMENTS
    * the jacobian)
    * @param force_vector (in/out) : Force vector where the local contribution is added to
    */
-  template <CORE::FE::CellType celltype>
-  void add_internal_force_vector(const CORE::LINALG::Matrix<DETAIL::num_str<celltype>,
+  template <Core::FE::CellType celltype>
+  void add_internal_force_vector(const Core::LinAlg::Matrix<DETAIL::num_str<celltype>,
                                      DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>>& Bop,
       const Stress<celltype>& stress, const double integration_fac,
-      CORE::LINALG::Matrix<DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>, 1>&
+      Core::LinAlg::Matrix<DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>, 1>&
           force_vector)
   {
     force_vector.MultiplyTN(integration_fac, Bop, stress.pk2_, 1.);
@@ -713,14 +713,14 @@ namespace DRT::ELEMENTS
    * the jacobian)
    * @param stiffness_matrix (in/out) : stiffness matrix where the local contribution is added to
    */
-  template <CORE::FE::CellType celltype>
-  void AddElasticStiffnessMatrix(const CORE::LINALG::Matrix<DETAIL::num_str<celltype>,
+  template <Core::FE::CellType celltype>
+  void AddElasticStiffnessMatrix(const Core::LinAlg::Matrix<DETAIL::num_str<celltype>,
                                      DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>>& Bop,
       const Stress<celltype>& stress, const double integration_fac,
-      CORE::LINALG::Matrix<DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>,
+      Core::LinAlg::Matrix<DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>,
           DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>>& stiffness_matrix)
   {
-    CORE::LINALG::Matrix<DETAIL::num_str<celltype>,
+    Core::LinAlg::Matrix<DETAIL::num_str<celltype>,
         DETAIL::num_nodes<celltype> * DETAIL::num_dim<celltype>>
         cb;
     cb.Multiply(stress.cmat_, Bop);
@@ -738,11 +738,11 @@ namespace DRT::ELEMENTS
    * the jacobian)
    * @param stiffness_matrix (in/out) : stiffness matrix where the local contribution is added to
    */
-  template <CORE::FE::CellType celltype>
+  template <Core::FE::CellType celltype>
   void AddGeometricStiffnessMatrix(
-      const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_nodes<celltype>>& B_L,
+      const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_nodes<celltype>>& B_L,
       const Stress<celltype>& stress, const double integration_fac,
-      CORE::LINALG::Matrix<DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>,
+      Core::LinAlg::Matrix<DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>,
           DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>>& stiffness_matrix)
   {
     std::array<double, 3> SmB_L;  // intermediate Sm.B_L
@@ -780,10 +780,10 @@ namespace DRT::ELEMENTS
    * @param density (in) : density at the Gauss point
    * @param mass (in/out) : mass matrix where the local contribution is added to
    */
-  template <CORE::FE::CellType celltype>
+  template <Core::FE::CellType celltype>
   void AddMassMatrix(const ShapeFunctionsAndDerivatives<celltype>& shapefunctions,
       const double integration_factor, const double density,
-      CORE::LINALG::Matrix<DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>,
+      Core::LinAlg::Matrix<DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>,
           DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>>& mass)
   {
     for (int inod = 0; inod < DETAIL::num_nodes<celltype>; ++inod)
@@ -809,18 +809,18 @@ namespace DRT::ELEMENTS
    * @param nodal_coordinates (in) : The nodal coordinates of the element
    * @param integration (in) : The integration rule to be used.
    * @param gp_evaluator (in) : A callable object (e.g. lambda-function) with signature void(const
-   * CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi, const
+   * Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1>& xi, const
    * ShapeFunctionsAndDerivatives<celltype>& shape_functions, const JacobianMapping<celltype>&
    * jacobian_mapping, double integration_factor, int gp) that will be called for each integration
    * point.
    */
-  template <CORE::FE::CellType celltype, typename GaussPointEvaluator>
+  template <Core::FE::CellType celltype, typename GaussPointEvaluator>
   inline void ForEachGaussPoint(const ElementNodes<celltype>& nodal_coordinates,
-      const CORE::FE::GaussIntegration& integration, GaussPointEvaluator gp_evaluator)
+      const Core::FE::GaussIntegration& integration, GaussPointEvaluator gp_evaluator)
   {
     for (int gp = 0; gp < integration.NumPoints(); ++gp)
     {
-      const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1> xi =
+      const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1> xi =
           EvaluateParameterCoordinate<celltype>(integration, gp);
 
       const ShapeFunctionsAndDerivatives<celltype> shape_functions =
@@ -844,7 +844,7 @@ namespace DRT::ELEMENTS
    * @param shape_functions_gp (in) : Shape functions evaluated at the Gauss point
    * @param params (in/out) : ParameterList the quantities are added to
    */
-  template <CORE::FE::CellType celltype>
+  template <Core::FE::CellType celltype>
   void EvaluateGPCoordinatesAndAddToParameterList(const ElementNodes<celltype>& nodal_coordinates,
       const ShapeFunctionsAndDerivatives<celltype>& shape_functions_gp,
       Teuchos::ParameterList& params)
@@ -862,7 +862,7 @@ namespace DRT::ELEMENTS
    * @param nodal_coordinates (in) : Reference and current coordinates of the nodes of the element
    * @param params (in/out) : ParameterList the quantities are added to
    */
-  template <CORE::FE::CellType celltype>
+  template <Core::FE::CellType celltype>
   void EvaluateCentroidCoordinatesAndAddToParameterList(
       const ElementNodes<celltype>& nodal_coordinates, Teuchos::ParameterList& params)
   {
@@ -879,37 +879,37 @@ namespace DRT::ELEMENTS
    * @param ele (in) : Reference to the element, possibly having nodal fibers
    * @param params (in/out) : ParameterList the interpolated fibers are added to
    */
-  template <CORE::FE::CellType celltype>
+  template <Core::FE::CellType celltype>
   inline void InterpolateFibersToGaussPointsAndAddToParameterList(
-      const CORE::FE::GaussIntegration& stiffness_matrix_integration,
-      const CORE::Elements::Element& ele, Teuchos::ParameterList& params)
+      const Core::FE::GaussIntegration& stiffness_matrix_integration,
+      const Core::Elements::Element& ele, Teuchos::ParameterList& params)
   {
-    if (CORE::Nodes::HaveNodalFibers<celltype>(ele.Nodes()))
+    if (Core::Nodes::HaveNodalFibers<celltype>(ele.Nodes()))
     {
       // This element has fiber nodes.
       // Interpolate fibers to the Gauss points and add them to the parameter list
 
       // Get shape functions
-      const static std::vector<CORE::LINALG::Matrix<DETAIL::num_nodes<celltype>, 1>> shapefcts =
+      const static std::vector<Core::LinAlg::Matrix<DETAIL::num_nodes<celltype>, 1>> shapefcts =
           std::invoke(
               [&]
               {
-                std::vector<CORE::LINALG::Matrix<DETAIL::num_nodes<celltype>, 1>> shapefcns(
+                std::vector<Core::LinAlg::Matrix<DETAIL::num_nodes<celltype>, 1>> shapefcns(
                     stiffness_matrix_integration.NumPoints());
                 for (int gp = 0; gp < stiffness_matrix_integration.NumPoints(); ++gp)
                 {
-                  CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1> xi(
+                  Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1> xi(
                       stiffness_matrix_integration.Point(gp), true);
-                  CORE::FE::shape_function<celltype>(xi, shapefcns[gp]);
+                  Core::FE::shape_function<celltype>(xi, shapefcns[gp]);
                 }
                 return shapefcns;
               });
 
       // add fibers to the ParameterList
-      CORE::Nodes::NodalFiberHolder fiberHolder;
+      Core::Nodes::NodalFiberHolder fiberHolder;
 
       // Do the interpolation
-      CORE::Nodes::ProjectFibersToGaussPoints<celltype>(ele.Nodes(), shapefcts, fiberHolder);
+      Core::Nodes::ProjectFibersToGaussPoints<celltype>(ele.Nodes(), shapefcts, fiberHolder);
 
       params.set("fiberholder", fiberHolder);
     }
@@ -922,22 +922,22 @@ namespace DRT::ELEMENTS
    *
    * @tparam celltype
    */
-  template <CORE::FE::CellType celltype>
+  template <Core::FE::CellType celltype>
   struct SolidFormulationLinearization
   {
     /// Derivative of the deformation gradient w.r.t. nodal displacements
-    CORE::LINALG::Matrix<9, CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>> d_F_dd{};
+    Core::LinAlg::Matrix<9, Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>> d_F_dd{};
 
     /// Derivative of the deformation gradient w.r.t. xi
-    CORE::LINALG::Matrix<9, CORE::FE::dim<celltype>> d_F_dxi{};
+    Core::LinAlg::Matrix<9, Core::FE::dim<celltype>> d_F_dxi{};
 
     /// 2. Derivative of the deformation gradient w.r.t. xi and nodal displacements
-    CORE::LINALG::Matrix<9,
-        CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype> * CORE::FE::dim<celltype>>
+    Core::LinAlg::Matrix<9,
+        Core::FE::num_nodes<celltype> * Core::FE::dim<celltype> * Core::FE::dim<celltype>>
         d2_F_dxi_dd{};
   };
 
-}  // namespace DRT::ELEMENTS
+}  // namespace Discret::ELEMENTS
 
 FOUR_C_NAMESPACE_CLOSE
 

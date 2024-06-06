@@ -38,7 +38,7 @@ NOX::STR::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
     Teuchos::ParameterList& linearSolverParams,
     const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
     const Teuchos::RCP<Epetra_Operator>& J, const ::NOX::Epetra::Vector& cloneVector,
-    Teuchos::RCP<CORE::LINALG::Solver> structure_solver,
+    Teuchos::RCP<Core::LinAlg::Solver> structure_solver,
     const Teuchos::RCP<::NOX::Epetra::Scaling> s)
     : utils_(printParams),
       jacInterfacePtr_(iJac),
@@ -75,10 +75,10 @@ NOX::STR::LinearSystem::OperatorType NOX::STR::LinearSystem::getOperatorType(
   const Epetra_Operator* testOperator = nullptr;
 
   testOperator = dynamic_cast<
-      const CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>*>(&Op);
+      const Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>*>(&Op);
   if (testOperator != nullptr) return BlockSparseMatrix;
 
-  testOperator = dynamic_cast<const CORE::LINALG::SparseMatrix*>(&Op);
+  testOperator = dynamic_cast<const Core::LinAlg::SparseMatrix*>(&Op);
   if (testOperator != nullptr) return SparseMatrix;
 
   testOperator = dynamic_cast<const Epetra_CrsMatrix*>(&Op);
@@ -145,8 +145,8 @@ bool NOX::STR::LinearSystem::applyJacobianInverse(
   {
     Teuchos::RCP<Epetra_Vector> fres = Teuchos::rcp(new Epetra_Vector(input.getEpetraVector()));
     Teuchos::RCP<Epetra_Vector> disi = Teuchos::rcp(&(result.getEpetraVector()), false);
-    CORE::LINALG::SparseMatrix* J = dynamic_cast<CORE::LINALG::SparseMatrix*>(jacPtr_.get());
-    CORE::LINALG::SolverParams solver_params;
+    Core::LinAlg::SparseMatrix* J = dynamic_cast<Core::LinAlg::SparseMatrix*>(jacPtr_.get());
+    Core::LinAlg::SolverParams solver_params;
     solver_params.refactor = true;
     solver_params.reset = callcount_ == 0;
     structureSolver_->Solve(J->EpetraMatrix(), disi, fres, solver_params);

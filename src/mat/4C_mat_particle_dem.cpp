@@ -21,12 +21,12 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | define static class member                                 sfuchs 07/2018 |
  *---------------------------------------------------------------------------*/
-MAT::ParticleMaterialDEMType MAT::ParticleMaterialDEMType::instance_;
+Mat::ParticleMaterialDEMType Mat::ParticleMaterialDEMType::instance_;
 
 /*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 07/2018 |
  *---------------------------------------------------------------------------*/
-MAT::PAR::ParticleMaterialDEM::ParticleMaterialDEM(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::ParticleMaterialDEM::ParticleMaterialDEM(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : Parameter(matdata), ParticleMaterialBase(matdata)
 {
   // empty constructor
@@ -35,16 +35,16 @@ MAT::PAR::ParticleMaterialDEM::ParticleMaterialDEM(Teuchos::RCP<CORE::MAT::PAR::
 /*---------------------------------------------------------------------------*
  | create material instance of matching type with parameters  sfuchs 07/2018 |
  *---------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ParticleMaterialDEM::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::ParticleMaterialDEM::create_material()
 {
-  return Teuchos::rcp(new MAT::ParticleMaterialDEM(this));
+  return Teuchos::rcp(new Mat::ParticleMaterialDEM(this));
 }
 
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
-CORE::COMM::ParObject* MAT::ParticleMaterialDEMType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::ParticleMaterialDEMType::Create(const std::vector<char>& data)
 {
-  MAT::ParticleMaterialDEM* particlematdem = new MAT::ParticleMaterialDEM();
+  Mat::ParticleMaterialDEM* particlematdem = new Mat::ParticleMaterialDEM();
   particlematdem->Unpack(data);
   return particlematdem;
 }
@@ -52,7 +52,7 @@ CORE::COMM::ParObject* MAT::ParticleMaterialDEMType::Create(const std::vector<ch
 /*---------------------------------------------------------------------------*
  | constructor (empty material object)                        sfuchs 07/2018 |
  *---------------------------------------------------------------------------*/
-MAT::ParticleMaterialDEM::ParticleMaterialDEM() : params_(nullptr)
+Mat::ParticleMaterialDEM::ParticleMaterialDEM() : params_(nullptr)
 {
   // empty constructor
 }
@@ -60,7 +60,7 @@ MAT::ParticleMaterialDEM::ParticleMaterialDEM() : params_(nullptr)
 /*---------------------------------------------------------------------------*
  | constructor (with given material parameters)               sfuchs 07/2018 |
  *---------------------------------------------------------------------------*/
-MAT::ParticleMaterialDEM::ParticleMaterialDEM(MAT::PAR::ParticleMaterialDEM* params)
+Mat::ParticleMaterialDEM::ParticleMaterialDEM(Mat::PAR::ParticleMaterialDEM* params)
     : params_(params)
 {
   // empty constructor
@@ -69,9 +69,9 @@ MAT::ParticleMaterialDEM::ParticleMaterialDEM(MAT::PAR::ParticleMaterialDEM* par
 /*---------------------------------------------------------------------------*
  | pack                                                       sfuchs 07/2018 |
  *---------------------------------------------------------------------------*/
-void MAT::ParticleMaterialDEM::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::ParticleMaterialDEM::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -87,25 +87,25 @@ void MAT::ParticleMaterialDEM::Pack(CORE::COMM::PackBuffer& data) const
 /*---------------------------------------------------------------------------*
  | unpack                                                     sfuchs 07/2018 |
  *---------------------------------------------------------------------------*/
-void MAT::ParticleMaterialDEM::Unpack(const std::vector<char>& data)
+void Mat::ParticleMaterialDEM::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
       // note: dynamic_cast needed due diamond inheritance structure
-      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = dynamic_cast<MAT::PAR::ParticleMaterialDEM*>(mat);
+        params_ = dynamic_cast<Mat::PAR::ParticleMaterialDEM*>(mat);
       else
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());

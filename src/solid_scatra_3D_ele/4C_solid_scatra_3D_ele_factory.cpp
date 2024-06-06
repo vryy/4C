@@ -28,9 +28,9 @@ namespace
    * @tparam prestress_technology : Prestress technology (none or mulf)
    * @tparam Enable : A dummy parameter for enabling a subset of switches.
    */
-  template <CORE::FE::CellType celltype, INPAR::STR::KinemType kinem,
-      DRT::ELEMENTS::ElementTechnology ele_tech,
-      DRT::ELEMENTS::PrestressTechnology prestress_technology, typename Enable = void>
+  template <Core::FE::CellType celltype, Inpar::STR::KinemType kinem,
+      Discret::ELEMENTS::ElementTechnology ele_tech,
+      Discret::ELEMENTS::PrestressTechnology prestress_technology, typename Enable = void>
   struct SolidScatraCalculationFormulation
   {
   };
@@ -39,48 +39,49 @@ namespace
    * @brief Standard nonlinear displacement based total lagrangian formulation valid for all
    * celltypes
    */
-  template <CORE::FE::CellType celltype>
-  struct SolidScatraCalculationFormulation<celltype, INPAR::STR::KinemType::nonlinearTotLag,
-      DRT::ELEMENTS::ElementTechnology::none, DRT::ELEMENTS::PrestressTechnology::none>
+  template <Core::FE::CellType celltype>
+  struct SolidScatraCalculationFormulation<celltype, Inpar::STR::KinemType::nonlinearTotLag,
+      Discret::ELEMENTS::ElementTechnology::none, Discret::ELEMENTS::PrestressTechnology::none>
   {
-    using type = DRT::ELEMENTS::DETAILS::DisplacementBasedSolidScatraIntegrator<celltype>;
+    using type = Discret::ELEMENTS::Details::DisplacementBasedSolidScatraIntegrator<celltype>;
   };
 
   /*!
    * @brief Nonlinear total lagrangian formulation with F-Bar for hex8 and pyramid 5
    */
-  template <CORE::FE::CellType celltype>
-  struct SolidScatraCalculationFormulation<celltype, INPAR::STR::KinemType::nonlinearTotLag,
-      DRT::ELEMENTS::ElementTechnology::fbar, DRT::ELEMENTS::PrestressTechnology::none,
-      std::enable_if_t<celltype == CORE::FE::CellType::hex8>>
+  template <Core::FE::CellType celltype>
+  struct SolidScatraCalculationFormulation<celltype, Inpar::STR::KinemType::nonlinearTotLag,
+      Discret::ELEMENTS::ElementTechnology::fbar, Discret::ELEMENTS::PrestressTechnology::none,
+      std::enable_if_t<celltype == Core::FE::CellType::hex8>>
   {
-    using type = DRT::ELEMENTS::DETAILS::FBarSolidScatraIntegrator<celltype>;
+    using type = Discret::ELEMENTS::Details::FBarSolidScatraIntegrator<celltype>;
   };
 }  // namespace
 
-void DRT::ELEMENTS::AddToPack(
-    CORE::COMM::PackBuffer& data, const DRT::ELEMENTS::SolidScatraElementProperties& properties)
+void Discret::ELEMENTS::AddToPack(Core::Communication::PackBuffer& data,
+    const Discret::ELEMENTS::SolidScatraElementProperties& properties)
 {
-  CORE::COMM::ParObject::AddtoPack(data, static_cast<int>(properties.impltype));
+  Core::Communication::ParObject::AddtoPack(data, static_cast<int>(properties.impltype));
 
   AddToPack(data, properties.solid);
 }
 
-void DRT::ELEMENTS::ExtractFromPack(std::size_t& position, const std::vector<char>& data,
-    DRT::ELEMENTS::SolidScatraElementProperties& properties)
+void Discret::ELEMENTS::ExtractFromPack(std::size_t& position, const std::vector<char>& data,
+    Discret::ELEMENTS::SolidScatraElementProperties& properties)
 {
-  properties.impltype =
-      static_cast<INPAR::SCATRA::ImplType>(CORE::COMM::ParObject::ExtractInt(position, data));
+  properties.impltype = static_cast<Inpar::ScaTra::ImplType>(
+      Core::Communication::ParObject::ExtractInt(position, data));
 
   ExtractFromPack(position, data, properties.solid);
 }
 
-DRT::ELEMENTS::SolidScatraCalcVariant DRT::ELEMENTS::CreateSolidScatraCalculationInterface(
-    CORE::FE::CellType celltype, const DRT::ELEMENTS::SolidElementProperties& element_properties)
+Discret::ELEMENTS::SolidScatraCalcVariant Discret::ELEMENTS::CreateSolidScatraCalculationInterface(
+    Core::FE::CellType celltype,
+    const Discret::ELEMENTS::SolidElementProperties& element_properties)
 {
   // We have 4 different element properties and each combination results in a different element
   // formulation.
-  return CORE::FE::CellTypeSwitch<DETAILS::ImplementedSolidScatraCellTypes>(celltype,
+  return Core::FE::CellTypeSwitch<Details::ImplementedSolidScatraCellTypes>(celltype,
       [&](auto celltype_t)
       {
         return switch_kinematic_type(element_properties.kintype,
@@ -92,8 +93,8 @@ DRT::ELEMENTS::SolidScatraCalcVariant DRT::ELEMENTS::CreateSolidScatraCalculatio
                     return PrestressTechnologySwitch(element_properties.prestress_technology,
                         [&](auto prestress_tech_t) -> SolidScatraCalcVariant
                         {
-                          constexpr CORE::FE::CellType celltype_c = celltype_t();
-                          constexpr INPAR::STR::KinemType kinemtype_c = kinemtype_t();
+                          constexpr Core::FE::CellType celltype_c = celltype_t();
+                          constexpr Inpar::STR::KinemType kinemtype_c = kinemtype_t();
                           constexpr ElementTechnology eletech_c = eletech_t();
                           constexpr PrestressTechnology prestress_tech_c = prestress_tech_t();
                           if constexpr (is_valid_type<SolidScatraCalculationFormulation<celltype_c,
@@ -107,8 +108,8 @@ DRT::ELEMENTS::SolidScatraCalcVariant DRT::ELEMENTS::CreateSolidScatraCalculatio
                               "Your element formulation with cell type %s, kinematic type %s,"
                               " elememt technology %s and prestress type %s oes not exist in the "
                               "solid-scatra context.",
-                              CORE::FE::celltype_string<celltype_t()>,
-                              INPAR::STR::KinemTypeString(element_properties.kintype).c_str(),
+                              Core::FE::celltype_string<celltype_t()>,
+                              Inpar::STR::KinemTypeString(element_properties.kintype).c_str(),
                               ElementTechnologyString(element_properties.element_technology)
                                   .c_str(),
                               PrestressTechnologyString(element_properties.prestress_technology)

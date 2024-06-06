@@ -67,7 +67,7 @@ namespace FLD
         mystressmanager_(fluid.stressmanager_),
         flow_(no_special_flow),
         withscatra_(false),
-        turbmodel_(INPAR::FLUID::no_model),
+        turbmodel_(Inpar::FLUID::no_model),
         subgrid_dissipation_(false),
         inflow_(false),
         statistics_outfilename_(fluid.statistics_outfilename_),
@@ -82,18 +82,18 @@ namespace FLD
         statistics_hit_(Teuchos::null),
         statistics_tgv_(Teuchos::null)
   {
-    subgrid_dissipation_ = CORE::UTILS::IntegralValue<int>(
+    subgrid_dissipation_ = Core::UTILS::IntegralValue<int>(
         params_->sublist("TURBULENCE MODEL"), "SUBGRID_DISSIPATION");
     // initialize
     withscatra_ = false;
 
     // toogle statistics output for turbulent inflow
-    inflow_ = CORE::UTILS::IntegralValue<int>(
+    inflow_ = Core::UTILS::IntegralValue<int>(
                   params_->sublist("TURBULENT INFLOW"), "TURBULENTINFLOW") == true;
 
     // toogle output of mean velocity for paraview
     out_mean_ =
-        CORE::UTILS::IntegralValue<int>(params_->sublist("TURBULENCE MODEL"), "OUTMEAN") == true;
+        Core::UTILS::IntegralValue<int>(params_->sublist("TURBULENCE MODEL"), "OUTMEAN") == true;
 
     // the flow parameter will control for which geometry the
     // sampling is done
@@ -146,8 +146,8 @@ namespace FLD
 
       // do the time integration independent setup
       setup();
-      if (GLOBAL::Problem::Instance()->spatial_approximation_type() ==
-          CORE::FE::ShapeFunctionType::hdg)
+      if (Global::Problem::Instance()->spatial_approximation_type() ==
+          Core::FE::ShapeFunctionType::hdg)
       {
         TimIntHDG* hdgfluid = dynamic_cast<TimIntHDG*>(&fluid);
         if (hdgfluid == nullptr) FOUR_C_THROW("this should be a hdg time integer");
@@ -425,18 +425,18 @@ namespace FLD
               "Smagorinsky_with_van_Driest_damping" ||
           modelparams->get<std::string>("PHYSICAL_MODEL", "no_model") == "Smagorinsky")
       {
-        turbmodel_ = INPAR::FLUID::dynamic_smagorinsky;
+        turbmodel_ = Inpar::FLUID::dynamic_smagorinsky;
       }
       // check if we want to compute averages of multifractal
       // quantities (N, B)
       else if (modelparams->get<std::string>("PHYSICAL_MODEL", "no_model") ==
                "Multifractal_Subgrid_Scales")
       {
-        turbmodel_ = INPAR::FLUID::multifractal_subgrid_scales;
+        turbmodel_ = Inpar::FLUID::multifractal_subgrid_scales;
       }
       else if (modelparams->get<std::string>("PHYSICAL_MODEL", "no_model") == "Dynamic_Vreman")
       {
-        turbmodel_ = INPAR::FLUID::dynamic_vreman;
+        turbmodel_ = Inpar::FLUID::dynamic_vreman;
         // some dummy values into the parameter list
         params_->set<double>("C_vreman", 0.0);
         params_->set<double>("C_vreman_theoretical", 0.0);
@@ -444,7 +444,7 @@ namespace FLD
       }
     }
     else
-      turbmodel_ = INPAR::FLUID::no_model;
+      turbmodel_ = Inpar::FLUID::no_model;
 
     // parameters for sampling/dumping period
     if (flow_ != no_special_flow)
@@ -527,7 +527,7 @@ namespace FLD
         {
           // add computed dynamic Smagorinsky quantities
           // (effective viscosity etc. used during the computation)
-          if (turbmodel_ == INPAR::FLUID::dynamic_smagorinsky)
+          if (turbmodel_ == Inpar::FLUID::dynamic_smagorinsky)
           {
             if (discret_->Comm().MyPID() == 0)
             {
@@ -675,8 +675,8 @@ namespace FLD
                 "need statistics_bfs_ to do a time sample for a flow over a backward-facing step "
                 "at low Mach number");
 
-          if (CORE::UTILS::GetAsEnum<INPAR::FLUID::PhysicalType>(*params_, "Physical Type") ==
-              INPAR::FLUID::incompressible)
+          if (Core::UTILS::GetAsEnum<Inpar::FLUID::PhysicalType>(*params_, "Physical Type") ==
+              Inpar::FLUID::incompressible)
           {
             if (not withscatra_)
             {
@@ -851,15 +851,15 @@ namespace FLD
               if (scatradis_ != Teuchos::null) FOUR_C_THROW("Not supported!");
             }
 
-            if (CORE::UTILS::GetAsEnum<INPAR::FLUID::TimeIntegrationScheme>(
-                    *params_, "time int algo") == INPAR::FLUID::timeint_afgenalpha or
-                CORE::UTILS::GetAsEnum<INPAR::FLUID::TimeIntegrationScheme>(
-                    *params_, "time int algo") == INPAR::FLUID::timeint_npgenalpha)
+            if (Core::UTILS::GetAsEnum<Inpar::FLUID::TimeIntegrationScheme>(
+                    *params_, "time int algo") == Inpar::FLUID::timeint_afgenalpha or
+                Core::UTILS::GetAsEnum<Inpar::FLUID::TimeIntegrationScheme>(
+                    *params_, "time int algo") == Inpar::FLUID::timeint_npgenalpha)
             {
               statevecs.insert(
                   std::pair<std::string, Teuchos::RCP<Epetra_Vector>>("velaf", myvelaf_));
-              if (CORE::UTILS::GetAsEnum<INPAR::FLUID::TimeIntegrationScheme>(
-                      *params_, "time int algo") == INPAR::FLUID::timeint_npgenalpha)
+              if (Core::UTILS::GetAsEnum<Inpar::FLUID::TimeIntegrationScheme>(
+                      *params_, "time int algo") == Inpar::FLUID::timeint_npgenalpha)
                 statevecs.insert(
                     std::pair<std::string, Teuchos::RCP<Epetra_Vector>>("velnp", myvelnp_));
 
@@ -886,15 +886,15 @@ namespace FLD
             }
 
             if (params_->sublist("TURBULENCE MODEL").get<std::string>("FSSUGRVISC") != "No" or
-                turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
+                turbmodel_ == Inpar::FLUID::multifractal_subgrid_scales)
             {
               statevecs.insert(
                   std::pair<std::string, Teuchos::RCP<Epetra_Vector>>("fsvelaf", myfsvelaf_));
               if (myfsvelaf_ == Teuchos::null) FOUR_C_THROW("Have not got fsvel!");
 
-              if (CORE::UTILS::GetAsEnum<INPAR::FLUID::PhysicalType>(*params_, "Physical Type") ==
-                      INPAR::FLUID::loma and
-                  turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
+              if (Core::UTILS::GetAsEnum<Inpar::FLUID::PhysicalType>(*params_, "Physical Type") ==
+                      Inpar::FLUID::loma and
+                  turbmodel_ == Inpar::FLUID::multifractal_subgrid_scales)
               {
                 statevecs.insert(
                     std::pair<std::string, Teuchos::RCP<Epetra_Vector>>("fsscaaf", myfsscaaf_));
@@ -957,7 +957,7 @@ namespace FLD
         std::cout << "\n";
       }
 
-      if (turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales and inflow_ == false and
+      if (turbmodel_ == Inpar::FLUID::multifractal_subgrid_scales and inflow_ == false and
           myxwall_ == Teuchos::null)
       {
         switch (flow_)
@@ -965,10 +965,10 @@ namespace FLD
           case channel_flow_of_height_2:
           {
             // add parameters of multifractal subgrid-scales model
-            if (CORE::UTILS::GetAsEnum<INPAR::FLUID::TimeIntegrationScheme>(
-                    *params_, "time int algo") == INPAR::FLUID::timeint_afgenalpha or
-                CORE::UTILS::GetAsEnum<INPAR::FLUID::TimeIntegrationScheme>(
-                    *params_, "time int algo") == INPAR::FLUID::timeint_npgenalpha)
+            if (Core::UTILS::GetAsEnum<Inpar::FLUID::TimeIntegrationScheme>(
+                    *params_, "time int algo") == Inpar::FLUID::timeint_afgenalpha or
+                Core::UTILS::GetAsEnum<Inpar::FLUID::TimeIntegrationScheme>(
+                    *params_, "time int algo") == Inpar::FLUID::timeint_npgenalpha)
               statistics_channel_->add_model_params_multifractal(myvelaf_, myfsvelaf_, false);
             else
               statistics_channel_->add_model_params_multifractal(myvelnp_, myfsvelaf_, false);
@@ -977,10 +977,10 @@ namespace FLD
           case scatra_channel_flow_of_height_2:
           {
             // add parameters of multifractal subgrid-scales model
-            if (CORE::UTILS::GetAsEnum<INPAR::FLUID::TimeIntegrationScheme>(
-                    *params_, "time int algo") == INPAR::FLUID::timeint_afgenalpha or
-                CORE::UTILS::GetAsEnum<INPAR::FLUID::TimeIntegrationScheme>(
-                    *params_, "time int algo") == INPAR::FLUID::timeint_npgenalpha)
+            if (Core::UTILS::GetAsEnum<Inpar::FLUID::TimeIntegrationScheme>(
+                    *params_, "time int algo") == Inpar::FLUID::timeint_afgenalpha or
+                Core::UTILS::GetAsEnum<Inpar::FLUID::TimeIntegrationScheme>(
+                    *params_, "time int algo") == Inpar::FLUID::timeint_npgenalpha)
               statistics_channel_->add_model_params_multifractal(myvelaf_, myfsvelaf_, true);
             else
               statistics_channel_->add_model_params_multifractal(myvelnp_, myfsvelaf_, false);
@@ -1037,7 +1037,7 @@ namespace FLD
   ----------------------------------------------------------------------*/
   void TurbulenceStatisticManager::DoTimeSample(int step, Teuchos::RCP<Epetra_Vector> velnp,
       Teuchos::RCP<Epetra_Vector> force, Teuchos::RCP<Epetra_Vector> phi,
-      Teuchos::RCP<const CORE::Dofsets::DofSet> stddofset)
+      Teuchos::RCP<const Core::DOFSets::DofSet> stddofset)
   {
     // sampling takes place only in the sampling period
     if (step >= samstart_ && step <= samstop_ && flow_ != no_special_flow)
@@ -1091,7 +1091,7 @@ namespace FLD
 
   ----------------------------------------------------------------------*/
   void TurbulenceStatisticManager::DoOutput(
-      CORE::IO::DiscretizationWriter& output, int step, const bool inflow)
+      Core::IO::DiscretizationWriter& output, int step, const bool inflow)
   {
     // sampling takes place only in the sampling period
     if (step >= samstart_ && step <= samstop_ && flow_ != no_special_flow)
@@ -1290,8 +1290,8 @@ namespace FLD
                 "need statistics_bfs_ to do a time sample for a flow over a backward-facing step "
                 "at low Mach number");
 
-          if (CORE::UTILS::GetAsEnum<INPAR::FLUID::PhysicalType>(*params_, "Physical Type") ==
-              INPAR::FLUID::incompressible)
+          if (Core::UTILS::GetAsEnum<Inpar::FLUID::PhysicalType>(*params_, "Physical Type") ==
+              Inpar::FLUID::incompressible)
           {
             if (not withscatra_)
             {
@@ -1412,7 +1412,7 @@ namespace FLD
       }
     }  // end step is in sampling period
 
-    if (discret_->Comm().MyPID() == 0 and turbmodel_ == INPAR::FLUID::dynamic_vreman)
+    if (discret_->Comm().MyPID() == 0 and turbmodel_ == Inpar::FLUID::dynamic_vreman)
     {
       std::string fnamevreman(statistics_outfilename_);
 
@@ -1458,16 +1458,16 @@ namespace FLD
 
   ----------------------------------------------------------------------*/
   void TurbulenceStatisticManager::AddScaTraField(
-      Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_timeint)
+      Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra_timeint)
   {
     if (discret_->Comm().MyPID() == 0)
     {
-      CORE::IO::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-                     << CORE::IO::endl;
-      CORE::IO::cout << "turbulence_statistic_manager: provided access to ScaTra time integration"
-                     << CORE::IO::endl;
-      CORE::IO::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-                     << CORE::IO::endl;
+      Core::IO::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+                     << Core::IO::endl;
+      Core::IO::cout << "turbulence_statistic_manager: provided access to ScaTra time integration"
+                     << Core::IO::endl;
+      Core::IO::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+                     << Core::IO::endl;
     }
 
     // store the relevant pointers to provide access
@@ -1528,7 +1528,7 @@ namespace FLD
 
   ----------------------------------------------------------------------*/
   void TurbulenceStatisticManager::DoOutputForScaTra(
-      CORE::IO::DiscretizationWriter& output, int step)
+      Core::IO::DiscretizationWriter& output, int step)
   {
     // sampling takes place only in the sampling period
     if (step >= samstart_ && step <= samstop_ && flow_ != no_special_flow)
@@ -1554,7 +1554,7 @@ namespace FLD
   Restart statistics collection
 
   ----------------------------------------------------------------------*/
-  void TurbulenceStatisticManager::read_restart(CORE::IO::DiscretizationReader& reader, int step)
+  void TurbulenceStatisticManager::read_restart(Core::IO::DiscretizationReader& reader, int step)
   {
     if (samstart_ < step && step <= samstop_)
     {
@@ -1595,7 +1595,7 @@ namespace FLD
 
   ----------------------------------------------------------------------*/
   void TurbulenceStatisticManager::ReadRestartScaTra(
-      CORE::IO::DiscretizationReader& scatrareader, int step)
+      Core::IO::DiscretizationReader& scatrareader, int step)
   {
     // we have only to read in the mean field.
     // The rest of the restart was already done during the Restart() call

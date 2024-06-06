@@ -23,9 +23,9 @@ FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*/
-namespace INPAR
+namespace Inpar
 {
-  namespace IO_RUNTIME_OUTPUT
+  namespace IORuntimeOutput
   {
     namespace BEAMS
     {
@@ -33,8 +33,8 @@ namespace INPAR
       void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
     }  // namespace BEAMS
-  }    // namespace IO_RUNTIME_OUTPUT
-}  // namespace INPAR
+  }    // namespace IORuntimeOutput
+}  // namespace Inpar
 
 FOUR_C_NAMESPACE_CLOSE
 

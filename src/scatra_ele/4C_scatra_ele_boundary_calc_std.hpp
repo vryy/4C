@@ -17,14 +17,14 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
-    template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype> + 1>
+    template <Core::FE::CellType distype, int probdim = Core::FE::dim<distype> + 1>
     class ScaTraEleBoundaryCalcStd : public ScaTraEleBoundaryCalc<distype, probdim>
     {
-      typedef DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim> my;
+      typedef Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim> my;
 
      public:
       /// Singleton access method
@@ -38,7 +38,7 @@ namespace DRT
           const int numdofpernode, const int numscal, const std::string& disname);
     };  // class ScaTraEleBoundaryCalcStd
   }     // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

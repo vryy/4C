@@ -39,13 +39,13 @@ namespace FSI
   {
    public:
     /// construction
-    OverlappingBlockMatrixFSIAMG(const CORE::LINALG::MultiMapExtractor& maps,
-        ADAPTER::FSIStructureWrapper& structure, ADAPTER::Fluid& fluid, ADAPTER::AleFsiWrapper& ale,
+    OverlappingBlockMatrixFSIAMG(const Core::LinAlg::MultiMapExtractor& maps,
+        Adapter::FSIStructureWrapper& structure, Adapter::Fluid& fluid, Adapter::AleFsiWrapper& ale,
         bool structuresplit, int symmetric, std::vector<std::string>& blocksmoother,
         std::vector<double>& schuromega, std::vector<double>& omega, std::vector<int>& iterations,
         std::vector<double>& somega, std::vector<int>& siterations, std::vector<double>& fomega,
         std::vector<int>& fiterations, std::vector<double>& aomega, std::vector<int>& aiterations,
-        int analyze, INPAR::FSI::LinearBlockSolver strategy, INPAR::FSI::Verbosity verbosity,
+        int analyze, Inpar::FSI::LinearBlockSolver strategy, Inpar::FSI::Verbosity verbosity,
         OverlappingBlockMatrixHybridSchwarz* hybridPrec = nullptr);
 
     /** \name Attribute access functions */
@@ -189,8 +189,8 @@ namespace FSI
     //! a non-Trilinos preconditioner Richardson
     double richardson_mixed(const std::string field, const int myrank, const int level,
         const int sweeps, const double damp, const MLAPI::Operator& A,
-        const CORE::LINALG::SparseMatrix& matrix,
-        const Teuchos::RCP<CORE::LINALG::Preconditioner>& solver, MLAPI::MultiVector& x,
+        const Core::LinAlg::SparseMatrix& matrix,
+        const Teuchos::RCP<Core::LinAlg::Preconditioner>& solver, MLAPI::MultiVector& x,
         const MLAPI::MultiVector& f, int& run, bool initiguesszero = false, bool analysis = false,
         bool silent = true) const;
 
@@ -268,7 +268,7 @@ namespace FSI
     int minnlevel_;  ///< min of the below nlevel_
     int maxnlevel_;  ///< max of the below nlevel_
     int analyze_;    ///< run analysis of FSIAMG
-    INPAR::FSI::LinearBlockSolver
+    Inpar::FSI::LinearBlockSolver
         strategy_;  ///< type of preconditioner  to run: BGS(AMG) or AMG(BGS)
     std::vector<std::string> blocksmoother_;  ///< type of inter-field block smoother
     std::vector<double> schuromega_;  ///< damping factor for construction of Schur complement
@@ -281,7 +281,7 @@ namespace FSI
     std::vector<double> aomega_;    ///< damping factors for ALE AMG hierarchy
     std::vector<int> aiterations_;  ///< number of sweeps for ALE AMG hierarchy
 
-    const INPAR::FSI::Verbosity verbosity_;  ///< verbosity level of FSI algorithm
+    const Inpar::FSI::Verbosity verbosity_;  ///< verbosity level of FSI algorithm
 
     //! hybrid additive/multiplicative Schwarz preconditioner
     OverlappingBlockMatrixHybridSchwarz* hybridPrec_;

@@ -19,7 +19,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
@@ -32,7 +32,7 @@ namespace STR
 /*!
   \brief Structure specific result test class
 */
-class StruResultTest : public CORE::UTILS::ResultTest
+class StruResultTest : public Core::UTILS::ResultTest
 {
  public:
   //! Constructor for time integrators of general kind
@@ -47,7 +47,7 @@ class StruResultTest : public CORE::UTILS::ResultTest
   - velocitites "velx", "vely", "velz",
   - accelerations "accx", "accy", "accz"
   */
-  void test_node(INPUT::LineDefinition& res, int& nerr, int& test_count) final;
+  void test_node(Input::LineDefinition& res, int& nerr, int& test_count) final;
 
   /*!
   \brief Test special quantities of structure discretization / time integration
@@ -55,7 +55,7 @@ class StruResultTest : public CORE::UTILS::ResultTest
   See get_special_result_for_testing() for a list and extraction mechanisms of special results to be
   tested.
   */
-  void TestSpecial(INPUT::LineDefinition& res, int& nerr, int& test_count) final;
+  void TestSpecial(Input::LineDefinition& res, int& nerr, int& test_count) final;
 
  private:
   //! Extract specified quantity from the structure field
@@ -65,7 +65,7 @@ class StruResultTest : public CORE::UTILS::ResultTest
   Teuchos::RCP<STR::TimInt> timeintegrator_;
 
   //! Structure discretisation
-  Teuchos::RCP<DRT::Discretization> strudisc_;
+  Teuchos::RCP<Discret::Discretization> strudisc_;
 
   //! @name Solution
   //!@{

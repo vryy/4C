@@ -18,17 +18,17 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   class StructPoroReactionECM;
 }
 
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     class ScaTraEleCalcPoroReacECM : public ScaTraEleCalcPoroReac<distype>
     {
      private:
@@ -50,7 +50,7 @@ namespace DRT
 
       //! get the material parameters
       void get_material_params(
-          const CORE::Elements::Element* ele,  //!< the element we are dealing with
+          const Core::Elements::Element* ele,  //!< the element we are dealing with
           std::vector<double>& densn,          //!< density at t_(n)
           std::vector<double>& densnp,         //!< density at t_(n+1) or t_(n+alpha_F)
           std::vector<double>& densam,         //!< density at t_(n+alpha_M)
@@ -60,7 +60,7 @@ namespace DRT
 
       //! evaluate material
       void materials(
-          const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+          const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
           const int k,                                             //!< id of current scalar
           double& densn,                                           //!< density at t_(n)
           double& densnp,       //!< density at t_(n+1) or t_(n+alpha_F)
@@ -71,11 +71,11 @@ namespace DRT
 
       //! compute_struct_chem_potential
       double compute_struct_chem_potential(
-          Teuchos::RCP<MAT::StructPoroReactionECM>& structmat, const int gp);
+          Teuchos::RCP<Mat::StructPoroReactionECM>& structmat, const int gp);
     };
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 
 FOUR_C_NAMESPACE_CLOSE

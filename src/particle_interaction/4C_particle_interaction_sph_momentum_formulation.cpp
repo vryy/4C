@@ -20,28 +20,28 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-PARTICLEINTERACTION::SPHMomentumFormulationBase::SPHMomentumFormulationBase()
+ParticleInteraction::SPHMomentumFormulationBase::SPHMomentumFormulationBase()
 {
   // empty constructor
 }
 
-void PARTICLEINTERACTION::SPHMomentumFormulationBase::Init()
+void ParticleInteraction::SPHMomentumFormulationBase::Init()
 {
   // nothing to do
 }
 
-void PARTICLEINTERACTION::SPHMomentumFormulationBase::Setup()
+void ParticleInteraction::SPHMomentumFormulationBase::Setup()
 {
   // nothing to do
 }
 
-PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::SPHMomentumFormulationMonaghan()
-    : PARTICLEINTERACTION::SPHMomentumFormulationBase()
+ParticleInteraction::SPHMomentumFormulationMonaghan::SPHMomentumFormulationMonaghan()
+    : ParticleInteraction::SPHMomentumFormulationBase()
 {
   // empty constructor
 }
 
-void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::SpecificCoefficient(const double* dens_i,
+void ParticleInteraction::SPHMomentumFormulationMonaghan::SpecificCoefficient(const double* dens_i,
     const double* dens_j, const double* mass_i, const double* mass_j, const double& dWdrij,
     const double& dWdrji, double* speccoeff_ij, double* speccoeff_ji) const
 {
@@ -49,7 +49,7 @@ void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::SpecificCoefficient(co
   if (speccoeff_ji) speccoeff_ji[0] = (dWdrji * mass_i[0]);
 }
 
-void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::PressureGradient(const double* dens_i,
+void ParticleInteraction::SPHMomentumFormulationMonaghan::PressureGradient(const double* dens_i,
     const double* dens_j, const double* press_i, const double* press_j, const double& speccoeff_ij,
     const double& speccoeff_ji, const double* e_ij, double* acc_i, double* acc_j) const
 {
@@ -60,7 +60,7 @@ void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::PressureGradient(const
   if (acc_j) UTILS::VecAddScale(acc_j, speccoeff_ji * fac, e_ij);
 }
 
-void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::ShearForces(const double* dens_i,
+void ParticleInteraction::SPHMomentumFormulationMonaghan::ShearForces(const double* dens_i,
     const double* dens_j, const double* vel_i, const double* vel_j, const double& kernelfac,
     const double& visc_i, const double& visc_j, const double& bulk_visc_i,
     const double& bulk_visc_j, const double& abs_rij, const double& speccoeff_ij,
@@ -97,7 +97,7 @@ void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::ShearForces(const doub
   if (acc_j) UTILS::VecAddScale(acc_j, -speccoeff_ji * fac_conv, e_ij);
 }
 
-void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::standard_background_pressure(
+void ParticleInteraction::SPHMomentumFormulationMonaghan::standard_background_pressure(
     const double* dens_i, const double* dens_j, const double& bg_press_i, const double& bg_press_j,
     const double& speccoeff_ij, const double& speccoeff_ji, const double* e_ij, double* mod_acc_i,
     double* mod_acc_j) const
@@ -108,7 +108,7 @@ void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::standard_background_pr
   if (mod_acc_j) UTILS::VecAddScale(mod_acc_j, speccoeff_ji * bg_press_j * fac, e_ij);
 }
 
-void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::generalized_background_pressure(
+void ParticleInteraction::SPHMomentumFormulationMonaghan::generalized_background_pressure(
     const double* dens_i, const double* dens_j, const double* mass_i, const double* mass_j,
     const double& mod_bg_press_i, const double& mod_bg_press_j, const double& mod_dWdrij,
     const double& mod_dWdrji, const double* e_ij, double* mod_acc_i, double* mod_acc_j) const
@@ -122,7 +122,7 @@ void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::generalized_background
         mod_acc_j, mod_bg_press_j * (mass_i[0] / UTILS::Pow<2>(dens_j[0])) * mod_dWdrji, e_ij);
 }
 
-void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::modified_velocity_contribution(
+void ParticleInteraction::SPHMomentumFormulationMonaghan::modified_velocity_contribution(
     const double* dens_i, const double* dens_j, const double* vel_i, const double* vel_j,
     const double* mod_vel_i, const double* mod_vel_j, const double& speccoeff_ij,
     const double& speccoeff_ji, const double* e_ij, double* acc_i, double* acc_j) const
@@ -149,13 +149,13 @@ void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::modified_velocity_cont
   if (acc_j) UTILS::VecAddScale(acc_j, -speccoeff_ji, A_ij_e_ij);
 }
 
-PARTICLEINTERACTION::SPHMomentumFormulationAdami::SPHMomentumFormulationAdami()
-    : PARTICLEINTERACTION::SPHMomentumFormulationBase()
+ParticleInteraction::SPHMomentumFormulationAdami::SPHMomentumFormulationAdami()
+    : ParticleInteraction::SPHMomentumFormulationBase()
 {
   // empty constructor
 }
 
-void PARTICLEINTERACTION::SPHMomentumFormulationAdami::SpecificCoefficient(const double* dens_i,
+void ParticleInteraction::SPHMomentumFormulationAdami::SpecificCoefficient(const double* dens_i,
     const double* dens_j, const double* mass_i, const double* mass_j, const double& dWdrij,
     const double& dWdrji, double* speccoeff_ij, double* speccoeff_ji) const
 {
@@ -165,7 +165,7 @@ void PARTICLEINTERACTION::SPHMomentumFormulationAdami::SpecificCoefficient(const
   if (speccoeff_ji) speccoeff_ji[0] = fac * (dWdrji / mass_j[0]);
 }
 
-void PARTICLEINTERACTION::SPHMomentumFormulationAdami::PressureGradient(const double* dens_i,
+void ParticleInteraction::SPHMomentumFormulationAdami::PressureGradient(const double* dens_i,
     const double* dens_j, const double* press_i, const double* press_j, const double& speccoeff_ij,
     const double& speccoeff_ji, const double* e_ij, double* acc_i, double* acc_j) const
 {
@@ -175,7 +175,7 @@ void PARTICLEINTERACTION::SPHMomentumFormulationAdami::PressureGradient(const do
   if (acc_j) UTILS::VecAddScale(acc_j, speccoeff_ji * fac, e_ij);
 }
 
-void PARTICLEINTERACTION::SPHMomentumFormulationAdami::ShearForces(const double* dens_i,
+void ParticleInteraction::SPHMomentumFormulationAdami::ShearForces(const double* dens_i,
     const double* dens_j, const double* vel_i, const double* vel_j, const double& kernelfac,
     const double& visc_i, const double& visc_j, const double& bulk_visc_i,
     const double& bulk_visc_j, const double& abs_rij, const double& speccoeff_ij,
@@ -197,7 +197,7 @@ void PARTICLEINTERACTION::SPHMomentumFormulationAdami::ShearForces(const double*
   if (acc_j) UTILS::VecAddScale(acc_j, -speccoeff_ji * fac, vel_ij);
 }
 
-void PARTICLEINTERACTION::SPHMomentumFormulationAdami::standard_background_pressure(
+void ParticleInteraction::SPHMomentumFormulationAdami::standard_background_pressure(
     const double* dens_i, const double* dens_j, const double& bg_press_i, const double& bg_press_j,
     const double& speccoeff_ij, const double& speccoeff_ji, const double* e_ij, double* mod_acc_i,
     double* mod_acc_j) const
@@ -206,7 +206,7 @@ void PARTICLEINTERACTION::SPHMomentumFormulationAdami::standard_background_press
   if (mod_acc_j) UTILS::VecAddScale(mod_acc_j, speccoeff_ji * bg_press_j, e_ij);
 }
 
-void PARTICLEINTERACTION::SPHMomentumFormulationAdami::generalized_background_pressure(
+void ParticleInteraction::SPHMomentumFormulationAdami::generalized_background_pressure(
     const double* dens_i, const double* dens_j, const double* mass_i, const double* mass_j,
     const double& mod_bg_press_i, const double& mod_bg_press_j, const double& mod_dWdrij,
     const double& mod_dWdrji, const double* e_ij, double* mod_acc_i, double* mod_acc_j) const
@@ -220,7 +220,7 @@ void PARTICLEINTERACTION::SPHMomentumFormulationAdami::generalized_background_pr
         mod_acc_j, (mod_bg_press_j * mass_j[0] * mod_dWdrji) / UTILS::Pow<2>(dens_j[0]), e_ij);
 }
 
-void PARTICLEINTERACTION::SPHMomentumFormulationAdami::modified_velocity_contribution(
+void ParticleInteraction::SPHMomentumFormulationAdami::modified_velocity_contribution(
     const double* dens_i, const double* dens_j, const double* vel_i, const double* vel_j,
     const double* mod_vel_i, const double* mod_vel_j, const double& speccoeff_ij,
     const double& speccoeff_ji, const double* e_ij, double* acc_i, double* acc_j) const

@@ -22,7 +22,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::FE
+namespace Core::FE
 {
   /*!
    \brief helper holding the parameters, which we need to know, to construct a polynomial space
@@ -30,12 +30,12 @@ namespace CORE::FE
   struct PolynomialSpaceParams
   {
     explicit PolynomialSpaceParams(
-        CORE::FE::CellType distype, unsigned int degree, bool completeSpace)
+        Core::FE::CellType distype, unsigned int degree, bool completeSpace)
         : distype_(distype), degree_(degree), completeSpace_(completeSpace)
     {
     }
 
-    CORE::FE::CellType distype_;
+    Core::FE::CellType distype_;
     unsigned int degree_;
     bool completeSpace_;
 
@@ -216,19 +216,19 @@ namespace CORE::FE
       {
         case 1:
         {
-          CORE::LINALG::Matrix<2, 1> derivatives(false);
+          Core::LinAlg::Matrix<2, 1> derivatives(false);
           Evaluate(point, derivatives);
           return derivatives(1, 0);
         }
         case 2:
         {
-          CORE::LINALG::Matrix<3, 1> derivatives(false);
+          Core::LinAlg::Matrix<3, 1> derivatives(false);
           Evaluate(point, derivatives);
           return derivatives(2, 0);
         }
         case 3:
         {
-          CORE::LINALG::Matrix<4, 1> derivatives(false);
+          Core::LinAlg::Matrix<4, 1> derivatives(false);
           Evaluate(point, derivatives);
           return derivatives(3, 0);
         }
@@ -284,25 +284,25 @@ namespace CORE::FE
     /*
      \brief Evaluates the values of all polynomials on the given point
      */
-    virtual void Evaluate(const CORE::LINALG::Matrix<nsd_, 1> &point,
-        CORE::LINALG::SerialDenseVector &values) const = 0;
+    virtual void Evaluate(const Core::LinAlg::Matrix<nsd_, 1> &point,
+        Core::LinAlg::SerialDenseVector &values) const = 0;
 
     /*
      \brief Evaluates the values of all polynomials on the given point
      */
-    virtual void Evaluate_deriv1(const CORE::LINALG::Matrix<nsd_, 1> &point,
-        CORE::LINALG::SerialDenseMatrix &derivatives) const = 0;
+    virtual void Evaluate_deriv1(const Core::LinAlg::Matrix<nsd_, 1> &point,
+        Core::LinAlg::SerialDenseMatrix &derivatives) const = 0;
 
     /*
      \brief Evaluates the first derivative of all polynomials on the given point
      */
-    virtual void Evaluate_deriv2(const CORE::LINALG::Matrix<nsd_, 1> &point,
-        CORE::LINALG::SerialDenseMatrix &derivatives) const = 0;
+    virtual void Evaluate_deriv2(const Core::LinAlg::Matrix<nsd_, 1> &point,
+        Core::LinAlg::SerialDenseMatrix &derivatives) const = 0;
 
     /*
      \brief Creates an array with coordinates of the nodes supporting the polynomials.
      */
-    virtual void FillUnitNodePoints(CORE::LINALG::SerialDenseMatrix &matrix) const = 0;
+    virtual void FillUnitNodePoints(Core::LinAlg::SerialDenseMatrix &matrix) const = 0;
   };
 
 
@@ -351,26 +351,26 @@ namespace CORE::FE
     /*
      \brief Evaluates the values of the whole polynomial space in the given point
      */
-    void Evaluate(const CORE::LINALG::Matrix<nsd_, 1> &point,
-        CORE::LINALG::SerialDenseVector &values) const override;
+    void Evaluate(const Core::LinAlg::Matrix<nsd_, 1> &point,
+        Core::LinAlg::SerialDenseVector &values) const override;
 
     /*
      \brief Evaluates the first derivative of the whole polynomial space in the given point
      */
-    void Evaluate_deriv1(const CORE::LINALG::Matrix<nsd_, 1> &point,
-        CORE::LINALG::SerialDenseMatrix &derivatives) const override;
+    void Evaluate_deriv1(const Core::LinAlg::Matrix<nsd_, 1> &point,
+        Core::LinAlg::SerialDenseMatrix &derivatives) const override;
 
     /*
      \brief Evaluates the second derivative of the whole polynomial space in the given point
      */
-    void Evaluate_deriv2(const CORE::LINALG::Matrix<nsd_, 1> &point,
-        CORE::LINALG::SerialDenseMatrix &derivatives) const override;
+    void Evaluate_deriv2(const Core::LinAlg::Matrix<nsd_, 1> &point,
+        Core::LinAlg::SerialDenseMatrix &derivatives) const override;
 
     /*
      \brief Evaluates the second derivative of the whole polynomial space in the given point
      */
     template <typename M>
-    void Evaluate_deriv2(const CORE::LINALG::Matrix<nsd_, 1> &point, M &derivatives) const
+    void Evaluate_deriv2(const Core::LinAlg::Matrix<nsd_, 1> &point, M &derivatives) const
     {
     }
 
@@ -378,10 +378,10 @@ namespace CORE::FE
      \brief Convert from a index within the polynomial space to the tensor indices in the
      individual dimensions
      */
-    CORE::LINALG::Matrix<nsd_, 1, unsigned int> getIndices(const unsigned int index) const
+    Core::LinAlg::Matrix<nsd_, 1, unsigned int> getIndices(const unsigned int index) const
     {
       FOUR_C_ASSERT(index < Size(), "Access out of range");
-      CORE::LINALG::Matrix<nsd_, 1, unsigned int> indices;
+      Core::LinAlg::Matrix<nsd_, 1, unsigned int> indices;
       const unsigned int npoly = poly_space1d_.size();
       switch (nsd_)
       {
@@ -407,7 +407,7 @@ namespace CORE::FE
     /*
      \brief Creates an array with coordinates of the nodes supporting the polynomials.
      */
-    void FillUnitNodePoints(CORE::LINALG::SerialDenseMatrix &matrix) const override;
+    void FillUnitNodePoints(Core::LinAlg::SerialDenseMatrix &matrix) const override;
 
    private:
     std::vector<POLY> poly_space1d_;
@@ -462,25 +462,25 @@ namespace CORE::FE
     /*
      \brief Evaluates the values of the whole polynomial space in the given point
      */
-    void Evaluate(const CORE::LINALG::Matrix<nsd_, 1> &point,
-        CORE::LINALG::SerialDenseVector &values) const override;
+    void Evaluate(const Core::LinAlg::Matrix<nsd_, 1> &point,
+        Core::LinAlg::SerialDenseVector &values) const override;
 
     /*
      \brief Evaluates the first derivative of the whole polynomial space in the given point
      */
-    void Evaluate_deriv1(const CORE::LINALG::Matrix<nsd_, 1> &point,
-        CORE::LINALG::SerialDenseMatrix &derivatives) const override;
+    void Evaluate_deriv1(const Core::LinAlg::Matrix<nsd_, 1> &point,
+        Core::LinAlg::SerialDenseMatrix &derivatives) const override;
 
     /*
      \brief Evaluates the second derivative of the whole polynomial space in the given point
      */
-    void Evaluate_deriv2(const CORE::LINALG::Matrix<nsd_, 1> &point,
-        CORE::LINALG::SerialDenseMatrix &derivatives) const override;
+    void Evaluate_deriv2(const Core::LinAlg::Matrix<nsd_, 1> &point,
+        Core::LinAlg::SerialDenseMatrix &derivatives) const override;
 
     /*
      \brief Creates an array with coordinates of the nodes supporting the polynomials.
      */
-    void FillUnitNodePoints(CORE::LINALG::SerialDenseMatrix &matrix) const override;
+    void FillUnitNodePoints(Core::LinAlg::SerialDenseMatrix &matrix) const override;
 
    private:
     std::vector<POLY> poly_space1d_;
@@ -549,8 +549,8 @@ namespace CORE::FE
   class LagrangeBasisTet : public PolynomialSpaceBase<nsd_>
   {
    public:
-    using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
-    using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
+    using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
+    using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
 
     LagrangeBasisTet(const unsigned int degree) : legendre_(degree)
     {
@@ -581,34 +581,34 @@ namespace CORE::FE
     /*
      \brief Evaluates the values of the whole polynomial space in the given point
      */
-    void Evaluate(const CORE::LINALG::Matrix<nsd_, 1> &point,
-        CORE::LINALG::SerialDenseVector &values) const override;
+    void Evaluate(const Core::LinAlg::Matrix<nsd_, 1> &point,
+        Core::LinAlg::SerialDenseVector &values) const override;
 
     /*
      \brief Evaluates the first derivative of the whole polynomial space in the given point
      */
-    void Evaluate_deriv1(const CORE::LINALG::Matrix<nsd_, 1> &point,
-        CORE::LINALG::SerialDenseMatrix &derivatives) const override;
+    void Evaluate_deriv1(const Core::LinAlg::Matrix<nsd_, 1> &point,
+        Core::LinAlg::SerialDenseMatrix &derivatives) const override;
 
     /*
      \brief Evaluates the second derivative of the whole polynomial space in the given point
      */
-    void Evaluate_deriv2(const CORE::LINALG::Matrix<nsd_, 1> &point,
-        CORE::LINALG::SerialDenseMatrix &derivatives) const override;
+    void Evaluate_deriv2(const Core::LinAlg::Matrix<nsd_, 1> &point,
+        Core::LinAlg::SerialDenseMatrix &derivatives) const override;
 
     /*
      \brief Creates an array with coordinates of the nodes supporting the polynomials.
      */
-    void FillUnitNodePoints(CORE::LINALG::SerialDenseMatrix &matrix) const override;
+    void FillUnitNodePoints(Core::LinAlg::SerialDenseMatrix &matrix) const override;
 
    private:
     void fill_fekete_points(const unsigned int degree);
     void compute_vandermonde_matrices(const unsigned int degree);
 
-    CORE::LINALG::SerialDenseMatrix vandermonde_;
+    Core::LinAlg::SerialDenseMatrix vandermonde_;
     mutable Teuchos::SerialDenseSolver<ordinalType, scalarType> vandermonde_factor_;
-    mutable CORE::LINALG::SerialDenseMatrix evaluate_vec_;
-    CORE::LINALG::SerialDenseMatrix fekete_points_;
+    mutable Core::LinAlg::SerialDenseMatrix evaluate_vec_;
+    Core::LinAlg::SerialDenseMatrix fekete_points_;
     LegendreBasis<nsd_> legendre_;
   };
 
@@ -629,28 +629,28 @@ namespace CORE::FE
   {
    public:
     PolynomialSpace(
-        const CORE::FE::CellType distype, const unsigned int degree, const bool completeSpace)
-        : polyspace_((CORE::FE::getNumberOfElementFaces(distype) == 1 + nsd_ && nsd_ > 1)
-                         ? static_cast<CORE::FE::PolynomialSpaceBase<nsd_> *>(
-                               new CORE::FE::LagrangeBasisTet<nsd_>(degree))
-                     : completeSpace ? static_cast<CORE::FE::PolynomialSpaceBase<nsd_> *>(
-                                           new CORE::FE::LegendreBasis<nsd_>(degree))
-                                     : static_cast<CORE::FE::PolynomialSpaceBase<nsd_> *>(
-                                           new CORE::FE::LagrangeBasis<nsd_>(degree)))
+        const Core::FE::CellType distype, const unsigned int degree, const bool completeSpace)
+        : polyspace_((Core::FE::getNumberOfElementFaces(distype) == 1 + nsd_ && nsd_ > 1)
+                         ? static_cast<Core::FE::PolynomialSpaceBase<nsd_> *>(
+                               new Core::FE::LagrangeBasisTet<nsd_>(degree))
+                     : completeSpace ? static_cast<Core::FE::PolynomialSpaceBase<nsd_> *>(
+                                           new Core::FE::LegendreBasis<nsd_>(degree))
+                                     : static_cast<Core::FE::PolynomialSpaceBase<nsd_> *>(
+                                           new Core::FE::LagrangeBasis<nsd_>(degree)))
     {
-      if (nsd_ != CORE::FE::getDimension(distype))
+      if (nsd_ != Core::FE::getDimension(distype))
         FOUR_C_THROW("Dimension of shape does not match template argument nsd_ in PolynomialSpace");
     }
 
     PolynomialSpace(PolynomialSpaceParams params)
-        : polyspace_((CORE::FE::getNumberOfElementFaces(params.distype_) == 1 + nsd_ && nsd_ > 1)
-                         ? static_cast<CORE::FE::PolynomialSpaceBase<nsd_> *>(
-                               new CORE::FE::LagrangeBasisTet<nsd_>(params.degree_))
+        : polyspace_((Core::FE::getNumberOfElementFaces(params.distype_) == 1 + nsd_ && nsd_ > 1)
+                         ? static_cast<Core::FE::PolynomialSpaceBase<nsd_> *>(
+                               new Core::FE::LagrangeBasisTet<nsd_>(params.degree_))
                      : params.completeSpace_
-                         ? static_cast<CORE::FE::PolynomialSpaceBase<nsd_> *>(
-                               new CORE::FE::LegendreBasis<nsd_>(params.degree_))
-                         : static_cast<CORE::FE::PolynomialSpaceBase<nsd_> *>(
-                               new CORE::FE::LagrangeBasis<nsd_>(params.degree_)))
+                         ? static_cast<Core::FE::PolynomialSpaceBase<nsd_> *>(
+                               new Core::FE::LegendreBasis<nsd_>(params.degree_))
+                         : static_cast<Core::FE::PolynomialSpaceBase<nsd_> *>(
+                               new Core::FE::LagrangeBasis<nsd_>(params.degree_)))
     {
     }
 
@@ -663,7 +663,7 @@ namespace CORE::FE
    \brief Evaluates the values of all polynomials on the given point
      */
     void Evaluate(
-        const CORE::LINALG::Matrix<nsd_, 1> &point, CORE::LINALG::SerialDenseVector &values) const
+        const Core::LinAlg::Matrix<nsd_, 1> &point, Core::LinAlg::SerialDenseVector &values) const
     {
       polyspace_->Evaluate(point, values);
     }
@@ -671,8 +671,8 @@ namespace CORE::FE
     /*
    \brief Evaluates the values of all polynomials on the given point
      */
-    void Evaluate_deriv1(const CORE::LINALG::Matrix<nsd_, 1> &point,
-        CORE::LINALG::SerialDenseMatrix &derivatives) const
+    void Evaluate_deriv1(const Core::LinAlg::Matrix<nsd_, 1> &point,
+        Core::LinAlg::SerialDenseMatrix &derivatives) const
     {
       polyspace_->Evaluate_deriv1(point, derivatives);
     }
@@ -680,8 +680,8 @@ namespace CORE::FE
     /*
    \brief Evaluates the first derivative of all polynomials on the given point
      */
-    void Evaluate_deriv2(const CORE::LINALG::Matrix<nsd_, 1> &point,
-        CORE::LINALG::SerialDenseMatrix &derivatives) const
+    void Evaluate_deriv2(const Core::LinAlg::Matrix<nsd_, 1> &point,
+        Core::LinAlg::SerialDenseMatrix &derivatives) const
     {
       polyspace_->Evaluate_deriv2(point, derivatives);
     }
@@ -695,7 +695,7 @@ namespace CORE::FE
 
    The output matrix is resized to the correct dimension.
      */
-    void FillUnitNodePoints(CORE::LINALG::SerialDenseMatrix &matrix) const
+    void FillUnitNodePoints(Core::LinAlg::SerialDenseMatrix &matrix) const
     {
       polyspace_->FillUnitNodePoints(matrix);
     }
@@ -731,10 +731,10 @@ namespace CORE::FE
    Note: This class must always be synchronized with PolynomialSpace above!
    */
   inline int getBasisSize(
-      const CORE::FE::CellType distype, const int degree, const bool completeSpace)
+      const Core::FE::CellType distype, const int degree, const bool completeSpace)
   {
-    const int dim = CORE::FE::getDimension(distype);
-    const int nfaces = CORE::FE::getNumberOfElementFaces(distype);
+    const int dim = Core::FE::getDimension(distype);
+    const int nfaces = Core::FE::getNumberOfElementFaces(distype);
     switch (dim)
     {
       case 3:
@@ -758,7 +758,7 @@ namespace CORE::FE
     }
   }
 
-}  // namespace CORE::FE
+}  // namespace Core::FE
 
 FOUR_C_NAMESPACE_CLOSE
 

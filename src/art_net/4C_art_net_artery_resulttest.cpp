@@ -19,8 +19,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ART::ArteryResultTest::ArteryResultTest(ArtNetExplicitTimeInt& art_net)
-    : CORE::UTILS::ResultTest("ARTNET")
+Arteries::ArteryResultTest::ArteryResultTest(ArtNetExplicitTimeInt& art_net)
+    : Core::UTILS::ResultTest("ARTNET")
 {
   dis_ = art_net.discretization();
   mysol_ = art_net.QAnp();
@@ -28,8 +28,8 @@ ART::ArteryResultTest::ArteryResultTest(ArtNetExplicitTimeInt& art_net)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ART::ArteryResultTest::ArteryResultTest(ArtNetImplStationary& art_net)
-    : CORE::UTILS::ResultTest("ARTNET")
+Arteries::ArteryResultTest::ArteryResultTest(ArtNetImplStationary& art_net)
+    : Core::UTILS::ResultTest("ARTNET")
 {
   dis_ = art_net.discretization();
   mysol_ = art_net.Pressurenp();
@@ -39,7 +39,7 @@ ART::ArteryResultTest::ArteryResultTest(ArtNetImplStationary& art_net)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ART::ArteryResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int& test_count)
+void Arteries::ArteryResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;
@@ -62,7 +62,7 @@ void ART::ArteryResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int
   {
     if (dis_->HaveGlobalNode(node))
     {
-      CORE::Nodes::Node* actnode = dis_->gNode(node);
+      Core::Nodes::Node* actnode = dis_->gNode(node);
 
       // Strange! It seems we might actually have a global node around
       // even if it does not belong to us. But here we are just
@@ -95,7 +95,7 @@ void ART::ArteryResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ART::ArteryResultTest::TestElement(INPUT::LineDefinition& res, int& nerr, int& test_count)
+void Arteries::ArteryResultTest::TestElement(Input::LineDefinition& res, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;
@@ -120,7 +120,7 @@ void ART::ArteryResultTest::TestElement(INPUT::LineDefinition& res, int& nerr, i
   {
     if (dis_->HaveGlobalElement(element))
     {
-      const CORE::Elements::Element* actelement = dis_->gElement(element);
+      const Core::Elements::Element* actelement = dis_->gElement(element);
 
       // Here we are just interested in the elements that we own (i.e. a row element)!
       if (actelement->Owner() != dis_->Comm().MyPID()) return;

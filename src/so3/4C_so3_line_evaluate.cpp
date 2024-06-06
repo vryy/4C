@@ -25,10 +25,10 @@ FOUR_C_NAMESPACE_OPEN
 /*-----------------------------------------------------------------------*
  * Integrate a Line Neumann boundary condition (public)         gee 04/08|
  * ----------------------------------------------------------------------*/
-int DRT::ELEMENTS::StructuralLine::evaluate_neumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
-    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
-    CORE::LINALG::SerialDenseMatrix* elemat1)
+int Discret::ELEMENTS::StructuralLine::evaluate_neumann(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
+    Core::LinAlg::SerialDenseMatrix* elemat1)
 {
   // set the interface ptr in the parent element
   parent_element()->set_params_interface_ptr(params);
@@ -90,22 +90,22 @@ int DRT::ELEMENTS::StructuralLine::evaluate_neumann(Teuchos::ParameterList& para
 
   // element geometry update - currently only material configuration
   const int numnode = num_node();
-  CORE::LINALG::SerialDenseMatrix x(numnode, numdim);
+  Core::LinAlg::SerialDenseMatrix x(numnode, numdim);
   material_configuration(x);
 
   // integration parameters
-  const CORE::FE::IntegrationPoints1D intpoints(gaussrule_);
-  CORE::LINALG::SerialDenseVector shapefcts(numnode);
-  CORE::LINALG::SerialDenseMatrix deriv(1, numnode);
-  const CORE::FE::CellType shape = Shape();
+  const Core::FE::IntegrationPoints1D intpoints(gaussrule_);
+  Core::LinAlg::SerialDenseVector shapefcts(numnode);
+  Core::LinAlg::SerialDenseMatrix deriv(1, numnode);
+  const Core::FE::CellType shape = Shape();
 
   // integration
   for (int gp = 0; gp < intpoints.nquad; ++gp)
   {
     // get shape functions and derivatives of element surface
     const double e = intpoints.qxg[gp][0];
-    CORE::FE::shape_function_1D(shapefcts, e, shape);
-    CORE::FE::shape_function_1D_deriv1(deriv, e, shape);
+    Core::FE::shape_function_1D(shapefcts, e, shape);
+    Core::FE::shape_function_1D_deriv1(deriv, e, shape);
     switch (ltype)
     {
       case neum_live:
@@ -126,8 +126,8 @@ int DRT::ELEMENTS::StructuralLine::evaluate_neumann(Teuchos::ParameterList& para
             if (functnum > 0)
             {
               // calculate reference position of GP
-              CORE::LINALG::SerialDenseMatrix gp_coord(1, numdim);
-              CORE::LINALG::multiplyTN(gp_coord, shapefcts, x);
+              Core::LinAlg::SerialDenseMatrix gp_coord(1, numdim);
+              Core::LinAlg::multiplyTN(gp_coord, shapefcts, x);
 
               // write coordinates in another datatype
               double gp_coord2[numdim];
@@ -135,8 +135,8 @@ int DRT::ELEMENTS::StructuralLine::evaluate_neumann(Teuchos::ParameterList& para
               const double* coordgpref = gp_coord2;  // needed for function evaluation
 
               // evaluate function at current gauss point
-              functfac = GLOBAL::Problem::Instance()
-                             ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
+              functfac = Global::Problem::Instance()
+                             ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
                              .Evaluate(coordgpref, time, i);
             }
 
@@ -163,12 +163,12 @@ int DRT::ELEMENTS::StructuralLine::evaluate_neumann(Teuchos::ParameterList& para
 /*----------------------------------------------------------------------*
  *  (private)                                                  gee 04/08|
  * ---------------------------------------------------------------------*/
-void DRT::ELEMENTS::StructuralLine::line_integration(double& dL,
-    const CORE::LINALG::SerialDenseMatrix& x, const CORE::LINALG::SerialDenseMatrix& deriv)
+void Discret::ELEMENTS::StructuralLine::line_integration(double& dL,
+    const Core::LinAlg::SerialDenseMatrix& x, const Core::LinAlg::SerialDenseMatrix& deriv)
 {
   // compute dXYZ / drs
-  CORE::LINALG::SerialDenseMatrix dxyzdrs(1, 3);
-  CORE::LINALG::multiply(dxyzdrs, deriv, x);
+  Core::LinAlg::SerialDenseMatrix dxyzdrs(1, 3);
+  Core::LinAlg::multiply(dxyzdrs, deriv, x);
   dL = 0.0;
   for (int i = 0; i < 3; ++i) dL += dxyzdrs(0, i) * dxyzdrs(0, i);
   dL = sqrt(dL);

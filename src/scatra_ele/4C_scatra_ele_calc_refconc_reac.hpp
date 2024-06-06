@@ -18,11 +18,11 @@ concentrations and with advanced reaction terms
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     class ScaTraEleCalcRefConcReac : public ScaTraEleCalcAdvReac<distype>
     {
      private:
@@ -43,13 +43,13 @@ namespace DRT
      protected:
       //! Set reac. body force, reaction coefficient and derivatives
       void set_advanced_reaction_terms(const int k,               //!< index of current scalar
-          const Teuchos::RCP<MAT::MatListReactions> matreaclist,  //!< index of current scalar
+          const Teuchos::RCP<Mat::MatListReactions> matreaclist,  //!< index of current scalar
           const double* gpcoord  //!< current Gauss-point coordinates
           ) override;
 
       //! calculation of convective element matrix: add conservative contributions
       void calc_mat_conv_add_cons(
-          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+          Core::LinAlg::SerialDenseMatrix& emat,  //!< element matrix to be filled
           const int k,                            //!< index of current scalar
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double vdiv,        //!< velocity divergence
@@ -60,14 +60,14 @@ namespace DRT
       void set_internal_variables_for_mat_and_rhs() override;
 
       //! calculation of diffusive element matrix
-      void calc_mat_diff(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+      void calc_mat_diff(Core::LinAlg::SerialDenseMatrix& emat,  //!< element matrix to be filled
           const int k,                                           //!< index of current scalar
           const double timefacfac  //!< domain-integration factor times time-integration factor
           ) override;
 
       //! calculate the Laplacian (weak form)
       void get_laplacian_weak_form(double& val,                //!< ?
-          const CORE::LINALG::Matrix<nsd_, nsd_>& difftensor,  //!< ?
+          const Core::LinAlg::Matrix<nsd_, nsd_>& difftensor,  //!< ?
           const int vi,                                        //!< ?
           const int ui                                         //!< ?
       )
@@ -84,15 +84,15 @@ namespace DRT
       };
 
       //! standard Galerkin diffusive term on right hand side
-      void calc_rhs_diff(CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
+      void calc_rhs_diff(Core::LinAlg::SerialDenseVector& erhs,  //!< element vector to be filled
           const int k,                                           //!< index of current scalar
           const double rhsfac  //!< time-integration factor for rhs times domain-integration factor
           ) override;
 
       //! calculate the Laplacian (weak form)
       void get_laplacian_weak_form_rhs(double& val,            //!< ?
-          const CORE::LINALG::Matrix<nsd_, nsd_>& difftensor,  //!< ?
-          const CORE::LINALG::Matrix<nsd_, 1>& gradphi,        //!< ?
+          const Core::LinAlg::Matrix<nsd_, nsd_>& difftensor,  //!< ?
+          const Core::LinAlg::Matrix<nsd_, 1>& gradphi,        //!< ?
           const int vi                                         //!< ?
       )
       {
@@ -118,17 +118,17 @@ namespace DRT
       double j_;
 
       /// inverse of cauchy-green deformation gradient
-      CORE::LINALG::Matrix<nsd_, nsd_> c_inv_;
+      Core::LinAlg::Matrix<nsd_, nsd_> c_inv_;
 
       /// derivative dJ/dX by finite differences
-      CORE::LINALG::Matrix<nsd_, 1> d_jd_x_;
+      Core::LinAlg::Matrix<nsd_, 1> d_jd_x_;
 
     };  // end ScaTraEleCalcRefConcReac
 
 
   }  // namespace ELEMENTS
 
-}  // namespace DRT
+}  // namespace Discret
 
 
 FOUR_C_NAMESPACE_CLOSE

@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
     namespace StatusTest
     {
@@ -73,7 +73,7 @@ namespace NOX
       };  // class Combo
 
     }  // namespace StatusTest
-  }    // namespace NLN
+  }    // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

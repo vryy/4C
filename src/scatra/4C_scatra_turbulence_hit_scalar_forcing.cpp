@@ -27,13 +27,13 @@ FOUR_C_NAMESPACE_OPEN
 #define USE_TRAGET_SPECTRUM
 // #define TIME_UPDATE_FORCING_SPECTRUM
 
-namespace SCATRA
+namespace ScaTra
 {
   /*--------------------------------------------------------------*
    | constructor                                  rasthofer 04/13 |
    *--------------------------------------------------------------*/
   HomIsoTurbScalarForcing::HomIsoTurbScalarForcing(ScaTraTimIntImpl* timeint)
-      : forcing_type_(CORE::UTILS::IntegralValue<INPAR::FLUID::ForcingType>(
+      : forcing_type_(Core::UTILS::IntegralValue<Inpar::FLUID::ForcingType>(
             timeint->extraparams_->sublist("TURBULENCE MODEL"), "FORCING_TYPE")),
         discret_(timeint->discret_),
         forcing_(timeint->forcing_),
@@ -109,7 +109,7 @@ namespace SCATRA
     // loop all nodes and store x1-coordinate
     for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
     {
-      CORE::Nodes::Node* node = discret_->lRowNode(inode);
+      Core::Nodes::Node* node = discret_->lRowNode(inode);
       if ((node->X()[1] < 2e-9 && node->X()[1] > -2e-9) and
           (node->X()[2] < 2e-9 && node->X()[2] > -2e-9))
         coords.insert(node->X()[0]);
@@ -124,23 +124,23 @@ namespace SCATRA
       std::vector<char> rblock;
 
       // create an exporter for point to point communication
-      CORE::COMM::Exporter exporter(discret_->Comm());
+      Core::Communication::Exporter exporter(discret_->Comm());
 
       // communicate coordinates
       for (int np = 0; np < numprocs; ++np)
       {
-        CORE::COMM::PackBuffer data;
+        Core::Communication::PackBuffer data;
 
         for (std::set<double, LineSortCriterion>::iterator x1line = coords.begin();
              x1line != coords.end(); ++x1line)
         {
-          CORE::COMM::ParObject::AddtoPack(data, *x1line);
+          Core::Communication::ParObject::AddtoPack(data, *x1line);
         }
         data.StartPacking();
         for (std::set<double, LineSortCriterion>::iterator x1line = coords.begin();
              x1line != coords.end(); ++x1line)
         {
-          CORE::COMM::ParObject::AddtoPack(data, *x1line);
+          Core::Communication::ParObject::AddtoPack(data, *x1line);
         }
         std::swap(sblock, data());
 
@@ -182,7 +182,7 @@ namespace SCATRA
           while (index < rblock.size())
           {
             double onecoord;
-            CORE::COMM::ParObject::ExtractfromPack(index, rblock, onecoord);
+            Core::Communication::ParObject::ExtractfromPack(index, rblock, onecoord);
             coords.insert(onecoord);
           }
         }
@@ -225,7 +225,7 @@ namespace SCATRA
 
     // linear compensation factor for isotropic forcing
     force_fac_ = Teuchos::rcp(
-        new CORE::LINALG::SerialDenseVector(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
+        new Core::LinAlg::SerialDenseVector(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
 
     return;
   }
@@ -234,13 +234,13 @@ namespace SCATRA
   /*--------------------------------------------------------------*
    | initialize energy spectrum by initial field  rasthofer 05/13 |
    *--------------------------------------------------------------*/
-  void HomIsoTurbScalarForcing::SetInitialSpectrum(INPAR::SCATRA::InitialField init_field_type)
+  void HomIsoTurbScalarForcing::SetInitialSpectrum(Inpar::ScaTra::InitialField init_field_type)
   {
 #ifdef USE_TRAGET_SPECTRUM
     (*scalarvariancespectrum_n_)[0] = 0.0;
     for (std::size_t rr = 1; rr < wavenumbers_->size(); rr++)
     {
-      if (init_field_type == INPAR::SCATRA::initialfield_forced_hit_low_Sc)
+      if (init_field_type == Inpar::ScaTra::initialfield_forced_hit_low_Sc)
       {
         if ((*wavenumbers_)[rr] > 0.0 and (*wavenumbers_)[rr] <= 2.0)
           (*scalarvariancespectrum_n_)[rr] = 0.1 * 1.0;
@@ -248,7 +248,7 @@ namespace SCATRA
           (*scalarvariancespectrum_n_)[rr] =
               0.1 * pow(2.0, 5.0 / 3.0) * pow((*wavenumbers_)[rr], -5.0 / 3.0);
       }
-      else if (init_field_type == INPAR::SCATRA::initialfield_forced_hit_high_Sc)
+      else if (init_field_type == Inpar::ScaTra::initialfield_forced_hit_high_Sc)
       {
         if ((*wavenumbers_)[rr] > 0.0 and (*wavenumbers_)[rr] <= 2.0)
           (*scalarvariancespectrum_n_)[rr] = 0.1 * 1.0;
@@ -260,7 +260,7 @@ namespace SCATRA
     }
 #else
     CalculateForcing(0);
-    if (forcing_type_ == INPAR::FLUID::linear_compensation_from_intermediate_spectrum)
+    if (forcing_type_ == Inpar::FLUID::linear_compensation_from_intermediate_spectrum)
       TimeUpdateForcing();
 #endif
     return;
@@ -304,10 +304,10 @@ namespace SCATRA
     for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
     {
       // get node
-      CORE::Nodes::Node* node = discret_->lRowNode(inode);
+      Core::Nodes::Node* node = discret_->lRowNode(inode);
 
       // get coordinates
-      CORE::LINALG::Matrix<3, 1> xyz(true);
+      Core::LinAlg::Matrix<3, 1> xyz(true);
       for (int idim = 0; idim < 3; idim++) xyz(idim, 0) = node->X()[idim];
 
       // get global ids of all dofs of the node
@@ -496,7 +496,7 @@ namespace SCATRA
           // instead
           const double scalarvariance = 0.5 * norm((*phi_hat)[pos]);
 
-          if (forcing_type_ == INPAR::FLUID::linear_compensation_from_intermediate_spectrum)
+          if (forcing_type_ == Inpar::FLUID::linear_compensation_from_intermediate_spectrum)
           {
             // get wave number
             const double k = sqrt(k_1 * k_1 + k_2 * k_2 + k_3 * k_3);
@@ -562,7 +562,7 @@ namespace SCATRA
             }
           }
 
-          if (forcing_type_ == INPAR::FLUID::linear_compensation_from_intermediate_spectrum)
+          if (forcing_type_ == Inpar::FLUID::linear_compensation_from_intermediate_spectrum)
           {
             // compute linear compensation factor from energy spectrum
 
@@ -643,10 +643,10 @@ namespace SCATRA
       for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
       {
         // get node
-        CORE::Nodes::Node* node = discret_->lRowNode(inode);
+        Core::Nodes::Node* node = discret_->lRowNode(inode);
 
         // get coordinates
-        CORE::LINALG::Matrix<3, 1> xyz(true);
+        Core::LinAlg::Matrix<3, 1> xyz(true);
         for (int idim = 0; idim < 3; idim++) xyz(idim, 0) = node->X()[idim];
 
         // get global ids of all dofs of the node
@@ -763,10 +763,10 @@ namespace SCATRA
       for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
       {
         // get node
-        CORE::Nodes::Node* node = discret_->lRowNode(inode);
+        Core::Nodes::Node* node = discret_->lRowNode(inode);
 
         // get coordinates
-        CORE::LINALG::Matrix<3, 1> xyz(true);
+        Core::LinAlg::Matrix<3, 1> xyz(true);
         for (int idim = 0; idim < 3; idim++) xyz(idim, 0) = node->X()[idim];
 
         // get global ids of all dofs of the node
@@ -842,6 +842,6 @@ namespace SCATRA
   }
 
 
-}  // namespace SCATRA
+}  // namespace ScaTra
 
 FOUR_C_NAMESPACE_CLOSE

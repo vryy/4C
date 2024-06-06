@@ -23,7 +23,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::COMM
+namespace Core::Communication
 {
   class PackBuffer;
 }
@@ -107,10 +107,11 @@ namespace MIXTURE
      *
      * @param data (out) : buffer to serialize data to.
      */
-    void Pack(CORE::COMM::PackBuffer& data) const;
+    void Pack(Core::Communication::PackBuffer& data) const;
 
     /*!
-     * @brief Unpack all internal data that was previously packed by #Pack(CORE::COMM::PackBuffer&)
+     * @brief Unpack all internal data that was previously packed by
+     * #Pack(Core::Communication::PackBuffer&)
      *
      * @param position (in/out) : Position, where to start reading
      * @param data (in) : Vector of chars to extract data from
@@ -199,14 +200,14 @@ namespace MIXTURE
     /*!
      * @brief Returns an evaluator object that is passed to the local newton solver.
      *
-     * The evaluator object returns an object that is callable with a CORE::LINALG::Matrix and
+     * The evaluator object returns an object that is callable with a Core::LinAlg::Matrix and
      * returns the residuum and the derivative.
      *
-     * @return std::function<std::tuple<CORE::LINALG::Matrix<2, 1, Number>,
-     * CORE::LINALG::Matrix<2, 2, Number>>(const CORE::LINALG::Matrix<2, 1, Number>&)>
+     * @return std::function<std::tuple<Core::LinAlg::Matrix<2, 1, Number>,
+     * Core::LinAlg::Matrix<2, 2, Number>>(const Core::LinAlg::Matrix<2, 1, Number>&)>
      */
-    [[nodiscard]] std::function<std::tuple<CORE::LINALG::Matrix<2, 1, Number>,
-        CORE::LINALG::Matrix<2, 2, Number>>(const CORE::LINALG::Matrix<2, 1, Number>&)>
+    [[nodiscard]] std::function<std::tuple<Core::LinAlg::Matrix<2, 1, Number>,
+        Core::LinAlg::Matrix<2, 2, Number>>(const Core::LinAlg::Matrix<2, 1, Number>&)>
     get_local_newton_evaluator() const;
 
     /*!

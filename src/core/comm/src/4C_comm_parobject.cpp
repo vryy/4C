@@ -14,12 +14,18 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-void CORE::COMM::ParObject::AddtoPack(PackBuffer& data, const ParObject& obj) { obj.Pack(data); }
+void Core::Communication::ParObject::AddtoPack(PackBuffer& data, const ParObject& obj)
+{
+  obj.Pack(data);
+}
 
-void CORE::COMM::ParObject::AddtoPack(PackBuffer& data, const ParObject* obj) { obj->Pack(data); }
+void Core::Communication::ParObject::AddtoPack(PackBuffer& data, const ParObject* obj)
+{
+  obj->Pack(data);
+}
 
-void CORE::COMM::ParObject::AddtoPack(
-    PackBuffer& data, const CORE::LINALG::SerialDenseMatrix& stuff)
+void Core::Communication::ParObject::AddtoPack(
+    PackBuffer& data, const Core::LinAlg::SerialDenseMatrix& stuff)
 {
   int m = stuff.numRows();
   int n = stuff.numCols();
@@ -29,8 +35,8 @@ void CORE::COMM::ParObject::AddtoPack(
   AddtoPack(data, A, n * m * sizeof(double));
 }
 
-void CORE::COMM::ParObject::AddtoPack(
-    PackBuffer& data, const CORE::LINALG::SerialDenseVector& stuff)
+void Core::Communication::ParObject::AddtoPack(
+    PackBuffer& data, const Core::LinAlg::SerialDenseVector& stuff)
 {
   int m = stuff.length();
   AddtoPack(data, m);
@@ -38,15 +44,15 @@ void CORE::COMM::ParObject::AddtoPack(
   AddtoPack(data, A, m * sizeof(double));
 }
 
-void CORE::COMM::ParObject::AddtoPack(PackBuffer& data, const std::string& stuff)
+void Core::Communication::ParObject::AddtoPack(PackBuffer& data, const std::string& stuff)
 {
   int numele = stuff.size();
   AddtoPack(data, numele);
   AddtoPack(data, stuff.data(), numele * sizeof(char));
 }
 
-void CORE::COMM::ParObject::ExtractfromPack(std::vector<char>::size_type& position,
-    const std::vector<char>& data, CORE::LINALG::SerialDenseMatrix& stuff)
+void Core::Communication::ParObject::ExtractfromPack(std::vector<char>::size_type& position,
+    const std::vector<char>& data, Core::LinAlg::SerialDenseMatrix& stuff)
 {
   int m = 0;
   ExtractfromPack(position, data, m);
@@ -57,8 +63,8 @@ void CORE::COMM::ParObject::ExtractfromPack(std::vector<char>::size_type& positi
   if (m * n > 0) ExtractfromPack(position, data, a, n * m * sizeof(double));
 }
 
-void CORE::COMM::ParObject::ExtractfromPack(std::vector<char>::size_type& position,
-    const std::vector<char>& data, CORE::LINALG::SerialDenseVector& stuff)
+void Core::Communication::ParObject::ExtractfromPack(std::vector<char>::size_type& position,
+    const std::vector<char>& data, Core::LinAlg::SerialDenseVector& stuff)
 {
   int m = 0;
   ExtractfromPack(position, data, m);
@@ -67,7 +73,7 @@ void CORE::COMM::ParObject::ExtractfromPack(std::vector<char>::size_type& positi
   if (m > 0) ExtractfromPack(position, data, a, m * sizeof(double));
 }
 
-void CORE::COMM::ParObject::ExtractfromPack(
+void Core::Communication::ParObject::ExtractfromPack(
     std::vector<char>::size_type& position, const std::vector<char>& data, std::string& stuff)
 {
   int dim = 0;
@@ -77,11 +83,11 @@ void CORE::COMM::ParObject::ExtractfromPack(
   ExtractfromPack(position, data, stuff.data(), size);
 }
 
-int CORE::COMM::ExtractAndAssertId(std::vector<char>::size_type& position,
+int Core::Communication::ExtractAndAssertId(std::vector<char>::size_type& position,
     const std::vector<char>& data, const int desired_type_id)
 {
   int type_id = 0;
-  CORE::COMM::ParObject::ExtractfromPack(position, data, type_id);
+  Core::Communication::ParObject::ExtractfromPack(position, data, type_id);
 
   std::string error_message = "Wrong instance type data. The extracted type id is " +
                               std::to_string(type_id) + ", while the desired type id is " +

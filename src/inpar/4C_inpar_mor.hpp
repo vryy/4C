@@ -18,15 +18,15 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
-namespace INPAR
+namespace Inpar
 {
-  namespace MOR
+  namespace ModelOrderRed
   {
     /// Defines all valid parameters for model order reduction
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
-  }  // namespace MOR
-}  // namespace INPAR
+  }  // namespace ModelOrderRed
+}  // namespace Inpar
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

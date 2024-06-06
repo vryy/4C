@@ -65,7 +65,7 @@ namespace STR::ELEMENTS
 
 }  // namespace STR::ELEMENTS
 
-namespace MAT
+namespace Mat
 {
   class So3Material;
 }
@@ -74,101 +74,101 @@ namespace STR::MODELEVALUATOR
 {
   class GaussPointDataOutputManager;
 }
-namespace DRT
+namespace Discret
 {
 
   namespace ELEMENTS
   {
     /// struct for EAS matrices and vectors to be stored between iterations
-    template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
+    template <Core::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
     struct EasIterationData
     {
       constexpr static int num_eas = STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas;
 
       /// inverse EAS matrix K_{alpha alpha}
-      CORE::LINALG::Matrix<num_eas, num_eas> invKaa_{true};
+      Core::LinAlg::Matrix<num_eas, num_eas> invKaa_{true};
 
       /// EAS matrix K_{d alpha}
-      CORE::LINALG::Matrix<CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>, num_eas> Kda_{
+      Core::LinAlg::Matrix<Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>, num_eas> Kda_{
           true};
 
       /// EAS enhacement vector s
-      CORE::LINALG::Matrix<num_eas, 1> s_{true};
+      Core::LinAlg::Matrix<num_eas, 1> s_{true};
 
       /// discrete enhanced strain scalars increment
-      CORE::LINALG::Matrix<num_eas, 1> alpha_inc_{true};
+      Core::LinAlg::Matrix<num_eas, 1> alpha_inc_{true};
 
       /// discrete enhanced strain scalars alpha
-      CORE::LINALG::Matrix<num_eas, 1> alpha_{true};
+      Core::LinAlg::Matrix<num_eas, 1> alpha_{true};
     };
 
-    template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
+    template <Core::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
     class SolidEleCalcEas
     {
      public:
       SolidEleCalcEas();
 
-      void Setup(MAT::So3Material& solid_material, INPUT::LineDefinition* linedef);
+      void Setup(Mat::So3Material& solid_material, Input::LineDefinition* linedef);
 
-      void Pack(CORE::COMM::PackBuffer& data) const;
+      void Pack(Core::Communication::PackBuffer& data) const;
 
       void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
 
       void material_post_setup(
-          const CORE::Elements::Element& ele, MAT::So3Material& solid_material);
+          const Core::Elements::Element& ele, Mat::So3Material& solid_material);
 
-      void evaluate_nonlinear_force_stiffness_mass(const CORE::Elements::Element& ele,
-          MAT::So3Material& solid_material, const DRT::Discretization& discretization,
+      void evaluate_nonlinear_force_stiffness_mass(const Core::Elements::Element& ele,
+          Mat::So3Material& solid_material, const Discret::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          CORE::LINALG::SerialDenseVector* force_vector,
-          CORE::LINALG::SerialDenseMatrix* stiffness_matrix,
-          CORE::LINALG::SerialDenseMatrix* mass_matrix);
+          Core::LinAlg::SerialDenseVector* force_vector,
+          Core::LinAlg::SerialDenseMatrix* stiffness_matrix,
+          Core::LinAlg::SerialDenseMatrix* mass_matrix);
 
-      void Recover(CORE::Elements::Element& ele, const DRT::Discretization& discretization,
+      void Recover(Core::Elements::Element& ele, const Discret::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params);
 
-      void CalculateStress(const CORE::Elements::Element& ele, MAT::So3Material& solid_material,
+      void CalculateStress(const Core::Elements::Element& ele, Mat::So3Material& solid_material,
           const StressIO& stressIO, const StrainIO& strainIO,
-          const DRT::Discretization& discretization, const std::vector<int>& lm,
+          const Discret::Discretization& discretization, const std::vector<int>& lm,
           Teuchos::ParameterList& params);
 
-      double calculate_internal_energy(const CORE::Elements::Element& ele,
-          MAT::So3Material& solid_material, const DRT::Discretization& discretization,
+      double calculate_internal_energy(const Core::Elements::Element& ele,
+          Mat::So3Material& solid_material, const Discret::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params);
 
-      void Update(const CORE::Elements::Element& ele, MAT::So3Material& solid_material,
-          const DRT::Discretization& discretization, const std::vector<int>& lm,
+      void Update(const Core::Elements::Element& ele, Mat::So3Material& solid_material,
+          const Discret::Discretization& discretization, const std::vector<int>& lm,
           Teuchos::ParameterList& params);
 
-      void initialize_gauss_point_data_output(const CORE::Elements::Element& ele,
-          const MAT::So3Material& solid_material,
+      void initialize_gauss_point_data_output(const Core::Elements::Element& ele,
+          const Mat::So3Material& solid_material,
           STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const;
 
-      void evaluate_gauss_point_data_output(const CORE::Elements::Element& ele,
-          const MAT::So3Material& solid_material,
+      void evaluate_gauss_point_data_output(const Core::Elements::Element& ele,
+          const Mat::So3Material& solid_material,
           STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const;
 
       void reset_to_last_converged(
-          const CORE::Elements::Element& ele, MAT::So3Material& solid_material);
+          const Core::Elements::Element& ele, Mat::So3Material& solid_material);
 
      private:
       /// EAS matrices and vectors to be stored between iterations
-      DRT::ELEMENTS::EasIterationData<celltype, eastype> eas_iteration_data_ = {};
+      Discret::ELEMENTS::EasIterationData<celltype, eastype> eas_iteration_data_ = {};
 
       // line search parameter (old step length)
       double old_step_length_;
 
       /// static values for matrix sizes
-      static constexpr int num_nodes_ = CORE::FE::num_nodes<celltype>;
-      static constexpr int num_dim_ = CORE::FE::dim<celltype>;
+      static constexpr int num_nodes_ = Core::FE::num_nodes<celltype>;
+      static constexpr int num_dim_ = Core::FE::dim<celltype>;
       static constexpr int num_dof_per_ele_ = num_nodes_ * num_dim_;
       static constexpr int num_str_ = num_dim_ * (num_dim_ + 1) / 2;
 
-      CORE::FE::GaussIntegration stiffness_matrix_integration_;
-      CORE::FE::GaussIntegration mass_matrix_integration_;
+      Core::FE::GaussIntegration stiffness_matrix_integration_;
+      Core::FE::GaussIntegration mass_matrix_integration_;
     };  // class SolidEleCalcEas
   }     // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

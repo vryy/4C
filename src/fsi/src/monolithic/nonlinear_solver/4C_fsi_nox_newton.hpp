@@ -64,7 +64,7 @@ namespace NOX
       double better_;
 
       /// verbosity level of FSI algorithm
-      INPAR::FSI::Verbosity verbosity_;
+      Inpar::FSI::Verbosity verbosity_;
 
       std::vector<double> cresiduals_;
       std::vector<double> dresiduals_;

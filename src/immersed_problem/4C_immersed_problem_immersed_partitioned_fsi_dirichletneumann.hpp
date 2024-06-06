@@ -28,17 +28,17 @@ namespace FLD
   class FluidImplicitTimeInt;
 }
 
-namespace CORE::GEO
+namespace Core::Geo
 {
   class SearchTree;
 }
 
-namespace ADAPTER
+namespace Adapter
 {
   class FSIStructureWrapperImmersed;
 }
 
-namespace IMMERSED
+namespace Immersed
 {
   class ImmersedPartitionedFSIDirichletNeumann : public ImmersedBase,
                                                  public FSI::PartitionedImmersed
@@ -97,7 +97,7 @@ namespace IMMERSED
     Teuchos::RCP<Epetra_Vector> initial_guess() override;
 
     /// get immersed nodes and determine their dofs
-    void build_immersed_dirich_map(Teuchos::RCP<DRT::Discretization> dis,
+    void build_immersed_dirich_map(Teuchos::RCP<Discret::Discretization> dis,
         Teuchos::RCP<Epetra_Map>& dirichmap,
         const Teuchos::RCP<const Epetra_Map>& dirichmap_original);
 
@@ -181,15 +181,15 @@ namespace IMMERSED
     Teuchos::RCP<Epetra_Vector> fluid_artificial_velocity_;  //!< background velocity interpolated
                                                              //!< from immersed dis (current state)
     Teuchos::RCP<Epetra_Map> dbcmap_immersed_;              //!< dirichlet bc map of immersed values
-    Teuchos::RCP<CORE::GEO::SearchTree> fluid_SearchTree_;  //!< search tree for fluid domain
-    Teuchos::RCP<CORE::GEO::SearchTree>
+    Teuchos::RCP<Core::Geo::SearchTree> fluid_SearchTree_;  //!< search tree for fluid domain
+    Teuchos::RCP<Core::Geo::SearchTree>
         structure_SearchTree_;  //!< search tree for structure domain
     std::map<int, std::set<int>>
         curr_subset_of_fluiddis_;  //!< fluid elements to evaluate the dirichlet interpolation
-    std::map<int, CORE::LINALG::Matrix<3, 1>>
+    std::map<int, Core::LinAlg::Matrix<3, 1>>
         currpositions_struct_;  //!< map of vectors for search tree containing current structural
                                 //!< positions
-    std::map<int, CORE::LINALG::Matrix<3, 1>>
+    std::map<int, Core::LinAlg::Matrix<3, 1>>
         currpositions_fluid_;  //!< map of vectors for search tree containing current fluid
                                //!< positions
     //@}
@@ -200,7 +200,7 @@ namespace IMMERSED
     //@}
 
     /// pointer to global problem
-    GLOBAL::Problem* globalproblem_;
+    Global::Problem* globalproblem_;
 
     //! @name various bools and switches
     //@{
@@ -230,15 +230,15 @@ namespace IMMERSED
 
     //! @name pointer to discretizations
     //@{
-    Teuchos::RCP<DRT::Discretization> fluiddis_;
-    Teuchos::RCP<DRT::Discretization> structdis_;
+    Teuchos::RCP<Discret::Discretization> fluiddis_;
+    Teuchos::RCP<Discret::Discretization> structdis_;
     //@}
 
     /// pointer to immersed structure adapter
-    Teuchos::RCP<ADAPTER::FSIStructureWrapperImmersed> immersedstructure_;
+    Teuchos::RCP<Adapter::FSIStructureWrapperImmersed> immersedstructure_;
 
   };  // class ImmersedFSI
-}  // namespace IMMERSED
+}  // namespace Immersed
 
 FOUR_C_NAMESPACE_CLOSE
 

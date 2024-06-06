@@ -13,9 +13,9 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void INPAR::EP::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::ElectroPhysiology::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
-  using namespace INPUT;
+  using namespace Input;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
@@ -24,18 +24,18 @@ void INPAR::EP::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
 
   // Parameters for reaction-diffusion systems (for example cardiac electrophysiology)
-  CORE::UTILS::IntParameter("WRITEMAXINTSTATE", 0,
+  Core::UTILS::IntParameter("WRITEMAXINTSTATE", 0,
       "number of maximal internal state variables to be postprocessed", &epcontrol);
-  CORE::UTILS::IntParameter("WRITEMAXIONICCURRENTS", 0,
+  Core::UTILS::IntParameter("WRITEMAXIONICCURRENTS", 0,
       "number of maximal ionic currents to be postprocessed", &epcontrol);
 
-  CORE::UTILS::DoubleParameter("ACTTHRES", 1.0,
+  Core::UTILS::DoubleParameter("ACTTHRES", 1.0,
       "threshold for the potential for computing and postprocessing activation time ", &epcontrol);
 }
 
 
-void INPAR::EP::SetValidConditions(
-    std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist)
+void Inpar::ElectroPhysiology::SetValidConditions(
+    std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist)
 {
 }
 

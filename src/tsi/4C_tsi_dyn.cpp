@@ -34,7 +34,7 @@ FOUR_C_NAMESPACE_OPEN
 void tsi_dyn_drt()
 {
   // create a communicator
-  const Epetra_Comm& comm = GLOBAL::Problem::Instance()->GetDis("structure")->Comm();
+  const Epetra_Comm& comm = Global::Problem::Instance()->GetDis("structure")->Comm();
 
   // print TSI-Logo to screen
   if (comm.MyPID() == 0) TSI::printlogo();
@@ -43,12 +43,12 @@ void tsi_dyn_drt()
   TSI::UTILS::SetupTSI(comm);
 
   // access the problem-specific parameter list
-  const Teuchos::ParameterList& tsidyn = GLOBAL::Problem::Instance()->TSIDynamicParams();
+  const Teuchos::ParameterList& tsidyn = Global::Problem::Instance()->TSIDynamicParams();
   // access the problem-specific parameter list
   const Teuchos::ParameterList& sdynparams =
-      GLOBAL::Problem::Instance()->structural_dynamic_params();
-  const INPAR::TSI::SolutionSchemeOverFields coupling =
-      CORE::UTILS::IntegralValue<INPAR::TSI::SolutionSchemeOverFields>(tsidyn, "COUPALGO");
+      Global::Problem::Instance()->structural_dynamic_params();
+  const Inpar::TSI::SolutionSchemeOverFields coupling =
+      Core::UTILS::IntegralValue<Inpar::TSI::SolutionSchemeOverFields>(tsidyn, "COUPALGO");
 
   // create an empty TSI::Algorithm instance
   Teuchos::RCP<TSI::Algorithm> tsi;
@@ -56,18 +56,18 @@ void tsi_dyn_drt()
   // choose algorithm depending on solution type
   switch (coupling)
   {
-    case INPAR::TSI::Monolithic:
+    case Inpar::TSI::Monolithic:
     {
       // create an TSI::Monolithic instance
       tsi = Teuchos::rcp(new TSI::Monolithic(comm, sdynparams));
       break;
     }
-    case INPAR::TSI::OneWay:
-    case INPAR::TSI::SequStagg:
-    case INPAR::TSI::IterStagg:
-    case INPAR::TSI::IterStaggAitken:
-    case INPAR::TSI::IterStaggAitkenIrons:
-    case INPAR::TSI::IterStaggFixedRel:
+    case Inpar::TSI::OneWay:
+    case Inpar::TSI::SequStagg:
+    case Inpar::TSI::IterStagg:
+    case Inpar::TSI::IterStaggAitken:
+    case Inpar::TSI::IterStaggAitkenIrons:
+    case Inpar::TSI::IterStaggFixedRel:
     {
       // Any partitioned algorithm. Stable of working horses.
       // create an TSI::Algorithm instance
@@ -79,7 +79,7 @@ void tsi_dyn_drt()
       break;
   }  // end switch
 
-  const int restart = GLOBAL::Problem::Instance()->Restart();
+  const int restart = Global::Problem::Instance()->Restart();
   if (restart)
   {
     // read the restart information, set vectors and variables
@@ -96,9 +96,9 @@ void tsi_dyn_drt()
   Teuchos::TimeMonitor::summarize();
 
   // perform the result test
-  GLOBAL::Problem::Instance()->AddFieldTest(tsi->structure_field()->CreateFieldTest());
-  GLOBAL::Problem::Instance()->AddFieldTest(tsi->ThermoField()->CreateFieldTest());
-  GLOBAL::Problem::Instance()->TestAll(comm);
+  Global::Problem::Instance()->AddFieldTest(tsi->structure_field()->CreateFieldTest());
+  Global::Problem::Instance()->AddFieldTest(tsi->ThermoField()->CreateFieldTest());
+  Global::Problem::Instance()->TestAll(comm);
 
   return;
 }  // tsi_dyn_drt()

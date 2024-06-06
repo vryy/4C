@@ -20,12 +20,12 @@ namespace
   class SPHArtificialViscosityTest : public ::testing::Test
   {
    protected:
-    std::unique_ptr<PARTICLEINTERACTION::SPHArtificialViscosity> artificialviscosity_;
+    std::unique_ptr<ParticleInteraction::SPHArtificialViscosity> artificialviscosity_;
 
     SPHArtificialViscosityTest()
     {
       // create artificial viscosity handler
-      artificialviscosity_ = std::make_unique<PARTICLEINTERACTION::SPHArtificialViscosity>();
+      artificialviscosity_ = std::make_unique<ParticleInteraction::SPHArtificialViscosity>();
 
       // init artificial viscosity handler
       artificialviscosity_->Init();
@@ -82,10 +82,10 @@ namespace
                        (dens_ij * (std::pow(abs_rij, 2) + epsilon * std::pow(h_ij, 2)));
 
     double acc_i_ref[3];
-    PARTICLEINTERACTION::UTILS::VecSetScale(acc_i_ref, (artvisc_i * mass_j * dWdrij * fac), e_ij);
+    ParticleInteraction::UTILS::VecSetScale(acc_i_ref, (artvisc_i * mass_j * dWdrij * fac), e_ij);
 
     double acc_j_ref[3];
-    PARTICLEINTERACTION::UTILS::VecSetScale(acc_j_ref, (-artvisc_j * mass_i * dWdrji * fac), e_ij);
+    ParticleInteraction::UTILS::VecSetScale(acc_j_ref, (-artvisc_j * mass_i * dWdrji * fac), e_ij);
 
     artificialviscosity_->ArtificialViscosity(vel_i, vel_j, &mass_i, &mass_j, artvisc_i, artvisc_j,
         dWdrij, dWdrji, dens_ij, h_ij, c_ij, abs_rij, e_ij, acc_i, acc_j);

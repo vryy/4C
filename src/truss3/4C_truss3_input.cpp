@@ -17,13 +17,13 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::Truss3::ReadElement(
-    const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
+bool Discret::ELEMENTS::Truss3::ReadElement(
+    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
   // read number of material model
   int material = 0;
   linedef->ExtractInt("MAT", material);
-  SetMaterial(0, MAT::Factory(material));
+  SetMaterial(0, Mat::Factory(material));
 
   linedef->ExtractDouble("CROSS", crosssec_);
 
@@ -43,6 +43,6 @@ bool DRT::ELEMENTS::Truss3::ReadElement(
 /*------------------------------------------------------------------------*
  | Set cross section area                           (public) mueller 03/12|
  *------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::SetCrossSec(const double& crosssec) { crosssec_ = crosssec; }
+void Discret::ELEMENTS::Truss3::SetCrossSec(const double& crosssec) { crosssec_ = crosssec; }
 
 FOUR_C_NAMESPACE_CLOSE

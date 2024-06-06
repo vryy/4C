@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MORTAR::StratDataContainer::StratDataContainer()
+Mortar::StratDataContainer::StratDataContainer()
     : probdofs_(Teuchos::null),
       probnodes_(Teuchos::null),
       comm_(Teuchos::null),
@@ -33,8 +33,8 @@ MORTAR::StratDataContainer::StratDataContainer()
       alphaf_(0.0),
       parredist_(false),
       maxdof_(0),
-      systype_(INPAR::CONTACT::system_none),
-      dyntype_(INPAR::STR::dyna_statics),
+      systype_(Inpar::CONTACT::system_none),
+      dyntype_(Inpar::STR::dyna_statics),
       dynparam_n_(0.0)
 {
 }
@@ -42,7 +42,7 @@ MORTAR::StratDataContainer::StratDataContainer()
 /*----------------------------------------------------------------------*
  | ctor (public)                                             popp 01/10 |
  *----------------------------------------------------------------------*/
-MORTAR::StrategyBase::StrategyBase(const Teuchos::RCP<MORTAR::StratDataContainer>& data_ptr,
+Mortar::StrategyBase::StrategyBase(const Teuchos::RCP<Mortar::StratDataContainer>& data_ptr,
     const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
     const Teuchos::ParameterList& params, const int spatialDim,
     const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf, const int maxdof)
@@ -65,24 +65,24 @@ MORTAR::StrategyBase::StrategyBase(const Teuchos::RCP<MORTAR::StratDataContainer
   data().Dim() = spatialDim;
   data().AlphaF() = alphaf;
   data().MaxDof() = maxdof;
-  data().SysType() = CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(scontact_, "SYSTEM");
+  data().SysType() = Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(scontact_, "SYSTEM");
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MORTAR::StrategyBase::set_time_integration_info(
-    const double time_fac, const INPAR::STR::DynamicType dyntype)
+void Mortar::StrategyBase::set_time_integration_info(
+    const double time_fac, const Inpar::STR::DynamicType dyntype)
 {
   // Get weight for contribution from last time step
 
   data().SetDynType(dyntype);
   switch (dyntype)
   {
-    case INPAR::STR::dyna_statics:
+    case Inpar::STR::dyna_statics:
       data().SetDynParameterN(0.0);
       break;
-    case INPAR::STR::dyna_genalpha:
-    case INPAR::STR::dyna_onesteptheta:
+    case Inpar::STR::dyna_genalpha:
+    case Inpar::STR::dyna_onesteptheta:
       data().SetDynParameterN(time_fac);
       break;
     default:
@@ -92,7 +92,7 @@ void MORTAR::StrategyBase::set_time_integration_info(
   }
 
   // Check if we only want to compute the contact force at the time endpoint
-  if (CORE::UTILS::IntegralValue<int>(data().SContact(), "CONTACTFORCE_ENDTIME"))
+  if (Core::UTILS::IntegralValue<int>(data().SContact(), "CONTACTFORCE_ENDTIME"))
     alphaf_ = 0.0;
   else
   {

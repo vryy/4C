@@ -19,7 +19,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
-CORE::UTILS::CubicSplineInterpolation::CubicSplineInterpolation(
+Core::UTILS::CubicSplineInterpolation::CubicSplineInterpolation(
     std::vector<double> x, std::vector<double> y)
     : a_(std::move(y)), x_(std::move(x))
 // zeroth-order coefficients a_ equal the function values y
@@ -32,8 +32,8 @@ CORE::UTILS::CubicSplineInterpolation::CubicSplineInterpolation(
 
   // temp variables for solution of the linear system
   const int N = static_cast<int>(x_.size());
-  CORE::LINALG::SerialDenseMatrix A(N, N);
-  CORE::LINALG::SerialDenseVector c(N), b(N);
+  Core::LinAlg::SerialDenseMatrix A(N, N);
+  Core::LinAlg::SerialDenseVector c(N), b(N);
 
   build_matrix_and_rhs(N, A, b);
   solve_linear_system(A, c, b);
@@ -41,8 +41,8 @@ CORE::UTILS::CubicSplineInterpolation::CubicSplineInterpolation(
 }
 
 /*----------------------------------------------------------------------*/
-void CORE::UTILS::CubicSplineInterpolation::build_matrix_and_rhs(
-    const int N, CORE::LINALG::SerialDenseMatrix &A, CORE::LINALG::SerialDenseVector &b) const
+void Core::UTILS::CubicSplineInterpolation::build_matrix_and_rhs(
+    const int N, Core::LinAlg::SerialDenseMatrix &A, Core::LinAlg::SerialDenseVector &b) const
 {
   // fill everything except the boundary condition lines
   for (int i = 1; i < N - 1; ++i)
@@ -70,7 +70,7 @@ void CORE::UTILS::CubicSplineInterpolation::build_matrix_and_rhs(
 }
 
 /*----------------------------------------------------------------------*/
-double CORE::UTILS::CubicSplineInterpolation::Evaluate(const double x) const
+double Core::UTILS::CubicSplineInterpolation::Evaluate(const double x) const
 {
   // safety check
   if (x < x_.front() or x > x_.back())
@@ -88,7 +88,7 @@ double CORE::UTILS::CubicSplineInterpolation::Evaluate(const double x) const
 }
 
 /*----------------------------------------------------------------------*/
-double CORE::UTILS::CubicSplineInterpolation::EvaluateDerivative(
+double Core::UTILS::CubicSplineInterpolation::EvaluateDerivative(
     const double x, const int deriv_order) const
 {
   // safety check
@@ -121,12 +121,12 @@ double CORE::UTILS::CubicSplineInterpolation::EvaluateDerivative(
 }
 
 /*----------------------------------------------------------------------*/
-void CORE::UTILS::CubicSplineInterpolation::solve_linear_system(CORE::LINALG::SerialDenseMatrix &A,
-    CORE::LINALG::SerialDenseVector &c, CORE::LINALG::SerialDenseVector &b) const
+void Core::UTILS::CubicSplineInterpolation::solve_linear_system(Core::LinAlg::SerialDenseMatrix &A,
+    Core::LinAlg::SerialDenseVector &c, Core::LinAlg::SerialDenseVector &b) const
 {
   // solve for third-order coefficients for cubic spline interpolation
-  using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
-  using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
+  using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
+  using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
   Teuchos::SerialDenseSolver<ordinalType, scalarType> solver;
   solver.setMatrix(Teuchos::rcpFromRef(A));
   solver.setVectors(Teuchos::rcpFromRef(c), Teuchos::rcpFromRef(b));
@@ -137,8 +137,8 @@ void CORE::UTILS::CubicSplineInterpolation::solve_linear_system(CORE::LINALG::Se
 }
 
 /*----------------------------------------------------------------------*/
-void CORE::UTILS::CubicSplineInterpolation::setup_internal_vectors(
-    const CORE::LINALG::SerialDenseVector &c)
+void Core::UTILS::CubicSplineInterpolation::setup_internal_vectors(
+    const Core::LinAlg::SerialDenseVector &c)
 {
   const std::size_t system_size = x_.size();
 

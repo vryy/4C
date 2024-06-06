@@ -20,12 +20,12 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace MORTAR
+namespace Mortar
 {
   // forward declarations
 
@@ -69,9 +69,9 @@ namespace MORTAR
     \param ...map      references to maps
 
     */
-    BinaryTreeNode(BinaryTreeNodeType type, DRT::Discretization& discret,
+    BinaryTreeNode(BinaryTreeNodeType type, Discret::Discretization& discret,
         Teuchos::RCP<BinaryTreeNode> parent, std::vector<int> elelist,
-        const CORE::LINALG::SerialDenseMatrix& dopnormals, const int& kdop, const int& dim,
+        const Core::LinAlg::SerialDenseMatrix& dopnormals, const int& kdop, const int& dim,
         const bool& useauxpos, const int layer,
         std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& streenodesmap,
         std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& mtreenodesmap,
@@ -139,7 +139,7 @@ namespace MORTAR
     BinaryTreeNode(const BinaryTreeNode& old);
 
     //! type of BinaryTreeNode
-    MORTAR::BinaryTreeNodeType type_;
+    Mortar::BinaryTreeNodeType type_;
 
     // the pointers to the parent as well as to the left and right child are not moved to the
     // BaseBinaryTreeNode as this would require a lot of dynamic casting and thereby complicating
@@ -191,9 +191,9 @@ namespace MORTAR
     \param useauxpos (in):   flag indicating usage of auxiliary position for calculation of slabs
 
     */
-    BinaryTree(DRT::Discretization& discret, Teuchos::RCP<Epetra_Map> selements,
+    BinaryTree(Discret::Discretization& discret, Teuchos::RCP<Epetra_Map> selements,
         Teuchos::RCP<Epetra_Map> melements, int dim, double eps,
-        INPAR::MORTAR::BinaryTreeUpdateType updatetype, bool useauxpos);
+        Inpar::Mortar::BinaryTreeUpdateType updatetype, bool useauxpos);
 
 
     //! @name Query methods
@@ -353,11 +353,11 @@ namespace MORTAR
     //! master root tree node
     Teuchos::RCP<BinaryTreeNode> mroot_;
     //! update type of binary tree
-    const INPAR::MORTAR::BinaryTreeUpdateType updatetype_;
+    const Inpar::Mortar::BinaryTreeUpdateType updatetype_;
     //! bool whether auxiliary position is used when computing dops
     bool useauxpos_;
   };  // class BinaryTree
-}  // namespace MORTAR
+}  // namespace Mortar
 
 FOUR_C_NAMESPACE_CLOSE
 

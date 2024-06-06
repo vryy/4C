@@ -27,24 +27,24 @@ namespace
               []()
               {
                 // initialize container for material parameters
-                const Teuchos::RCP<CORE::MAT::PAR::Material> container =
-                    Teuchos::rcp(new CORE::MAT::PAR::Material());
+                const Teuchos::RCP<Core::Mat::PAR::Material> container =
+                    Teuchos::rcp(new Core::Mat::PAR::Material());
 
                 // add material parameters to container
                 container->Add("ALPHA", -25.0);
                 container->Add("MUE", 0.8);
 
-                return MAT::ELASTIC::PAR::IsoOgden(container);
+                return Mat::Elastic::PAR::IsoOgden(container);
               })),
           isoogden_(&parameters_isoogden_)
     {
     }
 
     //! material parameters
-    MAT::ELASTIC::PAR::IsoOgden parameters_isoogden_;
+    Mat::Elastic::PAR::IsoOgden parameters_isoogden_;
 
     //! material class
-    MAT::ELASTIC::IsoOgden isoogden_;
+    Mat::Elastic::IsoOgden isoogden_;
   };
 
   TEST_F(IsoOgdenTest, add_coefficients_stretches_modified)
@@ -55,14 +55,14 @@ namespace
         28.615778605, 688.214269644, 25322.480278435, 0.0, 0.0, 0.0};
 
     // define modified principal strains
-    CORE::LINALG::Matrix<3, 1> modstr(true);
+    Core::LinAlg::Matrix<3, 1> modstr(true);
     modstr(0) = 0.9;
     modstr(1) = 0.8;
     modstr(2) = 0.7;
 
     // initialize resulting coefficients
-    CORE::LINALG::Matrix<3, 1> modgamma(true);
-    CORE::LINALG::Matrix<6, 1> moddelta(true);
+    Core::LinAlg::Matrix<3, 1> modgamma(true);
+    Core::LinAlg::Matrix<6, 1> moddelta(true);
 
     // call add_coefficients_stretches_modified function with test modified principal strains
     isoogden_.add_coefficients_stretches_modified(modgamma, moddelta, modstr);

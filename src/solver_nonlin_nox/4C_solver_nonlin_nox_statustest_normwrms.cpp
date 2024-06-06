@@ -24,8 +24,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::StatusTest::NormWRMS::NormWRMS(
-    const std::vector<NOX::NLN::StatusTest::QuantityType>& checkList,
+NOX::Nln::StatusTest::NormWRMS::NormWRMS(
+    const std::vector<NOX::Nln::StatusTest::QuantityType>& checkList,
     const std::vector<double>& rtol, const std::vector<double>& atol,
     const std::vector<double>& BDFMultiplier, const std::vector<double>& tolerance,
     const double& alpha, const double& beta, const std::vector<bool>& disable_implicit_weighting)
@@ -51,7 +51,7 @@ NOX::NLN::StatusTest::NormWRMS::NormWRMS(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-::NOX::StatusTest::StatusType NOX::NLN::StatusTest::NormWRMS::checkStatus(
+::NOX::StatusTest::StatusType NOX::Nln::StatusTest::NormWRMS::checkStatus(
     const ::NOX::Solver::Generic& problem, ::NOX::StatusTest::CheckType checkType)
 {
   if (checkType == ::NOX::StatusTest::None)
@@ -81,8 +81,8 @@ NOX::NLN::StatusTest::NormWRMS::NormWRMS(
   // Begin check for convergence criteria #1 (local check)
   // ---------------------------------------------------------
   // cast the nox_abstract_group to nox_nln_group
-  Teuchos::RCP<const NOX::NLN::Group> nlnGrp =
-      Teuchos::rcp_dynamic_cast<const NOX::NLN::Group>(soln);
+  Teuchos::RCP<const NOX::Nln::Group> nlnGrp =
+      Teuchos::rcp_dynamic_cast<const NOX::Nln::Group>(soln);
 
   // all entries of the criteria vector are initialized to Converged status
   std::vector<::NOX::StatusTest::StatusType> criteria =
@@ -175,8 +175,8 @@ NOX::NLN::StatusTest::NormWRMS::NormWRMS(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::NLN::StatusTest::NormWRMS::IsQuantity(
-    const NOX::NLN::StatusTest::QuantityType& qType) const
+bool NOX::Nln::StatusTest::NormWRMS::IsQuantity(
+    const NOX::Nln::StatusTest::QuantityType& qType) const
 {
   for (std::size_t i = 0; i < n_checks_; ++i)
     if (check_list_[i] == qType) return true;
@@ -186,8 +186,8 @@ bool NOX::NLN::StatusTest::NormWRMS::IsQuantity(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::NLN::StatusTest::NormWRMS::get_absolute_tolerance(
-    const NOX::NLN::StatusTest::QuantityType& qType) const
+double NOX::Nln::StatusTest::NormWRMS::get_absolute_tolerance(
+    const NOX::Nln::StatusTest::QuantityType& qType) const
 {
   for (std::size_t i = 0; i < n_checks_; ++i)
     if (check_list_[i] == qType) return atol_[i];
@@ -197,8 +197,8 @@ double NOX::NLN::StatusTest::NormWRMS::get_absolute_tolerance(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::NLN::StatusTest::NormWRMS::get_relative_tolerance(
-    const NOX::NLN::StatusTest::QuantityType& qType) const
+double NOX::Nln::StatusTest::NormWRMS::get_relative_tolerance(
+    const NOX::Nln::StatusTest::QuantityType& qType) const
 {
   for (std::size_t i = 0; i < n_checks_; ++i)
     if (check_list_[i] == qType) return rtol_[i];
@@ -208,14 +208,14 @@ double NOX::NLN::StatusTest::NormWRMS::get_relative_tolerance(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-::NOX::StatusTest::StatusType NOX::NLN::StatusTest::NormWRMS::getStatus() const
+::NOX::StatusTest::StatusType NOX::Nln::StatusTest::NormWRMS::getStatus() const
 {
   return g_status_;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::ostream& NOX::NLN::StatusTest::NormWRMS::print(std::ostream& stream, int indent) const
+std::ostream& NOX::Nln::StatusTest::NormWRMS::print(std::ostream& stream, int indent) const
 {
   std::string indent_string;
   indent_string.assign(indent, ' ');

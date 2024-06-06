@@ -43,87 +43,87 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void GLOBAL::ReadFields(
-    GLOBAL::Problem& problem, CORE::IO::DatFileReader& reader, const bool readmesh)
+void Global::ReadFields(
+    Global::Problem& problem, Core::IO::DatFileReader& reader, const bool readmesh)
 {
-  Teuchos::RCP<DRT::Discretization> structdis = Teuchos::null;
-  Teuchos::RCP<DRT::Discretization> fluiddis = Teuchos::null;
-  Teuchos::RCP<DRT::Discretization> xfluiddis = Teuchos::null;
-  Teuchos::RCP<DRT::Discretization> aledis = Teuchos::null;
-  Teuchos::RCP<DRT::Discretization> structaledis = Teuchos::null;
-  Teuchos::RCP<DRT::Discretization> thermdis = Teuchos::null;
-  Teuchos::RCP<DRT::Discretization> lubricationdis = Teuchos::null;
-  Teuchos::RCP<DRT::Discretization> scatradis = Teuchos::null;
-  Teuchos::RCP<DRT::Discretization> scatra_micro_dis = Teuchos::null;
-  Teuchos::RCP<DRT::Discretization> cellscatradis = Teuchos::null;
-  Teuchos::RCP<DRT::Discretization> fluidscatradis = Teuchos::null;
-  Teuchos::RCP<DRT::Discretization> structscatradis = Teuchos::null;
-  Teuchos::RCP<DRT::Discretization> artscatradis = Teuchos::null;
-  Teuchos::RCP<DRT::Discretization> arterydis = Teuchos::null;  //_1D_ARTERY_
-  Teuchos::RCP<DRT::Discretization> airwaydis = Teuchos::null;
-  Teuchos::RCP<DRT::Discretization> optidis = Teuchos::null;
-  Teuchos::RCP<DRT::Discretization> porofluiddis = Teuchos::null;  // fpsi, poroelast
-  Teuchos::RCP<DRT::Discretization> elemagdis = Teuchos::null;
-  Teuchos::RCP<DRT::Discretization> celldis = Teuchos::null;
-  Teuchos::RCP<DRT::Discretization> pboxdis = Teuchos::null;
+  Teuchos::RCP<Discret::Discretization> structdis = Teuchos::null;
+  Teuchos::RCP<Discret::Discretization> fluiddis = Teuchos::null;
+  Teuchos::RCP<Discret::Discretization> xfluiddis = Teuchos::null;
+  Teuchos::RCP<Discret::Discretization> aledis = Teuchos::null;
+  Teuchos::RCP<Discret::Discretization> structaledis = Teuchos::null;
+  Teuchos::RCP<Discret::Discretization> thermdis = Teuchos::null;
+  Teuchos::RCP<Discret::Discretization> lubricationdis = Teuchos::null;
+  Teuchos::RCP<Discret::Discretization> scatradis = Teuchos::null;
+  Teuchos::RCP<Discret::Discretization> scatra_micro_dis = Teuchos::null;
+  Teuchos::RCP<Discret::Discretization> cellscatradis = Teuchos::null;
+  Teuchos::RCP<Discret::Discretization> fluidscatradis = Teuchos::null;
+  Teuchos::RCP<Discret::Discretization> structscatradis = Teuchos::null;
+  Teuchos::RCP<Discret::Discretization> artscatradis = Teuchos::null;
+  Teuchos::RCP<Discret::Discretization> arterydis = Teuchos::null;  //_1D_ARTERY_
+  Teuchos::RCP<Discret::Discretization> airwaydis = Teuchos::null;
+  Teuchos::RCP<Discret::Discretization> optidis = Teuchos::null;
+  Teuchos::RCP<Discret::Discretization> porofluiddis = Teuchos::null;  // fpsi, poroelast
+  Teuchos::RCP<Discret::Discretization> elemagdis = Teuchos::null;
+  Teuchos::RCP<Discret::Discretization> celldis = Teuchos::null;
+  Teuchos::RCP<Discret::Discretization> pboxdis = Teuchos::null;
 
   // decide which kind of spatial representation is required
-  const CORE::FE::ShapeFunctionType distype = problem.spatial_approximation_type();
+  const Core::FE::ShapeFunctionType distype = problem.spatial_approximation_type();
   auto output_control = problem.OutputControlFile();
 
   // the basic mesh reader. now add desired node and element readers to it!
-  CORE::IO::MeshReader meshreader(reader, "--NODE COORDS",
+  Core::IO::MeshReader meshreader(reader, "--NODE COORDS",
       {.mesh_paritioning_parameters = Problem::Instance()->mesh_partitioning_params(),
           .geometric_search_parameters = Problem::Instance()->geometric_search_params(),
           .io_parameters = Problem::Instance()->IOParams()});
 
   switch (problem.GetProblemType())
   {
-    case CORE::ProblemType::fsi:
-    case CORE::ProblemType::fsi_redmodels:
-    case CORE::ProblemType::fsi_lung:
+    case Core::ProblemType::fsi:
+    case Core::ProblemType::fsi_redmodels:
+    case Core::ProblemType::fsi_lung:
     {
-      if (distype == CORE::FE::ShapeFunctionType::nurbs)
+      if (distype == Core::FE::ShapeFunctionType::nurbs)
       {
         structdis = Teuchos::rcp(
-            new DRT::NURBS::NurbsDiscretization("structure", reader.Comm(), problem.NDim()));
+            new Discret::Nurbs::NurbsDiscretization("structure", reader.Comm(), problem.NDim()));
         fluiddis = Teuchos::rcp(
-            new DRT::NURBS::NurbsDiscretization("fluid", reader.Comm(), problem.NDim()));
-        aledis =
-            Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("ale", reader.Comm(), problem.NDim()));
+            new Discret::Nurbs::NurbsDiscretization("fluid", reader.Comm(), problem.NDim()));
+        aledis = Teuchos::rcp(
+            new Discret::Nurbs::NurbsDiscretization("ale", reader.Comm(), problem.NDim()));
       }
-      else if (CORE::UTILS::IntegralValue<int>(
+      else if (Core::UTILS::IntegralValue<int>(
                    problem.FluidDynamicParams().sublist("WALL MODEL"), "X_WALL"))
       {
         structdis =
-            Teuchos::rcp(new DRT::Discretization("structure", reader.Comm(), problem.NDim()));
+            Teuchos::rcp(new Discret::Discretization("structure", reader.Comm(), problem.NDim()));
         fluiddis =
             Teuchos::rcp(new XFEM::DiscretizationXWall("fluid", reader.Comm(), problem.NDim()));
-        aledis = Teuchos::rcp(new DRT::Discretization("ale", reader.Comm(), problem.NDim()));
+        aledis = Teuchos::rcp(new Discret::Discretization("ale", reader.Comm(), problem.NDim()));
       }
       else
       {
         structdis =
-            Teuchos::rcp(new DRT::Discretization("structure", reader.Comm(), problem.NDim()));
+            Teuchos::rcp(new Discret::Discretization("structure", reader.Comm(), problem.NDim()));
         fluiddis =
-            Teuchos::rcp(new DRT::DiscretizationFaces("fluid", reader.Comm(), problem.NDim()));
-        if (CORE::UTILS::IntegralValue<bool>(
+            Teuchos::rcp(new Discret::DiscretizationFaces("fluid", reader.Comm(), problem.NDim()));
+        if (Core::UTILS::IntegralValue<bool>(
                 problem.XFluidDynamicParams().sublist("GENERAL"), "XFLUIDFLUID"))
           xfluiddis =
               Teuchos::rcp(new XFEM::DiscretizationXFEM("xfluid", reader.Comm(), problem.NDim()));
-        aledis = Teuchos::rcp(new DRT::Discretization("ale", reader.Comm(), problem.NDim()));
+        aledis = Teuchos::rcp(new Discret::Discretization("ale", reader.Comm(), problem.NDim()));
       }
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       structdis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(structdis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(structdis, output_control, distype)));
       fluiddis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(fluiddis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(fluiddis, output_control, distype)));
       if (xfluiddis != Teuchos::null)
         xfluiddis->SetWriter(
-            Teuchos::rcp(new CORE::IO::DiscretizationWriter(xfluiddis, output_control, distype)));
+            Teuchos::rcp(new Core::IO::DiscretizationWriter(xfluiddis, output_control, distype)));
       aledis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(aledis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(aledis, output_control, distype)));
 
       problem.AddDis("structure", structdis);
       problem.AddDis("fluid", fluiddis);
@@ -131,26 +131,26 @@ void GLOBAL::ReadFields(
       problem.AddDis("ale", aledis);
 
       meshreader.AddElementReader(
-          CORE::IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
+          Core::IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
 
       if (xfluiddis != Teuchos::null)
       {
-        meshreader.AddElementReader(CORE::IO::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS"));
+        meshreader.AddElementReader(Core::IO::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS"));
       }
       else
-        meshreader.AddElementReader(CORE::IO::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
+        meshreader.AddElementReader(Core::IO::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
 
-      meshreader.AddElementReader(CORE::IO::ElementReader(aledis, reader, "--ALE ELEMENTS"));
+      meshreader.AddElementReader(Core::IO::ElementReader(aledis, reader, "--ALE ELEMENTS"));
 
       break;
     }
-    case CORE::ProblemType::gas_fsi:
-    case CORE::ProblemType::ac_fsi:
-    case CORE::ProblemType::thermo_fsi:
+    case Core::ProblemType::gas_fsi:
+    case Core::ProblemType::ac_fsi:
+    case Core::ProblemType::thermo_fsi:
     {
       switch (distype)
       {
-        case CORE::FE::ShapeFunctionType::nurbs:
+        case Core::FE::ShapeFunctionType::nurbs:
         {
           FOUR_C_THROW("Nurbs discretization not possible for fs3i!");
           break;
@@ -158,29 +158,29 @@ void GLOBAL::ReadFields(
         default:
         {
           structdis =
-              Teuchos::rcp(new DRT::Discretization("structure", reader.Comm(), problem.NDim()));
-          fluiddis =
-              Teuchos::rcp(new DRT::DiscretizationFaces("fluid", reader.Comm(), problem.NDim()));
-          aledis = Teuchos::rcp(new DRT::Discretization("ale", reader.Comm(), problem.NDim()));
+              Teuchos::rcp(new Discret::Discretization("structure", reader.Comm(), problem.NDim()));
+          fluiddis = Teuchos::rcp(
+              new Discret::DiscretizationFaces("fluid", reader.Comm(), problem.NDim()));
+          aledis = Teuchos::rcp(new Discret::Discretization("ale", reader.Comm(), problem.NDim()));
           fluidscatradis =
-              Teuchos::rcp(new DRT::Discretization("scatra1", reader.Comm(), problem.NDim()));
+              Teuchos::rcp(new Discret::Discretization("scatra1", reader.Comm(), problem.NDim()));
           structscatradis =
-              Teuchos::rcp(new DRT::Discretization("scatra2", reader.Comm(), problem.NDim()));
+              Teuchos::rcp(new Discret::Discretization("scatra2", reader.Comm(), problem.NDim()));
           break;
         }
       }
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       structdis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(structdis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(structdis, output_control, distype)));
       fluiddis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(fluiddis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(fluiddis, output_control, distype)));
       aledis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(aledis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(aledis, output_control, distype)));
       fluidscatradis->SetWriter(Teuchos::rcp(
-          new CORE::IO::DiscretizationWriter(fluidscatradis, output_control, distype)));
+          new Core::IO::DiscretizationWriter(fluidscatradis, output_control, distype)));
       structscatradis->SetWriter(Teuchos::rcp(
-          new CORE::IO::DiscretizationWriter(structscatradis, output_control, distype)));
+          new Core::IO::DiscretizationWriter(structscatradis, output_control, distype)));
 
       problem.AddDis("structure", structdis);
       problem.AddDis("fluid", fluiddis);
@@ -189,12 +189,12 @@ void GLOBAL::ReadFields(
       problem.AddDis("scatra2", structscatradis);
 
       meshreader.AddElementReader(
-          CORE::IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
-      meshreader.AddElementReader(CORE::IO::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
+          Core::IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
+      meshreader.AddElementReader(Core::IO::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
       meshreader.AddElementReader(
-          CORE::IO::ElementReader(fluidscatradis, reader, "--TRANSPORT ELEMENTS"));
+          Core::IO::ElementReader(fluidscatradis, reader, "--TRANSPORT ELEMENTS"));
       meshreader.AddElementReader(
-          CORE::IO::ElementReader(structscatradis, reader, "--TRANSPORT2 ELEMENTS"));
+          Core::IO::ElementReader(structscatradis, reader, "--TRANSPORT2 ELEMENTS"));
 
 #ifdef EXTENDEDPARALLELOVERLAP
       structdis->CreateExtendedOverlap(false, false, false);
@@ -202,11 +202,11 @@ void GLOBAL::ReadFields(
 
       break;
     }
-    case CORE::ProblemType::biofilm_fsi:
+    case Core::ProblemType::biofilm_fsi:
     {
       switch (distype)
       {
-        case CORE::FE::ShapeFunctionType::nurbs:
+        case Core::FE::ShapeFunctionType::nurbs:
         {
           FOUR_C_THROW("Nurbs discretization not possible for biofilm problems!");
           break;
@@ -214,25 +214,25 @@ void GLOBAL::ReadFields(
         default:
         {
           structdis =
-              Teuchos::rcp(new DRT::Discretization("structure", reader.Comm(), problem.NDim()));
-          fluiddis =
-              Teuchos::rcp(new DRT::DiscretizationFaces("fluid", reader.Comm(), problem.NDim()));
-          aledis = Teuchos::rcp(new DRT::Discretization("ale", reader.Comm(), problem.NDim()));
+              Teuchos::rcp(new Discret::Discretization("structure", reader.Comm(), problem.NDim()));
+          fluiddis = Teuchos::rcp(
+              new Discret::DiscretizationFaces("fluid", reader.Comm(), problem.NDim()));
+          aledis = Teuchos::rcp(new Discret::Discretization("ale", reader.Comm(), problem.NDim()));
           structaledis =
-              Teuchos::rcp(new DRT::Discretization("structale", reader.Comm(), problem.NDim()));
+              Teuchos::rcp(new Discret::Discretization("structale", reader.Comm(), problem.NDim()));
           break;
         }
       }
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       structdis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(structdis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(structdis, output_control, distype)));
       fluiddis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(fluiddis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(fluiddis, output_control, distype)));
       aledis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(aledis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(aledis, output_control, distype)));
       structaledis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(structaledis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(structaledis, output_control, distype)));
 
       problem.AddDis("structure", structdis);
       problem.AddDis("fluid", fluiddis);
@@ -241,8 +241,8 @@ void GLOBAL::ReadFields(
 
 
       meshreader.AddElementReader(
-          CORE::IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
-      meshreader.AddElementReader(CORE::IO::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
+          Core::IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
+      meshreader.AddElementReader(Core::IO::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
 
 #ifdef EXTENDEDPARALLELOVERLAP
       structdis->CreateExtendedOverlap(false, false, false);
@@ -250,91 +250,93 @@ void GLOBAL::ReadFields(
 
       // fluid scatra field
       fluidscatradis =
-          Teuchos::rcp(new DRT::Discretization("scatra1", reader.Comm(), problem.NDim()));
+          Teuchos::rcp(new Discret::Discretization("scatra1", reader.Comm(), problem.NDim()));
       // create discretization writer - in constructor set into and owned by corresponding discret
       fluidscatradis->SetWriter(Teuchos::rcp(
-          new CORE::IO::DiscretizationWriter(fluidscatradis, output_control, distype)));
+          new Core::IO::DiscretizationWriter(fluidscatradis, output_control, distype)));
       problem.AddDis("scatra1", fluidscatradis);
 
       // structure scatra field
       structscatradis =
-          Teuchos::rcp(new DRT::Discretization("scatra2", reader.Comm(), problem.NDim()));
+          Teuchos::rcp(new Discret::Discretization("scatra2", reader.Comm(), problem.NDim()));
       // create discretization writer - in constructor set into and owned by corresponding discret
       structscatradis->SetWriter(Teuchos::rcp(
-          new CORE::IO::DiscretizationWriter(structscatradis, output_control, distype)));
+          new Core::IO::DiscretizationWriter(structscatradis, output_control, distype)));
       problem.AddDis("scatra2", structscatradis);
 
       break;
     }
-    case CORE::ProblemType::fsi_xfem:
-    case CORE::ProblemType::fluid_xfem:
+    case Core::ProblemType::fsi_xfem:
+    case Core::ProblemType::fluid_xfem:
     {
-      structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm(), problem.NDim()));
+      structdis =
+          Teuchos::rcp(new Discret::Discretization("structure", reader.Comm(), problem.NDim()));
       // create discretization writer - in constructor set into and owned by corresponding discret
       structdis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(structdis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(structdis, output_control, distype)));
       problem.AddDis("structure", structdis);
       meshreader.AddAdvancedReader(structdis, reader, "STRUCTURE",
-          CORE::UTILS::IntegralValue<CORE::IO::GeometryType>(
+          Core::UTILS::IntegralValue<Core::IO::GeometryType>(
               problem.structural_dynamic_params(), "GEOMETRY"),
           nullptr);
 
-      if (CORE::UTILS::IntegralValue<int>(
+      if (Core::UTILS::IntegralValue<int>(
               problem.XFluidDynamicParams().sublist("GENERAL"), "XFLUIDFLUID"))
       {
         fluiddis =
-            Teuchos::rcp(new DRT::DiscretizationFaces("fluid", reader.Comm(), problem.NDim()));
+            Teuchos::rcp(new Discret::DiscretizationFaces("fluid", reader.Comm(), problem.NDim()));
         fluiddis->SetWriter(
-            Teuchos::rcp(new CORE::IO::DiscretizationWriter(fluiddis, output_control, distype)));
+            Teuchos::rcp(new Core::IO::DiscretizationWriter(fluiddis, output_control, distype)));
         problem.AddDis("fluid", fluiddis);
 
         xfluiddis =
             Teuchos::rcp(new XFEM::DiscretizationXFEM("xfluid", reader.Comm(), problem.NDim()));
         xfluiddis->SetWriter(
-            Teuchos::rcp(new CORE::IO::DiscretizationWriter(xfluiddis, output_control, distype)));
+            Teuchos::rcp(new Core::IO::DiscretizationWriter(xfluiddis, output_control, distype)));
         problem.AddDis("xfluid", xfluiddis);
 
         meshreader.AddElementReader(
-            CORE::IO::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS", "FLUID"));
+            Core::IO::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS", "FLUID"));
       }
       else
       {
         fluiddis =
             Teuchos::rcp(new XFEM::DiscretizationXFEM("fluid", reader.Comm(), problem.NDim()));
         fluiddis->SetWriter(
-            Teuchos::rcp(new CORE::IO::DiscretizationWriter(fluiddis, output_control, distype)));
+            Teuchos::rcp(new Core::IO::DiscretizationWriter(fluiddis, output_control, distype)));
         problem.AddDis("fluid", fluiddis);
 
         meshreader.AddAdvancedReader(fluiddis, reader, "FLUID",
-            CORE::UTILS::IntegralValue<CORE::IO::GeometryType>(
+            Core::UTILS::IntegralValue<Core::IO::GeometryType>(
                 problem.FluidDynamicParams(), "GEOMETRY"),
             nullptr);
       }
 
-      aledis = Teuchos::rcp(new DRT::Discretization("ale", reader.Comm(), problem.NDim()));
+      aledis = Teuchos::rcp(new Discret::Discretization("ale", reader.Comm(), problem.NDim()));
       aledis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(aledis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(aledis, output_control, distype)));
       problem.AddDis("ale", aledis);
-      meshreader.AddElementReader(CORE::IO::ElementReader(aledis, reader, "--ALE ELEMENTS"));
+      meshreader.AddElementReader(Core::IO::ElementReader(aledis, reader, "--ALE ELEMENTS"));
       break;
     }
-    case CORE::ProblemType::fpsi_xfem:
+    case Core::ProblemType::fpsi_xfem:
     {
-      structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm(), problem.NDim()));
+      structdis =
+          Teuchos::rcp(new Discret::Discretization("structure", reader.Comm(), problem.NDim()));
       fluiddis = Teuchos::rcp(new XFEM::DiscretizationXFEM("fluid", reader.Comm(), problem.NDim()));
-      porofluiddis =
-          Teuchos::rcp(new DRT::DiscretizationFaces("porofluid", reader.Comm(), problem.NDim()));
-      aledis = Teuchos::rcp(new DRT::Discretization("ale", reader.Comm(), problem.NDim()));
+      porofluiddis = Teuchos::rcp(
+          new Discret::DiscretizationFaces("porofluid", reader.Comm(), problem.NDim()));
+      aledis = Teuchos::rcp(new Discret::Discretization("ale", reader.Comm(), problem.NDim()));
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       structdis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(structdis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(structdis, output_control, distype)));
       fluiddis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(fluiddis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(fluiddis, output_control, distype)));
       porofluiddis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(porofluiddis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(porofluiddis, output_control, distype)));
       aledis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(aledis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(aledis, output_control, distype)));
 
       problem.AddDis("structure", structdis);
       problem.AddDis("porofluid", porofluiddis);
@@ -342,66 +344,67 @@ void GLOBAL::ReadFields(
       problem.AddDis("ale", aledis);
 
       meshreader.AddElementReader(
-          CORE::IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
+          Core::IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
 
       meshreader.AddAdvancedReader(fluiddis, reader, "FLUID",
-          CORE::UTILS::IntegralValue<CORE::IO::GeometryType>(
+          Core::UTILS::IntegralValue<Core::IO::GeometryType>(
               problem.FluidDynamicParams(), "GEOMETRY"),
           nullptr);
 
-      meshreader.AddElementReader(CORE::IO::ElementReader(aledis, reader, "--ALE ELEMENTS"));
+      meshreader.AddElementReader(Core::IO::ElementReader(aledis, reader, "--ALE ELEMENTS"));
 
       break;
     }
-    case CORE::ProblemType::ale:
+    case Core::ProblemType::ale:
     {
       switch (distype)
       {
-        case CORE::FE::ShapeFunctionType::nurbs:
+        case Core::FE::ShapeFunctionType::nurbs:
         {
           aledis = Teuchos::rcp(
-              new DRT::NURBS::NurbsDiscretization("ale", reader.Comm(), problem.NDim()));
+              new Discret::Nurbs::NurbsDiscretization("ale", reader.Comm(), problem.NDim()));
           break;
         }
         default:
         {
-          aledis = Teuchos::rcp(new DRT::Discretization("ale", reader.Comm(), problem.NDim()));
+          aledis = Teuchos::rcp(new Discret::Discretization("ale", reader.Comm(), problem.NDim()));
           break;
         }
       }
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       aledis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(aledis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(aledis, output_control, distype)));
 
       problem.AddDis("ale", aledis);
 
-      meshreader.AddElementReader(CORE::IO::ElementReader(aledis, reader, "--ALE ELEMENTS"));
+      meshreader.AddElementReader(Core::IO::ElementReader(aledis, reader, "--ALE ELEMENTS"));
 
       break;
     }
-    case CORE::ProblemType::fluid:
-    case CORE::ProblemType::fluid_redmodels:
+    case Core::ProblemType::fluid:
+    case Core::ProblemType::fluid_redmodels:
     {
-      if (distype == CORE::FE::ShapeFunctionType::hdg)
+      if (distype == Core::FE::ShapeFunctionType::hdg)
       {
-        fluiddis = Teuchos::rcp(new DRT::DiscretizationHDG("fluid", reader.Comm(), problem.NDim()));
+        fluiddis =
+            Teuchos::rcp(new Discret::DiscretizationHDG("fluid", reader.Comm(), problem.NDim()));
 
         // create discretization writer - in constructor set into and owned by corresponding discret
         fluiddis->SetWriter(
-            Teuchos::rcp(new CORE::IO::DiscretizationWriter(fluiddis, output_control, distype)));
+            Teuchos::rcp(new Core::IO::DiscretizationWriter(fluiddis, output_control, distype)));
       }
-      else if (distype == CORE::FE::ShapeFunctionType::nurbs)
+      else if (distype == Core::FE::ShapeFunctionType::nurbs)
       {
         fluiddis = Teuchos::rcp(
-            new DRT::NURBS::NurbsDiscretization("fluid", reader.Comm(), problem.NDim()));
+            new Discret::Nurbs::NurbsDiscretization("fluid", reader.Comm(), problem.NDim()));
 
         // create discretization writer - in constructor set ingto and owned by corresponding
         // discret
         fluiddis->SetWriter(
-            Teuchos::rcp(new CORE::IO::DiscretizationWriter(fluiddis, output_control, distype)));
+            Teuchos::rcp(new Core::IO::DiscretizationWriter(fluiddis, output_control, distype)));
       }
-      else if (CORE::UTILS::IntegralValue<int>(
+      else if (Core::UTILS::IntegralValue<int>(
                    problem.FluidDynamicParams().sublist("WALL MODEL"), "X_WALL"))
       {
         fluiddis =
@@ -409,107 +412,108 @@ void GLOBAL::ReadFields(
 
         // create discretization writer - in constructor set into and owned by corresponding discret
         fluiddis->SetWriter(
-            Teuchos::rcp(new CORE::IO::DiscretizationWriter(fluiddis, output_control, distype)));
+            Teuchos::rcp(new Core::IO::DiscretizationWriter(fluiddis, output_control, distype)));
       }
       else
       {
-        // fluiddis  = Teuchos::rcp(new DRT::Discretization("fluid",reader.Comm()));
+        // fluiddis  = Teuchos::rcp(new Discret::Discretization("fluid",reader.Comm()));
         fluiddis =
-            Teuchos::rcp(new DRT::DiscretizationFaces("fluid", reader.Comm(), problem.NDim()));
+            Teuchos::rcp(new Discret::DiscretizationFaces("fluid", reader.Comm(), problem.NDim()));
 
         // create discretization writer - in constructor set into and owned by corresponding discret
         fluiddis->SetWriter(
-            Teuchos::rcp(new CORE::IO::DiscretizationWriter(fluiddis, output_control, distype)));
+            Teuchos::rcp(new Core::IO::DiscretizationWriter(fluiddis, output_control, distype)));
       }
 
       problem.AddDis("fluid", fluiddis);
 
       meshreader.AddAdvancedReader(fluiddis, reader, "FLUID",
-          CORE::UTILS::IntegralValue<CORE::IO::GeometryType>(
+          Core::UTILS::IntegralValue<Core::IO::GeometryType>(
               problem.FluidDynamicParams(), "GEOMETRY"),
           nullptr);
 
       break;
     }
-    case CORE::ProblemType::lubrication:
+    case Core::ProblemType::lubrication:
     {
       // create empty discretizations
       lubricationdis =
-          Teuchos::rcp(new DRT::Discretization("lubrication", reader.Comm(), problem.NDim()));
+          Teuchos::rcp(new Discret::Discretization("lubrication", reader.Comm(), problem.NDim()));
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       lubricationdis->SetWriter(Teuchos::rcp(
-          new CORE::IO::DiscretizationWriter(lubricationdis, output_control, distype)));
+          new Core::IO::DiscretizationWriter(lubricationdis, output_control, distype)));
 
       problem.AddDis("lubrication", lubricationdis);
 
       meshreader.AddElementReader(
-          CORE::IO::ElementReader(lubricationdis, reader, "--LUBRICATION ELEMENTS"));
+          Core::IO::ElementReader(lubricationdis, reader, "--LUBRICATION ELEMENTS"));
 
       break;
     }
-    case CORE::ProblemType::cardiac_monodomain:
-    case CORE::ProblemType::scatra:
+    case Core::ProblemType::cardiac_monodomain:
+    case Core::ProblemType::scatra:
     {
       switch (distype)
       {
-        case CORE::FE::ShapeFunctionType::nurbs:
+        case Core::FE::ShapeFunctionType::nurbs:
         {
           fluiddis = Teuchos::rcp(
-              new DRT::NURBS::NurbsDiscretization("fluid", reader.Comm(), problem.NDim()));
+              new Discret::Nurbs::NurbsDiscretization("fluid", reader.Comm(), problem.NDim()));
           scatradis = Teuchos::rcp(
-              new DRT::NURBS::NurbsDiscretization("scatra", reader.Comm(), problem.NDim()));
+              new Discret::Nurbs::NurbsDiscretization("scatra", reader.Comm(), problem.NDim()));
           break;
         }
-        case CORE::FE::ShapeFunctionType::hdg:
+        case Core::FE::ShapeFunctionType::hdg:
         {
-          fluiddis =
-              Teuchos::rcp(new DRT::DiscretizationFaces("fluid", reader.Comm(), problem.NDim()));
+          fluiddis = Teuchos::rcp(
+              new Discret::DiscretizationFaces("fluid", reader.Comm(), problem.NDim()));
           scatradis =
-              Teuchos::rcp(new DRT::DiscretizationHDG("scatra", reader.Comm(), problem.NDim()));
+              Teuchos::rcp(new Discret::DiscretizationHDG("scatra", reader.Comm(), problem.NDim()));
           break;
         }
         default:
         {
-          fluiddis =
-              Teuchos::rcp(new DRT::DiscretizationFaces("fluid", reader.Comm(), problem.NDim()));
+          fluiddis = Teuchos::rcp(
+              new Discret::DiscretizationFaces("fluid", reader.Comm(), problem.NDim()));
           scatradis =
-              Teuchos::rcp(new DRT::Discretization("scatra", reader.Comm(), problem.NDim()));
+              Teuchos::rcp(new Discret::Discretization("scatra", reader.Comm(), problem.NDim()));
           break;
         }
       }
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       fluiddis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(fluiddis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(fluiddis, output_control, distype)));
       scatradis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(scatradis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(scatradis, output_control, distype)));
 
 
       problem.AddDis("fluid", fluiddis);
       problem.AddDis("scatra", scatradis);
 
-      meshreader.AddElementReader(CORE::IO::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
+      meshreader.AddElementReader(Core::IO::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
       meshreader.AddElementReader(
-          CORE::IO::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
+          Core::IO::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
 
       break;
     }
-    case CORE::ProblemType::sti:
+    case Core::ProblemType::sti:
     {
       // safety checks
-      if (distype == CORE::FE::ShapeFunctionType::nurbs)
+      if (distype == Core::FE::ShapeFunctionType::nurbs)
         FOUR_C_THROW("Scatra-thermo interaction does not work for nurbs discretizations yet!");
 
       // create empty discretizations for scalar and thermo fields
-      scatradis = Teuchos::rcp(new DRT::Discretization("scatra", reader.Comm(), problem.NDim()));
-      thermdis = Teuchos::rcp(new DRT::Discretization("thermo", reader.Comm(), problem.NDim()));
+      scatradis =
+          Teuchos::rcp(new Discret::Discretization("scatra", reader.Comm(), problem.NDim()));
+      thermdis = Teuchos::rcp(new Discret::Discretization("thermo", reader.Comm(), problem.NDim()));
 
       // create discretization writers
       scatradis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(scatradis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(scatradis, output_control, distype)));
       thermdis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(thermdis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(thermdis, output_control, distype)));
 
       // add empty discretizations to global problem
       problem.AddDis("scatra", scatradis);
@@ -517,54 +521,55 @@ void GLOBAL::ReadFields(
 
       // add element reader to node reader
       meshreader.AddElementReader(
-          CORE::IO::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
+          Core::IO::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
 
       break;
     }
-    case CORE::ProblemType::fluid_ale:
-    case CORE::ProblemType::freesurf:
+    case Core::ProblemType::fluid_ale:
+    case Core::ProblemType::freesurf:
     {
-      if (distype == CORE::FE::ShapeFunctionType::hdg)
+      if (distype == Core::FE::ShapeFunctionType::hdg)
       {
-        fluiddis = Teuchos::rcp(new DRT::DiscretizationHDG("fluid", reader.Comm(), problem.NDim()));
-        aledis = Teuchos::rcp(new DRT::Discretization("ale", reader.Comm(), problem.NDim()));
+        fluiddis =
+            Teuchos::rcp(new Discret::DiscretizationHDG("fluid", reader.Comm(), problem.NDim()));
+        aledis = Teuchos::rcp(new Discret::Discretization("ale", reader.Comm(), problem.NDim()));
       }
-      else if (distype == CORE::FE::ShapeFunctionType::nurbs)
+      else if (distype == Core::FE::ShapeFunctionType::nurbs)
       {
         fluiddis = Teuchos::rcp(
-            new DRT::NURBS::NurbsDiscretization("fluid", reader.Comm(), problem.NDim()));
-        aledis =
-            Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("ale", reader.Comm(), problem.NDim()));
+            new Discret::Nurbs::NurbsDiscretization("fluid", reader.Comm(), problem.NDim()));
+        aledis = Teuchos::rcp(
+            new Discret::Nurbs::NurbsDiscretization("ale", reader.Comm(), problem.NDim()));
       }
-      else if (CORE::UTILS::IntegralValue<int>(
+      else if (Core::UTILS::IntegralValue<int>(
                    problem.FluidDynamicParams().sublist("WALL MODEL"), "X_WALL"))
       {
         fluiddis =
             Teuchos::rcp(new XFEM::DiscretizationXWall("fluid", reader.Comm(), problem.NDim()));
-        aledis = Teuchos::rcp(new DRT::Discretization("ale", reader.Comm(), problem.NDim()));
+        aledis = Teuchos::rcp(new Discret::Discretization("ale", reader.Comm(), problem.NDim()));
       }
       else
       {
         fluiddis =
-            Teuchos::rcp(new DRT::DiscretizationFaces("fluid", reader.Comm(), problem.NDim()));
-        if (CORE::UTILS::IntegralValue<bool>(
+            Teuchos::rcp(new Discret::DiscretizationFaces("fluid", reader.Comm(), problem.NDim()));
+        if (Core::UTILS::IntegralValue<bool>(
                 problem.XFluidDynamicParams().sublist("GENERAL"), "XFLUIDFLUID"))
           xfluiddis =
               Teuchos::rcp(new XFEM::DiscretizationXFEM("xfluid", reader.Comm(), problem.NDim()));
-        aledis = Teuchos::rcp(new DRT::Discretization("ale", reader.Comm(), problem.NDim()));
+        aledis = Teuchos::rcp(new Discret::Discretization("ale", reader.Comm(), problem.NDim()));
       }
 
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       fluiddis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(fluiddis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(fluiddis, output_control, distype)));
       if (xfluiddis != Teuchos::null)
       {
         xfluiddis->SetWriter(
-            Teuchos::rcp(new CORE::IO::DiscretizationWriter(xfluiddis, output_control, distype)));
+            Teuchos::rcp(new Core::IO::DiscretizationWriter(xfluiddis, output_control, distype)));
       }
       aledis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(aledis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(aledis, output_control, distype)));
 
 
       problem.AddDis("fluid", fluiddis);
@@ -576,269 +581,278 @@ void GLOBAL::ReadFields(
 
       if (xfluiddis != Teuchos::null)
       {
-        meshreader.AddElementReader(CORE::IO::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS"));
+        meshreader.AddElementReader(Core::IO::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS"));
       }
       else
-        meshreader.AddElementReader(CORE::IO::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
+        meshreader.AddElementReader(Core::IO::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
 
-      meshreader.AddElementReader(CORE::IO::ElementReader(aledis, reader, "--ALE ELEMENTS"));
+      meshreader.AddElementReader(Core::IO::ElementReader(aledis, reader, "--ALE ELEMENTS"));
 
       break;
     }
-    case CORE::ProblemType::tsi:
+    case Core::ProblemType::tsi:
     {
       switch (distype)
       {
-        case CORE::FE::ShapeFunctionType::nurbs:
+        case Core::FE::ShapeFunctionType::nurbs:
         {
           structdis = Teuchos::rcp(
-              new DRT::NURBS::NurbsDiscretization("structure", reader.Comm(), problem.NDim()));
+              new Discret::Nurbs::NurbsDiscretization("structure", reader.Comm(), problem.NDim()));
           thermdis = Teuchos::rcp(
-              new DRT::NURBS::NurbsDiscretization("thermo", reader.Comm(), problem.NDim()));
+              new Discret::Nurbs::NurbsDiscretization("thermo", reader.Comm(), problem.NDim()));
           break;
         }
         default:
         {
           structdis =
-              Teuchos::rcp(new DRT::Discretization("structure", reader.Comm(), problem.NDim()));
-          thermdis = Teuchos::rcp(new DRT::Discretization("thermo", reader.Comm(), problem.NDim()));
+              Teuchos::rcp(new Discret::Discretization("structure", reader.Comm(), problem.NDim()));
+          thermdis =
+              Teuchos::rcp(new Discret::Discretization("thermo", reader.Comm(), problem.NDim()));
           break;
         }
       }
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       structdis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(structdis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(structdis, output_control, distype)));
       thermdis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(thermdis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(thermdis, output_control, distype)));
 
       problem.AddDis("structure", structdis);
       problem.AddDis("thermo", thermdis);
 
       meshreader.AddAdvancedReader(structdis, reader, "STRUCTURE",
-          CORE::UTILS::IntegralValue<CORE::IO::GeometryType>(
+          Core::UTILS::IntegralValue<Core::IO::GeometryType>(
               problem.structural_dynamic_params(), "GEOMETRY"),
           nullptr);
       meshreader.AddAdvancedReader(thermdis, reader, "THERMO",
-          CORE::UTILS::IntegralValue<CORE::IO::GeometryType>(
+          Core::UTILS::IntegralValue<Core::IO::GeometryType>(
               problem.thermal_dynamic_params(), "GEOMETRY"),
           nullptr);
 
       break;
     }
-    case CORE::ProblemType::thermo:
+    case Core::ProblemType::thermo:
     {
       switch (distype)
       {
-        case CORE::FE::ShapeFunctionType::nurbs:
+        case Core::FE::ShapeFunctionType::nurbs:
         {
           thermdis = Teuchos::rcp(
-              new DRT::NURBS::NurbsDiscretization("thermo", reader.Comm(), problem.NDim()));
+              new Discret::Nurbs::NurbsDiscretization("thermo", reader.Comm(), problem.NDim()));
           break;
         }
         default:
         {
-          thermdis = Teuchos::rcp(new DRT::Discretization("thermo", reader.Comm(), problem.NDim()));
+          thermdis =
+              Teuchos::rcp(new Discret::Discretization("thermo", reader.Comm(), problem.NDim()));
           break;
         }
       }
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       thermdis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(thermdis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(thermdis, output_control, distype)));
 
       problem.AddDis("thermo", thermdis);
 
-      meshreader.AddElementReader(CORE::IO::ElementReader(thermdis, reader, "--THERMO ELEMENTS"));
+      meshreader.AddElementReader(Core::IO::ElementReader(thermdis, reader, "--THERMO ELEMENTS"));
 
       break;
     }
 
-    case CORE::ProblemType::structure:
+    case Core::ProblemType::structure:
     {
       switch (distype)
       {
-        case CORE::FE::ShapeFunctionType::nurbs:
+        case Core::FE::ShapeFunctionType::nurbs:
         {
           structdis = Teuchos::rcp(
-              new DRT::NURBS::NurbsDiscretization("structure", reader.Comm(), problem.NDim()));
+              new Discret::Nurbs::NurbsDiscretization("structure", reader.Comm(), problem.NDim()));
           break;
         }
         default:
         {
           structdis =
-              Teuchos::rcp(new DRT::Discretization("structure", reader.Comm(), problem.NDim()));
+              Teuchos::rcp(new Discret::Discretization("structure", reader.Comm(), problem.NDim()));
           break;
         }
       }
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       structdis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(structdis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(structdis, output_control, distype)));
 
       problem.AddDis("structure", structdis);
 
       meshreader.AddAdvancedReader(structdis, reader, "STRUCTURE",
-          CORE::UTILS::IntegralValue<CORE::IO::GeometryType>(
+          Core::UTILS::IntegralValue<Core::IO::GeometryType>(
               problem.structural_dynamic_params(), "GEOMETRY"),
           nullptr);
 
       break;
     }
 
-    case CORE::ProblemType::polymernetwork:
+    case Core::ProblemType::polymernetwork:
     {
       // create empty discretizations
-      structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm(), problem.NDim()));
-      pboxdis = Teuchos::rcp(new DRT::Discretization("boundingbox", reader.Comm(), problem.NDim()));
+      structdis =
+          Teuchos::rcp(new Discret::Discretization("structure", reader.Comm(), problem.NDim()));
+      pboxdis =
+          Teuchos::rcp(new Discret::Discretization("boundingbox", reader.Comm(), problem.NDim()));
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       structdis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(structdis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(structdis, output_control, distype)));
       pboxdis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(pboxdis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(pboxdis, output_control, distype)));
 
       problem.AddDis("structure", structdis);
       problem.AddDis("boundingbox", pboxdis);
 
       meshreader.AddElementReader(
-          CORE::IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
+          Core::IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
       meshreader.AddElementReader(
-          CORE::IO::ElementReader(pboxdis, reader, "--PERIODIC BOUNDINGBOX ELEMENTS"));
+          Core::IO::ElementReader(pboxdis, reader, "--PERIODIC BOUNDINGBOX ELEMENTS"));
 
       break;
     }
 
-    case CORE::ProblemType::loma:
+    case Core::ProblemType::loma:
     {
       // create empty discretizations
-      fluiddis = Teuchos::rcp(new DRT::DiscretizationFaces("fluid", reader.Comm(), problem.NDim()));
-      scatradis = Teuchos::rcp(new DRT::Discretization("scatra", reader.Comm(), problem.NDim()));
+      fluiddis =
+          Teuchos::rcp(new Discret::DiscretizationFaces("fluid", reader.Comm(), problem.NDim()));
+      scatradis =
+          Teuchos::rcp(new Discret::Discretization("scatra", reader.Comm(), problem.NDim()));
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       fluiddis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(fluiddis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(fluiddis, output_control, distype)));
       scatradis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(scatradis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(scatradis, output_control, distype)));
 
       problem.AddDis("fluid", fluiddis);
       problem.AddDis("scatra", scatradis);
 
-      meshreader.AddElementReader(CORE::IO::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
+      meshreader.AddElementReader(Core::IO::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
       meshreader.AddElementReader(
-          CORE::IO::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
+          Core::IO::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
 
       break;
     }
 
-    case CORE::ProblemType::fluid_xfem_ls:
+    case Core::ProblemType::fluid_xfem_ls:
     {
       // create empty discretizations
-      structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm(), problem.NDim()));
-      if (problem.GetProblemType() == CORE::ProblemType::fluid_xfem_ls)
+      structdis =
+          Teuchos::rcp(new Discret::Discretization("structure", reader.Comm(), problem.NDim()));
+      if (problem.GetProblemType() == Core::ProblemType::fluid_xfem_ls)
         fluiddis =
             Teuchos::rcp(new XFEM::DiscretizationXFEM("fluid", reader.Comm(), problem.NDim()));
       else
         fluiddis =
-            Teuchos::rcp(new DRT::DiscretizationFaces("fluid", reader.Comm(), problem.NDim()));
-      scatradis = Teuchos::rcp(new DRT::Discretization("scatra", reader.Comm(), problem.NDim()));
+            Teuchos::rcp(new Discret::DiscretizationFaces("fluid", reader.Comm(), problem.NDim()));
+      scatradis =
+          Teuchos::rcp(new Discret::Discretization("scatra", reader.Comm(), problem.NDim()));
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       structdis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(structdis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(structdis, output_control, distype)));
       fluiddis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(fluiddis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(fluiddis, output_control, distype)));
       scatradis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(scatradis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(scatradis, output_control, distype)));
 
       problem.AddDis("structure", structdis);
       problem.AddDis("fluid", fluiddis);
       problem.AddDis("scatra", scatradis);
 
       meshreader.AddElementReader(
-          CORE::IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
+          Core::IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
       meshreader.AddAdvancedReader(fluiddis, reader, "FLUID",
-          CORE::UTILS::IntegralValue<CORE::IO::GeometryType>(
+          Core::UTILS::IntegralValue<Core::IO::GeometryType>(
               problem.FluidDynamicParams(), "GEOMETRY"),
           nullptr);
-      // meshreader.AddElementReader(Teuchos::rcp(new CORE::IO::ElementReader(fluiddis, reader,
+      // meshreader.AddElementReader(Teuchos::rcp(new Core::IO::ElementReader(fluiddis, reader,
       // "--FLUID ELEMENTS")));
       meshreader.AddElementReader(
-          CORE::IO::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
+          Core::IO::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
       break;
     }
 
-    case CORE::ProblemType::elch:
+    case Core::ProblemType::elch:
     {
       // create empty discretizations
       switch (distype)
       {
-        case CORE::FE::ShapeFunctionType::nurbs:
+        case Core::FE::ShapeFunctionType::nurbs:
         {
           fluiddis = Teuchos::rcp(
-              new DRT::NURBS::NurbsDiscretization("fluid", reader.Comm(), problem.NDim()));
+              new Discret::Nurbs::NurbsDiscretization("fluid", reader.Comm(), problem.NDim()));
           scatradis = Teuchos::rcp(
-              new DRT::NURBS::NurbsDiscretization("scatra", reader.Comm(), problem.NDim()));
+              new Discret::Nurbs::NurbsDiscretization("scatra", reader.Comm(), problem.NDim()));
           aledis = Teuchos::rcp(
-              new DRT::NURBS::NurbsDiscretization("ale", reader.Comm(), problem.NDim()));
-          scatra_micro_dis = Teuchos::rcp(
-              new DRT::NURBS::NurbsDiscretization("scatra_micro", reader.Comm(), problem.NDim()));
+              new Discret::Nurbs::NurbsDiscretization("ale", reader.Comm(), problem.NDim()));
+          scatra_micro_dis = Teuchos::rcp(new Discret::Nurbs::NurbsDiscretization(
+              "scatra_micro", reader.Comm(), problem.NDim()));
           break;
         }
         default:
         {
-          fluiddis =
-              Teuchos::rcp(new DRT::DiscretizationFaces("fluid", reader.Comm(), problem.NDim()));
+          fluiddis = Teuchos::rcp(
+              new Discret::DiscretizationFaces("fluid", reader.Comm(), problem.NDim()));
           scatradis =
-              Teuchos::rcp(new DRT::Discretization("scatra", reader.Comm(), problem.NDim()));
-          aledis = Teuchos::rcp(new DRT::Discretization("ale", reader.Comm(), problem.NDim()));
-          scatra_micro_dis =
-              Teuchos::rcp(new DRT::Discretization("scatra_micro", reader.Comm(), problem.NDim()));
+              Teuchos::rcp(new Discret::Discretization("scatra", reader.Comm(), problem.NDim()));
+          aledis = Teuchos::rcp(new Discret::Discretization("ale", reader.Comm(), problem.NDim()));
+          scatra_micro_dis = Teuchos::rcp(
+              new Discret::Discretization("scatra_micro", reader.Comm(), problem.NDim()));
           break;
         }
       }
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       fluiddis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(fluiddis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(fluiddis, output_control, distype)));
       scatradis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(scatradis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(scatradis, output_control, distype)));
       aledis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(aledis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(aledis, output_control, distype)));
       scatra_micro_dis->SetWriter(Teuchos::rcp(
-          new CORE::IO::DiscretizationWriter(scatra_micro_dis, output_control, distype)));
+          new Core::IO::DiscretizationWriter(scatra_micro_dis, output_control, distype)));
 
       problem.AddDis("fluid", fluiddis);
       problem.AddDis("scatra", scatradis);
       problem.AddDis("ale", aledis);
       problem.AddDis("scatra_micro", scatra_micro_dis);
 
-      meshreader.AddElementReader(CORE::IO::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
+      meshreader.AddElementReader(Core::IO::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
       meshreader.AddElementReader(
-          CORE::IO::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
-      meshreader.AddElementReader(CORE::IO::ElementReader(aledis, reader, "--ALE ELEMENTS"));
+          Core::IO::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
+      meshreader.AddElementReader(Core::IO::ElementReader(aledis, reader, "--ALE ELEMENTS"));
       meshreader.AddElementReader(
-          CORE::IO::ElementReader(scatra_micro_dis, reader, "--TRANSPORT2 ELEMENTS"));
+          Core::IO::ElementReader(scatra_micro_dis, reader, "--TRANSPORT2 ELEMENTS"));
 
       break;
     }
-    case CORE::ProblemType::art_net:  // _1D_ARTERY_
+    case Core::ProblemType::art_net:  // _1D_ARTERY_
     {
       // create empty discretizations
-      arterydis = Teuchos::rcp(new DRT::Discretization("artery", reader.Comm(), problem.NDim()));
+      arterydis =
+          Teuchos::rcp(new Discret::Discretization("artery", reader.Comm(), problem.NDim()));
 
       // create empty discretizations
       switch (distype)
       {
-        case CORE::FE::ShapeFunctionType::nurbs:
+        case Core::FE::ShapeFunctionType::nurbs:
         {
           FOUR_C_THROW("Nurbs discretization not possible for artery");
           break;
         }
         default:
         {
-          scatradis =
-              Teuchos::rcp(new DRT::Discretization("artery_scatra", reader.Comm(), problem.NDim()));
+          scatradis = Teuchos::rcp(
+              new Discret::Discretization("artery_scatra", reader.Comm(), problem.NDim()));
           break;
         }
       }
@@ -848,305 +862,317 @@ void GLOBAL::ReadFields(
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       arterydis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(arterydis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(arterydis, output_control, distype)));
       scatradis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(scatradis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(scatradis, output_control, distype)));
 
-      meshreader.AddElementReader(CORE::IO::ElementReader(arterydis, reader, "--ARTERY ELEMENTS"));
+      meshreader.AddElementReader(Core::IO::ElementReader(arterydis, reader, "--ARTERY ELEMENTS"));
       meshreader.AddElementReader(
-          CORE::IO::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
+          Core::IO::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
 
       break;
     }
-    case CORE::ProblemType::red_airways:  // _reduced D airways
+    case Core::ProblemType::red_airways:  // _reduced D airways
     {
       // create empty discretizations
       airwaydis =
-          Teuchos::rcp(new DRT::Discretization("red_airway", reader.Comm(), problem.NDim()));
+          Teuchos::rcp(new Discret::Discretization("red_airway", reader.Comm(), problem.NDim()));
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       airwaydis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(airwaydis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(airwaydis, output_control, distype)));
 
       problem.AddDis("red_airway", airwaydis);
 
       meshreader.AddElementReader(
-          CORE::IO::ElementReader(airwaydis, reader, "--REDUCED D AIRWAYS ELEMENTS"));
+          Core::IO::ElementReader(airwaydis, reader, "--REDUCED D AIRWAYS ELEMENTS"));
 
       break;
     }
-    case CORE::ProblemType::struct_ale:  // structure with ale
+    case Core::ProblemType::struct_ale:  // structure with ale
     {
       // create empty discretizations
-      structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm(), problem.NDim()));
-      aledis = Teuchos::rcp(new DRT::Discretization("ale", reader.Comm(), problem.NDim()));
+      structdis =
+          Teuchos::rcp(new Discret::Discretization("structure", reader.Comm(), problem.NDim()));
+      aledis = Teuchos::rcp(new Discret::Discretization("ale", reader.Comm(), problem.NDim()));
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       structdis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(structdis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(structdis, output_control, distype)));
       aledis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(aledis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(aledis, output_control, distype)));
 
       problem.AddDis("structure", structdis);
       problem.AddDis("ale", aledis);
 
       meshreader.AddElementReader(
-          CORE::IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
-      meshreader.AddElementReader(CORE::IO::ElementReader(aledis, reader, "--ALE ELEMENTS"));
+          Core::IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
+      meshreader.AddElementReader(Core::IO::ElementReader(aledis, reader, "--ALE ELEMENTS"));
 
       break;
     }
-    case CORE::ProblemType::poroelast:
-    case CORE::ProblemType::poromultiphase:
+    case Core::ProblemType::poroelast:
+    case Core::ProblemType::poromultiphase:
     {
       // create empty discretizations
       switch (distype)
       {
-        case CORE::FE::ShapeFunctionType::nurbs:
+        case Core::FE::ShapeFunctionType::nurbs:
         {
           structdis = Teuchos::rcp(
-              new DRT::NURBS::NurbsDiscretization("structure", reader.Comm(), problem.NDim()));
+              new Discret::Nurbs::NurbsDiscretization("structure", reader.Comm(), problem.NDim()));
           porofluiddis = Teuchos::rcp(
-              new DRT::NURBS::NurbsDiscretization("porofluid", reader.Comm(), problem.NDim()));
+              new Discret::Nurbs::NurbsDiscretization("porofluid", reader.Comm(), problem.NDim()));
           break;
         }
         default:
         {
           structdis =
-              Teuchos::rcp(new DRT::Discretization("structure", reader.Comm(), problem.NDim()));
+              Teuchos::rcp(new Discret::Discretization("structure", reader.Comm(), problem.NDim()));
           porofluiddis =
-              Teuchos::rcp(new DRT::Discretization("porofluid", reader.Comm(), problem.NDim()));
+              Teuchos::rcp(new Discret::Discretization("porofluid", reader.Comm(), problem.NDim()));
           break;
         }
       }
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       structdis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(structdis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(structdis, output_control, distype)));
       porofluiddis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(porofluiddis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(porofluiddis, output_control, distype)));
 
       problem.AddDis("structure", structdis);
       problem.AddDis("porofluid", porofluiddis);
 
       meshreader.AddElementReader(
-          CORE::IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
+          Core::IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
       meshreader.AddElementReader(
-          CORE::IO::ElementReader(porofluiddis, reader, "--FLUID ELEMENTS"));
+          Core::IO::ElementReader(porofluiddis, reader, "--FLUID ELEMENTS"));
 
-      if (CORE::UTILS::IntegralValue<bool>(
+      if (Core::UTILS::IntegralValue<bool>(
               problem.poro_multi_phase_dynamic_params(), "ARTERY_COUPLING"))
       {
-        arterydis = Teuchos::rcp(new DRT::Discretization("artery", reader.Comm(), problem.NDim()));
+        arterydis =
+            Teuchos::rcp(new Discret::Discretization("artery", reader.Comm(), problem.NDim()));
         arterydis->SetWriter(
-            Teuchos::rcp(new CORE::IO::DiscretizationWriter(arterydis, output_control, distype)));
+            Teuchos::rcp(new Core::IO::DiscretizationWriter(arterydis, output_control, distype)));
         problem.AddDis("artery", arterydis);
         meshreader.AddElementReader(
-            CORE::IO::ElementReader(arterydis, reader, "--ARTERY ELEMENTS"));
+            Core::IO::ElementReader(arterydis, reader, "--ARTERY ELEMENTS"));
       }
 
       break;
     }
-    case CORE::ProblemType::poromultiphasescatra:
+    case Core::ProblemType::poromultiphasescatra:
     {
       // create empty discretizations
       switch (distype)
       {
-        case CORE::FE::ShapeFunctionType::nurbs:
+        case Core::FE::ShapeFunctionType::nurbs:
         {
           structdis = Teuchos::rcp(
-              new DRT::NURBS::NurbsDiscretization("structure", reader.Comm(), problem.NDim()));
+              new Discret::Nurbs::NurbsDiscretization("structure", reader.Comm(), problem.NDim()));
           porofluiddis = Teuchos::rcp(
-              new DRT::NURBS::NurbsDiscretization("porofluid", reader.Comm(), problem.NDim()));
+              new Discret::Nurbs::NurbsDiscretization("porofluid", reader.Comm(), problem.NDim()));
           scatradis = Teuchos::rcp(
-              new DRT::NURBS::NurbsDiscretization("scatra", reader.Comm(), problem.NDim()));
+              new Discret::Nurbs::NurbsDiscretization("scatra", reader.Comm(), problem.NDim()));
           break;
         }
         default:
         {
           structdis =
-              Teuchos::rcp(new DRT::Discretization("structure", reader.Comm(), problem.NDim()));
+              Teuchos::rcp(new Discret::Discretization("structure", reader.Comm(), problem.NDim()));
           porofluiddis =
-              Teuchos::rcp(new DRT::Discretization("porofluid", reader.Comm(), problem.NDim()));
+              Teuchos::rcp(new Discret::Discretization("porofluid", reader.Comm(), problem.NDim()));
           scatradis =
-              Teuchos::rcp(new DRT::Discretization("scatra", reader.Comm(), problem.NDim()));
+              Teuchos::rcp(new Discret::Discretization("scatra", reader.Comm(), problem.NDim()));
           break;
         }
       }
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       structdis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(structdis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(structdis, output_control, distype)));
       porofluiddis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(porofluiddis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(porofluiddis, output_control, distype)));
       scatradis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(scatradis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(scatradis, output_control, distype)));
 
       problem.AddDis("structure", structdis);
       problem.AddDis("porofluid", porofluiddis);
       problem.AddDis("scatra", scatradis);
 
       meshreader.AddElementReader(
-          CORE::IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
+          Core::IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
       meshreader.AddElementReader(
-          CORE::IO::ElementReader(porofluiddis, reader, "--FLUID ELEMENTS"));
+          Core::IO::ElementReader(porofluiddis, reader, "--FLUID ELEMENTS"));
       meshreader.AddElementReader(
-          CORE::IO::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
+          Core::IO::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
 
-      if (CORE::UTILS::IntegralValue<bool>(
+      if (Core::UTILS::IntegralValue<bool>(
               problem.poro_multi_phase_scatra_dynamic_params(), "ARTERY_COUPLING"))
       {
-        arterydis = Teuchos::rcp(new DRT::Discretization("artery", reader.Comm(), problem.NDim()));
+        arterydis =
+            Teuchos::rcp(new Discret::Discretization("artery", reader.Comm(), problem.NDim()));
         arterydis->SetWriter(
-            Teuchos::rcp(new CORE::IO::DiscretizationWriter(arterydis, output_control, distype)));
+            Teuchos::rcp(new Core::IO::DiscretizationWriter(arterydis, output_control, distype)));
         problem.AddDis("artery", arterydis);
         meshreader.AddElementReader(
-            CORE::IO::ElementReader(arterydis, reader, "--ARTERY ELEMENTS"));
+            Core::IO::ElementReader(arterydis, reader, "--ARTERY ELEMENTS"));
 
-        artscatradis =
-            Teuchos::rcp(new DRT::Discretization("artery_scatra", reader.Comm(), problem.NDim()));
+        artscatradis = Teuchos::rcp(
+            new Discret::Discretization("artery_scatra", reader.Comm(), problem.NDim()));
         artscatradis->SetWriter(Teuchos::rcp(
-            new CORE::IO::DiscretizationWriter(artscatradis, output_control, distype)));
+            new Core::IO::DiscretizationWriter(artscatradis, output_control, distype)));
         problem.AddDis("artery_scatra", artscatradis);
         meshreader.AddElementReader(
-            CORE::IO::ElementReader(artscatradis, reader, "--TRANSPORT ELEMENTS"));
+            Core::IO::ElementReader(artscatradis, reader, "--TRANSPORT ELEMENTS"));
       }
 
       break;
     }
-    case CORE::ProblemType::porofluidmultiphase:
+    case Core::ProblemType::porofluidmultiphase:
     {
       // create empty discretizations
       switch (distype)
       {
-        case CORE::FE::ShapeFunctionType::nurbs:
+        case Core::FE::ShapeFunctionType::nurbs:
         {
           porofluiddis = Teuchos::rcp(
-              new DRT::NURBS::NurbsDiscretization("porofluid", reader.Comm(), problem.NDim()));
+              new Discret::Nurbs::NurbsDiscretization("porofluid", reader.Comm(), problem.NDim()));
           break;
         }
         default:
         {
           porofluiddis =
-              Teuchos::rcp(new DRT::Discretization("porofluid", reader.Comm(), problem.NDim()));
+              Teuchos::rcp(new Discret::Discretization("porofluid", reader.Comm(), problem.NDim()));
           break;
         }
       }
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       porofluiddis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(porofluiddis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(porofluiddis, output_control, distype)));
 
       problem.AddDis("porofluid", porofluiddis);
 
       meshreader.AddElementReader(
-          CORE::IO::ElementReader(porofluiddis, reader, "--FLUID ELEMENTS"));
+          Core::IO::ElementReader(porofluiddis, reader, "--FLUID ELEMENTS"));
 
-      if (CORE::UTILS::IntegralValue<bool>(
+      if (Core::UTILS::IntegralValue<bool>(
               problem.poro_fluid_multi_phase_dynamic_params(), "ARTERY_COUPLING"))
       {
-        arterydis = Teuchos::rcp(new DRT::Discretization("artery", reader.Comm(), problem.NDim()));
+        arterydis =
+            Teuchos::rcp(new Discret::Discretization("artery", reader.Comm(), problem.NDim()));
         arterydis->SetWriter(
-            Teuchos::rcp(new CORE::IO::DiscretizationWriter(arterydis, output_control, distype)));
+            Teuchos::rcp(new Core::IO::DiscretizationWriter(arterydis, output_control, distype)));
         problem.AddDis("artery", arterydis);
         meshreader.AddElementReader(
-            CORE::IO::ElementReader(arterydis, reader, "--ARTERY ELEMENTS"));
+            Core::IO::ElementReader(arterydis, reader, "--ARTERY ELEMENTS"));
       }
       break;
     }
-    case CORE::ProblemType::fpsi:
+    case Core::ProblemType::fpsi:
     {
       // create empty discretizations
-      structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm(), problem.NDim()));
+      structdis =
+          Teuchos::rcp(new Discret::Discretization("structure", reader.Comm(), problem.NDim()));
       porofluiddis =
-          Teuchos::rcp(new DRT::Discretization("porofluid", reader.Comm(), problem.NDim()));
-      fluiddis = Teuchos::rcp(new DRT::DiscretizationFaces("fluid", reader.Comm(), problem.NDim()));
-      aledis = Teuchos::rcp(new DRT::Discretization("ale", reader.Comm(), problem.NDim()));
+          Teuchos::rcp(new Discret::Discretization("porofluid", reader.Comm(), problem.NDim()));
+      fluiddis =
+          Teuchos::rcp(new Discret::DiscretizationFaces("fluid", reader.Comm(), problem.NDim()));
+      aledis = Teuchos::rcp(new Discret::Discretization("ale", reader.Comm(), problem.NDim()));
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       structdis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(structdis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(structdis, output_control, distype)));
       porofluiddis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(porofluiddis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(porofluiddis, output_control, distype)));
       fluiddis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(fluiddis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(fluiddis, output_control, distype)));
       aledis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(aledis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(aledis, output_control, distype)));
 
       problem.AddDis("structure", structdis);
       problem.AddDis("porofluid", porofluiddis);
       problem.AddDis("fluid", fluiddis);
       problem.AddDis("ale", aledis);
 
-      meshreader.AddElementReader(CORE::IO::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
+      meshreader.AddElementReader(Core::IO::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
       meshreader.AddElementReader(
-          CORE::IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
+          Core::IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
 
       break;
     }
-    case CORE::ProblemType::fbi:
+    case Core::ProblemType::fbi:
     {
       // create empty discretizations
-      structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm(), problem.NDim()));
-      fluiddis = Teuchos::rcp(new DRT::DiscretizationFaces("fluid", reader.Comm(), problem.NDim()));
+      structdis =
+          Teuchos::rcp(new Discret::Discretization("structure", reader.Comm(), problem.NDim()));
+      fluiddis =
+          Teuchos::rcp(new Discret::DiscretizationFaces("fluid", reader.Comm(), problem.NDim()));
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       structdis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(structdis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(structdis, output_control, distype)));
       fluiddis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(fluiddis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(fluiddis, output_control, distype)));
 
       problem.AddDis("structure", structdis);
       problem.AddDis("fluid", fluiddis);
 
       meshreader.AddElementReader(
-          CORE::IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
+          Core::IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
       meshreader.AddAdvancedReader(fluiddis, reader, "FLUID",
-          CORE::UTILS::IntegralValue<CORE::IO::GeometryType>(
+          Core::UTILS::IntegralValue<Core::IO::GeometryType>(
               problem.FluidDynamicParams(), "GEOMETRY"),
           nullptr);
 
       break;
     }
-    case CORE::ProblemType::immersed_fsi:
+    case Core::ProblemType::immersed_fsi:
     {
       // create empty discretizations
-      structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm(), problem.NDim()));
-      fluiddis = Teuchos::rcp(new DRT::DiscretizationFaces("fluid", reader.Comm(), problem.NDim()));
+      structdis =
+          Teuchos::rcp(new Discret::Discretization("structure", reader.Comm(), problem.NDim()));
+      fluiddis =
+          Teuchos::rcp(new Discret::DiscretizationFaces("fluid", reader.Comm(), problem.NDim()));
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       structdis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(structdis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(structdis, output_control, distype)));
       fluiddis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(fluiddis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(fluiddis, output_control, distype)));
 
       problem.AddDis("structure", structdis);
       problem.AddDis("fluid", fluiddis);
 
       meshreader.AddElementReader(
-          CORE::IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
-      meshreader.AddElementReader(CORE::IO::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
+          Core::IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
+      meshreader.AddElementReader(Core::IO::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
 
       break;
     }
-    case CORE::ProblemType::fps3i:
+    case Core::ProblemType::fps3i:
     {
       // create empty discretizations
-      structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm(), problem.NDim()));
+      structdis =
+          Teuchos::rcp(new Discret::Discretization("structure", reader.Comm(), problem.NDim()));
       porofluiddis =
-          Teuchos::rcp(new DRT::Discretization("porofluid", reader.Comm(), problem.NDim()));
-      fluiddis = Teuchos::rcp(new DRT::DiscretizationFaces("fluid", reader.Comm(), problem.NDim()));
-      aledis = Teuchos::rcp(new DRT::Discretization("ale", reader.Comm(), problem.NDim()));
+          Teuchos::rcp(new Discret::Discretization("porofluid", reader.Comm(), problem.NDim()));
+      fluiddis =
+          Teuchos::rcp(new Discret::DiscretizationFaces("fluid", reader.Comm(), problem.NDim()));
+      aledis = Teuchos::rcp(new Discret::Discretization("ale", reader.Comm(), problem.NDim()));
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       structdis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(structdis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(structdis, output_control, distype)));
       porofluiddis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(porofluiddis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(porofluiddis, output_control, distype)));
       fluiddis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(fluiddis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(fluiddis, output_control, distype)));
       aledis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(aledis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(aledis, output_control, distype)));
 
       problem.AddDis("structure", structdis);
       problem.AddDis("porofluid", porofluiddis);
@@ -1154,168 +1180,177 @@ void GLOBAL::ReadFields(
       problem.AddDis("ale", aledis);
 
 
-      meshreader.AddElementReader(CORE::IO::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
+      meshreader.AddElementReader(Core::IO::ElementReader(fluiddis, reader, "--FLUID ELEMENTS"));
       meshreader.AddElementReader(
-          CORE::IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
+          Core::IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
 
       // fluid scatra field
       fluidscatradis =
-          Teuchos::rcp(new DRT::Discretization("scatra1", reader.Comm(), problem.NDim()));
+          Teuchos::rcp(new Discret::Discretization("scatra1", reader.Comm(), problem.NDim()));
       // create discretization writer - in constructor set into and owned by corresponding discret
       fluidscatradis->SetWriter(Teuchos::rcp(
-          new CORE::IO::DiscretizationWriter(fluidscatradis, output_control, distype)));
+          new Core::IO::DiscretizationWriter(fluidscatradis, output_control, distype)));
       problem.AddDis("scatra1", fluidscatradis);
 
       // poro structure scatra field
       structscatradis =
-          Teuchos::rcp(new DRT::Discretization("scatra2", reader.Comm(), problem.NDim()));
+          Teuchos::rcp(new Discret::Discretization("scatra2", reader.Comm(), problem.NDim()));
       // create discretization writer - in constructor set into and owned by corresponding discret
       structscatradis->SetWriter(Teuchos::rcp(
-          new CORE::IO::DiscretizationWriter(structscatradis, output_control, distype)));
+          new Core::IO::DiscretizationWriter(structscatradis, output_control, distype)));
       problem.AddDis("scatra2", structscatradis);
 
       break;
     }
-    case CORE::ProblemType::poroscatra:
+    case Core::ProblemType::poroscatra:
     {
       // create empty discretizations
-      structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm(), problem.NDim()));
+      structdis =
+          Teuchos::rcp(new Discret::Discretization("structure", reader.Comm(), problem.NDim()));
       porofluiddis =
-          Teuchos::rcp(new DRT::Discretization("porofluid", reader.Comm(), problem.NDim()));
-      scatradis = Teuchos::rcp(new DRT::Discretization("scatra", reader.Comm(), problem.NDim()));
+          Teuchos::rcp(new Discret::Discretization("porofluid", reader.Comm(), problem.NDim()));
+      scatradis =
+          Teuchos::rcp(new Discret::Discretization("scatra", reader.Comm(), problem.NDim()));
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       structdis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(structdis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(structdis, output_control, distype)));
       porofluiddis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(porofluiddis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(porofluiddis, output_control, distype)));
       scatradis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(scatradis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(scatradis, output_control, distype)));
 
       problem.AddDis("structure", structdis);
       problem.AddDis("porofluid", porofluiddis);
       problem.AddDis("scatra", scatradis);
 
       meshreader.AddElementReader(
-          CORE::IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
+          Core::IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
       meshreader.AddElementReader(
-          CORE::IO::ElementReader(porofluiddis, reader, "--FLUID ELEMENTS"));
+          Core::IO::ElementReader(porofluiddis, reader, "--FLUID ELEMENTS"));
       meshreader.AddElementReader(
-          CORE::IO::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
+          Core::IO::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
       break;
     }
-    case CORE::ProblemType::ehl:
+    case Core::ProblemType::ehl:
     {
       // create empty discretizations
-      structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm(), problem.NDim()));
+      structdis =
+          Teuchos::rcp(new Discret::Discretization("structure", reader.Comm(), problem.NDim()));
       lubricationdis =
-          Teuchos::rcp(new DRT::Discretization("lubrication", reader.Comm(), problem.NDim()));
+          Teuchos::rcp(new Discret::Discretization("lubrication", reader.Comm(), problem.NDim()));
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       structdis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(structdis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(structdis, output_control, distype)));
       lubricationdis->SetWriter(Teuchos::rcp(
-          new CORE::IO::DiscretizationWriter(lubricationdis, output_control, distype)));
+          new Core::IO::DiscretizationWriter(lubricationdis, output_control, distype)));
 
       problem.AddDis("structure", structdis);
       problem.AddDis("lubrication", lubricationdis);
 
       meshreader.AddElementReader(
-          CORE::IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
+          Core::IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
       meshreader.AddElementReader(
-          CORE::IO::ElementReader(lubricationdis, reader, "--LUBRICATION ELEMENTS"));
+          Core::IO::ElementReader(lubricationdis, reader, "--LUBRICATION ELEMENTS"));
 
       break;
     }
-    case CORE::ProblemType::ssi:
-    case CORE::ProblemType::ssti:
+    case Core::ProblemType::ssi:
+    case Core::ProblemType::ssti:
     {
       // create empty discretizations
-      structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm(), problem.NDim()));
-      scatradis = Teuchos::rcp(new DRT::Discretization("scatra", reader.Comm(), problem.NDim()));
+      structdis =
+          Teuchos::rcp(new Discret::Discretization("structure", reader.Comm(), problem.NDim()));
+      scatradis =
+          Teuchos::rcp(new Discret::Discretization("scatra", reader.Comm(), problem.NDim()));
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       structdis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(structdis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(structdis, output_control, distype)));
       scatradis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(scatradis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(scatradis, output_control, distype)));
 
       problem.AddDis("structure", structdis);
       problem.AddDis("scatra", scatradis);
 
       // consider case of additional scatra manifold
-      if (CORE::UTILS::IntegralValue<bool>(
+      if (Core::UTILS::IntegralValue<bool>(
               problem.SSIControlParams().sublist("MANIFOLD"), "ADD_MANIFOLD"))
       {
-        auto scatra_manifold_dis =
-            Teuchos::rcp(new DRT::Discretization("scatra_manifold", reader.Comm(), problem.NDim()));
+        auto scatra_manifold_dis = Teuchos::rcp(
+            new Discret::Discretization("scatra_manifold", reader.Comm(), problem.NDim()));
         scatra_manifold_dis->SetWriter(Teuchos::rcp(
-            new CORE::IO::DiscretizationWriter(scatra_manifold_dis, output_control, distype)));
+            new Core::IO::DiscretizationWriter(scatra_manifold_dis, output_control, distype)));
         problem.AddDis("scatra_manifold", scatra_manifold_dis);
       }
 
       meshreader.AddElementReader(
-          CORE::IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
+          Core::IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
       meshreader.AddElementReader(
-          CORE::IO::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
+          Core::IO::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
 
-      if (problem.GetProblemType() == CORE::ProblemType::ssti)
+      if (problem.GetProblemType() == Core::ProblemType::ssti)
       {
-        thermdis = Teuchos::rcp(new DRT::Discretization("thermo", reader.Comm(), problem.NDim()));
+        thermdis =
+            Teuchos::rcp(new Discret::Discretization("thermo", reader.Comm(), problem.NDim()));
         thermdis->SetWriter(
-            Teuchos::rcp(new CORE::IO::DiscretizationWriter(thermdis, output_control, distype)));
+            Teuchos::rcp(new Core::IO::DiscretizationWriter(thermdis, output_control, distype)));
         problem.AddDis("thermo", thermdis);
         meshreader.AddElementReader(
-            CORE::IO::ElementReader(thermdis, reader, "--TRANSPORT ELEMENTS"));
+            Core::IO::ElementReader(thermdis, reader, "--TRANSPORT ELEMENTS"));
       }
 
       break;
     }
-    case CORE::ProblemType::particle:
-    case CORE::ProblemType::pasi:
+    case Core::ProblemType::particle:
+    case Core::ProblemType::pasi:
     {
       // create empty discretizations
-      structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm(), problem.NDim()));
+      structdis =
+          Teuchos::rcp(new Discret::Discretization("structure", reader.Comm(), problem.NDim()));
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       structdis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(structdis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(structdis, output_control, distype)));
 
       problem.AddDis("structure", structdis);
 
       meshreader.AddElementReader(
-          CORE::IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
+          Core::IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
 
       break;
     }
-    case CORE::ProblemType::level_set:
+    case Core::ProblemType::level_set:
     {
       // create empty discretizations
-      scatradis = Teuchos::rcp(new DRT::Discretization("scatra", reader.Comm(), problem.NDim()));
+      scatradis =
+          Teuchos::rcp(new Discret::Discretization("scatra", reader.Comm(), problem.NDim()));
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       scatradis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(scatradis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(scatradis, output_control, distype)));
 
       problem.AddDis("scatra", scatradis);
 
       meshreader.AddElementReader(
-          CORE::IO::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
+          Core::IO::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
       break;
     }
-    case CORE::ProblemType::np_support:
+    case Core::ProblemType::np_support:
     {
       // no discretizations and nodes needed for supporting procs
       break;
     }
-    case CORE::ProblemType::elemag:
+    case Core::ProblemType::elemag:
     {
       // create empty discretizations
-      elemagdis = Teuchos::rcp(new DRT::DiscretizationHDG("elemag", reader.Comm(), problem.NDim()));
+      elemagdis =
+          Teuchos::rcp(new Discret::DiscretizationHDG("elemag", reader.Comm(), problem.NDim()));
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       elemagdis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(elemagdis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(elemagdis, output_control, distype)));
 
       problem.AddDis("elemag", elemagdis);
 
@@ -1323,31 +1358,32 @@ void GLOBAL::ReadFields(
       elemagelementtypes.insert("ELECTROMAGNETIC");
       elemagelementtypes.insert("ELECTROMAGNETICDIFF");
 
-      meshreader.AddElementReader(CORE::IO::ElementReader(
+      meshreader.AddElementReader(Core::IO::ElementReader(
           elemagdis, reader, "--ELECTROMAGNETIC ELEMENTS", elemagelementtypes));
 
       break;
     }
-    case CORE::ProblemType::redairways_tissue:
+    case Core::ProblemType::redairways_tissue:
     {
       // create empty discretizations
-      structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm(), problem.NDim()));
+      structdis =
+          Teuchos::rcp(new Discret::Discretization("structure", reader.Comm(), problem.NDim()));
       airwaydis =
-          Teuchos::rcp(new DRT::Discretization("red_airway", reader.Comm(), problem.NDim()));
+          Teuchos::rcp(new Discret::Discretization("red_airway", reader.Comm(), problem.NDim()));
 
       // create discretization writer - in constructor set into and owned by corresponding discret
       structdis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(structdis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(structdis, output_control, distype)));
       airwaydis->SetWriter(
-          Teuchos::rcp(new CORE::IO::DiscretizationWriter(airwaydis, output_control, distype)));
+          Teuchos::rcp(new Core::IO::DiscretizationWriter(airwaydis, output_control, distype)));
 
       problem.AddDis("structure", structdis);
       problem.AddDis("red_airway", airwaydis);
 
       meshreader.AddElementReader(
-          CORE::IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
+          Core::IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
       meshreader.AddElementReader(
-          CORE::IO::ElementReader(airwaydis, reader, "--REDUCED D AIRWAYS ELEMENTS"));
+          Core::IO::ElementReader(airwaydis, reader, "--REDUCED D AIRWAYS ELEMENTS"));
     }
     break;
     default:
@@ -1358,30 +1394,31 @@ void GLOBAL::ReadFields(
   // add artery or airways discretizations only for the following problem types
   switch (problem.GetProblemType())
   {
-    case CORE::ProblemType::fsi_redmodels:
-    case CORE::ProblemType::fsi_lung:
-    case CORE::ProblemType::fluid_ale:
-    case CORE::ProblemType::fluid_redmodels:
+    case Core::ProblemType::fsi_redmodels:
+    case Core::ProblemType::fsi_lung:
+    case Core::ProblemType::fluid_ale:
+    case Core::ProblemType::fluid_redmodels:
     {
-      if (distype == CORE::FE::ShapeFunctionType::polynomial)
+      if (distype == Core::FE::ShapeFunctionType::polynomial)
       {
         // create empty discretizations
-        arterydis = Teuchos::rcp(new DRT::Discretization("artery", reader.Comm(), problem.NDim()));
+        arterydis =
+            Teuchos::rcp(new Discret::Discretization("artery", reader.Comm(), problem.NDim()));
         // create discretization writer - in constructor set into and owned by corresponding discret
         arterydis->SetWriter(
-            Teuchos::rcp(new CORE::IO::DiscretizationWriter(arterydis, output_control, distype)));
+            Teuchos::rcp(new Core::IO::DiscretizationWriter(arterydis, output_control, distype)));
         problem.AddDis("artery", arterydis);
         meshreader.AddElementReader(
-            CORE::IO::ElementReader(arterydis, reader, "--ARTERY ELEMENTS"));
+            Core::IO::ElementReader(arterydis, reader, "--ARTERY ELEMENTS"));
 
         airwaydis =
-            Teuchos::rcp(new DRT::Discretization("red_airway", reader.Comm(), problem.NDim()));
+            Teuchos::rcp(new Discret::Discretization("red_airway", reader.Comm(), problem.NDim()));
         // create discretization writer - in constructor set into and owned by corresponding discret
         airwaydis->SetWriter(
-            Teuchos::rcp(new CORE::IO::DiscretizationWriter(airwaydis, output_control, distype)));
+            Teuchos::rcp(new Core::IO::DiscretizationWriter(airwaydis, output_control, distype)));
         problem.AddDis("red_airway", airwaydis);
         meshreader.AddElementReader(
-            CORE::IO::ElementReader(airwaydis, reader, "--REDUCED D AIRWAYS ELEMENTS"));
+            Core::IO::ElementReader(airwaydis, reader, "--REDUCED D AIRWAYS ELEMENTS"));
       }
     }
     break;
@@ -1397,19 +1434,19 @@ void GLOBAL::ReadFields(
     // care for special applications
     switch (problem.GetProblemType())
     {
-      case CORE::ProblemType::elch:
-      case CORE::ProblemType::fsi:
-      case CORE::ProblemType::fsi_redmodels:
-      case CORE::ProblemType::fsi_lung:
-      case CORE::ProblemType::scatra:
-      case CORE::ProblemType::structure:
+      case Core::ProblemType::elch:
+      case Core::ProblemType::fsi:
+      case Core::ProblemType::fsi_redmodels:
+      case Core::ProblemType::fsi_lung:
+      case Core::ProblemType::scatra:
+      case Core::ProblemType::structure:
       {
         // read microscale fields from second, third, ... input file if necessary
         // (in case of multi-scale material models)
         ReadMicroFields(problem, reader);
         break;
       }
-      case CORE::ProblemType::np_support:
+      case Core::ProblemType::np_support:
       {
         // read microscale fields from second, third, ... inputfile for supporting processors
         ReadMicrofieldsNPsupport(problem);
@@ -1421,15 +1458,15 @@ void GLOBAL::ReadFields(
   }  // if(readmesh)
 }
 
-void GLOBAL::ReadMicroFields(GLOBAL::Problem& problem, CORE::IO::DatFileReader& reader)
+void Global::ReadMicroFields(Global::Problem& problem, Core::IO::DatFileReader& reader)
 {
   // check whether micro material is specified
   const int id_struct =
-      GLOBAL::Problem::Instance()->Materials()->FirstIdByType(CORE::Materials::m_struct_multiscale);
+      Global::Problem::Instance()->Materials()->FirstIdByType(Core::Materials::m_struct_multiscale);
   const int id_scatra =
-      GLOBAL::Problem::Instance()->Materials()->FirstIdByType(CORE::Materials::m_scatra_multiscale);
+      Global::Problem::Instance()->Materials()->FirstIdByType(Core::Materials::m_scatra_multiscale);
   const int id_elch =
-      GLOBAL::Problem::Instance()->Materials()->FirstIdByType(CORE::Materials::m_newman_multiscale);
+      Global::Problem::Instance()->Materials()->FirstIdByType(Core::Materials::m_newman_multiscale);
 
   // return if no multiscale material is used
   if (id_struct == -1 and id_scatra == -1 and id_elch == -1) return;
@@ -1450,8 +1487,8 @@ void GLOBAL::ReadMicroFields(GLOBAL::Problem& problem, CORE::IO::DatFileReader& 
   Teuchos::RCP<Epetra_Comm> lcomm = problem.GetCommunicators()->LocalComm();
   Teuchos::RCP<Epetra_Comm> gcomm = problem.GetCommunicators()->GlobalComm();
 
-  GLOBAL::Problem* macro_problem = GLOBAL::Problem::Instance();
-  Teuchos::RCP<DRT::Discretization> macro_dis = macro_problem->GetDis(macro_dis_name);
+  Global::Problem* macro_problem = Global::Problem::Instance();
+  Teuchos::RCP<Discret::Discretization> macro_dis = macro_problem->GetDis(macro_dis_name);
 
   // repartition macro problem for a good distribution of elements with micro material
   if (macro_dis_name == "structure")
@@ -1459,9 +1496,9 @@ void GLOBAL::ReadMicroFields(GLOBAL::Problem& problem, CORE::IO::DatFileReader& 
     // do weighted repartitioning to obtain new row/column maps
     const Teuchos::ParameterList rebalanceParams;
     Teuchos::RCP<const Epetra_CrsGraph> nodeGraph = macro_dis->BuildNodeGraph();
-    const auto& [nodeWeights, edgeWeights] = CORE::REBALANCE::BuildWeights(*macro_dis);
+    const auto& [nodeWeights, edgeWeights] = Core::Rebalance::BuildWeights(*macro_dis);
     const auto& [rownodes, colnodes] =
-        CORE::REBALANCE::RebalanceNodeMaps(nodeGraph, rebalanceParams, nodeWeights, edgeWeights);
+        Core::Rebalance::RebalanceNodeMaps(nodeGraph, rebalanceParams, nodeWeights, edgeWeights);
 
     // rebuild the discretization with new maps
     macro_dis->Redistribute(*rownodes, *colnodes, true, true, true);
@@ -1475,26 +1512,26 @@ void GLOBAL::ReadMicroFields(GLOBAL::Problem& problem, CORE::IO::DatFileReader& 
   // take care also of ghosted elements! -> ElementColMap!
   for (int i = 0; i < macro_dis->ElementColMap()->NumMyElements(); ++i)
   {
-    CORE::Elements::Element* actele = macro_dis->lColElement(i);
-    Teuchos::RCP<CORE::MAT::Material> actmat = actele->Material();
+    Core::Elements::Element* actele = macro_dis->lColElement(i);
+    Teuchos::RCP<Core::Mat::Material> actmat = actele->Material();
 
-    if (id_elch != -1 and actmat->MaterialType() == CORE::Materials::m_elchmat)
+    if (id_elch != -1 and actmat->MaterialType() == Core::Materials::m_elchmat)
     {
       // extract wrapped material
-      auto elchmat = Teuchos::rcp_dynamic_cast<const MAT::ElchMat>(actmat);
+      auto elchmat = Teuchos::rcp_dynamic_cast<const Mat::ElchMat>(actmat);
       auto elchphase =
-          Teuchos::rcp_dynamic_cast<const MAT::ElchPhase>(elchmat->PhaseById(elchmat->PhaseID(0)));
+          Teuchos::rcp_dynamic_cast<const Mat::ElchPhase>(elchmat->PhaseById(elchmat->PhaseID(0)));
       actmat = elchphase->MatById(elchphase->MatID(0));
     }
 
-    if ((actmat->MaterialType() == CORE::Materials::m_struct_multiscale and
+    if ((actmat->MaterialType() == Core::Materials::m_struct_multiscale and
             macro_dis_name == "structure") or
-        (actmat->MaterialType() == CORE::Materials::m_scatra_multiscale and
+        (actmat->MaterialType() == Core::Materials::m_scatra_multiscale and
             macro_dis_name == "scatra") or
-        (actmat->MaterialType() == CORE::Materials::m_newman_multiscale and
+        (actmat->MaterialType() == Core::Materials::m_newman_multiscale and
             macro_dis_name == "scatra"))
     {
-      CORE::MAT::PAR::Parameter* actparams = actmat->Parameter();
+      Core::Mat::PAR::Parameter* actparams = actmat->Parameter();
       my_multimat_IDs.insert(actparams->Id());
     }
   }
@@ -1566,19 +1603,19 @@ void GLOBAL::ReadMicroFields(GLOBAL::Problem& problem, CORE::IO::DatFileReader& 
 
       if (my_multimat_IDs.find(matid) != my_multimat_IDs.end())
       {
-        Teuchos::RCP<CORE::MAT::Material> mat = MAT::Factory(matid);
+        Teuchos::RCP<Core::Mat::Material> mat = Mat::Factory(matid);
 
         // initialize variables storing micro-scale information
         int microdisnum(-1);
         std::string micro_dis_name = "";
         std::string micro_inputfile_name("");
-        GLOBAL::Problem* micro_problem(nullptr);
+        Global::Problem* micro_problem(nullptr);
 
         // structure case
         if (macro_dis_name == "structure")
         {
           // access multi-scale structure material
-          auto* micromat = static_cast<MAT::MicroMaterial*>(mat.get());
+          auto* micromat = static_cast<Mat::MicroMaterial*>(mat.get());
 
           // extract and broadcast number of micro-scale discretization
           microdisnum = micromat->MicroDisNum();
@@ -1591,18 +1628,18 @@ void GLOBAL::ReadMicroFields(GLOBAL::Problem& problem, CORE::IO::DatFileReader& 
           micro_inputfile_name = micromat->MicroInputFileName();
 
           // instantiate micro-scale problem
-          micro_problem = GLOBAL::Problem::Instance(microdisnum);
+          micro_problem = Global::Problem::Instance(microdisnum);
         }
 
         // scalar transport case
         else
         {
           // access multi-scale scalar transport material
-          MAT::ScatraMicroMacroCoupling* micromat = nullptr;
+          Mat::ScatraMicroMacroCoupling* micromat = nullptr;
           if (id_scatra != -1)
-            micromat = dynamic_cast<MAT::ScatraMultiScale*>(mat.get());
+            micromat = dynamic_cast<Mat::ScatraMultiScale*>(mat.get());
           else if (id_elch != -1)
-            micromat = dynamic_cast<MAT::NewmanMultiScale*>(mat.get());
+            micromat = dynamic_cast<Mat::NewmanMultiScale*>(mat.get());
           else
             FOUR_C_THROW("How the heck did you get here?!");
 
@@ -1619,7 +1656,7 @@ void GLOBAL::ReadMicroFields(GLOBAL::Problem& problem, CORE::IO::DatFileReader& 
           micro_inputfile_name = micromat->MicroInputFileName();
 
           // instantiate micro-scale problem
-          micro_problem = GLOBAL::Problem::Instance(microdisnum);
+          micro_problem = Global::Problem::Instance(microdisnum);
         }
 
         if (micro_inputfile_name[0] != '/')
@@ -1639,21 +1676,21 @@ void GLOBAL::ReadMicroFields(GLOBAL::Problem& problem, CORE::IO::DatFileReader& 
         subgroupcomm->Broadcast((const_cast<char*>(micro_inputfile_name.c_str())), length, 0);
 
         // start with actual reading
-        CORE::IO::DatFileReader micro_reader(micro_inputfile_name, subgroupcomm, 1);
+        Core::IO::DatFileReader micro_reader(micro_inputfile_name, subgroupcomm, 1);
 
-        Teuchos::RCP<DRT::Discretization> dis_micro = Teuchos::rcp(
-            new DRT::Discretization(micro_dis_name, micro_reader.Comm(), problem.NDim()));
+        Teuchos::RCP<Discret::Discretization> dis_micro = Teuchos::rcp(
+            new Discret::Discretization(micro_dis_name, micro_reader.Comm(), problem.NDim()));
 
         // replace standard dofset inside micro discretization by independent dofset
         // to avoid inconsistent dof numbering in non-nested parallel settings with more than one
         // micro discretization
         if (problem.GetCommunicators()->NpType() ==
-            CORE::COMM::NestedParallelismType::no_nested_parallelism)
-          dis_micro->ReplaceDofSet(Teuchos::rcp(new CORE::Dofsets::IndependentDofSet()));
+            Core::Communication::NestedParallelismType::no_nested_parallelism)
+          dis_micro->ReplaceDofSet(Teuchos::rcp(new Core::DOFSets::IndependentDofSet()));
 
         // create discretization writer - in constructor set into and owned by corresponding
         // discret
-        dis_micro->SetWriter(Teuchos::rcp(new CORE::IO::DiscretizationWriter(dis_micro,
+        dis_micro->SetWriter(Teuchos::rcp(new Core::IO::DiscretizationWriter(dis_micro,
             micro_problem->OutputControlFile(), micro_problem->spatial_approximation_type())));
 
         micro_problem->AddDis(micro_dis_name, dis_micro);
@@ -1671,7 +1708,7 @@ void GLOBAL::ReadMicroFields(GLOBAL::Problem& problem, CORE::IO::DatFileReader& 
 
         ReadMaterials(*micro_problem, micro_reader);
 
-        CORE::IO::MeshReader micromeshreader(micro_reader, "--NODE COORDS",
+        Core::IO::MeshReader micromeshreader(micro_reader, "--NODE COORDS",
             {.mesh_paritioning_parameters = Problem::Instance()->mesh_partitioning_params(),
                 .geometric_search_parameters = Problem::Instance()->geometric_search_params(),
                 .io_parameters = Problem::Instance()->IOParams()});
@@ -1679,17 +1716,17 @@ void GLOBAL::ReadMicroFields(GLOBAL::Problem& problem, CORE::IO::DatFileReader& 
         if (micro_dis_name == "structure")
         {
           micromeshreader.AddElementReader(
-              CORE::IO::ElementReader(dis_micro, micro_reader, "--STRUCTURE ELEMENTS"));
+              Core::IO::ElementReader(dis_micro, micro_reader, "--STRUCTURE ELEMENTS"));
         }
         else
           micromeshreader.AddElementReader(
-              CORE::IO::ElementReader(dis_micro, micro_reader, "--TRANSPORT ELEMENTS"));
+              Core::IO::ElementReader(dis_micro, micro_reader, "--TRANSPORT ELEMENTS"));
 
         micromeshreader.ReadAndPartition();
 
 
         {
-          CORE::UTILS::FunctionManager function_manager;
+          Core::UTILS::FunctionManager function_manager;
           GlobalLegacyModuleCallbacks().AttachFunctionDefinitions(function_manager);
           function_manager.ReadInput(micro_reader);
           micro_problem->SetFunctionManager(std::move(function_manager));
@@ -1708,7 +1745,7 @@ void GLOBAL::ReadMicroFields(GLOBAL::Problem& problem, CORE::IO::DatFileReader& 
         problem.SetRestartStep(restart_step);
 
         // set the problem number from which to call materials again to zero
-        // (i.e. macro problem), cf. MAT::Factory!
+        // (i.e. macro problem), cf. Mat::Factory!
         problem.Materials()->reset_read_from_problem();
       }
     }
@@ -1719,7 +1756,7 @@ void GLOBAL::ReadMicroFields(GLOBAL::Problem& problem, CORE::IO::DatFileReader& 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void GLOBAL::ReadMicrofieldsNPsupport(GLOBAL::Problem& problem)
+void Global::ReadMicrofieldsNPsupport(Global::Problem& problem)
 {
   Teuchos::RCP<Epetra_Comm> lcomm = problem.GetCommunicators()->LocalComm();
   Teuchos::RCP<Epetra_Comm> gcomm = problem.GetCommunicators()->GlobalComm();
@@ -1770,7 +1807,7 @@ void GLOBAL::ReadMicrofieldsNPsupport(GLOBAL::Problem& problem)
     int microdisnum = -1;
     subgroupcomm->Broadcast(&microdisnum, 1, 0);
 
-    GLOBAL::Problem* micro_problem = GLOBAL::Problem::Instance(microdisnum);
+    Global::Problem* micro_problem = Global::Problem::Instance(microdisnum);
 
     // broadcast micro input file name
     int length = -1;
@@ -1780,13 +1817,13 @@ void GLOBAL::ReadMicrofieldsNPsupport(GLOBAL::Problem& problem)
     subgroupcomm->Broadcast((const_cast<char*>(micro_inputfile_name.c_str())), length, 0);
 
     // start with actual reading
-    CORE::IO::DatFileReader micro_reader(micro_inputfile_name, subgroupcomm, 1);
+    Core::IO::DatFileReader micro_reader(micro_inputfile_name, subgroupcomm, 1);
 
-    Teuchos::RCP<DRT::Discretization> structdis_micro =
-        Teuchos::rcp(new DRT::Discretization("structure", micro_reader.Comm(), problem.NDim()));
+    Teuchos::RCP<Discret::Discretization> structdis_micro =
+        Teuchos::rcp(new Discret::Discretization("structure", micro_reader.Comm(), problem.NDim()));
 
     // create discretization writer - in constructor set into and owned by corresponding discret
-    structdis_micro->SetWriter(Teuchos::rcp(new CORE::IO::DiscretizationWriter(structdis_micro,
+    structdis_micro->SetWriter(Teuchos::rcp(new Core::IO::DiscretizationWriter(structdis_micro,
         micro_problem->OutputControlFile(), micro_problem->spatial_approximation_type())));
 
     micro_problem->AddDis("structure", structdis_micro);
@@ -1804,12 +1841,12 @@ void GLOBAL::ReadMicrofieldsNPsupport(GLOBAL::Problem& problem)
 
     ReadMaterials(*micro_problem, micro_reader);
 
-    CORE::IO::MeshReader micromeshreader(micro_reader, "--NODE COORDS",
+    Core::IO::MeshReader micromeshreader(micro_reader, "--NODE COORDS",
         {.mesh_paritioning_parameters = Problem::Instance()->mesh_partitioning_params(),
             .geometric_search_parameters = Problem::Instance()->geometric_search_params(),
             .io_parameters = Problem::Instance()->IOParams()});
     micromeshreader.AddElementReader(
-        CORE::IO::ElementReader(structdis_micro, micro_reader, "--STRUCTURE ELEMENTS"));
+        Core::IO::ElementReader(structdis_micro, micro_reader, "--STRUCTURE ELEMENTS"));
     micromeshreader.ReadAndPartition();
 
     // read conditions of microscale
@@ -1827,14 +1864,14 @@ void GLOBAL::ReadMicrofieldsNPsupport(GLOBAL::Problem& problem)
     problem.SetRestartStep(restart_step);
 
     // set the problem number from which to call materials again to zero
-    // (i.e. macro problem), cf. MAT::Factory!
+    // (i.e. macro problem), cf. Mat::Factory!
     problem.Materials()->reset_read_from_problem();
   }
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void GLOBAL::ReadParameter(GLOBAL::Problem& problem, CORE::IO::DatFileReader& reader)
+void Global::ReadParameter(Global::Problem& problem, Core::IO::DatFileReader& reader)
 {
   Teuchos::RCP<Teuchos::ParameterList> list = Teuchos::rcp(new Teuchos::ParameterList("DAT FILE"));
 
@@ -2061,11 +2098,11 @@ void GLOBAL::ReadParameter(GLOBAL::Problem& problem, CORE::IO::DatFileReader& re
 
   // 1) get the problem type
   const Teuchos::ParameterList& type = problem.ProblemTypeParams();
-  problem.SetProblemType(CORE::UTILS::IntegralValue<CORE::ProblemType>(type, "PROBLEMTYP"));
+  problem.SetProblemType(Core::UTILS::IntegralValue<Core::ProblemType>(type, "PROBLEMTYP"));
 
   // 2) get the spatial approximation type
   problem.set_spatial_approximation_type(
-      CORE::UTILS::IntegralValue<CORE::FE::ShapeFunctionType>(type, "SHAPEFCT"));
+      Core::UTILS::IntegralValue<Core::FE::ShapeFunctionType>(type, "SHAPEFCT"));
 
   int restart_step = problem.Restart();
   // 3) do the restart business with the four options we support (partially)
@@ -2096,7 +2133,7 @@ void GLOBAL::ReadParameter(GLOBAL::Problem& problem, CORE::IO::DatFileReader& re
     int rs = type.get<int>("RANDSEED");
     if (rs < 0)
       rs = static_cast<int>(time(nullptr)) +
-           42 * GLOBAL::Problem::Instance(0)->GetCommunicators()->GlobalComm()->MyPID();
+           42 * Global::Problem::Instance(0)->GetCommunicators()->GlobalComm()->MyPID();
 
     srand((unsigned int)rs);  // Set random seed for stdlibrary. This is deprecated, as it does not
     // produce random numbers on some platforms!
@@ -2107,18 +2144,18 @@ void GLOBAL::ReadParameter(GLOBAL::Problem& problem, CORE::IO::DatFileReader& re
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void GLOBAL::ReadMaterials(GLOBAL::Problem& problem, CORE::IO::DatFileReader& reader)
+void Global::ReadMaterials(Global::Problem& problem, Core::IO::DatFileReader& reader)
 {
   // create list of known materials
-  Teuchos::RCP<std::vector<Teuchos::RCP<MAT::MaterialDefinition>>> vm = INPUT::ValidMaterials();
-  std::vector<Teuchos::RCP<MAT::MaterialDefinition>>& matlist = *vm;
+  Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> vm = Input::ValidMaterials();
+  std::vector<Teuchos::RCP<Mat::MaterialDefinition>>& matlist = *vm;
 
   // test for each material definition (input file --MATERIALS section)
   // and store in #matmap_
   auto mmap = problem.Materials();
   for (auto& mat : matlist)
   {
-    std::vector<std::pair<int, CORE::IO::InputParameterContainer>> read_materials =
+    std::vector<std::pair<int, Core::IO::InputParameterContainer>> read_materials =
         mat->Read(reader);
 
     for (const auto& [id, data] : read_materials)
@@ -2132,9 +2169,9 @@ void GLOBAL::ReadMaterials(GLOBAL::Problem& problem, CORE::IO::DatFileReader& re
       // of parameters.
       // Also, this line shows a design flaw where the parameter object needs to know the material
       // id that was chosen in the input file.
-      mmap->insert(id, CORE::UTILS::LazyPtr<CORE::MAT::PAR::Parameter>(
+      mmap->insert(id, Core::UTILS::LazyPtr<Core::Mat::PAR::Parameter>(
                            [i = id, mat_type = mat->Type(), d = data]()
-                           { return MAT::make_parameter(i, mat_type, d); }));
+                           { return Mat::make_parameter(i, mat_type, d); }));
     }
   }
 
@@ -2184,11 +2221,11 @@ void GLOBAL::ReadMaterials(GLOBAL::Problem& problem, CORE::IO::DatFileReader& re
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void GLOBAL::ReadContactConstitutiveLaws(GLOBAL::Problem& problem, CORE::IO::DatFileReader& reader)
+void Global::ReadContactConstitutiveLaws(Global::Problem& problem, Core::IO::DatFileReader& reader)
 {
   // create list of known contact constitutive laws
   Teuchos::RCP<std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>> vm =
-      INPUT::ValidContactConstitutiveLaws();
+      Input::ValidContactConstitutiveLaws();
   std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>& coconstlawlist = *vm;
 
   // test for each contact constitutive law definition (input file --CONTACT CONSTITUTIVE LAWS
@@ -2238,13 +2275,13 @@ void GLOBAL::ReadContactConstitutiveLaws(GLOBAL::Problem& problem, CORE::IO::Dat
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void GLOBAL::ReadCloningMaterialMap(GLOBAL::Problem& problem, CORE::IO::DatFileReader& reader)
+void Global::ReadCloningMaterialMap(Global::Problem& problem, Core::IO::DatFileReader& reader)
 {
-  const std::vector<INPUT::LineDefinition> lines = CORE::FE::valid_cloning_material_map_lines();
+  const std::vector<Input::LineDefinition> lines = Core::FE::valid_cloning_material_map_lines();
 
   // perform the actual reading and extract the input parameters
-  std::vector<INPUT::LineDefinition> input_line_vec =
-      CORE::IO::DatFileUtils::read_all_lines_in_section(reader, "CLONING MATERIAL MAP", lines);
+  std::vector<Input::LineDefinition> input_line_vec =
+      Core::IO::DatFileUtils::read_all_lines_in_section(reader, "CLONING MATERIAL MAP", lines);
   for (const auto& input_line : input_line_vec)
   {
     // extract what was read from the input file
@@ -2269,13 +2306,13 @@ void GLOBAL::ReadCloningMaterialMap(GLOBAL::Problem& problem, CORE::IO::DatFileR
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void GLOBAL::ReadResult(GLOBAL::Problem& problem, CORE::IO::DatFileReader& reader)
+void Global::ReadResult(Global::Problem& problem, Core::IO::DatFileReader& reader)
 {
   const auto lines = GlobalLegacyModuleCallbacks().valid_result_description_lines();
 
   // read design nodes <-> nodes, lines <-> nodes, surfaces <-> nodes, volumes <-> nodes
   const auto get_discretization_callback = [](const std::string& name) -> decltype(auto)
-  { return *GLOBAL::Problem::Instance()->GetDis(name); };
+  { return *Global::Problem::Instance()->GetDis(name); };
   std::vector<std::vector<std::vector<int>>> nodeset(4);
   reader.ReadDesign("DNODE", nodeset[0], get_discretization_callback);
   reader.ReadDesign("DLINE", nodeset[1], get_discretization_callback);
@@ -2284,23 +2321,23 @@ void GLOBAL::ReadResult(GLOBAL::Problem& problem, CORE::IO::DatFileReader& reade
   problem.get_result_test_manager().set_node_set(nodeset);
 
   problem.get_result_test_manager().SetParsedLines(
-      CORE::IO::DatFileUtils::read_all_lines_in_section(reader, "RESULT DESCRIPTION", lines));
+      Core::IO::DatFileUtils::read_all_lines_in_section(reader, "RESULT DESCRIPTION", lines));
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void GLOBAL::ReadConditions(GLOBAL::Problem& problem, CORE::IO::DatFileReader& reader)
+void Global::ReadConditions(Global::Problem& problem, Core::IO::DatFileReader& reader)
 {
   Teuchos::Time time("", true);
   if (reader.Comm()->MyPID() == 0)
   {
-    CORE::IO::cout << "Read/generate conditions                          in....";
-    CORE::IO::cout.flush();
+    Core::IO::cout << "Read/generate conditions                          in....";
+    Core::IO::cout.flush();
   }
 
   //--------------------------------------------- read generic node sets
   const auto get_discretization_callback = [](const std::string& name) -> decltype(auto)
-  { return *GLOBAL::Problem::Instance()->GetDis(name); };
+  { return *Global::Problem::Instance()->GetDis(name); };
 
   // read design nodes <-> nodes
   std::vector<std::vector<int>> dnode_fenode;
@@ -2326,9 +2363,9 @@ void GLOBAL::ReadConditions(GLOBAL::Problem& problem, CORE::IO::DatFileReader& r
   nodeset[3] = &dvol_fenode;
 
   // create list of known conditions
-  Teuchos::RCP<std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>> vc =
-      INPUT::ValidConditions();
-  std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist = *vc;
+  Teuchos::RCP<std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>> vc =
+      Input::ValidConditions();
+  std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist = *vc;
 
   // test for each condition definition (input file condition section)
   // - read all conditions that match the definition
@@ -2338,18 +2375,18 @@ void GLOBAL::ReadConditions(GLOBAL::Problem& problem, CORE::IO::DatFileReader& r
   // Note that this will reset (un-fill_complete) the discretizations.
   for (auto& condition : condlist)
   {
-    std::multimap<int, Teuchos::RCP<CORE::Conditions::Condition>> cond;
+    std::multimap<int, Teuchos::RCP<Core::Conditions::Condition>> cond;
 
     // read conditions from dat file
     condition->Read(reader, cond);
 
     // add nodes to conditions
-    std::multimap<int, Teuchos::RCP<CORE::Conditions::Condition>>::const_iterator curr;
+    std::multimap<int, Teuchos::RCP<Core::Conditions::Condition>>::const_iterator curr;
     for (curr = cond.begin(); curr != cond.end(); ++curr)
     {
       switch (curr->second->GType())
       {
-        case CORE::Conditions::geometry_type_point:
+        case Core::Conditions::geometry_type_point:
           if (curr->first < 0 or static_cast<unsigned>(curr->first) >= dnode_fenode.size())
           {
             FOUR_C_THROW(
@@ -2359,7 +2396,7 @@ void GLOBAL::ReadConditions(GLOBAL::Problem& problem, CORE::IO::DatFileReader& r
           }
           curr->second->SetNodes(dnode_fenode[curr->first]);
           break;
-        case CORE::Conditions::geometry_type_line:
+        case Core::Conditions::geometry_type_line:
           if (curr->first < 0 or static_cast<unsigned>(curr->first) >= dline_fenode.size())
           {
             FOUR_C_THROW(
@@ -2369,7 +2406,7 @@ void GLOBAL::ReadConditions(GLOBAL::Problem& problem, CORE::IO::DatFileReader& r
           }
           curr->second->SetNodes(dline_fenode[curr->first]);
           break;
-        case CORE::Conditions::geometry_type_surface:
+        case Core::Conditions::geometry_type_surface:
           if (curr->first < 0 or static_cast<unsigned>(curr->first) >= dsurf_fenode.size())
           {
             FOUR_C_THROW(
@@ -2379,7 +2416,7 @@ void GLOBAL::ReadConditions(GLOBAL::Problem& problem, CORE::IO::DatFileReader& r
           }
           curr->second->SetNodes(dsurf_fenode[curr->first]);
           break;
-        case CORE::Conditions::geometry_type_volume:
+        case Core::Conditions::geometry_type_volume:
           if (curr->first < 0 or static_cast<unsigned>(curr->first) >= dvol_fenode.size())
           {
             FOUR_C_THROW(
@@ -2430,28 +2467,28 @@ void GLOBAL::ReadConditions(GLOBAL::Problem& problem, CORE::IO::DatFileReader& r
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void GLOBAL::ReadKnots(GLOBAL::Problem& problem, CORE::IO::DatFileReader& reader)
+void Global::ReadKnots(Global::Problem& problem, Core::IO::DatFileReader& reader)
 {
   // get information on the spatial approximation --- we only read knots
   // in the nurbs case
-  CORE::FE::ShapeFunctionType distype = problem.spatial_approximation_type();
+  Core::FE::ShapeFunctionType distype = problem.spatial_approximation_type();
 
   // Iterate through all discretizations and sort the appropriate condition
   // into the correct discretization it applies to
 
   for (const auto& [name, dis] : problem.DiscretizationRange())
   {
-    if (distype == CORE::FE::ShapeFunctionType::nurbs)
+    if (distype == Core::FE::ShapeFunctionType::nurbs)
     {
       // cast discretisation to nurbs variant to be able
       // to add the knotvector
-      auto* nurbsdis = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*dis));
+      auto* nurbsdis = dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(*dis));
 
       if (nurbsdis == nullptr)
         FOUR_C_THROW("discretization %s is not a NurbsDiscretization! Panic.", dis->Name().c_str());
 
       // define an empty knot vector object
-      Teuchos::RCP<DRT::NURBS::Knotvector> disknots = Teuchos::null;
+      Teuchos::RCP<Discret::Nurbs::Knotvector> disknots = Teuchos::null;
 
       // read the knotvector data from the input
       reader.ReadKnots(dis->Name(), disknots);
@@ -2486,13 +2523,13 @@ void GLOBAL::ReadKnots(GLOBAL::Problem& problem, CORE::IO::DatFileReader& reader
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void GLOBAL::ReadParticles(GLOBAL::Problem& problem, CORE::IO::DatFileReader& reader)
+void Global::ReadParticles(Global::Problem& problem, Core::IO::DatFileReader& reader)
 {
   // no need to read in particles in case of restart
   if (problem.Restart()) return;
 
   // the basic particle reader
-  INPUT::ParticleReader particlereader(reader, "--PARTICLES");
+  Input::ParticleReader particlereader(reader, "--PARTICLES");
 
   // do the actual reading of particles
   particlereader.Read(problem.Particles());

@@ -21,12 +21,12 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::ScatraMat::ScatraMat(Teuchos::RCP<CORE::MAT::PAR::Material> matdata) : Parameter(matdata)
+Mat::PAR::ScatraMat::ScatraMat(Teuchos::RCP<Core::Mat::PAR::Material> matdata) : Parameter(matdata)
 {
   // extract relevant communicator
-  const Epetra_Comm& comm = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem() == 0
-                                ? *GLOBAL::Problem::Instance()->GetCommunicators()->LocalComm()
-                                : *GLOBAL::Problem::Instance()->GetCommunicators()->SubComm();
+  const Epetra_Comm& comm = Global::Problem::Instance()->Materials()->GetReadFromProblem() == 0
+                                ? *Global::Problem::Instance()->GetCommunicators()->LocalComm()
+                                : *Global::Problem::Instance()->GetCommunicators()->SubComm();
 
   Epetra_Map dummy_map(1, 1, 0, comm);
   for (int i = first; i <= last; i++)
@@ -41,18 +41,18 @@ MAT::PAR::ScatraMat::ScatraMat(Teuchos::RCP<CORE::MAT::PAR::Material> matdata) :
 }
 
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ScatraMat::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::ScatraMat::create_material()
 {
-  return Teuchos::rcp(new MAT::ScatraMat(this));
+  return Teuchos::rcp(new Mat::ScatraMat(this));
 }
 
 
-MAT::ScatraMatType MAT::ScatraMatType::instance_;
+Mat::ScatraMatType Mat::ScatraMatType::instance_;
 
 
-CORE::COMM::ParObject* MAT::ScatraMatType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::ScatraMatType::Create(const std::vector<char>& data)
 {
-  MAT::ScatraMat* scatra_mat = new MAT::ScatraMat();
+  Mat::ScatraMat* scatra_mat = new Mat::ScatraMat();
   scatra_mat->Unpack(data);
   return scatra_mat;
 }
@@ -60,19 +60,19 @@ CORE::COMM::ParObject* MAT::ScatraMatType::Create(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::ScatraMat::ScatraMat() : params_(nullptr) {}
+Mat::ScatraMat::ScatraMat() : params_(nullptr) {}
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::ScatraMat::ScatraMat(MAT::PAR::ScatraMat* params) : params_(params) {}
+Mat::ScatraMat::ScatraMat(Mat::PAR::ScatraMat* params) : params_(params) {}
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ScatraMat::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::ScatraMat::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -88,24 +88,24 @@ void MAT::ScatraMat::Pack(CORE::COMM::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ScatraMat::Unpack(const std::vector<char>& data)
+void Mat::ScatraMat::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::ScatraMat*>(mat);
+        params_ = static_cast<Mat::PAR::ScatraMat*>(mat);
       else
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());

@@ -26,13 +26,13 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CONTACT::INTEGRATOR::find_feasible_master_elements(MORTAR::Element& sele,
-    const std::vector<MORTAR::Element*>& meles, bool boundary_ele, Integrator& wrapper,
+bool CONTACT::INTEGRATOR::find_feasible_master_elements(Mortar::Element& sele,
+    const std::vector<Mortar::Element*>& meles, bool boundary_ele, Integrator& wrapper,
     UniqueProjInfoPair& projInfo)
 {
-  TEUCHOS_FUNC_TIME_MONITOR(AUG::CONTACT_FUNC_NAME);
+  TEUCHOS_FUNC_TIME_MONITOR(Aug::CONTACT_FUNC_NAME);
 
-  const CORE::FE::CellType slavetype = sele.Shape();
+  const Core::FE::CellType slavetype = sele.Shape();
 
   const unsigned msize = meles.size();
   const unsigned numGP = wrapper.nGP();
@@ -40,10 +40,10 @@ bool CONTACT::INTEGRATOR::find_feasible_master_elements(MORTAR::Element& sele,
 
   const unsigned probdim = wrapper.Dim();
 
-  CORE::GEN::reset(msize, projInfo);
+  Core::Gen::reset(msize, projInfo);
 
   std::vector<double> found_alpha(msize, 0.0);
-  std::vector<CORE::LINALG::Matrix<2, 1>> found_mxi(msize, CORE::LINALG::Matrix<2, 1>(true));
+  std::vector<Core::LinAlg::Matrix<2, 1>> found_mxi(msize, Core::LinAlg::Matrix<2, 1>(true));
   std::vector<bool> is_on_meles(msize, false);
 
   std::vector<int> unique_ids(msize, -1);
@@ -67,25 +67,25 @@ bool CONTACT::INTEGRATOR::find_feasible_master_elements(MORTAR::Element& sele,
       double* mxi = found_mxi[m].A();
       double& projalpha = found_alpha[m];
 
-      const CORE::FE::CellType mastertype = meles[m]->Shape();
+      const Core::FE::CellType mastertype = meles[m]->Shape();
       // project Gauss point onto master element
 #ifdef DEBUG_FIND_FEASIBLE_MASTER_ELEMENT
-      CONTACT::AUG::ProjectorBase* proj_ptr = nullptr;
+      CONTACT::Aug::ProjectorBase* proj_ptr = nullptr;
       if (sele.Id() == -1 or sele.Id() == -1)
-        proj_ptr = CONTACT::AUG::ProjectorBase::Get(probdim, slavetype, mastertype, true);
+        proj_ptr = CONTACT::Aug::ProjectorBase::Get(probdim, slavetype, mastertype, true);
       else
-        proj_ptr = CONTACT::AUG::ProjectorBase::Get(probdim, slavetype, mastertype);
+        proj_ptr = CONTACT::Aug::ProjectorBase::Get(probdim, slavetype, mastertype);
 #else
-      CONTACT::AUG::ProjectorBase* proj_ptr =
-          CONTACT::AUG::ProjectorBase::Get(probdim, slavetype, mastertype);
+      CONTACT::Aug::ProjectorBase* proj_ptr =
+          CONTACT::Aug::ProjectorBase::Get(probdim, slavetype, mastertype);
 #endif
 
-      CONTACT::AUG::ProjectorBase& proj = *proj_ptr;
+      CONTACT::Aug::ProjectorBase& proj = *proj_ptr;
       const bool conv = proj(sele, sxi, *meles[m], mxi, projalpha);
 
       // --- DEBUGGING --------------------------------------------------------
 #ifdef DEBUG_FIND_FEASIBLE_MASTER_ELEMENT
-      CORE::Nodes::Node** snodes = sele.Nodes();
+      Core::Nodes::Node** snodes = sele.Nodes();
       if ((snodes[0]->Id() == 248 or snodes[1]->Id() == 251))
       //      if ( sele.Id() == 1261 )
       {
@@ -140,7 +140,7 @@ bool CONTACT::INTEGRATOR::find_feasible_master_elements(MORTAR::Element& sele,
       {
         const unsigned unique_id = unique_ids[i];
 
-        MORTAR::Element* mele = meles[unique_id];
+        Mortar::Element* mele = meles[unique_id];
         if (projInfo.find(mele) == projInfo.end())
         {
           projInfo[mele] = UniqueProjInfo(std::ceil(reserve_size));
@@ -156,7 +156,7 @@ bool CONTACT::INTEGRATOR::find_feasible_master_elements(MORTAR::Element& sele,
 
   // --- DEBUGGING --------------------------------------------------------
 #ifdef DEBUG_FIND_FEASIBLE_MASTER_ELEMENT
-  CORE::Nodes::Node** snodes = sele.Nodes();
+  Core::Nodes::Node** snodes = sele.Nodes();
   const std::vector<int> desired_nids = {247, 248, 251};
   unsigned count = 0;
 
@@ -184,7 +184,7 @@ bool CONTACT::INTEGRATOR::find_feasible_master_elements(MORTAR::Element& sele,
       std::cout << "\n";
       std::cout << "mele " << proj.first->Id() << "[" << proj.first << "]"
                 << "\n";
-      CORE::Nodes::Node** mnodes = proj.first->Nodes();
+      Core::Nodes::Node** mnodes = proj.first->Nodes();
       std::cout << "\nMaster-nodes: ";
       for (unsigned i = 0; i < static_cast<unsigned>(proj.first->num_node()); ++i)
       {
@@ -203,23 +203,23 @@ bool CONTACT::INTEGRATOR::find_feasible_master_elements(MORTAR::Element& sele,
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool CONTACT::INTEGRATOR::WithinBounds(
-    const double* mxi, const CORE::FE::CellType type, const double tol)
+    const double* mxi, const Core::FE::CellType type, const double tol)
 {
   switch (type)
   {
-    case CORE::FE::CellType::quad4:
-    case CORE::FE::CellType::quad8:
-    case CORE::FE::CellType::quad9:
-    case CORE::FE::CellType::nurbs4:
-    case CORE::FE::CellType::nurbs9:
+    case Core::FE::CellType::quad4:
+    case Core::FE::CellType::quad8:
+    case Core::FE::CellType::quad9:
+    case Core::FE::CellType::nurbs4:
+    case Core::FE::CellType::nurbs9:
     {
       if (mxi[0] < -1.0 - tol || mxi[1] < -1.0 - tol || mxi[0] > 1.0 + tol || mxi[1] > 1.0 + tol)
         return false;
 
       break;
     }
-    case CORE::FE::CellType::tri3:
-    case CORE::FE::CellType::tri6:
+    case Core::FE::CellType::tri3:
+    case Core::FE::CellType::tri6:
     {
       if (mxi[0] < -tol or mxi[1] < -tol or mxi[0] > 1.0 + tol or mxi[1] > 1.0 + tol or
           mxi[0] + mxi[1] > 1.0 + 2 * tol)
@@ -227,10 +227,10 @@ bool CONTACT::INTEGRATOR::WithinBounds(
 
       break;
     }
-    case CORE::FE::CellType::line2:
-    case CORE::FE::CellType::line3:
-    case CORE::FE::CellType::nurbs2:
-    case CORE::FE::CellType::nurbs3:
+    case Core::FE::CellType::line2:
+    case Core::FE::CellType::line3:
+    case Core::FE::CellType::nurbs2:
+    case Core::FE::CellType::nurbs3:
     {
       if ((mxi[0] < -1.0 - tol) or (mxi[0] > 1.0 + tol)) return false;
 
@@ -238,7 +238,7 @@ bool CONTACT::INTEGRATOR::WithinBounds(
     }
     default:
     {
-      FOUR_C_THROW("Unsupported element type %s!", CORE::FE::CellTypeToString(type).c_str());
+      FOUR_C_THROW("Unsupported element type %s!", Core::FE::CellTypeToString(type).c_str());
       exit(EXIT_FAILURE);
     }
   }
@@ -249,23 +249,23 @@ bool CONTACT::INTEGRATOR::WithinBounds(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double CONTACT::INTEGRATOR::BuildAveragedNormalAtSlaveNode(
-    std::vector<ElementNormal>& adj_ele_normals, MORTAR::Node& slavenode)
+    std::vector<ElementNormal>& adj_ele_normals, Mortar::Node& slavenode)
 {
   // access the averaged nodal normal
-  CORE::LINALG::Matrix<3, 1> avg_nodal_normal(slavenode.MoData().n(), true);
+  Core::LinAlg::Matrix<3, 1> avg_nodal_normal(slavenode.MoData().n(), true);
 
   // reset normal
   std::fill(avg_nodal_normal.A(), avg_nodal_normal.A() + 3, 0.0);
 
   const unsigned num_adj_eles = slavenode.NumElement();
-  CORE::Elements::Element** adj_eles = slavenode.Elements();
+  Core::Elements::Element** adj_eles = slavenode.Elements();
 
   adj_ele_normals.clear();
   adj_ele_normals.resize(num_adj_eles, ElementNormal());
 
   for (unsigned e = 0; e < num_adj_eles; ++e)
   {
-    MORTAR::Element& adj_ele = dynamic_cast<MORTAR::Element&>(*(adj_eles[e]));
+    Mortar::Element& adj_ele = dynamic_cast<Mortar::Element&>(*(adj_eles[e]));
 
     adj_ele_normals[e].ele_ = &adj_ele;
 
@@ -275,11 +275,11 @@ double CONTACT::INTEGRATOR::BuildAveragedNormalAtSlaveNode(
     adj_ele.local_coordinates_of_node(ele_node_lid, xi);
 
     // evaluate the convective base vectors
-    CORE::LINALG::Matrix<3, 2> tau;
+    Core::LinAlg::Matrix<3, 2> tau;
     adj_ele.Metrics(xi, &tau(0, 0), &tau(0, 1));
 
     // evaluate the unit normal of the adjacent element at the current slave node
-    CORE::LINALG::Matrix<3, 1>& unit_normal = adj_ele_normals[e].unit_n_;
+    Core::LinAlg::Matrix<3, 1>& unit_normal = adj_ele_normals[e].unit_n_;
     double& length_n_inv = adj_ele_normals[e].length_n_inv_;
     length_n_inv = unit_slave_element_normal(adj_ele, tau, unit_normal);
 
@@ -300,61 +300,61 @@ double CONTACT::INTEGRATOR::BuildAveragedNormalAtSlaveNode(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::INTEGRATOR::unit_slave_element_normal(const MORTAR::Element& sele,
-    const CORE::LINALG::Matrix<3, 2>& tau, CORE::LINALG::Matrix<3, 1>& unit_normal)
+double CONTACT::INTEGRATOR::unit_slave_element_normal(const Mortar::Element& sele,
+    const Core::LinAlg::Matrix<3, 2>& tau, Core::LinAlg::Matrix<3, 1>& unit_normal)
 {
-  const CORE::FE::CellType slavetype = sele.Shape();
+  const Core::FE::CellType slavetype = sele.Shape();
   switch (slavetype)
   {
-    case CORE::FE::CellType::line2:
+    case Core::FE::CellType::line2:
     {
-      const CONTACT::AUG::BaseSlaveIntPolicy<2, CORE::FE::CellType::line2> slave_policy;
+      const CONTACT::Aug::BaseSlaveIntPolicy<2, Core::FE::CellType::line2> slave_policy;
 
-      CORE::LINALG::Matrix<2, 1> unit_n(unit_normal.A(), true);
+      Core::LinAlg::Matrix<2, 1> unit_n(unit_normal.A(), true);
       return slave_policy.unit_slave_element_normal(sele, tau, unit_n);
     }
-    case CORE::FE::CellType::nurbs2:
+    case Core::FE::CellType::nurbs2:
     {
-      const CONTACT::AUG::BaseSlaveIntPolicy<2, CORE::FE::CellType::nurbs2> slave_policy;
+      const CONTACT::Aug::BaseSlaveIntPolicy<2, Core::FE::CellType::nurbs2> slave_policy;
 
-      CORE::LINALG::Matrix<2, 1> unit_n(unit_normal.A(), true);
+      Core::LinAlg::Matrix<2, 1> unit_n(unit_normal.A(), true);
       return slave_policy.unit_slave_element_normal(sele, tau, unit_n);
     }
-    case CORE::FE::CellType::nurbs3:
+    case Core::FE::CellType::nurbs3:
     {
-      const CONTACT::AUG::BaseSlaveIntPolicy<2, CORE::FE::CellType::nurbs3> slave_policy;
+      const CONTACT::Aug::BaseSlaveIntPolicy<2, Core::FE::CellType::nurbs3> slave_policy;
 
-      CORE::LINALG::Matrix<2, 1> unit_n(unit_normal.A(), true);
+      Core::LinAlg::Matrix<2, 1> unit_n(unit_normal.A(), true);
       return slave_policy.unit_slave_element_normal(sele, tau, unit_n);
     }
-    case CORE::FE::CellType::quad4:
+    case Core::FE::CellType::quad4:
     {
-      const CONTACT::AUG::BaseSlaveIntPolicy<3, CORE::FE::CellType::quad4> slave_policy;
+      const CONTACT::Aug::BaseSlaveIntPolicy<3, Core::FE::CellType::quad4> slave_policy;
 
       return slave_policy.unit_slave_element_normal(sele, tau, unit_normal);
     }
-    case CORE::FE::CellType::tri3:
+    case Core::FE::CellType::tri3:
     {
-      const CONTACT::AUG::BaseSlaveIntPolicy<3, CORE::FE::CellType::tri3> slave_policy;
+      const CONTACT::Aug::BaseSlaveIntPolicy<3, Core::FE::CellType::tri3> slave_policy;
 
       return slave_policy.unit_slave_element_normal(sele, tau, unit_normal);
     }
-    case CORE::FE::CellType::nurbs4:
+    case Core::FE::CellType::nurbs4:
     {
-      const CONTACT::AUG::BaseSlaveIntPolicy<3, CORE::FE::CellType::nurbs4> slave_policy;
+      const CONTACT::Aug::BaseSlaveIntPolicy<3, Core::FE::CellType::nurbs4> slave_policy;
 
       return slave_policy.unit_slave_element_normal(sele, tau, unit_normal);
     }
-    case CORE::FE::CellType::nurbs9:
+    case Core::FE::CellType::nurbs9:
     {
-      const CONTACT::AUG::BaseSlaveIntPolicy<3, CORE::FE::CellType::nurbs9> slave_policy;
+      const CONTACT::Aug::BaseSlaveIntPolicy<3, Core::FE::CellType::nurbs9> slave_policy;
 
       return slave_policy.unit_slave_element_normal(sele, tau, unit_normal);
     }
     default:
     {
       FOUR_C_THROW("Unsupported slave element type! (enum = %d|\"%s\")", slavetype,
-          CORE::FE::CellTypeToString(slavetype).c_str());
+          Core::FE::CellTypeToString(slavetype).c_str());
       exit(EXIT_FAILURE);
     }
   }
@@ -367,15 +367,15 @@ void CONTACT::INTEGRATOR::Deriv1st_AveragedSlaveNormal(CONTACT::Node& cnode,
     Deriv1stVecMap& d_nodal_avg_normal)
 {
   Deriv1stVecMap& d_avg_unit_normal = cnode.AugData().GetDeriv1st_N();
-  CORE::GEN::reset(3, cnode.GetLinsize(), d_avg_unit_normal);
-  CORE::GEN::reset(3, cnode.GetLinsize(), d_nodal_avg_normal);
+  Core::Gen::reset(3, cnode.GetLinsize(), d_avg_unit_normal);
+  Core::Gen::reset(3, cnode.GetLinsize(), d_nodal_avg_normal);
 
   Deriv1stVecMap d_non_unit_normal;
 
-  CORE::FE::CellType eletype = CORE::FE::CellType::dis_none;
+  Core::FE::CellType eletype = Core::FE::CellType::dis_none;
   for (const ElementNormal& adj_ele_n : adj_ele_normals)
   {
-    MORTAR::Element& mo_ele = *adj_ele_n.ele_;
+    Mortar::Element& mo_ele = *adj_ele_n.ele_;
 
     eletype = mo_ele.Shape();
 
@@ -383,104 +383,104 @@ void CONTACT::INTEGRATOR::Deriv1st_AveragedSlaveNormal(CONTACT::Node& cnode,
 
     Deriv1st_NonUnitSlaveNormal(xi, mo_ele, d_non_unit_normal);
 
-    const CORE::LINALG::Matrix<3, 1>& adj_ele_unit_n = adj_ele_n.unit_n_;
+    const Core::LinAlg::Matrix<3, 1>& adj_ele_unit_n = adj_ele_n.unit_n_;
     const double adj_ele_length_n_inv = adj_ele_n.length_n_inv_;
 
     Deriv1st_UnitSlaveNormal(eletype, adj_ele_unit_n, adj_ele_length_n_inv, d_non_unit_normal,
         d_nodal_avg_normal, false);
   }
 
-  const CORE::LINALG::Matrix<3, 1> avg_unit_normal(cnode.MoData().n(), true);
+  const Core::LinAlg::Matrix<3, 1> avg_unit_normal(cnode.MoData().n(), true);
   Deriv1st_UnitSlaveNormal(eletype, avg_unit_normal, 1.0 / avg_normal_length, d_nodal_avg_normal,
       d_avg_unit_normal, false);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::INTEGRATOR::Deriv1st_UnitSlaveNormal(const CORE::FE::CellType slavetype,
-    const CORE::LINALG::Matrix<3, 1>& unit_normal, const double length_n_inv,
+void CONTACT::INTEGRATOR::Deriv1st_UnitSlaveNormal(const Core::FE::CellType slavetype,
+    const Core::LinAlg::Matrix<3, 1>& unit_normal, const double length_n_inv,
     const Deriv1stVecMap& d_non_unit_normal, Deriv1stVecMap& d_unit_normal, const bool reset)
 {
   switch (slavetype)
   {
-    case CORE::FE::CellType::line2:
+    case Core::FE::CellType::line2:
     {
-      const unsigned eledim = CORE::FE::dim<CORE::FE::CellType::line2>;
+      const unsigned eledim = Core::FE::dim<Core::FE::CellType::line2>;
       const unsigned probdim = eledim + 1;
 
-      const CORE::LINALG::Matrix<probdim, 1> unit_normal_red(unit_normal.A(), true);
+      const Core::LinAlg::Matrix<probdim, 1> unit_normal_red(unit_normal.A(), true);
 
-      const CONTACT::AUG::BaseSlaveIntPolicy<probdim, CORE::FE::CellType::line2> slave_policy;
+      const CONTACT::Aug::BaseSlaveIntPolicy<probdim, Core::FE::CellType::line2> slave_policy;
       slave_policy.deriv1st_unit_slave_element_normal(
           unit_normal_red, length_n_inv, d_non_unit_normal, d_unit_normal, reset);
 
       break;
     }
-    case CORE::FE::CellType::nurbs2:
+    case Core::FE::CellType::nurbs2:
     {
-      const unsigned eledim = CORE::FE::dim<CORE::FE::CellType::nurbs2>;
+      const unsigned eledim = Core::FE::dim<Core::FE::CellType::nurbs2>;
       const unsigned probdim = eledim + 1;
 
-      const CORE::LINALG::Matrix<probdim, 1> unit_normal_red(unit_normal.A(), true);
+      const Core::LinAlg::Matrix<probdim, 1> unit_normal_red(unit_normal.A(), true);
 
-      const CONTACT::AUG::BaseSlaveIntPolicy<probdim, CORE::FE::CellType::nurbs2> slave_policy;
+      const CONTACT::Aug::BaseSlaveIntPolicy<probdim, Core::FE::CellType::nurbs2> slave_policy;
       slave_policy.deriv1st_unit_slave_element_normal(
           unit_normal_red, length_n_inv, d_non_unit_normal, d_unit_normal, reset);
 
       break;
     }
-    case CORE::FE::CellType::nurbs3:
+    case Core::FE::CellType::nurbs3:
     {
-      const unsigned eledim = CORE::FE::dim<CORE::FE::CellType::nurbs3>;
+      const unsigned eledim = Core::FE::dim<Core::FE::CellType::nurbs3>;
       const unsigned probdim = eledim + 1;
 
-      const CORE::LINALG::Matrix<probdim, 1> unit_normal_red(unit_normal.A(), true);
+      const Core::LinAlg::Matrix<probdim, 1> unit_normal_red(unit_normal.A(), true);
 
-      const CONTACT::AUG::BaseSlaveIntPolicy<probdim, CORE::FE::CellType::nurbs3> slave_policy;
+      const CONTACT::Aug::BaseSlaveIntPolicy<probdim, Core::FE::CellType::nurbs3> slave_policy;
       slave_policy.deriv1st_unit_slave_element_normal(
           unit_normal_red, length_n_inv, d_non_unit_normal, d_unit_normal, reset);
 
       break;
     }
-    case CORE::FE::CellType::quad4:
+    case Core::FE::CellType::quad4:
     {
-      const unsigned eledim = CORE::FE::dim<CORE::FE::CellType::quad4>;
+      const unsigned eledim = Core::FE::dim<Core::FE::CellType::quad4>;
       const unsigned probdim = eledim + 1;
 
-      const CONTACT::AUG::BaseSlaveIntPolicy<probdim, CORE::FE::CellType::quad4> slave_policy;
+      const CONTACT::Aug::BaseSlaveIntPolicy<probdim, Core::FE::CellType::quad4> slave_policy;
       slave_policy.deriv1st_unit_slave_element_normal(
           unit_normal, length_n_inv, d_non_unit_normal, d_unit_normal, reset);
 
       break;
     }
-    case CORE::FE::CellType::tri3:
+    case Core::FE::CellType::tri3:
     {
-      const unsigned eledim = CORE::FE::dim<CORE::FE::CellType::tri3>;
+      const unsigned eledim = Core::FE::dim<Core::FE::CellType::tri3>;
       const unsigned probdim = eledim + 1;
 
-      const CONTACT::AUG::BaseSlaveIntPolicy<probdim, CORE::FE::CellType::tri3> slave_policy;
+      const CONTACT::Aug::BaseSlaveIntPolicy<probdim, Core::FE::CellType::tri3> slave_policy;
       slave_policy.deriv1st_unit_slave_element_normal(
           unit_normal, length_n_inv, d_non_unit_normal, d_unit_normal, reset);
 
       break;
     }
-    case CORE::FE::CellType::nurbs4:
+    case Core::FE::CellType::nurbs4:
     {
-      const unsigned eledim = CORE::FE::dim<CORE::FE::CellType::nurbs4>;
+      const unsigned eledim = Core::FE::dim<Core::FE::CellType::nurbs4>;
       const unsigned probdim = eledim + 1;
 
-      const CONTACT::AUG::BaseSlaveIntPolicy<probdim, CORE::FE::CellType::nurbs4> slave_policy;
+      const CONTACT::Aug::BaseSlaveIntPolicy<probdim, Core::FE::CellType::nurbs4> slave_policy;
       slave_policy.deriv1st_unit_slave_element_normal(
           unit_normal, length_n_inv, d_non_unit_normal, d_unit_normal, reset);
 
       break;
     }
-    case CORE::FE::CellType::nurbs9:
+    case Core::FE::CellType::nurbs9:
     {
-      const unsigned eledim = CORE::FE::dim<CORE::FE::CellType::nurbs9>;
+      const unsigned eledim = Core::FE::dim<Core::FE::CellType::nurbs9>;
       const unsigned probdim = eledim + 1;
 
-      const CONTACT::AUG::BaseSlaveIntPolicy<probdim, CORE::FE::CellType::nurbs9> slave_policy;
+      const CONTACT::Aug::BaseSlaveIntPolicy<probdim, Core::FE::CellType::nurbs9> slave_policy;
       slave_policy.deriv1st_unit_slave_element_normal(
           unit_normal, length_n_inv, d_non_unit_normal, d_unit_normal, reset);
 
@@ -489,7 +489,7 @@ void CONTACT::INTEGRATOR::Deriv1st_UnitSlaveNormal(const CORE::FE::CellType slav
     default:
     {
       FOUR_C_THROW("Unsupported slave element type! (enum = %d|\"%s\")", slavetype,
-          CORE::FE::CellTypeToString(slavetype).c_str());
+          Core::FE::CellTypeToString(slavetype).c_str());
       exit(EXIT_FAILURE);
     }
   }
@@ -498,50 +498,50 @@ void CONTACT::INTEGRATOR::Deriv1st_UnitSlaveNormal(const CORE::FE::CellType slav
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::INTEGRATOR::Deriv1st_NonUnitSlaveNormal(
-    const double* xi, MORTAR::Element& sele, Deriv1stVecMap& d_non_unit_normal)
+    const double* xi, Mortar::Element& sele, Deriv1stVecMap& d_non_unit_normal)
 {
-  const CORE::FE::CellType slavetype = sele.Shape();
+  const Core::FE::CellType slavetype = sele.Shape();
   switch (slavetype)
   {
-    case CORE::FE::CellType::line2:
+    case Core::FE::CellType::line2:
     {
-      Deriv1st_NonUnitSlaveNormal<CORE::FE::CellType::line2>(sele, xi, d_non_unit_normal);
+      Deriv1st_NonUnitSlaveNormal<Core::FE::CellType::line2>(sele, xi, d_non_unit_normal);
       break;
     }
-    case CORE::FE::CellType::nurbs2:
+    case Core::FE::CellType::nurbs2:
     {
-      Deriv1st_NonUnitSlaveNormal<CORE::FE::CellType::nurbs2>(sele, xi, d_non_unit_normal);
+      Deriv1st_NonUnitSlaveNormal<Core::FE::CellType::nurbs2>(sele, xi, d_non_unit_normal);
       break;
     }
-    case CORE::FE::CellType::nurbs3:
+    case Core::FE::CellType::nurbs3:
     {
-      Deriv1st_NonUnitSlaveNormal<CORE::FE::CellType::nurbs3>(sele, xi, d_non_unit_normal);
+      Deriv1st_NonUnitSlaveNormal<Core::FE::CellType::nurbs3>(sele, xi, d_non_unit_normal);
       break;
     }
-    case CORE::FE::CellType::quad4:
+    case Core::FE::CellType::quad4:
     {
-      Deriv1st_NonUnitSlaveNormal<CORE::FE::CellType::quad4>(sele, xi, d_non_unit_normal);
+      Deriv1st_NonUnitSlaveNormal<Core::FE::CellType::quad4>(sele, xi, d_non_unit_normal);
       break;
     }
-    case CORE::FE::CellType::tri3:
+    case Core::FE::CellType::tri3:
     {
-      Deriv1st_NonUnitSlaveNormal<CORE::FE::CellType::tri3>(sele, xi, d_non_unit_normal);
+      Deriv1st_NonUnitSlaveNormal<Core::FE::CellType::tri3>(sele, xi, d_non_unit_normal);
       break;
     }
-    case CORE::FE::CellType::nurbs4:
+    case Core::FE::CellType::nurbs4:
     {
-      Deriv1st_NonUnitSlaveNormal<CORE::FE::CellType::nurbs4>(sele, xi, d_non_unit_normal);
+      Deriv1st_NonUnitSlaveNormal<Core::FE::CellType::nurbs4>(sele, xi, d_non_unit_normal);
       break;
     }
-    case CORE::FE::CellType::nurbs9:
+    case Core::FE::CellType::nurbs9:
     {
-      Deriv1st_NonUnitSlaveNormal<CORE::FE::CellType::nurbs9>(sele, xi, d_non_unit_normal);
+      Deriv1st_NonUnitSlaveNormal<Core::FE::CellType::nurbs9>(sele, xi, d_non_unit_normal);
       break;
     }
     default:
     {
       FOUR_C_THROW("Unsupported slave element type! (enum = %d|\"%s\")", slavetype,
-          CORE::FE::CellTypeToString(slavetype).c_str());
+          Core::FE::CellTypeToString(slavetype).c_str());
       exit(EXIT_FAILURE);
     }
   }
@@ -549,29 +549,29 @@ void CONTACT::INTEGRATOR::Deriv1st_NonUnitSlaveNormal(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <CORE::FE::CellType slavetype>
+template <Core::FE::CellType slavetype>
 void CONTACT::INTEGRATOR::Deriv1st_NonUnitSlaveNormal(
-    MORTAR::Element& sele, const double* xi, Deriv1stVecMap& d_non_unit_normal)
+    Mortar::Element& sele, const double* xi, Deriv1stVecMap& d_non_unit_normal)
 {
-  const unsigned slavenumnode = CORE::FE::num_nodes<slavetype>;
-  const unsigned slavedim = CORE::FE::dim<slavetype>;
+  const unsigned slavenumnode = Core::FE::num_nodes<slavetype>;
+  const unsigned slavedim = Core::FE::dim<slavetype>;
   const unsigned probdim = slavedim + 1;
 
-  CORE::LINALG::Matrix<probdim, slavenumnode, int> nodal_dofs;
+  Core::LinAlg::Matrix<probdim, slavenumnode, int> nodal_dofs;
   CONTACT::INTEGRATOR::GetElementNodalDofs(sele, nodal_dofs);
 
   // evaluate the convective base vectors
-  CORE::LINALG::Matrix<3, 2> tau;
+  Core::LinAlg::Matrix<3, 2> tau;
   sele.Metrics(xi, &tau(0, 0), &tau(0, 1));
 
   // derivatives with respect to xi^1 and xi^2
-  CORE::LINALG::Matrix<slavedim, slavenumnode> deriv(true);
+  Core::LinAlg::Matrix<slavedim, slavenumnode> deriv(true);
 
   // derivative of the convective base vectors with respect to the displacement
-  const CORE::LINALG::Matrix<2, 1> xi_mat(xi, true);
-  CONTACT::AUG::shape_function_deriv1<slavetype>(sele, xi_mat, deriv);
+  const Core::LinAlg::Matrix<2, 1> xi_mat(xi, true);
+  CONTACT::Aug::shape_function_deriv1<slavetype>(sele, xi_mat, deriv);
 
-  const CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype> slave_policy;
+  const CONTACT::Aug::BaseSlaveIntPolicy<probdim, slavetype> slave_policy;
   slave_policy.deriv1st_non_unit_slave_element_normal(
       sele, nodal_dofs, deriv, tau, d_non_unit_normal);
 }
@@ -583,20 +583,20 @@ void CONTACT::INTEGRATOR::Deriv2nd_AveragedSlaveNormal(CONTACT::Node& cnode,
     const Deriv1stVecMap& d_nodal_avg_normal)
 {
   Deriv2ndVecMap& dd_avg_unit_normal = cnode.AugData().GetDeriv2nd_N();
-  CORE::GEN::reset(3, cnode.GetLinsize(), dd_avg_unit_normal);
+  Core::Gen::reset(3, cnode.GetLinsize(), dd_avg_unit_normal);
 
   Deriv2ndVecMap dd_nodal_avg_normal;
-  CORE::GEN::reset(3, cnode.GetLinsize(), dd_nodal_avg_normal);
+  Core::Gen::reset(3, cnode.GetLinsize(), dd_nodal_avg_normal);
 
   Deriv1stVecMap d_non_unit_normal;
   Deriv1stVecMap d_unit_normal;
 
   Deriv2ndVecMap dd_non_unit_normal(3, Deriv2ndMap());
 
-  CORE::FE::CellType eletype = CORE::FE::CellType::dis_none;
+  Core::FE::CellType eletype = Core::FE::CellType::dis_none;
   for (const ElementNormal& adj_ele_n : adj_ele_normals)
   {
-    MORTAR::Element& mo_ele = *adj_ele_n.ele_;
+    Mortar::Element& mo_ele = *adj_ele_n.ele_;
 
     eletype = mo_ele.Shape();
 
@@ -604,7 +604,7 @@ void CONTACT::INTEGRATOR::Deriv2nd_AveragedSlaveNormal(CONTACT::Node& cnode,
 
     Deriv1st_NonUnitSlaveNormal(xi, mo_ele, d_non_unit_normal);
 
-    const CORE::LINALG::Matrix<3, 1>& adj_ele_unit_n = adj_ele_n.unit_n_;
+    const Core::LinAlg::Matrix<3, 1>& adj_ele_unit_n = adj_ele_n.unit_n_;
     const double adj_ele_length_n_inv = adj_ele_n.length_n_inv_;
 
     Deriv1st_UnitSlaveNormal(
@@ -616,7 +616,7 @@ void CONTACT::INTEGRATOR::Deriv2nd_AveragedSlaveNormal(CONTACT::Node& cnode,
         d_unit_normal, dd_non_unit_normal, dd_nodal_avg_normal);
   }
 
-  const CORE::LINALG::Matrix<3, 1> avg_unit_normal(cnode.MoData().n(), true);
+  const Core::LinAlg::Matrix<3, 1> avg_unit_normal(cnode.MoData().n(), true);
   const Deriv1stVecMap& d_avg_unit_normal = cnode.AugData().GetDeriv1st_N();
 
   Deriv2nd_UnitSlaveNormal(eletype, avg_unit_normal, 1.0 / avg_normal_length, d_nodal_avg_normal,
@@ -626,50 +626,50 @@ void CONTACT::INTEGRATOR::Deriv2nd_AveragedSlaveNormal(CONTACT::Node& cnode,
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::INTEGRATOR::Deriv2nd_NonUnitSlaveNormal(
-    const double* xi, MORTAR::Element& sele, Deriv2ndVecMap& dd_non_unit_normal)
+    const double* xi, Mortar::Element& sele, Deriv2ndVecMap& dd_non_unit_normal)
 {
-  const CORE::FE::CellType slavetype = sele.Shape();
+  const Core::FE::CellType slavetype = sele.Shape();
   switch (slavetype)
   {
-    case CORE::FE::CellType::line2:
+    case Core::FE::CellType::line2:
     {
-      Deriv2nd_NonUnitSlaveNormal<CORE::FE::CellType::line2>(sele, xi, dd_non_unit_normal);
+      Deriv2nd_NonUnitSlaveNormal<Core::FE::CellType::line2>(sele, xi, dd_non_unit_normal);
       break;
     }
-    case CORE::FE::CellType::nurbs2:
+    case Core::FE::CellType::nurbs2:
     {
-      Deriv2nd_NonUnitSlaveNormal<CORE::FE::CellType::nurbs2>(sele, xi, dd_non_unit_normal);
+      Deriv2nd_NonUnitSlaveNormal<Core::FE::CellType::nurbs2>(sele, xi, dd_non_unit_normal);
       break;
     }
-    case CORE::FE::CellType::nurbs3:
+    case Core::FE::CellType::nurbs3:
     {
-      Deriv2nd_NonUnitSlaveNormal<CORE::FE::CellType::nurbs3>(sele, xi, dd_non_unit_normal);
+      Deriv2nd_NonUnitSlaveNormal<Core::FE::CellType::nurbs3>(sele, xi, dd_non_unit_normal);
       break;
     }
-    case CORE::FE::CellType::quad4:
+    case Core::FE::CellType::quad4:
     {
-      Deriv2nd_NonUnitSlaveNormal<CORE::FE::CellType::quad4>(sele, xi, dd_non_unit_normal);
+      Deriv2nd_NonUnitSlaveNormal<Core::FE::CellType::quad4>(sele, xi, dd_non_unit_normal);
       break;
     }
-    case CORE::FE::CellType::tri3:
+    case Core::FE::CellType::tri3:
     {
-      Deriv2nd_NonUnitSlaveNormal<CORE::FE::CellType::tri3>(sele, xi, dd_non_unit_normal);
+      Deriv2nd_NonUnitSlaveNormal<Core::FE::CellType::tri3>(sele, xi, dd_non_unit_normal);
       break;
     }
-    case CORE::FE::CellType::nurbs4:
+    case Core::FE::CellType::nurbs4:
     {
-      Deriv2nd_NonUnitSlaveNormal<CORE::FE::CellType::nurbs4>(sele, xi, dd_non_unit_normal);
+      Deriv2nd_NonUnitSlaveNormal<Core::FE::CellType::nurbs4>(sele, xi, dd_non_unit_normal);
       break;
     }
-    case CORE::FE::CellType::nurbs9:
+    case Core::FE::CellType::nurbs9:
     {
-      Deriv2nd_NonUnitSlaveNormal<CORE::FE::CellType::nurbs9>(sele, xi, dd_non_unit_normal);
+      Deriv2nd_NonUnitSlaveNormal<Core::FE::CellType::nurbs9>(sele, xi, dd_non_unit_normal);
       break;
     }
     default:
     {
       FOUR_C_THROW("Unsupported slave element type! (enum = %d|\"%s\")", slavetype,
-          CORE::FE::CellTypeToString(slavetype).c_str());
+          Core::FE::CellTypeToString(slavetype).c_str());
       exit(EXIT_FAILURE);
     }
   }
@@ -677,115 +677,115 @@ void CONTACT::INTEGRATOR::Deriv2nd_NonUnitSlaveNormal(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <CORE::FE::CellType slavetype>
+template <Core::FE::CellType slavetype>
 void CONTACT::INTEGRATOR::Deriv2nd_NonUnitSlaveNormal(
-    MORTAR::Element& sele, const double* xi, Deriv2ndVecMap& dd_non_unit_normal)
+    Mortar::Element& sele, const double* xi, Deriv2ndVecMap& dd_non_unit_normal)
 {
-  const unsigned slavenumnode = CORE::FE::num_nodes<slavetype>;
-  const unsigned slavedim = CORE::FE::dim<slavetype>;
+  const unsigned slavenumnode = Core::FE::num_nodes<slavetype>;
+  const unsigned slavedim = Core::FE::dim<slavetype>;
   const unsigned probdim = slavedim + 1;
 
-  CORE::LINALG::Matrix<probdim, slavenumnode, int> nodal_dofs;
+  Core::LinAlg::Matrix<probdim, slavenumnode, int> nodal_dofs;
   CONTACT::INTEGRATOR::GetElementNodalDofs(sele, nodal_dofs);
 
   // derivatives with respect to xi^1 and xi^2
-  CORE::LINALG::Matrix<slavedim, slavenumnode> deriv(true);
+  Core::LinAlg::Matrix<slavedim, slavenumnode> deriv(true);
 
   // derivative of the convective base vectors with respect to the displacement
-  const CORE::LINALG::Matrix<2, 1> xi_mat(xi, true);
-  CONTACT::AUG::shape_function_deriv1<slavetype>(sele, xi_mat, deriv);
+  const Core::LinAlg::Matrix<2, 1> xi_mat(xi, true);
+  CONTACT::Aug::shape_function_deriv1<slavetype>(sele, xi_mat, deriv);
 
-  const CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype> slave_policy;
+  const CONTACT::Aug::BaseSlaveIntPolicy<probdim, slavetype> slave_policy;
   slave_policy.deriv2nd_non_unit_slave_element_normal(sele, nodal_dofs, deriv, dd_non_unit_normal);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::INTEGRATOR::Deriv2nd_UnitSlaveNormal(const CORE::FE::CellType slavetype,
-    const CORE::LINALG::Matrix<3, 1>& unit_normal, const double length_n_inv,
+void CONTACT::INTEGRATOR::Deriv2nd_UnitSlaveNormal(const Core::FE::CellType slavetype,
+    const Core::LinAlg::Matrix<3, 1>& unit_normal, const double length_n_inv,
     const Deriv1stVecMap& d_non_unit_normal, const Deriv1stVecMap& d_unit_normal,
     const Deriv2ndVecMap& dd_non_unit_normal, Deriv2ndVecMap& dd_unit_normal)
 {
   switch (slavetype)
   {
-    case CORE::FE::CellType::line2:
+    case Core::FE::CellType::line2:
     {
-      const unsigned eledim = CORE::FE::dim<CORE::FE::CellType::line2>;
+      const unsigned eledim = Core::FE::dim<Core::FE::CellType::line2>;
       const unsigned probdim = eledim + 1;
 
-      const CORE::LINALG::Matrix<probdim, 1> unit_normal_red(unit_normal.A(), true);
+      const Core::LinAlg::Matrix<probdim, 1> unit_normal_red(unit_normal.A(), true);
 
-      const CONTACT::AUG::BaseSlaveIntPolicy<probdim, CORE::FE::CellType::line2> slave_policy;
+      const CONTACT::Aug::BaseSlaveIntPolicy<probdim, Core::FE::CellType::line2> slave_policy;
       slave_policy.deriv2nd_unit_slave_element_normal(unit_normal_red, length_n_inv,
           d_non_unit_normal, d_unit_normal, dd_non_unit_normal, dd_unit_normal);
 
       break;
     }
-    case CORE::FE::CellType::nurbs2:
+    case Core::FE::CellType::nurbs2:
     {
-      const unsigned eledim = CORE::FE::dim<CORE::FE::CellType::nurbs2>;
+      const unsigned eledim = Core::FE::dim<Core::FE::CellType::nurbs2>;
       const unsigned probdim = eledim + 1;
 
-      const CORE::LINALG::Matrix<probdim, 1> unit_normal_red(unit_normal.A(), true);
+      const Core::LinAlg::Matrix<probdim, 1> unit_normal_red(unit_normal.A(), true);
 
-      const CONTACT::AUG::BaseSlaveIntPolicy<probdim, CORE::FE::CellType::nurbs2> slave_policy;
+      const CONTACT::Aug::BaseSlaveIntPolicy<probdim, Core::FE::CellType::nurbs2> slave_policy;
       slave_policy.deriv2nd_unit_slave_element_normal(unit_normal_red, length_n_inv,
           d_non_unit_normal, d_unit_normal, dd_non_unit_normal, dd_unit_normal);
 
       break;
     }
-    case CORE::FE::CellType::nurbs3:
+    case Core::FE::CellType::nurbs3:
     {
-      const unsigned eledim = CORE::FE::dim<CORE::FE::CellType::nurbs3>;
+      const unsigned eledim = Core::FE::dim<Core::FE::CellType::nurbs3>;
       const unsigned probdim = eledim + 1;
 
-      const CORE::LINALG::Matrix<probdim, 1> unit_normal_red(unit_normal.A(), true);
+      const Core::LinAlg::Matrix<probdim, 1> unit_normal_red(unit_normal.A(), true);
 
-      const CONTACT::AUG::BaseSlaveIntPolicy<probdim, CORE::FE::CellType::nurbs3> slave_policy;
+      const CONTACT::Aug::BaseSlaveIntPolicy<probdim, Core::FE::CellType::nurbs3> slave_policy;
       slave_policy.deriv2nd_unit_slave_element_normal(unit_normal_red, length_n_inv,
           d_non_unit_normal, d_unit_normal, dd_non_unit_normal, dd_unit_normal);
 
       break;
     }
-    case CORE::FE::CellType::quad4:
+    case Core::FE::CellType::quad4:
     {
-      const unsigned eledim = CORE::FE::dim<CORE::FE::CellType::quad4>;
+      const unsigned eledim = Core::FE::dim<Core::FE::CellType::quad4>;
       const unsigned probdim = eledim + 1;
 
-      const CONTACT::AUG::BaseSlaveIntPolicy<probdim, CORE::FE::CellType::quad4> slave_policy;
+      const CONTACT::Aug::BaseSlaveIntPolicy<probdim, Core::FE::CellType::quad4> slave_policy;
       slave_policy.deriv2nd_unit_slave_element_normal(unit_normal, length_n_inv, d_non_unit_normal,
           d_unit_normal, dd_non_unit_normal, dd_unit_normal);
 
       break;
     }
-    case CORE::FE::CellType::tri3:
+    case Core::FE::CellType::tri3:
     {
-      const unsigned eledim = CORE::FE::dim<CORE::FE::CellType::tri3>;
+      const unsigned eledim = Core::FE::dim<Core::FE::CellType::tri3>;
       const unsigned probdim = eledim + 1;
 
-      const CONTACT::AUG::BaseSlaveIntPolicy<probdim, CORE::FE::CellType::tri3> slave_policy;
+      const CONTACT::Aug::BaseSlaveIntPolicy<probdim, Core::FE::CellType::tri3> slave_policy;
       slave_policy.deriv2nd_unit_slave_element_normal(unit_normal, length_n_inv, d_non_unit_normal,
           d_unit_normal, dd_non_unit_normal, dd_unit_normal);
 
       break;
     }
-    case CORE::FE::CellType::nurbs4:
+    case Core::FE::CellType::nurbs4:
     {
-      const unsigned eledim = CORE::FE::dim<CORE::FE::CellType::nurbs4>;
+      const unsigned eledim = Core::FE::dim<Core::FE::CellType::nurbs4>;
       const unsigned probdim = eledim + 1;
 
-      const CONTACT::AUG::BaseSlaveIntPolicy<probdim, CORE::FE::CellType::nurbs4> slave_policy;
+      const CONTACT::Aug::BaseSlaveIntPolicy<probdim, Core::FE::CellType::nurbs4> slave_policy;
       slave_policy.deriv2nd_unit_slave_element_normal(unit_normal, length_n_inv, d_non_unit_normal,
           d_unit_normal, dd_non_unit_normal, dd_unit_normal);
 
       break;
     }
-    case CORE::FE::CellType::nurbs9:
+    case Core::FE::CellType::nurbs9:
     {
-      const unsigned eledim = CORE::FE::dim<CORE::FE::CellType::nurbs9>;
+      const unsigned eledim = Core::FE::dim<Core::FE::CellType::nurbs9>;
       const unsigned probdim = eledim + 1;
 
-      const CONTACT::AUG::BaseSlaveIntPolicy<probdim, CORE::FE::CellType::nurbs9> slave_policy;
+      const CONTACT::Aug::BaseSlaveIntPolicy<probdim, Core::FE::CellType::nurbs9> slave_policy;
       slave_policy.deriv2nd_unit_slave_element_normal(unit_normal, length_n_inv, d_non_unit_normal,
           d_unit_normal, dd_non_unit_normal, dd_unit_normal);
 
@@ -794,7 +794,7 @@ void CONTACT::INTEGRATOR::Deriv2nd_UnitSlaveNormal(const CORE::FE::CellType slav
     default:
     {
       FOUR_C_THROW("Unsupported slave element type! (enum = %d|\"%s\")", slavetype,
-          CORE::FE::CellTypeToString(slavetype).c_str());
+          Core::FE::CellTypeToString(slavetype).c_str());
       exit(EXIT_FAILURE);
     }
   }
@@ -804,13 +804,13 @@ void CONTACT::INTEGRATOR::Deriv2nd_UnitSlaveNormal(const CORE::FE::CellType slav
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, unsigned numnode>
 void CONTACT::INTEGRATOR::GetElementNodalDofs(
-    const MORTAR::Element& ele, CORE::LINALG::Matrix<probdim, numnode, int>& nodal_dofs)
+    const Mortar::Element& ele, Core::LinAlg::Matrix<probdim, numnode, int>& nodal_dofs)
 {
-  const CORE::Nodes::Node* const* mynodes = ele.Nodes();
+  const Core::Nodes::Node* const* mynodes = ele.Nodes();
 
   for (unsigned i = 0; i < numnode; ++i)
   {
-    const auto& mynode = dynamic_cast<const MORTAR::Node&>(*mynodes[i]);
+    const auto& mynode = dynamic_cast<const Mortar::Node&>(*mynodes[i]);
 
     std::copy(mynode.Dofs().data(), mynode.Dofs().data() + probdim, &nodal_dofs(0, i));
   }
@@ -842,14 +842,14 @@ double CONTACT::INTEGRATOR::LeviCivitaSymbol(const int i, const int j, const int
 
 /*----------------------------------------------------------------------------*/
 template void CONTACT::INTEGRATOR::GetElementNodalDofs(
-    const MORTAR::Element& ele, CORE::LINALG::Matrix<2, 2, int>& nodal_dofs);
+    const Mortar::Element& ele, Core::LinAlg::Matrix<2, 2, int>& nodal_dofs);
 template void CONTACT::INTEGRATOR::GetElementNodalDofs(
-    const MORTAR::Element& ele, CORE::LINALG::Matrix<2, 3, int>& nodal_dofs);
+    const Mortar::Element& ele, Core::LinAlg::Matrix<2, 3, int>& nodal_dofs);
 template void CONTACT::INTEGRATOR::GetElementNodalDofs(
-    const MORTAR::Element& ele, CORE::LINALG::Matrix<3, 3, int>& nodal_dofs);
+    const Mortar::Element& ele, Core::LinAlg::Matrix<3, 3, int>& nodal_dofs);
 template void CONTACT::INTEGRATOR::GetElementNodalDofs(
-    const MORTAR::Element& ele, CORE::LINALG::Matrix<3, 4, int>& nodal_dofs);
+    const Mortar::Element& ele, Core::LinAlg::Matrix<3, 4, int>& nodal_dofs);
 template void CONTACT::INTEGRATOR::GetElementNodalDofs(
-    const MORTAR::Element& ele, CORE::LINALG::Matrix<3, 9, int>& nodal_dofs);
+    const Mortar::Element& ele, Core::LinAlg::Matrix<3, 9, int>& nodal_dofs);
 
 FOUR_C_NAMESPACE_CLOSE

@@ -15,7 +15,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT::ELEMENTS::SHELL
+namespace Discret::ELEMENTS::Shell
 {
   /*!
    * @brief An interface providing methods to serialize an object into a packbuffer and deserialize
@@ -31,7 +31,7 @@ namespace DRT::ELEMENTS::SHELL
      *
      * @param data (out) : the buffer to pack into.
      */
-    virtual void Pack(CORE::COMM::PackBuffer& data) const = 0;
+    virtual void Pack(Core::Communication::PackBuffer& data) const = 0;
 
     /*!
      * @brief Unpack the state of an object from a char vector starting from the position
@@ -41,7 +41,7 @@ namespace DRT::ELEMENTS::SHELL
      */
     virtual void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data) = 0;
   };
-}  // namespace DRT::ELEMENTS::SHELL
+}  // namespace Discret::ELEMENTS::Shell
 
 FOUR_C_NAMESPACE_CLOSE
 

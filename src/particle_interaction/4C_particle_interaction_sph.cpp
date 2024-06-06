@@ -38,16 +38,16 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-PARTICLEINTERACTION::ParticleInteractionSPH::ParticleInteractionSPH(
+ParticleInteraction::ParticleInteractionSPH::ParticleInteractionSPH(
     const Epetra_Comm& comm, const Teuchos::ParameterList& params)
-    : PARTICLEINTERACTION::ParticleInteractionBase(comm, params), params_sph_(params.sublist("SPH"))
+    : ParticleInteraction::ParticleInteractionBase(comm, params), params_sph_(params.sublist("SPH"))
 {
   // empty constructor
 }
 
-PARTICLEINTERACTION::ParticleInteractionSPH::~ParticleInteractionSPH() = default;
+ParticleInteraction::ParticleInteractionSPH::~ParticleInteractionSPH() = default;
 
-void PARTICLEINTERACTION::ParticleInteractionSPH::Init()
+void ParticleInteraction::ParticleInteractionSPH::Init()
 {
   // call base class init
   ParticleInteractionBase::Init();
@@ -99,7 +99,7 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::Init()
     FOUR_C_THROW("surface tension formulation with wall interaction not implemented!");
 }
 
-void PARTICLEINTERACTION::ParticleInteractionSPH::Setup(
+void ParticleInteraction::ParticleInteractionSPH::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface)
 {
@@ -166,25 +166,25 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::Setup(
       particleengineinterface_->have_periodic_boundary_conditions())
   {
     if (myrank_ == 0)
-      CORE::IO::cout << "Warning: periodic boundary and open boundary conditions applied!"
-                     << CORE::IO::endl;
+      Core::IO::cout << "Warning: periodic boundary and open boundary conditions applied!"
+                     << Core::IO::endl;
   }
 }
 
-void PARTICLEINTERACTION::ParticleInteractionSPH::write_restart() const
+void ParticleInteraction::ParticleInteractionSPH::write_restart() const
 {
   // call base class function
   ParticleInteractionBase::write_restart();
 }
 
-void PARTICLEINTERACTION::ParticleInteractionSPH::read_restart(
-    const std::shared_ptr<CORE::IO::DiscretizationReader> reader)
+void ParticleInteraction::ParticleInteractionSPH::read_restart(
+    const std::shared_ptr<Core::IO::DiscretizationReader> reader)
 {
   // call base class function
   ParticleInteractionBase::read_restart(reader);
 }
 
-void PARTICLEINTERACTION::ParticleInteractionSPH::insert_particle_states_of_particle_types(
+void ParticleInteraction::ParticleInteractionSPH::insert_particle_states_of_particle_types(
     std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>& particlestatestotypes)
 {
   // iterate over particle types
@@ -230,7 +230,7 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::insert_particle_states_of_part
     surfacetension_->insert_particle_states_of_particle_types(particlestatestotypes);
 }
 
-void PARTICLEINTERACTION::ParticleInteractionSPH::SetInitialStates()
+void ParticleInteraction::ParticleInteractionSPH::SetInitialStates()
 {
   // get kernel space dimension
   int kernelspacedim = 0;
@@ -259,7 +259,7 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::SetInitialStates()
     if (particlestored <= 0) continue;
 
     // get material for current particle type
-    const MAT::PAR::ParticleMaterialBase* material =
+    const Mat::PAR::ParticleMaterialBase* material =
         particlematerial_->get_ptr_to_particle_mat_parameter(type_i);
 
     // initial density of current phase
@@ -317,8 +317,8 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::SetInitialStates()
     if (temperature_)
     {
       // get material for current particle type
-      const MAT::PAR::ParticleMaterialThermo* material =
-          dynamic_cast<const MAT::PAR::ParticleMaterialThermo*>(
+      const Mat::PAR::ParticleMaterialThermo* material =
+          dynamic_cast<const Mat::PAR::ParticleMaterialThermo*>(
               particlematerial_->get_ptr_to_particle_mat_parameter(type_i));
 
       // initial temperature of current phase
@@ -331,9 +331,9 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::SetInitialStates()
   }
 }
 
-void PARTICLEINTERACTION::ParticleInteractionSPH::pre_evaluate_time_step()
+void ParticleInteraction::ParticleInteractionSPH::pre_evaluate_time_step()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::ParticleInteractionSPH::pre_evaluate_time_step");
+  TEUCHOS_FUNC_TIME_MONITOR("ParticleInteraction::ParticleInteractionSPH::pre_evaluate_time_step");
 
   // prescribe open boundary states
   if (dirichletopenboundary_) dirichletopenboundary_->prescribe_open_boundary_states(time_);
@@ -342,9 +342,9 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::pre_evaluate_time_step()
   if (neumannopenboundary_) neumannopenboundary_->prescribe_open_boundary_states(time_);
 }
 
-void PARTICLEINTERACTION::ParticleInteractionSPH::evaluate_interactions()
+void ParticleInteraction::ParticleInteractionSPH::evaluate_interactions()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::ParticleInteractionSPH::evaluate_interactions");
+  TEUCHOS_FUNC_TIME_MONITOR("ParticleInteraction::ParticleInteractionSPH::evaluate_interactions");
 
   // evaluate particle neighbor pairs
   neighborpairs_->evaluate_neighbor_pairs();
@@ -387,10 +387,10 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::evaluate_interactions()
   if (rigidparticlecontact_) rigidparticlecontact_->add_force_contribution();
 }
 
-void PARTICLEINTERACTION::ParticleInteractionSPH::post_evaluate_time_step(
+void ParticleInteraction::ParticleInteractionSPH::post_evaluate_time_step(
     std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::ParticleInteractionSPH::post_evaluate_time_step");
+  TEUCHOS_FUNC_TIME_MONITOR("ParticleInteraction::ParticleInteractionSPH::post_evaluate_time_step");
 
   // check open boundary phase change
   if (dirichletopenboundary_)
@@ -404,22 +404,22 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::post_evaluate_time_step(
   if (phasechange_) phasechange_->EvaluatePhaseChange(particlesfromphasetophase);
 }
 
-double PARTICLEINTERACTION::ParticleInteractionSPH::max_interaction_distance() const
+double ParticleInteraction::ParticleInteractionSPH::max_interaction_distance() const
 {
   return max_particle_radius();
 }
 
-void PARTICLEINTERACTION::ParticleInteractionSPH::distribute_interaction_history() const
+void ParticleInteraction::ParticleInteractionSPH::distribute_interaction_history() const
 {
   // nothing to do
 }
 
-void PARTICLEINTERACTION::ParticleInteractionSPH::communicate_interaction_history() const
+void ParticleInteraction::ParticleInteractionSPH::communicate_interaction_history() const
 {
   // nothing to do
 }
 
-void PARTICLEINTERACTION::ParticleInteractionSPH::set_current_time(const double currenttime)
+void ParticleInteraction::ParticleInteractionSPH::set_current_time(const double currenttime)
 {
   // call base class method
   ParticleInteractionBase::set_current_time(currenttime);
@@ -431,7 +431,7 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::set_current_time(const double 
   if (surfacetension_) surfacetension_->set_current_time(currenttime);
 }
 
-void PARTICLEINTERACTION::ParticleInteractionSPH::set_current_step_size(
+void ParticleInteraction::ParticleInteractionSPH::set_current_step_size(
     const double currentstepsize)
 {
   // call base class method
@@ -444,23 +444,23 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::set_current_step_size(
   if (temperature_) temperature_->set_current_step_size(currentstepsize);
 }
 
-void PARTICLEINTERACTION::ParticleInteractionSPH::init_kernel_handler()
+void ParticleInteraction::ParticleInteractionSPH::init_kernel_handler()
 {
   // get type of smoothed particle hydrodynamics kernel
-  INPAR::PARTICLE::KernelType kerneltype =
-      CORE::UTILS::IntegralValue<INPAR::PARTICLE::KernelType>(params_sph_, "KERNEL");
+  Inpar::PARTICLE::KernelType kerneltype =
+      Core::UTILS::IntegralValue<Inpar::PARTICLE::KernelType>(params_sph_, "KERNEL");
 
   // create kernel handler
   switch (kerneltype)
   {
-    case INPAR::PARTICLE::CubicSpline:
+    case Inpar::PARTICLE::CubicSpline:
     {
-      kernel_ = std::make_shared<PARTICLEINTERACTION::SPHKernelCubicSpline>(params_sph_);
+      kernel_ = std::make_shared<ParticleInteraction::SPHKernelCubicSpline>(params_sph_);
       break;
     }
-    case INPAR::PARTICLE::QuinticSpline:
+    case Inpar::PARTICLE::QuinticSpline:
     {
-      kernel_ = std::make_shared<PARTICLEINTERACTION::SPHKernelQuinticSpline>(params_sph_);
+      kernel_ = std::make_shared<ParticleInteraction::SPHKernelQuinticSpline>(params_sph_);
       break;
     }
     default:
@@ -474,51 +474,51 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::init_kernel_handler()
   kernel_->Init();
 }
 
-void PARTICLEINTERACTION::ParticleInteractionSPH::init_equation_of_state_bundle()
+void ParticleInteraction::ParticleInteractionSPH::init_equation_of_state_bundle()
 {
   // create equation of state bundle
   equationofstatebundle_ =
-      std::make_shared<PARTICLEINTERACTION::SPHEquationOfStateBundle>(params_sph_);
+      std::make_shared<ParticleInteraction::SPHEquationOfStateBundle>(params_sph_);
 
   // init equation of state bundle
   equationofstatebundle_->Init(particlematerial_);
 }
 
-void PARTICLEINTERACTION::ParticleInteractionSPH::init_neighbor_pair_handler()
+void ParticleInteraction::ParticleInteractionSPH::init_neighbor_pair_handler()
 {
   // create neighbor pair handler
-  neighborpairs_ = std::make_shared<PARTICLEINTERACTION::SPHNeighborPairs>();
+  neighborpairs_ = std::make_shared<ParticleInteraction::SPHNeighborPairs>();
 
   // init neighbor pair handler
   neighborpairs_->Init();
 }
 
-void PARTICLEINTERACTION::ParticleInteractionSPH::init_density_handler()
+void ParticleInteraction::ParticleInteractionSPH::init_density_handler()
 {
   // get type of smoothed particle hydrodynamics density evaluation scheme
-  INPAR::PARTICLE::DensityEvaluationScheme densityevaluationscheme =
-      CORE::UTILS::IntegralValue<INPAR::PARTICLE::DensityEvaluationScheme>(
+  Inpar::PARTICLE::DensityEvaluationScheme densityevaluationscheme =
+      Core::UTILS::IntegralValue<Inpar::PARTICLE::DensityEvaluationScheme>(
           params_sph_, "DENSITYEVALUATION");
 
   // create density handler
   switch (densityevaluationscheme)
   {
-    case INPAR::PARTICLE::DensitySummation:
+    case Inpar::PARTICLE::DensitySummation:
     {
-      density_ = std::unique_ptr<PARTICLEINTERACTION::SPHDensitySummation>(
-          new PARTICLEINTERACTION::SPHDensitySummation(params_sph_));
+      density_ = std::unique_ptr<ParticleInteraction::SPHDensitySummation>(
+          new ParticleInteraction::SPHDensitySummation(params_sph_));
       break;
     }
-    case INPAR::PARTICLE::DensityIntegration:
+    case Inpar::PARTICLE::DensityIntegration:
     {
-      density_ = std::unique_ptr<PARTICLEINTERACTION::SPHDensityIntegration>(
-          new PARTICLEINTERACTION::SPHDensityIntegration(params_sph_));
+      density_ = std::unique_ptr<ParticleInteraction::SPHDensityIntegration>(
+          new ParticleInteraction::SPHDensityIntegration(params_sph_));
       break;
     }
-    case INPAR::PARTICLE::DensityPredictCorrect:
+    case Inpar::PARTICLE::DensityPredictCorrect:
     {
-      density_ = std::unique_ptr<PARTICLEINTERACTION::SPHDensityPredictCorrect>(
-          new PARTICLEINTERACTION::SPHDensityPredictCorrect(params_sph_));
+      density_ = std::unique_ptr<ParticleInteraction::SPHDensityPredictCorrect>(
+          new ParticleInteraction::SPHDensityPredictCorrect(params_sph_));
       break;
     }
     default:
@@ -532,43 +532,43 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::init_density_handler()
   density_->Init();
 
   // safety check
-  if (densityevaluationscheme != INPAR::PARTICLE::DensityPredictCorrect and
-      CORE::UTILS::IntegralValue<INPAR::PARTICLE::DensityCorrectionScheme>(
-          params_sph_, "DENSITYCORRECTION") != INPAR::PARTICLE::NoCorrection)
+  if (densityevaluationscheme != Inpar::PARTICLE::DensityPredictCorrect and
+      Core::UTILS::IntegralValue<Inpar::PARTICLE::DensityCorrectionScheme>(
+          params_sph_, "DENSITYCORRECTION") != Inpar::PARTICLE::NoCorrection)
     FOUR_C_THROW(
         "the density correction scheme set is not valid with the current density evaluation "
         "scheme!");
 }
 
-void PARTICLEINTERACTION::ParticleInteractionSPH::init_pressure_handler()
+void ParticleInteraction::ParticleInteractionSPH::init_pressure_handler()
 {
   // create pressure handler
   pressure_ =
-      std::unique_ptr<PARTICLEINTERACTION::SPHPressure>(new PARTICLEINTERACTION::SPHPressure());
+      std::unique_ptr<ParticleInteraction::SPHPressure>(new ParticleInteraction::SPHPressure());
 
   // init pressure handler
   pressure_->Init();
 }
 
-void PARTICLEINTERACTION::ParticleInteractionSPH::init_temperature_handler()
+void ParticleInteraction::ParticleInteractionSPH::init_temperature_handler()
 {
   // get type of smoothed particle hydrodynamics temperature evaluation scheme
-  INPAR::PARTICLE::TemperatureEvaluationScheme temperatureevaluationscheme =
-      CORE::UTILS::IntegralValue<INPAR::PARTICLE::TemperatureEvaluationScheme>(
+  Inpar::PARTICLE::TemperatureEvaluationScheme temperatureevaluationscheme =
+      Core::UTILS::IntegralValue<Inpar::PARTICLE::TemperatureEvaluationScheme>(
           params_sph_, "TEMPERATUREEVALUATION");
 
   // create temperature handler
   switch (temperatureevaluationscheme)
   {
-    case INPAR::PARTICLE::NoTemperatureEvaluation:
+    case Inpar::PARTICLE::NoTemperatureEvaluation:
     {
-      temperature_ = std::unique_ptr<PARTICLEINTERACTION::SPHTemperature>(nullptr);
+      temperature_ = std::unique_ptr<ParticleInteraction::SPHTemperature>(nullptr);
       break;
     }
-    case INPAR::PARTICLE::TemperatureIntegration:
+    case Inpar::PARTICLE::TemperatureIntegration:
     {
-      temperature_ = std::unique_ptr<PARTICLEINTERACTION::SPHTemperature>(
-          new PARTICLEINTERACTION::SPHTemperature(params_sph_));
+      temperature_ = std::unique_ptr<ParticleInteraction::SPHTemperature>(
+          new ParticleInteraction::SPHTemperature(params_sph_));
       break;
     }
     default:
@@ -582,35 +582,35 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::init_temperature_handler()
   if (temperature_) temperature_->Init();
 }
 
-void PARTICLEINTERACTION::ParticleInteractionSPH::init_momentum_handler()
+void ParticleInteraction::ParticleInteractionSPH::init_momentum_handler()
 {
   // create momentum handler
-  momentum_ = std::unique_ptr<PARTICLEINTERACTION::SPHMomentum>(
-      new PARTICLEINTERACTION::SPHMomentum(params_sph_));
+  momentum_ = std::unique_ptr<ParticleInteraction::SPHMomentum>(
+      new ParticleInteraction::SPHMomentum(params_sph_));
 
   // init momentum handler
   momentum_->Init();
 }
 
-void PARTICLEINTERACTION::ParticleInteractionSPH::init_surface_tension_handler()
+void ParticleInteraction::ParticleInteractionSPH::init_surface_tension_handler()
 {
   // get type of smoothed particle hydrodynamics surface tension formulation
-  INPAR::PARTICLE::SurfaceTensionFormulation surfacetensionformulation =
-      CORE::UTILS::IntegralValue<INPAR::PARTICLE::SurfaceTensionFormulation>(
+  Inpar::PARTICLE::SurfaceTensionFormulation surfacetensionformulation =
+      Core::UTILS::IntegralValue<Inpar::PARTICLE::SurfaceTensionFormulation>(
           params_sph_, "SURFACETENSIONFORMULATION");
 
   // create surface tension handler
   switch (surfacetensionformulation)
   {
-    case INPAR::PARTICLE::NoSurfaceTension:
+    case Inpar::PARTICLE::NoSurfaceTension:
     {
-      surfacetension_ = std::unique_ptr<PARTICLEINTERACTION::SPHSurfaceTension>(nullptr);
+      surfacetension_ = std::unique_ptr<ParticleInteraction::SPHSurfaceTension>(nullptr);
       break;
     }
-    case INPAR::PARTICLE::ContinuumSurfaceForce:
+    case Inpar::PARTICLE::ContinuumSurfaceForce:
     {
-      surfacetension_ = std::unique_ptr<PARTICLEINTERACTION::SPHSurfaceTension>(
-          new PARTICLEINTERACTION::SPHSurfaceTension(params_sph_));
+      surfacetension_ = std::unique_ptr<ParticleInteraction::SPHSurfaceTension>(
+          new ParticleInteraction::SPHSurfaceTension(params_sph_));
       break;
     }
     default:
@@ -624,25 +624,25 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::init_surface_tension_handler()
   if (surfacetension_) surfacetension_->Init();
 }
 
-void PARTICLEINTERACTION::ParticleInteractionSPH::init_boundary_particle_handler()
+void ParticleInteraction::ParticleInteractionSPH::init_boundary_particle_handler()
 {
   // get type of boundary particle formulation
-  INPAR::PARTICLE::BoundaryParticleFormulationType boundaryparticleformulation =
-      CORE::UTILS::IntegralValue<INPAR::PARTICLE::BoundaryParticleFormulationType>(
+  Inpar::PARTICLE::BoundaryParticleFormulationType boundaryparticleformulation =
+      Core::UTILS::IntegralValue<Inpar::PARTICLE::BoundaryParticleFormulationType>(
           params_sph_, "BOUNDARYPARTICLEFORMULATION");
 
   // create boundary particle handler
   switch (boundaryparticleformulation)
   {
-    case INPAR::PARTICLE::NoBoundaryFormulation:
+    case Inpar::PARTICLE::NoBoundaryFormulation:
     {
-      boundaryparticle_ = std::unique_ptr<PARTICLEINTERACTION::SPHBoundaryParticleBase>(nullptr);
+      boundaryparticle_ = std::unique_ptr<ParticleInteraction::SPHBoundaryParticleBase>(nullptr);
       break;
     }
-    case INPAR::PARTICLE::AdamiBoundaryFormulation:
+    case Inpar::PARTICLE::AdamiBoundaryFormulation:
     {
-      boundaryparticle_ = std::unique_ptr<PARTICLEINTERACTION::SPHBoundaryParticleAdami>(
-          new PARTICLEINTERACTION::SPHBoundaryParticleAdami(params_sph_));
+      boundaryparticle_ = std::unique_ptr<ParticleInteraction::SPHBoundaryParticleAdami>(
+          new ParticleInteraction::SPHBoundaryParticleAdami(params_sph_));
       break;
     }
     default:
@@ -656,25 +656,25 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::init_boundary_particle_handler
   if (boundaryparticle_) boundaryparticle_->Init();
 }
 
-void PARTICLEINTERACTION::ParticleInteractionSPH::init_dirichlet_open_boundary_handler()
+void ParticleInteraction::ParticleInteractionSPH::init_dirichlet_open_boundary_handler()
 {
   // get type of dirichlet open boundary
-  INPAR::PARTICLE::DirichletOpenBoundaryType dirichletopenboundarytype =
-      CORE::UTILS::IntegralValue<INPAR::PARTICLE::DirichletOpenBoundaryType>(
+  Inpar::PARTICLE::DirichletOpenBoundaryType dirichletopenboundarytype =
+      Core::UTILS::IntegralValue<Inpar::PARTICLE::DirichletOpenBoundaryType>(
           params_sph_, "DIRICHLETBOUNDARYTYPE");
 
   // create open boundary handler
   switch (dirichletopenboundarytype)
   {
-    case INPAR::PARTICLE::NoDirichletOpenBoundary:
+    case Inpar::PARTICLE::NoDirichletOpenBoundary:
     {
-      dirichletopenboundary_ = std::unique_ptr<PARTICLEINTERACTION::SPHOpenBoundaryBase>(nullptr);
+      dirichletopenboundary_ = std::unique_ptr<ParticleInteraction::SPHOpenBoundaryBase>(nullptr);
       break;
     }
-    case INPAR::PARTICLE::DirichletNormalToPlane:
+    case Inpar::PARTICLE::DirichletNormalToPlane:
     {
-      dirichletopenboundary_ = std::unique_ptr<PARTICLEINTERACTION::SPHOpenBoundaryDirichlet>(
-          new PARTICLEINTERACTION::SPHOpenBoundaryDirichlet(params_sph_));
+      dirichletopenboundary_ = std::unique_ptr<ParticleInteraction::SPHOpenBoundaryDirichlet>(
+          new ParticleInteraction::SPHOpenBoundaryDirichlet(params_sph_));
       break;
     }
     default:
@@ -688,25 +688,25 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::init_dirichlet_open_boundary_h
   if (dirichletopenboundary_) dirichletopenboundary_->Init();
 }
 
-void PARTICLEINTERACTION::ParticleInteractionSPH::init_neumann_open_boundary_handler()
+void ParticleInteraction::ParticleInteractionSPH::init_neumann_open_boundary_handler()
 {
   // get type of neumann open boundary
-  INPAR::PARTICLE::NeumannOpenBoundaryType neumannopenboundarytype =
-      CORE::UTILS::IntegralValue<INPAR::PARTICLE::NeumannOpenBoundaryType>(
+  Inpar::PARTICLE::NeumannOpenBoundaryType neumannopenboundarytype =
+      Core::UTILS::IntegralValue<Inpar::PARTICLE::NeumannOpenBoundaryType>(
           params_sph_, "NEUMANNBOUNDARYTYPE");
 
   // create open boundary handler
   switch (neumannopenboundarytype)
   {
-    case INPAR::PARTICLE::NoNeumannOpenBoundary:
+    case Inpar::PARTICLE::NoNeumannOpenBoundary:
     {
-      neumannopenboundary_ = std::unique_ptr<PARTICLEINTERACTION::SPHOpenBoundaryBase>(nullptr);
+      neumannopenboundary_ = std::unique_ptr<ParticleInteraction::SPHOpenBoundaryBase>(nullptr);
       break;
     }
-    case INPAR::PARTICLE::NeumannNormalToPlane:
+    case Inpar::PARTICLE::NeumannNormalToPlane:
     {
-      neumannopenboundary_ = std::unique_ptr<PARTICLEINTERACTION::SPHOpenBoundaryNeumann>(
-          new PARTICLEINTERACTION::SPHOpenBoundaryNeumann(params_sph_));
+      neumannopenboundary_ = std::unique_ptr<ParticleInteraction::SPHOpenBoundaryNeumann>(
+          new ParticleInteraction::SPHOpenBoundaryNeumann(params_sph_));
       break;
     }
     default:
@@ -720,25 +720,25 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::init_neumann_open_boundary_han
   if (neumannopenboundary_) neumannopenboundary_->Init();
 }
 
-void PARTICLEINTERACTION::ParticleInteractionSPH::init_virtual_wall_particle_handler()
+void ParticleInteraction::ParticleInteractionSPH::init_virtual_wall_particle_handler()
 {
   // get type of wall formulation
-  INPAR::PARTICLE::WallFormulationType wallformulation =
-      CORE::UTILS::IntegralValue<INPAR::PARTICLE::WallFormulationType>(
+  Inpar::PARTICLE::WallFormulationType wallformulation =
+      Core::UTILS::IntegralValue<Inpar::PARTICLE::WallFormulationType>(
           params_sph_, "WALLFORMULATION");
 
   // create virtual wall particle handler
   switch (wallformulation)
   {
-    case INPAR::PARTICLE::NoWallFormulation:
+    case Inpar::PARTICLE::NoWallFormulation:
     {
-      virtualwallparticle_ = std::shared_ptr<PARTICLEINTERACTION::SPHVirtualWallParticle>(nullptr);
+      virtualwallparticle_ = std::shared_ptr<ParticleInteraction::SPHVirtualWallParticle>(nullptr);
       break;
     }
-    case INPAR::PARTICLE::VirtualParticleWallFormulation:
+    case Inpar::PARTICLE::VirtualParticleWallFormulation:
     {
       virtualwallparticle_ =
-          std::make_shared<PARTICLEINTERACTION::SPHVirtualWallParticle>(params_sph_);
+          std::make_shared<ParticleInteraction::SPHVirtualWallParticle>(params_sph_);
       break;
     }
     default:
@@ -752,36 +752,36 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::init_virtual_wall_particle_han
   if (virtualwallparticle_) virtualwallparticle_->Init();
 }
 
-void PARTICLEINTERACTION::ParticleInteractionSPH::init_phase_change_handler()
+void ParticleInteraction::ParticleInteractionSPH::init_phase_change_handler()
 {
   // get type of phase change
-  INPAR::PARTICLE::PhaseChangeType phasechangetype =
-      CORE::UTILS::IntegralValue<INPAR::PARTICLE::PhaseChangeType>(params_sph_, "PHASECHANGETYPE");
+  Inpar::PARTICLE::PhaseChangeType phasechangetype =
+      Core::UTILS::IntegralValue<Inpar::PARTICLE::PhaseChangeType>(params_sph_, "PHASECHANGETYPE");
 
   // create phase change handler
   switch (phasechangetype)
   {
-    case INPAR::PARTICLE::NoPhaseChange:
+    case Inpar::PARTICLE::NoPhaseChange:
     {
-      phasechange_ = std::unique_ptr<PARTICLEINTERACTION::SPHPhaseChangeBase>(nullptr);
+      phasechange_ = std::unique_ptr<ParticleInteraction::SPHPhaseChangeBase>(nullptr);
       break;
     }
-    case INPAR::PARTICLE::OneWayScalarBelowToAbovePhaseChange:
+    case Inpar::PARTICLE::OneWayScalarBelowToAbovePhaseChange:
     {
-      phasechange_ = std::unique_ptr<PARTICLEINTERACTION::SPHPhaseChangeOneWayScalarBelowToAbove>(
-          new PARTICLEINTERACTION::SPHPhaseChangeOneWayScalarBelowToAbove(params_sph_));
+      phasechange_ = std::unique_ptr<ParticleInteraction::SPHPhaseChangeOneWayScalarBelowToAbove>(
+          new ParticleInteraction::SPHPhaseChangeOneWayScalarBelowToAbove(params_sph_));
       break;
     }
-    case INPAR::PARTICLE::OneWayScalarAboveToBelowPhaseChange:
+    case Inpar::PARTICLE::OneWayScalarAboveToBelowPhaseChange:
     {
-      phasechange_ = std::unique_ptr<PARTICLEINTERACTION::SPHPhaseChangeOneWayScalarAboveToBelow>(
-          new PARTICLEINTERACTION::SPHPhaseChangeOneWayScalarAboveToBelow(params_sph_));
+      phasechange_ = std::unique_ptr<ParticleInteraction::SPHPhaseChangeOneWayScalarAboveToBelow>(
+          new ParticleInteraction::SPHPhaseChangeOneWayScalarAboveToBelow(params_sph_));
       break;
     }
-    case INPAR::PARTICLE::TwoWayScalarPhaseChange:
+    case Inpar::PARTICLE::TwoWayScalarPhaseChange:
     {
-      phasechange_ = std::unique_ptr<PARTICLEINTERACTION::SPHPhaseChangeTwoWayScalar>(
-          new PARTICLEINTERACTION::SPHPhaseChangeTwoWayScalar(params_sph_));
+      phasechange_ = std::unique_ptr<ParticleInteraction::SPHPhaseChangeTwoWayScalar>(
+          new ParticleInteraction::SPHPhaseChangeTwoWayScalar(params_sph_));
       break;
     }
     default:
@@ -795,26 +795,26 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::init_phase_change_handler()
   if (phasechange_) phasechange_->Init();
 }
 
-void PARTICLEINTERACTION::ParticleInteractionSPH::init_rigid_particle_contact_handler()
+void ParticleInteraction::ParticleInteractionSPH::init_rigid_particle_contact_handler()
 {
   // get type of rigid particle contact
-  INPAR::PARTICLE::RigidParticleContactType rigidparticlecontacttype =
-      CORE::UTILS::IntegralValue<INPAR::PARTICLE::RigidParticleContactType>(
+  Inpar::PARTICLE::RigidParticleContactType rigidparticlecontacttype =
+      Core::UTILS::IntegralValue<Inpar::PARTICLE::RigidParticleContactType>(
           params_sph_, "RIGIDPARTICLECONTACTTYPE");
 
   // create rigid particle contact handler
   switch (rigidparticlecontacttype)
   {
-    case INPAR::PARTICLE::NoRigidParticleContact:
+    case Inpar::PARTICLE::NoRigidParticleContact:
     {
       rigidparticlecontact_ =
-          std::unique_ptr<PARTICLEINTERACTION::SPHRigidParticleContactBase>(nullptr);
+          std::unique_ptr<ParticleInteraction::SPHRigidParticleContactBase>(nullptr);
       break;
     }
-    case INPAR::PARTICLE::ElasticRigidParticleContact:
+    case Inpar::PARTICLE::ElasticRigidParticleContact:
     {
-      rigidparticlecontact_ = std::unique_ptr<PARTICLEINTERACTION::SPHRigidParticleContactElastic>(
-          new PARTICLEINTERACTION::SPHRigidParticleContactElastic(params_sph_));
+      rigidparticlecontact_ = std::unique_ptr<ParticleInteraction::SPHRigidParticleContactElastic>(
+          new ParticleInteraction::SPHRigidParticleContactElastic(params_sph_));
       break;
     }
     default:

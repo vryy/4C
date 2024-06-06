@@ -25,11 +25,11 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
 }
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
@@ -75,10 +75,10 @@ namespace BEAMINTERACTION
        * @param fe_sysvec (out) Global force vector.
        * @param fe_sysmat (out) Global stiffness matrix.
        */
-      virtual void evaluate_force_stiff(Teuchos::RCP<DRT::Discretization> discret,
+      virtual void evaluate_force_stiff(Teuchos::RCP<Discret::Discretization> discret,
           const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>& data_state,
           Teuchos::RCP<Epetra_FEVector> fe_sysvec,
-          Teuchos::RCP<CORE::LINALG::SparseMatrix> fe_sysmat)
+          Teuchos::RCP<Core::LinAlg::SparseMatrix> fe_sysmat)
       {
         FOUR_C_THROW("Not implemented!");
       }

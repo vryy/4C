@@ -20,12 +20,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace CORE::IO
+namespace Core::IO
 {
   /*----------------------------------------------------------------------*/
   /*!
@@ -71,7 +71,7 @@ namespace CORE::IO
     \param comm (i) our communicator
     \param sectionname (i) the section that contains the element lines
     */
-    ElementReader(Teuchos::RCP<DRT::Discretization> dis, const CORE::IO::DatFileReader& reader,
+    ElementReader(Teuchos::RCP<Discret::Discretization> dis, const Core::IO::DatFileReader& reader,
         std::string sectionname);
 
     /*!
@@ -84,7 +84,7 @@ namespace CORE::IO
     \param sectionname (i) the section that contains the element lines
     \param elementtype (i) element type name to read in this discretization
     */
-    ElementReader(Teuchos::RCP<DRT::Discretization> dis, const CORE::IO::DatFileReader& reader,
+    ElementReader(Teuchos::RCP<Discret::Discretization> dis, const Core::IO::DatFileReader& reader,
         std::string sectionname, std::string elementtype);
 
     /*!
@@ -97,7 +97,7 @@ namespace CORE::IO
     \param sectionname (i) the section that contains the element lines
     \param elementtypes (i) element type names to read in this discretization
     */
-    ElementReader(Teuchos::RCP<DRT::Discretization> dis, const CORE::IO::DatFileReader& reader,
+    ElementReader(Teuchos::RCP<Discret::Discretization> dis, const Core::IO::DatFileReader& reader,
         std::string sectionname, const std::set<std::string>& elementtypes);
 
     //! Destructor
@@ -106,7 +106,7 @@ namespace CORE::IO
     std::set<int> GetUniqueNodes() const { return nodes_; }
 
     /// give the discretization this reader fills
-    Teuchos::RCP<DRT::Discretization> GetDis() const { return dis_; }
+    Teuchos::RCP<Discret::Discretization> GetDis() const { return dis_; }
 
     /// Return the list of row elements
     Teuchos::RCP<Epetra_Map> GetRowElements() const { return roweles_; }
@@ -155,7 +155,7 @@ namespace CORE::IO
     std::string name_;
 
     /// the main dat file reader
-    const CORE::IO::DatFileReader& reader_;
+    const Core::IO::DatFileReader& reader_;
 
     /// my comm
     Teuchos::RCP<Epetra_Comm> comm_;
@@ -173,7 +173,7 @@ namespace CORE::IO
     std::set<int> nodes_;
 
     /// my discretization
-    Teuchos::RCP<DRT::Discretization> dis_;
+    Teuchos::RCP<Discret::Discretization> dis_;
 
     /// node row map
     Teuchos::RCP<Epetra_Map> rownodes_;
@@ -190,7 +190,7 @@ namespace CORE::IO
     /// element type names to read
     std::set<std::string> elementtypes_;
   };
-}  // namespace CORE::IO
+}  // namespace Core::IO
 
 FOUR_C_NAMESPACE_CLOSE
 

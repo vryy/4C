@@ -47,9 +47,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam, solid>::pre_
  */
 template <typename beam, typename solid>
 bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam, solid>::Evaluate(
-    CORE::LINALG::SerialDenseVector* forcevec1, CORE::LINALG::SerialDenseVector* forcevec2,
-    CORE::LINALG::SerialDenseMatrix* stiffmat11, CORE::LINALG::SerialDenseMatrix* stiffmat12,
-    CORE::LINALG::SerialDenseMatrix* stiffmat21, CORE::LINALG::SerialDenseMatrix* stiffmat22)
+    Core::LinAlg::SerialDenseVector* forcevec1, Core::LinAlg::SerialDenseVector* forcevec2,
+    Core::LinAlg::SerialDenseMatrix* stiffmat11, Core::LinAlg::SerialDenseMatrix* stiffmat12,
+    Core::LinAlg::SerialDenseMatrix* stiffmat21, Core::LinAlg::SerialDenseMatrix* stiffmat22)
 {
   // Call Evaluate on the geometry Pair. Only do this once for meshtying.
   if (!this->meshtying_is_evaluated_)
@@ -77,15 +77,15 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam, solid>::Eval
   if (projection_points.size() == 0) return false;
 
   // Initialize variables for position and force vectors.
-  CORE::LINALG::Matrix<3, 1, double> dr_beam_ref;
-  CORE::LINALG::Matrix<3, 1, scalar_type> r_beam;
-  CORE::LINALG::Matrix<3, 3, scalar_type> triad;
-  CORE::LINALG::Matrix<3, 1, scalar_type> r_cross_section_ref;
-  CORE::LINALG::Matrix<3, 1, scalar_type> r_cross_section;
-  CORE::LINALG::Matrix<3, 1, scalar_type> r_solid;
-  CORE::LINALG::Matrix<3, 1, scalar_type> force;
-  CORE::LINALG::Matrix<beam::n_dof_, 1, scalar_type> force_element_1(true);
-  CORE::LINALG::Matrix<solid::n_dof_, 1, scalar_type> force_element_2(true);
+  Core::LinAlg::Matrix<3, 1, double> dr_beam_ref;
+  Core::LinAlg::Matrix<3, 1, scalar_type> r_beam;
+  Core::LinAlg::Matrix<3, 3, scalar_type> triad;
+  Core::LinAlg::Matrix<3, 1, scalar_type> r_cross_section_ref;
+  Core::LinAlg::Matrix<3, 1, scalar_type> r_cross_section;
+  Core::LinAlg::Matrix<3, 1, scalar_type> r_solid;
+  Core::LinAlg::Matrix<3, 1, scalar_type> force;
+  Core::LinAlg::Matrix<beam::n_dof_, 1, scalar_type> force_element_1(true);
+  Core::LinAlg::Matrix<solid::n_dof_, 1, scalar_type> force_element_2(true);
 
   // Initialize scalar variables.
   double beam_jacobian;
@@ -150,10 +150,10 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam, solid>::Eval
     {
       // $f_1$
       for (unsigned int i_dof = 0; i_dof < beam::n_dof_; i_dof++)
-        (*forcevec1)(i_dof) = CORE::FADUTILS::CastToDouble(force_element_1(i_dof));
+        (*forcevec1)(i_dof) = Core::FADUtils::CastToDouble(force_element_1(i_dof));
       // $f_2$
       for (unsigned int i_dof = 0; i_dof < solid::n_dof_; i_dof++)
-        (*forcevec2)(i_dof) = CORE::FADUTILS::CastToDouble(force_element_2(i_dof));
+        (*forcevec2)(i_dof) = Core::FADUtils::CastToDouble(force_element_2(i_dof));
     }
 
     if (stiffmat11 != nullptr && stiffmat12 != nullptr && stiffmat21 != nullptr &&
@@ -163,7 +163,7 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam, solid>::Eval
       for (unsigned int i_dof_1 = 0; i_dof_1 < beam::n_dof_; i_dof_1++)
         for (unsigned int i_dof_2 = 0; i_dof_2 < beam::n_dof_; i_dof_2++)
           (*stiffmat11)(i_dof_1, i_dof_2) =
-              -CORE::FADUTILS::CastToDouble(force_element_1(i_dof_1).dx(i_dof_2));
+              -Core::FADUtils::CastToDouble(force_element_1(i_dof_1).dx(i_dof_2));
 
       // $k_{12}, k_{21}$
       for (unsigned int i_dof_1 = 0; i_dof_1 < beam::n_dof_; i_dof_1++)
@@ -171,9 +171,9 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam, solid>::Eval
         for (unsigned int i_dof_2 = 0; i_dof_2 < solid::n_dof_; i_dof_2++)
         {
           (*stiffmat12)(i_dof_1, i_dof_2) =
-              -CORE::FADUTILS::CastToDouble(force_element_1(i_dof_1).dx(beam::n_dof_ + i_dof_2));
+              -Core::FADUtils::CastToDouble(force_element_1(i_dof_1).dx(beam::n_dof_ + i_dof_2));
           (*stiffmat21)(i_dof_2, i_dof_1) =
-              -CORE::FADUTILS::CastToDouble(force_element_2(i_dof_2).dx(i_dof_1));
+              -Core::FADUtils::CastToDouble(force_element_2(i_dof_2).dx(i_dof_1));
         }
       }
 
@@ -181,7 +181,7 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam, solid>::Eval
       for (unsigned int i_dof_1 = 0; i_dof_1 < solid::n_dof_; i_dof_1++)
         for (unsigned int i_dof_2 = 0; i_dof_2 < solid::n_dof_; i_dof_2++)
           (*stiffmat22)(i_dof_1, i_dof_2) =
-              -CORE::FADUTILS::CastToDouble(force_element_2(i_dof_1).dx(beam::n_dof_ + i_dof_2));
+              -Core::FADUtils::CastToDouble(force_element_2(i_dof_1).dx(beam::n_dof_ + i_dof_2));
     }
   }
 
@@ -194,7 +194,7 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam, solid>::Eval
  */
 template <typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam, solid>::get_triad_at_xi_double(
-    const double xi, CORE::LINALG::Matrix<3, 3, double>& triad, const bool reference) const
+    const double xi, Core::LinAlg::Matrix<3, 3, double>& triad, const bool reference) const
 {
   if (reference)
   {

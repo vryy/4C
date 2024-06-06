@@ -18,7 +18,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace MORTAR
+namespace Mortar
 {
   class InterfacedataContainer;
 }
@@ -47,7 +47,7 @@ namespace CONTACT
     \param icontact (in): Global contact parameter list
     \param selfcontact (in): Flag for self contact status
     */
-    ConstitutivelawInterface(const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData,
+    ConstitutivelawInterface(const Teuchos::RCP<Mortar::InterfaceDataContainer>& interfaceData,
         const int id, const Epetra_Comm& comm, const int dim,
         const Teuchos::ParameterList& icontact, bool selfcontact,
         const int contactconstitutivelawid);

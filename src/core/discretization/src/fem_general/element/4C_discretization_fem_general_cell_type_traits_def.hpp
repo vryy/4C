@@ -20,7 +20,7 @@ In this file, the helper defining the mapping from celltype to their properties 
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::FE::DETAILS
+namespace Core::FE::Details
 {
   //! @name Definition of the mapping celltype to string
   /// @{
@@ -30,13 +30,13 @@ namespace CORE::FE::DETAILS
   };
 
   template <>
-  struct CellTypeInformation<CORE::FE::CellType::dis_none>
+  struct CellTypeInformation<Core::FE::CellType::dis_none>
   {
     static constexpr auto name = "DIS_NONE";
   };
 
   template <>
-  struct CellTypeInformation<CORE::FE::CellType::quad4>
+  struct CellTypeInformation<Core::FE::CellType::quad4>
   {
     static constexpr auto name = "QUAD4";
     static constexpr int dim = 2;
@@ -45,7 +45,7 @@ namespace CORE::FE::DETAILS
   };
 
   template <>
-  struct CellTypeInformation<CORE::FE::CellType::quad6>
+  struct CellTypeInformation<Core::FE::CellType::quad6>
   {
     static constexpr auto name = "QUAD6";
     static constexpr int dim = 2;
@@ -54,7 +54,7 @@ namespace CORE::FE::DETAILS
   };
 
   template <>
-  struct CellTypeInformation<CORE::FE::CellType::quad8>
+  struct CellTypeInformation<Core::FE::CellType::quad8>
   {
     static constexpr auto name = "QUAD8";
     static constexpr int dim = 2;
@@ -63,7 +63,7 @@ namespace CORE::FE::DETAILS
   };
 
   template <>
-  struct CellTypeInformation<CORE::FE::CellType::quad9>
+  struct CellTypeInformation<Core::FE::CellType::quad9>
   {
     static constexpr auto name = "QUAD9";
     static constexpr int dim = 2;
@@ -72,7 +72,7 @@ namespace CORE::FE::DETAILS
   };
 
   template <>
-  struct CellTypeInformation<CORE::FE::CellType::tri3>
+  struct CellTypeInformation<Core::FE::CellType::tri3>
   {
     static constexpr auto name = "TRI3";
     static constexpr int dim = 2;
@@ -81,7 +81,7 @@ namespace CORE::FE::DETAILS
   };
 
   template <>
-  struct CellTypeInformation<CORE::FE::CellType::tri6>
+  struct CellTypeInformation<Core::FE::CellType::tri6>
   {
     static constexpr auto name = "TRI6";
     static constexpr int dim = 2;
@@ -90,7 +90,7 @@ namespace CORE::FE::DETAILS
   };
 
   template <>
-  struct CellTypeInformation<CORE::FE::CellType::hex8>
+  struct CellTypeInformation<Core::FE::CellType::hex8>
   {
     static constexpr auto name = "HEX8";
     static constexpr int dim = 3;
@@ -99,7 +99,7 @@ namespace CORE::FE::DETAILS
   };
 
   template <>
-  struct CellTypeInformation<CORE::FE::CellType::hex16>
+  struct CellTypeInformation<Core::FE::CellType::hex16>
   {
     static constexpr auto name = "HEX16";
     static constexpr int dim = 3;
@@ -108,7 +108,7 @@ namespace CORE::FE::DETAILS
   };
 
   template <>
-  struct CellTypeInformation<CORE::FE::CellType::hex18>
+  struct CellTypeInformation<Core::FE::CellType::hex18>
   {
     static constexpr auto name = "HEX18";
     static constexpr int dim = 3;
@@ -117,7 +117,7 @@ namespace CORE::FE::DETAILS
   };
 
   template <>
-  struct CellTypeInformation<CORE::FE::CellType::hex20>
+  struct CellTypeInformation<Core::FE::CellType::hex20>
   {
     static constexpr auto name = "HEX20";
     static constexpr int dim = 3;
@@ -126,7 +126,7 @@ namespace CORE::FE::DETAILS
   };
 
   template <>
-  struct CellTypeInformation<CORE::FE::CellType::hex27>
+  struct CellTypeInformation<Core::FE::CellType::hex27>
   {
     static constexpr auto name = "HEX27";
     static constexpr int dim = 3;
@@ -135,7 +135,7 @@ namespace CORE::FE::DETAILS
   };
 
   template <>
-  struct CellTypeInformation<CORE::FE::CellType::tet4>
+  struct CellTypeInformation<Core::FE::CellType::tet4>
   {
     static constexpr auto name = "TET4";
     static constexpr int dim = 3;
@@ -144,7 +144,7 @@ namespace CORE::FE::DETAILS
   };
 
   template <>
-  struct CellTypeInformation<CORE::FE::CellType::tet10>
+  struct CellTypeInformation<Core::FE::CellType::tet10>
   {
     static constexpr auto name = "TET10";
     static constexpr int dim = 3;
@@ -153,7 +153,7 @@ namespace CORE::FE::DETAILS
   };
 
   template <>
-  struct CellTypeInformation<CORE::FE::CellType::wedge6>
+  struct CellTypeInformation<Core::FE::CellType::wedge6>
   {
     static constexpr auto name = "WEDGE6";
     static constexpr int dim = 3;
@@ -162,7 +162,7 @@ namespace CORE::FE::DETAILS
   };
 
   template <>
-  struct CellTypeInformation<CORE::FE::CellType::wedge15>
+  struct CellTypeInformation<Core::FE::CellType::wedge15>
   {
     static constexpr auto name = "WEDGE15";
     static constexpr int dim = 3;
@@ -171,7 +171,7 @@ namespace CORE::FE::DETAILS
   };
 
   template <>
-  struct CellTypeInformation<CORE::FE::CellType::pyramid5>
+  struct CellTypeInformation<Core::FE::CellType::pyramid5>
   {
     static constexpr auto name = "PYRAMID5";
     static constexpr int dim = 3;
@@ -180,7 +180,7 @@ namespace CORE::FE::DETAILS
   };
 
   template <>
-  struct CellTypeInformation<CORE::FE::CellType::line2>
+  struct CellTypeInformation<Core::FE::CellType::line2>
   {
     static constexpr auto name = "LINE2";
     static constexpr int dim = 1;
@@ -190,7 +190,7 @@ namespace CORE::FE::DETAILS
   };
 
   template <>
-  struct CellTypeInformation<CORE::FE::CellType::line3>
+  struct CellTypeInformation<Core::FE::CellType::line3>
   {
     static constexpr auto name = "LINE3";
     static constexpr int dim = 1;
@@ -200,7 +200,7 @@ namespace CORE::FE::DETAILS
   };
 
   template <>
-  struct CellTypeInformation<CORE::FE::CellType::line4>
+  struct CellTypeInformation<Core::FE::CellType::line4>
   {
     static constexpr auto name = "LINE4";
     static constexpr int dim = 1;
@@ -210,7 +210,7 @@ namespace CORE::FE::DETAILS
   };
 
   template <>
-  struct CellTypeInformation<CORE::FE::CellType::line5>
+  struct CellTypeInformation<Core::FE::CellType::line5>
   {
     static constexpr auto name = "LINE5";
     static constexpr int dim = 1;
@@ -220,7 +220,7 @@ namespace CORE::FE::DETAILS
   };
 
   template <>
-  struct CellTypeInformation<CORE::FE::CellType::line6>
+  struct CellTypeInformation<Core::FE::CellType::line6>
   {
     static constexpr auto name = "LINE6";
     static constexpr int dim = 1;
@@ -230,7 +230,7 @@ namespace CORE::FE::DETAILS
   };
 
   template <>
-  struct CellTypeInformation<CORE::FE::CellType::point1>
+  struct CellTypeInformation<Core::FE::CellType::point1>
   {
     static constexpr auto name = "POINT1";
     static constexpr int dim = 0;
@@ -239,7 +239,7 @@ namespace CORE::FE::DETAILS
   };
 
   template <>
-  struct CellTypeInformation<CORE::FE::CellType::nurbs2>
+  struct CellTypeInformation<Core::FE::CellType::nurbs2>
   {
     static constexpr auto name = "NURBS2";
     static constexpr int dim = 1;
@@ -248,7 +248,7 @@ namespace CORE::FE::DETAILS
   };
 
   template <>
-  struct CellTypeInformation<CORE::FE::CellType::nurbs3>
+  struct CellTypeInformation<Core::FE::CellType::nurbs3>
   {
     static constexpr auto name = "NURBS3";
     static constexpr int dim = 1;
@@ -257,7 +257,7 @@ namespace CORE::FE::DETAILS
   };
 
   template <>
-  struct CellTypeInformation<CORE::FE::CellType::nurbs4>
+  struct CellTypeInformation<Core::FE::CellType::nurbs4>
   {
     static constexpr auto name = "NURBS4";
     static constexpr int dim = 2;
@@ -266,7 +266,7 @@ namespace CORE::FE::DETAILS
   };
 
   template <>
-  struct CellTypeInformation<CORE::FE::CellType::nurbs9>
+  struct CellTypeInformation<Core::FE::CellType::nurbs9>
   {
     static constexpr auto name = "NURBS9";
     static constexpr int dim = 2;
@@ -275,7 +275,7 @@ namespace CORE::FE::DETAILS
   };
 
   template <>
-  struct CellTypeInformation<CORE::FE::CellType::nurbs8>
+  struct CellTypeInformation<Core::FE::CellType::nurbs8>
   {
     static constexpr auto name = "NURBS8";
     static constexpr int dim = 3;
@@ -284,7 +284,7 @@ namespace CORE::FE::DETAILS
   };
 
   template <>
-  struct CellTypeInformation<CORE::FE::CellType::nurbs27>
+  struct CellTypeInformation<Core::FE::CellType::nurbs27>
   {
     static constexpr auto name = "NURBS27";
     static constexpr int dim = 3;
@@ -293,7 +293,7 @@ namespace CORE::FE::DETAILS
   };
 
   template <>
-  struct CellTypeInformation<CORE::FE::CellType::max_distype>
+  struct CellTypeInformation<Core::FE::CellType::max_distype>
   {
     static constexpr auto name = "MAX_DISTYPE";
   };
@@ -301,49 +301,49 @@ namespace CORE::FE::DETAILS
 
   //! @name Helper functions to convert cell types to the shape of the cell
   /// @{
-  template <CORE::FE::CellType celltype>
-  using is_tet = std::bool_constant<celltype == CORE::FE::CellType::tet4 ||
-                                    celltype == CORE::FE::CellType::tet10>;
+  template <Core::FE::CellType celltype>
+  using is_tet = std::bool_constant<celltype == Core::FE::CellType::tet4 ||
+                                    celltype == Core::FE::CellType::tet10>;
 
-  template <CORE::FE::CellType celltype>
+  template <Core::FE::CellType celltype>
   using is_hex = std::bool_constant<
-      celltype == CORE::FE::CellType::hex8 || celltype == CORE::FE::CellType::hex16 ||
-      celltype == CORE::FE::CellType::hex18 || celltype == CORE::FE::CellType::hex20 ||
-      celltype == CORE::FE::CellType::hex27>;
+      celltype == Core::FE::CellType::hex8 || celltype == Core::FE::CellType::hex16 ||
+      celltype == Core::FE::CellType::hex18 || celltype == Core::FE::CellType::hex20 ||
+      celltype == Core::FE::CellType::hex27>;
 
-  template <CORE::FE::CellType celltype>
-  using is_nurbs = std::bool_constant<celltype == CORE::FE::CellType::nurbs27>;
+  template <Core::FE::CellType celltype>
+  using is_nurbs = std::bool_constant<celltype == Core::FE::CellType::nurbs27>;
 
-  template <CORE::FE::CellType celltype>
-  using is_wedge = std::bool_constant<celltype == CORE::FE::CellType::wedge6 ||
-                                      celltype == CORE::FE::CellType::wedge15>;
+  template <Core::FE::CellType celltype>
+  using is_wedge = std::bool_constant<celltype == Core::FE::CellType::wedge6 ||
+                                      celltype == Core::FE::CellType::wedge15>;
 
-  template <CORE::FE::CellType celltype>
-  using is_pyramid = std::bool_constant<celltype == CORE::FE::CellType::pyramid5>;
+  template <Core::FE::CellType celltype>
+  using is_pyramid = std::bool_constant<celltype == Core::FE::CellType::pyramid5>;
 
-  template <CORE::FE::CellType celltype>
+  template <Core::FE::CellType celltype>
   using is_quad = std::bool_constant<
-      celltype == CORE::FE::CellType::quad4 || celltype == CORE::FE::CellType::quad6 ||
-      celltype == CORE::FE::CellType::quad8 || celltype == CORE::FE::CellType::quad9>;
+      celltype == Core::FE::CellType::quad4 || celltype == Core::FE::CellType::quad6 ||
+      celltype == Core::FE::CellType::quad8 || celltype == Core::FE::CellType::quad9>;
 
-  template <CORE::FE::CellType celltype>
-  using is_tri = std::bool_constant<celltype == CORE::FE::CellType::tri3 ||
-                                    celltype == CORE::FE::CellType::tri6>;
+  template <Core::FE::CellType celltype>
+  using is_tri = std::bool_constant<celltype == Core::FE::CellType::tri3 ||
+                                    celltype == Core::FE::CellType::tri6>;
 
-  template <CORE::FE::CellType celltype>
+  template <Core::FE::CellType celltype>
   using is_line = std::bool_constant<
-      celltype == CORE::FE::CellType::line2 || celltype == CORE::FE::CellType::line3 ||
-      celltype == CORE::FE::CellType::line4 || celltype == CORE::FE::CellType::line5 ||
-      celltype == CORE::FE::CellType::line6>;
+      celltype == Core::FE::CellType::line2 || celltype == Core::FE::CellType::line3 ||
+      celltype == Core::FE::CellType::line4 || celltype == Core::FE::CellType::line5 ||
+      celltype == Core::FE::CellType::line6>;
 
-  template <CORE::FE::CellType celltype>
+  template <Core::FE::CellType celltype>
   using use_lagrange_shapefnct =
       std::bool_constant<is_tet<celltype>::value || is_hex<celltype>::value ||
                          is_wedge<celltype>::value || is_pyramid<celltype>::value ||
                          is_quad<celltype>::value || is_tri<celltype>::value ||
                          is_line<celltype>::value>;
   /// @}
-}  // namespace CORE::FE::DETAILS
+}  // namespace Core::FE::Details
 
 FOUR_C_NAMESPACE_CLOSE
 

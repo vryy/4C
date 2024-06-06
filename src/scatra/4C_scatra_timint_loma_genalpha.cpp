@@ -26,11 +26,11 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       vg 11/08 |
  *----------------------------------------------------------------------*/
-SCATRA::TimIntLomaGenAlpha::TimIntLomaGenAlpha(Teuchos::RCP<DRT::Discretization> actdis,
-    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+ScaTra::TimIntLomaGenAlpha::TimIntLomaGenAlpha(Teuchos::RCP<Discret::Discretization> actdis,
+    Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
     Teuchos::RCP<Teuchos::ParameterList> extraparams,
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, sctratimintparams, extraparams, output),
       ScaTraTimIntLoma(actdis, solver, params, sctratimintparams, extraparams, output),
       TimIntGenAlpha(actdis, solver, sctratimintparams, extraparams, output),
@@ -49,7 +49,7 @@ SCATRA::TimIntLomaGenAlpha::TimIntLomaGenAlpha(Teuchos::RCP<DRT::Discretization>
 /*----------------------------------------------------------------------*
  |  initialize time integration                             rauch 09/16 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntLomaGenAlpha::Init()
+void ScaTra::TimIntLomaGenAlpha::Init()
 {
   // call Init()-functions of base classes
   // note: this order is important
@@ -62,7 +62,7 @@ void SCATRA::TimIntLomaGenAlpha::Init()
 /*----------------------------------------------------------------------*
  |  setup time integration                                  rauch 09/16 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntLomaGenAlpha::Setup()
+void ScaTra::TimIntLomaGenAlpha::Setup()
 {
   // call Init()-functions of base classes
   // note: this order is important
@@ -77,7 +77,7 @@ void SCATRA::TimIntLomaGenAlpha::Setup()
 /*----------------------------------------------------------------------*
  | predict thermodynamic pressure and time derivative          vg 12/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntLomaGenAlpha::predict_therm_pressure()
+void ScaTra::TimIntLomaGenAlpha::predict_therm_pressure()
 {
   // same-thermodynamic-pressure predictor (not required to be performed,
   // since we just updated the thermodynamic pressure, and thus,
@@ -99,7 +99,7 @@ void SCATRA::TimIntLomaGenAlpha::predict_therm_pressure()
 /*----------------------------------------------------------------------*
  | compute values of therm. pressure at interm. time steps     vg 09/09 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntLomaGenAlpha::compute_therm_pressure_intermediate_values()
+void ScaTra::TimIntLomaGenAlpha::compute_therm_pressure_intermediate_values()
 {
   // thermodynamic pressure at n+alpha_F and n+alpha_M for low-Mach-number case
   // -> required for evaluation of equation of state
@@ -122,7 +122,7 @@ void SCATRA::TimIntLomaGenAlpha::compute_therm_pressure_intermediate_values()
 /*----------------------------------------------------------------------*
  | compute thermodynamic pressure for low-Mach-number flow     vg 12/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntLomaGenAlpha::compute_therm_pressure()
+void ScaTra::TimIntLomaGenAlpha::compute_therm_pressure()
 {
   // compute temperature at n+alpha_F
   phiaf_->Update(alphaF_, *phinp_, (1.0 - alphaF_), *phin_, 0.0);
@@ -139,13 +139,13 @@ void SCATRA::TimIntLomaGenAlpha::compute_therm_pressure()
   discret_->set_state("phinp", phiaf_);
 
   // set action for elements
-  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
-      "action", SCATRA::Action::calc_domain_and_bodyforce, eleparams);
+  Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+      "action", ScaTra::Action::calc_domain_and_bodyforce, eleparams);
   set_element_time_parameter();
 
   // variables for integrals of domain and bodyforce
-  Teuchos::RCP<CORE::LINALG::SerialDenseVector> scalars =
-      Teuchos::rcp(new CORE::LINALG::SerialDenseVector(2));
+  Teuchos::RCP<Core::LinAlg::SerialDenseVector> scalars =
+      Teuchos::rcp(new Core::LinAlg::SerialDenseVector(2));
 
   // evaluate domain and bodyforce integral
   discret_->EvaluateScalars(eleparams, scalars);
@@ -155,8 +155,8 @@ void SCATRA::TimIntLomaGenAlpha::compute_therm_pressure()
   double parbofint = (*scalars)[1];
 
   // set action for elements
-  CORE::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
-      "action", SCATRA::BoundaryAction::calc_loma_therm_press, eleparams);
+  Core::UTILS::AddEnumClassToParameterList<ScaTra::BoundaryAction>(
+      "action", ScaTra::BoundaryAction::calc_loma_therm_press, eleparams);
 
   // variables for integrals of normal velocity and diffusive flux
   double normvelint = 0.0;
@@ -227,7 +227,7 @@ void SCATRA::TimIntLomaGenAlpha::compute_therm_pressure()
 /*----------------------------------------------------------------------*
  | compute time derivative of thermodynamic pressure           vg 09/09 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntLomaGenAlpha::compute_therm_pressure_time_derivative()
+void ScaTra::TimIntLomaGenAlpha::compute_therm_pressure_time_derivative()
 {
   // time derivative of thermodynamic pressure:
   // tpdt(n+1) = (tp(n+1)-tp(n)) / (gamma*dt) + (1-(1/gamma))*tpdt(n)
@@ -242,7 +242,7 @@ void SCATRA::TimIntLomaGenAlpha::compute_therm_pressure_time_derivative()
 /*----------------------------------------------------------------------*
  | update thermodynamic pressure at n for low-Mach-number flow vg 12/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntLomaGenAlpha::UpdateThermPressure()
+void ScaTra::TimIntLomaGenAlpha::UpdateThermPressure()
 {
   thermpressn_ = thermpressnp_;
   thermpressdtn_ = thermpressdtnp_;
@@ -253,7 +253,7 @@ void SCATRA::TimIntLomaGenAlpha::UpdateThermPressure()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntLomaGenAlpha::write_restart() const
+void ScaTra::TimIntLomaGenAlpha::write_restart() const
 {
   // write standard fields first
   TimIntGenAlpha::write_restart();
@@ -287,8 +287,8 @@ void SCATRA::TimIntLomaGenAlpha::write_restart() const
 /*----------------------------------------------------------------------*
  |                                                             vg 11/08 |
  -----------------------------------------------------------------------*/
-void SCATRA::TimIntLomaGenAlpha::read_restart(
-    const int step, Teuchos::RCP<CORE::IO::InputControl> input)
+void ScaTra::TimIntLomaGenAlpha::read_restart(
+    const int step, Teuchos::RCP<Core::IO::InputControl> input)
 {
   // do standard output
   TimIntGenAlpha::read_restart(step, input);
@@ -296,12 +296,12 @@ void SCATRA::TimIntLomaGenAlpha::read_restart(
   // restart data of loma problems
   // required for restart of closed systems
 
-  Teuchos::RCP<CORE::IO::DiscretizationReader> reader(Teuchos::null);
+  Teuchos::RCP<Core::IO::DiscretizationReader> reader(Teuchos::null);
   if (input == Teuchos::null)
-    reader = Teuchos::rcp(new CORE::IO::DiscretizationReader(
-        discret_, GLOBAL::Problem::Instance()->InputControlFile(), step));
+    reader = Teuchos::rcp(new Core::IO::DiscretizationReader(
+        discret_, Global::Problem::Instance()->InputControlFile(), step));
   else
-    reader = Teuchos::rcp(new CORE::IO::DiscretizationReader(discret_, input, step));
+    reader = Teuchos::rcp(new Core::IO::DiscretizationReader(discret_, input, step));
 
   // thermodynamic pressure at time n+1
   thermpressnp_ = reader->ReadDouble("thermpressnp");
@@ -329,9 +329,9 @@ void SCATRA::TimIntLomaGenAlpha::read_restart(
 /*----------------------------------------------------------------------*
  | dynamic Smagorinsky model                           rasthofer  08/12 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntLomaGenAlpha::dynamic_computation_of_cs()
+void ScaTra::TimIntLomaGenAlpha::dynamic_computation_of_cs()
 {
-  if (turbmodel_ == INPAR::FLUID::dynamic_smagorinsky)
+  if (turbmodel_ == Inpar::FLUID::dynamic_smagorinsky)
   {
     // perform filtering and computation of Prt
     // compute averaged values for LkMk and MkMk
@@ -347,9 +347,9 @@ void SCATRA::TimIntLomaGenAlpha::dynamic_computation_of_cs()
 /*----------------------------------------------------------------------*
  | dynamic Vreman model                                krank  09/13     |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntLomaGenAlpha::dynamic_computation_of_cv()
+void ScaTra::TimIntLomaGenAlpha::dynamic_computation_of_cv()
 {
-  if (turbmodel_ == INPAR::FLUID::dynamic_vreman)
+  if (turbmodel_ == Inpar::FLUID::dynamic_vreman)
   {
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle = dirichlet_toggle();
     Vrem_->apply_filter_for_dynamic_computation_of_dt(
@@ -363,7 +363,7 @@ void SCATRA::TimIntLomaGenAlpha::dynamic_computation_of_cv()
 /*-------------------------------------------------------------------------------------*
  | add thermodynamic pressure to parameter list for element evaluation rasthofer 12/13 |
  *-------------------------------------------------------------------------------------*/
-void SCATRA::TimIntLomaGenAlpha::add_therm_press_to_parameter_list(
+void ScaTra::TimIntLomaGenAlpha::add_therm_press_to_parameter_list(
     Teuchos::ParameterList& params  //!< parameter list
 )
 {

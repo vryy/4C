@@ -23,12 +23,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   class Material;
 }
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 
@@ -47,28 +47,28 @@ namespace DRT
         This class does not provide a definition for this function; it
         must be defined in ElemagEleCalc.
        */
-      virtual int Evaluate(DRT::ELEMENTS::Elemag* ele, DRT::Discretization& discretization,
+      virtual int Evaluate(Discret::ELEMENTS::Elemag* ele, Discret::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra,
-          CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra, bool offdiag = false) = 0;
+          Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec1_epetra,
+          Core::LinAlg::SerialDenseVector& elevec2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec3_epetra, bool offdiag = false) = 0;
 
       /// Integrate shape function
       /*!
         This class does not provide a definition for this function; it
         must be defined in ElemagEleCalc.
        */
-      virtual int integrate_shape_function(DRT::ELEMENTS::Elemag* ele,
-          DRT::Discretization& discretization, const std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1) = 0;
+      virtual int integrate_shape_function(Discret::ELEMENTS::Elemag* ele,
+          Discret::Discretization& discretization, const std::vector<int>& lm,
+          Core::LinAlg::SerialDenseVector& elevec1) = 0;
     };
 
 
   }  // namespace ELEMENTS
 
-}  // namespace DRT
+}  // namespace Discret
 
 
 FOUR_C_NAMESPACE_CLOSE

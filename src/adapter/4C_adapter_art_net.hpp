@@ -22,13 +22,13 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
   class ResultTest;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace ADAPTER
+namespace Adapter
 {
   /// basic artery network adapter
   class ArtNet
@@ -58,10 +58,10 @@ namespace ADAPTER
     virtual void TestResults() = 0;
 
     // create field test
-    virtual Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() = 0;
+    virtual Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() = 0;
 
     //! get discretization
-    virtual Teuchos::RCP<DRT::Discretization> discretization() = 0;
+    virtual Teuchos::RCP<Discret::Discretization> discretization() = 0;
 
     // get time step size
     virtual double Dt() const = 0;
@@ -92,7 +92,7 @@ namespace ADAPTER
     virtual void PrepareLinearSolve() = 0;
 
     /// direct access to system matrix
-    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() = 0;
+    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() = 0;
 
     //! right-hand side alias the dynamic force residual
     virtual Teuchos::RCP<const Epetra_Vector> RHS() const = 0;
@@ -110,11 +110,11 @@ namespace ADAPTER
     virtual void SetSolveScatra(const bool solvescatra) = 0;
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    virtual Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor() const = 0;
 
   };  // class ArtNet
 
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 
 FOUR_C_NAMESPACE_CLOSE

@@ -24,27 +24,27 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace MAT
+namespace Mat
 {
   class Material;
   class StructPoro;
   class FluidPoroSinglePhase;
   class FluidPoroMultiPhase;
-}  // namespace MAT
+}  // namespace Mat
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
 
-namespace DRT
+namespace Discret
 {
 
   namespace ELEMENTS
   {
     class PoroFluidMultiPhaseEleParameter;
 
-    namespace POROFLUIDMANAGER
+    namespace PoroFluidManager
     {
       class VariableManagerMinAccess;
 
@@ -86,21 +86,21 @@ namespace DRT
         virtual ~PhaseManagerInterface() = default;
 
         //! factory method
-        static Teuchos::RCP<DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface>
-        CreatePhaseManager(const DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter& para, int nsd,
-            CORE::Materials::MaterialType mattype, const POROFLUIDMULTIPHASE::Action& action,
+        static Teuchos::RCP<Discret::ELEMENTS::PoroFluidManager::PhaseManagerInterface>
+        CreatePhaseManager(const Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter& para, int nsd,
+            Core::Materials::MaterialType mattype, const POROFLUIDMULTIPHASE::Action& action,
             int totalnumdofpernode, int numfluidphases);
 
         //! factory method
-        static Teuchos::RCP<DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface>
-        WrapPhaseManager(const DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter& para, int nsd,
-            CORE::Materials::MaterialType mattype, const POROFLUIDMULTIPHASE::Action& action,
+        static Teuchos::RCP<Discret::ELEMENTS::PoroFluidManager::PhaseManagerInterface>
+        WrapPhaseManager(const Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter& para, int nsd,
+            Core::Materials::MaterialType mattype, const POROFLUIDMULTIPHASE::Action& action,
             Teuchos::RCP<PhaseManagerInterface> corephasemanager);
 
         //! setup (matnum is the material number of the porofluid-material on the current element)
         //! default is set to zero, if called from a porofluidmultiphase-element
         //! otherwise it has to be explicitly passed from the caller
-        virtual void Setup(const CORE::Elements::Element* ele, const int matnum = 0) = 0;
+        virtual void Setup(const Core::Elements::Element* ele, const int matnum = 0) = 0;
 
         //! evaluate pressures, saturations and derivatives at GP (matnum is the material number of
         //! the porofluid-material on the current element) default is set to zero, if called from a
@@ -115,7 +115,7 @@ namespace DRT
         virtual bool IsReactive(int phasenum) const = 0;
 
         //! get scalar to phase mapping
-        virtual MAT::ScatraMatMultiPoro::ScalarToPhaseMap ScalarToPhase(int iscal) const = 0;
+        virtual Mat::ScaTraMatMultiPoro::ScalarToPhaseMap ScalarToPhase(int iscal) const = 0;
 
         //! check if EvaluateGPState() was called
         virtual void CheckIsEvaluated() const = 0;
@@ -190,7 +190,7 @@ namespace DRT
         virtual double SolidDensity() const = 0;
 
         //! get the current element the manager was set up with
-        virtual const CORE::Elements::Element* Element() const = 0;
+        virtual const Core::Elements::Element* Element() const = 0;
 
         //! get porosity
         virtual double Porosity() const = 0;
@@ -245,13 +245,13 @@ namespace DRT
 
         //! get the diffusion tensor
         virtual void PermeabilityTensor(
-            int phasenum, CORE::LINALG::Matrix<3, 3>& permeabilitytensor) const = 0;
+            int phasenum, Core::LinAlg::Matrix<3, 3>& permeabilitytensor) const = 0;
         //! get the diffusion tensor
         virtual void PermeabilityTensor(
-            int phasenum, CORE::LINALG::Matrix<2, 2>& permeabilitytensor) const = 0;
+            int phasenum, Core::LinAlg::Matrix<2, 2>& permeabilitytensor) const = 0;
         //! get the diffusion tensor
         virtual void PermeabilityTensor(
-            int phasenum, CORE::LINALG::Matrix<1, 1>& permeabilitytensor) const = 0;
+            int phasenum, Core::LinAlg::Matrix<1, 1>& permeabilitytensor) const = 0;
 
         //! check for constant relpermeability
         virtual bool has_constant_rel_permeability(int phasenum) const = 0;
@@ -269,12 +269,12 @@ namespace DRT
         virtual double DynViscosity(int phasenum, double abspressgrad, int matnum = 0) const = 0;
         //! get dynamic viscosity of phase
         virtual double DynViscosity(
-            const CORE::MAT::Material& material, int phasenum, double abspressgrad) const = 0;
+            const Core::Mat::Material& material, int phasenum, double abspressgrad) const = 0;
         //! get derivative of dynamic viscosity of phase
         virtual double DynViscosityDeriv(int phasenum, double abspressgrad) const = 0;
         //! get derivative dynamic viscosity of phase
         virtual double DynViscosityDeriv(
-            const CORE::MAT::Material& material, int phasenum, double abspressgrad) const = 0;
+            const Core::Mat::Material& material, int phasenum, double abspressgrad) const = 0;
 
         //! check for constant dynamic viscosity of volume fraction pressure
         virtual bool has_constant_dyn_viscosity_vol_frac_pressure(int volfracpressnum) const = 0;
@@ -285,34 +285,34 @@ namespace DRT
         virtual double dyn_viscosity_vol_frac_pressure(
             int volfracpressnum, double abspressgrad, int matnum = 0) const = 0;
         //! get dynamic viscosity of volume fraction pressure
-        virtual double dyn_viscosity_vol_frac_pressure(const CORE::MAT::Material& material,
+        virtual double dyn_viscosity_vol_frac_pressure(const Core::Mat::Material& material,
             int volfracpressnum, double abspressgrad) const = 0;
         //! get derivative of dynamic viscosity of volume fraction pressure
         virtual double dyn_viscosity_deriv_vol_frac_pressure(
             int volfracpressnum, double abspressgrad) const = 0;
         //! get derivative dynamic viscosity of volume fraction pressure
-        virtual double dyn_viscosity_deriv_vol_frac_pressure(const CORE::MAT::Material& material,
+        virtual double dyn_viscosity_deriv_vol_frac_pressure(const Core::Mat::Material& material,
             int volfracpressnum, double abspressgrad) const = 0;
 
         //! get the diffusion tensor
         virtual void DiffTensorVolFrac(
-            int volfracnum, CORE::LINALG::Matrix<3, 3>& difftensorvolfrac) const = 0;
+            int volfracnum, Core::LinAlg::Matrix<3, 3>& difftensorvolfrac) const = 0;
         //! get the diffusion tensor
         virtual void DiffTensorVolFrac(
-            int volfracnum, CORE::LINALG::Matrix<2, 2>& difftensorvolfrac) const = 0;
+            int volfracnum, Core::LinAlg::Matrix<2, 2>& difftensorvolfrac) const = 0;
         //! get the diffusion tensor
         virtual void DiffTensorVolFrac(
-            int volfracnum, CORE::LINALG::Matrix<1, 1>& difftensorvolfrac) const = 0;
+            int volfracnum, Core::LinAlg::Matrix<1, 1>& difftensorvolfrac) const = 0;
 
         //! get the permeability tensor for volume fraction pressures
         virtual void permeability_tensor_vol_frac_pressure(int volfracpressnum,
-            CORE::LINALG::Matrix<3, 3>& permeabilitytensorvolfracpressure) const = 0;
+            Core::LinAlg::Matrix<3, 3>& permeabilitytensorvolfracpressure) const = 0;
         //! get the permeability tensor for volume fraction pressures
         virtual void permeability_tensor_vol_frac_pressure(int volfracpressnum,
-            CORE::LINALG::Matrix<2, 2>& permeabilitytensorvolfracpressure) const = 0;
+            Core::LinAlg::Matrix<2, 2>& permeabilitytensorvolfracpressure) const = 0;
         //! get the permeability tensor for volume fraction pressures
         virtual void permeability_tensor_vol_frac_pressure(int volfracpressnum,
-            CORE::LINALG::Matrix<1, 1>& permeabilitytensorvolfracpressure) const = 0;
+            Core::LinAlg::Matrix<1, 1>& permeabilitytensorvolfracpressure) const = 0;
 
         //! check if volume frac 'volfracnum' has additional scalar dependent flux
         virtual bool has_add_scalar_dependent_flux(int volfracnum) const = 0;
@@ -361,7 +361,7 @@ namespace DRT
         //! setup (matnum is the material number of the porofluid-material on the current element)
         //! default is set to zero, if called from a porofluidmultiphase-element
         //! otherwise it has to be explicitly passed from the caller
-        void Setup(const CORE::Elements::Element* ele, const int matnum = 0) override;
+        void Setup(const Core::Elements::Element* ele, const int matnum = 0) override;
 
         //! evaluate pressures, saturations and derivatives at GP (matnum is the material number of
         //! the porofluid-material on the current element) default is set to zero, if called from a
@@ -442,7 +442,7 @@ namespace DRT
         double SolidDensity() const override;
 
         //! get the current element the manager was set up with
-        const CORE::Elements::Element* Element() const override { return ele_; };
+        const Core::Elements::Element* Element() const override { return ele_; };
 
         //@}
 
@@ -577,19 +577,19 @@ namespace DRT
 
         //! get the diffusion tensor
         void PermeabilityTensor(
-            int phasenum, CORE::LINALG::Matrix<3, 3>& permeabilitytensor) const override
+            int phasenum, Core::LinAlg::Matrix<3, 3>& permeabilitytensor) const override
         {
           FOUR_C_THROW("Diffusion tensor (3D) not available for this phase manager!");
         };
         //! get the diffusion tensor
         void PermeabilityTensor(
-            int phasenum, CORE::LINALG::Matrix<2, 2>& permeabilitytensor) const override
+            int phasenum, Core::LinAlg::Matrix<2, 2>& permeabilitytensor) const override
         {
           FOUR_C_THROW("Diffusion tensor (2D) not available for this phase manager!");
         };
         //! get the diffusion tensor
         void PermeabilityTensor(
-            int phasenum, CORE::LINALG::Matrix<1, 1>& permeabilitytensor) const override
+            int phasenum, Core::LinAlg::Matrix<1, 1>& permeabilitytensor) const override
         {
           FOUR_C_THROW("Diffusion tensor (1D) not available for this phase manager!");
         };
@@ -629,7 +629,7 @@ namespace DRT
         };
         //! get dynamic viscosity of phase
         double DynViscosity(
-            const CORE::MAT::Material& material, int phasenum, double abspressgrad) const override
+            const Core::Mat::Material& material, int phasenum, double abspressgrad) const override
         {
           FOUR_C_THROW("Dynamic Viscosity not available for this phase manager!");
           return 0.0;
@@ -642,7 +642,7 @@ namespace DRT
         };
         //! get derivative dynamic viscosity of phase
         double DynViscosityDeriv(
-            const CORE::MAT::Material& material, int phasenum, double abspressgrad) const override
+            const Core::Mat::Material& material, int phasenum, double abspressgrad) const override
         {
           FOUR_C_THROW("Derivative of dynamic Viscosity not available for this phase manager!");
           return 0.0;
@@ -664,7 +664,7 @@ namespace DRT
           return 0.0;
         };
         //! get dynamic viscosity of volume fraction pressure
-        double dyn_viscosity_vol_frac_pressure(const CORE::MAT::Material& material,
+        double dyn_viscosity_vol_frac_pressure(const Core::Mat::Material& material,
             int volfracpressnum, double abspressgrad) const override
         {
           FOUR_C_THROW("Dynamic Viscosity (VolFracPressure) not available for this phase manager!");
@@ -680,7 +680,7 @@ namespace DRT
           return 0.0;
         };
         //! get derivative dynamic viscosity of volume fraction pressure
-        double dyn_viscosity_deriv_vol_frac_pressure(const CORE::MAT::Material& material,
+        double dyn_viscosity_deriv_vol_frac_pressure(const Core::Mat::Material& material,
             int volfracpressnum, double abspressgrad) const override
         {
           FOUR_C_THROW(
@@ -691,21 +691,21 @@ namespace DRT
 
         //! get the diffusion tensor
         void DiffTensorVolFrac(
-            int volfracnum, CORE::LINALG::Matrix<3, 3>& difftensorvolfrac) const override
+            int volfracnum, Core::LinAlg::Matrix<3, 3>& difftensorvolfrac) const override
         {
           FOUR_C_THROW(
               "Diffusion tensor for volume fractions (3D) not available for this phase manager!");
         };
         //! get the diffusion tensor
         void DiffTensorVolFrac(
-            int volfracnum, CORE::LINALG::Matrix<2, 2>& difftensorvolfrac) const override
+            int volfracnum, Core::LinAlg::Matrix<2, 2>& difftensorvolfrac) const override
         {
           FOUR_C_THROW(
               "Diffusion tensor for volume fractions (2D) not available for this phase manager!");
         };
         //! get the diffusion tensor
         void DiffTensorVolFrac(
-            int volfracnum, CORE::LINALG::Matrix<1, 1>& difftensorvolfrac) const override
+            int volfracnum, Core::LinAlg::Matrix<1, 1>& difftensorvolfrac) const override
         {
           FOUR_C_THROW(
               "Diffusion tensor for volume fractions (1D) not available for this phase manager!");
@@ -713,7 +713,7 @@ namespace DRT
 
         //! get the permeabilty tensor for volume fraction pressures
         void permeability_tensor_vol_frac_pressure(int volfracpressnum,
-            CORE::LINALG::Matrix<3, 3>& permeabilitytensorvolfracpressure) const override
+            Core::LinAlg::Matrix<3, 3>& permeabilitytensorvolfracpressure) const override
         {
           FOUR_C_THROW(
               "Permeability tensor for volume fraction pressures (3D) not available for this phase "
@@ -721,7 +721,7 @@ namespace DRT
         };
         //! get the permeabilty tensor for volume fraction pressures
         void permeability_tensor_vol_frac_pressure(int volfracpressnum,
-            CORE::LINALG::Matrix<2, 2>& permeabilitytensorvolfracpressure) const override
+            Core::LinAlg::Matrix<2, 2>& permeabilitytensorvolfracpressure) const override
         {
           FOUR_C_THROW(
               "Permeability tensor for volume fraction pressures (2D) not available for this phase "
@@ -729,7 +729,7 @@ namespace DRT
         };
         //! get the permeabilty tensor for volume fraction pressures
         void permeability_tensor_vol_frac_pressure(int volfracpressnum,
-            CORE::LINALG::Matrix<1, 1>& permeabilitytensorvolfracpressure) const override
+            Core::LinAlg::Matrix<1, 1>& permeabilitytensorvolfracpressure) const override
         {
           FOUR_C_THROW(
               "Permeability tensor for volume fraction pressures (1D) not available for this phase "
@@ -776,10 +776,10 @@ namespace DRT
         };
 
         //! get scalar to phase mapping
-        MAT::ScatraMatMultiPoro::ScalarToPhaseMap ScalarToPhase(int iscal) const override
+        Mat::ScaTraMatMultiPoro::ScalarToPhaseMap ScalarToPhase(int iscal) const override
         {
           FOUR_C_THROW("ScalarToPhase not available for this phase manager!");
-          MAT::ScatraMatMultiPoro::ScalarToPhaseMap null_map;
+          Mat::ScaTraMatMultiPoro::ScalarToPhaseMap null_map;
           return null_map;
         };
 
@@ -817,7 +817,7 @@ namespace DRT
         double invbulkmodulussolid_;
 
         //! the current element
-        const CORE::Elements::Element* ele_;
+        const Core::Elements::Element* ele_;
 
         //! flag indicating of gauss point state has been set and evaluated
         bool isevaluated_;
@@ -846,13 +846,13 @@ namespace DRT
        public:
         //! constructor
         explicit PhaseManagerDecorator(
-            Teuchos::RCP<POROFLUIDMANAGER::PhaseManagerInterface> phasemanager)
+            Teuchos::RCP<PoroFluidManager::PhaseManagerInterface> phasemanager)
             : phasemanager_(phasemanager){};
 
         //! setup (matnum is the material number of the porofluid-material on the current element)
         //! default is set to zero, if called from a porofluidmultiphase-element
         //! otherwise it has to be explicitly passed from the caller
-        void Setup(const CORE::Elements::Element* ele, const int matnum = 0) override
+        void Setup(const Core::Elements::Element* ele, const int matnum = 0) override
         {
           phasemanager_->Setup(ele, matnum);
         };
@@ -924,7 +924,7 @@ namespace DRT
         };
 
         //! get scalar to phase mapping
-        MAT::ScatraMatMultiPoro::ScalarToPhaseMap ScalarToPhase(int iscal) const override
+        Mat::ScaTraMatMultiPoro::ScalarToPhaseMap ScalarToPhase(int iscal) const override
         {
           return phasemanager_->ScalarToPhase(iscal);
         }
@@ -1036,7 +1036,7 @@ namespace DRT
         double SolidDensity() const override { return phasemanager_->SolidDensity(); };
 
         //! get the current element the manager was set up with
-        const CORE::Elements::Element* Element() const override
+        const Core::Elements::Element* Element() const override
         {
           return phasemanager_->Element();
         };
@@ -1067,19 +1067,19 @@ namespace DRT
 
         //! get the diffusion tensor
         void PermeabilityTensor(
-            int phasenum, CORE::LINALG::Matrix<3, 3>& permeabilitytensor) const override
+            int phasenum, Core::LinAlg::Matrix<3, 3>& permeabilitytensor) const override
         {
           phasemanager_->PermeabilityTensor(phasenum, permeabilitytensor);
         };
         //! get the diffusion tensor
         void PermeabilityTensor(
-            int phasenum, CORE::LINALG::Matrix<2, 2>& permeabilitytensor) const override
+            int phasenum, Core::LinAlg::Matrix<2, 2>& permeabilitytensor) const override
         {
           phasemanager_->PermeabilityTensor(phasenum, permeabilitytensor);
         };
         //! get the diffusion tensor
         void PermeabilityTensor(
-            int phasenum, CORE::LINALG::Matrix<1, 1>& permeabilitytensor) const override
+            int phasenum, Core::LinAlg::Matrix<1, 1>& permeabilitytensor) const override
         {
           phasemanager_->PermeabilityTensor(phasenum, permeabilitytensor);
         };
@@ -1114,7 +1114,7 @@ namespace DRT
         };
         //! get dynamic viscosity of phase
         double DynViscosity(
-            const CORE::MAT::Material& material, int phasenum, double abspressgrad) const override
+            const Core::Mat::Material& material, int phasenum, double abspressgrad) const override
         {
           return phasemanager_->DynViscosity(material, phasenum, abspressgrad);
         };
@@ -1125,7 +1125,7 @@ namespace DRT
         };
         //! get derivative dynamic viscosity of phase
         double DynViscosityDeriv(
-            const CORE::MAT::Material& material, int phasenum, double abspressgrad) const override
+            const Core::Mat::Material& material, int phasenum, double abspressgrad) const override
         {
           return phasemanager_->DynViscosityDeriv(material, phasenum, abspressgrad);
         };
@@ -1143,7 +1143,7 @@ namespace DRT
               volfracpressnum, abspressgrad, matnum = 0);
         };
         //! get dynamic viscosity of volume fraction pressure
-        double dyn_viscosity_vol_frac_pressure(const CORE::MAT::Material& material,
+        double dyn_viscosity_vol_frac_pressure(const Core::Mat::Material& material,
             int volfracpressnum, double abspressgrad) const override
         {
           return phasemanager_->dyn_viscosity_vol_frac_pressure(
@@ -1157,7 +1157,7 @@ namespace DRT
               volfracpressnum, abspressgrad);
         };
         //! get derivative dynamic viscosity of volume fraction pressure
-        double dyn_viscosity_deriv_vol_frac_pressure(const CORE::MAT::Material& material,
+        double dyn_viscosity_deriv_vol_frac_pressure(const Core::Mat::Material& material,
             int volfracpressnum, double abspressgrad) const override
         {
           return phasemanager_->dyn_viscosity_deriv_vol_frac_pressure(
@@ -1166,40 +1166,40 @@ namespace DRT
 
         //! get the diffusion tensor
         void DiffTensorVolFrac(
-            int volfracnum, CORE::LINALG::Matrix<3, 3>& difftensorvolfrac) const override
+            int volfracnum, Core::LinAlg::Matrix<3, 3>& difftensorvolfrac) const override
         {
           phasemanager_->DiffTensorVolFrac(volfracnum, difftensorvolfrac);
         };
         //! get the diffusion tensor
         void DiffTensorVolFrac(
-            int volfracnum, CORE::LINALG::Matrix<2, 2>& difftensorvolfrac) const override
+            int volfracnum, Core::LinAlg::Matrix<2, 2>& difftensorvolfrac) const override
         {
           phasemanager_->DiffTensorVolFrac(volfracnum, difftensorvolfrac);
         };
         //! get the diffusion tensor
         void DiffTensorVolFrac(
-            int volfracnum, CORE::LINALG::Matrix<1, 1>& difftensorvolfrac) const override
+            int volfracnum, Core::LinAlg::Matrix<1, 1>& difftensorvolfrac) const override
         {
           phasemanager_->DiffTensorVolFrac(volfracnum, difftensorvolfrac);
         };
 
         //! get the permeability tensor for volume fraction pressures
         void permeability_tensor_vol_frac_pressure(int volfracpressnum,
-            CORE::LINALG::Matrix<3, 3>& permeabilitytensorvolfracpressure) const override
+            Core::LinAlg::Matrix<3, 3>& permeabilitytensorvolfracpressure) const override
         {
           phasemanager_->permeability_tensor_vol_frac_pressure(
               volfracpressnum, permeabilitytensorvolfracpressure);
         };
         //! get the permeability tensor for volume fraction pressures
         void permeability_tensor_vol_frac_pressure(int volfracpressnum,
-            CORE::LINALG::Matrix<2, 2>& permeabilitytensorvolfracpressure) const override
+            Core::LinAlg::Matrix<2, 2>& permeabilitytensorvolfracpressure) const override
         {
           phasemanager_->permeability_tensor_vol_frac_pressure(
               volfracpressnum, permeabilitytensorvolfracpressure);
         };
         //! get the permeability tensor for volume fraction pressures
         void permeability_tensor_vol_frac_pressure(int volfracpressnum,
-            CORE::LINALG::Matrix<1, 1>& permeabilitytensorvolfracpressure) const override
+            Core::LinAlg::Matrix<1, 1>& permeabilitytensorvolfracpressure) const override
         {
           phasemanager_->permeability_tensor_vol_frac_pressure(
               volfracpressnum, permeabilitytensorvolfracpressure);
@@ -1243,7 +1243,7 @@ namespace DRT
 
        protected:
         //! wrapped phase manager
-        Teuchos::RCP<POROFLUIDMANAGER::PhaseManagerInterface> phasemanager_;
+        Teuchos::RCP<PoroFluidManager::PhaseManagerInterface> phasemanager_;
       };
 
       /*----------------------------------------------------------------------*
@@ -1263,7 +1263,7 @@ namespace DRT
        public:
         //! constructor
         explicit PhaseManagerDeriv(
-            Teuchos::RCP<POROFLUIDMANAGER::PhaseManagerInterface> phasemanager);
+            Teuchos::RCP<PoroFluidManager::PhaseManagerInterface> phasemanager);
 
         //! evaluate pressures, saturations and derivatives at GP (matnum is the material number of
         //! the porofluid-material on the current element) default is set to zero, if called from a
@@ -1300,17 +1300,17 @@ namespace DRT
        private:
         //! derivative of true pressure w.r.t. degrees of freedom
         // first index: pressure, second index: dof
-        Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> pressurederiv_;
+        Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> pressurederiv_;
         //! derivative of saturations w.r.t. degrees of freedom
         // first index: saturation, second index: dof
-        Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> saturationderiv_;
+        Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> saturationderiv_;
         //! second derivative of saturations w.r.t. degrees of freedom
-        Teuchos::RCP<std::vector<CORE::LINALG::SerialDenseMatrix>> saturationderivderiv_;
+        Teuchos::RCP<std::vector<Core::LinAlg::SerialDenseMatrix>> saturationderivderiv_;
 
         //! derivative of solid pressure w.r.t. degrees of freedom
-        Teuchos::RCP<CORE::LINALG::SerialDenseVector> solidpressurederiv_;
+        Teuchos::RCP<Core::LinAlg::SerialDenseVector> solidpressurederiv_;
         //! second derivative of solid pressure w.r.t. degrees of freedom;
-        Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> solidpressurederivderiv_;
+        Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> solidpressurederivderiv_;
       };
 
       /*----------------------------------------------------------------------*
@@ -1330,7 +1330,7 @@ namespace DRT
        public:
         //! constructor
         explicit PhaseManagerDerivAndPorosity(
-            Teuchos::RCP<POROFLUIDMANAGER::PhaseManagerInterface> phasemanager);
+            Teuchos::RCP<PoroFluidManager::PhaseManagerInterface> phasemanager);
 
         //! evaluate pressures, saturations and derivatives at GP (matnum is the material number of
         //! the porofluid-material on the current element) default is set to zero, if called from a
@@ -1377,7 +1377,7 @@ namespace DRT
         double dporosity_dp_;
 
         //! derivative of porosity w.r.t. degrees of freedom
-        Teuchos::RCP<CORE::LINALG::SerialDenseVector> porosityderiv_;
+        Teuchos::RCP<Core::LinAlg::SerialDenseVector> porosityderiv_;
       };
 
       /*----------------------------------------------------------------------*
@@ -1396,12 +1396,12 @@ namespace DRT
       {
        public:
         //! constructor
-        PhaseManagerReaction(Teuchos::RCP<POROFLUIDMANAGER::PhaseManagerInterface> phasemanager);
+        PhaseManagerReaction(Teuchos::RCP<PoroFluidManager::PhaseManagerInterface> phasemanager);
 
         //! setup (matnum is the material number of the porofluid-material on the current element)
         //! default is set to zero, if called from a porofluidmultiphase-element
         //! otherwise it has to be explicitly passed from the caller
-        void Setup(const CORE::Elements::Element* ele, const int matnum = 0) override;
+        void Setup(const Core::Elements::Element* ele, const int matnum = 0) override;
 
         //! evaluate pressures, saturations and derivatives at GP (matnum is the material number of
         //! the porofluid-material on the current element) default is set to zero, if called from a
@@ -1428,7 +1428,7 @@ namespace DRT
         };
 
         //! get scalar to phase mapping
-        MAT::ScatraMatMultiPoro::ScalarToPhaseMap ScalarToPhase(int iscal) const override;
+        Mat::ScaTraMatMultiPoro::ScalarToPhaseMap ScalarToPhase(int iscal) const override;
 
         //! get total number of scalars in system
         int NumScal() const override;
@@ -1462,7 +1462,7 @@ namespace DRT
         //! flags indicating whether the phase is involved in a reaction
         std::vector<bool> isreactive_;
         //! scalar to phase map
-        std::vector<MAT::ScatraMatMultiPoro::ScalarToPhaseMap> scalartophasemap_;
+        std::vector<Mat::ScaTraMatMultiPoro::ScalarToPhaseMap> scalartophasemap_;
         //! number of scalars
         int numscal_;
       };
@@ -1476,7 +1476,7 @@ namespace DRT
 
       This class is a decorator for a phase manager, including evaluation of
       the diffusion tensor (inverse permeability). As the tensor is saved
-      as a CORE::LINALG::Matrix, it is templated by the number of space dimensions
+      as a Core::LinAlg::Matrix, it is templated by the number of space dimensions
 
       \author vuong
       */
@@ -1485,12 +1485,12 @@ namespace DRT
       {
        public:
         //! constructor
-        PhaseManagerDiffusion(Teuchos::RCP<POROFLUIDMANAGER::PhaseManagerInterface> phasemanager);
+        PhaseManagerDiffusion(Teuchos::RCP<PoroFluidManager::PhaseManagerInterface> phasemanager);
 
         //! setup (matnum is the material number of the porofluid-material on the current element)
         //! default is set to zero, if called from a porofluidmultiphase-element
         //! otherwise it has to be explicitly passed from the caller
-        void Setup(const CORE::Elements::Element* ele, const int matnum = 0) override;
+        void Setup(const Core::Elements::Element* ele, const int matnum = 0) override;
 
         //! evaluate pressures, saturations and derivatives at GP (matnum is the material number of
         //! the porofluid-material on the current element) default is set to zero, if called from a
@@ -1505,7 +1505,7 @@ namespace DRT
 
         //! get the diffusion tensor
         void PermeabilityTensor(
-            int phasenum, CORE::LINALG::Matrix<nsd, nsd>& permeabilitytensor) const override;
+            int phasenum, Core::LinAlg::Matrix<nsd, nsd>& permeabilitytensor) const override;
 
         //! check for constant relpermeability
         bool has_constant_rel_permeability(int phasenum) const override;
@@ -1522,16 +1522,16 @@ namespace DRT
         double DynViscosity(int phasenum, double abspressgrad, int matnum = 0) const override;
         //! get dynamic viscosity of phase
         double DynViscosity(
-            const CORE::MAT::Material& material, int phasenum, double abspressgrad) const override;
+            const Core::Mat::Material& material, int phasenum, double abspressgrad) const override;
         //! get derivative of dynamic viscosity of phase
         double DynViscosityDeriv(int phasenum, double abspressgrad) const override;
         //! get derivative dynamic viscosity of phase
         double DynViscosityDeriv(
-            const CORE::MAT::Material& material, int phasenum, double abspressgrad) const override;
+            const Core::Mat::Material& material, int phasenum, double abspressgrad) const override;
 
         //! get the permeability tensor for volume fraction pressures
         void permeability_tensor_vol_frac_pressure(int volfracpressnum,
-            CORE::LINALG::Matrix<nsd, nsd>& permeabilitytensorvolfracpressure) const override;
+            Core::LinAlg::Matrix<nsd, nsd>& permeabilitytensorvolfracpressure) const override;
 
         //! check for constant dynamic viscosity of volume fraction pressure
         bool has_constant_dyn_viscosity_vol_frac_pressure(int volfracpressnum) const override;
@@ -1542,20 +1542,20 @@ namespace DRT
         double dyn_viscosity_vol_frac_pressure(
             int volfracpressnum, double abspressgrad, int matnum = 0) const override;
         //! get dynamic viscosity of volume fraction pressure
-        double dyn_viscosity_vol_frac_pressure(const CORE::MAT::Material& material,
+        double dyn_viscosity_vol_frac_pressure(const Core::Mat::Material& material,
             int volfracpressnum, double abspressgrad) const override;
         //! get derivative of dynamic viscosity of volume fraction pressure
         double dyn_viscosity_deriv_vol_frac_pressure(
             int volfracpressnum, double abspressgrad) const override;
         //! get derivative dynamic viscosity of volume fraction pressure
-        double dyn_viscosity_deriv_vol_frac_pressure(const CORE::MAT::Material& material,
+        double dyn_viscosity_deriv_vol_frac_pressure(const Core::Mat::Material& material,
             int volfracpressnum, double abspressgrad) const override;
 
         //@}
 
        private:
         //! diffusion tensor
-        std::vector<CORE::LINALG::Matrix<nsd, nsd>> permeabilitytensors_;
+        std::vector<Core::LinAlg::Matrix<nsd, nsd>> permeabilitytensors_;
         //! relative diffusivities
         std::vector<double> relpermeabilities_;
         //! derivative of relative permeabilities w.r.t. saturation
@@ -1565,7 +1565,7 @@ namespace DRT
         //! check for constant dynamic viscosities of phase
         std::vector<bool> constdynviscosity_;
         //! permeability tensors
-        std::vector<CORE::LINALG::Matrix<nsd, nsd>> permeabilitytensorsvolfracpress_;
+        std::vector<Core::LinAlg::Matrix<nsd, nsd>> permeabilitytensorsvolfracpress_;
         //! check for constant dynamic viscosities of volume fraction pressure
         std::vector<bool> constdynviscosityvolfracpress_;
       };
@@ -1587,12 +1587,12 @@ namespace DRT
       {
        public:
         //! constructor
-        PhaseManagerVolFrac(Teuchos::RCP<POROFLUIDMANAGER::PhaseManagerInterface> phasemanager);
+        PhaseManagerVolFrac(Teuchos::RCP<PoroFluidManager::PhaseManagerInterface> phasemanager);
 
         //! setup (matnum is the material number of the porofluid-material on the current element)
         //! default is set to zero, if called from a porofluidmultiphase-element
         //! otherwise it has to be explicitly passed from the caller
-        void Setup(const CORE::Elements::Element* ele, const int matnum = 0) override;
+        void Setup(const Core::Elements::Element* ele, const int matnum = 0) override;
 
         //! evaluate pressures, saturations and derivatives at GP (matnum is the material number of
         //! the porofluid-material on the current element) default is set to zero, if called from a
@@ -1607,7 +1607,7 @@ namespace DRT
 
         //! get the diffusion tensor
         void DiffTensorVolFrac(
-            int volfracnum, CORE::LINALG::Matrix<nsd, nsd>& difftensorvolfrac) const override;
+            int volfracnum, Core::LinAlg::Matrix<nsd, nsd>& difftensorvolfrac) const override;
 
         //! check if volume frac 'volfracnum' has additional scalar dependent flux
         bool has_add_scalar_dependent_flux(int volfracnum) const override;
@@ -1632,7 +1632,7 @@ namespace DRT
 
        private:
         //! diffusion tensors
-        std::vector<CORE::LINALG::Matrix<nsd, nsd>> difftensorsvolfrac_;
+        std::vector<Core::LinAlg::Matrix<nsd, nsd>> difftensorsvolfrac_;
         //! does the material have additional scalar dependent flux
         std::vector<bool> hasaddscalardpendentflux_;
         //! matrix for scalar diffusivities
@@ -1645,9 +1645,9 @@ namespace DRT
       /*----------------------------------------------------------------------*
        * **********************************************************************
        *----------------------------------------------------------------------*/
-    }  // namespace POROFLUIDMANAGER
+    }  // namespace PoroFluidManager
   }    // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 
 FOUR_C_NAMESPACE_CLOSE

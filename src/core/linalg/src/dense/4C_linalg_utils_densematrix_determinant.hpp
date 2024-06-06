@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   /**
    *\brief Explicit determinant of a nonsymmetric 2x2 matrix.
@@ -27,7 +27,7 @@ namespace CORE::LINALG
    * @return Determinant of matrix A.
    */
   template <typename T>
-  T Determinant(const CORE::LINALG::Matrix<2, 2, T>& A)
+  T Determinant(const Core::LinAlg::Matrix<2, 2, T>& A)
   {
     T b00 = A(0, 0);
     T b01 = A(0, 1);
@@ -44,7 +44,7 @@ namespace CORE::LINALG
    * @return Determinant of matrix A.
    */
   template <typename T>
-  T Determinant(const CORE::LINALG::Matrix<3, 3, T>& A)
+  T Determinant(const Core::LinAlg::Matrix<3, 3, T>& A)
   {
     T b00 = A(0, 0);
     T b01 = A(0, 1);
@@ -69,7 +69,7 @@ namespace CORE::LINALG
    * @return Determinant of matrix A.
    */
   template <typename T>
-  T Determinant(const CORE::LINALG::Matrix<4, 4, T>& A)
+  T Determinant(const Core::LinAlg::Matrix<4, 4, T>& A)
   {
     T a00 = A(0, 0);
     T a01 = A(0, 1);
@@ -107,9 +107,9 @@ namespace CORE::LINALG
 
   \return the determinant of the matrix A
   */
-  double DeterminantLU(const CORE::LINALG::SerialDenseMatrix& A);
+  double DeterminantLU(const Core::LinAlg::SerialDenseMatrix& A);
 
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 FOUR_C_NAMESPACE_CLOSE
 

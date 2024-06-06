@@ -21,9 +21,9 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
-  namespace MESHFREE
+  namespace MeshFree
   {
     /*--------------------------------------------------------------------------*/
     /*!
@@ -33,7 +33,7 @@ namespace DRT
      * \date April, 2013
      */
     /*--------------------------------------------------------------------------*/
-    class MeshfreeMultiBinType : public CORE::Elements::ElementType
+    class MeshfreeMultiBinType : public Core::Elements::ElementType
     {
      public:
       //!< name of specific element type
@@ -43,24 +43,24 @@ namespace DRT
       static MeshfreeMultiBinType& Instance();
 
       //!< create parallel object of this element type
-      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
       //!< create element of this element type
-      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
       //!< create element of this element type
-      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
+          Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
-      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
+      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+          Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
-        CORE::LINALG::SerialDenseMatrix nullspace;
+        Core::LinAlg::SerialDenseMatrix nullspace;
         FOUR_C_THROW("method ComputeNullSpace not implemented!");
         return nullspace;
       }
@@ -79,7 +79,7 @@ namespace DRT
      * \date April, 2013
      */
     /*--------------------------------------------------------------------------*/
-    class MeshfreeMultiBin : public MeshfreeBin<CORE::Elements::Element>
+    class MeshfreeMultiBin : public MeshfreeBin<Core::Elements::Element>
     {
      public:
       /*========================================================================*/
@@ -102,19 +102,19 @@ namespace DRT
        * Makes a deep copy of a meshfree multibin
        *///                                                  (public) ghamm 04/13
       /*------------------------------------------------------------------------*/
-      MeshfreeMultiBin(const DRT::MESHFREE::MeshfreeMultiBin& old);
+      MeshfreeMultiBin(const Discret::MeshFree::MeshfreeMultiBin& old);
 
       /*------------------------------------------------------------------------*/
       /*!
        * \brief Deep copy the derived class and return pointer to it
        *
        * This method is sort of a copy constructor for a class derived from
-       * CORE::Elements::Element. It allows to copy construct the derived class without
+       * Core::Elements::Element. It allows to copy construct the derived class without
        * knowing what it actually is using the base class Element.
        *
        *///                                                  (public) ghamm 04/13
       /*------------------------------------------------------------------------*/
-      CORE::Elements::Element* Clone() const override;
+      Core::Elements::Element* Clone() const override;
 
       /*------------------------------------------------------------------------*/
       /*!
@@ -137,7 +137,7 @@ namespace DRT
        *
        *///                                                  (public) ghamm 04/13
       /*------------------------------------------------------------------------*/
-      void Pack(CORE::COMM::PackBuffer& data) const override;
+      void Pack(Core::Communication::PackBuffer& data) const override;
 
       /*------------------------------------------------------------------------*/
       /*!
@@ -150,7 +150,7 @@ namespace DRT
       void Unpack(const std::vector<char>& data) override;
 
       // return meshfree bin type instance
-      CORE::Elements::ElementType& ElementType() const override
+      Core::Elements::ElementType& ElementType() const override
       {
         return MeshfreeMultiBinType::Instance();
       }
@@ -158,12 +158,12 @@ namespace DRT
       /*!
       \brief Get number of degrees of freedom of a certain node
       */
-      int NumDofPerNode(const CORE::Nodes::Node& node) const override { return 3; }
+      int NumDofPerNode(const Core::Nodes::Node& node) const override { return 3; }
 
       /*------------------------------------------------------------------------*/
       /*!
       \brief Get number of degrees of freedom per element
-             (implements pure virtual CORE::Elements::Element)
+             (implements pure virtual Core::Elements::Element)
        *
        * Meshfree bins do not have dofs
        *///
@@ -221,7 +221,7 @@ namespace DRT
       inline virtual void AddAssociatedEle(
           BINSTRATEGY::UTILS::BinContentType bin_content,  //!< (in): type of element to be added
           const int gid,                   //!< (in): global id of element to be added
-          CORE::Elements::Element* eleptr  //!< (in): pointer to element to be added
+          Core::Elements::Element* eleptr  //!< (in): pointer to element to be added
       )
       {
         associatedeleid_[bin_content].push_back(gid);
@@ -268,7 +268,7 @@ namespace DRT
                         pointers to elements in the correct element local ordering scheme.
       */
       bool BuildElePointers(
-          BINSTRATEGY::UTILS::BinContentType bin_content, CORE::Elements::Element** eles);
+          BINSTRATEGY::UTILS::BinContentType bin_content, Core::Elements::Element** eles);
 
       /*------------------------------------------------------------------------*/
       /*!
@@ -299,10 +299,10 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          CORE::Conditions::Condition& condition, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override
+      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Core::Conditions::Condition& condition, std::vector<int>& lm,
+          Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override
       {
         return 0;
       }
@@ -310,23 +310,23 @@ namespace DRT
       /*!
       \brief Get shape type of element
       */
-      CORE::FE::CellType Shape() const override { return CORE::FE::CellType::dis_none; };
+      Core::FE::CellType Shape() const override { return Core::FE::CellType::dis_none; };
 
      private:
       //! \brief element ids contained in this bin
       std::vector<int> associatedeleid_[BINSTRATEGY::UTILS::enumsize];
 
       //! \brief pointers to elements contained in this bin
-      std::vector<CORE::Elements::Element*> associatedele_[BINSTRATEGY::UTILS::enumsize];
+      std::vector<Core::Elements::Element*> associatedele_[BINSTRATEGY::UTILS::enumsize];
 
 
     };  // class MeshfreeMultiBin
 
-  }  // namespace MESHFREE
-}  // namespace DRT
+  }  // namespace MeshFree
+}  // namespace Discret
 
 //! << operator
-std::ostream& operator<<(std::ostream& os, const DRT::MESHFREE::MeshfreeMultiBin& bin);
+std::ostream& operator<<(std::ostream& os, const Discret::MeshFree::MeshfreeMultiBin& bin);
 
 FOUR_C_NAMESPACE_CLOSE
 

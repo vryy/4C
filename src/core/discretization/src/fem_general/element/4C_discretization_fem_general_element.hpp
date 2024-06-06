@@ -32,25 +32,25 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace CORE::MAT
+namespace Core::Mat
 {
   class Material;
 }
 
-namespace CORE::GEOMETRICSEARCH
+namespace Core::GeometricSearch
 {
   struct BoundingVolume;
   class GeometricSearchParams;
-}  // namespace CORE::GEOMETRICSEARCH
+}  // namespace Core::GeometricSearch
 
-namespace INPUT
+namespace Input
 {
   class LineDefinition;
 }
 
-namespace DRT
+namespace Discret
 {
-  namespace MESHFREE
+  namespace MeshFree
   {
     template <typename>
     class MeshfreeBin;
@@ -59,14 +59,14 @@ namespace DRT
   // forward declarations
   class Discretization;
   class DiscretizationHDG;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::Nodes
+namespace Core::Nodes
 {
   class Node;
 }
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class ElementType;
   class FaceElement;
@@ -75,7 +75,7 @@ namespace CORE::Elements
   \brief A virtual class all elements that are used in DRT have to implement
 
   This is the pure virtual base class for all finite elements to be used with
-  the DRT::Discretization. Every element (and boundary condition) to be used
+  the Discret::Discretization. Every element (and boundary condition) to be used
   with the discretization management module has to implement this class.
   It implements various basic element methods and
   stores basic information such as element to node connectivity.
@@ -87,13 +87,13 @@ namespace CORE::Elements
   and other connectivity information.
 
   */
-  class Element : public CORE::COMM::ParObject
+  class Element : public Core::Communication::ParObject
   {
    public:
     //! @name Enums and Friends
 
     template <typename>
-    friend class DRT::MESHFREE::MeshfreeBin;
+    friend class Discret::MeshFree::MeshfreeBin;
 
     //@}
 
@@ -217,7 +217,7 @@ namespace CORE::Elements
     \ref Pack and \ref Unpack are used to communicate this element
 
     */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class
@@ -228,7 +228,7 @@ namespace CORE::Elements
     void Unpack(const std::vector<char>& data) override;
 
     /// return ElementType instance
-    virtual CORE::Elements::ElementType& ElementType() const = 0;
+    virtual Core::Elements::ElementType& ElementType() const = 0;
 
     //@}
 
@@ -252,7 +252,7 @@ namespace CORE::Elements
     /*!
     \brief Get shape type of element
     */
-    virtual CORE::FE::CellType Shape() const = 0;
+    virtual Core::FE::CellType Shape() const = 0;
 
     /*!
     \brief Return number of nodes to this element
@@ -306,7 +306,7 @@ namespace CORE::Elements
     \brief Get vector of ptrs to nodes
 
     \warning The pointers to the nodes are build in
-             DRT::Discretization::fill_complete. A standalone
+             Discret::Discretization::fill_complete. A standalone
              element that has not been added to a discretization
              (or the discretization has not been called fill_complete)
              does not have pointers to nodes. In this case, the method returns
@@ -314,7 +314,7 @@ namespace CORE::Elements
     \return Ptr to pointers to nodes of the element in local nodal ordering.
             Returns nullptr if pointers to not exist.
     */
-    virtual CORE::Nodes::Node** Nodes()
+    virtual Core::Nodes::Node** Nodes()
     {
       if (node_.size())
         return node_.data();
@@ -323,14 +323,14 @@ namespace CORE::Elements
     }
 
     // mgee: change to this (as const and !const):
-    // virtual std::vector<CORE::Nodes::Node*>& Nodes()
+    // virtual std::vector<Core::Nodes::Node*>& Nodes()
     //{ return node_; }
 
     /*!
     \brief Get const vector of ptrs to nodes
 
     \warning The pointers to the nodes are build in
-             DRT::Discretization::fill_complete. A standalone
+             Discret::Discretization::fill_complete. A standalone
              element that has not been added to a discretization
              (or the discretization has not been called fill_complete)
              does not have pointers to nodes. In this case, the method returns
@@ -338,10 +338,10 @@ namespace CORE::Elements
     \return Ptr to pointers to nodes of the element in local nodal ordering.
             Returns nullptr if pointers to not exist.
     */
-    virtual const CORE::Nodes::Node* const* Nodes() const
+    virtual const Core::Nodes::Node* const* Nodes() const
     {
       if (node_.size())
-        return (const CORE::Nodes::Node* const*)(node_.data());
+        return (const Core::Nodes::Node* const*)(node_.data());
       else
         return nullptr;
     }
@@ -362,7 +362,7 @@ namespace CORE::Elements
      * discretization where the integration cell (i.e. the "element") is not
      * formed by the nodes and many more nodes can have influence.
      */
-    virtual CORE::Nodes::Node** Points() { return Nodes(); }
+    virtual Core::Nodes::Node** Points() { return Nodes(); }
 
     /*!
      * \brief Get const vector of ptrs to points forming the geometry of this element
@@ -371,7 +371,7 @@ namespace CORE::Elements
      * discretization where the integration cell (i.e. the "element") is not
      * formed by the nodes and many more nodes can have influence.
      */
-    virtual const CORE::Nodes::Node* const* Points() const { return Nodes(); }
+    virtual const Core::Nodes::Node* const* Points() const { return Nodes(); }
 
 
     /*!
@@ -477,7 +477,7 @@ might become invalid after a redistribution of the discretization.
         Element* parent_slave,                 //!< parent slave element
         int nnode,                             //!< number of nodes
         const int* nodeids,                    //!< node ids
-        CORE::Nodes::Node** nodes,             //!< nodeids
+        Core::Nodes::Node** nodes,             //!< nodeids
         const int lsurface_master,             //!< local index of surface w.r.t master element
         const int lsurface_slave,              //!< local index of surface w.r.t slave element
         const std::vector<int>& localtrafomap  //!< local trafo map
@@ -494,12 +494,12 @@ might become invalid after a redistribution of the discretization.
     The method is used to build the connectivity between all the nodes adjacent
     to this element and how expensive its evaluation is
 
-    \param edgeweights (out): A CORE::LINALG::SerialDenseMatrix containing weights of all connected
-    nodes \param nodeweights (out): A CORE::LINALG::SerialDenseVector containing weights of all
+    \param edgeweights (out): A Core::LinAlg::SerialDenseMatrix containing weights of all connected
+    nodes \param nodeweights (out): A Core::LinAlg::SerialDenseVector containing weights of all
     nodes
     */
     virtual void NodalConnectivity(
-        CORE::LINALG::SerialDenseMatrix& edgeweights, CORE::LINALG::SerialDenseVector& nodeweights);
+        Core::LinAlg::SerialDenseMatrix& edgeweights, Core::LinAlg::SerialDenseVector& nodeweights);
 
     /*!
     \brief Return value how expensive it is to evaluate this element
@@ -515,13 +515,13 @@ might become invalid after a redistribution of the discretization.
     As this may vary along a simulation, the element can redecide the
     number of degrees of freedom per node along the way for each of it's nodes
     separately.<br>
-    This method is used by the DRT::Discretization to determine how many
+    This method is used by the Discret::Discretization to determine how many
     degrees of freedom should be assigned to each node. The discretization will
     assign a node the max number of dofs the adjacent elements demand by this
     method.
 
     */
-    virtual int NumDofPerNode(const CORE::Nodes::Node& node) const
+    virtual int NumDofPerNode(const Core::Nodes::Node& node) const
     {
       FOUR_C_THROW("not implemented");
       return -1;
@@ -539,7 +539,7 @@ might become invalid after a redistribution of the discretization.
     \note Face degrees of freedom mentioned here are dofs that are supposed
           to be visible at the global system level. Purely internal
           element dofs that are condensed internally should NOT be considered.
-          The DRT::Discretization will use this method to determine how many degrees
+          The Discret::Discretization will use this method to determine how many degrees
           of freedom it should include in the degree of freedom row and column map
           for the global system of equations.
     */
@@ -579,7 +579,7 @@ might become invalid after a redistribution of the discretization.
     \note Element degrees of freedom mentioned here are dofs that are supposed
           to be visible at the global system level. Purely internal
           element dofs that are condensed internally should NOT be considered.
-          The DRT::Discretization will use this method to determine how many degrees
+          The Discret::Discretization will use this method to determine how many degrees
           of freedom it should include in the degree of freedom row and column map
           for the global system of equations.
     */
@@ -606,7 +606,7 @@ might become invalid after a redistribution of the discretization.
 
     \param nummat (in): number of requested material
     */
-    virtual Teuchos::RCP<CORE::MAT::Material> Material(int nummat = 0) const
+    virtual Teuchos::RCP<Core::Mat::Material> Material(int nummat = 0) const
     {
       FOUR_C_ASSERT(nummat < (int)mat_.size(), "invalid material number");
       return mat_[nummat];
@@ -704,7 +704,7 @@ might become invalid after a redistribution of the discretization.
     \brief Read input for this element
     */
     virtual bool ReadElement(
-        const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef);
+        const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef);
 
     /*!
       \brief Set processor local col id
@@ -716,14 +716,14 @@ might become invalid after a redistribution of the discretization.
     /*!
     \brief Set ownership
 
-    This method is used by the DRT::Discretiztion to change the ownership of
+    This method is used by the Discret::Discretiztion to change the ownership of
     an element that got communicated from one processor to another.
 
     \param owner: Proc owning this node
 
     \warning You should be very careful with changing the ownership
              of an element by hand as this might significantly confuse
-             the DRT::Discretization the element is stored in.
+             the Discret::Discretization the element is stored in.
 
     */
     void SetOwner(const int owner) { owner_ = owner; }
@@ -747,7 +747,7 @@ might become invalid after a redistribution of the discretization.
 
     Here the node ids are directly taken from an input line.
     */
-    void SetNodeIds(const std::string& distype, INPUT::LineDefinition* linedef);
+    void SetNodeIds(const std::string& distype, Input::LineDefinition* linedef);
 
     /*!
     \brief Set a the face with index faceindex this element is connected to
@@ -788,7 +788,7 @@ might become invalid after a redistribution of the discretization.
       @param index index in material list
       @param mat pointer to the Material instance to set
      */
-    virtual void SetMaterial(const int index, Teuchos::RCP<CORE::MAT::Material> mat);
+    virtual void SetMaterial(const int index, Teuchos::RCP<Core::Mat::Material> mat);
 
     /// Add element material
     /*!
@@ -799,7 +799,7 @@ might become invalid after a redistribution of the discretization.
       \param mat: material to be added
       \param nummat (out):  number of materials the element holds
      */
-    int AddMaterial(Teuchos::RCP<CORE::MAT::Material> mat);
+    int AddMaterial(Teuchos::RCP<Core::Mat::Material> mat);
 
     /// Number of materials of the element
     /*!
@@ -829,10 +829,10 @@ might become invalid after a redistribution of the discretization.
              NOT be overwritten but stored twice in the element
 
     */
-    void SetCondition(const std::string& name, Teuchos::RCP<CORE::Conditions::Condition> cond)
+    void SetCondition(const std::string& name, Teuchos::RCP<Core::Conditions::Condition> cond)
     {
       condition_.insert(
-          std::pair<std::string, Teuchos::RCP<CORE::Conditions::Condition>>(name, cond));
+          std::pair<std::string, Teuchos::RCP<Core::Conditions::Condition>>(name, cond));
       return;
     }
 
@@ -848,7 +848,7 @@ might become invalid after a redistribution of the discretization.
 
     */
     virtual void GetCondition(
-        const std::string& name, std::vector<CORE::Conditions::Condition*>& out) const;
+        const std::string& name, std::vector<Core::Conditions::Condition*>& out) const;
 
     /*!
     \brief Get a condition with a certain name
@@ -863,7 +863,7 @@ might become invalid after a redistribution of the discretization.
 
     \return Returns nullptr if condition with that name does not exist
     */
-    virtual CORE::Conditions::Condition* GetCondition(const std::string& name) const;
+    virtual Core::Conditions::Condition* GetCondition(const std::string& name) const;
 
     /*!
     \brief Delete all conditions set to this element
@@ -884,8 +884,8 @@ might become invalid after a redistribution of the discretization.
     Extended version that features a nodal dof set (nds) array. Each node might
     have multiple sets of (physical) dofs. That is the actual number of dofs at
     a node represent a (small) number of independent physical dofs. This is not
-    to be confused with multiple CORE::Dofsets::DofSet objects within one
-    DRT::Discretization.
+    to be confused with multiple Core::DOFSets::DofSet objects within one
+    Discret::Discretization.
 
     The case of multiple set of dofs occurs in xfem without enrichments. E.g. a
     node of a cutted fluid element might own two or more velocity-pressure
@@ -902,7 +902,7 @@ might become invalid after a redistribution of the discretization.
     \param doDirichlet (in): whether to get the Dirichlet flags
 
     */
-    virtual void LocationVector(const DRT::Discretization& dis, const std::vector<int>& nds,
+    virtual void LocationVector(const Discret::Discretization& dis, const std::vector<int>& nds,
         LocationArray& la, bool doDirichlet) const;
 
     /*!
@@ -930,7 +930,7 @@ might become invalid after a redistribution of the discretization.
 
     */
     virtual void LocationVector(
-        const DRT::Discretization& dis, LocationArray& la, bool doDirichlet) const;
+        const Discret::Discretization& dis, LocationArray& la, bool doDirichlet) const;
 
 
     /*!
@@ -964,8 +964,8 @@ might become invalid after a redistribution of the discretization.
     \param condstring (in): Name of condition to be evaluated
     \param condstring (in):  List of parameters for use at element level
     */
-    virtual void LocationVector(const DRT::Discretization& dis, LocationArray& la, bool doDirichlet,
-        const std::string& condstring, Teuchos::ParameterList& params) const;
+    virtual void LocationVector(const Discret::Discretization& dis, LocationArray& la,
+        bool doDirichlet, const std::string& condstring, Teuchos::ParameterList& params) const;
     /*!
     \brief Return the location vector of this element
 
@@ -995,7 +995,7 @@ might become invalid after a redistribution of the discretization.
                            matches dofs in lm.
 
     */
-    virtual void LocationVector(const DRT::Discretization& dis, std::vector<int>& lm,
+    virtual void LocationVector(const Discret::Discretization& dis, std::vector<int>& lm,
         std::vector<int>& lmdirich, std::vector<int>& lmowner, std::vector<int>& lmstride) const;
 
     /*!
@@ -1024,7 +1024,7 @@ might become invalid after a redistribution of the discretization.
                            matches dofs in lm.
 
     */
-    virtual void LocationVector(const DRT::Discretization& dis, std::vector<int>& lm,
+    virtual void LocationVector(const Discret::Discretization& dis, std::vector<int>& lm,
         std::vector<int>& lmowner, std::vector<int>& lmstride) const;
 
     /*!
@@ -1053,10 +1053,10 @@ might become invalid after a redistribution of the discretization.
                                 given in params
     \return 0 if successful, negative otherwise
     */
-    virtual int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-        LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1,
-        CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-        CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3);
+    virtual int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+        LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1,
+        Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
+        Core::LinAlg::SerialDenseVector& elevec2, Core::LinAlg::SerialDenseVector& elevec3);
 
     /*!
     \brief Evaluate an element
@@ -1084,10 +1084,10 @@ might become invalid after a redistribution of the discretization.
                                 given in params
     \return 0 if successful, negative otherwise
     */
-    virtual int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-        std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
-        CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-        CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3);
+    virtual int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+        std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
+        Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
+        Core::LinAlg::SerialDenseVector& elevec2, Core::LinAlg::SerialDenseVector& elevec3);
 
     /*!
     \brief Evaluate a Neumann boundary condition
@@ -1109,33 +1109,33 @@ might become invalid after a redistribution of the discretization.
     \return 0 if successful, negative otherwise
     */
     virtual int evaluate_neumann(Teuchos::ParameterList& params,
-        DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
-        std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
-        CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) = 0;
+        Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+        std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
+        Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) = 0;
 
 
     //@}
 
 
-    //! @name Public methods to be used by DRT::Discretization only
+    //! @name Public methods to be used by Discret::Discretization only
 
     /*!
     \brief Build pointer vector from map of nodes
 
-    \warning (public, but to be used by DRT::Discretization ONLY!)
+    \warning (public, but to be used by Discret::Discretization ONLY!)
 
     The method is used to build the variable node_ in this element. It is called from
-    DRT::Discretization in DRT::Discretization::fill_complete() to create the
+    Discret::Discretization in Discret::Discretization::fill_complete() to create the
     pointers from elements to nodes (and nodes to elements)
 
     \param nodes (in): A map of all nodes of a discretization
     */
-    virtual bool BuildNodalPointers(std::map<int, Teuchos::RCP<CORE::Nodes::Node>>& nodes);
+    virtual bool BuildNodalPointers(std::map<int, Teuchos::RCP<Core::Nodes::Node>>& nodes);
 
     /*!
     \brief Build pointer vector from vector of nodal pointers
 
-    \warning (public, but to be used by DRT::Discretization ONLY!)
+    \warning (public, but to be used by Discret::Discretization ONLY!)
 
     The method is used to build the variable node_ in this element. It can be used
     to explicitly pass the nodal pointers to the element.
@@ -1144,17 +1144,17 @@ might become invalid after a redistribution of the discretization.
                        is implicitly expected to be of length num_node() and contain pointers
                        to nodes in the correct element local ordering scheme.
     */
-    virtual bool BuildNodalPointers(CORE::Nodes::Node** nodes);
+    virtual bool BuildNodalPointers(Core::Nodes::Node** nodes);
 
     /*!
     \brief Build pointer vector from map of elements
 
-    \warning (public, but to be used by DRT::Discretization ONLY!)
+    \warning (public, but to be used by Discret::Discretization ONLY!)
 
     The method is used to build the element connectivity in this element. For standard elements this
     procedure returns true and does nothing. For interface-elements a connection is made between the
-    interface and it's left and right element. It is called from DRT::Discretization in
-    DRT::Discretization::fill_complete() to create the pointers from elements to elements
+    interface and it's left and right element. It is called from Discret::Discretization in
+    Discret::Discretization::fill_complete() to create the pointers from elements to elements
     (next to the node-element and nodes-elements connectivity).
 
     \param elements (in): A map of all elements of a discretization
@@ -1191,7 +1191,7 @@ might become invalid after a redistribution of the discretization.
     /*!
     \brief get access to the interface pointer
     */
-    virtual Teuchos::RCP<CORE::Elements::ParamsInterface> ParamsInterfacePtr()
+    virtual Teuchos::RCP<Core::Elements::ParamsInterface> ParamsInterfacePtr()
     {
       FOUR_C_THROW(
           "This is a dummy function. Please implement the function in the derived classes, if "
@@ -1212,7 +1212,7 @@ might become invalid after a redistribution of the discretization.
      * @param point_coordinates (in/out) point coordinates for the representation of this element
      * @return Number of added points
      */
-    virtual unsigned int append_visualization_geometry(const DRT::Discretization& discret,
+    virtual unsigned int append_visualization_geometry(const Discret::Discretization& discret,
         std::vector<uint8_t>& cell_types, std::vector<double>& point_coordinates) const;
 
     /**
@@ -1228,16 +1228,17 @@ might become invalid after a redistribution of the discretization.
      * @return Number of points added by this element.
      */
     virtual unsigned int append_visualization_dof_based_result_data_vector(
-        const DRT::Discretization& discret, const Teuchos::RCP<Epetra_Vector>& result_data_dofbased,
+        const Discret::Discretization& discret,
+        const Teuchos::RCP<Epetra_Vector>& result_data_dofbased,
         unsigned int& result_num_dofs_per_node, const unsigned int read_result_data_from_dofindex,
         std::vector<double>& vtu_point_result_data) const;
 
     /**
      * \brief Add the current position of all nodes of the element to a boundary volume.
      */
-    virtual CORE::GEOMETRICSEARCH::BoundingVolume GetBoundingVolume(
-        const DRT::Discretization& discret, const Epetra_Vector& result_data_dofbased,
-        const CORE::GEOMETRICSEARCH::GeometricSearchParams& params) const;
+    virtual Core::GeometricSearch::BoundingVolume GetBoundingVolume(
+        const Discret::Discretization& discret, const Epetra_Vector& result_data_dofbased,
+        const Core::GeometricSearch::GeometricSearchParams& params) const;
     /// @}
 
    private:
@@ -1266,17 +1267,17 @@ might become invalid after a redistribution of the discretization.
     std::vector<int> nodeid_;
 
     //! \brief Pointers to adjacent nodes in element local ordering
-    std::vector<CORE::Nodes::Node*> node_;
+    std::vector<Core::Nodes::Node*> node_;
 
     //! \brief List of my faces, length NumFace(). Only filled if face elements are created, when
     //! using DiscretizationFaces
     std::vector<Teuchos::RCP<FaceElement>> face_;
 
     //! \brief Some conditions e.g. BCs
-    std::multimap<std::string, Teuchos::RCP<CORE::Conditions::Condition>> condition_;
+    std::multimap<std::string, Teuchos::RCP<Core::Conditions::Condition>> condition_;
 
     //! vector of material objects of element
-    std::vector<Teuchos::RCP<CORE::MAT::Material>> mat_;
+    std::vector<Teuchos::RCP<Core::Mat::Material>> mat_;
 
     //! is this a nurbs element?
     bool is_nurbs_;
@@ -1322,7 +1323,7 @@ might become invalid after a redistribution of the discretization.
     \ref Pack and \ref Unpack are used to communicate this face element
 
     */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class
@@ -1483,16 +1484,16 @@ might become invalid after a redistribution of the discretization.
     int parent_id_;
 
     //! Friend declaration
-    friend class DRT::DiscretizationHDG;
+    friend class Discret::DiscretizationHDG;
   };
 
   /// translate shards::key to enum
-  CORE::FE::CellType ShardsKeyToDisType(const unsigned& key);
-}  // namespace CORE::Elements
+  Core::FE::CellType ShardsKeyToDisType(const unsigned& key);
+}  // namespace Core::Elements
 
 
 // << operator
-std::ostream& operator<<(std::ostream& os, const CORE::Elements::Element& ele);
+std::ostream& operator<<(std::ostream& os, const Core::Elements::Element& ele);
 
 
 

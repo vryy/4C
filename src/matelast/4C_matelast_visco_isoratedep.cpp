@@ -14,16 +14,16 @@ modified from Pioletti, 1997
 FOUR_C_NAMESPACE_OPEN
 
 
-MAT::ELASTIC::PAR::IsoRateDep::IsoRateDep(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
+Mat::Elastic::PAR::IsoRateDep::IsoRateDep(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
     : Parameter(matdata), n_(matdata->Get<double>("N"))
 {
 }
 
-MAT::ELASTIC::IsoRateDep::IsoRateDep(MAT::ELASTIC::PAR::IsoRateDep* params) : params_(params) {}
+Mat::Elastic::IsoRateDep::IsoRateDep(Mat::Elastic::PAR::IsoRateDep* params) : params_(params) {}
 
-void MAT::ELASTIC::IsoRateDep::add_coefficients_visco_modified(
-    const CORE::LINALG::Matrix<3, 1>& modinv, CORE::LINALG::Matrix<8, 1>& modmu,
-    CORE::LINALG::Matrix<33, 1>& modxi, CORE::LINALG::Matrix<7, 1>& modrateinv,
+void Mat::Elastic::IsoRateDep::add_coefficients_visco_modified(
+    const Core::LinAlg::Matrix<3, 1>& modinv, Core::LinAlg::Matrix<8, 1>& modmu,
+    Core::LinAlg::Matrix<33, 1>& modxi, Core::LinAlg::Matrix<7, 1>& modrateinv,
     Teuchos::ParameterList& params, const int gp, const int eleGID)
 {
   const double n = params_->n_;

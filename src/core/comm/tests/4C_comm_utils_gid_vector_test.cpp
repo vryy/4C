@@ -24,7 +24,7 @@ namespace
 
     const int myPID = comm.MyPID();
     const std::vector<double> vec_in(myPID + 1, static_cast<double>(myPID));
-    const auto vec_out = CORE::COMM::BroadcastVector(vec_in, comm);
+    const auto vec_out = Core::Communication::BroadcastVector(vec_in, comm);
 
     std::vector<double> vec_expected;
     for (int pid = 0; pid < comm.NumProc(); ++pid)
@@ -45,7 +45,7 @@ namespace
     const int myPID = comm.MyPID();
     const std::vector<std::pair<int, double>> pair_vec_in(
         myPID + 1, std::make_pair(myPID, static_cast<double>(myPID)));
-    const auto pair_vec_out = CORE::COMM::BroadcastPairVector(pair_vec_in, comm);
+    const auto pair_vec_out = Core::Communication::BroadcastPairVector(pair_vec_in, comm);
 
     std::vector<std::pair<int, double>> pair_vec_expected;
     for (int pid = 0; pid < comm.NumProc(); ++pid)
@@ -68,7 +68,7 @@ namespace
 
     const int myPID = comm.MyPID();
     const std::map<int, double> map_in = {std::make_pair(myPID, static_cast<double>(myPID))};
-    const auto map_out = CORE::COMM::BroadcastMap(map_in, comm);
+    const auto map_out = Core::Communication::BroadcastMap(map_in, comm);
 
     std::map<int, double> map_expected;
     for (int pid = 0; pid < comm.NumProc(); ++pid)
@@ -88,7 +88,7 @@ namespace
 
     const int myPID = comm.MyPID();
     const std::set<int> set_in = {myPID};
-    const std::set<int> set_out = CORE::COMM::BroadcastSet(set_in, comm);
+    const std::set<int> set_out = Core::Communication::BroadcastSet(set_in, comm);
 
     std::set<int> set_expected;
     for (int pid = 0; pid < comm.NumProc(); ++pid)

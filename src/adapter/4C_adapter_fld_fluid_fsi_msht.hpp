@@ -25,7 +25,7 @@ namespace FLD
   }
 }  // namespace FLD
 
-namespace ADAPTER
+namespace Adapter
 {
   /*! \brief Fluid field adapter for fsi with internal mesh tying or mesh sliding
    *
@@ -36,9 +36,9 @@ namespace ADAPTER
   {
    public:
     /// Constructor
-    FluidFSIMsht(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<DRT::Discretization> dis,
-        Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-        Teuchos::RCP<CORE::IO::DiscretizationWriter> output, bool isale, bool dirichletcond);
+    FluidFSIMsht(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<Discret::Discretization> dis,
+        Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+        Teuchos::RCP<Core::IO::DiscretizationWriter> output, bool isale, bool dirichletcond);
 
     /// initialize algorithm
     void Init() override;
@@ -59,7 +59,7 @@ namespace ADAPTER
     //! Note: full map contains velocity AND pressure DOFs
     Teuchos::RCP<FLD::UTILS::FsiMapExtractor> fsiinterface_;
   };
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 
 FOUR_C_NAMESPACE_CLOSE

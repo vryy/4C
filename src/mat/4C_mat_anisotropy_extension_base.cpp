@@ -2,7 +2,7 @@
 /*! \file
 
 \brief Declaration of a base anisotropy extension to be used by anisotropic materials with
-@MAT::Anisotropy
+@Mat::Anisotropy
 
 \level 3
 
@@ -16,7 +16,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void MAT::BaseAnisotropyExtension::set_anisotropy(MAT::Anisotropy& anisotropy)
+void Mat::BaseAnisotropyExtension::set_anisotropy(Mat::Anisotropy& anisotropy)
 {
   anisotropy_ = Teuchos::rcpFromRef(anisotropy);
 }

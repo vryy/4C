@@ -22,7 +22,7 @@ bridge between the xfluid class and the cut-library
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::GEO
+namespace Core::Geo
 {
   class CutWizard;
 }
@@ -37,10 +37,10 @@ namespace XFEM
    public:
     //! constructor
     explicit LevelSetCoupling(
-        Teuchos::RCP<DRT::Discretization>& bg_dis,  ///< background discretization
+        Teuchos::RCP<Discret::Discretization>& bg_dis,  ///< background discretization
         const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                        ///< discretization is identified
-        Teuchos::RCP<DRT::Discretization>&
+        Teuchos::RCP<Discret::Discretization>&
             cond_dis,  ///< full discretization from which the cutter discretization is derived
         const int coupling_id,  ///< id of composite of coupling conditions
         const double time,      ///< time
@@ -49,12 +49,12 @@ namespace XFEM
 
     void SetCouplingDofsets() override;
 
-    bool HaveMatchingNodes(const Teuchos::RCP<DRT::Discretization>& dis_A,
-        const Teuchos::RCP<DRT::Discretization>& dis_B);
+    bool HaveMatchingNodes(const Teuchos::RCP<Discret::Discretization>& dis_A,
+        const Teuchos::RCP<Discret::Discretization>& dis_B);
 
-    void MapCutterToBgVector(const Teuchos::RCP<DRT::Discretization>& source_dis,
+    void MapCutterToBgVector(const Teuchos::RCP<Discret::Discretization>& source_dis,
         const Teuchos::RCP<Epetra_Vector>& source_vec_dofbased, const int source_nds,
-        const Teuchos::RCP<DRT::Discretization>& target_dis,
+        const Teuchos::RCP<Discret::Discretization>& target_dis,
         const Teuchos::RCP<Epetra_Vector>& target_vec_dofbased, const int target_nds);
 
     // TODO: sort the functions...
@@ -96,7 +96,7 @@ namespace XFEM
     bool HasMovingInterface() override { return true; }
 
     void get_interface_slave_material(
-        CORE::Elements::Element* actele, Teuchos::RCP<CORE::MAT::Material>& mat) override
+        Core::Elements::Element* actele, Teuchos::RCP<Core::Mat::Material>& mat) override
     {
       mat = Teuchos::null;
     }
@@ -115,7 +115,7 @@ namespace XFEM
 
    protected:
     //! Output specific
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> bg_output_;
+    Teuchos::RCP<Core::IO::DiscretizationWriter> bg_output_;
 
     //! @name fluid discretization related state vectors
 
@@ -148,7 +148,7 @@ namespace XFEM
 
 
     // Specify way of creating the projection matrix
-    INPAR::XFEM::ProjToSurface projtosurf_;
+    Inpar::XFEM::ProjToSurface projtosurf_;
 
     //@}
 
@@ -166,10 +166,10 @@ namespace XFEM
    public:
     //! constructor
     explicit LevelSetCouplingBC(
-        Teuchos::RCP<DRT::Discretization>& bg_dis,  ///< background discretization
+        Teuchos::RCP<Discret::Discretization>& bg_dis,  ///< background discretization
         const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                        ///< discretization is identified
-        Teuchos::RCP<DRT::Discretization>&
+        Teuchos::RCP<Discret::Discretization>&
             cond_dis,  ///< full discretization from which the cutter discretization is derived
         const int coupling_id,  ///< id of composite of coupling conditions
         const double time,      ///< time
@@ -194,10 +194,10 @@ namespace XFEM
    public:
     //! constructor
     explicit LevelSetCouplingWeakDirichlet(
-        Teuchos::RCP<DRT::Discretization>& bg_dis,  ///< background discretization
+        Teuchos::RCP<Discret::Discretization>& bg_dis,  ///< background discretization
         const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                        ///< discretization is identified
-        Teuchos::RCP<DRT::Discretization>&
+        Teuchos::RCP<Discret::Discretization>&
             cond_dis,  ///< full discretization from which the cutter discretization is derived
         const int coupling_id,  ///< id of composite of coupling conditions
         const double time,      ///< time
@@ -208,13 +208,13 @@ namespace XFEM
     }
 
    public:
-    void evaluate_coupling_conditions(CORE::LINALG::Matrix<3, 1>& ivel,
-        CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
-        const CORE::Conditions::Condition* cond) override;
+    void evaluate_coupling_conditions(Core::LinAlg::Matrix<3, 1>& ivel,
+        Core::LinAlg::Matrix<3, 1>& itraction, const Core::LinAlg::Matrix<3, 1>& x,
+        const Core::Conditions::Condition* cond) override;
 
-    void evaluate_coupling_conditions_old_state(CORE::LINALG::Matrix<3, 1>& ivel,
-        CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
-        const CORE::Conditions::Condition* cond) override;
+    void evaluate_coupling_conditions_old_state(Core::LinAlg::Matrix<3, 1>& ivel,
+        Core::LinAlg::Matrix<3, 1>& itraction, const Core::LinAlg::Matrix<3, 1>& x,
+        const Core::Conditions::Condition* cond) override;
 
    protected:
     //! Initializes configurationmap
@@ -227,15 +227,15 @@ namespace XFEM
         double& density_m,                             //< master sided density
         double& visc_stab_tang,                        //< viscous tangential NIT Penalty scaling
         double& full_stab,                             //< full NIT Penalty scaling
-        const CORE::LINALG::Matrix<3, 1>& x,           //< Position x in global coordinates
-        const CORE::Conditions::Condition* cond,       //< Condition
-        CORE::Elements::Element* ele,                  //< Element
-        CORE::Elements::Element* bele,                 //< Boundary Element
+        const Core::LinAlg::Matrix<3, 1>& x,           //< Position x in global coordinates
+        const Core::Conditions::Condition* cond,       //< Condition
+        Core::Elements::Element* ele,                  //< Element
+        Core::Elements::Element* bele,                 //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
-        CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
-        CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
-        CORE::LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+        Core::LinAlg::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+        Core::LinAlg::Matrix<3, 1>& normal,     //< normal at gp
+        Core::LinAlg::Matrix<3, 1>& vel_m,      //< master velocity at gp
         double* fulltraction  //< precomputed fsi traction (sigmaF n + gamma relvel)
         ) override;
   };
@@ -249,10 +249,10 @@ namespace XFEM
    public:
     //! constructor
     explicit LevelSetCouplingNeumann(
-        Teuchos::RCP<DRT::Discretization>& bg_dis,  ///< background discretization
+        Teuchos::RCP<Discret::Discretization>& bg_dis,  ///< background discretization
         const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                        ///< discretization is identified
-        Teuchos::RCP<DRT::Discretization>&
+        Teuchos::RCP<Discret::Discretization>&
             cond_dis,  ///< full discretization from which the cutter discretization is derived
         const int coupling_id,  ///< id of composite of coupling conditions
         const double time,      ///< time
@@ -265,18 +265,18 @@ namespace XFEM
 
    public:
     //! Evaluate Neumann traction 3 components
-    void evaluate_coupling_conditions(CORE::LINALG::Matrix<3, 1>& ivel,
-        CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
-        const CORE::Conditions::Condition* cond) override;
+    void evaluate_coupling_conditions(Core::LinAlg::Matrix<3, 1>& ivel,
+        Core::LinAlg::Matrix<3, 1>& itraction, const Core::LinAlg::Matrix<3, 1>& x,
+        const Core::Conditions::Condition* cond) override;
 
     //! Evaluate Neumann traction 6 components
-    void evaluate_coupling_conditions(CORE::LINALG::Matrix<3, 1>& ivel,
-        CORE::LINALG::Matrix<6, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
-        const CORE::Conditions::Condition* cond) override;
+    void evaluate_coupling_conditions(Core::LinAlg::Matrix<3, 1>& ivel,
+        Core::LinAlg::Matrix<6, 1>& itraction, const Core::LinAlg::Matrix<3, 1>& x,
+        const Core::Conditions::Condition* cond) override;
 
-    void evaluate_coupling_conditions_old_state(CORE::LINALG::Matrix<3, 1>& ivel,
-        CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
-        const CORE::Conditions::Condition* cond) override;
+    void evaluate_coupling_conditions_old_state(Core::LinAlg::Matrix<3, 1>& ivel,
+        Core::LinAlg::Matrix<3, 1>& itraction, const Core::LinAlg::Matrix<3, 1>& x,
+        const Core::Conditions::Condition* cond) override;
 
    protected:
     //! Do condition specific setup
@@ -292,15 +292,15 @@ namespace XFEM
         double& density_m,                             //< master sided density
         double& visc_stab_tang,                        //< viscous tangential NIT Penalty scaling
         double& full_stab,                             //< full NIT Penalty scaling
-        const CORE::LINALG::Matrix<3, 1>& x,           //< Position x in global coordinates
-        const CORE::Conditions::Condition* cond,       //< Condition
-        CORE::Elements::Element* ele,                  //< Element
-        CORE::Elements::Element* bele,                 //< Boundary Element
+        const Core::LinAlg::Matrix<3, 1>& x,           //< Position x in global coordinates
+        const Core::Conditions::Condition* cond,       //< Condition
+        Core::Elements::Element* ele,                  //< Element
+        Core::Elements::Element* bele,                 //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
-        CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
-        CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
-        CORE::LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+        Core::LinAlg::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+        Core::LinAlg::Matrix<3, 1>& normal,     //< normal at gp
+        Core::LinAlg::Matrix<3, 1>& vel_m,      //< master velocity at gp
         double* fulltraction  //< precomputed fsi traction (sigmaF n + gamma relvel)
         ) override;
 
@@ -317,10 +317,10 @@ namespace XFEM
    public:
     //! constructor
     explicit LevelSetCouplingNavierSlip(
-        Teuchos::RCP<DRT::Discretization>& bg_dis,  ///< background discretization
+        Teuchos::RCP<Discret::Discretization>& bg_dis,  ///< background discretization
         const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                        ///< discretization is identified
-        Teuchos::RCP<DRT::Discretization>&
+        Teuchos::RCP<Discret::Discretization>&
             cond_dis,  ///< full discretization from which the cutter discretization is derived
         const int coupling_id,  ///< id of composite of coupling conditions
         const double time,      ///< time
@@ -328,28 +328,28 @@ namespace XFEM
     );
 
    public:
-    void evaluate_coupling_conditions(CORE::LINALG::Matrix<3, 1>& ivel,
-        CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
-        const CORE::Conditions::Condition* cond) override;
+    void evaluate_coupling_conditions(Core::LinAlg::Matrix<3, 1>& ivel,
+        Core::LinAlg::Matrix<3, 1>& itraction, const Core::LinAlg::Matrix<3, 1>& x,
+        const Core::Conditions::Condition* cond) override;
 
-    void evaluate_coupling_conditions_old_state(CORE::LINALG::Matrix<3, 1>& ivel,
-        CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
-        const CORE::Conditions::Condition* cond) override;
+    void evaluate_coupling_conditions_old_state(Core::LinAlg::Matrix<3, 1>& ivel,
+        Core::LinAlg::Matrix<3, 1>& itraction, const Core::LinAlg::Matrix<3, 1>& x,
+        const Core::Conditions::Condition* cond) override;
 
-    void GetSlipCoefficient(double& slipcoeff, const CORE::LINALG::Matrix<3, 1>& x,
-        const CORE::Conditions::Condition* cond) override;
+    void GetSlipCoefficient(double& slipcoeff, const Core::LinAlg::Matrix<3, 1>& x,
+        const Core::Conditions::Condition* cond) override;
 
 
     /*!
      Return prescribed velocities and traction vectors for a GNBC boundary condition.
      Also returns the projection matrix (to the plane of the surface) needed for the GNBC condition.
      */
-    template <CORE::FE::CellType DISTYPE, class V1, class V2, class X1, class T1, class M1,
+    template <Core::FE::CellType DISTYPE, class V1, class V2, class X1, class T1, class M1,
         class M2, class M3>
     void evaluate_coupling_conditions(V1& ivel,   ///< prescribed velocity at interface
         V2& itraction,                            ///< prescribed traction at interface
         X1& x,                                    ///< coordinates of gauss point
-        const CORE::Conditions::Condition* cond,  ///< condition prescribed to this surface
+        const Core::Conditions::Condition* cond,  ///< condition prescribed to this surface
         T1& projection_matrix,  ///< Laplace-Beltrami matrix for surface tension calculations
         int eid,                ///< element ID
         M1& funct,              ///< local shape function for Gauss Point (from fluid element)
@@ -393,7 +393,7 @@ namespace XFEM
       if (forcetangvel_)
       {
         // We project in the normal direction
-        CORE::LINALG::Matrix<3, 1> tmp_ivel(true);
+        Core::LinAlg::Matrix<3, 1> tmp_ivel(true);
         tmp_ivel.MultiplyTN(
             projection_matrix, ivel);  // apply Projection matrix from the right. (u_0 * P^t)
         ivel.Update(1.0, tmp_ivel, 0.0);
@@ -403,7 +403,7 @@ namespace XFEM
     /*!
      Return a smoothed/non-smoothed tangiential projection of the level set surface.
      */
-    template <CORE::FE::CellType DISTYPE, class T1, class M1, class M2, class M3>
+    template <Core::FE::CellType DISTYPE, class T1, class M1, class M2, class M3>
     void eval_projection_matrix(T1& projection_matrix,  ///< Projection matrix
         int eid,                                        ///< element ID
         M1& funct,  ///< local shape function for Gauss Point (from fluid element)
@@ -420,46 +420,46 @@ namespace XFEM
       //-------------------------------------------------------------------------
 
       // number space dimensions for element
-      const size_t nsd = CORE::FE::dim<DISTYPE>;
+      const size_t nsd = Core::FE::dim<DISTYPE>;
 
       // number of nodes of element
-      const size_t nen = CORE::FE::num_nodes<DISTYPE>;
+      const size_t nen = Core::FE::num_nodes<DISTYPE>;
 
       // Should this be provided as well by the input?
-      CORE::Elements::Element* actele = cutter_dis_->gElement(eid);
+      Core::Elements::Element* actele = cutter_dis_->gElement(eid);
 
       //   Non-smoothed projection matrix
-      CORE::LINALG::Matrix<nsd, 1> gradphi;
-      if (projtosurf_ == INPAR::XFEM::Proj_normal)
+      Core::LinAlg::Matrix<nsd, 1> gradphi;
+      if (projtosurf_ == Inpar::XFEM::Proj_normal)
       {
         gradphi = normal;
       }
-      else if (projtosurf_ == INPAR::XFEM::Proj_smoothed)
+      else if (projtosurf_ == Inpar::XFEM::Proj_smoothed)
       {
         // smoothed normal at cutter element nodes, the Gaussian point lies in
-        CORE::LINALG::SerialDenseMatrix esmoothedgradphi_test(nsd, nen);
-        CORE::LINALG::Matrix<nsd, nen> esmoothedgradphi(esmoothedgradphi_test, View);
+        Core::LinAlg::SerialDenseMatrix esmoothedgradphi_test(nsd, nen);
+        Core::LinAlg::Matrix<nsd, nen> esmoothedgradphi(esmoothedgradphi_test, View);
         XFEM::UTILS::ExtractQuantityAtElement(esmoothedgradphi_test, actele,
             gradphinp_smoothed_node_col_, cutter_dis_, cutter_nds_phi_, nsd_);
 
         // Gradients @ GaussPoints
         gradphi.Multiply(esmoothedgradphi, funct);
       }
-      else if (projtosurf_ == INPAR::XFEM::Proj_normal_phi)
+      else if (projtosurf_ == Inpar::XFEM::Proj_normal_phi)
       {
-        CORE::LINALG::SerialDenseMatrix ephi_test(nen, 1);
-        CORE::LINALG::Matrix<nen, 1> ephi(ephi_test, View);
+        Core::LinAlg::SerialDenseMatrix ephi_test(nen, 1);
+        Core::LinAlg::Matrix<nen, 1> ephi(ephi_test, View);
         XFEM::UTILS::ExtractQuantityAtElement(
             ephi_test, actele, cutter_phinp_col_, cutter_dis_, cutter_nds_phi_, 1);
 
         // Gradients @ GaussPoints
         gradphi.Multiply(derxy, ephi);
       }
-      else if (projtosurf_ == INPAR::XFEM::Proj_normal_smoothed_comb)
+      else if (projtosurf_ == Inpar::XFEM::Proj_normal_smoothed_comb)
       {
         // smoothed normal at cutter element nodes, the Gaussian point lies in
-        CORE::LINALG::SerialDenseMatrix esmoothedgradphi_test(nsd, nen);
-        CORE::LINALG::Matrix<nsd, nen> esmoothedgradphi(esmoothedgradphi_test, View);
+        Core::LinAlg::SerialDenseMatrix esmoothedgradphi_test(nsd, nen);
+        Core::LinAlg::Matrix<nsd, nen> esmoothedgradphi(esmoothedgradphi_test, View);
         XFEM::UTILS::ExtractQuantityAtElement(esmoothedgradphi_test, actele,
             gradphinp_smoothed_node_col_, cutter_dis_, cutter_nds_phi_, nsd_);
 
@@ -473,7 +473,7 @@ namespace XFEM
           gradphi.putScalar(0.0);  // This to catch the cases when gradphi \approx 0
 
         // normal_comb = alpha_n * normal + (1-alpha)*gradphi
-        CORE::LINALG::Matrix<nsd, 1> normal_comb(true);
+        Core::LinAlg::Matrix<nsd, 1> normal_comb(true);
         double alpha_n = 0.3;
         normal_comb.Update(alpha_n, normal, -(1.0 - alpha_n), gradphi);
 
@@ -499,13 +499,13 @@ namespace XFEM
    protected:
     void set_element_conditions() override;
 
-    void set_element_specific_conditions(std::vector<CORE::Conditions::Condition*>& cutterele_cond,
+    void set_element_specific_conditions(std::vector<Core::Conditions::Condition*>& cutterele_cond,
         const std::string& cond_name, const int& robin_id);
 
     void set_condition_specific_parameters() override;
 
-    void get_condition_by_robin_id(const std::vector<CORE::Conditions::Condition*>& mycond,
-        const int coupling_id, std::vector<CORE::Conditions::Condition*>& mynewcond);
+    void get_condition_by_robin_id(const std::vector<Core::Conditions::Condition*>& mycond,
+        const int coupling_id, std::vector<Core::Conditions::Condition*>& mynewcond);
 
     //! Initializes configurationmap
     void setup_configuration_map() override;
@@ -517,15 +517,15 @@ namespace XFEM
         double& density_m,                             //< master sided density
         double& visc_stab_tang,                        //< viscous tangential NIT Penalty scaling
         double& full_stab,                             //< full NIT Penalty scaling
-        const CORE::LINALG::Matrix<3, 1>& x,           //< Position x in global coordinates
-        const CORE::Conditions::Condition* cond,       //< Condition
-        CORE::Elements::Element* ele,                  //< Element
-        CORE::Elements::Element* bele,                 //< Boundary Element
+        const Core::LinAlg::Matrix<3, 1>& x,           //< Position x in global coordinates
+        const Core::Conditions::Condition* cond,       //< Condition
+        Core::Elements::Element* ele,                  //< Element
+        Core::Elements::Element* bele,                 //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
-        CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
-        CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
-        CORE::LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+        Core::LinAlg::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+        Core::LinAlg::Matrix<3, 1>& normal,     //< normal at gp
+        Core::LinAlg::Matrix<3, 1>& vel_m,      //< master velocity at gp
         double* fulltraction  //< precomputed fsi traction (sigmaF n + gamma relvel)
         ) override;
 
@@ -541,8 +541,8 @@ namespace XFEM
     int robin_neumann_id_;
 
     // Get the condition for the dirichlet and neumann condition associated with the Robin-condition
-    std::vector<CORE::Conditions::Condition*> cutterele_cond_robin_dirichlet_;
-    std::vector<CORE::Conditions::Condition*> cutterele_cond_robin_neumann_;
+    std::vector<Core::Conditions::Condition*> cutterele_cond_robin_dirichlet_;
+    std::vector<Core::Conditions::Condition*> cutterele_cond_robin_neumann_;
 
 
   };  // End LevelSetCouplingNavierSlip
@@ -557,9 +557,9 @@ namespace XFEM
 
   /// set material pointer for coupling slave side
   void get_interface_slave_material(
-      CORE::Elements::Element* actele, Teuchos::RCP<CORE::MAT::Material>& mat);
+      Core::Elements::Element* actele, Teuchos::RCP<Core::Mat::Material>& mat);
 
-  template <CORE::FE::CellType DISTYPE, class M1, class M2>
+  template <Core::FE::CellType DISTYPE, class M1, class M2>
   void EvaluateCurvature(double& icurvature,  ///< curvature to be computed
       int eid,                                ///< element ID
       M1& funct,  ///< local shape function for Gauss Point (from fluid element)
@@ -567,22 +567,22 @@ namespace XFEM
   )
   {
     // number space dimensions for element
-    const size_t nsd = CORE::FE::dim<DISTYPE>;
+    const size_t nsd = Core::FE::dim<DISTYPE>;
 
     // number of nodes of element
-    const size_t nen = CORE::FE::num_nodes<DISTYPE>;
+    const size_t nen = Core::FE::num_nodes<DISTYPE>;
 
     // smoothed normal at cutter element nodes, the Gaussian point lies in
-    CORE::LINALG::SerialDenseMatrix esmoothedgradphi(nsd, nen);
-    CORE::LINALG::SerialDenseMatrix esmoothedcurvature(nen, 1);
+    Core::LinAlg::SerialDenseMatrix esmoothedgradphi(nsd, nen);
+    Core::LinAlg::SerialDenseMatrix esmoothedcurvature(nen, 1);
 
-    CORE::LINALG::Matrix<nsd, nen> esmoothedgradphi_T(esmoothedgradphi, View);
-    CORE::LINALG::Matrix<nen, 1> esmoothedcurvature_T(esmoothedcurvature, View);
+    Core::LinAlg::Matrix<nsd, nen> esmoothedgradphi_T(esmoothedgradphi, View);
+    Core::LinAlg::Matrix<nen, 1> esmoothedcurvature_T(esmoothedcurvature, View);
 
     return;
   }
 
-  template <CORE::FE::CellType DISTYPE, class M1, class M2>
+  template <Core::FE::CellType DISTYPE, class M1, class M2>
   void GetPhiAtGP(double& phi_gp,  ///< phi at gausspoint
       int eid,                     ///< element ID
       M1& funct,                   ///< local shape function for Gauss Point (from fluid element)
@@ -590,31 +590,31 @@ namespace XFEM
   )
   {
     // number space dimensions for element
-    //    const size_t nsd = CORE::FE::dim<DISTYPE>;
+    //    const size_t nsd = Core::FE::dim<DISTYPE>;
 
     // number of nodes of element
-    const size_t nen = CORE::FE::num_nodes<DISTYPE>;
+    const size_t nen = Core::FE::num_nodes<DISTYPE>;
 
     // smoothed normal at cutter element nodes, the Gaussian point lies in
-    CORE::LINALG::SerialDenseMatrix ephinp(nen, 1);
-    CORE::LINALG::Matrix<nen, 1> ephinp_T(ephinp, View);
+    Core::LinAlg::SerialDenseMatrix ephinp(nen, 1);
+    Core::LinAlg::Matrix<nen, 1> ephinp_T(ephinp, View);
 
     phi_gp = funct.Dot(ephinp_T);
   }
 
-  template <CORE::FE::CellType DISTYPE, class M1, class M2, class M3, class M4>
+  template <Core::FE::CellType DISTYPE, class M1, class M2, class M3, class M4>
   double InterpolateCurvature(const M1& funct, const M2& derxy, const M3& esmoothedgradphi_T,
       const M4& esmoothedcurvature_T, const int numnode)
   {
     // number space dimensions for element
-    const size_t nsd = CORE::FE::dim<DISTYPE>;
+    const size_t nsd = Core::FE::dim<DISTYPE>;
 
     double icurvature = 0.0;
     return icurvature;
   }
 
 
-  template <CORE::FE::CellType DISTYPE, class T1, class M1, class M2>
+  template <Core::FE::CellType DISTYPE, class T1, class M1, class M2>
   void eval_projection_matrix(
       T1& itraction_jump_matrix,  ///< Laplace-Beltrami matrix for surface tension calculations
       int eid,                    ///< element ID
@@ -623,10 +623,10 @@ namespace XFEM
   )
   {
     // number space dimensions for element
-    const size_t nsd = CORE::FE::dim<DISTYPE>;
+    const size_t nsd = Core::FE::dim<DISTYPE>;
 
-    CORE::LINALG::Matrix<nsd, nsd> p_matrix(false);
-    CORE::LINALG::Matrix<nsd, nsd> p_smoothed_matrix(false);
+    Core::LinAlg::Matrix<nsd, nsd> p_matrix(false);
+    Core::LinAlg::Matrix<nsd, nsd> p_smoothed_matrix(false);
 
     //  -----------------------------------------------------------
     //

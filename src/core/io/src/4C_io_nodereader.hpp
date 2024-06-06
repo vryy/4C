@@ -22,17 +22,17 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::IO
+namespace Core::IO
 {
   /**
    * Read all nodes that are defined in section @p node_section_name in the @p reader.
    * Nodes are added to the discretization objects associated with the @p element_readers.
    * The @p max_node_id is tracked for consistency checks.
    */
-  void ReadNodes(const CORE::IO::DatFileReader& reader, const std::string& node_section_name,
+  void ReadNodes(const Core::IO::DatFileReader& reader, const std::string& node_section_name,
       std::vector<ElementReader>& element_readers, int& max_node_id);
 
-}  // namespace CORE::IO
+}  // namespace Core::IO
 
 FOUR_C_NAMESPACE_CLOSE
 

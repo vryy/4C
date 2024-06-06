@@ -26,11 +26,11 @@ void ntaini_ccadiscret(int argc, char** argv, std::string& inputfile_name,
 {
   using namespace FourC;
 
-  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
+  Global::Problem* problem = Global::Problem::Instance();
   Teuchos::RCP<Epetra_Comm> lcomm = problem->GetCommunicators()->LocalComm();
   int group = problem->GetCommunicators()->GroupId();
   int ngroups = problem->GetCommunicators()->NumGroups();
-  CORE::COMM::NestedParallelismType npType = problem->GetCommunicators()->NpType();
+  Core::Communication::NestedParallelismType npType = problem->GetCommunicators()->NpType();
   int restartgroup = 0;
   int myrank = lcomm->MyPID();
 
@@ -74,12 +74,12 @@ void ntaini_ccadiscret(int argc, char** argv, std::string& inputfile_name,
   // set input file name in each group
   switch (npType)
   {
-    case CORE::COMM::NestedParallelismType::no_nested_parallelism:
+    case Core::Communication::NestedParallelismType::no_nested_parallelism:
       infilename << inout[0];
       outfilekenner << inout[1];
       restartgroup = 0;
       break;
-    case CORE::COMM::NestedParallelismType::every_group_read_dat_file:
+    case Core::Communication::NestedParallelismType::every_group_read_dat_file:
     {
       if (inoutargs > 4)
         FOUR_C_THROW(
@@ -102,7 +102,7 @@ void ntaini_ccadiscret(int argc, char** argv, std::string& inputfile_name,
       restartgroup = 0;
     }
     break;
-    case CORE::COMM::NestedParallelismType::separate_dat_files:
+    case Core::Communication::NestedParallelismType::separate_dat_files:
       if (inoutargs % ngroups != 0)
         FOUR_C_THROW("Each group needs the same number of arguments for input/output.");
       inoutargs /= ngroups;
@@ -159,11 +159,11 @@ void ntaini_ccadiscret(int argc, char** argv, std::string& inputfile_name,
 
       switch (npType)
       {
-        case CORE::COMM::NestedParallelismType::no_nested_parallelism:
-        case CORE::COMM::NestedParallelismType::separate_dat_files:
+        case Core::Communication::NestedParallelismType::no_nested_parallelism:
+        case Core::Communication::NestedParallelismType::separate_dat_files:
           // nothing to add to restartfilekenner
           break;
-        case CORE::COMM::NestedParallelismType::every_group_read_dat_file:
+        case Core::Communication::NestedParallelismType::every_group_read_dat_file:
         {
           // check whether restartfilekenner includes a dash and in case separate the number at the
           // end

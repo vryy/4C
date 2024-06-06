@@ -22,7 +22,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::IO
+namespace Core::IO
 {
   /*!
     \brief helper class to read a mesh
@@ -58,7 +58,7 @@ namespace CORE::IO
      * Construct a mesh reader. Read nodes from the given @p reader under section
      * @p node_section_name.
      */
-    MeshReader(CORE::IO::DatFileReader& reader, std::string node_section_name,
+    MeshReader(Core::IO::DatFileReader& reader, std::string node_section_name,
         MeshReaderParameters parameters = {});
 
     /// add an element reader for each discretization
@@ -83,9 +83,9 @@ namespace CORE::IO
      * \param geometrysource [in] selects which reader will be created
      * \param geofilepath    [in] path to the file for the file reader (not used for the others)
      */
-    void AddAdvancedReader(Teuchos::RCP<DRT::Discretization> dis,
-        const CORE::IO::DatFileReader& reader, const std::string& sectionname,
-        const CORE::IO::GeometryType geometrysource, const std::string* geofilepath);
+    void AddAdvancedReader(Teuchos::RCP<Discret::Discretization> dis,
+        const Core::IO::DatFileReader& reader, const std::string& sectionname,
+        const Core::IO::GeometryType geometrysource, const std::string* geofilepath);
 
     /// do the actual reading
     /*!
@@ -147,7 +147,7 @@ namespace CORE::IO
     std::vector<DomainReader> domain_readers_;
 
     /// Input file contents
-    CORE::IO::DatFileReader& reader_;
+    Core::IO::DatFileReader& reader_;
 
     /// The name of the section under which we will read the nodes.
     std::string node_section_name_;
@@ -155,7 +155,7 @@ namespace CORE::IO
     /// Additional paramters for reading meshes.
     MeshReaderParameters parameters_;
   };
-}  // namespace CORE::IO
+}  // namespace Core::IO
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -21,26 +21,26 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace MORTAR
+namespace Mortar
 {
   class Interface;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
 }
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
     class Group;
-  }  // namespace NLN
+  }  // namespace Nln
 }  // namespace NOX
 
 namespace CONTACT
@@ -54,11 +54,11 @@ namespace CONTACT
   Every solution algorithm has to fit into the set of functions and calls defined herein
   and has to be specified in a corresponding subclass defining the concrete algorithmic steps.
 
-  This class it itself derived from the MORTAR::StrategyBase class, which is an even
+  This class it itself derived from the Mortar::StrategyBase class, which is an even
   more abstract framework for any solution strategies involving mortar coupling.
 
   */
-  class MtAbstractStrategy : public MORTAR::StrategyBase
+  class MtAbstractStrategy : public Mortar::StrategyBase
   {
    public:
     /*!
@@ -77,7 +77,7 @@ namespace CONTACT
     \param[in] maxdof Highest DOF number in global problem
     */
     MtAbstractStrategy(const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
-        Teuchos::ParameterList params, std::vector<Teuchos::RCP<MORTAR::Interface>> interface,
+        Teuchos::ParameterList params, std::vector<Teuchos::RCP<Mortar::Interface>> interface,
         const int spatialDim, const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf,
         const int maxdof);
 
@@ -131,13 +131,13 @@ namespace CONTACT
     \brief Return mortar matrix D
 
     */
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> DMatrix() override { return dmatrix_; }
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> DMatrix() override { return dmatrix_; }
 
     /*!
     \brief Return mortar matrix M
 
     */
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> MMatrix() override { return mmatrix_; }
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> MMatrix() override { return mmatrix_; }
 
     /*!
     \brief Get dual quadratic 3d slave element flag
@@ -154,10 +154,10 @@ namespace CONTACT
     */
     bool ParRedist() const
     {
-      INPAR::MORTAR::ParallelRedist partype =
-          Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(
+      Inpar::Mortar::ParallelRedist partype =
+          Teuchos::getIntegralValue<Inpar::Mortar::ParallelRedist>(
               Params().sublist("PARALLEL REDISTRIBUTION"), "PARALLEL_REDIST");
-      if (partype != INPAR::MORTAR::ParallelRedist::redist_none)
+      if (partype != Inpar::Mortar::ParallelRedist::redist_none)
         return true;
       else
         return false;
@@ -191,7 +191,7 @@ namespace CONTACT
 
     */
     void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
-        Teuchos::RCP<CORE::LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f,
+        Teuchos::RCP<Core::LinAlg::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f,
         const int step, const int iter, bool predictor = false) override;
 
     /*! \brief Reset call at the beginning of the ApplyForce(), ApplyStiff() and ApplyForceStiff()
@@ -240,7 +240,7 @@ namespace CONTACT
     applicable) \param vec (in): current global state of the quantity defined by statename
 
     */
-    void set_state(const enum MORTAR::StateType& statetype, const Epetra_Vector& vec) override;
+    void set_state(const enum Mortar::StateType& statetype, const Epetra_Vector& vec) override;
 
     /*!
     \brief Do mortar coupling in reference configuration
@@ -270,7 +270,7 @@ namespace CONTACT
     //! @name Quantity control methods
 
     /*!
-    \brief Get some nodal quantity globally and store into MORTAR::Node(s)
+    \brief Get some nodal quantity globally and store into Mortar::Node(s)
 
     The enum input parameter defines, which quantity has to be updated.
     Currently, the possibilities "lmold", "lmcurrent", "lmupdate" and
@@ -282,21 +282,21 @@ namespace CONTACT
     problems. Finally, "lmuzawa" addresses the LM update within an Uzawa
     augmented Lagrangian scheme.
 
-    \param type (in): enum defining which quantity to store into MORTAR::Node(s)
+    \param type (in): enum defining which quantity to store into Mortar::Node(s)
 
     */
-    void store_nodal_quantities(MORTAR::StrategyBase::QuantityType type) override;
+    void store_nodal_quantities(Mortar::StrategyBase::QuantityType type) override;
 
     /*!
-    \brief Get dirichlet B.C. status and store into MORTAR::Node(s)
+    \brief Get dirichlet B.C. status and store into Mortar::Node(s)
 
     This is called once at the beginning of the simulation
-    to set the D.B.C. status in each MORTAR::Node.
+    to set the D.B.C. status in each Mortar::Node.
 
     \param dbcmaps (in): MapExtractor carrying global dbc map
 
     */
-    void store_dirichlet_status(Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmaps) override;
+    void store_dirichlet_status(Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmaps) override;
 
     /*!
     \brief Update meshtying at end of time step
@@ -316,7 +316,7 @@ namespace CONTACT
 
     */
     void DoReadRestart(
-        CORE::IO::DiscretizationReader& reader, Teuchos::RCP<const Epetra_Vector> dis) override;
+        Core::IO::DiscretizationReader& reader, Teuchos::RCP<const Epetra_Vector> dis) override;
 
     //@}
 
@@ -380,12 +380,12 @@ namespace CONTACT
 
     /*! Derived method
      *
-     * (see NOX::NLN::CONSTRAINT::Interface::Preconditioner for more information) */
+     * (see NOX::Nln::CONSTRAINT::Interface::Preconditioner for more information) */
     bool IsSaddlePointSystem() const override;
 
     /*! \brief Derived method
      *
-     * (see NOX::NLN::CONSTRAINT::Interface::Preconditioner for more information) */
+     * (see NOX::Nln::CONSTRAINT::Interface::Preconditioner for more information) */
     bool IsCondensedSystem() const override;
 
     /*! Fill the maps vector for the linear solver preconditioner
@@ -409,22 +409,22 @@ namespace CONTACT
      *
      * All these functions are defined in one or more specific derived classes,
      * i.e CONTACT::MeshtyingLagrangeStrategy or CONTACT::MeshtyingPenaltyStrategy.
-     * As the base class MORTAR::StrategyBase is always called from the control routine
+     * As the base class Mortar::StrategyBase is always called from the control routine
      * (time integrator), these functions need to be defined purely virtual here.
      */
 
     double ConstraintNorm() const override = 0;
-    void EvaluateMeshtying(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
+    void EvaluateMeshtying(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis) override = 0;
-    void InitializeUzawa(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
+    void InitializeUzawa(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff) override = 0;
     double InitialPenalty() override = 0;
     void Recover(Teuchos::RCP<Epetra_Vector> disi) override = 0;
     void ResetPenalty() override = 0;
     void ModifyPenalty() override = 0;
-    void build_saddle_point_system(Teuchos::RCP<CORE::LINALG::SparseOperator> kdd,
+    void build_saddle_point_system(Teuchos::RCP<Core::LinAlg::SparseOperator> kdd,
         Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
-        Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
+        Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
         Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) override = 0;
     void update_displacements_and_l_mincrements(
         Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<const Epetra_Vector> blocksol) override = 0;
@@ -475,7 +475,7 @@ namespace CONTACT
     void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis) override {}
     void UpdateActiveSet() override {}
     void update_active_set_semi_smooth(const bool firstStepPredictor = false) override {}
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> EvaluateNormals(
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> EvaluateNormals(
         Teuchos::RCP<Epetra_Vector> dis) override
     {
       return Teuchos::null;
@@ -495,7 +495,7 @@ namespace CONTACT
     //! @name New time integration
     //! @{
 
-    //! Return the NOX::NLN::CONSTRAINT::Interface::Required member object
+    //! Return the NOX::Nln::CONSTRAINT::Interface::Required member object
     const Teuchos::RCP<CONTACT::MtNoxInterface>& nox_interface_ptr() { return noxinterface_ptr_; };
 
     /*! \brief Return the desired right-hand-side block pointer (read-only)
@@ -519,7 +519,7 @@ namespace CONTACT
      *
      *  \date 05/2016
      *  \author hiermeier */
-    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrixBlockPtr(
+    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> GetMatrixBlockPtr(
         const enum CONTACT::MatBlockType& bt) const = 0;
 
     /*! \brief Return the Lagrange multiplier dof row map
@@ -538,7 +538,7 @@ namespace CONTACT
 
     //! Modify system before linear solve
     virtual void run_pre_apply_jacobian_inverse(
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> kteff, Epetra_Vector& rhs)
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff, Epetra_Vector& rhs)
     { /* do nothing */
     }
 
@@ -592,7 +592,7 @@ namespace CONTACT
     which is specific to the applied solving strategy (dual Lagrange or Penalty).
     In the dual LM, matrix D is diagonal, thus its inversion is trivial and no
     linear system needs to be solved. In the penalty case, matrix D is not diagonal
-    and we apply a default CORE::LINALG::Solver to solve for the modified slave positions.
+    and we apply a default Core::LinAlg::Solver to solve for the modified slave positions.
     Thus, this linear system solve is done in the derived method FIRST and then
     we refer back to this base class function.
 
@@ -611,13 +611,13 @@ namespace CONTACT
     on the effective stiffness matrix is handed in. This way, after building the
     new effective stiffness matrix with contact, we can simply let the pointer
     kteff point onto the new object. The same is true for the effective force
-    vector feff. Be careful: kteff is of type Teuchos::RCP<CORE::LINALG::SparseOperator>&.
+    vector feff. Be careful: kteff is of type Teuchos::RCP<Core::LinAlg::SparseOperator>&.
 
     \param kteff (in/out): effective stiffness matrix (without -> with contact)
     \param feff (in/out): effective residual / force vector (without -> with contact)
 
     */
-    void Evaluate(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
+    void Evaluate(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis) override;
 
     /*!
@@ -653,7 +653,7 @@ namespace CONTACT
     MtAbstractStrategy(const MtAbstractStrategy& old) = delete;
 
     //! Vector with all meshtying interfaces
-    std::vector<Teuchos::RCP<MORTAR::Interface>> interface_;
+    std::vector<Teuchos::RCP<Mortar::Interface>> interface_;
 
     //! Global Lagrange multiplier dof row map (of all interfaces)
     Teuchos::RCP<Epetra_Map> glmdofrowmap_;
@@ -706,10 +706,10 @@ namespace CONTACT
     std::vector<Teuchos::RCP<Epetra_Map>> initial_elecolmap_;
 
     //! Global Mortar matrix \f$D\f$
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> dmatrix_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> dmatrix_;
 
     //! Global Mortar matrix \f$M\f$
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> mmatrix_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> mmatrix_;
 
     //! Global weighted gap vector \f$g\f$
     Teuchos::RCP<Epetra_Vector> g_;
@@ -750,7 +750,7 @@ namespace CONTACT
      * \todo What is quad? Quadratic shape functions or quadrilateral elements?
      * \todo What is the difference to #systrafo_?
      */
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> trafo_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> trafo_;
 
     /*! \brief Transformation matrix \f$T\f$ for dual quad 3D case
      *
@@ -758,14 +758,14 @@ namespace CONTACT
      * \todo What is quad? Quadratic shape functions or quadrilateral elements?
      * \todo What is the difference to #trafo_?
      */
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> systrafo_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> systrafo_;
 
     /*! \brief Inverse trafo matrix \f$T^{-1}\f$ for dual quad 3D case
      *
      * \todo What is matrix \f$T\f$?
      * \todo What is quad? Quadratic shape functions or quadrilateral elements?
      */
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> invtrafo_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> invtrafo_;
 
     /*! \brief Integration time
      *
@@ -780,19 +780,19 @@ namespace CONTACT
     Teuchos::RCP<Epetra_Vector> fs_;
 
     //! Matrix containing \f$D\f$ and \f$-M\f$
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> dm_matrix_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> dm_matrix_;
 
     /*! \brief Matrix containing D and -M. transposed
      *
      * \todo Is it \f$D\f$ and \f$-M^T\f$ or (D and -M)^T? In latter case, why store it explicitly?
      */
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> dm_matrix_t_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> dm_matrix_t_;
 
     //! Lagrange multiplier diagonal block
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> lm_diag_matrix_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> lm_diag_matrix_;
 
    private:
-    ///< pointer to the NOX::NLN::CONSTRAINT::Interface::Required object
+    ///< pointer to the NOX::Nln::CONSTRAINT::Interface::Required object
     Teuchos::RCP<CONTACT::MtNoxInterface> noxinterface_ptr_;
 
   };  // class MtAbstractStrategy

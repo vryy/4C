@@ -24,7 +24,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
 
@@ -32,19 +32,19 @@ namespace DRT
   {
     class FluidEleParameter;
   }
-}  // namespace DRT
+}  // namespace Discret
 
-namespace MORTAR
+namespace Mortar
 {
   class Interface;
 }
 
-namespace ADAPTER
+namespace Adapter
 {
   class CouplingMortar;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class Solver;
   struct SolverParams;
@@ -54,7 +54,7 @@ namespace CORE::LINALG
   class BlockSparseMatrixBase;
   class SparseOperator;
   class KrylovProjector;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 namespace FLD
 {
@@ -69,8 +69,8 @@ namespace FLD
 
    public:
     //! Constructor
-    Meshtying(Teuchos::RCP<DRT::Discretization> dis,            ///> actual discretisation
-        CORE::LINALG::Solver& solver,                           ///> solver
+    Meshtying(Teuchos::RCP<Discret::Discretization> dis,        ///> actual discretisation
+        Core::LinAlg::Solver& solver,                           ///> solver
         int msht,                                               ///> meshting parameter list
         int nsd,                                                ///> number space dimensions
         const UTILS::MapExtractor* surfacesplitter = nullptr);  ///> surface splitter
@@ -81,7 +81,7 @@ namespace FLD
     //! Set up mesh-tying framework
     void setup_meshtying(const std::vector<int>& coupleddof, const bool pcoupled = true);
 
-    Teuchos::RCP<CORE::LINALG::SparseOperator> init_system_matrix() const;
+    Teuchos::RCP<Core::LinAlg::SparseOperator> init_system_matrix() const;
 
     //! Applied Dirichlet values are adapted on the slave side of the internal interface
     //! in order to avoid an over-constraint problem setup
@@ -110,16 +110,16 @@ namespace FLD
         Teuchos::RCP<Epetra_Vector>& dispnp);  ///> current ALE displacement vector
 
     //! Prepare matrix, shapederivatives and residual for meshtying
-    void PrepareMeshtying(Teuchos::RCP<CORE::LINALG::SparseOperator>&
+    void PrepareMeshtying(Teuchos::RCP<Core::LinAlg::SparseOperator>&
                               sysmat,  ///> sysmat established by the element routine
         const Teuchos::RCP<Epetra_Vector>&
             residual,                              ///> residual established by the element routine
         const Teuchos::RCP<Epetra_Vector>& velnp,  ///> current ALE displacement vector
-        Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>&
+        Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>&
             shapederivatives);  ///> shapederivatives established by the element routine
 
     //! Prepare matrix and residual for meshtying
-    void prepare_meshtying_system(const Teuchos::RCP<CORE::LINALG::SparseOperator>&
+    void prepare_meshtying_system(const Teuchos::RCP<Core::LinAlg::SparseOperator>&
                                       sysmat,  ///> sysmat established by the element routine
         const Teuchos::RCP<Epetra_Vector>&
             residual,                               ///> residual established by the element routine
@@ -127,16 +127,16 @@ namespace FLD
 
     //! The residual has another length in case of bmat_merged --> residual has to be calculated in
     //! split form
-    void ApplyPTToResidual(Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat,
+    void ApplyPTToResidual(Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat,
         Teuchos::RCP<Epetra_Vector> residual,
-        Teuchos::RCP<CORE::LINALG::KrylovProjector> projector);
+        Teuchos::RCP<Core::LinAlg::KrylovProjector> projector);
 
     //! Solve mesh-tying problem (including ALE case)
-    void SolveMeshtying(CORE::LINALG::Solver& solver,
-        const Teuchos::RCP<CORE::LINALG::SparseOperator>& sysmat,
+    void SolveMeshtying(Core::LinAlg::Solver& solver,
+        const Teuchos::RCP<Core::LinAlg::SparseOperator>& sysmat,
         const Teuchos::RCP<Epetra_Vector>& incvel, const Teuchos::RCP<Epetra_Vector>& residual,
         const Teuchos::RCP<Epetra_Vector>& velnp, const int itnum,
-        CORE::LINALG::SolverParams& solver_params);
+        Core::LinAlg::SolverParams& solver_params);
 
     //! Adjust null-space for Krylov projector (slave node are in-active)
     Teuchos::RCP<Epetra_Vector> adapt_krylov_projector(Teuchos::RCP<Epetra_Vector> vec);
@@ -145,10 +145,10 @@ namespace FLD
     void OutputSetUp();
 
     //! Output: split sparse matrix
-    void output_sparse_matrix_split(Teuchos::RCP<CORE::LINALG::SparseOperator> conmat);
+    void output_sparse_matrix_split(Teuchos::RCP<Core::LinAlg::SparseOperator> conmat);
 
     //! Output: single blocks of the block matrix
-    void OutputBlockMatrix(Teuchos::RCP<CORE::LINALG::SparseOperator> blockmatrix,
+    void OutputBlockMatrix(Teuchos::RCP<Core::LinAlg::SparseOperator> blockmatrix,
         Teuchos::RCP<Epetra_Vector> residual);
 
     //! Output: split vector
@@ -156,12 +156,12 @@ namespace FLD
 
     //! Analyze system matrix
     void AnalyzeMatrix(
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> sparsematrix);  ///> sparse matrix to analyze
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> sparsematrix);  ///> sparse matrix to analyze
 
     //! Replace matrix entries
     /// Replace computed identity matrix by a real identity matrix
     void replace_matrix_entries(
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> sparsematrix);  ///> sparse matrix to analyze
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> sparsematrix);  ///> sparse matrix to analyze
 
     //! Compute and update the increments of the slave node (including ALE case)
     void UpdateSlaveDOF(
@@ -169,46 +169,46 @@ namespace FLD
 
     //! Set the flag for multifield problems
     void IsMultifield(Teuchos::RCP<std::set<int>> condelements,  ///< conditioned elements of fluid
-        const CORE::LINALG::MultiMapExtractor&
+        const Core::LinAlg::MultiMapExtractor&
             domainmaps,  ///< domain maps for split of fluid matrix
-        const CORE::LINALG::MultiMapExtractor& rangemaps,  ///< range maps for split of fluid matrix
+        const Core::LinAlg::MultiMapExtractor& rangemaps,  ///< range maps for split of fluid matrix
         Teuchos::RCP<std::set<int>> condelements_shape,    ///< conditioned elements
-        const CORE::LINALG::MultiMapExtractor&
+        const Core::LinAlg::MultiMapExtractor&
             domainmaps_shape,  ///< domain maps for split of shape deriv. matrix
-        const CORE::LINALG::MultiMapExtractor&
+        const Core::LinAlg::MultiMapExtractor&
             rangemaps_shape,  ///< domain maps for split of shape deriv. matrix
         bool splitmatrix,     ///< flag for split of matrices
         bool ismultifield     ///< flag for multifield problems
     );
 
     //! Use the split of the fluid mesh tying for the sysmat
-    void MshtSplit(Teuchos::RCP<CORE::LINALG::SparseOperator>& sysmat,
-        Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>& shapederivatives);
+    void MshtSplit(Teuchos::RCP<Core::LinAlg::SparseOperator>& sysmat,
+        Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>& shapederivatives);
 
     //! Use the split of the fluid mesh tying for the shape derivatives
-    void MshtSplitShape(Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>& shapederivatives);
+    void MshtSplitShape(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>& shapederivatives);
 
     //! Use the split of the multifield problem for the sysmat
-    void MultifieldSplit(Teuchos::RCP<CORE::LINALG::SparseOperator>& sysmat);
+    void MultifieldSplit(Teuchos::RCP<Core::LinAlg::SparseOperator>& sysmat);
 
     //! Use the split of the multifield problem for the shape derivatives
     void multifield_split_shape(
-        Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>& shapederivatives);
+        Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>& shapederivatives);
 
     //! Prepare condensation of the shape derivatives
     void condensation_operation_block_matrix_shape(
-        Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>& shapederivatives);
+        Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>& shapederivatives);
 
    private:
     //! Prepare condensation for sparse matrix (including ALE case)
-    void condensation_sparse_matrix(const Teuchos::RCP<CORE::LINALG::SparseOperator>&
+    void condensation_sparse_matrix(const Teuchos::RCP<Core::LinAlg::SparseOperator>&
                                         sysmat,  ///> sysmat established by the element routine
         const Teuchos::RCP<Epetra_Vector>&
             residual,  ///> residual established by the element routine
         const Teuchos::RCP<Epetra_Vector>& velnp);
 
     //! Prepare condensation for a block matrix (including ALE case)
-    void condensation_block_matrix(const Teuchos::RCP<CORE::LINALG::SparseOperator>&
+    void condensation_block_matrix(const Teuchos::RCP<Core::LinAlg::SparseOperator>&
                                        sysmat,  ///> sysmat established by the element routine
         const Teuchos::RCP<Epetra_Vector>&
             residual,                               ///> residual established by the element routine
@@ -216,9 +216,9 @@ namespace FLD
 
     //! split sparse global system matrix into 3x3 block sparse matrix associated with interior,
     //! master, and slave dofs
-    void split_matrix(Teuchos::RCP<CORE::LINALG::SparseOperator>
+    void split_matrix(Teuchos::RCP<Core::LinAlg::SparseOperator>
                           matrix,  //!< original sparse global system matrix before split
-        Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>&
+        Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>&
             splitmatrix  //!< resulting block sparse matrix after split
     );
 
@@ -235,11 +235,11 @@ namespace FLD
     /// the sysmat is manipulated via a second sparse matrix
     /// Assembling is slower, since the graph cannot be saved
     void condensation_operation_sparse_matrix(
-        const Teuchos::RCP<CORE::LINALG::SparseOperator>&
+        const Teuchos::RCP<Core::LinAlg::SparseOperator>&
             sysmat,  ///> sysmat established by the element routine
         const Teuchos::RCP<Epetra_Vector>&
             residual,  ///> residual established by the element routine
-        const Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>&
+        const Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>&
             splitmatrix,  ///> container with split original sysmat
         const std::vector<Teuchos::RCP<Epetra_Vector>>&
             splitres,  ///> container with split original residual
@@ -252,7 +252,7 @@ namespace FLD
     /// the remaining blocks (ns, ms, ss, sn, sm) are not touched at all,
     /// since finally a 2x2 block matrix is solved
     void condensation_operation_block_matrix(
-        const Teuchos::RCP<CORE::LINALG::SparseOperator>&
+        const Teuchos::RCP<Core::LinAlg::SparseOperator>&
             sysmat,  ///> sysmat established by the element routine
         const Teuchos::RCP<Epetra_Vector>&
             residual,  ///> residual established by the element routine
@@ -263,9 +263,9 @@ namespace FLD
 
    private:
     //! discretisation
-    Teuchos::RCP<DRT::Discretization> discret_;
+    Teuchos::RCP<Discret::Discretization> discret_;
 
-    CORE::LINALG::Solver& solver_;  // standard solver object
+    Core::LinAlg::Solver& solver_;  // standard solver object
 
     //! meshting options
     /// 0: no_meshtying     -> no mesh-tying
@@ -310,10 +310,10 @@ namespace FLD
     Teuchos::RCP<Epetra_Vector> valuesdc_;
 
     //! adapter to mortar framework
-    Teuchos::RCP<CORE::ADAPTER::CouplingMortar> adaptermeshtying_;
+    Teuchos::RCP<Core::Adapter::CouplingMortar> adaptermeshtying_;
 
     //! 2x2 (3x3) block matrix for solving condensed system (3x3 block matrix)
-    Teuchos::RCP<CORE::LINALG::SparseOperator> sysmatsolve_;
+    Teuchos::RCP<Core::LinAlg::SparseOperator> sysmatsolve_;
     Teuchos::RCP<Epetra_Vector> residual_;
     //! flag defining pressure coupling
     bool pcoupled_;
@@ -332,19 +332,19 @@ namespace FLD
     Teuchos::RCP<std::set<int>> multifield_condelements_;
 
     //! domain maps for split of fluid matrix in multifield simulation
-    CORE::LINALG::MultiMapExtractor multifield_domainmaps_;
+    Core::LinAlg::MultiMapExtractor multifield_domainmaps_;
 
     //! range maps for split of fluid matrix in multifield simulation
-    CORE::LINALG::MultiMapExtractor multifield_rangemaps_;
+    Core::LinAlg::MultiMapExtractor multifield_rangemaps_;
 
     //! conditioned elements in multifield simulation
     Teuchos::RCP<std::set<int>> multifield_condelements_shape_;
 
     //! domain maps for split of shape deriv. matrix in multifield simulation
-    CORE::LINALG::MultiMapExtractor multifield_domainmaps_shape_;
+    Core::LinAlg::MultiMapExtractor multifield_domainmaps_shape_;
 
     //! domain maps for split of shape deriv. matrix in multifield simulation
-    CORE::LINALG::MultiMapExtractor multifield_rangemaps_shape_;
+    Core::LinAlg::MultiMapExtractor multifield_rangemaps_shape_;
 
     //! flag for split of matrices in multifield simulation
     bool multifield_splitmatrix_;

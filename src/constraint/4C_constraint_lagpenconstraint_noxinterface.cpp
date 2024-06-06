@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------*/
 /*! \file
 
-\brief Concrete mplementation of all the %NOX::NLN::CONSTRAINT::Interface::Required
+\brief Concrete mplementation of all the %NOX::Nln::CONSTRAINT::Interface::Required
        (pure) virtual routines.
 
 \level 3
@@ -43,7 +43,7 @@ LAGPENCONSTRAINT::NoxInterfacePrec::NoxInterfacePrec()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void LAGPENCONSTRAINT::NoxInterface::Init(
-    const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& gstate_ptr)
+    const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr)
 {
   issetup_ = false;
 
@@ -56,7 +56,7 @@ void LAGPENCONSTRAINT::NoxInterface::Init(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void LAGPENCONSTRAINT::NoxInterfacePrec::Init(
-    const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& gstate_ptr)
+    const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr)
 {
   issetup_ = false;
 
@@ -88,13 +88,13 @@ void LAGPENCONSTRAINT::NoxInterfacePrec::Setup()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double LAGPENCONSTRAINT::NoxInterface::get_constraint_rhs_norms(const Epetra_Vector& F,
-    NOX::NLN::StatusTest::QuantityType chQ, ::NOX::Abstract::Vector::NormType type,
+    NOX::Nln::StatusTest::QuantityType chQ, ::NOX::Abstract::Vector::NormType type,
     bool isScaled) const
 {
-  if (chQ != NOX::NLN::StatusTest::quantity_lag_pen_constraint) return -1.0;
+  if (chQ != NOX::Nln::StatusTest::quantity_lag_pen_constraint) return -1.0;
 
   Teuchos::RCP<Epetra_Vector> constrRhs =
-      gstate_ptr_->ExtractModelEntries(INPAR::STR::model_lag_pen_constraint, F);
+      gstate_ptr_->ExtractModelEntries(Inpar::STR::model_lag_pen_constraint, F);
 
   // no constraint contributions present
   if (constrRhs.is_null()) return 0.0;
@@ -113,23 +113,23 @@ double LAGPENCONSTRAINT::NoxInterface::get_constraint_rhs_norms(const Epetra_Vec
  *----------------------------------------------------------------------------*/
 double LAGPENCONSTRAINT::NoxInterface::get_lagrange_multiplier_update_rms(const Epetra_Vector& xNew,
     const Epetra_Vector& xOld, double aTol, double rTol,
-    NOX::NLN::StatusTest::QuantityType checkQuantity, bool disable_implicit_weighting) const
+    NOX::Nln::StatusTest::QuantityType checkQuantity, bool disable_implicit_weighting) const
 {
-  if (checkQuantity != NOX::NLN::StatusTest::quantity_lag_pen_constraint) return -1.0;
+  if (checkQuantity != NOX::Nln::StatusTest::quantity_lag_pen_constraint) return -1.0;
 
   double rms = -1.0;
 
   // export the constraint solution
   Teuchos::RCP<Epetra_Vector> lagincr_ptr =
-      gstate_ptr_->ExtractModelEntries(INPAR::STR::model_lag_pen_constraint, xOld);
+      gstate_ptr_->ExtractModelEntries(Inpar::STR::model_lag_pen_constraint, xOld);
   Teuchos::RCP<const Epetra_Vector> lagnew_ptr =
-      gstate_ptr_->ExtractModelEntries(INPAR::STR::model_lag_pen_constraint, xNew);
+      gstate_ptr_->ExtractModelEntries(Inpar::STR::model_lag_pen_constraint, xNew);
 
   lagincr_ptr->Update(1.0, *lagnew_ptr, -1.0);
   Teuchos::RCP<const ::NOX::Epetra::Vector> lagincr_nox_ptr =
       Teuchos::rcp(new ::NOX::Epetra::Vector(lagincr_ptr, ::NOX::Epetra::Vector::CreateView));
 
-  rms = NOX::NLN::AUX::RootMeanSquareNorm(
+  rms = NOX::Nln::Aux::RootMeanSquareNorm(
       aTol, rTol, lagnew_ptr, lagincr_ptr, disable_implicit_weighting);
 
   return rms;
@@ -139,16 +139,16 @@ double LAGPENCONSTRAINT::NoxInterface::get_lagrange_multiplier_update_rms(const 
  *----------------------------------------------------------------------------*/
 double LAGPENCONSTRAINT::NoxInterface::get_lagrange_multiplier_update_norms(
     const Epetra_Vector& xNew, const Epetra_Vector& xOld,
-    NOX::NLN::StatusTest::QuantityType checkQuantity, ::NOX::Abstract::Vector::NormType type,
+    NOX::Nln::StatusTest::QuantityType checkQuantity, ::NOX::Abstract::Vector::NormType type,
     bool isScaled) const
 {
-  if (checkQuantity != NOX::NLN::StatusTest::quantity_lag_pen_constraint) return -1.0;
+  if (checkQuantity != NOX::Nln::StatusTest::quantity_lag_pen_constraint) return -1.0;
 
   // export the constraint solution
   Teuchos::RCP<Epetra_Vector> lagincr_ptr =
-      gstate_ptr_->ExtractModelEntries(INPAR::STR::model_lag_pen_constraint, xOld);
+      gstate_ptr_->ExtractModelEntries(Inpar::STR::model_lag_pen_constraint, xOld);
   Teuchos::RCP<const Epetra_Vector> lagnew_ptr =
-      gstate_ptr_->ExtractModelEntries(INPAR::STR::model_lag_pen_constraint, xNew);
+      gstate_ptr_->ExtractModelEntries(Inpar::STR::model_lag_pen_constraint, xNew);
 
   lagincr_ptr->Update(1.0, *lagnew_ptr, -1.0);
   Teuchos::RCP<const ::NOX::Epetra::Vector> lagincr_nox_ptr =
@@ -166,14 +166,14 @@ double LAGPENCONSTRAINT::NoxInterface::get_lagrange_multiplier_update_norms(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double LAGPENCONSTRAINT::NoxInterface::get_previous_lagrange_multiplier_norms(
-    const Epetra_Vector& xOld, NOX::NLN::StatusTest::QuantityType checkQuantity,
+    const Epetra_Vector& xOld, NOX::Nln::StatusTest::QuantityType checkQuantity,
     ::NOX::Abstract::Vector::NormType type, bool isScaled) const
 {
-  if (checkQuantity != NOX::NLN::StatusTest::quantity_lag_pen_constraint) return -1.0;
+  if (checkQuantity != NOX::Nln::StatusTest::quantity_lag_pen_constraint) return -1.0;
 
   // export the constraint solution
   Teuchos::RCP<Epetra_Vector> lagold_ptr =
-      gstate_ptr_->ExtractModelEntries(INPAR::STR::model_lag_pen_constraint, xOld);
+      gstate_ptr_->ExtractModelEntries(Inpar::STR::model_lag_pen_constraint, xOld);
 
   Teuchos::RCP<const ::NOX::Epetra::Vector> lagold_nox_ptr =
       Teuchos::rcp(new ::NOX::Epetra::Vector(lagold_ptr, ::NOX::Epetra::Vector::CreateView));
@@ -193,18 +193,18 @@ double LAGPENCONSTRAINT::NoxInterface::get_previous_lagrange_multiplier_norms(
  *----------------------------------------------------------------------------*/
 bool LAGPENCONSTRAINT::NoxInterfacePrec::IsSaddlePointSystem() const
 {
-  Teuchos::RCP<const DRT::Discretization> dis = gstate_ptr_->GetDiscret();
+  Teuchos::RCP<const Discret::Discretization> dis = gstate_ptr_->GetDiscret();
 
   // ---------------------------------------------------------------------------
   // check type of constraint conditions (Lagrange multiplier vs. penalty)
   // ---------------------------------------------------------------------------
   bool have_lag_constraint = false;
-  std::vector<CORE::Conditions::Condition*> lagcond_volconstr3d(0);
-  std::vector<CORE::Conditions::Condition*> lagcond_areaconstr3d(0);
-  std::vector<CORE::Conditions::Condition*> lagcond_areaconstr2d(0);
-  std::vector<CORE::Conditions::Condition*> lagcond_mpconline2d(0);
-  std::vector<CORE::Conditions::Condition*> lagcond_mpconplane3d(0);
-  std::vector<CORE::Conditions::Condition*> lagcond_mpcnormcomp3d(0);
+  std::vector<Core::Conditions::Condition*> lagcond_volconstr3d(0);
+  std::vector<Core::Conditions::Condition*> lagcond_areaconstr3d(0);
+  std::vector<Core::Conditions::Condition*> lagcond_areaconstr2d(0);
+  std::vector<Core::Conditions::Condition*> lagcond_mpconline2d(0);
+  std::vector<Core::Conditions::Condition*> lagcond_mpconplane3d(0);
+  std::vector<Core::Conditions::Condition*> lagcond_mpcnormcomp3d(0);
   dis->GetCondition("VolumeConstraint_3D", lagcond_volconstr3d);
   dis->GetCondition("AreaConstraint_3D", lagcond_areaconstr3d);
   dis->GetCondition("AreaConstraint_2D", lagcond_areaconstr2d);

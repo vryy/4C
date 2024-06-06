@@ -28,16 +28,16 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationReader;
 }
 
-namespace PARTICLEINTERACTION
+namespace ParticleInteraction
 {
   class MaterialHandler;
   class InteractionWriter;
-}  // namespace PARTICLEINTERACTION
+}  // namespace ParticleInteraction
 
 namespace PARTICLEENGINE
 {
@@ -52,7 +52,7 @@ namespace PARTICLEWALL
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
  *---------------------------------------------------------------------------*/
-namespace PARTICLEINTERACTION
+namespace ParticleInteraction
 {
   /*!
    * \brief base particle interaction
@@ -80,7 +80,7 @@ namespace PARTICLEINTERACTION
     virtual void write_restart() const;
 
     //! read restart of particle interaction handler
-    virtual void read_restart(const std::shared_ptr<CORE::IO::DiscretizationReader> reader);
+    virtual void read_restart(const std::shared_ptr<Core::IO::DiscretizationReader> reader);
 
     //! insert interaction dependent states of all particle types
     virtual void insert_particle_states_of_particle_types(
@@ -157,10 +157,10 @@ namespace PARTICLEINTERACTION
     std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface_;
 
     //! particle material handler
-    std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial_;
+    std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial_;
 
     //! particle interaction writer
-    std::shared_ptr<PARTICLEINTERACTION::InteractionWriter> particleinteractionwriter_;
+    std::shared_ptr<ParticleInteraction::InteractionWriter> particleinteractionwriter_;
 
     //! current time
     double time_;
@@ -172,7 +172,7 @@ namespace PARTICLEINTERACTION
     std::vector<double> gravity_;
   };
 
-}  // namespace PARTICLEINTERACTION
+}  // namespace ParticleInteraction
 
 /*---------------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

@@ -19,7 +19,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace POROELASTSCATRA
+namespace PoroElastScaTra
 {
   class PoroScatraPart2WC : public PoroScatraPart
   {
@@ -71,7 +71,7 @@ namespace POROELASTSCATRA
     double ittol_;
   };
 
-}  // namespace POROELASTSCATRA
+}  // namespace PoroElastScaTra
 
 
 FOUR_C_NAMESPACE_CLOSE

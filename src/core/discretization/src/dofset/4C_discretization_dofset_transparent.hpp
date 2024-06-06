@@ -22,7 +22,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace CORE::Dofsets
+namespace Core::DOFSets
 {
   /// Alias dofset that shares dof numbers with another dofset
   /*!
@@ -33,13 +33,14 @@ namespace CORE::Dofsets
   according to the dofs of the source.
 
   */
-  class TransparentDofSet : public virtual CORE::Dofsets::DofSet
+  class TransparentDofSet : public virtual Core::DOFSets::DofSet
   {
    public:
     /*!
     \brief Standard Constructor
     */
-    explicit TransparentDofSet(Teuchos::RCP<DRT::Discretization> sourcedis, bool parallel = false);
+    explicit TransparentDofSet(
+        Teuchos::RCP<Discret::Discretization> sourcedis, bool parallel = false);
 
 
 
@@ -48,11 +49,11 @@ namespace CORE::Dofsets
 
     /// Assign dof numbers to all elements and nodes of the discretization.
     int assign_degrees_of_freedom(
-        const DRT::Discretization& dis, const unsigned dspos, const int start) override;
+        const Discret::Discretization& dis, const unsigned dspos, const int start) override;
 
     /// Assign dof numbers for new discretization using dof numbering from source discretization.
-    void transfer_degrees_of_freedom(const DRT::Discretization& sourcedis,  ///< source discret
-        const DRT::Discretization&
+    void transfer_degrees_of_freedom(const Discret::Discretization& sourcedis,  ///< source discret
+        const Discret::Discretization&
             newdis,      ///< discretization that gets dof numbering from source discret
         const int start  ///< offset for dof numbering (obsolete)
     );
@@ -62,8 +63,8 @@ namespace CORE::Dofsets
     /// for this version, newdis is allowed to be distributed completely different; the
     /// communication  of the dofs is done internally.
     void parallel_transfer_degrees_of_freedom(
-        const DRT::Discretization& sourcedis,  ///< source discret
-        const DRT::Discretization&
+        const Discret::Discretization& sourcedis,  ///< source discret
+        const Discret::Discretization&
             newdis,      ///< discretization that gets dof numbering from source discret
         const int start  ///< offset for dof numbering (obsolete)
     );
@@ -76,7 +77,7 @@ namespace CORE::Dofsets
     /// helper for parallel_transfer_degrees_of_freedom; pack the current map
     /// node gid -> its dofs into a send block
     void PackLocalSourceDofs(
-        std::map<int, std::vector<int>>& gid_to_dofs, CORE::COMM::PackBuffer& sblock);
+        std::map<int, std::vector<int>>& gid_to_dofs, Core::Communication::PackBuffer& sblock);
 
     /// helper for parallel_transfer_degrees_of_freedom; add processor local information
     /// to the map unpack the received block to the current map node gid -> its dofs
@@ -84,20 +85,20 @@ namespace CORE::Dofsets
 
     /// helper for parallel_transfer_degrees_of_freedom, an MPI send call
     void send_block(int numproc, int myrank, std::vector<char>& sblock,
-        CORE::COMM::Exporter& exporter, MPI_Request& request);
+        Core::Communication::Exporter& exporter, MPI_Request& request);
 
     /// helper for parallel_transfer_degrees_of_freedom, an MPI receive call
     void receive_block(int numproc, int myrank, std::vector<char>& rblock,
-        CORE::COMM::Exporter& exporter, MPI_Request& request);
+        Core::Communication::Exporter& exporter, MPI_Request& request);
 
    protected:
-    Teuchos::RCP<DRT::Discretization> sourcedis_;  ///< source discretization
+    Teuchos::RCP<Discret::Discretization> sourcedis_;  ///< source discretization
 
     bool parallel_;  ///< call parallel_transfer_degrees_of_freedom instead of
                      ///< transfer_degrees_of_freedom
 
   };  // class TransparentDofSet
-}  // namespace CORE::Dofsets
+}  // namespace Core::DOFSets
 
 FOUR_C_NAMESPACE_CLOSE
 

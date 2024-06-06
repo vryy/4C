@@ -33,7 +33,7 @@ NOX::FSI::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
     Teuchos::ParameterList& linearSolverParams,
     const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
     const Teuchos::RCP<Epetra_Operator>& J, const ::NOX::Epetra::Vector& cloneVector,
-    Teuchos::RCP<CORE::LINALG::Solver> solver, const Teuchos::RCP<::NOX::Epetra::Scaling> s)
+    Teuchos::RCP<Core::LinAlg::Solver> solver, const Teuchos::RCP<::NOX::Epetra::Scaling> s)
     : utils_(printParams),
       jac_interface_ptr_(iJac),
       jac_type_(EpetraOperator),
@@ -59,10 +59,10 @@ NOX::FSI::LinearSystem::OperatorType NOX::FSI::LinearSystem::getOperatorType(
   const Epetra_Operator* testOperator = nullptr;
 
   testOperator = dynamic_cast<
-      const CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>*>(&Op);
+      const Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>*>(&Op);
   if (testOperator != nullptr) return BlockSparseMatrix;
 
-  testOperator = dynamic_cast<const CORE::LINALG::SparseMatrix*>(&Op);
+  testOperator = dynamic_cast<const Core::LinAlg::SparseMatrix*>(&Op);
   if (testOperator != nullptr) return SparseMatrix;
 
   testOperator = dynamic_cast<const Epetra_CrsMatrix*>(&Op);
@@ -132,7 +132,7 @@ bool NOX::FSI::LinearSystem::applyJacobianInverse(
       .sublist("Belos Parameters")
       .set("Convergence Tolerance", p.get("Tolerance", 1.0e-10));
 
-  CORE::LINALG::SolverParams solver_params;
+  Core::LinAlg::SolverParams solver_params;
   solver_params.refactor = true;
   solver_params.reset = callcount_ == 0;
   solver_->Solve(jac_ptr_, disi, fres, solver_params);

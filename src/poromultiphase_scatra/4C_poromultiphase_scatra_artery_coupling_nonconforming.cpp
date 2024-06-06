@@ -31,9 +31,9 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
-    PoroMultiPhaseScaTraArtCouplNonConforming(Teuchos::RCP<DRT::Discretization> arterydis,
-        Teuchos::RCP<DRT::Discretization> contdis, const Teuchos::ParameterList& couplingparams,
+PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::
+    PoroMultiPhaseScaTraArtCouplNonConforming(Teuchos::RCP<Discret::Discretization> arterydis,
+        Teuchos::RCP<Discret::Discretization> contdis, const Teuchos::ParameterList& couplingparams,
         const std::string& condname, const std::string& artcoupleddofname,
         const std::string& contcoupleddofname)
     : PoroMultiPhaseScaTraArtCouplBase(
@@ -44,17 +44,17 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
       issetup_(false),
       porofluidprob_(false),
       has_varying_diam_(false),
-      delete_free_hanging_eles_(CORE::UTILS::IntegralValue<int>(
-          GLOBAL::Problem::Instance()->poro_fluid_multi_phase_dynamic_params().sublist(
+      delete_free_hanging_eles_(Core::UTILS::IntegralValue<int>(
+          Global::Problem::Instance()->poro_fluid_multi_phase_dynamic_params().sublist(
               "ARTERY COUPLING"),
           "DELETE_FREE_HANGING_ELES")),
-      delete_free_hanging_eles_threshold_(GLOBAL::Problem::Instance()
+      delete_free_hanging_eles_threshold_(Global::Problem::Instance()
                                               ->poro_fluid_multi_phase_dynamic_params()
                                               .sublist("ARTERY COUPLING")
                                               .get<double>("DELETE_SMALL_FREE_HANGING_COMPS")),
-      coupling_method_(
-          CORE::UTILS::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(
-              couplingparams, "ARTERY_COUPLING_METHOD")),
+      coupling_method_(Core::UTILS::IntegralValue<
+          Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod>(
+          couplingparams, "ARTERY_COUPLING_METHOD")),
       timefacrhs_art_(0.0),
       timefacrhs_cont_(0.0),
       pp_(couplingparams_.get<double>("PENALTY"))
@@ -63,10 +63,10 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::Init()
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::Init()
 {
   // we do not have a moving mesh
-  if (GLOBAL::Problem::Instance()->GetProblemType() == CORE::ProblemType::porofluidmultiphase)
+  if (Global::Problem::Instance()->GetProblemType() == Core::ProblemType::porofluidmultiphase)
   {
     evaluate_in_ref_config_ = true;
     porofluidprob_ = true;
@@ -90,10 +90,10 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::Init()
   // -------------------------------------------------------------------
   // create empty D and M matrices (27 adjacent nodes as 'good' guess)
   // -------------------------------------------------------------------
-  d_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
-      *(arterydis_->dof_row_map()), 27, false, true, CORE::LINALG::SparseMatrix::FE_MATRIX));
-  m_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
-      *(arterydis_->dof_row_map()), 27, false, true, CORE::LINALG::SparseMatrix::FE_MATRIX));
+  d_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+      *(arterydis_->dof_row_map()), 27, false, true, Core::LinAlg::SparseMatrix::FE_MATRIX));
+  m_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+      *(arterydis_->dof_row_map()), 27, false, true, Core::LinAlg::SparseMatrix::FE_MATRIX));
   kappa_inv_ = Teuchos::rcp(new Epetra_FEVector(*arterydis_->dof_row_map(), true));
 
   // full map of continous and artery dofs
@@ -101,13 +101,13 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::Init()
   maps.push_back(Teuchos::rcp(new Epetra_Map(*contdis_->dof_row_map())));
   maps.push_back(Teuchos::rcp(new Epetra_Map(*arterydis_->dof_row_map())));
 
-  fullmap_ = CORE::LINALG::MultiMapExtractor::MergeMaps(maps);
+  fullmap_ = Core::LinAlg::MultiMapExtractor::MergeMaps(maps);
   /// dof row map of coupled problem splitted in (field) blocks
-  globalex_ = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor());
+  globalex_ = Teuchos::rcp(new Core::LinAlg::MultiMapExtractor());
   globalex_->Setup(*fullmap_, maps);
 
-  FEmat_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
-      *fullmap_, 81, true, true, CORE::LINALG::SparseMatrix::FE_MATRIX));
+  FEmat_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+      *fullmap_, 81, true, true, Core::LinAlg::SparseMatrix::FE_MATRIX));
 
   fe_rhs_ = Teuchos::rcp(new Epetra_FEVector(*fullmap_));
 
@@ -117,17 +117,17 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::Init()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::Setup()
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::Setup()
 {
   // get the coupling method
   auto arterycoupl =
-      CORE::UTILS::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(
-          GLOBAL::Problem::Instance()->poro_fluid_multi_phase_dynamic_params().sublist(
+      Core::UTILS::IntegralValue<Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod>(
+          Global::Problem::Instance()->poro_fluid_multi_phase_dynamic_params().sublist(
               "ARTERY COUPLING"),
           "ARTERY_COUPLING_METHOD");
 
   // create the pairs
-  if (arterycoupl == INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::ntp)
+  if (arterycoupl == Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod::ntp)
   {
     get_coupling_idsfrom_input();
     if (couplingnodes_ntp_.size() == 0)
@@ -146,10 +146,10 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::Setup()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::get_coupling_idsfrom_input()
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::get_coupling_idsfrom_input()
 {
   // get 1D coupling IDs from Input
-  std::vector<CORE::Conditions::Condition*> artCoupcond;
+  std::vector<Core::Conditions::Condition*> artCoupcond;
 
   arterydis_->GetCondition(condname_, artCoupcond);
 
@@ -172,8 +172,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::get_coupli
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::Evaluate(
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::Evaluate(
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
 {
   if (!issetup_) FOUR_C_THROW("Setup() has not been called");
 
@@ -193,12 +193,12 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::Evaluate(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::SetupSystem(
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs,
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat_cont,
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat_art, Teuchos::RCP<const Epetra_Vector> rhs_cont,
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::SetupSystem(
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs,
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_cont,
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_art, Teuchos::RCP<const Epetra_Vector> rhs_cont,
     Teuchos::RCP<const Epetra_Vector> rhs_art,
-    Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmap_cont,
+    Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmap_cont,
     Teuchos::RCP<const Epetra_Map> dbcmap_art,
     Teuchos::RCP<const Epetra_Map> dbcmap_art_with_collapsed)
 {
@@ -208,8 +208,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::SetupSyste
 
   // apply DBCs
   // 1) on vector
-  CORE::LINALG::apply_dirichlet_to_system(*rhs, *zeros_cont_, *(dbcmap_cont->CondMap()));
-  CORE::LINALG::apply_dirichlet_to_system(*rhs, *zeros_art_, *(dbcmap_art));
+  Core::LinAlg::apply_dirichlet_to_system(*rhs, *zeros_cont_, *(dbcmap_cont->CondMap()));
+  Core::LinAlg::apply_dirichlet_to_system(*rhs, *zeros_art_, *(dbcmap_art));
   // 2) on OD-matrices
   sysmat->Matrix(0, 1).Complete(sysmat_art->RangeMap(), sysmat_cont->RangeMap());
   sysmat->Matrix(1, 0).Complete(sysmat_cont->RangeMap(), sysmat_art->RangeMap());
@@ -226,16 +226,16 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::SetupSyste
   sysmat->Matrix(1, 1).ApplyDirichlet(*(dbcmap_art_with_collapsed), true);
   // Assign view to 3D system matrix (such that it now includes also contributions from coupling)
   // this is important! Monolithic algorithms use this matrix
-  sysmat_cont->Assign(CORE::LINALG::View, sysmat->Matrix(0, 0));
+  sysmat_cont->Assign(Core::LinAlg::View, sysmat->Matrix(0, 0));
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::
     create_coupling_pairs_line_surf_based()
 {
   const Teuchos::ParameterList& fluidcouplingparams =
-      GLOBAL::Problem::Instance()->poro_fluid_multi_phase_dynamic_params().sublist(
+      Global::Problem::Instance()->poro_fluid_multi_phase_dynamic_params().sublist(
           "ARTERY COUPLING");
   // loop over pairs found by search
   std::map<int, std::set<int>>::const_iterator nearbyeleiter;
@@ -251,7 +251,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
        ++nearbyeleiter)
   {
     const int artelegid = nearbyeleiter->first;
-    std::vector<CORE::Elements::Element const*> ele_ptrs(2);
+    std::vector<Core::Elements::Element const*> ele_ptrs(2);
     ele_ptrs[0] = arterydis_->gElement(artelegid);
 
     std::set<int>::const_iterator secondeleiter;
@@ -263,8 +263,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
       if (ele_ptrs[1]->Owner() == myrank_)
       {
         // construct, init and setup coupling pairs
-        Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase> newpair =
-            POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
+        Teuchos::RCP<PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPairBase> newpair =
+            PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::
                 create_new_artery_coupling_pair(ele_ptrs);
         newpair->Init(ele_ptrs, couplingparams_, fluidcouplingparams, coupleddofs_cont_,
             coupleddofs_art_, scale_vec_, funct_vec_, condname_,
@@ -296,10 +296,10 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::create_coupling_pairs_ntp()
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::create_coupling_pairs_ntp()
 {
   const Teuchos::ParameterList& fluidcouplingparams =
-      GLOBAL::Problem::Instance()->poro_fluid_multi_phase_dynamic_params().sublist(
+      Global::Problem::Instance()->poro_fluid_multi_phase_dynamic_params().sublist(
           "ARTERY COUPLING");
 
   int numactive_pairs = std::accumulate(nearbyelepairs_.begin(), nearbyelepairs_.end(), 0,
@@ -312,12 +312,12 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::create_cou
   for (const auto& nearbyeleiter : nearbyelepairs_)
   {
     // create vector of active coupling pairs
-    std::vector<CORE::Elements::Element const*> ele_ptrs(2);
+    std::vector<Core::Elements::Element const*> ele_ptrs(2);
     // assign artery element
     ele_ptrs[0] = arterydis_->gElement(nearbyeleiter.first);
 
     // get nodes of artery element
-    const CORE::Nodes::Node* const* artnodes = ele_ptrs[0]->Nodes();
+    const Core::Nodes::Node* const* artnodes = ele_ptrs[0]->Nodes();
 
     // loop over nodes of artery element
     for (int i = 0; i < ele_ptrs[0]->num_node(); i++)
@@ -329,7 +329,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::create_cou
         if (artnodes[i]->Id() == couplingnodes_ntp_[j])
         {
           // get coupling type (ARTERY or AIRWAY ?)
-          std::vector<CORE::Conditions::Condition*> coupcond;
+          std::vector<Core::Conditions::Condition*> coupcond;
           arterydis_->GetCondition(condname_, coupcond);
           std::string coupling_element_type_ =
               (coupcond[j])->parameters().Get<std::string>("coupling_type");
@@ -354,8 +354,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::create_cou
             if (ele_ptrs[1]->Owner() == myrank_)
             {
               // construct, init and setup coupling pairs
-              Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase>
-                  newpair = POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
+              Teuchos::RCP<PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPairBase>
+                  newpair = PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::
                       create_new_artery_coupling_pair(ele_ptrs);
               newpair->Init(ele_ptrs, couplingparams_, fluidcouplingparams, coupleddofs_cont_,
                   coupleddofs_art_, scale_vec_, funct_vec_, condname_, penalty,
@@ -390,21 +390,21 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::create_cou
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::set_varying_diam_flag()
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::set_varying_diam_flag()
 {
   int has_varying_diam = 0;
   // check all column elements if one of them uses the diameter law by function
   for (int i = 0; i < arterydis_->NumMyColElements(); ++i)
   {
     // pointer to current element
-    CORE::Elements::Element* actele = arterydis_->lColElement(i);
+    Core::Elements::Element* actele = arterydis_->lColElement(i);
 
     // get the artery-material
-    Teuchos::RCP<MAT::Cnst1dArt> arterymat =
-        Teuchos::rcp_dynamic_cast<MAT::Cnst1dArt>(actele->Material());
+    Teuchos::RCP<Mat::Cnst1dArt> arterymat =
+        Teuchos::rcp_dynamic_cast<Mat::Cnst1dArt>(actele->Material());
     if (arterymat == Teuchos::null) FOUR_C_THROW("cast to artery material failed");
 
-    if (arterymat->DiameterLaw() == MAT::PAR::ArteryDiameterLaw::diameterlaw_by_function)
+    if (arterymat->DiameterLaw() == Mat::PAR::ArteryDiameterLaw::diameterlaw_by_function)
     {
       has_varying_diam = 1;
       break;
@@ -420,11 +420,11 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::set_varyin
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::evaluate_coupling_pairs(
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::evaluate_coupling_pairs(
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
 {
   // reset
-  if (coupling_method_ == INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp)
+  if (coupling_method_ == Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod::mp)
   {
     d_->Zero();
     m_->Zero();
@@ -435,16 +435,16 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::evaluate_c
   fe_rhs_->PutScalar(0.0);
 
   // resulting discrete element force vectors of the two interacting elements
-  std::vector<CORE::LINALG::SerialDenseVector> eleforce(2);
+  std::vector<Core::LinAlg::SerialDenseVector> eleforce(2);
 
   // linearizations
-  std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> elestiff(
-      2, std::vector<CORE::LINALG::SerialDenseMatrix>(2));
+  std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> elestiff(
+      2, std::vector<Core::LinAlg::SerialDenseMatrix>(2));
 
   // element mortar coupling matrices
-  CORE::LINALG::SerialDenseMatrix D_ele;
-  CORE::LINALG::SerialDenseMatrix M_ele;
-  CORE::LINALG::SerialDenseVector Kappa_ele;
+  Core::LinAlg::SerialDenseMatrix D_ele;
+  Core::LinAlg::SerialDenseMatrix M_ele;
+  Core::LinAlg::SerialDenseVector Kappa_ele;
 
   // set states
   if (contdis_->Name() == "porofluid")
@@ -485,7 +485,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::evaluate_c
         coupl_elepairs_[i]->Ele2GID(), integrated_diam, eleforce, elestiff, sysmat, rhs);
 
     // in case of MP, assemble D, M and Kappa
-    if (coupling_method_ == INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp and
+    if (coupling_method_ == Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod::mp and
         num_coupled_dofs_ > 0)
       fe_assemble_dm_kappa(
           coupl_elepairs_[i]->Ele1GID(), coupl_elepairs_[i]->Ele2GID(), D_ele, M_ele, Kappa_ele);
@@ -504,8 +504,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::evaluate_c
   rhs->Update(1.0, *fe_rhs_, 0.0);
 
   FEmat_->Complete();
-  Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> blockartery =
-      FEmat_->Split<CORE::LINALG::DefaultBlockMatrixStrategy>(*globalex_, *globalex_);
+  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> blockartery =
+      FEmat_->Split<Core::LinAlg::DefaultBlockMatrixStrategy>(*globalex_, *globalex_);
 
   blockartery->Complete();
   sysmat->Matrix(1, 0).Add(blockartery->Matrix(1, 0), false, 1.0, 0.0);
@@ -514,21 +514,21 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::evaluate_c
   sysmat->Matrix(1, 1).Add(blockartery->Matrix(1, 1), false, 1.0, 0.0);
 
   // assemble D and M contributions into global force and stiffness
-  if (coupling_method_ == INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp and
+  if (coupling_method_ == Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod::mp and
       num_coupled_dofs_ > 0)
     sum_dm_into_global_force_stiff(sysmat, rhs);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::
     fe_assemble_ele_force_stiff_into_system_vector_matrix(const int& ele1gid, const int& ele2gid,
-        const double& integrated_diam, std::vector<CORE::LINALG::SerialDenseVector> const& elevec,
-        std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> const& elemat,
-        Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
+        const double& integrated_diam, std::vector<Core::LinAlg::SerialDenseVector> const& elevec,
+        std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> const& elemat,
+        Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
 {
-  const CORE::Elements::Element* ele1 = arterydis_->gElement(ele1gid);
-  const CORE::Elements::Element* ele2 = contdis_->gElement(ele2gid);
+  const Core::Elements::Element* ele1 = arterydis_->gElement(ele1gid);
+  const Core::Elements::Element* ele2 = contdis_->gElement(ele2gid);
 
   // get element location vector and ownerships
   std::vector<int> lmrow1;
@@ -551,12 +551,12 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::fe_assemble_dm_kappa(
-    const int& ele1gid, const int& ele2gid, const CORE::LINALG::SerialDenseMatrix& D_ele,
-    const CORE::LINALG::SerialDenseMatrix& M_ele, const CORE::LINALG::SerialDenseVector& Kappa_ele)
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::fe_assemble_dm_kappa(
+    const int& ele1gid, const int& ele2gid, const Core::LinAlg::SerialDenseMatrix& D_ele,
+    const Core::LinAlg::SerialDenseMatrix& M_ele, const Core::LinAlg::SerialDenseVector& Kappa_ele)
 {
-  const CORE::Elements::Element* ele1 = arterydis_->gElement(ele1gid);
-  const CORE::Elements::Element* ele2 = contdis_->gElement(ele2gid);
+  const Core::Elements::Element* ele1 = arterydis_->gElement(ele1gid);
+  const Core::Elements::Element* ele2 = contdis_->gElement(ele2gid);
 
   // get element location vector and ownerships
   std::vector<int> lmrow1;
@@ -575,9 +575,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::fe_assembl
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::
     sum_dm_into_global_force_stiff(
-        Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
+        Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
 {
   // invert
   invert_kappa();
@@ -587,26 +587,26 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
   m_->Complete(*contdis_->dof_row_map(), *arterydis_->dof_row_map());
 
   // get kappa matrix
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> kappaInvMat =
-      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*new Epetra_Vector(Copy, *kappa_inv_, 0)));
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> kappaInvMat =
+      Teuchos::rcp(new Core::LinAlg::SparseMatrix(*new Epetra_Vector(Copy, *kappa_inv_, 0)));
   kappaInvMat->Complete();
 
   // kappa^{-1}*M
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> km =
-      CORE::LINALG::MLMultiply(*kappaInvMat, false, *m_, false, false, false, true);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> km =
+      Core::LinAlg::MLMultiply(*kappaInvMat, false, *m_, false, false, false, true);
   // kappa^{-1}*D
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> kd =
-      CORE::LINALG::MLMultiply(*kappaInvMat, false, *d_, false, false, false, true);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> kd =
+      Core::LinAlg::MLMultiply(*kappaInvMat, false, *d_, false, false, false, true);
 
   // D^T*kappa^{-1}*D
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> dtkd =
-      CORE::LINALG::MLMultiply(*d_, true, *kd, false, false, false, true);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> dtkd =
+      Core::LinAlg::MLMultiply(*d_, true, *kd, false, false, false, true);
   // D^T*kappa^{-1}*M
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> dtkm =
-      CORE::LINALG::MLMultiply(*d_, true, *km, false, false, false, true);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> dtkm =
+      Core::LinAlg::MLMultiply(*d_, true, *km, false, false, false, true);
   // M^T*kappa^{-1}*M
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> mtkm =
-      CORE::LINALG::MLMultiply(*m_, true, *km, false, false, false, true);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> mtkm =
+      Core::LinAlg::MLMultiply(*m_, true, *km, false, false, false, true);
 
   // add matrices
   sysmat->Matrix(0, 0).Add(*mtkm, false, pp_ * timefacrhs_cont_, 1.0);
@@ -640,7 +640,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::invert_kappa()
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::invert_kappa()
 {
   // global assemble
   if (kappa_inv_->GlobalAssemble(Add, false) != 0)
@@ -660,84 +660,84 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::invert_kap
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase>
-POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::create_new_artery_coupling_pair(
-    std::vector<CORE::Elements::Element const*> const& ele_ptrs)
+Teuchos::RCP<PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPairBase>
+PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::create_new_artery_coupling_pair(
+    std::vector<Core::Elements::Element const*> const& ele_ptrs)
 {
-  const CORE::FE::CellType distypeart = ele_ptrs[0]->Shape();
+  const Core::FE::CellType distypeart = ele_ptrs[0]->Shape();
   switch (distypeart)
   {
-    case CORE::FE::CellType::line2:
+    case Core::FE::CellType::line2:
     {
-      const CORE::FE::CellType distypecont = ele_ptrs[1]->Shape();
+      const Core::FE::CellType distypecont = ele_ptrs[1]->Shape();
       switch (distypecont)
       {
-        case CORE::FE::CellType::quad4:
+        case Core::FE::CellType::quad4:
         {
-          switch (GLOBAL::Problem::Instance()->NDim())
+          switch (Global::Problem::Instance()->NDim())
           {
             case 1:
-              return Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<
-                  CORE::FE::CellType::line2, CORE::FE::CellType::quad4, 1>());
+              return Teuchos::rcp(new PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<
+                  Core::FE::CellType::line2, Core::FE::CellType::quad4, 1>());
             case 2:
-              return Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<
-                  CORE::FE::CellType::line2, CORE::FE::CellType::quad4, 2>());
+              return Teuchos::rcp(new PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<
+                  Core::FE::CellType::line2, Core::FE::CellType::quad4, 2>());
             case 3:
-              return Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<
-                  CORE::FE::CellType::line2, CORE::FE::CellType::quad4, 3>());
+              return Teuchos::rcp(new PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<
+                  Core::FE::CellType::line2, Core::FE::CellType::quad4, 3>());
             default:
-              FOUR_C_THROW("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
+              FOUR_C_THROW("Unsupported dimension %d.", Global::Problem::Instance()->NDim());
           }
         }
-        case CORE::FE::CellType::hex8:
+        case Core::FE::CellType::hex8:
         {
-          switch (GLOBAL::Problem::Instance()->NDim())
+          switch (Global::Problem::Instance()->NDim())
           {
             case 1:
-              return Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<
-                  CORE::FE::CellType::line2, CORE::FE::CellType::hex8, 1>());
+              return Teuchos::rcp(new PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<
+                  Core::FE::CellType::line2, Core::FE::CellType::hex8, 1>());
             case 2:
-              return Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<
-                  CORE::FE::CellType::line2, CORE::FE::CellType::hex8, 2>());
+              return Teuchos::rcp(new PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<
+                  Core::FE::CellType::line2, Core::FE::CellType::hex8, 2>());
             case 3:
-              return Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<
-                  CORE::FE::CellType::line2, CORE::FE::CellType::hex8, 3>());
+              return Teuchos::rcp(new PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<
+                  Core::FE::CellType::line2, Core::FE::CellType::hex8, 3>());
             default:
-              FOUR_C_THROW("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
+              FOUR_C_THROW("Unsupported dimension %d.", Global::Problem::Instance()->NDim());
           }
         }
-        case CORE::FE::CellType::tet4:
+        case Core::FE::CellType::tet4:
         {
-          switch (GLOBAL::Problem::Instance()->NDim())
+          switch (Global::Problem::Instance()->NDim())
           {
             case 1:
-              return Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<
-                  CORE::FE::CellType::line2, CORE::FE::CellType::tet4, 1>());
+              return Teuchos::rcp(new PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<
+                  Core::FE::CellType::line2, Core::FE::CellType::tet4, 1>());
             case 2:
-              return Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<
-                  CORE::FE::CellType::line2, CORE::FE::CellType::tet4, 2>());
+              return Teuchos::rcp(new PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<
+                  Core::FE::CellType::line2, Core::FE::CellType::tet4, 2>());
             case 3:
-              return Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<
-                  CORE::FE::CellType::line2, CORE::FE::CellType::tet4, 3>());
+              return Teuchos::rcp(new PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<
+                  Core::FE::CellType::line2, Core::FE::CellType::tet4, 3>());
             default:
-              FOUR_C_THROW("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
+              FOUR_C_THROW("Unsupported dimension %d.", Global::Problem::Instance()->NDim());
           }
         }
-        case CORE::FE::CellType::tet10:
+        case Core::FE::CellType::tet10:
         {
-          switch (GLOBAL::Problem::Instance()->NDim())
+          switch (Global::Problem::Instance()->NDim())
           {
             case 1:
-              return Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<
-                  CORE::FE::CellType::line2, CORE::FE::CellType::tet10, 1>());
+              return Teuchos::rcp(new PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<
+                  Core::FE::CellType::line2, Core::FE::CellType::tet10, 1>());
             case 2:
-              return Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<
-                  CORE::FE::CellType::line2, CORE::FE::CellType::tet10, 2>());
+              return Teuchos::rcp(new PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<
+                  Core::FE::CellType::line2, Core::FE::CellType::tet10, 2>());
             case 3:
-              return Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<
-                  CORE::FE::CellType::line2, CORE::FE::CellType::tet10, 3>());
+              return Teuchos::rcp(new PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<
+                  Core::FE::CellType::line2, Core::FE::CellType::tet10, 3>());
             default:
-              FOUR_C_THROW("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
+              FOUR_C_THROW("Unsupported dimension %d.", Global::Problem::Instance()->NDim());
           }
         }
         default:
@@ -754,7 +754,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::create_new_arte
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::setup_vector(
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::setup_vector(
     Teuchos::RCP<Epetra_Vector> vec, Teuchos::RCP<const Epetra_Vector> vec_cont,
     Teuchos::RCP<const Epetra_Vector> vec_art)
 {
@@ -767,7 +767,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::setup_vect
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::extract_single_field_vectors(
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::extract_single_field_vectors(
     Teuchos::RCP<const Epetra_Vector> globalvec, Teuchos::RCP<const Epetra_Vector>& vec_cont,
     Teuchos::RCP<const Epetra_Vector>& vec_art)
 {
@@ -780,7 +780,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::extract_si
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map>
-POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::ArteryDofRowMap() const
+PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::ArteryDofRowMap() const
 {
   return globalex_->Map(1);
 }
@@ -788,14 +788,14 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::ArteryDofRowMap
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map>
-POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::dof_row_map() const
+PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::dof_row_map() const
 {
   return fullmap_;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::SetSolutionVectors(
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::SetSolutionVectors(
     Teuchos::RCP<const Epetra_Vector> phinp_cont, Teuchos::RCP<const Epetra_Vector> phin_cont,
     Teuchos::RCP<const Epetra_Vector> phinp_art)
 {
@@ -807,7 +807,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::SetSolutio
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector>
-POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::blood_vessel_volume_fraction()
+PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::blood_vessel_volume_fraction()
 {
   FOUR_C_THROW("Not implemented in base class");
   return Teuchos::null;
@@ -815,13 +815,13 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::blood_vessel_vo
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::print_out_coupling_method()
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::print_out_coupling_method()
     const
 {
   std::string name;
-  if (coupling_method_ == INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp)
+  if (coupling_method_ == Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod::mp)
     name = "Mortar Penalty";
-  else if (coupling_method_ == INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::gpts)
+  else if (coupling_method_ == Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod::gpts)
     name = "Gauss-Point-To-Segment";
   else
     FOUR_C_THROW("unknown coupling method");
@@ -838,7 +838,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::print_out_
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::
     fill_function_and_scale_vectors()
 {
   scale_vec_.resize(2);
@@ -867,13 +867,13 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::set_time_fac_rhs()
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::set_time_fac_rhs()
 {
   // set the right hand side factor
   if (contdis_->Name() == "porofluid")
   {
-    DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter* eleparams =
-        DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter::Instance("porofluid");
+    Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter* eleparams =
+        Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter::Instance("porofluid");
     // artery
     timefacrhs_art_ = 1.0;
     // continuous
@@ -881,8 +881,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::set_time_f
   }
   else if (contdis_->Name() == "scatra")
   {
-    DRT::ELEMENTS::ScaTraEleParameterTimInt* eleparams =
-        DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra");
+    Discret::ELEMENTS::ScaTraEleParameterTimInt* eleparams =
+        Discret::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra");
     // artery
     timefacrhs_art_ = eleparams->TimeFacRhs();
     // continuous
@@ -898,7 +898,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::set_time_f
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::SetNearbyElePairs(
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::SetNearbyElePairs(
     const std::map<int, std::set<int>>* nearbyelepairs)
 {
   nearbyelepairs_ = *nearbyelepairs;

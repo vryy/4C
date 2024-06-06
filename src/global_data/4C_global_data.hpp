@@ -32,24 +32,24 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::IO
+namespace Core::IO
 {
   class OutputControl;
   class InputControl;
-}  // namespace CORE::IO
+}  // namespace Core::IO
 
-namespace CORE::COMM
+namespace Core::Communication
 {
   class Communicators;
 }
 
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
     class Bundle;
   }
-}  // namespace MAT
+}  // namespace Mat
 
 namespace PARTICLEENGINE
 {
@@ -64,16 +64,16 @@ namespace CONTACT
   }
 }  // namespace CONTACT
 
-namespace CORE::IO
+namespace Core::IO
 {
   class DatFileReader;
 }
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace GLOBAL
+namespace Global
 {
   /*!
    * The Problem class gathers various input parameters and provides access
@@ -173,18 +173,18 @@ namespace GLOBAL
     /// set restart step which was read from the command line
     void SetRestartStep(int r);
 
-    void SetInputControlFile(Teuchos::RCP<CORE::IO::InputControl>& input) { inputcontrol_ = input; }
+    void SetInputControlFile(Teuchos::RCP<Core::IO::InputControl>& input) { inputcontrol_ = input; }
 
     /// manipulate problem type
-    void SetProblemType(CORE::ProblemType targettype);
+    void SetProblemType(Core::ProblemType targettype);
 
-    void set_spatial_approximation_type(CORE::FE::ShapeFunctionType shape_function_type);
+    void set_spatial_approximation_type(Core::FE::ShapeFunctionType shape_function_type);
 
     /// @name General query methods
     /// Once and for all definitions
 
     /// give enum of my problem type
-    CORE::ProblemType GetProblemType() const;
+    Core::ProblemType GetProblemType() const;
 
     /// give string name of my problem type
     std::string ProblemName() const;
@@ -196,7 +196,7 @@ namespace GLOBAL
     int NDim() const;
 
     //! Return type of the basis function encoded as enum
-    CORE::FE::ShapeFunctionType spatial_approximation_type() const { return shapefuntype_; }
+    Core::FE::ShapeFunctionType spatial_approximation_type() const { return shapefuntype_; }
 
     //! @}
 
@@ -216,10 +216,10 @@ namespace GLOBAL
         const std::string& restartkenner);
 
     /// control file for restart read
-    Teuchos::RCP<CORE::IO::InputControl> InputControlFile() { return inputcontrol_; }
+    Teuchos::RCP<Core::IO::InputControl> InputControlFile() { return inputcontrol_; }
 
     /// control file for normal output
-    Teuchos::RCP<CORE::IO::OutputControl> OutputControlFile() { return outputcontrol_; }
+    Teuchos::RCP<Core::IO::OutputControl> OutputControlFile() { return outputcontrol_; }
 
     /// write parameters read from input file for documentation
     void write_input_parameters();
@@ -240,10 +240,10 @@ namespace GLOBAL
     /// @name Communicators and their parallel groups
 
     /// set communicators
-    void SetCommunicators(Teuchos::RCP<CORE::COMM::Communicators> communicators);
+    void SetCommunicators(Teuchos::RCP<Core::Communication::Communicators> communicators);
 
     /// return communicators
-    Teuchos::RCP<CORE::COMM::Communicators> GetCommunicators() const;
+    Teuchos::RCP<Core::Communication::Communicators> GetCommunicators() const;
 
     //@}
 
@@ -478,7 +478,7 @@ namespace GLOBAL
     /// @name Discretizations
 
     /// get access to a particular discretization
-    Teuchos::RCP<DRT::Discretization> GetDis(const std::string& name) const;
+    Teuchos::RCP<Discret::Discretization> GetDis(const std::string& name) const;
 
     auto DiscretizationRange() { return std_20::ranges::views::all(discretizationmap_); }
 
@@ -494,7 +494,7 @@ namespace GLOBAL
     bool DoesExistDis(const std::string& name) const;
 
     /// add a discretization to the global problem
-    void AddDis(const std::string& name, Teuchos::RCP<DRT::Discretization> dis);
+    void AddDis(const std::string& name, Teuchos::RCP<Discret::Discretization> dis);
 
 
     //@}
@@ -502,7 +502,7 @@ namespace GLOBAL
     /// @name Materials
 
     /// return pointer to materials bundled to the problem
-    Teuchos::RCP<MAT::PAR::Bundle> Materials() { return materials_; }
+    Teuchos::RCP<Mat::PAR::Bundle> Materials() { return materials_; }
 
     // return pointer to contact constitutive law bundled to the problem
     Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Bundle> contact_constitutive_laws()
@@ -545,20 +545,20 @@ namespace GLOBAL
     void TestAll(const Epetra_Comm& comm) { resulttest_.TestAll(comm); }
 
     /// add field specific result test object
-    void AddFieldTest(Teuchos::RCP<CORE::UTILS::ResultTest> test)
+    void AddFieldTest(Teuchos::RCP<Core::UTILS::ResultTest> test)
     {
       resulttest_.AddFieldTest(test);
     }
 
-    CORE::UTILS::ResultTestManager& get_result_test_manager() { return resulttest_; }
+    Core::UTILS::ResultTestManager& get_result_test_manager() { return resulttest_; }
 
     //@}
 
     /// Return the class that handles random numbers globally
-    CORE::UTILS::Random* Random() { return &random_; }
+    Core::UTILS::Random* Random() { return &random_; }
 
     /// Return the class that handles restart initiating -> to be extended
-    CORE::IO::RestartManager* RestartManager() { return &restartmanager_; }
+    Core::IO::RestartManager* RestartManager() { return &restartmanager_; }
 
     /**
      * Set the @p function_manager which contains all parsed functions.
@@ -566,9 +566,9 @@ namespace GLOBAL
      * @note The parsing of functions must take place before. This calls wants a filled
      * FunctionManager.
      */
-    void SetFunctionManager(CORE::UTILS::FunctionManager&& function_manager);
+    void SetFunctionManager(Core::UTILS::FunctionManager&& function_manager);
 
-    const CORE::UTILS::FunctionManager& FunctionManager() const { return functionmanager_; }
+    const Core::UTILS::FunctionManager& FunctionManager() const { return functionmanager_; }
 
    private:
     /// private default constructor to disallow creation of instances
@@ -578,19 +578,19 @@ namespace GLOBAL
     static std::vector<Problem*> instances_;
 
     /// the problem type
-    CORE::ProblemType probtype_;
+    Core::ProblemType probtype_;
 
     /// Spatial approximation type
-    CORE::FE::ShapeFunctionType shapefuntype_;
+    Core::FE::ShapeFunctionType shapefuntype_;
 
     /// the restart step (given by command line or input file)
     int restartstep_;
 
     /// discretizations of this problem
-    std::map<std::string, Teuchos::RCP<DRT::Discretization>> discretizationmap_;
+    std::map<std::string, Teuchos::RCP<Discret::Discretization>> discretizationmap_;
 
     /// material bundle
-    Teuchos::RCP<MAT::PAR::Bundle> materials_;
+    Teuchos::RCP<Mat::PAR::Bundle> materials_;
 
     /// bundle containing all read-in contact constitutive laws
     Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Bundle> contactconstitutivelaws_;
@@ -599,36 +599,36 @@ namespace GLOBAL
     std::vector<std::shared_ptr<PARTICLEENGINE::ParticleObject>> particles_;
 
     /// basket of spatial function
-    CORE::UTILS::FunctionManager functionmanager_;
+    Core::UTILS::FunctionManager functionmanager_;
 
     /// all test values we might have
-    CORE::UTILS::ResultTestManager resulttest_;
+    Core::UTILS::ResultTestManager resulttest_;
 
     /// map of coupled fields and corresponding material IDs (needed for cloning
     /// of discretizations)
     std::map<std::pair<std::string, std::string>, std::map<int, int>> clonefieldmatmap_;
 
     /// communicators
-    Teuchos::RCP<CORE::COMM::Communicators> communicators_;
+    Teuchos::RCP<Core::Communication::Communicators> communicators_;
 
     /// @name File IO
 
-    Teuchos::RCP<CORE::IO::InputControl> inputcontrol_;
-    Teuchos::RCP<CORE::IO::OutputControl> outputcontrol_;
+    Teuchos::RCP<Core::IO::InputControl> inputcontrol_;
+    Teuchos::RCP<Core::IO::OutputControl> outputcontrol_;
 
     //@}
 
     /// handles all sorts of random numbers
-    CORE::UTILS::Random random_;
+    Core::UTILS::Random random_;
 
     /// handles restart
-    CORE::IO::RestartManager restartmanager_;
+    Core::IO::RestartManager restartmanager_;
 
     //! The central list of all paramters read from input.
     Teuchos::RCP<Teuchos::ParameterList> parameters_;
   };
 
-}  // namespace GLOBAL
+}  // namespace Global
 
 FOUR_C_NAMESPACE_CLOSE
 

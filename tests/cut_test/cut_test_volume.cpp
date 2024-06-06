@@ -18,21 +18,21 @@
 
 void test_cut_volumes()
 {
-  CORE::GEO::CUT::Options options;
+  Core::Geo::Cut::Options options;
   options.Init_for_Cuttests();
   // this is meant to be used with matching boundaries. Thus, no
   // inside/outside positions.
   options.SetFindPositions(false);
 
-  CORE::GEO::CUT::Mesh mesh1(options);
-  CORE::GEO::CUT::Mesh mesh2(options, 1, mesh1.Points());
+  Core::Geo::Cut::Mesh mesh1(options);
+  Core::Geo::Cut::Mesh mesh2(options, 1, mesh1.Points());
 
   create_hex8_mesh(mesh1, 4, 4, 4);
   create_hex8_mesh(mesh2, 3, 5, 2);
 
   mesh2.create_side_ids_cut_test();
 
-  CORE::GEO::CUT::plain_element_set elements_done;
+  Core::Geo::Cut::plain_element_set elements_done;
 
   mesh2.Cut(mesh1, elements_done);
 
@@ -49,21 +49,21 @@ void test_cut_volumes2()
     {
       for (int k = 2; k < 5; ++k)
       {
-        CORE::GEO::CUT::Options options;
+        Core::Geo::Cut::Options options;
         options.Init_for_Cuttests();
         // this is meant to be used with matching boundaries. Thus, no
         // inside/outside positions.
         options.SetFindPositions(false);
 
-        CORE::GEO::CUT::Mesh mesh1(options);
-        CORE::GEO::CUT::Mesh mesh2(options, 1, mesh1.Points());
+        Core::Geo::Cut::Mesh mesh1(options);
+        Core::Geo::Cut::Mesh mesh2(options, 1, mesh1.Points());
 
         create_hex8_mesh(mesh1, 1, 1, 1);
         create_hex8_mesh(mesh2, i, j, k);
 
         mesh2.create_side_ids_cut_test();
 
-        CORE::GEO::CUT::plain_element_set elements_done;
+        Core::Geo::Cut::plain_element_set elements_done;
 
         mesh2.Cut(mesh1, elements_done);
 
@@ -79,7 +79,7 @@ void test_cut_volumes3()
 {
   SimpleWrapper w;
 
-  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 8);
 
   xyze(0, 0) = -1;
   xyze(1, 0) = -1;

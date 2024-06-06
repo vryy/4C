@@ -23,8 +23,8 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 THR::TimIntExplEuler::TimIntExplEuler(const Teuchos::ParameterList& ioparams,
     const Teuchos::ParameterList& tdynparams, const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver,
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
+    Teuchos::RCP<Discret::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : TimIntExpl(ioparams, tdynparams, xparams, actdis, solver, output),
       fextn_(Teuchos::null),
       fintn_(Teuchos::null)
@@ -41,8 +41,8 @@ THR::TimIntExplEuler::TimIntExplEuler(const Teuchos::ParameterList& ioparams,
   determine_capa_consist_temp_rate();
 
   // allocate force vectors
-  fextn_ = CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);
-  fintn_ = CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);
+  fextn_ = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
+  fintn_ = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
 
   // let it rain
   return;
@@ -90,7 +90,7 @@ void THR::TimIntExplEuler::IntegrateStep()
   }
 
   // determine time derivative of capacity vector, ie \f$\dot{P} = C . \dot{T}_{n=1}\f$
-  Teuchos::RCP<Epetra_Vector> frimpn = CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);
+  Teuchos::RCP<Epetra_Vector> frimpn = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
   frimpn->Update(1.0, *fextn_, -1.0, *fintn_, 0.0);
 
   // obtain new temperature rates \f$R_{n+1}\f$
@@ -101,12 +101,12 @@ void THR::TimIntExplEuler::IntegrateStep()
   }
 
   if ((lumpcapa_ == false) or
-      (Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(tang_) == Teuchos::null))
+      (Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(tang_) == Teuchos::null))
   {
     // refactor==false: This is not necessary, because we always
     // use the same constant capacity matrix, which was firstly factorised
     // in TimInt::determine_capa_consist_temp_rate
-    CORE::LINALG::SolverParams solver_params;
+    Core::LinAlg::SolverParams solver_params;
     solver_params.reset = true;
     solver_->Solve(tang_->EpetraOperator(), raten_, frimpn, solver_params);
   }
@@ -114,9 +114,9 @@ void THR::TimIntExplEuler::IntegrateStep()
   else
   {
     // extract the diagonal values of the mass matrix
-    Teuchos::RCP<Epetra_Vector> diag = CORE::LINALG::CreateVector(
-        (Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(tang_))->RowMap(), false);
-    (Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(tang_))->ExtractDiagonalCopy(*diag);
+    Teuchos::RCP<Epetra_Vector> diag = Core::LinAlg::CreateVector(
+        (Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(tang_))->RowMap(), false);
+    (Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(tang_))->ExtractDiagonalCopy(*diag);
     // R_{n+1} = C^{-1} . ( -fint + fext )
     raten_->ReciprocalMultiply(1.0, *diag, *frimpn, 0.0);
   }
@@ -181,7 +181,7 @@ void THR::TimIntExplEuler::ReadRestartForce()
 /*----------------------------------------------------------------------*
  | read restart forces                                       dano 07/13 |
  *----------------------------------------------------------------------*/
-void THR::TimIntExplEuler::WriteRestartForce(Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
+void THR::TimIntExplEuler::WriteRestartForce(Teuchos::RCP<Core::IO::DiscretizationWriter> output)
 {
   // do nothing
   return;

@@ -21,12 +21,12 @@ FOUR_C_NAMESPACE_OPEN
   Unlike volume integration the facets whose normal-x if zero, cannot be eliminated
   facet is projected into appropriate coordinate plane to obtain quadrature
 *---------------------------------------------------------------------------------------------*/
-CORE::LINALG::SerialDenseVector
-CORE::GEO::CUT::BoundarycellIntegration::generate_boundary_cell_integration_rule()
+Core::LinAlg::SerialDenseVector
+Core::Geo::Cut::BoundarycellIntegration::generate_boundary_cell_integration_rule()
 {
   std::vector<std::vector<double>> corners1;
   bcell_->CornerPointsLocal(elem1_, corners1);
-  CORE::LINALG::SerialDenseVector rhs_bcell_temp(num_func_);
+  Core::LinAlg::SerialDenseVector rhs_bcell_temp(num_func_);
   FacetIntegration faee1(bcell_, elem1_, position_, true, false);
   for (int fnc = 1; fnc <= num_func_; fnc++)
   {
@@ -38,7 +38,7 @@ CORE::GEO::CUT::BoundarycellIntegration::generate_boundary_cell_integration_rule
     FOUR_C_THROW("Negative area found in base function integration. Is ordering of vertices a
     problem?");*/
 
-  CORE::LINALG::SerialDenseVector Bcellweights;
+  Core::LinAlg::SerialDenseVector Bcellweights;
 
   int ptsEachLine = 14;  // 14 points gave min error for the test cases
 
@@ -81,7 +81,7 @@ CORE::GEO::CUT::BoundarycellIntegration::generate_boundary_cell_integration_rule
       }
     }
 
-    CORE::LINALG::SerialDenseVector rhs_bcell(num_func_ - deleteRowNos.size());
+    Core::LinAlg::SerialDenseVector rhs_bcell(num_func_ - deleteRowNos.size());
     if (deleteRowNos.size() == 0)
     {
       for (int m = 0; m < rhs_bcell_temp.length(); m++) rhs_bcell(m) = rhs_bcell_temp(m);
@@ -109,7 +109,7 @@ CORE::GEO::CUT::BoundarycellIntegration::generate_boundary_cell_integration_rule
     Bcellweights.size(moment_matbc[0].size());
     Bcellweights = least.linear_least_square();
 
-    CORE::LINALG::SerialDenseVector err(num_func_);
+    Core::LinAlg::SerialDenseVector err(num_func_);
     for (int i = 0; i < num_func_; i++)
     {
       err(i) = 0.0;
@@ -143,7 +143,7 @@ CORE::GEO::CUT::BoundarycellIntegration::generate_boundary_cell_integration_rule
    the gauss points are generated in the coordinate plane - now it has only two coordinates
    value of third coordinate can be calculated from the equation of arbitrary plane
 *---------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::BoundarycellIntegration::distribute_boundary_cell_gauss_points(
+void Core::Geo::Cut::BoundarycellIntegration::distribute_boundary_cell_gauss_points(
     std::vector<double> eqn, std::vector<std::vector<double>> corners,
     std::vector<std::vector<double>>& bcGausspts, int ptNos)
 {
@@ -355,7 +355,7 @@ void CORE::GEO::CUT::BoundarycellIntegration::distribute_boundary_cell_gauss_poi
 /*--------------------------------------------------------------------------------------------*
                                    form the moment fitting matrix
 *---------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::BoundarycellIntegration::moment_fitting_matrix(
+void Core::Geo::Cut::BoundarycellIntegration::moment_fitting_matrix(
     std::vector<std::vector<double>>& mom, std::vector<std::vector<double>> gauspts)
 {
   for (int i = 0; i < num_func_; i++)

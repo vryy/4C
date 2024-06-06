@@ -36,7 +36,7 @@ namespace PARTICLEWALL
   class WallHandlerInterface;
 }
 
-namespace PARTICLEINTERACTION
+namespace ParticleInteraction
 {
   class SPHKernelBase;
 }
@@ -44,18 +44,18 @@ namespace PARTICLEINTERACTION
 /*---------------------------------------------------------------------------*
  | type definitions                                                          |
  *---------------------------------------------------------------------------*/
-namespace PARTICLEINTERACTION
+namespace ParticleInteraction
 {
-  using SPHParticlePairData = std::vector<PARTICLEINTERACTION::SPHParticlePair>;
-  using SPHParticleWallPairData = std::vector<PARTICLEINTERACTION::SPHParticleWallPair>;
+  using SPHParticlePairData = std::vector<ParticleInteraction::SPHParticlePair>;
+  using SPHParticleWallPairData = std::vector<ParticleInteraction::SPHParticleWallPair>;
   using SPHIndexOfParticlePairs = std::vector<std::vector<std::vector<int>>>;
   using SPHIndexOfParticleWallPairs = std::vector<std::vector<int>>;
-}  // namespace PARTICLEINTERACTION
+}  // namespace ParticleInteraction
 
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
  *---------------------------------------------------------------------------*/
-namespace PARTICLEINTERACTION
+namespace ParticleInteraction
 {
   class SPHNeighborPairs final
   {
@@ -70,7 +70,7 @@ namespace PARTICLEINTERACTION
     void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
         const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface,
-        const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel);
+        const std::shared_ptr<ParticleInteraction::SPHKernelBase> kernel);
 
     //! get reference to particle pair data
     inline const SPHParticlePairData& get_ref_to_particle_pair_data() const
@@ -129,10 +129,10 @@ namespace PARTICLEINTERACTION
     std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface_;
 
     //! kernel handler
-    std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel_;
+    std::shared_ptr<ParticleInteraction::SPHKernelBase> kernel_;
   };
 
-}  // namespace PARTICLEINTERACTION
+}  // namespace ParticleInteraction
 
 /*---------------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

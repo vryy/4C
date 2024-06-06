@@ -113,7 +113,7 @@ namespace POROMULTIPHASE
     bool artery_coupling_active_;
 
     //! relaxation method
-    INPAR::POROMULTIPHASE::RelaxationMethods relaxationmethod_;
+    Inpar::POROMULTIPHASE::RelaxationMethods relaxationmethod_;
 
   };  // PoroMultiPhasePartitioned
 

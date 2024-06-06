@@ -23,12 +23,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class FaceElement;
 }
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 
@@ -47,19 +47,19 @@ namespace DRT
       /// Virtual destructor.
       virtual ~ScaTraBoundaryInterface() = default;
 
-      virtual int Evaluate(CORE::Elements::FaceElement* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
-          CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
-          CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
-          CORE::LINALG::SerialDenseVector& elevec3) = 0;
+      virtual int Evaluate(Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
+          Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+          Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
+          Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
+          Core::LinAlg::SerialDenseVector& elevec3) = 0;
 
-      virtual int evaluate_neumann(CORE::Elements::FaceElement* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
-          CORE::Elements::Element::LocationArray& la, CORE::LINALG::SerialDenseVector& elevec1,
+      virtual int evaluate_neumann(Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
+          Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+          Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseVector& elevec1,
           const double scalar) = 0;
     };
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

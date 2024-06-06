@@ -18,38 +18,38 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT::ELEMENTS
+namespace Discret::ELEMENTS
 {
   /*!
    * @brief A container storing the history data for element implementations with MULF prestressing
    */
-  template <CORE::FE::CellType celltype>
+  template <Core::FE::CellType celltype>
   struct MulfHistoryData
   {
-    CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::dim<celltype>> inverse_jacobian =
-        CORE::LINALG::IdentityMatrix<CORE::FE::dim<celltype>>();
-    CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::dim<celltype>> deformation_gradient =
-        CORE::LINALG::IdentityMatrix<CORE::FE::dim<celltype>>();
+    Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>> inverse_jacobian =
+        Core::LinAlg::IdentityMatrix<Core::FE::dim<celltype>>();
+    Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>> deformation_gradient =
+        Core::LinAlg::IdentityMatrix<Core::FE::dim<celltype>>();
     bool is_setup = false;
   };
 
   /*!
    * @brief Evalaute the update of the deformation gradient for MULF prestressing
    */
-  template <CORE::FE::CellType celltype>
-  CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::dim<celltype>>
+  template <Core::FE::CellType celltype>
+  Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>>
   EvaluateMulfDeformationGradientUpdate(
-      const DRT::ELEMENTS::ShapeFunctionsAndDerivatives<celltype>& shape_functions,
-      const CORE::LINALG::Matrix<CORE::FE::num_nodes<celltype>, CORE::FE::dim<celltype>>&
+      const Discret::ELEMENTS::ShapeFunctionsAndDerivatives<celltype>& shape_functions,
+      const Core::LinAlg::Matrix<Core::FE::num_nodes<celltype>, Core::FE::dim<celltype>>&
           nodal_displacements,
-      const DRT::ELEMENTS::MulfHistoryData<celltype>& mulf_history_data)
+      const Discret::ELEMENTS::MulfHistoryData<celltype>& mulf_history_data)
   {
-    CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::num_nodes<celltype>> N_xyz;
+    Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::num_nodes<celltype>> N_xyz;
 
     N_xyz.Multiply(mulf_history_data.inverse_jacobian, shape_functions.derivatives_);
 
-    CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::dim<celltype>> defgrd =
-        CORE::LINALG::IdentityMatrix<CORE::FE::dim<celltype>>();
+    Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>> defgrd =
+        Core::LinAlg::IdentityMatrix<Core::FE::dim<celltype>>();
 
     defgrd.MultiplyTT(1.0, nodal_displacements, N_xyz, 1.0);
 
@@ -59,17 +59,17 @@ namespace DRT::ELEMENTS
   /*!
    * @brief Evaluate the spatial material mapping (deformation gradient) for MULF prestressing
    */
-  template <CORE::FE::CellType celltype>
-  DRT::ELEMENTS::SpatialMaterialMapping<celltype> EvaluateMulfSpatialMaterialMapping(
-      const DRT::ELEMENTS::JacobianMapping<celltype>& jacobian_mapping,
-      const DRT::ELEMENTS::ShapeFunctionsAndDerivatives<celltype>& shape_functions,
-      const CORE::LINALG::Matrix<CORE::FE::num_nodes<celltype>, CORE::FE::dim<celltype>>&
+  template <Core::FE::CellType celltype>
+  Discret::ELEMENTS::SpatialMaterialMapping<celltype> EvaluateMulfSpatialMaterialMapping(
+      const Discret::ELEMENTS::JacobianMapping<celltype>& jacobian_mapping,
+      const Discret::ELEMENTS::ShapeFunctionsAndDerivatives<celltype>& shape_functions,
+      const Core::LinAlg::Matrix<Core::FE::num_nodes<celltype>, Core::FE::dim<celltype>>&
           nodal_displacements,
-      const DRT::ELEMENTS::MulfHistoryData<celltype>& mulf_history_data)
+      const Discret::ELEMENTS::MulfHistoryData<celltype>& mulf_history_data)
   {
-    DRT::ELEMENTS::SpatialMaterialMapping<celltype> spatial_material_mapping;
+    Discret::ELEMENTS::SpatialMaterialMapping<celltype> spatial_material_mapping;
 
-    CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::dim<celltype>> defgrd =
+    Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>> defgrd =
         EvaluateMulfDeformationGradientUpdate(
             shape_functions, nodal_displacements, mulf_history_data);
 
@@ -83,7 +83,7 @@ namespace DRT::ELEMENTS
 
     return spatial_material_mapping;
   }
-}  // namespace DRT::ELEMENTS
+}  // namespace Discret::ELEMENTS
 
 FOUR_C_NAMESPACE_CLOSE
 #endif

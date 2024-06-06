@@ -25,9 +25,9 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | Input parameters for particle structure interaction                       |
  *---------------------------------------------------------------------------*/
-namespace INPAR
+namespace Inpar
 {
-  namespace PASI
+  namespace PaSI
   {
     //! type of partitioned coupling
     enum PartitionedCouplingType
@@ -41,9 +41,9 @@ namespace INPAR
     //! set valid parameters for particle structure interaction
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
-  }  // namespace PASI
+  }  // namespace PaSI
 
-}  // namespace INPAR
+}  // namespace Inpar
 
 /*---------------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

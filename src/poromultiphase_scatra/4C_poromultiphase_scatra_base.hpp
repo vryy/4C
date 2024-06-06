@@ -24,26 +24,26 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace ADAPTER
+namespace Adapter
 {
   class ScaTraBaseAlgorithm;
   class PoroMultiPhase;
-}  // namespace ADAPTER
+}  // namespace Adapter
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace SCATRA
+namespace ScaTra
 {
   class MeshtyingStrategyArtery;
 }
 
-namespace POROMULTIPHASESCATRA
+namespace PoroMultiPhaseScaTra
 {
   //! Base class of all solid-scatra algorithms
-  class PoroMultiPhaseScaTraBase : public ADAPTER::AlgorithmBase
+  class PoroMultiPhaseScaTraBase : public Adapter::AlgorithmBase
   {
    public:
     //! create using a Epetra_Comm
@@ -99,10 +99,10 @@ namespace POROMULTIPHASESCATRA
     void apply_additional_dbc_for_vol_frac_species();
 
     //! access to poro field
-    const Teuchos::RCP<ADAPTER::PoroMultiPhase>& poro_field() { return poromulti_; }
+    const Teuchos::RCP<Adapter::PoroMultiPhase>& poro_field() { return poromulti_; }
 
     //! access to fluid field
-    const Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm>& ScatraAlgo() { return scatra_; }
+    const Teuchos::RCP<Adapter::ScaTraBaseAlgorithm>& ScatraAlgo() { return scatra_; }
 
     //! dof map of vector of unknowns of scatra field
     virtual Teuchos::RCP<const Epetra_Map> ScatraDofRowMap() const;
@@ -112,13 +112,13 @@ namespace POROMULTIPHASESCATRA
 
    private:
     //! underlying poroelast multi phase
-    Teuchos::RCP<ADAPTER::PoroMultiPhase> poromulti_;
+    Teuchos::RCP<Adapter::PoroMultiPhase> poromulti_;
 
     //! underlying scatra problem
-    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_;
+    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra_;
 
     //! flux-reconstruction method
-    INPAR::POROFLUIDMULTIPHASE::FluxReconstructionMethod fluxreconmethod_;
+    Inpar::POROFLUIDMULTIPHASE::FluxReconstructionMethod fluxreconmethod_;
 
     //! dofset of scatra field on fluid dis
     //! TODO: find a better way to do this. Perhaps this should be moved to the adapter?
@@ -129,19 +129,19 @@ namespace POROMULTIPHASESCATRA
 
    protected:
     //! what to do when nonlinear solution fails
-    enum INPAR::POROMULTIPHASESCATRA::DivContAct divcontype_;
+    enum Inpar::PoroMultiPhaseScaTra::DivContAct divcontype_;
     //! do we perform coupling with 1D artery
     const bool artery_coupl_;
 
     //! additional volume-fraction species Dirichlet conditions
     Teuchos::RCP<Epetra_Map> add_dirichmaps_volfrac_spec_;
 
-    Teuchos::RCP<SCATRA::MeshtyingStrategyArtery> scatramsht_;
+    Teuchos::RCP<ScaTra::MeshtyingStrategyArtery> scatramsht_;
 
   };  // PoroMultiPhaseScaTraBase
 
 
-}  // namespace POROMULTIPHASESCATRA
+}  // namespace PoroMultiPhaseScaTra
 
 
 

@@ -31,16 +31,17 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 03/08|
  *----------------------------------------------------------------------*/
-CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MORTAR::ManagerBase()
+CONTACT::MtManager::MtManager(Discret::Discretization& discret, double alphaf)
+    : Mortar::ManagerBase()
 {
   // overwrite base class communicator
   comm_ = Teuchos::rcp(discret.Comm().Clone());
 
   // create some local variables (later to be stored in strategy)
-  const int spatialDim = GLOBAL::Problem::Instance()->NDim();
+  const int spatialDim = Global::Problem::Instance()->NDim();
   if (spatialDim != 2 && spatialDim != 3) FOUR_C_THROW("Meshtying problem must be 2D or 3D.");
 
-  std::vector<Teuchos::RCP<MORTAR::Interface>> interfaces;
+  std::vector<Teuchos::RCP<Mortar::Interface>> interfaces;
   Teuchos::ParameterList mtparams;
 
   // read and check meshtying input parameters
@@ -59,7 +60,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
   if (Comm().MyPID() == 0)
     std::cout << "Building meshtying interface(s)..............." << std::endl;
 
-  std::vector<CORE::Conditions::Condition*> contactconditions(0);
+  std::vector<Core::Conditions::Condition*> contactconditions(0);
   discret.GetCondition("Mortar", contactconditions);
 
   // there must be more than one meshtying condition
@@ -81,8 +82,8 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
   for (unsigned i = 0; i < contactconditions.size(); ++i)
   {
     // initialize vector for current group of conditions and temp condition
-    std::vector<CORE::Conditions::Condition*> currentgroup(0);
-    CORE::Conditions::Condition* tempcond = nullptr;
+    std::vector<Core::Conditions::Condition*> currentgroup(0);
+    Core::Conditions::Condition* tempcond = nullptr;
 
     // try to build meshtying group around this condition
     currentgroup.push_back(contactconditions[i]);
@@ -184,10 +185,10 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
     }
 
     // create an empty meshtying interface and store it in this Manager
-    interfaces.push_back(MORTAR::Interface::Create(groupid1, Comm(), spatialDim, mtparams));
+    interfaces.push_back(Mortar::Interface::Create(groupid1, Comm(), spatialDim, mtparams));
 
     // get it again
-    Teuchos::RCP<MORTAR::Interface> interface = interfaces.back();
+    Teuchos::RCP<Mortar::Interface> interface = interfaces.back();
 
     // note that the nodal IDs are unique because they come from
     // one global problem discretization containing all nodes of the
@@ -206,18 +207,18 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
         int gid = (*nodeids)[k];
         // do only nodes that I have in my discretization
         if (!discret.NodeColMap()->MyGID(gid)) continue;
-        CORE::Nodes::Node* node = discret.gNode(gid);
+        Core::Nodes::Node* node = discret.gNode(gid);
         if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
 
         // create Node object
-        Teuchos::RCP<MORTAR::Node> mtnode = Teuchos::rcp(new MORTAR::Node(
+        Teuchos::RCP<Mortar::Node> mtnode = Teuchos::rcp(new Mortar::Node(
             node->Id(), node->X(), node->Owner(), discret.Dof(0, node), isslave[j]));
         //-------------------
         // get nurbs weight!
-        if (nurbs) MORTAR::UTILS::prepare_nurbs_node(node, mtnode);
+        if (nurbs) Mortar::UTILS::prepare_nurbs_node(node, mtnode);
 
         // get edge and corner information:
-        std::vector<CORE::Conditions::Condition*> contactcornercond(0);
+        std::vector<Core::Conditions::Condition*> contactcornercond(0);
         discret.GetCondition("mrtrcorner", contactcornercond);
         for (unsigned j = 0; j < contactcornercond.size(); j++)
         {
@@ -226,7 +227,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
             mtnode->SetOnCorner() = true;
           }
         }
-        std::vector<CORE::Conditions::Condition*> contactedgecond(0);
+        std::vector<Core::Conditions::Condition*> contactedgecond(0);
         discret.GetCondition("mrtredge", contactedgecond);
         for (unsigned j = 0; j < contactedgecond.size(); j++)
         {
@@ -237,7 +238,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
         }
 
         // Check, if this node (and, in case, which dofs) are in the contact symmetry condition
-        std::vector<CORE::Conditions::Condition*> contactSymconditions(0);
+        std::vector<Core::Conditions::Condition*> contactSymconditions(0);
         discret.GetCondition("mrtrsym", contactSymconditions);
 
         for (unsigned j = 0; j < contactSymconditions.size(); j++)
@@ -260,7 +261,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
     for (unsigned j = 0; j < currentgroup.size(); ++j)
     {
       // get elements from condition j of current group
-      std::map<int, Teuchos::RCP<CORE::Elements::Element>>& currele = currentgroup[j]->Geometry();
+      std::map<int, Teuchos::RCP<Core::Elements::Element>>& currele = currentgroup[j]->Geometry();
 
       // elements in a boundary condition have a unique id
       // but ids are not unique among 2 distinct conditions
@@ -277,12 +278,12 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
 
       for (const auto& element : currele)
       {
-        Teuchos::RCP<CORE::Elements::Element> ele = element.second;
-        Teuchos::RCP<MORTAR::Element> mtele = Teuchos::rcp(new MORTAR::Element(ele->Id() + ggsize,
+        Teuchos::RCP<Core::Elements::Element> ele = element.second;
+        Teuchos::RCP<Mortar::Element> mtele = Teuchos::rcp(new Mortar::Element(ele->Id() + ggsize,
             ele->Owner(), ele->Shape(), ele->num_node(), ele->NodeIds(), isslave[j], nurbs));
         //------------------------------------------------------------------
         // get knotvector, normal factor and zero-size information for nurbs
-        if (nurbs) MORTAR::UTILS::prepare_nurbs_element(discret, ele, mtele, spatialDim);
+        if (nurbs) Mortar::UTILS::prepare_nurbs_element(discret, ele, mtele, spatialDim);
 
         interface->AddMortarElement(mtele);
       }
@@ -298,11 +299,11 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
      * assigned only once!
      */
     {
-      const INPAR::MORTAR::ParallelRedist parallelRedist =
-          Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(
+      const Inpar::Mortar::ParallelRedist parallelRedist =
+          Teuchos::getIntegralValue<Inpar::Mortar::ParallelRedist>(
               mtparams.sublist("PARALLEL REDISTRIBUTION"), "PARALLEL_REDIST");
       bool isFinalDistribution = false;
-      if (parallelRedist == INPAR::MORTAR::ParallelRedist::redist_none or comm_->NumProc() == 1)
+      if (parallelRedist == Inpar::Mortar::ParallelRedist::redist_none or comm_->NumProc() == 1)
         isFinalDistribution = true;
 
       interface->fill_complete(isFinalDistribution, maxdof);
@@ -316,15 +317,15 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
   if (Comm().MyPID() == 0)
     std::cout << "Building meshtying strategy object............" << std::endl;
 
-  const CORE::ProblemType problemtype = GLOBAL::Problem::Instance()->GetProblemType();
+  const Core::ProblemType problemtype = Global::Problem::Instance()->GetProblemType();
 
-  INPAR::CONTACT::SolvingStrategy stype =
-      CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(mtparams, "STRATEGY");
-  if (stype == INPAR::CONTACT::solution_lagmult)
+  Inpar::CONTACT::SolvingStrategy stype =
+      Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(mtparams, "STRATEGY");
+  if (stype == Inpar::CONTACT::solution_lagmult)
   {
     // finally we should use another criteria to decide which strategy
-    if (problemtype != CORE::ProblemType::poroelast && problemtype != CORE::ProblemType::fpsi &&
-        problemtype != CORE::ProblemType::fpsi_xfem && problemtype != CORE::ProblemType::fps3i)
+    if (problemtype != Core::ProblemType::poroelast && problemtype != Core::ProblemType::fpsi &&
+        problemtype != Core::ProblemType::fpsi_xfem && problemtype != Core::ProblemType::fps3i)
     {
       strategy_ = Teuchos::rcp(new MtLagrangeStrategy(discret.dof_row_map(), discret.NodeRowMap(),
           mtparams, interfaces, spatialDim, comm_, alphaf, maxdof));
@@ -335,7 +336,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
           discret.NodeRowMap(), mtparams, interfaces, spatialDim, comm_, alphaf, maxdof));
     }
   }
-  else if (stype == INPAR::CONTACT::solution_penalty or stype == INPAR::CONTACT::solution_uzawa)
+  else if (stype == Inpar::CONTACT::solution_penalty or stype == Inpar::CONTACT::solution_uzawa)
     strategy_ = Teuchos::rcp(new MtPenaltyStrategy(discret.dof_row_map(), discret.NodeRowMap(),
         mtparams, interfaces, spatialDim, comm_, alphaf, maxdof));
   else
@@ -360,21 +361,21 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
  |  read and check input parameters (public)                  popp 04/08|
  *----------------------------------------------------------------------*/
 bool CONTACT::MtManager::read_and_check_input(
-    Teuchos::ParameterList& mtparams, const DRT::Discretization& discret)
+    Teuchos::ParameterList& mtparams, const Discret::Discretization& discret)
 {
-  // read parameter lists from GLOBAL::Problem
-  const Teuchos::ParameterList& mortar = GLOBAL::Problem::Instance()->mortar_coupling_params();
-  const Teuchos::ParameterList& meshtying = GLOBAL::Problem::Instance()->contact_dynamic_params();
-  const Teuchos::ParameterList& wearlist = GLOBAL::Problem::Instance()->WearParams();
+  // read parameter lists from Global::Problem
+  const Teuchos::ParameterList& mortar = Global::Problem::Instance()->mortar_coupling_params();
+  const Teuchos::ParameterList& meshtying = Global::Problem::Instance()->contact_dynamic_params();
+  const Teuchos::ParameterList& wearlist = Global::Problem::Instance()->WearParams();
 
-  // read Problem Type and Problem Dimension from GLOBAL::Problem
-  const CORE::ProblemType problemtype = GLOBAL::Problem::Instance()->GetProblemType();
-  const int spatialDim = GLOBAL::Problem::Instance()->NDim();
-  CORE::FE::ShapeFunctionType distype = GLOBAL::Problem::Instance()->spatial_approximation_type();
+  // read Problem Type and Problem Dimension from Global::Problem
+  const Core::ProblemType problemtype = Global::Problem::Instance()->GetProblemType();
+  const int spatialDim = Global::Problem::Instance()->NDim();
+  Core::FE::ShapeFunctionType distype = Global::Problem::Instance()->spatial_approximation_type();
 
   // get mortar information
-  std::vector<CORE::Conditions::Condition*> mtcond(0);
-  std::vector<CORE::Conditions::Condition*> ccond(0);
+  std::vector<Core::Conditions::Condition*> mtcond(0);
+  std::vector<Core::Conditions::Condition*> ccond(0);
 
   discret.GetCondition("Mortar", mtcond);
   discret.GetCondition("Contact", ccond);
@@ -393,106 +394,106 @@ bool CONTACT::MtManager::read_and_check_input(
   const Teuchos::ParameterList& mortarParallelRedistParams =
       mortar.sublist("PARALLEL REDISTRIBUTION");
 
-  if (Teuchos::getIntegralValue<INPAR::MORTAR::ExtendGhosting>(mortarParallelRedistParams,
-          "GHOSTING_STRATEGY") == INPAR::MORTAR::ExtendGhosting::roundrobin)
+  if (Teuchos::getIntegralValue<Inpar::Mortar::ExtendGhosting>(mortarParallelRedistParams,
+          "GHOSTING_STRATEGY") == Inpar::Mortar::ExtendGhosting::roundrobin)
     FOUR_C_THROW(
         "Extending the ghosting via a Round-Robin loop is not implemented for mortar meshtying.");
 
   // *********************************************************************
   // invalid parameter combinations
   // *********************************************************************
-  if (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") ==
-          INPAR::CONTACT::solution_penalty &&
+  if (Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") ==
+          Inpar::CONTACT::solution_penalty &&
       meshtying.get<double>("PENALTYPARAM") <= 0.0)
     FOUR_C_THROW("Penalty parameter eps <= 0, must be greater than 0");
 
-  if (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") ==
-          INPAR::CONTACT::solution_uzawa &&
+  if (Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") ==
+          Inpar::CONTACT::solution_uzawa &&
       meshtying.get<double>("PENALTYPARAM") <= 0.0)
     FOUR_C_THROW("Penalty parameter eps <= 0, must be greater than 0");
 
-  if (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") ==
-          INPAR::CONTACT::solution_uzawa &&
+  if (Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") ==
+          Inpar::CONTACT::solution_uzawa &&
       meshtying.get<int>("UZAWAMAXSTEPS") < 2)
     FOUR_C_THROW("Maximum number of Uzawa / Augmentation steps must be at least 2");
 
-  if (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") ==
-          INPAR::CONTACT::solution_uzawa &&
+  if (Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") ==
+          Inpar::CONTACT::solution_uzawa &&
       meshtying.get<double>("UZAWACONSTRTOL") <= 0.0)
     FOUR_C_THROW("Constraint tolerance for Uzawa / Augmentation scheme must be greater than 0");
 
-  if (onlymeshtying && CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(
-                           meshtying, "FRICTION") != INPAR::CONTACT::friction_none)
+  if (onlymeshtying && Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(
+                           meshtying, "FRICTION") != Inpar::CONTACT::friction_none)
     FOUR_C_THROW("Friction law supplied for mortar meshtying");
 
-  if (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") ==
-          INPAR::CONTACT::solution_lagmult &&
-      CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
-          INPAR::MORTAR::shape_standard &&
-      (CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(meshtying, "SYSTEM") ==
-              INPAR::CONTACT::system_condensed ||
-          CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(meshtying, "SYSTEM") ==
-              INPAR::CONTACT::system_condensed_lagmult))
+  if (Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") ==
+          Inpar::CONTACT::solution_lagmult &&
+      Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
+          Inpar::Mortar::shape_standard &&
+      (Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(meshtying, "SYSTEM") ==
+              Inpar::CONTACT::system_condensed ||
+          Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(meshtying, "SYSTEM") ==
+              Inpar::CONTACT::system_condensed_lagmult))
     FOUR_C_THROW("Condensation of linear system only possible for dual Lagrange multipliers");
 
-  if (Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(mortarParallelRedistParams,
-          "PARALLEL_REDIST") == INPAR::MORTAR::ParallelRedist::redist_dynamic and
+  if (Teuchos::getIntegralValue<Inpar::Mortar::ParallelRedist>(mortarParallelRedistParams,
+          "PARALLEL_REDIST") == Inpar::Mortar::ParallelRedist::redist_dynamic and
       onlymeshtying)
     FOUR_C_THROW("Dynamic parallel redistribution not possible for meshtying");
 
-  if (Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(mortarParallelRedistParams,
-          "PARALLEL_REDIST") != INPAR::MORTAR::ParallelRedist::redist_none &&
+  if (Teuchos::getIntegralValue<Inpar::Mortar::ParallelRedist>(mortarParallelRedistParams,
+          "PARALLEL_REDIST") != Inpar::Mortar::ParallelRedist::redist_none &&
       mortarParallelRedistParams.get<int>("MIN_ELEPROC") < 0)
     FOUR_C_THROW(
         "ERROR: Minimum number of elements per processor for parallel redistribution must be >= 0");
 
-  if (CORE::UTILS::IntegralValue<INPAR::MORTAR::ConsistentDualType>(mortar, "LM_DUAL_CONSISTENT") !=
-          INPAR::MORTAR::consistent_none &&
-      CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") !=
-          INPAR::CONTACT::solution_lagmult &&
-      CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") !=
-          INPAR::MORTAR::shape_standard)
+  if (Core::UTILS::IntegralValue<Inpar::Mortar::ConsistentDualType>(mortar, "LM_DUAL_CONSISTENT") !=
+          Inpar::Mortar::consistent_none &&
+      Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") !=
+          Inpar::CONTACT::solution_lagmult &&
+      Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(mortar, "LM_SHAPEFCN") !=
+          Inpar::Mortar::shape_standard)
     FOUR_C_THROW(
         "ERROR: Consistent dual shape functions in boundary elements only for Lagrange multiplier "
         "strategy.");
 
-  if (CORE::UTILS::IntegralValue<INPAR::MORTAR::ConsistentDualType>(mortar, "LM_DUAL_CONSISTENT") !=
-          INPAR::MORTAR::consistent_none &&
-      CORE::UTILS::IntegralValue<INPAR::MORTAR::IntType>(mortar, "INTTYPE") ==
-          INPAR::MORTAR::inttype_elements &&
-      (CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
-              INPAR::MORTAR::shape_dual ||
-          CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
-              INPAR::MORTAR::shape_petrovgalerkin))
+  if (Core::UTILS::IntegralValue<Inpar::Mortar::ConsistentDualType>(mortar, "LM_DUAL_CONSISTENT") !=
+          Inpar::Mortar::consistent_none &&
+      Core::UTILS::IntegralValue<Inpar::Mortar::IntType>(mortar, "INTTYPE") ==
+          Inpar::Mortar::inttype_elements &&
+      (Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
+              Inpar::Mortar::shape_dual ||
+          Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
+              Inpar::Mortar::shape_petrovgalerkin))
 
     // *********************************************************************
     // not (yet) implemented combinations
     // *********************************************************************
-    if (CORE::UTILS::IntegralValue<int>(mortar, "CROSSPOINTS") == true && spatialDim == 3)
+    if (Core::UTILS::IntegralValue<int>(mortar, "CROSSPOINTS") == true && spatialDim == 3)
       FOUR_C_THROW("Crosspoints / edge node modification not yet implemented for 3D");
 
-  if (CORE::UTILS::IntegralValue<int>(mortar, "CROSSPOINTS") == true &&
-      CORE::UTILS::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar, "LM_QUAD") ==
-          INPAR::MORTAR::lagmult_lin)
+  if (Core::UTILS::IntegralValue<int>(mortar, "CROSSPOINTS") == true &&
+      Core::UTILS::IntegralValue<Inpar::Mortar::LagMultQuad>(mortar, "LM_QUAD") ==
+          Inpar::Mortar::lagmult_lin)
     FOUR_C_THROW("Crosspoints and linear LM interpolation for quadratic FE not yet compatible");
 
-  if (CORE::UTILS::IntegralValue<int>(mortar, "CROSSPOINTS") == true &&
-      Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(mortarParallelRedistParams,
-          "PARALLEL_REDIST") != INPAR::MORTAR::ParallelRedist::redist_none)
+  if (Core::UTILS::IntegralValue<int>(mortar, "CROSSPOINTS") == true &&
+      Teuchos::getIntegralValue<Inpar::Mortar::ParallelRedist>(mortarParallelRedistParams,
+          "PARALLEL_REDIST") != Inpar::Mortar::ParallelRedist::redist_none)
     FOUR_C_THROW("Crosspoints and parallel redistribution not yet compatible");
 
-  if (CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
-          INPAR::MORTAR::shape_petrovgalerkin and
+  if (Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
+          Inpar::Mortar::shape_petrovgalerkin and
       onlymeshtying)
     FOUR_C_THROW("Petrov-Galerkin approach makes no sense for meshtying");
 
   // *********************************************************************
   // 3D quadratic mortar (choice of interpolation and testing fcts.)
   // *********************************************************************
-  if (CORE::UTILS::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar, "LM_QUAD") ==
-          INPAR::MORTAR::lagmult_pwlin &&
-      CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
-          INPAR::MORTAR::shape_dual)
+  if (Core::UTILS::IntegralValue<Inpar::Mortar::LagMultQuad>(mortar, "LM_QUAD") ==
+          Inpar::Mortar::lagmult_pwlin &&
+      Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
+          Inpar::Mortar::shape_dual)
     FOUR_C_THROW(
         "ERROR: No pwlin approach (for LM) implemented for quadratic meshtying with DUAL shape "
         "fct.");
@@ -500,13 +501,13 @@ bool CONTACT::MtManager::read_and_check_input(
   // *********************************************************************
   // element-based vs. segment-based mortar integration
   // *********************************************************************
-  INPAR::MORTAR::IntType inttype =
-      CORE::UTILS::IntegralValue<INPAR::MORTAR::IntType>(mortar, "INTTYPE");
+  Inpar::Mortar::IntType inttype =
+      Core::UTILS::IntegralValue<Inpar::Mortar::IntType>(mortar, "INTTYPE");
 
-  if (inttype == INPAR::MORTAR::inttype_elements && mortar.get<int>("NUMGP_PER_DIM") <= 0)
+  if (inttype == Inpar::Mortar::inttype_elements && mortar.get<int>("NUMGP_PER_DIM") <= 0)
     FOUR_C_THROW("Invalid Gauss point number NUMGP_PER_DIM for element-based integration.");
 
-  if (inttype == INPAR::MORTAR::inttype_elements_BS && mortar.get<int>("NUMGP_PER_DIM") <= 0)
+  if (inttype == Inpar::Mortar::inttype_elements_BS && mortar.get<int>("NUMGP_PER_DIM") <= 0)
     FOUR_C_THROW(
         "ERROR: Invalid Gauss point number NUMGP_PER_DIM for element-based integration with "
         "boundary segmentation."
@@ -515,8 +516,8 @@ bool CONTACT::MtManager::read_and_check_input(
         "\ndomain, while pre-defined default values will be used in the segment-based boundary "
         "domain.");
 
-  if ((inttype == INPAR::MORTAR::inttype_elements ||
-          inttype == INPAR::MORTAR::inttype_elements_BS) &&
+  if ((inttype == Inpar::Mortar::inttype_elements ||
+          inttype == Inpar::Mortar::inttype_elements_BS) &&
       mortar.get<int>("NUMGP_PER_DIM") <= 1)
     FOUR_C_THROW("Invalid Gauss point number NUMGP_PER_DIM for element-based integration.");
 
@@ -556,7 +557,7 @@ bool CONTACT::MtManager::read_and_check_input(
   // NURBS PROBLEM?
   switch (distype)
   {
-    case CORE::FE::ShapeFunctionType::nurbs:
+    case Core::FE::ShapeFunctionType::nurbs:
     {
       mtparams.set<bool>("NURBS", true);
       break;
@@ -571,41 +572,41 @@ bool CONTACT::MtManager::read_and_check_input(
   // *********************************************************************
   // poroelastic meshtying
   // *********************************************************************
-  if ((problemtype == CORE::ProblemType::poroelast || problemtype == CORE::ProblemType::fpsi ||
-          problemtype == CORE::ProblemType::fpsi_xfem) &&
-      (CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") !=
-              INPAR::MORTAR::shape_dual &&
-          CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") !=
-              INPAR::MORTAR::shape_petrovgalerkin))
+  if ((problemtype == Core::ProblemType::poroelast || problemtype == Core::ProblemType::fpsi ||
+          problemtype == Core::ProblemType::fpsi_xfem) &&
+      (Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(mortar, "LM_SHAPEFCN") !=
+              Inpar::Mortar::shape_dual &&
+          Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(mortar, "LM_SHAPEFCN") !=
+              Inpar::Mortar::shape_petrovgalerkin))
     FOUR_C_THROW("POROCONTACT: Only dual and petrovgalerkin shape functions implemented yet!");
 
-  if ((problemtype == CORE::ProblemType::poroelast || problemtype == CORE::ProblemType::fpsi ||
-          problemtype == CORE::ProblemType::fpsi_xfem) &&
-      Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(mortarParallelRedistParams,
-          "PARALLEL_REDIST") != INPAR::MORTAR::ParallelRedist::redist_none)
+  if ((problemtype == Core::ProblemType::poroelast || problemtype == Core::ProblemType::fpsi ||
+          problemtype == Core::ProblemType::fpsi_xfem) &&
+      Teuchos::getIntegralValue<Inpar::Mortar::ParallelRedist>(mortarParallelRedistParams,
+          "PARALLEL_REDIST") != Inpar::Mortar::ParallelRedist::redist_none)
     FOUR_C_THROW(
         "POROCONTACT: Parallel Redistribution not implemented yet!");  // Since we use Pointers to
                                                                        // Parent Elements, which are
                                                                        // not copied to other procs!
 
-  if ((problemtype == CORE::ProblemType::poroelast || problemtype == CORE::ProblemType::fpsi ||
-          problemtype == CORE::ProblemType::fpsi_xfem) &&
-      CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") !=
-          INPAR::CONTACT::solution_lagmult)
+  if ((problemtype == Core::ProblemType::poroelast || problemtype == Core::ProblemType::fpsi ||
+          problemtype == Core::ProblemType::fpsi_xfem) &&
+      Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") !=
+          Inpar::CONTACT::solution_lagmult)
     FOUR_C_THROW("POROCONTACT: Use Lagrangean Strategy for poro meshtying!");
 
-  if ((problemtype == CORE::ProblemType::poroelast || problemtype == CORE::ProblemType::fpsi ||
-          problemtype == CORE::ProblemType::fpsi_xfem) &&
-      CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(meshtying, "SYSTEM") !=
-          INPAR::CONTACT::system_condensed_lagmult)
+  if ((problemtype == Core::ProblemType::poroelast || problemtype == Core::ProblemType::fpsi ||
+          problemtype == Core::ProblemType::fpsi_xfem) &&
+      Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(meshtying, "SYSTEM") !=
+          Inpar::CONTACT::system_condensed_lagmult)
     FOUR_C_THROW("POROCONTACT: Just lagrange multiplier should be condensed for poro meshtying!");
 
-  if ((problemtype == CORE::ProblemType::poroelast || problemtype == CORE::ProblemType::fpsi ||
-          problemtype == CORE::ProblemType::fpsi_xfem) &&
+  if ((problemtype == Core::ProblemType::poroelast || problemtype == Core::ProblemType::fpsi ||
+          problemtype == Core::ProblemType::fpsi_xfem) &&
       (spatialDim != 3) && (spatialDim != 2))
   {
-    const Teuchos::ParameterList& porodyn = GLOBAL::Problem::Instance()->poroelast_dynamic_params();
-    if (CORE::UTILS::IntegralValue<int>(porodyn, "CONTACTNOPEN"))
+    const Teuchos::ParameterList& porodyn = Global::Problem::Instance()->poroelast_dynamic_params();
+    if (Core::UTILS::IntegralValue<int>(porodyn, "CONTACTNOPEN"))
       FOUR_C_THROW("POROCONTACT: PoroMeshtying with no penetration just tested for 3d (and 2d)!");
   }
 
@@ -621,7 +622,7 @@ bool CONTACT::MtManager::read_and_check_input(
 /*----------------------------------------------------------------------*
  |  write restart information for meshtying (public)          popp 03/08|
  *----------------------------------------------------------------------*/
-void CONTACT::MtManager::write_restart(CORE::IO::DiscretizationWriter& output, bool forcedrestart)
+void CONTACT::MtManager::write_restart(Core::IO::DiscretizationWriter& output, bool forcedrestart)
 {
   output.WriteVector("mt_lagrmultold", GetStrategy().LagrMultOld());
 
@@ -631,7 +632,7 @@ void CONTACT::MtManager::write_restart(CORE::IO::DiscretizationWriter& output, b
 /*----------------------------------------------------------------------*
  |  read restart information for meshtying (public)           popp 03/08|
  *----------------------------------------------------------------------*/
-void CONTACT::MtManager::read_restart(CORE::IO::DiscretizationReader& reader,
+void CONTACT::MtManager::read_restart(Core::IO::DiscretizationReader& reader,
     Teuchos::RCP<Epetra_Vector> dis, Teuchos::RCP<Epetra_Vector> zero)
 {
   // this is meshtying, thus we need zeros for restart
@@ -644,14 +645,14 @@ void CONTACT::MtManager::read_restart(CORE::IO::DiscretizationReader& reader,
 /*----------------------------------------------------------------------*
  |  write interface tractions for postprocessing (public)     popp 03/08|
  *----------------------------------------------------------------------*/
-void CONTACT::MtManager::postprocess_quantities(CORE::IO::DiscretizationWriter& output)
+void CONTACT::MtManager::postprocess_quantities(Core::IO::DiscretizationWriter& output)
 {
   // evaluate interface tractions
   Teuchos::RCP<Epetra_Map> problem = GetStrategy().ProblemDofs();
   Teuchos::RCP<Epetra_Vector> traction =
       Teuchos::rcp(new Epetra_Vector(*(GetStrategy().LagrMultOld())));
   Teuchos::RCP<Epetra_Vector> tractionexp = Teuchos::rcp(new Epetra_Vector(*problem));
-  CORE::LINALG::Export(*traction, *tractionexp);
+  Core::LinAlg::Export(*traction, *tractionexp);
 
   // evaluate slave and master forces
   Teuchos::RCP<Epetra_Vector> fcslave =
@@ -662,8 +663,8 @@ void CONTACT::MtManager::postprocess_quantities(CORE::IO::DiscretizationWriter& 
   Teuchos::RCP<Epetra_Vector> fcmasterexp = Teuchos::rcp(new Epetra_Vector(*problem));
   GetStrategy().DMatrix()->Multiply(true, *traction, *fcslave);
   GetStrategy().MMatrix()->Multiply(true, *traction, *fcmaster);
-  CORE::LINALG::Export(*fcslave, *fcslaveexp);
-  CORE::LINALG::Export(*fcmaster, *fcmasterexp);
+  Core::LinAlg::Export(*fcslave, *fcslaveexp);
+  Core::LinAlg::Export(*fcmaster, *fcmasterexp);
 
   // write to output
   output.WriteVector("interfacetraction", tractionexp);

@@ -15,15 +15,15 @@ Mechanics, 2000"
 FOUR_C_NAMESPACE_OPEN
 
 
-MAT::ELASTIC::PAR::VolOgden::VolOgden(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
+Mat::Elastic::PAR::VolOgden::VolOgden(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
     : Parameter(matdata), kappa_(matdata->Get<double>("KAPPA")), beta_(matdata->Get<double>("BETA"))
 {
 }
 
-MAT::ELASTIC::VolOgden::VolOgden(MAT::ELASTIC::PAR::VolOgden* params) : params_(params) {}
+Mat::Elastic::VolOgden::VolOgden(Mat::Elastic::PAR::VolOgden* params) : params_(params) {}
 
-void MAT::ELASTIC::VolOgden::AddStrainEnergy(double& psi, const CORE::LINALG::Matrix<3, 1>& prinv,
-    const CORE::LINALG::Matrix<3, 1>& modinv, const CORE::LINALG::Matrix<6, 1>& glstrain,
+void Mat::Elastic::VolOgden::AddStrainEnergy(double& psi, const Core::LinAlg::Matrix<3, 1>& prinv,
+    const Core::LinAlg::Matrix<3, 1>& modinv, const Core::LinAlg::Matrix<6, 1>& glstrain,
     const int gp, const int eleGID)
 {
   const double kappa = params_->kappa_;
@@ -37,8 +37,8 @@ void MAT::ELASTIC::VolOgden::AddStrainEnergy(double& psi, const CORE::LINALG::Ma
     psi += kappa / 2. * pow(std::log(modinv(2)), 2.);
 }
 
-void MAT::ELASTIC::VolOgden::add_derivatives_modified(CORE::LINALG::Matrix<3, 1>& dPmodI,
-    CORE::LINALG::Matrix<6, 1>& ddPmodII, const CORE::LINALG::Matrix<3, 1>& modinv, const int gp,
+void Mat::Elastic::VolOgden::add_derivatives_modified(Core::LinAlg::Matrix<3, 1>& dPmodI,
+    Core::LinAlg::Matrix<6, 1>& ddPmodII, const Core::LinAlg::Matrix<3, 1>& modinv, const int gp,
     const int eleGID)
 {
   const double kappa = params_->kappa_;
@@ -58,8 +58,8 @@ void MAT::ELASTIC::VolOgden::add_derivatives_modified(CORE::LINALG::Matrix<3, 1>
   }
 }
 
-void MAT::ELASTIC::VolOgden::Add3rdVolDeriv(
-    const CORE::LINALG::Matrix<3, 1>& modinv, double& d3PsiVolDJ3)
+void Mat::Elastic::VolOgden::Add3rdVolDeriv(
+    const Core::LinAlg::Matrix<3, 1>& modinv, double& d3PsiVolDJ3)
 {
   const double kappa = params_->kappa_;
   const double beta = params_->beta_;

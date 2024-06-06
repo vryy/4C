@@ -13,16 +13,16 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-MAT::ELASTIC::PAR::IsoOgden::IsoOgden(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::Elastic::PAR::IsoOgden::IsoOgden(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : Parameter(matdata), mue_(matdata->Get<double>("MUE")), alpha_(matdata->Get<double>("ALPHA"))
 {
 }
 
-MAT::ELASTIC::IsoOgden::IsoOgden(MAT::ELASTIC::PAR::IsoOgden* params) : params_(params) {}
+Mat::Elastic::IsoOgden::IsoOgden(Mat::Elastic::PAR::IsoOgden* params) : params_(params) {}
 
-void MAT::ELASTIC::IsoOgden::add_coefficients_stretches_modified(
-    CORE::LINALG::Matrix<3, 1>& modgamma, CORE::LINALG::Matrix<6, 1>& moddelta,
-    const CORE::LINALG::Matrix<3, 1>& modstr)
+void Mat::Elastic::IsoOgden::add_coefficients_stretches_modified(
+    Core::LinAlg::Matrix<3, 1>& modgamma, Core::LinAlg::Matrix<6, 1>& moddelta,
+    const Core::LinAlg::Matrix<3, 1>& modstr)
 {
   // get parameters
   const double& mue = params_->mue_;

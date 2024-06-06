@@ -14,7 +14,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-std::ostream& NOX::NLN::INNER::StatusTest::operator<<(std::ostream& os, StatusType type)
+std::ostream& NOX::Nln::Inner::StatusTest::operator<<(std::ostream& os, StatusType type)
 {
   os << std::setiosflags(std::ios::left) << std::setw(13) << std::setfill('.');
   switch (type)

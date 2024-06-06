@@ -15,37 +15,37 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   // forward declarations
   class Discretization;
 
   namespace ELEMENTS
   {
-    class SoShw6Type : public CORE::Elements::ElementType
+    class SoShw6Type : public Core::Elements::ElementType
     {
      public:
       std::string Name() const override { return "So_shw6Type"; }
 
       static SoShw6Type& Instance();
 
-      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-      int Initialize(DRT::Discretization& dis) override;
+      int Initialize(Discret::Discretization& dis) override;
 
       void nodal_block_information(
-          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+          Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
+      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+          Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       void setup_element_definition(
-          std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+          std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
           override;
 
      private:
@@ -60,7 +60,7 @@ namespace DRT
     This element adopts the ANS approach to improve shear and curvature-thickness
     (trapezoidal) locking. However, being triangular inplane, the ANS evaluation
     points of the shear strains are choosen just on two of three surfaces (See
-    also DRT::ELEMENTS::So_shw6::soshw6_anssetup).
+    also Discret::ELEMENTS::So_shw6::soshw6_anssetup).
     Thus, the element becomes mesh dependent (where in material space lies my
     parameter space), but this is in favour of less pronounced shear locking
     compared to a invariant formulation (locking free just for certain mesh configurations).
@@ -102,7 +102,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      CORE::Elements::Element* Clone() const override;
+      Core::Elements::Element* Clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -118,7 +118,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(CORE::COMM::PackBuffer& data) const override;
+      void Pack(Core::Communication::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -144,7 +144,7 @@ namespace DRT
       */
       void Print(std::ostream& os) const override;
 
-      CORE::Elements::ElementType& ElementType() const override { return SoShw6Type::Instance(); }
+      Core::Elements::ElementType& ElementType() const override { return SoShw6Type::Instance(); }
 
       //@}
 
@@ -154,7 +154,7 @@ namespace DRT
       \brief Read input for this element
       */
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          INPUT::LineDefinition* linedef) override;
+          Input::LineDefinition* linedef) override;
 
       //@}
 
@@ -180,12 +180,12 @@ namespace DRT
 
       struct EASData
       {
-        CORE::LINALG::SerialDenseMatrix alpha;
-        CORE::LINALG::SerialDenseMatrix alphao;
-        CORE::LINALG::SerialDenseMatrix feas;
-        CORE::LINALG::SerialDenseMatrix invKaa;
-        CORE::LINALG::SerialDenseMatrix Kda;
-        CORE::LINALG::SerialDenseMatrix eas_inc;
+        Core::LinAlg::SerialDenseMatrix alpha;
+        Core::LinAlg::SerialDenseMatrix alphao;
+        Core::LinAlg::SerialDenseMatrix feas;
+        Core::LinAlg::SerialDenseMatrix invKaa;
+        Core::LinAlg::SerialDenseMatrix Kda;
+        Core::LinAlg::SerialDenseMatrix eas_inc;
       };
       //! EAS data
       EASData easdata_;
@@ -230,61 +230,61 @@ namespace DRT
                               to fill this vector
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
-          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2,
-          CORE::LINALG::SerialDenseVector& elevec3) override;
+      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
+          Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseVector& elevec2,
+          Core::LinAlg::SerialDenseVector& elevec3) override;
 
       //! Compute stiffness and mass matrix
       virtual void soshw6_nlnstiffmass(std::vector<int>& lm,            // location matrix
           std::vector<double>& disp,                                    // current displacements
           std::vector<double>& residual,                                // current residual displ
-          CORE::LINALG::Matrix<NUMDOF_WEG6, NUMDOF_WEG6>* stiffmatrix,  // element stiffness matrix
-          CORE::LINALG::Matrix<NUMDOF_WEG6, NUMDOF_WEG6>* massmatrix,   // element mass matrix
-          CORE::LINALG::Matrix<NUMDOF_WEG6, 1>* force,      // element internal force vector
-          CORE::LINALG::Matrix<NUMDOF_WEG6, 1>* force_str,  // structure force
-          CORE::LINALG::Matrix<NUMGPT_WEG6, MAT::NUM_STRESS_3D>* elestress,  // stresses at GP
-          CORE::LINALG::Matrix<NUMGPT_WEG6, MAT::NUM_STRESS_3D>* elestrain,  // strains at GP
+          Core::LinAlg::Matrix<NUMDOF_WEG6, NUMDOF_WEG6>* stiffmatrix,  // element stiffness matrix
+          Core::LinAlg::Matrix<NUMDOF_WEG6, NUMDOF_WEG6>* massmatrix,   // element mass matrix
+          Core::LinAlg::Matrix<NUMDOF_WEG6, 1>* force,      // element internal force vector
+          Core::LinAlg::Matrix<NUMDOF_WEG6, 1>* force_str,  // structure force
+          Core::LinAlg::Matrix<NUMGPT_WEG6, Mat::NUM_STRESS_3D>* elestress,  // stresses at GP
+          Core::LinAlg::Matrix<NUMGPT_WEG6, Mat::NUM_STRESS_3D>* elestrain,  // strains at GP
           Teuchos::ParameterList& params,          // algorithmic parameters e.g. time
-          const INPAR::STR::StressType iostress,   // stress output option
-          const INPAR::STR::StrainType iostrain);  // strain output option
+          const Inpar::STR::StressType iostress,   // stress output option
+          const Inpar::STR::StrainType iostrain);  // strain output option
 
       static constexpr int num_sp = 5;   ///< number of ANS sampling points
       static constexpr int num_ans = 3;  ///< number of modified ANS strains (E_rt,E_st,E_tt)
 
       //! Setup ANS interpolation (shear and trapezoidal)
       void soshw6_anssetup(
-          const CORE::LINALG::Matrix<NUMNOD_WEG6, NUMDIM_WEG6>& xrefe,  ///< material element coords
-          const CORE::LINALG::Matrix<NUMNOD_WEG6, NUMDIM_WEG6>& xcurr,  ///< current element coords
-          std::vector<CORE::LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>>**
+          const Core::LinAlg::Matrix<NUMNOD_WEG6, NUMDIM_WEG6>& xrefe,  ///< material element coords
+          const Core::LinAlg::Matrix<NUMNOD_WEG6, NUMDIM_WEG6>& xcurr,  ///< current element coords
+          std::vector<Core::LinAlg::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>>**
               deriv_sp,  ///< derivs eval. at all sampling points
-          std::vector<CORE::LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6>>&
+          std::vector<Core::LinAlg::Matrix<NUMDIM_WEG6, NUMDIM_WEG6>>&
               jac_sps,  ///< jac at all sampling points
-          std::vector<CORE::LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6>>&
+          std::vector<Core::LinAlg::Matrix<NUMDIM_WEG6, NUMDIM_WEG6>>&
               jac_cur_sps,  ///< current jac at all sampling points
-          CORE::LINALG::Matrix<num_ans * num_sp, NUMDOF_WEG6>& B_ans_loc);  ///< modified B
+          Core::LinAlg::Matrix<num_ans * num_sp, NUMDOF_WEG6>& B_ans_loc);  ///< modified B
 
       //! Transformation matrix parameter->material space
-      void soshw6_evaluate_t(const CORE::LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6>& jac,
-          CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& TinvT);
+      void soshw6_evaluate_t(const Core::LinAlg::Matrix<NUMDIM_WEG6, NUMDIM_WEG6>& jac,
+          Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D>& TinvT);
 
       //! EAS technology, init
       void soshw6_easinit();
 
       //! EAS technology, setup necessary data
       void soshw6_eassetup(
-          std::vector<CORE::LINALG::SerialDenseMatrix>** M_GP,  // M-matrix evaluated at GPs
+          std::vector<Core::LinAlg::SerialDenseMatrix>** M_GP,  // M-matrix evaluated at GPs
           double& detJ0,                                        // det of Jacobian at origin
-          CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>&
+          Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D>&
               T0invT,  // maps M(origin) local to global
-          const CORE::LINALG::Matrix<NUMNOD_WEG6, NUMDIM_WEG6>& xrefe);  // material element coords
+          const Core::LinAlg::Matrix<NUMNOD_WEG6, NUMDIM_WEG6>& xrefe);  // material element coords
 
       //! Evaluate Cauchy stress (mapping with disp_based F per default)
-      void soshw6_cauchy(CORE::LINALG::Matrix<NUMGPT_WEG6, MAT::NUM_STRESS_3D>* elestress,
-          const int gp, const CORE::LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6>& defgrd,
-          const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& glstrain,
-          const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& stress);
+      void soshw6_cauchy(Core::LinAlg::Matrix<NUMGPT_WEG6, Mat::NUM_STRESS_3D>* elestress,
+          const int gp, const Core::LinAlg::Matrix<NUMDIM_WEG6, NUMDIM_WEG6>& defgrd,
+          const Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>& glstrain,
+          const Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>& stress);
 
       //! Reorient wedge to optimally align material with parameter space
       int soshw6_findoptparmap();
@@ -292,7 +292,7 @@ namespace DRT
       //! recover condensed EAS variables
       void soshw6_recover(const std::vector<double>& residual);
 
-      void pack_eas_data(CORE::COMM::PackBuffer& data) const
+      void pack_eas_data(Core::Communication::PackBuffer& data) const
       {
         AddtoPack(data, easdata_.alpha);
         AddtoPack(data, easdata_.alphao);
@@ -318,7 +318,7 @@ namespace DRT
 
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

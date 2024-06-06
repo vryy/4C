@@ -15,9 +15,9 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
-  namespace ELASTIC
+  namespace Elastic
   {
     namespace PAR
     {
@@ -29,11 +29,11 @@ namespace MAT
        *  MAT 1 VISCO_GeneralizedGenMax NUMBRANCH 3 MATIDS 4 5 6 SOLVE CONVOL
        *  MAT 1 VISCO_GeneralizedGenMax NUMBRANCH 3 MATIDS 4 5 6 SOLVE OST
        */
-      class GeneralizedGenMax : public CORE::MAT::PAR::Parameter
+      class GeneralizedGenMax : public Core::Mat::PAR::Parameter
       {
        public:
         /// standard constructor
-        GeneralizedGenMax(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
+        GeneralizedGenMax(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
 
         /// @name material parameters
         //@{
@@ -46,7 +46,7 @@ namespace MAT
 
         /// create material instance of matching type with my parameters
 
-        Teuchos::RCP<CORE::MAT::Material> create_material() override { return Teuchos::null; };
+        Teuchos::RCP<Core::Mat::Material> create_material() override { return Teuchos::null; };
       };  // class GeneralizedGenMax
 
 
@@ -57,11 +57,11 @@ namespace MAT
        * <h3>Input line</h3>
        * MAT 1 VISCO_BRANCH NUMMAT 2 MATIDS 2 3
        */
-      class ViscoBranch : public CORE::MAT::PAR::Parameter
+      class ViscoBranch : public Core::Mat::PAR::Parameter
       {
        public:
         /// standard constructor
-        ViscoBranch(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
+        ViscoBranch(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
 
         /// @name material parameters
         //@{
@@ -76,11 +76,11 @@ namespace MAT
 
         /// Override this method and throw error, as the material should be created in within the
         /// Factory method of the elastic summand
-        Teuchos::RCP<CORE::MAT::Material> create_material() override
+        Teuchos::RCP<Core::Mat::Material> create_material() override
         {
           FOUR_C_THROW(
               "Cannot create a material from this method, as it should be created in "
-              "MAT::ELASTIC::Summand::Factory.");
+              "Mat::Elastic::Summand::Factory.");
           return Teuchos::null;
         };
       };  // class ViscoBranch
@@ -92,11 +92,11 @@ namespace MAT
        * <h3>Input line</h3>
        * MAT 1 VISCO_PART TAU 1.5
        */
-      class ViscoPart : public CORE::MAT::PAR::Parameter
+      class ViscoPart : public Core::Mat::PAR::Parameter
       {
        public:
         /// standard constructor
-        ViscoPart(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
+        ViscoPart(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
 
         /// @name material parameters
         //@{
@@ -107,7 +107,7 @@ namespace MAT
         //@}
 
         /// create material instance of matching type with my parameters
-        Teuchos::RCP<CORE::MAT::Material> create_material() override { return Teuchos::null; };
+        Teuchos::RCP<Core::Mat::Material> create_material() override { return Teuchos::null; };
       };  // class ViscoPart
 
     }  // namespace PAR
@@ -118,15 +118,15 @@ namespace MAT
     {
      public:
       /// constructor with given material parameters
-      GeneralizedGenMax(MAT::ELASTIC::PAR::GeneralizedGenMax* params);
+      GeneralizedGenMax(Mat::Elastic::PAR::GeneralizedGenMax* params);
 
       /// @name Access material constants
       //@{
 
       /// material type
-      CORE::Materials::MaterialType MaterialType() const override
+      Core::Materials::MaterialType MaterialType() const override
       {
-        return CORE::Materials::mes_generalizedgenmax;
+        return Core::Materials::mes_generalizedgenmax;
       }
       //@}
 
@@ -138,7 +138,7 @@ namespace MAT
 
       /// @name Access methods
       //@{
-      std::vector<std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>> GetBranchespotsum() const
+      std::vector<std::vector<Teuchos::RCP<Mat::Elastic::Summand>>> GetBranchespotsum() const
       {
         return branchespotsum_;
       }
@@ -173,28 +173,28 @@ namespace MAT
 
      private:
       /// my material parameters
-      MAT::ELASTIC::PAR::GeneralizedGenMax* params_;
+      Mat::Elastic::PAR::GeneralizedGenMax* params_;
 
      protected:
       /// summands of the GeneralizedGenMax material or each branch
-      std::vector<std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>> branchespotsum_;
+      std::vector<std::vector<Teuchos::RCP<Mat::Elastic::Summand>>> branchespotsum_;
       /// summands in one particular branch
-      std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>> internalpotsum_;
+      std::vector<Teuchos::RCP<Mat::Elastic::Summand>> internalpotsum_;
     };
 
     class ViscoBranch : public Summand
     {
      public:
       /// constructor with given material parameters
-      ViscoBranch(MAT::ELASTIC::PAR::ViscoBranch* params);
+      ViscoBranch(Mat::Elastic::PAR::ViscoBranch* params);
 
       /// @name Access material constants
       //@{
 
       /// material type
-      CORE::Materials::MaterialType MaterialType() const override
+      Core::Materials::MaterialType MaterialType() const override
       {
-        return CORE::Materials::mes_viscobranch;
+        return Core::Materials::mes_viscobranch;
       }
 
       //@}
@@ -220,7 +220,7 @@ namespace MAT
 
      private:
       /// my material parameters
-      MAT::ELASTIC::PAR::ViscoBranch* params_;
+      Mat::Elastic::PAR::ViscoBranch* params_;
 
     };  // class ViscoBranch
 
@@ -229,15 +229,15 @@ namespace MAT
     {
      public:
       /// constructor with given material parameters
-      ViscoPart(MAT::ELASTIC::PAR::ViscoPart* params);
+      ViscoPart(Mat::Elastic::PAR::ViscoPart* params);
 
       /// @name Access material constants
       //@{
 
       /// material type
-      CORE::Materials::MaterialType MaterialType() const override
+      Core::Materials::MaterialType MaterialType() const override
       {
-        return CORE::Materials::mes_viscopart;
+        return Core::Materials::mes_viscopart;
       }
 
       //@}
@@ -274,12 +274,12 @@ namespace MAT
 
      private:
       /// my material parameters
-      MAT::ELASTIC::PAR::ViscoPart* params_;
+      Mat::Elastic::PAR::ViscoPart* params_;
 
     };  // class ViscoPart
 
-  }  // namespace ELASTIC
-}  // namespace MAT
+  }  // namespace Elastic
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-MAT::PAR::ParticleMaterialBase::ParticleMaterialBase(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::ParticleMaterialBase::ParticleMaterialBase(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : Parameter(matdata),
       initRadius_(matdata->Get<double>("INITRADIUS")),
       initDensity_(matdata->Get<double>("INITDENSITY"))

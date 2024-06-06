@@ -25,7 +25,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace CORE::GEO
+namespace Core::Geo
 {
   //! named tolerance for easy search/grep
   const double TOL14 = 1e-14;
@@ -43,7 +43,7 @@ namespace CORE::GEO
   const double TOLPLUS8 = 1e8;
   //! large number to start computations of nearest distance in tree
   const double LARGENUMBER = 1e30;
-}  // namespace CORE::GEO
+}  // namespace Core::Geo
 
 
 FOUR_C_NAMESPACE_CLOSE

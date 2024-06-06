@@ -24,7 +24,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 
@@ -32,25 +32,25 @@ namespace DRT
   {
     // forward declarations
 
-    class ConstraintElement3Type : public CORE::Elements::ElementType
+    class ConstraintElement3Type : public Core::Elements::ElementType
     {
      public:
       std::string Name() const override { return "ConstraintElement3Type"; }
 
       static ConstraintElement3Type& Instance();
 
-      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+          Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
+      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+          Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
      private:
       static ConstraintElement3Type instance_;
@@ -58,7 +58,7 @@ namespace DRT
 
     /*!
      */
-    class ConstraintElement3 : public CORE::Elements::Element
+    class ConstraintElement3 : public Core::Elements::Element
     {
      public:
       //! @name Friends
@@ -89,15 +89,15 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      CORE::Elements::Element* Clone() const override;
+      Core::Elements::Element* Clone() const override;
 
       /*!
       \brief Get shape type of element
       */
-      CORE::FE::CellType Shape() const override
+      Core::FE::CellType Shape() const override
       {
         FOUR_C_THROW("ConstraintElement3 has no shape!");
-        return CORE::FE::CellType::dis_none;
+        return Core::FE::CellType::dis_none;
       };
 
       /*!
@@ -117,7 +117,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(CORE::COMM::PackBuffer& data) const override;
+      void Pack(Core::Communication::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -135,18 +135,18 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom of a certain node
-             (implements pure virtual CORE::Elements::Element)
+             (implements pure virtual Core::Elements::Element)
 
       The element decides how many degrees of freedom its nodes must have.
       As this may vary along a simulation, the element can redecide the
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const CORE::Nodes::Node& node) const override { return 3; }
+      int NumDofPerNode(const Core::Nodes::Node& node) const override { return 3; }
 
       /*!
       \brief Get number of degrees of freedom per element
-             (implements pure virtual CORE::Elements::Element)
+             (implements pure virtual Core::Elements::Element)
 
       The element decides how many element degrees of freedom it has.
       It can redecide along the way of a simulation.
@@ -157,7 +157,7 @@ namespace DRT
       */
       int num_dof_per_element() const override { return 0; }
 
-      CORE::Elements::ElementType& ElementType() const override
+      Core::Elements::ElementType& ElementType() const override
       {
         return ConstraintElement3Type::Instance();
       }
@@ -172,13 +172,13 @@ namespace DRT
       \return 0 if successful, negative otherwise
       */
       int Evaluate(Teuchos::ParameterList& params,   ///< ParameterList for communication
-          DRT::Discretization& discretization,       ///< discretization
+          Discret::Discretization& discretization,   ///< discretization
           std::vector<int>& lm,                      ///< location vector
-          CORE::LINALG::SerialDenseMatrix& elemat1,  ///< first matrix to be filled by element
-          CORE::LINALG::SerialDenseMatrix& elemat2,  ///< second matrix to be filled by element
-          CORE::LINALG::SerialDenseVector& elevec1,  ///< third matrix to be filled by element
-          CORE::LINALG::SerialDenseVector& elevec2,  ///< first vector to be filled by element
-          CORE::LINALG::SerialDenseVector& elevec3   ///< second vector to be filled by element
+          Core::LinAlg::SerialDenseMatrix& elemat1,  ///< first matrix to be filled by element
+          Core::LinAlg::SerialDenseMatrix& elemat2,  ///< second matrix to be filled by element
+          Core::LinAlg::SerialDenseVector& elevec1,  ///< third matrix to be filled by element
+          Core::LinAlg::SerialDenseVector& elevec2,  ///< first vector to be filled by element
+          Core::LinAlg::SerialDenseVector& elevec3   ///< second vector to be filled by element
           ) override;
 
 
@@ -190,11 +190,11 @@ namespace DRT
       \return 0 if successful, negative otherwise
       */
       int evaluate_neumann(Teuchos::ParameterList& params,  ///< ParameterList for communication
-          DRT::Discretization& discretization,              ///< discretization
-          CORE::Conditions::Condition& condition,           ///< Neumann condition to evaluate
+          Discret::Discretization& discretization,          ///< discretization
+          Core::Conditions::Condition& condition,           ///< Neumann condition to evaluate
           std::vector<int>& lm,                             ///< location vector
-          CORE::LINALG::SerialDenseVector& elevec1,         ///< vector to be filled by element
-          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
+          Core::LinAlg::SerialDenseVector& elevec1,         ///< vector to be filled by element
+          Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;
 
 
      private:
@@ -207,7 +207,7 @@ namespace DRT
       };
 
       //! vector of surfaces of this element (length 1)
-      std::vector<CORE::Elements::Element*> surface_;
+      std::vector<Core::Elements::Element*> surface_;
 
       // don't want = operator
       ConstraintElement3& operator=(const ConstraintElement3& old);
@@ -216,7 +216,7 @@ namespace DRT
       \brief Create matrix with material configuration for 3 dimensions and 4 nodes
       */
       inline void material_configuration(
-          CORE::LINALG::Matrix<4, 3>& x  ///< nodal coords in material frame
+          Core::LinAlg::Matrix<4, 3>& x  ///< nodal coords in material frame
       ) const
       {
         const int numnode = 4;
@@ -235,7 +235,7 @@ namespace DRT
       \brief Create matrix with spatial configuration for 3 dimensions and 4 nodes
       */
       inline void spatial_configuration(
-          CORE::LINALG::Matrix<4, 3>& x,  ///< nodal coords in spatial frame
+          Core::LinAlg::Matrix<4, 3>& x,  ///< nodal coords in spatial frame
           const std::vector<double> disp  ///< displacements
       ) const
       {
@@ -255,7 +255,7 @@ namespace DRT
       \brief Create matrix with spatial configuration for 3 dimensions and 2 nodes
       */
       inline void spatial_configuration(
-          CORE::LINALG::Matrix<2, 3>& x,  ///< nodal coords in spatial frame
+          Core::LinAlg::Matrix<2, 3>& x,  ///< nodal coords in spatial frame
           const std::vector<double> disp  ///< displacements
       ) const
       {
@@ -272,28 +272,28 @@ namespace DRT
       }
 
       /// compute normal for 3D case using the first three nodes to specify a plane
-      void compute_normal(const CORE::LINALG::Matrix<4, 3>& xc,  ///< nodal coords in spatial frame
-          CORE::LINALG::Matrix<3, 1>& elenormal                  ///< resulting element normal
+      void compute_normal(const Core::LinAlg::Matrix<4, 3>& xc,  ///< nodal coords in spatial frame
+          Core::LinAlg::Matrix<3, 1>& elenormal                  ///< resulting element normal
       );
 
       /// Compute normal distance between plane and fourth node
       double compute_normal_dist(
-          const CORE::LINALG::Matrix<4, 3>& xc,        ///< nodal coords in spatial frame
-          const CORE::LINALG::Matrix<3, 1>& elenormal  ///< element normal
+          const Core::LinAlg::Matrix<4, 3>& xc,        ///< nodal coords in spatial frame
+          const Core::LinAlg::Matrix<3, 1>& elenormal  ///< element normal
       );
 
       /// Compute first derivative of normal distance with respect to the nodal displacements
       void compute_first_deriv(
-          const CORE::LINALG::Matrix<4, 3>& xc,        ///< nodal coords in spatial frame
-          CORE::LINALG::SerialDenseVector& elevector,  ///< vector to store results into
-          const CORE::LINALG::Matrix<3, 1>& elenormal  ///< element normal
+          const Core::LinAlg::Matrix<4, 3>& xc,        ///< nodal coords in spatial frame
+          Core::LinAlg::SerialDenseVector& elevector,  ///< vector to store results into
+          const Core::LinAlg::Matrix<3, 1>& elenormal  ///< element normal
       );
 
       /// Compute first derivative of normal distance with respect to the nodal displacements
       void compute_second_deriv(
-          const CORE::LINALG::Matrix<4, 3>& xc,        ///< nodal coords in spatial frame
-          CORE::LINALG::SerialDenseMatrix& elematrix,  ///< vector to store results into
-          const CORE::LINALG::Matrix<3, 1>& elenormal  ///< element normal
+          const Core::LinAlg::Matrix<4, 3>& xc,        ///< nodal coords in spatial frame
+          Core::LinAlg::SerialDenseMatrix& elematrix,  ///< vector to store results into
+          const Core::LinAlg::Matrix<3, 1>& elenormal  ///< element normal
       );
 
       /// Compute difference of nodal displacement to masternode in given direction
@@ -304,13 +304,13 @@ namespace DRT
 
       /// Compute first derivatives nodal displacement to masternode in given direction
       void compute_first_deriv_weighted_distance(
-          CORE::LINALG::SerialDenseVector& elevector,  ///< vector to store results into
+          Core::LinAlg::SerialDenseVector& elevector,  ///< vector to store results into
           const std::vector<double> direct             ///< direction to weight with
       );
 
       /// Compute difference of spatial configuration to masternode in given direction
       double compute_weighted_distance(
-          const CORE::LINALG::Matrix<2, 3> disp, const std::vector<double> direct);
+          const Core::LinAlg::Matrix<2, 3> disp, const std::vector<double> direct);
     };  // class ConstraintElement3
 
 
@@ -322,7 +322,7 @@ namespace DRT
 
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 
 FOUR_C_NAMESPACE_CLOSE

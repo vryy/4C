@@ -17,14 +17,14 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class MatrixRowTransform;
   class MatrixColTransform;
   class MatrixRowColTransform;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace POROELAST
+namespace PoroElast
 {
   //! monolithic fluid split for condensing DOFs, when using the brinkman-equation
   class MonolithicFluidSplit : public MonolithicSplit
@@ -32,7 +32,7 @@ namespace POROELAST
    public:
     //! create using a Epetra_Comm
     explicit MonolithicFluidSplit(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams,
-        Teuchos::RCP<CORE::LINALG::MapExtractor> porosity_splitter);
+        Teuchos::RCP<Core::LinAlg::MapExtractor> porosity_splitter);
 
     /*! do the setup for the monolithic system
 
@@ -54,7 +54,7 @@ namespace POROELAST
     void setup_rhs(bool firstcall = false) override;
 
     //! setup composed system matrix from field solvers
-    void setup_system_matrix(CORE::LINALG::BlockSparseMatrixBase& mat) override;
+    void setup_system_matrix(Core::LinAlg::BlockSparseMatrixBase& mat) override;
 
    private:
     //! build block vector from field vectors
@@ -77,37 +77,37 @@ namespace POROELAST
 
     //! @name matrix transformation
     //! transform object for fluid interface matrix \f$F_{\Gamma \Gamma}\f$
-    Teuchos::RCP<CORE::LINALG::MatrixRowColTransform> fggtransform_;
+    Teuchos::RCP<Core::LinAlg::MatrixRowColTransform> fggtransform_;
     //! transform object for fluid interface matrix \f$F_{\Gamma I}\f$
-    Teuchos::RCP<CORE::LINALG::MatrixRowTransform> fgitransform_;
+    Teuchos::RCP<Core::LinAlg::MatrixRowTransform> fgitransform_;
     //! transform object for fluid interface matrix \f$F_{I \Gamma}\f$
-    Teuchos::RCP<CORE::LINALG::MatrixColTransform> figtransform_;
+    Teuchos::RCP<Core::LinAlg::MatrixColTransform> figtransform_;
     //! transform object for fluid coupling matrix \f$C_{\Gamma \Gamma}^F\f$
-    Teuchos::RCP<CORE::LINALG::MatrixRowTransform> cfggtransform_;
+    Teuchos::RCP<Core::LinAlg::MatrixRowTransform> cfggtransform_;
     //! transform object for structure coupling matrix \f$C_{\Gamma \Gamma}^S\f$
-    Teuchos::RCP<CORE::LINALG::MatrixColTransform> csggtransform_;
+    Teuchos::RCP<Core::LinAlg::MatrixColTransform> csggtransform_;
     //! transform object for fluid coupling matrix \f$C_{\Gamma I}^F\f$
-    Teuchos::RCP<CORE::LINALG::MatrixRowTransform> cfgitransform_;
+    Teuchos::RCP<Core::LinAlg::MatrixRowTransform> cfgitransform_;
     //! transform object for structure coupling matrix \f$C_{I \Gamma}^S\f$
-    Teuchos::RCP<CORE::LINALG::MatrixColTransform> csigtransform_;
+    Teuchos::RCP<Core::LinAlg::MatrixColTransform> csigtransform_;
     //!@}
 
     //! block \f$F_{\Gamma I,i+1}\f$ of fluid matrix at current iteration \f$i+1\f$
-    Teuchos::RCP<const CORE::LINALG::SparseOperator> fgicur_;
+    Teuchos::RCP<const Core::LinAlg::SparseOperator> fgicur_;
 
     //! block \f$F_{\Gamma\Gamma,i+1}\f$ of fluid matrix at current iteration \f$i+1\f$
-    Teuchos::RCP<const CORE::LINALG::SparseOperator> fggcur_;
+    Teuchos::RCP<const Core::LinAlg::SparseOperator> fggcur_;
 
     //! block \f$C_{\Gamma\Gamma,i+1}\f$ of fluid matrix at current iteration \f$i+1\f$
-    Teuchos::RCP<const CORE::LINALG::SparseOperator> cgicur_;
+    Teuchos::RCP<const Core::LinAlg::SparseOperator> cgicur_;
 
     //! block \f$C_{\Gamma\Gamma,i+1}\f$ of fluid matrix at current iteration \f$i+1\f$
-    Teuchos::RCP<const CORE::LINALG::SparseOperator> cggcur_;
+    Teuchos::RCP<const Core::LinAlg::SparseOperator> cggcur_;
 
     //!@}
   };
 
-}  // namespace POROELAST
+}  // namespace PoroElast
 
 FOUR_C_NAMESPACE_CLOSE
 

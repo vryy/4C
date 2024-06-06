@@ -25,10 +25,10 @@ namespace
       const std::vector<double> x = {0.30, 0.35, 0.40, 0.45};
       const std::vector<double> y = {4.40, 4.30, 4.25, 4.10};
 
-      cubic_spline_ = Teuchos::rcp(new CORE::UTILS::CubicSplineInterpolation(x, y));
+      cubic_spline_ = Teuchos::rcp(new Core::UTILS::CubicSplineInterpolation(x, y));
     }
 
-    Teuchos::RCP<CORE::UTILS::CubicSplineInterpolation> cubic_spline_;
+    Teuchos::RCP<Core::UTILS::CubicSplineInterpolation> cubic_spline_;
   };
 
   TEST_F(CubicSplineInterpolationTest, InputArgumentSortedAscending)
@@ -36,7 +36,7 @@ namespace
     const std::vector<double> x = {0.3, 0.6, 0.5};
     const std::vector<double> y(x.size(), 0.0);
 
-    EXPECT_THROW(CORE::UTILS::CubicSplineInterpolation(x, y), CORE::Exception);
+    EXPECT_THROW(Core::UTILS::CubicSplineInterpolation(x, y), Core::Exception);
   }
 
   TEST_F(CubicSplineInterpolationTest, InputArgumentsDifferentLength)
@@ -44,7 +44,7 @@ namespace
     const std::vector<double> x = {0.3, 0.5, 0.7};
     const std::vector<double> y(x.size() - 1, 0.0);
 
-    EXPECT_THROW(CORE::UTILS::CubicSplineInterpolation(x, y), CORE::Exception);
+    EXPECT_THROW(Core::UTILS::CubicSplineInterpolation(x, y), Core::Exception);
   }
 
   TEST_F(CubicSplineInterpolationTest, EvaluateOutsideValidityBounds)
@@ -53,9 +53,9 @@ namespace
 
     for (double x : x_test)
     {
-      EXPECT_THROW((void)cubic_spline_->Evaluate(x), CORE::Exception);
-      EXPECT_THROW((void)cubic_spline_->EvaluateDerivative(x, 1), CORE::Exception);
-      EXPECT_THROW((void)cubic_spline_->EvaluateDerivative(x, 2), CORE::Exception);
+      EXPECT_THROW((void)cubic_spline_->Evaluate(x), Core::Exception);
+      EXPECT_THROW((void)cubic_spline_->EvaluateDerivative(x, 1), Core::Exception);
+      EXPECT_THROW((void)cubic_spline_->EvaluateDerivative(x, 2), Core::Exception);
     }
   }
 

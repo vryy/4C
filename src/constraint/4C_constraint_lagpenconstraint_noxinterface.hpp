@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------*/
 /*! \file
 
-\brief Concrete mplementation of all the %NOX::NLN::CONSTRAINT::Interface::Required
+\brief Concrete mplementation of all the %NOX::Nln::CONSTRAINT::Interface::Required
        (pure) virtual routines.
 
 \level 3
@@ -27,14 +27,14 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace LAGPENCONSTRAINT
 {
-  class NoxInterface : public NOX::NLN::CONSTRAINT::Interface::Required
+  class NoxInterface : public NOX::Nln::CONSTRAINT::Interface::Required
   {
    public:
     /// constructor
     NoxInterface();
 
     /// initialize important member variables
-    void Init(const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& gstate_ptr);
+    void Init(const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr);
 
     /** \brief Setup important new member variables
      *
@@ -44,22 +44,22 @@ namespace LAGPENCONSTRAINT
     /// @name Supported basic interface functions
     /// @{
     //! Returns the constraint right-hand-side norms [derived]
-    double get_constraint_rhs_norms(const Epetra_Vector& F, NOX::NLN::StatusTest::QuantityType chQ,
+    double get_constraint_rhs_norms(const Epetra_Vector& F, NOX::Nln::StatusTest::QuantityType chQ,
         ::NOX::Abstract::Vector::NormType type, bool isScaled) const override;
 
     /// Returns the root mean square (abbr.: RMS) of the Lagrange multiplier updates [derived]
     double get_lagrange_multiplier_update_rms(const Epetra_Vector& xNew, const Epetra_Vector& xOld,
-        double aTol, double rTol, NOX::NLN::StatusTest::QuantityType checkQuantity,
+        double aTol, double rTol, NOX::Nln::StatusTest::QuantityType checkQuantity,
         bool disable_implicit_weighting) const override;
 
     /// Returns the increment norm of the largange multiplier DoFs
     double get_lagrange_multiplier_update_norms(const Epetra_Vector& xNew,
-        const Epetra_Vector& xOld, NOX::NLN::StatusTest::QuantityType checkQuantity,
+        const Epetra_Vector& xOld, NOX::Nln::StatusTest::QuantityType checkQuantity,
         ::NOX::Abstract::Vector::NormType type, bool isScaled) const override;
 
     /// Returns the previous solution norm of the largange multiplier DoFs
     double get_previous_lagrange_multiplier_norms(const Epetra_Vector& xOld,
-        NOX::NLN::StatusTest::QuantityType checkQuantity, ::NOX::Abstract::Vector::NormType type,
+        NOX::Nln::StatusTest::QuantityType checkQuantity, ::NOX::Abstract::Vector::NormType type,
         bool isScaled) const override;
     /// @}
 
@@ -92,18 +92,18 @@ namespace LAGPENCONSTRAINT
 
    private:
     //! global state data container
-    Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> gstate_ptr_;
+    Teuchos::RCP<STR::TimeInt::BaseDataGlobalState> gstate_ptr_;
   };
 
 
-  class NoxInterfacePrec : public NOX::NLN::CONSTRAINT::Interface::Preconditioner
+  class NoxInterfacePrec : public NOX::Nln::CONSTRAINT::Interface::Preconditioner
   {
    public:
     /// constructor
     NoxInterfacePrec();
 
     /// initialize important member variables
-    void Init(const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& gstate_ptr);
+    void Init(const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr);
 
     /** \brief Setup important new member variables
      *
@@ -149,7 +149,7 @@ namespace LAGPENCONSTRAINT
 
    private:
     //! global state data container
-    Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> gstate_ptr_;
+    Teuchos::RCP<STR::TimeInt::BaseDataGlobalState> gstate_ptr_;
   };
 
 }  // namespace LAGPENCONSTRAINT

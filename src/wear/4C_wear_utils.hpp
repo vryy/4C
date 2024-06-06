@@ -32,20 +32,20 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | forward declarations                                     farah 12/13 |
  *----------------------------------------------------------------------*/
-namespace DRT
+namespace Discret
 {
   class LocationArray;
 }
 /*----------------------------------------------------------------------*
  |                                                          farah 12/13 |
  *----------------------------------------------------------------------*/
-namespace WEAR
+namespace Wear
 {
   namespace UTILS
   {
     // advection map for elements
-    template <CORE::FE::CellType distype>
-    void av(CORE::Elements::Element* ele,               // in
+    template <Core::FE::CellType distype>
+    void av(Core::Elements::Element* ele,               // in
         double* Xtarget,                                // out
         double* Xsource,                                // in
         Teuchos::RCP<const Epetra_Vector> disp_source,  // in
@@ -53,21 +53,21 @@ namespace WEAR
         const std::vector<int>& lm,                     // in
         bool& found, double* e)
     {
-      static constexpr int numnod = CORE::FE::num_nodes<distype>;
-      static constexpr int ndim = CORE::FE::dim<distype>;
+      static constexpr int numnod = Core::FE::num_nodes<distype>;
+      static constexpr int ndim = Core::FE::dim<distype>;
 
-      CORE::LINALG::Matrix<numnod, 1> funct;
-      CORE::LINALG::Matrix<ndim, numnod> xcure;
-      CORE::LINALG::Matrix<ndim, ndim> xjm;
-      CORE::LINALG::Matrix<ndim, numnod> deriv;
+      Core::LinAlg::Matrix<numnod, 1> funct;
+      Core::LinAlg::Matrix<ndim, numnod> xcure;
+      Core::LinAlg::Matrix<ndim, ndim> xjm;
+      Core::LinAlg::Matrix<ndim, numnod> deriv;
 
       // spatial displacements
       std::vector<double> mydisp_source(lm.size());
-      CORE::FE::ExtractMyValues(*disp_source, mydisp_source, lm);
+      Core::FE::ExtractMyValues(*disp_source, mydisp_source, lm);
 
       // material displacements
       std::vector<double> mydisp_target(lm.size());
-      CORE::FE::ExtractMyValues(*disp_target, mydisp_target, lm);
+      Core::FE::ExtractMyValues(*disp_target, mydisp_target, lm);
 
       // spatial configuration of this element!
       for (int k = 0; k < numnod; ++k)
@@ -93,13 +93,13 @@ namespace WEAR
 
         if (ndim == 2)
         {
-          CORE::FE::shape_function_2D(funct, e[0], e[1], distype);
-          CORE::FE::shape_function_2D_deriv1(deriv, e[0], e[1], distype);
+          Core::FE::shape_function_2D(funct, e[0], e[1], distype);
+          Core::FE::shape_function_2D_deriv1(deriv, e[0], e[1], distype);
         }
         else if (ndim == 3)
         {
-          CORE::FE::shape_function_3D(funct, e[0], e[1], e[2], distype);
-          CORE::FE::shape_function_3D_deriv1(deriv, e[0], e[1], e[2], distype);
+          Core::FE::shape_function_3D(funct, e[0], e[1], e[2], distype);
+          Core::FE::shape_function_3D_deriv1(deriv, e[0], e[1], e[2], distype);
         }
         else
           FOUR_C_THROW("Wrong dimension!");
@@ -144,16 +144,16 @@ namespace WEAR
 
       // if material parameters are within the element, evaluate material
       // coordinates
-      if (distype == CORE::FE::CellType::hex8 or distype == CORE::FE::CellType::hex20 or
-          distype == CORE::FE::CellType::hex27 or distype == CORE::FE::CellType::quad4 or
-          distype == CORE::FE::CellType::quad8 or distype == CORE::FE::CellType::quad9)
+      if (distype == Core::FE::CellType::hex8 or distype == Core::FE::CellType::hex20 or
+          distype == Core::FE::CellType::hex27 or distype == Core::FE::CellType::quad4 or
+          distype == Core::FE::CellType::quad8 or distype == Core::FE::CellType::quad9)
       {
         if (e[0] >= -1.0 - WEARADVMAP and e[0] <= 1.0 + WEARADVMAP and e[1] >= -1.0 - WEARADVMAP and
             e[1] <= 1.0 + WEARADVMAP and e[2] >= -1.0 - WEARADVMAP and e[2] <= 1.0 + WEARADVMAP)
           found = true;
       }
-      else if (distype == CORE::FE::CellType::tet4 or distype == CORE::FE::CellType::tet10 or
-               distype == CORE::FE::CellType::tri3 or distype == CORE::FE::CellType::tri6)
+      else if (distype == Core::FE::CellType::tet4 or distype == Core::FE::CellType::tet10 or
+               distype == Core::FE::CellType::tri3 or distype == Core::FE::CellType::tri6)
       {
         if (e[0] >= 0.0 - WEARADVMAP and e[0] <= 1.0 + WEARADVMAP and e[1] >= 0.0 - WEARADVMAP and
             e[1] <= 1.0 + WEARADVMAP and e[2] >= 0.0 - WEARADVMAP and e[2] <= 1.0 + WEARADVMAP)
@@ -166,9 +166,9 @@ namespace WEAR
       for (int p = 0; p < ndim; ++p) xmat[p] = 0.0;
 
       if (ndim == 2)
-        CORE::FE::shape_function_2D(funct, e[0], e[1], distype);
+        Core::FE::shape_function_2D(funct, e[0], e[1], distype);
       else
-        CORE::FE::shape_function_3D(funct, e[0], e[1], e[2], distype);
+        Core::FE::shape_function_3D(funct, e[0], e[1], e[2], distype);
 
       for (int k = 0; k < numnod; ++k)
         for (int p = 0; p < ndim; ++p)
@@ -181,7 +181,7 @@ namespace WEAR
 
   }  // namespace UTILS
 
-}  // namespace WEAR
+}  // namespace Wear
 
 FOUR_C_NAMESPACE_CLOSE
 

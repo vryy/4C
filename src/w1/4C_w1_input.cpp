@@ -17,11 +17,11 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::Wall1::ReadElement(
-    const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
+bool Discret::ELEMENTS::Wall1::ReadElement(
+    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
   // set discretization type
-  SetDisType(CORE::FE::StringToCellType(distype));
+  SetDisType(Core::FE::StringToCellType(distype));
 
   linedef->ExtractDouble("THICK", thickness_);
   if (thickness_ <= 0) FOUR_C_THROW("WALL element thickness needs to be < 0");
@@ -43,12 +43,12 @@ bool DRT::ELEMENTS::Wall1::ReadElement(
   // read number of material model
   int material = 0;
   linedef->ExtractInt("MAT", material);
-  SetMaterial(0, MAT::Factory(material));
+  SetMaterial(0, Mat::Factory(material));
 
-  Teuchos::RCP<CORE::MAT::Material> mat = Material();
+  Teuchos::RCP<Core::Mat::Material> mat = Material();
 
   {
-    const CORE::FE::IntegrationPoints2D intpoints(gaussrule_);
+    const Core::FE::IntegrationPoints2D intpoints(gaussrule_);
     const int numgp = intpoints.nquad;
     SolidMaterial()->Setup(numgp, linedef);
   }
@@ -66,10 +66,10 @@ bool DRT::ELEMENTS::Wall1::ReadElement(
   // kinematics type
   linedef->ExtractString("KINEM", buffer);
   // geometrically linear
-  if (buffer == "linear") kintype_ = INPAR::STR::KinemType::linear;
+  if (buffer == "linear") kintype_ = Inpar::STR::KinemType::linear;
   // geometrically non-linear with Total Lagrangean approach
   else if (buffer == "nonlinear")
-    kintype_ = INPAR::STR::KinemType::nonlinearTotLag;
+    kintype_ = Inpar::STR::KinemType::nonlinearTotLag;
   else
     FOUR_C_THROW("Illegal KINEM type '%s'", buffer.c_str());
 
@@ -94,20 +94,20 @@ bool DRT::ELEMENTS::Wall1::ReadElement(
     else
     {
       // EAS enhanced deformation gradient parameters
-      CORE::LINALG::SerialDenseMatrix alpha(
+      Core::LinAlg::SerialDenseMatrix alpha(
           Wall1::neas_, 1);  // if you change '4' here, then do it for alphao as well
-      CORE::LINALG::SerialDenseMatrix alphao(Wall1::neas_, 1);
+      Core::LinAlg::SerialDenseMatrix alphao(Wall1::neas_, 1);
 
       // EAS portion of internal forces, also called enhacement vector s or Rtilde
-      CORE::LINALG::SerialDenseVector feas(Wall1::neas_);
+      Core::LinAlg::SerialDenseVector feas(Wall1::neas_);
       // EAS matrix K_{alpha alpha}, also called Dtilde
-      CORE::LINALG::SerialDenseMatrix invKaa(Wall1::neas_, Wall1::neas_);
+      Core::LinAlg::SerialDenseMatrix invKaa(Wall1::neas_, Wall1::neas_);
       // EAS matrix K_{d alpha}
-      CORE::LINALG::SerialDenseMatrix Kda(2 * num_node(), Wall1::neas_);
+      Core::LinAlg::SerialDenseMatrix Kda(2 * num_node(), Wall1::neas_);
       // EAS matrix K_{alpha d} // ONLY NEEDED FOR GENERALISED ENERGY-MOMENTUM METHOD
-      CORE::LINALG::SerialDenseMatrix Kad(Wall1::neas_, 2 * num_node());
+      Core::LinAlg::SerialDenseMatrix Kad(Wall1::neas_, 2 * num_node());
       // EAS increment over last Newton step
-      CORE::LINALG::SerialDenseMatrix eas_inc(Wall1::neas_, 1);
+      Core::LinAlg::SerialDenseMatrix eas_inc(Wall1::neas_, 1);
 
       // save EAS data into element container easdata_
       easdata_.alpha = alpha;
@@ -137,7 +137,7 @@ bool DRT::ELEMENTS::Wall1::ReadElement(
   stresstype_ = w1_xy;
 
   // check for invalid combinations
-  if (kintype_ == INPAR::STR::KinemType::linear && iseas_ == true)
+  if (kintype_ == Inpar::STR::KinemType::linear && iseas_ == true)
     FOUR_C_THROW("ERROR: No EAS for geometrically linear WALL element");
 
   // validate kinematics of solid material
@@ -153,69 +153,69 @@ bool DRT::ELEMENTS::Wall1::ReadElement(
 /*----------------------------------------------------------------------*
  |  Get gaussrule on dependance of gausspoints                     mgit |
  *----------------------------------------------------------------------*/
-CORE::FE::GaussRule2D DRT::ELEMENTS::Wall1::get_gaussrule(int* ngp)
+Core::FE::GaussRule2D Discret::ELEMENTS::Wall1::get_gaussrule(int* ngp)
 {
-  CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::undefined;
+  Core::FE::GaussRule2D rule = Core::FE::GaussRule2D::undefined;
 
   switch (Shape())
   {
-    case CORE::FE::CellType::quad4:
-    case CORE::FE::CellType::quad8:
-    case CORE::FE::CellType::quad9:
+    case Core::FE::CellType::quad4:
+    case Core::FE::CellType::quad8:
+    case Core::FE::CellType::quad9:
     {
       if ((ngp[0] == 2) && (ngp[1] == 2))
       {
-        rule = CORE::FE::GaussRule2D::quad_4point;
+        rule = Core::FE::GaussRule2D::quad_4point;
       }
       else if ((ngp[0] == 3) && (ngp[1] == 3))
       {
-        rule = CORE::FE::GaussRule2D::quad_9point;
+        rule = Core::FE::GaussRule2D::quad_9point;
       }
       else
         FOUR_C_THROW("Unknown number of Gauss points for quad element");
       break;
     }
-    case CORE::FE::CellType::nurbs4:
-    case CORE::FE::CellType::nurbs9:
+    case Core::FE::CellType::nurbs4:
+    case Core::FE::CellType::nurbs9:
     {
       if ((ngp[0] == 2) && (ngp[1] == 2))
       {
-        rule = CORE::FE::GaussRule2D::quad_4point;
+        rule = Core::FE::GaussRule2D::quad_4point;
       }
       else if ((ngp[0] == 3) && (ngp[1] == 3))
       {
-        rule = CORE::FE::GaussRule2D::quad_9point;
+        rule = Core::FE::GaussRule2D::quad_9point;
       }
       else if ((ngp[0] == 4) && (ngp[1] == 4))
       {
-        rule = CORE::FE::GaussRule2D::quad_16point;
+        rule = Core::FE::GaussRule2D::quad_16point;
       }
       else if ((ngp[0] == 5) && (ngp[1] == 5))
       {
-        rule = CORE::FE::GaussRule2D::quad_25point;
+        rule = Core::FE::GaussRule2D::quad_25point;
       }
       else if ((ngp[0] == 10) && (ngp[1] == 10))
       {
-        rule = CORE::FE::GaussRule2D::quad_100point;
+        rule = Core::FE::GaussRule2D::quad_100point;
       }
       else
         FOUR_C_THROW("Unknown number of Gauss points for nurbs element");
       break;
     }
-    case CORE::FE::CellType::tri3:
-    case CORE::FE::CellType::tri6:
+    case Core::FE::CellType::tri3:
+    case Core::FE::CellType::tri6:
     {
       if ((ngp[0] == 1) && (ngp[1] == 0))
       {
-        rule = CORE::FE::GaussRule2D::tri_1point;
+        rule = Core::FE::GaussRule2D::tri_1point;
       }
       else if ((ngp[0] == 3) && (ngp[1] == 0))
       {
-        rule = CORE::FE::GaussRule2D::tri_3point;
+        rule = Core::FE::GaussRule2D::tri_3point;
       }
       else if ((ngp[0] == 6) && (ngp[1] == 0))
       {
-        rule = CORE::FE::GaussRule2D::tri_6point;
+        rule = Core::FE::GaussRule2D::tri_6point;
       }
       else
         FOUR_C_THROW("Unknown number of Gauss points for tri element");

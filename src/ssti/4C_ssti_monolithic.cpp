@@ -34,8 +34,8 @@ SSTI::SSTIMono::SSTIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& 
     : SSTIAlgorithm(comm, globaltimeparams),
       increment_(Teuchos::null),
       residual_(Teuchos::null),
-      solver_(Teuchos::rcp(new CORE::LINALG::Solver(
-          GLOBAL::Problem::Instance()->SolverParams(
+      solver_(Teuchos::rcp(new Core::LinAlg::Solver(
+          Global::Problem::Instance()->SolverParams(
               globaltimeparams.sublist("MONOLITHIC").get<int>("LINEAR_SOLVER")),
           comm))),
       scatrastructureoffdiagcoupling_(Teuchos::null),
@@ -46,15 +46,15 @@ SSTI::SSTIMono::SSTIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& 
       dtnewton_(0.0),
       dtsolve_(0.0),
       timer_(Teuchos::rcp(new Teuchos::Time("SSTI_Monolithic", true))),
-      equilibration_method_{Teuchos::getIntegralValue<CORE::LINALG::EquilibrationMethod>(
+      equilibration_method_{Teuchos::getIntegralValue<Core::LinAlg::EquilibrationMethod>(
                                 globaltimeparams.sublist("MONOLITHIC"), "EQUILIBRATION"),
-          Teuchos::getIntegralValue<CORE::LINALG::EquilibrationMethod>(
+          Teuchos::getIntegralValue<Core::LinAlg::EquilibrationMethod>(
               globaltimeparams.sublist("MONOLITHIC"), "EQUILIBRATION_SCATRA"),
-          Teuchos::getIntegralValue<CORE::LINALG::EquilibrationMethod>(
+          Teuchos::getIntegralValue<Core::LinAlg::EquilibrationMethod>(
               globaltimeparams.sublist("MONOLITHIC"), "EQUILIBRATION_STRUCTURE"),
-          Teuchos::getIntegralValue<CORE::LINALG::EquilibrationMethod>(
+          Teuchos::getIntegralValue<Core::LinAlg::EquilibrationMethod>(
               globaltimeparams.sublist("MONOLITHIC"), "EQUILIBRATION_THERMO")},
-      matrixtype_(Teuchos::getIntegralValue<CORE::LINALG::MatrixType>(
+      matrixtype_(Teuchos::getIntegralValue<Core::LinAlg::MatrixType>(
           globaltimeparams.sublist("MONOLITHIC"), "MATRIXTYPE")),
       convcheck_(Teuchos::rcp(new SSTI::ConvCheckMono(globaltimeparams))),
       ssti_maps_mono_(Teuchos::null),
@@ -127,15 +127,15 @@ void SSTI::SSTIMono::build_null_spaces()
   // build null spaces for scatra and thermo
   switch (ScaTraField()->MatrixType())
   {
-    case CORE::LINALG::MatrixType::block_condition:
-    case CORE::LINALG::MatrixType::block_condition_dof:
+    case Core::LinAlg::MatrixType::block_condition:
+    case Core::LinAlg::MatrixType::block_condition_dof:
     {
       ScaTraField()->build_block_null_spaces(
           solver_, GetBlockPositions(Subproblem::scalar_transport).at(0));
       ThermoField()->build_block_null_spaces(solver_, GetBlockPositions(Subproblem::thermo).at(0));
       break;
     }
-    case CORE::LINALG::MatrixType::sparse:
+    case Core::LinAlg::MatrixType::sparse:
     {
       // equip smoother for scatra matrix block with empty parameter sub lists to trigger null space
       // computation
@@ -195,8 +195,8 @@ void SSTI::SSTIMono::Init(const Epetra_Comm& comm, const Teuchos::ParameterList&
     const Teuchos::ParameterList& structparams)
 {
   // check input parameters for scalar transport field
-  if (CORE::UTILS::IntegralValue<INPAR::SCATRA::VelocityField>(scatraparams, "VELOCITYFIELD") !=
-      INPAR::SCATRA::velocity_Navier_Stokes)
+  if (Core::UTILS::IntegralValue<Inpar::ScaTra::VelocityField>(scatraparams, "VELOCITYFIELD") !=
+      Inpar::ScaTra::velocity_Navier_Stokes)
     FOUR_C_THROW("Invalid type of velocity field for scalar-structure interaction!");
 
   // call base class routine
@@ -274,26 +274,26 @@ void SSTI::SSTIMono::Setup()
         "transported scalar at the moment it is not reasonable to use them with more than one "
         "transported scalar. So you need to cope with it or change implementation! ;-)");
   }
-  if (equilibration_method_.global != CORE::LINALG::EquilibrationMethod::local and
-      (equilibration_method_.structure != CORE::LINALG::EquilibrationMethod::none or
-          equilibration_method_.scatra != CORE::LINALG::EquilibrationMethod::none or
-          equilibration_method_.thermo != CORE::LINALG::EquilibrationMethod::none))
+  if (equilibration_method_.global != Core::LinAlg::EquilibrationMethod::local and
+      (equilibration_method_.structure != Core::LinAlg::EquilibrationMethod::none or
+          equilibration_method_.scatra != Core::LinAlg::EquilibrationMethod::none or
+          equilibration_method_.thermo != Core::LinAlg::EquilibrationMethod::none))
     FOUR_C_THROW("Either global equilibration or local equilibration");
 
-  if (matrixtype_ == CORE::LINALG::MatrixType::sparse and
-      (equilibration_method_.structure != CORE::LINALG::EquilibrationMethod::none or
-          equilibration_method_.scatra != CORE::LINALG::EquilibrationMethod::none or
-          equilibration_method_.thermo != CORE::LINALG::EquilibrationMethod::none))
+  if (matrixtype_ == Core::LinAlg::MatrixType::sparse and
+      (equilibration_method_.structure != Core::LinAlg::EquilibrationMethod::none or
+          equilibration_method_.scatra != Core::LinAlg::EquilibrationMethod::none or
+          equilibration_method_.thermo != Core::LinAlg::EquilibrationMethod::none))
     FOUR_C_THROW("Block based equilibration only for block matrices");
 
-  const bool equilibration_scatra_initial = CORE::UTILS::IntegralValue<bool>(
-      GLOBAL::Problem::Instance()->SSTIControlParams().sublist("MONOLITHIC"),
+  const bool equilibration_scatra_initial = Core::UTILS::IntegralValue<bool>(
+      Global::Problem::Instance()->SSTIControlParams().sublist("MONOLITHIC"),
       "EQUILIBRATION_INIT_SCATRA");
-  const bool calc_initial_pot = CORE::UTILS::IntegralValue<bool>(
-      GLOBAL::Problem::Instance()->ELCHControlParams(), "INITPOTCALC");
+  const bool calc_initial_pot = Core::UTILS::IntegralValue<bool>(
+      Global::Problem::Instance()->ELCHControlParams(), "INITPOTCALC");
 
   if (!equilibration_scatra_initial and
-      ScaTraField()->EquilibrationMethod() != CORE::LINALG::EquilibrationMethod::none)
+      ScaTraField()->EquilibrationMethod() != Core::LinAlg::EquilibrationMethod::none)
   {
     FOUR_C_THROW(
         "You are within the monolithic SSTI framework but activated a pure scatra equilibration "
@@ -301,7 +301,7 @@ void SSTI::SSTIMono::Setup()
         "CONTROL/MONOLITHIC' instead.");
   }
   if (equilibration_scatra_initial and
-      ScaTraField()->EquilibrationMethod() == CORE::LINALG::EquilibrationMethod::none)
+      ScaTraField()->EquilibrationMethod() == Core::LinAlg::EquilibrationMethod::none)
   {
     FOUR_C_THROW(
         "You selected to equilibrate equations of initial potential but did not specify any "
@@ -330,12 +330,12 @@ void SSTI::SSTIMono::SetupSystem()
   ssti_maps_mono_ = Teuchos::rcp(new SSTI::SSTIMapsMono(*this));
 
   // initialize global increment vector for Newton-Raphson iteration
-  increment_ = CORE::LINALG::CreateVector(*ssti_maps_mono_->MapsSubProblems()->FullMap(), true);
+  increment_ = Core::LinAlg::CreateVector(*ssti_maps_mono_->MapsSubProblems()->FullMap(), true);
 
   // initialize global residual vector
-  residual_ = CORE::LINALG::CreateVector(*ssti_maps_mono_->MapsSubProblems()->FullMap(), true);
+  residual_ = Core::LinAlg::CreateVector(*ssti_maps_mono_->MapsSubProblems()->FullMap(), true);
 
-  if (matrixtype_ == CORE::LINALG::MatrixType::block_field)
+  if (matrixtype_ == Core::LinAlg::MatrixType::block_field)
   {
     if (!solver_->Params().isSublist("AMGnxn Parameters"))
       FOUR_C_THROW(
@@ -380,7 +380,7 @@ void SSTI::SSTIMono::SetupSystem()
           meshtying_scatra(), meshtying_thermo(), ScaTraFieldBase(), ThermoFieldBase()));
 
   // initialize equilibration class
-  strategy_equilibration_ = CORE::LINALG::BuildEquilibration(
+  strategy_equilibration_ = Core::LinAlg::BuildEquilibration(
       matrixtype_, get_block_equilibration(), AllMaps()->MapsSubProblems()->FullMap());
 }
 
@@ -575,7 +575,7 @@ void SSTI::SSTIMono::linear_solve()
   strategy_equilibration_->EquilibrateSystem(
       ssti_matrices_->SystemMatrix(), residual_, AllMaps()->block_map_system_matrix());
 
-  CORE::LINALG::SolverParams solver_params;
+  Core::LinAlg::SolverParams solver_params;
   solver_params.refactor = true;
   solver_params.reset = Iter() == 1;
 
@@ -618,7 +618,7 @@ void SSTI::SSTIMono::prepare_newton_step()
  *--------------------------------------------------------------------------------------*/
 std::vector<int> SSTI::SSTIMono::GetBlockPositions(Subproblem subproblem) const
 {
-  if (matrixtype_ == CORE::LINALG::MatrixType::sparse)
+  if (matrixtype_ == Core::LinAlg::MatrixType::sparse)
     FOUR_C_THROW("Sparse matrices have just one block");
 
   auto block_position = std::vector<int>(0);
@@ -627,7 +627,7 @@ std::vector<int> SSTI::SSTIMono::GetBlockPositions(Subproblem subproblem) const
   {
     case Subproblem::structure:
     {
-      if (ScaTraField()->MatrixType() == CORE::LINALG::MatrixType::sparse)
+      if (ScaTraField()->MatrixType() == Core::LinAlg::MatrixType::sparse)
         block_position.emplace_back(1);
       else
         block_position.emplace_back(ScaTraField()->BlockMaps()->NumMaps());
@@ -635,7 +635,7 @@ std::vector<int> SSTI::SSTIMono::GetBlockPositions(Subproblem subproblem) const
     }
     case Subproblem::scalar_transport:
     {
-      if (ScaTraField()->MatrixType() == CORE::LINALG::MatrixType::sparse)
+      if (ScaTraField()->MatrixType() == Core::LinAlg::MatrixType::sparse)
         block_position.emplace_back(0);
       else
 
@@ -647,7 +647,7 @@ std::vector<int> SSTI::SSTIMono::GetBlockPositions(Subproblem subproblem) const
     }
     case Subproblem::thermo:
     {
-      if (ThermoField()->MatrixType() == CORE::LINALG::MatrixType::sparse)
+      if (ThermoField()->MatrixType() == Core::LinAlg::MatrixType::sparse)
         block_position.emplace_back(2);
       else
       {
@@ -701,30 +701,30 @@ int SSTI::SSTIMono::GetProblemPosition(Subproblem subproblem) const
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-std::vector<CORE::LINALG::EquilibrationMethod> SSTI::SSTIMono::get_block_equilibration()
+std::vector<Core::LinAlg::EquilibrationMethod> SSTI::SSTIMono::get_block_equilibration()
 {
-  std::vector<CORE::LINALG::EquilibrationMethod> equilibration_method_vector;
+  std::vector<Core::LinAlg::EquilibrationMethod> equilibration_method_vector;
   switch (matrixtype_)
   {
-    case CORE::LINALG::MatrixType::sparse:
+    case Core::LinAlg::MatrixType::sparse:
     {
       equilibration_method_vector =
-          std::vector<CORE::LINALG::EquilibrationMethod>(1, equilibration_method_.global);
+          std::vector<Core::LinAlg::EquilibrationMethod>(1, equilibration_method_.global);
       break;
     }
-    case CORE::LINALG::MatrixType::block_field:
+    case Core::LinAlg::MatrixType::block_field:
     {
-      if (equilibration_method_.global != CORE::LINALG::EquilibrationMethod::local)
+      if (equilibration_method_.global != Core::LinAlg::EquilibrationMethod::local)
       {
         equilibration_method_vector =
-            std::vector<CORE::LINALG::EquilibrationMethod>(1, equilibration_method_.global);
+            std::vector<Core::LinAlg::EquilibrationMethod>(1, equilibration_method_.global);
       }
-      else if (equilibration_method_.structure == CORE::LINALG::EquilibrationMethod::none and
-               equilibration_method_.scatra == CORE::LINALG::EquilibrationMethod::none and
-               equilibration_method_.thermo == CORE::LINALG::EquilibrationMethod::none)
+      else if (equilibration_method_.structure == Core::LinAlg::EquilibrationMethod::none and
+               equilibration_method_.scatra == Core::LinAlg::EquilibrationMethod::none and
+               equilibration_method_.thermo == Core::LinAlg::EquilibrationMethod::none)
       {
-        equilibration_method_vector = std::vector<CORE::LINALG::EquilibrationMethod>(
-            1, CORE::LINALG::EquilibrationMethod::none);
+        equilibration_method_vector = std::vector<Core::LinAlg::EquilibrationMethod>(
+            1, Core::LinAlg::EquilibrationMethod::none);
       }
       else
       {
@@ -732,10 +732,10 @@ std::vector<CORE::LINALG::EquilibrationMethod> SSTI::SSTIMono::get_block_equilib
         auto block_position_structure = GetBlockPositions(Subproblem::structure);
         auto block_positions_thermo = GetBlockPositions(Subproblem::thermo);
 
-        equilibration_method_vector = std::vector<CORE::LINALG::EquilibrationMethod>(
+        equilibration_method_vector = std::vector<Core::LinAlg::EquilibrationMethod>(
             block_positions_scatra.size() + block_position_structure.size() +
                 block_positions_thermo.size(),
-            CORE::LINALG::EquilibrationMethod::none);
+            Core::LinAlg::EquilibrationMethod::none);
 
         for (const int block_position_scatra : block_positions_scatra)
           equilibration_method_vector.at(block_position_scatra) = equilibration_method_.scatra;

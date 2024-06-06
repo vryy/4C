@@ -20,25 +20,25 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-PARTICLERIGIDBODY::RigidBodyResultTest::RigidBodyResultTest() : CORE::UTILS::ResultTest("RIGIDBODY")
+ParticleRigidBody::RigidBodyResultTest::RigidBodyResultTest() : Core::UTILS::ResultTest("RIGIDBODY")
 {
   // empty constructor
 }
 
-void PARTICLERIGIDBODY::RigidBodyResultTest::Init()
+void ParticleRigidBody::RigidBodyResultTest::Init()
 {
   // nothing to do
 }
 
-void PARTICLERIGIDBODY::RigidBodyResultTest::Setup(
-    const std::shared_ptr<PARTICLERIGIDBODY::RigidBodyHandlerInterface> particlerigidbodyinterface)
+void ParticleRigidBody::RigidBodyResultTest::Setup(
+    const std::shared_ptr<ParticleRigidBody::RigidBodyHandlerInterface> particlerigidbodyinterface)
 {
   // set interface to rigid body handler
   particlerigidbodyinterface_ = particlerigidbodyinterface;
 }
 
-void PARTICLERIGIDBODY::RigidBodyResultTest::TestSpecial(
-    INPUT::LineDefinition& res, int& nerr, int& test_count)
+void ParticleRigidBody::RigidBodyResultTest::TestSpecial(
+    Input::LineDefinition& res, int& nerr, int& test_count)
 {
   // get owned rigid bodies by this processor
   const std::vector<int>& ownedrigidbodies = particlerigidbodyinterface_->GetOwnedRigidBodies();
@@ -52,7 +52,7 @@ void PARTICLERIGIDBODY::RigidBodyResultTest::TestSpecial(
       ownedrigidbodies.end())
   {
     // get rigid body data state container
-    std::shared_ptr<PARTICLERIGIDBODY::RigidBodyDataState> rigidbodydatastate =
+    std::shared_ptr<ParticleRigidBody::RigidBodyDataState> rigidbodydatastate =
         particlerigidbodyinterface_->get_rigid_body_data_state();
 
     // get result

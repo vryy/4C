@@ -16,7 +16,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
@@ -25,13 +25,13 @@ namespace DRT
     class ScaTraEleParameterElchDiffCond;
 
     // class implementation
-    template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype> + 1>
+    template <Core::FE::CellType distype, int probdim = Core::FE::dim<distype> + 1>
     class ScaTraEleBoundaryCalcElchDiffCond
         : public ScaTraEleBoundaryCalcElchElectrode<distype, probdim>
     {
-      using my = DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>;
-      using myelch = DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>;
-      using myelectrode = DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>;
+      using my = Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>;
+      using myelch = Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>;
+      using myelectrode = Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>;
 
      protected:
       using my::nen_;
@@ -48,48 +48,48 @@ namespace DRT
       ScaTraEleBoundaryCalcElchDiffCond(
           const int numdofpernode, const int numscal, const std::string& disname);
 
-      int evaluate_action(CORE::Elements::FaceElement* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, SCATRA::BoundaryAction action,
-          CORE::Elements::Element::LocationArray& la,
-          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra,
-          CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
+      int evaluate_action(Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
+          Discret::Discretization& discretization, ScaTra::BoundaryAction action,
+          Core::Elements::Element::LocationArray& la,
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec1_epetra,
+          Core::LinAlg::SerialDenseVector& elevec2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec3_epetra) override;
 
-      int evaluate_neumann(CORE::Elements::FaceElement* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
-          CORE::Elements::Element::LocationArray& la, CORE::LINALG::SerialDenseVector& elevec1,
+      int evaluate_neumann(Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
+          Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+          Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseVector& elevec1,
           const double scalar) override;
 
-      void evaluate_elch_boundary_kinetics(const CORE::Elements::Element* ele,
-          CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs,
-          const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,
-          const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ehist, double timefac,
-          Teuchos::RCP<const CORE::MAT::Material> material,
-          Teuchos::RCP<CORE::Conditions::Condition> cond, const int nume,
+      void evaluate_elch_boundary_kinetics(const Core::Elements::Element* ele,
+          Core::LinAlg::SerialDenseMatrix& emat, Core::LinAlg::SerialDenseVector& erhs,
+          const std::vector<Core::LinAlg::Matrix<nen_, 1>>& ephinp,
+          const std::vector<Core::LinAlg::Matrix<nen_, 1>>& ehist, double timefac,
+          Teuchos::RCP<const Core::Mat::Material> material,
+          Teuchos::RCP<Core::Conditions::Condition> cond, const int nume,
           const std::vector<int> stoich, const int kinetics, const double pot0, const double frt,
           const double scalar) override;
 
-      void evaluate_s2_i_coupling(const CORE::Elements::FaceElement* ele,
-          Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          CORE::Elements::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& eslavematrix,
-          CORE::LINALG::SerialDenseMatrix& emastermatrix,
-          CORE::LINALG::SerialDenseVector& eslaveresidual) override;
+      void evaluate_s2_i_coupling(const Core::Elements::FaceElement* ele,
+          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& eslavematrix,
+          Core::LinAlg::SerialDenseMatrix& emastermatrix,
+          Core::LinAlg::SerialDenseVector& eslaveresidual) override;
 
-      void evaluate_s2_i_coupling_od(const CORE::Elements::FaceElement* ele,
-          Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          CORE::Elements::Element::LocationArray& la,
-          CORE::LINALG::SerialDenseMatrix& eslavematrix) override;
+      void evaluate_s2_i_coupling_od(const Core::Elements::FaceElement* ele,
+          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Core::Elements::Element::LocationArray& la,
+          Core::LinAlg::SerialDenseMatrix& eslavematrix) override;
 
       double get_valence(
-          const Teuchos::RCP<const CORE::MAT::Material>& material, const int k) const override;
+          const Teuchos::RCP<const Core::Mat::Material>& material, const int k) const override;
 
       //! diffusion manager
       Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> dmedc_;
     };  // class ScaTraEleBoundaryCalcElchDiffCond
   }     // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

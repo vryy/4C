@@ -19,7 +19,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
@@ -29,7 +29,7 @@ namespace ALE
   namespace UTILS
   {
     /// specific MultiMapExtractor to handle the ale field
-    class MapExtractor : public CORE::LINALG::MultiMapExtractor
+    class MapExtractor : public Core::LinAlg::MultiMapExtractor
     {
      public:
       enum
@@ -60,10 +60,10 @@ namespace ALE
       };
 
       /// setup the whole thing
-      void Setup(const DRT::Discretization& dis, bool overlapping = false);
+      void Setup(const Discret::Discretization& dis, bool overlapping = false);
 
       /// get all element gids those nodes are touched by any condition
-      Teuchos::RCP<std::set<int>> conditioned_element_map(const DRT::Discretization& dis) const;
+      Teuchos::RCP<std::set<int>> conditioned_element_map(const Discret::Discretization& dis) const;
 
       MAP_EXTRACTOR_VECTOR_METHODS(Other, cond_other)
       MAP_EXTRACTOR_VECTOR_METHODS(FSICond, cond_fsi)
@@ -77,7 +77,7 @@ namespace ALE
     };
 
     /// specific MultiMapExtractor to handle the fsi and ale meshtying at the same time
-    class FsiMapExtractor : public CORE::LINALG::MultiMapExtractor
+    class FsiMapExtractor : public Core::LinAlg::MultiMapExtractor
     {
      public:
       enum
@@ -87,14 +87,14 @@ namespace ALE
       };
 
       /// setup the whole thing
-      void Setup(const DRT::Discretization& dis);
+      void Setup(const Discret::Discretization& dis);
 
       MAP_EXTRACTOR_VECTOR_METHODS(Other, cond_other)
       MAP_EXTRACTOR_VECTOR_METHODS(FSI, cond_fsi)
     };
 
     /// specific MultiMapExtractor to handle the fluid_fluid_Coupling
-    class XFluidFluidMapExtractor : public CORE::LINALG::MultiMapExtractor
+    class XFluidFluidMapExtractor : public Core::LinAlg::MultiMapExtractor
     {
      public:
       enum
@@ -104,7 +104,7 @@ namespace ALE
       };
 
       /// setup the whole thing
-      void Setup(const DRT::Discretization& dis);
+      void Setup(const Discret::Discretization& dis);
 
       MAP_EXTRACTOR_VECTOR_METHODS(Other, cond_other)
       MAP_EXTRACTOR_VECTOR_METHODS(XFluidFluidCond, cond_xfluidfluid)

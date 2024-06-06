@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | definitions                                                          |
  *----------------------------------------------------------------------*/
-ADAPTER::PASIStructureWrapper::PASIStructureWrapper(Teuchos::RCP<Structure> structure)
+Adapter::PASIStructureWrapper::PASIStructureWrapper(Teuchos::RCP<Structure> structure)
     : StructureWrapper(structure)
 {
   // set-up PASI interface
@@ -31,7 +31,7 @@ ADAPTER::PASIStructureWrapper::PASIStructureWrapper(Teuchos::RCP<Structure> stru
   interface_->Setup(*discretization(), *discretization()->dof_row_map());
 }
 
-void ADAPTER::PASIStructureWrapper::ApplyInterfaceForce(Teuchos::RCP<const Epetra_Vector> intfforce)
+void Adapter::PASIStructureWrapper::ApplyInterfaceForce(Teuchos::RCP<const Epetra_Vector> intfforce)
 {
   pasi_model_evaluator()->get_interface_force_np_ptr()->PutScalar(0.0);
 

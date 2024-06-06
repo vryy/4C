@@ -22,11 +22,11 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration ...
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseOperator;
   class SparseMatrix;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 namespace STR
 {
@@ -47,16 +47,16 @@ namespace STR
       void Setup() override;
 
       //! derived
-      bool apply_correction_system(const enum NOX::NLN::CorrectionType type,
-          const std::vector<INPAR::STR::ModelType>& constraint_models, const Epetra_Vector& x,
-          Epetra_Vector& f, CORE::LINALG::SparseOperator& jac) override;
+      bool apply_correction_system(const enum NOX::Nln::CorrectionType type,
+          const std::vector<Inpar::STR::ModelType>& constraint_models, const Epetra_Vector& x,
+          Epetra_Vector& f, Core::LinAlg::SparseOperator& jac) override;
 
       //! derived
       void remove_condensed_contributions_from_rhs(Epetra_Vector& rhs) const override;
 
       //! derived
-      bool AssembleJac(CORE::LINALG::SparseOperator& jac,
-          const std::vector<INPAR::STR::ModelType>* without_these_models = nullptr) const override
+      bool AssembleJac(Core::LinAlg::SparseOperator& jac,
+          const std::vector<Inpar::STR::ModelType>* without_these_models = nullptr) const override
       {
         return false;
       };
@@ -145,26 +145,26 @@ namespace STR
 
       //! compute the scaling operator for element based scaling using PTC
       void compute_jacobian_contributions_from_element_level_for_ptc(
-          Teuchos::RCP<CORE::LINALG::SparseMatrix>& scalingMatrixOpPtr) override;
+          Teuchos::RCP<Core::LinAlg::SparseMatrix>& scalingMatrixOpPtr) override;
 
       /*! \brief Print jacbian into text file for later use in MATLAB
        *
        *  \param[in] NOX group containing the linear system with the Jacobian
        *
        *  \author hiermeier \date 06/17 */
-      void print_jacobian_in_matlab_format(const NOX::NLN::Group& curr_grp) const;
+      void print_jacobian_in_matlab_format(const NOX::Nln::Group& curr_grp) const;
 
       //! Get the NOX parameter list
       Teuchos::ParameterList& GetNoxParams();
 
       /// compute the condition number of the structural tangential stiffness matrix if desired
-      void ConditionNumber(const NOX::NLN::Group& grp) const;
+      void ConditionNumber(const NOX::Nln::Group& grp) const;
 
       //! @name Attribute access functions
       //@{
 
       //! Provide Name
-      virtual enum INPAR::STR::DynamicType MethodName() const = 0;
+      virtual enum Inpar::STR::DynamicType MethodName() const = 0;
 
       //! Provide number of steps, e.g. a single-step method returns 1,
       //! a \f$m\f$-multistep method returns \f$m\f$
@@ -205,7 +205,7 @@ namespace STR
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
     namespace PrePostOp
     {
@@ -213,12 +213,12 @@ namespace NOX
       {
         /*! \brief Implicit time integration helper class
          *
-         *  This class is an implementation of the NOX::NLN::Abstract::PrePostOperator
-         *  and is used to modify the computeX() routine of the given NOX::NLN::Group.
-         *  It's called by the wrapper class NOX::NLN::GROUP::PrePostOperator.
+         *  This class is an implementation of the NOX::Nln::Abstract::PrePostOperator
+         *  and is used to modify the computeX() routine of the given NOX::Nln::Group.
+         *  It's called by the wrapper class NOX::Nln::GROUP::PrePostOperator.
          *
          *  \author Michael Hiermeier */
-        class Generic : public NOX::NLN::Abstract::PrePostOperator
+        class Generic : public NOX::Nln::Abstract::PrePostOperator
         {
          public:
           //! constructor
@@ -226,20 +226,20 @@ namespace NOX
               : impl_(implicit), default_step_(implicit.get_default_step_length()){/* empty */};
 
           /*! \brief Derived function, which is called at the very beginning of a call to
-           *  NOX::NLN::Group::computeX()
+           *  NOX::Nln::Group::computeX()
            *
            *  This method is used to get access to the current direction vector and
            *  to augment/modify the direction vector before the actual solution update is
-           *  performed. One possible scenario is the CONTACT::AUG::STEEPESTASCENT::Strategy,
+           *  performed. One possible scenario is the CONTACT::Aug::SteepestAscent::Strategy,
            *  where we calculate the Lagrange multiplier increment in a post-processing
            *  step.
            *
            *  \author hiermeier \date 03/17 */
-          void runPreComputeX(const NOX::NLN::Group& input_grp, const Epetra_Vector& dir,
-              const double& step, const NOX::NLN::Group& curr_grp) override;
+          void runPreComputeX(const NOX::Nln::Group& input_grp, const Epetra_Vector& dir,
+              const double& step, const NOX::Nln::Group& curr_grp) override;
 
           /*! \brief Derived function, which is called at the end of a call to
-           * NOX::NLN::Group::computeX()
+           * NOX::Nln::Group::computeX()
            *
            *  This method is used to get access to the current direction vector. The
            *  direction vector is needed for different internal update routines. Two
@@ -249,8 +249,8 @@ namespace NOX
            *  mortar dual strategies.
            *
            *  \author hiermeier \date 07/16 */
-          void runPostComputeX(const NOX::NLN::Group& input_grp, const Epetra_Vector& dir,
-              const double& step, const NOX::NLN::Group& curr_grp) override;
+          void runPostComputeX(const NOX::Nln::Group& input_grp, const Epetra_Vector& dir,
+              const double& step, const NOX::Nln::Group& curr_grp) override;
 
           /*! \brief Derived function, which is called at the very end of a call to
            *  ::NOX::Solver::Generic::step()
@@ -263,7 +263,7 @@ namespace NOX
           void runPostIterate(const ::NOX::Solver::Generic& solver) override;
 
           /*! \brief Derived function, which is called at the very end of a call to
-           *  NOX::NLN::Group::applyJacobianInverse()
+           *  NOX::Nln::Group::applyJacobianInverse()
            *
            *  This method gives you the opportunity to do something in the end of
            *  a successful or unsuccessful linear solver attempt.
@@ -281,7 +281,7 @@ namespace NOX
            *  \author hiermeier \date 12/17 */
           void run_post_apply_jacobian_inverse(const ::NOX::Abstract::Vector& rhs,
               ::NOX::Abstract::Vector& result, const ::NOX::Abstract::Vector& xold,
-              const NOX::NLN::Group& grp) override;
+              const NOX::Nln::Group& grp) override;
 
           /// \brief Called at the very beginning of a Newton loop
           /**
@@ -289,7 +289,7 @@ namespace NOX
           void runPreSolve(const ::NOX::Solver::Generic& solver) override;
 
           /*! \brief Derived function, which is called at the beginning of a call to
-           *  NOX::NLN::Group::applyJacobianInverse()
+           *  NOX::Nln::Group::applyJacobianInverse()
            *
            *  \param rhs    : read-only access to the rhs vector
            *  \param result : full access to the result vector
@@ -299,7 +299,7 @@ namespace NOX
            *  \author seitz \date 04/18 */
           void run_pre_apply_jacobian_inverse(const ::NOX::Abstract::Vector& rhs,
               ::NOX::Abstract::Vector& result, const ::NOX::Abstract::Vector& xold,
-              const NOX::NLN::Group& grp) override;
+              const NOX::Nln::Group& grp) override;
 
          private:
           /*! \brief Convert ::NOX::Abstract::Vector to Epetra_Vector
@@ -325,7 +325,7 @@ namespace NOX
         };  // class Generic
       }     // namespace IMPLICIT
     }       // namespace PrePostOp
-  }         // namespace NLN
+  }         // namespace Nln
 }  // namespace NOX
 
 

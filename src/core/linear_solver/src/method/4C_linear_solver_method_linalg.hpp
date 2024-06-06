@@ -21,21 +21,21 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
   class SparseOperator;
   class DownwindMatrix;
   class KrylovProjector;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace CORE::LINEAR_SOLVER
+namespace Core::LinearSolver
 {
   template <class MatrixType, class VectorType>
   class SolverTypeBase;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   //! parameters to pass to the Solve() call
   struct SolverParams
@@ -47,7 +47,7 @@ namespace CORE::LINALG
     bool reset = false;
 
     //! Krylov space projector
-    Teuchos::RCP<CORE::LINALG::KrylovProjector> projector = Teuchos::null;
+    Teuchos::RCP<Core::LinAlg::KrylovProjector> projector = Teuchos::null;
 
     //! for adaptivity of the tolerance: tolerance of the nonlinear solver
     double nonlin_tolerance = {};
@@ -87,8 +87,8 @@ namespace CORE::LINALG
     by #translate_solver_parameters to the format required by Belos, if @p translate_params is true.
     Otherwise, they need to be provided such that Belos understands them.
 
-    \param inparams (in): input parameter list as provided by GLOBAL::Problem,
-                          e.g. GLOBAL::Problem::SolverParams(num)
+    \param inparams (in): input parameter list as provided by Global::Problem,
+                          e.g. Global::Problem::SolverParams(num)
     \param comm     (in): a reference to a Epetra communicator object
 
     \param translate_params_to_belos  (in): translate parameters to Belos
@@ -186,8 +186,8 @@ namespace CORE::LINALG
     \brief Translate solver input parameters from input parameter list to
            internal solver parameters list style
 
-    \param inparams (in): input parameter list as provided by GLOBAL::Problem,
-                          e.g. GLOBAL::Problem::SolverParams(num) in case of solver for
+    \param inparams (in): input parameter list as provided by Global::Problem,
+                          e.g. Global::Problem::SolverParams(num) in case of solver for
                           structures and num according to STRUCTURAL DYNAMIC
     \return             : internal parameter list ready to be associated
                           with #params_
@@ -216,8 +216,8 @@ namespace CORE::LINALG
            parameters
 
     \param name     (in): name for sublist for #params_ to attach data to
-    \param inparams (in): input parameter list as provided by GLOBAL::Problem,
-                          e.g. GLOBAL::Problem::FluidPressureSolverParams in case
+    \param inparams (in): input parameter list as provided by Global::Problem,
+                          e.g. Global::Problem::FluidPressureSolverParams in case
                           of additional solver for pressure preconditioner
     \author bborn
     \date 11/08
@@ -300,7 +300,7 @@ namespace CORE::LINALG
     Teuchos::RCP<Teuchos::ParameterList> params_;
 
     /// internal solver strategy
-    Teuchos::RCP<CORE::LINEAR_SOLVER::SolverTypeBase<Epetra_Operator, Epetra_MultiVector>> solver_;
+    Teuchos::RCP<Core::LinearSolver::SolverTypeBase<Epetra_Operator, Epetra_MultiVector>> solver_;
 
    private:
     //! don't want = operator
@@ -311,7 +311,7 @@ namespace CORE::LINALG
 
   };  // class Solver
 
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 FOUR_C_NAMESPACE_CLOSE
 

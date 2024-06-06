@@ -18,11 +18,11 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | constructor                                             vuong  08/16 |
  *----------------------------------------------------------------------*/
-SCATRA::ScaTraTimIntPoroMulti::ScaTraTimIntPoroMulti(Teuchos::RCP<DRT::Discretization> dis,
-    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+ScaTra::ScaTraTimIntPoroMulti::ScaTraTimIntPoroMulti(Teuchos::RCP<Discret::Discretization> dis,
+    Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
     Teuchos::RCP<Teuchos::ParameterList> extraparams,
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(dis, solver, sctratimintparams, extraparams, output), L2_projection_(false)
 {
   // DO NOT DEFINE ANY STATE VECTORS HERE (i.e., vectors based on row or column maps)
@@ -35,12 +35,12 @@ SCATRA::ScaTraTimIntPoroMulti::ScaTraTimIntPoroMulti(Teuchos::RCP<DRT::Discretiz
 /*----------------------------------------------------------------------*
  | initialize algorithm                                    vuong  08/16 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntPoroMulti::Init() { return; }
+void ScaTra::ScaTraTimIntPoroMulti::Init() { return; }
 
 /*----------------------------------------------------------------------*
  | set solution fields on given dof sets                    vuong  08/16 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntPoroMulti::set_l2_flux_of_multi_fluid(
+void ScaTra::ScaTraTimIntPoroMulti::set_l2_flux_of_multi_fluid(
     Teuchos::RCP<const Epetra_MultiVector> multiflux)
 {
   // set L2-projection to true
@@ -60,7 +60,7 @@ void SCATRA::ScaTraTimIntPoroMulti::set_l2_flux_of_multi_fluid(
   {
     // initialize velocity vectors
     Teuchos::RCP<Epetra_Vector> phaseflux =
-        CORE::LINALG::CreateVector(*discret_->dof_row_map(NdsVel()), true);
+        Core::LinAlg::CreateVector(*discret_->dof_row_map(NdsVel()), true);
 
     std::stringstream statename;
     statename << stateprefix << curphase;
@@ -69,7 +69,7 @@ void SCATRA::ScaTraTimIntPoroMulti::set_l2_flux_of_multi_fluid(
     for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
     {
       // get the processor local node
-      CORE::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
+      Core::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
 
       // get dofs associated with current node
       std::vector<int> nodedofs = discret_->Dof(NdsVel(), lnode);
@@ -101,7 +101,7 @@ void SCATRA::ScaTraTimIntPoroMulti::set_l2_flux_of_multi_fluid(
 /*----------------------------------------------------------------------*
  | set solution fields on given dof sets              kremheller  07/17 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntPoroMulti::set_solution_field_of_multi_fluid(
+void ScaTra::ScaTraTimIntPoroMulti::set_solution_field_of_multi_fluid(
     Teuchos::RCP<const Epetra_Vector> phinp_fluid, Teuchos::RCP<const Epetra_Vector> phin_fluid)
 {
   if (NdsPressure() >= discret_->NumDofSets())
@@ -115,7 +115,7 @@ void SCATRA::ScaTraTimIntPoroMulti::set_solution_field_of_multi_fluid(
 /*----------------------------------------------------------------------*
  | add parameters depending on the problem                  vuong  08/16 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntPoroMulti::add_problem_specific_parameters_and_vectors(
+void ScaTra::ScaTraTimIntPoroMulti::add_problem_specific_parameters_and_vectors(
     Teuchos::ParameterList& params  //!< parameter list
 )
 {
@@ -126,7 +126,7 @@ void SCATRA::ScaTraTimIntPoroMulti::add_problem_specific_parameters_and_vectors(
 /*----------------------------------------------------------------------*
  |  write current state to BINIO                           vuong  08/16 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntPoroMulti::output_state()
+void ScaTra::ScaTraTimIntPoroMulti::output_state()
 {
   // solution
   output_->WriteVector("phinp", phinp_);
@@ -139,7 +139,7 @@ void SCATRA::ScaTraTimIntPoroMulti::output_state()
       FOUR_C_THROW("Cannot extract displacement field from discretization");
 
     const auto dispnp_multi = convert_dof_vector_to_componentwise_node_vector(dispnp, NdsDisp());
-    output_->WriteVector("dispnp", dispnp_multi, CORE::IO::nodevector);
+    output_->WriteVector("dispnp", dispnp_multi, Core::IO::nodevector);
   }
 
   if (has_external_force_)
@@ -149,19 +149,19 @@ void SCATRA::ScaTraTimIntPoroMulti::output_state()
     const auto external_force = discret_->GetState(nds_vel, "external_force");
     const auto output_external_force =
         convert_dof_vector_to_componentwise_node_vector(external_force, NdsVel());
-    output_->WriteVector("external_force", output_external_force, CORE::IO::nodevector);
+    output_->WriteVector("external_force", output_external_force, Core::IO::nodevector);
 
     const auto mobility = discret_->GetState(nds_vel, "intrinsic_mobility");
     const auto output_intrinsic_mobility =
         convert_dof_vector_to_componentwise_node_vector(mobility, NdsVel());
-    output_->WriteVector("intrinsic_mobility", output_intrinsic_mobility, CORE::IO::nodevector);
+    output_->WriteVector("intrinsic_mobility", output_intrinsic_mobility, Core::IO::nodevector);
   }
 }  // ScaTraTimIntImpl::output_state
 
 /*----------------------------------------------------------------------*
  | problem specific output                             kremheller 10/18 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntPoroMulti::output_problem_specific()
+void ScaTra::ScaTraTimIntPoroMulti::output_problem_specific()
 {
   // oxygen partial pressure (if desired)
   output_oxygen_partial_pressure();
@@ -172,10 +172,10 @@ void SCATRA::ScaTraTimIntPoroMulti::output_problem_specific()
 /*----------------------------------------------------------------------*
  | output of oxygen partial pressure                   kremheller 10/18 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntPoroMulti::output_oxygen_partial_pressure()
+void ScaTra::ScaTraTimIntPoroMulti::output_oxygen_partial_pressure()
 {
   // extract conditions for oxygen partial pressure
-  std::vector<CORE::Conditions::Condition*> conditions;
+  std::vector<Core::Conditions::Condition*> conditions;
   discret_->GetCondition("PoroMultiphaseScatraOxyPartPressCalcCond", conditions);
 
   // perform all following operations only if there is at least one condition for oxygen partial
@@ -215,7 +215,7 @@ void SCATRA::ScaTraTimIntPoroMulti::output_oxygen_partial_pressure()
       if (discret_->HaveGlobalNode(nodegid))
       {
         // extract current node
-        const CORE::Nodes::Node* const node = discret_->gNode(nodegid);
+        const Core::Nodes::Node* const node = discret_->gNode(nodegid);
 
         // process only nodes owned by current processor
         if (node->Owner() == discret_->Comm().MyPID())
@@ -227,14 +227,14 @@ void SCATRA::ScaTraTimIntPoroMulti::output_oxygen_partial_pressure()
           // compute CaO2
           const double CaO2 = (*phinp_)[lidoxydof] * rho_bl / rho_oxy;
           // compute Pb
-          POROMULTIPHASESCATRA::UTILS::GetOxyPartialPressureFromConcentration<double>(
+          PoroMultiPhaseScaTra::UTILS::GetOxyPartialPressureFromConcentration<double>(
               Pb, CaO2, CaO2_max, Pb50, n, alpha_eff);
           // replace value
           oxypartpress->ReplaceGlobalValue(node->Id(), 0, Pb);
         }
       }
     }
-    output_->WriteVector("oxypartpress", oxypartpress, CORE::IO::nodevector);
+    output_->WriteVector("oxypartpress", oxypartpress, Core::IO::nodevector);
   }
   return;
 }
@@ -242,11 +242,12 @@ void SCATRA::ScaTraTimIntPoroMulti::output_oxygen_partial_pressure()
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                    vuong  08/16 |
  *----------------------------------------------------------------------*/
-SCATRA::ScaTraTimIntPoroMultiOST::ScaTraTimIntPoroMultiOST(Teuchos::RCP<DRT::Discretization> actdis,
-    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+ScaTra::ScaTraTimIntPoroMultiOST::ScaTraTimIntPoroMultiOST(
+    Teuchos::RCP<Discret::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
+    Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
     Teuchos::RCP<Teuchos::ParameterList> extraparams,
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, sctratimintparams, extraparams, output),
       ScaTraTimIntPoroMulti(actdis, solver, params, sctratimintparams, extraparams, output),
       TimIntOneStepTheta(actdis, solver, sctratimintparams, extraparams, output)
@@ -258,7 +259,7 @@ SCATRA::ScaTraTimIntPoroMultiOST::ScaTraTimIntPoroMultiOST(Teuchos::RCP<DRT::Dis
 /*----------------------------------------------------------------------*
  |  initialize time integration                             vuong  08/16 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntPoroMultiOST::Init()
+void ScaTra::ScaTraTimIntPoroMultiOST::Init()
 {
   // call Init()-functions of base classes
   // note: this order is important
@@ -274,7 +275,7 @@ void SCATRA::ScaTraTimIntPoroMultiOST::Init()
  | current solution becomes most recent solution of next timestep       |
  |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntPoroMultiOST::Update()
+void ScaTra::ScaTraTimIntPoroMultiOST::Update()
 {
   TimIntOneStepTheta::Update();
   ScaTraTimIntPoroMulti::Update();
@@ -285,12 +286,12 @@ void SCATRA::ScaTraTimIntPoroMultiOST::Update()
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                    vuong  08/16 |
  *----------------------------------------------------------------------*/
-SCATRA::ScaTraTimIntPoroMultiBDF2::ScaTraTimIntPoroMultiBDF2(
-    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver,
+ScaTra::ScaTraTimIntPoroMultiBDF2::ScaTraTimIntPoroMultiBDF2(
+    Teuchos::RCP<Discret::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
     Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
     Teuchos::RCP<Teuchos::ParameterList> extraparams,
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, sctratimintparams, extraparams, output),
       ScaTraTimIntPoroMulti(actdis, solver, params, sctratimintparams, extraparams, output),
       TimIntBDF2(actdis, solver, sctratimintparams, extraparams, output)
@@ -302,7 +303,7 @@ SCATRA::ScaTraTimIntPoroMultiBDF2::ScaTraTimIntPoroMultiBDF2(
 /*----------------------------------------------------------------------*
  |  initialize time integration                             vuong  08/16 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntPoroMultiBDF2::Init()
+void ScaTra::ScaTraTimIntPoroMultiBDF2::Init()
 {
   // call Init()-functions of base classes
   // note: this order is important
@@ -318,7 +319,7 @@ void SCATRA::ScaTraTimIntPoroMultiBDF2::Init()
  | current solution becomes most recent solution of next timestep       |
  |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntPoroMultiBDF2::Update()
+void ScaTra::ScaTraTimIntPoroMultiBDF2::Update()
 {
   TimIntBDF2::Update();
   ScaTraTimIntPoroMulti::Update();
@@ -330,12 +331,12 @@ void SCATRA::ScaTraTimIntPoroMultiBDF2::Update()
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                    vuong  08/16 |
  *----------------------------------------------------------------------*/
-SCATRA::ScaTraTimIntPoroMultiGenAlpha::ScaTraTimIntPoroMultiGenAlpha(
-    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver,
+ScaTra::ScaTraTimIntPoroMultiGenAlpha::ScaTraTimIntPoroMultiGenAlpha(
+    Teuchos::RCP<Discret::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
     Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
     Teuchos::RCP<Teuchos::ParameterList> extraparams,
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, sctratimintparams, extraparams, output),
       ScaTraTimIntPoroMulti(actdis, solver, params, sctratimintparams, extraparams, output),
       TimIntGenAlpha(actdis, solver, sctratimintparams, extraparams, output)
@@ -347,7 +348,7 @@ SCATRA::ScaTraTimIntPoroMultiGenAlpha::ScaTraTimIntPoroMultiGenAlpha(
 /*----------------------------------------------------------------------*
  |  initialize time integration                             vuong  08/16 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntPoroMultiGenAlpha::Init()
+void ScaTra::ScaTraTimIntPoroMultiGenAlpha::Init()
 {
   // call Init()-functions of base classes
   // note: this order is important
@@ -363,7 +364,7 @@ void SCATRA::ScaTraTimIntPoroMultiGenAlpha::Init()
  | current solution becomes most recent solution of next timestep       |
  |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntPoroMultiGenAlpha::Update()
+void ScaTra::ScaTraTimIntPoroMultiGenAlpha::Update()
 {
   TimIntGenAlpha::Update();
   ScaTraTimIntPoroMulti::Update();
@@ -374,12 +375,12 @@ void SCATRA::ScaTraTimIntPoroMultiGenAlpha::Update()
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                    vuong  08/16 |
  *----------------------------------------------------------------------*/
-SCATRA::ScaTraTimIntPoroMultiStationary::ScaTraTimIntPoroMultiStationary(
-    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver,
+ScaTra::ScaTraTimIntPoroMultiStationary::ScaTraTimIntPoroMultiStationary(
+    Teuchos::RCP<Discret::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
     Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
     Teuchos::RCP<Teuchos::ParameterList> extraparams,
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, sctratimintparams, extraparams, output),
       ScaTraTimIntPoroMulti(actdis, solver, params, sctratimintparams, extraparams, output),
       TimIntStationary(actdis, solver, sctratimintparams, extraparams, output)
@@ -391,7 +392,7 @@ SCATRA::ScaTraTimIntPoroMultiStationary::ScaTraTimIntPoroMultiStationary(
 /*----------------------------------------------------------------------*
  |  initialize time integration                             vuong  08/16 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntPoroMultiStationary::Init()
+void ScaTra::ScaTraTimIntPoroMultiStationary::Init()
 {
   // call Init()-functions of base classes
   // note: this order is important
@@ -407,7 +408,7 @@ void SCATRA::ScaTraTimIntPoroMultiStationary::Init()
  | current solution becomes most recent solution of next timestep       |
  |                                                         vuong  08/16 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntPoroMultiStationary::Update()
+void ScaTra::ScaTraTimIntPoroMultiStationary::Update()
 {
   TimIntStationary::Update();
   ScaTraTimIntPoroMulti::Update();

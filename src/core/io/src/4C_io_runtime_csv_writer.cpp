@@ -18,7 +18,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------*/
-namespace CORE::IO
+namespace Core::IO
 {
   //! Interface for the implementation of RuntimeCsvWriter based on an inheritance graph. The pure
   //! virtual interface class has two derived classes: One for proc 0 that does all the writing and
@@ -52,7 +52,7 @@ namespace CORE::IO
   {
    public:
     explicit RuntimeCsvWriterProc0(
-        const CORE::IO::OutputControl& output_control, std::string outputname);
+        const Core::IO::OutputControl& output_control, std::string outputname);
 
     void register_data_vector(
         const std::string& dataname, unsigned int numcomponents, int precision) override;
@@ -146,7 +146,7 @@ namespace CORE::IO
   }
 
   RuntimeCsvWriter::RuntimeCsvWriter(
-      int myrank, const CORE::IO::OutputControl& output_control, std::string outputname)
+      int myrank, const Core::IO::OutputControl& output_control, std::string outputname)
   {
     if (myrank == 0)
     {
@@ -160,7 +160,7 @@ namespace CORE::IO
   RuntimeCsvWriter::~RuntimeCsvWriter() = default;
 
   RuntimeCsvWriterProc0::RuntimeCsvWriterProc0(
-      const CORE::IO::OutputControl& output_control, std::string outputname)
+      const Core::IO::OutputControl& output_control, std::string outputname)
       : outputname_(std::move(outputname)),
         restart_step_(output_control.RestartStep()),
         time_(0.0),
@@ -315,6 +315,6 @@ namespace CORE::IO
     outputfile << "\n";
     outputfile.close();
   }
-}  // namespace CORE::IO
+}  // namespace Core::IO
 
 FOUR_C_NAMESPACE_CLOSE

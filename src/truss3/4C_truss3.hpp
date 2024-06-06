@@ -29,34 +29,34 @@ namespace STR
   }
 }  // namespace STR
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
-    class Truss3Type : public CORE::Elements::ElementType
+    class Truss3Type : public Core::Elements::ElementType
     {
      public:
-      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
+      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+          Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
-      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-      int Initialize(DRT::Discretization& dis) override;
+      int Initialize(Discret::Discretization& dis) override;
 
       static Truss3Type& Instance();
 
       std::string Name() const override { return "Truss3Type"; }
 
       void nodal_block_information(
-          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+          Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       void setup_element_definition(
-          std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+          std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
           override;
 
      private:
@@ -67,7 +67,7 @@ namespace DRT
      \brief three dimensional total Lagrange truss element
 
      */
-    class Truss3 : public CORE::Elements::Element
+    class Truss3 : public Core::Elements::Element
     {
      public:
       //! @name Friends
@@ -88,7 +88,7 @@ namespace DRT
        */
       Truss3(const Truss3& old);
 
-      CORE::Elements::Element* Clone() const override;
+      Core::Elements::Element* Clone() const override;
 
       //! prepare elemental specific geometric values
       //! \param[in] ele_state              elemental states (depending on the instantiated element)
@@ -97,8 +97,8 @@ namespace DRT
       //! \param[out] dN_dx                 derivative of shape functions
       void prep_calc_internal_force_stiff_tot_lag(
           const std::map<std::string, std::vector<double>>& ele_state,
-          CORE::LINALG::Matrix<6, 1>& curr_nodal_coords,
-          CORE::LINALG::Matrix<6, 6>& dcurr_nodal_coords_du, CORE::LINALG::Matrix<6, 1>& dN_dx);
+          Core::LinAlg::Matrix<6, 1>& curr_nodal_coords,
+          Core::LinAlg::Matrix<6, 6>& dcurr_nodal_coords_du, Core::LinAlg::Matrix<6, 1>& dN_dx);
 
       //! \brief calculate internal force vector and stiffness matrix based on absolute nodal
       //! positions (using kinematic type tr3_totlag)
@@ -108,7 +108,7 @@ namespace DRT
       //! \param[out] stiffmat    element stiffness matrix
       virtual void calc_internal_force_stiff_tot_lag(
           const std::map<std::string, std::vector<double>>& ele_state,
-          CORE::LINALG::SerialDenseVector& forcevec, CORE::LINALG::SerialDenseMatrix& stiffmat);
+          Core::LinAlg::SerialDenseVector& forcevec, Core::LinAlg::SerialDenseMatrix& stiffmat);
 
       //! calcluate stresses at Gauss point
       //! \param[in] params      parameter list
@@ -116,18 +116,18 @@ namespace DRT
       virtual void CalcGPStresses(Teuchos::ParameterList& params,
           const std::map<std::string, std::vector<double>>& ele_state);
 
-      CORE::Elements::ElementType& ElementType() const override { return Truss3Type::Instance(); }
+      Core::Elements::ElementType& ElementType() const override { return Truss3Type::Instance(); }
 
-      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1,
-          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2,
-          CORE::LINALG::SerialDenseVector& elevec3) override;
+      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1,
+          Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseVector& elevec2,
+          Core::LinAlg::SerialDenseVector& elevec3) override;
 
-      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          CORE::Conditions::Condition& condition, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
+      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Core::Conditions::Condition& condition, std::vector<int>& lm,
+          Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;
 
       //! get internal (elastic) energy of element
       double GetInternalEnergy() const { return eint_; };
@@ -138,25 +138,25 @@ namespace DRT
       double CrossSection() const { return crosssec_; }
 
       //! Return the current length of the truss from @p curr_nodal_coords
-      double CurrLength(const CORE::LINALG::Matrix<6, 1>& curr_nodal_coords) const
+      double CurrLength(const Core::LinAlg::Matrix<6, 1>& curr_nodal_coords) const
       {
         return curr_nodal_coords.Norm2() * M_SQRT1_2;
       }
 
       //! Return the squared value of the current length of the truss from @p curr_nodal_coords
-      double CurrLength2(const CORE::LINALG::Matrix<6, 1>& curr_nodal_coords) const
+      double CurrLength2(const Core::LinAlg::Matrix<6, 1>& curr_nodal_coords) const
       {
         return CurrLength(curr_nodal_coords) * CurrLength(curr_nodal_coords);
       }
 
       //! derivative of current length w.r.t. nodal coordinate (entry @p col) from @p
       //! curr_nodal_coords
-      double dCurrLengthdu(const CORE::LINALG::Matrix<6, 1>& curr_nodal_coords, const int col) const
+      double dCurrLengthdu(const Core::LinAlg::Matrix<6, 1>& curr_nodal_coords, const int col) const
       {
         return curr_nodal_coords(col) / curr_nodal_coords.Norm2() * M_SQRT1_2;
       }
 
-      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
 
       // TODO: remove once truss3 element is fixed and no longer expects more dofs (6) than it can
       // inherently handle (3)...
@@ -165,7 +165,7 @@ namespace DRT
 
       int num_dof_per_element() const override { return 0; }
 
-      int NumDofPerNode(const CORE::Nodes::Node& node) const override
+      int NumDofPerNode(const Core::Nodes::Node& node) const override
       {
         /*note: this is not necessarily the number of DOF assigned to this node by the
          *discretization finally, but only the number of DOF requested for this node by this
@@ -176,12 +176,12 @@ namespace DRT
 
       int NumLine() const override { return 1; }
 
-      void Pack(CORE::COMM::PackBuffer& data) const override;
+      void Pack(Core::Communication::PackBuffer& data) const override;
 
-      Teuchos::RCP<CORE::Elements::ParamsInterface> ParamsInterfacePtr() override;
+      Teuchos::RCP<Core::Elements::ParamsInterface> ParamsInterfacePtr() override;
 
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          INPUT::LineDefinition* linedef) override;
+          Input::LineDefinition* linedef) override;
 
       //! scale truss reference length
       void scale_reference_length(double scalefac);
@@ -197,14 +197,14 @@ namespace DRT
       //! \param xrefe     nodal coordinates in reference frame
       void set_up_reference_geometry(const std::vector<double>& xrefe);
 
-      CORE::FE::CellType Shape() const override;
+      Core::FE::CellType Shape() const override;
 
       int UniqueParObjectId() const override { return Truss3Type::Instance().UniqueParObjectId(); }
 
       void Unpack(const std::vector<char>& data) override;
 
       //! coordinates of nodes in reference configuration
-      const CORE::LINALG::Matrix<6, 1>& X() const { return x_; }
+      const Core::LinAlg::Matrix<6, 1>& X() const { return x_; }
 
      protected:
       //! kind of integration to be performed
@@ -229,11 +229,11 @@ namespace DRT
       //! \param[in] params          parameter list
       //! \param[out] ele_state      elemental states (depending on the instantiated element)
       virtual void extract_elemental_variables(LocationArray& la,
-          const DRT::Discretization& discretization, const Teuchos::ParameterList& params,
+          const Discret::Discretization& discretization, const Teuchos::ParameterList& params,
           std::map<std::string, std::vector<double>>& ele_state);
 
       //! determine Gauss rule from required type of integration
-      CORE::FE::GaussRule1D my_gauss_rule(int nnode, IntegrationType integrationtype);
+      Core::FE::GaussRule1D my_gauss_rule(int nnode, IntegrationType integrationtype);
 
       //! calculation of elastic energy
       //!
@@ -241,7 +241,7 @@ namespace DRT
       //! \param params
       //! \param intenergy
       virtual void energy(const std::map<std::string, std::vector<double>>& ele_state,
-          Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector& intenergy);
+          Teuchos::ParameterList& params, Core::LinAlg::SerialDenseVector& intenergy);
 
       //! cross section area
       double crosssec_;
@@ -253,7 +253,7 @@ namespace DRT
       double lrefe_;
 
       //! gaussrule_ will be initialized automatically to a 2 point integration rule
-      CORE::FE::GaussRule1D gaussrule_;
+      Core::FE::GaussRule1D gaussrule_;
 
      private:
       //! possible kinematic types
@@ -264,7 +264,7 @@ namespace DRT
       };
 
       //! lump mass matrix
-      void lump_mass(CORE::LINALG::SerialDenseMatrix* emass);
+      void lump_mass(Core::LinAlg::SerialDenseMatrix* emass);
 
       //! calculation of nonlinear stiffness and mass matrix switching between total lagrange
       //! and enginerring strains
@@ -274,8 +274,8 @@ namespace DRT
       //! \param[out] massmatrix   elemental mass matrix
       //! \param[out] force        elemental force vector
       void nln_stiff_mass(const std::map<std::string, std::vector<double>>& ele_state,
-          CORE::LINALG::SerialDenseMatrix* stiffmatrix, CORE::LINALG::SerialDenseMatrix* massmatrix,
-          CORE::LINALG::SerialDenseVector* force);
+          Core::LinAlg::SerialDenseMatrix* stiffmatrix, Core::LinAlg::SerialDenseMatrix* massmatrix,
+          Core::LinAlg::SerialDenseVector* force);
 
       //! \brief calculate force, nonlinear stiffness and mass matrix using a engineering strain
       //! measure.
@@ -288,8 +288,8 @@ namespace DRT
       //! \param[out] massmatrix          elemental mass matrix
       //! \param[out] DummyForce          elemental force vector
       void nln_stiff_mass_eng_str(const std::map<std::string, std::vector<double>>& ele_state,
-          CORE::LINALG::SerialDenseMatrix& DummyStiffMatrix,
-          CORE::LINALG::SerialDenseMatrix* massmatrix, CORE::LINALG::SerialDenseVector& DummyForce);
+          Core::LinAlg::SerialDenseMatrix& DummyStiffMatrix,
+          Core::LinAlg::SerialDenseMatrix* massmatrix, Core::LinAlg::SerialDenseVector& DummyForce);
 
       //! calculation of nonlinear stiffness and mass matrix
       //!
@@ -298,11 +298,11 @@ namespace DRT
       //! \param[out] massmatrix         elemental mass matrix
       //! \param[out] DummyForce         elemental force vector
       void nln_stiff_mass_tot_lag(const std::map<std::string, std::vector<double>>& ele_state,
-          CORE::LINALG::SerialDenseMatrix& DummyStiffMatrix,
-          CORE::LINALG::SerialDenseMatrix* massmatrix, CORE::LINALG::SerialDenseVector& DummyForce);
+          Core::LinAlg::SerialDenseMatrix& DummyStiffMatrix,
+          Core::LinAlg::SerialDenseMatrix* massmatrix, Core::LinAlg::SerialDenseVector& DummyForce);
 
       //! reference tangent position
-      CORE::LINALG::Matrix<1, 3> diff_disp_ref_;
+      Core::LinAlg::Matrix<1, 3> diff_disp_ref_;
 
       //!  data exchange between the element and the time integrator.
       Teuchos::RCP<STR::ELEMENTS::ParamsInterface> interface_ptr_;
@@ -323,17 +323,17 @@ namespace DRT
       int material_;
 
       //! reference node position
-      CORE::LINALG::Matrix<6, 1> x_;
+      Core::LinAlg::Matrix<6, 1> x_;
 
       // don't want = operator
       Truss3& operator=(const Truss3& old);
     };
 
     // << operator
-    std::ostream& operator<<(std::ostream& os, const CORE::Elements::Element& ele);
+    std::ostream& operator<<(std::ostream& os, const Core::Elements::Element& ele);
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

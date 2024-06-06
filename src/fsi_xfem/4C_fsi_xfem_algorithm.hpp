@@ -22,16 +22,16 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace ADAPTER
+namespace Adapter
 {
   class StructurePoroWrapper;
   class AleFpsiWrapper;
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 namespace FLD
 {
@@ -50,12 +50,12 @@ namespace FSI
   //!
   //!  \author schott
   //!  \date 08/14
-  class AlgorithmXFEM : public ADAPTER::AlgorithmBase
+  class AlgorithmXFEM : public Adapter::AlgorithmBase
   {
    public:
     //! create using a Epetra_Comm
     AlgorithmXFEM(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams,
-        const ADAPTER::FieldWrapper::Fieldtype type);
+        const Adapter::FieldWrapper::Fieldtype type);
 
 
     //! setup
@@ -75,13 +75,13 @@ namespace FSI
     //! @name Access to single fields
 
     //! access to structural & poro field
-    const Teuchos::RCP<ADAPTER::StructurePoroWrapper>& StructurePoro() { return structureporo_; }
+    const Teuchos::RCP<Adapter::StructurePoroWrapper>& StructurePoro() { return structureporo_; }
 
     //! access to fluid field
     const Teuchos::RCP<FLD::XFluid>& fluid_field() { return fluid_; }
 
     //! access to ale field
-    const Teuchos::RCP<ADAPTER::AleFpsiWrapper>& ale_field() { return ale_; }
+    const Teuchos::RCP<Adapter::AleFpsiWrapper>& ale_field() { return ale_; }
 
     //! is an monolithic ale computations
     bool HaveAle() { return (ale_field() != Teuchos::null); }
@@ -113,13 +113,13 @@ namespace FSI
     //! @name Underlying fields
 
     //! underlying structure / poro of the FSI/FPSI problem
-    Teuchos::RCP<ADAPTER::StructurePoroWrapper> structureporo_;
+    Teuchos::RCP<Adapter::StructurePoroWrapper> structureporo_;
 
     //! underlying fluid of the FSI problem
     Teuchos::RCP<FLD::XFluid> fluid_;
 
     // underlying ale of the FSI problem
-    Teuchos::RCP<ADAPTER::AleFpsiWrapper> ale_;
+    Teuchos::RCP<Adapter::AleFpsiWrapper> ale_;
 
     //@}
 

@@ -24,14 +24,14 @@ namespace CONTACT
   // forward declaration
   class Node;
 
-  class NodeType : public CORE::COMM::ParObjectType
+  class NodeType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const final { return "CONTACT::NodeType"; }
 
     static NodeType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static NodeType instance_;
@@ -70,7 +70,7 @@ namespace CONTACT
      class exists.
 
      */
-    virtual void Pack(CORE::COMM::PackBuffer& data) const;
+    virtual void Pack(Core::Communication::PackBuffer& data) const;
 
     /*!
      \brief Unpack data from a vector into this class
@@ -135,8 +135,8 @@ namespace CONTACT
      A vector is used because the normal itself is a vector (2 or 3 components).
 
      */
-    virtual std::vector<CORE::GEN::Pairedvector<int, double>>& GetDerivN() { return derivn_; }
-    virtual std::vector<CORE::GEN::Pairedvector<int, double>>& GetDerivTangent()
+    virtual std::vector<Core::Gen::Pairedvector<int, double>>& GetDerivN() { return derivn_; }
+    virtual std::vector<Core::Gen::Pairedvector<int, double>>& GetDerivTangent()
     {
       return derivEdge_;
     }
@@ -149,7 +149,7 @@ namespace CONTACT
      A vector is used because the tangent itself is a vector (2 or 3 components).
 
      */
-    virtual std::vector<CORE::GEN::Pairedvector<int, double>>& GetDerivTxi() { return derivtxi_; }
+    virtual std::vector<Core::Gen::Pairedvector<int, double>>& GetDerivTxi() { return derivtxi_; }
 
     /*!
      \brief Return the 'DerivTeta' map (vector) of this node
@@ -159,7 +159,7 @@ namespace CONTACT
      A vector is used because the tangent itself is a vector (2 or 3 components).
 
      */
-    virtual std::vector<CORE::GEN::Pairedvector<int, double>>& GetDerivTeta() { return derivteta_; }
+    virtual std::vector<Core::Gen::Pairedvector<int, double>>& GetDerivTeta() { return derivteta_; }
 
     /*!
      \brief Return the 'DerivD' map of this node
@@ -279,7 +279,7 @@ namespace CONTACT
      */
     virtual std::vector<std::map<int, double>>& GetDerivZ() { return derivz_; }
 
-    virtual CORE::GEN::Pairedvector<int, double>& GetAlpha() { return alpha_; };
+    virtual Core::Gen::Pairedvector<int, double>& GetAlpha() { return alpha_; };
     virtual double& GetAlphaN() { return nalpha_; };
 
     /*!
@@ -318,16 +318,16 @@ namespace CONTACT
     bool activeold_;
 
     //! directional derivative of nodal normal
-    std::vector<CORE::GEN::Pairedvector<int, double>> derivn_;
+    std::vector<Core::Gen::Pairedvector<int, double>> derivn_;
 
     //! directional derivative of nodal tangent
-    std::vector<CORE::GEN::Pairedvector<int, double>> derivEdge_;
+    std::vector<Core::Gen::Pairedvector<int, double>> derivEdge_;
 
     //! directional derivative of nodal tangent t_xi
-    std::vector<CORE::GEN::Pairedvector<int, double>> derivtxi_;
+    std::vector<Core::Gen::Pairedvector<int, double>> derivtxi_;
 
     //! directional derivative of nodal tangent t_eta
-    std::vector<CORE::GEN::Pairedvector<int, double>> derivteta_;
+    std::vector<Core::Gen::Pairedvector<int, double>> derivteta_;
 
     //! directional derivative of nodal D-matrix value
     std::map<int, std::map<int, double>> derivd_;
@@ -375,7 +375,7 @@ namespace CONTACT
     std::map<int, double> derivw_lm_;
 
     //! lin. of scaling factor for hybrid formulation
-    CORE::GEN::Pairedvector<int, double> alpha_;
+    Core::Gen::Pairedvector<int, double> alpha_;
 
     //! @name Penalty-related quantities
     //! @{
@@ -398,7 +398,7 @@ namespace CONTACT
     NodeDataContainer(const NodeDataContainer& old) = delete;
   };
 
-  namespace AUG
+  namespace Aug
   {
     /** \brief Nodal data container for all contact contributions related to the
      *  augmented framework
@@ -432,7 +432,7 @@ namespace CONTACT
        *  This function packs the datacontainer. This is only called
        *  when the class has been initialized and the pointer to this
        *  class exists. */
-      void Pack(CORE::COMM::PackBuffer& data) const;
+      void Pack(Core::Communication::PackBuffer& data) const;
 
       /*! \brief Unpack data from a vector into this class
        *
@@ -666,7 +666,7 @@ namespace CONTACT
       const Node& parent_node_;
 
     };  // class NodeDataContainer
-  }     // namespace AUG
+  }     // namespace Aug
 
   // class NodeDataContainer
 
@@ -702,7 +702,7 @@ namespace CONTACT
     class exists.
 
     */
-    virtual void Pack(CORE::COMM::PackBuffer& data) const;
+    virtual void Pack(Core::Communication::PackBuffer& data) const;
 
     /*!
     \brief Unpack data from a vector into this class
@@ -825,7 +825,7 @@ namespace CONTACT
     class exists.
 
     */
-    virtual void Pack(CORE::COMM::PackBuffer& data) const;
+    virtual void Pack(Core::Communication::PackBuffer& data) const;
 
     /*!
     \brief Unpack data from a vector into this class
@@ -904,7 +904,7 @@ namespace CONTACT
     virtual ~NodeEhlDataContainer() = default;
 
     //! pack for parallel communication
-    virtual void Pack(CORE::COMM::PackBuffer& data) const {
+    virtual void Pack(Core::Communication::PackBuffer& data) const {
         /* no need to pack, since terms are re-evaluated after parallel communication */};
 
     //! unpack and re-init after parallel comunication
@@ -924,20 +924,20 @@ namespace CONTACT
       weighted_avTangVel_.Clear();
     }
 
-    CORE::LINALG::Matrix<3, 1>& get_weighted_rel_tang_vel() { return weighted_relTangVel_; }
-    std::unordered_map<int, CORE::LINALG::Matrix<3, 1>>& get_weighted_rel_tang_vel_deriv()
+    Core::LinAlg::Matrix<3, 1>& get_weighted_rel_tang_vel() { return weighted_relTangVel_; }
+    std::unordered_map<int, Core::LinAlg::Matrix<3, 1>>& get_weighted_rel_tang_vel_deriv()
     {
       return deriv_weighted_relTangVel_;
     }
 
-    CORE::LINALG::Matrix<3, 1>& get_weighted_av_tang_vel() { return weighted_avTangVel_; }
-    std::unordered_map<int, CORE::LINALG::Matrix<3, 1>>& get_weighted_av_tang_vel_deriv()
+    Core::LinAlg::Matrix<3, 1>& get_weighted_av_tang_vel() { return weighted_avTangVel_; }
+    std::unordered_map<int, Core::LinAlg::Matrix<3, 1>>& get_weighted_av_tang_vel_deriv()
     {
       return deriv_weighted_avTangVel_;
     }
 
-    std::unordered_map<int, CORE::LINALG::Matrix<3, 1>>& GetSurfGrad() { return tang_grad_; }
-    std::unordered_map<int, std::unordered_map<int, CORE::LINALG::Matrix<3, 1>>>& GetSurfGradDeriv()
+    std::unordered_map<int, Core::LinAlg::Matrix<3, 1>>& GetSurfGrad() { return tang_grad_; }
+    std::unordered_map<int, std::unordered_map<int, Core::LinAlg::Matrix<3, 1>>>& GetSurfGradDeriv()
     {
       return tang_grad_deriv_;
     }
@@ -948,23 +948,23 @@ namespace CONTACT
     NodeEhlDataContainer(const NodeEhlDataContainer& old) = delete;
 
     // actual data
-    CORE::LINALG::Matrix<3, 1> weighted_relTangVel_;
-    std::unordered_map<int, CORE::LINALG::Matrix<3, 1>> deriv_weighted_relTangVel_;
+    Core::LinAlg::Matrix<3, 1> weighted_relTangVel_;
+    std::unordered_map<int, Core::LinAlg::Matrix<3, 1>> deriv_weighted_relTangVel_;
 
-    CORE::LINALG::Matrix<3, 1> weighted_avTangVel_;
-    std::unordered_map<int, CORE::LINALG::Matrix<3, 1>> deriv_weighted_avTangVel_;
+    Core::LinAlg::Matrix<3, 1> weighted_avTangVel_;
+    std::unordered_map<int, Core::LinAlg::Matrix<3, 1>> deriv_weighted_avTangVel_;
 
-    std::unordered_map<int, CORE::LINALG::Matrix<3, 1>> tang_grad_;
-    std::unordered_map<int, std::unordered_map<int, CORE::LINALG::Matrix<3, 1>>> tang_grad_deriv_;
+    std::unordered_map<int, Core::LinAlg::Matrix<3, 1>> tang_grad_;
+    std::unordered_map<int, std::unordered_map<int, Core::LinAlg::Matrix<3, 1>>> tang_grad_deriv_;
   };
 
   /*!
-   \brief A class for a contact node derived from MORTAR::Node
+   \brief A class for a contact node derived from Mortar::Node
 
    This class represents a finite element node capable of contact.
 
    */
-  class Node : public MORTAR::Node
+  class Node : public Mortar::Node
   {
    public:
     //! @name Enums and Friends
@@ -972,7 +972,7 @@ namespace CONTACT
     /*!
      \brief The discretization is a friend of Node
      */
-    friend class DRT::Discretization;
+    friend class Discret::Discretization;
 
     //@}
 
@@ -1022,7 +1022,7 @@ namespace CONTACT
      \ref Pack and \ref Unpack are used to communicate this node
 
      */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class
@@ -1088,12 +1088,12 @@ namespace CONTACT
      *  augmented contact specific quantities/information are stored.
      *
      *  \author hiermeier \date 03/17 */
-    inline CONTACT::AUG::NodeDataContainer& AugData()
+    inline CONTACT::Aug::NodeDataContainer& AugData()
     {
       if (augdata_.is_null()) FOUR_C_THROW("There are no augmented contact node data available!");
       return *augdata_;
     };
-    inline const CONTACT::AUG::NodeDataContainer& AugData() const
+    inline const CONTACT::Aug::NodeDataContainer& AugData() const
     {
       if (augdata_.is_null()) FOUR_C_THROW("There are no augmented contact node data available!");
       return *augdata_;
@@ -1299,7 +1299,7 @@ namespace CONTACT
      \param ltxi (in):   Length of the nodal tangent txi
 
      */
-    void deriv_averaged_normal(CORE::LINALG::SerialDenseMatrix& elens, double length, double ltxi);
+    void deriv_averaged_normal(Core::LinAlg::SerialDenseMatrix& elens, double length, double ltxi);
 
    protected:
     //! true if contact node is in contact (active set strategy)
@@ -1318,7 +1318,7 @@ namespace CONTACT
     Teuchos::RCP<CONTACT::NodeDataContainer> codata_;
 
     //! Additional information of proc's augmented contact nodes
-    Teuchos::RCP<CONTACT::AUG::NodeDataContainer> augdata_;
+    Teuchos::RCP<CONTACT::Aug::NodeDataContainer> augdata_;
 
     //! Additional information of proc's poro contact nodes
     Teuchos::RCP<CONTACT::NodePoroDataContainer> coporodata_;

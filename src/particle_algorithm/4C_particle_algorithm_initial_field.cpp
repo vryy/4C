@@ -97,7 +97,7 @@ void PARTICLEALGORITHM::InitialFieldHandler::SetInitialFields()
 
       // get reference to function
       const auto& function =
-          GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functid - 1);
+          Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functid - 1);
 
       // get pointer to particle states
       const double* pos = container->GetPtrToState(PARTICLEENGINE::Position, 0);

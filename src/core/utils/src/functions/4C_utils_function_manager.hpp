@@ -31,13 +31,13 @@ namespace Teuchos
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::IO
+namespace Core::IO
 {
   class DatFileReader;
-}  // namespace CORE::IO
+}  // namespace Core::IO
 
 
-namespace CORE::UTILS
+namespace Core::UTILS
 {
   /**
    * A class that collects various (mathematical) 4C Functions specified by the user.
@@ -51,13 +51,13 @@ namespace CORE::UTILS
     /**
      * Type used to pass functions that create 4C Functions from a number of parsed lines.
      */
-    using FunctionFactory = std::function<std::any(const std::vector<INPUT::LineDefinition>&)>;
+    using FunctionFactory = std::function<std::any(const std::vector<Input::LineDefinition>&)>;
 
     /// Return all known input lines that define a Function.
-    std::vector<INPUT::LineDefinition> valid_function_lines();
+    std::vector<Input::LineDefinition> valid_function_lines();
 
     /// Read the 4C input file and set up all Functions.
-    void ReadInput(CORE::IO::DatFileReader& reader);
+    void ReadInput(Core::IO::DatFileReader& reader);
 
     /**
      * Tell the FunctionManager how to parse a set of @p possible_lines into a Function object.
@@ -68,7 +68,7 @@ namespace CORE::UTILS
      * needs to return the actual function object wrapped in a Teuchos::RCP.
      */
     void add_function_definition(
-        std::vector<INPUT::LineDefinition> possible_lines, FunctionFactory function_factory);
+        std::vector<Input::LineDefinition> possible_lines, FunctionFactory function_factory);
 
     /**
      * Get a Function by its @p id in the input file. In addition, you need to specify the type of
@@ -98,7 +98,7 @@ namespace CORE::UTILS
     /**
      * Store the lines we can read and how to convert them into a 4C Function.
      */
-    std::vector<std::pair<std::vector<INPUT::LineDefinition>, FunctionFactory>>
+    std::vector<std::pair<std::vector<Input::LineDefinition>, FunctionFactory>>
         attached_function_data_;
   };
 
@@ -108,13 +108,13 @@ namespace CORE::UTILS
    * depending on arbitrary variables.
    */
   void AddValidBuiltinFunctions(FunctionManager& function_manager);
-}  // namespace CORE::UTILS
+}  // namespace Core::UTILS
 
 
 // --- template and inline functions --- //
 
 template <typename T>
-const T& CORE::UTILS::FunctionManager::FunctionById(int num) const
+const T& Core::UTILS::FunctionManager::FunctionById(int num) const
 {
   const int input_id = num + 1;
   if (functions_.size() < (unsigned int)(input_id) || input_id < 1)
@@ -136,7 +136,7 @@ const T& CORE::UTILS::FunctionManager::FunctionById(int num) const
         [&function_any]()
         {
           const std::string actual_type_name_with_rcp_prefix =
-              CORE::UTILS::TryDemangle(function_any.type().name());
+              Core::UTILS::TryDemangle(function_any.type().name());
 
           // find the outermost pair of angle brackets which should enclose the type inside an RCP
           const std::size_t start = actual_type_name_with_rcp_prefix.find_first_of('<');
@@ -153,7 +153,7 @@ const T& CORE::UTILS::FunctionManager::FunctionById(int num) const
     FOUR_C_THROW(
         "You tried to query function %d as a function of type '%s'.\n"
         "Actually, it has type '%s'.",
-        input_id, CORE::UTILS::TryDemangle(typeid(T).name()).c_str(), actual_type_name.c_str());
+        input_id, Core::UTILS::TryDemangle(typeid(T).name()).c_str(), actual_type_name.c_str());
   }
 }
 

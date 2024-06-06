@@ -20,8 +20,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-AIRWAY::RedAirwayResultTest::RedAirwayResultTest(RedAirwayImplicitTimeInt& airways)
-    : CORE::UTILS::ResultTest("RED_AIRWAY")
+Airway::RedAirwayResultTest::RedAirwayResultTest(RedAirwayImplicitTimeInt& airways)
+    : Core::UTILS::ResultTest("RED_AIRWAY")
 {
   dis_ = airways.discretization();
   mynodesol_pressure_ = airways.Pnp();
@@ -37,7 +37,7 @@ AIRWAY::RedAirwayResultTest::RedAirwayResultTest(RedAirwayImplicitTimeInt& airwa
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void AIRWAY::RedAirwayResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int& test_count)
+void Airway::RedAirwayResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;
@@ -60,7 +60,7 @@ void AIRWAY::RedAirwayResultTest::test_node(INPUT::LineDefinition& res, int& ner
   {
     if (dis_->HaveGlobalNode(node))
     {
-      CORE::Nodes::Node* actnode = dis_->gNode(node);
+      Core::Nodes::Node* actnode = dis_->gNode(node);
 
       // Here we are just interested in the nodes that we own (i.e. a row node)!
       if (actnode->Owner() != dis_->Comm().MyPID()) return;
@@ -102,8 +102,8 @@ void AIRWAY::RedAirwayResultTest::test_node(INPUT::LineDefinition& res, int& ner
  * of acini_volume.                                                     *
  *                                                         roth 11/2014 *
  *----------------------------------------------------------------------*/
-void AIRWAY::RedAirwayResultTest::TestElement(
-    INPUT::LineDefinition& res, int& nerr, int& test_count)
+void Airway::RedAirwayResultTest::TestElement(
+    Input::LineDefinition& res, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;
@@ -126,7 +126,7 @@ void AIRWAY::RedAirwayResultTest::TestElement(
   {
     if (dis_->HaveGlobalElement(element))
     {
-      const CORE::Elements::Element* actelement = dis_->gElement(element);
+      const Core::Elements::Element* actelement = dis_->gElement(element);
 
       // Here we are just interested in the elements that we own (i.e. a row element)!
       if (actelement->Owner() != dis_->Comm().MyPID()) return;

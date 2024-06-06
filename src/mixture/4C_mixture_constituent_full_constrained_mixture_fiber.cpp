@@ -26,10 +26,10 @@ FOUR_C_NAMESPACE_OPEN
 // anonymous namespace for helper classes and functions
 namespace
 {
-  [[nodiscard]] static inline CORE::LINALG::Matrix<3, 3> EvaluateC(
-      const CORE::LINALG::Matrix<3, 3>& F)
+  [[nodiscard]] static inline Core::LinAlg::Matrix<3, 3> EvaluateC(
+      const Core::LinAlg::Matrix<3, 3>& F)
   {
-    CORE::LINALG::Matrix<3, 3> C(false);
+    Core::LinAlg::Matrix<3, 3> C(false);
     C.MultiplyTN(F, F);
     return C;
   }
@@ -73,7 +73,7 @@ namespace
 
 MIXTURE::PAR::MixtureConstituentFullConstrainedMixtureFiber::
     MixtureConstituentFullConstrainedMixtureFiber(
-        const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
+        const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
     : MixtureConstituent(matdata),
       fiber_id_(matdata->Get<int>("FIBER_ID") - 1),
       init_(matdata->Get<int>("INIT")),
@@ -104,22 +104,22 @@ MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::
       params_(params),
       full_constrained_mixture_fiber_(),
       anisotropy_extension_(params_->init_, 0.0, false,
-          Teuchos::rcp(new MAT::ELASTIC::StructuralTensorStrategyStandard(nullptr)),
+          Teuchos::rcp(new Mat::Elastic::StructuralTensorStrategyStandard(nullptr)),
           {params_->fiber_id_})
 {
   anisotropy_extension_.register_needed_tensors(
-      MAT::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR_STRESS |
-      MAT::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR);
+      Mat::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR_STRESS |
+      Mat::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR);
 }
 
-CORE::Materials::MaterialType MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::MaterialType()
+Core::Materials::MaterialType MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::MaterialType()
     const
 {
-  return CORE::Materials::mix_full_constrained_mixture_fiber;
+  return Core::Materials::mix_full_constrained_mixture_fiber;
 }
 
 void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::PackConstituent(
-    CORE::COMM::PackBuffer& data) const
+    Core::Communication::PackBuffer& data) const
 {
   MIXTURE::MixtureConstituent::PackConstituent(data);
   anisotropy_extension_.PackAnisotropy(data);
@@ -127,7 +127,7 @@ void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::PackConstituent(
   for (const FullConstrainedMixtureFiber<double>& fiber : full_constrained_mixture_fiber_)
     fiber.Pack(data);
 
-  CORE::COMM::ParObject::AddtoPack(data, last_lambda_f_);
+  Core::Communication::ParObject::AddtoPack(data, last_lambda_f_);
 }
 
 void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::UnpackConstituent(
@@ -141,7 +141,7 @@ void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::UnpackConstituent(
   for (FullConstrainedMixtureFiber<double>& fiber : full_constrained_mixture_fiber_)
     fiber.Unpack(position, data);
 
-  CORE::COMM::ParObject::ExtractfromPack(position, data, last_lambda_f_);
+  Core::Communication::ParObject::ExtractfromPack(position, data, last_lambda_f_);
 
   if (params_->growth_enabled_)
   {
@@ -154,7 +154,7 @@ void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::UnpackConstituent(
 }
 
 void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::register_anisotropy_extensions(
-    MAT::Anisotropy& anisotropy)
+    Mat::Anisotropy& anisotropy)
 {
   anisotropy.register_anisotropy_extension(anisotropy_extension_);
 }
@@ -179,7 +179,7 @@ void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::initialize()
 }
 
 void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::ReadElement(
-    int numgp, INPUT::LineDefinition* linedef)
+    int numgp, Input::LineDefinition* linedef)
 {
   MIXTURE::MixtureConstituent::ReadElement(numgp, linedef);
   initialize();
@@ -201,7 +201,7 @@ void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::Setup(
 }
 
 void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::Update(
-    const CORE::LINALG::Matrix<3, 3>& F, Teuchos::ParameterList& params, const int gp,
+    const Core::LinAlg::Matrix<3, 3>& F, Teuchos::ParameterList& params, const int gp,
     const int eleGID)
 {
   MixtureConstituent::Update(F, params, gp, eleGID);
@@ -226,7 +226,7 @@ void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::register_output_dat
 }
 
 bool MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::EvaluateOutputData(
-    const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const
+    const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const
 {
   if (name == "mixture_constituent_" + std::to_string(Id()) + "_sig_h")
   {
@@ -266,20 +266,20 @@ bool MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::EvaluateOutputData(
   return MixtureConstituent::EvaluateOutputData(name, data);
 }
 
-CORE::LINALG::Matrix<1, 6>
+Core::LinAlg::Matrix<1, 6>
 MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::evaluate_d_lambdafsq_dc(
     int gp, int eleGID) const
 {
-  CORE::LINALG::Matrix<1, 6> dLambdafDC(false);
+  Core::LinAlg::Matrix<1, 6> dLambdafDC(false);
   dLambdafDC.UpdateT(anisotropy_extension_.get_structural_tensor_stress(gp, 0));
   return dLambdafDC;
 }
 
-CORE::LINALG::Matrix<6, 1>
+Core::LinAlg::Matrix<6, 1>
 MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::evaluate_current_p_k2(
     int gp, int eleGID) const
 {
-  CORE::LINALG::Matrix<6, 1> S_stress(false);
+  Core::LinAlg::Matrix<6, 1> S_stress(false);
   const double fiber_pk2 = full_constrained_mixture_fiber_[gp].evaluate_current_second_pk_stress();
 
   S_stress.Update(fiber_pk2, anisotropy_extension_.get_structural_tensor_stress(gp, 0));
@@ -287,14 +287,14 @@ MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::evaluate_current_p_k2(
   return S_stress;
 }
 
-CORE::LINALG::Matrix<6, 6>
+Core::LinAlg::Matrix<6, 6>
 MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::evaluate_current_cmat(
     const int gp, const int eleGID) const
 {
   const double dPK2dlambdafsq =
       full_constrained_mixture_fiber_[gp].evaluate_d_current_fiber_p_k2_stress_d_lambdafsq();
 
-  CORE::LINALG::Matrix<6, 6> cmat(false);
+  Core::LinAlg::Matrix<6, 6> cmat(false);
   cmat.MultiplyNN(2.0 * dPK2dlambdafsq, anisotropy_extension_.get_structural_tensor_stress(gp, 0),
       evaluate_d_lambdafsq_dc(gp, eleGID));
 
@@ -302,14 +302,14 @@ MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::evaluate_current_cmat(
 }
 
 void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::Evaluate(
-    const CORE::LINALG::Matrix<3, 3>& F, const CORE::LINALG::Matrix<6, 1>& E_strain,
-    Teuchos::ParameterList& params, CORE::LINALG::Matrix<6, 1>& S_stress,
-    CORE::LINALG::Matrix<6, 6>& cmat, int gp, int eleGID)
+    const Core::LinAlg::Matrix<3, 3>& F, const Core::LinAlg::Matrix<6, 1>& E_strain,
+    Teuchos::ParameterList& params, Core::LinAlg::Matrix<6, 1>& S_stress,
+    Core::LinAlg::Matrix<6, 6>& cmat, int gp, int eleGID)
 {
   const double time = GetTotalTime(params);
   const double delta_time = GetDeltaTime(params);
 
-  CORE::LINALG::Matrix<3, 3> C = EvaluateC(F);
+  Core::LinAlg::Matrix<3, 3> C = EvaluateC(F);
 
   const double lambda_f = evaluate_lambdaf(C, gp, eleGID);
   full_constrained_mixture_fiber_[gp].RecomputeState(lambda_f, time, delta_time);
@@ -319,9 +319,9 @@ void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::Evaluate(
 }
 
 void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::EvaluateElasticPart(
-    const CORE::LINALG::Matrix<3, 3>& FM, const CORE::LINALG::Matrix<3, 3>& iFextin,
-    Teuchos::ParameterList& params, CORE::LINALG::Matrix<6, 1>& S_stress,
-    CORE::LINALG::Matrix<6, 6>& cmat, int gp, int eleGID)
+    const Core::LinAlg::Matrix<3, 3>& FM, const Core::LinAlg::Matrix<3, 3>& iFextin,
+    Teuchos::ParameterList& params, Core::LinAlg::Matrix<6, 1>& S_stress,
+    Core::LinAlg::Matrix<6, 6>& cmat, int gp, int eleGID)
 {
   FOUR_C_THROW(
       "The full constrained mixture fiber cannot be evaluated with an additional inelastic "
@@ -333,11 +333,11 @@ double MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::GetGrowthScalar(i
   return full_constrained_mixture_fiber_[gp].computed_growth_scalar_;
 }
 
-CORE::LINALG::Matrix<1, 6>
+Core::LinAlg::Matrix<1, 6>
 MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::GetDGrowthScalarDC(int gp, int eleGID) const
 {
-  if (!params_->growth_enabled_) return CORE::LINALG::Matrix<1, 6>(true);
-  CORE::LINALG::Matrix<1, 6> dGrowthScalarDE = evaluate_d_lambdafsq_dc(gp, eleGID);
+  if (!params_->growth_enabled_) return Core::LinAlg::Matrix<1, 6>(true);
+  Core::LinAlg::Matrix<1, 6> dGrowthScalarDE = evaluate_d_lambdafsq_dc(gp, eleGID);
   dGrowthScalarDE.Scale(
       2.0 * full_constrained_mixture_fiber_[gp].computed_dgrowth_scalar_dlambda_f_sq_);
   return dGrowthScalarDE;
@@ -351,14 +351,14 @@ double MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::evaluate_initial_
     return params_->deposition_stretch_;
   }
 
-  return GLOBAL::Problem::Instance()
-      ->FunctionById<CORE::UTILS::FunctionOfTime>(
+  return Global::Problem::Instance()
+      ->FunctionById<Core::UTILS::FunctionOfTime>(
           params_->initial_deposition_stretch_timefunc_num_ - 1)
       .Evaluate(time);
 }
 
 double MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::evaluate_lambdaf(
-    const CORE::LINALG::Matrix<3, 3>& C, const int gp, const int eleGID) const
+    const Core::LinAlg::Matrix<3, 3>& C, const int gp, const int eleGID) const
 {
   return std::sqrt(C.Dot(anisotropy_extension_.GetStructuralTensor(gp, 0)));
 }

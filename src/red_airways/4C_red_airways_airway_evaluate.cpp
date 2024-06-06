@@ -26,13 +26,13 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------*
  |evaluate the element (public)                            ismail 01/10|
  *---------------------------------------------------------------------*/
-int DRT::ELEMENTS::RedAirway::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
-    CORE::LINALG::SerialDenseVector& elevec3)
+int Discret::ELEMENTS::RedAirway::Evaluate(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
+    Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
+    Core::LinAlg::SerialDenseVector& elevec3)
 {
-  DRT::ELEMENTS::RedAirway::ActionType act = RedAirway::none;
+  Discret::ELEMENTS::RedAirway::ActionType act = RedAirway::none;
 
   // get the action required
   std::string action = params.get<std::string>("action", "none");
@@ -81,13 +81,13 @@ int DRT::ELEMENTS::RedAirway::Evaluate(Teuchos::ParameterList& params,
   /*
   Here one must add the steps for evaluating an element
   */
-  Teuchos::RCP<CORE::MAT::Material> mat = Material();
+  Teuchos::RCP<Core::Mat::Material> mat = Material();
 
   switch (act)
   {
     case calc_sys_matrix_rhs:
     {
-      return DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->Evaluate(
+      return Discret::ELEMENTS::RedAirwayImplInterface::Impl(this)->Evaluate(
           this, params, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3, mat);
     }
     break;
@@ -97,37 +97,37 @@ int DRT::ELEMENTS::RedAirway::Evaluate(Teuchos::ParameterList& params,
     break;
     case get_initial_state:
     {
-      DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->Initial(
+      Discret::ELEMENTS::RedAirwayImplInterface::Impl(this)->Initial(
           this, params, discretization, lm, elevec1, elevec2, mat);
     }
     break;
     case set_bc:
     {
-      DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->EvaluateTerminalBC(
+      Discret::ELEMENTS::RedAirwayImplInterface::Impl(this)->EvaluateTerminalBC(
           this, params, discretization, lm, elevec1, mat);
     }
     break;
     case calc_flow_rates:
     {
-      DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->CalcFlowRates(
+      Discret::ELEMENTS::RedAirwayImplInterface::Impl(this)->CalcFlowRates(
           this, params, discretization, lm, mat);
     }
     break;
     case get_coupled_values:
     {
-      DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->GetCoupledValues(
+      Discret::ELEMENTS::RedAirwayImplInterface::Impl(this)->GetCoupledValues(
           this, params, discretization, lm, mat);
     }
     break;
     case get_junction_volume_mix:
     {
-      DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->get_junction_volume_mix(
+      Discret::ELEMENTS::RedAirwayImplInterface::Impl(this)->get_junction_volume_mix(
           this, params, discretization, elevec1, lm, mat);
     }
     break;
     case calc_cfl:
     {
-      DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->CalcCFL(
+      Discret::ELEMENTS::RedAirwayImplInterface::Impl(this)->CalcCFL(
           this, params, discretization, lm, mat);
     }
     break;
@@ -138,25 +138,25 @@ int DRT::ELEMENTS::RedAirway::Evaluate(Teuchos::ParameterList& params,
     break;
     case eval_nodal_ess_vals:
     {
-      DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->eval_nodal_essential_values(
+      Discret::ELEMENTS::RedAirwayImplInterface::Impl(this)->eval_nodal_essential_values(
           this, params, discretization, elevec1, elevec2, elevec3, lm, mat);
     }
     break;
     case update_scatra:
     {
-      DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->update_scatra(
+      Discret::ELEMENTS::RedAirwayImplInterface::Impl(this)->update_scatra(
           this, params, discretization, lm, mat);
     }
     break;
     case update_elem12_scatra:
     {
-      DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->UpdateElem12Scatra(
+      Discret::ELEMENTS::RedAirwayImplInterface::Impl(this)->UpdateElem12Scatra(
           this, params, discretization, lm, mat);
     }
     break;
     case calc_elem_volumes:
     {
-      DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->CalcElemVolume(
+      Discret::ELEMENTS::RedAirwayImplInterface::Impl(this)->CalcElemVolume(
           this, params, discretization, lm, mat);
     }
     break;
@@ -166,7 +166,7 @@ int DRT::ELEMENTS::RedAirway::Evaluate(Teuchos::ParameterList& params,
   }  // end of switch(act)
 
   return 0;
-}  // end of DRT::ELEMENTS::RedAirway::Evaluate
+}  // end of Discret::ELEMENTS::RedAirway::Evaluate
 
 
 /*----------------------------------------------------------------------*
@@ -174,10 +174,10 @@ int DRT::ELEMENTS::RedAirway::Evaluate(Teuchos::ParameterList& params,
  |                                                                      |
  |  The function is just a dummy.                                       |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::RedAirway::evaluate_neumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
-    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
-    CORE::LINALG::SerialDenseMatrix* elemat1)
+int Discret::ELEMENTS::RedAirway::evaluate_neumann(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
+    Core::LinAlg::SerialDenseMatrix* elemat1)
 {
   return 0;
 }
@@ -188,9 +188,9 @@ int DRT::ELEMENTS::RedAirway::evaluate_neumann(Teuchos::ParameterList& params,
  |                                                                      |
  |  The function is just a dummy.                                       |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::RedAirway::evaluate_dirichlet(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
-    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1)
+int Discret::ELEMENTS::RedAirway::evaluate_dirichlet(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1)
 {
   return 0;
 }
@@ -200,17 +200,17 @@ int DRT::ELEMENTS::RedAirway::evaluate_dirichlet(Teuchos::ParameterList& params,
  | get optimal gaussrule for discretisation type                        |
  |                                                                      |
  *----------------------------------------------------------------------*/
-CORE::FE::GaussRule1D DRT::ELEMENTS::RedAirway::get_optimal_gaussrule(
-    const CORE::FE::CellType& distype)
+Core::FE::GaussRule1D Discret::ELEMENTS::RedAirway::get_optimal_gaussrule(
+    const Core::FE::CellType& distype)
 {
-  CORE::FE::GaussRule1D rule = CORE::FE::GaussRule1D::undefined;
+  Core::FE::GaussRule1D rule = Core::FE::GaussRule1D::undefined;
   switch (distype)
   {
-    case CORE::FE::CellType::line2:
-      rule = CORE::FE::GaussRule1D::line_2point;
+    case Core::FE::CellType::line2:
+      rule = Core::FE::GaussRule1D::line_2point;
       break;
-    case CORE::FE::CellType::line3:
-      rule = CORE::FE::GaussRule1D::line_3point;
+    case Core::FE::CellType::line3:
+      rule = Core::FE::GaussRule1D::line_3point;
       break;
     default:
       FOUR_C_THROW("unknown number of nodes for gaussrule initialization");
@@ -224,15 +224,15 @@ CORE::FE::GaussRule1D DRT::ELEMENTS::RedAirway::get_optimal_gaussrule(
  | Check, whether higher order derivatives for shape functions          |
  | (dxdx, dxdy, ...) are necessary|                                     |
  *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::RedAirway::is_higher_order_element(const CORE::FE::CellType distype) const
+bool Discret::ELEMENTS::RedAirway::is_higher_order_element(const Core::FE::CellType distype) const
 {
   bool hoel = true;
   switch (distype)
   {
-    case CORE::FE::CellType::line3:
+    case Core::FE::CellType::line3:
       hoel = true;
       break;
-    case CORE::FE::CellType::line2:
+    case Core::FE::CellType::line2:
       hoel = false;
       break;
     default:

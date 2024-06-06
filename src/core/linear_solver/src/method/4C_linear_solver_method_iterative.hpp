@@ -21,7 +21,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINEAR_SOLVER
+namespace Core::LinearSolver
 {
   //! krylov subspace linear solvers with right-side preconditioning
   template <class MatrixType, class VectorType>
@@ -42,7 +42,7 @@ namespace CORE::LINEAR_SOLVER
      */
     void Setup(Teuchos::RCP<MatrixType> matrix, Teuchos::RCP<VectorType> x,
         Teuchos::RCP<VectorType> b, const bool refactor, const bool reset,
-        Teuchos::RCP<CORE::LINALG::KrylovProjector> projector) override;
+        Teuchos::RCP<Core::LinAlg::KrylovProjector> projector) override;
 
     //! Actual call to the underlying Belos solver
     int Solve() override;
@@ -77,9 +77,9 @@ namespace CORE::LINEAR_SOLVER
      * @param isCrsMatrix Boolean flag to indicate Epetra_CrsMatrix (true) or block matrix (false)
      * @param projector Krylov projector
      */
-    Teuchos::RCP<CORE::LINEAR_SOLVER::PreconditionerTypeBase> create_preconditioner(
+    Teuchos::RCP<Core::LinearSolver::PreconditionerTypeBase> create_preconditioner(
         Teuchos::ParameterList& solverlist, const bool isCrsMatrix,
-        Teuchos::RCP<CORE::LINALG::KrylovProjector> projector);
+        Teuchos::RCP<Core::LinAlg::KrylovProjector> projector);
 
     //! a communicator
     const Epetra_Comm& comm_;
@@ -103,7 +103,7 @@ namespace CORE::LINEAR_SOLVER
     int numiters_{-1};
 
     //! preconditioner object
-    Teuchos::RCP<CORE::LINEAR_SOLVER::PreconditionerTypeBase> preconditioner_;
+    Teuchos::RCP<Core::LinearSolver::PreconditionerTypeBase> preconditioner_;
 
     /*! \brief Check if active set has changed. If yes, enforce to rebuild the preconditioner.
      *
@@ -139,7 +139,7 @@ namespace CORE::LINEAR_SOLVER
 
     //!@}
   };
-}  // namespace CORE::LINEAR_SOLVER
+}  // namespace Core::LinearSolver
 
 FOUR_C_NAMESPACE_CLOSE
 

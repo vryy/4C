@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-ADAPTER::AleFpsiWrapper::AleFpsiWrapper(Teuchos::RCP<Ale> ale) : AleWrapper(ale)
+Adapter::AleFpsiWrapper::AleFpsiWrapper(Teuchos::RCP<Ale> ale) : AleWrapper(ale)
 {
   // create the FSI interface
   interface_ = Teuchos::rcp(new ALE::UTILS::MapExtractor);
@@ -29,7 +29,7 @@ ADAPTER::AleFpsiWrapper::AleFpsiWrapper(Teuchos::RCP<Ale> ale) : AleWrapper(ale)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ADAPTER::AleFpsiWrapper::apply_interface_displacements(Teuchos::RCP<const Epetra_Vector> idisp)
+void Adapter::AleFpsiWrapper::apply_interface_displacements(Teuchos::RCP<const Epetra_Vector> idisp)
 {
   interface_->InsertFPSICondVector(idisp, WriteAccessDispnp());
 
@@ -38,7 +38,7 @@ void ADAPTER::AleFpsiWrapper::apply_interface_displacements(Teuchos::RCP<const E
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ADAPTER::AleFpsiWrapper::apply_fsi_interface_displacements(
+void Adapter::AleFpsiWrapper::apply_fsi_interface_displacements(
     Teuchos::RCP<const Epetra_Vector> idisp)
 {
   interface_->InsertFSICondVector(idisp, WriteAccessDispnp());
@@ -49,7 +49,7 @@ void ADAPTER::AleFpsiWrapper::apply_fsi_interface_displacements(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<const ALE::UTILS::MapExtractor> ADAPTER::AleFpsiWrapper::Interface() const
+Teuchos::RCP<const ALE::UTILS::MapExtractor> Adapter::AleFpsiWrapper::Interface() const
 {
   return interface_;
 }

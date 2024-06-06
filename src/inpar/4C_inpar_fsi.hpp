@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /* The coupling methods for FSI. */
 /*----------------------------------------------------------------------*/
-// ToDo: put into the namespace INPAR::FSI ! No typedef?
+// ToDo: put into the namespace Inpar::FSI ! No typedef?
 typedef enum FsiCoupling
 {
   fsi_coupling_freesurface = -1,
@@ -62,7 +62,7 @@ typedef enum FsiCoupling
   fsi_iter_mortar_monolithicfluidsplit_saddlepoint
 } FSI_COUPLING;
 
-namespace INPAR
+namespace Inpar
 {
   namespace FSI
   {
@@ -79,7 +79,7 @@ namespace INPAR
     {
       PreconditionedKrylov,  ///< BGS(AMG)
       HybridSchwarz,         ///< hybrid additive/multiplicative Schwarz
-      LinalgSolver           ///< use CORE::LINALG::Solver interface
+      LinalgSolver           ///< use Core::LinAlg::Solver interface
     };
 
     enum HybridASType
@@ -172,11 +172,11 @@ namespace INPAR
 
     /// set specific fsi conditions
     void SetValidConditions(
-        std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist);
+        std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist);
 
   }  // namespace FSI
 
-}  // namespace INPAR
+}  // namespace Inpar
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

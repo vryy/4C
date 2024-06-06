@@ -18,11 +18,11 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                             vuong 08/16 |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
-    CORE::LINALG::SerialDenseVector& elevec3)
+int Discret::ELEMENTS::PoroFluidMultiPhaseBoundary::Evaluate(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
+    Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
+    Core::LinAlg::SerialDenseVector& elevec3)
 {
   FOUR_C_THROW("not implemented. Use the Evaluate() method with Location Array instead!");
   return -1;
@@ -31,21 +31,21 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Evaluate(Teuchos::ParameterList&
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                             vuong 08/16 |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, LocationArray& la,
-    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
-    CORE::LINALG::SerialDenseVector& elevec3)
+int Discret::ELEMENTS::PoroFluidMultiPhaseBoundary::Evaluate(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, LocationArray& la,
+    Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
+    Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
+    Core::LinAlg::SerialDenseVector& elevec3)
 {
   // we assume here, that numdofpernode is equal for every node within
   // the element and does not change during the computations
   const int numdofpernode = NumDofPerNode(*(Nodes()[0]));
 
   // copy pointers to matrices and vectors into std::vector
-  std::vector<CORE::LINALG::SerialDenseMatrix*> elemat(2);
+  std::vector<Core::LinAlg::SerialDenseMatrix*> elemat(2);
   elemat[0] = &elemat1;
   elemat[1] = &elemat2;
-  std::vector<CORE::LINALG::SerialDenseVector*> elevec(3);
+  std::vector<Core::LinAlg::SerialDenseVector*> elevec(3);
   elevec[0] = &elevec1;
   elevec[1] = &elevec2;
   elevec[2] = &elevec3;
@@ -56,7 +56,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Evaluate(Teuchos::ParameterList&
   // If this element has special features/ methods that do not fit in the
   // generalized implementation class, you have to do a switch here in order to
   // call element-specific routines
-  return DRT::ELEMENTS::PoroFluidMultiPhaseBoundaryFactory::ProvideImpl(
+  return Discret::ELEMENTS::PoroFluidMultiPhaseBoundaryFactory::ProvideImpl(
       this, numdofpernode, discretization.Name())
       ->Evaluate(this, params, discretization, la, elemat, elevec);
 }
@@ -65,17 +65,17 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Evaluate(Teuchos::ParameterList&
 /*----------------------------------------------------------------------*
  | evaluate Neumann boundary condition on boundary element   vuong 08/16 |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::evaluate_neumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
-    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
-    CORE::LINALG::SerialDenseMatrix* elemat1)
+int Discret::ELEMENTS::PoroFluidMultiPhaseBoundary::evaluate_neumann(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
+    Core::LinAlg::SerialDenseMatrix* elemat1)
 {
   // add Neumann boundary condition to parameter list
-  params.set<CORE::Conditions::Condition*>("condition", &condition);
+  params.set<Core::Conditions::Condition*>("condition", &condition);
 
   // build the location array
   LocationArray la(discretization.NumDofSets());
-  CORE::Elements::Element::LocationVector(discretization, la, false);
+  Core::Elements::Element::LocationVector(discretization, la, false);
 
   // evaluate boundary element
   return Evaluate(params, discretization, la, *elemat1, *elemat1, elevec1, elevec1, elevec1);

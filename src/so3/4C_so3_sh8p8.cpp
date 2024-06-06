@@ -21,40 +21,43 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-DRT::ELEMENTS::SoSh8p8Type DRT::ELEMENTS::SoSh8p8Type::instance_;
+Discret::ELEMENTS::SoSh8p8Type Discret::ELEMENTS::SoSh8p8Type::instance_;
 
-DRT::ELEMENTS::SoSh8p8Type& DRT::ELEMENTS::SoSh8p8Type::Instance() { return instance_; }
+Discret::ELEMENTS::SoSh8p8Type& Discret::ELEMENTS::SoSh8p8Type::Instance() { return instance_; }
 
-CORE::COMM::ParObject* DRT::ELEMENTS::SoSh8p8Type::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Discret::ELEMENTS::SoSh8p8Type::Create(
+    const std::vector<char>& data)
 {
-  auto* object = new DRT::ELEMENTS::SoSh8p8(-1, -1);
+  auto* object = new Discret::ELEMENTS::SoSh8p8(-1, -1);
   object->Unpack(data);
   return object;
 }
 
 
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoSh8p8Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoSh8p8Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoSh8p8(id, owner));
+    Teuchos::RCP<Core::Elements::Element> ele =
+        Teuchos::rcp(new Discret::ELEMENTS::SoSh8p8(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoSh8p8Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoSh8p8Type::Create(
     const int id, const int owner)
 {
-  Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoSh8p8(id, owner));
+  Teuchos::RCP<Core::Elements::Element> ele =
+      Teuchos::rcp(new Discret::ELEMENTS::SoSh8p8(id, owner));
   return ele;
 }
 
 
-void DRT::ELEMENTS::SoSh8p8Type::nodal_block_information(
-    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+void Discret::ELEMENTS::SoSh8p8Type::nodal_block_information(
+    Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 4;
   dimns = 4;
@@ -62,20 +65,20 @@ void DRT::ELEMENTS::SoSh8p8Type::nodal_block_information(
   np = 1;
 }
 
-CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::SoSh8p8Type::ComputeNullSpace(
-    CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
+Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SoSh8p8Type::ComputeNullSpace(
+    Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  CORE::LINALG::SerialDenseMatrix nullspace;
+  Core::LinAlg::SerialDenseMatrix nullspace;
   FOUR_C_THROW("method ComputeNullSpace not implemented!");
   return nullspace;
 }
 
-void DRT::ELEMENTS::SoSh8p8Type::setup_element_definition(
-    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+void Discret::ELEMENTS::SoSh8p8Type::setup_element_definition(
+    std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
-  std::map<std::string, INPUT::LineDefinition>& defs = definitions[get_element_type_string()];
+  std::map<std::string, Input::LineDefinition>& defs = definitions[get_element_type_string()];
 
-  defs["HEX8"] = INPUT::LineDefinition::Builder()
+  defs["HEX8"] = Input::LineDefinition::Builder()
                      .AddIntVector("HEX8", 8)
                      .AddNamedInt("MAT")
                      .AddNamedString("KINEM")
@@ -98,35 +101,37 @@ void DRT::ELEMENTS::SoSh8p8Type::setup_element_definition(
  *----------------------------------------------------------------------*/
 // 9-Voigt C-index                                         0 1 2  3 4 5  6 7 8
 // TODO this notation does not fit our usual definitions
-const int DRT::ELEMENTS::SoSh8p8::VOIGT9ROW_INCONSISTENT_[NUMDFGR_] = {0, 1, 2, 0, 1, 2, 0, 2, 1};
-const int DRT::ELEMENTS::SoSh8p8::VOIGT9COL_INCONSISTENT_[NUMDFGR_] = {0, 1, 2, 1, 2, 0, 2, 1, 0};
+const int Discret::ELEMENTS::SoSh8p8::VOIGT9ROW_INCONSISTENT_[NUMDFGR_] = {
+    0, 1, 2, 0, 1, 2, 0, 2, 1};
+const int Discret::ELEMENTS::SoSh8p8::VOIGT9COL_INCONSISTENT_[NUMDFGR_] = {
+    0, 1, 2, 1, 2, 0, 2, 1, 0};
 
 // tensor indices ij = 11, 12, 13, 21, 22, 23, 31, 32, 33
 // C indices           00, 01, 02, 10, 11, 12, 20, 21, 22
 // Access : 3*i+j
 // 9-Voigt C-indices    0   3   6   8   1   4   5   7   2
 // TODO this notation does not fit our usual definitions
-const int DRT::ELEMENTS::SoSh8p8::VOIGT3X3NONSYM_INCONSISTENT_[NUMDFGR_] = {
+const int Discret::ELEMENTS::SoSh8p8::VOIGT3X3NONSYM_INCONSISTENT_[NUMDFGR_] = {
     0, 3, 6, 8, 1, 4, 5, 7, 2};
 
 // 24 displacement and 8 pressure DOFs into 32 total element DOFs
-const int DRT::ELEMENTS::SoSh8p8::DISPTODISPPRES_[NUMDISP_] = {
+const int Discret::ELEMENTS::SoSh8p8::DISPTODISPPRES_[NUMDISP_] = {
     0, 1, 2, 4, 5, 6, 8, 9, 10, 12, 13, 14, 16, 17, 18, 20, 21, 22, 24, 25, 26, 28, 29, 30};
-const int DRT::ELEMENTS::SoSh8p8::PRESTODISPPRES_[NUMPRES_] = {3, 7, 11, 15, 19, 23, 27, 31};
+const int Discret::ELEMENTS::SoSh8p8::PRESTODISPPRES_[NUMPRES_] = {3, 7, 11, 15, 19, 23, 27, 31};
 
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            bborn 03/09|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::SoSh8p8::SoSh8p8(int id, int owner) : DRT::ELEMENTS::SoSh8(id, owner)
+Discret::ELEMENTS::SoSh8p8::SoSh8p8(int id, int owner) : Discret::ELEMENTS::SoSh8(id, owner)
 {
   Teuchos::RCP<const Teuchos::ParameterList> params =
-      GLOBAL::Problem::Instance()->getParameterList();
+      Global::Problem::Instance()->getParameterList();
   if (params != Teuchos::null)
   {
-    DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
-        GLOBAL::Problem::Instance()->structural_dynamic_params(), get_element_type_string());
+    Discret::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
+        Global::Problem::Instance()->structural_dynamic_params(), get_element_type_string());
   }
   return;
 }
@@ -135,7 +140,8 @@ DRT::ELEMENTS::SoSh8p8::SoSh8p8(int id, int owner) : DRT::ELEMENTS::SoSh8(id, ow
  |  copy-ctor (public)                                       bborn 03/09|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::SoSh8p8::SoSh8p8(const DRT::ELEMENTS::SoSh8p8& old) : DRT::ELEMENTS::SoSh8(old)
+Discret::ELEMENTS::SoSh8p8::SoSh8p8(const Discret::ELEMENTS::SoSh8p8& old)
+    : Discret::ELEMENTS::SoSh8(old)
 {
   return;
 }
@@ -144,9 +150,9 @@ DRT::ELEMENTS::SoSh8p8::SoSh8p8(const DRT::ELEMENTS::SoSh8p8& old) : DRT::ELEMEN
  |  Deep copy this instance of Solid3 and return pointer to it (public) |
  |                                                          bborn 03/09 |
  *----------------------------------------------------------------------*/
-CORE::Elements::Element* DRT::ELEMENTS::SoSh8p8::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::SoSh8p8::Clone() const
 {
-  auto* newelement = new DRT::ELEMENTS::SoSh8p8(*this);
+  auto* newelement = new Discret::ELEMENTS::SoSh8p8(*this);
   return newelement;
 }
 
@@ -154,16 +160,16 @@ CORE::Elements::Element* DRT::ELEMENTS::SoSh8p8::Clone() const
  |  Pack data                                                  (public) |
  |                                                          bborn 03/09 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8p8::Pack(CORE::COMM::PackBuffer& data) const
+void Discret::ELEMENTS::SoSh8p8::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data, type);
   // add base class So_sh8 Element
-  DRT::ELEMENTS::SoSh8::Pack(data);
+  Discret::ELEMENTS::SoSh8::Pack(data);
   // techniques
   AddtoPack(data, stab_);
   AddtoPack(data, ans_);
@@ -177,16 +183,16 @@ void DRT::ELEMENTS::SoSh8p8::Pack(CORE::COMM::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                          bborn 03/09 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8p8::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::SoSh8p8::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract base class So_sh8 Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
-  DRT::ELEMENTS::SoSh8::Unpack(basedata);
+  Discret::ELEMENTS::SoSh8::Unpack(basedata);
   // techniques
   stab_ = static_cast<StabilisationType>(ExtractInt(position, data));
   ans_ = static_cast<AnsType>(ExtractInt(position, data));
@@ -203,7 +209,7 @@ void DRT::ELEMENTS::SoSh8p8::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                              bborn 03/09|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8p8::Print(std::ostream& os) const
+void Discret::ELEMENTS::SoSh8p8::Print(std::ostream& os) const
 {
   os << "So_sh8p8 ";
   Element::Print(os);
@@ -214,11 +220,11 @@ void DRT::ELEMENTS::SoSh8p8::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  extrapolation of quantities at the GPs to the nodes      tk 04/09   |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8p8::sosh8p8_expol(
-    CORE::LINALG::Matrix<NUMGPT_, MAT::NUM_STRESS_3D>& stresses, Epetra_MultiVector& expolstresses)
+void Discret::ELEMENTS::SoSh8p8::sosh8p8_expol(
+    Core::LinAlg::Matrix<NUMGPT_, Mat::NUM_STRESS_3D>& stresses, Epetra_MultiVector& expolstresses)
 {
   // static variables, that are the same for every element
-  static CORE::LINALG::Matrix<NUMNOD_, NUMGPT_> expol;
+  static Core::LinAlg::Matrix<NUMNOD_, NUMGPT_> expol;
   static bool isfilled;
 
 
@@ -272,7 +278,7 @@ void DRT::ELEMENTS::SoSh8p8::sosh8p8_expol(
     isfilled = true;
   }
 
-  CORE::LINALG::Matrix<NUMNOD_, MAT::NUM_STRESS_3D> nodalstresses;
+  Core::LinAlg::Matrix<NUMNOD_, Mat::NUM_STRESS_3D> nodalstresses;
 
   nodalstresses.Multiply(expol, stresses);
 
@@ -283,7 +289,7 @@ void DRT::ELEMENTS::SoSh8p8::sosh8p8_expol(
     if (lid >= 0)  // rownode
     {
       const double invmyadjele = 1.0 / Nodes()[i]->NumElement();
-      for (int j = 0; j < MAT::NUM_STRESS_3D; ++j)
+      for (int j = 0; j < Mat::NUM_STRESS_3D; ++j)
         (*(expolstresses(j)))[lid] += nodalstresses(i, j) * invmyadjele;
     }
   }

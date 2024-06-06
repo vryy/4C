@@ -21,13 +21,13 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | define static class member                                 sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-MAT::ParticleMaterialSPHBoundaryType MAT::ParticleMaterialSPHBoundaryType::instance_;
+Mat::ParticleMaterialSPHBoundaryType Mat::ParticleMaterialSPHBoundaryType::instance_;
 
 /*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-MAT::PAR::ParticleMaterialSPHBoundary::ParticleMaterialSPHBoundary(
-    Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::ParticleMaterialSPHBoundary::ParticleMaterialSPHBoundary(
+    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : Parameter(matdata), ParticleMaterialBase(matdata), ParticleMaterialThermo(matdata)
 {
   // empty constructor
@@ -36,16 +36,17 @@ MAT::PAR::ParticleMaterialSPHBoundary::ParticleMaterialSPHBoundary(
 /*---------------------------------------------------------------------------*
  | create material instance of matching type with parameters  sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ParticleMaterialSPHBoundary::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::ParticleMaterialSPHBoundary::create_material()
 {
-  return Teuchos::rcp(new MAT::ParticleMaterialSPHBoundary(this));
+  return Teuchos::rcp(new Mat::ParticleMaterialSPHBoundary(this));
 }
 
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
-CORE::COMM::ParObject* MAT::ParticleMaterialSPHBoundaryType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::ParticleMaterialSPHBoundaryType::Create(
+    const std::vector<char>& data)
 {
-  MAT::ParticleMaterialSPHBoundary* particlematsphboundary = new MAT::ParticleMaterialSPHBoundary();
+  Mat::ParticleMaterialSPHBoundary* particlematsphboundary = new Mat::ParticleMaterialSPHBoundary();
   particlematsphboundary->Unpack(data);
   return particlematsphboundary;
 }
@@ -53,7 +54,7 @@ CORE::COMM::ParObject* MAT::ParticleMaterialSPHBoundaryType::Create(const std::v
 /*---------------------------------------------------------------------------*
  | constructor (empty material object)                        sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-MAT::ParticleMaterialSPHBoundary::ParticleMaterialSPHBoundary() : params_(nullptr)
+Mat::ParticleMaterialSPHBoundary::ParticleMaterialSPHBoundary() : params_(nullptr)
 {
   // empty constructor
 }
@@ -61,8 +62,8 @@ MAT::ParticleMaterialSPHBoundary::ParticleMaterialSPHBoundary() : params_(nullpt
 /*---------------------------------------------------------------------------*
  | constructor (with given material parameters)               sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-MAT::ParticleMaterialSPHBoundary::ParticleMaterialSPHBoundary(
-    MAT::PAR::ParticleMaterialSPHBoundary* params)
+Mat::ParticleMaterialSPHBoundary::ParticleMaterialSPHBoundary(
+    Mat::PAR::ParticleMaterialSPHBoundary* params)
     : params_(params)
 {
   // empty constructor
@@ -71,9 +72,9 @@ MAT::ParticleMaterialSPHBoundary::ParticleMaterialSPHBoundary(
 /*---------------------------------------------------------------------------*
  | pack                                                       sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-void MAT::ParticleMaterialSPHBoundary::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::ParticleMaterialSPHBoundary::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -89,25 +90,25 @@ void MAT::ParticleMaterialSPHBoundary::Pack(CORE::COMM::PackBuffer& data) const
 /*---------------------------------------------------------------------------*
  | unpack                                                     sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-void MAT::ParticleMaterialSPHBoundary::Unpack(const std::vector<char>& data)
+void Mat::ParticleMaterialSPHBoundary::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
       // note: dynamic_cast needed due diamond inheritance structure
-      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = dynamic_cast<MAT::PAR::ParticleMaterialSPHBoundary*>(mat);
+        params_ = dynamic_cast<Mat::PAR::ParticleMaterialSPHBoundary*>(mat);
       else
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());

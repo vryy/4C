@@ -18,9 +18,9 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::GEO
+namespace Core::Geo
 {
-  namespace CUT
+  namespace Cut
   {
     class Element;
     class Facet;
@@ -36,7 +36,7 @@ namespace CORE::GEO
        \brief Constructor
        */
       BoundarycellIntegration(Element* elem, Facet* bcell,
-          const CORE::GEO::CUT::Point::PointPosition posi, int num_func)
+          const Core::Geo::Cut::Point::PointPosition posi, int num_func)
           : elem1_(elem), bcell_(bcell), position_(posi), num_func_(num_func)
       {
       }
@@ -46,7 +46,7 @@ namespace CORE::GEO
       Unlike facet integration facets, whose x-component of normal is zero, cannot be eliminated
       from the integration.
        */
-      CORE::LINALG::SerialDenseVector generate_boundary_cell_integration_rule();
+      Core::LinAlg::SerialDenseVector generate_boundary_cell_integration_rule();
 
       /*!
       \brief Returns the location of Gauss points over the boundarycell
@@ -56,7 +56,7 @@ namespace CORE::GEO
      private:
       Element* elem1_;
       Facet* bcell_;
-      const CORE::GEO::CUT::Point::PointPosition position_;
+      const Core::Geo::Cut::Point::PointPosition position_;
       int num_func_;
       std::vector<std::vector<double>> bcellgaus_pts_;
 
@@ -80,8 +80,8 @@ namespace CORE::GEO
       void bcell_gauss_point_gmsh(const std::vector<std::vector<double>> bcGausspts,
           const std::vector<std::vector<double>> corners);
     };
-  }  // namespace CUT
-}  // namespace CORE::GEO
+  }  // namespace Cut
+}  // namespace Core::Geo
 
 FOUR_C_NAMESPACE_CLOSE
 
