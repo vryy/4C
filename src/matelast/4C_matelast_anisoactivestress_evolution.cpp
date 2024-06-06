@@ -53,14 +53,14 @@ void Mat::Elastic::AnisoActiveStressEvolution::PackSummand(
     Core::Communication::PackBuffer& data) const
 {
   add_to_pack(data, tauc_n_);
-  anisotropy_extension_.PackAnisotropy(data);
+  anisotropy_extension_.pack_anisotropy(data);
 }
 
 void Mat::Elastic::AnisoActiveStressEvolution::UnpackSummand(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
   extract_from_pack(position, data, tauc_n_);
-  anisotropy_extension_.UnpackAnisotropy(data, position);
+  anisotropy_extension_.unpack_anisotropy(data, position);
 }
 
 void Mat::Elastic::AnisoActiveStressEvolution::register_anisotropy_extensions(
@@ -213,7 +213,7 @@ void Mat::Elastic::AnisoActiveStressEvolution::GetFiberVecs(
     return;
   }
 
-  fibervecs.push_back(anisotropy_extension_.GetFiber(BaseAnisotropyExtension::GPDEFAULT, 0));
+  fibervecs.push_back(anisotropy_extension_.get_fiber(BaseAnisotropyExtension::GPDEFAULT, 0));
 }
 
 // Update internal stress variables
@@ -222,7 +222,7 @@ void Mat::Elastic::AnisoActiveStressEvolution::Update() { tauc_n_ = tauc_np_; }
 void Mat::Elastic::AnisoActiveStressEvolution::SetFiberVecs(const double newgamma,
     const Core::LinAlg::Matrix<3, 3>& locsys, const Core::LinAlg::Matrix<3, 3>& defgrd)
 {
-  anisotropy_extension_.SetFiberVecs(newgamma, locsys, defgrd);
+  anisotropy_extension_.set_fiber_vecs(newgamma, locsys, defgrd);
 }
 
 FOUR_C_NAMESPACE_CLOSE

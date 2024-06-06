@@ -21,7 +21,7 @@ Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension::CoupAnisoExpoShearAnisotrop
 {
 }
 
-void Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension::PackAnisotropy(
+void Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension::pack_anisotropy(
     Core::Communication::PackBuffer& data) const
 {
   Core::Communication::ParObject::add_to_pack(data, scalar_products_);
@@ -30,7 +30,7 @@ void Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension::PackAnisotropy(
   Core::Communication::ParObject::add_to_pack(data, is_initialized_);
 }
 
-void Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension::UnpackAnisotropy(
+void Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension::unpack_anisotropy(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
   Core::Communication::ParObject::extract_from_pack(position, data, scalar_products_);
@@ -55,7 +55,7 @@ double Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension::GetScalarProduct(int
 }
 
 const Core::LinAlg::Matrix<3, 3>&
-Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension::GetStructuralTensor(int gp) const
+Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension::get_structural_tensor(int gp) const
 {
   if (!is_initialized_)
   {
@@ -109,7 +109,7 @@ void Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension::on_global_element_data
         DefaultAnisotropyExtension<2>::INIT_MODE_NODAL_FIBERS);
   }
 
-  if (get_anisotropy()->GetElementFibers().empty())
+  if (get_anisotropy()->get_element_fibers().empty())
   {
     FOUR_C_THROW("No element fibers are given with the FIBER1 FIBER2 notation");
   }
@@ -118,12 +118,12 @@ void Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension::on_global_element_data
   structural_tensors_.resize(1);
   structural_tensors_stress_.resize(1);
   scalar_products_[0] = get_anisotropy()
-                            ->GetElementFiber(fiber_ids_[0])
-                            .Dot(get_anisotropy()->GetElementFiber(fiber_ids_[1]));
+                            ->get_element_fiber(fiber_ids_[0])
+                            .Dot(get_anisotropy()->get_element_fiber(fiber_ids_[1]));
 
   Core::LinAlg::Matrix<3, 3> fiber1fiber2T(false);
-  fiber1fiber2T.MultiplyNT(get_anisotropy()->GetElementFiber(fiber_ids_[0]),
-      get_anisotropy()->GetElementFiber(fiber_ids_[1]));
+  fiber1fiber2T.MultiplyNT(get_anisotropy()->get_element_fiber(fiber_ids_[0]),
+      get_anisotropy()->get_element_fiber(fiber_ids_[1]));
 
   structural_tensors_[0].Update(0.5, fiber1fiber2T);
   structural_tensors_[0].UpdateT(0.5, fiber1fiber2T, 1.0);
@@ -151,7 +151,7 @@ void Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension::on_global_gp_data_init
         DefaultAnisotropyExtension<2>::INIT_MODE_NODAL_FIBERS);
   }
 
-  if (get_anisotropy()->GetNumberOfGPFibers() == 0)
+  if (get_anisotropy()->get_number_of_gauss_point_fibers() == 0)
   {
     FOUR_C_THROW("No element fibers are given with the FIBER1 FIBER2 notation");
   }
@@ -163,12 +163,12 @@ void Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension::on_global_gp_data_init
   for (auto gp = 0; gp < get_anisotropy()->get_number_of_gauss_points(); ++gp)
   {
     scalar_products_[gp] = get_anisotropy()
-                               ->GetGPFiber(gp, fiber_ids_[0])
-                               .Dot(get_anisotropy()->GetGPFiber(gp, fiber_ids_[1]));
+                               ->get_gauss_point_fiber(gp, fiber_ids_[0])
+                               .Dot(get_anisotropy()->get_gauss_point_fiber(gp, fiber_ids_[1]));
 
     Core::LinAlg::Matrix<3, 3> fiber1fiber2T(false);
-    fiber1fiber2T.MultiplyNT(get_anisotropy()->GetGPFiber(gp, fiber_ids_[0]),
-        get_anisotropy()->GetGPFiber(gp, fiber_ids_[1]));
+    fiber1fiber2T.MultiplyNT(get_anisotropy()->get_gauss_point_fiber(gp, fiber_ids_[0]),
+        get_anisotropy()->get_gauss_point_fiber(gp, fiber_ids_[1]));
 
     structural_tensors_[gp].Update(0.5, fiber1fiber2T);
     structural_tensors_[gp].UpdateT(0.5, fiber1fiber2T, 1.0);
@@ -202,13 +202,13 @@ void Mat::Elastic::CoupAnisoExpoShear::register_anisotropy_extensions(Mat::Aniso
 
 void Mat::Elastic::CoupAnisoExpoShear::PackSummand(Core::Communication::PackBuffer& data) const
 {
-  anisotropy_extension_.PackAnisotropy(data);
+  anisotropy_extension_.pack_anisotropy(data);
 }
 
 void Mat::Elastic::CoupAnisoExpoShear::UnpackSummand(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
-  anisotropy_extension_.UnpackAnisotropy(data, position);
+  anisotropy_extension_.unpack_anisotropy(data, position);
 }
 
 void Mat::Elastic::CoupAnisoExpoShear::GetFiberVecs(

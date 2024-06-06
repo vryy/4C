@@ -202,17 +202,17 @@ namespace CONTACT
 
       for (int i = 0; i < size1; i++)
       {
-        angles[i] = Core::FADUtils::CastToDouble(cpvariables_[i]->GetAngle());
+        angles[i] = Core::FADUtils::CastToDouble(cpvariables_[i]->get_angle());
       }
 
       for (int i = size1; i < size2 + size1; i++)
       {
-        angles[i] = Core::FADUtils::CastToDouble(gpvariables_[i - size1]->GetAngle());
+        angles[i] = Core::FADUtils::CastToDouble(gpvariables_[i - size1]->get_angle());
       }
 
       for (int i = size1 + size2; i < size1 + size2 + size3; i++)
       {
-        angles[i] = Core::FADUtils::CastToDouble(epvariables_[i - size1 - size2]->GetAngle());
+        angles[i] = Core::FADUtils::CastToDouble(epvariables_[i - size1 - size2]->get_angle());
       }
 
       return angles;

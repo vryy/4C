@@ -91,7 +91,7 @@ namespace Mat
        *
        * \param data data array to pack to
        */
-      void PackAnisotropy(Core::Communication::PackBuffer& data) const override;
+      void pack_anisotropy(Core::Communication::PackBuffer& data) const override;
 
       /*!
        * \brief Unpack data from the pack from parallel distribution and restart
@@ -99,7 +99,7 @@ namespace Mat
        * \param data data array to unpack from
        * \param position position of the data
        */
-      void UnpackAnisotropy(
+      void unpack_anisotropy(
           const std::vector<char>& data, std::vector<char>::size_type& position) override;
 
       /*!

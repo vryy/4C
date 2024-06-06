@@ -46,7 +46,7 @@ namespace Mat
        * \param gp Gauss point
        * \return const Core::LinAlg::Matrix<3, 3>&
        */
-      virtual const Core::LinAlg::Matrix<3, 3>& GetStructuralTensor(int gp) const = 0;
+      virtual const Core::LinAlg::Matrix<3, 3>& get_structural_tensor(int gp) const = 0;
 
       /*!
        * \brief Returns the structural tensor in stress like Voigt notation that should be used

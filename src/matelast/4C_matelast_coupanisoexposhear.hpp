@@ -42,14 +42,14 @@ namespace Mat
 
       ///@name Packing and Unpacking
       /// @{
-      void PackAnisotropy(Core::Communication::PackBuffer& data) const override;
+      void pack_anisotropy(Core::Communication::PackBuffer& data) const override;
 
-      void UnpackAnisotropy(
+      void unpack_anisotropy(
           const std::vector<char>& data, std::vector<char>::size_type& position) override;
       /// @}
 
       double GetScalarProduct(int gp) const override;
-      const Core::LinAlg::Matrix<3, 3>& GetStructuralTensor(int gp) const override;
+      const Core::LinAlg::Matrix<3, 3>& get_structural_tensor(int gp) const override;
       const Core::LinAlg::Matrix<6, 1>& get_structural_tensor_stress(int gp) const override;
 
       /*!

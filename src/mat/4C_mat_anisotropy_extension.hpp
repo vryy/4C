@@ -96,7 +96,7 @@ namespace Mat
      *
      * \param data
      */
-    void PackAnisotropy(Core::Communication::PackBuffer& data) const override;
+    void pack_anisotropy(Core::Communication::PackBuffer& data) const override;
 
     /*!
      * \brief Unpack all data from parallel distribution or restart
@@ -104,7 +104,7 @@ namespace Mat
      * \param data whole data array
      * \param position position of the current reader
      */
-    void UnpackAnisotropy(
+    void unpack_anisotropy(
         const std::vector<char>& data, std::vector<char>::size_type& position) override;
     /// @}
 
@@ -119,7 +119,7 @@ namespace Mat
      * @param i (in) : Id of the fiber
      * @return Reference to the vector of the fiber
      */
-    const Core::LinAlg::Matrix<3, 1>& GetFiber(int gp, int i) const override;
+    const Core::LinAlg::Matrix<3, 1>& get_fiber(int gp, int i) const override;
 
     /**
      * \brief Returns the i-th structural tensor at the Integration point in stress-like Voigt
@@ -142,7 +142,7 @@ namespace Mat
      * @param i (in) : Id of the fiber
      * @return Reference to Matrix of the structural tensor in tensor notation
      */
-    const Core::LinAlg::Matrix<3, 3>& GetStructuralTensor(int gp, int i) const override;
+    const Core::LinAlg::Matrix<3, 3>& get_structural_tensor(int gp, int i) const override;
     //@}
 
     /*!
@@ -176,7 +176,7 @@ namespace Mat
      *
      * \return int
      */
-    int GetFibersPerElement() const;
+    int get_fibers_per_element() const;
 
    protected:
     /*!

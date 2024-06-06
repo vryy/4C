@@ -118,7 +118,7 @@ void Mat::Mixture::Pack(Core::Communication::PackBuffer& data) const
   }
   add_to_pack(data, isPreEvaluatedInt);
 
-  anisotropy_.PackAnisotropy(data);
+  anisotropy_.pack_anisotropy(data);
 
   // pack all constituents
   // constituents are not accessible during post processing
@@ -179,7 +179,7 @@ void Mat::Mixture::Unpack(const std::vector<char>& data)
       is_pre_evaluated_[i] = static_cast<bool>(isPreEvaluatedInt[i]);
     }
 
-    anisotropy_.UnpackAnisotropy(data, position);
+    anisotropy_.unpack_anisotropy(data, position);
 
     // extract constituents
     // constituents are not accessible during post processing

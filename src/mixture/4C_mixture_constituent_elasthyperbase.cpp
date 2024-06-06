@@ -80,7 +80,7 @@ void MIXTURE::MixtureConstituentElastHyperBase::PackConstituent(
 
   Core::Communication::ParObject::add_to_pack(data, prestretch_);
 
-  cosy_anisotropy_extension_.PackAnisotropy(data);
+  cosy_anisotropy_extension_.pack_anisotropy(data);
 
   if (prestress_strategy_ != nullptr) prestress_strategy_->Pack(data);
 
@@ -128,7 +128,7 @@ void MIXTURE::MixtureConstituentElastHyperBase::UnpackConstituent(
 
   Core::Communication::ParObject::extract_from_pack(position, data, prestretch_);
 
-  cosy_anisotropy_extension_.UnpackAnisotropy(data, position);
+  cosy_anisotropy_extension_.unpack_anisotropy(data, position);
 
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {

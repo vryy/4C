@@ -54,14 +54,14 @@ void Mat::Elastic::CoupAnisoExpoActive::register_anisotropy_extensions(Mat::Anis
 void Mat::Elastic::CoupAnisoExpoActive::PackSummand(Core::Communication::PackBuffer& data) const
 {
   add_to_pack(data, lambdaact_);
-  anisotropy_extension_.PackAnisotropy(data);
+  anisotropy_extension_.pack_anisotropy(data);
 }
 
 void Mat::Elastic::CoupAnisoExpoActive::UnpackSummand(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
   extract_from_pack(position, data, lambdaact_);
-  anisotropy_extension_.UnpackAnisotropy(data, position);
+  anisotropy_extension_.unpack_anisotropy(data, position);
 
   d_p_iact_ = evaluated_psi_active();
 }
@@ -154,7 +154,7 @@ void Mat::Elastic::CoupAnisoExpoActive::add_active_stress_cmat_aniso(
     Core::LinAlg::Matrix<3, 3> const& CM, Core::LinAlg::Matrix<6, 6>& cmat,
     Core::LinAlg::Matrix<6, 1>& stress, const int gp, const int eleGID) const
 {
-  double lambda_sq = CM.Dot(anisotropy_extension_.GetStructuralTensor(gp, 0));
+  double lambda_sq = CM.Dot(anisotropy_extension_.get_structural_tensor(gp, 0));
 
   double dPIact_T = 0.0;
   dPIact_T = d_p_iact_;
@@ -169,7 +169,7 @@ void Mat::Elastic::CoupAnisoExpoActive::evaluate_first_derivatives_aniso(
     Core::LinAlg::Matrix<2, 1>& dPI_aniso, Core::LinAlg::Matrix<3, 3> const& rcg, int gp,
     int eleGID)
 {
-  double I4 = anisotropy_extension_.GetStructuralTensor(gp, 0).Dot(rcg);
+  double I4 = anisotropy_extension_.get_structural_tensor(gp, 0).Dot(rcg);
 
   double k1 = params_->k1_;
   double k2 = params_->k2_;
@@ -187,7 +187,7 @@ void Mat::Elastic::CoupAnisoExpoActive::evaluate_second_derivatives_aniso(
     Core::LinAlg::Matrix<3, 1>& ddPII_aniso, Core::LinAlg::Matrix<3, 3> const& rcg, int gp,
     int eleGID)
 {
-  double I4 = anisotropy_extension_.GetStructuralTensor(gp, 0).Dot(rcg);
+  double I4 = anisotropy_extension_.get_structural_tensor(gp, 0).Dot(rcg);
 
   double k1 = params_->k1_;
   double k2 = params_->k2_;
@@ -266,13 +266,13 @@ void Mat::Elastic::CoupAnisoExpoActive::GetFiberVecs(
     std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs)
 {
   // this method does not support Gauss point fibers
-  fibervecs.push_back(anisotropy_extension_.GetFiber(BaseAnisotropyExtension::GPDEFAULT, 0));
+  fibervecs.push_back(anisotropy_extension_.get_fiber(BaseAnisotropyExtension::GPDEFAULT, 0));
 }
 
 void Mat::Elastic::CoupAnisoExpoActive::SetFiberVecs(const double newgamma,
     const Core::LinAlg::Matrix<3, 3>& locsys, const Core::LinAlg::Matrix<3, 3>& defgrd)
 {
-  anisotropy_extension_.SetFiberVecs(newgamma, locsys, defgrd);
+  anisotropy_extension_.set_fiber_vecs(newgamma, locsys, defgrd);
 }
 
 double Mat::Elastic::CoupAnisoExpoActive::evaluated_psi_active() const

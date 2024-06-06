@@ -64,7 +64,7 @@ namespace
 
     [[nodiscard]] double GetScalarProduct(int gp) const override { return scalar_products_[gp]; }
 
-    [[nodiscard]] const Core::LinAlg::Matrix<3, 3>& GetStructuralTensor(int gp) const override
+    [[nodiscard]] const Core::LinAlg::Matrix<3, 3>& get_structural_tensor(int gp) const override
     {
       return tensors_.at(gp);
     }

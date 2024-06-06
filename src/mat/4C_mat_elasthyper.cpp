@@ -108,7 +108,7 @@ void Mat::ElastHyper::Pack(Core::Communication::PackBuffer& data) const
   add_to_pack(data, matid);
   summandProperties_.Pack(data);
 
-  anisotropy_.PackAnisotropy(data);
+  anisotropy_.pack_anisotropy(data);
 
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
@@ -154,7 +154,7 @@ void Mat::ElastHyper::Unpack(const std::vector<char>& data)
   summandProperties_.Unpack(position, data);
 
   // Pack anisotropy
-  anisotropy_.UnpackAnisotropy(data, position);
+  anisotropy_.unpack_anisotropy(data, position);
 
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {

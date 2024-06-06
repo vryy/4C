@@ -219,7 +219,7 @@ void Mat::PlasticElastHyper::Pack(Core::Communication::PackBuffer& data) const
   add_to_pack(data, cpl());
   add_to_pack(data, s());
 
-  anisotropy_.PackAnisotropy(data);
+  anisotropy_.pack_anisotropy(data);
 
   return;
 }
@@ -324,7 +324,7 @@ void Mat::PlasticElastHyper::Unpack(const std::vector<char>& data)
   double s = ExtractDouble(position, data);
   GetParams(s, cpl);
 
-  anisotropy_.UnpackAnisotropy(data, position);
+  anisotropy_.unpack_anisotropy(data, position);
 
   // in the postprocessing mode, we do not unpack everything we have packed
   // -> position check cannot be done in this case

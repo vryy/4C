@@ -89,7 +89,7 @@ void MIXTURE::MixtureConstituentRemodelFiberExpl::PackConstituent(
     Core::Communication::PackBuffer& data) const
 {
   MIXTURE::MixtureConstituent::PackConstituent(data);
-  anisotropy_extension_.PackAnisotropy(data);
+  anisotropy_extension_.pack_anisotropy(data);
 
   for (const RemodelFiber<2>& fiber : remodel_fiber_) fiber.Pack(data);
 }
@@ -100,7 +100,7 @@ void MIXTURE::MixtureConstituentRemodelFiberExpl::UnpackConstituent(
   MIXTURE::MixtureConstituent::UnpackConstituent(position, data);
   initialize();
 
-  anisotropy_extension_.UnpackAnisotropy(data, position);
+  anisotropy_extension_.unpack_anisotropy(data, position);
   for (RemodelFiber<2>& fiber : remodel_fiber_) fiber.Unpack(position, data);
 }
 
@@ -349,13 +349,13 @@ void MIXTURE::MixtureConstituentRemodelFiberExpl::update_homeostatic_values(
 double MIXTURE::MixtureConstituentRemodelFiberExpl::evaluate_lambdaf(
     const Core::LinAlg::Matrix<3, 3>& C, const int gp, const int eleGID) const
 {
-  return std::sqrt(C.Dot(anisotropy_extension_.GetStructuralTensor(gp, 0)));
+  return std::sqrt(C.Dot(anisotropy_extension_.get_structural_tensor(gp, 0)));
 }
 
 double MIXTURE::MixtureConstituentRemodelFiberExpl::evaluate_lambda_ext(
     const Core::LinAlg::Matrix<3, 3>& iFext, const int gp, const int eleGID) const
 {
   return 1.0 /
-         std::sqrt(EvaluateiCext(iFext).Dot(anisotropy_extension_.GetStructuralTensor(gp, 0)));
+         std::sqrt(EvaluateiCext(iFext).Dot(anisotropy_extension_.get_structural_tensor(gp, 0)));
 }
 FOUR_C_NAMESPACE_CLOSE

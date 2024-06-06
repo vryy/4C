@@ -244,7 +244,7 @@ void Mat::GrowthRemodelElastHyper::Pack(Core::Communication::PackBuffer& data) c
   add_to_pack(data, setup_);
   add_to_pack(data, nr_rf_tot_);
 
-  anisotropy_.PackAnisotropy(data);
+  anisotropy_.pack_anisotropy(data);
 
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
@@ -317,7 +317,7 @@ void Mat::GrowthRemodelElastHyper::Unpack(const std::vector<char>& data)
   extract_from_pack(position, data, setup_);
   extract_from_pack(position, data, nr_rf_tot_);
 
-  anisotropy_.UnpackAnisotropy(data, position);
+  anisotropy_.unpack_anisotropy(data, position);
 
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {

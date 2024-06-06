@@ -66,13 +66,13 @@ Mat::Elastic::IsoMuscleBlemker::IsoMuscleBlemker(Mat::Elastic::PAR::IsoMuscleBle
 
 void Mat::Elastic::IsoMuscleBlemker::PackSummand(Core::Communication::PackBuffer& data) const
 {
-  anisotropy_extension_.PackAnisotropy(data);
+  anisotropy_extension_.pack_anisotropy(data);
 }
 
 void Mat::Elastic::IsoMuscleBlemker::UnpackSummand(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
-  anisotropy_extension_.UnpackAnisotropy(data, position);
+  anisotropy_extension_.unpack_anisotropy(data, position);
 }
 
 void Mat::Elastic::IsoMuscleBlemker::register_anisotropy_extensions(Mat::Anisotropy& anisotropy)
@@ -98,7 +98,7 @@ void Mat::Elastic::IsoMuscleBlemker::add_stress_aniso_modified(
   modC.Update(incJ, C, 0.0);
 
   // structural tensor M, i.e. dyadic product of fibre directions
-  Core::LinAlg::Matrix<3, 3> M = anisotropy_extension_.GetStructuralTensor(gp, 0);
+  Core::LinAlg::Matrix<3, 3> M = anisotropy_extension_.get_structural_tensor(gp, 0);
   Core::LinAlg::Matrix<6, 1> Mv = anisotropy_extension_.get_structural_tensor_stress(gp, 0);
 
   // compute modified invariants modI1, modI4 and modI5

@@ -50,7 +50,7 @@ namespace Mat
      *
      * \param data
      */
-    virtual void PackAnisotropy(Core::Communication::PackBuffer& data) const = 0;
+    virtual void pack_anisotropy(Core::Communication::PackBuffer& data) const = 0;
 
     /*!
      * \brief Unpack all data from parallel distribution or restart
@@ -58,7 +58,7 @@ namespace Mat
      * \param data whole data array
      * \param position position of the current reader
      */
-    virtual void UnpackAnisotropy(
+    virtual void unpack_anisotropy(
         const std::vector<char>& data, std::vector<char>::size_type& position) = 0;
     /// @}
 

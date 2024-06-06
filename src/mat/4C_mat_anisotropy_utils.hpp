@@ -47,7 +47,7 @@ namespace Mat
    * @param specifier (in) : Identifier of the fiber
    * @param fiber_vector (out) : Fiber vector
    */
-  void ReadAnisotropyFiber(Input::LineDefinition* linedef, std::string specifier,
+  void read_anisotropy_fiber(Input::LineDefinition* linedef, std::string specifier,
       Core::LinAlg::Matrix<3, 1>& fiber_vector);
 
   /*!
@@ -77,7 +77,7 @@ namespace Mat
    * \param vct vector
    */
   template <typename T>
-  void PackFiberVector(
+  void pack_fiber_vector(
       Core::Communication::PackBuffer& buffer, const std::vector<std::vector<T>>& vct);
 
   /*!
@@ -89,7 +89,7 @@ namespace Mat
    * \param vct vector
    */
   template <typename T, unsigned int numfib>
-  void PackFiberArray(
+  void pack_fiber_array(
       Core::Communication::PackBuffer& buffer, const std::vector<std::array<T, numfib>>& vct);
 
   /*!
@@ -101,7 +101,7 @@ namespace Mat
    * \param vct destination 2D array
    */
   template <typename T>
-  void UnpackFiberVector(std::vector<char>::size_type& position, const std::vector<char>& data,
+  void unpack_fiber_vector(std::vector<char>::size_type& position, const std::vector<char>& data,
       std::vector<std::vector<T>>& vct);
 
   /*!
@@ -114,7 +114,7 @@ namespace Mat
    * \param vct destination 2D array
    */
   template <typename T, unsigned int numfib>
-  void UnpackFiberArray(std::vector<char>::size_type& position, const std::vector<char>& data,
+  void unpack_fiber_array(std::vector<char>::size_type& position, const std::vector<char>& data,
       std::vector<std::array<T, numfib>>& vct);
 }  // namespace Mat
 

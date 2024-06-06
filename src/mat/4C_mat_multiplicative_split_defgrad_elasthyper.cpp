@@ -110,7 +110,7 @@ void Mat::MultiplicativeSplitDefgradElastHyper::Pack(Core::Communication::PackBu
   if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   add_to_pack(data, matid);
 
-  anisotropy_->PackAnisotropy(data);
+  anisotropy_->pack_anisotropy(data);
 
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
@@ -148,7 +148,7 @@ void Mat::MultiplicativeSplitDefgradElastHyper::Unpack(const std::vector<char>& 
     }
   }
 
-  anisotropy_->UnpackAnisotropy(data, position);
+  anisotropy_->unpack_anisotropy(data, position);
 
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {

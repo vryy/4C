@@ -125,7 +125,7 @@ void Mat::ViscoElastHyper::Pack(Core::Communication::PackBuffer& data) const
   add_to_pack(data, viscogeneralizedgenmax_);
   add_to_pack(data, viscofract_);
 
-  anisotropy_.PackAnisotropy(data);
+  anisotropy_.pack_anisotropy(data);
 
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
@@ -224,7 +224,7 @@ void Mat::ViscoElastHyper::Unpack(const std::vector<char>& data)
   viscogeneralizedgenmax_ = (bool)ExtractInt(position, data);
   viscofract_ = (bool)ExtractInt(position, data);
 
-  anisotropy_.UnpackAnisotropy(data, position);
+  anisotropy_.unpack_anisotropy(data, position);
 
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {

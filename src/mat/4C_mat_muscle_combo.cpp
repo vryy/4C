@@ -190,7 +190,7 @@ void Mat::MuscleCombo::Pack(Core::Communication::PackBuffer& data) const
   if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   add_to_pack(data, matid);
 
-  anisotropy_extension_.PackAnisotropy(data);
+  anisotropy_extension_.pack_anisotropy(data);
 }
 
 void Mat::MuscleCombo::Unpack(const std::vector<char>& data)
@@ -224,7 +224,7 @@ void Mat::MuscleCombo::Unpack(const std::vector<char>& data)
     }
   }
 
-  anisotropy_extension_.UnpackAnisotropy(data, position);
+  anisotropy_extension_.unpack_anisotropy(data, position);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
@@ -273,9 +273,9 @@ void Mat::MuscleCombo::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   Core::LinAlg::Voigt::Stresses::MatrixToVector(invC, invCv);  // invCv
 
   // structural tensor M, i.e. dyadic product of fibre directions
-  Core::LinAlg::Matrix<3, 3> M = anisotropy_extension_.GetStructuralTensor(gp, 0);
+  Core::LinAlg::Matrix<3, 3> M = anisotropy_extension_.get_structural_tensor(gp, 0);
   Core::LinAlg::Matrix<6, 1> Mv(false);                  // Voigt notation
-  Core::LinAlg::Voigt::Stresses::MatrixToVector(M, Mv);  // Mv
+  Core::LinAlg::VOIGT::Stresses::MatrixToVector(M, Mv);  // Mv
   // structural tensor L = omega0/3*Identity + omegap*M
   Core::LinAlg::Matrix<3, 3> L(M);
   L.Scale(1.0 - omega0);  // omegap*M

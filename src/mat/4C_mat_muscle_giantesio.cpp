@@ -348,7 +348,7 @@ void Mat::MuscleGiantesio::Pack(Core::Communication::PackBuffer& data) const
   add_to_pack(data, lambda_m_old_);
   add_to_pack(data, omegaa_old_);
 
-  anisotropy_extension_.PackAnisotropy(data);
+  anisotropy_extension_.pack_anisotropy(data);
 }
 
 void Mat::MuscleGiantesio::Unpack(const std::vector<char>& data)
@@ -382,7 +382,7 @@ void Mat::MuscleGiantesio::Unpack(const std::vector<char>& data)
   extract_from_pack(position, data, lambda_m_old_);
   extract_from_pack(position, data, omegaa_old_);
 
-  anisotropy_extension_.UnpackAnisotropy(data, position);
+  anisotropy_extension_.unpack_anisotropy(data, position);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
@@ -404,7 +404,7 @@ void Mat::MuscleGiantesio::Update(Core::LinAlg::Matrix<3, 3> const& defgrd, int 
   C.MultiplyTN(defgrd, defgrd);
 
   // structural tensor M, i.e. dyadic product of fibre directions
-  const Core::LinAlg::Matrix<3, 3>& M = anisotropy_extension_.GetStructuralTensor(gp, 0);
+  const Core::LinAlg::Matrix<3, 3>& M = anisotropy_extension_.get_structural_tensor(gp, 0);
 
   // save the current fibre stretch in lambdaMOld_
   lambda_m_old_ = Mat::UTILS::Muscle::FiberStretch(C, M);
@@ -453,11 +453,8 @@ void Mat::MuscleGiantesio::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   Core::LinAlg::Voigt::Stresses::MatrixToVector(invC, invCv);  // invCv
 
   // structural tensor M, i.e. dyadic product of fibre directions
-  Core::LinAlg::Matrix<3, 3> M = anisotropy_extension_.GetStructuralTensor(gp, 0);
-
-  // stretch in fibre direction lambdaM
+  Core::LinAlg::Matrix<3, 3> M = anisotropy_extension_.get_structural_tensor(gp, 0);
   double lambdaM = Mat::UTILS::Muscle::FiberStretch(C, M);
-
   // derivative of lambdaM w.r.t. C
   Core::LinAlg::Matrix<3, 3> dlambdaMdC = Mat::UTILS::Muscle::DFiberStretch_DC(lambdaM, C, M);
   Core::LinAlg::Matrix<6, 1> dlambdaMdCv(true);

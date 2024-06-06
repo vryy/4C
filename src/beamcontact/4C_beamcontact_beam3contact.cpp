@@ -485,7 +485,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::evaluate_active_large_angl
     //    cpvariables_[numcp]->GetCP().first.val() << std::endl; std::cout << "eta: " <<
     //    cpvariables_[numcp]->GetCP().second.val() << std::endl; std::cout << "gap: " <<
     //    cpvariables_[numcp]->GetGap().val() << std::endl; std::cout << "angle: " <<
-    //    cpvariables_[numcp]->GetAngle()/M_PI*180.0 << std::endl; std::cout << "r1_xi: " << r1_xi
+    //    cpvariables_[numcp]->get_angle()/M_PI*180.0 << std::endl; std::cout << "r1_xi: " << r1_xi
     //    << std::endl; std::cout << "r2_xi: " << r2_xi << std::endl; std::cout << "|r1_xi|: " <<
     //    r1_xi.Norm2() << std::endl; std::cout << "|r2_xi|: " << r2_xi.Norm2() << std::endl;
     //    std::cout << "r1_xi*r2_xi: " << Core::FADUtils::ScalarProduct(r1_xi,r2_xi) << std::endl;
@@ -981,7 +981,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::evaluate_active_small_angl
     //    gpvariables_[numgptot]->GetCP().first.val() << std::endl; std::cout << "eta: " <<
     //    gpvariables_[numgptot]->GetCP().second.val() << std::endl; std::cout << "gap: " <<
     //    gpvariables_[numgptot]->GetGap().val() << std::endl; std::cout << "angle: " <<
-    //    gpvariables_[numgptot]->GetAngle()/M_PI*180.0 << std::endl; std::cout << "r1_xi: " <<
+    //    gpvariables_[numgptot]->get_angle()/M_PI*180.0 << std::endl; std::cout << "r1_xi: " <<
     //    r1_xi << std::endl; std::cout << "r2_xi: " << r2_xi << std::endl; std::cout << "|r1_xi|: "
     //    << r1_xi.Norm2() << std::endl; std::cout << "|r2_xi|: " << r2_xi.Norm2() << std::endl;
     //    std::cout << "r1_xi*r2_xi: " << Core::FADUtils::ScalarProduct(r1_xi,r2_xi) << std::endl;
@@ -1387,7 +1387,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::evaluate_active_end_point_
     //    epvariables_[numep]->GetCP().first.val() << std::endl; std::cout << "eta: " <<
     //    epvariables_[numep]->GetCP().second.val() << std::endl; std::cout << "gap: " <<
     //    epvariables_[numep]->GetGap().val() << std::endl; std::cout << "angle: " <<
-    //    epvariables_[numep]->GetAngle()/M_PI*180.0 << std::endl; std::cout << "r1_xi: " << r1_xi
+    //    epvariables_[numep]->get_angle()/M_PI*180.0 << std::endl; std::cout << "r1_xi: " << r1_xi
     //    << std::endl; std::cout << "r2_xi: " << r2_xi << std::endl; std::cout << "|r1_xi|: " <<
     //    r1_xi.Norm2() << std::endl; std::cout << "|r2_xi|: " << r2_xi.Norm2() << std::endl;
     //    std::cout << "r1_xi*r2_xi: " << Core::FADUtils::ScalarProduct(r1_xi,r2_xi) << std::endl;
@@ -5006,7 +5006,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::compute_normal(
 
   variables->SetGap(gap);
   variables->SetNormal(normal);
-  variables->SetAngle(BEAMINTERACTION::CalcAngle(Core::FADUtils::CastToDouble<TYPE, 3, 1>(r1_xi),
+  variables->set_angle(BEAMINTERACTION::CalcAngle(Core::FADUtils::CastToDouble<TYPE, 3, 1>(r1_xi),
       Core::FADUtils::CastToDouble<TYPE, 3, 1>(r2_xi)));
 
   return;

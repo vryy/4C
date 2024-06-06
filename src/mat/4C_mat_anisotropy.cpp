@@ -29,13 +29,13 @@ Mat::Anisotropy::Anisotropy()
   // empty
 }
 
-void Mat::Anisotropy::PackAnisotropy(Core::Communication::PackBuffer& data) const
+void Mat::Anisotropy::pack_anisotropy(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::ParObject::add_to_pack(data, numgp_);
   Core::Communication::ParObject::add_to_pack(data, static_cast<int>(element_fibers_initialized_));
   Core::Communication::ParObject::add_to_pack(data, static_cast<int>(gp_fibers_initialized_));
   Core::Communication::ParObject::add_to_pack(data, element_fibers_);
-  PackFiberVector<Core::LinAlg::Matrix<3, 1>>(data, gp_fibers_);
+  pack_fiber_vector<Core::LinAlg::Matrix<3, 1>>(data, gp_fibers_);
 
   if (element_cylinder_coordinate_system_manager_)
   {
@@ -53,7 +53,7 @@ void Mat::Anisotropy::PackAnisotropy(Core::Communication::PackBuffer& data) cons
   }
 }
 
-void Mat::Anisotropy::UnpackAnisotropy(
+void Mat::Anisotropy::unpack_anisotropy(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
   Core::Communication::ParObject::extract_from_pack(position, data, numgp_);
@@ -62,7 +62,7 @@ void Mat::Anisotropy::UnpackAnisotropy(
   gp_fibers_initialized_ =
       static_cast<bool>(Core::Communication::ParObject::ExtractInt(position, data));
   Core::Communication::ParObject::extract_from_pack(position, data, element_fibers_);
-  UnpackFiberVector<Core::LinAlg::Matrix<3, 1>>(position, data, gp_fibers_);
+  unpack_fiber_vector<Core::LinAlg::Matrix<3, 1>>(position, data, gp_fibers_);
 
   if (static_cast<bool>(Core::Communication::ParObject::ExtractInt(position, data)))
   {
@@ -112,7 +112,7 @@ void Mat::Anisotropy::read_anisotropy_from_element(Input::LineDefinition* lineDe
       break;
     }
     element_fibers_.resize(i + 1);
-    ReadAnisotropyFiber(lineDefinition, "FIBER" + std::to_string(i + 1), element_fibers_[i]);
+    read_anisotropy_fiber(lineDefinition, "FIBER" + std::to_string(i + 1), element_fibers_[i]);
     i += 1;
   }
 
@@ -144,14 +144,14 @@ void Mat::Anisotropy::insert_fibers(std::vector<Core::LinAlg::Matrix<3, 1>> fibe
   }
 }
 
-void Mat::Anisotropy::SetElementFibers(const std::vector<Core::LinAlg::Matrix<3, 1>>& fibers)
+void Mat::Anisotropy::set_element_fibers(const std::vector<Core::LinAlg::Matrix<3, 1>>& fibers)
 {
   element_fibers_ = fibers;
 
   on_element_fibers_initialized();
 }
 
-void Mat::Anisotropy::SetGaussPointFibers(
+void Mat::Anisotropy::set_gauss_point_fibers(
     const std::vector<std::vector<Core::LinAlg::Matrix<3, 1>>>& fibers)
 {
   // check input fibers whether they make sense
@@ -186,7 +186,7 @@ void Mat::Anisotropy::SetGaussPointFibers(
   on_gp_fibers_initialized();
 }
 
-const Core::LinAlg::Matrix<3, 1>& Mat::Anisotropy::GetElementFiber(unsigned int i) const
+const Core::LinAlg::Matrix<3, 1>& Mat::Anisotropy::get_element_fiber(unsigned int i) const
 {
   if (!element_fibers_initialized_)
   {
@@ -200,7 +200,7 @@ const Core::LinAlg::Matrix<3, 1>& Mat::Anisotropy::GetElementFiber(unsigned int 
   return element_fibers_[i];
 }
 
-const std::vector<Core::LinAlg::Matrix<3, 1>>& Mat::Anisotropy::GetElementFibers() const
+const std::vector<Core::LinAlg::Matrix<3, 1>>& Mat::Anisotropy::get_element_fibers() const
 {
   if (!element_fibers_initialized_)
   {
@@ -209,7 +209,8 @@ const std::vector<Core::LinAlg::Matrix<3, 1>>& Mat::Anisotropy::GetElementFibers
   return element_fibers_;
 }
 
-const std::vector<std::vector<Core::LinAlg::Matrix<3, 1>>>& Mat::Anisotropy::GetGPFibers() const
+const std::vector<std::vector<Core::LinAlg::Matrix<3, 1>>>&
+Mat::Anisotropy::get_gauss_point_fibers() const
 {
   if (!gp_fibers_initialized_)
   {
@@ -218,7 +219,8 @@ const std::vector<std::vector<Core::LinAlg::Matrix<3, 1>>>& Mat::Anisotropy::Get
   return gp_fibers_;
 }
 
-const Core::LinAlg::Matrix<3, 1>& Mat::Anisotropy::GetGPFiber(unsigned int gp, unsigned int i) const
+const Core::LinAlg::Matrix<3, 1>& Mat::Anisotropy::get_gauss_point_fiber(
+    unsigned int gp, unsigned int i) const
 {
   if (!gp_fibers_initialized_)
   {
@@ -283,7 +285,7 @@ int Mat::Anisotropy::get_number_of_gauss_points() const { return numgp_; }
 
 int Mat::Anisotropy::get_number_of_element_fibers() const { return element_fibers_.size(); }
 
-int Mat::Anisotropy::GetNumberOfGPFibers() const
+int Mat::Anisotropy::get_number_of_gauss_point_fibers() const
 {
   if (gp_fibers_.empty()) return 0;
 
