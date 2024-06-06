@@ -680,7 +680,7 @@ void MIXTURE::FullConstrainedMixtureFiber<Number>::compute_internal_variables()
   Core::LinAlg::Matrix<2, 1, Number> initial_guess;
   initial_guess(0) = computed_growth_scalar_;
   initial_guess(1) = computed_sigma_;
-  auto [growth_scalar_and_sigma, K] = Core::UTILS::SolveLocalNewtonAndReturnJacobian(
+  auto [growth_scalar_and_sigma, K] = Core::UTILS::solve_local_newton_and_return_jacobian(
       EvaluateCurrentLocalNewtonLinearSystem, initial_guess, tolerance, max_iterations);
 
   computed_growth_scalar_ = growth_scalar_and_sigma(0);

@@ -624,7 +624,7 @@ Mat::MuscleGiantesio::evaluate_activation_level_and_derivatives(
   // compute activation level omegaa and its first and second derivative w.r.t. lambdaM using
   // central differences
   Core::UTILS::ValuesFunctAndFunctDerivs omegaaAndDerivs =
-      Core::UTILS::EvaluateFunctionAndDerivativesCentralDifferences(
+      Core::UTILS::evaluate_function_and_derivatives_central_differences(
           FunctionSolveActivationLevelEquation, lambdaM, h);
 
   return omegaaAndDerivs;
@@ -653,7 +653,7 @@ double Mat::MuscleGiantesio::solve_activation_level_equation(
     const double omegaa_b_init = 1.0;  // omegaa <= 1
 
     // approximate the starting guess for the newton solver via bisection method
-    omegaa_init = Core::UTILS::Bisection([&](double omegaa_init)
+    omegaa_init = Core::UTILS::bisection([&](double omegaa_init)
         { return std::get<0>(actLevelEquationAndDeriv(omegaa_init)); },
         omegaa_a_init, omegaa_b_init, tol_bisec, maxiter_bisec);
   }
@@ -666,7 +666,7 @@ double Mat::MuscleGiantesio::solve_activation_level_equation(
   const int maxiter_newton = 200;
 
   // compute activation level as solution of activation level equation
-  double omegaa = Core::UTILS::SolveLocalNewton(
+  double omegaa = Core::UTILS::solve_local_newton(
       actLevelEquationAndDeriv, omegaa_init, tol_newton, maxiter_newton);
 
   return omegaa;
