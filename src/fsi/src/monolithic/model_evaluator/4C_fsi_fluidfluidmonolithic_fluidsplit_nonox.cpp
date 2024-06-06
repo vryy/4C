@@ -419,7 +419,7 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::setup_system_matrix()
 
   // get single field block matrices
   Teuchos::RCP<Core::LinAlg::SparseMatrix> s =
-      structure_field()->SystemMatrix();  // can't be 'const' --> is modified by STC
+      structure_field()->system_matrix();  // can't be 'const' --> is modified by STC
   const Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> f = fluid_field()->BlockSystemMatrix();
   const Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> a = ale_field()->BlockSystemMatrix();
 

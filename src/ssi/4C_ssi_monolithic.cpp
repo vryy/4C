@@ -143,7 +143,7 @@ void SSI::SsiMono::apply_meshtying_to_sub_problems()
         is_uncomplete_of_matrices_necessary_for_mesh_tying());
 
     strategy_meshtying_->apply_meshtying_to_structure_matrix(*ssi_matrices_->StructureMatrix(),
-        structure_field()->SystemMatrix(), is_uncomplete_of_matrices_necessary_for_mesh_tying());
+        structure_field()->system_matrix(), is_uncomplete_of_matrices_necessary_for_mesh_tying());
 
     strategy_meshtying_->apply_meshtying_to_structure_scatra(
         ssi_matrices_->structure_sca_tra_matrix(),
@@ -178,7 +178,7 @@ void SSI::SsiMono::apply_meshtying_to_sub_problems()
   else
   {
     ssi_vectors_->StructureResidual()->Update(1.0, *(structure_field()->RHS()), 1.0);
-    ssi_matrices_->StructureMatrix()->Add(*structure_field()->SystemMatrix(), false, 1.0, 1.0);
+    ssi_matrices_->StructureMatrix()->Add(*structure_field()->system_matrix(), false, 1.0, 1.0);
   }
 }
 

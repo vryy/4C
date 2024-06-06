@@ -176,12 +176,12 @@ Teuchos::RCP<const Epetra_Map> Adapter::StructureConstrMerged::dof_row_map() { r
 /*----------------------------------------------------------------------*/
 /* stiffness, i.e. force residual R_{n+1} differentiated
  * by displacements D_{n+1} */
-Teuchos::RCP<Core::LinAlg::SparseMatrix> Adapter::StructureConstrMerged::SystemMatrix()
+Teuchos::RCP<Core::LinAlg::SparseMatrix> Adapter::StructureConstrMerged::system_matrix()
 {
   // create empty large matrix and get small ones from structure and constraints
   Teuchos::RCP<Core::LinAlg::SparseMatrix> mergedmatrix =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dofrowmap_, 81));
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> strustiff = structure_->SystemMatrix();
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> strustiff = structure_->system_matrix();
   strustiff->Complete();
 
   Teuchos::RCP<Core::LinAlg::SparseOperator> constiff =
@@ -202,7 +202,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Adapter::StructureConstrMerged::SystemM
 
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>
-Adapter::StructureConstrMerged::BlockSystemMatrix()
+Adapter::StructureConstrMerged::block_system_matrix()
 {
   FOUR_C_THROW("constrained BlockSparseMatrix never to be implemented");
   return Teuchos::null;

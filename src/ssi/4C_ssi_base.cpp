@@ -944,7 +944,7 @@ void SSI::SSIBase::setup_contact_strategy()
     auto& model_evaluator_contact = dynamic_cast<STR::MODELEVALUATOR::Contact&>(
         structure_field()->ModelEvaluator(Inpar::STR::model_contact));
     contact_strategy_nitsche_ = Teuchos::rcp_dynamic_cast<CONTACT::NitscheStrategySsi>(
-        model_evaluator_contact.StrategyPtr(), true);
+        model_evaluator_contact.strategy_ptr(), true);
   }
   else
     FOUR_C_THROW("Only Nitsche contact implemented for SSI problems at the moment!");

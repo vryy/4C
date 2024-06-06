@@ -30,7 +30,7 @@ STR::Nln::SOLVER::Factory::Factory()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::Nln::SOLVER::Generic> STR::Nln::SOLVER::Factory::BuildNlnSolver(
+Teuchos::RCP<STR::Nln::SOLVER::Generic> STR::Nln::SOLVER::Factory::build_nln_solver(
     const enum Inpar::STR::NonlinSolTech& nlnSolType) const
 {
   Teuchos::RCP<STR::Nln::SOLVER::Generic> nlnSolver = Teuchos::null;
@@ -65,11 +65,11 @@ Teuchos::RCP<STR::Nln::SOLVER::Generic> STR::Nln::SOLVER::Factory::BuildNlnSolve
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::Nln::SOLVER::Generic> STR::Nln::SOLVER::BuildNlnSolver(
+Teuchos::RCP<STR::Nln::SOLVER::Generic> STR::Nln::SOLVER::build_nln_solver(
     const enum Inpar::STR::NonlinSolTech& nlnSolType)
 {
   Factory factory;
-  return factory.BuildNlnSolver(nlnSolType);
+  return factory.build_nln_solver(nlnSolType);
 }
 
 FOUR_C_NAMESPACE_CLOSE

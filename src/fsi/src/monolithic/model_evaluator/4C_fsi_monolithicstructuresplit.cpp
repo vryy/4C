@@ -452,7 +452,7 @@ void FSI::MonolithicStructureSplit::setup_rhs_firstiter(Epetra_Vector& f)
 
   // get structure matrix
   const Teuchos::RCP<const Core::LinAlg::BlockSparseMatrixBase> blocks =
-      structure_field()->BlockSystemMatrix();
+      structure_field()->block_system_matrix();
 
   // get ale matrix
   const Teuchos::RCP<const Core::LinAlg::BlockSparseMatrixBase> blocka =
@@ -668,7 +668,7 @@ void FSI::MonolithicStructureSplit::setup_system_matrix(Core::LinAlg::BlockSpars
 
   // get single field block matrices
   const Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> s =
-      structure_field()->BlockSystemMatrix();
+      structure_field()->block_system_matrix();
   const Teuchos::RCP<Core::LinAlg::SparseMatrix> f = fluid_field()->SystemMatrix();
   const Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> a = ale_field()->BlockSystemMatrix();
 
@@ -1271,7 +1271,7 @@ void FSI::MonolithicStructureSplit::OutputLambda()
   const int upres = timeparams_.get<int>("RESULTSEVRY");
   if ((uprestart != 0 && fluid_field()->Step() % uprestart == 0) or
       (upres != 0 and fluid_field()->Step() % upres == 0))
-    structure_field()->DiscWriter()->WriteVector("fsilambda", lambdafull);
+    structure_field()->disc_writer()->WriteVector("fsilambda", lambdafull);
 }
 
 /*----------------------------------------------------------------------*/

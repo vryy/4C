@@ -41,7 +41,7 @@ void STR::IMPLICIT::Generic::Setup()
   // ---------------------------------------------------------------------------
   // set the new pre/post operator for the nox nln group in the parameter list
   // ---------------------------------------------------------------------------
-  Teuchos::ParameterList& p_grp_opt = s_dyn().GetNoxParams().sublist("Group Options");
+  Teuchos::ParameterList& p_grp_opt = sdyn().get_nox_params().sublist("Group Options");
 
   // create the new generic pre/post operator
   Teuchos::RCP<NOX::Nln::Abstract::PrePostOperator> prepost_generic_ptr =
@@ -57,7 +57,7 @@ void STR::IMPLICIT::Generic::Setup()
   // ---------------------------------------------------------------------------
   // set the new pre/post operator for the nox nln solver in the parameter list
   // ---------------------------------------------------------------------------
-  Teuchos::ParameterList& p_sol_opt = s_dyn().GetNoxParams().sublist("Solver Options");
+  Teuchos::ParameterList& p_sol_opt = sdyn().get_nox_params().sublist("Solver Options");
 
   NOX::Nln::Aux::AddToPrePostOpVector(p_sol_opt, prepost_generic_ptr);
 
@@ -67,24 +67,24 @@ void STR::IMPLICIT::Generic::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::Generic::SetIsPredictorState(const bool& ispredictor_state)
+void STR::IMPLICIT::Generic::set_is_predictor_state(const bool ispredictor_state)
 {
   ispredictor_state_ = ispredictor_state;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const bool& STR::IMPLICIT::Generic::IsPredictorState() const { return ispredictor_state_; }
+bool STR::IMPLICIT::Generic::is_predictor_state() const { return ispredictor_state_; }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::ParameterList& STR::IMPLICIT::Generic::GetNoxParams() { return s_dyn().GetNoxParams(); }
+Teuchos::ParameterList& STR::IMPLICIT::Generic::get_nox_params() { return sdyn().get_nox_params(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double STR::IMPLICIT::Generic::get_default_step_length() const
 {
-  const Teuchos::ParameterList& p_nox = tim_int().GetDataSDyn().GetNoxParams();
+  const Teuchos::ParameterList& p_nox = tim_int().get_data_sdyn().GetNoxParams();
   const std::string& nln_solver = p_nox.get<std::string>("Nonlinear Solver");
   // The pseudo transient implementation holds also a line search object!
   if (nln_solver == "Line Search Based" or nln_solver == "Pseudo Transient")
@@ -103,10 +103,10 @@ double STR::IMPLICIT::Generic::get_default_step_length() const
 void STR::IMPLICIT::Generic::reset_eval_params()
 {
   // set the time step dependent parameters for the element evaluation
-  EvalData().SetTotalTime(global_state().GetTimeNp());
-  EvalData().SetDeltaTime((*global_state().GetDeltaTime())[0]);
-  EvalData().SetIsTolerateError(true);
-  EvalData().set_function_manager(Global::Problem::Instance()->FunctionManager());
+  eval_data().set_total_time(global_state().get_time_np());
+  eval_data().set_delta_time((*global_state().get_delta_time())[0]);
+  eval_data().set_is_tolerate_error(true);
+  eval_data().set_function_manager(Global::Problem::Instance()->FunctionManager());
 }
 
 /*----------------------------------------------------------------------------*
@@ -129,7 +129,7 @@ bool STR::IMPLICIT::Generic::apply_correction_system(const enum NOX::Nln::Correc
 
   reset_eval_params();
 
-  EvalData().SetCorrectionType(type);
+  eval_data().set_correction_type(type);
 
   bool ok = false;
   switch (type)
@@ -139,12 +139,12 @@ bool STR::IMPLICIT::Generic::apply_correction_system(const enum NOX::Nln::Correc
       // Do a standard full step.
       /* Note that there is a difference, since we tagged this evaluation by
        * setting it to a non-default step. */
-      ok = ApplyForceStiff(x, f, jac);
+      ok = apply_force_stiff(x, f, jac);
       break;
     }
     case NOX::Nln::CorrectionType::soc_cheap:
     {
-      ok = ModelEval().ApplyCheapSOCRhs(type, constraint_models, x, f, 1.0);
+      ok = model_eval().apply_cheap_soc_rhs(type, constraint_models, x, f, 1.0);
       if (not jac.Filled()) FOUR_C_THROW("The jacobian is supposed to be filled at this point!");
 
       break;
@@ -168,7 +168,7 @@ bool STR::IMPLICIT::Generic::apply_correction_system(const enum NOX::Nln::Correc
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::Generic::ConditionNumber(const NOX::Nln::Group& grp) const
+void STR::IMPLICIT::Generic::condition_number(const NOX::Nln::Group& grp) const
 {
   const STR::TimeInt::Implicit& timint_impl =
       dynamic_cast<const STR::TimeInt::Implicit&>(tim_int());
@@ -187,7 +187,7 @@ void NOX::Nln::PrePostOp::IMPLICIT::Generic::runPreComputeX(const NOX::Nln::Grou
   Epetra_Vector& dir_mutable = const_cast<Epetra_Vector&>(dir);
 
   const bool isdefaultstep = (step == default_step_);
-  impl_.ModelEval().run_pre_compute_x(xold, dir_mutable, step, curr_grp, isdefaultstep);
+  impl_.model_eval().run_pre_compute_x(xold, dir_mutable, step, curr_grp, isdefaultstep);
 }
 
 /*----------------------------------------------------------------------------*
@@ -202,7 +202,7 @@ void NOX::Nln::PrePostOp::IMPLICIT::Generic::runPostComputeX(const NOX::Nln::Gro
       dynamic_cast<const ::NOX::Epetra::Vector&>(curr_grp.getX()).getEpetraVector();
 
   bool isdefaultstep = (step == default_step_);
-  impl_.ModelEval().run_post_compute_x(xold, dir, step, xnew, isdefaultstep);
+  impl_.model_eval().run_post_compute_x(xold, dir, step, xnew, isdefaultstep);
 }
 
 /*----------------------------------------------------------------------------*
@@ -213,7 +213,7 @@ void NOX::Nln::PrePostOp::IMPLICIT::Generic::runPostIterate(const ::NOX::Solver:
   const bool isdefaultstep = get_step(step, solver);
   const int num_corrs = get_number_of_modified_newton_corrections(solver);
 
-  impl_.ModelEval().run_post_iterate(solver, step, isdefaultstep, num_corrs);
+  impl_.model_eval().run_post_iterate(solver, step, isdefaultstep, num_corrs);
 }
 
 /*----------------------------------------------------------------------------*
@@ -223,7 +223,7 @@ void NOX::Nln::PrePostOp::IMPLICIT::Generic::runPreSolve(const ::NOX::Solver::Ge
   double step = 0.0;
   const bool isdefaultstep = get_step(step, solver);
 
-  impl_.ModelEval().RunPreSolve(solver, step, isdefaultstep);
+  impl_.model_eval().run_pre_solve(solver, step, isdefaultstep);
 }
 
 /*----------------------------------------------------------------------------*
@@ -232,7 +232,7 @@ void NOX::Nln::PrePostOp::IMPLICIT::Generic::run_pre_apply_jacobian_inverse(
     const ::NOX::Abstract::Vector& rhs, ::NOX::Abstract::Vector& result,
     const ::NOX::Abstract::Vector& xold, const NOX::Nln::Group& grp)
 {
-  impl_.ModelEval().run_pre_apply_jacobian_inverse(convert2_epetra_vector(rhs),
+  impl_.model_eval().run_pre_apply_jacobian_inverse(convert2_epetra_vector(rhs),
       convert2_epetra_vector(result), convert2_epetra_vector(xold), grp);
 }
 
@@ -242,15 +242,15 @@ void NOX::Nln::PrePostOp::IMPLICIT::Generic::run_post_apply_jacobian_inverse(
     const ::NOX::Abstract::Vector& rhs, ::NOX::Abstract::Vector& result,
     const ::NOX::Abstract::Vector& xold, const NOX::Nln::Group& grp)
 {
-  impl_.ModelEval().run_post_apply_jacobian_inverse(convert2_epetra_vector(rhs),
+  impl_.model_eval().run_post_apply_jacobian_inverse(convert2_epetra_vector(rhs),
       convert2_epetra_vector(result), convert2_epetra_vector(xold), grp);
 
   impl_.print_jacobian_in_matlab_format(grp);
-  impl_.ConditionNumber(grp);
+  impl_.condition_number(grp);
 
   // reset any possible set correction type at this point
-  const STR::MODELEVALUATOR::Data& eval_data = impl_.EvalData();
-  const_cast<STR::MODELEVALUATOR::Data&>(eval_data).SetCorrectionType(
+  const STR::MODELEVALUATOR::Data& eval_data = impl_.eval_data();
+  const_cast<STR::MODELEVALUATOR::Data&>(eval_data).set_correction_type(
       NOX::Nln::CorrectionType::vague);
 }
 
@@ -323,14 +323,14 @@ int NOX::Nln::PrePostOp::IMPLICIT::Generic::get_number_of_modified_newton_correc
 void STR::IMPLICIT::Generic::compute_jacobian_contributions_from_element_level_for_ptc(
     Teuchos::RCP<Core::LinAlg::SparseMatrix>& scalingMatrixOpPtr)
 {
-  ModelEval().compute_jacobian_contributions_from_element_level_for_ptc(scalingMatrixOpPtr);
+  model_eval().compute_jacobian_contributions_from_element_level_for_ptc(scalingMatrixOpPtr);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::IMPLICIT::Generic::remove_condensed_contributions_from_rhs(Epetra_Vector& rhs) const
 {
-  ModelEval().remove_condensed_contributions_from_rhs(rhs);
+  model_eval().remove_condensed_contributions_from_rhs(rhs);
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -192,7 +192,7 @@ void FSI::Monolithic::timeloop_ada_dt(
   /*--------------------------------------------------------------------------*/
 
   // resize MStep objects of structure needed for AB2 structural extrapolation of displacements
-  structure_field()->ResizeMStepTimAda();
+  structure_field()->resize_m_step_tim_ada();
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   // check whether all fields have the same time step size

@@ -727,7 +727,7 @@ void CONTACT::PenaltyStrategy::eval_force(CONTACT::ParamsInterface& cparams)
   }
 
   // evaluate relative movement for friction
-  if (cparams.IsPredictor())
+  if (cparams.is_predictor())
     evaluate_rel_mov_predict();
   else
     EvaluateRelMov();
@@ -975,7 +975,7 @@ void CONTACT::PenaltyStrategy::eval_force_stiff(CONTACT::ParamsInterface& cparam
  *----------------------------------------------------------------------*/
 void CONTACT::PenaltyStrategy::pre_evaluate(CONTACT::ParamsInterface& cparams)
 {
-  const enum Mortar::ActionType& act = cparams.GetActionType();
+  const enum Mortar::ActionType& act = cparams.get_action_type();
 
   switch (act)
   {
@@ -984,7 +984,7 @@ void CONTACT::PenaltyStrategy::pre_evaluate(CONTACT::ParamsInterface& cparams)
       // -------------------------------------------------------------------
     case Mortar::eval_force_stiff:
     {
-      if (cparams.IsPredictor()) evalForceCalled_ = false;
+      if (cparams.is_predictor()) evalForceCalled_ = false;
       break;
     }
     // -------------------------------------------------------------------
@@ -1005,7 +1005,7 @@ void CONTACT::PenaltyStrategy::pre_evaluate(CONTACT::ParamsInterface& cparams)
  *----------------------------------------------------------------------*/
 void CONTACT::PenaltyStrategy::post_evaluate(CONTACT::ParamsInterface& cparams)
 {
-  const enum Mortar::ActionType& act = cparams.GetActionType();
+  const enum Mortar::ActionType& act = cparams.get_action_type();
 
   switch (act)
   {

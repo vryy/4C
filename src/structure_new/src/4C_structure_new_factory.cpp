@@ -36,7 +36,7 @@ STR::Factory::Factory()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::Integrator> STR::Factory::BuildIntegrator(
+Teuchos::RCP<STR::Integrator> STR::Factory::build_integrator(
     const STR::TimeInt::BaseDataSDyn& datasdyn) const
 {
   Teuchos::RCP<STR::Integrator> int_ptr = Teuchos::null;
@@ -55,8 +55,8 @@ Teuchos::RCP<STR::Integrator> STR::Factory::build_implicit_integrator(
 {
   Teuchos::RCP<STR::IMPLICIT::Generic> impl_int_ptr = Teuchos::null;
 
-  const enum Inpar::STR::DynamicType& dyntype = datasdyn.GetDynamicType();
-  const enum Inpar::STR::PreStress& prestresstype = datasdyn.GetPreStressType();
+  const enum Inpar::STR::DynamicType& dyntype = datasdyn.get_dynamic_type();
+  const enum Inpar::STR::PreStress& prestresstype = datasdyn.get_pre_stress_type();
 
   // check if we have a problem that needs to be prestressed
   const bool is_prestress = prestresstype != Inpar::STR::PreStress::none;
@@ -114,7 +114,7 @@ Teuchos::RCP<STR::Integrator> STR::Factory::build_explicit_integrator(
 {
   Teuchos::RCP<STR::EXPLICIT::Generic> expl_int_ptr = Teuchos::null;
 
-  switch (datasdyn.GetDynamicType())
+  switch (datasdyn.get_dynamic_type())
   {
     // Forward Euler Scheme
     case Inpar::STR::dyna_expleuler:
@@ -157,19 +157,19 @@ Teuchos::RCP<STR::Integrator> STR::Factory::build_explicit_integrator(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::Integrator> STR::BuildIntegrator(const STR::TimeInt::BaseDataSDyn& datasdyn)
+Teuchos::RCP<STR::Integrator> STR::build_integrator(const STR::TimeInt::BaseDataSDyn& datasdyn)
 {
   STR::Factory factory;
 
-  return factory.BuildIntegrator(datasdyn);
+  return factory.build_integrator(datasdyn);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::Dbc> STR::Factory::BuildDbc(const STR::TimeInt::BaseDataSDyn& datasdyn) const
+Teuchos::RCP<STR::Dbc> STR::Factory::build_dbc(const STR::TimeInt::BaseDataSDyn& datasdyn) const
 {
   // if you want your model specific dbc object, check here if your model type is
-  // active ( datasdyn.GetModelTypes() )and build your own dbc object
+  // active ( datasdyn.get_model_types() )and build your own dbc object
   Teuchos::RCP<STR::Dbc> dbc = Teuchos::null;
   dbc = Teuchos::rcp(new STR::Dbc());
 
@@ -178,11 +178,11 @@ Teuchos::RCP<STR::Dbc> STR::Factory::BuildDbc(const STR::TimeInt::BaseDataSDyn& 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::Dbc> STR::BuildDbc(const STR::TimeInt::BaseDataSDyn& datasdyn)
+Teuchos::RCP<STR::Dbc> STR::build_dbc(const STR::TimeInt::BaseDataSDyn& datasdyn)
 {
   STR::Factory factory;
 
-  return factory.BuildDbc(datasdyn);
+  return factory.build_dbc(datasdyn);
 }
 
 FOUR_C_NAMESPACE_CLOSE

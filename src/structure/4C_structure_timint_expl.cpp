@@ -126,7 +126,7 @@ void STR::TimIntExpl::apply_force_external(const double time,  //!< evaluation t
 
 /*----------------------------------------------------------------------*/
 /* print step summary */
-void STR::TimIntExpl::PrintStep()
+void STR::TimIntExpl::print_step()
 {
   // print out
   if ((myrank_ == 0) and printscreen_ and (StepOld() % printscreen_ == 0))

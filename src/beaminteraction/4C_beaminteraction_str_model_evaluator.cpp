@@ -84,11 +84,11 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   // discretization pointer
   discret_ptr_ = Teuchos::rcp_dynamic_cast<Discret::Discretization>(discret_ptr(), true);
   // stiff
-  stiff_beaminteraction_ =
-      Teuchos::rcp(new Core::LinAlg::SparseMatrix(*g_state().DofRowMapView(), 81, true, true));
+  stiff_beaminteraction_ = Teuchos::rcp(
+      new Core::LinAlg::SparseMatrix(*global_state().dof_row_map_view(), 81, true, true));
   // force and displacement at last redistribution
-  force_beaminteraction_ = Teuchos::rcp(new Epetra_Vector(*g_state().dof_row_map(), true));
-  dis_at_last_redistr_ = Teuchos::rcp(new Epetra_Vector(*g_state().dof_row_map(), true));
+  force_beaminteraction_ = Teuchos::rcp(new Epetra_Vector(*global_state().dof_row_map(), true));
+  dis_at_last_redistr_ = Teuchos::rcp(new Epetra_Vector(*global_state().dof_row_map(), true));
   // get myrank
   myrank_ = discret_ptr()->Comm().MyPID();
 
@@ -124,9 +124,9 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   ia_state_ptr_->Init();
   ia_state_ptr_->Setup(ia_discret_);
 
-  ia_state_ptr_->GetDisNp() = Teuchos::rcp(new Epetra_Vector(*g_state_ptr()->GetDisNp()));
+  ia_state_ptr_->GetDisNp() = Teuchos::rcp(new Epetra_Vector(*global_state_ptr()->get_dis_np()));
   BEAMINTERACTION::UTILS::PeriodicBoundaryConsistentDisVector(ia_state_ptr_->GetDisNp(),
-      TimInt().GetDataSDynPtr()->get_periodic_bounding_box(), ia_discret_);
+      tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box(), ia_discret_);
 
   // -------------------------------------------------------------------------
   // initialize coupling adapter to transform matrices between the two discrets
@@ -149,7 +149,7 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   binstrategy_ = Teuchos::rcp(new BINSTRATEGY::BinningStrategy());
   binstrategy_->Init(discret_vec, disp_vec);
   binstrategy_->set_deforming_binning_domain_handler(
-      TimInt().GetDataSDynPtr()->get_periodic_bounding_box());
+      tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box());
 
   bindis_ = binstrategy_->BinDiscret();
 
@@ -158,7 +158,7 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   if (HaveSubModelType(Inpar::BEAMINTERACTION::submodel_crosslinking))
   {
     beam_crosslinker_handler_ = Teuchos::rcp(new BEAMINTERACTION::BeamCrosslinkerHandler());
-    beam_crosslinker_handler_->Init(g_state().GetMyRank(), binstrategy_);
+    beam_crosslinker_handler_->Init(global_state().get_my_rank(), binstrategy_);
     beam_crosslinker_handler_->Setup();
   }
 
@@ -206,7 +206,7 @@ void STR::MODELEVALUATOR::BeamInteraction::post_setup()
     for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
       (*sme_iter)->get_half_interaction_distance(half_interaction_distance_);
 
-    if (g_state().GetMyRank() == 0)
+    if (global_state().get_my_rank() == 0)
       std::cout << " half min bin size " << 0.5 * binstrategy_->GetMinBinSize() << std::endl;
 
     // safety checks
@@ -313,9 +313,9 @@ void STR::MODELEVALUATOR::BeamInteraction::init_and_setup_sub_model_evaluators()
   Vector::iterator sme_iter;
   for (sme_iter = (*me_vec_ptr_).begin(); sme_iter != (*me_vec_ptr_).end(); ++sme_iter)
   {
-    (*sme_iter)->Init(ia_discret_, bindis_, g_state_ptr(), g_in_output_ptr(), ia_state_ptr_,
-        beam_crosslinker_handler_, binstrategy_,
-        TimInt().GetDataSDynPtr()->get_periodic_bounding_box(),
+    (*sme_iter)->Init(ia_discret_, bindis_, global_state_ptr(), global_in_output_ptr(),
+        ia_state_ptr_, beam_crosslinker_handler_, binstrategy_,
+        tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box(),
         Teuchos::rcp_dynamic_cast<BEAMINTERACTION::UTILS::MapExtractor>(eletypeextractor_, true));
     (*sme_iter)->Setup();
   }
@@ -528,13 +528,14 @@ void STR::MODELEVALUATOR::BeamInteraction::Reset(const Epetra_Vector& x)
   check_init_setup();
 
   // todo: somewhat illegal as of const correctness
-  TimInt().GetDataSDynPtr()->get_periodic_bounding_box()->ApplyDirichlet(g_state().GetTimeN());
+  tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box()->ApplyDirichlet(
+      global_state().get_time_n());
 
   // get current displacement state and export to interaction discretization dofmap
   BEAMINTERACTION::UTILS::UpdateDofMapOfVector(
-      ia_discret_, ia_state_ptr_->GetDisNp(), g_state().GetDisNp());
+      ia_discret_, ia_state_ptr_->GetDisNp(), global_state().get_dis_np());
   BEAMINTERACTION::UTILS::PeriodicBoundaryConsistentDisVector(ia_state_ptr_->GetDisNp(),
-      TimInt().GetDataSDynPtr()->get_periodic_bounding_box(), ia_discret_);
+      tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box(), ia_discret_);
 
   // update column vector
   ia_state_ptr_->GetDisColNp() = Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
@@ -664,7 +665,7 @@ bool STR::MODELEVALUATOR::BeamInteraction::assemble_jacobian(
 {
   check_init_setup();
 
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> jac_dd_ptr = GState().ExtractDisplBlock(jac);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> jac_dd_ptr = global_state().extract_displ_block(jac);
   jac_dd_ptr->Add(*stiff_beaminteraction_, false, timefac_np, 1.0);
 
   // no need to keep it
@@ -681,8 +682,8 @@ void STR::MODELEVALUATOR::BeamInteraction::write_restart(
 {
   check_init_setup();
 
-  int const stepn = GState().GetStepN();
-  double const timen = GState().GetTimeN();
+  int const stepn = global_state().get_step_n();
+  double const timen = global_state().get_time_n();
   Teuchos::RCP<Core::IO::DiscretizationWriter> ia_writer = ia_discret_->Writer();
   Teuchos::RCP<Core::IO::DiscretizationWriter> bin_writer = bindis_->Writer();
 
@@ -712,7 +713,7 @@ void STR::MODELEVALUATOR::BeamInteraction::read_restart(Core::IO::Discretization
 {
   check_init_setup();
 
-  int const stepn = g_state().GetStepN();
+  int const stepn = global_state().get_step_n();
   auto input_control_file = Global::Problem::Instance()->InputControlFile();
 
   // pre sub model loop
@@ -783,12 +784,12 @@ void STR::MODELEVALUATOR::BeamInteraction::run_post_iterate(const ::NOX::Solver:
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::UpdateStepState(const double& timefac_n)
+void STR::MODELEVALUATOR::BeamInteraction::update_step_state(const double& timefac_n)
 {
   check_init_setup();
 
   // add the old time factor scaled contributions to the residual
-  Teuchos::RCP<Epetra_Vector>& fstructold_ptr = g_state().GetFstructureOld();
+  Teuchos::RCP<Epetra_Vector>& fstructold_ptr = global_state().get_fstructure_old();
 
   fstructold_ptr->Update(timefac_n, *force_beaminteraction_, 1.0);
 
@@ -800,7 +801,7 @@ void STR::MODELEVALUATOR::BeamInteraction::UpdateStepState(const double& timefac
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::UpdateStepElement()
+void STR::MODELEVALUATOR::BeamInteraction::update_step_element()
 {
   check_init_setup();
 
@@ -837,9 +838,9 @@ void STR::MODELEVALUATOR::BeamInteraction::UpdateStepElement()
     binstrategy_->AssignElesToBins(ia_discret_, ia_state_ptr_->get_extended_bin_to_row_ele_map());
 
     // current displacement state gets new reference state
-    dis_at_last_redistr_ = Teuchos::rcp(new Epetra_Vector(*g_state().GetDisN()));
+    dis_at_last_redistr_ = Teuchos::rcp(new Epetra_Vector(*global_state().get_dis_n()));
 
-    if (g_state().GetMyRank() == 0)
+    if (global_state().get_my_rank() == 0)
     {
       Core::IO::cout(Core::IO::verbose) << "\n************************************************\n"
                                         << Core::IO::endl;
@@ -854,7 +855,7 @@ void STR::MODELEVALUATOR::BeamInteraction::UpdateStepElement()
     binstrategy_->remove_all_eles_from_bins();
     binstrategy_->AssignElesToBins(ia_discret_, ia_state_ptr_->get_extended_bin_to_row_ele_map());
 
-    if (g_state().GetMyRank() == 0)
+    if (global_state().get_my_rank() == 0)
     {
       Core::IO::cout(Core::IO::verbose) << "\n************************************************\n"
                                         << Core::IO::endl;
@@ -889,7 +890,7 @@ bool STR::MODELEVALUATOR::BeamInteraction::check_if_beam_discret_redistribution_
     return true;
 
   Teuchos::RCP<Epetra_Vector> dis_increment =
-      Teuchos::rcp(new Epetra_Vector(*g_state().dof_row_map(), true));
+      Teuchos::rcp(new Epetra_Vector(*global_state().dof_row_map(), true));
   int doflid[3];
   for (int i = 0; i < discret_ptr_->NumMyRowNodes(); ++i)
   {
@@ -914,7 +915,7 @@ bool STR::MODELEVALUATOR::BeamInteraction::check_if_beam_discret_redistribution_
       // disp)
       doflid[dim] = dis_at_last_redistr_->Map().LID(dofnode[dim]);
       (*dis_increment)[doflid[dim]] =
-          (*g_state().GetDisNp())[doflid[dim]] - (*dis_at_last_redistr_)[doflid[dim]];
+          (*global_state().get_dis_np())[doflid[dim]] - (*dis_at_last_redistr_)[doflid[dim]];
     }
   }
 
@@ -925,7 +926,7 @@ bool STR::MODELEVALUATOR::BeamInteraction::check_if_beam_discret_redistribution_
   double gmaxdisincr = std::max(-extrema[0], extrema[1]);
 
   // some verbose screen output
-  if (g_state().GetMyRank() == 0)
+  if (global_state().get_my_rank() == 0)
   {
     Core::IO::cout(Core::IO::debug)
         << " half interaction distance " << half_interaction_distance_ << Core::IO::endl;
@@ -946,7 +947,7 @@ void STR::MODELEVALUATOR::BeamInteraction::determine_stress_strain()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::DetermineEnergy()
+void STR::MODELEVALUATOR::BeamInteraction::determine_energy()
 {
   check_init_setup();
 
@@ -970,7 +971,7 @@ void STR::MODELEVALUATOR::BeamInteraction::determine_optional_quantity()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::OutputStepState(
+void STR::MODELEVALUATOR::BeamInteraction::output_step_state(
     Core::IO::DiscretizationWriter& iowriter) const
 {
   check_init_setup();
@@ -980,7 +981,7 @@ void STR::MODELEVALUATOR::BeamInteraction::OutputStepState(
     (*sme_iter)->OutputStepState(iowriter);
 
   // visualize bins according to specification in input file ( MESHFREE -> WRITEBINS "" )
-  binstrategy_->WriteBinOutput(GState().GetStepN(), GState().GetTimeN());
+  binstrategy_->WriteBinOutput(global_state().get_step_n(), global_state().get_time_n());
 }
 
 /*----------------------------------------------------------------------------*
@@ -993,8 +994,8 @@ void STR::MODELEVALUATOR::BeamInteraction::runtime_output_step_state() const
   for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
     (*sme_iter)->runtime_output_step_state();
 
-  TimInt().GetDataSDynPtr()->get_periodic_bounding_box()->runtime_output_step_state(
-      GState().GetTimeN(), GState().GetStepN());
+  tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box()->runtime_output_step_state(
+      global_state().get_time_n(), global_state().get_step_n());
 }
 
 /*----------------------------------------------------------------------------*
@@ -1003,7 +1004,7 @@ Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::BeamInteraction::get_block_d
     const
 {
   check_init_setup();
-  return GState().dof_row_map();
+  return global_state().dof_row_map();
 }
 
 /*----------------------------------------------------------------------------*
@@ -1026,14 +1027,16 @@ STR::MODELEVALUATOR::BeamInteraction::get_last_time_step_solution_ptr() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::PostOutput()
+void STR::MODELEVALUATOR::BeamInteraction::post_output()
 {
-  //  TimInt().GetDataSDynPtr()->get_periodic_bounding_box()->ApplyDirichlet( GState().GetTimeN() );
+  //  tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box()->ApplyDirichlet(
+  //  global_state().get_time_n()
+  //  );
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::ResetStepState()
+void STR::MODELEVALUATOR::BeamInteraction::reset_step_state()
 {
   Vector::iterator sme_iter;
   for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
@@ -1095,9 +1098,9 @@ void STR::MODELEVALUATOR::BeamInteraction::update_maps()
 
   // get current displacement state and export to interaction discretization dofmap
   BEAMINTERACTION::UTILS::UpdateDofMapOfVector(
-      ia_discret_, ia_state_ptr_->GetDisNp(), g_state().GetDisNp());
+      ia_discret_, ia_state_ptr_->GetDisNp(), global_state().get_dis_np());
   BEAMINTERACTION::UTILS::PeriodicBoundaryConsistentDisVector(ia_state_ptr_->GetDisNp(),
-      TimInt().GetDataSDynPtr()->get_periodic_bounding_box(), ia_discret_);
+      tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box(), ia_discret_);
 
   // update column vector
   ia_state_ptr_->GetDisColNp() = Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
@@ -1171,7 +1174,7 @@ void STR::MODELEVALUATOR::BeamInteraction::print_binning_info_to_screen() const
   Core::LinAlg::Matrix<3, 2> XAABB(true);
   binstrategy_->compute_min_binning_domain_containing_all_elements_of_multiple_discrets(
       discret_vec, disnp_vec, XAABB, false);
-  if (GState().GetMyRank() == 0)
+  if (global_state().get_my_rank() == 0)
   {
     Core::IO::cout(Core::IO::verbose)
         << " \n---------------------------------------------------------- " << Core::IO::endl;

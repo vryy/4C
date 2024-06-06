@@ -43,10 +43,10 @@ void STR::MODELEVALUATOR::BeamInteractionOld::Setup()
   if (not is_init()) FOUR_C_THROW("Init() has not been called, yet!");
 
   // setup the pointers for displacement and stiffness
-  disnp_ptr_ = g_state().GetDisNp();
-  stiff_beaminteract_ptr_ =
-      Teuchos::rcp(new Core::LinAlg::SparseMatrix(*g_state().DofRowMapView(), 81, true, true));
-  f_beaminteract_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*g_state().dof_row_map(), true));
+  disnp_ptr_ = global_state().get_dis_np();
+  stiff_beaminteract_ptr_ = Teuchos::rcp(
+      new Core::LinAlg::SparseMatrix(*global_state().dof_row_map_view(), 81, true, true));
+  f_beaminteract_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*global_state().dof_row_map(), true));
 
   // create beam contact manager
   beamcman_ = Teuchos::rcp(new CONTACT::Beam3cmanager(*discret_ptr(), 0.0));
@@ -67,7 +67,7 @@ void STR::MODELEVALUATOR::BeamInteractionOld::Reset(const Epetra_Vector& x)
   check_init_setup();
 
   // update the structural displacement vector
-  disnp_ptr_ = g_state().GetDisNp();
+  disnp_ptr_ = global_state().get_dis_np();
 
   // Zero out force and stiffness contributions
   f_beaminteract_np_ptr_->PutScalar(0.0);
@@ -82,12 +82,12 @@ bool STR::MODELEVALUATOR::BeamInteractionOld::evaluate_force()
 
   // ToDo replace the parameter list by a beam interaction model data container
   Teuchos::ParameterList beamcontactparams;
-  beamcontactparams.set("iter", eval_data().GetNlnIter());
-  beamcontactparams.set("dt", eval_data().GetDeltaTime());
-  beamcontactparams.set("numstep", eval_data().GetStepNp());
+  beamcontactparams.set("iter", eval_data().get_nln_iter());
+  beamcontactparams.set("dt", eval_data().get_delta_time());
+  beamcontactparams.set("numstep", eval_data().get_step_np());
 
   beamcman_->Evaluate(*stiff_beaminteract_ptr_, *f_beaminteract_np_ptr_, *disnp_ptr_,
-      beamcontactparams, true, eval_data().GetTotalTime());
+      beamcontactparams, true, eval_data().get_total_time());
 
   return true;
 }
@@ -101,12 +101,12 @@ bool STR::MODELEVALUATOR::BeamInteractionOld::evaluate_stiff()
 
   // ToDo replace the parameter list by a beam interaction model data container
   Teuchos::ParameterList beamcontactparams;
-  beamcontactparams.set("iter", eval_data().GetNlnIter());
-  beamcontactparams.set("dt", eval_data().GetDeltaTime());
-  beamcontactparams.set("numstep", eval_data().GetStepNp());
+  beamcontactparams.set("iter", eval_data().get_nln_iter());
+  beamcontactparams.set("dt", eval_data().get_delta_time());
+  beamcontactparams.set("numstep", eval_data().get_step_np());
 
   beamcman_->Evaluate(*stiff_beaminteract_ptr_, *f_beaminteract_np_ptr_, *disnp_ptr_,
-      beamcontactparams, true, eval_data().GetTotalTime());
+      beamcontactparams, true, eval_data().get_total_time());
 
   return true;
 }
@@ -119,12 +119,12 @@ bool STR::MODELEVALUATOR::BeamInteractionOld::evaluate_force_stiff()
 
   // ToDo replace the parameter list by a beam interaction model data container
   Teuchos::ParameterList beamcontactparams;
-  beamcontactparams.set("iter", eval_data().GetNlnIter());
-  beamcontactparams.set("dt", eval_data().GetDeltaTime());
-  beamcontactparams.set("numstep", eval_data().GetStepNp());
+  beamcontactparams.set("iter", eval_data().get_nln_iter());
+  beamcontactparams.set("dt", eval_data().get_delta_time());
+  beamcontactparams.set("numstep", eval_data().get_step_np());
 
   beamcman_->Evaluate(*stiff_beaminteract_ptr_, *f_beaminteract_np_ptr_, *disnp_ptr_,
-      beamcontactparams, true, eval_data().GetTotalTime());
+      beamcontactparams, true, eval_data().get_total_time());
 
   // visualization of current Newton step
 #ifdef GMSHNEWTONSTEPS
@@ -153,7 +153,7 @@ bool STR::MODELEVALUATOR::BeamInteractionOld::assemble_force(
 bool STR::MODELEVALUATOR::BeamInteractionOld::assemble_jacobian(
     Core::LinAlg::SparseOperator& jac, const double& timefac_np) const
 {
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> jac_dd_ptr = GState().ExtractDisplBlock(jac);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> jac_dd_ptr = global_state().extract_displ_block(jac);
   jac_dd_ptr->Add(*stiff_beaminteract_ptr_, false, timefac_np, 1.0);
   // no need to keep it
   stiff_beaminteract_ptr_->Zero();
@@ -168,9 +168,9 @@ void STR::MODELEVALUATOR::BeamInteractionOld::write_restart(
 {
   beamcman_->write_restart(iowriter);  // ToDo
 
-  // since the global OutputStepState() routine is not called, if the
+  // since the global output_step_state() routine is not called, if the
   // restart is written, we have to do it here manually.
-  OutputStepState(iowriter);
+  output_step_state(iowriter);
   return;
 }
 
@@ -192,12 +192,12 @@ void STR::MODELEVALUATOR::BeamInteractionOld::run_post_compute_x(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteractionOld::UpdateStepState(const double& timefac_n)
+void STR::MODELEVALUATOR::BeamInteractionOld::update_step_state(const double& timefac_n)
 {
-  beamcman_->Update(*disnp_ptr_, eval_data().GetStepNp(), eval_data().GetNlnIter());
+  beamcman_->Update(*disnp_ptr_, eval_data().get_step_np(), eval_data().get_nln_iter());
 
   // add the old time factor scaled contributions to the residual
-  Teuchos::RCP<Epetra_Vector>& fstructold_ptr = g_state().GetFstructureOld();
+  Teuchos::RCP<Epetra_Vector>& fstructold_ptr = global_state().get_fstructure_old();
 
   // Todo take care of the minus sign in front of timefac_np
   fstructold_ptr->Update(-timefac_n, *f_beaminteract_np_ptr_, 1.0);
@@ -205,7 +205,7 @@ void STR::MODELEVALUATOR::BeamInteractionOld::UpdateStepState(const double& time
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteractionOld::UpdateStepElement()
+void STR::MODELEVALUATOR::BeamInteractionOld::update_step_element()
 {
   // empty
 }
@@ -221,7 +221,7 @@ void STR::MODELEVALUATOR::BeamInteractionOld::determine_stress_strain()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteractionOld::DetermineEnergy()
+void STR::MODELEVALUATOR::BeamInteractionOld::determine_energy()
 {
   // ToDo
   return;
@@ -237,7 +237,7 @@ void STR::MODELEVALUATOR::BeamInteractionOld::determine_optional_quantity()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteractionOld::OutputStepState(
+void STR::MODELEVALUATOR::BeamInteractionOld::output_step_state(
     Core::IO::DiscretizationWriter& iowriter) const
 {
   return;
@@ -245,7 +245,7 @@ void STR::MODELEVALUATOR::BeamInteractionOld::OutputStepState(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteractionOld::ResetStepState() { return; }
+void STR::MODELEVALUATOR::BeamInteractionOld::reset_step_state() { return; }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -253,7 +253,7 @@ Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::BeamInteractionOld::get_bloc
     const
 {
   check_init_setup();
-  return GState().dof_row_map();
+  return global_state().dof_row_map();
 }
 
 /*----------------------------------------------------------------------*
@@ -276,12 +276,12 @@ STR::MODELEVALUATOR::BeamInteractionOld::get_last_time_step_solution_ptr() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteractionOld::PostOutput()
+void STR::MODELEVALUATOR::BeamInteractionOld::post_output()
 {
   check_init_setup();
   // empty
 
   return;
-}  // PostOutput()
+}  // post_output()
 
 FOUR_C_NAMESPACE_CLOSE

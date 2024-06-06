@@ -59,7 +59,6 @@ namespace STR
       //! constructor
       NoxInterface();
 
-
       //! Init function
       virtual void Init(const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr,
           const Teuchos::RCP<STR::Integrator>& int_ptr, const Teuchos::RCP<STR::Dbc>& dbc_ptr,
@@ -92,7 +91,7 @@ namespace STR
 
       /*! Get the norm of right hand side rows/entries related to
        *  primary DoFs (derived from NOX::Nln::Interface::Required) */
-      double GetPrimaryRHSNorms(const Epetra_Vector& F,
+      double get_primary_rhs_norms(const Epetra_Vector& F,
           const NOX::Nln::StatusTest::QuantityType& checkquantity,
           const ::NOX::Abstract::Vector::NormType& type = ::NOX::Abstract::Vector::TwoNorm,
           const bool& isscaled = false) const override;
@@ -121,8 +120,8 @@ namespace STR
       /*! Compute and return some energy representative or any other scalar value
        *  which is capable to describe the solution path progress
        *  (derived from NOX::Nln::Interface::Required) */
-      double GetModelValue(const Epetra_Vector& x, const Epetra_Vector& F,
-          const enum NOX::Nln::MeritFunction::MeritFctName merit_func_type) const override;
+      double get_model_value(const Epetra_Vector& x, const Epetra_Vector& F,
+          const NOX::Nln::MeritFunction::MeritFctName merit_func_type) const override;
 
       double get_linearized_model_terms(const ::NOX::Abstract::Group* group,
           const Epetra_Vector& dir, const enum NOX::Nln::MeritFunction::MeritFctName mf_type,
@@ -133,10 +132,10 @@ namespace STR
        *
        *  Necessary for the LinearSystem objects.
        *  (derived from NOX::Nln::Interface::Required) */
-      double CalcRefNormForce() override;
+      double calc_ref_norm_force() override;
 
       /// create back-up state of condensed solution variables (e.g. EAS)
-      void CreateBackupState(const Epetra_Vector& dir) override;
+      void create_backup_state(const Epetra_Vector& dir) override;
 
       /// recover from back-up
       void recover_from_backup_state() override;
@@ -146,7 +145,7 @@ namespace STR
           const Epetra_Vector& x, Teuchos::RCP<Epetra_Vector>& ele_vols) const override;
 
       /// fill the sets with DOFs of the desired elements
-      void getDofsFromElements(
+      void get_dofs_from_elements(
           const std::vector<int>& my_ele_gids, std::set<int>& my_ele_dofs) const override;
 
       //!@}

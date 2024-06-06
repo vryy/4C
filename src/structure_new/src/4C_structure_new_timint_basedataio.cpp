@@ -224,7 +224,7 @@ bool STR::TimeInt::BaseDataIO::write_runtime_vtk_results_for_this_step(const int
 {
   if (step < 0) FOUR_C_THROW("The variable step is not allowed to be negative.");
   return (is_runtime_output_enabled() &&
-          DetermineWriteOutput(step, get_runtime_output_params()->OutputStepOffset(),
+          DetermineWriteOutput(step, get_runtime_output_params()->output_step_offset(),
               get_runtime_output_params()->output_interval_in_steps()));
 }
 
@@ -239,7 +239,7 @@ bool STR::TimeInt::BaseDataIO::write_runtime_vtp_results_for_this_step(const int
 {
   if (step < 0) FOUR_C_THROW("The variable step is not allowed to be negative.");
   return (get_runtime_vtp_output_params() != Teuchos::null &&
-          DetermineWriteOutput(step, get_runtime_output_params()->OutputStepOffset(),
+          DetermineWriteOutput(step, get_runtime_output_params()->output_step_offset(),
               get_runtime_output_params()->output_interval_in_steps()));
 }
 
@@ -255,18 +255,18 @@ bool STR::TimeInt::BaseDataIO::should_write_restart_for_step(const int step) con
 
 bool STR::TimeInt::BaseDataIO::should_write_reaction_forces_for_this_step(const int step) const
 {
-  return GetMonitorDBCParams()->output_interval_in_steps() > 0 &&
-         DetermineWriteOutput(
-             step, get_write_timestep_offset(), GetMonitorDBCParams()->output_interval_in_steps());
+  return get_monitor_dbc_params()->output_interval_in_steps() > 0 &&
+         DetermineWriteOutput(step, get_write_timestep_offset(),
+             get_monitor_dbc_params()->output_interval_in_steps());
 }
 
 
 bool STR::TimeInt::BaseDataIO::should_write_stress_strain_for_this_step(const int step) const
 {
   return write_results_for_this_step(step) &&
-         ((GetStressOutputType() != Inpar::STR::stress_none) ||
+         ((get_stress_output_type() != Inpar::STR::stress_none) ||
              (get_coupling_stress_output_type() != Inpar::STR::stress_none) ||
-             (GetStrainOutputType() != Inpar::STR::strain_none) ||
+             (get_strain_output_type() != Inpar::STR::strain_none) ||
              (get_plastic_strain_output_type() != Inpar::STR::strain_none));
 }
 

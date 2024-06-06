@@ -44,7 +44,7 @@ namespace STR
     namespace SOLVER
     {
       //! Check if a xml status test file is specified in the dat file
-      bool IsXMLStatusTestFile(const Teuchos::ParameterList& pstatus);
+      bool is_xml_status_test_file(const Teuchos::ParameterList& pstatus);
 
       /*! \brief Create quantity types
        *
@@ -53,13 +53,13 @@ namespace STR
        *
        *  \author Hiermeier
        */
-      void CreateQuantityTypes(std::set<enum NOX::Nln::StatusTest::QuantityType>& qtypes,
+      void create_quantity_types(std::set<enum NOX::Nln::StatusTest::QuantityType>& qtypes,
           const STR::TimeInt::BaseDataSDyn& datasdyn);
 
-      void ConvertModelType2QuantityType(const enum Inpar::STR::ModelType& mt,
+      void convert_model_type_to_quantity_type(const enum Inpar::STR::ModelType& mt,
           std::vector<enum NOX::Nln::StatusTest::QuantityType>& qt);
 
-      void ConvertEleTech2QuantityType(const enum Inpar::STR::EleTech& et,
+      void convert_ele_tech_to_quantity_type(const enum Inpar::STR::EleTech& et,
           std::vector<enum NOX::Nln::StatusTest::QuantityType>& qt);
 
       /*! \brief Create a status test parameter list
@@ -75,12 +75,12 @@ namespace STR
        *
        *  \author Hiermeier
        */
-      void SetStatusTestParams(Teuchos::ParameterList& pstatus,
+      void set_status_test_params(Teuchos::ParameterList& pstatus,
           const STR::TimeInt::BaseDataSDyn& datasdyn,
           const std::set<enum NOX::Nln::StatusTest::QuantityType>& qt);
 
       //! Split the given tests into and/or combinations
-      void SplitAndOrCombo(std::vector<enum NOX::Nln::StatusTest::QuantityType>& combo_or,
+      void split_and_or_combo(std::vector<enum NOX::Nln::StatusTest::QuantityType>& combo_or,
           std::vector<enum NOX::Nln::StatusTest::QuantityType>& combo_and,
           const STR::TimeInt::BaseDataSDyn& datasdyn, const std::string& testname,
           const std::set<enum NOX::Nln::StatusTest::QuantityType>& qtypes);
@@ -120,7 +120,7 @@ namespace STR
        *  \author Hiermeier
        *  \date Oct 13, 2015
        */
-      void SetComboQuantityTestParams(Teuchos::ParameterList& p,
+      void set_combo_quantity_test_params(Teuchos::ParameterList& p,
           const STR::TimeInt::BaseDataSDyn& datasdyn, const std::size_t& count,
           const std::string& testname,
           const std::set<enum NOX::Nln::StatusTest::QuantityType>& qtypes);
@@ -132,44 +132,43 @@ namespace STR
        *
        *  \author Hiermeier
        */
-      void SetQuantityTestParams(Teuchos::ParameterList& p,
+      void set_quantity_test_params(Teuchos::ParameterList& p,
           const STR::TimeInt::BaseDataSDyn& datasdyn,
           const enum NOX::Nln::StatusTest::QuantityType& qtype, const std::size_t& count,
           const std::string& testname);
 
       //! Set the status test parameters corresponding to the given quantity
-      void SetQuantityTestParams(Teuchos::ParameterList& p,
+      void set_quantity_test_params(Teuchos::ParameterList& p,
           const STR::TimeInt::BaseDataSDyn& datasdyn,
           const enum NOX::Nln::StatusTest::QuantityType& qtype, const std::string& testname);
 
       //! Set the NormUpdate status test parameters
-      void SetNormUpdateParams(Teuchos::ParameterList& qlist,
+      void set_norm_update_params(Teuchos::ParameterList& qlist,
           const enum NOX::Nln::StatusTest::QuantityType& qtype,
           const enum Inpar::STR::ConvNorm& toltype, const double& tol,
           const enum Inpar::STR::VectorNorm& normtype);
-      void SetNormUpdateParams(Teuchos::ParameterList& qlist,
+      void set_norm_update_params(Teuchos::ParameterList& qlist,
           const enum NOX::Nln::StatusTest::QuantityType& qtype, const double& alpha,
           const double& beta, const enum Inpar::STR::ConvNorm& toltype, const double& tol,
           const enum Inpar::STR::VectorNorm& normtype, const bool& isscaled);
 
       //! Set the NormF status test parameters
-      void SetNormFParams(Teuchos::ParameterList& qlist,
+      void set_norm_f_params(Teuchos::ParameterList& qlist,
           const enum NOX::Nln::StatusTest::QuantityType& qtype,
           const enum Inpar::STR::ConvNorm& toltype, const double& tol,
           const enum Inpar::STR::VectorNorm& normtype);
-      void SetNormFParams(Teuchos::ParameterList& qlist,
+      void set_norm_f_params(Teuchos::ParameterList& qlist,
           const enum NOX::Nln::StatusTest::QuantityType& qtype,
           const enum Inpar::STR::ConvNorm& toltype, const double& tol,
           const enum Inpar::STR::VectorNorm& normtype, const bool& isscaled);
 
       //! Set the ActiveSet status test parameters
-      void SetActiveSetParams(
+      void set_active_set_params(
           Teuchos::ParameterList& qlist, const enum NOX::Nln::StatusTest::QuantityType& qtype);
 
     }  // namespace SOLVER
   }    // namespace Nln
 }  // namespace STR
-
 
 FOUR_C_NAMESPACE_CLOSE
 

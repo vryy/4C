@@ -39,7 +39,6 @@ namespace STR
         //! constructor
         FullNewton();
 
-
         //! derived from the base class
         void Setup() override;
 
@@ -51,7 +50,6 @@ namespace STR
     }     // namespace SOLVER
   }       // namespace Nln
 }  // namespace STR
-
 
 FOUR_C_NAMESPACE_CLOSE
 

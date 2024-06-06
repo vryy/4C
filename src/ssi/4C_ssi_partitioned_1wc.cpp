@@ -61,7 +61,7 @@ void SSI::SSIPart1WC::do_struct_step()
   // write output to files
   structure_field()->Output();
   // write output to screen
-  structure_field()->PrintStep();
+  structure_field()->print_step();
   // clean up
   structure_field()->discretization()->ClearState(true);
 }

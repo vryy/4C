@@ -354,7 +354,7 @@ Teuchos::RCP<const std::vector<double>> NOX::Nln::Group::GetRHSNorms(
   double rval = -1.0;
   for (std::size_t i = 0; i < chQ.size(); ++i)
   {
-    rval = get_nln_req_interface_ptr()->GetPrimaryRHSNorms(RHSVector.getEpetraVector(), chQ[i],
+    rval = get_nln_req_interface_ptr()->get_primary_rhs_norms(RHSVector.getEpetraVector(), chQ[i],
         type[i], (*scale)[i] == ::NOX::StatusTest::NormF::Scaled);
     if (rval >= 0.0)
     {
@@ -518,7 +518,7 @@ Teuchos::RCP<std::vector<double>> NOX::Nln::Group::get_previous_solution_norms(
  *----------------------------------------------------------------------------*/
 double NOX::Nln::Group::GetModelValue(const enum MeritFunction::MeritFctName merit_func_type) const
 {
-  return get_nln_req_interface_ptr()->GetModelValue(
+  return get_nln_req_interface_ptr()->get_model_value(
       xVector.getEpetraVector(), RHSVector.getEpetraVector(), merit_func_type);
 }
 
@@ -653,7 +653,7 @@ void NOX::Nln::Group::CreateBackupState(const ::NOX::Abstract::Vector& dir) cons
   const ::NOX::Epetra::Vector* epetra_dir = dynamic_cast<const ::NOX::Epetra::Vector*>(&dir);
   if (not epetra_dir) FOUR_C_THROW("Dynamic cast failed.");
 
-  nln_required->CreateBackupState(epetra_dir->getEpetraVector());
+  nln_required->create_backup_state(epetra_dir->getEpetraVector());
 }
 
 /*----------------------------------------------------------------------------*
@@ -755,7 +755,7 @@ void NOX::Nln::Group::replace_diagonal_of_jacobian(
       break;
     }
     default:
-      FOUR_C_THROW("Unknown LinSystem::ConditionNumber type!");
+      FOUR_C_THROW("Unknown LinSystem::condition_number type!");
       exit(EXIT_FAILURE);
   }
 
@@ -862,7 +862,7 @@ NOX::Nln::Group::Eigenvalues& NOX::Nln::Group::Eigenvalues::operator=(const Eige
 void NOX::Nln::Group::getDofsFromElements(
     const std::vector<int>& my_ele_gids, std::set<int>& my_ele_dofs) const
 {
-  get_nln_req_interface_ptr()->getDofsFromElements(my_ele_gids, my_ele_dofs);
+  get_nln_req_interface_ptr()->get_dofs_from_elements(my_ele_gids, my_ele_dofs);
 }
 
 FOUR_C_NAMESPACE_CLOSE

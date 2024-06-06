@@ -110,28 +110,28 @@ namespace STR
       void run_post_iterate(const ::NOX::Solver::Generic& solver) override { return; };
 
       //! [derived]
-      void UpdateStepState(const double& timefac_n) override;
+      void update_step_state(const double& timefac_n) override;
 
       //! [derived]
-      void UpdateStepElement() override { return; };
+      void update_step_element() override { return; };
 
       //! [derived]
       void determine_stress_strain() override { return; };
 
       //! [derived]
-      void DetermineEnergy() override { return; };
+      void determine_energy() override { return; };
 
       //! [derived]
       void determine_optional_quantity() override { return; };
 
       //! [derived]
-      void OutputStepState(Core::IO::DiscretizationWriter& iowriter) const override { return; };
+      void output_step_state(Core::IO::DiscretizationWriter& iowriter) const override { return; };
 
       //! derived
-      void ResetStepState() override { return; };
+      void reset_step_state() override { return; };
 
       //! [derived]
-      void PostOutput() override { return; };
+      void post_output() override { return; };
 
       //! [derived]
       Teuchos::RCP<const Epetra_Map> get_block_dof_row_map_ptr() const override;

@@ -99,7 +99,7 @@ namespace STR
           const NOX::Nln::Group& curr_grp) override;
 
       //! derived
-      void RunRecover() override;
+      void run_recover() override;
 
       //! derived
       void run_post_compute_x(
@@ -112,10 +112,10 @@ namespace STR
       void Predict(const Inpar::STR::PredEnum& pred_type) override;
 
       //! derived
-      void UpdateStepState(const double& timefac_n) override;
+      void update_step_state(const double& timefac_n) override;
 
       //! derived
-      void UpdateStepElement() override;
+      void update_step_element() override;
 
       //! derived
       void update_residual() override;
@@ -124,9 +124,9 @@ namespace STR
       void determine_stress_strain() override;
 
       //! derived
-      void DetermineEnergy() override;
+      void determine_energy() override;
 
-      /*! \brief Fill energy map in EvalData
+      /*! \brief Fill energy map in eval_data
        *
        *  \param disnp (in): Current displacement vector
        *  \param velnp (in): Current velocity vector
@@ -148,10 +148,10 @@ namespace STR
       bool determine_element_volumes(const Epetra_Vector& x, Teuchos::RCP<Epetra_Vector>& ele_vols);
 
       //! derived
-      void ResetStepState() override;
+      void reset_step_state() override;
 
       //! derived
-      void OutputStepState(Core::IO::DiscretizationWriter& iowriter) const override;
+      void output_step_state(Core::IO::DiscretizationWriter& iowriter) const override;
 
       //! derived
       void runtime_pre_output_step_state() override;
@@ -169,7 +169,7 @@ namespace STR
       Teuchos::RCP<const Epetra_Vector> get_last_time_step_solution_ptr() const override;
 
       //! [derived]
-      void PostOutput() override;
+      void post_output() override;
 
       //! [derived]
       void evaluate_jacobian_contributions_from_element_level_for_ptc() override;
@@ -179,7 +179,7 @@ namespace STR
           Teuchos::RCP<Core::LinAlg::SparseMatrix>& modjac, const double& timefac_n) override;
 
       //! [derived]
-      void CreateBackupState(const Epetra_Vector& dir) override;
+      void create_backup_state(const Epetra_Vector& dir) override;
 
       //! [derived]
       void recover_from_backup_state() override;

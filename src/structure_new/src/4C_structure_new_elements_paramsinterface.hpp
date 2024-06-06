@@ -102,19 +102,19 @@ namespace STR
     {
      public:
       //! return the damping type
-      virtual enum Inpar::STR::DampKind GetDampingType() const = 0;
+      virtual enum Inpar::STR::DampKind get_damping_type() const = 0;
 
       //! return the predictor type
-      virtual enum Inpar::STR::PredEnum GetPredictorType() const = 0;
+      virtual enum Inpar::STR::PredEnum get_predictor_type() const = 0;
 
       /// Shall errors during the element evaluation be tolerated?
-      virtual bool IsTolerateErrors() const = 0;
+      virtual bool is_tolerate_errors() const = 0;
 
       //! @name General time integration parameters
       //! @{
-      virtual double GetTimIntFactorDisp() const = 0;
+      virtual double get_tim_int_factor_disp() const = 0;
 
-      virtual double GetTimIntFactorVel() const = 0;
+      virtual double get_tim_int_factor_vel() const = 0;
       //! @}
 
 
@@ -131,17 +131,17 @@ namespace STR
       //! @{
 
       //! get the current step length
-      virtual double GetStepLength() const = 0;
+      virtual double get_step_length() const = 0;
 
       //! Is the current step a default step, or e.g. a line search step?
-      virtual bool IsDefaultStep() const = 0;
+      virtual bool is_default_step() const = 0;
       //! @}
 
       //! @name Accessors
       //! @{
 
       //! get the evaluation error flag
-      virtual STR::ELEMENTS::EvalErrorFlag GetEleEvalErrorFlag() const = 0;
+      virtual STR::ELEMENTS::EvalErrorFlag get_ele_eval_error_flag() const = 0;
 
       //! @}
 
@@ -151,26 +151,26 @@ namespace STR
       /*! \brief set evaluation error flag
        *
        *  See the EvalErrorFlag enumerators for more information. */
-      virtual void SetEleEvalErrorFlag(const enum EvalErrorFlag& error_flag) = 0;
+      virtual void set_ele_eval_error_flag(const enum EvalErrorFlag& error_flag) = 0;
       //! @}
 
       //! @name output related functions
       //! @{
-      virtual Teuchos::RCP<std::vector<char>>& StressDataPtr() = 0;
+      virtual Teuchos::RCP<std::vector<char>>& stress_data_ptr() = 0;
 
-      virtual Teuchos::RCP<std::vector<char>>& StrainDataPtr() = 0;
+      virtual Teuchos::RCP<std::vector<char>>& strain_data_ptr() = 0;
 
       virtual Teuchos::RCP<std::vector<char>>& plastic_strain_data_ptr() = 0;
 
       virtual Teuchos::RCP<std::vector<char>>& coupling_stress_data_ptr() = 0;
 
-      virtual Teuchos::RCP<std::vector<char>>& OptQuantityDataPtr() = 0;
+      virtual Teuchos::RCP<std::vector<char>>& opt_quantity_data_ptr() = 0;
 
       //! get the current stress type
-      virtual enum Inpar::STR::StressType GetStressOutputType() const = 0;
+      virtual enum Inpar::STR::StressType get_stress_output_type() const = 0;
 
       //! get the current strain type
-      virtual enum Inpar::STR::StrainType GetStrainOutputType() const = 0;
+      virtual enum Inpar::STR::StrainType get_strain_output_type() const = 0;
 
       //! get the current plastic strain type
       virtual enum Inpar::STR::StrainType get_plastic_strain_output_type() const = 0;
@@ -185,7 +185,7 @@ namespace STR
       virtual void add_contribution_to_energy_type(double value, enum STR::EnergyType type) = 0;
 
       //! add the current partial update norm of the given quantity
-      virtual void SumIntoMyUpdateNorm(const enum NOX::Nln::StatusTest::QuantityType& qtype,
+      virtual void sum_into_my_update_norm(const enum NOX::Nln::StatusTest::QuantityType& qtype,
           const int& numentries, const double* my_update_values, const double* my_new_sol_values,
           const double& step_length, const int& owner) = 0;
 
@@ -209,10 +209,10 @@ namespace STR
       /*! @name time integration parameters required for element-internal update of angular velocity
        *  and acceleration (in combination with GenAlphaLieGroup) */
       //! @{
-      virtual double GetBeta() const = 0;
-      virtual double GetGamma() const = 0;
-      virtual double GetAlphaf() const = 0;
-      virtual double GetAlpham() const = 0;
+      virtual double get_beta() const = 0;
+      virtual double get_gamma() const = 0;
+      virtual double get_alphaf() const = 0;
+      virtual double get_alpham() const = 0;
       //! @}
     };  // class BeamParamsInterface
   }     // namespace ELEMENTS
@@ -230,7 +230,7 @@ namespace BROWNIANDYN
     virtual ~ParamsInterface() = default;
 
     /// ~ 1e-3 / 2.27 according to cyron2011 eq 52 ff, viscosity of surrounding fluid
-    virtual double const& GetViscosity() const = 0;
+    virtual double const& get_viscosity() const = 0;
 
     /// the way how damping coefficient values for beams are specified
     virtual Inpar::BROWNIANDYN::BeamDampingCoefficientSpecificationType
@@ -245,10 +245,9 @@ namespace BROWNIANDYN
         const = 0;
 
     //! get the current step length
-    virtual const Teuchos::RCP<Epetra_MultiVector>& GetRandomForces() const = 0;
+    virtual const Teuchos::RCP<Epetra_MultiVector>& get_random_forces() const = 0;
   };
 }  // namespace BROWNIANDYN
-
 
 FOUR_C_NAMESPACE_CLOSE
 

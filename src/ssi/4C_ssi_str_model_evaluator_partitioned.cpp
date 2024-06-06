@@ -49,7 +49,7 @@ bool STR::MODELEVALUATOR::PartitionedSSI::assemble_jacobian(
     auto cond_master_dof_map = ssi_part_->ssi_structure_mesh_tying()->FullMasterSideMap();
 
     // initialize new Jacobian
-    Core::LinAlg::SparseMatrix jac_new(*GState().dof_row_map(), 81, true, true);
+    Core::LinAlg::SparseMatrix jac_new(*global_state().dof_row_map(), 81, true, true);
 
     // assemble interior rows and columns of original Jacobian into new Jacobian
     Core::LinAlg::MatrixLogicalSplitAndTransform()(jac_sparse, *map_structure_interior,

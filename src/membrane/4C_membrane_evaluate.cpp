@@ -56,7 +56,7 @@ int Discret::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& param
 
   if (IsParamsInterface())  // new structural time integration
   {
-    act = params_interface().GetActionType();
+    act = params_interface().get_action_type();
   }
   else  // old structural time integration
   {
@@ -183,11 +183,11 @@ int Discret::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& param
 
       if (IsParamsInterface())  // new structural time integration
       {
-        stressdata = str_params_interface().StressDataPtr();
-        straindata = str_params_interface().StrainDataPtr();
+        stressdata = str_params_interface().stress_data_ptr();
+        straindata = str_params_interface().strain_data_ptr();
 
-        iostress = str_params_interface().GetStressOutputType();
-        iostrain = str_params_interface().GetStrainOutputType();
+        iostress = str_params_interface().get_stress_output_type();
+        iostrain = str_params_interface().get_strain_output_type();
       }
       else  // old structural time integration
       {
@@ -240,7 +240,7 @@ int Discret::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& param
         Teuchos::RCP<std::vector<char>> thickdata = Teuchos::null;
 
         if (IsParamsInterface())  // new structural time integration
-          thickdata = str_params_interface().OptQuantityDataPtr();
+          thickdata = str_params_interface().opt_quantity_data_ptr();
         else  // old structural time integration
           thickdata = params.get<Teuchos::RCP<std::vector<char>>>("optquantity", Teuchos::null);
 
@@ -485,7 +485,7 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate_neumann(Teuchos::ParameterLis
   double time = -1.0;
 
   if (IsParamsInterface())  // new structural time integration
-    time = params_interface().GetTotalTime();
+    time = params_interface().get_total_time();
   else  // old structural time integration
     time = params.get("total time", -1.0);
 

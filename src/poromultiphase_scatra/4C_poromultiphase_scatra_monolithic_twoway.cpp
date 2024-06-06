@@ -628,7 +628,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::apply_scatra_st
   }
 
   // complete
-  k_sps->Complete(poro_field()->structure_field()->SystemMatrix()->RangeMap(),
+  k_sps->Complete(poro_field()->structure_field()->system_matrix()->RangeMap(),
       ScatraAlgo()->ScaTraField()->SystemMatrix()->RangeMap());
 
   ScatraAlgo()->ScaTraField()->discretization()->ClearState();

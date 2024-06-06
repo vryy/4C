@@ -92,7 +92,6 @@ namespace STR
       //! constructor
       GenAlphaLieGroup();
 
-
       //! Setup the class variables [derived]
       void Setup() override;
 
@@ -110,28 +109,28 @@ namespace STR
       void read_restart(Core::IO::DiscretizationReader& ioreader) override;
 
       //! [derived]
-      double GetIntParam() const override;
+      double get_int_param() const override;
 
       //! @name Monolithic update routines
       //! @{
       //! Update configuration after time step [derived]
-      void UpdateStepState() override;
+      void update_step_state() override;
       //! @}
 
       //! @name Predictor routines (dependent on the implicit integration scheme)
       //! @{
-      /*! Predict constant displacements, consistent velocities and accelerations [derived] */
+      /*! predict constant displacements, consistent velocities and accelerations [derived] */
       void predict_const_dis_consist_vel_acc(
           Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const override;
 
-      /*! Predict displacements based on constant velocities
+      /*! predict displacements based on constant velocities
        *  and consistent accelerations [derived] */
       bool predict_const_vel_consist_acc(
           Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const override;
 
-      /*! Predict displacements based on constant accelerations
+      /*! predict displacements based on constant accelerations
        *  and consistent velocities [derived] */
-      bool PredictConstAcc(
+      bool predict_const_acc(
           Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const override;
       //! @}
      protected:
@@ -180,7 +179,7 @@ namespace STR
        *
        *  See the set_state() routine for the iterative update of the current state.
        *
-       *  \f$ A_{mod,n} \f$ is updated in the method UpdateStepState() according to
+       *  \f$ A_{mod,n} \f$ is updated in the method update_step_state() according to
        *  \f[
        *    A_{mod,n+1} =
        *    \frac{1}{1-\alpha_m} ( (1-\alpha_f) A_{n+1} + \alpha_f A_n - \alpha_m * A_{mod,n} )

@@ -95,7 +95,7 @@ namespace STR
       sta_ = Teuchos::rcp(
           new T(timeparams, ioparams, sdyn, xparams, sti->discretization(), sti->Solver(),
               Teuchos::null,  // no contact solver
-              sti->DiscWriter()));
+              sti->disc_writer()));
       sta_->Init(timeparams, sdyn, xparams, sti->discretization(), sti->Solver());
 
       // check explicitness

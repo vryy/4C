@@ -407,7 +407,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::UpdateStepElement(
   MPI_Reduce(num_local.data(), num_global.data(), 3, MPI_INT, MPI_SUM, 0,
       dynamic_cast<const Epetra_MpiComm*>(&(Discret().Comm()))->Comm());
 
-  if (GState().GetMyRank() == 0)
+  if (GState().get_my_rank() == 0)
   {
     Core::IO::cout(Core::IO::standard)
         << "\n************************************************" << Core::IO::endl;
@@ -440,7 +440,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::post_update_step_ele
 
   //  int const updateevery = 200;
   //
-  //  if( (GState().GetStepN() + 1) % updateevery == 0 and GState().GetStepN() > updateevery)
+  //  if( (global_state().get_step_n() + 1) % updateevery == 0 and global_state().get_step_n() >
+  //  updateevery)
   //    sm_crosslinkink_ptr->double_bind_crosslinker_in_bins_and_neighborhood( spherebingids );
 }
 
@@ -496,7 +497,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::ResetStepState()
   check_init_setup();
 
   // in case time step is same as structure time step, update it
-  spherebeamlinking_params_ptr_->ResetTimeStep((*GState().GetDeltaTime())[0]);
+  spherebeamlinking_params_ptr_->ResetTimeStep((*GState().get_delta_time())[0]);
 }
 
 /*-------------------------------------------------------------------------------*
@@ -565,7 +566,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::get_half_interaction
   {
     //    int const elegid = EleTypeMapExtractor().SphereMap()->GID(rowele_i);
     //    Discret::ELEMENTS::Rigidsphere * sphere =
-    //        dynamic_cast< Discret::ELEMENTS::Rigidsphere * >( Discret().gElement(elegid) );
+    //        dynamic_cast< Discret::ELEMENTS::Rigidsphere * >( discret().gElement(elegid) );
 
     curr_ia_dist =
         0.5 * spherebeamlinking_params_ptr_->GetLinkerMaterial()->linking_length_tolerance();
@@ -585,11 +586,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::get_half_interaction
       dynamic_cast<const Epetra_MpiComm*>(&(Discret().Comm()))->Comm());
 
   // some screen output
-  if (GState().GetMyRank() == 0)
+  if (GState().get_my_rank() == 0)
     Core::IO::cout(Core::IO::verbose)
         << "\n spherebeamlinking half interaction distance "
         << spherebeamlinking_half_interaction_distance_global << Core::IO::endl;
-
 
   half_interaction_distance =
       (spherebeamlinking_half_interaction_distance_global > half_interaction_distance)
@@ -606,7 +606,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::init_output_runtime(
   visualization_manager_ptr_ = Teuchos::rcp(new Core::IO::VisualizationManager(
       Core::IO::VisualizationParametersFactory(
           Global::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
-          *Global::Problem::Instance()->OutputControlFile(), GState().GetTimeN()),
+          *Global::Problem::Instance()->OutputControlFile(), GState().get_time_n()),
       BinDiscretPtr()->Comm(), "spherebeamlinker"));
 }
 
@@ -705,7 +705,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::write_output_runtime
   visualization_manager_ptr_->get_visualization_data().SetPointDataVector("force", force, 3);
 
   // finalize everything and write all required VTU files to filesystem
-  visualization_manager_ptr_->WriteToDisk(GState().GetTimeN(), GState().GetStepN());
+  visualization_manager_ptr_->WriteToDisk(GState().get_time_n(), GState().get_step_n());
 }
 
 /*----------------------------------------------------------------------------*
@@ -978,7 +978,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::create_beam_to_spher
 
       // finally initialize and setup object
       linkelepairptr->Init(id, eleids, pos, dummy_triad,
-          spherebeamlinking_params_ptr_->GetLinkerMaterial()->LinkerType(), GState().GetTimeNp());
+          spherebeamlinking_params_ptr_->GetLinkerMaterial()->LinkerType(), GState().get_time_np());
       // material id
       linkelepairptr->Setup(
           spherebeamlinking_params_ptr_->GetLinkerMaterial()->beam_elast_hyper_mat_num());
@@ -1002,7 +1002,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::unbind_sphere_beam_b
 
   // check if unbinding needs to be checked this problem time step
   int random_number_sphere_beam_linking_step =
-      static_cast<int>((GState().GetTimeNp() - (*GState().GetDeltaTime())[0]) /
+      static_cast<int>((GState().get_time_np() - (*GState().get_delta_time())[0]) /
                            spherebeamlinking_params_ptr_->DeltaTime() +
                        1.0e-8);
   if (random_number_sphere_beam_linking_step == random_number_sphere_beam_linking_step_)
@@ -1033,7 +1033,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::unbind_sphere_beam_b
       Teuchos::RCP<BEAMINTERACTION::BeamLinkPinJointed> elepairptr = ipair.second;
 
       // check if linker was set this time step
-      if (elepairptr->GetTimeLinkWasSet() == GState().GetTimeNp()) continue;
+      if (elepairptr->GetTimeLinkWasSet() == GState().get_time_np()) continue;
 
       // consider catch-slip bond behavior of integrin linkers
       calc_force_dependent_catch_slip_bond_unbind_probability(elepairptr, p_unbind);
@@ -1123,7 +1123,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::update_linker_length
   // note: problem time step is used here
   double contraction_per_dt =
       spherebeamlinking_params_ptr_->ContractionRate(Inpar::BEAMINTERACTION::linkertype_integrin) *
-      (*GState().GetDeltaTime())[0];
+      (*GState().get_delta_time())[0];
   double scalefac = 0.0;
   int unsigned const numrowsphereeles = ele_type_map_extractor_ptr()->SphereMap()->NumMyElements();
   for (unsigned int rowele_i = 0; rowele_i < numrowsphereeles; ++rowele_i)
@@ -1134,7 +1134,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::update_linker_length
 
     // todo: do we want this (note: this would be a compressible behavior in this case)
     // change radius of contracting cell
-    //    if ( GState().GetStepN() % 10 == 0 )
+    //    if ( global_state().get_step_n() % 10 == 0 )
     //      sphere->ScaleRadius(0.95);
 
     // loop over bonds of current sphere
@@ -1146,7 +1146,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::update_linker_length
       // only contract if linker size > sphere radius * factor
       double factor = 1.01;
       if ((elepairptr->get_current_linker_length() <= sphere->Radius() * factor) or
-          (GState().GetStepN() == 0))
+          (GState().get_step_n() == 0))
         continue;
 
       // compute scaling factor for linker length

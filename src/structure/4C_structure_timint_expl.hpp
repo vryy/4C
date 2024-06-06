@@ -129,7 +129,7 @@ namespace STR
         void UpdateStepAndTime()
         {
           // system state
-          UpdateStepState();
+          update_step_state();
           // update time and step
           time_->UpdateSteps(timen_);
           step_ = stepn_;
@@ -137,7 +137,7 @@ namespace STR
           timen_ += (*dt_)[0];
           stepn_ += 1;
           // element update
-          UpdateStepElement();
+          update_step_element();
         }
     */
     //@}
@@ -146,9 +146,9 @@ namespace STR
     //@{
 
     //! print summary after step
-    void PrintStep() override;
+    void print_step() override;
 
-    //! The text for summary print, see #PrintStep
+    //! The text for summary print, see #print_step
     void print_step_text(FILE* ofile  //!< output file handle
     );
 
@@ -191,7 +191,7 @@ namespace STR
     Teuchos::RCP<Epetra_Vector> Fext() override = 0;
 
     //! Return reaction forces
-    Teuchos::RCP<Epetra_Vector> Freact() override
+    Teuchos::RCP<Epetra_Vector> freact() override
     {
       FOUR_C_THROW("Not impl.");
       return Teuchos::null;
@@ -262,7 +262,7 @@ namespace STR
         Teuchos::RCP<Epetra_Vector>& fext         //!< external force
     );
 
-    /// has to be renamed either here or PrintStep()
+    /// has to be renamed either here or print_step()
     void Output(bool forced_writerestart) override
     {
       OutputStep(forced_writerestart);
@@ -271,7 +271,7 @@ namespace STR
       return;
     }
 
-    /// has to be renamed either here or UpdateStepState() /UpdateStepStateElement()
+    /// has to be renamed either here or update_step_state() /UpdateStepStateElement()
     void Update() override
     {
       PreUpdate();
@@ -341,16 +341,16 @@ namespace STR
     };
 
     //! Get type of thickness scaling for thin shell structures
-    Inpar::STR::StcScale GetSTCAlgo() override
+    Inpar::STR::StcScale get_stc_algo() override
     {
-      FOUR_C_THROW("GetSTCAlgo() has not been tested for explicit time integrators");
+      FOUR_C_THROW("get_stc_algo() has not been tested for explicit time integrators");
       return Inpar::STR::stc_none;
     };
 
     //! Access to scaling matrix for STC
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> GetSTCMat() override
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> get_stc_mat() override
     {
-      FOUR_C_THROW("GetSTCMat() has not been tested for explicit time integrators");
+      FOUR_C_THROW("get_stc_mat() has not been tested for explicit time integrators");
       return Teuchos::null;
     };
 

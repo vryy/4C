@@ -46,7 +46,7 @@ void STR::Nln::SOLVER::SingleStep::set_single_step_params()
 
   // get the nox parameter list and set the necessary parameters for a
   // full Newton solution procedure
-  Teuchos::ParameterList& p = data_s_dyn().GetNoxParams();
+  Teuchos::ParameterList& p = data_sdyn().get_nox_params();
   set_single_step_params(p);
 
   // ---------------------------------------------------------------------------
@@ -55,11 +55,12 @@ void STR::Nln::SOLVER::SingleStep::set_single_step_params()
   /* This is only necessary for the special case, that you use no xml-file for
    * the definition of your convergence tests, but you use the dat-file instead.
    */
-  if (not IsXMLStatusTestFile(data_s_dyn().GetNoxParams().sublist("Status Test")))
+  if (not is_xml_status_test_file(data_sdyn().get_nox_params().sublist("Status Test")))
   {
     std::set<enum NOX::Nln::StatusTest::QuantityType> qtypes;
-    CreateQuantityTypes(qtypes, data_s_dyn());
-    SetStatusTestParams(data_s_dyn().GetNoxParams().sublist("Status Test"), data_s_dyn(), qtypes);
+    create_quantity_types(qtypes, data_sdyn());
+    set_status_test_params(
+        data_sdyn().get_nox_params().sublist("Status Test"), data_sdyn(), qtypes);
   }
 }
 

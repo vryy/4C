@@ -744,7 +744,7 @@ void THR::TimInt::apply_force_tang_internal(
     if (fint->Update(
             1., *contact_strategy_nitsche_->GetRhsBlockPtr(CONTACT::VecBlockType::temp), 1.))
       FOUR_C_THROW("update failed");
-    if (contact_params_interface_->GetCouplingScheme() ==
+    if (contact_params_interface_->get_coupling_scheme() ==
         Inpar::CONTACT::CouplingScheme::monolithic)
     {
       tang->UnComplete();
@@ -807,7 +807,7 @@ void THR::TimInt::apply_force_tang_internal(
   if (contact_strategy_nitsche_ != Teuchos::null)
   {
     fint->Update(1., *contact_strategy_nitsche_->GetRhsBlockPtr(CONTACT::VecBlockType::temp), 1.);
-    if (contact_params_interface_->GetCouplingScheme() ==
+    if (contact_params_interface_->get_coupling_scheme() ==
         Inpar::CONTACT::CouplingScheme::monolithic)
     {
       tang->UnComplete();

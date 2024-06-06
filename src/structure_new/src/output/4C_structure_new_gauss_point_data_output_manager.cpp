@@ -59,7 +59,7 @@ void STR::MODELEVALUATOR::GaussPointDataOutputManager::add_quantity_if_not_exist
   }
 }
 
-void STR::MODELEVALUATOR::GaussPointDataOutputManager::MergeQuantities(
+void STR::MODELEVALUATOR::GaussPointDataOutputManager::merge_quantities(
     const std::unordered_map<std::string, int>& quantities)
 {
   for (const auto& name_and_size : quantities)
@@ -80,7 +80,7 @@ void STR::MODELEVALUATOR::GaussPointDataOutputManager::add_element_number_of_gau
   }
 }
 
-void STR::MODELEVALUATOR::GaussPointDataOutputManager::PrepareData(
+void STR::MODELEVALUATOR::GaussPointDataOutputManager::prepare_data(
     const Epetra_Map& node_col_map, const Epetra_Map& element_row_map)
 {
   switch (output_type_)
@@ -199,7 +199,7 @@ void STR::MODELEVALUATOR::GaussPointDataOutputManager::distribute_quantities(
       std::unique_ptr<std::unordered_map<std::string, int>> received_quantities =
           receive_quantities_from_proc(exporter, i);
 
-      MergeQuantities(*received_quantities);
+      merge_quantities(*received_quantities);
     }
   }
   else
@@ -257,7 +257,7 @@ void STR::MODELEVALUATOR::GaussPointDataOutputManager::broadcast_my_quantitites(
     std::unordered_map<std::string, int> received_quantities{};
     unpack_quantities(pos, data, received_quantities);
 
-    MergeQuantities(received_quantities);
+    merge_quantities(received_quantities);
   }
 }
 

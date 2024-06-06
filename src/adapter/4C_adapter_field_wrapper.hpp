@@ -60,15 +60,15 @@ namespace Adapter
     Teuchos::RCP<const Epetra_Map> dof_row_map() override { return field_->dof_row_map(); }
 
     /// direct access to system matrix
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() override
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() override
     {
-      return field_->SystemMatrix();
+      return field_->system_matrix();
     }
 
     /// direct access to system matrix
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> BlockSystemMatrix() override
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() override
     {
-      return field_->BlockSystemMatrix();
+      return field_->block_system_matrix();
     }
 
     //@}

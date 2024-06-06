@@ -563,7 +563,7 @@ int Discret::ELEMENTS::SoPyramid5fbar::evaluate_neumann(Teuchos::ParameterList& 
       [&]()
       {
         if (IsParamsInterface())
-          return str_params_interface().GetTotalTime();
+          return str_params_interface().get_total_time();
         else
           return params.get("total time", -1.0);
       });
@@ -1258,8 +1258,8 @@ void Discret::ELEMENTS::SoPyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // l
         double timintfac_vel = 0.0;
         if (IsParamsInterface())
         {
-          timintfac_dis = str_params_interface().GetTimIntFactorDisp();
-          timintfac_vel = str_params_interface().GetTimIntFactorVel();
+          timintfac_dis = str_params_interface().get_tim_int_factor_disp();
+          timintfac_vel = str_params_interface().get_tim_int_factor_vel();
         }
         else
         {

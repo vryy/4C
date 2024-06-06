@@ -457,7 +457,7 @@ namespace THR
     Teuchos::RCP<const Epetra_Vector> RHS() override = 0;
 
     //! Return tangent, i.e. thermal residual differentiated by temperatures
-    //! (SystemMatrix()/stiff_ in STR)
+    //! (system_matrix()/stiff_ in STR)
     Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() override { return tang_; }
 
     //! Return domain map

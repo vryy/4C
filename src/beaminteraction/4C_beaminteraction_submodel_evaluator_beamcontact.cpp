@@ -96,7 +96,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
         Teuchos::rcp(new Core::GeometricSearch::GeometricSearchVisualization(
             Core::IO::VisualizationParametersFactory(
                 Global::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
-                *Global::Problem::Instance()->OutputControlFile(), GState().GetTimeN()),
+                *Global::Problem::Instance()->OutputControlFile(), GState().get_time_n()),
             DiscretPtr()->Comm(), "beam-interaction-geometric-search"));
   }
 
@@ -108,7 +108,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
           Global::Problem::Instance()->beam_contact_params().sublist("RUNTIME VTK OUTPUT"),
           "VTK_OUTPUT_BEAM_CONTACT"))
   {
-    beam_contact_params_ptr_->build_beam_contact_runtime_output_params(GState().GetTimeN());
+    beam_contact_params_ptr_->build_beam_contact_runtime_output_params(GState().get_time_n());
 
     init_output_runtime_beam_contact();
   }
@@ -164,7 +164,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
               new BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter(
                   Core::IO::VisualizationParametersFactory(
                       Global::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
-                      *Global::Problem::Instance()->OutputControlFile(), GState().GetTimeN())));
+                      *Global::Problem::Instance()->OutputControlFile(), GState().get_time_n())));
       beam_to_solid_volume_meshtying_visualization_output_writer_ptr_->Init();
       beam_to_solid_volume_meshtying_visualization_output_writer_ptr_->Setup(
           GInOutput().get_runtime_output_params(),
@@ -195,7 +195,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
               new BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter(
                   Core::IO::VisualizationParametersFactory(
                       Global::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
-                      *Global::Problem::Instance()->OutputControlFile(), GState().GetTimeN())));
+                      *Global::Problem::Instance()->OutputControlFile(), GState().get_time_n())));
       beam_to_solid_surface_visualization_output_writer_ptr_->Init();
       beam_to_solid_surface_visualization_output_writer_ptr_->Setup(
           GInOutput().get_runtime_output_params(),
@@ -376,16 +376,16 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::pre_update_step_element(bo
    * from previous time step */
   /* Fixme
    * writing this output also must be done BEFORE re-distribution which
-   * currently happens in STR::MODELEVALUATOR::BeamInteraction::UpdateStepElement()
-   * before calling UpdateStepElement() on all submodels.
+   * currently happens in STR::MODELEVALUATOR::BeamInteraction::update_step_element()
+   * before calling update_step_element() on all submodels.
    * Hence, the only option currently is to call it from pre_update_step_element() */
   /* Note: another option would be to not use any data from state vectors or elements and only
    * write previously computed and (locally) stored data at this point. Like
    * this, it works in SUBMODELEVALUATOR::BeamPotential */
   if (visualization_manager_ptr_ != Teuchos::null and
-      GState().GetStepNp() % beam_contact_params()
-                                 .beam_contact_runtime_visualization_output_params()
-                                 ->output_interval_in_steps() ==
+      GState().get_step_np() % beam_contact_params()
+                                   .beam_contact_runtime_visualization_output_params()
+                                   ->output_interval_in_steps() ==
           0)
   {
     write_time_step_output_runtime_beam_contact();
@@ -436,7 +436,7 @@ std::map<STR::EnergyType, double> BEAMINTERACTION::SUBMODELEVALUATOR::BeamContac
   for (const auto& assembly_manager : assembly_managers_)
   {
     contact_penalty_potential[STR::beam_contact_penalty_potential] +=
-        assembly_manager->get_energy(GState().GetDisNp());
+        assembly_manager->get_energy(GState().get_dis_np());
   }
 
   return contact_penalty_potential;
@@ -477,7 +477,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::write_time_step_output_run
       beam_contact_params()
           .beam_contact_runtime_visualization_output_params()
           ->get_visualization_parameters(),
-      GState().GetTimeN(), GState().GetStepN());
+      GState().get_time_n(), GState().get_step_n());
   write_output_runtime_beam_contact(output_step, output_time);
 }
 
@@ -492,7 +492,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::write_iteration_output_run
       beam_contact_params()
           .beam_contact_runtime_visualization_output_params()
           ->get_visualization_parameters(),
-      GState().GetTimeN(), GState().GetStepN(), iteration_number);
+      GState().get_time_n(), GState().get_step_n(), iteration_number);
   write_output_runtime_beam_contact(output_step, output_time);
 }
 
@@ -729,7 +729,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::get_half_interaction_dista
                                     : half_interaction_distance;
 
     // some screen output
-    if (GState().GetMyRank() == 0)
+    if (GState().get_my_rank() == 0)
       std::cout << " beam to beam contact half interaction distance " << globalmax_beam_ia_distance
                 << std::endl;
   }
@@ -765,7 +765,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::get_half_interaction_dista
             : half_interaction_distance;
 
     // some screen output
-    if (GState().GetMyRank() == 0)
+    if (GState().get_my_rank() == 0)
       Core::IO::cout(Core::IO::verbose)
           << " sphere to beam contact half interaction distance "
           << spherebeamlinking_half_interaction_distance_global << Core::IO::endl;
@@ -906,7 +906,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::find_and_store_neighboring
       // Output is desired, so create it right here, because we only search the pairs once per time
       // step anyways.
       geometric_search_visualization_ptr_->write_primitives_and_predicates_to_disk(
-          GState().GetTimeN(), GState().GetStepN(), other_bounding_boxes, beam_bounding_boxes);
+          GState().get_time_n(), GState().get_step_n(), other_bounding_boxes, beam_bounding_boxes);
     }
   }
   else
@@ -1028,7 +1028,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::create_beam_contact_elemen
       DiscretPtr(), assembly_managers_);
 
   Core::IO::cout(Core::IO::standard)
-      << "PID " << std::setw(2) << std::right << GState().GetMyRank() << " currently monitors "
+      << "PID " << std::setw(2) << std::right << GState().get_my_rank() << " currently monitors "
       << std::setw(5) << std::right << contact_elepairs_.size() << " beam contact pairs"
       << Core::IO::endl;
 }
@@ -1084,7 +1084,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::print_active_beam_contact_
 
   if (atleastoneactivepair)
   {
-    out << "\n    Active Beam-To-? Contact Set (PID " << GState().GetMyRank()
+    out << "\n    Active Beam-To-? Contact Set (PID " << GState().get_my_rank()
         << "):-----------------------------------------\n";
     out << "    ID1            ID2              T    xi       eta      angle    gap         "
            "force\n";

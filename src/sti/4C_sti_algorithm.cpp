@@ -287,7 +287,7 @@ void STI::Algorithm::TimeLoop()
 
     // output solution to screen and files
     output();
-  }  // while(NotFinished())
+  }  // while(not_finished())
 }  // STI::Algorithm::TimeLoop()
 
 /*--------------------------------------------------------------------------------*

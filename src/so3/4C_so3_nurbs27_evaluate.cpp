@@ -553,7 +553,7 @@ int Discret::ELEMENTS::Nurbs::SoNurbs27::evaluate_neumann(Teuchos::ParameterList
   // find out whether we will use a time curve
   double time = -1.0;
   if (IsParamsInterface())
-    time = params_interface().GetTotalTime();
+    time = params_interface().get_total_time();
   else
     time = params.get("total time", -1.0);
 

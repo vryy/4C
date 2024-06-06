@@ -159,7 +159,7 @@ void PoroElast::MonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpa
 {
   TEUCHOS_FUNC_TIME_MONITOR("PoroElast::MonolithicFluidSplit::setup_system_matrix");
 
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> s = structure_field()->SystemMatrix();
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> s = structure_field()->system_matrix();
   if (s == Teuchos::null) FOUR_C_THROW("expect structure matrix");
   Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> f = fluid_field()->BlockSystemMatrix();
   if (f == Teuchos::null) FOUR_C_THROW("expect fluid block matrix");

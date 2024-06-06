@@ -26,10 +26,10 @@ void Adapter::StructureTimeAdaZienXie::integrate_step_auxiliar()
   const STR::TimeInt::BaseDataGlobalState& gstate = stm.data_global_state();
 
   // get state vectors of marching integrator
-  Teuchos::RCP<const Epetra_Vector> dis = gstate.GetDisN();    // D_{n}^{A2}
-  Teuchos::RCP<const Epetra_Vector> vel = gstate.GetVelN();    // V_{n}^{A2}
-  Teuchos::RCP<const Epetra_Vector> acc = gstate.GetAccN();    // A_{n}^{A2}
-  Teuchos::RCP<const Epetra_Vector> accn = gstate.GetAccNp();  // A_{n+1}^{A2}
+  Teuchos::RCP<const Epetra_Vector> dis = gstate.get_dis_n();    // D_{n}^{A2}
+  Teuchos::RCP<const Epetra_Vector> vel = gstate.get_vel_n();    // V_{n}^{A2}
+  Teuchos::RCP<const Epetra_Vector> acc = gstate.get_acc_n();    // A_{n}^{A2}
+  Teuchos::RCP<const Epetra_Vector> accn = gstate.get_acc_np();  // A_{n+1}^{A2}
 
   // build ZX displacements D_{n+1}^{ZX}
   // using the second order (or lower) accurate new accelerations

@@ -82,11 +82,11 @@ void STR::TimIntExplEuler::Setup()
   ResizeMStep();
 
   // allocate force vectors
-  fextn_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
-  fintn_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
-  fviscn_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
-  fcmtn_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
-  frimpn_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
+  fextn_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+  fintn_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+  fviscn_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+  fcmtn_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+  frimpn_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
 
   return;
 }

@@ -40,7 +40,7 @@ STR::TimAda::TimAda(const Teuchos::ParameterList& timeparams,  //!< TIS input pa
       discret_(tis->discretization()),
       myrank_(discret_->Comm().MyPID()),
       solver_(tis->Solver()),
-      output_(tis->DiscWriter()),
+      output_(tis->disc_writer()),
       //
       timeinitial_(0.0),
       timefinal_(timeparams.get<double>("MAXTIME")),
@@ -216,7 +216,7 @@ int STR::TimAda::Integrate()
     OutputPeriod();
     sti_->PostOutput();
     OutputStepSize();
-    sti_->PrintStep();
+    sti_->print_step();
 
     // update
     //    Update();

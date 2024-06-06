@@ -210,7 +210,7 @@ namespace STR
        * the desired mid-point. The reason why we do it here and not at time integrator level
        * is that you have now the possibility to use a different time integration (not the
        * underlying structural one). This makes it more flexible. However, the contributions of the
-       * old time step should be stored in the UpdateStepState() routine. There you can scale the
+       * old time step should be stored in the update_step_state() routine. There you can scale the
        * old contributions with the time integration factor you like and save them once, thus you
        * just have to add them to complete the mid-point right-hand-side.
        *
@@ -218,7 +218,7 @@ namespace STR
        * \param[in] timefac_np Time factor of the underlying structural time integrator for
        *                       the new state at \f$t_{n+1}\f$.
        *
-       * To scale the old state of the previous time step, see UpdateStepState.
+       * To scale the old state of the previous time step, see update_step_state.
        *
        * \return Boolean to indicate sucess (true) or error (false)
        *
@@ -259,13 +259,13 @@ namespace STR
        *  \author hiermeier */
       virtual void read_restart(Core::IO::DiscretizationReader& ioreader) = 0;
 
-      /*! \brief Predict the values for DoFs that are defined in
+      /*! \brief predict the values for DoFs that are defined in
        *         the respective model evaluators, e.g. condensed variables.*/
       virtual void Predict(const Inpar::STR::PredEnum& pred_type) = 0;
 
       /*! \brief Recover condensed solution variables, meant to be called by run_post_compute_x
        */
-      virtual void RunRecover(){};
+      virtual void run_recover(){};
 
       /*! \brief Recover condensed solution variables
        *
@@ -295,7 +295,7 @@ namespace STR
        *  \param solver (in) : reference to the non-linear nox solver object (read-only)
        *
        *  \author hiermeier */
-      virtual void RunPreSolve(const ::NOX::Solver::Generic& solver){};
+      virtual void run_pre_solve(const ::NOX::Solver::Generic& solver){};
 
       /*! \brief Executed at the end of the NOX::Nln::LinearSystem::applyJacobianInverse()
        *  method
@@ -333,7 +333,7 @@ namespace STR
       virtual bool correct_parameters(NOX::Nln::CorrectionType type) { return true; };
 
       /// update the model state corresponding to the time/load-step
-      virtual void UpdateStepState(const double& timefac_n) = 0;
+      virtual void update_step_state(const double& timefac_n) = 0;
 
       // compute the element contributions for element based scaling using PTC
       virtual void evaluate_jacobian_contributions_from_element_level_for_ptc(){};
@@ -342,7 +342,7 @@ namespace STR
           Teuchos::RCP<Core::LinAlg::SparseMatrix>& modjac, const double& timefac_n){};
 
       //! Update the element by end of the time step
-      virtual void UpdateStepElement() = 0;
+      virtual void update_step_element() = 0;
 
       //! Compute the residual by difference of {n+1} and {n} state
       virtual void update_residual()
@@ -354,9 +354,9 @@ namespace STR
        *  \remark This function is called from STR::TimeInt::Base::prepare_output() and calculates
        *  missing quantities, which were not evaluated during the standard evaluate call and are
        *  only calculated once per load/time step. You can not do the calculations during the
-       *  OutputStepState() routine, because of the const status of the named function!
+       *  output_step_state() routine, because of the const status of the named function!
        *
-       *  \sa OutputStepState
+       *  \sa output_step_state
        *
        *  \author hiermeier*/
       virtual void determine_stress_strain() = 0;
@@ -366,21 +366,21 @@ namespace STR
        *  \remark This function is called from STR::TimeInt::Base::prepare_output() and calculates
        *  missing quantities, which were not evaluated during the standard evaluate call and are
        *  only calculated once per load/time step. You can not do the calculations during the
-       *  OutputStepState() routine, because of the const status of the named function!
+       *  output_step_state() routine, because of the const status of the named function!
        *
-       *  \sa OutputStepState
+       *  \sa output_step_state
        *
        *  \author hiermeier*/
-      virtual void DetermineEnergy() = 0;
+      virtual void determine_energy() = 0;
 
       /*! \brief calculate optional quantity contribution of each model evaluator
        *
        *  \remark This function is called from STR::TimeInt::Base::prepare_output() and calculates
        *  missing quantities, which were not evaluated during the standard evaluate call and are
        *  only calculated once per load/time step. You can not do the calculations during the
-       *  OutputStepState() routine, because of the const status of the named function!
+       *  output_step_state() routine, because of the const status of the named function!
        *
-       *  \sa OutputStepState
+       *  \sa output_step_state
        *
        *  \author hiermeier*/
       virtual void determine_optional_quantity() = 0;
@@ -389,7 +389,7 @@ namespace STR
        *
        * @param iowriter discretization writer that actually writes binary output to the disk
        */
-      virtual void OutputStepState(Core::IO::DiscretizationWriter& iowriter) const = 0;
+      virtual void output_step_state(Core::IO::DiscretizationWriter& iowriter) const = 0;
 
       /**
        * \brief This method is called before the runtime output method is called.
@@ -400,10 +400,10 @@ namespace STR
       virtual void runtime_output_step_state() const {};
 
       //! reset routine for model evlaluator
-      virtual void ResetStepState() = 0;
+      virtual void reset_step_state() = 0;
 
       //! post output routine for model evlaluator
-      virtual void PostOutput() = 0;
+      virtual void post_output() = 0;
 
       /** \brief Create a backup state
        *
@@ -412,7 +412,7 @@ namespace STR
        *  global state in terms of the x-vector is stored more globally.
        *
        *  \author hiermeier \date 12/17 */
-      virtual void CreateBackupState(const Epetra_Vector& dir){/* do nothing in default */};
+      virtual void create_backup_state(const Epetra_Vector& dir){/* do nothing in default */};
 
       /** \brief Recover from the previously created backup state
        *
@@ -437,7 +437,7 @@ namespace STR
       virtual Teuchos::RCP<const Epetra_Vector> get_last_time_step_solution_ptr() const = 0;
 
       /// access the current external load increment
-      Teuchos::RCP<Epetra_Vector> GetFextIncr() const;
+      Teuchos::RCP<Epetra_Vector> get_fext_incr() const;
 
       //! Get the mechanical stress state vector (read access)
       [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> get_mechanical_stress_state() const
@@ -450,22 +450,22 @@ namespace STR
       //! @name internal accessors
       //! @{
       //! Returns the model evaluator data container
-      const STR::MODELEVALUATOR::Data& EvalData() const;
+      const STR::MODELEVALUATOR::Data& eval_data() const;
 
       //! Returns the global state data container
-      const STR::TimeInt::BaseDataGlobalState& GState() const;
+      const STR::TimeInt::BaseDataGlobalState& global_state() const;
 
       //! Returns the global input/output data container
-      const STR::TimeInt::BaseDataIO& GInOutput() const;
+      const STR::TimeInt::BaseDataIO& global_in_output() const;
 
       //! Returns the (structural) discretization
-      const Discret::Discretization& Discret() const;
+      const Discret::Discretization& discret() const;
 
       //! Returns the underlying STR::Integrator object
-      const STR::Integrator& Int() const;
+      const STR::Integrator& integrator() const;
 
       //! Returns the underlying STR::TIMINT object
-      const STR::TimeInt::Base& TimInt() const;
+      const STR::TimeInt::Base& tim_int() const;
       //! @}
 
      protected:
@@ -489,12 +489,12 @@ namespace STR
       Teuchos::RCP<STR::MODELEVALUATOR::Data>& eval_data_ptr();
 
       //! Returns the global state data container
-      STR::TimeInt::BaseDataGlobalState& g_state();
-      Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& g_state_ptr();
+      STR::TimeInt::BaseDataGlobalState& global_state();
+      Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& global_state_ptr();
 
       //! Returns the global input/output data container
-      STR::TimeInt::BaseDataIO& g_in_output();
-      Teuchos::RCP<STR::TimeInt::BaseDataIO> g_in_output_ptr();
+      STR::TimeInt::BaseDataIO& global_in_output();
+      Teuchos::RCP<STR::TimeInt::BaseDataIO> global_in_output_ptr();
 
       //! Returns the (structural) discretization
       Discret::Discretization& discret();
@@ -502,7 +502,7 @@ namespace STR
 
       //! Returns the underlying STR::Integrator object
       STR::Integrator& integrator();
-      Teuchos::RCP<STR::Integrator>& int_ptr();
+      Teuchos::RCP<STR::Integrator>& integrator_ptr();
 
       const int& dof_offset() const;
       //! @}

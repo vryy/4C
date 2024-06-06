@@ -310,7 +310,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::Aug::PenaltyUpdate::get_problem_rhs(
     const CONTACT::ParamsInterface& cparams,
     const std::vector<Inpar::STR::ModelType>* without_these_models) const
 {
-  const STR::MODELEVALUATOR::Generic& model = cparams.GetModelEvaluator();
+  const STR::MODELEVALUATOR::Generic& model = cparams.get_model_evaluator();
   const STR::MODELEVALUATOR::Contact& cmodel =
       dynamic_cast<const STR::MODELEVALUATOR::Contact&>(model);
 
@@ -323,13 +323,13 @@ Teuchos::RCP<const Core::LinAlg::SparseMatrix>
 CONTACT::Aug::PenaltyUpdate::get_structural_stiffness_matrix(
     const CONTACT::ParamsInterface& cparams) const
 {
-  const STR::MODELEVALUATOR::Generic& model = cparams.GetModelEvaluator();
+  const STR::MODELEVALUATOR::Generic& model = cparams.get_model_evaluator();
   const STR::MODELEVALUATOR::Contact& cmodel =
       dynamic_cast<const STR::MODELEVALUATOR::Contact&>(model);
 
   // access the full stiffness matrix
   Teuchos::RCP<const Core::LinAlg::SparseMatrix> full_stiff_ptr =
-      cmodel.GetJacobianBlock(STR::MatBlockType::displ_displ);
+      cmodel.get_jacobian_block(STR::MatBlockType::displ_displ);
   return full_stiff_ptr;
 }
 
@@ -477,7 +477,7 @@ void CONTACT::Aug::PenaltyUpdateSufficientAngle::set_state(
 
   // directional derivative of the structural gradient
   const STR::MODELEVALUATOR::Contact& cmodel =
-      dynamic_cast<const STR::MODELEVALUATOR::Contact&>(cparams.GetModelEvaluator());
+      dynamic_cast<const STR::MODELEVALUATOR::Contact&>(cparams.get_model_evaluator());
 
   const std::vector<Inpar::STR::ModelType> without_contact(1, cmodel.Type());
   Teuchos::RCP<Epetra_Vector> str_gradient =

@@ -86,7 +86,7 @@ namespace STR
       }
 
       //! @}
-      [[nodiscard]] Teuchos::RCP<const STR::Nln::SOLVER::Generic> GetNlnSolverPtr() const
+      [[nodiscard]] Teuchos::RCP<const STR::Nln::SOLVER::Generic> get_nln_solver_ptr() const
       {
         return nlnsolver_ptr_;
       };
@@ -95,12 +95,11 @@ namespace STR
       Inpar::STR::ConvergenceStatus PerformErrorAction(
           Inpar::STR::ConvergenceStatus nonlinsoldiv) override;
 
-
       //! check, if according to divercont flag time step size can be increased
       void check_for_time_step_increase(Inpar::STR::ConvergenceStatus& status);
 
       //! returns pointer to generic implicit object
-      Teuchos::RCP<STR::IMPLICIT::Generic> ImplIntPtr()
+      Teuchos::RCP<STR::IMPLICIT::Generic> impl_int_ptr()
       {
         check_init_setup();
         return implint_ptr_;
@@ -180,11 +179,11 @@ namespace STR
       //@{
 
       //! Provide Name
-      enum Inpar::STR::DynamicType MethodName() const override;
+      enum Inpar::STR::DynamicType method_name() const override;
 
       //! Provide number of steps, e.g. a single-step method returns 1,
       //! a \f$m\f$-multistep method returns \f$m\f$
-      int MethodSteps() const override;
+      int method_steps() const override;
 
       //! Give local order of accuracy of displacement part
       int method_order_of_accuracy_dis() const override;
@@ -215,7 +214,6 @@ namespace STR
     };
   }  // namespace TimeInt
 }  // namespace STR
-
 
 FOUR_C_NAMESPACE_CLOSE
 

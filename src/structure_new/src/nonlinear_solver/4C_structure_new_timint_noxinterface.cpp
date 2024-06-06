@@ -96,7 +96,7 @@ bool STR::TimeInt::NoxInterface::computeF(
 {
   check_init_setup();
 
-  if (not int_ptr_->ApplyForce(x, F)) return false;
+  if (not int_ptr_->apply_force(x, F)) return false;
 
   /* Apply the DBC on the right hand side, since we need the Dirichlet free
    * right hand side inside NOX for the convergence check, etc.               */
@@ -115,7 +115,7 @@ bool STR::TimeInt::NoxInterface::computeJacobian(const Epetra_Vector& x, Epetra_
   Core::LinAlg::SparseOperator* jac_ptr = dynamic_cast<Core::LinAlg::SparseOperator*>(&jac);
   FOUR_C_ASSERT(jac_ptr != nullptr, "Dynamic cast failed.");
 
-  if (not int_ptr_->ApplyStiff(x, *jac_ptr)) return false;
+  if (not int_ptr_->apply_stiff(x, *jac_ptr)) return false;
 
   /* We do not consider the jacobian DBC at this point. The Dirichlet conditions
    * are applied inside the NOX::Nln::LinearSystem::applyJacobianInverse()
@@ -135,7 +135,7 @@ bool STR::TimeInt::NoxInterface::computeFandJacobian(
   Core::LinAlg::SparseOperator* jac_ptr = dynamic_cast<Core::LinAlg::SparseOperator*>(&jac);
   FOUR_C_ASSERT(jac_ptr != nullptr, "Dynamic cast failed!");
 
-  if (not int_ptr_->ApplyForceStiff(x, rhs, *jac_ptr)) return false;
+  if (not int_ptr_->apply_force_stiff(x, rhs, *jac_ptr)) return false;
 
   /* Apply the DBC on the right hand side, since we need the Dirichlet free
    * right hand side inside NOX for the convergence check, etc.               */
@@ -187,7 +187,7 @@ bool STR::TimeInt::NoxInterface::computePreconditioner(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::TimeInt::NoxInterface::GetPrimaryRHSNorms(const Epetra_Vector& F,
+double STR::TimeInt::NoxInterface::get_primary_rhs_norms(const Epetra_Vector& F,
     const NOX::Nln::StatusTest::QuantityType& checkquantity,
     const ::NOX::Abstract::Vector::NormType& type, const bool& isscaled) const
 {
@@ -204,7 +204,7 @@ double STR::TimeInt::NoxInterface::GetPrimaryRHSNorms(const Epetra_Vector& F,
     case NOX::Nln::StatusTest::quantity_cardiovascular0d:
     {
       // export the model specific solution if necessary
-      Teuchos::RCP<Epetra_Vector> rhs_ptr = gstate_ptr_->ExtractModelEntries(mt, F);
+      Teuchos::RCP<Epetra_Vector> rhs_ptr = gstate_ptr_->extract_model_entries(mt, F);
 
       // remove entries specific to element technology
       gstate_ptr_->remove_element_technologies(rhs_ptr);
@@ -218,7 +218,7 @@ double STR::TimeInt::NoxInterface::GetPrimaryRHSNorms(const Epetra_Vector& F,
     case NOX::Nln::StatusTest::quantity_pressure:
     {
       // export the model specific solution if necessary
-      Teuchos::RCP<Epetra_Vector> rhs_ptr = gstate_ptr_->ExtractModelEntries(mt, F);
+      Teuchos::RCP<Epetra_Vector> rhs_ptr = gstate_ptr_->extract_model_entries(mt, F);
 
       // extract entries specific to element technology
       gstate_ptr_->extract_element_technologies(NOX::Nln::StatusTest::quantity_pressure, rhs_ptr);
@@ -258,8 +258,8 @@ double STR::TimeInt::NoxInterface::get_primary_solution_update_rms(const Epetra_
     {
       // export the displacement solution if necessary
       Teuchos::RCP<Epetra_Vector> model_incr_ptr =
-          Teuchos::rcp(new Epetra_Vector(*gstate_ptr_->ExtractModelEntries(mt, xold)));
-      Teuchos::RCP<Epetra_Vector> model_xnew_ptr = gstate_ptr_->ExtractModelEntries(mt, xnew);
+          Teuchos::rcp(new Epetra_Vector(*gstate_ptr_->extract_model_entries(mt, xold)));
+      Teuchos::RCP<Epetra_Vector> model_xnew_ptr = gstate_ptr_->extract_model_entries(mt, xnew);
 
       // remove entries specific to element technology
       gstate_ptr_->remove_element_technologies(model_incr_ptr);
@@ -275,8 +275,8 @@ double STR::TimeInt::NoxInterface::get_primary_solution_update_rms(const Epetra_
     {
       // export the displacement solution if necessary
       Teuchos::RCP<Epetra_Vector> model_incr_ptr =
-          Teuchos::rcp(new Epetra_Vector(*gstate_ptr_->ExtractModelEntries(mt, xold)));
-      Teuchos::RCP<Epetra_Vector> model_xnew_ptr = gstate_ptr_->ExtractModelEntries(mt, xnew);
+          Teuchos::rcp(new Epetra_Vector(*gstate_ptr_->extract_model_entries(mt, xold)));
+      Teuchos::RCP<Epetra_Vector> model_xnew_ptr = gstate_ptr_->extract_model_entries(mt, xnew);
 
       // extract entries specific to element technology
       gstate_ptr_->extract_element_technologies(
@@ -324,8 +324,8 @@ double STR::TimeInt::NoxInterface::get_primary_solution_update_norms(const Epetr
     case NOX::Nln::StatusTest::quantity_cardiovascular0d:
     {
       // export the displacement solution if necessary
-      Teuchos::RCP<Epetra_Vector> model_incr_ptr = gstate_ptr_->ExtractModelEntries(mt, xold);
-      Teuchos::RCP<Epetra_Vector> model_xnew_ptr = gstate_ptr_->ExtractModelEntries(mt, xnew);
+      Teuchos::RCP<Epetra_Vector> model_incr_ptr = gstate_ptr_->extract_model_entries(mt, xold);
+      Teuchos::RCP<Epetra_Vector> model_xnew_ptr = gstate_ptr_->extract_model_entries(mt, xnew);
 
       // remove entries specific to element technology
       gstate_ptr_->remove_element_technologies(model_incr_ptr);
@@ -339,8 +339,8 @@ double STR::TimeInt::NoxInterface::get_primary_solution_update_norms(const Epetr
     case NOX::Nln::StatusTest::quantity_pressure:
     {
       // export the displacement solution if necessary
-      Teuchos::RCP<Epetra_Vector> model_incr_ptr = gstate_ptr_->ExtractModelEntries(mt, xold);
-      Teuchos::RCP<Epetra_Vector> model_xnew_ptr = gstate_ptr_->ExtractModelEntries(mt, xnew);
+      Teuchos::RCP<Epetra_Vector> model_incr_ptr = gstate_ptr_->extract_model_entries(mt, xold);
+      Teuchos::RCP<Epetra_Vector> model_xnew_ptr = gstate_ptr_->extract_model_entries(mt, xnew);
 
       // extract entries specific to element technology
       gstate_ptr_->extract_element_technologies(
@@ -395,7 +395,7 @@ double STR::TimeInt::NoxInterface::get_previous_primary_solution_norms(const Epe
     case NOX::Nln::StatusTest::quantity_cardiovascular0d:
     {
       // export the displacement solution if necessary
-      Teuchos::RCP<Epetra_Vector> model_xold_ptr = gstate_ptr_->ExtractModelEntries(mt, xold);
+      Teuchos::RCP<Epetra_Vector> model_xold_ptr = gstate_ptr_->extract_model_entries(mt, xold);
 
       // remove entries specific to element technology
       gstate_ptr_->remove_element_technologies(model_xold_ptr);
@@ -407,7 +407,7 @@ double STR::TimeInt::NoxInterface::get_previous_primary_solution_norms(const Epe
     case NOX::Nln::StatusTest::quantity_pressure:
     {
       // export the displacement solution if necessary
-      Teuchos::RCP<Epetra_Vector> model_xold_ptr = gstate_ptr_->ExtractModelEntries(mt, xold);
+      Teuchos::RCP<Epetra_Vector> model_xold_ptr = gstate_ptr_->extract_model_entries(mt, xold);
 
       // extract entries specific to element technology
       gstate_ptr_->extract_element_technologies(
@@ -456,8 +456,8 @@ double STR::TimeInt::NoxInterface::calculate_norm(Teuchos::RCP<Epetra_Vector> qu
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::TimeInt::NoxInterface::GetModelValue(const Epetra_Vector& x, const Epetra_Vector& F,
-    const enum NOX::Nln::MeritFunction::MeritFctName merit_func_type) const
+double STR::TimeInt::NoxInterface::get_model_value(const Epetra_Vector& x, const Epetra_Vector& F,
+    const NOX::Nln::MeritFunction::MeritFctName merit_func_type) const
 {
   check_init_setup();
 
@@ -471,7 +471,7 @@ double STR::TimeInt::NoxInterface::GetModelValue(const Epetra_Vector& x, const E
     {
       Core::IO::cout(Core::IO::debug) << __LINE__ << " - " << __FUNCTION__ << "\n";
       int_ptr_->get_total_mid_time_str_energy(x);
-      omval = int_ptr_->GetModelValue(x);
+      omval = int_ptr_->get_model_value(x);
 
       break;
     }
@@ -597,11 +597,12 @@ void STR::TimeInt::NoxInterface::find_constraint_models(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::TimeInt::NoxInterface::CalcRefNormForce()
+double STR::TimeInt::NoxInterface::calc_ref_norm_force()
 {
   check_init_setup();
-  const ::NOX::Epetra::Vector::NormType& nox_normtype = timint_ptr_->GetDataSDyn().GetNoxNormType();
-  return int_ptr_->CalcRefNormForce(nox_normtype);
+  const ::NOX::Epetra::Vector::NormType& nox_normtype =
+      timint_ptr_->get_data_sdyn().GetNoxNormType();
+  return int_ptr_->calc_ref_norm_force(nox_normtype);
 }
 
 /*----------------------------------------------------------------------------*
@@ -619,10 +620,10 @@ STR::TimeInt::NoxInterface::calc_jacobian_contributions_from_element_level_for_p
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::NoxInterface::CreateBackupState(const Epetra_Vector& dir)
+void STR::TimeInt::NoxInterface::create_backup_state(const Epetra_Vector& dir)
 {
   check_init_setup();
-  int_ptr_->CreateBackupState(dir);
+  int_ptr_->create_backup_state(dir);
 }
 
 /*----------------------------------------------------------------------------*
@@ -644,12 +645,12 @@ bool STR::TimeInt::NoxInterface::compute_element_volumes(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::NoxInterface::getDofsFromElements(
+void STR::TimeInt::NoxInterface::get_dofs_from_elements(
     const std::vector<int>& my_ele_gids, std::set<int>& my_ele_dofs) const
 {
   check_init_setup();
 
-  Teuchos::RCP<const Discret::Discretization> discret_ptr = gstate_ptr_->GetDiscret();
+  Teuchos::RCP<const Discret::Discretization> discret_ptr = gstate_ptr_->get_discret();
 
   for (int egid : my_ele_gids)
   {
@@ -658,7 +659,7 @@ void STR::TimeInt::NoxInterface::getDofsFromElements(
 
     for (int i = 0; i < ele->num_node(); ++i)
     {
-      if (nodes[i]->Owner() != gstate_ptr_->GetComm().MyPID()) continue;
+      if (nodes[i]->Owner() != gstate_ptr_->get_comm().MyPID()) continue;
 
       const std::vector<int> ndofs(discret_ptr->Dof(0, nodes[i]));
       my_ele_dofs.insert(ndofs.begin(), ndofs.end());

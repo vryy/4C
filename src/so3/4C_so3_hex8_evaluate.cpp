@@ -83,7 +83,7 @@ int Discret::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
 
   if (IsParamsInterface())
   {
-    act = params_interface().GetActionType();
+    act = params_interface().get_action_type();
   }
   else
   {
@@ -219,7 +219,7 @@ int Discret::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
       auto modelevaluator_data =
           Teuchos::rcp_dynamic_cast<STR::MODELEVALUATOR::Data>(ParamsInterfacePtr());
       if (modelevaluator_data != Teuchos::null)
-        mass_lin = modelevaluator_data->SDyn().GetMassLinType();
+        mass_lin = modelevaluator_data->sdyn().GetMassLinType();
       if (mass_lin == Inpar::STR::MassLin::ml_rotations)
       {
         // In case of Lie group time integration, we need to explicitly add the inertia terms to the
@@ -461,12 +461,12 @@ int Discret::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
       Inpar::STR::StrainType ioplstrain = Inpar::STR::strain_none;
       if (IsParamsInterface())
       {
-        stressdata = str_params_interface().StressDataPtr();
-        straindata = str_params_interface().StrainDataPtr();
+        stressdata = str_params_interface().stress_data_ptr();
+        straindata = str_params_interface().strain_data_ptr();
         plstraindata = str_params_interface().plastic_strain_data_ptr();
 
-        iostress = str_params_interface().GetStressOutputType();
-        iostrain = str_params_interface().GetStrainOutputType();
+        iostress = str_params_interface().get_stress_output_type();
+        iostrain = str_params_interface().get_strain_output_type();
         ioplstrain = str_params_interface().get_plastic_strain_output_type();
       }
       else
@@ -547,7 +547,8 @@ int Discret::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
       SolidMaterial()->register_output_data_names(quantities_map);
 
       // Add quantities to the Gauss point output data manager (if they do not already exist)
-      str_params_interface().gauss_point_data_output_manager_ptr()->MergeQuantities(quantities_map);
+      str_params_interface().gauss_point_data_output_manager_ptr()->merge_quantities(
+          quantities_map);
     }
     break;
     case Core::Elements::struct_gauss_point_data_output:
@@ -557,7 +558,7 @@ int Discret::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
 
       // Collection and assembly of gauss point data
       for (const auto& quantity :
-          str_params_interface().gauss_point_data_output_manager_ptr()->GetQuantities())
+          str_params_interface().gauss_point_data_output_manager_ptr()->get_quantities())
       {
         const std::string& quantity_name = quantity.first;
         const int quantity_size = quantity.second;
@@ -570,7 +571,7 @@ int Discret::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
         // point)
         if (data_available)
         {
-          switch (str_params_interface().gauss_point_data_output_manager_ptr()->GetOutputType())
+          switch (str_params_interface().gauss_point_data_output_manager_ptr()->get_output_type())
           {
             case Inpar::STR::GaussPointDataOutputType::element_center:
             {
@@ -586,13 +587,13 @@ int Discret::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
             case Inpar::STR::GaussPointDataOutputType::nodes:
             {
               Teuchos::RCP<Epetra_MultiVector> global_data =
-                  str_params_interface().gauss_point_data_output_manager_ptr()->GetNodalData().at(
+                  str_params_interface().gauss_point_data_output_manager_ptr()->get_nodal_data().at(
                       quantity_name);
 
               Epetra_IntVector& global_nodal_element_count =
                   *str_params_interface()
                        .gauss_point_data_output_manager_ptr()
-                       ->GetNodalDataCount()
+                       ->get_nodal_data_count()
                        .at(quantity_name);
 
               static auto gauss_integration = Core::FE::IntegrationPoints3D(
@@ -607,7 +608,7 @@ int Discret::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
               std::vector<Teuchos::RCP<Epetra_MultiVector>>& global_data =
                   str_params_interface()
                       .gauss_point_data_output_manager_ptr()
-                      ->GetGaussPointData()
+                      ->get_gauss_point_data()
                       .at(quantity_name);
               Discret::ELEMENTS::AssembleGaussPointValues(global_data, gp_data, *this);
               break;
@@ -888,9 +889,9 @@ int Discret::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
 
         if (defgrd.Determinant() <= 0.0)
         {
-          if (IsParamsInterface() and str_params_interface().IsTolerateErrors())
+          if (IsParamsInterface() and str_params_interface().is_tolerate_errors())
           {
-            str_params_interface().SetEleEvalErrorFlag(
+            str_params_interface().set_ele_eval_error_flag(
                 STR::ELEMENTS::ele_error_negative_det_of_def_gradient);
             return 0;
           }
@@ -1294,7 +1295,7 @@ int Discret::ELEMENTS::SoHex8::evaluate_neumann(Teuchos::ParameterList& params,
   // find out whether we will use a time curve
   double time = -1.0;
   if (IsParamsInterface())
-    time = params_interface().GetTotalTime();
+    time = params_interface().get_total_time();
   else
     time = params.get("total time", -1.0);
 
@@ -1469,9 +1470,9 @@ int Discret::ELEMENTS::SoHex8::init_jacobian_mapping(std::vector<double>& dispma
 
     if (detJ_[gp] <= 0.0)
     {
-      if (IsParamsInterface() and str_params_interface().IsTolerateErrors())
+      if (IsParamsInterface() and str_params_interface().is_tolerate_errors())
       {
-        str_params_interface().SetEleEvalErrorFlag(
+        str_params_interface().set_ele_eval_error_flag(
             STR::ELEMENTS::ele_error_negative_det_of_def_gradient);
         return 1;
       }
@@ -1534,7 +1535,7 @@ void Discret::ELEMENTS::SoHex8::soh8_recover(
   Core::LinAlg::SerialDenseMatrix* alpha = nullptr;
   Core::LinAlg::SerialDenseMatrix* eas_inc = nullptr;
   // get access to the interface parameters
-  const double step_length = str_params_interface().GetStepLength();
+  const double step_length = str_params_interface().get_step_length();
   const bool iseas = (eastype_ != soh8_easnone);
 
   // have eas?
@@ -1550,7 +1551,7 @@ void Discret::ELEMENTS::SoHex8::soh8_recover(
 
   /* if it is a default step, we have to recover the condensed
    * solution vectors */
-  if (str_params_interface().IsDefaultStep())
+  if (str_params_interface().is_default_step())
   {
     /* recovery of the enhanced assumed strain increment and
      * update of the eas dofs. */
@@ -1599,7 +1600,7 @@ void Discret::ELEMENTS::SoHex8::soh8_recover(
   // Check if the eas incr is tested and if yes, calculate the element
   // contribution to the norm
   if (iseas)
-    str_params_interface().SumIntoMyUpdateNorm(NOX::Nln::StatusTest::quantity_eas, neas_,
+    str_params_interface().sum_into_my_update_norm(NOX::Nln::StatusTest::quantity_eas, neas_,
         (*eas_inc)[0], (*alpha)[0], step_length, Owner());
 
   // the element internal stuff should be up-to-date for now...
@@ -1856,9 +1857,9 @@ void Discret::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
       double det_defgrd = defgrd.Determinant();
       if (det_defgrd < 0.0)
       {
-        if (str_params_interface().IsTolerateErrors())
+        if (str_params_interface().is_tolerate_errors())
         {
-          str_params_interface().SetEleEvalErrorFlag(
+          str_params_interface().set_ele_eval_error_flag(
               STR::ELEMENTS::ele_error_negative_det_of_def_gradient);
           stiffmatrix->Clear();
           force->Clear();
@@ -2178,8 +2179,8 @@ void Discret::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
     so3mat->Evaluate(&defgrd_mod, &glstrain, params, &stress, &cmat, gp, Id());
 
     // stop if the material evaluation fails
-    if (IsParamsInterface() and str_params_interface().IsTolerateErrors())
-      if (str_params_interface().GetEleEvalErrorFlag() != STR::ELEMENTS::ele_error_none) return;
+    if (IsParamsInterface() and str_params_interface().is_tolerate_errors())
+      if (str_params_interface().get_ele_eval_error_flag() != STR::ELEMENTS::ele_error_none) return;
 
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
@@ -2416,8 +2417,8 @@ void Discret::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
         double timintfac_vel = 0.0;
         if (IsParamsInterface())
         {
-          timintfac_dis = str_params_interface().GetTimIntFactorDisp();
-          timintfac_vel = str_params_interface().GetTimIntFactorVel();
+          timintfac_dis = str_params_interface().get_tim_int_factor_disp();
+          timintfac_vel = str_params_interface().get_tim_int_factor_vel();
         }
         else
         {

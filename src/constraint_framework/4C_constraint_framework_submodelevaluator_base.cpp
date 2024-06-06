@@ -67,7 +67,7 @@ void CONSTRAINTS::SUBMODELEVALUATOR::ConstraintBase::evaluate_coupling_terms(
   // set Q_dd to zero as default
   Q_dd_->Zero();
   // Evaluate the Constraint Pairs / equations objects
-  Teuchos::RCP<const Epetra_Vector> dis_np = gstate.GetDisNp();
+  Teuchos::RCP<const Epetra_Vector> dis_np = gstate.get_dis_np();
   for (const auto& obj : listMPCs_)
   {
     obj->EvaluateEquation(*Q_dd_, *Q_dL_, *Q_Ld_, *constraint_vector_, *dis_np);

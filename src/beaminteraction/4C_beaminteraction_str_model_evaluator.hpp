@@ -135,22 +135,22 @@ namespace STR
       void run_post_iterate(const ::NOX::Solver::Generic& solver) override;
 
       //! derived
-      void UpdateStepState(const double& timefac_n) override;
+      void update_step_state(const double& timefac_n) override;
 
       //! derived
-      void UpdateStepElement() override;
+      void update_step_element() override;
 
       //! derived
       void determine_stress_strain() override;
 
       //! derived
-      void DetermineEnergy() override;
+      void determine_energy() override;
 
       //! derived
       void determine_optional_quantity() override;
 
       //! derived
-      void OutputStepState(Core::IO::DiscretizationWriter& iowriter) const override;
+      void output_step_state(Core::IO::DiscretizationWriter& iowriter) const override;
 
       //! derived
       void runtime_output_step_state() const override;
@@ -165,10 +165,10 @@ namespace STR
       Teuchos::RCP<const Epetra_Vector> get_last_time_step_solution_ptr() const override;
 
       //! derived
-      void PostOutput() override;
+      void post_output() override;
 
       //! derived
-      void ResetStepState() override;
+      void reset_step_state() override;
       //! @}
 
      protected:
@@ -210,13 +210,13 @@ namespace STR
       /// update coupling adapter and matrix transformation object with new maps
       void update_coupling_adapter_and_matrix_transformation();
 
-      /// transform force vector from ia_discret_ to Discret()
+      /// transform force vector from ia_discret_ to discret()
       virtual void transform_force();
 
-      /// transform stiffness matrix from ia_discret_ to Discret()
+      /// transform stiffness matrix from ia_discret_ to discret()
       virtual void transform_stiff();
 
-      /// transform force vector and stiffness matrix from ia_discret_ to Discret()
+      /// transform force vector and stiffness matrix from ia_discret_ to discret()
       virtual void transform_force_stiff();
 
       /// update states based on bindis after its redistribution
@@ -260,7 +260,7 @@ namespace STR
       //! myrank
       int myrank_;
 
-      //! coupling adapter to transfer vectors and matrices between Discret() and intactids_
+      //! coupling adapter to transfer vectors and matrices between discret() and intactids_
       Teuchos::RCP<Core::Adapter::Coupling> coupsia_;
 
       //! transform object for structure stiffness matrix
@@ -283,10 +283,10 @@ namespace STR
       //! force based on ia_discret at \f$t_{n+1}\f$
       Teuchos::RCP<Epetra_Vector> ia_force_beaminteraction_;
 
-      //! global force based on Discret() at \f$t_{n+1}\f$
+      //! global force based on discret() at \f$t_{n+1}\f$
       Teuchos::RCP<Epetra_Vector> force_beaminteraction_;
 
-      //! structural stiffness matrix based on Discret()
+      //! structural stiffness matrix based on discret()
       Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_beaminteraction_;
 
       //! beam crosslinker handler

@@ -53,7 +53,7 @@ int Discret::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
 
   if (IsParamsInterface())
   {
-    act = params_interface().GetActionType();
+    act = params_interface().get_action_type();
   }
   else
   {
@@ -323,11 +323,11 @@ int Discret::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       Inpar::STR::StrainType iostrain = Inpar::STR::strain_none;
       if (IsParamsInterface())
       {
-        stressdata = str_params_interface().StressDataPtr();
-        straindata = str_params_interface().StrainDataPtr();
+        stressdata = str_params_interface().stress_data_ptr();
+        straindata = str_params_interface().strain_data_ptr();
 
-        iostress = str_params_interface().GetStressOutputType();
-        iostrain = str_params_interface().GetStrainOutputType();
+        iostress = str_params_interface().get_stress_output_type();
+        iostrain = str_params_interface().get_strain_output_type();
       }
       else
       {
@@ -657,7 +657,7 @@ int Discret::ELEMENTS::Wall1::evaluate_neumann(Teuchos::ParameterList& params,
   // check total time
   double time = -1.0;
   if (IsParamsInterface())
-    time = params_interface().GetTotalTime();
+    time = params_interface().get_total_time();
   else
     time = params.get("total time", -1.0);
 
@@ -801,7 +801,7 @@ void Discret::ELEMENTS::Wall1::w1_recover(const std::vector<int>& lm,
   Core::LinAlg::SerialDenseMatrix* alpha = nullptr;
   Core::LinAlg::SerialDenseMatrix* eas_inc = nullptr;
   // get access to the interface parameters
-  const double step_length = str_params_interface().GetStepLength();
+  const double step_length = str_params_interface().get_step_length();
 
   // have eas?
   if (iseas_)
@@ -816,7 +816,7 @@ void Discret::ELEMENTS::Wall1::w1_recover(const std::vector<int>& lm,
 
   /* if it is a default step, we have to recover the condensed
    * solution vectors */
-  if (str_params_interface().IsDefaultStep())
+  if (str_params_interface().is_default_step())
   {
     /* recovery of the enhanced assumed strain increment and
      * update of the eas dofs. */
@@ -870,7 +870,7 @@ void Discret::ELEMENTS::Wall1::w1_recover(const std::vector<int>& lm,
   // Check if the eas incr is tested and if yes, calculate the element
   // contribution to the norm
   if (iseas_)
-    str_params_interface().SumIntoMyUpdateNorm(NOX::Nln::StatusTest::quantity_eas, w1_neas(),
+    str_params_interface().sum_into_my_update_norm(NOX::Nln::StatusTest::quantity_eas, w1_neas(),
         (*eas_inc)[0], (*alpha)[0], step_length, Owner());
 
   // the element internal stuff should be up-to-date for now...

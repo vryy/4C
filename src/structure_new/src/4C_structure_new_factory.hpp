@@ -52,10 +52,11 @@ namespace STR
     virtual ~Factory() = default;
 
     //! build the internal integrator
-    Teuchos::RCP<STR::Integrator> BuildIntegrator(const STR::TimeInt::BaseDataSDyn& datasdyn) const;
+    Teuchos::RCP<STR::Integrator> build_integrator(
+        const STR::TimeInt::BaseDataSDyn& datasdyn) const;
 
     //! build the desired  dirichlet boundary condition object
-    Teuchos::RCP<STR::Dbc> BuildDbc(const STR::TimeInt::BaseDataSDyn& datasdyn) const;
+    Teuchos::RCP<STR::Dbc> build_dbc(const STR::TimeInt::BaseDataSDyn& datasdyn) const;
 
    protected:
     //! build the implicit integrator
@@ -72,15 +73,14 @@ namespace STR
    *
    * \note Call this method from outside!
    */
-  Teuchos::RCP<STR::Integrator> BuildIntegrator(const STR::TimeInt::BaseDataSDyn& datasdyn);
+  Teuchos::RCP<STR::Integrator> build_integrator(const STR::TimeInt::BaseDataSDyn& datasdyn);
 
   /*! \brief Non-member function, which relates to the STR::Factory class
    *
    * \note Call this method from outside!
    */
-  Teuchos::RCP<STR::Dbc> BuildDbc(const STR::TimeInt::BaseDataSDyn& datasdyn);
+  Teuchos::RCP<STR::Dbc> build_dbc(const STR::TimeInt::BaseDataSDyn& datasdyn);
 }  // namespace STR
-
 
 FOUR_C_NAMESPACE_CLOSE
 

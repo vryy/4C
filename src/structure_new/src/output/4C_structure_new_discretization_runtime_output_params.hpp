@@ -45,7 +45,6 @@ namespace Discret
       /// setup new class variables
       void Setup();
 
-
       /// whether to write displacements
       bool output_displacement_state() const
       {
@@ -54,21 +53,21 @@ namespace Discret
       };
 
       /// whether to write velocity
-      bool OutputVelocityState() const
+      bool output_velocity_state() const
       {
         check_init_setup();
         return output_velocity_state_;
       };
 
       /// whether to write the owner of elements
-      bool OutputElementOwner() const
+      bool output_element_owner() const
       {
         check_init_setup();
         return output_element_owner_;
       };
 
       /// whether to write the GIDs of elements
-      bool OutputElementGID() const
+      bool output_element_gid() const
       {
         check_init_setup();
         return output_element_gid_;
@@ -82,7 +81,7 @@ namespace Discret
       };
 
       /// whether to write the GIDs of the nodes
-      bool OutputNodeGID() const
+      bool output_node_gid() const
       {
         check_init_setup();
         return output_node_gid_;

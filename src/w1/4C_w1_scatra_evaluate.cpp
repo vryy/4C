@@ -103,7 +103,7 @@ int Discret::ELEMENTS::Wall1Scatra::Evaluate(Teuchos::ParameterList& params,
 
   if (IsParamsInterface())
   {
-    act = params_interface().GetActionType();
+    act = params_interface().get_action_type();
   }
   else
   {

@@ -522,7 +522,7 @@ void CONTACT::Aug::Integrator<probdim, slavetype, mastertype,
     IntPolicy>::integrate_deriv_slave_element(Mortar::Element& sele)
 {
   // set evaluator
-  const enum Mortar::ActionType action = c_params().GetActionType();
+  const enum Mortar::ActionType action = c_params().get_action_type();
   set_evaluator(action);
 
   for (int gp = 0; gp < this->wrapper().nGP(); ++gp)
@@ -574,7 +574,7 @@ void CONTACT::Aug::Integrator<probdim, slavetype, mastertype, IntPolicy>::Evalua
   if (this->wrapper().IntegrationType() != Inpar::Mortar::inttype_elements)
     FOUR_C_THROW("How did you come here?");
 
-  const enum Mortar::ActionType action = c_params().GetActionType();
+  const enum Mortar::ActionType action = c_params().get_action_type();
 
   // set the evaluator: 1-st derivatives only, or 1-st AND 2-nd derivatives
   set_evaluator(action);
@@ -756,7 +756,7 @@ void CONTACT::Aug::Integrator<probdim, slavetype, mastertype, IntPolicy>::integr
       IntPolicy::Get_Deriv1st_Debug(sele, lmval_, sval_, sderiv_, stau, derivjac_, dmxigp_,
           dn_unit_, deriv_gapn_sl_, gapn_sl, wgt, jacslave);
 
-      switch (c_params().GetActionType())
+      switch (c_params().get_action_type())
       {
         case Mortar::eval_force_stiff:
         {

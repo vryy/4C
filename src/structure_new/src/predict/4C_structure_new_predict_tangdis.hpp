@@ -45,7 +45,7 @@ namespace STR
       void Compute(::NOX::Abstract::Group& grp) override;
 
       //! return the dbc increment
-      const Epetra_Vector& GetDbcIncr() const;
+      const Epetra_Vector& get_dbc_incr() const;
 
       //! return the switch for the pre/post operator
       const bool& is_apply_linear_reaction_forces() const;
@@ -82,7 +82,6 @@ namespace NOX
          public:
           //! constructor
           TangDis(const Teuchos::RCP<const STR::Predict::TangDis>& tang_predict_ptr);
-
 
           //! add the linear reaction forces
           void runPostComputeF(Epetra_Vector& F, const NOX::Nln::Group& grp) override;

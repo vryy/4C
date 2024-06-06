@@ -66,13 +66,13 @@ namespace STR
       virtual void Setup() = 0;
 
       //! Get the predictor type enum
-      const Inpar::STR::PredEnum& GetType() const { return type_; };
+      const Inpar::STR::PredEnum& get_type() const { return type_; };
 
       //! returns the name of the used predictor
       virtual std::string Name() const;
 
       //! Preprocess the predictor step
-      virtual void PrePredict(::NOX::Abstract::Group& grp);
+      virtual void pre_predict(::NOX::Abstract::Group& grp);
 
       //! Pre-/Postprocess the specific predictor step
       void Predict(::NOX::Abstract::Group& grp);
@@ -81,10 +81,10 @@ namespace STR
       virtual void Compute(::NOX::Abstract::Group& grp) = 0;
 
       //! Postprocess the predictor step
-      virtual void PostPredict(::NOX::Abstract::Group& grp);
+      virtual void post_predict(::NOX::Abstract::Group& grp);
 
       //! return a constant reference to the global state object (read only)
-      const STR::TimeInt::BaseDataGlobalState& GlobalState() const;
+      const STR::TimeInt::BaseDataGlobalState& global_state() const;
 
       //! print the result of the predictor step
       void Print() const;
@@ -145,7 +145,6 @@ namespace STR
     };  // class  Generic
   }     // namespace Predict
 }  // namespace STR
-
 
 FOUR_C_NAMESPACE_CLOSE
 

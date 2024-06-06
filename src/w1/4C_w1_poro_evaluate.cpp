@@ -84,7 +84,7 @@ int Discret::ELEMENTS::Wall1Poro<distype>::Evaluate(Teuchos::ParameterList& para
 
   if (this->IsParamsInterface())
   {
-    act = this->params_interface().GetActionType();
+    act = this->params_interface().get_action_type();
   }
   else
   {
@@ -150,7 +150,7 @@ int Discret::ELEMENTS::Wall1Poro<distype>::my_evaluate(Teuchos::ParameterList& p
 
   if (this->IsParamsInterface())
   {
-    act = this->params_interface().GetActionType();
+    act = this->params_interface().get_action_type();
   }
   else
   {

@@ -127,9 +127,9 @@ void Discret::ELEMENTS::SoBase::error_handling(const double& det_curr,
     Teuchos::ParameterList& params, const int line_id, const STR::ELEMENTS::EvalErrorFlag flag)
 {
   // check, if errors are tolerated or should throw a FOUR_C_THROW
-  if (IsParamsInterface() and str_params_interface().IsTolerateErrors())
+  if (IsParamsInterface() and str_params_interface().is_tolerate_errors())
   {
-    str_params_interface().SetEleEvalErrorFlag(flag);
+    str_params_interface().set_ele_eval_error_flag(flag);
     return;
   }
   else

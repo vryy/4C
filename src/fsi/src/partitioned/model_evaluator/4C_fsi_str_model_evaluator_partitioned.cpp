@@ -39,7 +39,7 @@ STR::MODELEVALUATOR::PartitionedFSI::PartitionedFSI()
 void STR::MODELEVALUATOR::PartitionedFSI::Setup()
 {
   // fsi interface force at t_{n+1}
-  interface_force_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*g_state().dof_row_map(), true));
+  interface_force_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*global_state().dof_row_map(), true));
 
   // set flag
   issetup_ = true;
@@ -50,7 +50,7 @@ void STR::MODELEVALUATOR::PartitionedFSI::Setup()
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::PartitionedFSI::setup_multi_map_extractor()
 {
-  integrator().ModelEval().setup_multi_map_extractor();
+  integrator().model_eval().setup_multi_map_extractor();
 }
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -58,7 +58,7 @@ Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::PartitionedFSI::get_block_do
     const
 {
   check_init_setup();
-  return GState().dof_row_map();
+  return global_state().dof_row_map();
 }
 
 /*----------------------------------------------------------------------*
@@ -67,7 +67,7 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedFSI::get_curre
     const
 {
   check_init();
-  return GState().GetDisNp();
+  return global_state().get_dis_np();
 }
 
 /*----------------------------------------------------------------------*
@@ -76,7 +76,7 @@ Teuchos::RCP<const Epetra_Vector>
 STR::MODELEVALUATOR::PartitionedFSI::get_last_time_step_solution_ptr() const
 {
   check_init();
-  return GState().GetDisN();
+  return global_state().get_dis_n();
 }
 
 /*----------------------------------------------------------------------*
@@ -90,12 +90,12 @@ bool STR::MODELEVALUATOR::PartitionedFSI::assemble_force(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::PartitionedFSI::UpdateStepState(const double& timefac_n)
+void STR::MODELEVALUATOR::PartitionedFSI::update_step_state(const double& timefac_n)
 {
   if (not is_relaxationsolve_)  // standard case
   {
     // add the old time factor scaled contributions to the residual
-    Teuchos::RCP<Epetra_Vector>& fstructold_ptr = g_state().GetFstructureOld();
+    Teuchos::RCP<Epetra_Vector>& fstructold_ptr = global_state().get_fstructure_old();
     fstructold_ptr->Update(-timefac_n, *interface_force_np_ptr_, 1.0);
   }
   else
@@ -111,7 +111,7 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedFSI::solve_rel
     Teuchos::RCP<Adapter::Structure> structure)
 {
   // print to screen
-  if (g_state().dof_row_map()->Comm().MyPID() == 0)
+  if (global_state().dof_row_map()->Comm().MyPID() == 0)
     std::cout << "\n DO SRUCTURAL RELAXATION SOLVE ..." << std::endl;
 
   // cast adapter structure to implicit time integrator
@@ -120,7 +120,7 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedFSI::solve_rel
 
   // get the nonlinear solver pointer
   STR::Nln::SOLVER::Generic& nlnsolver =
-      const_cast<STR::Nln::SOLVER::Generic&>(*(ti_impl->GetNlnSolverPtr()));
+      const_cast<STR::Nln::SOLVER::Generic&>(*(ti_impl->get_nln_solver_ptr()));
 
   // get the solution group
   ::NOX::Abstract::Group& grp = nlnsolver.SolutionGroup();
@@ -128,12 +128,12 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedFSI::solve_rel
   if (grp_ptr == nullptr) FOUR_C_THROW("Dynamic cast failed!");
 
   // get nox parameter
-  Teuchos::ParameterList& noxparams = ti_impl->DataSDyn().GetNoxParams();
+  Teuchos::ParameterList& noxparams = ti_impl->data_sdyn().get_nox_params();
 
   // create new state vector
   Teuchos::RCP<::NOX::Epetra::Vector> x_ptr =
-      g_state().CreateGlobalVector(TimeInt::BaseDataGlobalState::VecInitType::last_time_step,
-          ti_impl->ImplIntPtr()->ModelEvalPtr());
+      global_state().create_global_vector(TimeInt::BaseDataGlobalState::VecInitType::last_time_step,
+          ti_impl->impl_int_ptr()->model_eval_ptr());
   // Set the solution vector in the nox group. This will reset all isValid
   // flags.
   grp.setX(*x_ptr);
@@ -145,7 +145,7 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedFSI::solve_rel
 
   // overwrite F with boundary force
   interface_force_np_ptr_->Scale(-(ti_impl->TimIntParam()));
-  ti_impl->DBCPtr()->ApplyDirichletToRhs(interface_force_np_ptr_);
+  ti_impl->dbc_ptr()->ApplyDirichletToRhs(interface_force_np_ptr_);
   Teuchos::RCP<::NOX::Epetra::Vector> nox_force =
       Teuchos::rcp(new ::NOX::Epetra::Vector(interface_force_np_ptr_));
   grp_ptr->setF(nox_force);
@@ -165,7 +165,7 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedFSI::solve_rel
   Teuchos::ParameterList& p =
       noxparams.sublist("Direction").sublist("Newton").sublist("Linear Solver");
   p.set<int>("Number of Nonlinear Iterations", 0);
-  p.set<int>("Current Time Step", g_state().GetStepNp());
+  p.set<int>("Current Time Step", global_state().get_step_np());
   p.set<double>("Wanted Tolerance", 1.0e-6);  //!< dummy
 
   // ---------------------------------------------------------------------------
@@ -186,7 +186,7 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedFSI::solve_rel
 const STR::TimeInt::BaseDataIO& STR::MODELEVALUATOR::PartitionedFSI::GetInOutput() const
 {
   check_init();
-  return GInOutput();
+  return global_in_output();
 }
 
 FOUR_C_NAMESPACE_CLOSE

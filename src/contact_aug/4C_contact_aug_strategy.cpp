@@ -646,7 +646,7 @@ bool CONTACT::Aug::Strategy::dyn_redistribute_contact(const Teuchos::RCP<const E
 void CONTACT::Aug::Strategy::eval_interface(CONTACT::Aug::Interface& interface, const int rriter,
     const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
 {
-  const enum Mortar::ActionType atype = cparams_ptr->GetActionType();
+  const enum Mortar::ActionType atype = cparams_ptr->get_action_type();
   switch (atype)
   {
     case Mortar::eval_force:
@@ -697,7 +697,7 @@ void CONTACT::Aug::Strategy::run_post_compute_x(const CONTACT::ParamsInterface& 
   if (err) FOUR_C_THROW("ReplaceMap failed with error code %d.", err);
 
   // get the current step length
-  const double stepLength = cparams.GetStepLength();
+  const double stepLength = cparams.get_step_length();
   // ---------------------------------------------------------------------
   /* store the SCALED Lagrange multiplier increment in the contact
    * strategy */
@@ -771,7 +771,7 @@ void CONTACT::Aug::Strategy::pre_eval_force(CONTACT::ParamsInterface& cparams)
     AssembleMortar();
   }
 
-  if (cparams.IsPredictor())
+  if (cparams.is_predictor())
   {
     // evaluate relative movement for friction
     evaluate_rel_mov_predict();
@@ -787,7 +787,7 @@ void CONTACT::Aug::Strategy::pre_eval_force(CONTACT::ParamsInterface& cparams)
   split_mortar();
 
   // initialize all rhs vectors and linearization matrices
-  Initialize(cparams.GetActionType());
+  Initialize(cparams.get_action_type());
 }
 
 /*----------------------------------------------------------------------------*
@@ -820,8 +820,8 @@ void CONTACT::Aug::Strategy::eval_force(CONTACT::ParamsInterface& cparams)
 void CONTACT::Aug::Strategy::post_eval_force(CONTACT::ParamsInterface& cparams)
 {
   // Check linear and angular momentum conservation
-  if (cparams.GetActionType() == Mortar::eval_force or  // only one per Newton
-      cparams.GetNlnIter() == 0)                        // predictor
+  if (cparams.get_action_type() == Mortar::eval_force or  // only one per Newton
+      cparams.get_nln_iter() == 0)                        // predictor
     check_conservation_laws(cparams);
 }
 
@@ -1057,7 +1057,7 @@ void CONTACT::Aug::Strategy::eval_static_constraint_rhs(CONTACT::ParamsInterface
   InitEvalInterface(cparams);
 
   // --- Assemble the gap vectors ---------------------------------------------
-  Initialize(cparams.GetActionType());
+  Initialize(cparams.get_action_type());
   assemble_gap();
 
   // --- Evaluate only the forces coming from the constraints -----------------
@@ -1254,7 +1254,7 @@ void CONTACT::Aug::Strategy::check_conservation_laws(CONTACT::ParamsInterface& c
     }
 
     unsigned icount = 0;
-    const int nln_iter = cparams.GetNlnIter();
+    const int nln_iter = cparams.get_nln_iter();
 
     Core::LinAlg::SerialDenseMatrix conservation_data(18, 1, false);
     for (plain_interface_set::const_iterator cit = interface_.begin(); cit != interface_.end();
@@ -1270,7 +1270,7 @@ void CONTACT::Aug::Strategy::check_conservation_laws(CONTACT::ParamsInterface& c
       }
       interface.EvalResultantMoment(*augfs_lm, *augfm_lm, &conservation_data);
       CONTACT::UTILS::WriteConservationDataToFile(Comm().MyPID(), icount, nln_iter,
-          conservation_data, cparams.GetOutputFilePath(), "lm_terms");
+          conservation_data, cparams.get_output_file_path(), "lm_terms");
 
       if (Comm().MyPID() == 0)
       {
@@ -1279,7 +1279,7 @@ void CONTACT::Aug::Strategy::check_conservation_laws(CONTACT::ParamsInterface& c
       }
       interface.EvalResultantMoment(*augfs_g, *augfm_g, &conservation_data);
       CONTACT::UTILS::WriteConservationDataToFile(Comm().MyPID(), icount, nln_iter,
-          conservation_data, cparams.GetOutputFilePath(), "regularization_terms");
+          conservation_data, cparams.get_output_file_path(), "regularization_terms");
 
       if (Comm().MyPID() == 0)
       {
@@ -1288,7 +1288,7 @@ void CONTACT::Aug::Strategy::check_conservation_laws(CONTACT::ParamsInterface& c
       }
       interface.EvalResultantMoment(augfs, augfm, &conservation_data);
       CONTACT::UTILS::WriteConservationDataToFile(Comm().MyPID(), icount, nln_iter,
-          conservation_data, cparams.GetOutputFilePath(), "complete");
+          conservation_data, cparams.get_output_file_path(), "complete");
     }
     if (Comm().MyPID() == 0)
       std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<" << std::endl;
@@ -2185,7 +2185,7 @@ double CONTACT::Aug::Strategy::characteristic_interface_element_length(
  *----------------------------------------------------------------------------*/
 void CONTACT::Aug::Strategy::set_current_eval_state(const CONTACT::ParamsInterface& cparams)
 {
-  data().set_current_eval_state(cparams.GetActionType());
+  data().set_current_eval_state(cparams.get_action_type());
 }
 
 /*----------------------------------------------------------------------------*

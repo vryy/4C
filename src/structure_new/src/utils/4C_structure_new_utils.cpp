@@ -287,15 +287,15 @@ void STR::Nln::CreateConstraintInterfaces(NOX::Nln::CONSTRAINT::ReqInterfaceMap&
     {
       case NOX::Nln::sol_contact:
       {
-        STR::MODELEVALUATOR::Generic& model = integrator.Evaluator(Inpar::STR::model_contact);
+        STR::MODELEVALUATOR::Generic& model = integrator.evaluator(Inpar::STR::model_contact);
         STR::MODELEVALUATOR::Contact& contact_model =
             dynamic_cast<STR::MODELEVALUATOR::Contact&>(model);
-        iconstr[NOX::Nln::sol_contact] = contact_model.StrategyPtr()->nox_interface_ptr();
+        iconstr[NOX::Nln::sol_contact] = contact_model.strategy_ptr()->nox_interface_ptr();
         break;
       }
       case NOX::Nln::sol_meshtying:
       {
-        STR::MODELEVALUATOR::Generic& model = integrator.Evaluator(Inpar::STR::model_meshtying);
+        STR::MODELEVALUATOR::Generic& model = integrator.evaluator(Inpar::STR::model_meshtying);
         STR::MODELEVALUATOR::Meshtying& mt_model =
             dynamic_cast<STR::MODELEVALUATOR::Meshtying&>(model);
         iconstr[NOX::Nln::sol_meshtying] = mt_model.StrategyPtr()->nox_interface_ptr();
@@ -304,7 +304,7 @@ void STR::Nln::CreateConstraintInterfaces(NOX::Nln::CONSTRAINT::ReqInterfaceMap&
       case NOX::Nln::sol_lag_pen_constraint:
       {
         STR::MODELEVALUATOR::Generic& model =
-            integrator.Evaluator(Inpar::STR::model_lag_pen_constraint);
+            integrator.evaluator(Inpar::STR::model_lag_pen_constraint);
         STR::MODELEVALUATOR::LagPenConstraint& lagpenconstraint_model =
             dynamic_cast<STR::MODELEVALUATOR::LagPenConstraint&>(model);
         iconstr[NOX::Nln::sol_lag_pen_constraint] = lagpenconstraint_model.nox_interface_ptr();
@@ -330,18 +330,18 @@ void STR::Nln::CreateConstraintPreconditioner(NOX::Nln::CONSTRAINT::PrecInterfac
     {
       case NOX::Nln::sol_contact:
       {
-        STR::MODELEVALUATOR::Generic& model = integrator.Evaluator(Inpar::STR::model_contact);
+        STR::MODELEVALUATOR::Generic& model = integrator.evaluator(Inpar::STR::model_contact);
         STR::MODELEVALUATOR::Contact& contact_model =
             dynamic_cast<STR::MODELEVALUATOR::Contact&>(model);
         /* Actually we use the underlying Mortar::StrategyBase as Preconditioner
          * interface. Nevertheless, the implementations can differ for the
          * contact/meshtying cases. */
-        iconstr_prec[NOX::Nln::sol_contact] = contact_model.StrategyPtr();
+        iconstr_prec[NOX::Nln::sol_contact] = contact_model.strategy_ptr();
         break;
       }
       case NOX::Nln::sol_meshtying:
       {
-        STR::MODELEVALUATOR::Generic& model = integrator.Evaluator(Inpar::STR::model_meshtying);
+        STR::MODELEVALUATOR::Generic& model = integrator.evaluator(Inpar::STR::model_meshtying);
         STR::MODELEVALUATOR::Meshtying& mt_model =
             dynamic_cast<STR::MODELEVALUATOR::Meshtying&>(model);
         iconstr_prec[NOX::Nln::sol_meshtying] = mt_model.StrategyPtr();
@@ -350,7 +350,7 @@ void STR::Nln::CreateConstraintPreconditioner(NOX::Nln::CONSTRAINT::PrecInterfac
       case NOX::Nln::sol_lag_pen_constraint:
       {
         STR::MODELEVALUATOR::Generic& model =
-            integrator.Evaluator(Inpar::STR::model_lag_pen_constraint);
+            integrator.evaluator(Inpar::STR::model_lag_pen_constraint);
         STR::MODELEVALUATOR::LagPenConstraint& lagpenconstraint_model =
             dynamic_cast<STR::MODELEVALUATOR::LagPenConstraint&>(model);
         iconstr_prec[NOX::Nln::sol_lag_pen_constraint] =
@@ -370,7 +370,7 @@ void STR::Nln::CreateConstraintPreconditioner(NOX::Nln::CONSTRAINT::PrecInterfac
 void STR::Nln::CreateScaling(Teuchos::RCP<::NOX::Epetra::Scaling>& iscale,
     const STR::TimeInt::BaseDataSDyn& DataSDyn, STR::TimeInt::BaseDataGlobalState& GState)
 {
-  if (DataSDyn.GetSTCAlgoType() != Inpar::STR::stc_none)
+  if (DataSDyn.get_stc_algo_type() != Inpar::STR::stc_none)
     iscale = Teuchos::rcp(new STR::Nln::LinSystem::StcScaling(DataSDyn, GState));
 }
 

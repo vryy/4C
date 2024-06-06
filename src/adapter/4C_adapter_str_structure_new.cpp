@@ -206,7 +206,7 @@ void Adapter::StructureBaseAlgorithmNew::setup_tim_int()
   // Setup and create model specific linear solvers
   // ---------------------------------------------------------------------------
   Teuchos::RCP<std::map<enum Inpar::STR::ModelType, Teuchos::RCP<Core::LinAlg::Solver>>>
-      linsolvers = STR::SOLVER::BuildLinSolvers(*modeltypes, *sdyn_, *actdis_);
+      linsolvers = STR::SOLVER::build_lin_solvers(*modeltypes, *sdyn_, *actdis_);
 
   // ---------------------------------------------------------------------------
   // Checks in case of multi-scale simulations
@@ -251,7 +251,7 @@ void Adapter::StructureBaseAlgorithmNew::setup_tim_int()
   // initialize/setup the structural dynamics data
   // container
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<STR::TimeInt::BaseDataSDyn> datasdyn = STR::TimeInt::BuildDataSDyn(*sdyn_);
+  Teuchos::RCP<STR::TimeInt::BaseDataSDyn> datasdyn = STR::TimeInt::build_data_sdyn(*sdyn_);
   datasdyn->Init(actdis_, *sdyn_, *xparams, modeltypes, eletechs, linsolvers);
   datasdyn->Setup();
 
@@ -269,7 +269,7 @@ void Adapter::StructureBaseAlgorithmNew::setup_tim_int()
     // -------------------------------------------------------------------------
     // set the RotVecUpdater as new precomputeX operator for the nox nln group
     // -------------------------------------------------------------------------
-    Teuchos::ParameterList& p_grp_opt = datasdyn->GetNoxParams().sublist("Group Options");
+    Teuchos::ParameterList& p_grp_opt = datasdyn->get_nox_params().sublist("Group Options");
     // Get the current map. If there is no map, return a new empty one. (reference)
     NOX::Nln::GROUP::PrePostOperator::Map& prepostgroup_map =
         NOX::Nln::GROUP::PrePostOp::GetMap(p_grp_opt);
@@ -773,7 +773,7 @@ void Adapter::StructureBaseAlgorithmNew::set_time_integration_strategy(
     const Teuchos::RCP<STR::TimeInt::BaseDataSDyn>& datasdyn,
     const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& dataglobalstate, const int& restart)
 {
-  ti_strategy = STR::TimeInt::BuildStrategy(*sdyn_);
+  ti_strategy = STR::TimeInt::build_strategy(*sdyn_);
   ti_strategy->Init(dataio, datasdyn, dataglobalstate);
 
   /* In the restart case, we Setup the structural time integration after the
@@ -826,7 +826,7 @@ void Adapter::StructureBaseAlgorithmNew::create_wrapper(
 
       // Are there any constraint conditions active?
       const std::set<Inpar::STR::ModelType>& modeltypes =
-          ti_strategy->GetDataSDyn().GetModelTypes();
+          ti_strategy->get_data_sdyn().GetModelTypes();
       if (modeltypes.find(Inpar::STR::model_lag_pen_constraint) != modeltypes.end())
       {
         if ((actdis_->Comm()).MyPID() == 0)
@@ -899,7 +899,7 @@ void Adapter::StructureBaseAlgorithmNew::create_wrapper(
               porodyn, "COUPALGO");
       // Are there any constraint conditions active?
       const std::set<Inpar::STR::ModelType>& modeltypes =
-          ti_strategy->GetDataSDyn().GetModelTypes();
+          ti_strategy->get_data_sdyn().GetModelTypes();
       if (modeltypes.find(Inpar::STR::model_lag_pen_constraint) != modeltypes.end())
       {
         if (coupling == Inpar::PoroElast::Monolithic_structuresplit or

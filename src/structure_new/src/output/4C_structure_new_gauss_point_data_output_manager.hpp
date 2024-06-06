@@ -41,11 +41,11 @@ namespace STR
 
       void add_quantity_if_not_existant(const std::string& name, int size);
 
-      void MergeQuantities(const std::unordered_map<std::string, int>& quantities);
+      void merge_quantities(const std::unordered_map<std::string, int>& quantities);
 
       void add_element_number_of_gauss_points(int numgp);
 
-      void PrepareData(const Epetra_Map& node_col_map, const Epetra_Map& element_row_map);
+      void prepare_data(const Epetra_Map& node_col_map, const Epetra_Map& element_row_map);
 
       void post_evaluate();
 
@@ -55,12 +55,12 @@ namespace STR
        */
       void distribute_quantities(const Epetra_Comm& comm);
 
-      inline std::unordered_map<std::string, Teuchos::RCP<Epetra_MultiVector>>& GetNodalData()
+      inline std::unordered_map<std::string, Teuchos::RCP<Epetra_MultiVector>>& get_nodal_data()
       {
         return data_nodes_;
       }
 
-      inline std::unordered_map<std::string, Teuchos::RCP<Epetra_IntVector>>& GetNodalDataCount()
+      inline std::unordered_map<std::string, Teuchos::RCP<Epetra_IntVector>>& get_nodal_data_count()
       {
         return data_nodes_count_;
       }
@@ -72,24 +72,24 @@ namespace STR
       }
 
       inline std::unordered_map<std::string, std::vector<Teuchos::RCP<Epetra_MultiVector>>>&
-      GetGaussPointData()
+      get_gauss_point_data()
       {
         return data_gauss_point_;
       }
 
       inline const std::unordered_map<std::string, std::vector<Teuchos::RCP<Epetra_MultiVector>>>&
-      GetGaussPointData() const
+      get_gauss_point_data() const
       {
         return data_gauss_point_;
       }
-      inline const std::unordered_map<std::string, Teuchos::RCP<Epetra_MultiVector>>& GetNodalData()
-          const
+      inline const std::unordered_map<std::string, Teuchos::RCP<Epetra_MultiVector>>&
+      get_nodal_data() const
       {
         return data_nodes_;
       }
 
       inline const std::unordered_map<std::string, Teuchos::RCP<Epetra_IntVector>>&
-      GetNodalDataCount() const
+      get_nodal_data_count() const
       {
         return data_nodes_count_;
       }
@@ -100,13 +100,12 @@ namespace STR
         return data_element_center_;
       }
 
-      inline const std::unordered_map<std::string, int>& GetQuantities() const
+      inline const std::unordered_map<std::string, int>& get_quantities() const
       {
         return quantities_;
       }
 
-      inline Inpar::STR::GaussPointDataOutputType GetOutputType() const { return output_type_; }
-
+      inline Inpar::STR::GaussPointDataOutputType get_output_type() const { return output_type_; }
 
      private:
       static constexpr int MPI_TAG = 545;
@@ -155,7 +154,6 @@ namespace STR
     };
   }  // namespace MODELEVALUATOR
 }  // namespace STR
-
 
 FOUR_C_NAMESPACE_CLOSE
 

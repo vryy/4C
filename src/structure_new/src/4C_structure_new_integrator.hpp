@@ -111,7 +111,7 @@ namespace STR
      *  (incl. the structural dynamic state variables)
      *
      *  \param x (in) : current full state vector */
-    void ResetModelStates(const Epetra_Vector& x);
+    void reset_model_states(const Epetra_Vector& x);
 
     /*! \brief Add the viscous and mass contributions to the right hand side (TR-rule)
      *
@@ -131,21 +131,21 @@ namespace STR
     virtual void add_visco_mass_contributions(Core::LinAlg::SparseOperator& jac) const = 0;
 
     //! Apply the right hand side only
-    virtual bool ApplyForce(const Epetra_Vector& x, Epetra_Vector& f) = 0;
+    virtual bool apply_force(const Epetra_Vector& x, Epetra_Vector& f) = 0;
 
     /*! \brief Apply the stiffness only
      *
      * Normally this one is unnecessary, since it makes more sense
      * to evaluate the stiffness and right hand side at once, because of
      * the lower computational overhead. */
-    virtual bool ApplyStiff(const Epetra_Vector& x, Core::LinAlg::SparseOperator& jac) = 0;
+    virtual bool apply_stiff(const Epetra_Vector& x, Core::LinAlg::SparseOperator& jac) = 0;
 
     /*! \brief Apply force and stiff at once
      *
      *  Only one loop over all elements. Especially in the contact case,
-     *  the difference between this call and first call ApplyForce and
-     *  then ApplyStiff is mentionable because of the projection operations. */
-    virtual bool ApplyForceStiff(
+     *  the difference between this call and first call apply_force and
+     *  then apply_stiff is mentionable because of the projection operations. */
+    virtual bool apply_force_stiff(
         const Epetra_Vector& x, Epetra_Vector& f, Core::LinAlg::SparseOperator& jac) = 0;
 
     /*! \brief Modify the right hand side and Jacobian corresponding to the requested correction
@@ -167,7 +167,8 @@ namespace STR
      *  purpose we only need the right order of magnitude, so we don't
      *  mind evaluating the corresponding norms at possibly different
      *  points within the time-step (end point, generalized midpoint). */
-    virtual double CalcRefNormForce(const enum ::NOX::Abstract::Vector::NormType& type) const = 0;
+    virtual double calc_ref_norm_force(
+        const enum ::NOX::Abstract::Vector::NormType& type) const = 0;
 
     //! compute the scaling operator for element based scaling using PTC
     virtual void compute_jacobian_contributions_from_element_level_for_ptc(
@@ -178,21 +179,21 @@ namespace STR
         const std::vector<Inpar::STR::ModelType>* without_these_models = nullptr) const = 0;
 
     //! Assemble Jacobian
-    virtual bool AssembleJac(Core::LinAlg::SparseOperator& jac,
+    virtual bool assemble_jac(Core::LinAlg::SparseOperator& jac,
         const std::vector<Inpar::STR::ModelType>* without_these_models = nullptr) const
     {
       return false;
     };
 
     //! Create backup state
-    void CreateBackupState(const Epetra_Vector& dir);
+    void create_backup_state(const Epetra_Vector& dir);
 
     //! recover state from the stored backup
     void recover_from_backup_state();
 
     //! return integration factor
-    virtual double GetIntParam() const = 0;
-    virtual double GetAccIntParam() const { return GetIntParam(); }
+    virtual double get_int_param() const = 0;
+    virtual double get_acc_int_param() const { return get_int_param(); }
 
     /*!
      * \brief Allows to stop the simulation before the max. time or max timestep is reached
@@ -200,7 +201,7 @@ namespace STR
      * \return true In case of an early stop is desired
      * \return false In case of no early stop (default)
      */
-    virtual bool EarlyStopping() const { return false; }
+    virtual bool early_stopping() const { return false; }
 
     //! @name Restart and output related functions
     //!@{
@@ -224,30 +225,30 @@ namespace STR
     //!@{
 
     //! things that should be done before updating
-    virtual void PreUpdate() = 0;
+    virtual void pre_update() = 0;
 
     /*! \brief Update configuration after time step
      *
      *  Thus the 'last' converged is lost and a reset of the time step
      *  becomes impossible. We are ready and keen awaiting the next
      *  time step. */
-    virtual void UpdateStepState() = 0;
+    virtual void update_step_state() = 0;
 
     /*! \brief Update everything on element level after time step and after output
      *
      *  Thus the 'last' converged is lost and a reset of the time step
      *  becomes impossible. We are ready and keen awaiting the next
      *  time step. */
-    virtual void UpdateStepElement() = 0;
+    virtual void update_step_element() = 0;
 
     //! calculate stresses and strains in the different model evaluators
     void determine_stress_strain();
 
     //! calculate the energy in the different model evaluators
-    void DetermineEnergy();
+    void determine_energy();
 
     //! get the model value in accordance with the currently active time integration
-    virtual double GetModelValue(const Epetra_Vector& x);
+    virtual double get_model_value(const Epetra_Vector& x);
 
     /*! return the total structural energy evaluated at the actual mid-time
      *  in accordance to the used time integration scheme */
@@ -269,7 +270,7 @@ namespace STR
      *  upon object prior to writing stuff here.
      *
      *  \author mwgee (originally)                         \date 03/07 */
-    void OutputStepState(Core::IO::DiscretizationWriter& iowriter) const;
+    void output_step_state(Core::IO::DiscretizationWriter& iowriter) const;
 
     /**
      * \brief Do stuff that has to be done before runtime output is written.
@@ -290,21 +291,21 @@ namespace STR
      *  This function is supposed to reset all variables which are directly related
      *  to the current new step n+1. To be more precise all variables ending with "Np"
      *  have to be reseted. */
-    virtual void ResetStepState();
+    virtual void reset_step_state();
 
     /// things that should be done after updating
     virtual void post_update() = 0;
 
     /// things that should be done after the timeloop
-    virtual void PostTimeLoop(){};
+    virtual void post_time_loop(){};
 
     //! update constant contributions of the current state for the new time step \f$t_{n+1}\f$
     virtual void update_constant_state_contributions() = 0;
 
     //! things that should be done after output
-    virtual void PostOutput();
+    virtual void post_output();
 
-    void MonitorDbc(Core::IO::DiscretizationWriter& writer) const;
+    void monitor_dbc(Core::IO::DiscretizationWriter& writer) const;
     //!@}
 
     //! @name Accessors
@@ -321,26 +322,26 @@ namespace STR
     int get_condensed_dof_number(const enum NOX::Nln::StatusTest::QuantityType& qtype) const;
 
     //! Return the model evaluator control object (read and write)
-    STR::ModelEvaluator& ModelEval();
+    STR::ModelEvaluator& model_eval();
 
     //! Return the model evaluator control object (read-only)
-    const STR::ModelEvaluator& ModelEval() const;
-    Teuchos::RCP<const STR::ModelEvaluator> ModelEvalPtr() const;
+    const STR::ModelEvaluator& model_eval() const;
+    Teuchos::RCP<const STR::ModelEvaluator> model_eval_ptr() const;
 
     //! Return the model evaluator object for the given model type
-    STR::MODELEVALUATOR::Generic& Evaluator(const Inpar::STR::ModelType& mt);
+    STR::MODELEVALUATOR::Generic& evaluator(const Inpar::STR::ModelType& mt);
 
     //! Return the model evaluator object for the given model type
-    const STR::MODELEVALUATOR::Generic& Evaluator(const Inpar::STR::ModelType& mt) const;
+    const STR::MODELEVALUATOR::Generic& evaluator(const Inpar::STR::ModelType& mt) const;
 
     //! Return the model evaluator data object (read-only)
-    const STR::MODELEVALUATOR::Data& EvalData() const;
+    const STR::MODELEVALUATOR::Data& eval_data() const;
 
     //! Return the model evaluator data object (read and write access)
-    STR::MODELEVALUATOR::Data& EvalData();
+    STR::MODELEVALUATOR::Data& eval_data();
 
     //! Return the Dirichlet boundary condition object (read-only)
-    const STR::Dbc& GetDbc() const;
+    const STR::Dbc& get_dbc() const;
 
     //!@}
 
@@ -371,7 +372,7 @@ namespace STR
     bool current_state_is_equilibrium(const double& tol);
 
     //! Return the structural dynamic data container
-    STR::TimeInt::BaseDataSDyn& s_dyn();
+    STR::TimeInt::BaseDataSDyn& sdyn();
 
     //! Return the structural dynamic data container (read-only)
     const STR::TimeInt::BaseDataSDyn& s_dyn() const;
@@ -413,13 +414,13 @@ namespace STR
       /// can this container be used?
       bool is_correctly_configured() const;
 
-      bool StoreEnergyN() const;
+      bool store_energy_n() const;
 
       /// print energy info to output stream
       void Print(std::ostream& os) const;
 
       /// Get total energy measure in accordance to the surrounding time integrator
-      double GetTotal() const;
+      double get_total() const;
 
       /// average quantities based on the used averaging type
       Teuchos::RCP<const Epetra_Vector> Average(
@@ -484,7 +485,6 @@ namespace STR
     Teuchos::RCP<STR::MonitorDbc> monitor_dbc_ptr_ = Teuchos::null;
   };  // namespace STR
 }  // namespace STR
-
 
 FOUR_C_NAMESPACE_CLOSE
 

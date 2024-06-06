@@ -38,18 +38,17 @@ namespace STR
         virtual ~Factory() = default;
 
         //! build the specific nonlinear solver
-        Teuchos::RCP<STR::Nln::SOLVER::Generic> BuildNlnSolver(
+        Teuchos::RCP<STR::Nln::SOLVER::Generic> build_nln_solver(
             const enum Inpar::STR::NonlinSolTech& nlnSolType) const;
       };
 
       /*! Non-member function, which relates to the STR::Nln::SOLVER::Factory class
        *  Please call this method from outside! */
-      Teuchos::RCP<STR::Nln::SOLVER::Generic> BuildNlnSolver(
+      Teuchos::RCP<STR::Nln::SOLVER::Generic> build_nln_solver(
           const enum Inpar::STR::NonlinSolTech& nlnSolType);
     }  // namespace SOLVER
   }    // namespace Nln
 }  // namespace STR
-
 
 FOUR_C_NAMESPACE_CLOSE
 

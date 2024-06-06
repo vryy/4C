@@ -102,7 +102,7 @@ void CONTACT::Aug::ActiveSet::post_update(
   data.Potential().set_active_inactive_state();
 
   // update the history information only if it's no correction step of the active set
-  if (cparams.IsDefaultStep())
+  if (cparams.is_default_step())
   {
     // update flag for the contact status of the last iterate (history information)
     if (strategy_.IsInContact())
@@ -218,7 +218,7 @@ CONTACT::Aug::ActiveSet::Status CONTACT::Aug::ActiveSet::update_initial_status(
 {
   static std::vector<std::vector<std::pair<int, bool>>> init_active_list;
 
-  if (not cparams.IsPredictor() or cparams.GetStepNp() != cparams.GetRestartStep() + 1)
+  if (not cparams.is_predictor() or cparams.get_step_np() != cparams.get_restart_step() + 1)
   {
     init_active_list.clear();
     return merge(istatus);
@@ -396,7 +396,7 @@ void CONTACT::Aug::ActiveSet::update_maps(const CONTACT::ParamsInterface& cparam
   plain_interface_set& interfaces = strategy_.interfaces();
 
   // only if it's a full Newton step...
-  if (cparams.IsDefaultStep())
+  if (cparams.is_default_step())
   {
     // store the previous augmented active set
     if (data.g_active_node_row_map_ptr() != Teuchos::null)
@@ -441,7 +441,7 @@ void CONTACT::Aug::ActiveSet::sanity_check(
 {
   const DataContainer& data = strategy_.data();
 
-  if (cparams.IsDefaultStep() and (gstatus == Status::changed) == data.is_active_set_converged())
+  if (cparams.is_default_step() and (gstatus == Status::changed) == data.is_active_set_converged())
     FOUR_C_THROW(
         "The convergence state of the active set has not been correctly "
         "detected: %s",

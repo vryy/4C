@@ -714,13 +714,13 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::Recover(Core::Elements::Elem
   Core::FE::ExtractMyValues(*res, residual, dof_index_array);
 
   // get access to the interface parameters
-  double step_length = interface_ptr.GetStepLength();
+  double step_length = interface_ptr.get_step_length();
 
   // access general EAS history stuff stored in element
   Core::LinAlg::SerialDenseMatrix delta_alpha(locking_types_.total, 1);
 
   // if it is a default step, we have to recover the condensed solution vectors
-  if (interface_ptr.IsDefaultStep())
+  if (interface_ptr.is_default_step())
   {
     // first, store the eas state of the previous accepted Newton step
     interface_ptr.sum_into_my_previous_sol_norm(NOX::Nln::StatusTest::quantity_eas,
@@ -751,7 +751,7 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::Recover(Core::Elements::Elem
 
   // Check if delta alpha is tested and if yes, calculate the element
   // contribution to the norm
-  interface_ptr.SumIntoMyUpdateNorm(NOX::Nln::StatusTest::quantity_eas, locking_types_.total,
+  interface_ptr.sum_into_my_update_norm(NOX::Nln::StatusTest::quantity_eas, locking_types_.total,
       delta_alpha[0], eas_iteration_data_.alpha_[0], step_length, ele.Owner());
 
   // save the old step length

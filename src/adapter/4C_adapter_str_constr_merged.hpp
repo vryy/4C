@@ -102,10 +102,10 @@ namespace Adapter
     void apply_interface_forces_temporary_deprecated(Teuchos::RCP<Epetra_Vector> iforce) override;
 
     /// direct access to system matrix
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() override;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() override;
 
     /// direct access to system matrix
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> BlockSystemMatrix() override;
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() override;
 
     /// update displacement and evaluate elements
     void Evaluate(Teuchos::RCP<const Epetra_Vector>
@@ -130,12 +130,12 @@ namespace Adapter
       return structure_->get_constraint_manager();
     };
 
-    Inpar::STR::StcScale GetSTCAlgo() override { return structure_->GetSTCAlgo(); };
+    Inpar::STR::StcScale get_stc_algo() override { return structure_->get_stc_algo(); };
 
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> GetSTCMat() override
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> get_stc_mat() override
     {
       FOUR_C_THROW("FSI with merged structural constraints does not work in combination with STC!");
-      return structure_->GetSTCMat();
+      return structure_->get_stc_mat();
     }
 
     //! Update iteration

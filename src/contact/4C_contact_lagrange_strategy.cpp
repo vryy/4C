@@ -3361,14 +3361,14 @@ void CONTACT::LagrangeStrategy::eval_force(CONTACT::ParamsInterface& cparams)
   }
 
   // evaluate relative movement for friction
-  if (cparams.IsPredictor())
+  if (cparams.is_predictor())
     evaluate_rel_mov_predict();
   else
     EvaluateRelMov();
 
   // update active set
   const bool firstTimeStepAndPredictor =
-      (cparams.IsPredictor() and (cparams.GetStepNp() == cparams.GetRestartStep() + 1));
+      (cparams.is_predictor() and (cparams.get_step_np() == cparams.get_restart_step() + 1));
   update_active_set_semi_smooth(firstTimeStepAndPredictor);
 
   // apply contact forces and stiffness
@@ -4048,7 +4048,7 @@ void CONTACT::LagrangeStrategy::eval_str_contact_rhs()
  *----------------------------------------------------------------------*/
 void CONTACT::LagrangeStrategy::pre_evaluate(CONTACT::ParamsInterface& cparams)
 {
-  const enum Mortar::ActionType& act = cparams.GetActionType();
+  const enum Mortar::ActionType& act = cparams.get_action_type();
 
   switch (act)
   {
@@ -4057,7 +4057,7 @@ void CONTACT::LagrangeStrategy::pre_evaluate(CONTACT::ParamsInterface& cparams)
       // -------------------------------------------------------------------
     case Mortar::eval_force_stiff:
     {
-      if (cparams.IsPredictor()) evalForceCalled_ = false;
+      if (cparams.is_predictor()) evalForceCalled_ = false;
       break;
     }
     // -------------------------------------------------------------------
@@ -4078,7 +4078,7 @@ void CONTACT::LagrangeStrategy::pre_evaluate(CONTACT::ParamsInterface& cparams)
  *----------------------------------------------------------------------*/
 void CONTACT::LagrangeStrategy::post_evaluate(CONTACT::ParamsInterface& cparams)
 {
-  const enum Mortar::ActionType& act = cparams.GetActionType();
+  const enum Mortar::ActionType& act = cparams.get_action_type();
 
   switch (act)
   {
@@ -4313,7 +4313,7 @@ void CONTACT::LagrangeStrategy::run_post_compute_x(const CONTACT::ParamsInterfac
           Teuchos::rcp(new Epetra_Vector(LMDoFRowMap(true), true));
       Core::LinAlg::Export(dir, *zdir_ptr);
       // get the current step length
-      const double stepLength = cparams.GetStepLength();
+      const double stepLength = cparams.get_step_length();
       // ---------------------------------------------------------------------
       // store the SCALED Lagrange multiplier increment in the contact
       // strategy

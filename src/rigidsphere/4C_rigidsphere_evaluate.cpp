@@ -39,7 +39,7 @@ int Discret::ELEMENTS::Rigidsphere::Evaluate(Teuchos::ParameterList& params,
   set_params_interface_ptr(params);
 
   // start with "none"
-  Core::Elements::ActionType act = params_interface().GetActionType();
+  Core::Elements::ActionType act = params_interface().get_action_type();
 
   switch (act)
   {
@@ -220,7 +220,7 @@ void Discret::ELEMENTS::Rigidsphere::calc_drag_force(Teuchos::ParameterList& par
   double gamma = my_damping_constant();
 
   // get time step size
-  double dt = params_interface().GetDeltaTime();
+  double dt = params_interface().get_delta_time();
 
   // velocity and gradient of background velocity field
   Core::LinAlg::Matrix<3, 1> velbackground;
@@ -316,7 +316,7 @@ void Discret::ELEMENTS::Rigidsphere::get_background_velocity(
 double Discret::ELEMENTS::Rigidsphere::my_damping_constant()
 {
   // (dynamic) viscosity of background fluid
-  double eta = params_interface().get_brownian_dyn_param_interface()->GetViscosity();
+  double eta = params_interface().get_brownian_dyn_param_interface()->get_viscosity();
 
   // damping/friction coefficient of a rigid sphere (Stokes' law for very small Reynolds numbers)
   return 6 * M_PI * eta * radius_;
@@ -398,7 +398,7 @@ void Discret::ELEMENTS::Rigidsphere::calc_stochastic_force(
   /*get pointer at Epetra multivector in parameter list linking to random numbers for stochastic
    * forces with zero mean and standard deviation (2*kT / dt)^0.5*/
   Teuchos::RCP<Epetra_MultiVector> randomnumbers =
-      params_interface().get_brownian_dyn_param_interface()->GetRandomForces();
+      params_interface().get_brownian_dyn_param_interface()->get_random_forces();
 
   if (force != nullptr)
   {

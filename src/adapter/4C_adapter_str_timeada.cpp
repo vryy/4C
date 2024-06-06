@@ -219,7 +219,7 @@ int Adapter::StructureTimeAda::Integrate()
         accepted = false;
 
         // get the divergence action
-        enum Inpar::STR::DivContAct div_action = stm_->DataSDyn().GetDivergenceAction();
+        enum Inpar::STR::DivContAct div_action = stm_->data_sdyn().get_divergence_action();
 
         convergencestatus = PerformErrorAction(div_action, stpsiznew);
       }
@@ -290,7 +290,7 @@ int Adapter::StructureTimeAda::Integrate()
     PostOutput();
 
     // print info about finished time step
-    PrintStep();
+    print_step();
 
     // update
     timestep_ += 1;
@@ -367,7 +367,7 @@ void Adapter::StructureTimeAda::size_for_output()
 void Adapter::StructureTimeAda::Output(bool forced_writerestart)
 {
   STR::TimeInt::BaseDataIO& dataio = stm_->data_io();
-  Teuchos::RCP<Core::IO::DiscretizationWriter> output_ptr = dataio.GetOutputPtr();
+  Teuchos::RCP<Core::IO::DiscretizationWriter> output_ptr = dataio.get_output_ptr();
 
   StructureWrapper::Output(forced_writerestart);
   output_ptr->WriteDouble("next_delta_time", stepsize_);
@@ -384,17 +384,17 @@ void Adapter::StructureTimeAda::evaluate_local_error_dis()
   {
     const double coeffmarch = sti.method_lin_err_coeff_dis();
     const double coeffaux = method_lin_err_coeff_dis();
-    locerrdisn_->Update(-1.0, *(gstate.GetDisNp()), 1.0);
+    locerrdisn_->Update(-1.0, *(gstate.get_dis_np()), 1.0);
     locerrdisn_->Scale(coeffmarch / (coeffaux - coeffmarch));
   }
   else
   {
     // schemes do not have the same order of accuracy
-    locerrdisn_->Update(-1.0, *(gstate.GetDisNp()), 1.0);
+    locerrdisn_->Update(-1.0, *(gstate.get_dis_np()), 1.0);
   }
 
   // blank Dirichlet DOFs since they always carry the exact solution
-  sti.GetDBC().apply_dirichlet_to_vector(locerrdisn_);
+  sti.get_dbc().apply_dirichlet_to_vector(locerrdisn_);
 }
 
 /*----------------------------------------------------------------------*/

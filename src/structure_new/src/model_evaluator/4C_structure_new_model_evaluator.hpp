@@ -117,7 +117,7 @@ namespace STR
 
     bool initialize_inertia_and_damping(const Epetra_Vector& x, Core::LinAlg::SparseOperator& jac);
 
-    bool ApplyInitialForce(const Epetra_Vector& x, Epetra_Vector& f);
+    bool apply_initial_force(const Epetra_Vector& x, Epetra_Vector& f);
 
     /*! \brie Apply force
      *
@@ -127,7 +127,7 @@ namespace STR
      *
      * @return Boolean flag to indicate success (true) or failure (false)
      */
-    bool ApplyForce(const Epetra_Vector& x, Epetra_Vector& f, const double& timefac_np) const;
+    bool apply_force(const Epetra_Vector& x, Epetra_Vector& f, const double& timefac_np) const;
 
     /*! \brief Apply stiffness
      *
@@ -137,7 +137,7 @@ namespace STR
      *
      * @return Boolean flag to indicate success (true) or failure (false)
      */
-    bool ApplyStiff(
+    bool apply_stiff(
         const Epetra_Vector& x, Core::LinAlg::SparseOperator& jac, const double& timefac_np) const;
 
     /*! \brief Apply model specific stiff
@@ -149,7 +149,7 @@ namespace STR
      *
      * @return Boolean flag to indicate success (true) or failure (false)
      */
-    bool ApplyStiff(const Inpar::STR::ModelType& mt, const Epetra_Vector& x,
+    bool apply_stiff(const Inpar::STR::ModelType& mt, const Epetra_Vector& x,
         Core::LinAlg::SparseOperator& jac, const double& timefac_np) const;
 
     /*! \brief Apply force and stiffness
@@ -161,7 +161,7 @@ namespace STR
      *
      * @return Boolean flag to indicate success (true) or failure (false)
      */
-    bool ApplyForceStiff(const Epetra_Vector& x, Epetra_Vector& f,
+    bool apply_force_stiff(const Epetra_Vector& x, Epetra_Vector& f,
         Core::LinAlg::SparseOperator& jac, const double& timefac_np) const;
 
     /*! \brief Compute cheap second order correction right hand side
@@ -176,7 +176,7 @@ namespace STR
      *
      * @return Boolean flag to indicate success (true) or failure (false)
      */
-    bool ApplyCheapSOCRhs(const enum NOX::Nln::CorrectionType type,
+    bool apply_cheap_soc_rhs(const enum NOX::Nln::CorrectionType type,
         const std::vector<Inpar::STR::ModelType>& constraint_models, const Epetra_Vector& x,
         Epetra_Vector& f, const double& timefac_np) const;
 
@@ -191,11 +191,11 @@ namespace STR
      *  \author hiermeier \date 03/18 */
     void remove_condensed_contributions_from_rhs(Epetra_Vector& rhs) const;
 
-    /*! \brief Predict all internal variables in model evaluators
+    /*! \brief predict all internal variables in model evaluators
      *
      * @param[in] pred_type Type of predictor to be applied
      */
-    void Predict(const Inpar::STR::PredEnum& pred_type) const;
+    void predict(const Inpar::STR::PredEnum& pred_type) const;
 
     /** \brief Assembly of all force contributions
      *
@@ -295,21 +295,21 @@ namespace STR
 
     //!@}
 
-    void CreateBackupState(const Epetra_Vector& dir);
+    void create_backup_state(const Epetra_Vector& dir);
 
     void recover_from_backup_state();
 
     /*! \brief reset all model states (incl. the structural dynamic state)
      *
      *  \param x (in) : current full state vector */
-    void ResetStates(const Epetra_Vector& x) const;
+    void reset_states(const Epetra_Vector& x) const;
 
     /*! \brief reset all model states (optional even. the structural dynamic
      *  state)
      *
      *  \param x (in) : current full state vector
      *  \param setstate (in) : flag to set state */
-    void ResetStates(const Epetra_Vector& x, bool setstate) const;
+    void reset_states(const Epetra_Vector& x, bool setstate) const;
 
     /*! \brief reset a sub-set of all model states (optional even the structural
      *  dynamic state)
@@ -317,7 +317,7 @@ namespace STR
      *  \param x (in) : current full state vector
      *  \param setstate (in) : flag to set state
      *  \param me_vec (in) : vector containing the sub-set of model evaluators */
-    void ResetStates(const Epetra_Vector& x, bool setstate, Vector& me_vec) const;
+    void reset_states(const Epetra_Vector& x, bool setstate, Vector& me_vec) const;
 
     //! Write current restart
     void write_restart(
@@ -330,20 +330,20 @@ namespace STR
     //!@{
 
     //! return global state (read-only)
-    const STR::TimeInt::BaseDataGlobalState& GetGlobalState() const;
+    const STR::TimeInt::BaseDataGlobalState& get_global_state() const;
 
     //! return global state pointer (read and write access of the data)
     const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& global_state_ptr();
 
     //! return pointer to the underlying time integrator (read-only)
-    const Teuchos::RCP<const STR::TimeInt::Base>& GetTimIntPtr() const;
+    const Teuchos::RCP<const STR::TimeInt::Base>& get_tim_int_ptr() const;
 
     /*! \brief Access one specific model evaluator
      *
      * \param[in] mt Type of model evaluator to be accessed
      */
-    STR::MODELEVALUATOR::Generic& Evaluator(const enum Inpar::STR::ModelType& mt);
-    const STR::MODELEVALUATOR::Generic& Evaluator(const enum Inpar::STR::ModelType& mt) const;
+    STR::MODELEVALUATOR::Generic& evaluator(const enum Inpar::STR::ModelType& mt);
+    const STR::MODELEVALUATOR::Generic& evaluator(const enum Inpar::STR::ModelType& mt) const;
 
     //!@}
 
@@ -351,10 +351,10 @@ namespace STR
     //!@{
 
     //! Update configuration after time step
-    void UpdateStepState(const double& timefac_n);
+    void update_step_state(const double& timefac_n);
 
     //! Update everything on element level after time step and after output
-    void UpdateStepElement();
+    void update_step_element();
 
     //! Compute the residual by difference of {n+1} and {n} state
     void update_residual();
@@ -363,13 +363,13 @@ namespace STR
     void determine_stress_strain();
 
     //! calculation of engery
-    void DetermineEnergy();
+    void determine_energy();
 
     //! calculation of an optional quantitiy
     void determine_optional_quantity();
 
     //! Write the current step state
-    void OutputStepState(Core::IO::DiscretizationWriter& iowriter) const;
+    void output_step_state(Core::IO::DiscretizationWriter& iowriter) const;
 
     /**
      * \brief Do stuff that has to be done before the runtime output is written.
@@ -380,19 +380,19 @@ namespace STR
     void runtime_output_step_state() const;
 
     //! Do things after writing output
-    void PostOutput();
+    void post_output();
 
     /*!
      * \brief Reset the current state variables to the ones of the previous timestep
      *
      * This is used for example to output the last successfull timestep.
      */
-    void ResetStepState();
+    void reset_step_state();
 
     /*! \brief Recover the current state
      *
      * Necessary for condensed systems, e.g. EAS, dual mortar, etc.*/
-    void RunRecover() const;
+    void run_recover() const;
 
     /*! \brief Recover the current state
      *
@@ -415,7 +415,7 @@ namespace STR
     /*! \brief Executed at the beginning of the ::NOX::Solver::solve() method
      *
      *  \author hiermeier */
-    void RunPreSolve(
+    void run_pre_solve(
         const ::NOX::Solver::Generic& solver, const double step, const bool isdefaultstep) const;
 
     /*! \brief Executed at the end of the NOX::Nln::Group::applyJacobianInverse
@@ -532,7 +532,6 @@ namespace STR
 
   };  // class ModelEvaluator
 }  // namespace STR
-
 
 FOUR_C_NAMESPACE_CLOSE
 

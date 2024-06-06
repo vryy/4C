@@ -86,14 +86,14 @@ namespace STR
 
      public:
       /// get the binary output writer
-      Teuchos::RCP<Core::IO::DiscretizationWriter> GetOutputPtr()
+      Teuchos::RCP<Core::IO::DiscretizationWriter> get_output_ptr()
       {
         check_init_setup();
         return output_;
       };
 
       /// get the binary output writer
-      Teuchos::RCP<const Core::IO::DiscretizationWriter> GetOutputPtr() const
+      Teuchos::RCP<const Core::IO::DiscretizationWriter> get_output_ptr() const
       {
         check_init_setup();
         return output_;
@@ -114,7 +114,7 @@ namespace STR
       };
 
       /// get the data container for parameters regarding output at runtime
-      Teuchos::RCP<const ParamsMonitorDBC> GetMonitorDBCParams() const
+      Teuchos::RCP<const ParamsMonitorDBC> get_monitor_dbc_params() const
       {
         check_init_setup();
         return params_monitor_dbc_;
@@ -164,14 +164,14 @@ namespace STR
       };
 
       /// Is GMSH output of displacements required?
-      const bool& IsGmsh() const
+      const bool& is_gmsh() const
       {
         check_init_setup();
         return gmsh_out_;
       };
 
       /// Shall we print the logo?
-      const bool& IsLogo() const
+      const bool& is_logo() const
       {
         check_init_setup();
         return printlogo_;
@@ -185,28 +185,28 @@ namespace STR
       };
 
       /// Shall we write output every iteration?
-      const bool& IsOutputEveryIter() const
+      const bool& is_output_every_iter() const
       {
         check_init_setup();
         return outputeveryiter_;
       };
 
       /// Shall we write surfactant output?
-      const bool& IsSurfactantOutput() const
+      const bool& is_surfactant_output() const
       {
         check_init_setup();
         return writesurfactant_;
       };
 
       /// Shall we write the current state?
-      const bool& IsWriteState() const
+      const bool& is_write_state() const
       {
         check_init_setup();
         return writestate_;
       };
 
       /// Shall we write the velocities and accelerations?
-      const bool& IsWriteVelAcc() const
+      const bool& is_write_vel_acc() const
       {
         check_init_setup();
         return writevelacc_;
@@ -227,14 +227,14 @@ namespace STR
       }
 
       /// Shall we compute and write the condition number?
-      Inpar::STR::ConditionNumber ConditionNumberType() const
+      Inpar::STR::ConditionNumber condition_number_type() const
       {
         check_init_setup();
         return conditionnumbertype_;
       }
 
       /// Is this the first output of the current run?
-      const bool& IsFirstOutputOfRun() const
+      const bool& is_first_output_of_run() const
       {
         check_init_setup();
         return firstoutputofrun_;
@@ -283,7 +283,7 @@ namespace STR
       }
 
       /// get stress output type
-      const Inpar::STR::StressType& GetStressOutputType() const
+      const Inpar::STR::StressType& get_stress_output_type() const
       {
         check_init_setup();
         return writestress_;
@@ -297,7 +297,7 @@ namespace STR
       }
 
       /// get strain output type
-      const Inpar::STR::StrainType& GetStrainOutputType() const
+      const Inpar::STR::StrainType& get_strain_output_type() const
       {
         check_init_setup();
         return writestrain_;
@@ -319,7 +319,7 @@ namespace STR
       ///@}
 
       /// set the flag indicator firstoutputofrun_
-      void SetFirstOutputOfRun(const bool& firstoutputofrun)
+      void set_first_output_of_run(const bool& firstoutputofrun)
       {
         check_init_setup();
         firstoutputofrun_ = firstoutputofrun;
@@ -481,8 +481,6 @@ namespace NOX
     }      // namespace Solver
   }        // namespace Nln
 }  // namespace NOX
-
-
 
 FOUR_C_NAMESPACE_CLOSE
 

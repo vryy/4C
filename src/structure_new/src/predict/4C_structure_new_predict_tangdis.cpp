@@ -68,7 +68,7 @@ void STR::Predict::TangDis::Compute(::NOX::Abstract::Group& grp)
   FOUR_C_ASSERT(grp_ptr != nullptr, "Dynamic cast failed!");
   grp_ptr->reset_pre_post_operator(nox_params().sublist("Group Options"));
 
-  impl_int().EvalData().SetPredictorType(Inpar::STR::pred_tangdis);
+  impl_int().eval_data().set_predictor_type(Inpar::STR::pred_tangdis);
 
   // ---------------------------------------------------------------------------
   // calculate the dbc increment on the dirichlet boundary
@@ -79,8 +79,8 @@ void STR::Predict::TangDis::Compute(::NOX::Abstract::Group& grp)
   // We create at this point a new solution vector and initialize it
   // with the values of the last converged time step.
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<::NOX::Epetra::Vector> x_ptr = global_state().CreateGlobalVector(
-      TimeInt::BaseDataGlobalState::VecInitType::last_time_step, impl_int().ModelEvalPtr());
+  Teuchos::RCP<::NOX::Epetra::Vector> x_ptr = global_state().create_global_vector(
+      TimeInt::BaseDataGlobalState::VecInitType::last_time_step, impl_int().model_eval_ptr());
   // Set the solution vector in the nox group. This will reset all isValid
   // flags.
   grp.setX(*x_ptr);
@@ -110,7 +110,7 @@ void STR::Predict::TangDis::Compute(::NOX::Abstract::Group& grp)
   Teuchos::ParameterList& p =
       nox_params().sublist("Direction").sublist("Newton").sublist("Linear Solver");
   p.set<int>("Number of Nonlinear Iterations", 0);
-  p.set<int>("Current Time Step", global_state().GetStepNp());
+  p.set<int>("Current Time Step", global_state().get_step_np());
   // ToDo Get the actual tolerance value
   p.set<double>("Wanted Tolerance", 1.0e-6);
 
@@ -123,26 +123,26 @@ void STR::Predict::TangDis::Compute(::NOX::Abstract::Group& grp)
   grp_ptr->computeX(*grp_ptr, grp_ptr->getNewton(), 1.0);
   // add the DBC values to the current state vector
   Teuchos::RCP<Epetra_Vector> dbc_incr_exp_ptr =
-      Teuchos::rcp(new Epetra_Vector(global_state().GlobalProblemMap(), true));
+      Teuchos::rcp(new Epetra_Vector(global_state().global_problem_map(), true));
   Core::LinAlg::Export(*dbc_incr_ptr_, *dbc_incr_exp_ptr);
   grp_ptr->computeX(*grp_ptr, *dbc_incr_exp_ptr, 1.0);
   // Reset the state variables
   const ::NOX::Epetra::Vector& x_eptra =
       dynamic_cast<const ::NOX::Epetra::Vector&>(grp_ptr->getX());
   // set the consistent state in the models (e.g. structure and contact models)
-  impl_int().ResetModelStates(x_eptra.getEpetraVector());
+  impl_int().reset_model_states(x_eptra.getEpetraVector());
 
   // For safety purposes, we set the dbc_incr vector to zero
   dbc_incr_ptr_->PutScalar(0.0);
 
-  impl_int().ModelEval().Predict(GetType());
+  impl_int().model_eval().predict(get_type());
 
-  impl_int().EvalData().SetPredictorType(Inpar::STR::pred_vague);
+  impl_int().eval_data().set_predictor_type(Inpar::STR::pred_vague);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Vector& STR::Predict::TangDis::GetDbcIncr() const
+const Epetra_Vector& STR::Predict::TangDis::get_dbc_incr() const
 {
   FOUR_C_ASSERT(!dbc_incr_ptr_.is_null(), "The dbc increment is not initialized!");
   return *dbc_incr_ptr_;
@@ -161,11 +161,11 @@ bool STR::Predict::TangDis::pre_apply_force_external(Epetra_Vector& fextnp) cons
 {
   check_init_setup();
 
-  if (GetType() != Inpar::STR::pred_tangdis_constfext) return false;
+  if (get_type() != Inpar::STR::pred_tangdis_constfext) return false;
 
   if (apply_linear_reaction_forces_)
   {
-    fextnp.Scale(1.0, *GlobalState().GetFextN());
+    fextnp.Scale(1.0, *global_state().get_fext_n());
     return true;
   }
   return false;
@@ -190,7 +190,7 @@ void NOX::Nln::GROUP::PrePostOp::TangDis::runPostComputeF(
   if (not tang_predict_ptr_->is_apply_linear_reaction_forces()) return;
 
   // get the new dirichlet boundary increment
-  const Epetra_Vector& dbc_incr = tang_predict_ptr_->GetDbcIncr();
+  const Epetra_Vector& dbc_incr = tang_predict_ptr_->get_dbc_incr();
 
   double dbc_incr_nrm2 = 0.0;
   dbc_incr.Norm2(&dbc_incr_nrm2);
@@ -201,13 +201,13 @@ void NOX::Nln::GROUP::PrePostOp::TangDis::runPostComputeF(
   /* Alternatively, it's also possible to get a const pointer on the jacobian
    * by calling grp.getLinearSystem()->getJacobianOperator()... */
   Teuchos::RCP<const Core::LinAlg::SparseMatrix> stiff_ptr =
-      tang_predict_ptr_->GlobalState().get_jacobian_displ_block();
+      tang_predict_ptr_->global_state().get_jacobian_displ_block();
 
   // check if the jacobian is filled
   if (not stiff_ptr->Filled()) FOUR_C_THROW("The jacobian is not yet filled!");
 
   Teuchos::RCP<Epetra_Vector> freact_ptr =
-      Teuchos::rcp(new Epetra_Vector(*tang_predict_ptr_->GlobalState().DofRowMapView()));
+      Teuchos::rcp(new Epetra_Vector(*tang_predict_ptr_->global_state().dof_row_map_view()));
   if (stiff_ptr->Multiply(false, dbc_incr, *freact_ptr)) FOUR_C_THROW("Multiply failed!");
 
   // finally add the linear reaction forces to the current rhs

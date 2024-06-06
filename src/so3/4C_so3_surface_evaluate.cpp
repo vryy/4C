@@ -114,7 +114,7 @@ int Discret::ELEMENTS::StructuralSurface::evaluate_neumann(Teuchos::ParameterLis
   // find out whether we will use a time curve
   double time = -1.0;
   if (parent_element()->IsParamsInterface())
-    time = parent_element()->ParamsInterfacePtr()->GetTotalTime();
+    time = parent_element()->ParamsInterfacePtr()->get_total_time();
   else
     time = params.get("total time", -1.0);
 
@@ -1622,7 +1622,7 @@ int Discret::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& param
       const auto* numfuncnonlinstiff = params.get<const std::vector<int>*>("funct_nonlinstiff");
 
       const double time = parent_element()->IsParamsInterface()
-                              ? parent_element()->ParamsInterfacePtr()->GetTotalTime()
+                              ? parent_element()->ParamsInterfacePtr()->get_total_time()
                               : params.get("total time", 0.0);
 
 

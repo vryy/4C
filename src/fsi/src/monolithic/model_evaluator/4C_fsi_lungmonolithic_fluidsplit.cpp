@@ -282,7 +282,7 @@ void FSI::LungMonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpars
   /*----------------------------------------------------------------------*/
   // structure part
 
-  Core::LinAlg::SparseMatrix s = *structure_field()->SystemMatrix();
+  Core::LinAlg::SparseMatrix s = *structure_field()->system_matrix();
   s.UnComplete();
   s.Add(AddStructConstrMatrix_->Matrix(0, 0), false, 1.0, 1.0);
 

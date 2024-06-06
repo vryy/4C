@@ -300,9 +300,9 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::Evaluate(Teuchos::RCP<const
   {
     // (4) Set structure solution on fluid field
     set_struct_solution(struct_zeros_, struct_zeros_);
-    structure_field()->SystemMatrix()->Zero();
-    structure_field()->SystemMatrix()->Complete(structure_field()->SystemMatrix()->RangeMap(),
-        structure_field()->SystemMatrix()->RangeMap());
+    structure_field()->system_matrix()->Zero();
+    structure_field()->system_matrix()->Complete(structure_field()->system_matrix()->RangeMap(),
+        structure_field()->system_matrix()->RangeMap());
   }
 
   // (5) Evaluate the fluid
@@ -336,7 +336,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::setup_system_matrix(
   // The maps of the block matrix have to match the maps of the blocks we
   // insert here. Extract Jacobian matrices and put them into composite system
   // matrix W
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> k_ss = structure_field()->SystemMatrix();
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> k_ss = structure_field()->system_matrix();
 
   if (k_ss == Teuchos::null) FOUR_C_THROW("structure system matrix null pointer!");
 
@@ -384,7 +384,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::setup_system_matrix(
 
   // to apply Multiply in LocSys, k_st has to be FillCompleted
   k_sf->Complete(
-      fluid_field()->SystemMatrix()->RangeMap(), structure_field()->SystemMatrix()->RangeMap());
+      fluid_field()->SystemMatrix()->RangeMap(), structure_field()->system_matrix()->RangeMap());
 
   if (locsysman_ != Teuchos::null)
   {
@@ -487,7 +487,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::apply_fluid_coupl_matrix(
   k_fs->Zero();
   if (solve_structure_) fluid_field()->assemble_fluid_struct_coupling_mat(k_fs);
   k_fs->Complete(
-      structure_field()->SystemMatrix()->RangeMap(), fluid_field()->SystemMatrix()->RangeMap());
+      structure_field()->system_matrix()->RangeMap(), fluid_field()->SystemMatrix()->RangeMap());
 
   return;
 }

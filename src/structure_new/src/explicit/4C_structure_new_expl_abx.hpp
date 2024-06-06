@@ -54,7 +54,6 @@ namespace STR
       //! constructor
       AdamsBashforthX();
 
-
       //! Setup class variables (derived)
       void Setup() override;
 
@@ -65,7 +64,7 @@ namespace STR
       void set_state(const Epetra_Vector& x) override;
 
       //! return integration factor (derived)
-      [[nodiscard]] double GetIntParam() const override { return -1.0; }
+      [[nodiscard]] double get_int_param() const override { return -1.0; }
 
       /*! \brief Add the viscous and mass contributions to the right hand side
        */
@@ -76,7 +75,7 @@ namespace STR
       void add_visco_mass_contributions(Core::LinAlg::SparseOperator& jac) const override;
 
       //! Update configuration after time step (derived)
-      void UpdateStepState() override;
+      void update_step_state() override;
 
       //! (derived)
       void write_restart(
@@ -90,14 +89,14 @@ namespace STR
       //@{
 
       //! Return time integrator name
-      [[nodiscard]] enum Inpar::STR::DynamicType MethodName() const override
+      [[nodiscard]] enum Inpar::STR::DynamicType method_name() const override
       {
         return Inpar::STR::dyna_ab4;
       }
 
       //! Provide number of steps, e.g. a single-step method returns 1,
       //! a m-multistep method returns m
-      [[nodiscard]] int MethodSteps() const override { return TOrder; }
+      [[nodiscard]] int method_steps() const override { return TOrder; }
 
       //! Give local order of accuracy of displacement part
       [[nodiscard]] int method_order_of_accuracy_dis() const override { return TOrder; }

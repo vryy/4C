@@ -355,7 +355,7 @@ void EHL::Monolithic::Timeloop()
     // write output to screen and files
     output();
 
-  }  // NotFinished
+  }  // not_finished
 }  // TimeLoop()
 
 
@@ -672,7 +672,7 @@ void EHL::Monolithic::setup_system_matrix()
   //----------------------------------------------
 
   // Effective dynamic stiffness matrix, Dirichlet already applied.
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> k_ss = structure_field()->SystemMatrix();
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> k_ss = structure_field()->system_matrix();
   k_ss->UnComplete();
 
   //----------------------------------------------------------------------

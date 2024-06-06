@@ -101,21 +101,21 @@ namespace STR
       //!@{
 
       //! get the desired action type [derived]
-      [[nodiscard]] inline enum Core::Elements::ActionType GetActionType() const override
+      [[nodiscard]] inline enum Core::Elements::ActionType get_action_type() const override
       {
         check_init_setup();
         return ele_action_;
       }
 
       //! get the total time for the element evaluation [derived]
-      [[nodiscard]] inline double GetTotalTime() const override
+      [[nodiscard]] inline double get_total_time() const override
       {
         check_init_setup();
         return total_time_;
       }
 
       //! get the current time step for the element evaluation [derived]
-      [[nodiscard]] inline double GetDeltaTime() const override
+      [[nodiscard]] inline double get_delta_time() const override
       {
         check_init_setup();
         return delta_time_;
@@ -128,45 +128,45 @@ namespace STR
       }
 
       //! get the current step length [derived]
-      [[nodiscard]] inline double GetStepLength() const override
+      [[nodiscard]] inline double get_step_length() const override
       {
         check_init_setup();
         return step_length_;
       }
 
       //! get the is_default_step indicator [derived]
-      [[nodiscard]] inline bool IsDefaultStep() const override
+      [[nodiscard]] inline bool is_default_step() const override
       {
         check_init_setup();
         return is_default_step_;
       }
 
       //! get the current damping type [derived]
-      [[nodiscard]] enum Inpar::STR::DampKind GetDampingType() const override;
+      [[nodiscard]] enum Inpar::STR::DampKind get_damping_type() const override;
 
       //! get the tolerate errors indicator [derived]
-      [[nodiscard]] inline bool IsTolerateErrors() const override
+      [[nodiscard]] inline bool is_tolerate_errors() const override
       {
         check_init_setup();
         return is_tolerate_errors_;
       }
 
       //! get the structural time integration factor for the displacement [derived]
-      [[nodiscard]] inline double GetTimIntFactorDisp() const override
+      [[nodiscard]] inline double get_tim_int_factor_disp() const override
       {
         check_init_setup();
         return timintfactor_disp_;
       }
 
       //! get the structural time integration factor for the velocities [derived]
-      [[nodiscard]] inline double GetTimIntFactorVel() const override
+      [[nodiscard]] inline double get_tim_int_factor_vel() const override
       {
         check_init_setup();
         return timintfactor_vel_;
       }
 
       //! get the predictor type of the structural time integration
-      [[nodiscard]] enum Inpar::STR::PredEnum GetPredictorType() const override
+      [[nodiscard]] enum Inpar::STR::PredEnum get_predictor_type() const override
       {
         check_init_setup();
         return predict_type_;
@@ -178,10 +178,10 @@ namespace STR
       bool IsPredictorState() const;
 
       //! mutable access to the stress data vector
-      Teuchos::RCP<std::vector<char>>& StressDataPtr() override;
+      Teuchos::RCP<std::vector<char>>& stress_data_ptr() override;
 
       //! mutable access to the strain data vector
-      Teuchos::RCP<std::vector<char>>& StrainDataPtr() override;
+      Teuchos::RCP<std::vector<char>>& strain_data_ptr() override;
 
       //! mutable access to the plastic strain data vector
       Teuchos::RCP<std::vector<char>>& plastic_strain_data_ptr() override;
@@ -190,13 +190,13 @@ namespace STR
       Teuchos::RCP<std::vector<char>>& coupling_stress_data_ptr() override;
 
       //! mutable access to the optional quantity data vector
-      Teuchos::RCP<std::vector<char>>& OptQuantityDataPtr() override;
+      Teuchos::RCP<std::vector<char>>& opt_quantity_data_ptr() override;
 
       //! get the current stress type [derived]
-      [[nodiscard]] enum Inpar::STR::StressType GetStressOutputType() const override;
+      [[nodiscard]] enum Inpar::STR::StressType get_stress_output_type() const override;
 
       //! get the current strain type [derived]
-      [[nodiscard]] enum Inpar::STR::StrainType GetStrainOutputType() const override;
+      [[nodiscard]] enum Inpar::STR::StrainType get_strain_output_type() const override;
 
       //! get the current plastic strain type [derived]
       [[nodiscard]] enum Inpar::STR::StrainType get_plastic_strain_output_type() const override;
@@ -214,13 +214,13 @@ namespace STR
       void insert_energy_type_to_be_considered(enum STR::EnergyType type);
 
       //! read-only access to energy data
-      std::map<enum STR::EnergyType, double> const& GetEnergyData() const;
+      std::map<enum STR::EnergyType, double> const& get_energy_data() const;
 
       //! read-only access to energy data
-      double GetEnergyData(enum STR::EnergyType type) const;
+      double get_energy_data(enum STR::EnergyType type) const;
 
       //! read-only access to energy data
-      double GetEnergyData(const std::string type) const;
+      double get_energy_data(const std::string type) const;
 
       //! set value for a specific energy type
       void set_value_for_energy_type(double value, enum STR::EnergyType type);
@@ -262,7 +262,7 @@ namespace STR
        *
        *  \note Currently only used in the contact data container and therefore
        *  not part of the params_interface. Feel free to add. */
-      const Generic& GetModelEvaluator() const
+      const Generic& get_model_evaluator() const
       {
         FOUR_C_ASSERT(model_ptr_, "No reference to the model evaluator available!");
 
@@ -270,7 +270,7 @@ namespace STR
       }
 
       /// get the current non-linear solver correction type
-      NOX::Nln::CorrectionType GetCorrectionType() const
+      NOX::Nln::CorrectionType get_correction_type() const
       {
         check_init_setup();
         return corr_type_;
@@ -290,7 +290,7 @@ namespace STR
        *
        * @param[in] error_flag Error flag to be set
        */
-      inline void SetEleEvalErrorFlag(const enum STR::ELEMENTS::EvalErrorFlag& error_flag) override
+      inline void set_ele_eval_error_flag(const ELEMENTS::EvalErrorFlag& error_flag) override
       {
         ele_eval_error_flag_ = error_flag;
       }
@@ -315,7 +315,7 @@ namespace STR
        *
        * \sa sum_into_my_previous_sol_norm
        */
-      void SumIntoMyUpdateNorm(const enum NOX::Nln::StatusTest::QuantityType& qtype,
+      void sum_into_my_update_norm(const enum NOX::Nln::StatusTest::QuantityType& qtype,
           const int& numentries, const double* my_update_values, const double* my_new_sol_values,
           const double& step_length, const int& owner) override;
 
@@ -327,7 +327,7 @@ namespace STR
        * @param[in] owner Owner of the corresponding element (used to avoid summing up ghost
        *                  entries)
        *
-       * \sa SumIntoMyUpdateNorm
+       * \sa sum_into_my_update_norm
        */
       void sum_into_my_previous_sol_norm(const enum NOX::Nln::StatusTest::QuantityType& qtype,
           const int& numentries, const double* my_old_sol_values, const int& owner) override;
@@ -341,7 +341,7 @@ namespace STR
        * @param[in] qtype Quantity type which is tested
        * @return
        */
-      inline double GetMyUpdateNorm(const enum NOX::Nln::StatusTest::QuantityType& qtype) const
+      inline double get_my_update_norm(const enum NOX::Nln::StatusTest::QuantityType& qtype) const
       {
         check_init_setup();
         std::map<enum NOX::Nln::StatusTest::QuantityType, double>::const_iterator c_it;
@@ -358,7 +358,7 @@ namespace STR
        * @param[in] qtype Quantity type which is tested
        * @return
        */
-      inline double GetMyRMSNorm(const enum NOX::Nln::StatusTest::QuantityType& qtype) const
+      inline double get_my_rms_norm(const enum NOX::Nln::StatusTest::QuantityType& qtype) const
       {
         check_init_setup();
         std::map<enum NOX::Nln::StatusTest::QuantityType, double>::const_iterator c_it;
@@ -422,7 +422,7 @@ namespace STR
        * @param[in] qtype Quantity type which is tested
        * @return
        */
-      inline int GetMyDofNumber(const enum NOX::Nln::StatusTest::QuantityType& qtype) const
+      inline int get_my_dof_number(const enum NOX::Nln::StatusTest::QuantityType& qtype) const
       {
         check_init_setup();
         std::map<enum NOX::Nln::StatusTest::QuantityType, std::size_t>::const_iterator c_it;
@@ -436,13 +436,13 @@ namespace STR
        *
        * @return Boolean flag to indicate occurrence error during element evaluation
        */
-      bool IsEleEvalError() const;
+      bool is_ele_eval_error() const;
 
       /*! brief Access the element evaluation error flag
        *
        * @return Flag describing errors during element evaluation
        */
-      inline STR::ELEMENTS::EvalErrorFlag GetEleEvalErrorFlag() const override
+      inline STR::ELEMENTS::EvalErrorFlag get_ele_eval_error_flag() const override
       {
         return ele_eval_error_flag_;
       }
@@ -457,7 +457,7 @@ namespace STR
        *
        * @param[in] actiontype Action type
        */
-      inline void SetActionType(const enum Core::Elements::ActionType& actiontype)
+      inline void set_action_type(const enum Core::Elements::ActionType& actiontype)
       {
         ele_action_ = actiontype;
       }
@@ -466,7 +466,7 @@ namespace STR
        *
        * @param[in] is_tolerate_errors Boolean flag to indicate error tolerance
        */
-      inline void SetIsTolerateError(const bool& is_tolerate_errors)
+      inline void set_is_tolerate_error(const bool& is_tolerate_errors)
       {
         is_tolerate_errors_ = is_tolerate_errors;
       }
@@ -475,10 +475,10 @@ namespace STR
        *
        * @param[in] step_length Value for current step length to be set
        */
-      inline void SetStepLength(const double& step_length) { step_length_ = step_length; }
+      inline void set_step_length(const double& step_length) { step_length_ = step_length; }
 
       //! set the default step flag
-      inline void SetIsDefaultStep(const bool& is_default_step)
+      inline void set_is_default_step(const bool& is_default_step)
       {
         is_default_step_ = is_default_step;
       }
@@ -490,37 +490,37 @@ namespace STR
       }
 
       /// set the current system correction type of the non-linear solver
-      inline void SetCorrectionType(const NOX::Nln::CorrectionType corr_type)
+      inline void set_correction_type(const NOX::Nln::CorrectionType corr_type)
       {
         corr_type_ = corr_type;
       }
 
       //! set the total time for the evaluation call
-      inline void SetTotalTime(const double& total_time) { total_time_ = total_time; }
+      inline void set_total_time(const double total_time) { total_time_ = total_time; }
 
       //! set the current time step for the evaluation call
-      inline void SetDeltaTime(const double& dt) { delta_time_ = dt; }
+      inline void set_delta_time(const double dt) { delta_time_ = dt; }
 
       //! set the time integration factor for the displacements
-      inline void SetTimIntFactorDisp(const double& timintfactor_disp)
+      inline void set_tim_int_factor_disp(const double timintfactor_disp)
       {
         timintfactor_disp_ = timintfactor_disp;
       }
 
       //! set the time integration factor for the velocities
-      inline void SetTimIntFactorVel(const double& timintfactor_vel)
+      inline void set_tim_int_factor_vel(const double timintfactor_vel)
       {
         timintfactor_vel_ = timintfactor_vel;
       }
 
       //! set the predictor type of the structural time integration
-      inline void SetPredictorType(const Inpar::STR::PredEnum& predictor_type)
+      inline void set_predictor_type(const Inpar::STR::PredEnum predictor_type)
       {
         predict_type_ = predictor_type;
       }
 
       //! set stress data vector
-      inline void SetStressData(const Teuchos::RCP<std::vector<char>>& stressdata)
+      inline void set_stress_data(const Teuchos::RCP<std::vector<char>>& stressdata)
       {
         stressdata_ptr_ = stressdata;
       }
@@ -545,7 +545,7 @@ namespace STR
       }
 
       //! get stress data vector
-      inline const Teuchos::RCP<std::vector<char>>& GetStressData() const
+      inline const Teuchos::RCP<std::vector<char>>& get_stress_data() const
       {
         return stressdata_ptr_;
       }
@@ -587,13 +587,13 @@ namespace STR
       }
 
       //! set strain data vector
-      inline void SetStrainData(const Teuchos::RCP<std::vector<char>>& straindata)
+      inline void set_strain_data(const Teuchos::RCP<std::vector<char>>& straindata)
       {
         straindata_ptr_ = straindata;
       }
 
       //! get strain data vector
-      inline const Teuchos::RCP<std::vector<char>>& GetStrainData() const
+      inline const Teuchos::RCP<std::vector<char>>& get_strain_data() const
       {
         return straindata_ptr_;
       }
@@ -629,34 +629,34 @@ namespace STR
       }
 
       //! set optional quantity data vector
-      inline void SetOptQuantityData(const Teuchos::RCP<std::vector<char>>& optquantitydata)
+      inline void set_opt_quantity_data(const Teuchos::RCP<std::vector<char>>& optquantitydata)
       {
         optquantitydata_ptr_ = optquantitydata;
       }
 
       //! set model evaluator ptr
-      inline void SetModelEvaluator(Generic* model_ptr) { model_ptr_ = model_ptr; }
+      inline void set_model_evaluator(Generic* model_ptr) { model_ptr_ = model_ptr; }
 
       //! reset the partial update norm value of the current processor
-      void ResetMyNorms(const bool& isdefaultstep);
+      void reset_my_norms(const bool& isdefaultstep);
 
       //! return element volume data vector (read-only)
       const Epetra_Vector& current_element_volume_data() const;
 
       //! return the stress data (read-only)
-      const std::vector<char>& StressData() const;
+      const std::vector<char>& stress_data() const;
 
       //! return the strain data (read-only)
-      const std::vector<char>& StrainData() const;
+      const std::vector<char>& strain_data() const;
 
       //! return the plastic strain data (read-only)
-      const std::vector<char>& PlasticStrainData() const;
+      const std::vector<char>& plastic_strain_data() const;
 
       //! return the coupling stress data (read-only)
-      const std::vector<char>& CouplingStressData() const;
+      const std::vector<char>& coupling_stress_data() const;
 
       //! return the optional quantity data (read-only)
-      const std::vector<char>& OptQuantityData() const;
+      const std::vector<char>& opt_quantity_data() const;
 
       //!@}
 
@@ -710,45 +710,45 @@ namespace STR
       //!@{
 
       //! Time integration strategy
-      inline const STR::TimeInt::Base& TimInt() const
+      inline const STR::TimeInt::Base& tim_int() const
       {
         check_init();
         return *timint_ptr_;
       }
 
       //! Structural dynamic data
-      inline const STR::TimeInt::BaseDataSDyn& SDyn() const
+      inline const STR::TimeInt::BaseDataSDyn& sdyn() const
       {
         check_init();
         return *sdyn_ptr_;
       }
 
       //! input/ouput parameters
-      inline const STR::TimeInt::BaseDataIO& InOutput() const
+      inline const STR::TimeInt::BaseDataIO& in_output() const
       {
         check_init();
         return *io_ptr_;
       }
 
       //! global state variables
-      inline const STR::TimeInt::BaseDataGlobalState& GState() const
+      inline const STR::TimeInt::BaseDataGlobalState& global_state() const
       {
         check_init();
         return *gstate_ptr_;
       }
 
       //! get the nonlinear iteration number
-      int GetNlnIter() const;
+      int get_nln_iter() const;
 
       //! get the current step counter \f$(n+1)\f$
-      int GetStepNp() const;
+      int get_step_np() const;
 
       //! get the predictor indicator
-      bool IsPredictor() const;
+      bool is_predictor() const;
 
       /*! Get the step number from which the current simulation has been
        *  restarted. Equal to 0 if no restart has been performed. */
-      int GetRestartStep() const;
+      int get_restart_step() const;
 
       //!@}
 
@@ -1012,25 +1012,25 @@ namespace STR
       //!@{
 
       //! get the Lie group GenAlpha time integration parameters [derived]
-      [[nodiscard]] inline double GetBeta() const override
+      [[nodiscard]] inline double get_beta() const override
       {
         check_init_setup();
         return beta_;
       }
 
-      [[nodiscard]] inline double GetGamma() const override
+      [[nodiscard]] inline double get_gamma() const override
       {
         check_init_setup();
         return gamma_;
       }
 
-      [[nodiscard]] inline double GetAlphaf() const override
+      [[nodiscard]] inline double get_alphaf() const override
       {
         check_init_setup();
         return alphaf_;
       }
 
-      [[nodiscard]] inline double GetAlpham() const override
+      [[nodiscard]] inline double get_alpham() const override
       {
         check_init_setup();
         return alpham_;
@@ -1044,10 +1044,10 @@ namespace STR
       //!@{
 
       //! set the Lie group GenAlpha time integration parameters
-      inline void SetBeta(const double& beta) { beta_ = beta; }
-      inline void SetGamma(const double& gamma) { gamma_ = gamma; }
-      inline void SetAlphaf(const double& alphaf) { alphaf_ = alphaf; }
-      inline void SetAlpham(const double& alpham) { alpham_ = alpham; }
+      inline void set_beta(const double& beta) { beta_ = beta; }
+      inline void set_gamma(const double& gamma) { gamma_ = gamma; }
+      inline void set_alphaf(const double& alphaf) { alphaf_ = alphaf; }
+      inline void set_alpham(const double& alpham) { alpham_ = alpham; }
 
       //!@}
 
@@ -1115,37 +1115,37 @@ namespace STR
       void Setup();
 
       //! returns the mortar/contact action type
-      [[nodiscard]] inline enum Mortar::ActionType GetActionType() const override
+      [[nodiscard]] inline enum Mortar::ActionType get_action_type() const override
       {
         check_init_setup();
         return mortar_action_;
       };
 
       //! get the nonlinear iteration number
-      [[nodiscard]] int GetNlnIter() const override
+      [[nodiscard]] int get_nln_iter() const override
       {
         check_init();
-        return str_data_ptr_->GetNlnIter();
+        return str_data_ptr_->get_nln_iter();
       };
 
       //! get the current step counter \f$(n+1)\f$
-      [[nodiscard]] int GetStepNp() const override
+      [[nodiscard]] int get_step_np() const override
       {
         check_init();
-        return str_data_ptr_->GetStepNp();
+        return str_data_ptr_->get_step_np();
       };
 
-      [[nodiscard]] bool IsPredictor() const override
+      [[nodiscard]] bool is_predictor() const override
       {
         check_init();
-        return str_data_ptr_->IsPredictor();
+        return str_data_ptr_->is_predictor();
       };
 
       /// derived
-      NOX::Nln::CorrectionType GetCorrectionType() const override
+      NOX::Nln::CorrectionType get_correction_type() const override
       {
         check_init();
-        return str_data_ptr_->GetCorrectionType();
+        return str_data_ptr_->get_correction_type();
       }
 
       /// derived
@@ -1162,49 +1162,49 @@ namespace STR
        * @return Type of predictor
        *
        * \author hiermeier \date 02/18 */
-      [[nodiscard]] enum Inpar::STR::PredEnum GetPredictorType() const override
+      [[nodiscard]] enum Inpar::STR::PredEnum get_predictor_type() const override
       {
         check_init();
-        return str_data_ptr_->GetPredictorType();
+        return str_data_ptr_->get_predictor_type();
       }
 
       //! get the current step length [derived]
-      [[nodiscard]] inline double GetStepLength() const override
+      [[nodiscard]] inline double get_step_length() const override
       {
         check_init();
-        return str_data_ptr_->GetStepLength();
+        return str_data_ptr_->get_step_length();
       };
 
       //! get the is_default_step indicator [derived]
-      [[nodiscard]] inline bool IsDefaultStep() const override
+      [[nodiscard]] inline bool is_default_step() const override
       {
         check_init();
-        return str_data_ptr_->IsDefaultStep();
+        return str_data_ptr_->is_default_step();
       };
 
       //! is the current state the predictor state?
-      inline bool IsPredictorState() const override
+      inline bool is_predictor_state() const override
       {
         check_init();
         return str_data_ptr_->IsPredictorState();
       }
 
       //! get the current time step [derived]
-      [[nodiscard]] inline double GetDeltaTime() const override
+      [[nodiscard]] inline double get_delta_time() const override
       {
         check_init();
-        return str_data_ptr_->GetDeltaTime();
+        return str_data_ptr_->get_delta_time();
       }
 
       //! get reference to the set model evaluator
-      [[nodiscard]] const Generic& GetModelEvaluator() const override
+      [[nodiscard]] const Generic& get_model_evaluator() const override
       {
         check_init();
-        return str_data_ptr_->GetModelEvaluator();
+        return str_data_ptr_->get_model_evaluator();
       }
 
       //! get output file name
-      [[nodiscard]] std::string GetOutputFilePath() const override;
+      [[nodiscard]] std::string get_output_file_path() const override;
 
       //! get variational approach enumerator
       [[nodiscard]] enum Inpar::CONTACT::VariationalApproach get_variational_approach_type()
@@ -1221,13 +1221,13 @@ namespace STR
       }
 
       //! set coupling mode enumerator
-      [[nodiscard]] enum Inpar::CONTACT::CouplingScheme GetCouplingScheme() const override
+      [[nodiscard]] enum Inpar::CONTACT::CouplingScheme get_coupling_scheme() const override
       {
         return coupling_scheme_;
       }
 
       //! set coupling mode enumerator
-      void SetCouplingScheme(const enum Inpar::CONTACT::CouplingScheme scheme) override
+      void set_coupling_scheme(const enum Inpar::CONTACT::CouplingScheme scheme) override
       {
         coupling_scheme_ = scheme;
       }
@@ -1236,10 +1236,10 @@ namespace STR
        *
        * Equal to 0 if no restart has been performed.
        */
-      [[nodiscard]] int GetRestartStep() const override
+      [[nodiscard]] int get_restart_step() const override
       {
         check_init();
-        return str_data_ptr_->GetRestartStep();
+        return str_data_ptr_->get_restart_step();
       }
 
       /*! @name set routines which are used to set the parameters of the data container
@@ -1248,7 +1248,7 @@ namespace STR
       //! @{
 
       //! set the action type
-      inline void SetActionType(const enum Mortar::ActionType& actiontype)
+      inline void set_action_type(const enum Mortar::ActionType& actiontype)
       {
         mortar_action_ = actiontype;
       }
@@ -1278,28 +1278,28 @@ namespace STR
       inline const STR::TimeInt::Base& tim_int() const
       {
         check_init();
-        return str_data_ptr_->TimInt();
+        return str_data_ptr_->tim_int();
       }
 
       //! Structural dynamic data
-      inline const STR::TimeInt::BaseDataSDyn& s_dyn() const
+      inline const STR::TimeInt::BaseDataSDyn& sdyn() const
       {
         check_init();
-        return str_data_ptr_->SDyn();
+        return str_data_ptr_->sdyn();
       }
 
       //! input/ouput parameters
       inline const STR::TimeInt::BaseDataIO& in_output() const
       {
         check_init();
-        return str_data_ptr_->InOutput();
+        return str_data_ptr_->in_output();
       }
 
       //! global state variables
-      inline const STR::TimeInt::BaseDataGlobalState& g_state() const
+      inline const STR::TimeInt::BaseDataGlobalState& global_state() const
       {
         check_init();
-        return str_data_ptr_->GState();
+        return str_data_ptr_->global_state();
       }
 
      private:
@@ -1334,10 +1334,10 @@ namespace STR
       void Setup();
 
       //! Structural dynamic data
-      inline STR::TimeInt::BaseDataSDyn const& SDyn() const
+      inline STR::TimeInt::BaseDataSDyn const& sdyn() const
       {
         check_init();
-        return str_data_ptr_->SDyn();
+        return str_data_ptr_->sdyn();
       }
 
       /// thermal energy
@@ -1352,14 +1352,14 @@ namespace STR
           Teuchos::RCP<Discret::Discretization> discret_ptr, int maxrandnumelement);
 
       //! get mutable random force vector
-      Teuchos::RCP<Epetra_MultiVector>& GetRandomForces()
+      Teuchos::RCP<Epetra_MultiVector>& get_random_forces()
       {
         check_init_setup();
         return randomforces_;
       };
 
       /// ~ 1e-3 / 2.27 according to cyron2011 eq 52 ff, viscosity of surrounding fluid
-      double const& MaxRandForce() const
+      double const& max_rand_force() const
       {
         check_init_setup();
         return maxrandforce_;
@@ -1376,14 +1376,14 @@ namespace STR
       /*! @name set routines which are allowed to be called by the elements
        */
       //! @{
-      Teuchos::RCP<Epetra_MultiVector> const& GetRandomForces() const override
+      Teuchos::RCP<Epetra_MultiVector> const& get_random_forces() const override
       {
         check_init_setup();
         return randomforces_;
       };
 
       /// ~ 1e-3 / 2.27 according to cyron2011 eq 52 ff, viscosity of surrounding fluid
-      double const& GetViscosity() const override
+      double const& get_viscosity() const override
       {
         check_init_setup();
         return viscosity_;
@@ -1410,7 +1410,7 @@ namespace STR
       get_periodic_bounding_box() const override
       {
         check_init_setup();
-        return str_data_ptr_->SDyn().get_periodic_bounding_box();
+        return str_data_ptr_->sdyn().get_periodic_bounding_box();
       }
       //! @}
 
@@ -1464,7 +1464,6 @@ namespace STR
 
   }  // namespace MODELEVALUATOR
 }  // namespace STR
-
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -53,7 +53,7 @@ void STR::MODELEVALUATOR::BrownianDyn::Setup()
 
   // safety check, brownian dynamics simulation only for one step theta and
   // theta = 1.0 (see Cyron 2012)
-  if (TimInt().GetDataSDynPtr()->GetDynamicType() != Inpar::STR::dyna_onesteptheta)
+  if (tim_int().get_data_sdyn_ptr()->get_dynamic_type() != Inpar::STR::dyna_onesteptheta)
     FOUR_C_THROW("Brownian dynamics simulation only consistent for one step theta schema.");
 
   discret_ptr_ = discret_ptr();
@@ -67,9 +67,9 @@ void STR::MODELEVALUATOR::BrownianDyn::Setup()
   // todo: maybe make input of time step obligatory
   if (brown_dyn_state_data_.browndyn_dt < 0.0)
   {
-    brown_dyn_state_data_.browndyn_dt = (*g_state().GetDeltaTime())[0];
-    if (g_state().GetMyRank() == 0)
-      std::cout << " Time step " << (*g_state().GetDeltaTime())[0]
+    brown_dyn_state_data_.browndyn_dt = (*global_state().get_delta_time())[0];
+    if (global_state().get_my_rank() == 0)
+      std::cout << " Time step " << (*global_state().get_delta_time())[0]
                 << " form Structural Dynamic section used for stochastic forces.\n"
                 << std::endl;
   }
@@ -78,13 +78,13 @@ void STR::MODELEVALUATOR::BrownianDyn::Setup()
   // -------------------------------------------------------------------------
   // setup the brownian forces and the external force pointers
   // -------------------------------------------------------------------------
-  f_brown_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*g_state().dof_row_map(), true));
-  f_ext_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*g_state().dof_row_map(), true));
+  f_brown_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*global_state().dof_row_map(), true));
+  f_ext_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*global_state().dof_row_map(), true));
   // -------------------------------------------------------------------------
   // setup the brownian forces and the external force pointers
   // -------------------------------------------------------------------------
-  stiff_brownian_ptr_ =
-      Teuchos::rcp(new Core::LinAlg::SparseMatrix(*g_state().DofRowMapView(), 81, true, true));
+  stiff_brownian_ptr_ = Teuchos::rcp(
+      new Core::LinAlg::SparseMatrix(*global_state().dof_row_map_view(), 81, true, true));
 
   // -------------------------------------------------------------------------
   // get maximal number of random numbers required by any element in the
@@ -114,7 +114,8 @@ void STR::MODELEVALUATOR::BrownianDyn::Reset(const Epetra_Vector& x)
   check_init_setup();
 
   // todo: somewhat illegal considering of const correctness
-  TimInt().GetDataSDynPtr()->get_periodic_bounding_box()->ApplyDirichlet(g_state().GetTimeN());
+  tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box()->ApplyDirichlet(
+      global_state().get_time_n());
 
   // -------------------------------------------------------------------------
   // reset brownian (stochastic and damping) forces
@@ -159,7 +160,7 @@ bool STR::MODELEVALUATOR::BrownianDyn::evaluate_stiff()
   check_init_setup();
   bool ok = true;
 
-  /* We use the same routines as for the ApplyForceStiff case, but we
+  /* We use the same routines as for the apply_force_stiff case, but we
    * do not update the global force vector, which is used for the
    * solution process in the NOX library.
    * This is meaningful, since the computational overhead, which is
@@ -235,7 +236,7 @@ bool STR::MODELEVALUATOR::BrownianDyn::assemble_jacobian(
 {
   check_init_setup();
 
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> jac_dd_ptr = GState().ExtractDisplBlock(jac);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> jac_dd_ptr = global_state().extract_displ_block(jac);
   jac_dd_ptr->Add(*stiff_brownian_ptr_, false, timefac_np, 1.0);
   // no need to keep it
   stiff_brownian_ptr_->Zero();
@@ -253,12 +254,12 @@ bool STR::MODELEVALUATOR::BrownianDyn::apply_force_external()
   // Set to default value  as it is unnecessary for the
   // evaluate_neumann routine.
   // -------------------------------------------------------------------------
-  eval_data().SetActionType(Core::Elements::none);
+  eval_data().set_action_type(Core::Elements::none);
   // -------------------------------------------------------------------------
   // set vector values needed by elements
   // -------------------------------------------------------------------------
   discret().ClearState();
-  discret().set_state(0, "displacement", g_state().GetDisN());
+  discret().set_state(0, "displacement", global_state().get_dis_n());
   // -------------------------------------------------------------------------
   // Evaluate brownian specific neumann conditions
   // -------------------------------------------------------------------------
@@ -288,13 +289,13 @@ bool STR::MODELEVALUATOR::BrownianDyn::apply_force_brownian()
   // -------------------------------------------------------------------------
   // set action for elements
   // -------------------------------------------------------------------------
-  eval_data().SetActionType(Core::Elements::struct_calc_brownianforce);
+  eval_data().set_action_type(Core::Elements::struct_calc_brownianforce);
   // -------------------------------------------------------------------------
   // set vector values needed by elements
   // -------------------------------------------------------------------------
   discret().ClearState();
-  discret().set_state(0, "displacement", g_state_ptr()->GetDisNp());
-  discret().set_state(0, "velocity", g_state().GetVelNp());
+  discret().set_state(0, "displacement", global_state_ptr()->get_dis_np());
+  discret().set_state(0, "velocity", global_state().get_vel_np());
   // -------------------------------------------------------------------------
   // Evaluate Browian (stochastic and damping forces)
   // -------------------------------------------------------------------------
@@ -316,12 +317,12 @@ bool STR::MODELEVALUATOR::BrownianDyn::apply_force_stiff_external()
   // Set to default value, as it is unnecessary for the
   // evaluate_neumann routine.
   // -------------------------------------------------------------------------
-  eval_data().SetActionType(Core::Elements::none);
+  eval_data().set_action_type(Core::Elements::none);
   // -------------------------------------------------------------------------
   // set vector values needed by elements
   // -------------------------------------------------------------------------
   discret().ClearState();
-  discret().set_state(0, "displacement", g_state().GetDisN());
+  discret().set_state(0, "displacement", global_state().get_dis_n());
   // -------------------------------------------------------------------------
   // Evaluate brownian specific neumann conditions
   // -------------------------------------------------------------------------
@@ -352,13 +353,13 @@ bool STR::MODELEVALUATOR::BrownianDyn::apply_force_stiff_brownian()
   // -------------------------------------------------------------------------
   // set action for elements
   // -------------------------------------------------------------------------
-  eval_data().SetActionType(Core::Elements::struct_calc_brownianstiff);
+  eval_data().set_action_type(Core::Elements::struct_calc_brownianstiff);
   // -------------------------------------------------------------------------
   // set vector values needed by elements
   // -------------------------------------------------------------------------
   discret().ClearState();
-  discret().set_state(0, "displacement", g_state_ptr()->GetDisNp());
-  discret().set_state(0, "velocity", g_state().GetVelNp());
+  discret().set_state(0, "displacement", global_state_ptr()->get_dis_np());
+  discret().set_state(0, "velocity", global_state().get_vel_np());
   // -------------------------------------------------------------------------
   // Evaluate brownian (stochastic and damping) forces
   evaluate_brownian(eval_mat.data(), eval_vec.data());
@@ -445,14 +446,14 @@ void STR::MODELEVALUATOR::BrownianDyn::run_post_compute_x(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BrownianDyn::UpdateStepState(const double& timefac_n)
+void STR::MODELEVALUATOR::BrownianDyn::update_step_state(const double& timefac_n)
 {
   check_init_setup();
   // -------------------------------------------------------------------------
   // add brownian force contributions to the old structural
   // residual state vector
   // -------------------------------------------------------------------------
-  Teuchos::RCP<Epetra_Vector>& fstructold_ptr = g_state().GetFstructureOld();
+  Teuchos::RCP<Epetra_Vector>& fstructold_ptr = global_state().get_fstructure_old();
   fstructold_ptr->Update(timefac_n, *f_brown_np_ptr_, 1.0);
   fstructold_ptr->Update(-timefac_n, *f_ext_np_ptr_, 1.0);
 
@@ -461,15 +462,15 @@ void STR::MODELEVALUATOR::BrownianDyn::UpdateStepState(const double& timefac_n)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BrownianDyn::UpdateStepElement()
+void STR::MODELEVALUATOR::BrownianDyn::update_step_element()
 {
   // -------------------------------------------------------------------------
   // check if timestep changes according to action dt in input file
   // -------------------------------------------------------------------------
   // todo: this needs to go somewhere else, to a more global/general place
   // (console output at this point is also very unflattering)
-  //  sm_manager_ptr_->UpdateTimeAndStepSize((*GStatePtr()->GetDeltaTime())[0],
-  //                                           GStatePtr()->GetTimeN());
+  //  sm_manager_ptr_->UpdateTimeAndStepSize((*GStatePtr()->get_delta_time())[0],
+  //                                           GStatePtr()->get_time_n());
 
   return;
 }
@@ -484,7 +485,7 @@ void STR::MODELEVALUATOR::BrownianDyn::determine_stress_strain()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BrownianDyn::DetermineEnergy()
+void STR::MODELEVALUATOR::BrownianDyn::determine_energy()
 {
   // nothing to do
   return;
@@ -500,7 +501,7 @@ void STR::MODELEVALUATOR::BrownianDyn::determine_optional_quantity()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BrownianDyn::OutputStepState(
+void STR::MODELEVALUATOR::BrownianDyn::output_step_state(
     Core::IO::DiscretizationWriter& iowriter) const
 {
   // nothing to do
@@ -512,7 +513,7 @@ void STR::MODELEVALUATOR::BrownianDyn::OutputStepState(
 Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::BrownianDyn::get_block_dof_row_map_ptr() const
 {
   check_init_setup();
-  return GState().dof_row_map();
+  return global_state().dof_row_map();
 }
 
 /*----------------------------------------------------------------------------*
@@ -534,7 +535,7 @@ STR::MODELEVALUATOR::BrownianDyn::get_last_time_step_solution_ptr() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BrownianDyn::PostOutput()
+void STR::MODELEVALUATOR::BrownianDyn::post_output()
 {
   check_init_setup();
   // -------------------------------------------------------------------------
@@ -545,11 +546,11 @@ void STR::MODELEVALUATOR::BrownianDyn::PostOutput()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BrownianDyn::ResetStepState()
+void STR::MODELEVALUATOR::BrownianDyn::reset_step_state()
 {
   check_init_setup();
 
-  if (g_state().GetMyRank() == 0)
+  if (global_state().get_my_rank() == 0)
     std::cout << " NOTE: stochastic forces stay unchanged in case of DIVERCONT" << std::endl;
   /*
     // -------------------------------------------------------------------------
@@ -573,15 +574,15 @@ void STR::MODELEVALUATOR::BrownianDyn::ResetStepState()
    * in any other case*/
   // todo: is this the right place for this (originally done in brownian predictor,
   // should work as prediction is the next thing that is done)
-  g_state_ptr()->GetDisNp()->PutScalar(0.0);
-  g_state_ptr()->GetVelNp()->PutScalar(0.0);
+  global_state_ptr()->get_dis_np()->PutScalar(0.0);
+  global_state_ptr()->get_vel_np()->PutScalar(0.0);
   // we only need this in case we use Lie Group gen alpha and calculate a consistent
   // mass matrix and acc vector (i.e. we are not neglecting inertia forces)
-  g_state_ptr()->GetAccNp()->PutScalar(0.0);
+  global_state_ptr()->get_acc_np()->PutScalar(0.0);
 
-  g_state_ptr()->GetDisNp()->Update(1.0, (*g_state_ptr()->GetDisN()), 0.0);
-  g_state_ptr()->GetVelNp()->Update(1.0, (*g_state_ptr()->GetVelN()), 0.0);
-  g_state_ptr()->GetAccNp()->Update(1.0, (*g_state_ptr()->GetAccN()), 0.0);
+  global_state_ptr()->get_dis_np()->Update(1.0, (*global_state_ptr()->get_dis_n()), 0.0);
+  global_state_ptr()->get_vel_np()->Update(1.0, (*global_state_ptr()->get_vel_n()), 0.0);
+  global_state_ptr()->get_acc_np()->Update(1.0, (*global_state_ptr()->get_acc_n()), 0.0);
 
 
   return;
@@ -642,7 +643,7 @@ void STR::MODELEVALUATOR::BrownianDyn::generate_gaussian_random_numbers()
   // note: in case of a restart, first stochastic time step can be smaller than
   // brown_dyn_state_data_.browndyn_dt, this is intended
   int browndyn_step =
-      static_cast<int>((g_state().GetTimeNp() - (*g_state_ptr()->GetDeltaTime())[0]) /
+      static_cast<int>((global_state().get_time_np() - (*global_state_ptr()->get_delta_time())[0]) /
                            brown_dyn_state_data_.browndyn_dt +
                        1.0e-8);
 
@@ -664,7 +665,7 @@ void STR::MODELEVALUATOR::BrownianDyn::generate_gaussian_random_numbers()
   Global::Problem::Instance()->Random()->SetRandRange(0.0, 1.0);
 
   // multivector for stochastic forces evaluated by each element based on row map
-  Teuchos::RCP<Epetra_MultiVector> randomnumbersrow = eval_browniandyn_ptr_->GetRandomForces();
+  Teuchos::RCP<Epetra_MultiVector> randomnumbersrow = eval_browniandyn_ptr_->get_random_forces();
 
   int numele = randomnumbersrow->MyLength();
   int numperele = randomnumbersrow->NumVectors();
@@ -673,7 +674,7 @@ void STR::MODELEVALUATOR::BrownianDyn::generate_gaussian_random_numbers()
   Global::Problem::Instance()->Random()->Normal(randvec, count);
 
   // MAXRANDFORCE is a multiple of the standard deviation
-  double maxrandforcefac = eval_browniandyn_ptr_->MaxRandForce();
+  double maxrandforcefac = eval_browniandyn_ptr_->max_rand_force();
   if (maxrandforcefac == -1.0)
   {
     for (int i = 0; i < numele; ++i)
@@ -712,7 +713,7 @@ void STR::MODELEVALUATOR::BrownianDyn::generate_gaussian_random_numbers()
 bool STR::MODELEVALUATOR::BrownianDyn::
     is_any_beam_element_length_larger_than_min_half_pbb_edge_length() const
 {
-  const int numroweles = Discret().NumMyRowElements();
+  const int numroweles = discret().NumMyRowElements();
   const double halfofminimalperiodlength =
       0.5 * eval_browniandyn_ptr_->get_periodic_bounding_box()->EdgeLength(0);
   for (int i = 1; i < 3; ++i)
@@ -724,7 +725,7 @@ bool STR::MODELEVALUATOR::BrownianDyn::
     for (int elelid = 0; elelid < numroweles; ++elelid)
     {
       const Discret::ELEMENTS::Beam3Base* beamele =
-          dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(Discret().lRowElement(elelid));
+          dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(discret().lRowElement(elelid));
 
       if (beamele != nullptr and beamele->RefLength() >= halfofminimalperiodlength) return true;
     }
@@ -747,10 +748,10 @@ void STR::MODELEVALUATOR::BrownianDyn::SeedRandomGenerator()
 {
   check_init();
 
-  const int    stepn  = GStatePtr()->GetStepN() + 1;
-  const double timenp = GStatePtr()->GetTimeNp();
-  const double dt     = (*GStatePtr()->GetDeltaTime())[0];
-  const int myrank = GState().GetMyRank();
+  const int    stepn  = GStatePtr()->get_step_n() + 1;
+  const double timenp = GStatePtr()->get_time_np();
+  const double dt     = (*GStatePtr()->get_delta_time())[0];
+  const int myrank = global_state().get_my_rank();
 
   // -----------------------------------------------------------------------
   // Decide if random numbers should change in every time step...

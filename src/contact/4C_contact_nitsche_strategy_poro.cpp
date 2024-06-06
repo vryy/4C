@@ -40,11 +40,11 @@ void CONTACT::NitscheStrategyPoro::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector
   kdp_ = create_matrix_block_ptr(CONTACT::MatBlockType::displ_porofluid);
   //    for (int i = 0; i < (int) interface_.size(); ++i)
   //    {
-  //      for (int e=0;e<interface_[i]->Discret().ElementColMap()->NumMyElements();++e)
+  //      for (int e=0;e<interface_[i]->discret().ElementColMap()->NumMyElements();++e)
   //      {
   //        Mortar::Element* mele
-  //        =dynamic_cast<Mortar::Element*>(interface_[i]->Discret().gElement(
-  //            interface_[i]->Discret().ElementColMap()->GID(e)));
+  //        =dynamic_cast<Mortar::Element*>(interface_[i]->discret().gElement(
+  //            interface_[i]->discret().ElementColMap()->GID(e)));
   //        mele->GetNitscheContainer().ClearAll();
   //      }
   //    }

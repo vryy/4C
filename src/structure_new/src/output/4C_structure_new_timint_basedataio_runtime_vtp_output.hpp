@@ -46,7 +46,7 @@ namespace STR
       void Setup();
 
       /// whether to write owner at visualization point
-      bool OutputOwner() const
+      bool output_owner() const
       {
         check_init_setup();
         return output_owner_;
@@ -60,14 +60,14 @@ namespace STR
       };
 
       /// whether to write number of bonds at visualization point
-      bool OutputNumberOfBonds() const
+      bool output_number_of_bonds() const
       {
         check_init_setup();
         return output_numberofbonds_;
       };
 
       /// whether to write number of bonds at visualization point
-      bool OutputLinkingForce() const
+      bool output_linking_force() const
       {
         check_init_setup();
         return output_linkingforce_;
@@ -80,7 +80,7 @@ namespace STR
           };*/
 
       /*    /// get the data container for parameters regarding beams
-          Teuchos::RCP<const Discret::ELEMENTS::BeamRuntimeOutputParams> GetBeamParams() const
+          Teuchos::RCP<const Discret::ELEMENTS::BeamRuntimeOutputParams> get_beam_params() const
           {
             check_init_setup();
             return params_runtime_output_beams_;
@@ -134,7 +134,6 @@ namespace STR
       /*    /// data container for input parameters related to output of beams at runtime
           Teuchos::RCP<Discret::ELEMENTS::BeamRuntimeOutputParams>
          params_runtime_output_beams_;*/
-
 
       //@}
     };

@@ -42,7 +42,6 @@ namespace STR
       //! constructor
       Generic();
 
-
       //! Setup (has to be implemented by the derived classes)
       void Setup() override;
 
@@ -55,7 +54,7 @@ namespace STR
       void remove_condensed_contributions_from_rhs(Epetra_Vector& rhs) const override;
 
       //! derived
-      bool AssembleJac(Core::LinAlg::SparseOperator& jac,
+      bool assemble_jac(Core::LinAlg::SparseOperator& jac,
           const std::vector<Inpar::STR::ModelType>* without_these_models = nullptr) const override
       {
         return false;
@@ -68,7 +67,7 @@ namespace STR
        *  purpose we only need the right order of magnitude, so we don't
        *  mind evaluating the corresponding norms at possibly different
        *  points within the time-step (end point, generalized midpoint). */
-      double CalcRefNormForce(
+      double calc_ref_norm_force(
           const enum ::NOX::Abstract::Vector::NormType& type) const override = 0;
 
       //! return the default step length of the used ::NOX::LineSearch method
@@ -77,7 +76,7 @@ namespace STR
       //! @name Monolithic update routines
       //! @{
       //! things that should be done before updating (derived)
-      void PreUpdate() override{/* do nothing for now */};
+      void pre_update() override{/* do nothing for now */};
 
       //! things that should be done after updating (derived)
       void post_update() override{/* do nothing for now */};
@@ -89,7 +88,7 @@ namespace STR
       //! @name Predictor routines (dependent on the implicit integration scheme)
       //!@{
 
-      /*! \brief Predict constant displacements with consistent velocities and accelerations
+      /*! \brief predict constant displacements with consistent velocities and accelerations
        *
        * The displacement field is kept constant, however the velocities
        * and accelerations are consistent to the time integration
@@ -102,7 +101,7 @@ namespace STR
       virtual void predict_const_dis_consist_vel_acc(
           Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const = 0;
 
-      /*! \brief Predict displacements based on the assumption of constant velocities.
+      /*! \brief predict displacements based on the assumption of constant velocities.
        *
        * Assuming constant velocities, new displacements are predicted.
        * Calculate consistent accelerations afterwards.
@@ -118,7 +117,7 @@ namespace STR
       virtual bool predict_const_vel_consist_acc(
           Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const = 0;
 
-      /*! \brief Predict displacements based on the assumption of constant accelerations.
+      /*! \brief predict displacements based on the assumption of constant accelerations.
        *
        * Assuming constant accelerations, new velocities and displacements are predicted.
        *
@@ -130,7 +129,7 @@ namespace STR
        * \param[in/out] velnp Velocity vector
        * \param[in/out] accnp Acceleration vector
        */
-      virtual bool PredictConstAcc(
+      virtual bool predict_const_acc(
           Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const = 0;
       //!@}
 
@@ -138,10 +137,10 @@ namespace STR
        *
        * \param[in] ispredictor_state Predictor state flag
        */
-      void SetIsPredictorState(const bool& ispredictor_state);
+      void set_is_predictor_state(const bool ispredictor_state);
 
       //! Get the predictor state flag
-      const bool& IsPredictorState() const;
+      bool is_predictor_state() const;
 
       //! compute the scaling operator for element based scaling using PTC
       void compute_jacobian_contributions_from_element_level_for_ptc(
@@ -155,20 +154,20 @@ namespace STR
       void print_jacobian_in_matlab_format(const NOX::Nln::Group& curr_grp) const;
 
       //! Get the NOX parameter list
-      Teuchos::ParameterList& GetNoxParams();
+      Teuchos::ParameterList& get_nox_params();
 
       /// compute the condition number of the structural tangential stiffness matrix if desired
-      void ConditionNumber(const NOX::Nln::Group& grp) const;
+      void condition_number(const NOX::Nln::Group& grp) const;
 
       //! @name Attribute access functions
       //@{
 
       //! Provide Name
-      virtual enum Inpar::STR::DynamicType MethodName() const = 0;
+      virtual enum Inpar::STR::DynamicType method_name() const = 0;
 
       //! Provide number of steps, e.g. a single-step method returns 1,
       //! a \f$m\f$-multistep method returns \f$m\f$
-      virtual int MethodSteps() const = 0;
+      virtual int method_steps() const = 0;
 
       //! Give local order of accuracy of displacement part
       virtual int method_order_of_accuracy_dis() const = 0;

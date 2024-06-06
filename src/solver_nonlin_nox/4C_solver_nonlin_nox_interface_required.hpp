@@ -48,7 +48,7 @@ namespace NOX
         Required(){};
 
         //! returns the right-hand-side norms of the primary DoF fields
-        virtual double GetPrimaryRHSNorms(const Epetra_Vector& F,
+        virtual double get_primary_rhs_norms(const Epetra_Vector& F,
             const NOX::Nln::StatusTest::QuantityType& checkQuantity,
             const ::NOX::Abstract::Vector::NormType& type = ::NOX::Abstract::Vector::TwoNorm,
             const bool& isScaled = false) const = 0;
@@ -72,7 +72,7 @@ namespace NOX
             const bool& isScaled = false) const = 0;
 
         //! compute and return some energy representative
-        virtual double GetModelValue(const Epetra_Vector& x, const Epetra_Vector& F,
+        virtual double get_model_value(const Epetra_Vector& x, const Epetra_Vector& F,
             const enum MeritFunction::MeritFctName merit_func_type) const = 0;
 
         //! return model terms of a linear model (optional)
@@ -86,7 +86,7 @@ namespace NOX
         }
 
         //! calculate characteristic/reference norms for forces
-        virtual double CalcRefNormForce() = 0;
+        virtual double calc_ref_norm_force() = 0;
 
         //! access the lumped mass matrix
         virtual Teuchos::RCP<const Epetra_Vector> get_lumped_mass_matrix_ptr() const
@@ -96,7 +96,7 @@ namespace NOX
         }
 
         //! create a backup state (optional)
-        virtual void CreateBackupState(const Epetra_Vector& dir)
+        virtual void create_backup_state(const Epetra_Vector& dir)
         {
           FOUR_C_THROW("There is no meaningful implementation for this method!");
         }
@@ -116,7 +116,7 @@ namespace NOX
         }
 
         //! access dofs of specific elements (optional)
-        virtual void getDofsFromElements(
+        virtual void get_dofs_from_elements(
             const std::vector<int>& my_ele_gids, std::set<int>& my_ele_dofs) const
         {
           FOUR_C_THROW("There is no meaningful implementation for this method!");
@@ -125,7 +125,6 @@ namespace NOX
     }  // namespace Interface
   }    // namespace Nln
 }  // namespace NOX
-
 
 FOUR_C_NAMESPACE_CLOSE
 

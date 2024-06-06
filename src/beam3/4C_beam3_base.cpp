@@ -254,9 +254,9 @@ void Discret::ELEMENTS::Beam3Base::get_damping_coefficients(Core::LinAlg::Matrix
        * (1) damping of translation orthogonal to axis,
        * (2) damping of rotation around its own axis */
 
-      gamma(0) = 2.0 * M_PI * brownian_dyn_params_interface().GetViscosity();
-      gamma(1) = 4.0 * M_PI * brownian_dyn_params_interface().GetViscosity();
-      gamma(2) = 4.0 * M_PI * brownian_dyn_params_interface().GetViscosity() *
+      gamma(0) = 2.0 * M_PI * brownian_dyn_params_interface().get_viscosity();
+      gamma(1) = 4.0 * M_PI * brownian_dyn_params_interface().get_viscosity();
+      gamma(2) = 4.0 * M_PI * brownian_dyn_params_interface().get_viscosity() *
                  get_circular_cross_section_radius_for_interactions() *
                  get_circular_cross_section_radius_for_interactions();
 
@@ -270,13 +270,13 @@ void Discret::ELEMENTS::Beam3Base::get_damping_coefficients(Core::LinAlg::Matrix
     {
       gamma(0) = brownian_dyn_params_interface()
                      .get_beam_damping_coefficient_prefactors_from_input_file()[0] *
-                 brownian_dyn_params_interface().GetViscosity();
+                 brownian_dyn_params_interface().get_viscosity();
       gamma(1) = brownian_dyn_params_interface()
                      .get_beam_damping_coefficient_prefactors_from_input_file()[1] *
-                 brownian_dyn_params_interface().GetViscosity();
+                 brownian_dyn_params_interface().get_viscosity();
       gamma(2) = brownian_dyn_params_interface()
                      .get_beam_damping_coefficient_prefactors_from_input_file()[2] *
-                 brownian_dyn_params_interface().GetViscosity();
+                 brownian_dyn_params_interface().get_viscosity();
 
       break;
     }

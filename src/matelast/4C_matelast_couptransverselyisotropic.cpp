@@ -333,9 +333,9 @@ void Mat::Elastic::CoupTransverselyIsotropic::error_handling(
     Teuchos::RCP<STR::ELEMENTS::ParamsInterface> pinter =
         Teuchos::rcp_dynamic_cast<STR::ELEMENTS::ParamsInterface>(interface_ptr, true);
 
-    if (pinter->IsTolerateErrors())
+    if (pinter->is_tolerate_errors())
     {
-      pinter->SetEleEvalErrorFlag(STR::ELEMENTS::ele_error_material_failed);
+      pinter->set_ele_eval_error_flag(STR::ELEMENTS::ele_error_material_failed);
       return;
     }
   }

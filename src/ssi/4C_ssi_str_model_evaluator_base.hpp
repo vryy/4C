@@ -28,7 +28,7 @@ namespace STR::MODELEVALUATOR
       return true;
     }
 
-    void DetermineEnergy() override {}
+    void determine_energy() override {}
 
     void determine_optional_quantity() override {}
 
@@ -59,11 +59,11 @@ namespace STR::MODELEVALUATOR
       return mechanical_stress_state_;
     }
 
-    void OutputStepState(Core::IO::DiscretizationWriter& iowriter) const override {}
+    void output_step_state(Core::IO::DiscretizationWriter& iowriter) const override {}
 
     void post_evaluate() override {}
 
-    void PostOutput() override {}
+    void post_output() override {}
 
     void Predict(const Inpar::STR::PredEnum& pred_type) override {}
 
@@ -73,7 +73,7 @@ namespace STR::MODELEVALUATOR
 
     void Reset(const Epetra_Vector& x) override {}
 
-    void ResetStepState() override {}
+    void reset_step_state() override {}
 
     void run_post_compute_x(
         const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew) override
@@ -94,9 +94,9 @@ namespace STR::MODELEVALUATOR
       return Inpar::STR::model_basic_coupling;
     }
 
-    void UpdateStepElement() override {}
+    void update_step_element() override {}
 
-    void UpdateStepState(const double& timefac_n) override {}
+    void update_step_state(const double& timefac_n) override {}
 
     void write_restart(
         Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override

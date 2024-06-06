@@ -1173,7 +1173,7 @@ namespace Mortar
      *  \param mparams_ptr (in/out) : mortar parameter interface pointer */
     void Evaluate(Teuchos::RCP<Mortar::ParamsInterface> mparams_ptr)
     {
-      Evaluate(0, mparams_ptr->GetStepNp(), mparams_ptr->GetNlnIter(), mparams_ptr);
+      Evaluate(0, mparams_ptr->get_step_np(), mparams_ptr->get_nln_iter(), mparams_ptr);
     };
 
     /** \brief Evaluate mortar interface
@@ -1182,7 +1182,7 @@ namespace Mortar
      *  \param mparams_ptr (in/out) : mortar parameter interface pointer */
     void Evaluate(int rriter, Teuchos::RCP<Mortar::ParamsInterface> mparams_ptr)
     {
-      Evaluate(rriter, mparams_ptr->GetStepNp(), mparams_ptr->GetNlnIter(), mparams_ptr);
+      Evaluate(rriter, mparams_ptr->get_step_np(), mparams_ptr->get_nln_iter(), mparams_ptr);
     };
 
     /** \brief Evaluate mortar interface

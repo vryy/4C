@@ -297,8 +297,8 @@ void Discret::ELEMENTS::SoSh18Plast::nln_stiffmass(
     plmat = dynamic_cast<Mat::PlasticElastHyper*>(Material().get());
 
   // get time integration data
-  double theta = str_params_interface().GetTimIntFactorDisp();
-  double dt = str_params_interface().GetDeltaTime();
+  double theta = str_params_interface().get_tim_int_factor_disp();
+  double dt = str_params_interface().get_delta_time();
   if (eval_tsi && (stiffmatrix != nullptr || force != nullptr))
     if (theta == 0 || dt == 0)
       FOUR_C_THROW("time integration parameters not provided in element for TSI problem");

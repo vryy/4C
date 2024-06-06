@@ -102,7 +102,7 @@ namespace STR
       void run_post_iterate(const ::NOX::Solver::Generic& solver) override;
 
       /// [derived]
-      void RunPreSolve(const ::NOX::Solver::Generic& solver) override;
+      void run_pre_solve(const ::NOX::Solver::Generic& solver) override;
 
       //! [derived]
       void run_post_apply_jacobian_inverse(const Epetra_Vector& rhs, Epetra_Vector& result,
@@ -113,25 +113,25 @@ namespace STR
           const Epetra_Vector& xold, const NOX::Nln::Group& grp) override;
 
       //! [derived]
-      void UpdateStepState(const double& timefac_n) override;
+      void update_step_state(const double& timefac_n) override;
 
       //! [derived]
-      void UpdateStepElement() override;
+      void update_step_element() override;
 
       //! [derived]
       void determine_stress_strain() override;
 
       //! [derived]
-      void DetermineEnergy() override;
+      void determine_energy() override;
 
       //! [derived]
       void determine_optional_quantity() override;
 
       //! [derived]
-      void OutputStepState(Core::IO::DiscretizationWriter& iowriter) const override;
+      void output_step_state(Core::IO::DiscretizationWriter& iowriter) const override;
 
       //! [derived]
-      void ResetStepState() override;
+      void reset_step_state() override;
 
       //! [derived]
       Teuchos::RCP<const Epetra_Map> get_block_dof_row_map_ptr() const override;
@@ -143,7 +143,7 @@ namespace STR
       Teuchos::RCP<const Epetra_Vector> get_last_time_step_solution_ptr() const override;
 
       //! [derived]
-      void PostOutput() override;
+      void post_output() override;
 
       //! [derived]
       bool evaluate_cheap_soc_rhs() override;
@@ -156,7 +156,8 @@ namespace STR
       //! @name Call-back routines
       //!@{
 
-      Teuchos::RCP<const Core::LinAlg::SparseMatrix> GetJacobianBlock(const MatBlockType bt) const;
+      Teuchos::RCP<const Core::LinAlg::SparseMatrix> get_jacobian_block(
+          const MatBlockType bt) const;
 
       /** \brief Assemble the structural right-hand side vector
        *
@@ -169,7 +170,7 @@ namespace STR
           const std::vector<Inpar::STR::ModelType>* without_these_models = nullptr,
           const bool apply_dbc = false) const;
 
-      virtual Teuchos::RCP<Core::LinAlg::SparseOperator> GetAuxDisplJacobian() const;
+      virtual Teuchos::RCP<Core::LinAlg::SparseOperator> get_aux_displ_jacobian() const;
 
       void evaluate_weighted_gap_gradient_error();
 
@@ -179,7 +180,7 @@ namespace STR
       //!@{
 
       //! Returns a pointer to the underlying contact strategy object
-      const Teuchos::RCP<CONTACT::AbstractStrategy>& StrategyPtr();
+      const Teuchos::RCP<CONTACT::AbstractStrategy>& strategy_ptr();
 
       //! Returns the underlying contact strategy object
       CONTACT::AbstractStrategy& Strategy();
@@ -191,7 +192,7 @@ namespace STR
       STR::MODELEVALUATOR::ContactData& eval_contact();
       const STR::MODELEVALUATOR::ContactData& eval_contact() const;
 
-      virtual void check_pseudo2_d() const;
+      virtual void check_pseudo2d() const;
 
      private:
       void post_setup(Teuchos::ParameterList& cparams);
@@ -210,8 +211,7 @@ namespace STR
       Teuchos::RCP<CONTACT::AbstractStrategy> strategy_ptr_;
 
     };  // class Contact
-
-  }  // namespace MODELEVALUATOR
+  }     // namespace MODELEVALUATOR
 }  // namespace STR
 
 FOUR_C_NAMESPACE_CLOSE

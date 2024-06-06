@@ -249,7 +249,7 @@ void SSI::SSIPart2WC::update_and_output()
   {
     // re-evaluate the contact to re-obtain the displ state
     const auto& model_eval = structure_field()->ModelEvaluator(Inpar::STR::model_structure);
-    const auto& cparams = model_eval.EvalData().ContactPtr();
+    const auto& cparams = model_eval.eval_data().ContactPtr();
     nitsche_strategy_ssi()->Integrate(*cparams);
   }
 

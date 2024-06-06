@@ -509,7 +509,7 @@ void CONTACT::Aug::ComboStrategy::eval_static_constraint_rhs(CONTACT::ParamsInte
   get().set_current_eval_state(cparams);
   get().InitEvalInterface(cparams);
 
-  get().Initialize(cparams.GetActionType());
+  get().Initialize(cparams.get_action_type());
   get().assemble_gap();
 
   get().eval_constraint_forces();
@@ -536,12 +536,12 @@ void CONTACT::Aug::ComboStrategy::switch_update(CONTACT::ParamsInterface& cparam
   Core::IO::cout(Core::IO::debug) << CONTACT_FUNC_NAME << Core::IO::endl;
   Core::IO::cout(Core::IO::debug)
       << "Correction Type = "
-      << NOX::Nln::CorrectionType2String(cparams.GetCorrectionType()).c_str() << "\n";
+      << NOX::Nln::CorrectionType2String(cparams.get_correction_type()).c_str() << "\n";
   Core::IO::cout(Core::IO::debug) << std::string(40, '*') << "\n";
 
   /* Do not perform a switch in case of a correction step, since this will lead
    * to an error during the potential backup evaluation. */
-  if (cparams.GetCorrectionType() != NOX::Nln::CorrectionType::vague) return;
+  if (cparams.get_correction_type() != NOX::Nln::CorrectionType::vague) return;
 
   switch_->Update(cparams, output_.oscreen());
 }

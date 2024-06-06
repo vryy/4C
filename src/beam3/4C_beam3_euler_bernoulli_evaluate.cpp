@@ -45,7 +45,7 @@ int Discret::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
 
   if (IsParamsInterface())
   {
-    act = params_interface().GetActionType();
+    act = params_interface().get_action_type();
   }
   else
   {
@@ -273,7 +273,7 @@ int Discret::ELEMENTS::Beam3eb::evaluate_neumann(Teuchos::ParameterList& params,
   // find out whether we will use a time curve
   double time = -1.0;
   if (this->IsParamsInterface())
-    time = this->ParamsInterfacePtr()->GetTotalTime();
+    time = this->ParamsInterfacePtr()->get_total_time();
   else
     time = params.get("total time", -1.0);
 
@@ -1986,7 +1986,7 @@ void Discret::ELEMENTS::Beam3eb::evaluate_translational_damping(
   // get time step size
   double dt = 1000;
   if (IsParamsInterface())
-    dt = params_interface().GetDeltaTime();
+    dt = params_interface().get_delta_time();
   else
     dt = params.get<double>("delta time", 1000);
 
@@ -2107,7 +2107,8 @@ void Discret::ELEMENTS::Beam3eb::evaluate_stochastic_forces(
    * forces with zero mean and standard deviation (2*kT / dt)^0.5; note carefully: a space between
    * the two subsequal ">" signs is mandatory for the C++ parser in order to avoid confusion with
    * ">>" for streams*/
-  Teuchos::RCP<Epetra_MultiVector> randomforces = brownian_dyn_params_interface().GetRandomForces();
+  Teuchos::RCP<Epetra_MultiVector> randomforces =
+      brownian_dyn_params_interface().get_random_forces();
 
   // tangent vector (derivative of beam centerline curve r with respect to arc-length parameter s)
   Core::LinAlg::Matrix<ndim, 1> r_s(true);

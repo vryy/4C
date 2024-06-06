@@ -35,7 +35,6 @@ namespace STR
       //! constructor
       Explicit();
 
-
       void Setup() override;
 
       int Integrate() override;
@@ -62,21 +61,21 @@ namespace STR
 
       void Update(double endtime) override;
 
-      void PrintStep() override;
+      void print_step() override;
 
-      Inpar::STR::StcScale GetSTCAlgo() override;
+      Inpar::STR::StcScale get_stc_algo() override;
 
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> GetSTCMat() override;
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> get_stc_mat() override;
 
       Teuchos::RCP<const Epetra_Vector> initial_guess() override;
 
-      Teuchos::RCP<const Epetra_Vector> GetF() const override;
+      Teuchos::RCP<const Epetra_Vector> get_f() const override;
 
-      Teuchos::RCP<Epetra_Vector> Freact() override;
+      Teuchos::RCP<Epetra_Vector> freact() override;
 
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() override;
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() override;
 
-      Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> BlockSystemMatrix() override;
+      Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() override;
 
       void use_block_matrix(Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> domainmaps,
           Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> rangemaps) override;
@@ -86,13 +85,13 @@ namespace STR
       //! @name Attribute access functions
       //@{
 
-      enum Inpar::STR::DynamicType MethodName() const override;
+      enum Inpar::STR::DynamicType method_name() const override;
 
-      bool IsImplicit() const override { return false; }
+      bool is_implicit() const override { return false; }
 
-      bool IsExplicit() const override { return true; }
+      bool is_explicit() const override { return true; }
 
-      int MethodSteps() const override;
+      int method_steps() const override;
 
       int method_order_of_accuracy_dis() const override;
 

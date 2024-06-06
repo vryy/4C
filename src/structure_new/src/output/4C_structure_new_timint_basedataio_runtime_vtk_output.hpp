@@ -59,7 +59,7 @@ namespace STR
         return output_interval_steps_;
       };
 
-      [[nodiscard]] int OutputStepOffset() const
+      [[nodiscard]] int output_step_offset() const
       {
         check_init_setup();
         return output_step_offset_;
@@ -73,28 +73,29 @@ namespace STR
       };
 
       /// whether to write special output for structure elements
-      bool OutputStructure() const
+      bool output_structure() const
       {
         check_init_setup();
         return output_structure_;
       };
 
       /// whether to write special output for structure elements
-      bool OutputBeams() const
+      bool output_beams() const
       {
         check_init_setup();
         return output_beams_;
       };
 
       /// get the data container for parameters regarding beams
-      Teuchos::RCP<const Discret::ELEMENTS::StructureRuntimeOutputParams> GetStructureParams() const
+      Teuchos::RCP<const Discret::ELEMENTS::StructureRuntimeOutputParams> get_structure_params()
+          const
       {
         check_init_setup();
         return params_runtime_output_structure_;
       };
 
       /// get the data container for parameters regarding beams
-      Teuchos::RCP<const Discret::ELEMENTS::BeamRuntimeOutputParams> GetBeamParams() const
+      Teuchos::RCP<const Discret::ELEMENTS::BeamRuntimeOutputParams> get_beam_params() const
       {
         check_init_setup();
         return params_runtime_output_beams_;
@@ -147,13 +148,11 @@ namespace STR
       Teuchos::RCP<Discret::ELEMENTS::BeamRuntimeOutputParams> params_runtime_output_beams_ =
           Teuchos::null;
 
-
       //@}
     };
 
   }  // namespace TimeInt
 }  // namespace STR
-
 
 FOUR_C_NAMESPACE_CLOSE
 

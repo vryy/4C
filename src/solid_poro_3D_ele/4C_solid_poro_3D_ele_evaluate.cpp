@@ -37,7 +37,7 @@ int Discret::ELEMENTS::SolidPoro::Evaluate(Teuchos::ParameterList& params,
       [&]()
       {
         if (IsParamsInterface())
-          return params_interface().GetActionType();
+          return params_interface().get_action_type();
         else
           return Core::Elements::String2ActionType(params.get<std::string>("action", "none"));
       });

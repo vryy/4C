@@ -272,7 +272,7 @@ namespace THR
     //! print summary after step
     void PrintStep() override;
 
-    //! The text for summary print, see #PrintStep
+    //! The text for summary print, see #print_step
     void print_step_text(FILE* ofile  //!< output file handle
     );
 

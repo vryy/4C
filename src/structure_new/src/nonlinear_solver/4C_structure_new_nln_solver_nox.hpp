@@ -68,7 +68,6 @@ namespace STR
         //! constructor
         Nox();
 
-
         //! derived from the base class
         void Setup() override;
 
@@ -79,7 +78,7 @@ namespace STR
         Inpar::STR::ConvergenceStatus Solve() override;
 
         //! returns the outer status test object pointer
-        const ::NOX::StatusTest::Generic& GetOStatusTest() const
+        const ::NOX::StatusTest::Generic& get_outer_status_test() const
         {
           check_init_setup();
           FOUR_C_ASSERT(!ostatus_.is_null(), "The outer status test object is not defined!");
@@ -87,14 +86,14 @@ namespace STR
         }
 
         //! returns the outer status test object pointer
-        Teuchos::RCP<const NOX::Nln::Inner::StatusTest::Generic> GetIStatusPtr() const
+        Teuchos::RCP<const NOX::Nln::Inner::StatusTest::Generic> get_inner_status_ptr() const
         {
           check_init_setup();
           return istatus_;
         }
 
         //! get number of nonlinear iterations (derived)
-        int GetNumNlnIterations() const override;
+        int get_num_nln_iterations() const override;
 
        protected:
         //! Reset the non-linear solver parameters and variables
@@ -140,7 +139,6 @@ namespace STR
     }     // namespace SOLVER
   }       // namespace Nln
 }  // namespace STR
-
 
 FOUR_C_NAMESPACE_CLOSE
 

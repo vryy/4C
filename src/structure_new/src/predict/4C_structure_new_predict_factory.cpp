@@ -29,7 +29,7 @@ STR::Predict::Factory::Factory()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::Predict::Generic> STR::Predict::Factory::BuildPredictor(
+Teuchos::RCP<STR::Predict::Generic> STR::Predict::Factory::build_predictor(
     const enum Inpar::STR::PredEnum& predType) const
 {
   Teuchos::RCP<STR::Predict::Generic> predictor = Teuchos::null;
@@ -60,11 +60,11 @@ Teuchos::RCP<STR::Predict::Generic> STR::Predict::Factory::BuildPredictor(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::Predict::Generic> STR::Predict::BuildPredictor(
+Teuchos::RCP<STR::Predict::Generic> STR::Predict::build_predictor(
     const enum Inpar::STR::PredEnum& predType)
 {
   Factory factory;
-  return factory.BuildPredictor(predType);
+  return factory.build_predictor(predType);
 }
 
 FOUR_C_NAMESPACE_CLOSE

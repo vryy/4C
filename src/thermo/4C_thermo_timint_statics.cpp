@@ -166,7 +166,7 @@ double THR::TimIntStatics::CalcRefNormForce()
 
   //! return char norm
   return std::max(fintnorm, std::max(fextnorm, freactnorm));
-}  // CalcRefNormForce()
+}  // calc_ref_norm_force()
 
 
 /*----------------------------------------------------------------------*
@@ -220,7 +220,7 @@ void THR::TimIntStatics::UpdateStepState()
 
   //! look out
   return;
-}  // UpdateStepState()
+}  // update_step_state()
 
 
 /*----------------------------------------------------------------------*
@@ -239,7 +239,7 @@ void THR::TimIntStatics::UpdateStepElement()
   // go to elements
   discret_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
-}  // UpdateStepElement()
+}  // update_step_element()
 
 
 /*----------------------------------------------------------------------*

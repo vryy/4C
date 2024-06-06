@@ -64,7 +64,7 @@ namespace Adapter
     /// Access to output object
     virtual Teuchos::RCP<Core::IO::DiscretizationWriter> DiscWriter()
     {
-      return structure_->DiscWriter();
+      return structure_->disc_writer();
     }
 
     /// unknown displacements at \f$t_{n+1}\f$

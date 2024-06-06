@@ -25,20 +25,16 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
-
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-
-
 void STR::MODELEVALUATOR::Constraints::Setup()
 {
   check_init();
 
-  constraint_stiff_ptr_ =
-      Teuchos::rcp(new Core::LinAlg::SparseMatrix(*g_state().DofRowMapView(), 81, true, true));
+  constraint_stiff_ptr_ = Teuchos::rcp(
+      new Core::LinAlg::SparseMatrix(*global_state().dof_row_map_view(), 81, true, true));
 
-  constraint_force_ptr_ = Teuchos::rcp(new Epetra_Vector(*g_state().DofRowMapView(), true));
+  constraint_force_ptr_ = Teuchos::rcp(new Epetra_Vector(*global_state().dof_row_map_view(), true));
 
   set_sub_model_types();
   create_sub_model_evaluators();
@@ -165,7 +161,7 @@ void STR::MODELEVALUATOR::Constraints::pre_evaluate()
 {
   for (auto& sme : sub_model_vec_ptr_)
   {
-    sme->evaluate_coupling_terms(*g_state_ptr());
+    sme->evaluate_coupling_terms(*global_state_ptr());
   }
 }
 /*----------------------------------------------------------------------------*
@@ -183,7 +179,7 @@ bool STR::MODELEVALUATOR::Constraints::assemble_force(
 bool STR::MODELEVALUATOR::Constraints::assemble_jacobian(
     Core::LinAlg::SparseOperator& jac, const double& timefac_np) const
 {
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> jac_dd_ptr = GState().ExtractDisplBlock(jac);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> jac_dd_ptr = global_state().extract_displ_block(jac);
 
   jac_dd_ptr->Add(*constraint_stiff_ptr_, false, timefac_np, 1.0);
 
@@ -211,18 +207,18 @@ void STR::MODELEVALUATOR::Constraints::Predict(const Inpar::STR::PredEnum& pred_
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Constraints::UpdateStepState(const double& timefac_n)
+void STR::MODELEVALUATOR::Constraints::update_step_state(const double& timefac_n)
 {
   if (not constraint_force_ptr_.is_null())
   {
-    Teuchos::RCP<Epetra_Vector>& fstruct_ptr = g_state().GetFstructureOld();
+    Teuchos::RCP<Epetra_Vector>& fstruct_ptr = global_state().get_fstructure_old();
     fstruct_ptr->Update(timefac_n, *constraint_force_ptr_, 1.0);
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Constraints::UpdateStepElement() {}
+void STR::MODELEVALUATOR::Constraints::update_step_element() {}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -230,7 +226,7 @@ void STR::MODELEVALUATOR::Constraints::determine_stress_strain() {}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Constraints::DetermineEnergy()
+void STR::MODELEVALUATOR::Constraints::determine_energy()
 {
   FOUR_C_THROW("This function is not implemented");
 }
@@ -240,14 +236,14 @@ void STR::MODELEVALUATOR::Constraints::DetermineEnergy()
 void STR::MODELEVALUATOR::Constraints::determine_optional_quantity() {}
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Constraints::ResetStepState()
+void STR::MODELEVALUATOR::Constraints::reset_step_state()
 {
   FOUR_C_THROW("This function is not implemented");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Constraints::OutputStepState(
+void STR::MODELEVALUATOR::Constraints::output_step_state(
     Core::IO::DiscretizationWriter& iowriter) const
 {
 }
@@ -264,7 +260,7 @@ void STR::MODELEVALUATOR::Constraints::runtime_output_step_state() const {}
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::Constraints::get_block_dof_row_map_ptr() const
 {
-  return GState().dof_row_map();
+  return global_state().dof_row_map();
 }
 
 /*----------------------------------------------------------------------------*
@@ -284,7 +280,7 @@ STR::MODELEVALUATOR::Constraints::get_last_time_step_solution_ptr() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Constraints::PostOutput() {}
+void STR::MODELEVALUATOR::Constraints::post_output() {}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -303,7 +299,7 @@ void STR::MODELEVALUATOR::Constraints::assemble_jacobian_contributions_from_elem
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Constraints::CreateBackupState(const Epetra_Vector& dir)
+void STR::MODELEVALUATOR::Constraints::create_backup_state(const Epetra_Vector& dir)
 {
   FOUR_C_THROW("This function is not yet implemented");
 }

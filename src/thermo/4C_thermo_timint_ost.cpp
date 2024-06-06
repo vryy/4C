@@ -245,7 +245,7 @@ double THR::TimIntOneStepTheta::CalcRefNormForce()
   // return char norm
   return std::max(fcapnorm, std::max(fintnorm, std::max(fextnorm, freactnorm)));
 
-}  // CalcRefNormForce()
+}  // calc_ref_norm_force()
 
 
 /*----------------------------------------------------------------------*
@@ -325,7 +325,7 @@ void THR::TimIntOneStepTheta::UpdateStepState()
   // look out
   return;
 
-}  // UpdateStepState()
+}  // update_step_state()
 
 
 /*----------------------------------------------------------------------*
@@ -345,7 +345,7 @@ void THR::TimIntOneStepTheta::UpdateStepElement()
   discret_->set_state(0, "temperature", tempn_);
   discret_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
-}  // UpdateStepElement()
+}  // update_step_element()
 
 
 /*----------------------------------------------------------------------*

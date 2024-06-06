@@ -56,7 +56,6 @@ namespace STR
         StcScaling(
             const STR::TimeInt::BaseDataSDyn& DataSDyn, STR::TimeInt::BaseDataGlobalState& GState);
 
-
         //! Scales the linear system.
         void scaleLinearSystem(Epetra_LinearProblem& problem) override;
 

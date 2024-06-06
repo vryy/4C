@@ -93,28 +93,28 @@ namespace STR
       void run_post_iterate(const ::NOX::Solver::Generic& solver) override { return; };
 
       //! derived
-      void UpdateStepState(const double& timefac_n) override;
+      void update_step_state(const double& timefac_n) override;
 
       //! derived
-      void UpdateStepElement() override;
+      void update_step_element() override;
 
       //! derived
       void determine_stress_strain() override;
 
       //! derived
-      void DetermineEnergy() override;
+      void determine_energy() override;
 
       //! derived
       void determine_optional_quantity() override;
 
       //! derived
-      void OutputStepState(Core::IO::DiscretizationWriter& iowriter) const override;
+      void output_step_state(Core::IO::DiscretizationWriter& iowriter) const override;
 
       //! derived
-      void ResetStepState() override;
+      void reset_step_state() override;
 
       //! [derived]
-      void PostOutput() override;
+      void post_output() override;
 
       //! derived
       Teuchos::RCP<const Epetra_Map> get_block_dof_row_map_ptr() const override;

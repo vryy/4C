@@ -52,7 +52,7 @@ void STR::MODELEVALUATOR::Generic::Init(
   eval_data_ptr_ = eval_data_ptr;
   gstate_ptr_ = gstate_ptr;
   gio_ptr_ = gio_ptr;
-  discret_ptr_ = gstate_ptr->GetDiscret();
+  discret_ptr_ = gstate_ptr->get_discret();
   int_ptr_ = int_ptr;
   timint_ptr_ = timint_ptr;
   dof_offset_ = dof_offset;
@@ -84,7 +84,7 @@ STR::MODELEVALUATOR::Data& STR::MODELEVALUATOR::Generic::eval_data()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const STR::MODELEVALUATOR::Data& STR::MODELEVALUATOR::Generic::EvalData() const
+const STR::MODELEVALUATOR::Data& STR::MODELEVALUATOR::Generic::eval_data() const
 {
   check_init();
   return *eval_data_ptr_;
@@ -100,7 +100,7 @@ Teuchos::RCP<STR::MODELEVALUATOR::Data>& STR::MODELEVALUATOR::Generic::eval_data
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::TimeInt::BaseDataGlobalState& STR::MODELEVALUATOR::Generic::g_state()
+STR::TimeInt::BaseDataGlobalState& STR::MODELEVALUATOR::Generic::global_state()
 {
   check_init();
   return *gstate_ptr_;
@@ -108,7 +108,7 @@ STR::TimeInt::BaseDataGlobalState& STR::MODELEVALUATOR::Generic::g_state()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& STR::MODELEVALUATOR::Generic::g_state_ptr()
+Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& STR::MODELEVALUATOR::Generic::global_state_ptr()
 {
   check_init();
   return gstate_ptr_;
@@ -116,7 +116,7 @@ Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& STR::MODELEVALUATOR::Generic::g
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const STR::TimeInt::BaseDataGlobalState& STR::MODELEVALUATOR::Generic::GState() const
+const STR::TimeInt::BaseDataGlobalState& STR::MODELEVALUATOR::Generic::global_state() const
 {
   check_init();
   return *gstate_ptr_;
@@ -124,7 +124,7 @@ const STR::TimeInt::BaseDataGlobalState& STR::MODELEVALUATOR::Generic::GState() 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::TimeInt::BaseDataIO& STR::MODELEVALUATOR::Generic::g_in_output()
+STR::TimeInt::BaseDataIO& STR::MODELEVALUATOR::Generic::global_in_output()
 {
   check_init();
   return *gio_ptr_;
@@ -132,7 +132,7 @@ STR::TimeInt::BaseDataIO& STR::MODELEVALUATOR::Generic::g_in_output()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::TimeInt::BaseDataIO> STR::MODELEVALUATOR::Generic::g_in_output_ptr()
+Teuchos::RCP<STR::TimeInt::BaseDataIO> STR::MODELEVALUATOR::Generic::global_in_output_ptr()
 {
   check_init();
   return gio_ptr_;
@@ -140,7 +140,7 @@ Teuchos::RCP<STR::TimeInt::BaseDataIO> STR::MODELEVALUATOR::Generic::g_in_output
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const STR::TimeInt::BaseDataIO& STR::MODELEVALUATOR::Generic::GInOutput() const
+const STR::TimeInt::BaseDataIO& STR::MODELEVALUATOR::Generic::global_in_output() const
 {
   check_init();
   return *gio_ptr_;
@@ -164,7 +164,7 @@ Teuchos::RCP<Discret::Discretization>& STR::MODELEVALUATOR::Generic::discret_ptr
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Discret::Discretization& STR::MODELEVALUATOR::Generic::Discret() const
+const Discret::Discretization& STR::MODELEVALUATOR::Generic::discret() const
 {
   check_init();
   return *discret_ptr_;
@@ -180,7 +180,7 @@ STR::Integrator& STR::MODELEVALUATOR::Generic::integrator()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const STR::Integrator& STR::MODELEVALUATOR::Generic::Int() const
+const STR::Integrator& STR::MODELEVALUATOR::Generic::integrator() const
 {
   check_init();
   return *int_ptr_;
@@ -188,11 +188,11 @@ const STR::Integrator& STR::MODELEVALUATOR::Generic::Int() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::Integrator>& STR::MODELEVALUATOR::Generic::int_ptr() { return int_ptr_; }
+Teuchos::RCP<STR::Integrator>& STR::MODELEVALUATOR::Generic::integrator_ptr() { return int_ptr_; }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const STR::TimeInt::Base& STR::MODELEVALUATOR::Generic::TimInt() const
+const STR::TimeInt::Base& STR::MODELEVALUATOR::Generic::tim_int() const
 {
   check_init();
   return *timint_ptr_;
@@ -208,11 +208,11 @@ const int& STR::MODELEVALUATOR::Generic::dof_offset() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> STR::MODELEVALUATOR::Generic::GetFextIncr() const
+Teuchos::RCP<Epetra_Vector> STR::MODELEVALUATOR::Generic::get_fext_incr() const
 {
   check_init_setup();
-  const Epetra_Vector& fextn = *GState().GetFextN();
-  const Epetra_Vector& fextnp = *GState().GetFextNp();
+  const Epetra_Vector& fextn = *global_state().get_fext_n();
+  const Epetra_Vector& fextnp = *global_state().get_fext_np();
 
   Teuchos::RCP<Epetra_Vector> fext_incr = Teuchos::rcp<Epetra_Vector>(new Epetra_Vector(fextnp));
   fext_incr->Update(-1.0, fextn, 1.0);
@@ -232,27 +232,27 @@ bool STR::MODELEVALUATOR::Generic::eval_error_check() const
     ok = false;
     std::cout << "FLOATING POINT EXCEPTION occurred on proc "
                  "#"
-              << gstate_ptr_->GetComm().MyPID() << ".\n";
+              << gstate_ptr_->get_comm().MyPID() << ".\n";
   }
 
   // --- Did the element evaluation detect an error? ---------------------------
-  ok = (ok and (not eval_data_ptr_->IsEleEvalError()));
+  ok = (ok and (not eval_data_ptr_->is_ele_eval_error()));
 
-  if (eval_data_ptr_->IsEleEvalError())
+  if (eval_data_ptr_->is_ele_eval_error())
     std::cout << "ELEMENT EVALUATION failed on proc "
                  "#"
-              << gstate_ptr_->GetComm().MyPID() << ".\n"
+              << gstate_ptr_->get_comm().MyPID() << ".\n"
               << "(Error: "
-              << STR::ELEMENTS::EvalErrorFlag2String(eval_data_ptr_->GetEleEvalErrorFlag())
+              << STR::ELEMENTS::EvalErrorFlag2String(eval_data_ptr_->get_ele_eval_error_flag())
               << ")\n";
 
   // reset the flag
-  eval_data_ptr_->SetEleEvalErrorFlag(STR::ELEMENTS::ele_error_none);
+  eval_data_ptr_->set_ele_eval_error_flag(STR::ELEMENTS::ele_error_none);
 
   // --- check for local errors on each proc and communicate the information ---
   int lerr = (ok ? 0 : 1);
   int gerr = 0;
-  gstate_ptr_->GetComm().SumAll(&lerr, &gerr, 1);
+  gstate_ptr_->get_comm().SumAll(&lerr, &gerr, 1);
   return (gerr == 0);
 }
 

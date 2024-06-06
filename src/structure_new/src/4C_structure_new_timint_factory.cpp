@@ -32,7 +32,7 @@ STR::TimeInt::Factory::Factory()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::TimeInt::Base> STR::TimeInt::Factory::BuildStrategy(
+Teuchos::RCP<STR::TimeInt::Base> STR::TimeInt::Factory::build_strategy(
     const Teuchos::ParameterList& sdyn) const
 {
   Teuchos::RCP<STR::TimeInt::Base> ti_strategy = Teuchos::null;
@@ -109,7 +109,7 @@ Teuchos::RCP<STR::TimeInt::Base> STR::TimeInt::Factory::build_explicit_strategy(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::TimeInt::BaseDataSDyn> STR::TimeInt::Factory::BuildDataSDyn(
+Teuchos::RCP<STR::TimeInt::BaseDataSDyn> STR::TimeInt::Factory::build_data_sdyn(
     const Teuchos::ParameterList& sdyn) const
 {
   Teuchos::RCP<STR::TimeInt::BaseDataSDyn> sdyndata_ptr = Teuchos::null;
@@ -148,19 +148,19 @@ Teuchos::RCP<STR::TimeInt::BaseDataGlobalState> STR::TimeInt::Factory::build_dat
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::TimeInt::Base> STR::TimeInt::BuildStrategy(const Teuchos::ParameterList& sdyn)
+Teuchos::RCP<STR::TimeInt::Base> STR::TimeInt::build_strategy(const Teuchos::ParameterList& sdyn)
 {
   Factory factory;
-  return factory.BuildStrategy(sdyn);
+  return factory.build_strategy(sdyn);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::TimeInt::BaseDataSDyn> STR::TimeInt::BuildDataSDyn(
+Teuchos::RCP<STR::TimeInt::BaseDataSDyn> STR::TimeInt::build_data_sdyn(
     const Teuchos::ParameterList& sdyn)
 {
   Factory factory;
-  return factory.BuildDataSDyn(sdyn);
+  return factory.build_data_sdyn(sdyn);
 }
 
 /*----------------------------------------------------------------------------*
