@@ -646,7 +646,7 @@ SOLIDH8FBAR
 
 .. _structuresolidh8fbarscatra:
 
-SOLIDH8FBARSCATRA
+SOLIDH8FBARSCATRA_DEPRECATED
 ^^^^^^^^^^^^^^^^^
 
 *Shapes:*
@@ -974,10 +974,52 @@ SOLIDH8PLAST
 | lambda (opt.)     |  1 x number |
 +-------------------+-------------+
 
+.. _structuresolidscatra:
+
+SOLIDSCATRA
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+*Shapes:*
+
+- :ref:`HEX8 <hex8>` (8 nodes)
+- :ref:`HEX27 <hex27>` (27 nodes)
+- :ref:`TET4 <tet4>` (4 nodes)
+- :ref:`TET10 <tet10>` (10 nodes)
+
+**Parameters**
+
++-----------------------+-------------+
+| Parameter             | Values      |
++=======================+=============+
+| MAT                   |  1 x number |
++-----------------------+-------------+
+| KINEM                 |  1 x string |
++-----------------------+-------------+
+| PRESTRESS_TECH (opt)  |  1 x string |
++-----------------------+-------------+
+| TECH (opt, hex8 only) |  1 x string |
++-----------------------+-------------+
+| TYPE                  |  1 x string |
++-----------------------+-------------+
+| RAD (opt.)            |  3 x number |
++-----------------------+-------------+
+| AXI (opt.)            |  3 x number |
++-----------------------+-------------+
+| CIR (opt.)            |  3 x number |
++-----------------------+-------------+
+| FIBER1 (opt.)         |  3 x number |
++-----------------------+-------------+
+| FIBER2 (opt.)         |  3 x number |
++-----------------------+-------------+
+| FIBER3 (opt.)         |  3 x number |
++-----------------------+-------------+
+
 .. _structuresolidh8scatra:
 
-SOLIDH8SCATRA
-^^^^^^^^^^^^^
+SOLIDH8SCATRA_DEPRECATED
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Note: This element is deprecated and should not be used. Use SOLIDSCATRA instead.
 
 *Shapes:*
 
@@ -1480,8 +1522,10 @@ SOLIDT10THERMO
 
 .. _structuresolidt4scatra:
 
-SOLIDT4SCATRA
-^^^^^^^^^^^^^
+SOLIDT4SCATRA_DEPRECATED
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Note: This element is deprecated and should not be used. Use SOLIDSCATRA instead.
 
 *Shapes:*
 
@@ -1519,8 +1563,10 @@ SOLIDT4SCATRA
 
 .. _structuresolidt10scatra:
 
-SOLIDT10SCATRA
-^^^^^^^^^^^^^^
+SOLIDT10SCATRA_DEPRECATED
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Note: This element is deprecated and should not be used. Use SOLIDSCATRA instead.
 
 *Shapes:*
 
@@ -1560,8 +1606,10 @@ SOLIDT10SCATRA
 
 .. _structuresolidw6:
 
-SOLIDW6
-^^^^^^^
+SOLIDW6_DEPRECATED
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Note: This element is deprecated and should not be used. Use SOLIDSCATRA instead.
 
 *Shapes:*
 
@@ -1673,8 +1721,10 @@ SOLIDP5FBAR
 
 .. _structuresolidw6scatra:
 
-SOLIDW6SCATRA
-^^^^^^^^^^^^^
+SOLIDW6SCATRA_DEPRECATED
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Note: This element is deprecated and should not be used. Use SOLIDSCATRA instead.
 
 *Shapes:*
 

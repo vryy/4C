@@ -54,7 +54,7 @@ namespace Discret
      private:
       static SoHex8ScatraType instance_;
 
-      std::string get_element_type_string() const { return "SOLIDH8SCATRA"; }
+      std::string get_element_type_string() const { return "SOLIDH8SCATRA_DEPRECATED"; }
     };
 
 
@@ -84,7 +84,7 @@ namespace Discret
      private:
       static SoHex8fbarScatraType instance_;
 
-      std::string get_element_type_string() const { return "SOLIDH8FBARSCATRA"; }
+      std::string get_element_type_string() const { return "SOLIDH8FBARSCATRA_DEPRECATED"; }
     };
 
 
@@ -114,7 +114,7 @@ namespace Discret
      private:
       static SoHex27ScatraType instance_;
 
-      std::string get_element_type_string() const { return "SOLIDH27SCATRA"; }
+      std::string get_element_type_string() const { return "SOLIDH27SCATRA_DEPRECATED"; }
     };
 
     /*----------------------------------------------------------------------*
@@ -143,7 +143,7 @@ namespace Discret
      private:
       static SoTet4ScatraType instance_;
 
-      std::string get_element_type_string() const { return "SOLIDT4SCATRA"; }
+      std::string get_element_type_string() const { return "SOLIDT4SCATRA_DEPRECATED"; }
     };
 
     /*----------------------------------------------------------------------*
@@ -172,7 +172,7 @@ namespace Discret
      private:
       static SoTet10ScatraType instance_;
 
-      std::string get_element_type_string() const { return "SOLIDT10SCATRA"; }
+      std::string get_element_type_string() const { return "SOLIDT10SCATRA_DEPRECATED"; }
     };
 
     /*----------------------------------------------------------------------*
@@ -201,7 +201,7 @@ namespace Discret
      private:
       static SoWeg6ScatraType instance_;
 
-      std::string get_element_type_string() const { return "SOLIDW6SCATRA"; }
+      std::string get_element_type_string() const { return "SOLIDW6SCATRA_DEPRECATED"; }
     };
   }  // namespace ELEMENTS
 }  // namespace Discret
