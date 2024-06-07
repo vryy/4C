@@ -30,22 +30,23 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 STR::Nln::LinSystem::StcScaling::StcScaling(
     const STR::TimeInt::BaseDataSDyn& DataSDyn, STR::TimeInt::BaseDataGlobalState& GState)
-    : stcscale_(DataSDyn.GetSTCAlgoType()),
-      stclayer_(DataSDyn.GetSTCLayer()),
+    : stcscale_(DataSDyn.get_stc_algo_type()),
+      stclayer_(DataSDyn.get_stc_layer()),
       stcmat_(Teuchos::null)
 {
   // prepare matrix for scaled thickness business of thin shell structures
-  stcmat_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*GState.DofRowMapView(), 81, true, true));
+  stcmat_ =
+      Teuchos::rcp(new Core::LinAlg::SparseMatrix(*GState.dof_row_map_view(), 81, true, true));
   stcmat_->Zero();
 
   // create the parameters for the discretization
   Teuchos::ParameterList p;
 
   // get discretization
-  Teuchos::RCP<Discret::Discretization> discret = GState.GetDiscret();
+  Teuchos::RCP<Discret::Discretization> discret = GState.get_discret();
 
   // action for elements
-  discret->set_state("displacement", GState.GetDisNp());
+  discret->set_state("displacement", GState.get_dis_np());
 
   const std::string action = "calc_stc_matrix";
   p.set("action", action);
@@ -65,7 +66,7 @@ STR::Nln::LinSystem::StcScaling::StcScaling(
     pe.set("stc_layer", lay);
 
     Teuchos::RCP<Core::LinAlg::SparseMatrix> tmpstcmat =
-        Teuchos::rcp(new Core::LinAlg::SparseMatrix(*GState.DofRowMapView(), 81, true, true));
+        Teuchos::rcp(new Core::LinAlg::SparseMatrix(*GState.dof_row_map_view(), 81, true, true));
     tmpstcmat->Zero();
 
     discret->Evaluate(pe, tmpstcmat, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);

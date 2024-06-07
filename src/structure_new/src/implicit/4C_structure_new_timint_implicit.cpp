@@ -51,28 +51,28 @@ void STR::TimeInt::Implicit::Setup()
   Teuchos::RCP<STR::TimeInt::NoxInterface> noxinterface_ptr =
       Teuchos::rcp(new STR::TimeInt::NoxInterface);
   noxinterface_ptr->Init(
-      data_global_state_ptr(), implint_ptr_, DBCPtr(), Teuchos::rcp(this, false));
+      data_global_state_ptr(), implint_ptr_, dbc_ptr(), Teuchos::rcp(this, false));
   noxinterface_ptr->Setup();
 
   // ---------------------------------------------------------------------------
   // build predictor
   // ---------------------------------------------------------------------------
-  const enum Inpar::STR::PredEnum& predtype = DataSDyn().GetPredictorType();
-  predictor_ptr_ = STR::Predict::BuildPredictor(predtype);
-  predictor_ptr_->Init(predtype, implint_ptr_, DBCPtr(), data_global_state_ptr(), data_io_ptr(),
-      DataSDyn().GetNoxParamsPtr());
+  const enum Inpar::STR::PredEnum& predtype = data_sdyn().get_predictor_type();
+  predictor_ptr_ = STR::Predict::build_predictor(predtype);
+  predictor_ptr_->Init(predtype, implint_ptr_, dbc_ptr(), data_global_state_ptr(), data_io_ptr(),
+      data_sdyn().get_nox_params_ptr());
   predictor_ptr_->Setup();
 
   // ---------------------------------------------------------------------------
   // build non-linear solver
   // ---------------------------------------------------------------------------
-  const enum Inpar::STR::NonlinSolTech& nlnSolverType = DataSDyn().GetNlnSolverType();
+  const enum Inpar::STR::NonlinSolTech& nlnSolverType = data_sdyn().get_nln_solver_type();
   if (nlnSolverType == Inpar::STR::soltech_singlestep)
     std::cout << "WARNING!!! You are trying to solve implicitly using the \"singlestep\" nonlinear "
                  "solver. This is not encouraged, since it only works for linear statics analysis. "
                  "Please use NLNSOL as \"fullnewton\" for reliable result."
               << std::endl;
-  nlnsolver_ptr_ = STR::Nln::SOLVER::BuildNlnSolver(nlnSolverType);
+  nlnsolver_ptr_ = STR::Nln::SOLVER::build_nln_solver(nlnSolverType);
   nlnsolver_ptr_->Init(data_global_state_ptr(), data_s_dyn_ptr(), noxinterface_ptr, implint_ptr_,
       Teuchos::rcp(this, false));
   nlnsolver_ptr_->Setup();
@@ -107,10 +107,10 @@ void STR::TimeInt::Implicit::prepare_time_step()
   // update end time \f$t_{n+1}\f$ of this time step to cope with time step size adaptivity
   /* ToDo Check if this is still necessary. I moved this part to the Update(const double endtime)
    * routine, such it becomes consistent with non-adaptive update routine! See the
-   * UpdateStepTime() routine for more information.                             hiermeier 12/2015
+   * update_step_time() routine for more information.                             hiermeier 12/2015
    *
-  double& time_np = data_global_state().GetTimeNp();
-  time_np = data_global_state().GetTimeN() + (*data_global_state().GetDeltaTime())[0]; */
+  double& time_np = data_global_state().get_time_np();
+  time_np = data_global_state().get_time_n() + (*data_global_state().get_delta_time())[0]; */
 
   ::NOX::Abstract::Group& grp = nln_solver().SolutionGroup();
   predictor().Predict(grp);
@@ -180,7 +180,7 @@ void STR::TimeInt::Implicit::update_state_incrementally(
   // Reset the state variables
   const auto& x_eptra = dynamic_cast<const ::NOX::Epetra::Vector&>(grp_ptr->getX());
   // set the consistent state in the models (e.g. structure and contact models)
-  impl_int().ResetModelStates(x_eptra.getEpetraVector());
+  impl_int().reset_model_states(x_eptra.getEpetraVector());
 }
 
 /*----------------------------------------------------------------------------*
@@ -250,7 +250,7 @@ Inpar::STR::ConvergenceStatus STR::TimeInt::Implicit::PerformErrorAction(
     return Inpar::STR::conv_success;
   }
   // get ID of actual processor in parallel
-  const int& myrank = data_global_state().GetMyRank();
+  const int& myrank = data_global_state().get_my_rank();
 
   // what to do when nonlinear solver does not converge
   switch (GetDivergenceAction())
@@ -457,7 +457,7 @@ void STR::TimeInt::Implicit::check_for_time_step_increase(Inpar::STR::Convergenc
       // increase the step size if the remaining number of steps is a even number
       if (((GetStepEnd() - GetStepNp()) % 2) == 0 and GetStepEnd() != GetStepNp())
       {
-        if (data_global_state().GetMyRank() == 0)
+        if (data_global_state().get_my_rank() == 0)
           Core::IO::cout << "Nonlinear solver successful. Double timestep size!" << Core::IO::endl;
 
         set_div_con_refine_level(get_div_con_refine_level() - 1);
@@ -484,19 +484,20 @@ void STR::TimeInt::Implicit::print_jacobian_in_matlab_format(const NOX::Nln::Gro
   typedef Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>
       LinalgBlockSparseMatrix;
 
-  if (not GetDataIO().is_write_jacobian_to_matlab()) return;
+  if (not get_data_io().is_write_jacobian_to_matlab()) return;
 
   // create file name
   std::stringstream filebase;
 
   filebase << "str_jacobian"
-           << "_step-" << GetDataGlobalState().GetStepNp() << "_nlniter-"
-           << nlnsolver_ptr_->GetNumNlnIterations();
+           << "_step-" << get_data_global_state().get_step_np() << "_nlniter-"
+           << nlnsolver_ptr_->get_num_nln_iterations();
 
   std::stringstream filename;
-  filename << GetDataIO().GetOutputPtr()->Output()->FileName() << "_" << filebase.str() << ".mtl";
+  filename << get_data_io().get_output_ptr()->Output()->FileName() << "_" << filebase.str()
+           << ".mtl";
 
-  if (GetDataGlobalState().GetMyRank() == 0)
+  if (get_data_global_state().get_my_rank() == 0)
     std::cout << "Writing structural jacobian to \"" << filename.str() << "\"\n";
 
   Teuchos::RCP<const ::NOX::Epetra::LinearSystem> linear_system = curr_grp.getLinearSystem();
@@ -537,7 +538,7 @@ void STR::TimeInt::Implicit::print_jacobian_in_matlab_format(const NOX::Nln::Gro
   }
 
   // print sparsity pattern to file
-  //  Core::LinAlg::PrintSparsityToPostscript( *(SystemMatrix()->EpetraMatrix()) );
+  //  Core::LinAlg::PrintSparsityToPostscript( *(system_matrix()->EpetraMatrix()) );
 }
 
 /*----------------------------------------------------------------------------*
@@ -549,7 +550,7 @@ void STR::TimeInt::Implicit::compute_condition_number(const NOX::Nln::Group& grp
   double max_rev = -1.0;
   double min_rev = -1.0;
 
-  const Inpar::STR::ConditionNumber cond_type = GetDataIO().ConditionNumberType();
+  const Inpar::STR::ConditionNumber cond_type = get_data_io().condition_number_type();
   switch (cond_type)
   {
     case Inpar::STR::ConditionNumber::gmres_estimate:
@@ -585,7 +586,7 @@ void STR::TimeInt::Implicit::compute_condition_number(const NOX::Nln::Group& grp
     case Inpar::STR::ConditionNumber::none:
       return;
     default:
-      FOUR_C_THROW("Unknown ConditionNumber type!");
+      FOUR_C_THROW("Unknown condition_number type!");
       exit(EXIT_FAILURE);
   }
 
@@ -594,13 +595,15 @@ void STR::TimeInt::Implicit::compute_condition_number(const NOX::Nln::Group& grp
   // create file name
   std::stringstream filebase;
 
-  const int iter = nlnsolver_ptr_->GetNumNlnIterations();
-  filebase << "str_" << name_prefix << "condition_number_step-" << GetDataGlobalState().GetStepNp();
+  const int iter = nlnsolver_ptr_->get_num_nln_iterations();
+  filebase << "str_" << name_prefix << "condition_number_step-"
+           << get_data_global_state().get_step_np();
 
   std::stringstream filename;
-  filename << GetDataIO().GetOutputPtr()->Output()->FileName() << "_" << filebase.str() << ".data";
+  filename << get_data_io().get_output_ptr()->Output()->FileName() << "_" << filebase.str()
+           << ".data";
 
-  if (GetDataGlobalState().GetMyRank() == 0)
+  if (get_data_global_state().get_my_rank() == 0)
   {
     static bool first_execution = true;
 
@@ -626,14 +629,14 @@ void STR::TimeInt::Implicit::compute_condition_number(const NOX::Nln::Group& grp
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum Inpar::STR::DynamicType STR::TimeInt::Implicit::MethodName() const
+enum Inpar::STR::DynamicType STR::TimeInt::Implicit::method_name() const
 {
-  return implint_ptr_->MethodName();
+  return implint_ptr_->method_name();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int STR::TimeInt::Implicit::MethodSteps() const { return implint_ptr_->MethodSteps(); }
+int STR::TimeInt::Implicit::method_steps() const { return implint_ptr_->method_steps(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

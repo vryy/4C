@@ -60,60 +60,60 @@ void STR::IMPLICIT::PreStress::write_restart(
 {
   check_init_setup();
 
-  const auto zeros = Teuchos::rcp(new Epetra_Vector(*global_state().DofRowMapView(), true));
+  const auto zeros = Teuchos::rcp(new Epetra_Vector(*global_state().dof_row_map_view(), true));
 
   // write zero dynamic forces (for dynamic restart after  static prestressing)
   iowriter.WriteVector("finert", zeros);
   iowriter.WriteVector("fvisco", zeros);
 
-  ModelEval().write_restart(iowriter, forced_writerestart);
+  model_eval().write_restart(iowriter, forced_writerestart);
 }
 
-void STR::IMPLICIT::PreStress::UpdateStepState()
+void STR::IMPLICIT::PreStress::update_step_state()
 {
   check_init_setup();
 
   // Compute norm of the displacements
-  global_state().GetDisNp()->NormInf(&absolute_displacement_norm_);
+  global_state().get_dis_np()->NormInf(&absolute_displacement_norm_);
 
   if (!is_material_iterative_prestress_converged())
   {
     // Only update prestress if the material iterative prestress is not converged
     // update model specific variables
-    ModelEval().UpdateStepState(0.0);
+    model_eval().update_step_state(0.0);
   }
 }
 
-void STR::IMPLICIT::PreStress::UpdateStepElement()
+void STR::IMPLICIT::PreStress::update_step_element()
 {
   check_init_setup();
 
   if (!is_material_iterative_prestress_converged())
   {
     // Only update prestress if the material iterative prestress is not converged
-    ModelEval().UpdateStepElement();
+    model_eval().update_step_element();
   }
 }
 
 void STR::IMPLICIT::PreStress::post_update()
 {
   // Check for prestressing
-  if (IsMulfActive(global_state().GetTimeN()))
+  if (IsMulfActive(global_state().get_time_n()))
 
   {
-    if (global_state().GetMyRank() == 0)
+    if (global_state().get_my_rank() == 0)
       Core::IO::cout << "====== Resetting Displacements" << Core::IO::endl;
     // This is a MULF step, hence we do not update the displacements at the end of the
     // timestep. This is achieved by resetting the displacements, velocities and
     // accelerations.
-    global_state().GetDisN()->PutScalar(0.0);
-    global_state().GetVelN()->PutScalar(0.0);
-    global_state().GetAccN()->PutScalar(0.0);
+    global_state().get_dis_n()->PutScalar(0.0);
+    global_state().get_vel_n()->PutScalar(0.0);
+    global_state().get_acc_n()->PutScalar(0.0);
   }
-  else if (IsMaterialIterativeActive(global_state().GetTimeN()))
+  else if (IsMaterialIterativeActive(global_state().get_time_n()))
   {
     // Print prestress status update
-    if (global_state().GetMyRank() == 0)
+    if (global_state().get_my_rank() == 0)
     {
       Core::IO::cout << "====== Iterative Prestress Status" << Core::IO::endl;
       Core::IO::cout << "abs-dis-inf-norm:                    " << absolute_displacement_norm_
@@ -125,17 +125,17 @@ void STR::IMPLICIT::PreStress::post_update()
 bool STR::IMPLICIT::PreStress::is_material_iterative_prestress_converged() const
 {
   return IsMaterialIterative() &&
-         global_state().GetStepN() >= s_dyn().get_pre_stress_minimum_number_of_load_steps() &&
+         global_state().get_step_n() >= s_dyn().get_pre_stress_minimum_number_of_load_steps() &&
          absolute_displacement_norm_ < s_dyn().get_pre_stress_displacement_tolerance();
 }
 
-bool STR::IMPLICIT::PreStress::EarlyStopping() const
+bool STR::IMPLICIT::PreStress::early_stopping() const
 {
   check_init_setup();
 
   if (is_material_iterative_prestress_converged())
   {
-    if (global_state().GetMyRank() == 0)
+    if (global_state().get_my_rank() == 0)
     {
       Core::IO::cout << "Prestress is converged. Stopping simulation." << Core::IO::endl;
       Core::IO::cout << "abs-dis-inf-norm:                    " << absolute_displacement_norm_
@@ -147,11 +147,11 @@ bool STR::IMPLICIT::PreStress::EarlyStopping() const
   return false;
 }
 
-void STR::IMPLICIT::PreStress::PostTimeLoop()
+void STR::IMPLICIT::PreStress::post_time_loop()
 {
   if (IsMaterialIterative())
   {
-    if (absolute_displacement_norm_ > s_dyn().get_pre_stress_displacement_tolerance())
+    if (absolute_displacement_norm_ > sdyn().get_pre_stress_displacement_tolerance())
     {
       FOUR_C_THROW(
           "Prestress algorithm did not converged within the given timesteps. "

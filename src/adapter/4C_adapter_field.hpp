@@ -74,10 +74,10 @@ namespace Adapter
     virtual Teuchos::RCP<const Epetra_Map> dof_row_map() = 0;
 
     /// direct access to system matrix
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() = 0;
+    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() = 0;
 
     /// direct access to system matrix
-    virtual Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> BlockSystemMatrix() = 0;
+    virtual Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() = 0;
 
     //@}
 

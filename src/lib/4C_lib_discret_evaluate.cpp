@@ -172,7 +172,7 @@ void Discret::Discretization::evaluate_neumann(Teuchos::ParameterList& params,
 
   if (params.isParameter("interface"))
   {
-    time = params.get<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface")->GetTotalTime();
+    time = params.get<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface")->get_total_time();
   }
 
   //--------------------------------------------------------

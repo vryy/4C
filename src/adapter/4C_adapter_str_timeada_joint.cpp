@@ -51,7 +51,7 @@ void Adapter::StructureTimeAdaJoint::setup_auxiliar()
   for (auto i = jep.begin(); i != jep.end(); ++i) adyn.setEntry(jep.name(i), jep.entry(i));
 
   // construct the auxiliary time integrator
-  sta_ = STR::TimeInt::BuildStrategy(adyn);
+  sta_ = STR::TimeInt::build_strategy(adyn);
 
   ///// setup dataio
   Global::Problem* problem = Global::Problem::Instance();
@@ -79,9 +79,9 @@ void Adapter::StructureTimeAdaJoint::setup_auxiliar()
       Teuchos::rcp(new std::set<enum Inpar::STR::EleTech>());
   //
   Teuchos::RCP<std::map<enum Inpar::STR::ModelType, Teuchos::RCP<Core::LinAlg::Solver>>>
-      linsolvers = STR::SOLVER::BuildLinSolvers(*modeltypes, adyn, *stm_->discretization());
+      linsolvers = STR::SOLVER::build_lin_solvers(*modeltypes, adyn, *stm_->discretization());
   //
-  Teuchos::RCP<STR::TimeInt::BaseDataSDyn> datasdyn = STR::TimeInt::BuildDataSDyn(adyn);
+  Teuchos::RCP<STR::TimeInt::BaseDataSDyn> datasdyn = STR::TimeInt::build_data_sdyn(adyn);
   datasdyn->Init(stm_->discretization(), adyn, *xparams, modeltypes, eletechs, linsolvers);
   datasdyn->Setup();
 
@@ -103,13 +103,13 @@ void Adapter::StructureTimeAdaJoint::setup_auxiliar()
   {
     const STR::TimeInt::Base& sti = *stm_;
     const auto& gstate = sti.data_global_state();
-    dataglobalstate->GetDisN()->Update(1.0, *(gstate.GetDisN()), 0.0);
-    dataglobalstate->GetVelN()->Update(1.0, *(gstate.GetVelN()), 0.0);
-    dataglobalstate->GetAccN()->Update(1.0, *(gstate.GetAccN()), 0.0);
+    dataglobalstate->get_dis_n()->Update(1.0, *(gstate.get_dis_n()), 0.0);
+    dataglobalstate->get_vel_n()->Update(1.0, *(gstate.get_vel_n()), 0.0);
+    dataglobalstate->get_acc_n()->Update(1.0, *(gstate.get_acc_n()), 0.0);
   }
 
   // check explicitness
-  if (sta_->IsImplicit())
+  if (sta_->is_implicit())
   {
     FOUR_C_THROW("Implicit might work, but please check carefully");
   }
@@ -123,7 +123,7 @@ void Adapter::StructureTimeAdaJoint::setup_auxiliar()
   {
     ada_ = ada_downward;
   }
-  else if (sta_->MethodName() == stm_->MethodName())
+  else if (sta_->method_name() == stm_->method_name())
   {
     ada_ = ada_ident;
   }
@@ -137,7 +137,7 @@ void Adapter::StructureTimeAdaJoint::setup_auxiliar()
 /*----------------------------------------------------------------------*/
 std::string Adapter::StructureTimeAdaJoint::MethodTitle() const
 {
-  return "JointExplicit_" + sta_->MethodTitle();
+  return "JointExplicit_" + sta_->method_title();
 }
 
 /*----------------------------------------------------------------------*/
@@ -191,7 +191,7 @@ void Adapter::StructureTimeAdaJoint::integrate_step_auxiliar()
   sta_->IntegrateStep();
 
   // copy onto target
-  locerrdisn_->Update(1.0, *(gstate.GetDisNp()), 0.0);
+  locerrdisn_->Update(1.0, *(gstate.get_dis_np()), 0.0);
 
   // reset
   sta_->reset_step();
@@ -212,23 +212,23 @@ void Adapter::StructureTimeAdaJoint::update_auxiliar()
   STR::TimeInt::BaseDataGlobalState& gstate_a =
       const_cast<STR::TimeInt::BaseDataGlobalState&>(gstate_a_const);
 
-  gstate_a.GetDisNp()->Update(1.0, (*gstate_i.GetDisN()), 0.0);
-  gstate_a.GetVelNp()->Update(1.0, (*gstate_i.GetVelN()), 0.0);
-  gstate_a.GetAccNp()->Update(1.0, (*gstate_i.GetAccN()), 0.0);
-  gstate_a.GetMultiDis()->UpdateSteps((*gstate_i.GetDisN()));
-  gstate_a.GetMultiVel()->UpdateSteps((*gstate_i.GetVelN()));
-  gstate_a.GetMultiAcc()->UpdateSteps((*gstate_i.GetAccN()));
+  gstate_a.get_dis_np()->Update(1.0, (*gstate_i.get_dis_n()), 0.0);
+  gstate_a.get_vel_np()->Update(1.0, (*gstate_i.get_vel_n()), 0.0);
+  gstate_a.get_acc_np()->Update(1.0, (*gstate_i.get_acc_n()), 0.0);
+  gstate_a.get_multi_dis()->UpdateSteps((*gstate_i.get_dis_n()));
+  gstate_a.get_multi_vel()->UpdateSteps((*gstate_i.get_vel_n()));
+  gstate_a.get_multi_acc()->UpdateSteps((*gstate_i.get_acc_n()));
 
-  gstate_a.GetTimeNp() = gstate_i.GetTimeNp();
-  gstate_a.GetDeltaTime()->UpdateSteps((*gstate_i.GetDeltaTime())[0]);
-  gstate_a.GetFviscoNp()->Update(1.0, (*gstate_i.GetFviscoN()), 0.0);
-  gstate_a.GetFviscoN()->Update(1.0, (*gstate_i.GetFviscoN()), 0.0);
-  gstate_a.GetFinertialNp()->Update(1.0, (*gstate_i.GetFinertialN()), 0.0);
-  gstate_a.GetFinertialN()->Update(1.0, (*gstate_i.GetFinertialN()), 0.0);
-  gstate_a.GetFintNp()->Update(1.0, (*gstate_i.GetFintN()), 0.0);
-  gstate_a.GetFintN()->Update(1.0, (*gstate_i.GetFintN()), 0.0);
-  gstate_a.GetFextNp()->Update(1.0, (*gstate_i.GetFextN()), 0.0);
-  gstate_a.GetFextN()->Update(1.0, (*gstate_i.GetFextN()), 0.0);
+  gstate_a.get_time_np() = gstate_i.get_time_np();
+  gstate_a.get_delta_time()->UpdateSteps((*gstate_i.get_delta_time())[0]);
+  gstate_a.get_fvisco_np()->Update(1.0, (*gstate_i.get_fvisco_n()), 0.0);
+  gstate_a.get_fvisco_n()->Update(1.0, (*gstate_i.get_fvisco_n()), 0.0);
+  gstate_a.get_finertial_np()->Update(1.0, (*gstate_i.get_finertial_n()), 0.0);
+  gstate_a.get_finertial_n()->Update(1.0, (*gstate_i.get_finertial_n()), 0.0);
+  gstate_a.get_fint_np()->Update(1.0, (*gstate_i.get_fint_n()), 0.0);
+  gstate_a.get_fint_n()->Update(1.0, (*gstate_i.get_fint_n()), 0.0);
+  gstate_a.get_fext_np()->Update(1.0, (*gstate_i.get_fext_n()), 0.0);
+  gstate_a.get_fext_n()->Update(1.0, (*gstate_i.get_fext_n()), 0.0);
 }
 
 /*----------------------------------------------------------------------*/

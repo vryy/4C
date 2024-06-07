@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::Nln::SOLVER::IsXMLStatusTestFile(const Teuchos::ParameterList& pstatus)
+bool STR::Nln::SOLVER::is_xml_status_test_file(const Teuchos::ParameterList& pstatus)
 {
   bool check = false;
 
@@ -47,7 +47,7 @@ bool STR::Nln::SOLVER::IsXMLStatusTestFile(const Teuchos::ParameterList& pstatus
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Nln::SOLVER::CreateQuantityTypes(
+void STR::Nln::SOLVER::create_quantity_types(
     std::set<enum NOX::Nln::StatusTest::QuantityType>& qtypes,
     const STR::TimeInt::BaseDataSDyn& datasdyn)
 {
@@ -60,7 +60,7 @@ void STR::Nln::SOLVER::CreateQuantityTypes(
   std::set<enum Inpar::STR::ModelType>::const_iterator miter;
   for (miter = mtypes.begin(); miter != mtypes.end(); ++miter)
   {
-    ConvertModelType2QuantityType(*miter, qt_vec);
+    convert_model_type_to_quantity_type(*miter, qt_vec);
 
     // check if the corresponding enum could be found.
     // Note: We do not throw an error, since there are model types,
@@ -78,7 +78,7 @@ void STR::Nln::SOLVER::CreateQuantityTypes(
   std::set<enum Inpar::STR::EleTech>::const_iterator etiter;
   for (etiter = eletechs.begin(); etiter != eletechs.end(); ++etiter)
   {
-    ConvertEleTech2QuantityType(*etiter, qt_vec);
+    convert_ele_tech_to_quantity_type(*etiter, qt_vec);
 
     // check if the corresponding enum could be found.
     // Note: We do not throw an error, since there are element technologies,
@@ -92,7 +92,7 @@ void STR::Nln::SOLVER::CreateQuantityTypes(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Nln::SOLVER::ConvertModelType2QuantityType(
+void STR::Nln::SOLVER::convert_model_type_to_quantity_type(
     const enum Inpar::STR::ModelType& mt, std::vector<enum NOX::Nln::StatusTest::QuantityType>& qt)
 {
   // clear quantity type vector
@@ -163,7 +163,7 @@ void STR::Nln::SOLVER::ConvertModelType2QuantityType(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Nln::SOLVER::ConvertEleTech2QuantityType(
+void STR::Nln::SOLVER::convert_ele_tech_to_quantity_type(
     const enum Inpar::STR::EleTech& et, std::vector<enum NOX::Nln::StatusTest::QuantityType>& qt)
 {
   // clear quantity type vector
@@ -199,7 +199,7 @@ void STR::Nln::SOLVER::ConvertEleTech2QuantityType(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Nln::SOLVER::SetStatusTestParams(Teuchos::ParameterList& pstatus,
+void STR::Nln::SOLVER::set_status_test_params(Teuchos::ParameterList& pstatus,
     const STR::TimeInt::BaseDataSDyn& datasdyn,
     const std::set<enum NOX::Nln::StatusTest::QuantityType>& qt)
 {
@@ -250,13 +250,13 @@ void STR::Nln::SOLVER::SetStatusTestParams(Teuchos::ParameterList& pstatus,
   // || lvl. 2: combo AND/OR - Test 0:
   // || Tests the combination of the different solution increment norms
   // ---------------------------------------------------------------------------
-  SetComboQuantityTestParams(pcombo_incr_fres, datasdyn, 0, "NormUpdate", qt);
+  set_combo_quantity_test_params(pcombo_incr_fres, datasdyn, 0, "NormUpdate", qt);
 
   // ---------------------------------------------------------------------------
   // || lvl. 2: combo AND/OR - Test 1:
   // || Tests the combination of the different solution force norms
   // ---------------------------------------------------------------------------
-  SetComboQuantityTestParams(pcombo_incr_fres, datasdyn, 1, "NormF", qt);
+  set_combo_quantity_test_params(pcombo_incr_fres, datasdyn, 1, "NormF", qt);
 
   // *** BEGIN: OPTIONAL STATUS TESTS ******************************************
   int opt_count = 1;
@@ -264,13 +264,13 @@ void STR::Nln::SOLVER::SetStatusTestParams(Teuchos::ParameterList& pstatus,
   // | lvl. 1: combo AND - Test 1:
   // | Enforces a minimal number of non-linear solution steps
   // ---------------------------------------------------------------------------
-  if (datasdyn.GetIterMin() > 0)
+  if (datasdyn.get_iter_min() > 0)
   {
     std::ostringstream test_string;
     test_string << "Test " << opt_count;
     Teuchos::ParameterList& pnstep = pcombo_incr_fres_constr.sublist(test_string.str());
     pnstep.set("Test Type", "NStep");
-    pnstep.set("Number of Nonlinear Iterations", datasdyn.GetIterMin());
+    pnstep.set("Number of Nonlinear Iterations", datasdyn.get_iter_min());
     ++opt_count;
   }
   // ---------------------------------------------------------------------------
@@ -279,7 +279,7 @@ void STR::Nln::SOLVER::SetStatusTestParams(Teuchos::ParameterList& pstatus,
   // ---------------------------------------------------------------------------
   if (qt.find(NOX::Nln::StatusTest::quantity_lag_pen_constraint) != qt.end())
   {
-    SetQuantityTestParams(pcombo_incr_fres_constr, datasdyn,
+    set_quantity_test_params(pcombo_incr_fres_constr, datasdyn,
         NOX::Nln::StatusTest::quantity_lag_pen_constraint, opt_count, "NormF");
     ++opt_count;
 
@@ -287,7 +287,7 @@ void STR::Nln::SOLVER::SetStatusTestParams(Teuchos::ParameterList& pstatus,
     // | lvl. 1: combo AND - Test OPTIONAL:
     // | Tests the constraint model NormUpdate
     // ---------------------------------------------------------------------------
-    SetQuantityTestParams(pcombo_incr_fres_constr, datasdyn,
+    set_quantity_test_params(pcombo_incr_fres_constr, datasdyn,
         NOX::Nln::StatusTest::quantity_lag_pen_constraint, opt_count, "NormUpdate");
     ++opt_count;
   }
@@ -298,7 +298,7 @@ void STR::Nln::SOLVER::SetStatusTestParams(Teuchos::ParameterList& pstatus,
   // ---------------------------------------------------------------------------
   if (qt.find(NOX::Nln::StatusTest::quantity_cardiovascular0d) != qt.end())
   {
-    SetQuantityTestParams(pcombo_incr_fres_constr, datasdyn,
+    set_quantity_test_params(pcombo_incr_fres_constr, datasdyn,
         NOX::Nln::StatusTest::quantity_cardiovascular0d, opt_count, "NormF");
     ++opt_count;
 
@@ -306,7 +306,7 @@ void STR::Nln::SOLVER::SetStatusTestParams(Teuchos::ParameterList& pstatus,
     // | lvl. 1: combo AND - Test OPTIONAL:
     // | Tests the 0D cardiovascular model NormUpdate
     // ---------------------------------------------------------------------------
-    SetQuantityTestParams(pcombo_incr_fres_constr, datasdyn,
+    set_quantity_test_params(pcombo_incr_fres_constr, datasdyn,
         NOX::Nln::StatusTest::quantity_cardiovascular0d, opt_count, "NormUpdate");
     ++opt_count;
   }
@@ -317,13 +317,13 @@ void STR::Nln::SOLVER::SetStatusTestParams(Teuchos::ParameterList& pstatus,
   // ---------------------------------------------------------------------------
   if (qt.find(NOX::Nln::StatusTest::quantity_contact_normal) != qt.end())
   {
-    SetQuantityTestParams(pcombo_incr_fres_constr, datasdyn,
+    set_quantity_test_params(pcombo_incr_fres_constr, datasdyn,
         NOX::Nln::StatusTest::quantity_contact_normal, opt_count, "ActiveSet");
     ++opt_count;
   }
   if (qt.find(NOX::Nln::StatusTest::quantity_contact_friction) != qt.end())
   {
-    SetQuantityTestParams(pcombo_incr_fres_constr, datasdyn,
+    set_quantity_test_params(pcombo_incr_fres_constr, datasdyn,
         NOX::Nln::StatusTest::quantity_contact_friction, opt_count, "ActiveSet");
     ++opt_count;
   }
@@ -334,7 +334,7 @@ void STR::Nln::SOLVER::SetStatusTestParams(Teuchos::ParameterList& pstatus,
   // ---------------------------------------------------------------------------
   if (qt.find(NOX::Nln::StatusTest::quantity_plasticity) != qt.end())
   {
-    SetQuantityTestParams(pcombo_incr_fres_constr, datasdyn,
+    set_quantity_test_params(pcombo_incr_fres_constr, datasdyn,
         NOX::Nln::StatusTest::quantity_plasticity, opt_count, "ActiveSet");
     ++opt_count;
   }
@@ -346,19 +346,19 @@ void STR::Nln::SOLVER::SetStatusTestParams(Teuchos::ParameterList& pstatus,
   // ---------------------------------------------------------------------------
   Teuchos::ParameterList& pmaxiters = postatus.sublist("Test 1");
   pmaxiters.set("Test Type", "MaxIters");
-  pmaxiters.set<int>("Maximum Iterations", datasdyn.GetIterMax());
+  pmaxiters.set<int>("Maximum Iterations", datasdyn.get_iter_max());
 }
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Nln::SOLVER::SetComboQuantityTestParams(Teuchos::ParameterList& p,
+void STR::Nln::SOLVER::set_combo_quantity_test_params(Teuchos::ParameterList& p,
     const STR::TimeInt::BaseDataSDyn& datasdyn, const std::size_t& count,
     const std::string& testname, const std::set<enum NOX::Nln::StatusTest::QuantityType>& qtypes)
 {
   std::vector<enum NOX::Nln::StatusTest::QuantityType> combo_or(0);
   std::vector<enum NOX::Nln::StatusTest::QuantityType> combo_and(0);
-  SplitAndOrCombo(combo_or, combo_and, datasdyn, testname, qtypes);
+  split_and_or_combo(combo_or, combo_and, datasdyn, testname, qtypes);
   std::ostringstream test_string;
   test_string << "Test " << count;
   Teuchos::ParameterList& ptest = p.sublist(test_string.str());
@@ -375,12 +375,12 @@ void STR::Nln::SOLVER::SetComboQuantityTestParams(Teuchos::ParameterList& p,
     std::ostringstream test_string;
     for (qtiter = combo_or.begin(); qtiter != combo_or.end(); ++qtiter)
     {
-      SetQuantityTestParams(ptest, datasdyn, *qtiter, count_or, testname);
+      set_quantity_test_params(ptest, datasdyn, *qtiter, count_or, testname);
       ++count_or;
     }
     // if there are only OR combinations
     if (combo_and.size() == 0)
-      SetQuantityTestParams(
+      set_quantity_test_params(
           ptest, datasdyn, NOX::Nln::StatusTest::quantity_structure, count_or, testname);
   }
   // if there are any AND combinations
@@ -397,21 +397,21 @@ void STR::Nln::SOLVER::SetComboQuantityTestParams(Teuchos::ParameterList& p,
     ptest_and.set("Combo Type", "AND");
     for (qtiter = combo_and.begin(); qtiter != combo_and.end(); ++qtiter)
     {
-      SetQuantityTestParams(ptest_and, datasdyn, *qtiter, count_and, testname);
+      set_quantity_test_params(ptest_and, datasdyn, *qtiter, count_and, testname);
       ++count_and;
     }
-    SetQuantityTestParams(
+    set_quantity_test_params(
         ptest_and, datasdyn, NOX::Nln::StatusTest::quantity_structure, count_and, testname);
   }
   // if there are neither AND nor OR combinations
   if (count_or == 0 and count_and == 0)
-    SetQuantityTestParams(ptest, datasdyn, NOX::Nln::StatusTest::quantity_structure, testname);
+    set_quantity_test_params(ptest, datasdyn, NOX::Nln::StatusTest::quantity_structure, testname);
 }
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Nln::SOLVER::SetQuantityTestParams(Teuchos::ParameterList& p,
+void STR::Nln::SOLVER::set_quantity_test_params(Teuchos::ParameterList& p,
     const STR::TimeInt::BaseDataSDyn& datasdyn,
     const enum NOX::Nln::StatusTest::QuantityType& qtype, const std::size_t& count,
     const std::string& testname)
@@ -419,24 +419,24 @@ void STR::Nln::SOLVER::SetQuantityTestParams(Teuchos::ParameterList& p,
   std::ostringstream test_string;
   test_string << "Test " << count;
   Teuchos::ParameterList& ptest = p.sublist(test_string.str());
-  SetQuantityTestParams(ptest, datasdyn, qtype, testname);
+  set_quantity_test_params(ptest, datasdyn, qtype, testname);
 }
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Nln::SOLVER::SetQuantityTestParams(Teuchos::ParameterList& p,
+void STR::Nln::SOLVER::set_quantity_test_params(Teuchos::ParameterList& p,
     const STR::TimeInt::BaseDataSDyn& datasdyn,
     const enum NOX::Nln::StatusTest::QuantityType& qtype, const std::string& testname)
 {
   if (testname == "NormUpdate")
-    SetNormUpdateParams(p, qtype, datasdyn.get_incr_tolerance_type(qtype),
+    set_norm_update_params(p, qtype, datasdyn.get_incr_tolerance_type(qtype),
         datasdyn.GetIncrTolerance(qtype), datasdyn.GetNormType());
   else if (testname == "NormF")
-    SetNormFParams(p, qtype, datasdyn.GetResToleranceType(qtype), datasdyn.GetResTolerance(qtype),
-        datasdyn.GetNormType());
+    set_norm_f_params(p, qtype, datasdyn.GetResToleranceType(qtype),
+        datasdyn.GetResTolerance(qtype), datasdyn.GetNormType());
   else if (testname == "ActiveSet")
-    SetActiveSetParams(p, qtype);
+    set_active_set_params(p, qtype);
   else
     FOUR_C_THROW("Unknown/Unsupported status test name: %s", testname.c_str());
 }
@@ -444,7 +444,7 @@ void STR::Nln::SOLVER::SetQuantityTestParams(Teuchos::ParameterList& p,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Nln::SOLVER::SplitAndOrCombo(
+void STR::Nln::SOLVER::split_and_or_combo(
     std::vector<enum NOX::Nln::StatusTest::QuantityType>& combo_or,
     std::vector<enum NOX::Nln::StatusTest::QuantityType>& combo_and,
     const STR::TimeInt::BaseDataSDyn& datasdyn, const std::string& testname,
@@ -482,17 +482,17 @@ void STR::Nln::SOLVER::SplitAndOrCombo(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Nln::SOLVER::SetNormUpdateParams(Teuchos::ParameterList& qlist,
+void STR::Nln::SOLVER::set_norm_update_params(Teuchos::ParameterList& qlist,
     const enum NOX::Nln::StatusTest::QuantityType& qtype, const enum Inpar::STR::ConvNorm& toltype,
     const double& tol, const enum Inpar::STR::VectorNorm& normtype)
 {
-  SetNormUpdateParams(qlist, qtype, 1.0, 0.5, toltype, tol, normtype, false);
+  set_norm_update_params(qlist, qtype, 1.0, 0.5, toltype, tol, normtype, false);
 }
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Nln::SOLVER::SetNormUpdateParams(Teuchos::ParameterList& qlist,
+void STR::Nln::SOLVER::set_norm_update_params(Teuchos::ParameterList& qlist,
     const enum NOX::Nln::StatusTest::QuantityType& qtype, const double& alpha, const double& beta,
     const enum Inpar::STR::ConvNorm& toltype, const double& tol,
     const enum Inpar::STR::VectorNorm& normtype, const bool& isscaled)
@@ -531,10 +531,10 @@ void STR::Nln::SOLVER::SetNormUpdateParams(Teuchos::ParameterList& qlist,
       qlist.set("Combo Type", "OR");
       Teuchos::ParameterList& qlist_abs = qlist.sublist("Test 0");
       // first recursive call
-      SetNormUpdateParams(qlist_abs, qtype, Inpar::STR::convnorm_abs, tol, normtype);
+      set_norm_update_params(qlist_abs, qtype, Inpar::STR::convnorm_abs, tol, normtype);
       Teuchos::ParameterList& qlist_rel = qlist.sublist("Test 1");
       // second recursive call
-      SetNormUpdateParams(qlist_rel, qtype, Inpar::STR::convnorm_rel, tol, normtype);
+      set_norm_update_params(qlist_rel, qtype, Inpar::STR::convnorm_rel, tol, normtype);
       break;
     }
     default:
@@ -581,17 +581,17 @@ void STR::Nln::SOLVER::SetNormUpdateParams(Teuchos::ParameterList& qlist,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Nln::SOLVER::SetNormFParams(Teuchos::ParameterList& qlist,
+void STR::Nln::SOLVER::set_norm_f_params(Teuchos::ParameterList& qlist,
     const enum NOX::Nln::StatusTest::QuantityType& qtype, const enum Inpar::STR::ConvNorm& toltype,
     const double& tol, const enum Inpar::STR::VectorNorm& normtype)
 {
-  SetNormFParams(qlist, qtype, toltype, tol, normtype, false);
+  set_norm_f_params(qlist, qtype, toltype, tol, normtype, false);
 }
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Nln::SOLVER::SetNormFParams(Teuchos::ParameterList& qlist,
+void STR::Nln::SOLVER::set_norm_f_params(Teuchos::ParameterList& qlist,
     const enum NOX::Nln::StatusTest::QuantityType& qtype, const enum Inpar::STR::ConvNorm& toltype,
     const double& tol, const enum Inpar::STR::VectorNorm& normtype, const bool& isscaled)
 {
@@ -629,10 +629,10 @@ void STR::Nln::SOLVER::SetNormFParams(Teuchos::ParameterList& qlist,
       qlist.set("Combo Type", "OR");
       Teuchos::ParameterList& qlist_abs = qlist.sublist("Test 0");
       // first recursive call
-      SetNormFParams(qlist_abs, qtype, Inpar::STR::convnorm_abs, tol, normtype);
+      set_norm_f_params(qlist_abs, qtype, Inpar::STR::convnorm_abs, tol, normtype);
       Teuchos::ParameterList& qlist_rel = qlist.sublist("Test 1");
       // second recursive call
-      SetNormFParams(qlist_rel, qtype, Inpar::STR::convnorm_rel, tol, normtype);
+      set_norm_f_params(qlist_rel, qtype, Inpar::STR::convnorm_rel, tol, normtype);
       break;
     }
     default:
@@ -673,7 +673,7 @@ void STR::Nln::SOLVER::SetNormFParams(Teuchos::ParameterList& qlist,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Nln::SOLVER::SetActiveSetParams(
+void STR::Nln::SOLVER::set_active_set_params(
     Teuchos::ParameterList& qlist, const enum NOX::Nln::StatusTest::QuantityType& qtype)
 {
   qlist.set("Test Type", "ActiveSet");

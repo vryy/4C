@@ -41,7 +41,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Core::Geo::Cut::Kernel
 {
-  // functions to compare determinant ot zero, e.g when computing the ConditionNumber
+  // functions to compare determinant ot zero, e.g when computing the condition_number
   bool closeToZero(const double a);
 
   bool closeToZero(const Core::CLN::ClnWrapper& a);

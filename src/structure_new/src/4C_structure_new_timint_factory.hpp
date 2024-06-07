@@ -48,10 +48,10 @@ namespace STR
       virtual ~Factory() = default;
 
       //! Build the implicit or explicit time integration strategies
-      Teuchos::RCP<STR::TimeInt::Base> BuildStrategy(const Teuchos::ParameterList& sdyn) const;
+      Teuchos::RCP<STR::TimeInt::Base> build_strategy(const Teuchos::ParameterList& sdyn) const;
 
       //! Build the structural dynamics data container
-      Teuchos::RCP<STR::TimeInt::BaseDataSDyn> BuildDataSDyn(
+      Teuchos::RCP<STR::TimeInt::BaseDataSDyn> build_data_sdyn(
           const Teuchos::ParameterList& sdyn) const;
 
       //! Build the global state data container
@@ -69,7 +69,7 @@ namespace STR
 
     /*! Non-member function, which relates to the STR::TimeInt::Factory
      *  Please call this method, if you want to build a new time integration strategy. */
-    Teuchos::RCP<STR::TimeInt::Base> BuildStrategy(const Teuchos::ParameterList& sdyn);
+    Teuchos::RCP<STR::TimeInt::Base> build_strategy(const Teuchos::ParameterList& sdyn);
 
     /*! Non-member function, which relates to the STR::TimeInt::Factory
      *  Please call this method, if you want to build a new adaptive wrapper object. */
@@ -83,7 +83,7 @@ namespace STR
 
     /*! Non-member function, which relates to the STR::TimeInt::Factory
      *  Please call this method, if you want to build a new structural dynamics data container. */
-    Teuchos::RCP<STR::TimeInt::BaseDataSDyn> BuildDataSDyn(const Teuchos::ParameterList& sdyn);
+    Teuchos::RCP<STR::TimeInt::BaseDataSDyn> build_data_sdyn(const Teuchos::ParameterList& sdyn);
 
     /*! Non-member function, which relates to the STR::TimeInt::Factory
      *  Please call this method, if you want to build a new global state data container. */

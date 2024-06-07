@@ -68,7 +68,7 @@ namespace STR
       virtual ~Factory() = default;
 
       //! build the desired linear solvers
-      Teuchos::RCP<LinSolMap> BuildLinSolvers(
+      Teuchos::RCP<LinSolMap> build_lin_solvers(
           const std::set<enum Inpar::STR::ModelType>& modeltypes,
           const Teuchos::ParameterList& sdyn, Discret::Discretization& actdis) const;
 
@@ -99,7 +99,7 @@ namespace STR
     /*! Non-member function, which relates to the STR::SOLVER::Factory class
      *  Please call this method from outside! */
     Teuchos::RCP<std::map<enum Inpar::STR::ModelType, Teuchos::RCP<Core::LinAlg::Solver>>>
-    BuildLinSolvers(const std::set<enum Inpar::STR::ModelType>& modeltypes,
+    build_lin_solvers(const std::set<enum Inpar::STR::ModelType>& modeltypes,
         const Teuchos::ParameterList& sdyn, Discret::Discretization& actdis);
   }  // namespace SOLVER
 }  // namespace STR

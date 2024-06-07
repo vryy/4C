@@ -53,7 +53,7 @@ namespace Discret::ELEMENTS
   {
     if (ele.IsParamsInterface())
     {
-      return *ele.params_interface().StressDataPtr();
+      return *ele.params_interface().stress_data_ptr();
     }
     else
     {
@@ -66,7 +66,7 @@ namespace Discret::ELEMENTS
   {
     if (ele.IsParamsInterface())
     {
-      return *ele.params_interface().StrainDataPtr();
+      return *ele.params_interface().strain_data_ptr();
     }
     else
     {
@@ -79,7 +79,7 @@ namespace Discret::ELEMENTS
   {
     if (ele.IsParamsInterface())
     {
-      return ele.params_interface().GetStressOutputType();
+      return ele.params_interface().get_stress_output_type();
     }
     else
     {
@@ -92,7 +92,7 @@ namespace Discret::ELEMENTS
   {
     if (ele.IsParamsInterface())
     {
-      return ele.params_interface().GetStrainOutputType();
+      return ele.params_interface().get_strain_output_type();
     }
     else
     {
@@ -232,7 +232,7 @@ namespace Discret::ELEMENTS
     solid_material.register_output_data_names(quantities_map);
 
     // Add quantities to the Gauss point output data manager (if they do not already exist)
-    gp_data_output_manager.MergeQuantities(quantities_map);
+    gp_data_output_manager.merge_quantities(quantities_map);
   }
 
   /*!
@@ -253,7 +253,7 @@ namespace Discret::ELEMENTS
       STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager)
   {
     // Collection and assembly of gauss point data
-    for (const auto& quantity : gp_data_output_manager.GetQuantities())
+    for (const auto& quantity : gp_data_output_manager.get_quantities())
     {
       const std::string& quantity_name = quantity.first;
       const int quantity_size = quantity.second;
@@ -267,7 +267,7 @@ namespace Discret::ELEMENTS
       // point)
       if (data_available)
       {
-        switch (gp_data_output_manager.GetOutputType())
+        switch (gp_data_output_manager.get_output_type())
         {
           case Inpar::STR::GaussPointDataOutputType::element_center:
           {
@@ -280,10 +280,10 @@ namespace Discret::ELEMENTS
           case Inpar::STR::GaussPointDataOutputType::nodes:
           {
             Teuchos::RCP<Epetra_MultiVector> global_data =
-                gp_data_output_manager.GetNodalData().at(quantity_name);
+                gp_data_output_manager.get_nodal_data().at(quantity_name);
 
             Epetra_IntVector& global_nodal_element_count =
-                *gp_data_output_manager.GetNodalDataCount().at(quantity_name);
+                *gp_data_output_manager.get_nodal_data_count().at(quantity_name);
 
             Core::FE::ExtrapolateGPQuantityToNodesAndAssemble<celltype>(
                 ele, gp_data, *global_data, false, stiffness_matrix_integration);
@@ -293,7 +293,7 @@ namespace Discret::ELEMENTS
           case Inpar::STR::GaussPointDataOutputType::gauss_points:
           {
             std::vector<Teuchos::RCP<Epetra_MultiVector>>& global_data =
-                gp_data_output_manager.GetGaussPointData().at(quantity_name);
+                gp_data_output_manager.get_gauss_point_data().at(quantity_name);
             Discret::ELEMENTS::AssembleGaussPointValues(global_data, gp_data, ele);
             break;
           }

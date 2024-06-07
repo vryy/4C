@@ -67,9 +67,9 @@ void STR::Dbc::Setup()
   // ---------------------------------------------------------------------------
   // Create Dirichlet Boundary Condition map
   // ---------------------------------------------------------------------------
-  zeros_ptr_ = Teuchos::rcp(new Epetra_Vector(*g_state().DofRowMapView(), true));
+  zeros_ptr_ = Teuchos::rcp(new Epetra_Vector(*g_state().dof_row_map_view(), true));
   Teuchos::ParameterList p;
-  p.set<double>("total time", timint_ptr_->GetDataGlobalState().GetTimeNp());
+  p.set<double>("total time", timint_ptr_->get_data_global_state().get_time_np());
   dbcmap_ptr_ = Teuchos::rcp(new Core::LinAlg::MapExtractor());
   p.set<const Core::UTILS::FunctionManager*>(
       "function_manager", &Global::Problem::Instance()->FunctionManager());
@@ -97,7 +97,7 @@ void STR::Dbc::Setup()
   // Set the new pre/post operator for the nox nln linearsystem in the parameter
   // list
   // ---------------------------------------------------------------------------
-  const Teuchos::ParameterList& pnox = timint_ptr_->GetDataSDyn().GetNoxParams();
+  const Teuchos::ParameterList& pnox = timint_ptr_->get_data_sdyn().GetNoxParams();
   if (pnox.sublist("Direction").isSublist("Newton"))
   {
     if (pnox.sublist("Direction").sublist("Newton").isSublist("Linear Solver"))
@@ -157,8 +157,9 @@ void STR::Dbc::UpdateLocSysManager()
 {
   if (!is_loc_sys()) return;
 
-  discret_ptr()->set_state("dispnp", g_state().GetDisNp());
-  locsysman_ptr_->Update(g_state().GetTimeNp(), {}, Global::Problem::Instance()->FunctionManager());
+  discret_ptr()->set_state("dispnp", g_state().get_dis_np());
+  locsysman_ptr_->Update(
+      g_state().get_time_np(), {}, Global::Problem::Instance()->FunctionManager());
   discret_ptr()->ClearState();
 }
 
@@ -166,9 +167,9 @@ void STR::Dbc::UpdateLocSysManager()
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> STR::Dbc::get_dirichlet_increment()
 {
-  Teuchos::RCP<const Epetra_Vector> disn = timint_ptr_->GetDataGlobalState().GetDisN();
+  Teuchos::RCP<const Epetra_Vector> disn = timint_ptr_->get_data_global_state().get_dis_n();
   Teuchos::RCP<Epetra_Vector> dbcincr = Teuchos::rcp(new Epetra_Vector(*disn));
-  const double& timenp = g_state().GetTimeNp();
+  const double& timenp = g_state().get_time_np();
 
   // get the new value for the Dirichlet DOFs
   apply_dirichlet_bc(timenp, dbcincr, Teuchos::null, Teuchos::null, false);
@@ -322,9 +323,9 @@ bool STR::Dbc::RotateGlobalToLocal(const Teuchos::RCP<Epetra_Vector>& v, bool of
   check_init_setup();
   if (not is_loc_sys()) return false;
 
-  if (g_state().MaxBlockNumber() > 1)
+  if (g_state().max_block_number() > 1)
   {
-    Epetra_Vector v_displ(*g_state().DofRowMapView());
+    Epetra_Vector v_displ(*g_state().dof_row_map_view());
     Core::LinAlg::ExtractMyVector(*v, v_displ);
 
     locsysman_ptr_->RotateGlobalToLocal(Teuchos::rcpFromRef(v_displ), offset);
@@ -370,9 +371,9 @@ bool STR::Dbc::RotateLocalToGlobal(const Teuchos::RCP<Epetra_Vector>& v, bool of
   check_init_setup();
   if (not is_loc_sys()) return false;
 
-  if (g_state().MaxBlockNumber() > 1)
+  if (g_state().max_block_number() > 1)
   {
-    Epetra_Vector v_displ(*g_state().DofRowMapView());
+    Epetra_Vector v_displ(*g_state().dof_row_map_view());
     Core::LinAlg::ExtractMyVector(*v, v_displ);
 
     locsysman_ptr_->RotateLocalToGlobal(Teuchos::rcpFromRef(v_displ), offset);
@@ -466,7 +467,7 @@ Epetra_Vector& STR::Dbc::freact() const
  *----------------------------------------------------------------------------*/
 const STR::TimeInt::BaseDataGlobalState& STR::Dbc::g_state() const
 {
-  return timint_ptr_->GetDataGlobalState();
+  return timint_ptr_->get_data_global_state();
 }
 
 /*----------------------------------------------------------------------------*

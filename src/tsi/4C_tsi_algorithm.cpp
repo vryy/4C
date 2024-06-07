@@ -457,7 +457,7 @@ void TSI::Algorithm::prepare_contact_strategy()
     STR::MODELEVALUATOR::Contact& a = static_cast<STR::MODELEVALUATOR::Contact&>(
         structure_field()->ModelEvaluator(Inpar::STR::model_contact));
     contact_strategy_nitsche_ =
-        Teuchos::rcp_dynamic_cast<CONTACT::NitscheStrategyTsi>(a.StrategyPtr(), false);
+        Teuchos::rcp_dynamic_cast<CONTACT::NitscheStrategyTsi>(a.strategy_ptr(), false);
     contact_strategy_nitsche_->enable_redistribution();
 
     thermo_->set_nitsche_contact_strategy(contact_strategy_nitsche_);

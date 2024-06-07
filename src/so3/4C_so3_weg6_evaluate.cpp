@@ -938,8 +938,8 @@ void Discret::ELEMENTS::SoWeg6::sow6_nlnstiffmass(std::vector<int>& lm,  // loca
           double timintfac_vel = 0.0;
           if (IsParamsInterface())
           {
-            timintfac_dis = str_params_interface().GetTimIntFactorDisp();
-            timintfac_vel = str_params_interface().GetTimIntFactorVel();
+            timintfac_dis = str_params_interface().get_tim_int_factor_disp();
+            timintfac_vel = str_params_interface().get_tim_int_factor_vel();
           }
           else
           {

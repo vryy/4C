@@ -92,19 +92,19 @@ namespace STR
 
       void Predict(const Inpar::STR::PredEnum& pred_type) override;
 
-      void UpdateStepState(const double& timefac_n) override;
+      void update_step_state(const double& timefac_n) override;
 
-      void UpdateStepElement() override;
+      void update_step_element() override;
 
       void determine_stress_strain() override;
 
-      void DetermineEnergy() override;
+      void determine_energy() override;
 
       void determine_optional_quantity() override;
 
-      void ResetStepState() override;
+      void reset_step_state() override;
 
-      void OutputStepState(Core::IO::DiscretizationWriter& iowriter) const override;
+      void output_step_state(Core::IO::DiscretizationWriter& iowriter) const override;
 
       void runtime_pre_output_step_state() override;
 
@@ -116,14 +116,14 @@ namespace STR
 
       Teuchos::RCP<const Epetra_Vector> get_last_time_step_solution_ptr() const override;
 
-      void PostOutput() override;
+      void post_output() override;
 
       void evaluate_jacobian_contributions_from_element_level_for_ptc() override;
 
       void assemble_jacobian_contributions_from_element_level_for_ptc(
           Teuchos::RCP<Core::LinAlg::SparseMatrix>& modjac, const double& timefac_n) override;
 
-      void CreateBackupState(const Epetra_Vector& dir) override;
+      void create_backup_state(const Epetra_Vector& dir) override;
 
       void recover_from_backup_state() override;
       //! @}

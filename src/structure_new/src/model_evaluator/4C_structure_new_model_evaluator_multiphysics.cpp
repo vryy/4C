@@ -113,11 +113,11 @@ bool STR::MODELEVALUATOR::Multiphysics::evaluate_force_stiff()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Multiphysics::UpdateStepState(const double& timefac_n)
+void STR::MODELEVALUATOR::Multiphysics::update_step_state(const double& timefac_n)
 {
   check_active_model_type();
 
-  get_model_evaluator_from_map(active_mt_)->UpdateStepState(timefac_n);
+  get_model_evaluator_from_map(active_mt_)->update_step_state(timefac_n);
 }
 
 FOUR_C_NAMESPACE_CLOSE

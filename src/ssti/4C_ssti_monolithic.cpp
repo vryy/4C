@@ -76,7 +76,7 @@ void SSTI::SSTIMono::assemble_mat_and_rhs()
   strategy_assemble_->AssembleScatra(
       ssti_matrices_->SystemMatrix(), ScaTraField()->system_matrix_operator());
   strategy_assemble_->AssembleStructure(
-      ssti_matrices_->SystemMatrix(), structure_field()->SystemMatrix());
+      ssti_matrices_->SystemMatrix(), structure_field()->system_matrix());
   strategy_assemble_->AssembleThermo(
       ssti_matrices_->SystemMatrix(), ThermoField()->system_matrix_operator());
 

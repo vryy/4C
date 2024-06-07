@@ -59,7 +59,7 @@ int Discret::ELEMENTS::SoHex8fbar::Evaluate(Teuchos::ParameterList& params,
   Core::Elements::ActionType act = Core::Elements::none;
 
   if (IsParamsInterface())
-    act = params_interface().GetActionType();
+    act = params_interface().get_action_type();
   else
   {
     // get the required action
@@ -213,12 +213,12 @@ int Discret::ELEMENTS::SoHex8fbar::Evaluate(Teuchos::ParameterList& params,
       Inpar::STR::StrainType ioplstrain = Inpar::STR::strain_none;
       if (IsParamsInterface())
       {
-        stressdata = str_params_interface().StressDataPtr();
-        straindata = str_params_interface().StrainDataPtr();
+        stressdata = str_params_interface().stress_data_ptr();
+        straindata = str_params_interface().strain_data_ptr();
         plstraindata = str_params_interface().plastic_strain_data_ptr();
 
-        iostress = str_params_interface().GetStressOutputType();
-        iostrain = str_params_interface().GetStrainOutputType();
+        iostress = str_params_interface().get_stress_output_type();
+        iostrain = str_params_interface().get_strain_output_type();
         ioplstrain = str_params_interface().get_plastic_strain_output_type();
       }
       else
@@ -640,7 +640,7 @@ int Discret::ELEMENTS::SoHex8fbar::evaluate_neumann(Teuchos::ParameterList& para
   // find out whether we will use a time curve
   double time = -1.0;
   if (IsParamsInterface())
-    time = params_interface().GetTotalTime();
+    time = params_interface().get_total_time();
   else
     time = params.get("total time", -1.0);
 
@@ -899,9 +899,9 @@ void Discret::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // locat
       // check, if errors are tolerated or should throw a FOUR_C_THROW
       if (IsParamsInterface())
       {
-        if (str_params_interface().IsTolerateErrors())
+        if (str_params_interface().is_tolerate_errors())
         {
-          str_params_interface().SetEleEvalErrorFlag(
+          str_params_interface().set_ele_eval_error_flag(
               STR::ELEMENTS::ele_error_negative_det_of_def_gradient);
           stiffmatrix->Clear();
           force->Clear();
@@ -1358,8 +1358,8 @@ void Discret::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // locat
         double timintfac_vel = 0.0;
         if (IsParamsInterface())
         {
-          timintfac_dis = str_params_interface().GetTimIntFactorDisp();
-          timintfac_vel = str_params_interface().GetTimIntFactorVel();
+          timintfac_dis = str_params_interface().get_tim_int_factor_disp();
+          timintfac_vel = str_params_interface().get_tim_int_factor_vel();
         }
         else
         {

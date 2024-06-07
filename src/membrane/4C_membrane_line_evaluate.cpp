@@ -56,7 +56,7 @@ int Discret::ELEMENTS::MembraneLine<distype>::evaluate_neumann(Teuchos::Paramete
   // find out whether we will use a time curve
   double time = -1.0;
   if (parent_element()->IsParamsInterface())
-    time = parent_element()->ParamsInterfacePtr()->GetTotalTime();
+    time = parent_element()->ParamsInterfacePtr()->get_total_time();
   else
     time = params.get("total time", -1.0);
 

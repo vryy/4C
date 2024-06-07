@@ -258,7 +258,7 @@ void FPSI::MonolithicPlain::setup_system_matrix(Core::LinAlg::BlockSparseMatrixB
   mat.UnComplete();  // basically makes no sense as all blocks will be assigned later!!!
 
   // get single field block matrices
-  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> p = poro_field()->BlockSystemMatrix();
+  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> p = poro_field()->block_system_matrix();
   p->UnComplete();
 
   const Teuchos::RCP<Core::LinAlg::SparseMatrix> f = fluid_field()->SystemSparseMatrix();
@@ -519,8 +519,8 @@ void FPSI::MonolithicPlain::setup_system_matrix(Core::LinAlg::BlockSparseMatrixB
     // FPSICoupl()->C_pf().Complete();
     // TODO: scaled by zero??
     //    (*figtransform4_)(
-    //        fluid_field()->BlockSystemMatrix()->FullRowMap(),
-    //        fluid_field()->BlockSystemMatrix()->FullColMap(),
+    //        fluid_field()->block_system_matrix()->FullRowMap(),
+    //        fluid_field()->block_system_matrix()->FullColMap(),
     //        FPSICoupl()->C_pf(),
     //        timescale * 0,
     //        Adapter::CouplingSlaveConverter(coupsf_fsi),
@@ -713,9 +713,10 @@ void FPSI::MonolithicPlain::setup_rhs_first_iter(Epetra_Vector& f)
   rhs = poro_field()->structure_field()->Interface()->InsertFSICondVector(rhs);
   rhs = poro_field()->Extractor()->InsertVector(rhs, 0);  // s->p
 
-  if (poro_field()->structure_field()->GetSTCAlgo() == Inpar::STR::stc_currsym)  //??ChrAg
+  if (poro_field()->structure_field()->get_stc_algo() == Inpar::STR::stc_currsym)  //??ChrAg
   {
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> stcmat = poro_field()->structure_field()->GetSTCMat();
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> stcmat =
+        poro_field()->structure_field()->get_stc_mat();
     stcmat->Multiply(true, *rhs, *rhs);
   }
 

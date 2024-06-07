@@ -57,7 +57,7 @@ void STR::Predict::Generic::Init(const enum Inpar::STR::PredEnum& type,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Predict::Generic::PrePredict(::NOX::Abstract::Group& grp)
+void STR::Predict::Generic::pre_predict(::NOX::Abstract::Group& grp)
 {
   check_init_setup();
   Print();
@@ -69,42 +69,42 @@ void STR::Predict::Generic::PrePredict(::NOX::Abstract::Group& grp)
 void STR::Predict::Generic::Predict(::NOX::Abstract::Group& grp)
 {
   check_init_setup();
-  bool& ispredict = gstate_ptr_->IsPredict();
+  bool& ispredict = gstate_ptr_->is_predict();
   ispredict = true;
 
   // pre-process the prediction step
-  PrePredict(grp);
+  pre_predict(grp);
 
   // compute the actual prediction step
   Compute(grp);
 
   // post-process the prediction step
-  PostPredict(grp);
+  post_predict(grp);
 
   ispredict = false;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Predict::Generic::PostPredict(::NOX::Abstract::Group& grp)
+void STR::Predict::Generic::post_predict(::NOX::Abstract::Group& grp)
 {
   check_init_setup();
 
-  dbc().apply_dirichlet_bc(global_state().GetTimeNp(), global_state().GetDisNp(),
-      global_state().GetVelNp(), global_state().GetAccNp(), false);
+  dbc().apply_dirichlet_bc(global_state().get_time_np(), global_state().get_dis_np(),
+      global_state().get_vel_np(), global_state().get_acc_np(), false);
 
   // Create the new solution vector
-  Teuchos::RCP<::NOX::Epetra::Vector> x_vec = global_state().CreateGlobalVector(
-      TimeInt::BaseDataGlobalState::VecInitType::init_current_state, impl_int().ModelEvalPtr());
+  Teuchos::RCP<::NOX::Epetra::Vector> x_vec = global_state().create_global_vector(
+      TimeInt::BaseDataGlobalState::VecInitType::init_current_state, impl_int().model_eval_ptr());
   // resets all isValid flags
   grp.setX(*x_vec);
 
   NOX::Nln::Group* nlngrp_ptr = dynamic_cast<NOX::Nln::Group*>(&grp);
   FOUR_C_ASSERT(nlngrp_ptr != nullptr, "Group cast failed!");
   // evaluate the right hand side and the jacobian
-  implint_ptr_->SetIsPredictorState(true);
+  implint_ptr_->set_is_predictor_state(true);
   nlngrp_ptr->computeFandJacobian();
-  implint_ptr_->SetIsPredictorState(false);
+  implint_ptr_->set_is_predictor_state(false);
 }
 
 /*----------------------------------------------------------------------------*
@@ -192,7 +192,7 @@ STR::TimeInt::BaseDataIO& STR::Predict::Generic::io_data()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const STR::TimeInt::BaseDataGlobalState& STR::Predict::Generic::GlobalState() const
+const STR::TimeInt::BaseDataGlobalState& STR::Predict::Generic::global_state() const
 {
   check_init();
   return *gstate_ptr_;
@@ -219,8 +219,8 @@ Teuchos::ParameterList& STR::Predict::Generic::nox_params()
 void STR::Predict::Generic::Print() const
 {
   check_init_setup();
-  if (gstate_ptr_->GetMyRank() == 0 and iodata_ptr_->get_print2_screen_every_n_step() and
-      gstate_ptr_->GetStepN() % iodata_ptr_->get_print2_screen_every_n_step() == 0)
+  if (gstate_ptr_->get_my_rank() == 0 and iodata_ptr_->get_print2_screen_every_n_step() and
+      gstate_ptr_->get_step_n() % iodata_ptr_->get_print2_screen_every_n_step() == 0)
   {
     Core::IO::cout << "=== Structural predictor: " << Name().c_str() << " ===" << Core::IO::endl;
   }

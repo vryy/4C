@@ -157,7 +157,7 @@ Teuchos::RCP<Epetra_Vector> CONTACT::Aug::LagrangeMultiplierFunction::Compute(
 Teuchos::RCP<Epetra_Vector> CONTACT::Aug::LagrangeMultiplierFunction::get_structure_gradient(
     const CONTACT::ParamsInterface& cparams) const
 {
-  const STR::MODELEVALUATOR::Generic& model = cparams.GetModelEvaluator();
+  const STR::MODELEVALUATOR::Generic& model = cparams.get_model_evaluator();
   const STR::MODELEVALUATOR::Contact& cmodel =
       dynamic_cast<const STR::MODELEVALUATOR::Contact&>(model);
 
@@ -191,13 +191,13 @@ Teuchos::RCP<Epetra_Vector> CONTACT::Aug::LagrangeMultiplierFunction::FirstOrder
 
   Epetra_Vector rhs(data_->GActiveNDofRowMap(), true);
 
-  const STR::MODELEVALUATOR::Generic& model = cparams.GetModelEvaluator();
+  const STR::MODELEVALUATOR::Generic& model = cparams.get_model_evaluator();
   const STR::MODELEVALUATOR::Contact& cmodel =
       dynamic_cast<const STR::MODELEVALUATOR::Contact&>(model);
 
   // access the full stiffness matrix
   Core::LinAlg::SparseMatrix full_stiff(
-      *cmodel.GetJacobianBlock(STR::MatBlockType::displ_displ), Core::LinAlg::Copy);
+      *cmodel.get_jacobian_block(STR::MatBlockType::displ_displ), Core::LinAlg::Copy);
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kdd_ptr =
       strategy_->GetMatrixBlockPtr(CONTACT::MatBlockType::displ_displ);

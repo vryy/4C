@@ -125,7 +125,7 @@ namespace THR
         void UpdateStepAndTime()
         {
           // system state
-          UpdateStepState();
+          update_step_state();
           // update time and step
           time_->UpdateSteps(timen_);
           step_ = stepn_;
@@ -133,7 +133,7 @@ namespace THR
           timen_ += (*dt_)[0];
           stepn_ += 1;
           // element update
-          UpdateStepElement();
+          update_step_element();
         }
     */
     //@}
@@ -144,7 +144,7 @@ namespace THR
     //! print summary after step
     void PrintStep() override;
 
-    //! The text for summary print, see #PrintStep
+    //! The text for summary print, see #print_step
     void print_step_text(FILE* ofile  //!< output file handle
     );
 

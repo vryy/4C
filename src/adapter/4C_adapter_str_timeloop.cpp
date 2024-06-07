@@ -27,8 +27,8 @@ int Adapter::StructureTimeLoop::Integrate()
 
   // target time #timen_ and step #stepn_ already set
   // time loop
-  while (NotFinished() and (convergencestatus == Inpar::STR::conv_success or
-                               convergencestatus == Inpar::STR::conv_fail_repeat))
+  while (not_finished() and (convergencestatus == Inpar::STR::conv_success or
+                                convergencestatus == Inpar::STR::conv_fail_repeat))
   {
     // call the predictor
     PrePredict();
@@ -61,7 +61,7 @@ int Adapter::StructureTimeLoop::Integrate()
       PostOutput();
 
       // print info about finished time step
-      PrintStep();
+      print_step();
     }
     // todo: remove this as soon as old structure time integration is gone
     else if (Core::UTILS::IntegralValue<Inpar::STR::IntegrationStrategy>(

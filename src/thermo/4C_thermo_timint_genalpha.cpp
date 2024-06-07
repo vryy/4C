@@ -317,7 +317,7 @@ double THR::TimIntGenAlpha::CalcRefNormForce()
   // determine worst value ==> charactersitic norm
   return std::max(fcapnorm, std::max(fintnorm, std::max(fextnorm, freactnorm)));
 
-}  // CalcRefNormForce()
+}  // calc_ref_norm_force()
 
 
 /*----------------------------------------------------------------------*
@@ -401,7 +401,7 @@ void THR::TimIntGenAlpha::UpdateStepState()
   // look out
   return;
 
-}  // UpdateStepState()
+}  // update_step_state()
 
 
 /*----------------------------------------------------------------------*
@@ -420,7 +420,7 @@ void THR::TimIntGenAlpha::UpdateStepElement()
   // go to elements
   discret_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
-}  // UpdateStepElement()
+}  // update_step_element()
 
 
 /*----------------------------------------------------------------------*

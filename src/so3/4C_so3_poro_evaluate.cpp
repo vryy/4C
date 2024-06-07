@@ -114,7 +114,7 @@ int Discret::ELEMENTS::So3Poro<so3_ele, distype>::Evaluate(Teuchos::ParameterLis
 
   if (so3_ele::IsParamsInterface())
   {
-    act = so3_ele::params_interface().GetActionType();
+    act = so3_ele::params_interface().get_action_type();
   }
   else
   {
@@ -177,7 +177,7 @@ int Discret::ELEMENTS::So3Poro<so3_ele, distype>::my_evaluate(Teuchos::Parameter
 
   if (so3_ele::IsParamsInterface())
   {
-    act = so3_ele::params_interface().GetActionType();
+    act = so3_ele::params_interface().get_action_type();
   }
   else
   {

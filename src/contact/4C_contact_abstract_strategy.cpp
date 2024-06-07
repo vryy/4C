@@ -2965,7 +2965,7 @@ void CONTACT::AbstractStrategy::Evaluate(CONTACT::ParamsInterface& cparams,
 {
   pre_evaluate(cparams);
 
-  const enum Mortar::ActionType& act = cparams.GetActionType();
+  const enum Mortar::ActionType& act = cparams.get_action_type();
   switch (act)
   {
     // -------------------------------------------------------------------

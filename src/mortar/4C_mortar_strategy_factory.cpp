@@ -68,7 +68,7 @@ void Mortar::STRATEGY::Factory::Setup()
   check_init();
 
   //  get the underlying discretization
-  if (gstate_ptr_ != Teuchos::null) discret_ptr_ = gstate_ptr_->GetDiscret();
+  if (gstate_ptr_ != Teuchos::null) discret_ptr_ = gstate_ptr_->get_discret();
 
   // get a copy of the underlying structural communicator
   comm_ptr_ = Teuchos::rcp(discret_ptr_->Comm().Clone());

@@ -158,13 +158,13 @@ void STR::ResultTest::Init(
 {
   issetup_ = false;
 
-  disn_ = gstate.GetDisN();
-  veln_ = gstate.GetVelN();
-  accn_ = gstate.GetAccN();
-  reactn_ = gstate.GetFreactN();
+  disn_ = gstate.get_dis_n();
+  veln_ = gstate.get_vel_n();
+  accn_ = gstate.get_acc_n();
+  reactn_ = gstate.get_freact_n();
   gstate_ = Teuchos::rcpFromRef(gstate);
   data_ = Teuchos::rcpFromRef(data);
-  strudisc_ = gstate.GetDiscret();
+  strudisc_ = gstate.get_discret();
 
   if (Global::Problem::Instance()->GetProblemType() == Core::ProblemType::struct_ale and
       (Global::Problem::Instance()->WearParams()).get<double>("WEARCOEFF") > 0.0)
@@ -367,11 +367,11 @@ int STR::ResultTest::get_nodal_result(
   if (data_->get_gauss_point_data_output_manager_ptr() != Teuchos::null)
   {
     std::optional<QuantityNameAndComponent> name_and_component = GetGaussPointDataNameAndComponent(
-        position, data_->get_gauss_point_data_output_manager_ptr()->GetQuantities());
+        position, data_->get_gauss_point_data_output_manager_ptr()->get_quantities());
     if (name_and_component.has_value())
     {
       result = GetGaussPointDataValue(*name_and_component, node,
-          data_->get_gauss_point_data_output_manager_ptr()->GetNodalData());
+          data_->get_gauss_point_data_output_manager_ptr()->get_nodal_data());
       unknownpos = false;
     }
   }
@@ -708,7 +708,7 @@ std::optional<double> STR::ResultTest::get_energy(
   if (strudisc_->Comm().MyPID() == 0)
   {
     special_status = Status::evaluated;
-    result = data_->GetEnergyData(quantity);
+    result = data_->get_energy_data(quantity);
   }
 
   return result;

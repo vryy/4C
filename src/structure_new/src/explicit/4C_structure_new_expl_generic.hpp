@@ -33,18 +33,17 @@ namespace STR
       //! constructor
       Generic() = default;
 
-
       //! Setup (has to be implemented by the derived classes)
       void Setup() override;
 
       //! Apply the right hand side only (derived)
-      bool ApplyForce(const Epetra_Vector& x, Epetra_Vector& f) override;
+      bool apply_force(const Epetra_Vector& x, Epetra_Vector& f) override;
 
       //! \brief Apply the stiffness only (derived)
-      bool ApplyStiff(const Epetra_Vector& x, Core::LinAlg::SparseOperator& jac) override;
+      bool apply_stiff(const Epetra_Vector& x, Core::LinAlg::SparseOperator& jac) override;
 
       //! \brief Apply force and stiff at once (derived)
-      bool ApplyForceStiff(
+      bool apply_force_stiff(
           const Epetra_Vector& x, Epetra_Vector& f, Core::LinAlg::SparseOperator& jac) override;
 
       /*! \brief (derived)
@@ -59,7 +58,7 @@ namespace STR
 
       /*! \brief Calculate characteristic/reference norms for forces (derived)
        */
-      [[nodiscard]] double CalcRefNormForce(
+      [[nodiscard]] double calc_ref_norm_force(
           const enum ::NOX::Abstract::Vector::NormType& type) const override;
 
       //! return the default step length
@@ -76,7 +75,7 @@ namespace STR
       //! @name Monolithic update routines
       //! @{
       //! things that should be done before updating (derived)
-      void PreUpdate() override{/* do nothing for now */};
+      void pre_update() override{/* do nothing for now */};
 
       //! (derived)
       void update_constant_state_contributions() override;
@@ -84,7 +83,7 @@ namespace STR
       virtual void OutputStepstate() { ; };
 
       //! Update everything on element level after time step and after output (derived)
-      void UpdateStepElement() override;
+      void update_step_element() override;
 
       //! things that should be done after updating (derived)
       void post_update() override;
@@ -99,11 +98,11 @@ namespace STR
       //@{
 
       //! Provide Name
-      [[nodiscard]] virtual enum Inpar::STR::DynamicType MethodName() const = 0;
+      [[nodiscard]] virtual enum Inpar::STR::DynamicType method_name() const = 0;
 
       //! Provide number of steps, e.g. a single-step method returns 1,
       //! a \f$m\f$-multistep method returns \f$m\f$
-      [[nodiscard]] virtual int MethodSteps() const = 0;
+      [[nodiscard]] virtual int method_steps() const = 0;
 
       //! Give local order of accuracy of displacement part
       [[nodiscard]] virtual int method_order_of_accuracy_dis() const = 0;
@@ -144,7 +143,6 @@ namespace NOX
               : default_step_(expl.get_default_step_length())
           {
           }
-
 
           //! derived
           void runPreIterate(const ::NOX::Solver::Generic& solver) override;

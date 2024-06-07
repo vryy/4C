@@ -108,14 +108,14 @@ namespace STR
       ///@{
 
       /// Returns final time \f$t_\text{fin}\f$
-      const double& GetTimeMax() const
+      const double& get_time_max() const
       {
         check_init_setup();
         return timemax_;
       };
 
       /// Returns final time step \f$N\f$
-      const int& GetStepMax() const
+      const int& get_step_max() const
       {
         check_init_setup();
         return stepmax_;
@@ -128,56 +128,56 @@ namespace STR
       }
 
       /// Returns timer for solution technique
-      Teuchos::RCP<const Teuchos::Time> GetTimer() const
+      Teuchos::RCP<const Teuchos::Time> get_timer() const
       {
         check_init_setup();
         return timer_;
       };
 
       /// Returns dynamic type
-      const enum Inpar::STR::DynamicType& GetDynamicType() const
+      const enum Inpar::STR::DynamicType& get_dynamic_type() const
       {
         check_init_setup();
         return dyntype_;
       };
 
       /// Get type of shell thickness scaling
-      const enum Inpar::STR::StcScale& GetSTCAlgoType() const
+      const enum Inpar::STR::StcScale& get_stc_algo_type() const
       {
         check_init_setup();
         return stcscale_;
       };
 
       /// Get number of layers for multilayered shell thickness scaling case
-      const int& GetSTCLayer() const
+      int get_stc_layer() const
       {
         check_init_setup();
         return stclayer_;
       };
 
       /// Returns minimal non-linear iteration number
-      const int& GetIterMin() const
+      int get_iter_min() const
       {
         check_init_setup();
         return itermin_;
       };
 
       /// Returns maximal non-linear iteration number
-      const int& GetIterMax() const
+      int get_iter_max() const
       {
         check_init_setup();
         return itermax_;
       };
 
       /// Returns true if the external load should be linearized
-      const bool& GetLoadLin() const
+      bool get_load_lin() const
       {
         check_init_setup();
         return loadlin_;
       }
 
       // Return time until the prestressing algorthm should be applied
-      double GetPreStressTime() const
+      double get_pre_stress_time() const
       {
         check_init_setup();
         return prestresstime_;
@@ -198,21 +198,21 @@ namespace STR
       }
 
       /// Returns prestress type
-      const enum Inpar::STR::PreStress& GetPreStressType() const
+      enum Inpar::STR::PreStress get_pre_stress_type() const
       {
         check_init_setup();
         return prestresstype_;
       };
 
       /// Returns predictor type
-      const enum Inpar::STR::PredEnum& GetPredictorType() const
+      enum Inpar::STR::PredEnum get_predictor_type() const
       {
         check_init_setup();
         return predtype_;
       };
 
       /// Returns nonlinear solver type
-      const enum Inpar::STR::NonlinSolTech& GetNlnSolverType() const
+      enum Inpar::STR::NonlinSolTech get_nln_solver_type() const
       {
         check_init_setup();
         return nlnsolvertype_;
@@ -220,7 +220,7 @@ namespace STR
 
       /// Returns the divergence action
       /// Short: What to do if the non-linear solver fails.
-      const enum Inpar::STR::DivContAct& GetDivergenceAction() const
+      enum Inpar::STR::DivContAct get_divergence_action() const
       {
         check_init_setup();
         return divergenceaction_;
@@ -255,7 +255,7 @@ namespace STR
       }
 
       /// Returns the inital pseudo time step for the PTC method
-      const double& get_initial_ptc_pseudo_time_step() const { return ptc_delta_init_; }
+      double get_initial_ptc_pseudo_time_step() const { return ptc_delta_init_; }
       ///@}
 
       /// @name Get mutable linear solver variables (read only access)
@@ -274,21 +274,21 @@ namespace STR
       /// @name Get damping control parameters (read only access)
       ///@{
       /// Returns damping type
-      const enum Inpar::STR::DampKind& GetDampingType() const
+      enum Inpar::STR::DampKind get_damping_type() const
       {
         check_init_setup();
         return damptype_;
       };
 
       /// Returns damping factor for stiffness \f$c_\text{K}\f$
-      const double& get_damping_stiffness_factor() const
+      double get_damping_stiffness_factor() const
       {
         check_init_setup();
         return dampk_;
       };
 
       /// Returns damping factor for mass \f$c_\text{M}\f$
-      const double& get_damping_mass_factor() const
+      double get_damping_mass_factor() const
       {
         check_init_setup();
         return dampm_;
@@ -298,19 +298,19 @@ namespace STR
       /// @name Get mass and inertia control parameters (read only access)
       ///@{
       /// Returns mass linearization type
-      const enum Inpar::STR::MassLin& GetMassLinType() const
+      enum Inpar::STR::MassLin GetMassLinType() const
       {
         check_init_setup();
         return masslintype_;
       };
 
-      const bool& IsMassLumping() const
+      bool IsMassLumping() const
       {
         check_init_setup();
         return lumpmass_;
       }
 
-      const bool& NeglectInertia() const
+      bool NeglectInertia() const
       {
         check_init_setup();
         return neglectinertia_;
@@ -495,28 +495,28 @@ namespace STR
       }
 
       /// Returns prestress type
-      enum Inpar::STR::PreStress& GetPreStressType()
+      enum Inpar::STR::PreStress& get_pre_stress_type()
       {
         check_init_setup();
         return prestresstype_;
       };
 
       /// Returns predictor type
-      enum Inpar::STR::PredEnum& GetPredictorType()
+      enum Inpar::STR::PredEnum& get_predictor_type()
       {
         check_init_setup();
         return predtype_;
       };
 
       /// Returns dynamic type
-      enum Inpar::STR::DynamicType& GetDynamicType()
+      enum Inpar::STR::DynamicType& get_dynamic_type()
       {
         check_init_setup();
         return dyntype_;
       };
 
       /// Returns nonlinear solver type
-      enum Inpar::STR::NonlinSolTech& GetNlnSolverType()
+      enum Inpar::STR::NonlinSolTech& get_nln_solver_type()
       {
         check_init_setup();
         return nlnsolvertype_;
@@ -531,28 +531,28 @@ namespace STR
 
       /// Returns the divergence action
       /// Short: What to do if the non-linear solver fails.
-      enum Inpar::STR::DivContAct& GetDivergenceAction()
+      enum Inpar::STR::DivContAct& get_divergence_action()
       {
         check_init_setup();
         return divergenceaction_;
       };
 
       /// Returns nox parameters
-      Teuchos::ParameterList& GetNoxParams()
+      Teuchos::ParameterList& get_nox_params()
       {
         check_init_setup();
         return *noxparams_;
       }
 
       /// Returns nox parameters
-      Teuchos::RCP<Teuchos::ParameterList> GetNoxParamsPtr()
+      Teuchos::RCP<Teuchos::ParameterList> get_nox_params_ptr()
       {
         check_init_setup();
         return noxparams_;
       }
 
       /// Returns loca parameters
-      Teuchos::ParameterList& GetLocaParams()
+      Teuchos::ParameterList& get_loca_params()
       {
         check_init_setup();
         return *locaparams_;
@@ -603,7 +603,7 @@ namespace STR
       /// @name Get mutable damping control parameters (read and write access)
       ///@{
       /// Returns damping type
-      enum Inpar::STR::DampKind& GetDampingType()
+      enum Inpar::STR::DampKind& get_damping_type()
       {
         check_init_setup();
         return damptype_;
@@ -627,7 +627,7 @@ namespace STR
       /// @name Get mutable mass and inertia control parameters (read and write access)
       ///@{
       /// Returns mass linearization type
-      enum Inpar::STR::MassLin& GetMassLinType()
+      enum Inpar::STR::MassLin& get_mass_lin_type()
       {
         check_init_setup();
         return masslintype_;
@@ -637,7 +637,7 @@ namespace STR
       /// @name Get model evaluator control parameters (read and write access)
       ///@{
       /// Returns types of the current active models
-      std::set<enum Inpar::STR::ModelType>& GetModelTypes()
+      std::set<enum Inpar::STR::ModelType>& get_model_types()
       {
         check_init_setup();
         return *modeltypes_;
@@ -651,7 +651,7 @@ namespace STR
       };
 
       /// Return a pointer to the coupling model evaluator
-      const Teuchos::RCP<STR::MODELEVALUATOR::Generic>& CouplingModelPtr()
+      const Teuchos::RCP<STR::MODELEVALUATOR::Generic>& coupling_model_ptr()
       {
         return coupling_model_ptr_;
       }
@@ -660,7 +660,7 @@ namespace STR
       /// @name Get the initial displacement method
       ///@{
       /// Returns type of initial displacement
-      enum Inpar::STR::InitialDisp GetInitialDisp() const
+      enum Inpar::STR::InitialDisp get_initial_disp() const
       {
         check_init_setup();
         return initial_disp_;
@@ -679,7 +679,7 @@ namespace STR
        *
        * Do not touch this. It should be used only in derived Setup routines.
        * Do not call it from outside! */
-      const Teuchos::ParameterList& get_s_dyn_params() const
+      const Teuchos::ParameterList& get_sdyn_params() const
       {
         check_init();
         return *sdynparams_ptr_;

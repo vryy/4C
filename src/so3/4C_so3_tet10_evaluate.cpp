@@ -568,7 +568,8 @@ int Discret::ELEMENTS::SoTet10::Evaluate(Teuchos::ParameterList& params,
       SolidMaterial()->register_output_data_names(quantities_map);
 
       // Add quantities to the Gauss point output data manager (if they do not already exist)
-      str_params_interface().gauss_point_data_output_manager_ptr()->MergeQuantities(quantities_map);
+      str_params_interface().gauss_point_data_output_manager_ptr()->merge_quantities(
+          quantities_map);
     }
     break;
     case struct_gauss_point_data_output:
@@ -578,7 +579,7 @@ int Discret::ELEMENTS::SoTet10::Evaluate(Teuchos::ParameterList& params,
 
       // Collection and assembly of gauss point data
       for (const auto& quantity :
-          str_params_interface().gauss_point_data_output_manager_ptr()->GetQuantities())
+          str_params_interface().gauss_point_data_output_manager_ptr()->get_quantities())
       {
         const std::string& quantity_name = quantity.first;
         const int quantity_size = quantity.second;
@@ -591,7 +592,7 @@ int Discret::ELEMENTS::SoTet10::Evaluate(Teuchos::ParameterList& params,
         // point)
         if (data_available)
         {
-          switch (str_params_interface().gauss_point_data_output_manager_ptr()->GetOutputType())
+          switch (str_params_interface().gauss_point_data_output_manager_ptr()->get_output_type())
           {
             case Inpar::STR::GaussPointDataOutputType::element_center:
             {
@@ -607,13 +608,13 @@ int Discret::ELEMENTS::SoTet10::Evaluate(Teuchos::ParameterList& params,
             case Inpar::STR::GaussPointDataOutputType::nodes:
             {
               Teuchos::RCP<Epetra_MultiVector> global_data =
-                  str_params_interface().gauss_point_data_output_manager_ptr()->GetNodalData().at(
+                  str_params_interface().gauss_point_data_output_manager_ptr()->get_nodal_data().at(
                       quantity_name);
 
               Epetra_IntVector& global_nodal_element_count =
                   *str_params_interface()
                        .gauss_point_data_output_manager_ptr()
-                       ->GetNodalDataCount()
+                       ->get_nodal_data_count()
                        .at(quantity_name);
 
               static auto gauss_integration = Core::FE::IntegrationPoints3D(
@@ -628,7 +629,7 @@ int Discret::ELEMENTS::SoTet10::Evaluate(Teuchos::ParameterList& params,
               std::vector<Teuchos::RCP<Epetra_MultiVector>>& global_data =
                   str_params_interface()
                       .gauss_point_data_output_manager_ptr()
-                      ->GetGaussPointData()
+                      ->get_gauss_point_data()
                       .at(quantity_name);
               Discret::ELEMENTS::AssembleGaussPointValues(global_data, gp_data, *this);
               break;
@@ -673,7 +674,7 @@ int Discret::ELEMENTS::SoTet10::evaluate_neumann(Teuchos::ParameterList& params,
       [&]()
       {
         if (IsParamsInterface())
-          return str_params_interface().GetTotalTime();
+          return str_params_interface().get_total_time();
         else
           return params.get("total time", -1.0);
       });
@@ -1170,8 +1171,8 @@ void Discret::ELEMENTS::SoTet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  //
         double timintfac_vel = 0.0;
         if (IsParamsInterface())
         {
-          timintfac_dis = str_params_interface().GetTimIntFactorDisp();
-          timintfac_vel = str_params_interface().GetTimIntFactorVel();
+          timintfac_dis = str_params_interface().get_tim_int_factor_disp();
+          timintfac_vel = str_params_interface().get_tim_int_factor_vel();
         }
         else
         {

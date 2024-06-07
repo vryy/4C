@@ -26,7 +26,7 @@ namespace
   {
     if (ele.IsParamsInterface())
     {
-      return *ele.str_params_interface().StressDataPtr();
+      return *ele.str_params_interface().stress_data_ptr();
     }
     else
     {
@@ -39,7 +39,7 @@ namespace
   {
     if (ele.IsParamsInterface())
     {
-      return *ele.str_params_interface().StrainDataPtr();
+      return *ele.str_params_interface().strain_data_ptr();
     }
     else
     {
@@ -52,7 +52,7 @@ namespace
   {
     if (ele.IsParamsInterface())
     {
-      return ele.str_params_interface().GetStressOutputType();
+      return ele.str_params_interface().get_stress_output_type();
     }
     else
     {
@@ -65,7 +65,7 @@ namespace
   {
     if (ele.IsParamsInterface())
     {
-      return ele.str_params_interface().GetStrainOutputType();
+      return ele.str_params_interface().get_strain_output_type();
     }
     else
     {
@@ -87,7 +87,7 @@ int Discret::ELEMENTS::Shell7p::Evaluate(Teuchos::ParameterList& params,
       [&]()
       {
         if (IsParamsInterface())
-          return str_params_interface().GetActionType();
+          return str_params_interface().get_action_type();
         else
           return Core::Elements::String2ActionType(params.get<std::string>("action", "none"));
       });
@@ -198,7 +198,7 @@ int Discret::ELEMENTS::Shell7p::evaluate_neumann(Teuchos::ParameterList& params,
       [&]()
       {
         if (IsParamsInterface())
-          return str_params_interface().GetTotalTime();
+          return str_params_interface().get_total_time();
         else
           return params.get("total time", -1.0);
       });

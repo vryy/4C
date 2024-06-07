@@ -240,7 +240,7 @@ void PoroElast::MonolithicSplitNoPenetration::setup_system_matrix(
 {
   TEUCHOS_FUNC_TIME_MONITOR("PoroElast::MonolithicSplitNoPenetration::setup_system_matrix");
 
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> s = structure_field()->SystemMatrix();
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> s = structure_field()->system_matrix();
   if (s == Teuchos::null) FOUR_C_THROW("expect structure matrix");
   Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> f = fluid_field()->BlockSystemMatrix();
   if (f == Teuchos::null) FOUR_C_THROW("expect fluid block matrix");
@@ -599,7 +599,7 @@ void PoroElast::MonolithicSplitNoPenetration::Output(bool forced_writerestart)
   Teuchos::RCP<Epetra_Vector> fulllambda =
       Teuchos::rcp<Epetra_Vector>(new Epetra_Vector(*structure_field()->dof_row_map()));
   Core::LinAlg::Export(*lambdanp_, *fulllambda);
-  structure_field()->DiscWriter()->WriteVector("poronopencond_lambda", fulllambda);
+  structure_field()->disc_writer()->WriteVector("poronopencond_lambda", fulllambda);
 }
 
 void PoroElast::MonolithicSplitNoPenetration::setup_coupling_and_matrices()

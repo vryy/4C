@@ -64,7 +64,7 @@ int Discret::ELEMENTS::SoHex27::Evaluate(Teuchos::ParameterList& params,
   else if (action == "calc_struct_internalforce")
     act = SoHex27::calc_struct_internalforce;
   else if (IsParamsInterface() &&
-           params_interface().GetActionType() == Core::Elements::struct_calc_internalinertiaforce)
+           params_interface().get_action_type() == Core::Elements::struct_calc_internalinertiaforce)
     act = SoHex27::calc_struct_internalinertiaforce;
   else if (action == "calc_struct_linstiffmass")
     act = SoHex27::calc_struct_linstiffmass;
@@ -258,7 +258,7 @@ int Discret::ELEMENTS::SoHex27::Evaluate(Teuchos::ParameterList& params,
       auto modelevaluator_data =
           Teuchos::rcp_dynamic_cast<STR::MODELEVALUATOR::Data>(ParamsInterfacePtr());
       if (modelevaluator_data != Teuchos::null)
-        mass_lin = modelevaluator_data->SDyn().GetMassLinType();
+        mass_lin = modelevaluator_data->sdyn().GetMassLinType();
       if (mass_lin == Inpar::STR::MassLin::ml_rotations)
       {
         // In case of Lie group time integration, we need to explicitly add the inertia terms to the
@@ -537,7 +537,7 @@ int Discret::ELEMENTS::SoHex27::evaluate_neumann(Teuchos::ParameterList& params,
       [&]()
       {
         if (IsParamsInterface())
-          return str_params_interface().GetTotalTime();
+          return str_params_interface().get_total_time();
         else
           return params.get("total time", -1.0);
       });
@@ -1403,8 +1403,8 @@ void Discret::ELEMENTS::SoHex27::soh27_nlnstiffmass(std::vector<int>& lm,  // lo
         double timintfac_vel = 0.0;
         if (IsParamsInterface())
         {
-          timintfac_dis = str_params_interface().GetTimIntFactorDisp();
-          timintfac_vel = str_params_interface().GetTimIntFactorVel();
+          timintfac_dis = str_params_interface().get_tim_int_factor_disp();
+          timintfac_vel = str_params_interface().get_tim_int_factor_vel();
         }
         else
         {

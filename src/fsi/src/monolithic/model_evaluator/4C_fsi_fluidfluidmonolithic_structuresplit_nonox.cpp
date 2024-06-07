@@ -167,7 +167,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::setup_rhs(Epetra_Vector& f, b
   {
     // get structure matrix
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> blocks =
-        structure_field()->BlockSystemMatrix();
+        structure_field()->block_system_matrix();
     if (blocks == Teuchos::null) FOUR_C_THROW("expect structure block matrix");
 
     // get fluid shape derivatives matrix
@@ -330,7 +330,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::setup_system_matrix()
   const Core::Adapter::Coupling& coupfa = fluid_ale_coupling();
   const Core::Adapter::Coupling& icoupfa = interface_fluid_ale_coupling();
 
-  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> s = structure_field()->BlockSystemMatrix();
+  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> s = structure_field()->block_system_matrix();
   if (s == Teuchos::null) FOUR_C_THROW("expect structure block matrix");
   Teuchos::RCP<Core::LinAlg::SparseMatrix> f = fluid_field()->SystemMatrix();
   if (f == Teuchos::null) FOUR_C_THROW("expect fluid matrix");
@@ -700,7 +700,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::output()
     const int upres = fsidyn.get<int>("RESULTSEVRY");
     if ((uprestart != 0 && fluid_field()->Step() % uprestart == 0) ||
         fluid_field()->Step() % upres == 0)
-      structure_field()->DiscWriter()->WriteVector("fsilambda", lambdafull);
+      structure_field()->disc_writer()->WriteVector("fsilambda", lambdafull);
   }
 
   fluid_field()->Output();

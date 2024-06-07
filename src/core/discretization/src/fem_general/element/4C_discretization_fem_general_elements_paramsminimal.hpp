@@ -32,11 +32,11 @@ namespace Core::Elements
     //! constructor
     ParamsMinimal() : ele_action_(none), total_time_(-1.0), delta_time_(-1.0){};
 
-    enum ActionType GetActionType() const override { return ele_action_; };
+    enum ActionType get_action_type() const override { return ele_action_; };
 
-    double GetTotalTime() const override { return total_time_; };
+    double get_total_time() const override { return total_time_; };
 
-    double GetDeltaTime() const override { return delta_time_; };
+    double get_delta_time() const override { return delta_time_; };
 
     const Core::UTILS::FunctionManager* get_function_manager() const override
     {

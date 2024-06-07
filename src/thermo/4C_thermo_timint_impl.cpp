@@ -200,7 +200,7 @@ void THR::TimIntImpl::Predict()
   normfres_ = THR::Aux::calculate_vector_norm(iternorm_, fres_);
 
   // determine characteristic norms
-  // we set the minimum of CalcRefNormForce() and #tolfres_, because
+  // we set the minimum of calc_ref_norm_force() and #tolfres_, because
   // we want to prevent the case of a zero characteristic fnorm
   normcharforce_ = CalcRefNormForce();
   if (normcharforce_ == 0.0) normcharforce_ = tolfres_;
@@ -242,7 +242,7 @@ void THR::TimIntImpl::prepare_partition_step()
   normfres_ = THR::Aux::calculate_vector_norm(iternorm_, fres_);
 
   // determine characteristic norms
-  // we set the minumum of CalcRefNormForce() and #tolfres_, because
+  // we set the minumum of calc_ref_norm_force() and #tolfres_, because
   // we want to prevent the case of a zero characteristic fnorm
   normcharforce_ = CalcRefNormForce();
   if (normcharforce_ == 0.0) normcharforce_ = tolfres_;
@@ -994,7 +994,7 @@ void THR::TimIntImpl::PrintStep()
   {
     print_step_text(stdout);
   }
-}  // PrintStep()
+}  // print_step()
 
 
 /*----------------------------------------------------------------------*

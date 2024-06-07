@@ -109,19 +109,19 @@ namespace Mortar
     virtual ~ParamsInterface() = default;
 
     //! Return the mortar/contact action type
-    virtual enum ActionType GetActionType() const = 0;
+    virtual enum ActionType get_action_type() const = 0;
 
     //! Get the nonlinear iteration number
-    virtual int GetNlnIter() const = 0;
+    virtual int get_nln_iter() const = 0;
 
     //! Get the current time step counter \f$(n+1)\f$
-    virtual int GetStepNp() const = 0;
+    virtual int get_step_np() const = 0;
 
     /*! \brief Get time step number from which the current simulation has been restarted
      *
      * Equal to 0 if no restart has been performed.
      */
-    virtual int GetRestartStep() const = 0;
+    virtual int get_restart_step() const = 0;
 
   };  // class ParamsInterface
 }  // namespace Mortar

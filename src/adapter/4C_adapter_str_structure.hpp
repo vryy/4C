@@ -182,7 +182,7 @@ namespace Adapter
     /// known acceleration at \f$t_{n}\f$
     [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> Accn() const = 0;
 
-    virtual void ResizeMStepTimAda() = 0;
+    virtual void resize_m_step_tim_ada() = 0;
 
     //@}
 
@@ -195,16 +195,16 @@ namespace Adapter
     virtual Teuchos::RCP<const Epetra_Map> dof_row_map(unsigned nds) = 0;
 
     /// DOF map view of vector of unknowns
-    virtual const Epetra_Map* DofRowMapView() = 0;
+    virtual const Epetra_Map* dof_row_map_view() = 0;
 
     /// domain map of system matrix (do we really need this?)
     [[nodiscard]] virtual const Epetra_Map& DomainMap() const = 0;
 
     /// direct access to system matrix
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() override = 0;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() override = 0;
 
     /// direct access to system matrix
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> BlockSystemMatrix() override = 0;
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() override = 0;
 
     /// switch structure field to block matrix
     virtual void use_block_matrix(Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> domainmaps,
@@ -242,10 +242,10 @@ namespace Adapter
     virtual Teuchos::RCP<CONSTRAINTS::SpringDashpotManager> get_spring_dashpot_manager() = 0;
 
     /// Get type of thickness scaling for thin shell structures
-    virtual Inpar::STR::StcScale GetSTCAlgo() = 0;
+    virtual Inpar::STR::StcScale get_stc_algo() = 0;
 
     /// Access to scaling matrix for STC
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> GetSTCMat() = 0;
+    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> get_stc_mat() = 0;
 
     /// Return MapExtractor for Dirichlet boundary conditions
     virtual Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor() = 0;
@@ -308,7 +308,7 @@ namespace Adapter
         Inpar::STR::ConvergenceStatus nonlinsoldiv) = 0;
 
     /// tests if there are more time steps to do
-    [[nodiscard]] virtual bool NotFinished() const = 0;
+    [[nodiscard]] virtual bool not_finished() const = 0;
 
     /// start new time step
     void prepare_time_step() override = 0;
@@ -368,13 +368,13 @@ namespace Adapter
     virtual void update_iter_incr_cardiovascular0_d(Teuchos::RCP<Epetra_Vector> presincr) = 0;
 
     /// Access to output object
-    virtual Teuchos::RCP<Core::IO::DiscretizationWriter> DiscWriter() = 0;
+    virtual Teuchos::RCP<Core::IO::DiscretizationWriter> disc_writer() = 0;
 
     /// prepare output (i.e. calculate stresses, strains, energies)
     void prepare_output(bool force_prepare_timestep) override = 0;
 
     // Get restart data
-    virtual void GetRestartData(Teuchos::RCP<int> step, Teuchos::RCP<double> time,
+    virtual void get_restart_data(Teuchos::RCP<int> step, Teuchos::RCP<double> time,
         Teuchos::RCP<Epetra_Vector> disn, Teuchos::RCP<Epetra_Vector> veln,
         Teuchos::RCP<Epetra_Vector> accn, Teuchos::RCP<std::vector<char>> elementdata,
         Teuchos::RCP<std::vector<char>> nodedata) = 0;
@@ -383,7 +383,7 @@ namespace Adapter
     void Output(bool forced_writerestart = false) override = 0;
 
     /// output results to screen
-    virtual void PrintStep() = 0;
+    virtual void print_step() = 0;
 
     /// read restart information for given time step
     void read_restart(const int step) override = 0;
@@ -401,7 +401,7 @@ namespace Adapter
     virtual void reset_step() = 0;
 
     /// set restart information for parameter continuation
-    virtual void SetRestart(int step, double time, Teuchos::RCP<Epetra_Vector> disn,
+    virtual void set_restart(int step, double time, Teuchos::RCP<Epetra_Vector> disn,
         Teuchos::RCP<Epetra_Vector> veln, Teuchos::RCP<Epetra_Vector> accn,
         Teuchos::RCP<std::vector<char>> elementdata, Teuchos::RCP<std::vector<char>> nodedata) = 0;
 
@@ -450,7 +450,7 @@ namespace Adapter
     virtual Teuchos::RCP<Epetra_Vector> solve_relaxation_linear() = 0;
 
     /// get the linear solver object used for this field
-    virtual Teuchos::RCP<Core::LinAlg::Solver> LinearSolver() = 0;
+    virtual Teuchos::RCP<Core::LinAlg::Solver> linear_solver() = 0;
 
     //@}
 
@@ -472,7 +472,7 @@ namespace Adapter
     //@}
 
     /// extract rhs (used to calculate reaction force for post-processing)
-    virtual Teuchos::RCP<Epetra_Vector> Freact() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> freact() = 0;
 
 
     //! @name volume coupled specific methods

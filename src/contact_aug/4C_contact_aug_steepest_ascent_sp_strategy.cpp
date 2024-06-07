@@ -128,11 +128,11 @@ void CONTACT::Aug::SteepestAscentSaddlePoint::Strategy::run_post_apply_jacobian_
 void CONTACT::Aug::SteepestAscentSaddlePoint::Strategy::set_penalty_update_state(
     const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold, const Epetra_Vector& dir)
 {
-  const NOX::Nln::CorrectionType corrtype = cparams.GetCorrectionType();
+  const NOX::Nln::CorrectionType corrtype = cparams.get_correction_type();
 
   Core::IO::cout(Core::IO::debug) << std::string(40, '*') << Core::IO::endl;
   Core::IO::cout(Core::IO::debug) << __LINE__ << " -- " << CONTACT_FUNC_NAME << Core::IO::endl;
-  Core::IO::cout(Core::IO::debug) << "cparams.GetCorrectionType() = "
+  Core::IO::cout(Core::IO::debug) << "cparams.get_correction_type() = "
                                   << NOX::Nln::CorrectionType2String(corrtype).c_str()
                                   << Core::IO::endl;
   Core::IO::cout(Core::IO::debug) << std::string(40, '*') << Core::IO::endl;
@@ -157,14 +157,15 @@ void CONTACT::Aug::SteepestAscentSaddlePoint::Strategy::run_post_iterate(
 {
   Core::IO::cout(Core::IO::debug) << std::string(40, '*') << "\n";
   Core::IO::cout(Core::IO::debug) << CONTACT_FUNC_NAME << Core::IO::endl;
-  Core::IO::cout(Core::IO::debug) << "IsDefaultStep = "
-                                  << (cparams.IsDefaultStep() ? "TRUE" : "FALSE") << Core::IO::endl;
+  Core::IO::cout(Core::IO::debug) << "is_default_step = "
+                                  << (cparams.is_default_step() ? "TRUE" : "FALSE")
+                                  << Core::IO::endl;
   Core::IO::cout(Core::IO::debug) << "Number of modified Newton corrections = "
                                   << cparams.get_number_of_modified_newton_corrections()
                                   << Core::IO::endl;
   Core::IO::cout(Core::IO::debug) << std::string(40, '*') << "\n";
 
-  if (cparams.IsDefaultStep() or cparams.get_number_of_modified_newton_corrections() == 0)
+  if (cparams.is_default_step() or cparams.get_number_of_modified_newton_corrections() == 0)
     update_cn(cparams);
   else
     decrease_cn(cparams);

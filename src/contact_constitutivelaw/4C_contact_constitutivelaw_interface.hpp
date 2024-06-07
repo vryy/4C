@@ -70,7 +70,7 @@ namespace CONTACT
      * level.
      *
      * Note: To be able to perform this computation, weighted gaps and normals have to be available
-     * within every node! Since this computation is done via Interface::Evaluate() in the Integrator
+     * within every node! Since this computation is done via Interface::Evaluate() in the integrator
      * class, these corresponding methods have to be called before AssembleMacauley()!
      *
      * \params[in/out] localisincontact true if at least one node is in contact

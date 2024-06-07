@@ -271,7 +271,7 @@ const ::NOX::Abstract::Vector& NOX::Nln::LineSearch::Backtrack::GetSearchDirecti
  *----------------------------------------------------------------------*/
 double NOX::Nln::LineSearch::Backtrack::GetStepLength() const
 {
-  if (step_ptr_ == nullptr) throw_error("GetStepLength", "Step pointer is nullptr!");
+  if (step_ptr_ == nullptr) throw_error("get_step_length", "Step pointer is nullptr!");
 
   return *step_ptr_;
 }
@@ -280,7 +280,7 @@ double NOX::Nln::LineSearch::Backtrack::GetStepLength() const
  *----------------------------------------------------------------------*/
 void NOX::Nln::LineSearch::Backtrack::SetStepLength(double step)
 {
-  if (step_ptr_ == nullptr) throw_error("SetStepLength", "Step pointer is nullptr!");
+  if (step_ptr_ == nullptr) throw_error("set_step_length", "Step pointer is nullptr!");
 
   *step_ptr_ = step;
 }

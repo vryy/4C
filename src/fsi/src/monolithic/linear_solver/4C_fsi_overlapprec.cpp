@@ -45,13 +45,13 @@ FSI::BlockPreconditioningMatrix::BlockPreconditioningMatrix(
   fluidsolver_ = Teuchos::rcp(new Core::LinAlg::Preconditioner(fluid.LinearSolver()));
 
 #ifndef BLOCKMATRIXMERGE
-  structuresolver_ = Teuchos::rcp(new Core::LinAlg::Preconditioner(structure.LinearSolver()));
+  structuresolver_ = Teuchos::rcp(new Core::LinAlg::Preconditioner(structure.linear_solver()));
   alesolver_ = Teuchos::rcp(new Core::LinAlg::Preconditioner(ale.LinearSolver()));
 #endif
 
   // check and fix ml nullspace if neccessary
   {
-    Core::LinAlg::Solver& solver = *(structure.LinearSolver());
+    Core::LinAlg::Solver& solver = *(structure.linear_solver());
     const Epetra_Map& oldmap = *(structure.discretization()->dof_row_map());
     const Epetra_Map& newmap = Matrix(0, 0).EpetraMatrix()->RowMap();
     Core::LinearSolver::Parameters::FixNullSpace("Structure", oldmap, newmap, solver.Params());

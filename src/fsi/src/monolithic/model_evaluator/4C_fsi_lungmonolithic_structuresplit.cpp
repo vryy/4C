@@ -216,7 +216,7 @@ void FSI::LungMonolithicStructureSplit::setup_rhs_firstiter(Epetra_Vector& f)
   Teuchos::RCP<Epetra_Vector> veln = structure_field()->Interface()->InsertFSICondVector(sveln);
   rhs = Teuchos::rcp(new Epetra_Vector(veln->Map()));
 
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> s = structure_field()->SystemMatrix();
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> s = structure_field()->system_matrix();
   s->Apply(*veln, *rhs);
 
   Teuchos::RCP<Epetra_Vector> addrhs = Teuchos::rcp(new Epetra_Vector(veln->Map()));
@@ -383,7 +383,7 @@ void FSI::LungMonolithicStructureSplit::setup_system_matrix(
   const Teuchos::RCP<Adapter::StructureLung>& structfield =
       Teuchos::rcp_dynamic_cast<Adapter::StructureLung>(structure_field());
 
-  Core::LinAlg::SparseMatrix& s = *structure_field()->SystemMatrix();
+  Core::LinAlg::SparseMatrix& s = *structure_field()->system_matrix();
   s.Add(AddStructConstrMatrix_->Matrix(0, 0), false, 1.0, 1.0);
 
   siitransform_(s, *structfield->FSIInterface()->Map(0), *structfield->FSIInterface()->Map(0), 1.0,

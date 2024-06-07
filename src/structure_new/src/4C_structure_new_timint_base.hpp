@@ -61,7 +61,6 @@ namespace STR
       /// constructor
       Base();
 
-
       /// initialize (all already existing) class variables
       virtual void Init(const Teuchos::RCP<STR::TimeInt::BaseDataIO> dataio,
           const Teuchos::RCP<STR::TimeInt::BaseDataSDyn> datasdyn,
@@ -71,7 +70,7 @@ namespace STR
       void Setup() override;
 
       /// tests if there are more time steps to do
-      [[nodiscard]] bool NotFinished() const override;
+      [[nodiscard]] bool not_finished() const override;
 
       /// reset everything (needed for biofilm simulations)
       void Reset() override;
@@ -101,10 +100,10 @@ namespace STR
       Teuchos::RCP<Discret::Discretization> discretization() override;
 
       /// Access to pointer to DoF row map of the discretization (structure only)
-      const Epetra_Map* DofRowMapView() override
+      const Epetra_Map* dof_row_map_view() override
       {
         check_init();
-        return dataglobalstate_->DofRowMapView();
+        return dataglobalstate_->dof_row_map_view();
       }
 
       /// DoF map of structural vector of unknowns
@@ -123,7 +122,7 @@ namespace STR
       }
 
       /// Access linear structural solver
-      Teuchos::RCP<Core::LinAlg::Solver> LinearSolver() override
+      Teuchos::RCP<Core::LinAlg::Solver> linear_solver() override
       {
         check_init();
         return datasdyn_->GetLinSolvers()[Inpar::STR::model_structure];
@@ -160,7 +159,7 @@ namespace STR
       void Update(double endtime) override = 0;
 
       /// Update time and step counter
-      virtual void UpdateStepTime();
+      virtual void update_step_time();
 
       /// wrapper for things that should be done after solving the update
       void post_update() override;
@@ -172,7 +171,7 @@ namespace STR
       [[nodiscard]] Teuchos::RCP<const Epetra_Vector> DispNp() const override
       {
         check_init();
-        return dataglobalstate_->GetDisNp();
+        return dataglobalstate_->get_dis_np();
       }
 
       /* \brief write access to displacements at \f$t^{n+1}\f$
@@ -192,70 +191,70 @@ namespace STR
       {
         check_init();
         set_state_in_sync_with_nox_group(false);
-        return dataglobalstate_->GetDisNp();
+        return dataglobalstate_->get_dis_np();
       }
 
       /// known displacements at \f$t_{n}\f$
       [[nodiscard]] Teuchos::RCP<const Epetra_Vector> DispN() const override
       {
         check_init();
-        return dataglobalstate_->GetDisN();
+        return dataglobalstate_->get_dis_n();
       }
 
       /// write access to displacements at \f$t^{n}\f$
       Teuchos::RCP<Epetra_Vector> WriteAccessDispN() override
       {
         check_init();
-        return dataglobalstate_->GetDisN();
+        return dataglobalstate_->get_dis_n();
       }
 
       /// unknown velocities at \f$t_{n+1}\f$
       [[nodiscard]] Teuchos::RCP<const Epetra_Vector> VelNp() const override
       {
         check_init();
-        return dataglobalstate_->GetVelNp();
+        return dataglobalstate_->get_vel_np();
       }
 
       /// write access to velocities at \f$t^{n+1}\f$
       Teuchos::RCP<Epetra_Vector> WriteAccessVelNp() override
       {
         check_init();
-        return dataglobalstate_->GetVelNp();
+        return dataglobalstate_->get_vel_np();
       }
 
       /// unknown velocities at \f$t_{n}\f$
       [[nodiscard]] Teuchos::RCP<const Epetra_Vector> VelN() const override
       {
         check_init();
-        return dataglobalstate_->GetVelN();
+        return dataglobalstate_->get_vel_n();
       }
 
       /// write access to velocities at \f$t^{n}\f$
       Teuchos::RCP<Epetra_Vector> WriteAccessVelN() override
       {
         check_init();
-        return dataglobalstate_->GetVelN();
+        return dataglobalstate_->get_vel_n();
       }
 
       /// known velocities at \f$t_{n-1}\f$
       [[nodiscard]] Teuchos::RCP<const Epetra_Vector> VelNm() const override
       {
         check_init();
-        return dataglobalstate_->GetVelNm();
+        return dataglobalstate_->get_vel_nm();
       }
 
       /// unknown accelerations at \f$t_{n+1}\f$
       [[nodiscard]] Teuchos::RCP<const Epetra_Vector> AccNp() const override
       {
         check_init();
-        return dataglobalstate_->GetAccNp();
+        return dataglobalstate_->get_acc_np();
       }
 
       //! known accelerations at \f$t_{n}\f$
       [[nodiscard]] Teuchos::RCP<const Epetra_Vector> AccN() const override
       {
         check_init();
-        return dataglobalstate_->GetAccN();
+        return dataglobalstate_->get_acc_n();
       }
       ///@}
 
@@ -316,28 +315,28 @@ namespace STR
       [[nodiscard]] double GetTimeN() const override
       {
         check_init();
-        return dataglobalstate_->GetTimeN();
+        return dataglobalstate_->get_time_n();
       }
 
       /// Sets the current time \f$t_{n}\f$ (derived)
       void SetTimeN(const double time_n) override
       {
         check_init();
-        dataglobalstate_->GetTimeN() = time_n;
+        dataglobalstate_->get_time_n() = time_n;
       }
 
       /// Return target time \f$t_{n+1}\f$ (derived)
       [[nodiscard]] double GetTimeNp() const override
       {
         check_init();
-        return dataglobalstate_->GetTimeNp();
+        return dataglobalstate_->get_time_np();
       }
 
       /// Sets the target time \f$t_{n+1}\f$ of this time step (derived)
       void SetTimeNp(const double time_np) override
       {
         check_init();
-        dataglobalstate_->GetTimeNp() = time_np;
+        dataglobalstate_->get_time_np() = time_np;
       }
 
       /// Get upper limit of time range of interest (derived)
@@ -358,14 +357,14 @@ namespace STR
       [[nodiscard]] double GetDeltaTime() const override
       {
         check_init();
-        return (*dataglobalstate_->GetDeltaTime())[0];
+        return (*dataglobalstate_->get_delta_time())[0];
       }
 
       /// Set time step size \f$\Delta t_n\f$
       void SetDeltaTime(const double dt) override
       {
         check_init();
-        (*dataglobalstate_->GetDeltaTime())[0] = dt;
+        (*dataglobalstate_->get_delta_time())[0] = dt;
       }
 
       /// Return time integration factor
@@ -375,28 +374,28 @@ namespace STR
       [[nodiscard]] int GetStepN() const override
       {
         check_init();
-        return dataglobalstate_->GetStepN();
+        return dataglobalstate_->get_step_n();
       }
 
       /// Sets the current step \f$n\f$
       void SetStepN(int step_n) override
       {
         check_init();
-        dataglobalstate_->GetStepN() = step_n;
+        dataglobalstate_->get_step_n() = step_n;
       }
 
       /// Return current step number $n+1$
       [[nodiscard]] int GetStepNp() const override
       {
         check_init();
-        return dataglobalstate_->GetStepNp();
+        return dataglobalstate_->get_step_np();
       }
 
       /// Sets the current step number \f$n+1\f$
       void SetStepNp(int step_np) override
       {
         check_init_setup();
-        dataglobalstate_->GetStepNp() = step_np;
+        dataglobalstate_->get_step_np() = step_np;
       }
 
       //! Get number of time steps
@@ -417,7 +416,7 @@ namespace STR
       [[nodiscard]] virtual enum Inpar::STR::DivContAct GetDivergenceAction() const
       {
         check_init_setup();
-        return datasdyn_->GetDivergenceAction();
+        return datasdyn_->get_divergence_action();
       }
 
       //! Get number of times you want to halve your timestep in case nonlinear solver diverges
@@ -497,16 +496,16 @@ namespace STR
       /// Time adaptivity (derived pure virtual functionality)
       /// @{
       /// Resize MStep Object due to time adaptivity in FSI (derived)
-      void ResizeMStepTimAda() override;
+      void resize_m_step_tim_ada() override;
 
       /// @}
 
       /// Output writer related routines (file and screen output)
       /// @{
       /// Access output object
-      Teuchos::RCP<Core::IO::DiscretizationWriter> DiscWriter() override
+      Teuchos::RCP<Core::IO::DiscretizationWriter> disc_writer() override
       {
-        return data_io().GetOutputPtr();
+        return data_io().get_output_ptr();
       }
 
       /// Calculate all output quantities depending on the constitutive model
@@ -537,7 +536,7 @@ namespace STR
        *  This routine is only for simple structure problems!
        *  \date 06/13
        *  \author biehler */
-      void GetRestartData(Teuchos::RCP<int> step, Teuchos::RCP<double> time,
+      void get_restart_data(Teuchos::RCP<int> step, Teuchos::RCP<double> time,
           Teuchos::RCP<Epetra_Vector> disnp, Teuchos::RCP<Epetra_Vector> velnp,
           Teuchos::RCP<Epetra_Vector> accnp, Teuchos::RCP<std::vector<char>> elementdata,
           Teuchos::RCP<std::vector<char>> nodedata) override;
@@ -549,7 +548,7 @@ namespace STR
       void read_restart(const int stepn) override;
 
       /// Set restart values (deprecated)
-      void SetRestart(int stepn,                        //!< restart step at \f${n}\f$
+      void set_restart(int stepn,                       //!< restart step at \f${n}\f$
           double timen,                                 //!< restart time at \f$t_{n}\f$
           Teuchos::RCP<Epetra_Vector> disn,             //!< restart displacements at \f$t_{n}\f$
           Teuchos::RCP<Epetra_Vector> veln,             //!< restart velocities at \f$t_{n}\f$
@@ -573,15 +572,15 @@ namespace STR
       /// integrate the current step (implicit and explicit)
       virtual int IntegrateStep() = 0;
       /// right-hand-side of Newton's method (implicit only)
-      Teuchos::RCP<const Epetra_Vector> RHS() override { return GetF(); };
-      [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> GetF() const = 0;
+      Teuchos::RCP<const Epetra_Vector> RHS() override { return get_f(); };
+      [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> get_f() const = 0;
       /// @}
 
      public:
       /// @name External accessors for the class variables
       ///@{
       /// Get the indicator if we are currently restarting the simulation
-      [[nodiscard]] inline const bool& IsRestarting() const { return isrestarting_; }
+      [[nodiscard]] inline const bool& is_restarting() const { return isrestarting_; }
 
       /// Get the indicator if we need to restart the initial state
       [[nodiscard]] inline bool is_restarting_initial_state() const
@@ -603,61 +602,61 @@ namespace STR
         return dataglobalstate_;
       }
 
-      [[nodiscard]] const BaseDataGlobalState& GetDataGlobalState() const
+      [[nodiscard]] const BaseDataGlobalState& get_data_global_state() const
       {
         check_init();
         return *dataglobalstate_;
       }
 
       /// Get TimIntBase data for io quantities (read access)
-      [[nodiscard]] Teuchos::RCP<const BaseDataIO> GetDataIOPtr() const
+      [[nodiscard]] Teuchos::RCP<const BaseDataIO> get_data_io_ptr() const
       {
         check_init();
         return dataio_;
       }
 
-      [[nodiscard]] const BaseDataIO& GetDataIO() const
+      [[nodiscard]] const BaseDataIO& get_data_io() const
       {
         check_init();
         return *dataio_;
       }
 
       /// Get TimIntBase data or struct dynamics quantitites (read access)
-      [[nodiscard]] Teuchos::RCP<const BaseDataSDyn> GetDataSDynPtr() const
+      [[nodiscard]] Teuchos::RCP<const BaseDataSDyn> get_data_sdyn_ptr() const
       {
         check_init();
         return datasdyn_;
       }
 
-      [[nodiscard]] const BaseDataSDyn& GetDataSDyn() const
+      [[nodiscard]] const BaseDataSDyn& get_data_sdyn() const
       {
         check_init();
         return *datasdyn_;
       }
 
       /// return a reference to the Dirichlet Boundary Condition handler (read access)
-      [[nodiscard]] const STR::Dbc& GetDBC() const
+      [[nodiscard]] const STR::Dbc& get_dbc() const
       {
         check_init_setup();
         return *dbc_ptr_;
       }
 
       /// return a reference to the Dirichlet Boundary Condition handler (write access)
-      STR::Dbc& GetDBC()
+      STR::Dbc& get_dbc()
       {
         check_init_setup();
         return *dbc_ptr_;
       }
 
       /// return a pointer to the Dirichlet Boundary Condition handler (read access)
-      [[nodiscard]] Teuchos::RCP<const STR::Dbc> GetDBCPtr() const
+      [[nodiscard]] Teuchos::RCP<const STR::Dbc> get_dbc_ptr() const
       {
         check_init_setup();
         return dbc_ptr_;
       }
 
       /// return the integrator (read-only)
-      [[nodiscard]] const STR::Integrator& Integrator() const
+      [[nodiscard]] const STR::Integrator& integrator() const
       {
         check_init_setup();
         return *int_ptr_;
@@ -671,14 +670,14 @@ namespace STR
       }
 
       /// Get internal TimIntBase data for structural dynamics quantities (read and write access)
-      BaseDataSDyn& DataSDyn()
+      BaseDataSDyn& data_sdyn()
       {
         check_init();
         return *datasdyn_;
       }
 
       /// return a pointer to the Dirichlet Boundary Condition handler (read and write access)
-      const Teuchos::RCP<STR::Dbc>& DBCPtr()
+      const Teuchos::RCP<STR::Dbc>& dbc_ptr()
       {
         check_init_setup();
         return dbc_ptr_;
@@ -696,20 +695,20 @@ namespace STR
       //@{
 
       //! Provide Name
-      virtual enum Inpar::STR::DynamicType MethodName() const = 0;
+      virtual enum Inpar::STR::DynamicType method_name() const = 0;
 
       //! Provide title
-      std::string MethodTitle() const { return Inpar::STR::DynamicTypeString(MethodName()); }
+      std::string method_title() const { return Inpar::STR::DynamicTypeString(method_name()); }
 
       //! Return true, if time integrator is implicit
-      virtual bool IsImplicit() const = 0;
+      virtual bool is_implicit() const = 0;
 
       //! Return true, if time integrator is explicit
-      virtual bool IsExplicit() const = 0;
+      virtual bool is_explicit() const = 0;
 
       //! Provide number of steps, e.g. a single-step method returns 1,
       //! a \f$m\f$-multistep method returns \f$m\f$
-      virtual int MethodSteps() const = 0;
+      virtual int method_steps() const = 0;
 
       //! Give order of accuracy
       int method_order_of_accuracy() const
@@ -854,7 +853,7 @@ namespace STR
 
       /** \brief set the number of nonlinear iterations of the last time step
        *
-       *  \pre UpdateStepTime() must be called beforehand, otherwise the wrong
+       *  \pre update_step_time() must be called beforehand, otherwise the wrong
        *  step-id is considered.
        *
        *  \author hiermeier \date 11/17 */

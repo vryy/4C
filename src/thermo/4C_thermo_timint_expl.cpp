@@ -64,7 +64,7 @@ void THR::TimIntExpl::PrintStep()
   {
     print_step_text(stdout);
   }
-}  // PrintStep()
+}  // print_step()
 
 
 /*----------------------------------------------------------------------*

@@ -107,7 +107,7 @@ namespace STR
    *
    * Although #Integrate is the main interface, this base time integrator
    * allows the public to access a few of its datum objects, for instance
-   * the tangent system matrix #stiff_ by #SystemMatrix(). This selective access
+   * the tangent system matrix #stiff_ by #system_matrix(). This selective access
    * is needed in environments in which a independent time loop is provided.
    * This happens e.g. in fluid-structure-interaction.
    *
@@ -201,7 +201,7 @@ namespace STR
     virtual void ResizeMStep() = 0;
 
     //! Resize \p TimIntMStep<T> multi-step quantities, needed for fsi time adaptivity
-    void ResizeMStepTimAda() override;
+    void resize_m_step_tim_ada() override;
 
     //! Merge
     //!
@@ -265,7 +265,7 @@ namespace STR
     }
 
     /// tests if there are more time steps to do
-    bool NotFinished() const override
+    bool not_finished() const override
     {
       return timen_ <= timemax_ + 1.0e-8 * (*dt_)[0] and stepn_ <= stepmax_;
     }
@@ -400,7 +400,7 @@ namespace STR
     //@{
 
     //! print summary after step
-    void PrintStep() override = 0;
+    void print_step() override = 0;
 
     //! Output to file
     //! This routine always prints the last converged state, i.e.
@@ -433,7 +433,7 @@ namespace STR
     );
     //! Get data that is written during restart
     //! \author biehler \data 06/13
-    void GetRestartData(Teuchos::RCP<int> step, Teuchos::RCP<double> time,
+    void get_restart_data(Teuchos::RCP<int> step, Teuchos::RCP<double> time,
         Teuchos::RCP<Epetra_Vector> disn,  //!< new displacement state
         Teuchos::RCP<Epetra_Vector> veln,  //!< new velocity state
         Teuchos::RCP<Epetra_Vector> accn,  //!< new acceleration state
@@ -628,26 +628,26 @@ namespace STR
     }
 
     //! Access to dofrowmap of discretization via const raw pointer
-    const Epetra_Map* DofRowMapView() override;
+    const Epetra_Map* dof_row_map_view() override;
 
     //! Access solver, one of these have to be removed (see below)
     Teuchos::RCP<Core::LinAlg::Solver> Solver() { return solver_; }
 
     //! Access solver, one of these have to be removed (see above)
-    Teuchos::RCP<Core::LinAlg::Solver> LinearSolver() override { return solver_; }
+    Teuchos::RCP<Core::LinAlg::Solver> linear_solver() override { return solver_; }
 
     //! Access solver for contact/meshtying problems
     Teuchos::RCP<Core::LinAlg::Solver> ContactSolver() { return contactsolver_; }
 
     //! Access output object
-    Teuchos::RCP<Core::IO::DiscretizationWriter> DiscWriter() override { return output_; }
+    Teuchos::RCP<Core::IO::DiscretizationWriter> disc_writer() override { return output_; }
 
     //! Read restart values
     void read_restart(const int step  //!< restart step
         ) override;
 
     //! Set restart values
-    void SetRestart(int step,                         //!< restart step
+    void set_restart(int step,                        //!< restart step
         double time,                                  //!< restart time
         Teuchos::RCP<Epetra_Vector> disn,             //!< restart displacements
         Teuchos::RCP<Epetra_Vector> veln,             //!< restart velocities
@@ -767,7 +767,7 @@ namespace STR
     virtual Teuchos::RCP<Epetra_Vector> FextNew() = 0;
 
     //! Return reaction forces
-    Teuchos::RCP<Epetra_Vector> Freact() override = 0;
+    Teuchos::RCP<Epetra_Vector> freact() override = 0;
 
     //! Return element data
     // Teuchos::RCP<std::vector<char> > ElementData() {return discret_->PackMyElements();}
@@ -781,11 +781,11 @@ namespace STR
 
     //! Return stiffness,
     //! i.e. force residual differentiated by displacements
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() override;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() override;
 
     //! Return stiffness,
     //! i.e. force residual differentiated by displacements
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> BlockSystemMatrix() override;
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() override;
 
     //! switch structure field to block matrix in fsi simulations
     void use_block_matrix(Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> domainmaps,
@@ -810,10 +810,10 @@ namespace STR
     Teuchos::RCP<CONSTRAINTS::SpringDashpotManager> get_spring_dashpot_manager() override = 0;
 
     //! get type of thickness scaling for thin shell structures
-    Inpar::STR::StcScale GetSTCAlgo() override = 0;
+    Inpar::STR::StcScale get_stc_algo() override = 0;
 
     //! Access to scaling matrix for STC
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> GetSTCMat() override = 0;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> get_stc_mat() override = 0;
 
 
     //@}

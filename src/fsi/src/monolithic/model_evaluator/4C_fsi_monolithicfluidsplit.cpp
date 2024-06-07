@@ -344,9 +344,9 @@ void FSI::MonolithicFluidSplit::setup_rhs_residual(Epetra_Vector& f)
       structure_field()->Interface()->InsertFSICondVector(fluid_to_struct(fcv));
   modsv->Update(1.0, *sv, (1.0 - stiparam) / (1.0 - ftiparam) * fluidscale);
 
-  if (structure_field()->GetSTCAlgo() == Inpar::STR::stc_currsym)
+  if (structure_field()->get_stc_algo() == Inpar::STR::stc_currsym)
   {
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> stcmat = structure_field()->GetSTCMat();
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> stcmat = structure_field()->get_stc_mat();
     stcmat->Multiply(true, *modsv, *modsv);
   }
 
@@ -455,9 +455,9 @@ void FSI::MonolithicFluidSplit::setup_rhs_firstiter(Epetra_Vector& f)
   rhs = fluid_to_struct(rhs);
   rhs = structure_field()->Interface()->InsertFSICondVector(rhs);
 
-  if (structure_field()->GetSTCAlgo() == Inpar::STR::stc_currsym)
+  if (structure_field()->get_stc_algo() == Inpar::STR::stc_currsym)
   {
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> stcmat = structure_field()->GetSTCMat();
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> stcmat = structure_field()->get_stc_mat();
     stcmat->Multiply(true, *rhs, *rhs);
   }
 
@@ -594,14 +594,14 @@ void FSI::MonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSparseMat
   const Core::Adapter::Coupling& coupfa = fluid_ale_coupling();
 
   // get info about STC feature
-  Inpar::STR::StcScale stcalgo = structure_field()->GetSTCAlgo();
+  Inpar::STR::StcScale stcalgo = structure_field()->get_stc_algo();
   Teuchos::RCP<Core::LinAlg::SparseMatrix> stcmat = Teuchos::null;
   // if STC is to be used, get STC matrix from structure field
-  if (stcalgo != Inpar::STR::stc_none) stcmat = structure_field()->GetSTCMat();
+  if (stcalgo != Inpar::STR::stc_none) stcmat = structure_field()->get_stc_mat();
 
   // get single field block matrices
   Teuchos::RCP<Core::LinAlg::SparseMatrix> s =
-      structure_field()->SystemMatrix();  // can't be 'const' --> is modified by STC
+      structure_field()->system_matrix();  // can't be 'const' --> is modified by STC
   const Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> f = fluid_field()->BlockSystemMatrix();
   const Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> a = ale_field()->BlockSystemMatrix();
 
@@ -888,10 +888,10 @@ void FSI::MonolithicFluidSplit::unscale_solution(
     if (ay->Multiply(1.0, *acolsum_, *ay, 0.0)) FOUR_C_THROW("ale scaling failed");
 
     // get info about STC feature and unscale solution if necessary
-    Inpar::STR::StcScale stcalgo = structure_field()->GetSTCAlgo();
+    Inpar::STR::StcScale stcalgo = structure_field()->get_stc_algo();
     if (stcalgo != Inpar::STR::stc_none)
     {
-      structure_field()->GetSTCMat()->Multiply(false, *sy, *sy);
+      structure_field()->get_stc_mat()->Multiply(false, *sy, *sy);
     }
 
     extractor().InsertVector(*sy, 0, x);
@@ -905,7 +905,7 @@ void FSI::MonolithicFluidSplit::unscale_solution(
 
     if (stcalgo != Inpar::STR::stc_none)
     {
-      structure_field()->GetSTCMat()->Multiply(false, *sx, *sx);
+      structure_field()->get_stc_mat()->Multiply(false, *sx, *sx);
     }
 
     extractor().InsertVector(*sx, 0, b);
@@ -971,8 +971,8 @@ void FSI::MonolithicFluidSplit::unscale_solution(
   }
   utils()->out().flags(flags);
 
-  if (structure_field()->GetSTCAlgo() != Inpar::STR::stc_none)
-    structure_field()->SystemMatrix()->Reset();
+  if (structure_field()->get_stc_algo() != Inpar::STR::stc_none)
+    structure_field()->system_matrix()->Reset();
 }
 
 /*----------------------------------------------------------------------*/
@@ -1338,8 +1338,8 @@ void FSI::MonolithicFluidSplit::prepare_time_step()
 
   prepare_time_step_preconditioner();
 
-  if (structure_field()->GetSTCAlgo() != Inpar::STR::stc_none)
-    structure_field()->SystemMatrix()->Reset();
+  if (structure_field()->get_stc_algo() != Inpar::STR::stc_none)
+    structure_field()->system_matrix()->Reset();
 
   prepare_time_step_fields();
 

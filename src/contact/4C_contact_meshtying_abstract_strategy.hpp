@@ -194,8 +194,8 @@ namespace CONTACT
         Teuchos::RCP<Core::LinAlg::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f,
         const int step, const int iter, bool predictor = false) override;
 
-    /*! \brief Reset call at the beginning of the ApplyForce(), ApplyStiff() and ApplyForceStiff()
-     * [derived]
+    /*! \brief Reset call at the beginning of the apply_force(), apply_stiff() and
+     * apply_force_stiff() [derived]
      *
      *  \date 02/2016
      *  \author hiermeier */

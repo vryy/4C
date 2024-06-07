@@ -54,7 +54,7 @@ int Discret::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
 
   if (IsParamsInterface())
   {
-    act = params_interface().GetActionType();
+    act = params_interface().get_action_type();
   }
   else
   {
@@ -562,7 +562,7 @@ int Discret::ELEMENTS::Beam3r::evaluate_neumann(Teuchos::ParameterList& params,
   double time = -1.0;
 
   if (IsParamsInterface())
-    time = params_interface().GetTotalTime();
+    time = params_interface().get_total_time();
   else
     time = params.get<double>("total time", -1.0);
 
@@ -1185,11 +1185,11 @@ void Discret::ELEMENTS::Beam3r::calc_inertia_force_and_mass_matrix(
    * basically because of the triad interpolation. See also the discussion in Christoph Meier's
    * Dissertation on this topic. (Maximilian Grill, 08/16)*/
 
-  const double dt = params_interface().GetDeltaTime();
-  const double beta = params_interface().get_beam_params_interface_ptr()->GetBeta();
-  const double gamma = params_interface().get_beam_params_interface_ptr()->GetGamma();
-  const double alpha_f = params_interface().get_beam_params_interface_ptr()->GetAlphaf();
-  const double alpha_m = params_interface().get_beam_params_interface_ptr()->GetAlpham();
+  const double dt = params_interface().get_delta_time();
+  const double beta = params_interface().get_beam_params_interface_ptr()->get_beta();
+  const double gamma = params_interface().get_beam_params_interface_ptr()->get_gamma();
+  const double alpha_f = params_interface().get_beam_params_interface_ptr()->get_alphaf();
+  const double alpha_m = params_interface().get_beam_params_interface_ptr()->get_alpham();
 
   const bool materialintegration = true;  // TODO unused? remove or realize coverage by test case
   const double diff_factor_vel = gamma / (beta * dt);
@@ -2257,7 +2257,7 @@ void Discret::ELEMENTS::Beam3r::evaluate_rotational_damping(
   // get time step size
   double dt_inv = 0.0001;
   if (IsParamsInterface())
-    dt_inv = 1.0 / params_interface().GetDeltaTime();
+    dt_inv = 1.0 / params_interface().get_delta_time();
   else
     dt_inv = 1.0 / params.get<double>("delta time", 1000);
 
@@ -2505,7 +2505,7 @@ void Discret::ELEMENTS::Beam3r::evaluate_translational_damping(Teuchos::Paramete
   // get time step size
   double dt_inv = 0.0001;
   if (IsParamsInterface())
-    dt_inv = 1.0 / params_interface().GetDeltaTime();
+    dt_inv = 1.0 / params_interface().get_delta_time();
   else
     dt_inv = 1.0 / params.get<double>("delta time", 1000);
 
@@ -2698,7 +2698,8 @@ void Discret::ELEMENTS::Beam3r::evaluate_stochastic_forces(Teuchos::ParameterLis
 
   /* get pointer at Epetra multivector in parameter list linking to random numbers for stochastic
    * forces with zero mean and standard deviation (2*kT / dt)^0.5 */
-  Teuchos::RCP<Epetra_MultiVector> randomforces = brownian_dyn_params_interface().GetRandomForces();
+  Teuchos::RCP<Epetra_MultiVector> randomforces =
+      brownian_dyn_params_interface().get_random_forces();
 
   // my random number vector at current GP
   Core::LinAlg::Matrix<ndim, 1> randnumvec(true);

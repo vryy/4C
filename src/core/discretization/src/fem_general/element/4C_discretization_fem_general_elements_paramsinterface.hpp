@@ -51,13 +51,13 @@ namespace Core::Elements
     //! @name Access general control parameters
     //! @{
     //! get the desired action type
-    virtual enum ActionType GetActionType() const = 0;
+    virtual enum ActionType get_action_type() const = 0;
 
     //! get the current total time for the evaluate call
-    virtual double GetTotalTime() const = 0;
+    virtual double get_total_time() const = 0;
 
     //! get the current time step
-    virtual double GetDeltaTime() const = 0;
+    virtual double get_delta_time() const = 0;
 
     //! get function manager
     virtual const Core::UTILS::FunctionManager* get_function_manager() const = 0;

@@ -158,7 +158,7 @@ Teuchos::RCP<const std::vector<double>> NOX::Nln::CONSTRAINT::Group::GetRHSNorms
   double rval = -1.0;
   for (std::size_t i = 0; i < chQ.size(); ++i)
   {
-    rval = get_nln_req_interface_ptr()->GetPrimaryRHSNorms(RHSVector.getEpetraVector(), chQ[i],
+    rval = get_nln_req_interface_ptr()->get_primary_rhs_norms(RHSVector.getEpetraVector(), chQ[i],
         type[i], (*scale)[i] == ::NOX::StatusTest::NormF::Scaled);
     if (rval >= 0.0)
     {

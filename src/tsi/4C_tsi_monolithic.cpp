@@ -416,7 +416,7 @@ void TSI::Monolithic::TimeLoop()
     std::cout << "dispn\n" << *(structure_field()->Dispn()) << std::endl;
 #endif  // TSIMONOLITHASOUTPUT
 
-  }  // NotFinished
+  }  // not_finished
 }  // TimeLoop()
 
 
@@ -762,15 +762,15 @@ void TSI::Monolithic::PTC()
     // modify structural diagonal block k_ss
     {
       Teuchos::RCP<Epetra_Vector> tmp_SS =
-          Core::LinAlg::CreateVector(structure_field()->SystemMatrix()->RowMap(), false);
+          Core::LinAlg::CreateVector(structure_field()->system_matrix()->RowMap(), false);
       tmp_SS->PutScalar(dti);
       Teuchos::RCP<Epetra_Vector> diag_SS =
-          Core::LinAlg::CreateVector(structure_field()->SystemMatrix()->RowMap(), false);
-      structure_field()->SystemMatrix()->ExtractDiagonalCopy(*diag_SS);
+          Core::LinAlg::CreateVector(structure_field()->system_matrix()->RowMap(), false);
+      structure_field()->system_matrix()->ExtractDiagonalCopy(*diag_SS);
 
       diag_SS->Update(1.0, *tmp_SS, 1.0);
 
-      structure_field()->SystemMatrix()->replace_diagonal_values(*diag_SS);
+      structure_field()->system_matrix()->replace_diagonal_values(*diag_SS);
     }
     // modify thermal diagonal block k_tt
     {
@@ -1148,7 +1148,7 @@ void TSI::Monolithic::setup_system_matrix()
   // The maps of the block matrix have to match the maps of the blocks we
   // insert here. Extract Jacobian matrices and put them into composite system
   // matrix W
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> k_ss = structure_field()->SystemMatrix();
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> k_ss = structure_field()->system_matrix();
 
   // assign structure part to the TSI matrix
   systemmatrix_->Assign(0, 0, Core::LinAlg::View, *k_ss);
@@ -2619,7 +2619,7 @@ void TSI::Monolithic::calculate_necking_tsi_results()
                                                   // all DOFs at top surf with DBC
           false));
   // copy the structural reaction force to tension
-  Core::LinAlg::Export(*(structure_field()->Freact()), *tension);
+  Core::LinAlg::Export(*(structure_field()->freact()), *tension);
   double top_force_local = 0.0;  // local force
   for (int i = 0; i < tension->MyLength(); i++) top_force_local -= (*tension)[i];
 
@@ -2773,7 +2773,7 @@ void TSI::Monolithic::calculate_necking_tsi_results()
   std::cout << std::fixed;
   if (ThermoField()->discretization()->Comm().MyPID() == 0)
   {
-    std::cout << "OUTPUT:\ttop-disp \ttop-Freact \tneck-disp \tneck-tempi \ttop-tempi \ttop-force\n"
+    std::cout << "OUTPUT:\ttop-disp \ttop-freact \tneck-disp \tneck-tempi \ttop-tempi \ttop-force\n"
               << "\t" << top_disp_global << "\t" << top_reaction_force << "\t"
               << necking_radius_global << "\t" << (necking_temperature_global - inittemp) << "\t"
               << (top_temperature_global - inittemp) << "\t" << top_force_global << std::endl;
@@ -2806,9 +2806,9 @@ void TSI::Monolithic::prepare_contact_strategy()
   if (contact_strategy_nitsche_ != Teuchos::null)
   {
     const auto& model_eval = structure_field()->ModelEvaluator(Inpar::STR::model_structure);
-    const auto cparams = model_eval.EvalData().ContactPtr();
+    const auto cparams = model_eval.eval_data().ContactPtr();
     auto cparams_new = cparams;
-    cparams_new->SetCouplingScheme(Inpar::CONTACT::CouplingScheme::monolithic);
+    cparams_new->set_coupling_scheme(Inpar::CONTACT::CouplingScheme::monolithic);
     ThermoField()->set_nitsche_contact_parameters(cparams_new);
   }
 }

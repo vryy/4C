@@ -127,21 +127,21 @@ namespace Adapter
     }
 
     /// view of dof map of vector of vector of unknowns
-    const Epetra_Map* DofRowMapView() override { return structure_->DofRowMapView(); }
+    const Epetra_Map* dof_row_map_view() override { return structure_->dof_row_map_view(); }
 
     /// domain map of system matrix
     [[nodiscard]] const Epetra_Map& DomainMap() const override { return structure_->DomainMap(); }
 
     /// direct access to system matrix
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() override
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() override
     {
-      return structure_->SystemMatrix();
+      return structure_->system_matrix();
     }
 
     /// direct access to system matrix
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> BlockSystemMatrix() override
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() override
     {
-      return structure_->BlockSystemMatrix();
+      return structure_->block_system_matrix();
     }
 
     /// switch structure field to block matrix
@@ -194,12 +194,12 @@ namespace Adapter
     }
 
     /// get type of thickness scaling for thin shell structures
-    Inpar::STR::StcScale GetSTCAlgo() override { return structure_->GetSTCAlgo(); }
+    Inpar::STR::StcScale get_stc_algo() override { return structure_->get_stc_algo(); }
 
     /// access to scaling matrix for STC
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> GetSTCMat() override
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> get_stc_mat() override
     {
-      return structure_->GetSTCMat();
+      return structure_->get_stc_mat();
     }
 
     /// Return MapExtractor for Dirichlet boundary conditions
@@ -282,7 +282,7 @@ namespace Adapter
     }
 
     /// tests if there are more time steps to do
-    [[nodiscard]] bool NotFinished() const override { return structure_->NotFinished(); }
+    [[nodiscard]] bool not_finished() const override { return structure_->not_finished(); }
 
     /// set time step size
     void set_dt(const double dtnew) override { structure_->set_dt(dtnew); }
@@ -316,7 +316,7 @@ namespace Adapter
     void Update(const double endtime) override { structure_->Update(endtime); }
 
     /// resize MStep objects for AB2
-    void ResizeMStepTimAda() override { structure_->ResizeMStepTimAda(); }
+    void resize_m_step_tim_ada() override { structure_->resize_m_step_tim_ada(); }
 
     /// update iteration; add residual increment to Lagrange multipliers stored in Constraint
     /// manager
@@ -332,21 +332,21 @@ namespace Adapter
     }
 
     /// access to output object
-    Teuchos::RCP<Core::IO::DiscretizationWriter> DiscWriter() override
+    Teuchos::RCP<Core::IO::DiscretizationWriter> disc_writer() override
     {
-      return structure_->DiscWriter();
+      return structure_->disc_writer();
     }
 
     /// prepare output (i.e. calculate stresses, strains, energies)
     void prepare_output(bool force_prepare) override { structure_->prepare_output(force_prepare); }
 
     /// Get restart data
-    void GetRestartData(Teuchos::RCP<int> step, Teuchos::RCP<double> time,
+    void get_restart_data(Teuchos::RCP<int> step, Teuchos::RCP<double> time,
         Teuchos::RCP<Epetra_Vector> disn, Teuchos::RCP<Epetra_Vector> veln,
         Teuchos::RCP<Epetra_Vector> accn, Teuchos::RCP<std::vector<char>> elementdata,
         Teuchos::RCP<std::vector<char>> nodedata) override
     {
-      structure_->GetRestartData(step, time, disn, veln, accn, elementdata, nodedata);
+      structure_->get_restart_data(step, time, disn, veln, accn, elementdata, nodedata);
     }
 
     /// output results
@@ -359,18 +359,18 @@ namespace Adapter
     void write_gmsh_struc_output_step() override { structure_->write_gmsh_struc_output_step(); }
 
     /// output results to screen
-    void PrintStep() override { structure_->PrintStep(); }
+    void print_step() override { structure_->print_step(); }
 
     /// read restart information for given time step
     void read_restart(const int step) override { structure_->read_restart(step); }
 
     /// set restart information for parameter continuation
-    void SetRestart(int step, double time, Teuchos::RCP<Epetra_Vector> disn,
+    void set_restart(int step, double time, Teuchos::RCP<Epetra_Vector> disn,
         Teuchos::RCP<Epetra_Vector> veln, Teuchos::RCP<Epetra_Vector> accn,
         Teuchos::RCP<std::vector<char>> elementdata,
         Teuchos::RCP<std::vector<char>> nodedata) override
     {
-      structure_->SetRestart(step, time, disn, veln, accn, elementdata, nodedata);
+      structure_->set_restart(step, time, disn, veln, accn, elementdata, nodedata);
     }
 
     /// set the state of the nox group and the global state data container (implicit only)
@@ -416,9 +416,9 @@ namespace Adapter
     }
 
     /// get the linear solver object used for this field
-    Teuchos::RCP<Core::LinAlg::Solver> LinearSolver() override
+    Teuchos::RCP<Core::LinAlg::Solver> linear_solver() override
     {
-      return structure_->LinearSolver();
+      return structure_->linear_solver();
     }
 
     //@}
@@ -470,7 +470,7 @@ namespace Adapter
     //@}
 
     /// extract rhs (used to calculate reaction force for post-processing)
-    Teuchos::RCP<Epetra_Vector> Freact() override { return structure_->Freact(); }
+    Teuchos::RCP<Epetra_Vector> freact() override { return structure_->freact(); }
 
     //! @name Structure with ale specific methods
     //@{

@@ -1589,11 +1589,11 @@ void Discret::ELEMENTS::SoSh18::recover(const std::vector<double>& residual)
 {
   if (not eas_) return;
 
-  const double step_length = str_params_interface().GetStepLength();
+  const double step_length = str_params_interface().get_step_length();
   Core::LinAlg::Matrix<NUMDOF_SOH18, 1> res_d;
   for (int i = 0; i < NUMDOF_SOH18; ++i) res_d(i) = residual[i];
 
-  if (str_params_interface().IsDefaultStep())
+  if (str_params_interface().is_default_step())
   {
     // first, store the eas state of the previous accepted Newton step
     str_params_interface().sum_into_my_previous_sol_norm(
@@ -1611,7 +1611,7 @@ void Discret::ELEMENTS::SoSh18::recover(const std::vector<double>& residual)
   }
   old_step_length_ = step_length;
 
-  str_params_interface().SumIntoMyUpdateNorm(NOX::Nln::StatusTest::quantity_eas, num_eas,
+  str_params_interface().sum_into_my_update_norm(NOX::Nln::StatusTest::quantity_eas, num_eas,
       alpha_eas_inc_.A(), alpha_eas_.A(), step_length, Owner());
 }
 

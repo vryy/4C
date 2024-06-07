@@ -98,7 +98,7 @@ Core::LinAlg::SolverParams NOX::Nln::STR::LinearSystem::set_solver_options(
         Teuchos::rcp_dynamic_cast<NOX::Nln::Interface::Required>(reqInterfacePtr_, true);
 
     solver_params.nonlin_tolerance = p.get<double>("Wanted Tolerance");
-    solver_params.nonlin_residual = iNlnReq->CalcRefNormForce();
+    solver_params.nonlin_residual = iNlnReq->calc_ref_norm_force();
     solver_params.lin_tol_better = p.get<double>("Adaptive Control Objective");
   }
 

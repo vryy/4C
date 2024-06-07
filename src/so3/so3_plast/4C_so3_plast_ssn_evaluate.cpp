@@ -59,7 +59,7 @@ int Discret::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& param
   Core::Elements::ActionType act = Core::Elements::none;
   if (IsParamsInterface())
   {
-    act = params_interface().GetActionType();
+    act = params_interface().get_action_type();
   }
   else
   {
@@ -284,11 +284,11 @@ int Discret::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& param
       Inpar::STR::StrainType iostrain = Inpar::STR::strain_none;
       if (IsParamsInterface())
       {
-        stressdata = str_params_interface().StressDataPtr();
-        straindata = str_params_interface().StrainDataPtr();
+        stressdata = str_params_interface().stress_data_ptr();
+        straindata = str_params_interface().strain_data_ptr();
 
-        iostress = str_params_interface().GetStressOutputType();
-        iostrain = str_params_interface().GetStrainOutputType();
+        iostress = str_params_interface().get_stress_output_type();
+        iostrain = str_params_interface().get_strain_output_type();
       }
       else
       {
@@ -475,7 +475,7 @@ int Discret::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& param
 
     case Core::Elements::struct_calc_predict:
     {
-      switch (str_params_interface().GetPredictorType())
+      switch (str_params_interface().get_predictor_type())
       {
         case Inpar::STR::pred_constdis:
         default:
@@ -508,7 +508,8 @@ int Discret::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& param
       // Ask material for the output quantity names and sizes
       SolidMaterial()->register_output_data_names(quantities_map);
       // Add quantities to the Gauss point output data manager (if they do not already exist)
-      str_params_interface().gauss_point_data_output_manager_ptr()->MergeQuantities(quantities_map);
+      str_params_interface().gauss_point_data_output_manager_ptr()->merge_quantities(
+          quantities_map);
     }
     break;
 
@@ -519,7 +520,7 @@ int Discret::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& param
 
       // Collection and assembly of gauss point data
       for (const auto& [quantity_name, quantity_size] :
-          str_params_interface().gauss_point_data_output_manager_ptr()->GetQuantities())
+          str_params_interface().gauss_point_data_output_manager_ptr()->get_quantities())
       {
         // Step 1: Collect the data for each Gauss point for the material
         Core::LinAlg::SerialDenseMatrix gp_data(numgpt_post, quantity_size, true);
@@ -529,7 +530,7 @@ int Discret::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& param
         // point)
         if (data_available)
         {
-          switch (str_params_interface().gauss_point_data_output_manager_ptr()->GetOutputType())
+          switch (str_params_interface().gauss_point_data_output_manager_ptr()->get_output_type())
           {
             case Inpar::STR::GaussPointDataOutputType::element_center:
             {
@@ -546,13 +547,13 @@ int Discret::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& param
             case Inpar::STR::GaussPointDataOutputType::nodes:
             {
               Teuchos::RCP<Epetra_MultiVector> global_data =
-                  str_params_interface().gauss_point_data_output_manager_ptr()->GetNodalData().at(
+                  str_params_interface().gauss_point_data_output_manager_ptr()->get_nodal_data().at(
                       quantity_name);
 
               Epetra_IntVector& global_nodal_element_count =
                   *str_params_interface()
                        .gauss_point_data_output_manager_ptr()
-                       ->GetNodalDataCount()
+                       ->get_nodal_data_count()
                        .at(quantity_name);
 
               if (distype == Core::FE::CellType::hex8)
@@ -581,7 +582,7 @@ int Discret::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& param
               std::vector<Teuchos::RCP<Epetra_MultiVector>>& global_data =
                   str_params_interface()
                       .gauss_point_data_output_manager_ptr()
-                      ->GetGaussPointData()
+                      ->get_gauss_point_data()
                       .at(quantity_name);
               Discret::ELEMENTS::AssembleGaussPointValues(global_data, gp_data, *this);
               break;
@@ -700,7 +701,7 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate_neumann(Teuchos::ParameterLis
   // find out whether we will use a time curve
   double time = -1.0;
   if (IsParamsInterface())
-    time = params_interface().GetTotalTime();
+    time = params_interface().get_total_time();
   else
     time = params.get("total time", -1.0);
 
@@ -817,10 +818,10 @@ void Discret::ELEMENTS::So3Plast<distype>::nln_stiffmass(
 )
 {
   const bool eval_tsi = (temperature.size() != 0);
-  const bool is_tangDis = str_params_interface().GetPredictorType() == Inpar::STR::pred_tangdis;
-  const double dt = str_params_interface().GetDeltaTime();
-  const double timefac_d =
-      str_params_interface().GetTimIntFactorVel() / str_params_interface().GetTimIntFactorDisp();
+  const bool is_tangDis = str_params_interface().get_predictor_type() == Inpar::STR::pred_tangdis;
+  const double dt = str_params_interface().get_delta_time();
+  const double timefac_d = str_params_interface().get_tim_int_factor_vel() /
+                           str_params_interface().get_tim_int_factor_disp();
   if (timefac_d <= 0 || dt <= 0) FOUR_C_THROW("time integration parameters not provided");
 
   fill_position_arrays(disp, vel, temperature);
@@ -1157,13 +1158,13 @@ void Discret::ELEMENTS::So3Plast<distype>::condense_plasticity(
   if (!eval_tsi)
     plmat->EvaluatePlast(&defgrd, &deltaLp, nullptr, params, &dpk2ddp, &ncp, &dncpdc, &dncpddp,
         &active, &elast, &as_converged, gp, nullptr, nullptr, nullptr,
-        str_params_interface().GetDeltaTime(), Id(), cauchy_ptr, d_cauchy_ddp_ptr, d_cauchy_dC_ptr,
-        d_cauchy_dF_ptr, d_cauchy_dT_ptr);
+        str_params_interface().get_delta_time(), Id(), cauchy_ptr, d_cauchy_ddp_ptr,
+        d_cauchy_dC_ptr, d_cauchy_dF_ptr, d_cauchy_dT_ptr);
   else
     plmat->EvaluatePlast(&defgrd, &deltaLp, &temp, params, &dpk2ddp, &ncp, &dncpdc, &dncpddp,
         &active, &elast, &as_converged, gp, &dncpdT, &dHdC, &dHdLp,
-        str_params_interface().GetDeltaTime(), Id(), cauchy_ptr, d_cauchy_ddp_ptr, d_cauchy_dC_ptr,
-        d_cauchy_dF_ptr, d_cauchy_dT_ptr);
+        str_params_interface().get_delta_time(), Id(), cauchy_ptr, d_cauchy_ddp_ptr,
+        d_cauchy_dC_ptr, d_cauchy_dF_ptr, d_cauchy_dT_ptr);
   // *************************************************************************
 
   // Simple matrix do delete the linear dependent row in Voigt-notation.
@@ -1756,7 +1757,7 @@ void Discret::ELEMENTS::So3Plast<distype>::recover_plasticity_and_eas(
     const Core::LinAlg::Matrix<numdofperelement_, 1>* res_d,
     const Core::LinAlg::Matrix<nen_, 1>* res_T)
 {
-  if (str_params_interface().IsDefaultStep())
+  if (str_params_interface().is_default_step())
   {
     if (eastype_ != soh8p_easnone) recover_eas(res_d, res_T);
 
@@ -1787,7 +1788,7 @@ void Discret::ELEMENTS::So3Plast<distype>::recover_plasticity_and_eas(
   }
   else
   {
-    //    const double new_step_length   = str_params_interface().GetStepLength();
+    //    const double new_step_length   = str_params_interface().get_step_length();
     //
     //    if (eastype_!=soh8p_easnone)
     //      reduce_eas_step(new_step_length,old_step_length_);
@@ -1810,13 +1811,13 @@ void Discret::ELEMENTS::So3Plast<distype>::recover_eas(
 {
   if (eastype_ == soh8p_easnone) return;
 
-  const double step_length = str_params_interface().GetStepLength();
+  const double step_length = str_params_interface().get_step_length();
 
   // first, store the eas state of the previous accepted Newton step
   str_params_interface().sum_into_my_previous_sol_norm(
       NOX::Nln::StatusTest::quantity_eas, neas_, alpha_eas_->values(), Owner());
 
-  if (str_params_interface().IsDefaultStep()) switch (eastype_)
+  if (str_params_interface().is_default_step()) switch (eastype_)
     {
       case soh8p_easmild:
         Core::LinAlg::DenseFunctions::multiply<double,
@@ -1891,7 +1892,7 @@ void Discret::ELEMENTS::So3Plast<distype>::recover_eas(
   else
     FOUR_C_THROW("no line search implemented yet");
 
-  str_params_interface().SumIntoMyUpdateNorm(NOX::Nln::StatusTest::quantity_eas, neas_,
+  str_params_interface().sum_into_my_update_norm(NOX::Nln::StatusTest::quantity_eas, neas_,
       alpha_eas_inc_->values(), alpha_eas_->values(), step_length, Owner());
 
   return;
@@ -1905,9 +1906,9 @@ template <int spintype>
 void Discret::ELEMENTS::So3Plast<distype>::recover_plasticity(
     const Core::LinAlg::Matrix<numdofperelement_, 1>* res_d, const int gp, const double* res_t)
 {
-  const double step_length = str_params_interface().GetStepLength();
+  const double step_length = str_params_interface().get_step_length();
 
-  if (str_params_interface().IsDefaultStep() == false)
+  if (str_params_interface().is_default_step() == false)
     FOUR_C_THROW("no line search implemented yet");
 
   // first, store the state of the previous accepted Newton step
@@ -1985,8 +1986,8 @@ void Discret::ELEMENTS::So3Plast<distype>::recover_plasticity(
   Core::LinAlg::DenseFunctions::update<double, spintype, 1>(
       1., dDp_last_iter_[gp], 1., dDp_inc_[gp]);
 
-  str_params_interface().SumIntoMyUpdateNorm(NOX::Nln::StatusTest::quantity_plasticity, spintype,
-      dDp_inc_[gp].values(), dDp_inc_[gp].values(), step_length, Owner());
+  str_params_interface().sum_into_my_update_norm(NOX::Nln::StatusTest::quantity_plasticity,
+      spintype, dDp_inc_[gp].values(), dDp_inc_[gp].values(), step_length, Owner());
 }
 
 template <Core::FE::CellType distype>
@@ -1999,7 +2000,7 @@ void Discret::ELEMENTS::So3Plast<distype>::reduce_eas_step(
   alpha_eas_inc_->scale(new_step_length / old_step_length);
   Core::LinAlg::Update(+1., *alpha_eas_inc_, 1., *alpha_eas_);
 
-  str_params_interface().SumIntoMyUpdateNorm(NOX::Nln::StatusTest::quantity_eas, neas_,
+  str_params_interface().sum_into_my_update_norm(NOX::Nln::StatusTest::quantity_eas, neas_,
       alpha_eas_inc_->values(), alpha_eas_->values(), new_step_length, Owner());
 }
 
@@ -2011,8 +2012,8 @@ void Discret::ELEMENTS::So3Plast<distype>::reduce_plasticity_step(
   dDp_inc_[gp].scale(new_step_length / old_step_length);
   Core::LinAlg::Update(+1., dDp_inc_[gp], 1., dDp_last_iter_[gp]);
 
-  str_params_interface().SumIntoMyUpdateNorm(NOX::Nln::StatusTest::quantity_plasticity, plspintype_,
-      dDp_inc_[gp].values(), dDp_inc_[gp].values(), new_step_length, Owner());
+  str_params_interface().sum_into_my_update_norm(NOX::Nln::StatusTest::quantity_plasticity,
+      plspintype_, dDp_inc_[gp].values(), dDp_inc_[gp].values(), new_step_length, Owner());
 }
 
 /*----------------------------------------------------------------------*
@@ -2797,7 +2798,7 @@ void Discret::ELEMENTS::So3Plast<distype>::integrate_stiff_matrix(const int gp,
   // end of integrate additional fbar matrix*****************************
 
   // EAS technology: integrate matrices --------------------------------- EAS
-  if (not(str_params_interface().GetPredictorType() == Inpar::STR::pred_tangdis))
+  if (not(str_params_interface().get_predictor_type() == Inpar::STR::pred_tangdis))
     if (eastype_ != soh8p_easnone)
     {
       // integrate Kaa: Kaa += (M^T . cmat . M) * detJ * w(gp)
@@ -2865,8 +2866,8 @@ template <Core::FE::CellType distype>
 void Discret::ELEMENTS::So3Plast<distype>::integrate_thermo_gp(
     const int gp, Core::LinAlg::SerialDenseVector& dHda)
 {
-  const double timefac_d =
-      str_params_interface().GetTimIntFactorVel() / str_params_interface().GetTimIntFactorDisp();
+  const double timefac_d = str_params_interface().get_tim_int_factor_vel() /
+                           str_params_interface().get_tim_int_factor_disp();
   const double detJ_w = det_j() * wgt_[gp];
 
   // get plastic hyperelastic material

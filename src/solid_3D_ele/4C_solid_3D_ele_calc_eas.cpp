@@ -788,9 +788,9 @@ void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype>::Recover(Core::Elemen
   STR::ELEMENTS::ParamsInterface& params_interface =
       *Teuchos::rcp_dynamic_cast<STR::ELEMENTS::ParamsInterface>(ele.ParamsInterfacePtr());
 
-  const double step_length = params_interface.GetStepLength();
+  const double step_length = params_interface.get_step_length();
 
-  if (params_interface.IsDefaultStep())
+  if (params_interface.is_default_step())
   {
     params_interface.sum_into_my_previous_sol_norm(NOX::Nln::StatusTest::quantity_eas,
         STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, &eas_iteration_data_.alpha_(0, 0),
@@ -807,7 +807,7 @@ void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype>::Recover(Core::Elemen
   // store old step length
   old_step_length_ = step_length;
 
-  params_interface.SumIntoMyUpdateNorm(NOX::Nln::StatusTest::quantity_eas,
+  params_interface.sum_into_my_update_norm(NOX::Nln::StatusTest::quantity_eas,
       STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, &eas_iteration_data_.alpha_inc_(0, 0),
       &eas_iteration_data_.alpha_(0, 0), step_length, ele.Owner());
 }

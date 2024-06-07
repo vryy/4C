@@ -293,7 +293,7 @@ void Discret::UTILS::DbcHDG::read_dirichlet_condition(const Teuchos::ParameterLi
     int hierarchical_order) const
 {
   // no need to check the cast, because it has been done during
-  // the build process (see BuildDbc())
+  // the build process (see build_dbc())
   const Discret::DiscretizationFaces& face_discret =
       static_cast<const Discret::DiscretizationFaces&>(discret);
 
@@ -413,7 +413,7 @@ void Discret::UTILS::DbcHDG::do_dirichlet_condition(const Teuchos::ParameterList
     const Teuchos::RCP<std::set<int>>* dbcgids) const
 {
   // no need to check the cast, because it has been done during
-  // the build process (see BuildDbc())
+  // the build process (see build_dbc())
   const Discret::DiscretizationFaces& face_discret =
       static_cast<const Discret::DiscretizationFaces&>(discret);
 

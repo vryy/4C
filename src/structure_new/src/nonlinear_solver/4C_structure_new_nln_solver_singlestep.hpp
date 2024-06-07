@@ -42,14 +42,13 @@ namespace STR::Nln::SOLVER
     void reset_params() override;
 
    private:
-    //! set the full newton parameters in the nox parameter list
+    //! set the single step parameters in the nox parameter list
     void set_single_step_params();
 
+    //! set the single step parameters from the parameter list
     void set_single_step_params(Teuchos::ParameterList& p);
-
   };  // class SingleStep
 }  // namespace STR::Nln::SOLVER
-
 
 FOUR_C_NAMESPACE_CLOSE
 

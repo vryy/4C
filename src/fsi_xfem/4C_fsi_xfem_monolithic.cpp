@@ -480,7 +480,7 @@ void FSI::MonolithicXFEM::setup_system_matrix()
   if (!StructurePoro()->isPoro())
   {
     // extract Jacobian matrices and put them into composite system
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> s = StructurePoro()->SystemMatrix();
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> s = StructurePoro()->system_matrix();
 
     // Uncomplete structure matrix to be able to deal with slightly defective interface meshes.
     //
@@ -503,7 +503,7 @@ void FSI::MonolithicXFEM::setup_system_matrix()
   }
   else  // we use a block structure for poro
   {
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> ps = StructurePoro()->BlockSystemMatrix();
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> ps = StructurePoro()->block_system_matrix();
     ps->UnComplete();
     ps->Scale(scaling_S);
     systemmatrix_->Assign(
@@ -774,7 +774,7 @@ void FSI::MonolithicXFEM::Timeloop()
     // write output to screen and files
     output();
 
-  }  // NotFinished
+  }  // not_finished
 }  // TimeLoop()
 
 
@@ -930,7 +930,7 @@ void FSI::MonolithicXFEM::output()
   {
     for (std::map<int, Teuchos::RCP<XFEM::CouplingManager>>::iterator coupit = coup_man_.begin();
          coupit != coup_man_.end(); ++coupit)
-      coupit->second->Output(*StructurePoro()->structure_field()->DiscWriter());
+      coupit->second->Output(*StructurePoro()->structure_field()->disc_writer());
   }
 
   //--------------------------------

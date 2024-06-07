@@ -1303,7 +1303,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::BlockMonolithic::create_linear_sy
           // This might be an alternative to "Core::LinAlg::FixNullspace()", directly calculate
           // nullspace on correct map
           // solver->Params().sublist("Inverse1").set<Teuchos::RCP<Epetra_Map>>("null space: map",
-          // Teuchos::rcp(new Epetra_Map(SystemMatrix()->Matrix(0,0).RowMap())));
+          // Teuchos::rcp(new Epetra_Map(system_matrix()->Matrix(0,0).RowMap())));
           structure_field()->discretization()->compute_null_space_if_necessary(
               solver->Params().sublist("Inverse1"));
           Core::LinearSolver::Parameters::FixNullSpace("Structure",
@@ -1315,7 +1315,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::BlockMonolithic::create_linear_sy
           // This might be an alternative to "Core::LinAlg::FixNullspace()", directly calculate
           // nullspace on correct map
           // solver->Params().sublist("Inverse2").set<Teuchos::RCP<Epetra_Map>>("null space: map",
-          // Teuchos::rcp(new Epetra_Map(SystemMatrix()->Matrix(1,1).RowMap())));
+          // Teuchos::rcp(new Epetra_Map(system_matrix()->Matrix(1,1).RowMap())));
           fluid_field()->discretization()->compute_null_space_if_necessary(
               solver->Params().sublist("Inverse2"));
           Core::LinearSolver::Parameters::FixNullSpace("Fluid",
@@ -1327,7 +1327,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::BlockMonolithic::create_linear_sy
           // This might be an alternative to "Core::LinAlg::FixNullspace()", directly calculate
           // nullspace on correct map
           // solver->Params().sublist("Inverse3").set<Teuchos::RCP<Epetra_Map>>("null space: map",
-          // Teuchos::rcp(new Epetra_Map(SystemMatrix()->Matrix(2,2).RowMap()))); we have to cast
+          // Teuchos::rcp(new Epetra_Map(system_matrix()->Matrix(2,2).RowMap()))); we have to cast
           // the const on the ale discretization away!
           const_cast<Discret::Discretization&>(*(ale_field()->discretization()))
               .compute_null_space_if_necessary(solver->Params().sublist("Inverse3"));

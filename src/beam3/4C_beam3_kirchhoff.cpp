@@ -1983,7 +1983,7 @@ void Discret::ELEMENTS::Beam3k::calc_velocity(
       velocity_dofvec, N_i, velocity_test);
 
   // get time step size
-  const double dt = params_interface().GetDeltaTime();
+  const double dt = params_interface().get_delta_time();
 
   Core::LinAlg::Matrix<3, 1> diff(true);
 

@@ -54,7 +54,7 @@ int Discret::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
 
   if (IsParamsInterface())
   {
-    act = params_interface().GetActionType();
+    act = params_interface().get_action_type();
   }
   else
   {
@@ -541,10 +541,10 @@ void Discret::ELEMENTS::Beam3k::calc_internal_and_inertia_forces_and_stiff(
 
     if (this->IsParamsInterface())
     {
-      dt = params_interface().GetDeltaTime();
-      beta = params_interface().get_beam_params_interface_ptr()->GetBeta();
-      alpha_f = params_interface().get_beam_params_interface_ptr()->GetAlphaf();
-      alpha_m = params_interface().get_beam_params_interface_ptr()->GetAlpham();
+      dt = params_interface().get_delta_time();
+      beta = params_interface().get_beam_params_interface_ptr()->get_beta();
+      alpha_f = params_interface().get_beam_params_interface_ptr()->get_alphaf();
+      alpha_m = params_interface().get_beam_params_interface_ptr()->get_alpham();
     }
     else
     {
@@ -1662,11 +1662,11 @@ void Discret::ELEMENTS::Beam3k::calculate_inertia_forces_and_mass_matrix(
 
   if (this->IsParamsInterface())
   {
-    dt = params_interface().GetDeltaTime();
-    beta = params_interface().get_beam_params_interface_ptr()->GetBeta();
-    gamma = params_interface().get_beam_params_interface_ptr()->GetGamma();
-    alpha_f = params_interface().get_beam_params_interface_ptr()->GetAlphaf();
-    alpha_m = params_interface().get_beam_params_interface_ptr()->GetAlpham();
+    dt = params_interface().get_delta_time();
+    beta = params_interface().get_beam_params_interface_ptr()->get_beta();
+    gamma = params_interface().get_beam_params_interface_ptr()->get_gamma();
+    alpha_f = params_interface().get_beam_params_interface_ptr()->get_alphaf();
+    alpha_m = params_interface().get_beam_params_interface_ptr()->get_alpham();
   }
   else
   {
@@ -2102,7 +2102,7 @@ int Discret::ELEMENTS::Beam3k::evaluate_neumann(Teuchos::ParameterList& params,
   // find out whether we will use a time curve
   double time = -1.0;
   if (this->IsParamsInterface())
-    time = this->ParamsInterfacePtr()->GetTotalTime();
+    time = this->ParamsInterfacePtr()->get_total_time();
   else
     time = params.get("total time", -1.0);
 
@@ -2900,7 +2900,7 @@ void Discret::ELEMENTS::Beam3k::evaluate_analytic_stiffmat_contributions_from_tr
   const unsigned int dofpernode = ndim * vpernode + 1;
 
   // get time step size
-  const double dt = params_interface().GetDeltaTime();
+  const double dt = params_interface().get_delta_time();
 
   // compute matrix product of damping matrix and gradient of background velocity
   Core::LinAlg::Matrix<ndim, ndim> dampmatvelbackgroundgrad(true);
@@ -2990,7 +2990,8 @@ void Discret::ELEMENTS::Beam3k::evaluate_stochastic_forces(
 
   /* get pointer at Epetra multivector in parameter list linking to random numbers for stochastic
    * forces with zero mean and standard deviation (2*kT / dt)^0.5 */
-  Teuchos::RCP<Epetra_MultiVector> randomforces = brownian_dyn_params_interface().GetRandomForces();
+  Teuchos::RCP<Epetra_MultiVector> randomforces =
+      brownian_dyn_params_interface().get_random_forces();
 
   // tangent vector (derivative of beam centerline curve r with respect to arc-length parameter s)
   Core::LinAlg::Matrix<ndim, 1, T> r_s(true);
@@ -3125,7 +3126,7 @@ void Discret::ELEMENTS::Beam3k::evaluate_rotational_damping(
     Core::LinAlg::Matrix<ndim * vpernode * nnode + BEAM3K_COLLOCATION_POINTS, 1, T>& f_int)
 {
   // get time step size
-  const double dt = params_interface().GetDeltaTime();
+  const double dt = params_interface().get_delta_time();
 
   // get damping coefficients for translational and rotational degrees of freedom
   Core::LinAlg::Matrix<3, 1> gamma(true);

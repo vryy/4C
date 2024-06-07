@@ -401,7 +401,7 @@ void Adapter::StructureLung::EvaluateVolCon(
 void Adapter::StructureLung::WriteVolConRestart(Teuchos::RCP<Epetra_Vector> OldFlowRatesRed,
     Teuchos::RCP<Epetra_Vector> OldVolsRed, Teuchos::RCP<Epetra_Vector> OldLagrMultRed)
 {
-  Teuchos::RCP<Core::IO::DiscretizationWriter> output = DiscWriter();
+  Teuchos::RCP<Core::IO::DiscretizationWriter> output = disc_writer();
   std::stringstream stream1;
   stream1 << "OldVols";
   std::stringstream stream2;
@@ -443,7 +443,7 @@ void Adapter::StructureLung::WriteVolConRestart(Teuchos::RCP<Epetra_Vector> OldF
 /* output of volume constraint related forces*/
 void Adapter::StructureLung::OutputForces(Teuchos::RCP<Epetra_Vector> Forces)
 {
-  Teuchos::RCP<Core::IO::DiscretizationWriter> output = DiscWriter();
+  Teuchos::RCP<Core::IO::DiscretizationWriter> output = disc_writer();
   output->WriteVector("Add_Forces", Forces);
 }
 

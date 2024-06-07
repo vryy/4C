@@ -35,7 +35,7 @@ int Discret::ELEMENTS::SolidScatra::Evaluate(Teuchos::ParameterList& params,
       [&]()
       {
         if (IsParamsInterface())
-          return params_interface().GetActionType();
+          return params_interface().get_action_type();
         else
           return Core::Elements::String2ActionType(params.get<std::string>("action", "none"));
       });
@@ -138,7 +138,7 @@ int Discret::ELEMENTS::SolidScatra::evaluate_neumann(Teuchos::ParameterList& par
       [&]()
       {
         if (IsParamsInterface())
-          return params_interface().GetTotalTime();
+          return params_interface().get_total_time();
         else
           return params.get("total time", -1.0);
       });

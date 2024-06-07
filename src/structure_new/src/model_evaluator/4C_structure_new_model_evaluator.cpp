@@ -81,7 +81,7 @@ void STR::ModelEvaluator::Setup()
   check_init();
 
   me_map_ptr_ = STR::MODELEVALUATOR::build_model_evaluators(
-      sdyn_ptr_->GetModelTypes(), sdyn_ptr_->CouplingModelPtr());
+      sdyn_ptr_->get_model_types(), sdyn_ptr_->coupling_model_ptr());
 
   me_vec_ptr_ = transform_to_vector(*me_map_ptr_);
 
@@ -122,7 +122,7 @@ bool STR::ModelEvaluator::initialize_inertia_and_damping(
   jac.Zero();
   // get structural model evaluator
   STR::MODELEVALUATOR::Structure& str_model =
-      dynamic_cast<STR::MODELEVALUATOR::Structure&>(Evaluator(Inpar::STR::model_structure));
+      dynamic_cast<STR::MODELEVALUATOR::Structure&>(evaluator(Inpar::STR::model_structure));
 
   str_model.Reset(x);
 
@@ -255,7 +255,7 @@ void STR::ModelEvaluator::post_evaluate(bool ok, const Vector& me_vec) const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::ModelEvaluator::ApplyInitialForce(const Epetra_Vector& x, Epetra_Vector& f)
+bool STR::ModelEvaluator::apply_initial_force(const Epetra_Vector& x, Epetra_Vector& f)
 {
   check_init_setup();
 
@@ -267,7 +267,7 @@ bool STR::ModelEvaluator::ApplyInitialForce(const Epetra_Vector& x, Epetra_Vecto
   // ---------------------------------------------------------------------------
   // reset model specific variables
   // ---------------------------------------------------------------------------
-  ResetStates(x, false);
+  reset_states(x, false);
 
   // ---------------------------------------------------------------------------
   // evaluate all terms
@@ -295,22 +295,22 @@ bool STR::ModelEvaluator::ApplyInitialForce(const Epetra_Vector& x, Epetra_Vecto
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ModelEvaluator::ResetStates(const Epetra_Vector& x) const
+void STR::ModelEvaluator::reset_states(const Epetra_Vector& x) const
 {
-  // default ResetStates call
-  ResetStates(x, true);
+  // default reset_states call
+  reset_states(x, true);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ModelEvaluator::ResetStates(const Epetra_Vector& x, bool setstate) const
+void STR::ModelEvaluator::reset_states(const Epetra_Vector& x, bool setstate) const
 {
-  ResetStates(x, setstate, *me_vec_ptr_);
+  reset_states(x, setstate, *me_vec_ptr_);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ModelEvaluator::ResetStates(const Epetra_Vector& x, bool setstate, Vector& me_vec) const
+void STR::ModelEvaluator::reset_states(const Epetra_Vector& x, bool setstate, Vector& me_vec) const
 {
   if (setstate) int_ptr_->set_state(x);
   for (auto& me_iter : me_vec) me_iter->Reset(x);
@@ -318,7 +318,7 @@ void STR::ModelEvaluator::ResetStates(const Epetra_Vector& x, bool setstate, Vec
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::ModelEvaluator::ApplyForce(
+bool STR::ModelEvaluator::apply_force(
     const Epetra_Vector& x, Epetra_Vector& f, const double& timefac_np) const
 {
   check_init_setup();
@@ -331,7 +331,7 @@ bool STR::ModelEvaluator::ApplyForce(
   // reset model specific variables
   // and also update the state variables of the current time integrator
   // ---------------------------------------------------------------------------
-  ResetStates(x);
+  reset_states(x);
 
   // ---------------------------------------------------------------------------
   // evaluate all terms
@@ -348,7 +348,7 @@ bool STR::ModelEvaluator::ApplyForce(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::ModelEvaluator::ApplyStiff(
+bool STR::ModelEvaluator::apply_stiff(
     const Epetra_Vector& x, Core::LinAlg::SparseOperator& jac, const double& timefac_np) const
 {
   check_init_setup();
@@ -361,7 +361,7 @@ bool STR::ModelEvaluator::ApplyStiff(
   // update the state variables of the current time integrator
   // reset model specific variables
   // ---------------------------------------------------------------------------
-  ResetStates(x);
+  reset_states(x);
 
   // ---------------------------------------------------------------------------
   // evaluate all terms
@@ -378,7 +378,7 @@ bool STR::ModelEvaluator::ApplyStiff(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::ModelEvaluator::ApplyStiff(const Inpar::STR::ModelType& mt, const Epetra_Vector& x,
+bool STR::ModelEvaluator::apply_stiff(const Inpar::STR::ModelType& mt, const Epetra_Vector& x,
     Core::LinAlg::SparseOperator& jac, const double& timefac_np) const
 {
   check_init_setup();
@@ -409,7 +409,7 @@ bool STR::ModelEvaluator::ApplyStiff(const Inpar::STR::ModelType& mt, const Epet
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::ModelEvaluator::ApplyForceStiff(const Epetra_Vector& x, Epetra_Vector& f,
+bool STR::ModelEvaluator::apply_force_stiff(const Epetra_Vector& x, Epetra_Vector& f,
     Core::LinAlg::SparseOperator& jac, const double& timefac_np) const
 {
   check_init_setup();
@@ -423,7 +423,7 @@ bool STR::ModelEvaluator::ApplyForceStiff(const Epetra_Vector& x, Epetra_Vector&
   // update the state variables of the current time integrator
   // reset model specific variables
   // ---------------------------------------------------------------------------
-  ResetStates(x);
+  reset_states(x);
 
   // ---------------------------------------------------------------------------
   // evaluate all terms
@@ -441,7 +441,7 @@ bool STR::ModelEvaluator::ApplyForceStiff(const Epetra_Vector& x, Epetra_Vector&
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::ModelEvaluator::ApplyCheapSOCRhs(const enum NOX::Nln::CorrectionType type,
+bool STR::ModelEvaluator::apply_cheap_soc_rhs(const enum NOX::Nln::CorrectionType type,
     const std::vector<Inpar::STR::ModelType>& constraint_models, const Epetra_Vector& x,
     Epetra_Vector& f, const double& timefac_np) const
 {
@@ -458,7 +458,7 @@ bool STR::ModelEvaluator::ApplyCheapSOCRhs(const enum NOX::Nln::CorrectionType t
   // update the state variables of the current time integrator
   // reset model specific variables of the constraint models
   // ---------------------------------------------------------------------------
-  ResetStates(x, true, constraint_me_vec);
+  reset_states(x, true, constraint_me_vec);
 
   // ---------------------------------------------------------------------------
   // evaluate all rhs terms of the constraint models
@@ -512,7 +512,7 @@ bool STR::ModelEvaluator::correct_parameters(const enum NOX::Nln::CorrectionType
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ModelEvaluator::Predict(const Inpar::STR::PredEnum& pred_type) const
+void STR::ModelEvaluator::predict(const Inpar::STR::PredEnum& pred_type) const
 {
   check_init_setup();
   for (Vector::iterator me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
@@ -542,16 +542,16 @@ void STR::ModelEvaluator::read_restart(Core::IO::DiscretizationReader& ioreader)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ModelEvaluator::RunRecover() const
+void STR::ModelEvaluator::run_recover() const
 {
   check_init_setup();
   // set some parameters for the element evaluation
-  eval_data_ptr_->SetIsDefaultStep(true);
-  eval_data_ptr_->SetStepLength(1.0);
-  eval_data_ptr_->ResetMyNorms(true);
+  eval_data_ptr_->set_is_default_step(true);
+  eval_data_ptr_->set_step_length(1.0);
+  eval_data_ptr_->reset_my_norms(true);
   Vector::iterator me_iter;
   for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
-    (*me_iter)->RunRecover();
+    (*me_iter)->run_recover();
 }
 
 /*----------------------------------------------------------------------------*
@@ -561,9 +561,9 @@ void STR::ModelEvaluator::run_post_compute_x(const Epetra_Vector& xold, const Ep
 {
   check_init_setup();
   // set some parameters for the element evaluation
-  eval_data_ptr_->SetIsDefaultStep(isdefaultstep);
-  eval_data_ptr_->SetStepLength(step);
-  eval_data_ptr_->ResetMyNorms(isdefaultstep);
+  eval_data_ptr_->set_is_default_step(isdefaultstep);
+  eval_data_ptr_->set_step_length(step);
+  eval_data_ptr_->reset_my_norms(isdefaultstep);
   Vector::iterator me_iter;
   for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
     (*me_iter)->run_post_compute_x(xold, dir, xnew);
@@ -574,8 +574,8 @@ void STR::ModelEvaluator::run_post_compute_x(const Epetra_Vector& xold, const Ep
 void STR::ModelEvaluator::run_pre_compute_x(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
     const double& step, const NOX::Nln::Group& curr_grp, const bool isdefaultstep) const
 {
-  eval_data_ptr_->SetIsDefaultStep(isdefaultstep);
-  eval_data_ptr_->SetStepLength(step);
+  eval_data_ptr_->set_is_default_step(isdefaultstep);
+  eval_data_ptr_->set_step_length(step);
 
   Vector::iterator me_iter;
   for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
@@ -587,8 +587,8 @@ void STR::ModelEvaluator::run_pre_compute_x(const Epetra_Vector& xold, Epetra_Ve
 void STR::ModelEvaluator::run_post_iterate(const ::NOX::Solver::Generic& solver, const double step,
     const bool isdefaultstep, const int num_corrs) const
 {
-  eval_data_ptr_->SetIsDefaultStep(isdefaultstep);
-  eval_data_ptr_->SetStepLength(step);
+  eval_data_ptr_->set_is_default_step(isdefaultstep);
+  eval_data_ptr_->set_step_length(step);
   eval_data_ptr_->set_number_of_modified_newton_corrections(num_corrs);
 
   Vector::iterator me_iter;
@@ -598,15 +598,15 @@ void STR::ModelEvaluator::run_post_iterate(const ::NOX::Solver::Generic& solver,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ModelEvaluator::RunPreSolve(
+void STR::ModelEvaluator::run_pre_solve(
     const ::NOX::Solver::Generic& solver, const double step, const bool isdefaultstep) const
 {
-  eval_data_ptr_->SetIsDefaultStep(isdefaultstep);
-  eval_data_ptr_->SetStepLength(step);
+  eval_data_ptr_->set_is_default_step(isdefaultstep);
+  eval_data_ptr_->set_step_length(step);
 
   Vector::iterator me_iter;
   for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
-    (*me_iter)->RunPreSolve(solver);
+    (*me_iter)->run_pre_solve(solver);
 }
 
 
@@ -632,7 +632,7 @@ void STR::ModelEvaluator::run_pre_apply_jacobian_inverse(const Epetra_Vector& rh
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const STR::TimeInt::BaseDataGlobalState& STR::ModelEvaluator::GetGlobalState() const
+const STR::TimeInt::BaseDataGlobalState& STR::ModelEvaluator::get_global_state() const
 {
   check_init_setup();
   return *gstate_ptr_;
@@ -648,7 +648,7 @@ const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& STR::ModelEvaluator::glob
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Teuchos::RCP<const STR::TimeInt::Base>& STR::ModelEvaluator::GetTimIntPtr() const
+const Teuchos::RCP<const STR::TimeInt::Base>& STR::ModelEvaluator::get_tim_int_ptr() const
 {
   check_init_setup();
   return timint_ptr_;
@@ -656,7 +656,7 @@ const Teuchos::RCP<const STR::TimeInt::Base>& STR::ModelEvaluator::GetTimIntPtr(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::MODELEVALUATOR::Generic& STR::ModelEvaluator::Evaluator(const enum Inpar::STR::ModelType& mt)
+STR::MODELEVALUATOR::Generic& STR::ModelEvaluator::evaluator(const enum Inpar::STR::ModelType& mt)
 {
   check_init_setup();
   // sanity check, if there is a model evaluator for the given model type
@@ -670,7 +670,7 @@ STR::MODELEVALUATOR::Generic& STR::ModelEvaluator::Evaluator(const enum Inpar::S
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const STR::MODELEVALUATOR::Generic& STR::ModelEvaluator::Evaluator(
+const STR::MODELEVALUATOR::Generic& STR::ModelEvaluator::evaluator(
     const enum Inpar::STR::ModelType& mt) const
 {
   check_init_setup();
@@ -685,15 +685,15 @@ const STR::MODELEVALUATOR::Generic& STR::ModelEvaluator::Evaluator(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ModelEvaluator::UpdateStepState(const double& timefac_n)
+void STR::ModelEvaluator::update_step_state(const double& timefac_n)
 {
   check_init_setup();
   /* Reset old structural right hand side.
    * It will be filled within the model evaluators */
-  gstate_ptr_->GetFstructureOld()->PutScalar(0.0);
+  gstate_ptr_->get_fstructure_old()->PutScalar(0.0);
   Vector::iterator me_iter;
   for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
-    (*me_iter)->UpdateStepState(timefac_n);
+    (*me_iter)->update_step_state(timefac_n);
 }
 
 
@@ -722,12 +722,12 @@ void STR::ModelEvaluator::remove_condensed_contributions_from_rhs(Epetra_Vector&
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ModelEvaluator::UpdateStepElement()
+void STR::ModelEvaluator::update_step_element()
 {
   check_init_setup();
   Vector::iterator me_iter;
   for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
-    (*me_iter)->UpdateStepElement();
+    (*me_iter)->update_step_element();
 }
 
 /*----------------------------------------------------------------------------*
@@ -752,12 +752,12 @@ void STR::ModelEvaluator::determine_stress_strain()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ModelEvaluator::DetermineEnergy()
+void STR::ModelEvaluator::determine_energy()
 {
   check_init_setup();
   Vector::iterator me_iter;
   for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
-    (*me_iter)->DetermineEnergy();
+    (*me_iter)->determine_energy();
 }
 
 /*----------------------------------------------------------------------------*
@@ -772,12 +772,12 @@ void STR::ModelEvaluator::determine_optional_quantity()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ModelEvaluator::OutputStepState(Core::IO::DiscretizationWriter& iowriter) const
+void STR::ModelEvaluator::output_step_state(Core::IO::DiscretizationWriter& iowriter) const
 {
   check_init_setup();
   Vector::const_iterator me_iter;
   for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
-    (*me_iter)->OutputStepState(iowriter);
+    (*me_iter)->output_step_state(iowriter);
 }
 
 /*----------------------------------------------------------------------------*
@@ -800,22 +800,22 @@ void STR::ModelEvaluator::runtime_output_step_state() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ModelEvaluator::PostOutput()
+void STR::ModelEvaluator::post_output()
 {
   check_init_setup();
   Vector::iterator me_iter;
   for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
-    (*me_iter)->PostOutput();
+    (*me_iter)->post_output();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ModelEvaluator::ResetStepState()
+void STR::ModelEvaluator::reset_step_state()
 {
   check_init_setup();
   Vector::iterator me_iter;
   for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
-    (*me_iter)->ResetStepState();
+    (*me_iter)->reset_step_state();
 }
 
 /*----------------------------------------------------------------------------*
@@ -891,10 +891,10 @@ void STR::ModelEvaluator::extract_model_vector(STR::ModelEvaluator::Vector& part
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ModelEvaluator::CreateBackupState(const Epetra_Vector& dir)
+void STR::ModelEvaluator::create_backup_state(const Epetra_Vector& dir)
 {
   check_init_setup();
-  for (const auto& me_iter : *me_vec_ptr_) me_iter->CreateBackupState(dir);
+  for (const auto& me_iter : *me_vec_ptr_) me_iter->create_backup_state(dir);
 }
 
 /*----------------------------------------------------------------------------*

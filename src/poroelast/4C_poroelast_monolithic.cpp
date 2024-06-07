@@ -478,7 +478,7 @@ void PoroElast::Monolithic::setup_system_matrix(Core::LinAlg::BlockSparseMatrixB
   // The maps of the block matrix have to match the maps of the blocks we
   // insert here. Extract Jacobian matrices and put them into composite system
   // matrix W
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> k_ss = structure_field()->SystemMatrix();
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> k_ss = structure_field()->system_matrix();
 
   if (k_ss == Teuchos::null) FOUR_C_THROW("structure system matrix null pointer!");
 
@@ -1128,7 +1128,7 @@ void PoroElast::Monolithic::apply_fluid_coupl_matrix(
   if (nopen_handle_->HasCond())
   {
     k_fs->Complete(
-        structure_field()->SystemMatrix()->RangeMap(), fluid_field()->SystemMatrix()->RangeMap());
+        structure_field()->system_matrix()->RangeMap(), fluid_field()->SystemMatrix()->RangeMap());
     evaluate_condition(k_fs, PoroElast::fluidstructure);
   }
 
@@ -1412,10 +1412,10 @@ void PoroElast::Monolithic::evaluate_condition(
     double timescale = fluid_field()->residual_scaling();
     struct_vel_constraint_matrix->Scale(timescale);
     struct_vel_constraint_matrix->Complete(
-        structure_field()->SystemMatrix()->RangeMap(), fluid_field()->SystemMatrix()->RangeMap());
+        structure_field()->system_matrix()->RangeMap(), fluid_field()->SystemMatrix()->RangeMap());
     ConstraintMatrix->Add(*struct_vel_constraint_matrix, false, 1.0, 1.0);
     ConstraintMatrix->Complete(
-        structure_field()->SystemMatrix()->RangeMap(), fluid_field()->SystemMatrix()->RangeMap());
+        structure_field()->system_matrix()->RangeMap(), fluid_field()->SystemMatrix()->RangeMap());
   }
 
   const Teuchos::RCP<const Epetra_Map>& nopenetrationmap = nopen_handle_->Extractor()->Map(1);
@@ -1624,7 +1624,7 @@ bool PoroElast::Monolithic::SetupSolver()
   return true;
 }
 
-Teuchos::RCP<Core::LinAlg::SparseMatrix> PoroElast::Monolithic::SystemMatrix()
+Teuchos::RCP<Core::LinAlg::SparseMatrix> PoroElast::Monolithic::system_matrix()
 {
   return systemmatrix_->Merge();
 }

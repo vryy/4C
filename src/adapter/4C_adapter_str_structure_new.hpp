@@ -116,7 +116,7 @@ namespace Adapter
     [[nodiscard]] Teuchos::RCP<const Epetra_Vector> Accn() const override { return AccN(); }
 
     /// resize the multi step class vector
-    void ResizeMStepTimAda() override = 0;
+    void resize_m_step_tim_ada() override = 0;
     ///@}
 
     /// @name Time step helpers
@@ -204,7 +204,7 @@ namespace Adapter
     };
 
     /// tests if there are more time steps to do
-    [[nodiscard]] bool NotFinished() const override = 0;
+    [[nodiscard]] bool not_finished() const override = 0;
 
     /// start new time step
     void prepare_time_step() override = 0;
@@ -264,13 +264,13 @@ namespace Adapter
     void update_iter_incr_cardiovascular0_d(Teuchos::RCP<Epetra_Vector> presincr) override = 0;
 
     /// Access to output object
-    Teuchos::RCP<Core::IO::DiscretizationWriter> DiscWriter() override = 0;
+    Teuchos::RCP<Core::IO::DiscretizationWriter> disc_writer() override = 0;
 
     /// prepare output (i.e. calculate stresses, strains, energies)
     void prepare_output(bool force_prepare_timestep) override = 0;
 
     // Get restart data
-    void GetRestartData(Teuchos::RCP<int> step, Teuchos::RCP<double> time,
+    void get_restart_data(Teuchos::RCP<int> step, Teuchos::RCP<double> time,
         Teuchos::RCP<Epetra_Vector> disn, Teuchos::RCP<Epetra_Vector> veln,
         Teuchos::RCP<Epetra_Vector> accn, Teuchos::RCP<std::vector<char>> elementdata,
         Teuchos::RCP<std::vector<char>> nodedata) override = 0;
@@ -279,7 +279,7 @@ namespace Adapter
     void Output(bool forced_writerestart = false) override = 0;
 
     /// output results to screen
-    void PrintStep() override = 0;
+    void print_step() override = 0;
 
     /// read restart information for given time step
     void read_restart(const int step) override = 0;
@@ -297,7 +297,7 @@ namespace Adapter
     void reset_step() override = 0;
 
     /// set restart information for parameter continuation
-    void SetRestart(int step, double time, Teuchos::RCP<Epetra_Vector> disn,
+    void set_restart(int step, double time, Teuchos::RCP<Epetra_Vector> disn,
         Teuchos::RCP<Epetra_Vector> veln, Teuchos::RCP<Epetra_Vector> accn,
         Teuchos::RCP<std::vector<char>> elementdata,
         Teuchos::RCP<std::vector<char>> nodedata) override = 0;
@@ -352,12 +352,12 @@ namespace Adapter
     };
 
     /// get the linear solver object used for this field
-    Teuchos::RCP<Core::LinAlg::Solver> LinearSolver() override = 0;
+    Teuchos::RCP<Core::LinAlg::Solver> linear_solver() override = 0;
 
     //@}
 
     /// extract rhs (used to calculate reaction force for post-processing)
-    Teuchos::RCP<Epetra_Vector> Freact() override = 0;
+    Teuchos::RCP<Epetra_Vector> freact() override = 0;
 
 
     //! @name volume coupled specific methods
@@ -405,7 +405,7 @@ namespace Adapter
     Teuchos::RCP<const Epetra_Map> dof_row_map(unsigned nds) override = 0;
 
     /// DOF map view of vector of unknowns
-    const Epetra_Map* DofRowMapView() override = 0;
+    const Epetra_Map* dof_row_map_view() override = 0;
 
     /// domain map of system matrix (do we really need this?)
     /// ToDo Replace the deprecated version with the new version
@@ -413,10 +413,10 @@ namespace Adapter
     [[nodiscard]] const Epetra_Map& DomainMap() const override { return GetMassDomainMap(); }
 
     /// direct access to system matrix
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() override = 0;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() override = 0;
 
     /// direct access to system matrix
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> BlockSystemMatrix() override = 0;
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() override = 0;
 
     /// switch structure field to block matrix
     void use_block_matrix(Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> domainmaps,
@@ -445,10 +445,10 @@ namespace Adapter
     Teuchos::RCP<CONSTRAINTS::ConstrManager> get_constraint_manager() override = 0;
 
     /// Get type of thickness scaling for thin shell structures
-    Inpar::STR::StcScale GetSTCAlgo() override = 0;
+    Inpar::STR::StcScale get_stc_algo() override = 0;
 
     /// Access to scaling matrix for STC
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> GetSTCMat() override = 0;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> get_stc_mat() override = 0;
 
     /// Return MapExtractor for Dirichlet boundary conditions
     Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor() override = 0;

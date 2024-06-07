@@ -36,8 +36,8 @@ void STR::MonitorDbc::Init(const Teuchos::RCP<STR::TimeInt::BaseDataIO>& io_ptr,
   isinit_ = false;
 
 
-  of_precision_ = io_ptr->GetMonitorDBCParams()->FilePrecision();
-  os_precision_ = io_ptr->GetMonitorDBCParams()->ScreenPrecision();
+  of_precision_ = io_ptr->get_monitor_dbc_params()->FilePrecision();
+  os_precision_ = io_ptr->get_monitor_dbc_params()->ScreenPrecision();
 
   std::vector<const Core::Conditions::Condition*> tagged_conds;
   get_tagged_condition(tagged_conds, "Dirichlet", "monitor_reaction", discret);
@@ -176,7 +176,7 @@ void STR::MonitorDbc::Setup()
         create_file_paths(rconds, full_restart_dirpath, filename_restart_only_prefix, filetype);
 
     read_results_prior_restart_step_and_write_to_file(
-        full_restart_filepaths, gstate_ptr_->GetStepN());
+        full_restart_filepaths, gstate_ptr_->get_step_n());
   }
 
   issetup_ = true;
@@ -311,7 +311,7 @@ void STR::MonitorDbc::write_results_to_file(const std::string& full_filepath,
 
   std::ofstream of(full_filepath, std::ios_base::out | std::ios_base::app);
 
-  write_results(of, OF_WIDTH, of_precision_, gstate_ptr_->GetStepN(), gstate_ptr_->GetTimeN(),
+  write_results(of, OF_WIDTH, of_precision_, gstate_ptr_->get_step_n(), gstate_ptr_->get_time_n(),
       rforce, rmoment, area_ref, area_curr);
 
   of.close();
@@ -329,8 +329,8 @@ void STR::MonitorDbc::write_results_to_screen(
   Core::IO::cout << "\n\n--- Monitor Dirichlet boundary condition " << rcond_ptr->Id() + 1 << " \n";
   write_condition_header(Core::IO::cout.os(), OS_WIDTH);
   write_column_header(Core::IO::cout.os(), OS_WIDTH);
-  write_results(Core::IO::cout.os(), OS_WIDTH, os_precision_, gstate_ptr_->GetStepN(),
-      gstate_ptr_->GetTimeN(), rforce, rmoment, area_ref, area_curr);
+  write_results(Core::IO::cout.os(), OS_WIDTH, os_precision_, gstate_ptr_->get_step_n(),
+      gstate_ptr_->get_time_n(), rforce, rmoment, area_ref, area_curr);
 }
 
 /*----------------------------------------------------------------------------*
@@ -440,7 +440,7 @@ void STR::MonitorDbc::get_area(double area[], const Core::Conditions::Condition*
   Core::LinAlg::SerialDenseMatrix xyze_curr;
 
   const std::map<int, Teuchos::RCP<Core::Elements::Element>>& celes = rcond->Geometry();
-  Teuchos::RCP<const Epetra_Vector> dispn = gstate_ptr_->GetDisNp();
+  Teuchos::RCP<const Epetra_Vector> dispn = gstate_ptr_->get_dis_np();
   Epetra_Vector dispn_col(*discret.DofColMap(), true);
   Core::LinAlg::Export(*dispn, dispn_col);
 
@@ -507,7 +507,7 @@ void STR::MonitorDbc::get_area(double area[], const Core::Conditions::Condition*
 double STR::MonitorDbc::get_reaction_force(
     Core::LinAlg::Matrix<DIM, 1>& rforce_xyz, const Teuchos::RCP<Epetra_Map>* react_maps) const
 {
-  Epetra_Vector complete_freact(*gstate_ptr_->GetFreactNp());
+  Epetra_Vector complete_freact(*gstate_ptr_->get_freact_np());
   dbc_ptr_->RotateGlobalToLocal(Teuchos::rcpFromRef(complete_freact));
 
   Core::LinAlg::Matrix<DIM, 1> lrforce_xyz(true);
@@ -530,9 +530,9 @@ double STR::MonitorDbc::get_reaction_force(
 double STR::MonitorDbc::get_reaction_moment(Core::LinAlg::Matrix<DIM, 1>& rmoment_xyz,
     const Teuchos::RCP<Epetra_Map>* react_maps, const Core::Conditions::Condition* rcond) const
 {
-  Teuchos::RCP<const Epetra_Vector> dispn = gstate_ptr_->GetDisNp();
+  Teuchos::RCP<const Epetra_Vector> dispn = gstate_ptr_->get_dis_np();
 
-  Epetra_Vector complete_freact(*gstate_ptr_->GetFreactNp());
+  Epetra_Vector complete_freact(*gstate_ptr_->get_freact_np());
   dbc_ptr_->RotateGlobalToLocal(Teuchos::rcpFromRef(complete_freact));
 
   Core::LinAlg::Matrix<DIM, 1> lrmoment_xyz(true);

@@ -48,7 +48,7 @@ void STR::Nln::SOLVER::PseudoTransient::set_pseudo_transient_params()
 
   /* get the nox parameter list and set the necessary parameters for a
    * pseudo transient solution procedure */
-  Teuchos::ParameterList& pnox = data_s_dyn().GetNoxParams();
+  Teuchos::ParameterList& pnox = data_sdyn().get_nox_params();
 
   // ---------------------------------------------------------------------------
   // Set-up the pseudo transient method
@@ -82,10 +82,10 @@ void STR::Nln::SOLVER::PseudoTransient::set_pseudo_transient_params()
    * input section "STRUCT NOX/Pseudo Transient" in your input file. */
   Teuchos::ParameterList& pptc = pnox.sublist("Pseudo Transient");
 
-  pptc.set<double>("deltaInit", data_s_dyn().get_initial_ptc_pseudo_time_step());
+  pptc.set<double>("deltaInit", data_sdyn().get_initial_ptc_pseudo_time_step());
   pptc.set<double>("deltaMax", std::numeric_limits<double>::max());
   pptc.set<double>("deltaMin", 0.0);
-  pptc.set<int>("Maximum Number of Pseudo-Transient Iterations", (data_s_dyn().GetIterMax() + 1));
+  pptc.set<int>("Maximum Number of Pseudo-Transient Iterations", (data_sdyn().GetIterMax() + 1));
   pptc.set<std::string>("Time Step Control", "SER");
   pptc.set<double>("SER_alpha", 1.0);
   pptc.set<double>("ScalingFactor", 1.0);
@@ -99,11 +99,12 @@ void STR::Nln::SOLVER::PseudoTransient::set_pseudo_transient_params()
   /* This is only necessary for the special case, that you use no xml-file for
    * the definition of your convergence tests, but you use the dat-file instead.
    */
-  if (not IsXMLStatusTestFile(data_s_dyn().GetNoxParams().sublist("Status Test")))
+  if (not is_xml_status_test_file(data_sdyn().get_nox_params().sublist("Status Test")))
   {
     std::set<enum NOX::Nln::StatusTest::QuantityType> qtypes;
-    CreateQuantityTypes(qtypes, data_s_dyn());
-    SetStatusTestParams(data_s_dyn().GetNoxParams().sublist("Status Test"), data_s_dyn(), qtypes);
+    create_quantity_types(qtypes, data_sdyn());
+    set_status_test_params(
+        data_sdyn().get_nox_params().sublist("Status Test"), data_sdyn(), qtypes);
   }
 }
 

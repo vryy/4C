@@ -38,7 +38,7 @@ namespace STR
       virtual ~Factory() = default;
 
       //! build the desired predictor
-      Teuchos::RCP<STR::Predict::Generic> BuildPredictor(
+      Teuchos::RCP<STR::Predict::Generic> build_predictor(
           const enum Inpar::STR::PredEnum& predType) const;
     };
 
@@ -46,11 +46,10 @@ namespace STR
      *
      * \note Call this method from outside!
      */
-    Teuchos::RCP<STR::Predict::Generic> BuildPredictor(const enum Inpar::STR::PredEnum& predType);
+    Teuchos::RCP<STR::Predict::Generic> build_predictor(const enum Inpar::STR::PredEnum& predType);
 
   }  // namespace Predict
 }  // namespace STR
-
 
 FOUR_C_NAMESPACE_CLOSE
 

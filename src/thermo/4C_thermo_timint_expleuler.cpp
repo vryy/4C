@@ -144,7 +144,7 @@ void THR::TimIntExplEuler::UpdateStepState()
 
   // bye
   return;
-}  // UpdateStepState()
+}  // update_step_state()
 
 
 /*----------------------------------------------------------------------*
@@ -164,7 +164,7 @@ void THR::TimIntExplEuler::UpdateStepElement()
   // go to elements and do nothing
   discret_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
-}  // UpdateStepElement()
+}  // update_step_element()
 
 
 /*----------------------------------------------------------------------*

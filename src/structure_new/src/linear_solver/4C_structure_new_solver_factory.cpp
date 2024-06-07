@@ -41,7 +41,7 @@ STR::SOLVER::Factory::Factory()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::SOLVER::Factory::LinSolMap> STR::SOLVER::Factory::BuildLinSolvers(
+Teuchos::RCP<STR::SOLVER::Factory::LinSolMap> STR::SOLVER::Factory::build_lin_solvers(
     const std::set<enum Inpar::STR::ModelType>& modeltypes, const Teuchos::ParameterList& sdyn,
     Discret::Discretization& actdis) const
 {
@@ -483,11 +483,11 @@ Teuchos::RCP<Core::LinAlg::Solver> STR::SOLVER::Factory::build_cardiovascular0_d
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<std::map<enum Inpar::STR::ModelType, Teuchos::RCP<Core::LinAlg::Solver>>>
-STR::SOLVER::BuildLinSolvers(const std::set<enum Inpar::STR::ModelType>& modeltypes,
+STR::SOLVER::build_lin_solvers(const std::set<enum Inpar::STR::ModelType>& modeltypes,
     const Teuchos::ParameterList& sdyn, Discret::Discretization& actdis)
 {
   Factory factory;
-  return factory.BuildLinSolvers(modeltypes, sdyn, actdis);
+  return factory.build_lin_solvers(modeltypes, sdyn, actdis);
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -55,12 +55,12 @@ void STR::MODELEVALUATOR::SpringDashpot::Setup()
         Teuchos::rcp(new CONSTRAINTS::SpringDashpot(discret_ptr(), springdashpot)));
 
   // setup the displacement pointer
-  disnp_ptr_ = g_state().GetDisNp();
-  velnp_ptr_ = g_state().GetVelNp();
+  disnp_ptr_ = global_state().get_dis_np();
+  velnp_ptr_ = global_state().get_vel_np();
 
-  fspring_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*g_state().DofRowMapView()));
-  stiff_spring_ptr_ =
-      Teuchos::rcp(new Core::LinAlg::SparseMatrix(*g_state().DofRowMapView(), 81, true, true));
+  fspring_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*global_state().dof_row_map_view()));
+  stiff_spring_ptr_ = Teuchos::rcp(
+      new Core::LinAlg::SparseMatrix(*global_state().dof_row_map_view(), 81, true, true));
 
   // set flag
   issetup_ = true;
@@ -76,10 +76,10 @@ void STR::MODELEVALUATOR::SpringDashpot::Reset(const Epetra_Vector& x)
   for (const auto& spring : springs_) spring->ResetNewton();
 
   // update the structural displacement vector
-  disnp_ptr_ = g_state().GetDisNp();
+  disnp_ptr_ = global_state().get_dis_np();
 
   // update the structural displacement vector
-  velnp_ptr_ = g_state().GetVelNp();
+  velnp_ptr_ = global_state().get_vel_np();
 
   fspring_np_ptr_->PutScalar(0.0);
   stiff_spring_ptr_->Zero();
@@ -93,7 +93,7 @@ bool STR::MODELEVALUATOR::SpringDashpot::evaluate_force()
 
   Teuchos::ParameterList springdashpotparams;
   // loop over all spring dashpot conditions and evaluate them
-  fspring_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*g_state().DofRowMapView()));
+  fspring_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*global_state().dof_row_map_view()));
   for (const auto& spring : springs_)
   {
     const CONSTRAINTS::SpringDashpot::SpringType stype = spring->GetSpringType();
@@ -101,13 +101,13 @@ bool STR::MODELEVALUATOR::SpringDashpot::evaluate_force()
     if (stype == CONSTRAINTS::SpringDashpot::xyz or
         stype == CONSTRAINTS::SpringDashpot::refsurfnormal)
     {
-      springdashpotparams.set("total time", g_state().GetTimeNp());
+      springdashpotparams.set("total time", global_state().get_time_np());
       spring->EvaluateRobin(
           Teuchos::null, fspring_np_ptr_, disnp_ptr_, velnp_ptr_, springdashpotparams);
     }
     if (stype == CONSTRAINTS::SpringDashpot::cursurfnormal)
     {
-      springdashpotparams.set("dt", (*g_state().GetDeltaTime())[0]);
+      springdashpotparams.set("dt", (*global_state().get_delta_time())[0]);
       spring->evaluate_force(*fspring_np_ptr_, disnp_ptr_, velnp_ptr_, springdashpotparams);
     }
   }
@@ -121,12 +121,12 @@ bool STR::MODELEVALUATOR::SpringDashpot::evaluate_stiff()
 {
   check_init_setup();
 
-  fspring_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*g_state().DofRowMapView(), true));
+  fspring_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*global_state().dof_row_map_view(), true));
 
   // factors from time-integrator for derivative of d(v_{n+1}) / d(d_{n+1})
   // needed for stiffness contribution from dashpot
-  const double fac_vel = eval_data().GetTimIntFactorVel();
-  const double fac_disp = eval_data().GetTimIntFactorDisp();
+  const double fac_vel = eval_data().get_tim_int_factor_vel();
+  const double fac_disp = eval_data().get_tim_int_factor_disp();
   const double time_fac = fac_vel / fac_disp;
   Teuchos::ParameterList springdashpotparams;
   if (fac_vel > 0.0) springdashpotparams.set("time_fac", time_fac);
@@ -139,13 +139,13 @@ bool STR::MODELEVALUATOR::SpringDashpot::evaluate_stiff()
     if (stype == CONSTRAINTS::SpringDashpot::xyz or
         stype == CONSTRAINTS::SpringDashpot::refsurfnormal)
     {
-      springdashpotparams.set("total time", g_state().GetTimeNp());
+      springdashpotparams.set("total time", global_state().get_time_np());
       spring->EvaluateRobin(
           stiff_spring_ptr_, Teuchos::null, disnp_ptr_, velnp_ptr_, springdashpotparams);
     }
     if (stype == CONSTRAINTS::SpringDashpot::cursurfnormal)
     {
-      springdashpotparams.set("dt", (*g_state().GetDeltaTime())[0]);
+      springdashpotparams.set("dt", (*global_state().get_delta_time())[0]);
       spring->evaluate_force_stiff(
           *stiff_spring_ptr_, *fspring_np_ptr_, disnp_ptr_, velnp_ptr_, springdashpotparams);
     }
@@ -163,12 +163,12 @@ bool STR::MODELEVALUATOR::SpringDashpot::evaluate_force_stiff()
   check_init_setup();
 
   // get displacement DOFs
-  fspring_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*g_state().dof_row_map(), true));
+  fspring_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*global_state().dof_row_map(), true));
 
   // factors from time-integrator for derivative of d(v_{n+1}) / d(d_{n+1})
   // needed for stiffness contribution from dashpot
-  const double fac_vel = eval_data().GetTimIntFactorVel();
-  const double fac_disp = eval_data().GetTimIntFactorDisp();
+  const double fac_vel = eval_data().get_tim_int_factor_vel();
+  const double fac_disp = eval_data().get_tim_int_factor_disp();
   const double time_fac = fac_vel / fac_disp;
   Teuchos::ParameterList springdashpotparams;
 
@@ -182,13 +182,13 @@ bool STR::MODELEVALUATOR::SpringDashpot::evaluate_force_stiff()
     if (stype == CONSTRAINTS::SpringDashpot::xyz or
         stype == CONSTRAINTS::SpringDashpot::refsurfnormal)
     {
-      springdashpotparams.set("total time", g_state().GetTimeNp());
+      springdashpotparams.set("total time", global_state().get_time_np());
       spring->EvaluateRobin(
           stiff_spring_ptr_, fspring_np_ptr_, disnp_ptr_, velnp_ptr_, springdashpotparams);
     }
     if (stype == CONSTRAINTS::SpringDashpot::cursurfnormal)
     {
-      springdashpotparams.set("dt", (*g_state().GetDeltaTime())[0]);
+      springdashpotparams.set("dt", (*global_state().get_delta_time())[0]);
       spring->evaluate_force_stiff(
           *stiff_spring_ptr_, *fspring_np_ptr_, disnp_ptr_, velnp_ptr_, springdashpotparams);
     }
@@ -213,7 +213,7 @@ bool STR::MODELEVALUATOR::SpringDashpot::assemble_force(
 bool STR::MODELEVALUATOR::SpringDashpot::assemble_jacobian(
     Core::LinAlg::SparseOperator& jac, const double& timefac_np) const
 {
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> jac_dd_ptr = GState().ExtractDisplBlock(jac);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> jac_dd_ptr = global_state().extract_displ_block(jac);
   jac_dd_ptr->Add(*stiff_spring_ptr_, false, timefac_np, 1.0);
   // no need to keep it
   stiff_spring_ptr_->Zero();
@@ -228,9 +228,9 @@ void STR::MODELEVALUATOR::SpringDashpot::write_restart(
 {
   // row maps for export
   Teuchos::RCP<Epetra_Vector> springoffsetprestr =
-      Teuchos::rcp(new Epetra_Vector(*Discret().dof_row_map()));
+      Teuchos::rcp(new Epetra_Vector(*discret().dof_row_map()));
   Teuchos::RCP<Epetra_MultiVector> springoffsetprestr_old =
-      Teuchos::rcp(new Epetra_MultiVector(*(Discret().NodeRowMap()), 3, true));
+      Teuchos::rcp(new Epetra_MultiVector(*(discret().NodeRowMap()), 3, true));
 
   // collect outputs from all spring dashpot conditions
   for (const auto& spring : springs_)
@@ -277,24 +277,24 @@ void STR::MODELEVALUATOR::SpringDashpot::read_restart(Core::IO::DiscretizationRe
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::SpringDashpot::UpdateStepState(const double& timefac_n)
+void STR::MODELEVALUATOR::SpringDashpot::update_step_state(const double& timefac_n)
 {
   // add the old time factor scaled contributions to the residual
-  Teuchos::RCP<Epetra_Vector>& fstructold_ptr = g_state().GetFstructureOld();
+  Teuchos::RCP<Epetra_Vector>& fstructold_ptr = global_state().get_fstructure_old();
   fstructold_ptr->Update(timefac_n, *fspring_np_ptr_, 1.0);
 
   // check for prestressing and reset if necessary
-  const Inpar::STR::PreStress prestress_type = TimInt().GetDataSDyn().GetPreStressType();
-  const double prestress_time = TimInt().GetDataSDyn().GetPreStressTime();
+  const Inpar::STR::PreStress prestress_type = tim_int().get_data_sdyn().get_pre_stress_type();
+  const double prestress_time = tim_int().get_data_sdyn().get_pre_stress_time();
 
   if (prestress_type != Inpar::STR::PreStress::none &&
-      g_state().GetTimeNp() <= prestress_time + 1.0e-15)
+      global_state().get_time_np() <= prestress_time + 1.0e-15)
   {
     switch (prestress_type)
     {
       case Inpar::STR::PreStress::mulf:
       case Inpar::STR::PreStress::material_iterative:
-        for (const auto& spring : springs_) spring->ResetPrestress(g_state().GetDisNp());
+        for (const auto& spring : springs_) spring->ResetPrestress(global_state().get_dis_np());
       default:
         break;
     }
@@ -304,16 +304,16 @@ void STR::MODELEVALUATOR::SpringDashpot::UpdateStepState(const double& timefac_n
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::SpringDashpot::OutputStepState(
+void STR::MODELEVALUATOR::SpringDashpot::output_step_state(
     Core::IO::DiscretizationWriter& iowriter) const
 {
   // row maps for export
   Teuchos::RCP<Epetra_Vector> gap =
-      Teuchos::rcp(new Epetra_Vector(*(Discret().NodeRowMap()), true));
+      Teuchos::rcp(new Epetra_Vector(*(discret().NodeRowMap()), true));
   Teuchos::RCP<Epetra_MultiVector> normals =
-      Teuchos::rcp(new Epetra_MultiVector(*(Discret().NodeRowMap()), 3, true));
+      Teuchos::rcp(new Epetra_MultiVector(*(discret().NodeRowMap()), 3, true));
   Teuchos::RCP<Epetra_MultiVector> springstress =
-      Teuchos::rcp(new Epetra_MultiVector(*(Discret().NodeRowMap()), 3, true));
+      Teuchos::rcp(new Epetra_MultiVector(*(discret().NodeRowMap()), 3, true));
 
   // collect outputs from all spring dashpot conditions
   bool found_cursurfnormal = false;
@@ -340,7 +340,7 @@ void STR::MODELEVALUATOR::SpringDashpot::OutputStepState(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::SpringDashpot::ResetStepState()
+void STR::MODELEVALUATOR::SpringDashpot::reset_step_state()
 {
   check_init_setup();
 
@@ -355,7 +355,7 @@ void STR::MODELEVALUATOR::SpringDashpot::ResetStepState()
 Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::SpringDashpot::get_block_dof_row_map_ptr() const
 {
   check_init_setup();
-  return GState().dof_row_map();
+  return global_state().dof_row_map();
 }
 
 /*----------------------------------------------------------------------*
@@ -378,6 +378,6 @@ STR::MODELEVALUATOR::SpringDashpot::get_last_time_step_solution_ptr() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::SpringDashpot::PostOutput() { check_init_setup(); }
+void STR::MODELEVALUATOR::SpringDashpot::post_output() { check_init_setup(); }
 
 FOUR_C_NAMESPACE_CLOSE

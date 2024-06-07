@@ -1287,7 +1287,7 @@ void Discret::ELEMENTS::SoShw6::soshw6_recover(const std::vector<double>& residu
   Core::LinAlg::Matrix<NUMDOF_WEG6, 1> disi(false);
   for (int i = 0; i < NUMDOF_WEG6; ++i) disi(i) = residual[i];
 
-  const double step_length = str_params_interface().GetStepLength();
+  const double step_length = str_params_interface().get_step_length();
 
   auto* oldfeas = &easdata_.feas;
   auto* oldKda = &easdata_.Kda;
@@ -1296,7 +1296,7 @@ void Discret::ELEMENTS::SoShw6::soshw6_recover(const std::vector<double>& residu
   auto* oldKaainv = &easdata_.invKaa;
   /* if it is a default step, we have to recover the condensed
    * solution vectors */
-  if (str_params_interface().IsDefaultStep())
+  if (str_params_interface().is_default_step())
   {
     // first, store the eas state of the previous accepted Newton step
     str_params_interface().sum_into_my_previous_sol_norm(
@@ -1317,7 +1317,7 @@ void Discret::ELEMENTS::SoShw6::soshw6_recover(const std::vector<double>& residu
   }
   old_step_length_ = step_length;
 
-  str_params_interface().SumIntoMyUpdateNorm(NOX::Nln::StatusTest::quantity_eas,
+  str_params_interface().sum_into_my_update_norm(NOX::Nln::StatusTest::quantity_eas,
       soshw6_easpoisthick, (*eas_inc)[0], (*alpha)[0], step_length, Owner());
 }
 

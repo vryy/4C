@@ -87,7 +87,7 @@ Core::LinAlg::SolverParams NOX::Nln::CONTACT::LinearSystem::set_solver_options(
         Teuchos::rcp_dynamic_cast<NOX::Nln::Interface::Required>(reqInterfacePtr_);
     if (iNlnReq.is_null()) throw_error("setSolverOptions", "required interface cast failed");
 
-    double worst = iNlnReq->CalcRefNormForce();
+    double worst = iNlnReq->calc_ref_norm_force();
     // This value has to be specified in the PrePostOperator object of
     // the non-linear solver (i.e. runPreSolve())
     double wanted = p.get<double>("Wanted Tolerance");

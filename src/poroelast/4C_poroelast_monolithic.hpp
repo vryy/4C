@@ -100,11 +100,11 @@ namespace PoroElast
     // remove this method!
     // this method merges the block matrix when called.
     // As this is very expensive this,this method is not meant to be used any more.
-    // Use BlockSystemMatrix() instead and assemble the blocks separately, if necessary.
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() override;
+    // Use block_system_matrix() instead and assemble the blocks separately, if necessary.
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() override;
 
     //! block system matrix
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> BlockSystemMatrix() override
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() override
     {
       return systemmatrix_;
     }
@@ -133,13 +133,13 @@ namespace PoroElast
     //! iter_ += 1
     void IncrementPoroIter();
 
-    //! fluid_field()->SystemMatrix()->RangeMap()
+    //! fluid_field()->system_matrix()->RangeMap()
     const Epetra_Map& FluidRangeMap();
 
-    //! fluid_field()->SystemMatrix()->DomainMap()
+    //! fluid_field()->system_matrix()->DomainMap()
     const Epetra_Map& FluidDomainMap();
 
-    //! structure_field()->SystemMatrix()->DomainMap()
+    //! structure_field()->system_matrix()->DomainMap()
     const Epetra_Map& StructureDomainMap();
 
     //!@}

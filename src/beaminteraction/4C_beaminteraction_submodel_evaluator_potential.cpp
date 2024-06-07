@@ -49,7 +49,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::Setup()
 
   // init and setup beam to beam contact data container
   beam_potential_params_ptr_ = Teuchos::rcp(new BEAMINTERACTION::BeamPotentialParams());
-  beam_potential_params().Init(GState().GetTimeN());
+  beam_potential_params().Init(GState().get_time_n());
   beam_potential_params().Setup();
 
   print_console_welcome_message(std::cout);
@@ -110,7 +110,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::Reset()
     }
 
     // update the Dof values in the interaction element pair object
-    elepairptr->ResetState(GState().GetTimeNp(), element_posdofvec_absolutevalues[0],
+    elepairptr->ResetState(GState().get_time_np(), element_posdofvec_absolutevalues[0],
         element_posdofvec_absolutevalues[1]);
   }
 }
@@ -428,9 +428,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::UpdateStepElement(bool r
    * move this to runtime_output_step_state as soon as we keep element pairs
    * from previous time step */
   if (visualization_manager_ != Teuchos::null and
-      GState().GetStepNp() % beam_potential_params()
-                                 .get_beam_potential_visualization_output_params()
-                                 ->output_interval_in_steps() ==
+      GState().get_step_np() % beam_potential_params()
+                                   .get_beam_potential_visualization_output_params()
+                                   ->output_interval_in_steps() ==
           0)
   {
     write_time_step_output_runtime_beam_potential();
@@ -565,7 +565,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::get_half_interaction_dis
   {
     half_interaction_distance = 0.5 * beam_potential_params().CutoffRadius();
 
-    if (GState().GetMyRank() == 0)
+    if (GState().get_my_rank() == 0)
       Core::IO::cout(Core::IO::verbose) << " beam potential half interaction distance "
                                         << half_interaction_distance << Core::IO::endl;
   }
@@ -748,7 +748,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::create_beam_potential_el
   if (static_cast<int>(beam_potential_element_pairs_.size()) > 0)
   {
     Core::IO::cout(Core::IO::standard)
-        << "PID " << std::setw(2) << std::right << GState().GetMyRank() << " currently monitors "
+        << "PID " << std::setw(2) << std::right << GState().get_my_rank() << " currently monitors "
         << std::setw(5) << std::right << beam_potential_element_pairs_.size()
         << " beam potential pairs" << Core::IO::endl;
   }
@@ -772,7 +772,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::print_active_beam_potent
     std::ostream& out) const
 {
   // Todo
-  out << "\n    Active BeamToBeam Potential Set (PID " << GState().GetMyRank()
+  out << "\n    Active BeamToBeam Potential Set (PID " << GState().get_my_rank()
       << "):-----------------------------------------\n";
   out << "    ID1            ID2              T xi       eta      angle    gap         force\n";
 
@@ -825,7 +825,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::print_console_welcome_me
     std::ostream& out) const
 {
   // console welcome message
-  if (GState().GetMyRank() == 0)
+  if (GState().get_my_rank() == 0)
   {
     std::cout << "=============== Beam Potential-Based Interaction ===============" << std::endl;
 
@@ -885,7 +885,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
       beam_potential_params()
           .get_beam_potential_visualization_output_params()
           ->get_visualization_parameters(),
-      GState().GetTimeN(), GState().GetStepN());
+      GState().get_time_n(), GState().get_step_n());
   write_output_runtime_beam_potential(output_step, output_time);
 }
 
@@ -900,7 +900,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
       beam_potential_params()
           .get_beam_potential_visualization_output_params()
           ->get_visualization_parameters(),
-      GState().GetTimeN(), GState().GetStepN(), iteration_number);
+      GState().get_time_n(), GState().get_step_n(), iteration_number);
   write_output_runtime_beam_potential(output_step, output_time);
 }
 
@@ -927,7 +927,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::write_output_runtime_bea
   else
   {
     // Todo: this won't perfectly work in parallel yet since some communication would be required
-    //    if ( GState().GetMyRank() != 0 )
+    //    if ( global_state().get_my_rank() != 0 )
     //      FOUR_C_THROW("visualization of resulting forces not implemented in parallel yet!");
 
     num_row_points = Discret().NumGlobalElements() *

@@ -106,34 +106,34 @@ void STR::TimIntOneStepTheta::Setup()
   // create state vectors
 
   // mid-displacements
-  dist_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
+  dist_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
   // mid-velocities
-  velt_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
+  velt_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
   // mid-accelerations
-  acct_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
+  acct_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
 
   // create force vectors
 
   // internal force vector F_{int;n} at last time
-  fint_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
+  fint_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
   // internal force vector F_{int;n+1} at new time
-  fintn_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
+  fintn_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
 
   // external force vector F_ext at last times
-  fext_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
+  fext_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
   // external force vector F_{n+1} at new time
-  fextn_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
+  fextn_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
   // set initial external force vector
   apply_force_external((*time_)[0], (*dis_)(0), disn_, (*vel_)(0), fext_);
 
   // inertial force vector F_{int;n} at last time
-  finert_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
+  finert_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
   // inertial mid-force vector F_{int;n+1-alpha_f}
-  finertt_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
+  finertt_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
   // inertial force vector F_{int;n+1} at new time
-  finertn_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
+  finertn_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
   // viscous mid-point force vector F_visc
-  fvisct_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
+  fvisct_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
 
   // create parameter list
   Teuchos::ParameterList params;
@@ -676,13 +676,13 @@ void STR::TimIntOneStepTheta::UpdateStepElement()
     discret_->set_state("acceleration", (*acc_)(0));
 
     Teuchos::RCP<Epetra_Vector> update_disp;
-    update_disp = Core::LinAlg::CreateVector(*DofRowMapView(), true);
+    update_disp = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
 
     Teuchos::RCP<Epetra_Vector> update_vel;
-    update_vel = Core::LinAlg::CreateVector(*DofRowMapView(), true);
+    update_vel = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
 
     Teuchos::RCP<Epetra_Vector> update_acc;
-    update_acc = Core::LinAlg::CreateVector(*DofRowMapView(), true);
+    update_acc = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
 
 
     discret_->Evaluate(p, Teuchos::null, Teuchos::null, update_disp, update_vel, update_acc);

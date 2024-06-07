@@ -221,7 +221,7 @@ void FSI::ConstrMonolithicStructureSplit::setup_rhs_firstiter(Epetra_Vector& f)
   Teuchos::RCP<Epetra_Vector> veln = structure_field()->Interface()->InsertFSICondVector(sveln);
   rhs = Teuchos::rcp(new Epetra_Vector(veln->Map()));
 
-  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> s = structure_field()->BlockSystemMatrix();
+  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> s = structure_field()->block_system_matrix();
   s->Apply(*veln, *rhs);
 
   rhs->Scale(-1. * Dt());
@@ -297,7 +297,7 @@ void FSI::ConstrMonolithicStructureSplit::setup_system_matrix(
   const Core::Adapter::Coupling& coupsf = structure_fluid_coupling();
   // const Adapter::Coupling& coupsa = structure_ale_coupling();
 
-  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> s = structure_field()->BlockSystemMatrix();
+  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> s = structure_field()->block_system_matrix();
   if (s == Teuchos::null) FOUR_C_THROW("expect structure block matrix");
   Teuchos::RCP<Core::LinAlg::SparseMatrix> f = fluid_field()->SystemMatrix();
   if (f == Teuchos::null) FOUR_C_THROW("expect fluid matrix");

@@ -197,7 +197,7 @@ namespace POROMULTIPHASE
     //! get monolithic block system matrix
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> BlockSystemMatrix() const override
     {
-      FOUR_C_THROW("BlockSystemMatrix() only available for monolithic schemes!");
+      FOUR_C_THROW("block_system_matrix() only available for monolithic schemes!");
       return Teuchos::null;
     };
 

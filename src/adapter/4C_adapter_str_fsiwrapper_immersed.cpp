@@ -249,15 +249,15 @@ void Adapter::FSIStructureWrapperImmersed::Output(
                 << std::endl;
 
 
-    structure_->DiscWriter()->NewStep(step, time);
-    structure_->DiscWriter()->WriteVector("displacement", structure_->Dispnp());
+    structure_->disc_writer()->NewStep(step, time);
+    structure_->disc_writer()->WriteVector("displacement", structure_->Dispnp());
 
     // for visualization of vel and acc do not forget to comment in corresponding lines in
     // StructureEnsightWriter
     if (writevelacc_)
     {
-      structure_->DiscWriter()->WriteVector("velocity", structure_->Velnp());
-      structure_->DiscWriter()->WriteVector("acceleration", structure_->Accnp());
+      structure_->disc_writer()->WriteVector("velocity", structure_->Velnp());
+      structure_->disc_writer()->WriteVector("acceleration", structure_->Accnp());
     }
   }  // write extra output
 }
@@ -266,7 +266,7 @@ void Adapter::FSIStructureWrapperImmersed::Output(
 /*----------------------------------------------------------------------*/
 STR::Dbc& Adapter::FSIStructureWrapperImmersed::GetDBC()
 {
-  return Teuchos::rcp_dynamic_cast<STR::TimeInt::Base>(structure_, true)->GetDBC();
+  return Teuchos::rcp_dynamic_cast<STR::TimeInt::Base>(structure_, true)->get_dbc();
 }
 
 /*----------------------------------------------------------------------*/

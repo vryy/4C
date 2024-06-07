@@ -33,7 +33,7 @@ STR::MODELEVALUATOR::PartitionedPASI::PartitionedPASI()
 void STR::MODELEVALUATOR::PartitionedPASI::Setup()
 {
   // pasi interface force at t_{n+1}
-  interface_force_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*g_state().dof_row_map(), true));
+  interface_force_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*global_state().dof_row_map(), true));
 
   // set flag
   issetup_ = true;
@@ -43,21 +43,21 @@ Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::PartitionedPASI::get_block_d
     const
 {
   check_init_setup();
-  return GState().dof_row_map();
+  return global_state().dof_row_map();
 }
 
 Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedPASI::get_current_solution_ptr()
     const
 {
   check_init();
-  return GState().GetDisNp();
+  return global_state().get_dis_np();
 }
 
 Teuchos::RCP<const Epetra_Vector>
 STR::MODELEVALUATOR::PartitionedPASI::get_last_time_step_solution_ptr() const
 {
   check_init();
-  return GState().GetDisN();
+  return global_state().get_dis_n();
 }
 
 bool STR::MODELEVALUATOR::PartitionedPASI::assemble_force(
@@ -68,6 +68,6 @@ bool STR::MODELEVALUATOR::PartitionedPASI::assemble_force(
   return true;
 }
 
-void STR::MODELEVALUATOR::PartitionedPASI::UpdateStepState(const double& timefac_n) { return; }
+void STR::MODELEVALUATOR::PartitionedPASI::update_step_state(const double& timefac_n) { return; }
 
 FOUR_C_NAMESPACE_CLOSE

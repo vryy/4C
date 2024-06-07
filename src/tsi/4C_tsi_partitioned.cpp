@@ -1319,9 +1319,9 @@ void TSI::Partitioned::prepare_contact_strategy()
   if (contact_strategy_nitsche_ != Teuchos::null)
   {
     const auto& model_eval = structure_field()->ModelEvaluator(Inpar::STR::model_structure);
-    const auto cparams = model_eval.EvalData().ContactPtr();
+    const auto cparams = model_eval.eval_data().ContactPtr();
     auto cparams_new = cparams;
-    cparams_new->SetCouplingScheme(Inpar::CONTACT::CouplingScheme::partitioning);
+    cparams_new->set_coupling_scheme(Inpar::CONTACT::CouplingScheme::partitioning);
     ThermoField()->set_nitsche_contact_parameters(cparams_new);
   }
 }  // prepare_contact_strategy()

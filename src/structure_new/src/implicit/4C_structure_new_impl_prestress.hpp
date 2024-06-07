@@ -34,9 +34,9 @@ namespace STR
       void write_restart(
           Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
 
-      void UpdateStepState() override;
+      void update_step_state() override;
 
-      void UpdateStepElement() override;
+      void update_step_element() override;
 
       /*!
        * \brief During MULF and material iterative prestressing, the displacements resetted after
@@ -52,9 +52,9 @@ namespace STR
        * prestressing method
        * \return false otherwise
        */
-      bool EarlyStopping() const override;
+      bool early_stopping() const override;
 
-      void PostTimeLoop() override;
+      void post_time_loop() override;
 
      private:
       /*!
@@ -67,7 +67,6 @@ namespace STR
     };
   }  // namespace IMPLICIT
 }  // namespace STR
-
 
 FOUR_C_NAMESPACE_CLOSE
 

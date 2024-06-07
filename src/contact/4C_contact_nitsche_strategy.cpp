@@ -222,7 +222,7 @@ void CONTACT::NitscheStrategy::Integrate(const CONTACT::ParamsInterface& cparams
   // Evaluation for all interfaces
   for (const auto& interface : interface_)
   {
-    interface->interface_params().set<double>("TIMESTEP", cparams.GetDeltaTime());
+    interface->interface_params().set<double>("TIMESTEP", cparams.get_delta_time());
     interface->Initialize();
     interface->Evaluate(0, step_, iter_);
 

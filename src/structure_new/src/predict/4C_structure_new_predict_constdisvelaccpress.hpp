@@ -28,7 +28,6 @@ namespace STR
       //! constructor
       ConstDisVelAccPress();
 
-
       //! setup class specific stuff
       void Setup() override;
 
@@ -40,7 +39,6 @@ namespace STR
     };  // class ConstDisVelAccPress
   }     // namespace Predict
 }  // namespace STR
-
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -84,16 +84,16 @@ void STR::TimIntStatics::Setup()
   // create force vectors
 
   // internal force vector F_{int;n+1} at new time
-  fintn_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
+  fintn_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
 
   // external force vector F_{n+1} at new time
-  fextn_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
+  fextn_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
 
   // internal force vector F_{int;n} at new time
-  fint_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
+  fint_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
 
   // external force vector F_{n} at new time
-  fext_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
+  fext_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
 
   return;
 }
@@ -133,7 +133,7 @@ void STR::TimIntStatics::predict_const_vel_consist_acc()
   else
   {
     // Displacement increment over last time step
-    Teuchos::RCP<Epetra_Vector> disp_inc = Core::LinAlg::CreateVector(*DofRowMapView(), true);
+    Teuchos::RCP<Epetra_Vector> disp_inc = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
     disp_inc->Update((*dt_)[0], *(*vel_)(0), 0.);
     Core::LinAlg::apply_dirichlet_to_system(*disp_inc, *zeros_, *(dbcmaps_->CondMap()));
     disn_->Update(1.0, *(*dis_)(0), 0.0);
@@ -165,7 +165,7 @@ void STR::TimIntStatics::PredictConstAcc()
   else
   {
     // Displacement increment over last time step
-    Teuchos::RCP<Epetra_Vector> disp_inc = Core::LinAlg::CreateVector(*DofRowMapView(), true);
+    Teuchos::RCP<Epetra_Vector> disp_inc = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
     disp_inc->Update((*dt_)[0], *(*vel_)(0), 0.);
     disp_inc->Update(.5 * (*dt_)[0] * (*dt_)[0], *(*acc_)(0), 1.);
     Core::LinAlg::apply_dirichlet_to_system(*disp_inc, *zeros_, *(dbcmaps_->CondMap()));

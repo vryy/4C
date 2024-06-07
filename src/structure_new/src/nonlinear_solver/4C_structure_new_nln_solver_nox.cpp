@@ -69,7 +69,7 @@ void STR::Nln::SOLVER::Nox::Setup()
   /* convert the Inpar::STR::ModelType to a NOX::Nln::SolType
    * and fill the linear solver map. */
   STR::Nln::ConvertModelType2SolType(
-      soltypes, linsolvers, data_s_dyn().GetModelTypes(), data_s_dyn().GetLinSolvers());
+      soltypes, linsolvers, data_sdyn().get_model_types(), data_sdyn().GetLinSolvers());
 
   // define and initialize the optimization type
   const NOX::Nln::OptimizationProblemType opttype = STR::Nln::OptimizationType(soltypes);
@@ -85,18 +85,18 @@ void STR::Nln::SOLVER::Nox::Setup()
 
   // create object to scale linear system
   Teuchos::RCP<::NOX::Epetra::Scaling> iscale = Teuchos::null;
-  STR::Nln::CreateScaling(iscale, data_s_dyn(), data_global_state());
+  STR::Nln::CreateScaling(iscale, data_sdyn(), data_global_state());
 
   // build the global data container for the nox_nln_solver
   nlnglobaldata_ = Teuchos::rcp(
-      new NOX::Nln::GlobalData(data_global_state().GetComm(), data_s_dyn().GetNoxParams(),
+      new NOX::Nln::GlobalData(data_global_state().get_comm(), data_sdyn().get_nox_params(),
           linsolvers, ireq, ijac, opttype, iconstr, iprec, iconstr_prec, iscale));
 
   // -------------------------------------------------------------------------
   // Create NOX control class: NoxProblem()
   // -------------------------------------------------------------------------
-  Teuchos::RCP<::NOX::Epetra::Vector> soln = data_global_state().CreateGlobalVector();
-  Teuchos::RCP<Core::LinAlg::SparseOperator>& jac = data_global_state().CreateJacobian();
+  Teuchos::RCP<::NOX::Epetra::Vector> soln = data_global_state().create_global_vector();
+  Teuchos::RCP<Core::LinAlg::SparseOperator>& jac = data_global_state().create_jacobian();
   problem_ = Teuchos::rcp(new NOX::Nln::Problem(nlnglobaldata_, soln, jac));
 
   // -------------------------------------------------------------------------
@@ -166,7 +166,7 @@ void STR::Nln::SOLVER::Nox::reset_params()
                                            .sublist("Linear Solver", true);
 
     // get current time step and update the parameter list entry
-    lsparams.set<int>("Current Time Step", data_global_state().GetStepNp());
+    lsparams.set<int>("Current Time Step", data_global_state().get_step_np());
   }
   else if (method == "Single Step")
   {
@@ -176,7 +176,7 @@ void STR::Nln::SOLVER::Nox::reset_params()
                                            .sublist("Linear Solver", true);
 
     // get current time step and update the parameter list entry
-    lsparams.set<int>("Current Time Step", data_global_state().GetStepNp());
+    lsparams.set<int>("Current Time Step", data_global_state().get_step_np());
   }
 }
 
@@ -192,7 +192,7 @@ enum Inpar::STR::ConvergenceStatus STR::Nln::SOLVER::Nox::Solve()
 
   // Check if we do something special if the non-linear solver fails,
   // otherwise an error is thrown.
-  if (data_s_dyn().GetDivergenceAction() == Inpar::STR::divcont_stop)
+  if (data_sdyn().get_divergence_action() == Inpar::STR::divcont_stop)
     problem_->CheckFinalStatus(finalstatus);
 
   // copy the solution group into the class variable
@@ -235,7 +235,7 @@ enum Inpar::STR::ConvergenceStatus STR::Nln::SOLVER::Nox::convert_final_status(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int STR::Nln::SOLVER::Nox::GetNumNlnIterations() const
+int STR::Nln::SOLVER::Nox::get_num_nln_iterations() const
 {
   if (not nlnsolver_.is_null()) return nlnsolver_->getNumIterations();
   return 0;

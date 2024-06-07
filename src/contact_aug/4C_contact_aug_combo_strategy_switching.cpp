@@ -151,7 +151,7 @@ void CONTACT::Aug::ComboStrategy::PreAsymptoticSwitching::Update(
 {
   print_update_head(os);
 
-  const bool is_predict = cparams.IsPredictor();
+  const bool is_predict = cparams.is_predictor();
   const bool check_pen = check_penetration(os);
   bool is_asymptotic =
       (not is_predict and check_pen and (check_residual(cparams, os) or check_cn_bound(os)));
@@ -386,7 +386,7 @@ CONTACT::Aug::ComboStrategy::PreAsymptoticSwitching::get_structural_force_withou
       Teuchos::rcp(new Epetra_Vector(*combo_.no_dbc_.slMaMap_));
 
   const STR::MODELEVALUATOR::Contact& cmodel =
-      dynamic_cast<const STR::MODELEVALUATOR::Contact&>(cparams.GetModelEvaluator());
+      dynamic_cast<const STR::MODELEVALUATOR::Contact&>(cparams.get_model_evaluator());
 
   const std::vector<Inpar::STR::ModelType> without_contact_model(1, cmodel.Type());
   Teuchos::RCP<Epetra_Vector> force_ptr = cmodel.assemble_force_of_models(&without_contact_model);

@@ -977,7 +977,7 @@ void Discret::ELEMENTS::SoSh8Plast::nln_stiffmass(
 )
 {
   invalid_ele_data();
-  const bool is_tangDis = str_params_interface().GetPredictorType() == Inpar::STR::pred_tangdis;
+  const bool is_tangDis = str_params_interface().get_predictor_type() == Inpar::STR::pred_tangdis;
 
   fill_position_arrays(disp, vel, temp);
 

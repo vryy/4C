@@ -297,17 +297,17 @@ void STR::TimIntImpl::Setup()
   if (itertype_ == Inpar::STR::soltech_newtonls) PrepareLineSearch();
 
   // create empty residual force vector
-  fres_ = Core::LinAlg::CreateVector(*DofRowMapView(), false);
+  fres_ = Core::LinAlg::CreateVector(*dof_row_map_view(), false);
 
   // create empty reaction force vector of full length
-  freact_ = Core::LinAlg::CreateVector(*DofRowMapView(), false);
+  freact_ = Core::LinAlg::CreateVector(*dof_row_map_view(), false);
 
   // iterative displacement increments IncD_{n+1}
   // also known as residual displacements
-  disi_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
+  disi_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
 
   // prepare matrix for scaled thickness business of thin shell structures
-  stcmat_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*DofRowMapView(), 81, true, true));
+  stcmat_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dof_row_map_view(), 81, true, true));
   stccompl_ = false;
 
   return;
@@ -472,7 +472,7 @@ void STR::TimIntImpl::Predict()
   }
 
   // determine characteristic norms
-  // we set the minimum of CalcRefNormForce() and #tolfres_, because
+  // we set the minimum of calc_ref_norm_force() and #tolfres_, because
   // we want to prevent the case of a zero characteristic fnorm
   normcharforce_ = CalcRefNormForce();
   if (normcharforce_ == 0.0) normcharforce_ = tolfres_;
@@ -534,7 +534,7 @@ void STR::TimIntImpl::prepare_partition_step()
   }
 
   // determine characteristic norms
-  // we set the minumum of CalcRefNormForce() and #tolfres_, because
+  // we set the minumum of calc_ref_norm_force() and #tolfres_, because
   // we want to prevent the case of a zero characteristic fnorm
   normcharforce_ = CalcRefNormForce();
   if (normcharforce_ == 0.0) normcharforce_ = tolfres_;
@@ -575,8 +575,8 @@ void STR::TimIntImpl::PrepareLineSearch()
   discret_->Comm().MaxAll(&haveCondensationLocal, &haveCondensationGlobal, 1);
   if (haveCondensationGlobal)
   {
-    fresn_str_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
-    fintn_str_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
+    fresn_str_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+    fintn_str_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
   }
   return;
 }
@@ -605,7 +605,7 @@ void STR::TimIntImpl::predict_tang_dis_consist_vel_acc()
   disi_->PutScalar(0.0);
 
   // for displacement increments on Dirichlet boundary
-  Teuchos::RCP<Epetra_Vector> dbcinc = Core::LinAlg::CreateVector(*DofRowMapView(), true);
+  Teuchos::RCP<Epetra_Vector> dbcinc = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
 
   // copy last converged displacements
   dbcinc->Update(1.0, *(*dis_)(0), 0.0);
@@ -629,7 +629,7 @@ void STR::TimIntImpl::predict_tang_dis_consist_vel_acc()
   // add linear reaction forces to residual
   {
     // linear reactions
-    Teuchos::RCP<Epetra_Vector> freact = Core::LinAlg::CreateVector(*DofRowMapView(), true);
+    Teuchos::RCP<Epetra_Vector> freact = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
     stiff_->Multiply(false, *dbcinc, *freact);
 
     // add linear reaction forces due to prescribed Dirichlet BCs
@@ -654,7 +654,7 @@ void STR::TimIntImpl::predict_tang_dis_consist_vel_acc()
   fres_->Scale(-1.0);
 
   // transform to local co-ordinate systems
-  if (locsysman_ != Teuchos::null) locsysman_->RotateGlobalToLocal(SystemMatrix(), fres_);
+  if (locsysman_ != Teuchos::null) locsysman_->RotateGlobalToLocal(system_matrix(), fres_);
 
   // apply Dirichlet BCs to system of equations
   disi_->PutScalar(0.0);
@@ -1099,7 +1099,7 @@ void STR::TimIntImpl::apply_force_stiff_beam_contact(
     // (set boolean flag 'newsti' to true, which activates
     // sclaing of contact stiffness with appropriate scaling
     // factor, e.g. (1.0-alphaf), internally)
-    beamcman_->Evaluate(*SystemMatrix(), *fresm, *dis, beamcontactparams, true, timen_);
+    beamcman_->Evaluate(*system_matrix(), *fresm, *dis, beamcontactparams, true, timen_);
 
     // scaling back
     fresm->Scale(-1.0);
@@ -1503,7 +1503,7 @@ int STR::TimIntImpl::NewtonFull()
     fres_->Scale(-1.0);
 
     // transform to local co-ordinate systems
-    if (locsysman_ != Teuchos::null) locsysman_->RotateGlobalToLocal(SystemMatrix(), fres_);
+    if (locsysman_ != Teuchos::null) locsysman_->RotateGlobalToLocal(system_matrix(), fres_);
 
     // STC preconditioning
     STCPreconditioning();
@@ -2093,7 +2093,7 @@ int STR::TimIntImpl::LsSolveNewtonStep()
   fres_->Scale(-1.0);
 
   // transform to local co-ordinate systems
-  if (locsysman_ != Teuchos::null) locsysman_->RotateGlobalToLocal(SystemMatrix(), fres_);
+  if (locsysman_ != Teuchos::null) locsysman_->RotateGlobalToLocal(system_matrix(), fres_);
 
   // STC preconditioning
   STCPreconditioning();
@@ -2515,7 +2515,7 @@ int STR::TimIntImpl::uzawa_linear_newton_full()
       //    stiff_->UnComplete();
 
       // transform to local co-ordinate systems
-      if (locsysman_ != Teuchos::null) locsysman_->RotateGlobalToLocal(SystemMatrix(), fres_);
+      if (locsysman_ != Teuchos::null) locsysman_->RotateGlobalToLocal(system_matrix(), fres_);
 
       // apply Dirichlet BCs to system of equations
       disi_->PutScalar(0.0);  // Useful? depends on solver and more
@@ -2560,7 +2560,7 @@ int STR::TimIntImpl::uzawa_linear_newton_full()
         }
       }
       // Call constraint solver to solve system with zeros on diagonal
-      consolv_->Solve(SystemMatrix(), constr, constrT, disi_, lagrincr, fres_, conrhs);
+      consolv_->Solve(system_matrix(), constr, constrT, disi_, lagrincr, fres_, conrhs);
 
       // recover unscaled solution
       RecoverSTCSolution();
@@ -2704,7 +2704,7 @@ int STR::TimIntImpl::uzawa_linear_newton_full()
       // stiff_->UnComplete();
 
       // transform to local co-ordinate systems
-      if (locsysman_ != Teuchos::null) locsysman_->RotateGlobalToLocal(SystemMatrix(), fres_);
+      if (locsysman_ != Teuchos::null) locsysman_->RotateGlobalToLocal(system_matrix(), fres_);
 
       // apply Dirichlet BCs to system of equations
       disi_->PutScalar(0.0);  // Useful? depends on solver and more
@@ -2733,7 +2733,7 @@ int STR::TimIntImpl::uzawa_linear_newton_full()
       else
       {
         // Call Cardiovascular0D solver to solve system
-        linsolve_error = cardvasc0dman_->Solve(SystemMatrix(), disi_, fres_, dti);
+        linsolve_error = cardvasc0dman_->Solve(system_matrix(), disi_, fres_, dti);
       }
 
       // check for problems in linear solver
@@ -3355,17 +3355,18 @@ int STR::TimIntImpl::PTC()
     fres_->Scale(-1.0);
 
     // transform to local co-ordinate systems
-    if (locsysman_ != Teuchos::null) locsysman_->RotateGlobalToLocal(SystemMatrix(), fres_);
+    if (locsysman_ != Teuchos::null) locsysman_->RotateGlobalToLocal(system_matrix(), fres_);
 
     // modify stiffness matrix with dti
     {
-      Teuchos::RCP<Epetra_Vector> tmp = Core::LinAlg::CreateVector(SystemMatrix()->RowMap(), false);
+      Teuchos::RCP<Epetra_Vector> tmp =
+          Core::LinAlg::CreateVector(system_matrix()->RowMap(), false);
       tmp->PutScalar(dti);
       Teuchos::RCP<Epetra_Vector> diag =
-          Core::LinAlg::CreateVector(SystemMatrix()->RowMap(), false);
-      SystemMatrix()->ExtractDiagonalCopy(*diag);
+          Core::LinAlg::CreateVector(system_matrix()->RowMap(), false);
+      system_matrix()->ExtractDiagonalCopy(*diag);
       diag->Update(1.0, *tmp, 1.0);
-      SystemMatrix()->replace_diagonal_values(*diag);
+      system_matrix()->replace_diagonal_values(*diag);
     }
 
     // apply Dirichlet BCs to system of equations
@@ -4093,7 +4094,7 @@ void STR::TimIntImpl::print_newton_conv()
 
 /*----------------------------------------------------------------------*/
 /* print step summary */
-void STR::TimIntImpl::PrintStep()
+void STR::TimIntImpl::print_step()
 {
   // print out (only on master CPU)
   if ((myrank_ == 0) and printscreen_ and (StepOld() % printscreen_ == 0))
@@ -4179,7 +4180,7 @@ void STR::TimIntImpl::prepare_system_for_newton_solve(const bool preparejacobian
   fres_->Scale(-1.0);
 
   // transform stiff_ and fres_ to local coordinate system
-  if (locsysman_ != Teuchos::null) locsysman_->RotateGlobalToLocal(SystemMatrix(), fres_);
+  if (locsysman_ != Teuchos::null) locsysman_->RotateGlobalToLocal(system_matrix(), fres_);
   // local matrix and rhs required for correctly applying Dirichlet boundary
   // conditions: rows with inclined Dirichlet boundary condition can be blanked
   // and a '1.0' is put at the diagonal term
@@ -4226,7 +4227,7 @@ void STR::TimIntImpl::use_block_matrix(
   // recalculate mass and damping matrices
 
   Teuchos::RCP<Epetra_Vector> fint =
-      Core::LinAlg::CreateVector(*DofRowMapView(), true);  // internal force
+      Core::LinAlg::CreateVector(*dof_row_map_view(), true);  // internal force
 
   stiff_->Zero();
   mass_->Zero();
@@ -4243,7 +4244,7 @@ void STR::TimIntImpl::use_block_matrix(
     Teuchos::RCP<Epetra_Vector> finert = Teuchos::null;
     if (HaveNonlinearMass())
     {
-      finert = Core::LinAlg::CreateVector(*DofRowMapView(), true);  // intertial force
+      finert = Core::LinAlg::CreateVector(*dof_row_map_view(), true);  // intertial force
       // Note: the following parameters are just dummies, since they are only needed to calculate
       // finert which we will not use anyway
       p.set("timintfac_dis", 0.0);  // dummy!
@@ -4309,7 +4310,7 @@ void STR::TimIntImpl::STCPreconditioning()
       stiff_ = MLMultiply(*stcmat_, true,
           *(Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(stiff_)), false, true, false,
           true);
-      Teuchos::RCP<Epetra_Vector> fressdc = Core::LinAlg::CreateVector(*DofRowMapView(), true);
+      Teuchos::RCP<Epetra_Vector> fressdc = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
       stcmat_->Multiply(true, *fres_, *fressdc);
       fres_->Update(1.0, *fressdc, 0.0);
     }
@@ -4355,7 +4356,7 @@ void STR::TimIntImpl::ComputeSTCMatrix()
     pe.set("stc_layer", lay);
 
     Teuchos::RCP<Core::LinAlg::SparseMatrix> tmpstcmat =
-        Teuchos::rcp(new Core::LinAlg::SparseMatrix(*DofRowMapView(), 81, true, true));
+        Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dof_row_map_view(), 81, true, true));
     tmpstcmat->Zero();
 
     discret_->Evaluate(pe, tmpstcmat, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
@@ -4384,7 +4385,7 @@ void STR::TimIntImpl::RecoverSTCSolution()
 {
   if (stcscale_ != Inpar::STR::stc_none)
   {
-    Teuchos::RCP<Epetra_Vector> disisdc = Core::LinAlg::CreateVector(*DofRowMapView(), true);
+    Teuchos::RCP<Epetra_Vector> disisdc = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
 
     stcmat_->Multiply(false, *disi_, *disisdc);
     disi_->Update(1.0, *disisdc, 0.0);
@@ -4627,7 +4628,7 @@ int STR::TimIntImpl::cmt_windk_constr_linear_solve(const double k_ptc)
   else
   {
     // solve with Cardiovascular0D solver
-    linsolve_error = cardvasc0dman_->Solve(SystemMatrix(), disi_, fres_, k_ptc);
+    linsolve_error = cardvasc0dman_->Solve(system_matrix(), disi_, fres_, k_ptc);
   }
 
   return linsolve_error;

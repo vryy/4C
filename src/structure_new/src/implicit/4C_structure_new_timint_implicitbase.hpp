@@ -46,12 +46,11 @@ namespace STR
       /// constructor
       ImplicitBase();
 
-
       /// Get type of thickness scaling for thin shell structures (derived)
-      Inpar::STR::StcScale GetSTCAlgo() override;
+      Inpar::STR::StcScale get_stc_algo() override;
 
       /// Get stc matrix (derived)
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> GetSTCMat() override;
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> get_stc_mat() override;
 
       /// Update routine for coupled problems with monolithic approach with time adaptivity
       void Update(double endtime) override;
@@ -62,19 +61,19 @@ namespace STR
       Teuchos::RCP<const Epetra_Vector> initial_guess() override;
 
       /// right-hand-side of Newton's method
-      Teuchos::RCP<const Epetra_Vector> GetF() const override;
+      Teuchos::RCP<const Epetra_Vector> get_f() const override;
 
       /// Return reaction forces at \f$t_{n+1}\f$ (read and write)
-      Teuchos::RCP<Epetra_Vector> Freact() override;
+      Teuchos::RCP<Epetra_Vector> freact() override;
 
       //! Return stiffness,
       //! i.e. force residual differentiated by displacements
       //!      (structural block only)
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() override;
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() override;
 
       /// Return stiffness,
       /// i.e. force residual differentiated by displacements
-      Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> BlockSystemMatrix() override;
+      Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() override;
 
       ///! FixMe switch structure field to block matrix in fsi simulations
       void use_block_matrix(Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> domainmaps,
@@ -82,14 +81,14 @@ namespace STR
       /// @}
 
       //! print summary after step
-      void PrintStep() override;
+      void print_step() override;
 
       //! @name Attribute access functions
       //@{
 
-      bool IsImplicit() const override { return true; }
+      bool is_implicit() const override { return true; }
 
-      bool IsExplicit() const override { return false; }
+      bool is_explicit() const override { return false; }
 
       ///@}
 
@@ -102,7 +101,6 @@ namespace STR
     };
   }  // namespace TimeInt
 }  // namespace STR
-
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -86,16 +86,16 @@ namespace PoroElast
     const Teuchos::RCP<Adapter::FluidPoro>& fluid_field() { return fluid_; }
 
     //! composed system matrix
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() override
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() override
     {
-      FOUR_C_THROW("SystemMatrix() only available for monolithic schemes!");
+      FOUR_C_THROW("system_matrix() only available for monolithic schemes!");
       return Teuchos::null;
     }
 
     //! block system matrix
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> BlockSystemMatrix() override
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() override
     {
-      FOUR_C_THROW("BlockSystemMatrix() only available for monolithic schemes!");
+      FOUR_C_THROW("block_system_matrix() only available for monolithic schemes!");
       return Teuchos::null;
     }
 

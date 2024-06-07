@@ -33,37 +33,37 @@ STR::TimeInt::ImplicitBase::ImplicitBase()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> STR::TimeInt::ImplicitBase::GetF() const
+Teuchos::RCP<const Epetra_Vector> STR::TimeInt::ImplicitBase::get_f() const
 {
   const ::NOX::Abstract::Group& solgrp = get_solution_group();
   const ::NOX::Epetra::Vector& F = dynamic_cast<const ::NOX::Epetra::Vector&>(solgrp.getF());
-  return GetDataGlobalState().ExtractDisplEntries(F.getEpetraVector());
+  return get_data_global_state().extract_displ_entries(F.getEpetraVector());
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> STR::TimeInt::ImplicitBase::Freact()
+Teuchos::RCP<Epetra_Vector> STR::TimeInt::ImplicitBase::freact()
 {
   check_init_setup();
-  return data_global_state().GetFreactNp();
+  return data_global_state().get_freact_np();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> STR::TimeInt::ImplicitBase::SystemMatrix()
+Teuchos::RCP<Core::LinAlg::SparseMatrix> STR::TimeInt::ImplicitBase::system_matrix()
 {
   check_init_setup();
-  return Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(data_global_state().GetJacobian());
+  return Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(data_global_state().get_jacobian());
 }
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> STR::TimeInt::ImplicitBase::BlockSystemMatrix()
+Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> STR::TimeInt::ImplicitBase::block_system_matrix()
 {
   check_init_setup();
   return Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(
-      data_global_state().GetJacobian());
+      data_global_state().get_jacobian());
 }
 
 /*----------------------------------------------------------------------------*
@@ -77,14 +77,14 @@ void STR::TimeInt::ImplicitBase::use_block_matrix(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Inpar::STR::StcScale STR::TimeInt::ImplicitBase::GetSTCAlgo()
+Inpar::STR::StcScale STR::TimeInt::ImplicitBase::get_stc_algo()
 {
-  return DataSDyn().GetSTCAlgoType();
+  return data_sdyn().get_stc_algo_type();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> STR::TimeInt::ImplicitBase::GetSTCMat()
+Teuchos::RCP<Core::LinAlg::SparseMatrix> STR::TimeInt::ImplicitBase::get_stc_mat()
 {
   FOUR_C_THROW("Not yet implemented!");
   /* See the scaling object in the NOX::Nln::Epetra::LinearSystem class.
@@ -109,27 +109,27 @@ void STR::TimeInt::ImplicitBase::Update(double endtime)
 {
   check_init_setup();
   PreUpdate();
-  integrator().UpdateStepState();
+  integrator().update_step_state();
   SetTimeNp(endtime);
-  UpdateStepTime();
-  integrator().UpdateStepElement();
+  update_step_time();
+  integrator().update_step_element();
   post_update();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::ImplicitBase::PrintStep()
+void STR::TimeInt::ImplicitBase::print_step()
 {
   check_init_setup();
 
-  if (data_global_state().GetMyRank() != 0 or GroupId() != 0) return;
+  if (data_global_state().get_my_rank() != 0 or GroupId() != 0) return;
 
-  const int stepmax = DataSDyn().GetStepMax();
-  const int stepn = data_global_state().GetStepN();
-  const double& timen = data_global_state().GetTimeN();
-  const double& dt = (*data_global_state().GetDeltaTime())[0];
+  const int stepmax = data_sdyn().GetStepMax();
+  const int stepn = data_global_state().get_step_n();
+  const double& timen = data_global_state().get_time_n();
+  const double& dt = (*data_global_state().get_delta_time())[0];
   const int newtoniter = data_global_state().get_nln_iteration_number(stepn);
-  double wct = data_global_state().GetTimer()->totalElapsedTime(true);
+  double wct = data_global_state().get_timer()->totalElapsedTime(true);
 
   // open outstd::stringstream
   std::ostringstream oss;

@@ -483,7 +483,7 @@ int Discret::ELEMENTS::SoHex20::evaluate_neumann(Teuchos::ParameterList& params,
       [&]()
       {
         if (IsParamsInterface())
-          return str_params_interface().GetTotalTime();
+          return str_params_interface().get_total_time();
         else
           return params.get("total time", -1.0);
       });
@@ -1217,8 +1217,8 @@ void Discret::ELEMENTS::SoHex20::soh20_nlnstiffmass(std::vector<int>& lm,  // lo
         double timintfac_vel = 0.0;
         if (IsParamsInterface())
         {
-          timintfac_dis = str_params_interface().GetTimIntFactorDisp();
-          timintfac_vel = str_params_interface().GetTimIntFactorVel();
+          timintfac_dis = str_params_interface().get_tim_int_factor_disp();
+          timintfac_vel = str_params_interface().get_tim_int_factor_vel();
         }
         else
         {

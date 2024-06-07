@@ -30,7 +30,6 @@ namespace STR
       //! constructor
       Statics();
 
-
       //! Setup the class variables
       void Setup() override;
 
@@ -41,13 +40,13 @@ namespace STR
       void set_state(const Epetra_Vector& x) override;
 
       //! Apply the rhs only (derived)
-      bool ApplyForce(const Epetra_Vector& x, Epetra_Vector& f) override;
+      bool apply_force(const Epetra_Vector& x, Epetra_Vector& f) override;
 
       //! Apply the stiffness only (derived)
-      bool ApplyStiff(const Epetra_Vector& x, Core::LinAlg::SparseOperator& jac) override;
+      bool apply_stiff(const Epetra_Vector& x, Core::LinAlg::SparseOperator& jac) override;
 
       //! Apply force and stiff at once (derived)
-      bool ApplyForceStiff(
+      bool apply_force_stiff(
           const Epetra_Vector& x, Epetra_Vector& f, Core::LinAlg::SparseOperator& jac) override;
 
       //! (derived)
@@ -62,40 +61,40 @@ namespace STR
       void read_restart(Core::IO::DiscretizationReader& ioreader) override;
 
       //! (derived)
-      double CalcRefNormForce(const enum ::NOX::Abstract::Vector::NormType& type) const override;
+      double calc_ref_norm_force(const enum ::NOX::Abstract::Vector::NormType& type) const override;
 
       //! return time integration factor (derived)
-      [[nodiscard]] double GetIntParam() const override;
+      [[nodiscard]] double get_int_param() const override;
 
       //! derived
-      double GetModelValue(const Epetra_Vector& x) override;
+      double get_model_value(const Epetra_Vector& x) override;
 
       //! @name Monolithic update routines
       //! @{
       //! things that should be done before updating (derived)
-      void PreUpdate() override;
+      void pre_update() override;
 
       //! Update configuration after time step (derived)
-      void UpdateStepState() override;
+      void update_step_state() override;
 
       //! Update everything on element level after time step and after output (derived)
-      void UpdateStepElement() override;
+      void update_step_element() override;
       //! @}
 
       //! @name Predictor routines (dependent on the implicit integration scheme)
       //! @{
-      /*! Predict constant displacements, consistent velocities and accelerations (derived) */
+      /*! predict constant displacements, consistent velocities and accelerations (derived) */
       void predict_const_dis_consist_vel_acc(
           Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const override;
 
-      /*! Predict displacements based on constant velocities and consistent accelerations (derived)
+      /*! predict displacements based on constant velocities and consistent accelerations (derived)
        */
       bool predict_const_vel_consist_acc(
           Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const override;
 
-      /*! Predict displacements based on constant accelerations and consistent velocities (derived)
+      /*! predict displacements based on constant accelerations and consistent velocities (derived)
        */
-      bool PredictConstAcc(
+      bool predict_const_acc(
           Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const override;
       //! @}
 
@@ -103,10 +102,10 @@ namespace STR
       //@{
 
       //! Return name
-      enum Inpar::STR::DynamicType MethodName() const override { return Inpar::STR::dyna_statics; }
+      enum Inpar::STR::DynamicType method_name() const override { return Inpar::STR::dyna_statics; }
 
       //! Provide number of steps, a single-step method returns 1
-      int MethodSteps() const override { return 1; }
+      int method_steps() const override { return 1; }
 
       //! Give local order of accuracy of displacement part
       int method_order_of_accuracy_dis() const override

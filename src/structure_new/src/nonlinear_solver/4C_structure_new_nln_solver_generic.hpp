@@ -87,7 +87,7 @@ namespace STR
         const ::NOX::Abstract::Group& get_solution_group() const;
 
         //! Get the number of nonlinear iterations
-        virtual int GetNumNlnIterations() const = 0;
+        virtual int get_num_nln_iterations() const = 0;
 
        protected:
         //! Returns true if Init() has been called
@@ -141,7 +141,7 @@ namespace STR
         }
 
         //! Returns the structural dynamics data container (read and write)
-        STR::TimeInt::BaseDataSDyn& data_s_dyn()
+        STR::TimeInt::BaseDataSDyn& data_sdyn()
         {
           check_init();
           return *sdyn_ptr_;
@@ -223,7 +223,6 @@ namespace STR
     }     // namespace SOLVER
   }       // namespace Nln
 }  // namespace STR
-
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -37,7 +37,7 @@ void STR::EXPLICIT::Generic::Setup()
   // ---------------------------------------------------------------------------
   // set the new pre/post operator for the nox nln group in the parameter list
   // ---------------------------------------------------------------------------
-  Teuchos::ParameterList& p_grp_opt = s_dyn().GetNoxParams().sublist("Group Options");
+  Teuchos::ParameterList& p_grp_opt = sdyn().get_nox_params().sublist("Group Options");
 
   // create the new generic pre/post operator
   Teuchos::RCP<NOX::Nln::Abstract::PrePostOperator> prepost_generic_ptr =
@@ -53,7 +53,7 @@ void STR::EXPLICIT::Generic::Setup()
   // ---------------------------------------------------------------------------
   // set the new pre/post operator for the nox nln solver in the parameter list
   // ---------------------------------------------------------------------------
-  Teuchos::ParameterList& p_sol_opt = s_dyn().GetNoxParams().sublist("Solver Options");
+  Teuchos::ParameterList& p_sol_opt = sdyn().get_nox_params().sublist("Solver Options");
 
   NOX::Nln::Aux::AddToPrePostOpVector(p_sol_opt, prepost_generic_ptr);
 
@@ -63,7 +63,7 @@ void STR::EXPLICIT::Generic::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::EXPLICIT::Generic::ApplyForce(const Epetra_Vector& x, Epetra_Vector& f)
+bool STR::EXPLICIT::Generic::apply_force(const Epetra_Vector& x, Epetra_Vector& f)
 {
   check_init_setup();
 
@@ -72,13 +72,13 @@ bool STR::EXPLICIT::Generic::ApplyForce(const Epetra_Vector& x, Epetra_Vector& f
   // ---------------------------------------------------------------------------
   // set the time step dependent parameters for the element evaluation
   reset_eval_params();
-  bool ok = ModelEval().ApplyForce(x, f, 1.0);
+  bool ok = model_eval().apply_force(x, f, 1.0);
   return ok;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::EXPLICIT::Generic::ApplyStiff(const Epetra_Vector& x, Core::LinAlg::SparseOperator& jac)
+bool STR::EXPLICIT::Generic::apply_stiff(const Epetra_Vector& x, Core::LinAlg::SparseOperator& jac)
 {
   check_init_setup();
 
@@ -87,7 +87,7 @@ bool STR::EXPLICIT::Generic::ApplyStiff(const Epetra_Vector& x, Core::LinAlg::Sp
   // ---------------------------------------------------------------------------
   // set the time step dependent parameters for the element evaluation
   reset_eval_params();
-  const bool ok = ModelEval().ApplyStiff(x, jac, 1.0);
+  const bool ok = model_eval().apply_stiff(x, jac, 1.0);
 
   if (not ok) return ok;
 
@@ -98,7 +98,7 @@ bool STR::EXPLICIT::Generic::ApplyStiff(const Epetra_Vector& x, Core::LinAlg::Sp
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::EXPLICIT::Generic::ApplyForceStiff(
+bool STR::EXPLICIT::Generic::apply_force_stiff(
     const Epetra_Vector& x, Epetra_Vector& f, Core::LinAlg::SparseOperator& jac)
 {
   check_init_setup();
@@ -107,7 +107,7 @@ bool STR::EXPLICIT::Generic::ApplyForceStiff(
   // ---------------------------------------------------------------------------
   // set the time step dependent parameters for the element evaluation
   reset_eval_params();
-  const bool ok = ModelEval().ApplyForceStiff(x, f, jac, 1.0);
+  const bool ok = model_eval().apply_force_stiff(x, f, jac, 1.0);
 
   if (not ok) return ok;
 
@@ -118,7 +118,7 @@ bool STR::EXPLICIT::Generic::ApplyForceStiff(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::EXPLICIT::Generic::CalcRefNormForce(
+double STR::EXPLICIT::Generic::calc_ref_norm_force(
     const enum ::NOX::Abstract::Vector::NormType& type) const
 {
   FOUR_C_THROW("%s is not yet implemented", __FUNCTION__);
@@ -146,15 +146,15 @@ bool STR::EXPLICIT::Generic::assemble_force(
  *----------------------------------------------------------------------------*/
 void STR::EXPLICIT::Generic::remove_condensed_contributions_from_rhs(Epetra_Vector& rhs) const
 {
-  ModelEval().remove_condensed_contributions_from_rhs(rhs);
+  model_eval().remove_condensed_contributions_from_rhs(rhs);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::Generic::UpdateStepElement()
+void STR::EXPLICIT::Generic::update_step_element()
 {
   check_init_setup();
-  ModelEval().UpdateStepElement();
+  model_eval().update_step_element();
 }
 
 /*----------------------------------------------------------------------------*
@@ -178,10 +178,10 @@ double STR::EXPLICIT::Generic::get_default_step_length() const
 void STR::EXPLICIT::Generic::reset_eval_params()
 {
   // set the time step dependent parameters for the element evaluation
-  EvalData().SetTotalTime(global_state().GetTimeNp());
-  EvalData().SetDeltaTime((*global_state().GetDeltaTime())[0]);
-  EvalData().SetIsTolerateError(true);
-  EvalData().set_function_manager(Global::Problem::Instance()->FunctionManager());
+  eval_data().set_total_time(global_state().get_time_np());
+  eval_data().set_delta_time((*global_state().get_delta_time())[0]);
+  eval_data().set_is_tolerate_error(true);
+  eval_data().set_function_manager(Global::Problem::Instance()->FunctionManager());
 }
 
 /*----------------------------------------------------------------------------*

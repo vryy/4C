@@ -34,7 +34,7 @@ int Discret::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList& params,
 
   if (IsParamsInterface())
   {
-    act = params_interface().GetActionType();
+    act = params_interface().get_action_type();
   }
   else  // Todo remove as soon as old structural time integration is gone
   {
@@ -491,8 +491,8 @@ void Discret::ELEMENTS::Truss3::CalcGPStresses(
   Inpar::STR::StressType iostress;
   if (IsParamsInterface())
   {
-    stressdata = params_interface().StressDataPtr();
-    iostress = params_interface().GetStressOutputType();
+    stressdata = params_interface().stress_data_ptr();
+    iostress = params_interface().get_stress_output_type();
   }
   else
   {

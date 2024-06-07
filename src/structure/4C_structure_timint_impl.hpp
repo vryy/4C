@@ -732,10 +732,10 @@ namespace STR
     }
 
     //! Get type of thickness scaling for thin shell structures
-    Inpar::STR::StcScale GetSTCAlgo() override { return stcscale_; }
+    Inpar::STR::StcScale get_stc_algo() override { return stcscale_; }
 
     //! Access to scaling matrix for STC
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> GetSTCMat() override
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> get_stc_mat() override
     {
       if (!stccompl_) ComputeSTCMatrix();
       stccompl_ = true;
@@ -808,7 +808,7 @@ namespace STR
      *  components. The reaction force resultant is not affected by this
      *  operation.
      */
-    Teuchos::RCP<Epetra_Vector> Freact() override { return freact_; }
+    Teuchos::RCP<Epetra_Vector> freact() override { return freact_; }
 
     //! Read and set external forces from file
     void ReadRestartForce() override = 0;
@@ -915,9 +915,9 @@ namespace STR
     void print_newton_conv();
 
     //! print summary after step
-    void PrintStep() override;
+    void print_step() override;
 
-    //! The text for summary print, see #PrintStep
+    //! The text for summary print, see #print_step
     void print_step_text(FILE* ofile  //!< output file handle
     );
 

@@ -24,7 +24,7 @@ void CONTACT::Aug::ParallelDistributionController::setup(CONTACT::ParamsInterfac
   global_timer_.reset();
   cparams.SetTimer(&global_timer_, 0);
 
-  acttype_ = cparams.GetActionType();
+  acttype_ = cparams.get_action_type();
 
   // rebuild the slave element evaluation time vector only if the redistribution
   // has been changed

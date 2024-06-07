@@ -339,32 +339,32 @@ void STR::TimInt::Setup()
 void STR::TimInt::create_all_solution_vectors()
 {
   // displacements D_{n}
-  dis_ = Teuchos::rcp(new TimeStepping::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+  dis_ = Teuchos::rcp(new TimeStepping::TimIntMStep<Epetra_Vector>(0, 0, dof_row_map_view(), true));
   // velocities V_{n}
-  vel_ = Teuchos::rcp(new TimeStepping::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+  vel_ = Teuchos::rcp(new TimeStepping::TimIntMStep<Epetra_Vector>(0, 0, dof_row_map_view(), true));
   // accelerations A_{n}
-  acc_ = Teuchos::rcp(new TimeStepping::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+  acc_ = Teuchos::rcp(new TimeStepping::TimIntMStep<Epetra_Vector>(0, 0, dof_row_map_view(), true));
 
   // displacements D_{n+1} at t_{n+1}
-  disn_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
+  disn_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
 
   if ((Global::Problem::Instance()->GetProblemType() == Core::ProblemType::struct_ale and
           (Global::Problem::Instance()->WearParams()).get<double>("WEARCOEFF") > 0.0))
   {
     // material displacements Dm_{n+1} at t_{n+1}
-    dismatn_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
+    dismatn_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
 
     // material_displacements D_{n}
     dismat_ =
-        Teuchos::rcp(new TimeStepping::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+        Teuchos::rcp(new TimeStepping::TimIntMStep<Epetra_Vector>(0, 0, dof_row_map_view(), true));
   }
 
   // velocities V_{n+1} at t_{n+1}
-  veln_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
+  veln_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
   // accelerations A_{n+1} at t_{n+1}
-  accn_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
+  accn_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
   // create empty interface force vector
-  fifc_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
+  fifc_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
 }
 
 /*-------------------------------------------------------------------------------------------*
@@ -373,7 +373,7 @@ void STR::TimInt::create_all_solution_vectors()
 void STR::TimInt::CreateFields()
 {
   // a zero vector of full length
-  zeros_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
+  zeros_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
 
   // Map containing Dirichlet DOFs
   {
@@ -387,13 +387,13 @@ void STR::TimInt::CreateFields()
   }
 
   // create empty matrices
-  stiff_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*DofRowMapView(), 81, false, true));
-  mass_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*DofRowMapView(), 81, false, true));
+  stiff_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dof_row_map_view(), 81, false, true));
+  mass_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dof_row_map_view(), 81, false, true));
   if (damping_ != Inpar::STR::damp_none)
   {
     if (HaveNonlinearMass() == Inpar::STR::ml_none)
     {
-      damp_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*DofRowMapView(), 81, false, true));
+      damp_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dof_row_map_view(), 81, false, true));
     }
     else
     {
@@ -1001,12 +1001,12 @@ void STR::TimInt::determine_mass_damp_consist_accel()
 {
   // temporary right hand sinde vector in this routing
   Teuchos::RCP<Epetra_Vector> rhs =
-      Core::LinAlg::CreateVector(*DofRowMapView(), true);  // right hand side
+      Core::LinAlg::CreateVector(*dof_row_map_view(), true);  // right hand side
   // temporary force vectors in this routine
   Teuchos::RCP<Epetra_Vector> fext =
-      Core::LinAlg::CreateVector(*DofRowMapView(), true);  // external force
+      Core::LinAlg::CreateVector(*dof_row_map_view(), true);  // external force
   Teuchos::RCP<Epetra_Vector> fint =
-      Core::LinAlg::CreateVector(*DofRowMapView(), true);  // internal force
+      Core::LinAlg::CreateVector(*dof_row_map_view(), true);  // internal force
 
   // initialise matrices
   stiff_->Zero();
@@ -1015,7 +1015,7 @@ void STR::TimInt::determine_mass_damp_consist_accel()
   // auxiliary vector in order to store accelerations of inhomogeneous Dirichilet-DoFs
   // Meier 2015: This contribution is necessary in order to determine correct initial
   // accelerations in case of inhomogeneous Dirichlet conditions
-  Teuchos::RCP<Epetra_Vector> acc_aux = Core::LinAlg::CreateVector(*DofRowMapView(), true);
+  Teuchos::RCP<Epetra_Vector> acc_aux = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
   acc_aux->PutScalar(0.0);
 
   // overwrite initial state vectors with DirichletBCs
@@ -1130,11 +1130,11 @@ void STR::TimInt::determine_mass_damp_consist_accel()
       beamcontactparams.set("iter", 0);
       beamcontactparams.set("dt", (*dt_)[0]);
       beamcontactparams.set("numstep", step_);
-      beamcman_->Evaluate(*SystemMatrix(), *rhs, (*dis_)[0], beamcontactparams, true, timen_);
+      beamcman_->Evaluate(*system_matrix(), *rhs, (*dis_)[0], beamcontactparams, true, timen_);
     }
 
     // Contribution to rhs due to inertia forces of inhomogeneous Dirichlet conditions
-    Teuchos::RCP<Epetra_Vector> finert0 = Core::LinAlg::CreateVector(*DofRowMapView(), true);
+    Teuchos::RCP<Epetra_Vector> finert0 = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
     finert0->PutScalar(0.0);
     mass_->Multiply(false, *acc_aux, *finert0);
     rhs->Update(-1.0, *finert0, 1.0);
@@ -1727,7 +1727,7 @@ void STR::TimInt::read_restart(const int step)
 
 /*----------------------------------------------------------------------*/
 /* Set restart values passed down from above */
-void STR::TimInt::SetRestart(int step, double time, Teuchos::RCP<Epetra_Vector> disn,
+void STR::TimInt::set_restart(int step, double time, Teuchos::RCP<Epetra_Vector> disn,
     Teuchos::RCP<Epetra_Vector> veln, Teuchos::RCP<Epetra_Vector> accn,
     Teuchos::RCP<std::vector<char>> elementdata, Teuchos::RCP<std::vector<char>> nodedata)
 {
@@ -2067,7 +2067,7 @@ bool STR::TimInt::has_final_state_been_written() const { return step_ == lastwri
 /* We need the restart data to perform on "restarts" on the fly for parameter
  * continuation
  */
-void STR::TimInt::GetRestartData(Teuchos::RCP<int> step, Teuchos::RCP<double> time,
+void STR::TimInt::get_restart_data(Teuchos::RCP<int> step, Teuchos::RCP<double> time,
     Teuchos::RCP<Epetra_Vector> disn, Teuchos::RCP<Epetra_Vector> veln,
     Teuchos::RCP<Epetra_Vector> accn, Teuchos::RCP<std::vector<char>> elementdata,
     Teuchos::RCP<std::vector<char>> nodedata)
@@ -2380,7 +2380,7 @@ void STR::TimInt::DetermineEnergy()
     // global calculation of kinetic energy
     kinergy_ = 0.0;  // total kinetic energy
     {
-      Teuchos::RCP<Epetra_Vector> linmom = Core::LinAlg::CreateVector(*DofRowMapView(), true);
+      Teuchos::RCP<Epetra_Vector> linmom = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
       mass_->Multiply(false, *veln_, *linmom);
       linmom->Dot(*veln_, &kinergy_);
       kinergy_ *= 0.5;
@@ -2850,7 +2850,7 @@ void STR::TimInt::output_nodal_positions()
 
   // Teuchos::RCP<Epetra_Vector> mynoderowmap = Teuchos::rcp(new
   // Epetra_Vector(discret_->NodeRowMap())); Teuchos::RCP<Epetra_Vector> noderowmap_ =
-  // Teuchos::rcp(new Epetra_Vector(discret_->NodeRowMap())); DofRowMapView()  = Teuchos::rcp(new
+  // Teuchos::rcp(new Epetra_Vector(discret_->NodeRowMap())); dof_row_map_view()  = Teuchos::rcp(new
   // discret_->dof_row_map());
   const Epetra_Map* noderowmap = discret_->NodeRowMap();
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
@@ -3283,14 +3283,14 @@ Teuchos::RCP<const Core::LinAlg::SparseMatrix> STR::TimInt::get_loc_sys_trafo() 
 
 /*----------------------------------------------------------------------*/
 /* Return stiffness matrix as Core::LinAlg::SparseMatrix                      */
-Teuchos::RCP<Core::LinAlg::SparseMatrix> STR::TimInt::SystemMatrix()
+Teuchos::RCP<Core::LinAlg::SparseMatrix> STR::TimInt::system_matrix()
 {
   return Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(stiff_);
 }
 
 /*----------------------------------------------------------------------*/
 /* Return stiffness matrix as Core::LinAlg::BlockSparseMatrix */
-Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> STR::TimInt::BlockSystemMatrix()
+Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> STR::TimInt::block_system_matrix()
 {
   return Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(stiff_);
 }
@@ -3333,29 +3333,30 @@ Teuchos::RCP<const Epetra_Map> STR::TimInt::dof_row_map(unsigned nds)
 
 /*----------------------------------------------------------------------*/
 /* view of dof map of vector of unknowns                                */
-const Epetra_Map* STR::TimInt::DofRowMapView() { return discret_->dof_row_map(); }
+const Epetra_Map* STR::TimInt::dof_row_map_view() { return discret_->dof_row_map(); }
 
 /*----------------------------------------------------------------------*/
 /* reset everything (needed for biofilm simulations)                    */
 void STR::TimInt::Reset()
 {
   // displacements D_{n}
-  dis_ = Teuchos::rcp(new TimeStepping::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+  dis_ = Teuchos::rcp(new TimeStepping::TimIntMStep<Epetra_Vector>(0, 0, dof_row_map_view(), true));
   // displacements D_{n}
-  dismat_ = Teuchos::rcp(new TimeStepping::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+  dismat_ =
+      Teuchos::rcp(new TimeStepping::TimIntMStep<Epetra_Vector>(0, 0, dof_row_map_view(), true));
   // velocities V_{n}
-  vel_ = Teuchos::rcp(new TimeStepping::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+  vel_ = Teuchos::rcp(new TimeStepping::TimIntMStep<Epetra_Vector>(0, 0, dof_row_map_view(), true));
   // accelerations A_{n}
-  acc_ = Teuchos::rcp(new TimeStepping::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+  acc_ = Teuchos::rcp(new TimeStepping::TimIntMStep<Epetra_Vector>(0, 0, dof_row_map_view(), true));
 
   // displacements D_{n+1} at t_{n+1}
-  disn_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
+  disn_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
   // velocities V_{n+1} at t_{n+1}
-  veln_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
+  veln_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
   // accelerations A_{n+1} at t_{n+1}
-  accn_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
+  accn_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
   // create empty interface force vector
-  fifc_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
+  fifc_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
 
   // set initial fields
   SetInitialFields();
@@ -3370,7 +3371,7 @@ void STR::TimInt::SetStrGrDisp(Teuchos::RCP<Epetra_Vector> struct_growth_disp)
 
 /*----------------------------------------------------------------------*/
 /* Resize MStep Object due to time adaptivity in FSI                    */
-void STR::TimInt::ResizeMStepTimAda()
+void STR::TimInt::resize_m_step_tim_ada()
 {
   // safety checks
   check_is_init();
@@ -3382,9 +3383,9 @@ void STR::TimInt::ResizeMStepTimAda()
 
   // resize state vectors, AB2 is a 2-step method, thus we need two
   // past steps at t_{n} and t_{n-1}
-  dis_->Resize(-1, 0, DofRowMapView(), true);
-  vel_->Resize(-1, 0, DofRowMapView(), true);
-  acc_->Resize(-1, 0, DofRowMapView(), true);
+  dis_->Resize(-1, 0, dof_row_map_view(), true);
+  vel_->Resize(-1, 0, dof_row_map_view(), true);
+  acc_->Resize(-1, 0, dof_row_map_view(), true);
 }
 
 /*----------------------------------------------------------------------*/

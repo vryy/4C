@@ -210,7 +210,7 @@ int Discret::ELEMENTS::SoTet4av::evaluate_neumann(Teuchos::ParameterList& params
       [&]()
       {
         if (IsParamsInterface())
-          return str_params_interface().GetTotalTime();
+          return str_params_interface().get_total_time();
         else
           return params.get("total time", -1.0);
       });

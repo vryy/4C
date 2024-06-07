@@ -39,7 +39,7 @@ int Discret::ELEMENTS::Shell7pLine::evaluate_neumann(Teuchos::ParameterList& par
   // find out whether we will use a time curve
   double time = -1.0;
   if (parent_element()->IsParamsInterface())
-    time = parent_element()->str_params_interface().GetTotalTime();
+    time = parent_element()->str_params_interface().get_total_time();
   else
     time = params.get<double>("total time", -1.0);
 
