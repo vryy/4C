@@ -95,13 +95,13 @@ Teuchos::RCP<const Discret::Nurbs::Knotvector> Discret::Nurbs::NurbsDiscretizati
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Discret::UTILS::DbcNurbs::evaluate(const Core::UTILS::FunctionManager& function_manager,
+void Discret::UTILS::DbcNurbs::evaluate(const Teuchos::ParameterList& params,
     const Discret::Discretization& discret, double time,
     const Teuchos::RCP<Epetra_Vector>* systemvectors, Discret::UTILS::Dbc::DbcInfo& info,
     Teuchos::RCP<std::set<int>>* dbcgids) const
 {
   // --------------------------- Step 1 ---------------------------------------
-  Discret::UTILS::Dbc::evaluate(function_manager, discret, time, systemvectors, info, dbcgids);
+  Discret::UTILS::Dbc::evaluate(params, discret, time, systemvectors, info, dbcgids);
 
   // --------------------------- Step 2 ---------------------------------------
   std::vector<std::string> dbc_cond_names(2, "");
@@ -120,7 +120,7 @@ void Discret::UTILS::DbcNurbs::evaluate(const Core::UTILS::FunctionManager& func
   }
 
   Discret::UTILS::Dbc::DbcInfo info2(info.toggle.Map());
-  read_dirichlet_condition(function_manager, discret, conds, time, info2, dbcgids);
+  read_dirichlet_condition(params, discret, conds, time, info2, dbcgids);
 
   // --------------------------- Step 3 ---------------------------------------
   conds.clear();
@@ -137,18 +137,17 @@ void Discret::UTILS::DbcNurbs::evaluate(const Core::UTILS::FunctionManager& func
 
   // build dummy column toggle vector and auxiliary vectors
   Discret::UTILS::Dbc::DbcInfo info_col(*discret_nurbs->DofColMap());
-  read_dirichlet_condition(function_manager, discret, conds, time, info_col, dbcgids_nurbs);
+  read_dirichlet_condition(params, discret, conds, time, info_col, dbcgids_nurbs);
 
   // --------------------------- Step 4 ---------------------------------------
   do_dirichlet_condition(
-      function_manager, discret, conds, time, systemvectors, info_col.toggle, dbcgids_nurbs);
+      params, discret, conds, time, systemvectors, info_col.toggle, dbcgids_nurbs);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Discret::UTILS::DbcNurbs::do_dirichlet_condition(
-    const Core::UTILS::FunctionManager& function_manager, const Discret::Discretization& discret,
-    const Core::Conditions::Condition& cond, double time,
+void Discret::UTILS::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterList& params,
+    const Discret::Discretization& discret, const Core::Conditions::Condition& cond, double time,
     const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
     const Teuchos::RCP<std::set<int>>* dbcgids) const
 {
@@ -156,7 +155,7 @@ void Discret::UTILS::DbcNurbs::do_dirichlet_condition(
   if (dbcgids[set_col].is_null())
   {
     Discret::UTILS::Dbc::do_dirichlet_condition(
-        function_manager, discret, cond, time, systemvectors, toggle, dbcgids);
+        params, discret, cond, time, systemvectors, toggle, dbcgids);
     return;
   }
 

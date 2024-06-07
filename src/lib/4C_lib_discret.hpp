@@ -76,11 +76,6 @@ namespace Core::IO
   class DiscretizationWriter;
 }  // namespace Core::IO
 
-namespace Global
-{
-  class Problem;
-}
-
 namespace Discret
 {
   /*!

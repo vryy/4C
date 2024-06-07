@@ -404,6 +404,8 @@ void ScaTra::ScaTraTimIntImpl::Setup()
     eleparams.set("total time", time_);
     eleparams.set<const Core::UTILS::FunctionManager*>(
         "function_manager", &Global::Problem::Instance()->FunctionManager());
+    const Core::ProblemType problem_type = Core::ProblemType::scatra;
+    eleparams.set<const Core::ProblemType*>("problem_type", &problem_type);
     discret_->evaluate_dirichlet(
         eleparams, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_);
     zeros_->PutScalar(0.0);  // just in case of change
@@ -2453,6 +2455,8 @@ void ScaTra::ScaTraTimIntImpl::apply_dirichlet_bc(
   p.set("total time", time);  // actual time t_{n+1}
   p.set<const Core::UTILS::FunctionManager*>(
       "function_manager", &Global::Problem::Instance()->FunctionManager());
+  const Core::ProblemType problem_type = Core::ProblemType::scatra;
+  p.set<const Core::ProblemType*>("problem_type", &problem_type);
 
   // predicted Dirichlet values
   // \c  phinp then also holds prescribed new Dirichlet values

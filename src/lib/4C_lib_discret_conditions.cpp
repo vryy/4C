@@ -10,7 +10,7 @@
 /*---------------------------------------------------------------------*/
 
 #include "4C_discretization_condition_utils.hpp"
-#include "4C_global_data.hpp"
+#include "4C_legacy_enum_definitions_problem_type.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_utils_exceptions.hpp"

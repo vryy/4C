@@ -21,24 +21,22 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FLD::UTILS::DbcHdgFluid::read_dirichlet_condition(
-    const Core::UTILS::FunctionManager& function_manager, const Discret::Discretization& discret,
-    const Core::Conditions::Condition& cond, double time, Discret::UTILS::Dbc::DbcInfo& info,
-    const Teuchos::RCP<std::set<int>>* dbcgids, int hierarchical_order) const
+void FLD::UTILS::DbcHdgFluid::read_dirichlet_condition(const Teuchos::ParameterList& params,
+    const Discret::Discretization& discret, const Core::Conditions::Condition& cond, double time,
+    Discret::UTILS::Dbc::DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids,
+    int hierarchical_order) const
 {
   // no need to check the cast, because it has been done during
   // the build process (see BuildDbc())
   const Discret::DiscretizationFaces& face_discret =
       static_cast<const Discret::DiscretizationFaces&>(discret);
 
-  read_dirichlet_condition(
-      function_manager, face_discret, cond, time, info, dbcgids, hierarchical_order);
+  read_dirichlet_condition(params, face_discret, cond, time, info, dbcgids, hierarchical_order);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FLD::UTILS::DbcHdgFluid::read_dirichlet_condition(
-    const Core::UTILS::FunctionManager& function_manager,
+void FLD::UTILS::DbcHdgFluid::read_dirichlet_condition(const Teuchos::ParameterList& params,
     const Discret::DiscretizationFaces& discret, const Core::Conditions::Condition& cond,
     double time, Discret::UTILS::Dbc::DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids,
     int hierarchical_order) const
@@ -46,7 +44,7 @@ void FLD::UTILS::DbcHdgFluid::read_dirichlet_condition(
 {
   // call to corresponding method in base class; safety checks inside
   Discret::UTILS::Dbc::read_dirichlet_condition(
-      function_manager, discret, cond, time, info, dbcgids, hierarchical_order);
+      params, discret, cond, time, info, dbcgids, hierarchical_order);
 
   // say good bye if there are no face elements
   if (discret.FaceRowMap() == nullptr) return;
@@ -142,9 +140,8 @@ void FLD::UTILS::DbcHdgFluid::read_dirichlet_condition(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(
-    const Core::UTILS::FunctionManager& function_manager, const Discret::Discretization& discret,
-    const Core::Conditions::Condition& cond, double time,
+void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterList& params,
+    const Discret::Discretization& discret, const Core::Conditions::Condition& cond, double time,
     const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
     const Teuchos::RCP<std::set<int>>* dbcgids) const
 {
@@ -153,20 +150,19 @@ void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(
   const Discret::DiscretizationFaces& face_discret =
       static_cast<const Discret::DiscretizationFaces&>(discret);
 
-  do_dirichlet_condition(function_manager, face_discret, cond, time, systemvectors, toggle);
+  do_dirichlet_condition(params, face_discret, cond, time, systemvectors, toggle);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(
-    const Core::UTILS::FunctionManager& function_manager,
+void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterList& params,
     const Discret::DiscretizationFaces& discret, const Core::Conditions::Condition& cond,
     double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
     const Epetra_IntVector& toggle) const
 {
   // call corresponding method from base class; safety checks inside
   Discret::UTILS::Dbc::do_dirichlet_condition(
-      function_manager, discret, cond, time, systemvectors, toggle, nullptr);
+      params, discret, cond, time, systemvectors, toggle, nullptr);
 
   // say good bye if there are no face elements
   if (discret.FaceRowMap() == nullptr) return;

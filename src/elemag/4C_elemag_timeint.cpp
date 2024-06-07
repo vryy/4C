@@ -101,6 +101,8 @@ void EleMag::ElemagTimeInt::Init()
     eleparams.set("total time", time_);
     eleparams.set<const Core::UTILS::FunctionManager *>(
         "function_manager", &Global::Problem::Instance()->FunctionManager());
+    const Core::ProblemType problem_type = Core::ProblemType::elemag;
+    eleparams.set<const Core::ProblemType *>("problem_type", &problem_type);
 
     // Evaluation of the dirichlet conditions (why is it here and also later?)
     discret_->evaluate_dirichlet(
@@ -740,6 +742,8 @@ void EleMag::ElemagTimeInt::apply_dirichlet_to_system(bool resonly)
   params.set<double>("total time", time_);
   params.set<const Core::UTILS::FunctionManager *>(
       "function_manager", &Global::Problem::Instance()->FunctionManager());
+  const Core::ProblemType problem_type = Core::ProblemType::elemag;
+  params.set<const Core::ProblemType *>("problem_type", &problem_type);
   discret_->evaluate_dirichlet(
       params, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   if (resonly)

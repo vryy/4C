@@ -172,35 +172,11 @@ namespace Discret
 
 
      protected:
-      /** \brief Evaluate the NURBS DBCs
-       *
-       *  In the case of NURBs the evaluation is split into 4 steps:
-       *
-       *  (1) Call the base class function and apply the standard DBCs first
-       *  (2) Fill the DBC GIDs row set completely ( NURBS + standard DBCs )
-       *  (3) Fill new DBC NURBS GID sets ( row + column ) w/o standard DBC
-       *  (4) Now, after reading the row and column information of the NURBS DBCs,
-       *      start to build and solve the least squares problem
-       *
-       *  \author hiermeier, vuong \date 01/17 */
-      void evaluate(const Core::UTILS::FunctionManager& function_manager,
-          const Discret::Discretization& discret, double time,
-          const Teuchos::RCP<Epetra_Vector>* systemvectors, DbcInfo& info,
+      void evaluate(const Teuchos::ParameterList& params, const Discret::Discretization& discret,
+          double time, const Teuchos::RCP<Epetra_Vector>* systemvectors, DbcInfo& info,
           Teuchos::RCP<std::set<int>>* dbcgids) const override;
 
-      /** \brief Determine Dirichlet condition at given time and apply its
-       *         values to a system vector
-       *  \param cond            The condition object
-       *  \param time            Evaluation time
-       *  \param systemvector    Vector to apply DBCs to (eg displ. in structure, vel. in fluids)
-       *  \param systemvectord   First time derivative of DBCs
-       *  \param systemvectordd  Second time derivative of DBCs
-       *  \param toggle          Its i-th compononent is set 1 if it has a DBC, otherwise this
-       * component remains untouched \param dbcgids         Map containing DOFs subjected to
-       * Dirichlet boundary conditions
-       *
-       * \author vuong */
-      void do_dirichlet_condition(const Core::UTILS::FunctionManager& function_manager,
+      void do_dirichlet_condition(const Teuchos::ParameterList& params,
           const Discret::Discretization& discret, const Core::Conditions::Condition& cond,
           double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
           const Epetra_IntVector& toggle,
