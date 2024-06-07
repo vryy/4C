@@ -8,7 +8,7 @@ Evaluate(...), evaluate_neumann(...), etc.
 \level 1
 */
 
-#include "4C_discretization_fem_general_elements_paramsinterface.hpp"
+#include "4C_fem_general_elements_paramsinterface.hpp"
 #include "4C_solid_3D_ele_neumann_evaluator.hpp"
 #include "4C_solid_scatra_3D_ele.hpp"
 #include "4C_solid_scatra_3D_ele_calc_lib_nitsche.hpp"

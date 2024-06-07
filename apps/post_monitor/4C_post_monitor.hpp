@@ -18,7 +18,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_post_common.hpp"
 
 #include <Teuchos_CommandLineProcessor.hpp>

@@ -10,7 +10,7 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "4C_discretization_condition_utils.hpp"
+#include "4C_fem_condition_utils.hpp"
 #include "4C_fluid_ele.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_evaluate_utils.hpp"

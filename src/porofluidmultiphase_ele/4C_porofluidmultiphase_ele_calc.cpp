@@ -8,10 +8,10 @@
 
 #include "4C_porofluidmultiphase_ele_calc.hpp"
 
-#include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
-#include "4C_discretization_fem_general_utils_gder2.hpp"
-#include "4C_discretization_geometry_position_array.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_utils_fem_shapefunctions.hpp"
+#include "4C_fem_general_utils_gder2.hpp"
+#include "4C_fem_geometry_position_array.hpp"
 #include "4C_mat_fluidporo_multiphase.hpp"
 #include "4C_mat_material_factory.hpp"
 #include "4C_material_base.hpp"

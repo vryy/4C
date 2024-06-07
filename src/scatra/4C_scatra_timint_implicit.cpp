@@ -21,9 +21,9 @@
 
 #include "4C_comm_utils_gid_vector.hpp"
 #include "4C_contact_nitsche_strategy_ssi.hpp"
-#include "4C_discretization_condition_periodic.hpp"
-#include "4C_discretization_condition_selector.hpp"
-#include "4C_discretization_fem_general_assemblestrategy.hpp"
+#include "4C_fem_condition_periodic.hpp"
+#include "4C_fem_condition_selector.hpp"
+#include "4C_fem_general_assemblestrategy.hpp"
 #include "4C_fluid_rotsym_periodicbc_utils.hpp"
 #include "4C_fluid_turbulence_dyn_vreman.hpp"
 #include "4C_global_data.hpp"

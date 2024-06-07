@@ -15,7 +15,7 @@ The functions in this file are not problem-specific and may be useful for a numb
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_utils_polynomial.hpp"
+#include "4C_fem_general_utils_polynomial.hpp"
 #include "4C_utils_function_of_scalar.hpp"
 
 #include <memory>

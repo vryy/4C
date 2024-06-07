@@ -10,7 +10,7 @@
 
 #include "4C_beamcontact_beam3contactvariables.hpp"
 
-#include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>

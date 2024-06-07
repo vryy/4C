@@ -10,9 +10,9 @@
 
 #include "4C_linear_solver_method_parameters.hpp"
 
-#include "4C_discretization_fem_general_elementtype.hpp"
-#include "4C_lib_discret.hpp"
-#include "4C_lib_discret_nullspace.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_discretization_nullspace.hpp"
+#include "4C_fem_general_elementtype.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Xpetra_EpetraIntMultiVector.hpp>

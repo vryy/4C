@@ -10,7 +10,6 @@ set(_dependencies
     fluid_ele
     global_data
     inpar
-    lib
     mortar
     rigidsphere
     scatra_ele

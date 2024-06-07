@@ -10,10 +10,10 @@
 
 #include "4C_xfem_discretization_utils.hpp"
 
-#include "4C_discretization_condition_utils.hpp"
-#include "4C_discretization_dofset_fixed_size.hpp"
+#include "4C_fem_condition_utils.hpp"
+#include "4C_fem_discretization_faces.hpp"
+#include "4C_fem_dofset_fixed_size.hpp"
 #include "4C_io_gmsh.hpp"
-#include "4C_lib_discret_faces.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_rebalance_binning_based.hpp"
 #include "4C_rebalance_graph_based.hpp"

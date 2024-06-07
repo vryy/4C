@@ -10,9 +10,9 @@
  *---------------------------------------------------------------------------*/
 #include "4C_particle_interaction_dem_adhesion.hpp"
 
-#include "4C_discretization_fem_general_element.hpp"
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_extract_values.hpp"
+#include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_io_visualization_manager.hpp"
 #include "4C_mat_particle_wall_dem.hpp"
 #include "4C_particle_engine_container.hpp"

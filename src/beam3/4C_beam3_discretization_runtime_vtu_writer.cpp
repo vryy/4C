@@ -15,11 +15,11 @@
 #include "4C_beam3_reissner.hpp"
 #include "4C_beaminteraction_calc_utils.hpp"
 #include "4C_beaminteraction_periodic_boundingbox.hpp"
-#include "4C_discretization_fem_general_element.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_element.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_discretization_visualization_writer_mesh.hpp"
 #include "4C_io_visualization_manager.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_utils_exceptions.hpp"
 

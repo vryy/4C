@@ -14,7 +14,7 @@
 
 #include "4C_cut_node.hpp"
 #include "4C_cut_tolerance.hpp"
-#include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_inpar_cut.hpp"
 
 FOUR_C_NAMESPACE_OPEN

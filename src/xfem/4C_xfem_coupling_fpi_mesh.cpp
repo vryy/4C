@@ -11,8 +11,8 @@ xfluid class and the cut-library
 
 #include "4C_xfem_coupling_fpi_mesh.hpp"
 
-#include "4C_discretization_dofset_transparent_independent.hpp"
-#include "4C_discretization_fem_general_utils_createdis.hpp"
+#include "4C_fem_dofset_transparent_independent.hpp"
+#include "4C_fem_general_utils_createdis.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_parameter_xfem.hpp"
 #include "4C_io.hpp"

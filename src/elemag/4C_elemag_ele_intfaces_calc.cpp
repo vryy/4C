@@ -10,7 +10,7 @@
 #include "4C_elemag_ele_intfaces_calc.hpp"
 
 #include "4C_elemag_ele_action.hpp"
-#include "4C_lib_discret_faces.hpp"
+#include "4C_fem_discretization_faces.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>

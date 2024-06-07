@@ -10,8 +10,8 @@
 
 #include "4C_comm_exporter.hpp"
 #include "4C_comm_utils.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_utils_densematrix_svd.hpp"
 #include "4C_mat_micromaterial.hpp"
 #include "4C_mat_micromaterialgp_static.hpp"

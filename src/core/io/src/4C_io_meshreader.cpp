@@ -10,11 +10,11 @@
 
 #include "4C_io_meshreader.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_io_domainreader.hpp"
 #include "4C_io_elementreader.hpp"
 #include "4C_io_inputreader.hpp"
 #include "4C_io_nodereader.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_rebalance.hpp"
 #include "4C_rebalance_graph_based.hpp"
 #include "4C_rebalance_print.hpp"

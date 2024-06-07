@@ -16,7 +16,7 @@
 #include "4C_config.hpp"
 
 #include "4C_adapter_str_structure.hpp"
-#include "4C_discretization_fem_general_elements_paramsinterface.hpp"
+#include "4C_fem_general_elements_paramsinterface.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_timestepping_mstep.hpp"
 

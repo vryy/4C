@@ -20,7 +20,7 @@
 // dependent on distype
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_utils_gausspoints.hpp"
+#include "4C_fem_general_utils_gausspoints.hpp"
 #include "4C_thermo_ele_impl_utils.hpp"
 
 FOUR_C_NAMESPACE_OPEN

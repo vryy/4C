@@ -5,7 +5,6 @@ set(_dependencies
     config
     core
     inpar
-    lib
     mat
     so3
     solid_3D_ele

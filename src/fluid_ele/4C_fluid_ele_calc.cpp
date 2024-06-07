@@ -11,10 +11,10 @@
 
 #include "4C_fluid_ele_calc.hpp"
 
-#include "4C_discretization_condition_utils.hpp"
-#include "4C_discretization_fem_general_immersed_node.hpp"
-#include "4C_discretization_fem_general_utils_gder2.hpp"
-#include "4C_discretization_geometry_searchtree.hpp"
+#include "4C_fem_condition_utils.hpp"
+#include "4C_fem_general_immersed_node.hpp"
+#include "4C_fem_general_utils_gder2.hpp"
+#include "4C_fem_geometry_searchtree.hpp"
 #include "4C_fluid_ele.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_immersed_base.hpp"

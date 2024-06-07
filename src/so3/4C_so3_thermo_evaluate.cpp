@@ -9,8 +9,8 @@
 /*----------------------------------------------------------------------*
  | headers                                                   dano 11/12 |
  *----------------------------------------------------------------------*/
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
+#include "4C_fem_general_extract_values.hpp"
+#include "4C_fem_general_utils_nurbs_shapefunctions.hpp"
 #include "4C_global_data.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_mat_robinson.hpp"

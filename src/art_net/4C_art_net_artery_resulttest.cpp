@@ -12,8 +12,8 @@
 
 #include "4C_art_net_explicitintegration.hpp"
 #include "4C_art_net_impl_stationary.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_io_linedefinition.hpp"
-#include "4C_lib_discret.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

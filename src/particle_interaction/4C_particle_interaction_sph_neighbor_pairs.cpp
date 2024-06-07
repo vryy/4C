@@ -10,9 +10,9 @@
  *---------------------------------------------------------------------------*/
 #include "4C_particle_interaction_sph_neighbor_pairs.hpp"
 
-#include "4C_discretization_geometry_element_coordtrafo.hpp"
-#include "4C_discretization_geometry_position_array.hpp"
-#include "4C_discretization_geometry_searchtree_service.hpp"
+#include "4C_fem_geometry_element_coordtrafo.hpp"
+#include "4C_fem_geometry_position_array.hpp"
+#include "4C_fem_geometry_searchtree_service.hpp"
 #include "4C_particle_engine_container.hpp"
 #include "4C_particle_engine_interface.hpp"
 #include "4C_particle_interaction_sph_kernel.hpp"

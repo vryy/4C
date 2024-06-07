@@ -12,7 +12,7 @@
 #include "4C_fluid_xfluid_state_creator.hpp"
 
 #include "4C_cut_cutwizard.hpp"
-#include "4C_discretization_condition_utils.hpp"
+#include "4C_fem_condition_utils.hpp"
 #include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_fluid_xfluid_fluid_state.hpp"
 #include "4C_fluid_xfluid_state.hpp"

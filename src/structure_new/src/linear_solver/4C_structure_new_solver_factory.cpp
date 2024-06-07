@@ -14,12 +14,12 @@
 
 #include "4C_beam3_euler_bernoulli.hpp"
 #include "4C_beaminteraction_calc_utils.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_cardiovascular0d.hpp"
 #include "4C_inpar_contact.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_io_control.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_multiply.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linear_solver_method.hpp"

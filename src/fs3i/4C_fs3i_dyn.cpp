@@ -12,6 +12,7 @@
 #include "4C_fs3i_dyn.hpp"
 
 #include "4C_comm_utils.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_fs3i.hpp"
 #include "4C_fs3i_ac_fsi.hpp"
 #include "4C_fs3i_biofilm_fsi.hpp"
@@ -19,7 +20,6 @@
 #include "4C_fs3i_partitioned_1wc.hpp"
 #include "4C_fs3i_partitioned_2wc.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

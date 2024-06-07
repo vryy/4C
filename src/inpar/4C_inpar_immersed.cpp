@@ -12,7 +12,7 @@
 
 #include "4C_inpar_immersed.hpp"
 
-#include "4C_discretization_condition_definition.hpp"
+#include "4C_fem_condition_definition.hpp"
 #include "4C_inpar_fsi.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_utils_parameter_list.hpp"

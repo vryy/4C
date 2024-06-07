@@ -11,7 +11,7 @@
 #include "4C_mat_anisotropy.hpp"
 
 #include "4C_comm_parobject.hpp"
-#include "4C_discretization_fem_general_fiber_node_holder.hpp"
+#include "4C_fem_general_fiber_node_holder.hpp"
 #include "4C_mat_anisotropy_extension.hpp"
 #include "4C_mat_anisotropy_utils.hpp"
 #include "4C_mat_service.hpp"

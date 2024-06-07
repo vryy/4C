@@ -12,8 +12,8 @@
 
 #include "4C_red_airways_resulttest.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_io_linedefinition.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_red_airways_implicitintegration.hpp"
 
 FOUR_C_NAMESPACE_OPEN

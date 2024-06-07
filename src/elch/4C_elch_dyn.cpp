@@ -9,10 +9,10 @@
 #include "4C_elch_dyn.hpp"
 
 #include "4C_ale_utils_clonestrategy.hpp"
-#include "4C_discretization_dofset_predefineddofnumber.hpp"
-#include "4C_discretization_fem_general_utils_createdis.hpp"
 #include "4C_elch_algorithm.hpp"
 #include "4C_elch_moving_boundary_algorithm.hpp"
+#include "4C_fem_dofset_predefineddofnumber.hpp"
+#include "4C_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_elch.hpp"
 #include "4C_inpar_validparameters.hpp"

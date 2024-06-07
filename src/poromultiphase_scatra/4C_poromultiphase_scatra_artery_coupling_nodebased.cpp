@@ -11,9 +11,9 @@
 
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_converter.hpp"
-#include "4C_discretization_condition_selector.hpp"
+#include "4C_fem_condition_selector.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_matrixtransform.hpp"
 
 FOUR_C_NAMESPACE_OPEN

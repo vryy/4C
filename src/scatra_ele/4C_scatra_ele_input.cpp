@@ -6,7 +6,7 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "4C_discretization_fem_general_cell_type_traits.hpp"
+#include "4C_fem_general_cell_type_traits.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_mat_myocard.hpp"
 #include "4C_scatra_ele.hpp"

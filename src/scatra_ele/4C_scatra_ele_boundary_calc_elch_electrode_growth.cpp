@@ -10,7 +10,7 @@ growth, e.g., lithium plating
 /*----------------------------------------------------------------------*/
 #include "4C_scatra_ele_boundary_calc_elch_electrode_growth.hpp"
 
-#include "4C_discretization_fem_general_utils_boundary_integration.hpp"
+#include "4C_fem_general_utils_boundary_integration.hpp"
 #include "4C_mat_electrode.hpp"
 #include "4C_scatra_ele_boundary_calc_elch_electrode_growth_utils.hpp"
 #include "4C_scatra_ele_boundary_calc_elch_electrode_utils.hpp"

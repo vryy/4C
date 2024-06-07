@@ -9,7 +9,6 @@ set(_dependencies
     fluid_ele
     global_data
     inpar
-    lib
     scatra
     scatra_ele
     )

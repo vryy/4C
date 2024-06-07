@@ -11,11 +11,11 @@
 #include "4C_constraint_springdashpot_manager.hpp"
 
 #include "4C_constraint_springdashpot.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_io.hpp"
 #include "4C_io_pstream.hpp"  // has to go before io.hpp
-#include "4C_lib_discret.hpp"
 
 #include <iostream>
 

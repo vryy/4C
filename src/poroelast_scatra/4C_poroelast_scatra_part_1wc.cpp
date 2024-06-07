@@ -14,8 +14,8 @@
 #include "4C_adapter_fld_poro.hpp"
 #include "4C_adapter_scatra_base_algorithm.hpp"
 #include "4C_adapter_str_fpsiwrapper.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_scatra_timint_implicit.hpp"
 
 FOUR_C_NAMESPACE_OPEN

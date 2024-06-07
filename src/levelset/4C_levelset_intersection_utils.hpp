@@ -20,7 +20,7 @@
 #include "4C_config.hpp"
 
 #include "4C_cut_point.hpp"
-#include "4C_discretization_geometry_geo_utils.hpp"
+#include "4C_fem_geometry_geo_utils.hpp"
 
 #include <Epetra_MpiComm.h>
 #include <Epetra_MultiVector.h>

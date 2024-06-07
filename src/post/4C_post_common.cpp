@@ -15,9 +15,9 @@
 
 #include "4C_comm_exporter.hpp"
 #include "4C_comm_parobject.hpp"
-#include "4C_discretization_condition_periodic.hpp"
-#include "4C_discretization_condition_utils.hpp"
-#include "4C_discretization_dofset_independent.hpp"
+#include "4C_fem_condition_periodic.hpp"
+#include "4C_fem_condition_utils.hpp"
+#include "4C_fem_dofset_independent.hpp"
 #include "4C_global_data.hpp"
 #include "4C_global_legacy_module.hpp"
 #include "4C_inpar_problemtype.hpp"

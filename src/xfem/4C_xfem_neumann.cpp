@@ -14,9 +14,9 @@
 
 #include "4C_xfem_neumann.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_fluid_ele.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_utils_function_of_time.hpp"
 

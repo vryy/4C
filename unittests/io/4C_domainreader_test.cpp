@@ -8,8 +8,8 @@
 /*----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
+#include "4C_fem_discretization.hpp"
 #include "4C_io_domainreader.hpp"
-#include "4C_lib_discret.hpp"
 
 #include <Epetra_SerialComm.h>
 

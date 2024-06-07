@@ -16,7 +16,7 @@
 #include "4C_adapter_art_net.hpp"
 #include "4C_art_net_artery_resulttest.hpp"
 #include "4C_art_net_utils.hpp"
-#include "4C_discretization_fem_general_utils_createdis.hpp"
+#include "4C_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_validparameters.hpp"
 #include "4C_io_control.hpp"

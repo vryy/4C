@@ -14,7 +14,7 @@
  *----------------------------------------------------------------------*/
 #include "4C_adapter_str_pasiwrapper.hpp"
 
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_structure_aux.hpp"
 
 FOUR_C_NAMESPACE_OPEN

@@ -11,11 +11,11 @@
 #include "4C_fluid_xfluid_state.hpp"
 
 #include "4C_cut_cutwizard.hpp"
-#include "4C_discretization_condition_utils.hpp"
+#include "4C_fem_condition_utils.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_xfem_condition_manager.hpp"

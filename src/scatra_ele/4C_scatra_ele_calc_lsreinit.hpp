@@ -13,8 +13,8 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_geometry_geo_utils.hpp"
-#include "4C_discretization_geometry_integrationcell.hpp"
+#include "4C_fem_geometry_geo_utils.hpp"
+#include "4C_fem_geometry_integrationcell.hpp"
 #include "4C_scatra_ele_calc.hpp"
 
 FOUR_C_NAMESPACE_OPEN

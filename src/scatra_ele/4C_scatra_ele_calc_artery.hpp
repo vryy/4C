@@ -13,7 +13,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_mat_cnst_1d_art.hpp"
 #include "4C_scatra_ele_calc.hpp"
 

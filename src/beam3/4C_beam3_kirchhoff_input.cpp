@@ -9,7 +9,7 @@
 /*-----------------------------------------------------------------------------------------------*/
 
 #include "4C_beam3_kirchhoff.hpp"
-#include "4C_discretization_fem_general_largerotations.hpp"
+#include "4C_fem_general_largerotations.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_legacy_enum_definitions_materials.hpp"
 #include "4C_mat_material_factory.hpp"

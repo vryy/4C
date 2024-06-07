@@ -5,9 +5,9 @@
  *------------------------------------------------------------------------------------------------*/
 #include "4C_scatra_timint_loma.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_control.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_mat_par_bundle.hpp"

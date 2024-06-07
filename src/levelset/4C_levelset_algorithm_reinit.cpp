@@ -10,7 +10,7 @@
  *------------------------------------------------------------------------------------------------*/
 
 
-#include "4C_discretization_condition_periodic.hpp"
+#include "4C_fem_condition_periodic.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_levelset_algorithm.hpp"

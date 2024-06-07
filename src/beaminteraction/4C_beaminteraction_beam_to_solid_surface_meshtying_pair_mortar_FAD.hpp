@@ -16,9 +16,9 @@ evaluated with FAD.
 #include "4C_config.hpp"
 
 #include "4C_beaminteraction_beam_to_solid_surface_meshtying_pair_mortar_base.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_geometry_pair_element.hpp"
 #include "4C_geometry_pair_scalar_types.hpp"
-#include "4C_lib_discret.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

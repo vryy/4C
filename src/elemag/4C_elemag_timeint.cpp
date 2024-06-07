@@ -10,13 +10,13 @@
 
 #include "4C_elemag_timeint.hpp"
 
-#include "4C_discretization_fem_general_extract_values.hpp"
 #include "4C_elemag_ele_action.hpp"
 #include "4C_elemag_resulttest.hpp"
+#include "4C_fem_discretization_hdg.hpp"
+#include "4C_fem_general_extract_values.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
-#include "4C_lib_discret_hdg.hpp"
 #include "4C_linalg_equilibrate.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"

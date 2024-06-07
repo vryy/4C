@@ -14,8 +14,8 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
+#include "4C_fem_general_extract_values.hpp"
+#include "4C_fem_general_utils_nurbs_shapefunctions.hpp"
 #include "4C_io_element_vtk_cell_type_register.hpp"
 #include "4C_nurbs_discret_nurbs_utils.hpp"
 #include "4C_utils_exceptions.hpp"

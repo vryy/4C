@@ -14,7 +14,7 @@ Thomas Kloeppel
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_condition.hpp"
+#include "4C_fem_condition.hpp"
 
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>

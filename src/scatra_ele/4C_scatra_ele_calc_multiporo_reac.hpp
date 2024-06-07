@@ -13,8 +13,8 @@
 
 #include "4C_config.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_mat_fluidporo_multiphase.hpp"
 #include "4C_mat_fluidporo_multiphase_reactions.hpp"
 #include "4C_mat_fluidporo_singlephase.hpp"

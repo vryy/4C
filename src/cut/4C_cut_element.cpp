@@ -15,7 +15,7 @@
 #include "4C_cut_output.hpp"
 #include "4C_cut_position.hpp"
 #include "4C_cut_tetmesh.hpp"
-#include "4C_discretization_geometry_element_volume.hpp"
+#include "4C_fem_geometry_element_volume.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_cut.hpp"
 

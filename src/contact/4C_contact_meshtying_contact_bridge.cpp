@@ -12,8 +12,8 @@
 
 #include "4C_contact_manager.hpp"
 #include "4C_contact_meshtying_manager.hpp"
-#include "4C_discretization_condition.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_condition.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_mortar_manager_base.hpp"
 #include "4C_mortar_strategy_base.hpp"

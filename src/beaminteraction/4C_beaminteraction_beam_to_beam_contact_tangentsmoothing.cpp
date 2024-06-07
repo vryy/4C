@@ -10,9 +10,9 @@
 
 #include "4C_beaminteraction_beam_to_beam_contact_tangentsmoothing.hpp"
 
-#include "4C_discretization_fem_general_element.hpp"
-#include "4C_discretization_fem_general_node.hpp"
-#include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_node.hpp"
+#include "4C_fem_general_utils_fem_shapefunctions.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

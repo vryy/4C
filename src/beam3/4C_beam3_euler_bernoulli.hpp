@@ -38,7 +38,7 @@
 #include "4C_config.hpp"
 
 #include "4C_beam3_base.hpp"
-#include "4C_discretization_fem_general_node.hpp"
+#include "4C_fem_general_node.hpp"
 
 // #define SIMPLECALC ;          // simplified residuum and stiffness calculation for the small
 //  tension case Default: Off

@@ -11,7 +11,7 @@
 #include "4C_beaminteraction_beam_to_beam_contact_variables.hpp"
 
 #include "4C_beaminteraction_beam_to_beam_contact_pair.hpp"
-#include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>

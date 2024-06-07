@@ -12,8 +12,8 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_element.hpp"
-#include "4C_discretization_fem_general_elementtype.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_elementtype.hpp"
 #include "4C_inpar_structure.hpp"
 
 // #define PUSO_NSTET5              ///< run the Puso&Solberg style 5-node tet

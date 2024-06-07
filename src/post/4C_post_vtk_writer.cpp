@@ -10,8 +10,8 @@
 
 #include "4C_post_vtk_writer.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_io_legacy_table.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_post_common.hpp"
 
 #include <filesystem>

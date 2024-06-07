@@ -10,12 +10,12 @@
 /*----------------------------------------------------------------------*/
 
 
+#include "4C_fem_discretization.hpp"
 #include "4C_fluid_ele.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_boundary_calc.hpp"
 #include "4C_fluid_ele_boundary_factory.hpp"
 #include "4C_fluid_ele_boundary_parent_calc.hpp"
-#include "4C_lib_discret.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

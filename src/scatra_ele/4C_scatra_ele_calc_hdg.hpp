@@ -14,7 +14,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_utils_shapevalues_hdg.hpp"
+#include "4C_fem_general_utils_shapevalues_hdg.hpp"
 #include "4C_inpar_scatra.hpp"
 #include "4C_scatra_ele_calc.hpp"
 #include "4C_scatra_ele_hdg.hpp"

@@ -12,7 +12,7 @@
 
 #include "4C_contact_element.hpp"
 #include "4C_contact_node.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 

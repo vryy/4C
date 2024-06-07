@@ -8,7 +8,7 @@
 #include "4C_solid_3D_ele_calc_eas.hpp"
 
 #include "4C_comm_parobject.hpp"
-#include "4C_discretization_fem_general_extract_values.hpp"
+#include "4C_fem_general_extract_values.hpp"
 #include "4C_linalg_utils_densematrix_eigen.hpp"
 #include "4C_mat_so3_material.hpp"
 #include "4C_solid_3D_ele.hpp"

@@ -7,7 +7,7 @@
  *----------------------------------------------------------------------*/
 
 
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_porofluidmultiphase_ele.hpp"
 #include "4C_porofluidmultiphase_ele_action.hpp"
 #include "4C_porofluidmultiphase_ele_factory.hpp"

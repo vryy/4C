@@ -10,7 +10,7 @@
 
 #include "4C_inpar_beampotential.hpp"
 
-#include "4C_discretization_condition_definition.hpp"
+#include "4C_fem_condition_definition.hpp"
 #include "4C_inpar_beamcontact.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_inpar_tsi.hpp"

@@ -7,8 +7,8 @@
 *----------------------------------------------------------------------*/
 
 #include "4C_constraint_element3.hpp"
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_extract_values.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

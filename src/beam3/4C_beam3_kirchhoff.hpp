@@ -46,9 +46,9 @@ no direct physical interpretation. For 2D rotations both variants are identical.
 #include "4C_config.hpp"
 
 #include "4C_beam3_base.hpp"
-#include "4C_discretization_fem_general_elementtype.hpp"
-#include "4C_discretization_fem_general_largerotations.hpp"
-#include "4C_discretization_fem_general_node.hpp"
+#include "4C_fem_general_elementtype.hpp"
+#include "4C_fem_general_largerotations.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_utils_fad.hpp"

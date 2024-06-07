@@ -12,7 +12,7 @@
 
 #include "4C_inpar_beam_to_solid.hpp"
 
-#include "4C_discretization_condition_definition.hpp"
+#include "4C_fem_condition_definition.hpp"
 #include "4C_inpar_beaminteraction.hpp"
 #include "4C_inpar_geometry_pair.hpp"
 #include "4C_utils_exceptions.hpp"

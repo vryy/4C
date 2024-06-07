@@ -11,9 +11,9 @@
 #include "4C_fluid_turbulence_statistics_hit.hpp"
 
 #include "4C_comm_exporter.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_mat_newtonianfluid.hpp"
 #include "4C_mat_par_bundle.hpp"
 

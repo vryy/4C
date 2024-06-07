@@ -16,8 +16,8 @@
 
 #include "4C_adapter_art_net.hpp"
 #include "4C_adapter_porofluidmultiphase.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_inpar_porofluidmultiphase.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 
 #include <Epetra_Map.h>

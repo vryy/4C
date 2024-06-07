@@ -15,8 +15,8 @@
 
 #include "4C_binstrategy_meshfree_bin.hpp"
 #include "4C_binstrategy_utils.hpp"
-#include "4C_discretization_fem_general_elementtype.hpp"
-#include "4C_discretization_fem_general_node.hpp"
+#include "4C_fem_general_elementtype.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 
 FOUR_C_NAMESPACE_OPEN

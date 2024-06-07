@@ -10,7 +10,7 @@
 
 #include "4C_mortar_coupling3d_classes.hpp"
 
-#include "4C_discretization_fem_general_node.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_mortar_coupling3d.hpp"

@@ -13,8 +13,8 @@
 
 #include "4C_config.hpp"
 
-#include "4C_lib_discret.hpp"
-#include "4C_lib_utils_discret.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_discretization_utils.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 
 FOUR_C_NAMESPACE_OPEN

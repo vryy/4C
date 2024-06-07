@@ -9,7 +9,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "4C_bele_bele3.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_utils_exceptions.hpp"
 

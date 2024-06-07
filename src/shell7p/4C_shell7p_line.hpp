@@ -10,10 +10,10 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_element.hpp"
-#include "4C_discretization_fem_general_element_integration_select.hpp"
-#include "4C_discretization_fem_general_node.hpp"
-#include "4C_discretization_fem_general_utils_gausspoints.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_element_integration_select.hpp"
+#include "4C_fem_general_node.hpp"
+#include "4C_fem_general_utils_gausspoints.hpp"
 #include "4C_shell7p_ele.hpp"
 
 FOUR_C_NAMESPACE_OPEN

@@ -14,7 +14,7 @@
 #include "4C_beaminteraction_beam_to_beam_potential_pair.hpp"
 #include "4C_beaminteraction_beam_to_sphere_potential_pair.hpp"
 #include "4C_beaminteraction_potential_params.hpp"
-#include "4C_discretization_fem_general_element.hpp"
+#include "4C_fem_general_element.hpp"
 #include "4C_rigidsphere.hpp"
 #include "4C_utils_exceptions.hpp"
 

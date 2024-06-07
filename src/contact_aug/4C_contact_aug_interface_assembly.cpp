@@ -13,7 +13,7 @@ sparse matrices and parallel distributed vectors
 #include "4C_contact_aug_interface.hpp"
 #include "4C_contact_aug_steepest_ascent_interface.hpp"
 #include "4C_contact_node.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 

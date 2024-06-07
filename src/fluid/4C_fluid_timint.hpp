@@ -15,7 +15,7 @@
 #include "4C_config.hpp"
 
 #include "4C_adapter_fld_fluid.hpp"
-#include "4C_discretization_condition.hpp"
+#include "4C_fem_condition.hpp"
 #include "4C_fluid_discretization_runtime_output_params.hpp"
 #include "4C_utils_exceptions.hpp"
 

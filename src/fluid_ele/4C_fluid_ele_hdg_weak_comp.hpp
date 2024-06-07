@@ -12,8 +12,8 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_dg_element.hpp"
-#include "4C_discretization_fem_general_utils_polynomial.hpp"
+#include "4C_fem_general_dg_element.hpp"
+#include "4C_fem_general_utils_polynomial.hpp"
 #include "4C_fluid_ele.hpp"
 
 #include <Teuchos_RCP.hpp>

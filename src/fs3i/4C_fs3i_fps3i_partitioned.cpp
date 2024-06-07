@@ -16,8 +16,8 @@
 
 #include "4C_adapter_fld_poro.hpp"
 #include "4C_adapter_str_fpsiwrapper.hpp"
-#include "4C_discretization_condition_selector.hpp"
-#include "4C_discretization_fem_general_utils_createdis.hpp"
+#include "4C_fem_condition_selector.hpp"
+#include "4C_fem_general_utils_createdis.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_fpsi_monolithic_plain.hpp"

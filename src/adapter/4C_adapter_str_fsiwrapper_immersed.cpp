@@ -12,10 +12,10 @@
 
 #include "4C_adapter_str_fsiwrapper_immersed.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_fsi_str_model_evaluator_partitioned.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_structure_aux.hpp"

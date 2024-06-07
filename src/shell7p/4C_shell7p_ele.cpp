@@ -7,7 +7,7 @@
 #include "4C_shell7p_ele.hpp"
 
 #include "4C_comm_utils_factory.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_mat_so3_material.hpp"
 #include "4C_shell7p_ele_factory.hpp"
 #include "4C_shell7p_ele_interface_serializable.hpp"

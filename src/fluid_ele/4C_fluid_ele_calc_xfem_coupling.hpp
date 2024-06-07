@@ -29,9 +29,9 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_inpar_xfem.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_fixedsizeblockmatrix.hpp"
 
 FOUR_C_NAMESPACE_OPEN

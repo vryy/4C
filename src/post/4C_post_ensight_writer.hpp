@@ -13,8 +13,8 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_element.hpp"  // due to DiscretizationType
-#include "4C_post_writer_base.hpp"                    // base class PostWriterBase
+#include "4C_fem_general_element.hpp"  // due to DiscretizationType
+#include "4C_post_writer_base.hpp"     // base class PostWriterBase
 
 #include <Epetra_Map.h>
 

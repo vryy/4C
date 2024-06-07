@@ -11,12 +11,12 @@
 
 #include "4C_fluid_ele_intfaces_calc.hpp"
 
+#include "4C_fem_discretization_faces.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_calc_intfaces_stab.hpp"
 #include "4C_fluid_ele_parameter_intface.hpp"
 #include "4C_fluid_ele_parameter_std.hpp"
 #include "4C_fluid_ele_parameter_timint.hpp"
-#include "4C_lib_discret_faces.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>

@@ -28,7 +28,7 @@
 #include "4C_contact_wear_interface.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_volmortar.hpp"
-#include "4C_discretization_fem_general_element.hpp"
+#include "4C_fem_general_element.hpp"
 #include "4C_fs3i_biofilm_fsi_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_ale.hpp"

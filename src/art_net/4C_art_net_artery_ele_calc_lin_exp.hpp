@@ -17,7 +17,7 @@
 #include "4C_art_net_artery.hpp"
 #include "4C_art_net_artery_ele_action.hpp"
 #include "4C_art_net_artery_ele_calc.hpp"
-#include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
+#include "4C_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 
 FOUR_C_NAMESPACE_OPEN

@@ -11,9 +11,9 @@
 
 #include "4C_xfem_utils.hpp"
 
-#include "4C_discretization_fem_general_element.hpp"
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_lib_discret_faces.hpp"
+#include "4C_fem_discretization_faces.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_extract_values.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_mat_list.hpp"
 #include "4C_mat_material_factory.hpp"

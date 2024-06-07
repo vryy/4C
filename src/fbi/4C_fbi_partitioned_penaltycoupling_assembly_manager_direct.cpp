@@ -15,9 +15,9 @@ be directly assembled into the global matrices.
 
 #include "4C_beaminteraction_calc_utils.hpp"
 #include "4C_beaminteraction_contact_pair.hpp"
-#include "4C_discretization_fem_general_element.hpp"
 #include "4C_fbi_calc_utils.hpp"
 #include "4C_fbi_fluid_assembly_strategy.hpp"
+#include "4C_fem_general_element.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_sparsematrix.hpp"

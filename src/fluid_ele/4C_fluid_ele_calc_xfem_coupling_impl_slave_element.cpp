@@ -10,7 +10,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "4C_cut_position.hpp"
-#include "4C_discretization_fem_general_extract_values.hpp"
+#include "4C_fem_general_extract_values.hpp"
 #include "4C_fluid_ele_calc_xfem_coupling_impl.hpp"
 #include "4C_xfem_interface_utils.hpp"
 

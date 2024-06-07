@@ -10,7 +10,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_element.hpp"
+#include "4C_fem_general_element.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_solid_3D_ele_properties.hpp"
 

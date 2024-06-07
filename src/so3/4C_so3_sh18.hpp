@@ -10,8 +10,8 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_element.hpp"
-#include "4C_discretization_fem_general_elementtype.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_elementtype.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_mat_material_factory.hpp"
 #include "4C_material_base.hpp"

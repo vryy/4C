@@ -22,9 +22,9 @@ convection-diffusion-reaction equation E.Burman, M.A.Fernandez Comput. Methods A
 
 #include "4C_fluid_ele_calc_intfaces_stab.hpp"
 
-#include "4C_discretization_fem_general_utils_boundary_integration.hpp"
-#include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
-#include "4C_discretization_fem_general_utils_gder2.hpp"
+#include "4C_fem_general_utils_boundary_integration.hpp"
+#include "4C_fem_general_utils_fem_shapefunctions.hpp"
+#include "4C_fem_general_utils_gder2.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_fluid.hpp"
 #include "4C_mat_fluidporo.hpp"

@@ -15,7 +15,7 @@
 #include "4C_cut_output.hpp"
 #include "4C_cut_side.hpp"
 #include "4C_cut_volumecell.hpp"
-#include "4C_discretization_geometry_element_volume.hpp"
+#include "4C_fem_geometry_element_volume.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

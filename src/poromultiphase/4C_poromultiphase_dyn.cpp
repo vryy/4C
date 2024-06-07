@@ -9,9 +9,9 @@
 
 #include "4C_poromultiphase_dyn.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_poromultiphase.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_poromultiphase_base.hpp"
 #include "4C_poromultiphase_utils.hpp"
 

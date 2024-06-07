@@ -8,7 +8,7 @@
 
 #include "4C_so3_element_service.hpp"
 
-#include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_so3_hex8.hpp"
 #include "4C_so3_tet10.hpp"

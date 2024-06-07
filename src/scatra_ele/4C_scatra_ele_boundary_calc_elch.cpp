@@ -9,8 +9,8 @@
 /*----------------------------------------------------------------------*/
 #include "4C_scatra_ele_boundary_calc_elch.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_scatra_ele_parameter_elch.hpp"
 #include "4C_scatra_ele_parameter_timint.hpp"
 #include "4C_scatra_ele_utils_elch.hpp"

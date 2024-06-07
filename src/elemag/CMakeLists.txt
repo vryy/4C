@@ -8,7 +8,6 @@ set(_dependencies
     cut
     global_data
     inpar
-    lib
     mat
     scatra
     scatra_ele

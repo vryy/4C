@@ -15,9 +15,9 @@ mesh
 #include "4C_cut_parallel.hpp"
 #include "4C_cut_point_impl.hpp"
 #include "4C_cut_volumecell.hpp"
-#include "4C_discretization_geometry_element_volume.hpp"
-#include "4C_discretization_geometry_searchtree.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_geometry_element_volume.hpp"
+#include "4C_fem_geometry_searchtree.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

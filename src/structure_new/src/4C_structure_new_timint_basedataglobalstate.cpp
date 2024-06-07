@@ -13,10 +13,10 @@
 
 #include "4C_beam3_base.hpp"
 #include "4C_contact_meshtying_abstract_strategy.hpp"
-#include "4C_discretization_fem_general_largerotations.hpp"
+#include "4C_fem_discretization_utils.hpp"
+#include "4C_fem_general_largerotations.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_contact.hpp"
-#include "4C_lib_utils_discret.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"

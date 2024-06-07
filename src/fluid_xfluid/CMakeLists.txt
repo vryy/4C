@@ -11,7 +11,6 @@ set(_dependencies
     global_data
     inpar
     levelset
-    lib
     mat
     xfem
     )

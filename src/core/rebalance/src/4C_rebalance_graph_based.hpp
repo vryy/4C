@@ -13,7 +13,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_geometric_search_params.hpp"
+#include "4C_fem_geometric_search_params.hpp"
 
 #include <Epetra_CrsGraph.h>
 #include <Epetra_Map.h>

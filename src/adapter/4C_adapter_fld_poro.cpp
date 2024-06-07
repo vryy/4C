@@ -13,8 +13,8 @@
 /*----------------------------------------------------------------------*/
 #include "4C_adapter_fld_poro.hpp"
 
-#include "4C_discretization_condition_utils.hpp"
-#include "4C_discretization_fem_general_assemblestrategy.hpp"
+#include "4C_fem_condition_utils.hpp"
+#include "4C_fem_general_assemblestrategy.hpp"
 #include "4C_fluid_ele.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_implicit_integration.hpp"

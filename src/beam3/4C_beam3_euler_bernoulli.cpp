@@ -11,8 +11,8 @@
 #include "4C_beam3_euler_bernoulli.hpp"
 
 #include "4C_beaminteraction_periodic_boundingbox.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_io_linedefinition.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_utils_exceptions.hpp"

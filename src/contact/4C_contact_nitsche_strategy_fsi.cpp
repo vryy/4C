@@ -14,7 +14,7 @@
 #include "4C_contact_element.hpp"
 #include "4C_contact_interface.hpp"
 #include "4C_contact_nitsche_integrator_fsi.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_mortar_projector.hpp"
 
 FOUR_C_NAMESPACE_OPEN

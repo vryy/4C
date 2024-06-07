@@ -8,9 +8,9 @@
 */
 /*---------------------------------------------------------------------------*/
 
-#include "4C_discretization_fem_general_element.hpp"
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_extract_values.hpp"
 #include "4C_mat_material_factory.hpp"
 #include "4C_material_base.hpp"
 #include "4C_structure_new_elements_paramsinterface.hpp"

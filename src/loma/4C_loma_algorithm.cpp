@@ -12,7 +12,7 @@
 
 #include "4C_loma_algorithm.hpp"
 
-#include "4C_discretization_fem_general_assemblestrategy.hpp"
+#include "4C_fem_general_assemblestrategy.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_timint_loma.hpp"
 #include "4C_global_data.hpp"

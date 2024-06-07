@@ -12,9 +12,9 @@
 
 #include "4C_fluid_rotsym_periodicbc_utils.hpp"
 
-#include "4C_discretization_condition.hpp"
-#include "4C_discretization_fem_general_node.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_condition.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_node.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

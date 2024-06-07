@@ -14,9 +14,9 @@
 
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_mortar.hpp"
-#include "4C_discretization_condition.hpp"
-#include "4C_discretization_fem_general_element.hpp"
-#include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
+#include "4C_fem_condition.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_inpar_s2i.hpp"
 #include "4C_inpar_scatra.hpp"
 #include "4C_io_runtime_csv_writer.hpp"

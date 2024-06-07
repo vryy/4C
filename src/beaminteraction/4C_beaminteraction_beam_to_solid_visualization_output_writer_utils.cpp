@@ -12,10 +12,10 @@
 
 #include "4C_beaminteraction_beam_to_solid_visualization_output_writer_visualization.hpp"
 #include "4C_beaminteraction_calc_utils.hpp"
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_extract_values.hpp"
+#include "4C_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_geometry_pair_element_faces.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 
 FOUR_C_NAMESPACE_OPEN

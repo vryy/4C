@@ -14,8 +14,8 @@ MATLAB, PGFPlot or other tools.
 #include "4C_contact_aug_plot.hpp"
 
 #include "4C_contact_aug_strategy.hpp"
-#include "4C_discretization_fem_general_element.hpp"
-#include "4C_discretization_fem_general_node.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_inpar_contact.hpp"
 #include "4C_io_every_iteration_writer.hpp"
 #include "4C_io_pstream.hpp"

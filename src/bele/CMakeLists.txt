@@ -5,7 +5,6 @@ set(_dependencies
     config
     core
     global_data
-    lib
     mat
     so3
     )

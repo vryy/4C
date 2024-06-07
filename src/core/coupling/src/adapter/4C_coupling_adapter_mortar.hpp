@@ -14,7 +14,7 @@
 #include "4C_config.hpp"
 
 #include "4C_coupling_adapter_base.hpp"
-#include "4C_discretization_fem_general_shape_function_type.hpp"
+#include "4C_fem_general_shape_function_type.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Epetra_CrsMatrix.h>

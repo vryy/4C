@@ -13,8 +13,8 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
-#include "4C_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
+#include "4C_fem_general_utils_fem_shapefunctions.hpp"
+#include "4C_fem_general_utils_nurbs_shapefunctions.hpp"
 #include "4C_mortar_element.hpp"
 
 FOUR_C_NAMESPACE_OPEN

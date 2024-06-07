@@ -10,8 +10,8 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_element.hpp"
-#include "4C_discretization_fem_general_utils_gausspoints.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_utils_gausspoints.hpp"
 #include "4C_solid_3D_ele_calc_interface.hpp"
 #include "4C_solid_3D_ele_interface_serializable.hpp"
 #include "4C_solid_3D_ele_utils.hpp"

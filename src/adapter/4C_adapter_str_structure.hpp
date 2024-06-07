@@ -16,7 +16,7 @@
 #include "4C_config.hpp"
 
 #include "4C_adapter_field.hpp"
-#include "4C_discretization_fem_general_elements_paramsinterface.hpp"
+#include "4C_fem_general_elements_paramsinterface.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_utils_result_test.hpp"
 

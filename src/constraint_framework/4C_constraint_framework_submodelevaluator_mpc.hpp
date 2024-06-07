@@ -14,9 +14,9 @@
 #include "4C_config.hpp"
 
 #include "4C_constraint_framework_submodelevaluator_base.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_inpar_mpc_rve.hpp"
 #include "4C_io_pstream.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_structure_new_model_evaluator_generic.hpp"
 
 #include <boost/algorithm/string.hpp>

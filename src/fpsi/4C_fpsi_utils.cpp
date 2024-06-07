@@ -17,8 +17,8 @@
 #include "4C_fpsi_utils.hpp"
 
 #include "4C_ale_utils_clonestrategy.hpp"
-#include "4C_discretization_condition_selector.hpp"
-#include "4C_discretization_fem_general_utils_createdis.hpp"
+#include "4C_fem_condition_selector.hpp"
+#include "4C_fem_general_utils_createdis.hpp"
 #include "4C_fpsi_monolithic_plain.hpp"
 #include "4C_fsi_utils.hpp"
 #include "4C_global_data.hpp"

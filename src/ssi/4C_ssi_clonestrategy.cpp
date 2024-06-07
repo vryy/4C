@@ -11,9 +11,9 @@
 #include "4C_ssi_clonestrategy.hpp"
 
 #include "4C_adapter_structure_scatra_ele.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_ssi.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_material_parameter_base.hpp"
 #include "4C_scatra_ele.hpp"

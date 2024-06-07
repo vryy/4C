@@ -18,7 +18,7 @@
 #include "4C_cardiovascular0d_respiratory_syspulperiphcirculation.hpp"
 #include "4C_cardiovascular0d_resulttest.hpp"
 #include "4C_cardiovascular0d_syspulcirculation.hpp"
-#include "4C_discretization_condition.hpp"
+#include "4C_fem_condition.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_linalg_mapextractor.hpp"

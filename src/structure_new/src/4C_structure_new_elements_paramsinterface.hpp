@@ -16,10 +16,10 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_elements_paramsinterface.hpp"  // base class
-#include "4C_inpar_browniandyn.hpp"                                    // enums
-#include "4C_inpar_structure.hpp"                                      // enums
-#include "4C_solver_nonlin_nox_enum_lists.hpp"                         // enums
+#include "4C_fem_general_elements_paramsinterface.hpp"  // base class
+#include "4C_inpar_browniandyn.hpp"                     // enums
+#include "4C_inpar_structure.hpp"                       // enums
+#include "4C_solver_nonlin_nox_enum_lists.hpp"          // enums
 #include "4C_structure_new_enum_lists.hpp"
 
 #include <Epetra_MultiVector.h>

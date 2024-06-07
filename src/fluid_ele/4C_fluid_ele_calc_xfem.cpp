@@ -13,7 +13,7 @@
 #include "4C_cut_boundarycell.hpp"
 #include "4C_cut_position.hpp"
 #include "4C_cut_volumecell.hpp"
-#include "4C_discretization_condition_utils.hpp"
+#include "4C_fem_condition_utils.hpp"
 #include "4C_fluid_ele.hpp"
 #include "4C_fluid_ele_parameter_xfem.hpp"
 #include "4C_fluid_functions.hpp"

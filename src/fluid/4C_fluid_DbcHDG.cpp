@@ -9,12 +9,12 @@
 
 #include "4C_fluid_DbcHDG.hpp"
 
+#include "4C_fem_discretization_hdg.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_calc.hpp"
 #include "4C_fluid_ele_calc_hdg.hpp"
 #include "4C_fluid_ele_hdg.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret_hdg.hpp"
 #include "4C_utils_parameter_list.hpp"
 
 FOUR_C_NAMESPACE_OPEN

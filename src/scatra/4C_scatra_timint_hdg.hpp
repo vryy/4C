@@ -11,7 +11,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_lib_discret_hdg.hpp"
+#include "4C_fem_discretization_hdg.hpp"
 #include "4C_scatra_timint_genalpha.hpp"
 
 FOUR_C_NAMESPACE_OPEN

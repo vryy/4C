@@ -17,8 +17,8 @@ the number of dofs per node when multiple sets of degrees of freedom per node ha
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_dofset_fixed_size.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_dofset_fixed_size.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

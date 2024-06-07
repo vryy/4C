@@ -11,7 +11,7 @@
 #include "4C_cut_parentintersection.hpp"
 
 #include "4C_cut_volumecell.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

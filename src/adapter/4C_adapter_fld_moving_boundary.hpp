@@ -15,7 +15,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_utils_result_test.hpp"
 
 FOUR_C_NAMESPACE_OPEN

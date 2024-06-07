@@ -14,9 +14,9 @@
 
 #include "4C_comm_utils_factory.hpp"
 #include "4C_elemag_ele_boundary_calc.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_discretization_faces.hpp"
 #include "4C_io_linedefinition.hpp"
-#include "4C_lib_discret.hpp"
-#include "4C_lib_discret_faces.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

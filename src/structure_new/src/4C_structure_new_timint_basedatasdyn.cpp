@@ -14,8 +14,8 @@
 #include "4C_structure_new_timint_basedatasdyn.hpp"
 
 #include "4C_beaminteraction_periodic_boundingbox.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_structure_new_utils.hpp"
 

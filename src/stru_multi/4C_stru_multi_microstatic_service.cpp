@@ -10,8 +10,8 @@
 /*---------------------------------------------------------------------*/
 
 
-#include "4C_discretization_condition.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_condition.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_stru_multi_microstatic.hpp"
 #include "4C_structure_aux.hpp"

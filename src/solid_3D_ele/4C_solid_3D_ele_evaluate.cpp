@@ -8,9 +8,9 @@ Evaluate(...), evaluate_neumann(...), etc.
 \level 1
 */
 
-#include "4C_discretization_fem_general_elements_paramsinterface.hpp"
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_elements_paramsinterface.hpp"
+#include "4C_fem_general_extract_values.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_solid_3D_ele.hpp"

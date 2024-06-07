@@ -13,7 +13,7 @@
 #include "4C_contact_nitsche_utils.hpp"
 #include "4C_contact_node.hpp"
 #include "4C_contact_paramsinterface.hpp"
-#include "4C_discretization_fem_general_utils_boundary_integration.hpp"
+#include "4C_fem_general_utils_boundary_integration.hpp"
 #include "4C_linalg_utils_densematrix_multiply.hpp"
 #include "4C_mat_elasthyper.hpp"
 #include "4C_so3_base.hpp"

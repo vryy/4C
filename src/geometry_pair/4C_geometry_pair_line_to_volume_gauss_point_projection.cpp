@@ -9,8 +9,8 @@
 
 #include "4C_geometry_pair_line_to_volume_gauss_point_projection.hpp"
 
-#include "4C_discretization_fem_general_element.hpp"
-#include "4C_discretization_fem_general_utils_integration.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_utils_integration.hpp"
 #include "4C_geometry_pair_element.hpp"
 #include "4C_geometry_pair_line_projection.hpp"
 #include "4C_geometry_pair_line_to_3D_evaluation_data.hpp"

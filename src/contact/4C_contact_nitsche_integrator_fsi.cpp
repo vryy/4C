@@ -12,7 +12,7 @@
 
 #include "4C_contact_element.hpp"
 #include "4C_contact_node.hpp"
-#include "4C_discretization_fem_general_utils_boundary_integration.hpp"
+#include "4C_fem_general_utils_boundary_integration.hpp"
 #include "4C_so3_hex8.hpp"
 #include "4C_so3_poro.hpp"
 #include "4C_solid_3D_ele.hpp"

@@ -12,8 +12,8 @@
 #include "4C_mortar_multifield_coupling.hpp"
 
 #include "4C_coupling_adapter_mortar.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
 #include "4C_mortar_utils.hpp"
 

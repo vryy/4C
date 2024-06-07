@@ -10,11 +10,11 @@
 
 #include "4C_fluid_xfluid_resulttest.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_fluid_xfluid.hpp"
 #include "4C_fluid_xfluid_fluid.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_linedefinition.hpp"
-#include "4C_lib_discret.hpp"
 
 #include <string>
 

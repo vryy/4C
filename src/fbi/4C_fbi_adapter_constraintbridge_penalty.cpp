@@ -14,7 +14,7 @@ approach for Fluid-beam interaction.
 #include "4C_fbi_beam_to_fluid_meshtying_params.hpp"
 #include "4C_fbi_partitioned_penaltycoupling_assembly_manager_direct.hpp"
 #include "4C_fbi_partitioned_penaltycoupling_assembly_manager_indirect.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_sparseoperator.hpp"
 

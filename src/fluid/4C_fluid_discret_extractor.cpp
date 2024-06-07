@@ -11,8 +11,8 @@
 
 #include "4C_fluid_discret_extractor.hpp"
 
-#include "4C_discretization_condition_periodic.hpp"
-#include "4C_discretization_dofset_transparent.hpp"
+#include "4C_fem_condition_periodic.hpp"
+#include "4C_fem_dofset_transparent.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_rebalance_graph_based.hpp"

@@ -10,8 +10,8 @@ transport within electrochemical substances
 /*--------------------------------------------------------------------------*/
 #include "4C_scatra_ele_sti_elch.hpp"
 
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_extract_values.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

@@ -11,7 +11,7 @@ Integrate internal face terms on an internal faces element
 *----------------------------------------------------------------------*/
 #include "4C_scatra_ele_hdg_intfaces_calc.hpp"
 
-#include "4C_lib_discret_faces.hpp"
+#include "4C_fem_discretization_faces.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_scatra_ele_action.hpp"
 

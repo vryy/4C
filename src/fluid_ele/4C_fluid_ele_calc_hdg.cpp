@@ -11,7 +11,7 @@
 
 #include "4C_fluid_ele_calc_hdg.hpp"
 
-#include "4C_discretization_fem_general_extract_values.hpp"
+#include "4C_fem_general_extract_values.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_calc.hpp"
 #include "4C_fluid_ele_parameter_std.hpp"

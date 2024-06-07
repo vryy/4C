@@ -9,9 +9,9 @@
 
 #include "4C_mortar_strategy_base.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_inpar_mortar.hpp"
 #include "4C_inpar_structure.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_mortar_defines.hpp"

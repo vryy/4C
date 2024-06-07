@@ -6,7 +6,6 @@ set(_dependencies
     contact_constitutivelaw
     core
     global_data
-    lib
     solver_nonlin_nox
     )
 

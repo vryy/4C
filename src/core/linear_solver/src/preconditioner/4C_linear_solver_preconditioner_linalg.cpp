@@ -11,8 +11,8 @@
 
 #include "4C_linear_solver_preconditioner_linalg.hpp"
 
-#include "4C_discretization_fem_general_node.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 

@@ -15,7 +15,7 @@
 #include "4C_adapter_str_structure_new.hpp"
 #include "4C_contact_nitsche_strategy_ssi.hpp"
 #include "4C_coupling_volmortar.hpp"
-#include "4C_discretization_fem_general_utils_createdis.hpp"
+#include "4C_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
 #include "4C_global_data_read.hpp"
 #include "4C_inpar_ssi.hpp"

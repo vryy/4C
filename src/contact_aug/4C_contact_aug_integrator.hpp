@@ -16,7 +16,7 @@
 
 #include "4C_contact_aug_integrator_policy.hpp"
 #include "4C_contact_integrator.hpp"
-#include "4C_discretization_fem_general_utils_integration.hpp"
+#include "4C_fem_general_utils_integration.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

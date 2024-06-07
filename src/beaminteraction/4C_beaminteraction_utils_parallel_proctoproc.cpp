@@ -12,7 +12,7 @@
 #include "4C_beaminteraction_utils_parallel_proctoproc.hpp"
 
 #include "4C_comm_exporter.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Epetra_MpiComm.h>

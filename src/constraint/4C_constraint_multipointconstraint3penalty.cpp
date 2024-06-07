@@ -9,10 +9,10 @@
 #include "4C_constraint_multipointconstraint3penalty.hpp"
 
 #include "4C_constraint_element3.hpp"
-#include "4C_discretization_condition_utils.hpp"
-#include "4C_discretization_dofset_transparent.hpp"
+#include "4C_fem_condition_utils.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_dofset_transparent.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"

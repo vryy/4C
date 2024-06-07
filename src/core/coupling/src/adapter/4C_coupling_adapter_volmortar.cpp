@@ -15,8 +15,8 @@
 
 #include "4C_coupling_volmortar.hpp"
 #include "4C_coupling_volmortar_utils.hpp"
-#include "4C_discretization_dofset_predefineddofnumber.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_dofset_predefineddofnumber.hpp"
 #include "4C_linalg_multiply.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"

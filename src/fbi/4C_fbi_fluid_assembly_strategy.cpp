@@ -12,8 +12,8 @@
 #include "4C_fbi_fluid_assembly_strategy.hpp"
 
 #include "4C_beam3_base.hpp"
-#include "4C_discretization_fem_general_element.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_element.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"

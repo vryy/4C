@@ -9,9 +9,9 @@
 /*----------------------------------------------------------------------*/
 #include "4C_scatra_timint_elch_scheme.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_scatra_timint_meshtying_strategy_base.hpp"
 #include "4C_utils_function_of_time.hpp"
 

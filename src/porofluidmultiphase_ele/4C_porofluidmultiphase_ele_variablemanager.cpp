@@ -9,8 +9,8 @@
 
 #include "4C_porofluidmultiphase_ele_variablemanager.hpp"
 
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_extract_values.hpp"
 #include "4C_mat_fluidporo_singlephase.hpp"
 #include "4C_porofluidmultiphase_ele_calc_utils.hpp"
 #include "4C_porofluidmultiphase_ele_parameter.hpp"

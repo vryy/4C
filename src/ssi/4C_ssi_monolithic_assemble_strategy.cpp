@@ -10,7 +10,7 @@
 #include "4C_adapter_str_ssiwrapper.hpp"
 #include "4C_contact_nitsche_strategy_ssi.hpp"
 #include "4C_coupling_adapter_converter.hpp"
-#include "4C_discretization_condition_locsys.hpp"
+#include "4C_fem_condition_locsys.hpp"
 #include "4C_io_control.hpp"
 #include "4C_linalg_matrixtransform.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"

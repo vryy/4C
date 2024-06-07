@@ -15,10 +15,10 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_utils_gausspoints.hpp"
-#include "4C_discretization_fem_general_utils_shapevalues_hdg.hpp"
 #include "4C_elemag_diff_ele.hpp"
 #include "4C_elemag_ele_interface.hpp"
+#include "4C_fem_general_utils_gausspoints.hpp"
+#include "4C_fem_general_utils_shapevalues_hdg.hpp"
 #include "4C_inpar_elemag.hpp"
 #include "4C_utils_singleton_owner.hpp"
 

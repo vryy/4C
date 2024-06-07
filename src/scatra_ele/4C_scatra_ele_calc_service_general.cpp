@@ -10,8 +10,8 @@
 /*----------------------------------------------------------------------*/
 
 #include "4C_coupling_volmortar_shape.hpp"
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_discretization_fem_general_utils_boundary_integration.hpp"
+#include "4C_fem_general_extract_values.hpp"
+#include "4C_fem_general_utils_boundary_integration.hpp"
 #include "4C_fluid_rotsym_periodicbc.hpp"
 #include "4C_global_data.hpp"
 #include "4C_mat_scatra_multiscale.hpp"

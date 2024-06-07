@@ -14,12 +14,12 @@
 #include "4C_adapter_scatra_fluid_coupling_algorithm.hpp"
 
 #include "4C_coupling_adapter_volmortar.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_fluid_turbulence_statistic_manager.hpp"
 #include "4C_fluid_xfluid.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_levelset_algorithm.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_xfem_discretization.hpp"
 
 FOUR_C_NAMESPACE_OPEN

@@ -9,7 +9,7 @@
 
 #include "4C_inpar_mpc_rve.hpp"
 
-#include "4C_discretization_condition_definition.hpp"
+#include "4C_fem_condition_definition.hpp"
 #include "4C_inpar_validparameters.hpp"
 
 FOUR_C_NAMESPACE_OPEN

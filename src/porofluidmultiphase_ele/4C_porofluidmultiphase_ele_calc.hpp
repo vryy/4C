@@ -11,8 +11,8 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_utils_integration.hpp"
-#include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
+#include "4C_fem_general_utils_integration.hpp"
+#include "4C_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_porofluidmultiphase_ele_action.hpp"
 #include "4C_porofluidmultiphase_ele_calc_utils.hpp"
 #include "4C_porofluidmultiphase_ele_interface.hpp"

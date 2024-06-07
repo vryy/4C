@@ -10,9 +10,9 @@
 
 #include "4C_geometry_pair_element_faces.hpp"
 
-#include "4C_discretization_fem_general_cell_type.hpp"
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
+#include "4C_fem_general_cell_type.hpp"
+#include "4C_fem_general_extract_values.hpp"
+#include "4C_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_geometry_pair_element_evaluation_functions.hpp"
 #include "4C_geometry_pair_scalar_types.hpp"
 #include "4C_inpar_geometry_pair.hpp"

@@ -14,8 +14,8 @@
 /* headers */
 #include "4C_config.hpp"
 
-#include "4C_discretization_condition.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_condition.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_structure_timint.hpp"
 
 #include <NOX_Direction_UserDefinedFactory.H>

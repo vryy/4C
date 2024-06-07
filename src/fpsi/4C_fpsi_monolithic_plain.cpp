@@ -18,7 +18,7 @@
 #include "4C_constraint_manager.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_converter.hpp"
-#include "4C_discretization_fem_general_assemblestrategy.hpp"
+#include "4C_fem_general_assemblestrategy.hpp"
 #include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_fpsi_monolithic.hpp"
 #include "4C_fpsi_utils.hpp"

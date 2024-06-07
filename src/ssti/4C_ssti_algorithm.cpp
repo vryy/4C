@@ -12,7 +12,7 @@
 #include "4C_adapter_str_factory.hpp"
 #include "4C_adapter_str_ssiwrapper.hpp"
 #include "4C_adapter_str_structure_new.hpp"
-#include "4C_discretization_fem_general_utils_createdis.hpp"
+#include "4C_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_ssti.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"

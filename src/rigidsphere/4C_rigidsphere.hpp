@@ -15,10 +15,10 @@
 #include "4C_config.hpp"
 
 #include "4C_beaminteraction_calc_utils.hpp"
-#include "4C_discretization_fem_general_elementtype.hpp"
-#include "4C_discretization_fem_general_largerotations.hpp"
-#include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
-#include "4C_discretization_fem_general_utils_integration.hpp"
+#include "4C_fem_general_elementtype.hpp"
+#include "4C_fem_general_largerotations.hpp"
+#include "4C_fem_general_utils_fem_shapefunctions.hpp"
+#include "4C_fem_general_utils_integration.hpp"
 
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>

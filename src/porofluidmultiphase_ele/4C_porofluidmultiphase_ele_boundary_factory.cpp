@@ -10,7 +10,7 @@
 
 #include "4C_porofluidmultiphase_ele_boundary_factory.hpp"
 
-#include "4C_discretization_fem_general_element.hpp"
+#include "4C_fem_general_element.hpp"
 #include "4C_global_data.hpp"
 #include "4C_porofluidmultiphase_ele_boundary_calc.hpp"
 #include "4C_porofluidmultiphase_ele_interface.hpp"

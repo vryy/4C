@@ -8,9 +8,9 @@
 
 #include "4C_adapter_porofluidmultiphase_wrapper.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_validparameters.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_porofluidmultiphase_timint_implicit.hpp"
 #include "4C_porofluidmultiphase_timint_ost.hpp"

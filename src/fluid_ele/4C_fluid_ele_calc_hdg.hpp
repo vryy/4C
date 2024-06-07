@@ -15,7 +15,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_utils_shapevalues_hdg.hpp"
+#include "4C_fem_general_utils_shapevalues_hdg.hpp"
 #include "4C_fluid_ele_hdg.hpp"
 #include "4C_fluid_ele_interface.hpp"
 #include "4C_inpar_fluid.hpp"

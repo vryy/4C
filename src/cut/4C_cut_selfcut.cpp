@@ -19,7 +19,7 @@
 #include "4C_cut_pointpool.hpp"
 #include "4C_cut_side.hpp"
 #include "4C_cut_triangulateFacet.hpp"
-#include "4C_discretization_geometry_searchtree.hpp"
+#include "4C_fem_geometry_searchtree.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

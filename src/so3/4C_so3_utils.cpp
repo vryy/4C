@@ -8,9 +8,9 @@
 
 #include "4C_so3_utils.hpp"
 
-#include "4C_discretization_fem_general_element.hpp"
-#include "4C_discretization_fem_general_fiber_node.hpp"
-#include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_fiber_node.hpp"
+#include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_linalg_utils_densematrix_svd.hpp"
 #include "4C_so3_prestress.hpp"
 

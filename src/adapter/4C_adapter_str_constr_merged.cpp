@@ -13,7 +13,7 @@
 #include "4C_adapter_str_constr_merged.hpp"
 
 #include "4C_constraint_manager.hpp"
-#include "4C_discretization_condition_utils.hpp"
+#include "4C_fem_condition_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_validparameters.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"

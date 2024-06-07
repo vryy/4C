@@ -22,7 +22,7 @@
 #include "4C_beaminteraction_str_model_evaluator_datastate.hpp"
 #include "4C_beaminteraction_utils_parallel_proctoproc.hpp"
 #include "4C_binstrategy_meshfree_multibin.hpp"
-#include "4C_discretization_geometry_intersection_math.hpp"
+#include "4C_fem_geometry_intersection_math.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_discretization_visualization_writer_nodes.hpp"

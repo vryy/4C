@@ -13,7 +13,7 @@
 #include "4C_coupling_matchingoctree.hpp"
 
 #include "4C_comm_exporter.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

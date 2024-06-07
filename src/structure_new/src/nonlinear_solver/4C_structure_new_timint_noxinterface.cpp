@@ -13,8 +13,8 @@
 
 #include "4C_structure_new_timint_noxinterface.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_io_pstream.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_sparseoperator.hpp"
 #include "4C_solver_nonlin_nox_aux.hpp"

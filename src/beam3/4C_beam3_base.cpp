@@ -12,8 +12,8 @@
 
 #include "4C_beaminteraction_calc_utils.hpp"
 #include "4C_beaminteraction_periodic_boundingbox.hpp"
-#include "4C_discretization_geometric_search_bounding_volume.hpp"
-#include "4C_discretization_geometric_search_params.hpp"
+#include "4C_fem_geometric_search_bounding_volume.hpp"
+#include "4C_fem_geometric_search_params.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_browniandyn.hpp"  // enums
 #include "4C_mat_beam_templated_material_generic.hpp"

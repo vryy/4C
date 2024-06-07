@@ -11,8 +11,8 @@
 
 #include "4C_adapter_fld_fluid_immersed.hpp"
 #include "4C_adapter_str_fsiwrapper_immersed.hpp"
-#include "4C_discretization_geometry_searchtree.hpp"
-#include "4C_discretization_geometry_searchtree_service.hpp"
+#include "4C_fem_geometry_searchtree.hpp"
+#include "4C_fem_geometry_searchtree_service.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_global_data.hpp"
 #include "4C_immersed_problem_fsi_partitioned_immersed.hpp"

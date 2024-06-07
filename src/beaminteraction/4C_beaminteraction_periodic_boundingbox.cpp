@@ -13,8 +13,8 @@
 
 #include "4C_binstrategy_utils.hpp"
 #include "4C_comm_utils_factory.hpp"
-#include "4C_discretization_dofset_independent.hpp"
-#include "4C_discretization_geometry_intersection_math.hpp"
+#include "4C_fem_dofset_independent.hpp"
+#include "4C_fem_geometry_intersection_math.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_binningstrategy.hpp"
 #include "4C_io.hpp"

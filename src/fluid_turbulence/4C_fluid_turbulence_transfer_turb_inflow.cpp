@@ -14,8 +14,8 @@ boundary of the actual domain
 #include "4C_fluid_turbulence_transfer_turb_inflow.hpp"
 
 #include "4C_coupling_matchingoctree.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_utils_function_of_time.hpp"
 
 FOUR_C_NAMESPACE_OPEN

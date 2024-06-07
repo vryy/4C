@@ -16,7 +16,7 @@
 #include "4C_beaminteraction_beam_to_sphere_contact_pair.hpp"
 #include "4C_beaminteraction_conditions.hpp"
 #include "4C_beaminteraction_contact_params.hpp"
-#include "4C_discretization_fem_general_element.hpp"
+#include "4C_fem_general_element.hpp"
 #include "4C_geometry_pair.hpp"
 #include "4C_rigidsphere.hpp"
 #include "4C_so3_base.hpp"

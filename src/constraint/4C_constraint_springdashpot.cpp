@@ -12,7 +12,7 @@
 
 #include "4C_adapter_coupling_nonlin_mortar.hpp"
 #include "4C_contact_interface.hpp"
-#include "4C_discretization_condition_utils.hpp"
+#include "4C_fem_condition_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_pstream.hpp"  // has to go before io.hpp

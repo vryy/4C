@@ -10,8 +10,8 @@
 #include "4C_sti_dyn.hpp"
 
 #include "4C_adapter_scatra_base_algorithm.hpp"
-#include "4C_discretization_dofset_predefineddofnumber.hpp"
-#include "4C_discretization_fem_general_utils_createdis.hpp"
+#include "4C_fem_dofset_predefineddofnumber.hpp"
+#include "4C_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
 #include "4C_scatra_resulttest_elch.hpp"
 #include "4C_scatra_timint_elch.hpp"

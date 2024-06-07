@@ -12,11 +12,11 @@
 #include "4C_fluid_ele.hpp"
 
 #include "4C_comm_utils_factory.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_fluid_ele_nullspace.hpp"
 #include "4C_fluid_ele_tds.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_linedefinition.hpp"
-#include "4C_lib_discret.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

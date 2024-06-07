@@ -10,9 +10,9 @@
 
 #include "4C_scatra_ele_calc_poro_reac_ECM.hpp"
 
-#include "4C_discretization_fem_general_element.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_element.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_mat_list_reactions.hpp"
 #include "4C_mat_scatra.hpp"
 #include "4C_mat_scatra_poro_ecm.hpp"

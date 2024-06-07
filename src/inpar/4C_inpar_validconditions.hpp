@@ -15,7 +15,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_condition_definition.hpp"
+#include "4C_fem_condition_definition.hpp"
 
 #include <Teuchos_Array.hpp>
 #include <Teuchos_RCP.hpp>

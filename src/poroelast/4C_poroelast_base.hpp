@@ -16,7 +16,7 @@
 #include "4C_adapter_field.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_volmortar.hpp"
-#include "4C_discretization_condition.hpp"
+#include "4C_fem_condition.hpp"
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_poroelast_utils.hpp"
 #include "4C_utils_exceptions.hpp"

@@ -11,9 +11,9 @@
 #include "4C_pasi_partitioned_twowaycoup.hpp"
 
 #include "4C_adapter_str_pasiwrapper.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_particle_algorithm.hpp"
 #include "4C_particle_wall_datastate.hpp"

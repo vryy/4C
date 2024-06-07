@@ -12,7 +12,7 @@
 
 #include "4C_fluid_volumetric_surfaceFlow_condition.hpp"
 
-#include "4C_discretization_condition_utils.hpp"
+#include "4C_fem_condition_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_utils_function.hpp"
 #include "4C_utils_function_of_time.hpp"

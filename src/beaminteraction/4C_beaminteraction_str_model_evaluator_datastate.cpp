@@ -14,7 +14,7 @@
 #include "4C_beaminteraction_str_model_evaluator_datastate.hpp"
 
 #include "4C_beaminteraction_periodic_boundingbox.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"

@@ -15,11 +15,11 @@ coupling matrices M and D first.
 
 #include "4C_beaminteraction_calc_utils.hpp"
 #include "4C_beaminteraction_contact_pair.hpp"
-#include "4C_discretization_fem_general_element.hpp"
 #include "4C_fbi_beam_to_fluid_meshtying_params.hpp"
 #include "4C_fbi_beam_to_fluid_mortar_manager.hpp"
 #include "4C_fbi_calc_utils.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_element.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_sparsematrix.hpp"

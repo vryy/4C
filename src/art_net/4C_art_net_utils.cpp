@@ -12,7 +12,7 @@
 #include "4C_art_net_artery.hpp"
 #include "4C_art_net_explicitintegration.hpp"
 #include "4C_art_net_impl_stationary.hpp"
-#include "4C_discretization_fem_general_utils_createdis.hpp"
+#include "4C_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_scatra_ele.hpp"

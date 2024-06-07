@@ -11,10 +11,10 @@
 
 #include "4C_fluid_ele_calc_poro.hpp"
 
-#include "4C_discretization_fem_general_element_integration_select.hpp"
-#include "4C_discretization_fem_general_utils_gder2.hpp"
-#include "4C_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
-#include "4C_discretization_geometry_position_array.hpp"
+#include "4C_fem_general_element_integration_select.hpp"
+#include "4C_fem_general_utils_gder2.hpp"
+#include "4C_fem_general_utils_nurbs_shapefunctions.hpp"
+#include "4C_fem_geometry_position_array.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_parameter_poro.hpp"
 #include "4C_fluid_ele_poro.hpp"

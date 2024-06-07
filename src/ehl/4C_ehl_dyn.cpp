@@ -13,8 +13,8 @@
 #include "4C_ehl_monolithic.hpp"
 #include "4C_ehl_partitioned.hpp"
 #include "4C_ehl_utils.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 

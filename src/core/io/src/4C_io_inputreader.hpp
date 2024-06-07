@@ -15,7 +15,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
 
 #include <Epetra_Comm.h>
 #include <Teuchos_ParameterList.hpp>

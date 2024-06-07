@@ -9,8 +9,8 @@
 
 #include "4C_scatra_timint_poromulti.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_io.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_poromultiphase_scatra_utils.hpp"
 
 FOUR_C_NAMESPACE_OPEN

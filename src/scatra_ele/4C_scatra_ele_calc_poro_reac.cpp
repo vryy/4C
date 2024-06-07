@@ -9,9 +9,9 @@
  *----------------------------------------------------------------------*/
 #include "4C_scatra_ele_calc_poro_reac.hpp"
 
-#include "4C_discretization_fem_general_element.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_element.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_mat_scatra.hpp"
 #include "4C_mat_structporo.hpp"
 #include "4C_mat_structporo_reaction_ecm.hpp"

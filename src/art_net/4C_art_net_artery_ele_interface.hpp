@@ -15,7 +15,7 @@
 
 #include "4C_art_net_artery.hpp"
 #include "4C_art_net_artery_ele_action.hpp"
-#include "4C_discretization_fem_general_element.hpp"
+#include "4C_fem_general_element.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 

@@ -11,10 +11,10 @@
 
 #include "4C_fluid_utils.hpp"
 
-#include "4C_discretization_dofset.hpp"
-#include "4C_discretization_dofset_interface.hpp"
-#include "4C_discretization_fem_general_l2_projection.hpp"
-#include "4C_discretization_fem_general_utils_superconvergent_patch_recovery.hpp"
+#include "4C_fem_dofset.hpp"
+#include "4C_fem_dofset_interface.hpp"
+#include "4C_fem_general_l2_projection.hpp"
+#include "4C_fem_general_utils_superconvergent_patch_recovery.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_implicit_integration.hpp"
 #include "4C_global_data.hpp"

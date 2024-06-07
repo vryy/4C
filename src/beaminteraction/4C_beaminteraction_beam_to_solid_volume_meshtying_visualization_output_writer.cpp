@@ -21,7 +21,7 @@
 #include "4C_beaminteraction_submodel_evaluator_beamcontact.hpp"
 #include "4C_beaminteraction_submodel_evaluator_beamcontact_assembly_manager_direct.hpp"
 #include "4C_beaminteraction_submodel_evaluator_beamcontact_assembly_manager_indirect.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_structure_new_timint_basedataglobalstate.hpp"
 

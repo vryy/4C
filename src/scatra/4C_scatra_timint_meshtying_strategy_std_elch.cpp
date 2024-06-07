@@ -9,7 +9,7 @@
 *----------------------------------------------------------------------*/
 #include "4C_scatra_timint_meshtying_strategy_std_elch.hpp"
 
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_scatra_utils_splitstrategy.hpp"
 

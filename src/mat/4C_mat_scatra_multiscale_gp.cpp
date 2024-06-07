@@ -9,7 +9,7 @@ transport problems
 /*----------------------------------------------------------------------*/
 #include "4C_mat_scatra_multiscale_gp.hpp"
 
-#include "4C_discretization_dofset_predefineddofnumber.hpp"
+#include "4C_fem_dofset_predefineddofnumber.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"

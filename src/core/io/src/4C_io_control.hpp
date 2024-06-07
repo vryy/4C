@@ -10,7 +10,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_shape_function_type.hpp"
+#include "4C_fem_general_shape_function_type.hpp"
 #include "4C_io_legacy_types.hpp"
 
 #include <Epetra_Comm.h>

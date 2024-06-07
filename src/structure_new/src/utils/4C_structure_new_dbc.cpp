@@ -11,9 +11,9 @@
 
 #include "4C_structure_new_dbc.hpp"
 
-#include "4C_discretization_condition_locsys.hpp"
+#include "4C_fem_condition_locsys.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"

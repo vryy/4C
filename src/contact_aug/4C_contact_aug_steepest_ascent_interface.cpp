@@ -12,7 +12,7 @@
 #include "4C_contact_aug_steepest_ascent_interface.hpp"
 
 #include "4C_contact_node.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

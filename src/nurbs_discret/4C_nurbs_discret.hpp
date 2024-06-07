@@ -14,8 +14,8 @@
 
 #include "4C_config.hpp"
 
-#include "4C_lib_discret.hpp"
-#include "4C_lib_utils_discret.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_discretization_utils.hpp"
 #include "4C_nurbs_discret_control_point.hpp"
 #include "4C_nurbs_discret_knotvector.hpp"
 

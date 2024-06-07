@@ -11,12 +11,12 @@
 
 #include "4C_fluid_ele_hdg.hpp"
 
+#include "4C_fem_discretization_faces.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_factory.hpp"
 #include "4C_fluid_ele_interface.hpp"
 #include "4C_inpar_fluid.hpp"
 #include "4C_io_linedefinition.hpp"
-#include "4C_lib_discret_faces.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

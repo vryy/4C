@@ -8,7 +8,7 @@
 #include "4C_shell7p_utils.hpp"
 
 #include "4C_comm_exporter.hpp"
-#include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_shell7p_ele.hpp"
 #include "4C_shell7p_ele_scatra.hpp"

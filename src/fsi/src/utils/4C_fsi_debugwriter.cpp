@@ -10,12 +10,12 @@
 #include "4C_adapter_fld_fluid_fsi.hpp"
 #include "4C_adapter_str_fsiwrapper.hpp"
 #include "4C_coupling_adapter.hpp"
-#include "4C_discretization_fem_general_utils_createdis.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_utils_createdis.hpp"
 #include "4C_fsi_monolithic.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
-#include "4C_lib_discret.hpp"
 
 #include <sstream>
 

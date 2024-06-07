@@ -1,0 +1,6 @@
+add_subdirectory(condition)
+add_subdirectory(discretization)
+add_subdirectory(dofset)
+add_subdirectory(general)
+add_subdirectory(geometric_search)
+add_subdirectory(geometry)

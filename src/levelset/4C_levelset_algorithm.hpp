@@ -13,9 +13,9 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_geometry_geo_utils.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_geometry_geo_utils.hpp"
 #include "4C_inpar_levelset.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_scatra_timint_implicit.hpp"
 

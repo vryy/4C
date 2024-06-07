@@ -9,8 +9,8 @@
 
 #include "4C_poroelast_scatra_utils.hpp"
 
-#include "4C_discretization_condition_utils.hpp"
-#include "4C_lib_discret_faces.hpp"
+#include "4C_fem_condition_utils.hpp"
+#include "4C_fem_discretization_faces.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_mat_fluidporo.hpp"

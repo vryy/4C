@@ -9,8 +9,8 @@
 #include "4C_poromultiphase_utils.hpp"
 
 #include "4C_adapter_poromultiphase.hpp"
-#include "4C_discretization_dofset_predefineddofnumber.hpp"
-#include "4C_discretization_fem_general_utils_createdis.hpp"
+#include "4C_fem_dofset_predefineddofnumber.hpp"
+#include "4C_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_bio.hpp"
 #include "4C_poroelast_utils.hpp"

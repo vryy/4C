@@ -16,7 +16,7 @@ bridge between the xfluid class and the cut-library
 #include "4C_config.hpp"
 
 #include "4C_cut_point.hpp"
-#include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
+#include "4C_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_xfem_coupling_base.hpp"
 #include "4C_xfem_utils.hpp"
 

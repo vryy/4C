@@ -10,8 +10,8 @@
 
 #include "4C_rebalance_print.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_io_pstream.hpp"
-#include "4C_lib_discret.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

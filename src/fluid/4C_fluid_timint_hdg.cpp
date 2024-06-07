@@ -11,7 +11,8 @@
 
 #include "4C_fluid_timint_hdg.hpp"
 
-#include "4C_discretization_dofset_predefineddofnumber.hpp"
+#include "4C_fem_discretization_hdg.hpp"
+#include "4C_fem_dofset_predefineddofnumber.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_hdg.hpp"
 #include "4C_fluid_ele_hdg_weak_comp.hpp"
@@ -19,7 +20,6 @@
 #include "4C_fluid_turbulence_hit_initial_field.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
-#include "4C_lib_discret_hdg.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 
 FOUR_C_NAMESPACE_OPEN

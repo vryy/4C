@@ -12,8 +12,8 @@
 #define FOUR_C_GEOMETRY_PAIR_LINE_TO_SURFACE_PATCH_GEOMETRY_TEST_HPP
 
 
+#include "4C_fem_discretization.hpp"
 #include "4C_geometry_pair_element_faces.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_so3_hex8.hpp"
 #include "4C_so3_surface.hpp"
 

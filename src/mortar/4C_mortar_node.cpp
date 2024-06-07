@@ -9,7 +9,7 @@
 
 #include "4C_mortar_node.hpp"
 
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_mortar_element.hpp"
 #include "4C_utils_exceptions.hpp"
 

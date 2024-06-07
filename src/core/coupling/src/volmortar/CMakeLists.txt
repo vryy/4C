@@ -7,7 +7,6 @@ set(_dependencies
     cut
     global_data
     inpar
-    lib
     mortar
     )
 

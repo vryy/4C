@@ -13,8 +13,8 @@
 
 #include "4C_adapter_ale.hpp"
 #include "4C_ale_resulttest.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 
 #include <Teuchos_RCP.hpp>
 

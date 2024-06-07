@@ -12,7 +12,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_element.hpp"
+#include "4C_fem_general_element.hpp"
 #include "4C_scatra_timint_elch.hpp"
 #include "4C_scatra_timint_meshtying_strategy_s2i.hpp"
 

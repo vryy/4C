@@ -8,8 +8,8 @@ formulation
 
 #include "4C_solid_3D_ele_calc.hpp"
 
-#include "4C_discretization_fem_general_cell_type.hpp"
-#include "4C_discretization_fem_general_cell_type_traits.hpp"
+#include "4C_fem_general_cell_type.hpp"
+#include "4C_fem_general_cell_type_traits.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_mat_so3_material.hpp"
 #include "4C_solid_3D_ele_calc_displacement_based.hpp"

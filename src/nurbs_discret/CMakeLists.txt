@@ -5,7 +5,6 @@ set(_dependencies
     config
     core
     global_data
-    lib
     )
 
 four_c_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

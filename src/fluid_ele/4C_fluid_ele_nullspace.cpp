@@ -4,7 +4,7 @@
 */
 #include "4C_fluid_ele_nullspace.hpp"
 
-#include "4C_discretization_fem_general_node.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_utils_exceptions.hpp"
 
 FOUR_C_NAMESPACE_OPEN

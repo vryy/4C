@@ -8,11 +8,11 @@
 *-----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
-#include "4C_discretization_fem_general_element.hpp"
-#include "4C_discretization_fem_general_element_integration_select.hpp"
-#include "4C_discretization_fem_general_utils_gauss_point_extrapolation.hpp"
-#include "4C_discretization_fem_general_utils_gausspoints.hpp"
-#include "4C_discretization_fem_general_utils_integration.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_element_integration_select.hpp"
+#include "4C_fem_general_utils_gauss_point_extrapolation.hpp"
+#include "4C_fem_general_utils_gausspoints.hpp"
+#include "4C_fem_general_utils_integration.hpp"
 #include "4C_so3_element_service.hpp"
 
 #include <vector>

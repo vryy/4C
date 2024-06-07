@@ -22,7 +22,7 @@
 #include "4C_cut_position.hpp"
 #include "4C_cut_sidehandle.hpp"
 #include "4C_cut_volumecell.hpp"
-#include "4C_discretization_fem_general_extract_values.hpp"
+#include "4C_fem_general_extract_values.hpp"
 #include "4C_fluid_ele.hpp"
 #include "4C_mat_newtonianfluid.hpp"
 #include "4C_mortar_element.hpp"

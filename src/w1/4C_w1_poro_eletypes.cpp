@@ -10,8 +10,8 @@
 
 #include "4C_w1_poro_eletypes.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_io_linedefinition.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_w1_poro.hpp"
 
 FOUR_C_NAMESPACE_OPEN

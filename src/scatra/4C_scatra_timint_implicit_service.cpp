@@ -9,7 +9,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "4C_coupling_adapter.hpp"
-#include "4C_discretization_fem_general_utils_superconvergent_patch_recovery.hpp"
+#include "4C_fem_general_utils_superconvergent_patch_recovery.hpp"
 #include "4C_fluid_rotsym_periodicbc_utils.hpp"
 #include "4C_fluid_turbulence_dyn_smag.hpp"
 #include "4C_fluid_turbulence_dyn_vreman.hpp"

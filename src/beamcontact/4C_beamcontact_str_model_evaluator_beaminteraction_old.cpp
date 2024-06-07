@@ -11,8 +11,8 @@
 #include "4C_beamcontact_str_model_evaluator_beaminteraction_old.hpp"
 
 #include "4C_beamcontact_beam3contact_manager.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_io.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_sparseoperator.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"

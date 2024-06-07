@@ -15,7 +15,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_dofset_fixed_size.hpp"
+#include "4C_fem_dofset_fixed_size.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

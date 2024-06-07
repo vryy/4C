@@ -12,7 +12,7 @@ thereby builds the bridge between the xfluid class and the cut-library
 
 #include "4C_xfem_coupling_base.hpp"
 
-#include "4C_discretization_condition_utils.hpp"
+#include "4C_fem_condition_utils.hpp"
 #include "4C_fluid_ele_parameter_xfem.hpp"
 #include "4C_mat_newtonianfluid.hpp"
 #include "4C_utils_function.hpp"

@@ -13,7 +13,7 @@
 #include "4C_config.hpp"
 
 #include "4C_adapter_algorithmbase.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_ssi_str_model_evaluator_base.hpp"
 
 #include <Epetra_Vector.h>

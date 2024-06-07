@@ -15,7 +15,7 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_exporter.hpp"
-#include "4C_discretization_fem_general_elementtype.hpp"
+#include "4C_fem_general_elementtype.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 
 #include <Epetra_MpiComm.h>

@@ -10,8 +10,8 @@
  *---------------------------------------------------------------------------*/
 #include "4C_particle_wall_result_test.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_io_linedefinition.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_particle_wall_datastate.hpp"
 #include "4C_particle_wall_interface.hpp"
 

@@ -27,7 +27,7 @@
 #include "4C_config.hpp"
 
 #include "4C_adapter_scatra_wrapper.hpp"
-#include "4C_discretization_condition.hpp"
+#include "4C_fem_condition.hpp"
 #include "4C_inpar_fluid.hpp"
 #include "4C_inpar_scatra.hpp"
 #include "4C_io_runtime_csv_writer.hpp"

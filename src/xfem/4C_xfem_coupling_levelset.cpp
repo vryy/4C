@@ -12,9 +12,9 @@ bridge between the xfluid class and the cut-library
 #include "4C_xfem_coupling_levelset.hpp"
 
 #include "4C_cut_cutwizard.hpp"
-#include "4C_discretization_condition_utils.hpp"
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_discretization_fem_general_l2_projection.hpp"
+#include "4C_fem_condition_utils.hpp"
+#include "4C_fem_general_extract_values.hpp"
+#include "4C_fem_general_l2_projection.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_inpar_fluid.hpp"
 #include "4C_inpar_xfem.hpp"

@@ -11,9 +11,9 @@
 
 #include "4C_scatra_timint_cardiac_monodomain_scheme.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_scatra_ele_action.hpp"
 
 FOUR_C_NAMESPACE_OPEN

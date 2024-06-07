@@ -13,7 +13,7 @@
 #include "4C_config.hpp"
 
 #include "4C_beaminteraction_beam_to_beam_contact_defines.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 

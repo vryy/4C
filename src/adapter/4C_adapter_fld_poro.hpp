@@ -16,7 +16,7 @@
 #include "4C_config.hpp"
 
 #include "4C_adapter_fld_fluid_fpsi.hpp"
-#include "4C_discretization_condition.hpp"
+#include "4C_fem_condition.hpp"
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_poroelast_utils.hpp"
 

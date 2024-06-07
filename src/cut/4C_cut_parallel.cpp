@@ -13,7 +13,7 @@
 #include "4C_comm_pack_buffer.hpp"
 #include "4C_cut_output.hpp"
 #include "4C_cut_volumecell.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
 
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>

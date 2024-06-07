@@ -10,7 +10,7 @@
 #include "4C_geometry_pair_line_to_surface.hpp"
 
 #include "4C_beam3_base.hpp"
-#include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
+#include "4C_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_geometry_pair_constants.hpp"
 #include "4C_geometry_pair_element.hpp"
 #include "4C_geometry_pair_element_evaluation_functions.hpp"

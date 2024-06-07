@@ -11,7 +11,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_dofset_interface.hpp"
+#include "4C_fem_dofset_interface.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
 
 #include <Epetra_Comm.h>

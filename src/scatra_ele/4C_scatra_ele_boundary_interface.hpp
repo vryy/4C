@@ -12,8 +12,8 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_condition.hpp"
-#include "4C_discretization_fem_general_element.hpp"
+#include "4C_fem_condition.hpp"
+#include "4C_fem_general_element.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 

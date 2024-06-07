@@ -9,7 +9,7 @@
 #define FOUR_C_SOLID_3D_ELE_NEUMANN_EVALUATOR_HPP
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_element.hpp"
+#include "4C_fem_general_element.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 
 #include <vector>

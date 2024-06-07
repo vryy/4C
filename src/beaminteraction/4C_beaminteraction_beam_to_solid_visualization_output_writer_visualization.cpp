@@ -11,9 +11,9 @@
 #include "4C_beaminteraction_beam_to_solid_visualization_output_writer_visualization.hpp"
 
 #include "4C_comm_utils.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_visualization_manager.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_structure_new_timint_basedataio_runtime_vtk_output.hpp"
 

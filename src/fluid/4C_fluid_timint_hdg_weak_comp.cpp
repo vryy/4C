@@ -9,13 +9,13 @@
 
 #include "4C_fluid_timint_hdg_weak_comp.hpp"
 
-#include "4C_discretization_dofset_predefineddofnumber.hpp"
+#include "4C_fem_discretization_hdg.hpp"
+#include "4C_fem_dofset_predefineddofnumber.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_hdg_weak_comp.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
-#include "4C_lib_discret_hdg.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_mat_fluid_weakly_compressible.hpp"
 #include "4C_mat_par_bundle.hpp"

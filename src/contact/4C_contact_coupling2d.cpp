@@ -16,7 +16,7 @@
 #include "4C_contact_integrator_factory.hpp"
 #include "4C_contact_interpolator.hpp"
 #include "4C_contact_node.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_utils_densematrix_inverse.hpp"
 #include "4C_linalg_utils_densematrix_multiply.hpp"

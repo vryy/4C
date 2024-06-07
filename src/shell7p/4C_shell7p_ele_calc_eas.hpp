@@ -9,8 +9,8 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_element_integration_select.hpp"
-#include "4C_discretization_fem_general_utils_gausspoints.hpp"
+#include "4C_fem_general_element_integration_select.hpp"
+#include "4C_fem_general_utils_gausspoints.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_shell7p_ele_calc_interface.hpp"

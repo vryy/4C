@@ -14,8 +14,8 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_fiber_node_holder.hpp"
-#include "4C_discretization_fem_general_utils_polynomial.hpp"
+#include "4C_fem_general_fiber_node_holder.hpp"
+#include "4C_fem_general_utils_polynomial.hpp"
 #include "4C_scatra_ele_calc_hdg.hpp"
 #include "4C_scatra_ele_hdg.hpp"
 

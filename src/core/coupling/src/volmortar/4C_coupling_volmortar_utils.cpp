@@ -10,8 +10,8 @@
 #include "4C_coupling_volmortar_utils.hpp"
 
 #include "4C_coupling_volmortar.hpp"
-#include "4C_discretization_fem_general_element_center.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_element_center.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

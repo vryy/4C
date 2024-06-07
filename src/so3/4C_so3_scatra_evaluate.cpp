@@ -8,8 +8,8 @@
 
 *----------------------------------------------------------------------*/
 
-#include "4C_discretization_fem_general_element_center.hpp"
-#include "4C_discretization_fem_general_extract_values.hpp"
+#include "4C_fem_general_element_center.hpp"
+#include "4C_fem_general_extract_values.hpp"
 #include "4C_mat_so3_material.hpp"
 #include "4C_so3_element_service.hpp"
 #include "4C_so3_scatra.hpp"

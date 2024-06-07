@@ -14,8 +14,8 @@
 
 #include "4C_constraint_lagpenconstraint_noxinterface.hpp"
 
-#include "4C_discretization_condition.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_condition.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_solver_nonlin_nox_aux.hpp"
 

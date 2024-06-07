@@ -12,11 +12,11 @@ to disk
 /* headers */
 #include "4C_io_discretization_visualization_writer_mesh.hpp"
 
-#include "4C_discretization_fem_general_element.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_element.hpp"
 #include "4C_io.hpp"
 #include "4C_io_element_vtk_cell_type_register.hpp"
 #include "4C_io_visualization_manager.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Epetra_FEVector.h>

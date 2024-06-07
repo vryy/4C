@@ -15,7 +15,7 @@ of the usual Lagrangian polynomials for standard transport elements
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_utils_polynomial.hpp"
+#include "4C_fem_general_utils_polynomial.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_scatra_ele.hpp"
 

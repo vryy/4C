@@ -17,7 +17,7 @@
 #include "4C_beaminteraction_beam_to_solid_surface_contact_params.hpp"
 #include "4C_beaminteraction_calc_utils.hpp"
 #include "4C_beaminteraction_contact_pair.hpp"
-#include "4C_discretization_fem_general_largerotations.hpp"
+#include "4C_fem_general_largerotations.hpp"
 #include "4C_geometry_pair.hpp"
 #include "4C_geometry_pair_element.hpp"
 #include "4C_geometry_pair_element_evaluation_functions.hpp"

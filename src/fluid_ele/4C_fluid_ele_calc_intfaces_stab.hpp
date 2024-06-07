@@ -25,7 +25,7 @@ convection-diffusion-reaction equation E.Burman, M.A.Fernandez Comput. Methods A
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_utils_gausspoints.hpp"
+#include "4C_fem_general_utils_gausspoints.hpp"
 #include "4C_fluid_ele.hpp"
 #include "4C_fluid_ele_parameter_intface.hpp"
 #include "4C_fluid_ele_parameter_std.hpp"

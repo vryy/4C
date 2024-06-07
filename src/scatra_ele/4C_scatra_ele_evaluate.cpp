@@ -8,7 +8,7 @@
 
 *----------------------------------------------------------------------*/
 
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_mat_elchmat.hpp"
 #include "4C_scatra_ele.hpp"
 #include "4C_scatra_ele_action.hpp"

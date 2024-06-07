@@ -8,9 +8,9 @@
 
 #include "4C_shell7p_ele_scatra_preevaluator.hpp"
 
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_discretization_fem_general_utils_integration.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_extract_values.hpp"
+#include "4C_fem_general_utils_integration.hpp"
 #include "4C_shell7p_ele_calc_lib.hpp"
 
 FOUR_C_NAMESPACE_OPEN

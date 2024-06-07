@@ -10,8 +10,8 @@
 
 #include "4C_scatra_ele_calc_multiporo_reac.hpp"
 
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_extract_values.hpp"
 #include "4C_mat_fluidporo_multiphase.hpp"
 #include "4C_mat_list.hpp"
 #include "4C_mat_list_reactions.hpp"

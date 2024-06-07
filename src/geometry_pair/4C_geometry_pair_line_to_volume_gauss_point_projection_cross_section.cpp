@@ -12,8 +12,8 @@ line.
 
 #include "4C_beam3_base.hpp"
 #include "4C_beam3_triad_interpolation_local_rotation_vectors.hpp"
-#include "4C_discretization_fem_general_element.hpp"
-#include "4C_discretization_fem_general_utils_integration.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_utils_integration.hpp"
 #include "4C_geometry_pair_element_evaluation_functions.hpp"
 #include "4C_geometry_pair_line_to_3D_evaluation_data.hpp"
 #include "4C_geometry_pair_utility_classes.hpp"

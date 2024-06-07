@@ -13,7 +13,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_dofset_transparent_independent.hpp"
+#include "4C_fem_dofset_transparent_independent.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

@@ -10,9 +10,9 @@
  *----------------------------------------------------------------------*/
 #include "4C_fpsi.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_fpsi_utils.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_poroelast_utils.hpp"
 
 FOUR_C_NAMESPACE_OPEN

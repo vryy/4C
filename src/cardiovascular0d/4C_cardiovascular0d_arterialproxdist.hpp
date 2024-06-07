@@ -29,7 +29,7 @@ valves with k_p -> 0
 #include "4C_config.hpp"
 
 #include "4C_cardiovascular0d.hpp"
-#include "4C_discretization_fem_general_utils_integration.hpp"
+#include "4C_fem_general_utils_integration.hpp"
 #include "4C_inpar_cardiovascular0d.hpp"
 
 #include <Epetra_FECrsMatrix.h>

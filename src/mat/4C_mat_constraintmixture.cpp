@@ -25,9 +25,9 @@ For a detailed description see:
 #include "4C_mat_constraintmixture.hpp"
 
 #include "4C_comm_utils.hpp"
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"  // for debug plotting with gmsh
-#include "4C_discretization_fem_general_utils_integration.hpp"  // for debug plotting with gmsh
+#include "4C_fem_general_extract_values.hpp"
+#include "4C_fem_general_utils_fem_shapefunctions.hpp"  // for debug plotting with gmsh
+#include "4C_fem_general_utils_integration.hpp"         // for debug plotting with gmsh
 #include "4C_global_data.hpp"
 #include "4C_inpar_structure.hpp"  // for pstime
 #include "4C_io_control.hpp"       // for debug plotting with gmsh

@@ -13,8 +13,8 @@
 #include "4C_config.hpp"
 
 #include "4C_adapter_art_net.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_inpar_bio.hpp"
-#include "4C_lib_discret.hpp"
 
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_TimeMonitor.hpp>

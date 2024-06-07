@@ -10,7 +10,6 @@ set(_dependencies
     geometry_pair
     global_data
     inpar
-    lib
     mat
     rigidsphere
     so3

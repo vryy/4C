@@ -10,10 +10,10 @@
 
 #include "4C_rebalance_graph_based.hpp"
 
-#include "4C_discretization_geometric_search_bounding_volume.hpp"
-#include "4C_discretization_geometric_search_distributed_tree.hpp"
-#include "4C_discretization_geometric_search_params.hpp"
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_geometric_search_bounding_volume.hpp"
+#include "4C_fem_geometric_search_distributed_tree.hpp"
+#include "4C_fem_geometric_search_params.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"

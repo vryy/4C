@@ -11,9 +11,9 @@
 /* headers */
 #include "4C_io_discretization_visualization_writer_nodes.hpp"
 
-#include "4C_discretization_fem_general_node.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_io_visualization_manager.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <utility>

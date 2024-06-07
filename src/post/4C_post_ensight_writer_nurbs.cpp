@@ -10,7 +10,7 @@
 
 
 
-#include "4C_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
+#include "4C_fem_general_utils_nurbs_shapefunctions.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_nurbs_discret.hpp"
 #include "4C_nurbs_discret_control_point.hpp"

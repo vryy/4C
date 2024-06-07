@@ -24,7 +24,7 @@
 #include "4C_beaminteraction_submodel_evaluator_generic.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_converter.hpp"
-#include "4C_discretization_fem_general_utils_createdis.hpp"
+#include "4C_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_beam_to_solid.hpp"
 #include "4C_inpar_beamcontact.hpp"

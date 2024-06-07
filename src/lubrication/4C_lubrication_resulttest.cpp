@@ -11,8 +11,8 @@
 
 #include "4C_lubrication_resulttest.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_io_linedefinition.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_lubrication_timint_implicit.hpp"
 
 FOUR_C_NAMESPACE_OPEN

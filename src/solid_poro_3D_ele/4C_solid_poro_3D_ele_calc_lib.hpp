@@ -11,9 +11,9 @@
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_element.hpp"
-#include "4C_discretization_fem_general_element_integration_select.hpp"
-#include "4C_discretization_fem_general_extract_values.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_element_integration_select.hpp"
+#include "4C_fem_general_extract_values.hpp"
 #include "4C_mat_fluidporo_multiphase.hpp"
 #include "4C_mat_structporo.hpp"
 #include "4C_solid_3D_ele_calc_lib.hpp"

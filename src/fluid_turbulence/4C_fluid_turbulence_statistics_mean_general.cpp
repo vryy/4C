@@ -14,9 +14,9 @@ means are computed as time averages
 #include "4C_fluid_turbulence_statistics_mean_general.hpp"
 
 #include "4C_comm_exporter.hpp"
-#include "4C_discretization_dofset.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_dofset.hpp"
 #include "4C_io.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 

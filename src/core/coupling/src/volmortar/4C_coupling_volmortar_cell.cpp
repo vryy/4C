@@ -11,7 +11,7 @@
  *---------------------------------------------------------------------*/
 #include "4C_coupling_volmortar_cell.hpp"
 
-#include "4C_discretization_fem_general_utils_fem_shapefunctions.hpp"
+#include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 
 FOUR_C_NAMESPACE_OPEN

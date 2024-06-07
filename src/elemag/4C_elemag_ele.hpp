@@ -17,11 +17,11 @@ Pack, Unpack, NumDofPerNode etc.
 
 #include "4C_config.hpp"
 
-#include "4C_discretization_fem_general_elementtype.hpp"
-#include "4C_discretization_fem_general_utils_gausspoints.hpp"
-#include "4C_discretization_fem_general_utils_integration.hpp"
-#include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
-#include "4C_discretization_fem_general_utils_polynomial.hpp"
+#include "4C_fem_general_elementtype.hpp"
+#include "4C_fem_general_utils_gausspoints.hpp"
+#include "4C_fem_general_utils_integration.hpp"
+#include "4C_fem_general_utils_local_connectivity_matrices.hpp"
+#include "4C_fem_general_utils_polynomial.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 
 #include <Teuchos_RCP.hpp>

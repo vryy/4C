@@ -9,7 +9,7 @@
 
 #include "4C_mortar_dofset.hpp"
 
-#include "4C_lib_discret.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_mortar_node.hpp"
 
 FOUR_C_NAMESPACE_OPEN

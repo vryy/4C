@@ -10,12 +10,12 @@
 
 #include "4C_porofluidmultiphase_dyn.hpp"
 
-#include "4C_discretization_dofset_predefineddofnumber.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_dofset_predefineddofnumber.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_bio.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_porofluidmultiphase_timint_implicit.hpp"
 #include "4C_porofluidmultiphase_timint_ost.hpp"
 #include "4C_porofluidmultiphase_utils.hpp"

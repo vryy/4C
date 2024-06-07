@@ -13,7 +13,7 @@
 #include "4C_beaminteraction_link.hpp"
 #include "4C_beaminteraction_link_beam3_reissner_line2_pinjointed.hpp"
 #include "4C_beaminteraction_link_truss.hpp"
-#include "4C_discretization_fem_general_largerotations.hpp"
+#include "4C_fem_general_largerotations.hpp"
 #include "4C_inpar_beaminteraction.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"

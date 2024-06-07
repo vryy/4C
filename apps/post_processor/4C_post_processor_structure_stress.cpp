@@ -9,9 +9,9 @@
 
 
 
-#include "4C_discretization_fem_general_utils_gauss_point_postprocess.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_general_utils_gauss_point_postprocess.hpp"
 #include "4C_io_legacy_table.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_utils_densematrix_eigen.hpp"
 #include "4C_post_common.hpp"

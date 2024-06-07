@@ -5,7 +5,7 @@
 
 #include "4C_so3_nullspace.hpp"
 
-#include "4C_discretization_fem_general_node.hpp"
+#include "4C_fem_general_node.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

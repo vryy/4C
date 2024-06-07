@@ -14,8 +14,8 @@ constraint discretization approach
 #include "4C_fbi_fluid_assembly_strategy.hpp"
 #include "4C_fbi_partitioned_penaltycoupling_assembly_manager_direct.hpp"
 #include "4C_fbi_partitioned_penaltycoupling_assembly_manager_indirect.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_inpar_fbi.hpp"
-#include "4C_lib_discret.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 /**

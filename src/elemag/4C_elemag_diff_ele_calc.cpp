@@ -11,13 +11,13 @@
 
 #include "4C_elemag_diff_ele_calc.hpp"
 
-#include "4C_discretization_fem_general_elementtype.hpp"
-#include "4C_discretization_fem_general_extract_values.hpp"
-#include "4C_discretization_fem_general_utils_boundary_integration.hpp"
 #include "4C_elemag_ele_action.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_fem_discretization_hdg.hpp"
+#include "4C_fem_general_elementtype.hpp"
+#include "4C_fem_general_extract_values.hpp"
+#include "4C_fem_general_utils_boundary_integration.hpp"
 #include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
-#include "4C_lib_discret_hdg.hpp"
 #include "4C_linalg_utils_densematrix_multiply.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_mat_electromagnetic.hpp"

@@ -13,10 +13,10 @@
 #include "4C_red_airways_tissue.hpp"
 
 #include "4C_adapter_str_redairway.hpp"
-#include "4C_discretization_condition.hpp"
+#include "4C_fem_condition.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
-#include "4C_lib_discret.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_red_airways_implicitintegration.hpp"
 
