@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief Testcases for the material_service functions
+\brief Testcases for the Material_service functions
 \level 2
 
 */
@@ -9,6 +9,7 @@
 #include <gtest/gtest.h>
 
 #include "4C_linalg_fixedsizematrix.hpp"
+#include "4C_linalg_four_tensor.hpp"
 #include "4C_mat_service.hpp"
 #include "4C_unittest_utils_assertions_test.hpp"
 
@@ -100,6 +101,131 @@ namespace
     Result_reference(5, 5) = -0.95275;
 
     FOUR_C_EXPECT_NEAR(Result, Result_reference, 1.0e-10);
+  }
+
+  TEST(MaterialServiceTest, TestComputeJ2)
+  {
+    // test the calculation of J2 invariant
+    Core::LinAlg::Matrix<3, 3> stress(false);
+    stress(0, 0) = 1.0;
+    stress(1, 1) = 2.0;
+    stress(2, 2) = 3.0;
+    stress(0, 1) = stress(1, 0) = 0.1;
+    stress(1, 2) = stress(2, 1) = 0.0;
+    stress(0, 2) = stress(2, 0) = 0.0;
+    const double j2 = Mat::ComputeJ2(stress);
+    const double j2_ref = 0.5 * (2 + 2 * 0.1 * 0.1);
+    EXPECT_NEAR(j2, j2_ref, 1.0e-10);
+  }
+
+  TEST(MaterialServiceTest, TestElasticTensor)
+  {
+    // test the calculation of fourth order elastic tensor and subroutine to transform 4th order
+    // tensor to Matrix
+    Core::LinAlg::FourTensor<3> Ce;
+    const double E = 2.0;
+    const double NU = 0.3;
+    Mat::CalculateLinearIsotropicElasticTensor(Ce, E, NU);
+
+    Core::LinAlg::Matrix<6, 6> De;
+    Mat::FourTensorToMatrix(Ce, De);
+
+    Core::LinAlg::Matrix<6, 6> De_ref;
+    const double c1 = E / ((1.00 + NU) * (1 - 2 * NU));
+    const double c2 = c1 * (1 - NU);
+    const double c3 = c1 * NU;
+    const double c4 = c1 * 0.5 * (1 - 2 * NU);
+
+    De_ref(0, 0) = c2;
+    De_ref(0, 1) = c3;
+    De_ref(0, 2) = c3;
+    De_ref(0, 3) = 0.;
+    De_ref(0, 4) = 0.;
+    De_ref(0, 5) = 0.;
+    De_ref(1, 0) = c3;
+    De_ref(1, 1) = c2;
+    De_ref(1, 2) = c3;
+    De_ref(1, 3) = 0.;
+    De_ref(1, 4) = 0.;
+    De_ref(1, 5) = 0.;
+    De_ref(2, 0) = c3;
+    De_ref(2, 1) = c3;
+    De_ref(2, 2) = c2;
+    De_ref(2, 3) = 0.;
+    De_ref(2, 4) = 0.;
+    De_ref(2, 5) = 0.;
+    De_ref(3, 0) = 0.;
+    De_ref(3, 1) = 0.;
+    De_ref(3, 2) = 0.;
+    De_ref(3, 3) = c4;
+    De_ref(3, 4) = 0.;
+    De_ref(3, 5) = 0.;
+    De_ref(4, 0) = 0.;
+    De_ref(4, 1) = 0.;
+    De_ref(4, 2) = 0.;
+    De_ref(4, 3) = 0.;
+    De_ref(4, 4) = c4;
+    De_ref(4, 5) = 0.;
+    De_ref(5, 0) = 0.;
+    De_ref(5, 1) = 0.;
+    De_ref(5, 2) = 0.;
+    De_ref(5, 3) = 0.;
+    De_ref(5, 4) = 0.;
+    De_ref(5, 5) = c4;
+
+    FOUR_C_EXPECT_NEAR(De, De_ref, 1.0e-10);
+  }
+
+  TEST(MaterialServiceTest, TestDeviatoricTensor)
+  {
+    // test the calculation of fourth order deviatoric tensor and contraction of fourth order tensor
+    // and Matrix
+    Core::LinAlg::FourTensor<3> Id;
+    Mat::CalculateDeviatoricProjectionTensor(Id);
+
+    Core::LinAlg::Matrix<3, 3> stress(false);
+    stress(0, 0) = 1.0;
+    stress(1, 1) = 2.0;
+    stress(2, 2) = 3.0;
+    stress(0, 1) = stress(1, 0) = 0.4;
+    stress(1, 2) = stress(2, 1) = 0.5;
+    stress(0, 2) = stress(2, 0) = 0.6;
+
+    Core::LinAlg::Matrix<3, 3> s_ref(false);
+    s_ref(0, 0) = -1.0;
+    s_ref(1, 1) = 0.0;
+    s_ref(2, 2) = 1.0;
+    s_ref(0, 1) = s_ref(1, 0) = 0.4;
+    s_ref(1, 2) = s_ref(2, 1) = 0.5;
+    s_ref(0, 2) = s_ref(2, 0) = 0.6;
+
+    Core::LinAlg::Matrix<3, 3> s;
+    Mat::AddContractionFourTensorMatrix(s, 1.0, Id, stress);
+
+    FOUR_C_EXPECT_NEAR(s, s_ref, 1.0e-10);
+  }
+
+  TEST(MaterialServiceTest, TestDyadicProductMatrixMatrix)
+  {
+    // test the dyadic product of two Matrices
+    Core::LinAlg::Matrix<3, 3> stress(false);
+    stress(0, 0) = 1.0;
+    stress(1, 1) = 2.0;
+    stress(2, 2) = 3.0;
+    stress(0, 1) = stress(1, 0) = 0.4;
+    stress(1, 2) = stress(2, 1) = 0.5;
+    stress(0, 2) = stress(2, 0) = 0.6;
+
+    Core::LinAlg::FourTensor<3> T;
+    Mat::AddDyadicProductMatrixMatrix(T, 1.0, stress, stress);
+
+    Core::LinAlg::Matrix<3, 3> result;
+    Mat::AddContractionFourTensorMatrix(result, 1.0, T, stress);
+
+    Core::LinAlg::Matrix<3, 3> result_ref = stress;
+    result_ref.Scale(std::pow(stress.Norm2(), 2));
+
+    FOUR_C_EXPECT_NEAR(result, result_ref, 1.0e-10);
   }
 
 }  // namespace
