@@ -35,6 +35,12 @@ namespace Mat
 {
 
   /*!
+   * @brief Returns the second invariant of the deviatoric stress tensor,
+   * \f$J_2 = \dfrac{1}{2} \mathbf(s) : \mathbf{s}\f$
+   */
+  double ComputeJ2(const Core::LinAlg::Matrix<3, 3>& stress);
+
+  /*!
    * @brief Multiply two 2nd order tensors A x B and add the result to a 4th order symmetric
    * material tensor in matrix notation
    *
@@ -530,8 +536,7 @@ namespace Mat
       const Core::LinAlg::FourTensor<dim>& inputTensor);
 
   /*!
-   * @brief Adds the dyadic product of two 2nd order tensors (in matrix notation) to a 4th order
-   * tensor
+   * @brief Adds the dyadic product of two 2nd order tensors to a 4th order tensor
    *
    * @param[in,out] fourTensorResult    4th order tensor \f$C^{ijkl} = A^{ij} B^{kl}\f$
    * @param[in]     matrixA             2nd order tensor \f$A^{ij}\f$
@@ -541,8 +546,20 @@ namespace Mat
       const Core::LinAlg::Matrix<3, 3>& matrixA, const Core::LinAlg::Matrix<3, 3>& matrixB);
 
   /*!
-   * @brief Adds the contraction of a 2nd order tensor (in matrix notation) and a 4th order tensor
-   * to a 2nd order tensor (in matrix notation)
+   * @brief Adds the dyadic product of two 2nd order tensors to a 4th order tensor
+   *
+   * @param[in,out] fourTensorResult    4th order tensor \f$C^{ijkl} = A^{ij} B^{kl}\f$
+   * @param[in]     matrixA             2nd order tensor \f$A^{ij}\f$
+   * @param[in]     matrixB             2nd order tensor \f$B^{kl}\f$
+   * @param[in]     scale               scaling factor
+   */
+  void AddDyadicProductMatrixMatrix(Core::LinAlg::FourTensor<3>& fourTensorResult,
+      const double scale, const Core::LinAlg::Matrix<3, 3>& matrixA,
+      const Core::LinAlg::Matrix<3, 3>& matrixB);
+
+  /*!
+   * @brief Adds the contraction of a 2nd order tensor and a 4th order tensor
+   * to a 2nd order tensor
    *
    * @param[in,out] matrixResult    2nd order tensor \f$C^{kl} = A_{ij} B^{ijkl}\f$
    * @param[in]     matrix          2nd order tensor \f$A_{ij}\f$
@@ -552,7 +569,47 @@ namespace Mat
       const Core::LinAlg::Matrix<3, 3>& matrix, const Core::LinAlg::FourTensor<3>& fourTensor);
 
   /*!
-   * @brief Returns the double contraction of two 2nd order tensors (in matrix notation)
+   * @brief Adds the contraction of a 4th order tensor and a 2nd order tensor
+   * to a 2nd order tensor
+   *
+   * @param[in,out] matrixResult    2nd order tensor \f$C^{ij} = A_{ijkl} B^{kl}\f$
+   * @param[in]     scale           the scaling factor
+   * @param[in]     fourTensor      4th order tensor \f$B^{kl}\f$
+   * @param[in]     matrix          2nd order tensor \f$A_{ijkl}\f$
+   */
+  void AddContractionFourTensorMatrix(Core::LinAlg::Matrix<3, 3>& matrixResult, const double scale,
+      const Core::LinAlg::FourTensor<3>& fourTensor, const Core::LinAlg::Matrix<3, 3>& matrix);
+
+  /*!
+   * @brief Compute the fourth order linear isotropic elastic tensor
+   *
+   * @param[out] elasticity_tensor  The resulting elastic tensor
+   * @param[in]  youngs_modulus     Young's modulus
+   * @param[in]  poisson_ratio      Poisson ratio
+   */
+  void CalculateLinearIsotropicElasticTensor(Core::LinAlg::FourTensor<3>& elasticity_tensor,
+      const double youngs_modulus, const double poisson_ratio);
+
+  /*!
+   * @brief Compute the fourth order deviatoric tensor. This tensor projects the stress tensor to
+   * its deviatoric variant via contraction operator, i.e.,
+   *  \f$\mathbb{I}_{d} : \boldsymbol{sigma} = \mathbf{s} (\boldsymbol{\sigma})\f$.
+   *
+   * This tensor can be computed as
+   *  \f$\mathbb{I}_{d} = \dfrac{1}{2} \delta_{ik} \delta_{jl} + \dfrac{1}{2} \delta_{il}
+   * \delta_{jk} - \dfrac{1}{3} \delta_{ij} \delta_{kl}\f$
+   *
+   * Reference:
+   *    Souze de Neto, Computational Methods for Plasticity, 2008, page 10.
+   *
+   * @param[out]  four_tensor   the resulting deviatoric tensor
+   * @param[in]   scale         the scaling factor
+   */
+  void CalculateDeviatoricProjectionTensor(
+      Core::LinAlg::FourTensor<3>& four_tensor, const double scale = 1.0);
+
+  /*!
+   * @brief Returns the double contraction of two 2nd order tensors
    *
    * @param[out]    scalarContraction   0th order tensor \f$s = A_{ij} B^{ij}\f$
    * @param[in]     matrixA             2nd order tensor \f$A_{ij}\f$
@@ -560,6 +617,14 @@ namespace Mat
    */
   double ContractMatrixMatrix(
       const Core::LinAlg::Matrix<3, 3>& matrixA, const Core::LinAlg::Matrix<3, 3>& matrixB);
+
+  /*!
+   * @brief Converts a fourth order (symmetric) tensor to a second order tensor
+   *
+   * @param[in]     T             4th order tensor
+   * @param[out]    A             matrix
+   */
+  void FourTensorToMatrix(const Core::LinAlg::FourTensor<3>& T, Core::LinAlg::Matrix<6, 6>& A);
 }  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE

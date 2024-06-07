@@ -84,6 +84,20 @@ void Mat::AddtoCmatHolzapfelProduct(
   cmat(5, 5) += scalar * 0.5 * (invc(0) * invc(2) + invc(5) * invc(5));
 }
 
+double Mat::ComputeJ2(const Core::LinAlg::Matrix<3, 3>& stress)
+{
+  const double p = 1.0 / 3 * (stress(0, 0) + stress(1, 1) + stress(2, 2));
+  const double s11 = stress(0, 0) - p;
+  const double s22 = stress(1, 1) - p;
+  const double s33 = stress(2, 2) - p;
+  const double s12 = stress(0, 1);
+  const double s23 = stress(1, 2);
+  const double s13 = stress(0, 2);
+  const double J2 =
+      0.5 * (s11 * s11 + s22 * s22 + s33 * s33 + 2 * (s12 * s12 + s23 * s23 + s13 * s13));
+  return J2;
+}
+
 void Mat::ElastSymTensorMultiply(Core::LinAlg::Matrix<6, 6>& C, const double ScalarAB,
     const Core::LinAlg::Matrix<3, 3>& A, const Core::LinAlg::Matrix<3, 3>& B,
     const double ScalarThis)
@@ -1147,6 +1161,17 @@ void Mat::AddDyadicProductMatrixMatrix(Core::LinAlg::FourTensor<3>& fourTensorRe
           fourTensorResult(i, j, k, l) += matrixA(i, j) * matrixB(k, l);
 }
 
+void Mat::AddDyadicProductMatrixMatrix(Core::LinAlg::FourTensor<3>& fourTensorResult,
+    const double scale, const Core::LinAlg::Matrix<3, 3>& matrixA,
+    const Core::LinAlg::Matrix<3, 3>& matrixB)
+{
+  for (unsigned i = 0; i < 3; ++i)
+    for (unsigned j = 0; j < 3; ++j)
+      for (unsigned k = 0; k < 3; ++k)
+        for (unsigned l = 0; l < 3; ++l)
+          fourTensorResult(i, j, k, l) += scale * matrixA(i, j) * matrixB(k, l);
+}
+
 void Mat::AddContractionMatrixFourTensor(Core::LinAlg::Matrix<3, 3>& matrixResult,
     const Core::LinAlg::Matrix<3, 3>& matrix, const Core::LinAlg::FourTensor<3>& fourTensor)
 {
@@ -1156,6 +1181,55 @@ void Mat::AddContractionMatrixFourTensor(Core::LinAlg::Matrix<3, 3>& matrixResul
         for (unsigned j = 0; j < 3; ++j)
           matrixResult(k, l) += matrix(i, j) * fourTensor(i, j, k, l);
 }
+
+void Mat::AddContractionFourTensorMatrix(Core::LinAlg::Matrix<3, 3>& matrixResult,
+    const double scale, const Core::LinAlg::FourTensor<3>& fourTensor,
+    const Core::LinAlg::Matrix<3, 3>& matrix)
+{
+  for (unsigned i = 0; i < 3; ++i)
+    for (unsigned j = 0; j < 3; ++j)
+      for (unsigned k = 0; k < 3; ++k)
+        for (unsigned l = 0; l < 3; ++l)
+          matrixResult(i, j) += scale * fourTensor(i, j, k, l) * matrix(k, l);
+}
+
+void Mat::CalculateLinearIsotropicElasticTensor(Core::LinAlg::FourTensor<3>& elasticity_tensor,
+    const double youngs_modulus, const double poisson_ratio)
+{
+  const double lambda =
+      poisson_ratio * youngs_modulus / ((1 + poisson_ratio) * (1 - 2 * poisson_ratio));
+  const double mu = youngs_modulus / (2 * (1 + poisson_ratio));
+
+  const auto eye = [](int i, int j) { return i == j ? 1.0 : 0.0; };
+
+  for (unsigned int i = 0; i < 3; ++i)
+    for (unsigned int j = 0; j < 3; ++j)
+      for (unsigned int k = 0; k < 3; ++k)
+        for (unsigned int l = 0; l < 3; ++l)
+          elasticity_tensor(i, j, k, l) =
+              lambda * eye(i, j) * eye(k, l) + mu * (eye(i, k) * eye(j, l) + eye(i, l) * eye(j, k));
+}
+
+void Mat::CalculateDeviatoricProjectionTensor(
+    Core::LinAlg::FourTensor<3>& four_tensor, const double scale)
+{
+  const auto eye = [](int i, int j) { return i == j ? 1.0 : 0.0; };
+
+  for (unsigned int i = 0; i < 3; ++i)
+  {
+    for (unsigned int j = 0; j < 3; ++j)
+    {
+      for (unsigned int k = 0; k < 3; ++k)
+      {
+        for (unsigned int l = 0; l < 3; ++l)
+          four_tensor(i, j, k, l) =
+              scale * (0.5 * eye(i, k) * eye(j, l) + 0.5 * eye(i, l) * eye(j, k) -
+                          1.0 / 3 * eye(i, j) * eye(k, l));
+      }
+    }
+  }
+}
+
 double Mat::ContractMatrixMatrix(
     const Core::LinAlg::Matrix<3, 3>& matrixA, const Core::LinAlg::Matrix<3, 3>& matrixB)
 {
@@ -1164,6 +1238,51 @@ double Mat::ContractMatrixMatrix(
     for (unsigned j = 0; j < 3; ++j) scalarContraction += matrixA(i, j) * matrixB(i, j);
 
   return scalarContraction;
+}
+
+void Mat::FourTensorToMatrix(const Core::LinAlg::FourTensor<3>& T, Core::LinAlg::Matrix<6, 6>& A)
+{
+  A(0, 0) = T(0, 0, 0, 0);  // xx-xx
+  A(0, 1) = T(0, 0, 1, 1);  // xx-yy
+  A(0, 2) = T(0, 0, 2, 2);  // xx-zz
+  A(0, 3) = T(0, 0, 0, 1);  // xx-xy
+  A(0, 4) = T(0, 0, 1, 2);  // xx-yz
+  A(0, 5) = T(0, 0, 0, 2);  // xx-xz
+
+  A(1, 0) = T(1, 1, 0, 0);
+  A(1, 1) = T(1, 1, 1, 1);
+  A(1, 2) = T(1, 1, 2, 2);
+  A(1, 3) = T(1, 1, 0, 1);
+  A(1, 4) = T(1, 1, 1, 2);
+  A(1, 5) = T(1, 1, 0, 2);
+
+  A(2, 0) = T(2, 2, 0, 0);
+  A(2, 1) = T(2, 2, 1, 1);
+  A(2, 2) = T(2, 2, 2, 2);
+  A(2, 3) = T(2, 2, 0, 1);
+  A(2, 4) = T(2, 2, 1, 2);
+  A(2, 5) = T(2, 2, 0, 2);
+
+  A(3, 0) = T(0, 1, 0, 0);
+  A(3, 1) = T(0, 1, 1, 1);
+  A(3, 2) = T(0, 1, 2, 2);
+  A(3, 3) = T(0, 1, 0, 1);
+  A(3, 4) = T(0, 1, 1, 2);
+  A(3, 5) = T(0, 1, 0, 2);
+
+  A(4, 0) = T(1, 2, 0, 0);
+  A(4, 1) = T(1, 2, 1, 1);
+  A(4, 2) = T(1, 2, 2, 2);
+  A(4, 3) = T(1, 2, 0, 1);
+  A(4, 4) = T(1, 2, 1, 2);
+  A(4, 5) = T(1, 2, 0, 2);
+
+  A(5, 0) = T(0, 2, 0, 0);
+  A(5, 1) = T(0, 2, 1, 1);
+  A(5, 2) = T(0, 2, 2, 2);
+  A(5, 3) = T(0, 2, 0, 1);
+  A(5, 4) = T(0, 2, 1, 2);
+  A(5, 5) = T(0, 2, 0, 2);
 }
 
 // explicit instantiation of template functions
@@ -1216,4 +1335,5 @@ template void Mat::Setup6x6VoigtMatrix<3>(
 
 template void Mat::TransposeFourTensor12<3>(
     Core::LinAlg::FourTensor<3>& resultTensor, const Core::LinAlg::FourTensor<3>& inputTensor);
+
 FOUR_C_NAMESPACE_CLOSE
