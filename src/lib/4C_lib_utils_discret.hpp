@@ -284,6 +284,7 @@ namespace Discret
        *  params.set("total time",acttime); // current total time
        *  \endcode
        *
+       *  \param params           (in): Teuchos Parameter List
        *  \param discret          (in): discretization corresponding to the input
        *                                system vectors
        *  \param params           (in): List of parameters
@@ -298,7 +299,7 @@ namespace Discret
        *                                subjected to Dirichlet boundary conditions
        *                                and the remaining/free DOFs
        */
-      virtual void evaluate(const Core::UTILS::FunctionManager& function_manager,
+      virtual void evaluate(const Teuchos::ParameterList& params,
           const Discret::Discretization& discret, double time,
           const Teuchos::RCP<Epetra_Vector>* systemvectors, DbcInfo& info,
           Teuchos::RCP<std::set<int>>* dbcgids) const;
@@ -334,13 +335,13 @@ namespace Discret
        *  dofs is actually touched, or not, irrespective of the dirichlet BC
        *  definition of a lower entity.
        */
-      void read_dirichlet_condition(const Core::UTILS::FunctionManager& function_manager,
+      void read_dirichlet_condition(const Teuchos::ParameterList& params,
           const Discret::Discretization& discret,
           const std::vector<Teuchos::RCP<Core::Conditions::Condition>>& conds, double time,
           DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids) const;
 
       /// loop over the conditions and read the given type
-      void read_dirichlet_condition(const Core::UTILS::FunctionManager& function_manager,
+      void read_dirichlet_condition(const Teuchos::ParameterList& params,
           const Discret::Discretization& discret,
           const std::vector<Teuchos::RCP<Core::Conditions::Condition>>& conds, double time,
           DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids,
@@ -348,6 +349,7 @@ namespace Discret
 
       /** \brief Determine dofs subject to Dirichlet condition from input file
        *
+       *  \param params   (in)  : Teuchos Parameter List
        *  \param discret  (in)  :  discretization corresponding to the input
        *                           system vectors
        *  \param cond     (in)  :  The condition object
@@ -372,7 +374,7 @@ namespace Discret
        *  No matter what is defined in a condition line of lower priority. The
        *  corresponding entries in the systemvectors remain untouched.
        */
-      virtual void read_dirichlet_condition(const Core::UTILS::FunctionManager& function_manager,
+      virtual void read_dirichlet_condition(const Teuchos::ParameterList& params,
           const Discret::Discretization& discret, const Core::Conditions::Condition& cond,
           double time, DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids,
           int hierarchical_order) const;
@@ -384,14 +386,14 @@ namespace Discret
        *  (3) Assign LineDirichlet DBC GIDs
        *  (4) Assign PointDirichlet DBC GIDs
        */
-      void do_dirichlet_condition(const Core::UTILS::FunctionManager& function_manager,
+      void do_dirichlet_condition(const Teuchos::ParameterList& params,
           const Discret::Discretization& discret,
           const std::vector<Teuchos::RCP<Core::Conditions::Condition>>& conds, double time,
           const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
           const Teuchos::RCP<std::set<int>>* dbcgids) const;
 
       /// loop over the conditions and assign the given type
-      void do_dirichlet_condition(const Core::UTILS::FunctionManager& function_manager,
+      void do_dirichlet_condition(const Teuchos::ParameterList& params,
           const Discret::Discretization& discret,
           const std::vector<Teuchos::RCP<Core::Conditions::Condition>>& conds, double time,
           const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
@@ -400,6 +402,7 @@ namespace Discret
 
       /** \brief Apply the Dirichlet values to the system vectors
        *
+       *  \param params          (in): Teuchos Parameter List
        *  \param discret         (in): discretization corresponding to the input
        *                               system vectors
        *  \param cond            (in): The condition object
@@ -436,7 +439,7 @@ namespace Discret
        *  read_dirichlet_condition(...). Then, they are applied by
        *  do_dirichlet_condition(...).
        */
-      virtual void do_dirichlet_condition(const Core::UTILS::FunctionManager& function_manager,
+      virtual void do_dirichlet_condition(const Teuchos::ParameterList& params,
           const Discret::Discretization& discret, const Core::Conditions::Condition& cond,
           double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
           const Epetra_IntVector& toggle, const Teuchos::RCP<std::set<int>>* dbcgids) const;
