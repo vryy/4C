@@ -239,7 +239,6 @@ Core::Elements::Element* Discret::ELEMENTS::Shell7pScatra::Clone() const
 void Discret::ELEMENTS::Shell7pScatra::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();

@@ -158,7 +158,6 @@ Core::FE::CellType Discret::ELEMENTS::Lubrication::Shape() const { return distyp
 void Discret::ELEMENTS::Lubrication::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();

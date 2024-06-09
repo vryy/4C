@@ -96,7 +96,6 @@ Mat::Mixture::Mixture(Mat::PAR::Mixture* params)
 void Mat::Mixture::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();

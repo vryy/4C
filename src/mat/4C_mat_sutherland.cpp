@@ -64,7 +64,6 @@ Mat::Sutherland::Sutherland(Mat::PAR::Sutherland* params) : params_(params) {}
 void Mat::Sutherland::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();

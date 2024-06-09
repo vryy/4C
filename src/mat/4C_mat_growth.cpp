@@ -161,7 +161,6 @@ Mat::Growth::Growth(Mat::PAR::Growth* params)
 void Mat::Growth::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
@@ -762,7 +761,6 @@ void Mat::GrowthVolumetric::GetSAndCmatdach(const double theta,
 void Mat::GrowthVolumetric::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();

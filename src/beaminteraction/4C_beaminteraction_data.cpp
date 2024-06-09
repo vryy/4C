@@ -72,7 +72,6 @@ BEAMINTERACTION::Data::CrosslinkerData::CrosslinkerData() : id_(-1), pos_(true),
 void BEAMINTERACTION::Data::CrosslinkerData::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack id
   Core::Communication::ParObject::add_to_pack(data, id_);
@@ -124,7 +123,6 @@ BEAMINTERACTION::Data::BeamData::BeamData() : id_(-1)
 void BEAMINTERACTION::Data::BeamData::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack id
   Core::Communication::ParObject::add_to_pack(data, id_);
@@ -191,7 +189,6 @@ void BEAMINTERACTION::Data::BindEventData::Init(
 void BEAMINTERACTION::Data::BindEventData::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   Core::Communication::ParObject::add_to_pack(data, clgid_);
 
@@ -244,7 +241,6 @@ BEAMINTERACTION::Data::UnBindEventData::UnBindEventData()
 void BEAMINTERACTION::Data::UnBindEventData::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   Core::Communication::ParObject::add_to_pack(data, clgid_);
 

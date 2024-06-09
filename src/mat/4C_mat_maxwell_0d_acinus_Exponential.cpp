@@ -79,7 +79,6 @@ Mat::Maxwell0dAcinusExponential::Maxwell0dAcinusExponential(Mat::PAR::Maxwell0dA
 void Mat::Maxwell0dAcinusExponential::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // Pack type of this instance of ParObject
   int type = UniqueParObjectId();

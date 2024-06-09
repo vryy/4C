@@ -30,7 +30,6 @@ Core::Communication::ParObject* Mat::ConstraintMixtureHistoryType::Create(
 void Mat::ConstraintMixtureHistory::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();

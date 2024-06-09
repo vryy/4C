@@ -55,7 +55,6 @@ template <Core::FE::CellType distype>
 void Discret::ELEMENTS::Wall1PoroScatra<distype>::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();

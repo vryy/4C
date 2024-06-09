@@ -85,7 +85,6 @@ Mat::ScatraChemotaxisMat::ScatraChemotaxisMat(Mat::PAR::ScatraChemotaxisMat* par
 void Mat::ScatraChemotaxisMat::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();

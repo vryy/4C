@@ -231,7 +231,6 @@ Mat::PlasticNlnLogNeoHooke::PlasticNlnLogNeoHooke(Mat::PAR::PlasticNlnLogNeoHook
 void Mat::PlasticNlnLogNeoHooke::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();

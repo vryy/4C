@@ -78,7 +78,6 @@ Mat::Newman::Newman(Mat::PAR::Newman* params) : params_(params) { return; }
 void Mat::Newman::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();

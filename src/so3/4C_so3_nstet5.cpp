@@ -273,7 +273,6 @@ Discret::ELEMENTS::NStet5::NStet5(const Discret::ELEMENTS::NStet5& old)
 void Discret::ELEMENTS::NStet5::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();

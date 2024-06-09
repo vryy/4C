@@ -78,7 +78,6 @@ Mat::Scl::Scl(Mat::PAR::Scl* params) : params_(params) {}
 void Mat::Scl::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();

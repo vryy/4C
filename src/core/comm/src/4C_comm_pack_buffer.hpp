@@ -26,30 +26,26 @@ namespace Core::Communication
     friend class SizeMarker;
 
    public:
+    /**
+     * This class is used to mark the size of an object in the buffer. The class uses RAII to
+     * automatically prepend the size of the object in the buffer when an instance goes out of
+     * scope.
+     */
     class SizeMarker
     {
      public:
-      SizeMarker(PackBuffer& data) : data_(data), oldsize_(0) {}
-
-      ~SizeMarker()
-      {
-        // set actual object size
-        data_.set_object_size(oldsize_);
-      }
-
-      void Insert()
+      SizeMarker(PackBuffer& data) : data_(data)
       {
         // add dummy object size, will be filled later
-        int size = 0;
-        data_.add_to_pack(size);
-
-        // remember current data size
-        oldsize_ = data_().size();
+        data_.add_to_pack(-1);
+        old_size_ = data_().size();
       }
+
+      ~SizeMarker() { data_.set_object_size(old_size_); }
 
      private:
       PackBuffer& data_;
-      std::size_t oldsize_;
+      std::size_t old_size_{};
     };
 
     PackBuffer() : size_(0), grow_(true) {}

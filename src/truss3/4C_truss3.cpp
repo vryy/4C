@@ -142,7 +142,6 @@ Core::FE::CellType Discret::ELEMENTS::Truss3::Shape() const { return Core::FE::C
 void Discret::ELEMENTS::Truss3::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();

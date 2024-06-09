@@ -97,7 +97,6 @@ Mat::Cnst1dArt::Cnst1dArt(Mat::PAR::Cnst1dArt* params)
 void Mat::Cnst1dArt::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();

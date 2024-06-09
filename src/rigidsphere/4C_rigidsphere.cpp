@@ -166,7 +166,6 @@ Core::FE::CellType Discret::ELEMENTS::Rigidsphere::Shape() const
 void Discret::ELEMENTS::Rigidsphere::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();

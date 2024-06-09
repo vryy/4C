@@ -223,7 +223,6 @@ Core::FE::CellType Discret::ELEMENTS::SoHex8::Shape() const { return Core::FE::C
 void Discret::ELEMENTS::SoHex8::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();

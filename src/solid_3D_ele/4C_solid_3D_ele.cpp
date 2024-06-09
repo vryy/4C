@@ -165,7 +165,6 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Solid::Sur
 void Discret::ELEMENTS::Solid::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   add_to_pack(data, UniqueParObjectId());
 

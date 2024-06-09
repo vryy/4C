@@ -107,7 +107,6 @@ Mat::Damage::Damage(Mat::PAR::Damage* params) : params_(params), plastic_step_(f
 void Mat::Damage::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();

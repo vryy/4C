@@ -62,7 +62,6 @@ Mat::Ion::Ion(Mat::PAR::Ion* params) : params_(params) {}
 void Mat::Ion::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();

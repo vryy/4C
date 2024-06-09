@@ -80,7 +80,6 @@ Mat::Maxwell0dAcinusOgden::Maxwell0dAcinusOgden(Mat::PAR::Maxwell0dAcinus* param
 void Mat::Maxwell0dAcinusOgden::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // Pack type of this instance of ParObject
   int type = UniqueParObjectId();

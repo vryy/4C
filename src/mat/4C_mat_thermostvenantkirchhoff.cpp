@@ -102,7 +102,6 @@ void Mat::ThermoStVenantKirchhoff::create_thermo_material_if_set()
 void Mat::ThermoStVenantKirchhoff::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();

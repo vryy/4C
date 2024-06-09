@@ -558,7 +558,6 @@ Core::FE::CellType Discret::ELEMENTS::Transport::Shape() const { return distype_
 void Discret::ELEMENTS::Transport::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();

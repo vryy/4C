@@ -426,7 +426,6 @@ Core::FE::CellType Discret::ELEMENTS::Beam3r::Shape() const
 void Discret::ELEMENTS::Beam3r::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();

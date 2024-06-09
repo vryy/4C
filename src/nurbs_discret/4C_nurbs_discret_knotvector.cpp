@@ -733,8 +733,7 @@ void Discret::Nurbs::Knotvector::Pack(Core::Communication::PackBuffer& data) con
 {
   // we don't need the PackBuffer for the knotvector (at the moment)
   // Core::Communication::PackBuffer::SizeMarker sm( data );
-  // sm.Insert();
-
+  //
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   add_to_pack(data, type);

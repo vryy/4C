@@ -171,7 +171,6 @@ Core::Elements::Element* Discret::ELEMENTS::Elemag::Clone() const
 void Discret::ELEMENTS::Elemag::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
@@ -358,7 +357,6 @@ Core::FE::CellType Discret::ELEMENTS::ElemagBoundary::Shape() const
 void Discret::ELEMENTS::ElemagBoundary::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();

@@ -181,7 +181,11 @@ void Discret::Discretization::proc_zero_distribute_elements_to_all(
     while (index < recvdata.size())
     {
       std::vector<char> data;
+      // Extract the size and raw data. This operation is asymmetric to the packing operation which
+      // did store the size via a manual SizeMarker insertion.
       Core::Communication::ParObject::extract_from_pack(index, recvdata, data);
+      // Pass on the raw data to the factory that selects the specialized implementation based on
+      // the unique id stored as first entry.
       Core::Communication::ParObject* object = Core::Communication::Factory(data);
       Core::Elements::Element* ele = dynamic_cast<Core::Elements::Element*>(object);
       if (!ele) FOUR_C_THROW("Received object is not an element");

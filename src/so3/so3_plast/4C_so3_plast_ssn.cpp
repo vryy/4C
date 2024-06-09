@@ -291,7 +291,6 @@ template <Core::FE::CellType distype>
 void Discret::ELEMENTS::So3Plast<distype>::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();

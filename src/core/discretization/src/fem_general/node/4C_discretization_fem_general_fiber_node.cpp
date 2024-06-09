@@ -57,7 +57,6 @@ Core::Nodes::FiberNode* Core::Nodes::FiberNode::Clone() const
 void Core::Nodes::FiberNode::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();

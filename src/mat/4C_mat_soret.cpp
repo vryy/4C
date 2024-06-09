@@ -59,7 +59,6 @@ Mat::Soret::Soret(Mat::PAR::Soret* params) : FourierIso(params), params_(params)
 void Mat::Soret::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();

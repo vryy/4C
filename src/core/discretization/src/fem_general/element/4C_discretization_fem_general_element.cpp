@@ -258,7 +258,6 @@ int Core::Elements::Element::AddMaterial(Teuchos::RCP<Core::Mat::Material> mat)
 void Core::Elements::Element::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
@@ -1130,7 +1129,6 @@ Core::Elements::FaceElement::FaceElement(const Core::Elements::FaceElement& old)
 void Core::Elements::FaceElement::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();

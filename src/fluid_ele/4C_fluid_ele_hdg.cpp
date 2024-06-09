@@ -181,7 +181,6 @@ Core::Elements::Element* Discret::ELEMENTS::FluidHDG::Clone() const
 void Discret::ELEMENTS::FluidHDG::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();

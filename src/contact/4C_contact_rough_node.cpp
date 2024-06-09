@@ -88,7 +88,6 @@ CONTACT::RoughNode::RoughNode(int id, const std::vector<double>& coords, const i
 void CONTACT::RoughNode::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();

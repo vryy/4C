@@ -65,7 +65,6 @@ Mat::ScatraMatMultiPoroFluid::ScatraMatMultiPoroFluid(Mat::PAR::ScatraMatMultiPo
 void Mat::ScatraMatMultiPoroFluid::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
@@ -157,7 +156,6 @@ Mat::ScatraMatMultiPoroVolFrac::ScatraMatMultiPoroVolFrac(
 void Mat::ScatraMatMultiPoroVolFrac::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
@@ -243,7 +241,6 @@ Mat::ScatraMatMultiPoroSolid::ScatraMatMultiPoroSolid(Mat::PAR::ScatraMatMultiPo
 void Mat::ScatraMatMultiPoroSolid::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
@@ -338,7 +335,6 @@ Mat::ScatraMatMultiPoroTemperature::ScatraMatMultiPoroTemperature(
 void Mat::ScatraMatMultiPoroTemperature::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();

@@ -93,7 +93,6 @@ Mat::PlasticLinElast::PlasticLinElast(Mat::PAR::PlasticLinElast* params) : param
 void Mat::PlasticLinElast::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();

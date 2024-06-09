@@ -62,7 +62,6 @@ Mat::HerschelBulkley::HerschelBulkley(Mat::PAR::HerschelBulkley* params) : param
 void Mat::HerschelBulkley::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();

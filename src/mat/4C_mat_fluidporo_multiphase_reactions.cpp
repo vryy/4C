@@ -133,7 +133,6 @@ void Mat::FluidPoroMultiPhaseReactions::clear()
 void Mat::FluidPoroMultiPhaseReactions::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();

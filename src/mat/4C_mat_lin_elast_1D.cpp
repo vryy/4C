@@ -55,7 +55,6 @@ Mat::LinElast1D::LinElast1D(Mat::PAR::LinElast1D* params) : params_(params) {}
 void Mat::LinElast1D::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
@@ -143,7 +142,6 @@ Mat::LinElast1DGrowth::LinElast1DGrowth(Mat::PAR::LinElast1DGrowth* params)
 void Mat::LinElast1DGrowth::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();

@@ -1140,7 +1140,6 @@ void MultiScale::stop_np_multiscale()
 void MultiScale::MicroStaticParObject::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   add_to_pack(data, UniqueParObjectId());
 

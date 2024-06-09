@@ -213,7 +213,6 @@ int Discret::ELEMENTS::Shell7p::NumSurface() const { return 1; }
 void Discret::ELEMENTS::Shell7p::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();

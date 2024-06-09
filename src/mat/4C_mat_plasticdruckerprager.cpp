@@ -64,7 +64,6 @@ Mat::PlasticDruckerPrager::PlasticDruckerPrager(Mat::PAR::PlasticDruckerPrager* 
 void Mat::PlasticDruckerPrager::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
   int type = UniqueParObjectId();
   add_to_pack(data, type);
   int matid = -1;

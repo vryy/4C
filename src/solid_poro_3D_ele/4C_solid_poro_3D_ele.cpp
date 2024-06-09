@@ -209,7 +209,6 @@ Mat::So3Material& Discret::ELEMENTS::SolidPoro::SolidPoroMaterial(int nummat) co
 void Discret::ELEMENTS::SolidPoro::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   add_to_pack(data, UniqueParObjectId());
 

@@ -75,7 +75,6 @@ Mat::Maxwell0dAcinusNeoHookean::Maxwell0dAcinusNeoHookean(Mat::PAR::Maxwell0dAci
 void Mat::Maxwell0dAcinusNeoHookean::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // Pack type of this instance of ParObject
   int type = UniqueParObjectId();

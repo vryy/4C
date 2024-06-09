@@ -54,7 +54,6 @@ Discret::ELEMENTS::Beam3Base::Beam3Base(const Discret::ELEMENTS::Beam3Base& old)
 void Discret::ELEMENTS::Beam3Base::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();

@@ -134,7 +134,6 @@ void BEAMINTERACTION::BeamLinkTruss::Pack(Core::Communication::PackBuffer& data)
   check_init_setup();
 
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();

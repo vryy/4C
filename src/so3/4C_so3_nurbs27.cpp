@@ -149,7 +149,6 @@ Core::FE::CellType Discret::ELEMENTS::Nurbs::SoNurbs27::Shape() const
 void Discret::ELEMENTS::Nurbs::SoNurbs27::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();

@@ -132,7 +132,6 @@ Mat::Robinson::Robinson(Mat::PAR::Robinson* params) : plastic_step(false), param
 void Mat::Robinson::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();

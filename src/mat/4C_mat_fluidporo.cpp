@@ -727,7 +727,6 @@ Mat::FluidPoro::FluidPoro(Mat::PAR::FluidPoro* params) : params_(params)
 void Mat::FluidPoro::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();

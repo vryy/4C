@@ -146,7 +146,6 @@ Core::FE::CellType Discret::ELEMENTS::SoTet4av::Shape() const { return Core::FE:
 void Discret::ELEMENTS::SoTet4av::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();

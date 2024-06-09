@@ -139,7 +139,6 @@ void Mat::StructPoro::Pack(Core::Communication::PackBuffer& data) const
   if (not is_initialized_) FOUR_C_THROW("poro material not initialized. Not a poro element?");
 
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();

@@ -134,7 +134,6 @@ Core::Elements::Element* Discret::ELEMENTS::SoShw6::Clone() const
 void Discret::ELEMENTS::SoShw6::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();

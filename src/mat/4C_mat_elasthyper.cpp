@@ -98,7 +98,6 @@ Mat::ElastHyper::ElastHyper(Mat::PAR::ElastHyper* params)
 void Mat::ElastHyper::Pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
