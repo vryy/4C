@@ -4,7 +4,6 @@ lxml==4.9.4
 numpy
 scipy
 vtk
-yamlfmt
 dataclasses
 typing
 pre-commit==3.5.0

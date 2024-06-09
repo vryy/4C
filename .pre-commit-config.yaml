@@ -1,35 +1,41 @@
 repos:
-- repo: https://github.com/pre-commit/mirrors-clang-format
-  rev: v14.0.0
-  hooks:
-  - id: clang-format
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: v14.0.0
+    hooks:
+      - id: clang-format
         # Only use on C and C++ files and not on other files that clang could format (e.g. json).
-    types: [c++, c]
+        types: [c++, c]
 
-- repo: https://github.com/cheshirekow/cmake-format-precommit
-  rev: v0.6.13
-  hooks:
-  - id: cmake-format
-    args: [--config, utilities/code_checks/.cmake-format.yaml, --in-place]
-    additional_dependencies: [pyyaml>=5.1]
+  - repo: https://github.com/cheshirekow/cmake-format-precommit
+    rev: v0.6.13
+    hooks:
+      - id: cmake-format
+        args: [--config, utilities/code_checks/.cmake-format.yaml, --in-place]
+        additional_dependencies: [pyyaml>=5.1]
 
-- repo: https://github.com/psf/black-pre-commit-mirror
-  rev: 22.3.0
-  hooks:
-  - id: black
+  - repo: https://github.com/psf/black-pre-commit-mirror
+    rev: 22.3.0
+    hooks:
+      - id: black
 
-- repo: https://github.com/pamoller/xmlformatter
-  rev: v0.2.6
-  hooks:
-  - id: xml-formatter
-    args: [--indent, '2', --indent-char, ' ', --selfclose, --overwrite]
+  - repo: https://github.com/pamoller/xmlformatter
+    rev: v0.2.6
+    hooks:
+      - id: xml-formatter
+        args: [--indent, '2', --indent-char, ' ', --selfclose, --overwrite]
         # Only run on "pure" XML files and not on files that internally use XML (e.g. svg)
-    files: \.xml$
+        files: \.xml$
 
-- repo: local
-  hooks:
-  - id: custom-checks
-    name: Custom Checks
-    language: system
-    pass_filenames: false
-    entry: ./utilities/code_checks/pre-commit
+  - repo: https://github.com/google/yamlfmt
+    rev: v0.12.1
+    hooks:
+      - id: yamlfmt
+        args: [-conf, utilities/code_checks/.yamlfmt.yaml]
+
+  - repo: local
+    hooks:
+      - id: custom-checks
+        name: Custom Checks
+        language: system
+        pass_filenames: false
+        entry: ./utilities/code_checks/pre-commit
