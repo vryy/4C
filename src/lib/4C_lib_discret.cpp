@@ -710,7 +710,7 @@ void Discret::Discretization::UnPackMyElements(Teuchos::RCP<std::vector<char>> e
   while (index < e->size())
   {
     std::vector<char> data;
-    Core::Communication::ParObject::ExtractfromPack(index, *e, data);
+    Core::Communication::ParObject::extract_from_pack(index, *e, data);
     Core::Communication::ParObject* o = Core::Communication::Factory(data);
     auto* ele = dynamic_cast<Core::Elements::Element*>(o);
     FOUR_C_THROW_UNLESS(ele != nullptr,
@@ -730,7 +730,7 @@ void Discret::Discretization::UnPackMyNodes(Teuchos::RCP<std::vector<char>> e)
   while (index < e->size())
   {
     std::vector<char> data;
-    Core::Communication::ParObject::ExtractfromPack(index, *e, data);
+    Core::Communication::ParObject::extract_from_pack(index, *e, data);
     Core::Communication::ParObject* o = Core::Communication::Factory(data);
     auto* node = dynamic_cast<Core::Nodes::Node*>(o);
     FOUR_C_THROW_UNLESS(node != nullptr,

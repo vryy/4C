@@ -97,15 +97,15 @@ void Mat::MembraneActiveStrain::Pack(Core::Communication::PackBuffer& data) cons
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
 
   // matid
   int matid = -1;
   if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
-  AddtoPack(data, matid);
+  add_to_pack(data, matid);
 
   // fiber vectors: Fiber1, Fiber2, Normal
-  AddtoPack(data, fibervecs_);
+  add_to_pack(data, fibervecs_);
 
   // data of passive elastic material
   if (matpassive_ != Teuchos::null)
@@ -126,12 +126,12 @@ void Mat::MembraneActiveStrain::Pack(Core::Communication::PackBuffer& data) cons
     numgp = voltage_->size();
   }
   // Length of internal vector(s)
-  AddtoPack(data, numgp);
+  add_to_pack(data, numgp);
   for (int gp = 0; gp < numgp; ++gp)
   {
-    // insert internal vectors to AddtoPack
-    AddtoPack(data, voltage_->at(gp));
-    AddtoPack(data, activation_->at(gp));
+    // insert internal vectors to add_to_pack
+    add_to_pack(data, voltage_->at(gp));
+    add_to_pack(data, activation_->at(gp));
   }
 
   return;
@@ -148,7 +148,7 @@ void Mat::MembraneActiveStrain::Unpack(const std::vector<char>& data)
 
   // matid and recover params_
   int matid = -1;
-  ExtractfromPack(position, data, matid);
+  extract_from_pack(position, data, matid);
   if (Global::Problem::Instance()->Materials() != Teuchos::null)
     if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
@@ -163,11 +163,11 @@ void Mat::MembraneActiveStrain::Unpack(const std::vector<char>& data)
     }
 
   // fiber vectors: Fiber1, Fiber2, Normal
-  ExtractfromPack(position, data, fibervecs_);
+  extract_from_pack(position, data, fibervecs_);
 
   // unpack data of passive material
   std::vector<char> matpassive_data;
-  ExtractfromPack(position, data, matpassive_data);
+  extract_from_pack(position, data, matpassive_data);
   if (matpassive_data.size() > 0)
   {
     Core::Communication::ParObject* o =
@@ -183,7 +183,7 @@ void Mat::MembraneActiveStrain::Unpack(const std::vector<char>& data)
   }
 
   int numgp;
-  ExtractfromPack(position, data, numgp);
+  extract_from_pack(position, data, numgp);
   isinit_ = true;
   if (numgp == 0)  // no internal data to unpack
   {
@@ -200,9 +200,9 @@ void Mat::MembraneActiveStrain::Unpack(const std::vector<char>& data)
   double activation_gp;
   for (int gp = 0; gp < numgp; ++gp)
   {
-    ExtractfromPack(position, data, voltage_gp);
+    extract_from_pack(position, data, voltage_gp);
     voltage_->at(gp) = voltage_gp;
-    ExtractfromPack(position, data, activation_gp);
+    extract_from_pack(position, data, activation_gp);
     activation_->at(gp) = activation_gp;
   }
   return;

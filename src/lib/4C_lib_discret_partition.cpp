@@ -181,7 +181,7 @@ void Discret::Discretization::proc_zero_distribute_elements_to_all(
     while (index < recvdata.size())
     {
       std::vector<char> data;
-      Core::Communication::ParObject::ExtractfromPack(index, recvdata, data);
+      Core::Communication::ParObject::extract_from_pack(index, recvdata, data);
       Core::Communication::ParObject* object = Core::Communication::Factory(data);
       Core::Elements::Element* ele = dynamic_cast<Core::Elements::Element*>(object);
       if (!ele) FOUR_C_THROW("Received object is not an element");
@@ -296,7 +296,7 @@ void Discret::Discretization::proc_zero_distribute_nodes_to_all(Epetra_Map& targ
     while (index < recvdata.size())
     {
       std::vector<char> data;
-      Core::Communication::ParObject::ExtractfromPack(index, recvdata, data);
+      Core::Communication::ParObject::extract_from_pack(index, recvdata, data);
       Core::Communication::ParObject* object = Core::Communication::Factory(data);
       Core::Nodes::Node* node = dynamic_cast<Core::Nodes::Node*>(object);
       if (!node) FOUR_C_THROW("Received object is not a node");

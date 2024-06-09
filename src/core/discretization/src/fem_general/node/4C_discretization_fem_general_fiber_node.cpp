@@ -61,14 +61,14 @@ void Core::Nodes::FiberNode::Pack(Core::Communication::PackBuffer& data) const
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  Core::Nodes::Node::AddtoPack(data, type);
+  Core::Nodes::Node::add_to_pack(data, type);
   // add base class of fiber node
   Core::Nodes::Node::Pack(data);
 
   // Add fiber data
-  Core::Communication::ParObject::AddtoPack(data, fibers_);
-  Core::Communication::ParObject::AddtoPack(data, coordinateSystemDirections_);
-  Core::Communication::ParObject::AddtoPack(data, angles_);
+  Core::Communication::ParObject::add_to_pack(data, fibers_);
+  Core::Communication::ParObject::add_to_pack(data, coordinateSystemDirections_);
+  Core::Communication::ParObject::add_to_pack(data, angles_);
 }
 
 /*
@@ -84,13 +84,13 @@ void Core::Nodes::FiberNode::Unpack(const std::vector<char>& data)
 
   // extract base class Node
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   Core::Nodes::Node::Unpack(basedata);
 
   // extract fiber data
-  Core::Communication::ParObject::ExtractfromPack(position, data, fibers_);
-  Core::Communication::ParObject::ExtractfromPack(position, data, coordinateSystemDirections_);
-  Core::Communication::ParObject::ExtractfromPack(position, data, angles_);
+  Core::Communication::ParObject::extract_from_pack(position, data, fibers_);
+  Core::Communication::ParObject::extract_from_pack(position, data, coordinateSystemDirections_);
+  Core::Communication::ParObject::extract_from_pack(position, data, angles_);
 }
 
 /*

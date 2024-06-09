@@ -51,20 +51,20 @@ void Discret::ELEMENTS::Shell7pEleCalc<distype>::Setup(Core::Elements::Element& 
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::Shell7pEleCalc<distype>::Pack(Core::Communication::PackBuffer& data) const
 {
-  Discret::ELEMENTS::Shell7p::AddtoPack(data, shell_data_.sdc);
-  Discret::ELEMENTS::Shell7p::AddtoPack(data, shell_data_.thickness);
-  Discret::ELEMENTS::Shell7p::AddtoPack(data, shell_data_.num_ans);
-  Discret::ELEMENTS::Shell7p::AddtoPack(data, cur_thickness_);
+  Discret::ELEMENTS::Shell7p::add_to_pack(data, shell_data_.sdc);
+  Discret::ELEMENTS::Shell7p::add_to_pack(data, shell_data_.thickness);
+  Discret::ELEMENTS::Shell7p::add_to_pack(data, shell_data_.num_ans);
+  Discret::ELEMENTS::Shell7p::add_to_pack(data, cur_thickness_);
 }
 
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::Shell7pEleCalc<distype>::Unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
-  Core::Communication::ParObject::ExtractfromPack(position, data, shell_data_.sdc);
-  Core::Communication::ParObject::ExtractfromPack(position, data, shell_data_.thickness);
-  Core::Communication::ParObject::ExtractfromPack(position, data, shell_data_.num_ans);
-  Core::Communication::ParObject::ExtractfromPack(position, data, cur_thickness_);
+  Core::Communication::ParObject::extract_from_pack(position, data, shell_data_.sdc);
+  Core::Communication::ParObject::extract_from_pack(position, data, shell_data_.thickness);
+  Core::Communication::ParObject::extract_from_pack(position, data, shell_data_.num_ans);
+  Core::Communication::ParObject::extract_from_pack(position, data, cur_thickness_);
 }
 
 

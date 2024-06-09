@@ -150,7 +150,7 @@ void Discret::ELEMENTS::SoTet4av::Pack(Core::Communication::PackBuffer& data) co
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
   // add base class Element
   SoBase::Pack(data);
 
@@ -170,7 +170,7 @@ void Discret::ELEMENTS::SoTet4av::Unpack(const std::vector<char>& data)
 
   // extract base class Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   SoBase::Unpack(basedata);
 
   if (position != data.size())

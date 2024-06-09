@@ -55,7 +55,7 @@ void MIXTURE::MixtureConstituentElastHyperDamage::PackConstituent(
 {
   MixtureConstituentElastHyperBase::PackConstituent(data);
 
-  Core::Communication::ParObject::AddtoPack(data, current_reference_growth_);
+  Core::Communication::ParObject::add_to_pack(data, current_reference_growth_);
 }
 
 // Unpack the constituent
@@ -64,7 +64,7 @@ void MIXTURE::MixtureConstituentElastHyperDamage::UnpackConstituent(
 {
   MixtureConstituentElastHyperBase::UnpackConstituent(position, data);
 
-  Core::Communication::ParObject::ExtractfromPack(position, data, current_reference_growth_);
+  Core::Communication::ParObject::extract_from_pack(position, data, current_reference_growth_);
 }
 
 // Reads the element from the input file

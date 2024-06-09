@@ -37,18 +37,18 @@ namespace ParticleInteraction
     //! pack history pair data
     void Pack(Core::Communication::PackBuffer& data) const
     {
-      data.AddtoPack(stick_);
+      data.add_to_pack(stick_);
 
-      for (int i = 0; i < 3; ++i) data.AddtoPack(gap_t_[i]);
+      for (int i = 0; i < 3; ++i) data.add_to_pack(gap_t_[i]);
     }
 
     //! unpack history pair data
     void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data)
     {
-      Core::Communication::ParObject::ExtractfromPack(position, data, stick_);
+      Core::Communication::ParObject::extract_from_pack(position, data, stick_);
 
       for (int i = 0; i < 3; ++i)
-        Core::Communication::ParObject::ExtractfromPack(position, data, gap_t_[i]);
+        Core::Communication::ParObject::extract_from_pack(position, data, gap_t_[i]);
     }
   };
 
@@ -64,18 +64,18 @@ namespace ParticleInteraction
     //! pack history pair data
     void Pack(Core::Communication::PackBuffer& data) const
     {
-      data.AddtoPack(stick_);
+      data.add_to_pack(stick_);
 
-      for (int i = 0; i < 3; ++i) data.AddtoPack(gap_r_[i]);
+      for (int i = 0; i < 3; ++i) data.add_to_pack(gap_r_[i]);
     }
 
     //! unpack history pair data
     void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data)
     {
-      Core::Communication::ParObject::ExtractfromPack(position, data, stick_);
+      Core::Communication::ParObject::extract_from_pack(position, data, stick_);
 
       for (int i = 0; i < 3; ++i)
-        Core::Communication::ParObject::ExtractfromPack(position, data, gap_r_[i]);
+        Core::Communication::ParObject::extract_from_pack(position, data, gap_r_[i]);
     }
   };
 
@@ -91,17 +91,17 @@ namespace ParticleInteraction
     //! pack history pair data
     void Pack(Core::Communication::PackBuffer& data) const
     {
-      data.AddtoPack(surface_energy_);
+      data.add_to_pack(surface_energy_);
 
-      data.AddtoPack(adhesion_force_);
+      data.add_to_pack(adhesion_force_);
     }
 
     //! unpack history pair data
     void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data)
     {
-      Core::Communication::ParObject::ExtractfromPack(position, data, surface_energy_);
+      Core::Communication::ParObject::extract_from_pack(position, data, surface_energy_);
 
-      Core::Communication::ParObject::ExtractfromPack(position, data, adhesion_force_);
+      Core::Communication::ParObject::extract_from_pack(position, data, adhesion_force_);
     }
   };
 }  // namespace ParticleInteraction

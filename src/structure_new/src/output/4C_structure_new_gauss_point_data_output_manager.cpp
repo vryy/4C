@@ -266,14 +266,14 @@ void STR::MODELEVALUATOR::GaussPointDataOutputManager::pack_my_quantities(
 {
   Core::Communication::PackBuffer packBuffer;
   packBuffer.StartPacking();
-  Core::Communication::ParObject::AddtoPack(packBuffer, quantities_);
+  Core::Communication::ParObject::add_to_pack(packBuffer, quantities_);
   std::swap(data, packBuffer());
 }
 
 void STR::MODELEVALUATOR::GaussPointDataOutputManager::unpack_quantities(std::size_t pos,
     const std::vector<char>& data, std::unordered_map<std::string, int>& quantities) const
 {
-  Core::Communication::ParObject::ExtractfromPack(pos, data, quantities);
+  Core::Communication::ParObject::extract_from_pack(pos, data, quantities);
 }
 
 FOUR_C_NAMESPACE_CLOSE

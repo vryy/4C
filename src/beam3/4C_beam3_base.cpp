@@ -58,14 +58,14 @@ void Discret::ELEMENTS::Beam3Base::Pack(Core::Communication::PackBuffer& data) c
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
   // add base class Element
   Element::Pack(data);
 
   // bspotposxi_
-  AddtoPack(data, bspotposxi_);
+  add_to_pack(data, bspotposxi_);
   // filamenttype_
-  AddtoPack(data, filamenttype_);
+  add_to_pack(data, filamenttype_);
 
   return;
 }
@@ -81,11 +81,11 @@ void Discret::ELEMENTS::Beam3Base::Unpack(const std::vector<char>& data)
 
   // extract base class Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   Element::Unpack(basedata);
 
   // bspotposxi_
-  ExtractfromPack(position, data, bspotposxi_);
+  extract_from_pack(position, data, bspotposxi_);
   // filamenttype_
   filamenttype_ = static_cast<Inpar::BEAMINTERACTION::FilamentType>(ExtractInt(position, data));
 

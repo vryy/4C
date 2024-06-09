@@ -108,7 +108,7 @@ void CONTACT::Element::Pack(Core::Communication::PackBuffer& data) const
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
 
   // add base class Mortar::Element
   Mortar::Element::Pack(data);
@@ -128,7 +128,7 @@ void CONTACT::Element::Unpack(const std::vector<char>& data)
 
   // extract base class Mortar::Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   Mortar::Element::Unpack(basedata);
 
   if (position != data.size())

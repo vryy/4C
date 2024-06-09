@@ -172,15 +172,15 @@ void Discret::ELEMENTS::SolidScatra::Pack(Core::Communication::PackBuffer& data)
   Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
-  AddtoPack(data, UniqueParObjectId());
+  add_to_pack(data, UniqueParObjectId());
 
   // add base class Element
   Core::Elements::Element::Pack(data);
 
-  AddtoPack(data, (int)celltype_);
+  add_to_pack(data, (int)celltype_);
   AddToPack(data, properties_);
 
-  data.AddtoPack(material_post_setup_);
+  data.add_to_pack(material_post_setup_);
 
   // optional data, e.g., EAS data
   Discret::ELEMENTS::Pack(solid_scatra_calc_variant_, data);
@@ -194,14 +194,14 @@ void Discret::ELEMENTS::SolidScatra::Unpack(const std::vector<char>& data)
 
   // extract base class Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   Core::Elements::Element::Unpack(basedata);
 
   celltype_ = static_cast<Core::FE::CellType>(ExtractInt(position, data));
 
   ExtractFromPack(position, data, properties_);
 
-  Core::Communication::ParObject::ExtractfromPack(position, data, material_post_setup_);
+  Core::Communication::ParObject::extract_from_pack(position, data, material_post_setup_);
 
   // reset solid and scatra interfaces
   solid_scatra_calc_variant_ = CreateSolidScatraCalculationInterface(celltype_, properties_.solid);

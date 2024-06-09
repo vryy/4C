@@ -80,12 +80,12 @@ void Mat::Maxwell0dAcinusNeoHookean::Pack(Core::Communication::PackBuffer& data)
   // Pack type of this instance of ParObject
   int type = UniqueParObjectId();
 
-  AddtoPack(data, type);
+  add_to_pack(data, type);
 
   // Pack matid
   int matid = -1;
   if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
-  AddtoPack(data, matid);
+  add_to_pack(data, matid);
 }
 
 
@@ -99,7 +99,7 @@ void Mat::Maxwell0dAcinusNeoHookean::Unpack(const std::vector<char>& data)
 
   // Extract matid
   int matid;
-  ExtractfromPack(position, data, matid);
+  extract_from_pack(position, data, matid);
   params_ = nullptr;
   if (Global::Problem::Instance()->Materials() != Teuchos::null)
     if (Global::Problem::Instance()->Materials()->Num() != 0)

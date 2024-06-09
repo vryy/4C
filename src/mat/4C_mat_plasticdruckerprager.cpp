@@ -66,16 +66,16 @@ void Mat::PlasticDruckerPrager::Pack(Core::Communication::PackBuffer& data) cons
   Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
   int matid = -1;
   if (params_ != nullptr) matid = params_->Id();
-  AddtoPack(data, matid);
+  add_to_pack(data, matid);
   int histsize = Initialized() ? strainpllast_.size() : 0;
-  AddtoPack(data, histsize);
+  add_to_pack(data, histsize);
   for (int var = 0; var < histsize; ++var)
   {
-    AddtoPack(data, strainpllast_.at(var));
-    AddtoPack(data, strainbarpllast_.at(var));
+    add_to_pack(data, strainpllast_.at(var));
+    add_to_pack(data, strainbarpllast_.at(var));
   }
 }
 
@@ -87,7 +87,7 @@ void Mat::PlasticDruckerPrager::Unpack(const std::vector<char>& data)
   Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   int matid;
-  ExtractfromPack(position, data, matid);
+  extract_from_pack(position, data, matid);
   params_ = nullptr;
   if (Global::Problem::Instance()->Materials() != Teuchos::null)
   {
@@ -104,7 +104,7 @@ void Mat::PlasticDruckerPrager::Unpack(const std::vector<char>& data)
     }
 
     int histsize;
-    ExtractfromPack(position, data, histsize);
+    extract_from_pack(position, data, histsize);
 
     if (histsize == 0) isinit_ = false;
 
@@ -117,10 +117,10 @@ void Mat::PlasticDruckerPrager::Unpack(const std::vector<char>& data)
       Core::LinAlg::Matrix<NUM_STRESS_3D, 1> tmp_vect(true);
       double tmp_scalar = 0.0;
 
-      ExtractfromPack(position, data, tmp_vect);
+      extract_from_pack(position, data, tmp_vect);
       strainpllast_.push_back(tmp_vect);
 
-      ExtractfromPack(position, data, tmp_scalar);
+      extract_from_pack(position, data, tmp_scalar);
       strainbarpllast_.push_back(tmp_scalar);
 
       strainplcurr_.push_back(tmp_vect);

@@ -679,11 +679,11 @@ void MultiScale::MicroStatic::Output(Teuchos::RCP<Core::IO::DiscretizationWriter
     {
       if ((*lastalpha_)[i] != Teuchos::null)
       {
-        Core::Communication::ParObject::AddtoPack(data, *(*lastalpha_)[i]);
+        Core::Communication::ParObject::add_to_pack(data, *(*lastalpha_)[i]);
       }
       else
       {
-        Core::Communication::ParObject::AddtoPack(data, *emptyalpha);
+        Core::Communication::ParObject::add_to_pack(data, *emptyalpha);
       }
     }
     data.StartPacking();
@@ -691,11 +691,11 @@ void MultiScale::MicroStatic::Output(Teuchos::RCP<Core::IO::DiscretizationWriter
     {
       if ((*lastalpha_)[i] != Teuchos::null)
       {
-        Core::Communication::ParObject::AddtoPack(data, *(*lastalpha_)[i]);
+        Core::Communication::ParObject::add_to_pack(data, *(*lastalpha_)[i]);
       }
       else
       {
-        Core::Communication::ParObject::AddtoPack(data, *emptyalpha);
+        Core::Communication::ParObject::add_to_pack(data, *emptyalpha);
       }
     }
     output->WriteVector("alpha", data(), *discret_->ElementColMap());
@@ -1142,16 +1142,16 @@ void MultiScale::MicroStaticParObject::Pack(Core::Communication::PackBuffer& dat
   Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
-  AddtoPack(data, UniqueParObjectId());
+  add_to_pack(data, UniqueParObjectId());
 
   const auto* micro_data = MultiScale::MicroStaticParObject::get_micro_static_data_ptr();
-  AddtoPack(data, micro_data->gp_);
-  AddtoPack(data, micro_data->eleowner_);
-  AddtoPack(data, micro_data->microdisnum_);
-  AddtoPack(data, micro_data->V0_);
-  AddtoPack(data, micro_data->defgrd_);
-  AddtoPack(data, micro_data->stress_);
-  AddtoPack(data, micro_data->cmat_);
+  add_to_pack(data, micro_data->gp_);
+  add_to_pack(data, micro_data->eleowner_);
+  add_to_pack(data, micro_data->microdisnum_);
+  add_to_pack(data, micro_data->V0_);
+  add_to_pack(data, micro_data->defgrd_);
+  add_to_pack(data, micro_data->stress_);
+  add_to_pack(data, micro_data->cmat_);
 }
 
 void MultiScale::MicroStaticParObject::Unpack(const std::vector<char>& data)
@@ -1161,13 +1161,13 @@ void MultiScale::MicroStaticParObject::Unpack(const std::vector<char>& data)
   Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   MultiScale::MicroStaticParObject::MicroStaticData micro_data{};
-  ExtractfromPack(position, data, micro_data.gp_);
-  ExtractfromPack(position, data, micro_data.eleowner_);
-  ExtractfromPack(position, data, micro_data.microdisnum_);
-  ExtractfromPack(position, data, micro_data.V0_);
-  ExtractfromPack(position, data, micro_data.defgrd_);
-  ExtractfromPack(position, data, micro_data.stress_);
-  ExtractfromPack(position, data, micro_data.cmat_);
+  extract_from_pack(position, data, micro_data.gp_);
+  extract_from_pack(position, data, micro_data.eleowner_);
+  extract_from_pack(position, data, micro_data.microdisnum_);
+  extract_from_pack(position, data, micro_data.V0_);
+  extract_from_pack(position, data, micro_data.defgrd_);
+  extract_from_pack(position, data, micro_data.stress_);
+  extract_from_pack(position, data, micro_data.cmat_);
   SetMicroStaticData(micro_data);
 
   if (position != data.size())

@@ -191,7 +191,7 @@ void XFEM::MultiFieldMapExtractor::Init(const XDisVec& dis_vec, int max_num_rese
   // --- count set size
   for (cit_map = my_coupled_sl_dis.begin(); cit_map != my_coupled_sl_dis.end(); ++cit_map)
   {
-    Core::Communication::ParObject::AddtoPack(data, cit_map->second);
+    Core::Communication::ParObject::add_to_pack(data, cit_map->second);
   }
 
   // --- activate packing
@@ -201,7 +201,7 @@ void XFEM::MultiFieldMapExtractor::Init(const XDisVec& dis_vec, int max_num_rese
   for (cit_map = my_coupled_sl_dis.begin(); cit_map != my_coupled_sl_dis.end(); ++cit_map)
   {
     sendgid.push_back(cit_map->first);
-    Core::Communication::ParObject::AddtoPack(data, cit_map->second);
+    Core::Communication::ParObject::add_to_pack(data, cit_map->second);
   }
 
   // swap into std::vector<char>
@@ -299,9 +299,9 @@ void XFEM::MultiFieldMapExtractor::Init(const XDisVec& dis_vec, int max_num_rese
     while (index < receivedset.size())
     {
       int gid = receivedgid[j];
-      // the set gets cleared at the beginning of the ExtractfromPack routine!
+      // the set gets cleared at the beginning of the extract_from_pack routine!
       std::set<int> rs;
-      Core::Communication::ParObject::ExtractfromPack(index, receivedset, rs);
+      Core::Communication::ParObject::extract_from_pack(index, receivedset, rs);
       g_coupled_sl_dis[gid].insert(rs.begin(), rs.end());
       ++j;
     }

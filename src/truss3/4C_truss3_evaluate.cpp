@@ -545,9 +545,9 @@ void Discret::ELEMENTS::Truss3::CalcGPStresses(
 
   {
     Core::Communication::PackBuffer data;
-    AddtoPack(data, stress);
+    add_to_pack(data, stress);
     data.StartPacking();
-    AddtoPack(data, stress);
+    add_to_pack(data, stress);
     std::copy(data().begin(), data().end(), std::back_inserter(*stressdata));
   }
 }

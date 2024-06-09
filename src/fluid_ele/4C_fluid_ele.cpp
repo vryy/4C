@@ -226,25 +226,25 @@ void Discret::ELEMENTS::Fluid::Pack(Core::Communication::PackBuffer& data) const
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
   // add base class Element
   Element::Pack(data);
   // is_ale_
-  AddtoPack(data, is_ale_);
+  add_to_pack(data, is_ale_);
   // Discretisation type
-  AddtoPack(data, distype_);
+  add_to_pack(data, distype_);
 
   // time-dependent subgrid scales
   bool is_tds(false);
   if (tds_ != Teuchos::null)
   {
     is_tds = true;
-    AddtoPack(data, is_tds);
+    add_to_pack(data, is_tds);
     tds_->Pack(data);
   }
   else
   {
-    AddtoPack(data, is_tds);
+    add_to_pack(data, is_tds);
   }
 
   return;
@@ -263,7 +263,7 @@ void Discret::ELEMENTS::Fluid::Unpack(const std::vector<char>& data)
 
   // extract base class Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   Element::Unpack(basedata);
   // is_ale_
   is_ale_ = ExtractInt(position, data);
@@ -276,7 +276,7 @@ void Discret::ELEMENTS::Fluid::Unpack(const std::vector<char>& data)
   {
     tds_ = Teuchos::rcp(new FLD::TDSEleData());
     std::vector<char> pbtest;
-    ExtractfromPack(position, data, pbtest);
+    extract_from_pack(position, data, pbtest);
     if (pbtest.size() == 0) FOUR_C_THROW("Seems no TDS data available");
     tds_->Unpack(pbtest);
   }

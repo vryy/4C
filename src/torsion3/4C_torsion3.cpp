@@ -128,9 +128,9 @@ void Discret::ELEMENTS::Torsion3::Pack(Core::Communication::PackBuffer& data) co
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
   Element::Pack(data);
-  AddtoPack(data, bendingpotential_);
+  add_to_pack(data, bendingpotential_);
 }
 
 
@@ -145,7 +145,7 @@ void Discret::ELEMENTS::Torsion3::Unpack(const std::vector<char>& data)
   Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   Element::Unpack(basedata);
   bendingpotential_ = static_cast<BendingPotential>(ExtractInt(position, data));
 

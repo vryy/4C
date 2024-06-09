@@ -277,23 +277,23 @@ void Discret::ELEMENTS::NStet5::Pack(Core::Communication::PackBuffer& data) cons
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
   // add base class Element
   Element::Pack(data);
   // material_
-  AddtoPack(data, material_);
+  add_to_pack(data, material_);
   // stresstype_
-  AddtoPack(data, stresstype_);
+  add_to_pack(data, stresstype_);
   // V_
-  AddtoPack(data, V_);
+  add_to_pack(data, V_);
 
   // Pack prestress
-  AddtoPack(data, static_cast<int>(pstype_));
-  AddtoPack(data, pstime_);
-  AddtoPack(data, time_);
+  add_to_pack(data, static_cast<int>(pstype_));
+  add_to_pack(data, pstime_);
+  add_to_pack(data, time_);
   if (Prestress::IsMulf(pstype_))
   {
-    Core::Communication::ParObject::AddtoPack(data, *prestress_);
+    Core::Communication::ParObject::add_to_pack(data, *prestress_);
   }
 }
 
@@ -310,23 +310,23 @@ void Discret::ELEMENTS::NStet5::Unpack(const std::vector<char>& data)
 
   // extract base class Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   Element::Unpack(basedata);
   // material_
-  ExtractfromPack(position, data, material_);
+  extract_from_pack(position, data, material_);
   // stresstype_
   stresstype_ = static_cast<StressType>(ExtractInt(position, data));
   // V_
-  ExtractfromPack(position, data, V_);
+  extract_from_pack(position, data, V_);
 
   // Extract prestress
   pstype_ = static_cast<Inpar::STR::PreStress>(ExtractInt(position, data));
-  ExtractfromPack(position, data, pstime_);
-  ExtractfromPack(position, data, time_);
+  extract_from_pack(position, data, pstime_);
+  extract_from_pack(position, data, time_);
   if (Prestress::IsMulf(pstype_))
   {
     std::vector<char> tmpprestress(0);
-    ExtractfromPack(position, data, tmpprestress);
+    extract_from_pack(position, data, tmpprestress);
     if (prestress_ == Teuchos::null)
       prestress_ = Teuchos::rcp(new Discret::ELEMENTS::PreStress(4, 4, true));
     prestress_->Unpack(tmpprestress);

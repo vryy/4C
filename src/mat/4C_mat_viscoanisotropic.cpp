@@ -85,11 +85,11 @@ void Mat::ViscoAnisotropic::Pack(Core::Communication::PackBuffer& data) const
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
   // matid
   int matid = -1;
   if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
-  AddtoPack(data, matid);
+  add_to_pack(data, matid);
 
   int numgp;
   int numhist;
@@ -103,21 +103,21 @@ void Mat::ViscoAnisotropic::Pack(Core::Communication::PackBuffer& data) const
     numgp = a1_->size();  // size is number of gausspoints
     numhist = histstresscurr_->size();
   }
-  AddtoPack(data, numgp);
+  add_to_pack(data, numgp);
   // Pack internal variables
   for (int gp = 0; gp < numgp; ++gp)
   {
-    AddtoPack(data, a1_->at(gp));
-    AddtoPack(data, a2_->at(gp));
-    AddtoPack(data, ca1_->at(gp));
-    AddtoPack(data, ca2_->at(gp));
+    add_to_pack(data, a1_->at(gp));
+    add_to_pack(data, a2_->at(gp));
+    add_to_pack(data, ca1_->at(gp));
+    add_to_pack(data, ca2_->at(gp));
   }
   // Pack history data
-  if (numhist != 0) AddtoPack(data, numhist);  // Length of history vector(s)
+  if (numhist != 0) add_to_pack(data, numhist);  // Length of history vector(s)
   for (int var = 0; var < numhist; ++var)
   {
-    AddtoPack(data, histstresslast_->at(var));
-    AddtoPack(data, artstresslast_->at(var));
+    add_to_pack(data, histstresslast_->at(var));
+    add_to_pack(data, artstresslast_->at(var));
   }
   return;
 }
@@ -135,7 +135,7 @@ void Mat::ViscoAnisotropic::Unpack(const std::vector<char>& data)
 
   // matid and recover params_
   int matid;
-  ExtractfromPack(position, data, matid);
+  extract_from_pack(position, data, matid);
   params_ = nullptr;
   if (Global::Problem::Instance()->Materials() != Teuchos::null)
     if (Global::Problem::Instance()->Materials()->Num() != 0)
@@ -151,7 +151,7 @@ void Mat::ViscoAnisotropic::Unpack(const std::vector<char>& data)
     }
 
   int numgp, numhist;
-  ExtractfromPack(position, data, numgp);
+  extract_from_pack(position, data, numgp);
   if (numgp == 0)
   {  // no history data to unpack
     isinit_ = false;
@@ -168,19 +168,19 @@ void Mat::ViscoAnisotropic::Unpack(const std::vector<char>& data)
   for (int gp = 0; gp < numgp; ++gp)
   {
     std::vector<double> a;
-    ExtractfromPack(position, data, a);
+    extract_from_pack(position, data, a);
     a1_->at(gp) = a;
-    ExtractfromPack(position, data, a);
+    extract_from_pack(position, data, a);
     a2_->at(gp) = a;
-    ExtractfromPack(position, data, a);
+    extract_from_pack(position, data, a);
     ca1_->at(gp) = a;
-    ExtractfromPack(position, data, a);
+    extract_from_pack(position, data, a);
     ca2_->at(gp) = a;
   }
 
 
   // unpack history
-  ExtractfromPack(position, data, numhist);
+  extract_from_pack(position, data, numhist);
   histstresscurr_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
   artstresscurr_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
   histstresslast_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
@@ -193,9 +193,9 @@ void Mat::ViscoAnisotropic::Unpack(const std::vector<char>& data)
     artstresscurr_->push_back(tmp);
 
     // last vectors are unpacked
-    ExtractfromPack(position, data, tmp);
+    extract_from_pack(position, data, tmp);
     histstresslast_->push_back(tmp);
-    ExtractfromPack(position, data, tmp);
+    extract_from_pack(position, data, tmp);
     artstresslast_->push_back(tmp);
   }
 

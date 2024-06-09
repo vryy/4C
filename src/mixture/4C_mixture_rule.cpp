@@ -100,13 +100,13 @@ MIXTURE::MixtureRule::MixtureRule(MIXTURE::PAR::MixtureRule* params)
 void MIXTURE::MixtureRule::PackMixtureRule(Core::Communication::PackBuffer& data) const
 {
   // Add number of Gauss points
-  Core::Communication::ParObject::AddtoPack(data, numgp_);
+  Core::Communication::ParObject::add_to_pack(data, numgp_);
 
   // Add flag whether it has already read the element
-  Core::Communication::ParObject::AddtoPack(data, static_cast<int>(has_read_element_));
+  Core::Communication::ParObject::add_to_pack(data, static_cast<int>(has_read_element_));
 
   // Add flags whether it is setup
-  Core::Communication::ParObject::AddtoPack(data, static_cast<int>(is_setup_));
+  Core::Communication::ParObject::add_to_pack(data, static_cast<int>(is_setup_));
 }
 
 // Unpack the mixture rule

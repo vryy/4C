@@ -2150,8 +2150,8 @@ void XFEM::XFluidTimeInt::export_methods(
       for (std::map<int, std::map<int, int>>::iterator node_it = dofset_marker_export_.begin();
            node_it != dofset_marker_export_.end(); node_it++)
       {
-        Core::Communication::ParObject::AddtoPack(dataSend, node_it->first);
-        Core::Communication::ParObject::AddtoPack(dataSend, node_it->second);
+        Core::Communication::ParObject::add_to_pack(dataSend, node_it->first);
+        Core::Communication::ParObject::add_to_pack(dataSend, node_it->second);
       }
 
       dataSend.StartPacking();
@@ -2160,8 +2160,8 @@ void XFEM::XFluidTimeInt::export_methods(
       for (std::map<int, std::map<int, int>>::iterator node_it = dofset_marker_export_.begin();
            node_it != dofset_marker_export_.end(); node_it++)
       {
-        Core::Communication::ParObject::AddtoPack(dataSend, node_it->first);
-        Core::Communication::ParObject::AddtoPack(dataSend, node_it->second);
+        Core::Communication::ParObject::add_to_pack(dataSend, node_it->first);
+        Core::Communication::ParObject::add_to_pack(dataSend, node_it->second);
       }
 
       std::vector<char> dataRecv;
@@ -2178,8 +2178,8 @@ void XFEM::XFluidTimeInt::export_methods(
         std::map<int, int> dofset_map;  // dofset map <nds, Method>
 
         // unpack reconstruction method data
-        Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, nid);
-        Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, dofset_map);
+        Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, nid);
+        Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, dofset_map);
 
         // distribute the received information on this proc if the info is required on this node
 

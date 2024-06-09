@@ -86,21 +86,21 @@ void Mat::Maxwell0dAcinusDoubleExponential::Pack(Core::Communication::PackBuffer
   // Pack type of this instance of ParObject
   int type = UniqueParObjectId();
 
-  AddtoPack(data, type);
-  AddtoPack(data, e1_01_);
-  AddtoPack(data, e1_lin1_);
-  AddtoPack(data, e1_exp1_);
-  AddtoPack(data, tau1_);
+  add_to_pack(data, type);
+  add_to_pack(data, e1_01_);
+  add_to_pack(data, e1_lin1_);
+  add_to_pack(data, e1_exp1_);
+  add_to_pack(data, tau1_);
 
-  AddtoPack(data, e1_02_);
-  AddtoPack(data, e1_lin2_);
-  AddtoPack(data, e1_exp2_);
-  AddtoPack(data, tau2_);
+  add_to_pack(data, e1_02_);
+  add_to_pack(data, e1_lin2_);
+  add_to_pack(data, e1_exp2_);
+  add_to_pack(data, tau2_);
 
   // Pack matid
   int matid = -1;
   if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
-  AddtoPack(data, matid);
+  add_to_pack(data, matid);
 }
 
 
@@ -113,20 +113,20 @@ void Mat::Maxwell0dAcinusDoubleExponential::Unpack(const std::vector<char>& data
   Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // Extract e1_01_, e1_lin1_, e1_exp1_, tau1_
-  ExtractfromPack(position, data, e1_01_);
-  ExtractfromPack(position, data, e1_lin1_);
-  ExtractfromPack(position, data, e1_exp1_);
-  ExtractfromPack(position, data, tau1_);
+  extract_from_pack(position, data, e1_01_);
+  extract_from_pack(position, data, e1_lin1_);
+  extract_from_pack(position, data, e1_exp1_);
+  extract_from_pack(position, data, tau1_);
 
   // Extract e1_02_, e1_lin2_, e1_exp2_, tau2_
-  ExtractfromPack(position, data, e1_02_);
-  ExtractfromPack(position, data, e1_lin2_);
-  ExtractfromPack(position, data, e1_exp2_);
-  ExtractfromPack(position, data, tau2_);
+  extract_from_pack(position, data, e1_02_);
+  extract_from_pack(position, data, e1_lin2_);
+  extract_from_pack(position, data, e1_exp2_);
+  extract_from_pack(position, data, tau2_);
 
   // Extract matid
   int matid;
-  ExtractfromPack(position, data, matid);
+  extract_from_pack(position, data, matid);
   params_ = nullptr;
   if (Global::Problem::Instance()->Materials() != Teuchos::null)
     if (Global::Problem::Instance()->Materials()->Num() != 0)

@@ -111,10 +111,10 @@ void Discret::ELEMENTS::Truss3Scatra::Pack(Core::Communication::PackBuffer& data
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
   // add base class Element
   Truss3::Pack(data);
-  AddtoPack(data, impltype_);
+  add_to_pack(data, impltype_);
 }
 
 /*----------------------------------------------------------------------*
@@ -127,10 +127,10 @@ void Discret::ELEMENTS::Truss3Scatra::Unpack(const std::vector<char>& data)
 
   // extract base class Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   Truss3::Unpack(basedata);
 
-  ExtractfromPack(position, data, impltype_);
+  extract_from_pack(position, data, impltype_);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
@@ -318,9 +318,9 @@ void Discret::ELEMENTS::Truss3Scatra::CalcGPStresses(
       }
       {
         Core::Communication::PackBuffer data;
-        AddtoPack(data, stress);
+        add_to_pack(data, stress);
         data.StartPacking();
-        AddtoPack(data, stress);
+        add_to_pack(data, stress);
         std::copy(data().begin(), data().end(), std::back_inserter(*stressdata));
       }
     }

@@ -153,17 +153,17 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27::Pack(Core::Communication::PackBuffer& 
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
   // add base class Element
   SoBase::Pack(data);
 
   // detJ_
-  AddtoPack(data, detJ_);
+  add_to_pack(data, detJ_);
 
   // invJ_
   const auto size = (int)invJ_.size();
-  AddtoPack(data, size);
-  for (int i = 0; i < size; ++i) AddtoPack(data, invJ_[i]);
+  add_to_pack(data, size);
+  for (int i = 0; i < size; ++i) add_to_pack(data, invJ_[i]);
 
   return;
 }
@@ -180,15 +180,15 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27::Unpack(const std::vector<char>& data)
 
   // extract base class Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   SoBase::Unpack(basedata);
   // detJ_
-  ExtractfromPack(position, data, detJ_);
+  extract_from_pack(position, data, detJ_);
   // invJ_
   int size = 0;
-  ExtractfromPack(position, data, size);
+  extract_from_pack(position, data, size);
   invJ_.resize(size, Core::LinAlg::Matrix<NUMDIM_SONURBS27, NUMDIM_SONURBS27>(true));
-  for (int i = 0; i < size; ++i) ExtractfromPack(position, data, invJ_[i]);
+  for (int i = 0; i < size; ++i) extract_from_pack(position, data, invJ_[i]);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);

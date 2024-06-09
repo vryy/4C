@@ -116,14 +116,14 @@ void MIXTURE::Implementation::RemodelFiberImplementation<numstates, T>::Pack(
   }
   else
   {
-    data.AddtoPack(lambda_pre_);
+    data.add_to_pack(lambda_pre_);
 
     for (const auto& state : states_)
     {
-      data.AddtoPack(state.growth_scalar);
-      data.AddtoPack(state.lambda_r);
-      data.AddtoPack(state.lambda_f);
-      data.AddtoPack(state.lambda_ext);
+      data.add_to_pack(state.growth_scalar);
+      data.add_to_pack(state.lambda_r);
+      data.add_to_pack(state.lambda_f);
+      data.add_to_pack(state.lambda_ext);
     }
   }
 }
@@ -141,16 +141,16 @@ void MIXTURE::Implementation::RemodelFiberImplementation<numstates, T>::Unpack(
   }
   else
   {
-    Core::Communication::ParObject::ExtractfromPack(position, data, lambda_pre_);
+    Core::Communication::ParObject::extract_from_pack(position, data, lambda_pre_);
     sig_h_ = evaluate_fiber_cauchy_stress(1.0, 1.0 / lambda_pre_, 1.0);
 
 
     for (auto& state : states_)
     {
-      Core::Communication::ParObject::ExtractfromPack(position, data, state.growth_scalar);
-      Core::Communication::ParObject::ExtractfromPack(position, data, state.lambda_r);
-      Core::Communication::ParObject::ExtractfromPack(position, data, state.lambda_f);
-      Core::Communication::ParObject::ExtractfromPack(position, data, state.lambda_ext);
+      Core::Communication::ParObject::extract_from_pack(position, data, state.growth_scalar);
+      Core::Communication::ParObject::extract_from_pack(position, data, state.lambda_r);
+      Core::Communication::ParObject::extract_from_pack(position, data, state.lambda_f);
+      Core::Communication::ParObject::extract_from_pack(position, data, state.lambda_ext);
     }
   }
 }

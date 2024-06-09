@@ -52,51 +52,51 @@ CONTACT::FriNodeDataContainer::FriNodeDataContainer()
 void CONTACT::FriNodeDataContainer::Pack(Core::Communication::PackBuffer& data) const
 {
   // add jump_
-  Core::Communication::ParObject::AddtoPack(data, jump_, 3 * sizeof(double));
+  Core::Communication::ParObject::add_to_pack(data, jump_, 3 * sizeof(double));
   // add slip_
-  Core::Communication::ParObject::AddtoPack(data, slip_);
+  Core::Communication::ParObject::add_to_pack(data, slip_);
   // add slip_
-  Core::Communication::ParObject::AddtoPack(data, slipold_);
+  Core::Communication::ParObject::add_to_pack(data, slipold_);
   // add traction_
-  Core::Communication::ParObject::AddtoPack(data, traction_, 3 * sizeof(double));
+  Core::Communication::ParObject::add_to_pack(data, traction_, 3 * sizeof(double));
   // add tractionold_
-  Core::Communication::ParObject::AddtoPack(data, tractionold_, 3 * sizeof(double));
+  Core::Communication::ParObject::add_to_pack(data, tractionold_, 3 * sizeof(double));
   // add traction_
-  Core::Communication::ParObject::AddtoPack(data, tractionLTL_, 3 * sizeof(double));
+  Core::Communication::ParObject::add_to_pack(data, tractionLTL_, 3 * sizeof(double));
   // add tractionold_
-  Core::Communication::ParObject::AddtoPack(data, tractionoldLTL_, 3 * sizeof(double));
+  Core::Communication::ParObject::add_to_pack(data, tractionoldLTL_, 3 * sizeof(double));
 
   // add drowsold_,mrowsold_,mnodesold_
   int hasdata = drowsold_.size();
 
-  Core::Communication::ParObject::AddtoPack(data, hasdata);
+  Core::Communication::ParObject::add_to_pack(data, hasdata);
 
   if (hasdata != 0)
   {
     int dentries = (int)drowsold_.size();
-    Core::Communication::ParObject::AddtoPack(data, dentries);
-    Core::Communication::ParObject::AddtoPack(data, drowsold_);
-    Core::Communication::ParObject::AddtoPack(data, mrowsold_);
-    Core::Communication::ParObject::AddtoPack(data, mnodesold_);
+    Core::Communication::ParObject::add_to_pack(data, dentries);
+    Core::Communication::ParObject::add_to_pack(data, drowsold_);
+    Core::Communication::ParObject::add_to_pack(data, mrowsold_);
+    Core::Communication::ParObject::add_to_pack(data, mnodesold_);
   }
 
   int hasdata2 = drowsoldLTL_.size();
-  Core::Communication::ParObject::AddtoPack(data, hasdata2);
+  Core::Communication::ParObject::add_to_pack(data, hasdata2);
   if (hasdata2 != 0)
   {
     int dentries = (int)drowsoldLTL_.size();
-    Core::Communication::ParObject::AddtoPack(data, dentries);
-    Core::Communication::ParObject::AddtoPack(data, drowsoldLTL_);
-    Core::Communication::ParObject::AddtoPack(data, mrowsoldLTL_);
+    Core::Communication::ParObject::add_to_pack(data, dentries);
+    Core::Communication::ParObject::add_to_pack(data, drowsoldLTL_);
+    Core::Communication::ParObject::add_to_pack(data, mrowsoldLTL_);
   }
   // add derivjump
   int hasdataderivjump = derivjump_.size();
-  Core::Communication::ParObject::AddtoPack(data, hasdataderivjump);
+  Core::Communication::ParObject::add_to_pack(data, hasdataderivjump);
 
   if (hasdataderivjump != 0)
   {
     for (int i = 0; i < hasdataderivjump; i++)
-      Core::Communication::ParObject::AddtoPack(data, (derivjump_[i]));
+      Core::Communication::ParObject::add_to_pack(data, (derivjump_[i]));
   }
 
   return;
@@ -110,58 +110,60 @@ void CONTACT::FriNodeDataContainer::Unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   // jump_
-  Core::Communication::ParObject::ExtractfromPack(position, data, jump_, 3 * sizeof(double));
+  Core::Communication::ParObject::extract_from_pack(position, data, jump_, 3 * sizeof(double));
   // slip_
   slip_ = Core::Communication::ParObject::ExtractInt(position, data);
   // slipold_
   slipold_ = Core::Communication::ParObject::ExtractInt(position, data);
   // traction_
-  Core::Communication::ParObject::ExtractfromPack(position, data, traction_, 3 * sizeof(double));
+  Core::Communication::ParObject::extract_from_pack(position, data, traction_, 3 * sizeof(double));
   // tractionold_
-  Core::Communication::ParObject::ExtractfromPack(position, data, tractionold_, 3 * sizeof(double));
+  Core::Communication::ParObject::extract_from_pack(
+      position, data, tractionold_, 3 * sizeof(double));
   // traction_
-  Core::Communication::ParObject::ExtractfromPack(position, data, tractionLTL_, 3 * sizeof(double));
+  Core::Communication::ParObject::extract_from_pack(
+      position, data, tractionLTL_, 3 * sizeof(double));
   // tractionold_
-  Core::Communication::ParObject::ExtractfromPack(
+  Core::Communication::ParObject::extract_from_pack(
       position, data, tractionoldLTL_, 3 * sizeof(double));
 
   // drowsold_,mrowsold_,mnodesold_
   int hasdata;
-  Core::Communication::ParObject::ExtractfromPack(position, data, hasdata);
+  Core::Communication::ParObject::extract_from_pack(position, data, hasdata);
 
   if (hasdata != 0)
   {
     int dentries = Core::Communication::ParObject::ExtractInt(position, data);
 
     drowsold_.resize(dentries);
-    Core::Communication::ParObject::ExtractfromPack(position, data, drowsold_);
-    Core::Communication::ParObject::ExtractfromPack(position, data, mrowsold_);
-    Core::Communication::ParObject::ExtractfromPack(position, data, mnodesold_);
+    Core::Communication::ParObject::extract_from_pack(position, data, drowsold_);
+    Core::Communication::ParObject::extract_from_pack(position, data, mrowsold_);
+    Core::Communication::ParObject::extract_from_pack(position, data, mnodesold_);
   }
 
   // drowsold_,mrowsold_,mnodesold_
   int hasdata2;
-  Core::Communication::ParObject::ExtractfromPack(position, data, hasdata2);
+  Core::Communication::ParObject::extract_from_pack(position, data, hasdata2);
 
   if (hasdata2 != 0)
   {
     int dentries = Core::Communication::ParObject::ExtractInt(position, data);
 
     drowsoldLTL_.resize(dentries);
-    Core::Communication::ParObject::ExtractfromPack(position, data, drowsoldLTL_);
-    Core::Communication::ParObject::ExtractfromPack(position, data, mrowsoldLTL_);
+    Core::Communication::ParObject::extract_from_pack(position, data, drowsoldLTL_);
+    Core::Communication::ParObject::extract_from_pack(position, data, mrowsoldLTL_);
   }
 
   // and derivjump_
   int hasdataderivjump;
-  Core::Communication::ParObject::ExtractfromPack(position, data, hasdataderivjump);
+  Core::Communication::ParObject::extract_from_pack(position, data, hasdataderivjump);
 
   if (hasdataderivjump != 0)
   {
     derivjump_.resize(hasdataderivjump);
     for (int i = 0; i < hasdataderivjump; i++)
     {
-      Core::Communication::ParObject::ExtractfromPack(position, data, derivjump_[i]);
+      Core::Communication::ParObject::extract_from_pack(position, data, derivjump_[i]);
     }
   }
 
@@ -186,18 +188,18 @@ CONTACT::FriNodeWearDataContainer::FriNodeWearDataContainer()
  *----------------------------------------------------------------------*/
 void CONTACT::FriNodeWearDataContainer::Pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::ParObject::AddtoPack(data, weightedwear_);
-  Core::Communication::ParObject::AddtoPack(data, deltaweightedwear_);
+  Core::Communication::ParObject::add_to_pack(data, weightedwear_);
+  Core::Communication::ParObject::add_to_pack(data, deltaweightedwear_);
 
   // add d2row
   int hasdata = d2rows_.size();
-  Core::Communication::ParObject::AddtoPack(data, hasdata);
+  Core::Communication::ParObject::add_to_pack(data, hasdata);
 
   if (hasdata != 0)
   {
     for (int i = 0; i < hasdata; i++)
     {
-      Core::Communication::ParObject::AddtoPack(data, (d2rows_[i]));
+      Core::Communication::ParObject::add_to_pack(data, (d2rows_[i]));
     }
   }
 
@@ -211,19 +213,19 @@ void CONTACT::FriNodeWearDataContainer::Pack(Core::Communication::PackBuffer& da
 void CONTACT::FriNodeWearDataContainer::Unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
-  Core::Communication::ParObject::ExtractfromPack(position, data, weightedwear_);
-  Core::Communication::ParObject::ExtractfromPack(position, data, deltaweightedwear_);
+  Core::Communication::ParObject::extract_from_pack(position, data, weightedwear_);
+  Core::Communication::ParObject::extract_from_pack(position, data, deltaweightedwear_);
 
   // d2rows_
   int hasdata;
-  Core::Communication::ParObject::ExtractfromPack(position, data, hasdata);
+  Core::Communication::ParObject::extract_from_pack(position, data, hasdata);
 
   if (hasdata != 0)
   {
     d2rows_.resize(hasdata);
     for (int i = 0; i < hasdata; i++)
     {
-      Core::Communication::ParObject::ExtractfromPack(position, data, d2rows_[i]);
+      Core::Communication::ParObject::extract_from_pack(position, data, d2rows_[i]);
     }
   }
   return;
@@ -293,18 +295,18 @@ void CONTACT::FriNode::Pack(Core::Communication::PackBuffer& data) const
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
 
   // add base class Mortar::Node
   CONTACT::Node::Pack(data);
 
   // add data_
   bool hasdata = (fridata_ != Teuchos::null);
-  AddtoPack(data, hasdata);
+  add_to_pack(data, hasdata);
   if (hasdata) fridata_->Pack(data);
 
   bool hasweardata = (weardata_ != Teuchos::null);
-  AddtoPack(data, hasweardata);
+  add_to_pack(data, hasweardata);
   if (hasweardata) weardata_->Pack(data);
 
   return;
@@ -322,7 +324,7 @@ void CONTACT::FriNode::Unpack(const std::vector<char>& data)
 
   // extract base class CONTACT::Node
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   CONTACT::Node::Unpack(basedata);
 
   // **************************

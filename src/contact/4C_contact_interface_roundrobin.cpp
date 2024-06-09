@@ -133,7 +133,7 @@ void CONTACT::Interface::round_robin_change_ownership()
     mele->Pack(dataeles);
 
     int ghost = 0;
-    Core::Communication::ParObject::AddtoPack(dataeles, ghost);
+    Core::Communication::ParObject::add_to_pack(dataeles, ghost);
   }
 
   dataeles.StartPacking();
@@ -155,7 +155,7 @@ void CONTACT::Interface::round_robin_change_ownership()
     else
       ghost = 0;
 
-    Core::Communication::ParObject::AddtoPack(dataeles, ghost);
+    Core::Communication::ParObject::add_to_pack(dataeles, ghost);
   }
   std::swap(sdataeles, dataeles());
 
@@ -195,8 +195,8 @@ void CONTACT::Interface::round_robin_change_ownership()
     {
       std::vector<char> data;
       int ghost = -1;
-      Core::Communication::ParObject::ExtractfromPack(index, rdataeles, data);
-      Core::Communication::ParObject::ExtractfromPack(index, rdataeles, ghost);
+      Core::Communication::ParObject::extract_from_pack(index, rdataeles, data);
+      Core::Communication::ParObject::extract_from_pack(index, rdataeles, ghost);
       if (ghost == -1) FOUR_C_THROW("UNPACK ERROR!!!!!!!!!");
 
       // this Teuchos::rcp holds the memory of the ele
@@ -256,7 +256,7 @@ void CONTACT::Interface::round_robin_change_ownership()
     }
 
     int ghost = 0;
-    Core::Communication::ParObject::AddtoPack(datanodes, ghost);
+    Core::Communication::ParObject::add_to_pack(datanodes, ghost);
   }
 
   datanodes.StartPacking();
@@ -290,7 +290,7 @@ void CONTACT::Interface::round_robin_change_ownership()
         ghost = 0;
     }
 
-    Core::Communication::ParObject::AddtoPack(datanodes, ghost);
+    Core::Communication::ParObject::add_to_pack(datanodes, ghost);
   }
   std::swap(sdatanodes, datanodes());
 
@@ -335,8 +335,8 @@ void CONTACT::Interface::round_robin_change_ownership()
       std::vector<char> data;
 
       int ghost = -1;
-      Core::Communication::ParObject::ExtractfromPack(index, rdatanodes, data);
-      Core::Communication::ParObject::ExtractfromPack(index, rdatanodes, ghost);
+      Core::Communication::ParObject::extract_from_pack(index, rdatanodes, data);
+      Core::Communication::ParObject::extract_from_pack(index, rdatanodes, ghost);
       if (ghost == -1) FOUR_C_THROW("UNPACK ERROR!!!!!!!!!");
 
       // this Teuchos::rcp holds the memory of the node

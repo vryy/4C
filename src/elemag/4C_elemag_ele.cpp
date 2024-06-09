@@ -175,16 +175,16 @@ void Discret::ELEMENTS::Elemag::Pack(Core::Communication::PackBuffer& data) cons
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
 
   // add base class Element
   Element::Pack(data);
 
   // Discretisation type
-  AddtoPack(data, distype_);
+  add_to_pack(data, distype_);
   int degree = degree_;
-  AddtoPack(data, degree);
-  AddtoPack(data, completepol_);
+  add_to_pack(data, degree);
+  add_to_pack(data, completepol_);
 
   return;
 }
@@ -202,16 +202,16 @@ void Discret::ELEMENTS::Elemag::Unpack(const std::vector<char>& data)
 
   // extract base class Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   Element::Unpack(basedata);
 
   // distype
   distype_ = static_cast<Core::FE::CellType>(ExtractInt(position, data));
   int val = 0;
-  ExtractfromPack(position, data, val);
+  extract_from_pack(position, data, val);
   FOUR_C_ASSERT(val >= 0 && val < 255, "Degree out of range");
   degree_ = val;
-  ExtractfromPack(position, data, val);
+  extract_from_pack(position, data, val);
   completepol_ = val;
 
   if (position != data.size())
@@ -362,12 +362,12 @@ void Discret::ELEMENTS::ElemagBoundary::Pack(Core::Communication::PackBuffer& da
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
   // add base class Element
   Element::Pack(data);
 
   // Discretisation type
-  // AddtoPack(data,distype_);
+  // add_to_pack(data,distype_);
 
   return;
 }
@@ -385,7 +385,7 @@ void Discret::ELEMENTS::ElemagBoundary::Unpack(const std::vector<char>& data)
 
   // extract base class Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   Element::Unpack(basedata);
 
   // distype

@@ -720,32 +720,32 @@ namespace Discret
      private:
       void pack_eas_data(Core::Communication::PackBuffer& data) const
       {
-        AddtoPack(data, easdata_.alpha);
-        AddtoPack(data, easdata_.alpha_backup);
-        AddtoPack(data, easdata_.alphao);
-        AddtoPack(data, easdata_.feas);
-        AddtoPack(data, easdata_.invKaa);
-        AddtoPack(data, easdata_.invKaao);
-        AddtoPack(data, easdata_.Kda);
-        AddtoPack(data, easdata_.Kdao);
-        AddtoPack(data, easdata_.eas_inc);
-        AddtoPack(data, easdata_.eas_inc_backup);
-        AddtoPack(data, easdata_.Kap);
+        add_to_pack(data, easdata_.alpha);
+        add_to_pack(data, easdata_.alpha_backup);
+        add_to_pack(data, easdata_.alphao);
+        add_to_pack(data, easdata_.feas);
+        add_to_pack(data, easdata_.invKaa);
+        add_to_pack(data, easdata_.invKaao);
+        add_to_pack(data, easdata_.Kda);
+        add_to_pack(data, easdata_.Kdao);
+        add_to_pack(data, easdata_.eas_inc);
+        add_to_pack(data, easdata_.eas_inc_backup);
+        add_to_pack(data, easdata_.Kap);
       };
 
       void unpack_eas_data(std::vector<char>::size_type& position, const std::vector<char>& data)
       {
-        ExtractfromPack(position, data, easdata_.alpha);
-        ExtractfromPack(position, data, easdata_.alpha_backup);
-        ExtractfromPack(position, data, easdata_.alphao);
-        ExtractfromPack(position, data, easdata_.feas);
-        ExtractfromPack(position, data, easdata_.invKaa);
-        ExtractfromPack(position, data, easdata_.invKaao);
-        ExtractfromPack(position, data, easdata_.Kda);
-        ExtractfromPack(position, data, easdata_.Kdao);
-        ExtractfromPack(position, data, easdata_.eas_inc);
-        ExtractfromPack(position, data, easdata_.eas_inc_backup);
-        ExtractfromPack(position, data, easdata_.Kap);
+        extract_from_pack(position, data, easdata_.alpha);
+        extract_from_pack(position, data, easdata_.alpha_backup);
+        extract_from_pack(position, data, easdata_.alphao);
+        extract_from_pack(position, data, easdata_.feas);
+        extract_from_pack(position, data, easdata_.invKaa);
+        extract_from_pack(position, data, easdata_.invKaao);
+        extract_from_pack(position, data, easdata_.Kda);
+        extract_from_pack(position, data, easdata_.Kdao);
+        extract_from_pack(position, data, easdata_.eas_inc);
+        extract_from_pack(position, data, easdata_.eas_inc_backup);
+        extract_from_pack(position, data, easdata_.Kap);
       };
 
       /** recover elementwise stored stuff

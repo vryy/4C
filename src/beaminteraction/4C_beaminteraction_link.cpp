@@ -100,26 +100,26 @@ void BEAMINTERACTION::BeamLink::Pack(Core::Communication::PackBuffer& data) cons
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
   // isinit_
-  AddtoPack(data, isinit_);
+  add_to_pack(data, isinit_);
   // issetup
-  AddtoPack(data, issetup_);
+  add_to_pack(data, issetup_);
   // add id
-  AddtoPack(data, id_);
+  add_to_pack(data, id_);
 
   // add eleids_
-  AddtoPack(data, bspot_ids_);
+  add_to_pack(data, bspot_ids_);
   // bspotpos1_
-  AddtoPack(data, bspotpos1_);
+  add_to_pack(data, bspotpos1_);
   // bspotpos2_
-  AddtoPack(data, bspotpos2_);
+  add_to_pack(data, bspotpos2_);
   // linkertype
-  AddtoPack(data, linkertype_);
+  add_to_pack(data, linkertype_);
   // timelinkwasset
-  AddtoPack(data, timelinkwasset_);
+  add_to_pack(data, timelinkwasset_);
   // reflength
-  AddtoPack(data, reflength_);
+  add_to_pack(data, reflength_);
 
   return;
 }
@@ -137,20 +137,20 @@ void BEAMINTERACTION::BeamLink::Unpack(const std::vector<char>& data)
   // issetup
   issetup_ = Core::Communication::ParObject::ExtractInt(position, data);
   // id_
-  ExtractfromPack(position, data, id_);
+  extract_from_pack(position, data, id_);
 
   // eleids_
-  ExtractfromPack(position, data, bspot_ids_);
+  extract_from_pack(position, data, bspot_ids_);
   // bspotpos1
-  ExtractfromPack(position, data, bspotpos1_);
+  extract_from_pack(position, data, bspotpos1_);
   // bspotpos2
-  ExtractfromPack(position, data, bspotpos2_);
+  extract_from_pack(position, data, bspotpos2_);
   // linkertype
   linkertype_ = static_cast<Inpar::BEAMINTERACTION::CrosslinkerType>(ExtractInt(position, data));
   // timelinkwasset
-  ExtractfromPack(position, data, timelinkwasset_);
+  extract_from_pack(position, data, timelinkwasset_);
   // reflength
-  ExtractfromPack(position, data, reflength_);
+  extract_from_pack(position, data, reflength_);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);

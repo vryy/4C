@@ -139,7 +139,7 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_round_robin(
       while (index < rdata.size())
       {
         std::vector<char> data;
-        Core::Communication::ParObject::ExtractfromPack(index, rdata, data);
+        Core::Communication::ParObject::extract_from_pack(index, rdata, data);
         // this Teuchos::rcp holds the memory of the node
         Teuchos::RCP<Core::Communication::ParObject> object =
             Teuchos::rcp(Core::Communication::Factory(data), true);
@@ -419,7 +419,7 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::receive_linker_and_fill_them_in_bi
       while (index < rdata.size())
       {
         std::vector<char> data;
-        Core::Communication::ParObject::ExtractfromPack(index, rdata, data);
+        Core::Communication::ParObject::extract_from_pack(index, rdata, data);
         // this Teuchos::rcp holds the memory of the node
         Teuchos::RCP<Core::Communication::ParObject> object =
             Teuchos::rcp(Core::Communication::Factory(data), true);

@@ -185,15 +185,15 @@ void Discret::ELEMENTS::FluidHDG::Pack(Core::Communication::PackBuffer& data) co
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
 
   // add base class Element
   Fluid::Pack(data);
 
   int degree = degree_;
-  AddtoPack(data, degree);
+  add_to_pack(data, degree);
   degree = completepol_;
-  AddtoPack(data, degree);
+  add_to_pack(data, degree);
 }
 
 
@@ -209,14 +209,14 @@ void Discret::ELEMENTS::FluidHDG::Unpack(const std::vector<char>& data)
 
   // extract base class Element
   std::vector<char> basedata(0);
-  Fluid::ExtractfromPack(position, data, basedata);
+  Fluid::extract_from_pack(position, data, basedata);
   Fluid::Unpack(basedata);
 
   int val = 0;
-  ExtractfromPack(position, data, val);
+  extract_from_pack(position, data, val);
   FOUR_C_ASSERT(val >= 0 && val < 255, "Degree out of range");
   degree_ = val;
-  ExtractfromPack(position, data, val);
+  extract_from_pack(position, data, val);
   completepol_ = val;
 
   if (position != data.size())

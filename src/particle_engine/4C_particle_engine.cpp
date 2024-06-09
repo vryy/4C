@@ -120,7 +120,7 @@ void PARTICLEENGINE::ParticleEngine::read_restart(
   while (position < particledata->size())
   {
     std::vector<char> data;
-    Core::Communication::ParObject::ExtractfromPack(position, *particledata, data);
+    Core::Communication::ParObject::extract_from_pack(position, *particledata, data);
 
     // this std::shared_ptr holds the memory
     std::shared_ptr<Core::Communication::ParObject> object(Core::Communication::Factory(data));
@@ -1186,9 +1186,9 @@ void PARTICLEENGINE::ParticleEngine::determine_ghosting_dependent_maps_and_sets(
 
   // pack data for sending
   Core::Communication::PackBuffer data;
-  Core::Communication::ParObject::AddtoPack(data, ghostedbins_);
+  Core::Communication::ParObject::add_to_pack(data, ghostedbins_);
   data.StartPacking();
-  Core::Communication::ParObject::AddtoPack(data, ghostedbins_);
+  Core::Communication::ParObject::add_to_pack(data, ghostedbins_);
 
   // communicate ghosted bins between all processors
   for (int torank = 0; torank < comm_.NumProc(); ++torank)
@@ -1214,7 +1214,7 @@ void PARTICLEENGINE::ParticleEngine::determine_ghosting_dependent_maps_and_sets(
 
     while (position < rmsg.size())
     {
-      Core::Communication::ParObject::ExtractfromPack(position, rmsg, receivedbins);
+      Core::Communication::ParObject::extract_from_pack(position, rmsg, receivedbins);
 
       // iterate over received bins
       for (int receivedbin : receivedbins)
@@ -1742,7 +1742,7 @@ void PARTICLEENGINE::ParticleEngine::communicate_particles(
     while (position < rmsg.size())
     {
       std::vector<char> data;
-      Core::Communication::ParObject::ExtractfromPack(position, rmsg, data);
+      Core::Communication::ParObject::extract_from_pack(position, rmsg, data);
 
       // this std::shared_ptr holds the memory
       std::shared_ptr<Core::Communication::ParObject> object(Core::Communication::Factory(data));
@@ -1777,9 +1777,9 @@ void PARTICLEENGINE::ParticleEngine::communicate_direct_ghosting_map(
   for (const auto& p : directghosting)
   {
     Core::Communication::PackBuffer data;
-    Core::Communication::ParObject::AddtoPack(data, p.second);
+    Core::Communication::ParObject::add_to_pack(data, p.second);
     data.StartPacking();
-    Core::Communication::ParObject::AddtoPack(data, p.second);
+    Core::Communication::ParObject::add_to_pack(data, p.second);
     std::swap(sdata[p.first], data());
   }
 
@@ -1801,7 +1801,7 @@ void PARTICLEENGINE::ParticleEngine::communicate_direct_ghosting_map(
 
     while (position < rmsg.size())
     {
-      Core::Communication::ParObject::ExtractfromPack(position, rmsg, receiveddirectghosting);
+      Core::Communication::ParObject::extract_from_pack(position, rmsg, receiveddirectghosting);
 
       // iterate over particle types
       for (const auto& typeIt : receiveddirectghosting)

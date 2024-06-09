@@ -202,11 +202,11 @@ void Mat::ScalarDepInterp::Pack(Core::Communication::PackBuffer& data) const
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
   // matid
   int matid = -1;
   if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
-  AddtoPack(data, matid);
+  add_to_pack(data, matid);
 
   int numgp = 0;
   if (isinit_)
@@ -214,11 +214,11 @@ void Mat::ScalarDepInterp::Pack(Core::Communication::PackBuffer& data) const
     numgp = lambda_.size();
     ;  // size is number of gausspoints
   }
-  AddtoPack(data, numgp);
+  add_to_pack(data, numgp);
 
   for (int gp = 0; gp < numgp; gp++)
   {
-    AddtoPack(data, lambda_.at(gp));
+    add_to_pack(data, lambda_.at(gp));
   }
 
   // Pack data of both elastic materials
@@ -243,7 +243,7 @@ void Mat::ScalarDepInterp::Unpack(const std::vector<char>& data)
 
   // matid and recover params_
   int matid;
-  ExtractfromPack(position, data, matid);
+  extract_from_pack(position, data, matid);
   params_ = nullptr;
   if (Global::Problem::Instance()->Materials() != Teuchos::null)
     if (Global::Problem::Instance()->Materials()->Num() != 0)
@@ -259,7 +259,7 @@ void Mat::ScalarDepInterp::Unpack(const std::vector<char>& data)
     }
 
   int numgp;
-  ExtractfromPack(position, data, numgp);
+  extract_from_pack(position, data, numgp);
   if (not(numgp == 0))
   {
     lambda_ = std::vector<double>(numgp, 1.0);
@@ -267,14 +267,14 @@ void Mat::ScalarDepInterp::Unpack(const std::vector<char>& data)
     for (int gp = 0; gp < numgp; gp++)
     {
       double lambda = 1.0;
-      ExtractfromPack(position, data, lambda);
+      extract_from_pack(position, data, lambda);
       lambda_.at(gp) = lambda;
     }
   }
 
   // Unpack data of elastic material (these lines are copied from element.cpp)
   std::vector<char> dataelastic;
-  ExtractfromPack(position, data, dataelastic);
+  extract_from_pack(position, data, dataelastic);
   if (dataelastic.size() > 0)
   {
     Core::Communication::ParObject* o =
@@ -288,7 +288,7 @@ void Mat::ScalarDepInterp::Unpack(const std::vector<char>& data)
 
   // Unpack data of elastic material (these lines are copied from element.cpp)
   std::vector<char> dataelastic2;
-  ExtractfromPack(position, data, dataelastic2);
+  extract_from_pack(position, data, dataelastic2);
   if (dataelastic2.size() > 0)
   {
     Core::Communication::ParObject* o =

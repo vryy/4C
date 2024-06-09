@@ -84,16 +84,16 @@ void Mat::Maxwell0dAcinusExponential::Pack(Core::Communication::PackBuffer& data
   // Pack type of this instance of ParObject
   int type = UniqueParObjectId();
 
-  AddtoPack(data, type);
-  AddtoPack(data, e1_0_);
-  AddtoPack(data, e1_lin_);
-  AddtoPack(data, e1_exp_);
-  AddtoPack(data, tau_);
+  add_to_pack(data, type);
+  add_to_pack(data, e1_0_);
+  add_to_pack(data, e1_lin_);
+  add_to_pack(data, e1_exp_);
+  add_to_pack(data, tau_);
 
   // Pack matid
   int matid = -1;
   if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
-  AddtoPack(data, matid);
+  add_to_pack(data, matid);
 }
 
 
@@ -106,14 +106,14 @@ void Mat::Maxwell0dAcinusExponential::Unpack(const std::vector<char>& data)
   Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // Extract e1_0_, e1_lin_, e1_exp_, tau_
-  ExtractfromPack(position, data, e1_0_);
-  ExtractfromPack(position, data, e1_lin_);
-  ExtractfromPack(position, data, e1_exp_);
-  ExtractfromPack(position, data, tau_);
+  extract_from_pack(position, data, e1_0_);
+  extract_from_pack(position, data, e1_lin_);
+  extract_from_pack(position, data, e1_exp_);
+  extract_from_pack(position, data, tau_);
 
   // Extract matid
   int matid;
-  ExtractfromPack(position, data, matid);
+  extract_from_pack(position, data, matid);
   params_ = nullptr;
   if (Global::Problem::Instance()->Materials() != Teuchos::null)
     if (Global::Problem::Instance()->Materials()->Num() != 0)

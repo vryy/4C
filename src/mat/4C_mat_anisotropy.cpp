@@ -31,20 +31,20 @@ Mat::Anisotropy::Anisotropy()
 
 void Mat::Anisotropy::PackAnisotropy(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::ParObject::AddtoPack(data, numgp_);
-  Core::Communication::ParObject::AddtoPack(data, static_cast<int>(element_fibers_initialized_));
-  Core::Communication::ParObject::AddtoPack(data, static_cast<int>(gp_fibers_initialized_));
-  Core::Communication::ParObject::AddtoPack(data, element_fibers_);
+  Core::Communication::ParObject::add_to_pack(data, numgp_);
+  Core::Communication::ParObject::add_to_pack(data, static_cast<int>(element_fibers_initialized_));
+  Core::Communication::ParObject::add_to_pack(data, static_cast<int>(gp_fibers_initialized_));
+  Core::Communication::ParObject::add_to_pack(data, element_fibers_);
   PackFiberVector<Core::LinAlg::Matrix<3, 1>>(data, gp_fibers_);
 
   if (element_cylinder_coordinate_system_manager_)
   {
-    Core::Communication::ParObject::AddtoPack(data, static_cast<int>(true));
+    Core::Communication::ParObject::add_to_pack(data, static_cast<int>(true));
     element_cylinder_coordinate_system_manager_->Pack(data);
   }
   else
   {
-    Core::Communication::ParObject::AddtoPack(data, static_cast<int>(false));
+    Core::Communication::ParObject::add_to_pack(data, static_cast<int>(false));
   }
 
   for (const auto& gpCylinderCoordinateSystemManager : gp_cylinder_coordinate_system_managers_)
@@ -56,12 +56,12 @@ void Mat::Anisotropy::PackAnisotropy(Core::Communication::PackBuffer& data) cons
 void Mat::Anisotropy::UnpackAnisotropy(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
-  Core::Communication::ParObject::ExtractfromPack(position, data, numgp_);
+  Core::Communication::ParObject::extract_from_pack(position, data, numgp_);
   element_fibers_initialized_ =
       static_cast<bool>(Core::Communication::ParObject::ExtractInt(position, data));
   gp_fibers_initialized_ =
       static_cast<bool>(Core::Communication::ParObject::ExtractInt(position, data));
-  Core::Communication::ParObject::ExtractfromPack(position, data, element_fibers_);
+  Core::Communication::ParObject::extract_from_pack(position, data, element_fibers_);
   UnpackFiberVector<Core::LinAlg::Matrix<3, 1>>(position, data, gp_fibers_);
 
   if (static_cast<bool>(Core::Communication::ParObject::ExtractInt(position, data)))

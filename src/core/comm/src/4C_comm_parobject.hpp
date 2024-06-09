@@ -56,12 +56,12 @@ namespace Core::Communication
    {
    data.resize(0);                       // resize data to zero
    int tmp = UniqueParObjectId()         // get the unique parobject id
-   AddtoPack(data,tmp);                  // pack this id
-   AddtoPack(data,i);                    // pack i
-   AddtoPack(data,b);                    // pack b
-   AddtoPack(data,vec,50*sizeof(double); // pack vec
-   AddtoPack(data,bla);                  // pack bla
-   AddtoPack(data,matrix);               // pack matrix
+   add_to_pack(data,tmp);                  // pack this id
+   add_to_pack(data,i);                    // pack i
+   add_to_pack(data,b);                    // pack b
+   add_to_pack(data,vec,50*sizeof(double); // pack vec
+   add_to_pack(data,bla);                  // pack bla
+   add_to_pack(data,matrix);               // pack matrix
    return;
    }
    \endcode
@@ -70,12 +70,13 @@ namespace Core::Communication
    Fool::Unpack(const vector< char > &data)
    {
    std::vector<char>::size_type position = 0;                      // used to mark current reading
-   position in data int tmp; ExtractfromPack(position,data,tmp);    // unpack the unique id if (tmp
+   position in data int tmp; extract_from_pack(position,data,tmp);    // unpack the unique id if
+  (tmp
    != UniqueParObjectId()) FOUR_C_THROW("data does not belong to this class");
-   ExtractfromPack(position,data,i);      // extract i
-   ExtractfromPack(position,data,b);      // extract b
-   ExtractfromPack(position,data,bla);    // extract bla
-   ExtractfromPack(position,data,matrix); // extract matrix
+   extract_from_pack(position,data,i);      // extract i
+   extract_from_pack(position,data,b);      // extract b
+   extract_from_pack(position,data,bla);    // extract bla
+   extract_from_pack(position,data,matrix); // extract matrix
    if (position != data.size()) FOUR_C_THROW("Mismatch in size of data");
    return;
    }
@@ -109,8 +110,8 @@ namespace Core::Communication
    Epetra_CrsMatrix objects and is not supposed to in the future either.
 
    <br>
-   Here is a list of data types that are currently supported by the existing AddtoPack and
-   ExtractfromPack methods \code bool, bool* char, char* enum, enum* int, int* double, double*
+   Here is a list of data types that are currently supported by the existing add_to_pack and
+   extract_from_pack methods \code bool, bool* char, char* enum, enum* int, int* double, double*
    float, float*
    string
    template<typename T, typename U>
@@ -130,7 +131,8 @@ namespace Core::Communication
    Note that trying to pack an unsupported type of data (such as e.g. std::list<T> ) might compile
    and link but will result in the most (or least) funny behavior. Also, this type of bug might be
    extremely hard to find.... <br><br> Of course, you are welcome to add more specializations to the
-   existing AddtoPack and ExtractfromPack templates. If you do so, please update this documentation.
+   existing add_to_pack and extract_from_pack templates. If you do so, please update this
+  documentation.
 
    */
   class ParObject
@@ -200,11 +202,11 @@ namespace Core::Communication
      * \note To be more precise, you can use this template for types of data that sizeof(kind) works
      * for. Do not use for classes or structs or stl containers!
      */
-    static void AddtoPack(PackBuffer& data, const int& stuff) { data.AddtoPack(stuff); }
+    static void add_to_pack(PackBuffer& data, const int& stuff) { data.add_to_pack(stuff); }
 
-    static void AddtoPack(PackBuffer& data, const unsigned& stuff) { data.AddtoPack(stuff); }
+    static void add_to_pack(PackBuffer& data, const unsigned& stuff) { data.add_to_pack(stuff); }
 
-    static void AddtoPack(PackBuffer& data, const double& stuff) { data.AddtoPack(stuff); }
+    static void add_to_pack(PackBuffer& data, const double& stuff) { data.add_to_pack(stuff); }
 
     /*!
      * \brief Add scoped enums to the end of a char vector data
@@ -217,14 +219,14 @@ namespace Core::Communication
      */
     template <class T,
         typename Enable = typename std::enable_if<is_enum_class<T>::value, void>::type>
-    static void AddtoPack(PackBuffer& data, const T& stuff)
+    static void add_to_pack(PackBuffer& data, const T& stuff)
     {
-      data.AddtoPack<T>(stuff);
+      data.add_to_pack<T>(stuff);
     }
 
-    static void AddtoPack(PackBuffer& data, const ParObject& obj);
+    static void add_to_pack(PackBuffer& data, const ParObject& obj);
 
-    static void AddtoPack(PackBuffer& data, const ParObject* obj);
+    static void add_to_pack(PackBuffer& data, const ParObject* obj);
 
     /*!
      * \brief Add stuff to the end of a char vector data
@@ -234,11 +236,11 @@ namespace Core::Communication
      * \param[in] stuff std::vector<T> that get's added to stuff
      */
     template <typename T>
-    static void AddtoPack(PackBuffer& data, const std::vector<T>& stuff)
+    static void add_to_pack(PackBuffer& data, const std::vector<T>& stuff)
     {
       int numele = stuff.size();
-      AddtoPack(data, numele);
-      AddtoPack(data, stuff.data(), numele * sizeof(T));
+      add_to_pack(data, numele);
+      add_to_pack(data, stuff.data(), numele * sizeof(T));
     }
 
     /*!
@@ -249,9 +251,9 @@ namespace Core::Communication
      * \param[in] stuff std::array<T, n> that get's added to stuff
      */
     template <typename T, std::size_t numentries>
-    static void AddtoPack(PackBuffer& data, const std::array<T, numentries>& stuff)
+    static void add_to_pack(PackBuffer& data, const std::array<T, numentries>& stuff)
     {
-      AddtoPack(data, stuff.data(), numentries * sizeof(T));
+      add_to_pack(data, stuff.data(), numentries * sizeof(T));
     }
 
     /*!
@@ -262,15 +264,15 @@ namespace Core::Communication
      * \param[in] stuff std::map<T,U> that get's added to stuff
      */
     template <typename T, typename U>
-    static void AddtoPack(PackBuffer& data, const std::map<T, U>& stuff)
+    static void add_to_pack(PackBuffer& data, const std::map<T, U>& stuff)
     {
       int numentries = (int)stuff.size();
-      AddtoPack(data, numentries);
+      add_to_pack(data, numentries);
 
       for (const auto& entry : stuff)
       {
-        AddtoPack(data, entry.first);
-        AddtoPack(data, entry.second);
+        add_to_pack(data, entry.first);
+        add_to_pack(data, entry.second);
       }
     }
 
@@ -283,15 +285,15 @@ namespace Core::Communication
      * \param[in] stuff std::unordered_map<T,U> that get's added to stuff
      */
     template <typename T, typename U>
-    static void AddtoPack(PackBuffer& data, const std::unordered_map<T, U>& stuff)
+    static void add_to_pack(PackBuffer& data, const std::unordered_map<T, U>& stuff)
     {
       int numentries = (int)stuff.size();
-      AddtoPack(data, numentries);
+      add_to_pack(data, numentries);
 
       for (const auto& entry : stuff)
       {
-        AddtoPack(data, entry.first);
-        AddtoPack(data, entry.second);
+        add_to_pack(data, entry.first);
+        add_to_pack(data, entry.second);
       }
     }
 
@@ -303,10 +305,10 @@ namespace Core::Communication
      * \param[in] stuff std::pair<T,U> that get's added to stuff
      */
     template <typename T, typename U>
-    static void AddtoPack(PackBuffer& data, const std::pair<T, U>& stuff)
+    static void add_to_pack(PackBuffer& data, const std::pair<T, U>& stuff)
     {
-      AddtoPack(data, stuff.first);
-      AddtoPack(data, stuff.second);
+      add_to_pack(data, stuff.first);
+      add_to_pack(data, stuff.second);
     }
 
     /*!
@@ -317,16 +319,16 @@ namespace Core::Communication
      * \param[in] stuff Pairedvector<Ts...> that get's added to stuff
      */
     template <typename... Ts>
-    static void AddtoPack(PackBuffer& data, const Core::Gen::Pairedvector<Ts...>& stuff)
+    static void add_to_pack(PackBuffer& data, const Core::Gen::Pairedvector<Ts...>& stuff)
     {
       int numentries = (int)stuff.size();
-      AddtoPack(data, numentries);
+      add_to_pack(data, numentries);
 
       int i = 0;
       for (const auto& colcurr : stuff)
       {
-        AddtoPack(data, colcurr.first);
-        AddtoPack(data, colcurr.second);
+        add_to_pack(data, colcurr.first);
+        add_to_pack(data, colcurr.second);
         ++i;
       }
 
@@ -341,16 +343,16 @@ namespace Core::Communication
      * \param[in] stuff std::vector<Pairedvector<Ts...> > that get's added to stuff
      */
     template <typename... Ts>
-    static void AddtoPack(
+    static void add_to_pack(
         PackBuffer& data, const std::vector<Core::Gen::Pairedvector<Ts...>>& stuff)
     {
       int numentries = (int)stuff.size();
-      AddtoPack(data, numentries);
+      add_to_pack(data, numentries);
 
       int i = 0;
       for (auto& paired_vec : stuff)
       {
-        AddtoPack(data, paired_vec);
+        add_to_pack(data, paired_vec);
         ++i;
       }
 
@@ -365,16 +367,16 @@ namespace Core::Communication
      * \param[in] stuff std::vector<pairedmatrix<Ts...> > that get's added to stuff
      */
     template <typename... Ts>
-    static void AddtoPack(
+    static void add_to_pack(
         PackBuffer& data, const std::vector<Core::Gen::Pairedmatrix<Ts...>>& stuff)
     {
       int numentries = (int)stuff.size();
-      AddtoPack(data, numentries);
+      add_to_pack(data, numentries);
 
       int i = 0;
       for (const typename Core::Gen::PairedmatrixBase<Ts...>::type& paired_mat : stuff)
       {
-        AddtoPack(data, paired_mat);
+        add_to_pack(data, paired_mat);
         ++i;
       }
 
@@ -389,10 +391,10 @@ namespace Core::Communication
      * \param[in] stuff std::set<T> that get's added to stuff
      */
     template <typename T, typename U>
-    static void AddtoPack(PackBuffer& data, const std::set<T, U>& stuff)
+    static void add_to_pack(PackBuffer& data, const std::set<T, U>& stuff)
     {
       int numentries = (int)stuff.size();
-      AddtoPack(data, numentries);
+      add_to_pack(data, numentries);
 
       // iterator
       typename std::set<T, U>::const_iterator colcurr;
@@ -400,7 +402,7 @@ namespace Core::Communication
       int i = 0;
       for (colcurr = stuff.begin(); colcurr != stuff.end(); ++colcurr)
       {
-        AddtoPack(data, *colcurr);
+        add_to_pack(data, *colcurr);
         ++i;
       }
 
@@ -414,7 +416,7 @@ namespace Core::Communication
      * \param[in,out] data char string stuff shall be added to
      * \param[in] stuff Core::LinAlg::SerialDenseMatrix that get's added to stuff
      */
-    static void AddtoPack(PackBuffer& data, const Core::LinAlg::SerialDenseMatrix& stuff);
+    static void add_to_pack(PackBuffer& data, const Core::LinAlg::SerialDenseMatrix& stuff);
 
     /*!
      * \brief Add stuff to the end of a char vector data
@@ -423,7 +425,7 @@ namespace Core::Communication
      * \param[in,out] data char string stuff shall be added to
      * \param[in] stuff Core::LinAlg::SerialDenseVector that get's added to stuff
      */
-    static void AddtoPack(PackBuffer& data, const Core::LinAlg::SerialDenseVector& stuff);
+    static void add_to_pack(PackBuffer& data, const Core::LinAlg::SerialDenseVector& stuff);
 
     /*!
      * \brief Add stuff to the end of a char vector data
@@ -433,11 +435,11 @@ namespace Core::Communication
      * \param[in] stuff Matrix that get's added to data
      */
     template <unsigned i, unsigned j>
-    static void AddtoPack(PackBuffer& data, const Core::LinAlg::Matrix<i, j>& stuff)
+    static void add_to_pack(PackBuffer& data, const Core::LinAlg::Matrix<i, j>& stuff)
     {
-      AddtoPack(data, i);
-      AddtoPack(data, j);
-      AddtoPack(data, stuff.A(), stuff.M() * stuff.N() * sizeof(double));
+      add_to_pack(data, i);
+      add_to_pack(data, j);
+      add_to_pack(data, stuff.A(), stuff.M() * stuff.N() * sizeof(double));
     }
 
     /*!
@@ -448,19 +450,19 @@ namespace Core::Communication
      * \param[in] stuff vector of matrices that get's added to data
      */
     template <unsigned i, unsigned j>
-    static void AddtoPack(PackBuffer& data, const std::vector<Core::LinAlg::Matrix<i, j>>& stuff)
+    static void add_to_pack(PackBuffer& data, const std::vector<Core::LinAlg::Matrix<i, j>>& stuff)
     {
       // add length of vector to be packed so that later the vector can be restored with correct
       // length when unpacked
       int vectorlength = stuff.size();
-      AddtoPack(data, vectorlength);
+      add_to_pack(data, vectorlength);
 
       for (int p = 0; p < vectorlength; ++p)
       {
         const double* A = stuff[p].A();
 
         // add all data in vector to pack
-        AddtoPack(data, A, i * j * sizeof(double));
+        add_to_pack(data, A, i * j * sizeof(double));
       }
     }
 
@@ -471,7 +473,7 @@ namespace Core::Communication
      * \param[in,out] data char string stuff shall be added to
      * \param[in] stuff string that get's added to stuff
      */
-    static void AddtoPack(PackBuffer& data, const std::string& stuff);
+    static void add_to_pack(PackBuffer& data, const std::string& stuff);
 
     /*!
      * \brief Add stuff to a char vector data
@@ -482,9 +484,9 @@ namespace Core::Communication
      * \param[in] stuffsize length of stuff in byte
      */
     template <typename kind>
-    static void AddtoPack(PackBuffer& data, const kind* stuff, const int stuffsize)
+    static void add_to_pack(PackBuffer& data, const kind* stuff, const int stuffsize)
     {
-      data.AddtoPack(stuff, stuffsize);
+      data.add_to_pack(stuff, stuffsize);
     }
 
     /*!
@@ -499,7 +501,7 @@ namespace Core::Communication
      * \param[out] stuff basic data type (float int double char ...) to extract from data
      */
     template <typename T>
-    static typename std::enable_if<std::is_pod<T>::value, void>::type ExtractfromPack(
+    static typename std::enable_if<std::is_pod<T>::value, void>::type extract_from_pack(
         std::vector<char>::size_type& position, const std::vector<char>& data, T& stuff)
     {
       int size = sizeof(T);
@@ -507,7 +509,7 @@ namespace Core::Communication
       position += size;
     }
 
-    static void ExtractfromPack(
+    static void extract_from_pack(
         std::vector<char>::size_type& position, const std::vector<char>& data, int& stuff)
     {
       int size = sizeof(int);
@@ -515,7 +517,7 @@ namespace Core::Communication
       position += size;
     }
 
-    static void ExtractfromPack(
+    static void extract_from_pack(
         std::vector<char>::size_type& position, const std::vector<char>& data, unsigned& stuff)
     {
       int size = sizeof(unsigned);
@@ -523,7 +525,7 @@ namespace Core::Communication
       position += size;
     }
 
-    static void ExtractfromPack(
+    static void extract_from_pack(
         std::vector<char>::size_type& position, const std::vector<char>& data, double& stuff)
     {
       int size = sizeof(double);
@@ -534,7 +536,7 @@ namespace Core::Communication
     static int ExtractInt(std::vector<char>::size_type& position, const std::vector<char>& data)
     {
       int i;
-      ExtractfromPack(position, data, i);
+      extract_from_pack(position, data, i);
       return i;
     }
 
@@ -542,7 +544,7 @@ namespace Core::Communication
         std::vector<char>::size_type& position, const std::vector<char>& data)
     {
       unsigned i;
-      ExtractfromPack(position, data, i);
+      extract_from_pack(position, data, i);
       return i;
     }
 
@@ -550,7 +552,7 @@ namespace Core::Communication
         std::vector<char>::size_type& position, const std::vector<char>& data)
     {
       double f;
-      ExtractfromPack(position, data, f);
+      extract_from_pack(position, data, f);
       return f;
     }
 
@@ -565,14 +567,14 @@ namespace Core::Communication
      * \param[out] stuff std::vector<T> to extract from data
      */
     template <typename T>
-    static void ExtractfromPack(std::vector<char>::size_type& position,
+    static void extract_from_pack(std::vector<char>::size_type& position,
         const std::vector<char>& data, std::vector<T>& stuff)
     {
       int dim = 0;
-      ExtractfromPack(position, data, dim);
+      extract_from_pack(position, data, dim);
       stuff.resize(dim);
       int size = dim * sizeof(T);
-      ExtractfromPack(position, data, stuff.data(), size);
+      extract_from_pack(position, data, stuff.data(), size);
     }
 
     /*!
@@ -586,11 +588,11 @@ namespace Core::Communication
      * \param[out] stuff std::map<T,n> to extract from data
      */
     template <typename T, std::size_t numentries>
-    static void ExtractfromPack(std::vector<char>::size_type& position,
+    static void extract_from_pack(std::vector<char>::size_type& position,
         const std::vector<char>& data, std::array<T, numentries>& stuff)
     {
       int size = numentries * sizeof(T);
-      ExtractfromPack(position, data, stuff.data(), size);
+      extract_from_pack(position, data, stuff.data(), size);
     }
 
     /*!
@@ -604,11 +606,11 @@ namespace Core::Communication
      * \param[out] stuff std::map<T,U> to extract from data
      */
     template <typename T, typename U>
-    static void ExtractfromPack(std::vector<char>::size_type& position,
+    static void extract_from_pack(std::vector<char>::size_type& position,
         const std::vector<char>& data, std::map<T, U>& stuff)
     {
       int numentries = 0;
-      ExtractfromPack(position, data, numentries);
+      extract_from_pack(position, data, numentries);
 
       stuff.clear();
 
@@ -616,8 +618,8 @@ namespace Core::Communication
       {
         T first;
         U second;
-        ExtractfromPack(position, data, first);
-        ExtractfromPack(position, data, second);
+        extract_from_pack(position, data, first);
+        extract_from_pack(position, data, second);
 
         // add to map
         stuff.insert(std::pair<T, U>(first, second));
@@ -635,11 +637,11 @@ namespace Core::Communication
      * \param[out] stuff std::unordered_map<T,U> to extract from data
      */
     template <typename T, typename U>
-    static void ExtractfromPack(std::vector<char>::size_type& position,
+    static void extract_from_pack(std::vector<char>::size_type& position,
         const std::vector<char>& data, std::unordered_map<T, U>& stuff)
     {
       int numentries = 0;
-      ExtractfromPack(position, data, numentries);
+      extract_from_pack(position, data, numentries);
 
       stuff.clear();
 
@@ -647,8 +649,8 @@ namespace Core::Communication
       {
         T first;
         U second;
-        ExtractfromPack(position, data, first);
-        ExtractfromPack(position, data, second);
+        extract_from_pack(position, data, first);
+        extract_from_pack(position, data, second);
 
         // add to map
         stuff.insert({first, second});
@@ -666,11 +668,11 @@ namespace Core::Communication
      * \param[out] stuff std::pair<T,U> to extract from data
      */
     template <typename T, typename U>
-    static void ExtractfromPack(std::vector<char>::size_type& position,
+    static void extract_from_pack(std::vector<char>::size_type& position,
         const std::vector<char>& data, std::pair<T, U>& stuff)
     {
-      ExtractfromPack(position, data, stuff.first);
-      ExtractfromPack(position, data, stuff.second);
+      extract_from_pack(position, data, stuff.first);
+      extract_from_pack(position, data, stuff.second);
     }
 
     /*!
@@ -684,11 +686,11 @@ namespace Core::Communication
      * \param[out] stuff std::vector<std::pair<T,U>> to extract from data
      */
     template <typename T, typename U>
-    static void ExtractfromPack(std::vector<char>::size_type& position,
+    static void extract_from_pack(std::vector<char>::size_type& position,
         const std::vector<char>& data, std::vector<std::pair<T, U>>& stuff)
     {
       int numentries = 0;
-      ExtractfromPack(position, data, numentries);
+      extract_from_pack(position, data, numentries);
 
       stuff.clear();
 
@@ -696,8 +698,8 @@ namespace Core::Communication
       {
         T first;
         U second;
-        ExtractfromPack(position, data, first);
-        ExtractfromPack(position, data, second);
+        extract_from_pack(position, data, first);
+        extract_from_pack(position, data, second);
 
         // add to map
         stuff.push_back(std::pair<T, U>(first, second));
@@ -715,11 +717,11 @@ namespace Core::Communication
      * \param[out] stuff Pairedvector<Key,T0,Ts...> to extract from data
      */
     template <typename Key, typename T0, typename... Ts>
-    static void ExtractfromPack(std::vector<char>::size_type& position,
+    static void extract_from_pack(std::vector<char>::size_type& position,
         const std::vector<char>& data, Core::Gen::Pairedvector<Key, T0, Ts...>& stuff)
     {
       int numentries = 0;
-      ExtractfromPack(position, data, numentries);
+      extract_from_pack(position, data, numentries);
 
       stuff.clear();
       stuff.resize(numentries);
@@ -728,8 +730,8 @@ namespace Core::Communication
       {
         Key first;
         T0 second;
-        ExtractfromPack(position, data, first);
-        ExtractfromPack(position, data, second);
+        extract_from_pack(position, data, first);
+        extract_from_pack(position, data, second);
 
         // add to map
         stuff[first] = second;
@@ -747,11 +749,11 @@ namespace Core::Communication
      * \param[out] stuff std::vector< Pairedvector<Ts...> > to extract from data
      */
     template <typename... Ts>
-    static void ExtractfromPack(std::vector<char>::size_type& position,
+    static void extract_from_pack(std::vector<char>::size_type& position,
         const std::vector<char>& data, std::vector<Core::Gen::Pairedvector<Ts...>>& stuff)
     {
       int numentries = 0;
-      ExtractfromPack(position, data, numentries);
+      extract_from_pack(position, data, numentries);
 
       stuff.clear();
       stuff.resize(numentries);
@@ -759,7 +761,7 @@ namespace Core::Communication
       Core::Gen::Pairedvector<Ts...> paired_vec;
       for (int i = 0; i < numentries; i++)
       {
-        ExtractfromPack(position, data, paired_vec);
+        extract_from_pack(position, data, paired_vec);
 
 
         // add to map
@@ -778,11 +780,11 @@ namespace Core::Communication
      * \param[out] stuff std::vector< pairedmatrix<Ts...> > to extract from data
      */
     template <typename... Ts>
-    static void ExtractfromPack(std::vector<char>::size_type& position,
+    static void extract_from_pack(std::vector<char>::size_type& position,
         const std::vector<char>& data, std::vector<Core::Gen::Pairedmatrix<Ts...>>& stuff)
     {
       int numentries = 0;
-      ExtractfromPack(position, data, numentries);
+      extract_from_pack(position, data, numentries);
 
       stuff.clear();
       stuff.resize(numentries);
@@ -790,7 +792,7 @@ namespace Core::Communication
       typename Core::Gen::PairedmatrixBase<Ts...>::type paired_mat;
       for (int i = 0; i < numentries; i++)
       {
-        ExtractfromPack(position, data, paired_mat);
+        extract_from_pack(position, data, paired_mat);
 
         // add to map
         stuff[i] = paired_mat;
@@ -808,18 +810,18 @@ namespace Core::Communication
      * \param[out] stuff std::set<T> to extract from data
      */
     template <typename T, typename U>
-    static void ExtractfromPack(std::vector<char>::size_type& position,
+    static void extract_from_pack(std::vector<char>::size_type& position,
         const std::vector<char>& data, std::set<T, U>& stuff)
     {
       int numentries = 0;
-      ExtractfromPack(position, data, numentries);
+      extract_from_pack(position, data, numentries);
 
       stuff.clear();
 
       for (int i = 0; i < numentries; i++)
       {
         T value;
-        ExtractfromPack(position, data, value);
+        extract_from_pack(position, data, value);
 
         // add to set
         stuff.insert(value);
@@ -837,7 +839,7 @@ namespace Core::Communication
      * \param[in] data char vector where stuff is extracted from
      * \param[out] stuff Core::LinAlg::SerialDenseMatrix to extract from data
      */
-    static void ExtractfromPack(std::vector<char>::size_type& position,
+    static void extract_from_pack(std::vector<char>::size_type& position,
         const std::vector<char>& data, Core::LinAlg::SerialDenseMatrix& stuff);
 
     /*!
@@ -851,7 +853,7 @@ namespace Core::Communication
      * \param[in] data char vector where stuff is extracted from
      * \param[out] stuff Core::LinAlg::SerialDenseVector to extract from data
      */
-    static void ExtractfromPack(std::vector<char>::size_type& position,
+    static void extract_from_pack(std::vector<char>::size_type& position,
         const std::vector<char>& data, Core::LinAlg::SerialDenseVector& stuff);
 
     /*!
@@ -865,16 +867,16 @@ namespace Core::Communication
      * \param[out] stuff Matrix to extract from data
      */
     template <unsigned int i, unsigned int j>
-    static void ExtractfromPack(std::vector<char>::size_type& position,
+    static void extract_from_pack(std::vector<char>::size_type& position,
         const std::vector<char>& data, Core::LinAlg::Matrix<i, j>& stuff)
     {
       int m = 0;
-      ExtractfromPack(position, data, m);
+      extract_from_pack(position, data, m);
       if (m != i) FOUR_C_THROW("first dimension mismatch");
       int n = 0;
-      ExtractfromPack(position, data, n);
+      extract_from_pack(position, data, n);
       if (n != j) FOUR_C_THROW("second dimension mismatch");
-      ExtractfromPack(position, data, stuff.A(), stuff.M() * stuff.N() * sizeof(double));
+      extract_from_pack(position, data, stuff.A(), stuff.M() * stuff.N() * sizeof(double));
     }
 
     /*!
@@ -888,13 +890,13 @@ namespace Core::Communication
      * \param[out] stuff STL vector of matrices to extract from data
      */
     template <unsigned int i, unsigned int j>
-    static void ExtractfromPack(std::vector<char>::size_type& position,
+    static void extract_from_pack(std::vector<char>::size_type& position,
         const std::vector<char>& data, std::vector<Core::LinAlg::Matrix<i, j>>& stuff)
     {
       // get length of vector to be extracted and allocate according amount of memory for all
       // extracted data
       int vectorlength;
-      ExtractfromPack(position, data, vectorlength);
+      extract_from_pack(position, data, vectorlength);
 
       // resize vector stuff appropriately
       stuff.resize(vectorlength);
@@ -904,7 +906,7 @@ namespace Core::Communication
         double* A = stuff[p].A();
 
         // actual extraction of data
-        ExtractfromPack(position, data, A, i * j * sizeof(double));
+        extract_from_pack(position, data, A, i * j * sizeof(double));
       }
     }
 
@@ -918,7 +920,7 @@ namespace Core::Communication
      * \param[in] data char vector where stuff is extracted from
      * \param[out] stuff string to extract from data
      */
-    static void ExtractfromPack(
+    static void extract_from_pack(
         std::vector<char>::size_type& position, const std::vector<char>& data, std::string& stuff);
 
     /*!
@@ -933,7 +935,7 @@ namespace Core::Communication
      * \param[in] stuffsize length of stuff in byte
      */
     template <typename kind>
-    static void ExtractfromPack(std::vector<char>::size_type& position,
+    static void extract_from_pack(std::vector<char>::size_type& position,
         const std::vector<char>& data, kind* stuff, const int stuffsize)
     {
       memcpy(stuff, &data[position], stuffsize);

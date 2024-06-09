@@ -102,12 +102,12 @@ void Mat::BeamElastHyperMaterial<T>::Pack(Core::Communication::PackBuffer& data)
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  this->AddtoPack(data, type);
+  this->add_to_pack(data, type);
 
   // matid
   int matid = -1;
   if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
-  this->AddtoPack(data, matid);
+  this->add_to_pack(data, matid);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -121,7 +121,7 @@ void Mat::BeamElastHyperMaterial<T>::Unpack(const std::vector<char>& data)
 
   // matid and recover params_
   int matid;
-  this->ExtractfromPack(position, data, matid);
+  this->extract_from_pack(position, data, matid);
   params_ = nullptr;
 
   if (Global::Problem::Instance()->Materials() != Teuchos::null)

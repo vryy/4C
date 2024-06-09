@@ -100,21 +100,21 @@ void Mat::StructPoroReactionECM::Pack(Core::Communication::PackBuffer& data) con
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
 
   // matid
   int matid = -1;
   if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
-  AddtoPack(data, matid);
+  add_to_pack(data, matid);
 
   // refporosity_
-  AddtoPack(data, refporosity_old_);
+  add_to_pack(data, refporosity_old_);
   // refporositydot_old_
-  AddtoPack(data, refporositydot_old_);
+  add_to_pack(data, refporositydot_old_);
   // chempot_init_
-  AddtoPack(data, chempot_init_);
+  add_to_pack(data, chempot_init_);
   // chempot_
-  AddtoPack(data, chempot_);
+  add_to_pack(data, chempot_);
 
   // add base class material
   StructPoroReaction::Pack(data);
@@ -130,7 +130,7 @@ void Mat::StructPoroReactionECM::Unpack(const std::vector<char>& data)
 
   // matid
   int matid;
-  ExtractfromPack(position, data, matid);
+  extract_from_pack(position, data, matid);
   params_ = nullptr;
   if (Global::Problem::Instance()->Materials() != Teuchos::null)
     if (Global::Problem::Instance()->Materials()->Num() != 0)
@@ -145,14 +145,14 @@ void Mat::StructPoroReactionECM::Unpack(const std::vector<char>& data)
             MaterialType());
     }
 
-  ExtractfromPack(position, data, refporosity_old_);
-  ExtractfromPack(position, data, refporositydot_old_);
-  ExtractfromPack(position, data, chempot_init_);
-  ExtractfromPack(position, data, chempot_);
+  extract_from_pack(position, data, refporosity_old_);
+  extract_from_pack(position, data, refporositydot_old_);
+  extract_from_pack(position, data, chempot_init_);
+  extract_from_pack(position, data, chempot_);
 
   // extract base class material
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   StructPoroReaction::Unpack(basedata);
 }
 

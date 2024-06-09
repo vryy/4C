@@ -151,19 +151,19 @@ void Discret::ELEMENTS::RedAcinus::Pack(Core::Communication::PackBuffer& data) c
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
 
   // add base class Element
   Element::Pack(data);
 
-  AddtoPack(data, elem_type_);
-  AddtoPack(data, resistance_);
+  add_to_pack(data, elem_type_);
+  add_to_pack(data, resistance_);
 
-  AddtoPack(data, acinus_params_.volume_relaxed);
-  AddtoPack(data, acinus_params_.alveolar_duct_volume);
-  AddtoPack(data, acinus_params_.area);
-  AddtoPack(data, acinus_params_.volume_init);
-  AddtoPack(data, acinus_params_.generation);
+  add_to_pack(data, acinus_params_.volume_relaxed);
+  add_to_pack(data, acinus_params_.alveolar_duct_volume);
+  add_to_pack(data, acinus_params_.area);
+  add_to_pack(data, acinus_params_.volume_init);
+  add_to_pack(data, acinus_params_.generation);
 
   return;
 }
@@ -181,17 +181,17 @@ void Discret::ELEMENTS::RedAcinus::Unpack(const std::vector<char>& data)
 
   // extract base class Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   Element::Unpack(basedata);
 
-  ExtractfromPack(position, data, elem_type_);
-  ExtractfromPack(position, data, resistance_);
+  extract_from_pack(position, data, elem_type_);
+  extract_from_pack(position, data, resistance_);
 
-  ExtractfromPack(position, data, acinus_params_.volume_relaxed);
-  ExtractfromPack(position, data, acinus_params_.alveolar_duct_volume);
-  ExtractfromPack(position, data, acinus_params_.area);
-  ExtractfromPack(position, data, acinus_params_.volume_init);
-  ExtractfromPack(position, data, acinus_params_.generation);
+  extract_from_pack(position, data, acinus_params_.volume_relaxed);
+  extract_from_pack(position, data, acinus_params_.alveolar_duct_volume);
+  extract_from_pack(position, data, acinus_params_.area);
+  extract_from_pack(position, data, acinus_params_.volume_init);
+  extract_from_pack(position, data, acinus_params_.generation);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);

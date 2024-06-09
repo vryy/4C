@@ -389,7 +389,7 @@ void Core::DOFSets::TransparentDofSet::PackLocalSourceDofs(
   int size = gid_to_dofs.size();
 
   // add size  to sendblock
-  Core::Communication::ParObject::AddtoPack(sblock, size);
+  Core::Communication::ParObject::add_to_pack(sblock, size);
 
   for (std::map<int, std::vector<int>>::iterator curr = gid_to_dofs.begin();
        curr != gid_to_dofs.end(); ++curr)
@@ -398,11 +398,11 @@ void Core::DOFSets::TransparentDofSet::PackLocalSourceDofs(
     std::vector<int> mydofs = curr->second;
     int numdofs = (int)mydofs.size();
 
-    Core::Communication::ParObject::AddtoPack(sblock, gid);
-    Core::Communication::ParObject::AddtoPack(sblock, numdofs);
+    Core::Communication::ParObject::add_to_pack(sblock, gid);
+    Core::Communication::ParObject::add_to_pack(sblock, numdofs);
     for (int ll = 0; ll < numdofs; ++ll)
     {
-      Core::Communication::ParObject::AddtoPack(sblock, mydofs[ll]);
+      Core::Communication::ParObject::add_to_pack(sblock, mydofs[ll]);
     }
   }
 
@@ -429,7 +429,7 @@ void Core::DOFSets::TransparentDofSet::unpack_local_source_dofs(
 
   // extract size
   int size = 0;
-  Core::Communication::ParObject::ExtractfromPack(position, rblock, size);
+  Core::Communication::ParObject::extract_from_pack(position, rblock, size);
 
   for (int rr = 0; rr < size; ++rr)
   {
@@ -437,14 +437,14 @@ void Core::DOFSets::TransparentDofSet::unpack_local_source_dofs(
     std::vector<int> mydofs;
     int numdofs = 0;
 
-    Core::Communication::ParObject::ExtractfromPack(position, rblock, gid);
-    Core::Communication::ParObject::ExtractfromPack(position, rblock, numdofs);
+    Core::Communication::ParObject::extract_from_pack(position, rblock, gid);
+    Core::Communication::ParObject::extract_from_pack(position, rblock, numdofs);
 
     for (int ll = 0; ll < numdofs; ++ll)
     {
       int thisdof = 0;
 
-      Core::Communication::ParObject::ExtractfromPack(position, rblock, thisdof);
+      Core::Communication::ParObject::extract_from_pack(position, rblock, thisdof);
       mydofs.push_back(thisdof);
     }
 

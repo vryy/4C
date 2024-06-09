@@ -262,13 +262,13 @@ void Core::Elements::Element::Pack(Core::Communication::PackBuffer& data) const
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
   // add id
-  AddtoPack(data, id_);
+  add_to_pack(data, id_);
   // add owner
-  AddtoPack(data, owner_);
+  add_to_pack(data, owner_);
   // add vector nodeid_
-  AddtoPack(data, nodeid_);
+  add_to_pack(data, nodeid_);
   // add material
   if (mat_[0] != Teuchos::null)
   {
@@ -278,7 +278,7 @@ void Core::Elements::Element::Pack(Core::Communication::PackBuffer& data) const
   else
   {
     int size = 0;
-    AddtoPack(data, size);
+    add_to_pack(data, size);
   }
 
   return;
@@ -296,14 +296,14 @@ void Core::Elements::Element::Unpack(const std::vector<char>& data)
   Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // id_
-  ExtractfromPack(position, data, id_);
+  extract_from_pack(position, data, id_);
   // owner_
-  ExtractfromPack(position, data, owner_);
+  extract_from_pack(position, data, owner_);
   // nodeid_
-  ExtractfromPack(position, data, nodeid_);
+  extract_from_pack(position, data, nodeid_);
   // mat_
   std::vector<char> tmp;
-  ExtractfromPack(position, data, tmp);
+  extract_from_pack(position, data, tmp);
   if (!tmp.empty())
   {
     Core::Communication::ParObject* o = Core::Communication::Factory(tmp);
@@ -1134,13 +1134,13 @@ void Core::Elements::FaceElement::Pack(Core::Communication::PackBuffer& data) co
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
   // add base class Discret::Elememt
   Core::Elements::Element::Pack(data);
   // add lface_master_
-  AddtoPack(data, lface_master_);
+  add_to_pack(data, lface_master_);
   // Pack Parent Id, used to set parent_master_ after parallel communication!
-  AddtoPack(data, parent_id_);
+  add_to_pack(data, parent_id_);
 
   return;
 }
@@ -1158,7 +1158,7 @@ void Core::Elements::FaceElement::Unpack(const std::vector<char>& data)
 
   // extract base class Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   Core::Elements::Element::Unpack(basedata);
 
   // lface_master_

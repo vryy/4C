@@ -138,18 +138,18 @@ void Discret::ELEMENTS::SoShw6::Pack(Core::Communication::PackBuffer& data) cons
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
   // add base class So_weg6 Element
   Discret::ELEMENTS::SoWeg6::Pack(data);
   // eastype_
-  AddtoPack(data, eastype_);
+  add_to_pack(data, eastype_);
   // neas_
-  AddtoPack(data, neas_);
+  add_to_pack(data, neas_);
   // easdata_
   pack_eas_data(data);
   // reordering
-  AddtoPack(data, optimal_parameterspace_map_);
-  AddtoPack(data, nodes_rearranged_);
+  add_to_pack(data, optimal_parameterspace_map_);
+  add_to_pack(data, nodes_rearranged_);
 
   return;
 }
@@ -167,12 +167,12 @@ void Discret::ELEMENTS::SoShw6::Unpack(const std::vector<char>& data)
 
   // extract base class So_weg6 Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   Discret::ELEMENTS::SoWeg6::Unpack(basedata);
   // eastype_
   eastype_ = static_cast<EASType>(ExtractInt(position, data));
   // neas_
-  ExtractfromPack(position, data, neas_);
+  extract_from_pack(position, data, neas_);
   // easdata_
   unpack_eas_data(position, data);
   // reordering

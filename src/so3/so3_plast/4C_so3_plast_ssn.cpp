@@ -295,59 +295,59 @@ void Discret::ELEMENTS::So3Plast<distype>::Pack(Core::Communication::PackBuffer&
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
 
   // add base class Element
   SoBase::Pack(data);
 
   // Gauss points and weights
   const auto size2 = (int)xsi_.size();
-  AddtoPack(data, size2);
-  for (int i = 0; i < size2; ++i) AddtoPack(data, xsi_[i]);
-  AddtoPack(data, wgt_);
+  add_to_pack(data, size2);
+  for (int i = 0; i < size2; ++i) add_to_pack(data, xsi_[i]);
+  add_to_pack(data, wgt_);
 
   // parameters
-  AddtoPack(data, (int)fbar_);
+  add_to_pack(data, (int)fbar_);
 
   // plastic spin type
-  AddtoPack(data, (int)plspintype_);
+  add_to_pack(data, (int)plspintype_);
 
   // tsi
-  AddtoPack(data, (int)tsi_);
+  add_to_pack(data, (int)tsi_);
   if (tsi_)
   {
-    AddtoPack(data, (int)KbT_->size());
+    add_to_pack(data, (int)KbT_->size());
     for (unsigned i = 0; i < KbT_->size(); i++)
     {
-      AddtoPack(data, (*dFintdT_)[i]);
-      AddtoPack(data, (*KbT_)[i]);
-      AddtoPack(data, (*temp_last_)[i]);
+      add_to_pack(data, (*dFintdT_)[i]);
+      add_to_pack(data, (*KbT_)[i]);
+      add_to_pack(data, (*temp_last_)[i]);
     }
   }
 
   // EAS element technology
-  AddtoPack(data, (int)eastype_);
-  AddtoPack(data, neas_);
+  add_to_pack(data, (int)eastype_);
+  add_to_pack(data, neas_);
   if (eastype_ != soh8p_easnone)
   {
-    AddtoPack(data, (*alpha_eas_));
-    AddtoPack(data, (*alpha_eas_last_timestep_));
-    AddtoPack(data, (*alpha_eas_delta_over_last_timestep_));
+    add_to_pack(data, (*alpha_eas_));
+    add_to_pack(data, (*alpha_eas_last_timestep_));
+    add_to_pack(data, (*alpha_eas_delta_over_last_timestep_));
   }
 
   // history at each Gauss point
   int histsize = dDp_last_iter_.size();
-  AddtoPack(data, histsize);
+  add_to_pack(data, histsize);
   if (histsize != 0)
-    for (int i = 0; i < histsize; i++) AddtoPack(data, dDp_last_iter_[i]);
+    for (int i = 0; i < histsize; i++) add_to_pack(data, dDp_last_iter_[i]);
 
   // nitsche contact
-  AddtoPack(data, (int)is_nitsche_contact_);
+  add_to_pack(data, (int)is_nitsche_contact_);
   if (is_nitsche_contact_)
   {
-    AddtoPack(data, cauchy_);
-    AddtoPack(data, cauchy_deriv_);
-    if (tsi_) AddtoPack(data, cauchy_deriv_T_);
+    add_to_pack(data, cauchy_);
+    add_to_pack(data, cauchy_deriv_);
+    if (tsi_) add_to_pack(data, cauchy_deriv_T_);
   }
 
   return;
@@ -366,14 +366,14 @@ void Discret::ELEMENTS::So3Plast<distype>::Unpack(const std::vector<char>& data)
 
   // extract base class Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   SoBase::Unpack(basedata);
 
   // Gauss points and weights
   int size2 = ExtractInt(position, data);
   xsi_.resize(size2, Core::LinAlg::Matrix<nsd_, 1>(true));
-  for (int i = 0; i < size2; ++i) ExtractfromPack(position, data, xsi_[i]);
-  ExtractfromPack(position, data, wgt_);
+  for (int i = 0; i < size2; ++i) extract_from_pack(position, data, xsi_[i]);
+  extract_from_pack(position, data, wgt_);
   numgpt_ = wgt_.size();
 
   // paramters
@@ -393,15 +393,15 @@ void Discret::ELEMENTS::So3Plast<distype>::Unpack(const std::vector<char>& data)
     int size = ExtractInt(position, data);
     for (int i = 0; i < size; i++)
     {
-      ExtractfromPack(position, data, (*dFintdT_)[i]);
-      ExtractfromPack(position, data, (*KbT_)[i]);
-      ExtractfromPack(position, data, (*temp_last_)[i]);
+      extract_from_pack(position, data, (*dFintdT_)[i]);
+      extract_from_pack(position, data, (*KbT_)[i]);
+      extract_from_pack(position, data, (*temp_last_)[i]);
     }
   }
 
   // EAS element technology
   eastype_ = static_cast<Discret::ELEMENTS::So3PlastEasType>(ExtractInt(position, data));
-  ExtractfromPack(position, data, neas_);
+  extract_from_pack(position, data, neas_);
 
   // no EAS
   if (eastype_ == soh8p_easnone)
@@ -444,22 +444,22 @@ void Discret::ELEMENTS::So3Plast<distype>::Unpack(const std::vector<char>& data)
 
   if (eastype_ != soh8p_easnone)
   {
-    ExtractfromPack(position, data, (*alpha_eas_));
-    ExtractfromPack(position, data, (*alpha_eas_last_timestep_));
-    ExtractfromPack(position, data, (*alpha_eas_delta_over_last_timestep_));
+    extract_from_pack(position, data, (*alpha_eas_));
+    extract_from_pack(position, data, (*alpha_eas_last_timestep_));
+    extract_from_pack(position, data, (*alpha_eas_delta_over_last_timestep_));
   }
 
   int size = ExtractInt(position, data);
-  for (int i = 0; i < size; i++) ExtractfromPack(position, data, dDp_last_iter_[i]);
+  for (int i = 0; i < size; i++) extract_from_pack(position, data, dDp_last_iter_[i]);
 
   // Nitsche contact stuff
   is_nitsche_contact_ = (bool)ExtractInt(position, data);
   if (is_nitsche_contact_)
   {
-    ExtractfromPack(position, data, cauchy_);
-    ExtractfromPack(position, data, cauchy_deriv_);
+    extract_from_pack(position, data, cauchy_);
+    extract_from_pack(position, data, cauchy_deriv_);
     if (tsi_)
-      ExtractfromPack(position, data, cauchy_deriv_T_);
+      extract_from_pack(position, data, cauchy_deriv_T_);
     else
       cauchy_deriv_T_.resize(0);
   }

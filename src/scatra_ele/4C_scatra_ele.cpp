@@ -562,17 +562,17 @@ void Discret::ELEMENTS::Transport::Pack(Core::Communication::PackBuffer& data) c
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
 
   // add base class Element
   Element::Pack(data);
 
   // add internal data
-  AddtoPack(data, name_);
-  AddtoPack(data, vis_map_);
-  AddtoPack(data, numdofpernode_);
-  AddtoPack(data, distype_);
-  AddtoPack(data, impltype_);
+  add_to_pack(data, name_);
+  add_to_pack(data, vis_map_);
+  add_to_pack(data, numdofpernode_);
+  add_to_pack(data, distype_);
+  add_to_pack(data, impltype_);
 }
 
 
@@ -588,13 +588,13 @@ void Discret::ELEMENTS::Transport::Unpack(const std::vector<char>& data)
 
   // extract base class Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   Element::Unpack(basedata);
 
   // extract internal data
-  ExtractfromPack(position, data, name_);
-  ExtractfromPack(position, data, vis_map_);
-  ExtractfromPack(position, data, numdofpernode_);
+  extract_from_pack(position, data, name_);
+  extract_from_pack(position, data, vis_map_);
+  extract_from_pack(position, data, numdofpernode_);
   distype_ = static_cast<Core::FE::CellType>(ExtractInt(position, data));
   impltype_ = static_cast<Inpar::ScaTra::ImplType>(ExtractInt(position, data));
 

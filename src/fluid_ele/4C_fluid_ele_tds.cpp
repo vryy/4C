@@ -54,17 +54,17 @@ void FLD::TDSEleData::Pack(Core::Communication::PackBuffer& data) const
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
 
   // history variables
-  AddtoPack(data, saccn_.numRows());
-  AddtoPack(data, saccn_.numCols());
+  add_to_pack(data, saccn_.numRows());
+  add_to_pack(data, saccn_.numCols());
 
   int size = saccn_.numRows() * saccn_.numCols() * sizeof(double);
 
-  AddtoPack(data, saccn_.values(), size);
-  AddtoPack(data, svelnp_.values(), size);
-  AddtoPack(data, sveln_.values(), size);
+  add_to_pack(data, saccn_.values(), size);
+  add_to_pack(data, svelnp_.values(), size);
+  add_to_pack(data, sveln_.values(), size);
 
   return;
 }
@@ -84,8 +84,8 @@ void FLD::TDSEleData::Unpack(const std::vector<char>& data)
     int firstdim;
     int secondim;
 
-    ExtractfromPack(position, data, firstdim);
-    ExtractfromPack(position, data, secondim);
+    extract_from_pack(position, data, firstdim);
+    extract_from_pack(position, data, secondim);
 
 
     saccn_.shape(firstdim, secondim);
@@ -95,9 +95,9 @@ void FLD::TDSEleData::Unpack(const std::vector<char>& data)
 
     int size = firstdim * secondim * sizeof(double);
 
-    ExtractfromPack(position, data, saccn_.values(), size);
-    ExtractfromPack(position, data, svelnp_.values(), size);
-    ExtractfromPack(position, data, sveln_.values(), size);
+    extract_from_pack(position, data, saccn_.values(), size);
+    extract_from_pack(position, data, svelnp_.values(), size);
+    extract_from_pack(position, data, sveln_.values(), size);
   }
 
   if (position != data.size())

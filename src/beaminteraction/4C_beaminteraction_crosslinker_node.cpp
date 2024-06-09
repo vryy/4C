@@ -56,9 +56,9 @@ CrossLinking::CrosslinkerNodeDataContainer::CrosslinkerNodeDataContainer() : num
 void CrossLinking::CrosslinkerNodeDataContainer::Pack(Core::Communication::PackBuffer& data) const
 {
   // add numbond
-  Core::Communication::ParObject::AddtoPack(data, numbond_);
+  Core::Communication::ParObject::add_to_pack(data, numbond_);
   // add clbspots_
-  Core::Communication::ParObject::AddtoPack(data, clbspots_);
+  Core::Communication::ParObject::add_to_pack(data, clbspots_);
 
   return;
 }
@@ -71,9 +71,9 @@ void CrossLinking::CrosslinkerNodeDataContainer::Unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   // numbond
-  Core::Communication::ParObject::ExtractfromPack(position, data, numbond_);
+  Core::Communication::ParObject::extract_from_pack(position, data, numbond_);
   // clbspots_
-  Core::Communication::ParObject::ExtractfromPack(position, data, clbspots_);
+  Core::Communication::ParObject::extract_from_pack(position, data, clbspots_);
 
   return;
 }
@@ -143,13 +143,13 @@ void CrossLinking::CrosslinkerNode::Pack(Core::Communication::PackBuffer& data) 
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
   // add base class Core::Nodes::Node
   Core::Nodes::Node::Pack(data);
 
   // add material
   bool hasmat = (mat_ != Teuchos::null);
-  AddtoPack(data, hasmat);
+  add_to_pack(data, hasmat);
   if (hasmat) mat_->Pack(data);
 
   return;
@@ -167,7 +167,7 @@ void CrossLinking::CrosslinkerNode::Unpack(const std::vector<char>& data)
 
   // extract base class Core::Nodes::Node
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   Core::Nodes::Node::Unpack(basedata);
 
   // mat
@@ -175,7 +175,7 @@ void CrossLinking::CrosslinkerNode::Unpack(const std::vector<char>& data)
   if (hasmat)
   {
     std::vector<char> tmp;
-    ExtractfromPack(position, data, tmp);
+    extract_from_pack(position, data, tmp);
     Core::Communication::ParObject* o = Core::Communication::Factory(tmp);
     Mat::CrosslinkerMat* mat = dynamic_cast<Mat::CrosslinkerMat*>(o);
     if (mat == nullptr) FOUR_C_THROW("failed to unpack material");

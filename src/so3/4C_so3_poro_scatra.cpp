@@ -58,9 +58,9 @@ void Discret::ELEMENTS::So3PoroScatra<so3_ele, distype>::Pack(
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  so3_ele::AddtoPack(data, type);
+  so3_ele::add_to_pack(data, type);
   // pack scalar transport impltype
-  so3_ele::AddtoPack(data, impltype_);
+  so3_ele::add_to_pack(data, impltype_);
 
   // add base class Element
   my::Pack(data);
@@ -83,7 +83,7 @@ void Discret::ELEMENTS::So3PoroScatra<so3_ele, distype>::Unpack(const std::vecto
 
   // extract base class Element
   std::vector<char> basedata(0);
-  my::ExtractfromPack(position, data, basedata);
+  my::extract_from_pack(position, data, basedata);
   my::Unpack(basedata);
 
   if (position != data.size())

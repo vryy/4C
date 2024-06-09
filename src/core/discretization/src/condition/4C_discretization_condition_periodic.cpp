@@ -816,17 +816,17 @@ void Core::Conditions::PeriodicBoundaryConditions::add_connectivity(
                  iter != multiplecouplings.end(); ++iter)
               mids.push_back(iter->first);
 
-            Core::Communication::ParObject::AddtoPack(data, mids);
+            Core::Communication::ParObject::add_to_pack(data, mids);
             for (std::map<int, std::vector<int>>::const_iterator iter = multiplecouplings.begin();
                  iter != multiplecouplings.end(); ++iter)
-              Core::Communication::ParObject::AddtoPack(data, iter->second);
+              Core::Communication::ParObject::add_to_pack(data, iter->second);
 
             data.StartPacking();
 
-            Core::Communication::ParObject::AddtoPack(data, mids);
+            Core::Communication::ParObject::add_to_pack(data, mids);
             for (std::map<int, std::vector<int>>::const_iterator iter = multiplecouplings.begin();
                  iter != multiplecouplings.end(); ++iter)
-              Core::Communication::ParObject::AddtoPack(data, iter->second);
+              Core::Communication::ParObject::add_to_pack(data, iter->second);
 
             std::swap(sdata, data());
           }
@@ -849,12 +849,12 @@ void Core::Conditions::PeriodicBoundaryConditions::add_connectivity(
             multiplecouplings.clear();
             size_t pos = 0;
             std::vector<int> mids;
-            Core::Communication::ParObject::ExtractfromPack(pos, rdata, mids);
+            Core::Communication::ParObject::extract_from_pack(pos, rdata, mids);
 
             for (std::vector<int>::const_iterator iter = mids.begin(); iter != mids.end(); ++iter)
             {
               std::vector<int> slvs;
-              Core::Communication::ParObject::ExtractfromPack(pos, rdata, slvs);
+              Core::Communication::ParObject::extract_from_pack(pos, rdata, slvs);
               multiplecouplings[*iter] = slvs;
             }
           }

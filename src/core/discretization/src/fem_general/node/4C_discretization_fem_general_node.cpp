@@ -93,15 +93,15 @@ void Core::Nodes::Node::Pack(Core::Communication::PackBuffer& data) const
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
   // add id
   int id = Id();
-  AddtoPack(data, id);
+  add_to_pack(data, id);
   // add owner
   int owner = Owner();
-  AddtoPack(data, owner);
+  add_to_pack(data, owner);
   // x_
-  AddtoPack(data, x_);
+  add_to_pack(data, x_);
 }
 
 
@@ -114,11 +114,11 @@ void Core::Nodes::Node::Unpack(const std::vector<char>& data)
   Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // id_
-  ExtractfromPack(position, data, id_);
+  extract_from_pack(position, data, id_);
   // owner_
-  ExtractfromPack(position, data, owner_);
+  extract_from_pack(position, data, owner_);
   // x_
-  ExtractfromPack(position, data, x_);
+  extract_from_pack(position, data, x_);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);

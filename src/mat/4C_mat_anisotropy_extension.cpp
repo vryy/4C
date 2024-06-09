@@ -177,8 +177,8 @@ void Mat::FiberAnisotropyExtension<numfib>::PackAnisotropy(
   PackFiberArray<Core::LinAlg::Matrix<3, 1>, numfib>(data, fibers_);
   PackFiberArray<Core::LinAlg::Matrix<6, 1>, numfib>(data, fiber_structural_tensors_stress_);
   PackFiberArray<Core::LinAlg::Matrix<3, 3>, numfib>(data, fiber_structural_tensors_);
-  Core::Communication::ParObject::AddtoPack(data, static_cast<int>(tensor_flags_));
-  Core::Communication::ParObject::AddtoPack(data, static_cast<int>(fiber_location_));
+  Core::Communication::ParObject::add_to_pack(data, static_cast<int>(tensor_flags_));
+  Core::Communication::ParObject::add_to_pack(data, static_cast<int>(fiber_location_));
 }
 
 template <unsigned int numfib>

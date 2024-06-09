@@ -169,26 +169,26 @@ void Discret::ELEMENTS::SoWeg6::Pack(Core::Communication::PackBuffer& data) cons
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
   // add base class Element
   SoBase::Pack(data);
 
   // Pack prestress
-  AddtoPack(data, static_cast<int>(pstype_));
-  AddtoPack(data, pstime_);
-  AddtoPack(data, time_);
+  add_to_pack(data, static_cast<int>(pstype_));
+  add_to_pack(data, pstime_);
+  add_to_pack(data, time_);
   if (Prestress::IsMulf(pstype_))
   {
-    Core::Communication::ParObject::AddtoPack(data, *prestress_);
+    Core::Communication::ParObject::add_to_pack(data, *prestress_);
   }
 
   // detJ_
-  AddtoPack(data, detJ_);
+  add_to_pack(data, detJ_);
 
   // invJ_
   const unsigned int size = invJ_.size();
-  AddtoPack(data, size);
-  for (unsigned int i = 0; i < size; ++i) AddtoPack(data, invJ_[i]);
+  add_to_pack(data, size);
+  for (unsigned int i = 0; i < size; ++i) add_to_pack(data, invJ_[i]);
 
   return;
 }
@@ -206,31 +206,31 @@ void Discret::ELEMENTS::SoWeg6::Unpack(const std::vector<char>& data)
 
   // extract base class Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   SoBase::Unpack(basedata);
   // prestress_
   pstype_ = static_cast<Inpar::STR::PreStress>(ExtractInt(position, data));
-  ExtractfromPack(position, data, pstime_);
-  ExtractfromPack(position, data, time_);
+  extract_from_pack(position, data, pstime_);
+  extract_from_pack(position, data, time_);
   if (Prestress::IsMulf(pstype_))
   {
     std::vector<char> tmpprestress(0);
-    ExtractfromPack(position, data, tmpprestress);
+    extract_from_pack(position, data, tmpprestress);
     if (prestress_ == Teuchos::null)
       prestress_ = Teuchos::rcp(new Discret::ELEMENTS::PreStress(NUMNOD_WEG6, NUMGPT_WEG6));
     prestress_->Unpack(tmpprestress);
   }
 
   // detJ_
-  ExtractfromPack(position, data, detJ_);
+  extract_from_pack(position, data, detJ_);
   // invJ_
   int size = 0;
-  ExtractfromPack(position, data, size);
+  extract_from_pack(position, data, size);
   invJ_.resize(size);
   for (int i = 0; i < size; ++i)
   {
     invJ_[i] = Core::LinAlg::Matrix<NUMDIM_WEG6, NUMDIM_WEG6>(true);
-    ExtractfromPack(position, data, invJ_[i]);
+    extract_from_pack(position, data, invJ_[i]);
   }
 
   if (position != data.size())

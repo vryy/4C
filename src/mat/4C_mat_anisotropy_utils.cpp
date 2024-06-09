@@ -71,11 +71,11 @@ template <typename T>
 void Mat::PackFiberVector(
     Core::Communication::PackBuffer& buffer, const std::vector<std::vector<T>>& vct)
 {
-  Core::Communication::ParObject::AddtoPack(buffer, static_cast<int>(vct.size()));
+  Core::Communication::ParObject::add_to_pack(buffer, static_cast<int>(vct.size()));
 
   for (const auto& list : vct)
   {
-    Core::Communication::ParObject::AddtoPack(buffer, list);
+    Core::Communication::ParObject::add_to_pack(buffer, list);
   }
 }
 
@@ -83,13 +83,13 @@ template <typename T, unsigned int numfib>
 void Mat::PackFiberArray(
     Core::Communication::PackBuffer& buffer, const std::vector<std::array<T, numfib>>& vct)
 {
-  Core::Communication::ParObject::AddtoPack(buffer, static_cast<int>(vct.size()));
+  Core::Communication::ParObject::add_to_pack(buffer, static_cast<int>(vct.size()));
 
   for (const auto& list : vct)
   {
     for (const auto& fiber : list)
     {
-      Core::Communication::ParObject::AddtoPack<T::numRows(), T::numCols()>(buffer, fiber);
+      Core::Communication::ParObject::add_to_pack<T::numRows(), T::numCols()>(buffer, fiber);
     }
   }
 }
@@ -103,7 +103,7 @@ void Mat::UnpackFiberVector(std::vector<char>::size_type& position, const std::v
   for (int i = 0; i < numgps; ++i)
   {
     std::vector<T> mat(0);
-    Core::Communication::ParObject::ExtractfromPack(position, data, mat);
+    Core::Communication::ParObject::extract_from_pack(position, data, mat);
     vct.emplace_back(mat);
   }
 }
@@ -119,7 +119,7 @@ void Mat::UnpackFiberArray(std::vector<char>::size_type& position, const std::ve
     std::array<T, numfib> mat;
     for (unsigned int j = 0; j < numfib; ++j)
     {
-      Core::Communication::ParObject::ExtractfromPack<T::numRows(), T::numCols()>(
+      Core::Communication::ParObject::extract_from_pack<T::numRows(), T::numCols()>(
           position, data, mat.at(j));
     }
     vct.emplace_back(mat);

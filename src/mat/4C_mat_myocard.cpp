@@ -97,30 +97,30 @@ void Mat::Myocard::Pack(Core::Communication::PackBuffer& data) const
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
 
   // matid
   int matid = -1;
   if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
-  AddtoPack(data, matid);
-  AddtoPack(data, nb_state_variables_);
-  AddtoPack(data, difftensor_);
+  add_to_pack(data, matid);
+  add_to_pack(data, nb_state_variables_);
+  add_to_pack(data, difftensor_);
   int num;
   if (diff_at_ele_center_)
     num = 1;
   else
     num = 0;
-  AddtoPack(data, num);
+  add_to_pack(data, num);
   if (myocard_mat_ != Teuchos::null)
-    AddtoPack(data, myocard_mat_->GetNumberOfGP());
+    add_to_pack(data, myocard_mat_->GetNumberOfGP());
   else
-    AddtoPack(data, 0);
+    add_to_pack(data, 0);
 
   // pack history data
   if (myocard_mat_ != Teuchos::null)
     for (int k = -1; k < nb_state_variables_; ++k)  // Starting from -1 for mechanical activation
       for (int i = 0; i < myocard_mat_->GetNumberOfGP(); ++i)  // loop over Gauss points
-        AddtoPack(data, myocard_mat_->GetInternalState(k, i));
+        add_to_pack(data, myocard_mat_->GetInternalState(k, i));
 
   return;
 }
@@ -139,15 +139,15 @@ void Mat::Myocard::Unpack(const std::vector<char>& data)
   int unpack_nb_state_variables;
   int num_gp;
   int num;
-  ExtractfromPack(position, data, matid);
-  ExtractfromPack(position, data, unpack_nb_state_variables);
-  ExtractfromPack(position, data, difftensor_);
-  ExtractfromPack(position, data, num);
+  extract_from_pack(position, data, matid);
+  extract_from_pack(position, data, unpack_nb_state_variables);
+  extract_from_pack(position, data, difftensor_);
+  extract_from_pack(position, data, num);
   if (num)
     diff_at_ele_center_ = true;
   else
     diff_at_ele_center_ = false;
-  ExtractfromPack(position, data, num_gp);
+  extract_from_pack(position, data, num_gp);
 
   params_ = nullptr;
   if (Global::Problem::Instance()->Materials() !=
@@ -180,7 +180,7 @@ void Mat::Myocard::Unpack(const std::vector<char>& data)
              ++k)                                    // Starting from -1 for mechanical activation
           for (int i = 0; i < params_->num_gp; ++i)  // loop over Gauss points
           {
-            ExtractfromPack(position, data, val);
+            extract_from_pack(position, data, val);
             myocard_mat_->SetInternalState(k, val, i);
           }
 
@@ -204,15 +204,15 @@ void Mat::Myocard::unpack_material(const std::vector<char>& data)
   int matid;
   int num_gp;
   int num;
-  ExtractfromPack(position, data, matid);
-  ExtractfromPack(position, data, nb_state_variables_);
-  ExtractfromPack(position, data, difftensor_);
-  ExtractfromPack(position, data, num);
+  extract_from_pack(position, data, matid);
+  extract_from_pack(position, data, nb_state_variables_);
+  extract_from_pack(position, data, difftensor_);
+  extract_from_pack(position, data, num);
   if (num)
     diff_at_ele_center_ = true;
   else
     diff_at_ele_center_ = false;
-  ExtractfromPack(position, data, num_gp);
+  extract_from_pack(position, data, num_gp);
 
   params_ = nullptr;
   if (Global::Problem::Instance()->Materials() !=
@@ -239,7 +239,7 @@ void Mat::Myocard::unpack_material(const std::vector<char>& data)
       for (int k = -1; k < nb_state_variables_; ++k)  // Starting from -1 for mechanical activation
         for (int i = 0; i < params_->num_gp; ++i)     // loop over Gauss points
         {
-          ExtractfromPack(position, data, val);
+          extract_from_pack(position, data, val);
           myocard_mat_->SetInternalState(k, val, i);
         }
 

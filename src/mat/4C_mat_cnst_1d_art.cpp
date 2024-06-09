@@ -101,15 +101,15 @@ void Mat::Cnst1dArt::Pack(Core::Communication::PackBuffer& data) const
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
 
   // matid
   int matid = -1;
   if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
-  AddtoPack(data, matid);
-  AddtoPack(data, diam_init_);
-  AddtoPack(data, diam_);
-  AddtoPack(data, diam_previous_time_step_);
+  add_to_pack(data, matid);
+  add_to_pack(data, diam_init_);
+  add_to_pack(data, diam_);
+  add_to_pack(data, diam_previous_time_step_);
 }
 
 
@@ -123,7 +123,7 @@ void Mat::Cnst1dArt::Unpack(const std::vector<char>& data)
 
   // matid
   int matid;
-  ExtractfromPack(position, data, matid);
+  extract_from_pack(position, data, matid);
   params_ = nullptr;
   if (Global::Problem::Instance()->Materials() != Teuchos::null)
     if (Global::Problem::Instance()->Materials()->Num() != 0)
@@ -139,9 +139,9 @@ void Mat::Cnst1dArt::Unpack(const std::vector<char>& data)
     }
 
   // diameter
-  ExtractfromPack(position, data, diam_init_);
-  ExtractfromPack(position, data, diam_);
-  ExtractfromPack(position, data, diam_previous_time_step_);
+  extract_from_pack(position, data, diam_init_);
+  extract_from_pack(position, data, diam_);
+  extract_from_pack(position, data, diam_previous_time_step_);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);

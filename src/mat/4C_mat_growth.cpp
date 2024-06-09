@@ -165,11 +165,11 @@ void Mat::Growth::Pack(Core::Communication::PackBuffer& data) const
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
   // matid
   int matid = -1;
   if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
-  AddtoPack(data, matid);
+  add_to_pack(data, matid);
 
   int numgp;
   if (!isinit_)
@@ -180,15 +180,15 @@ void Mat::Growth::Pack(Core::Communication::PackBuffer& data) const
   {
     numgp = theta_->size();  // size is number of Gauss points
   }
-  AddtoPack(data, numgp);
+  add_to_pack(data, numgp);
   // Pack internal variables
   for (int gp = 0; gp < numgp; ++gp)
   {
-    AddtoPack(data, thetaold_->at(gp));
-    AddtoPack(data, theta_->at(gp));
+    add_to_pack(data, thetaold_->at(gp));
+    add_to_pack(data, theta_->at(gp));
   }
 
-  AddtoPack(data, histdata_);
+  add_to_pack(data, histdata_);
 
   // Pack data of elastic material
   if (matelastic_ != Teuchos::null)
@@ -207,7 +207,7 @@ void Mat::Growth::Unpack(const std::vector<char>& data)
 
   // matid and recover params_
   int matid;
-  ExtractfromPack(position, data, matid);
+  extract_from_pack(position, data, matid);
 
   params_ = nullptr;
   if (Global::Problem::Instance()->Materials() != Teuchos::null)
@@ -226,7 +226,7 @@ void Mat::Growth::Unpack(const std::vector<char>& data)
   }
 
   int numgp;
-  ExtractfromPack(position, data, numgp);
+  extract_from_pack(position, data, numgp);
   if (numgp == 0)
   {  // no history data to unpack
     isinit_ = false;
@@ -241,17 +241,17 @@ void Mat::Growth::Unpack(const std::vector<char>& data)
   for (int gp = 0; gp < numgp; ++gp)
   {
     double a;
-    ExtractfromPack(position, data, a);
+    extract_from_pack(position, data, a);
     thetaold_->at(gp) = a;
-    ExtractfromPack(position, data, a);
+    extract_from_pack(position, data, a);
     theta_->at(gp) = a;
   }
 
-  ExtractfromPack(position, data, histdata_);
+  extract_from_pack(position, data, histdata_);
 
   // Unpack data of elastic material (these lines are copied from element.cpp)
   std::vector<char> dataelastic;
-  ExtractfromPack(position, data, dataelastic);
+  extract_from_pack(position, data, dataelastic);
   if (dataelastic.size() > 0)
   {
     Core::Communication::ParObject* o =
@@ -766,38 +766,38 @@ void Mat::GrowthVolumetric::Pack(Core::Communication::PackBuffer& data) const
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
 
   // matid
   int matid = -1;
   Mat::PAR::Growth* params = Parameter();
   if (params != nullptr) matid = params->Id();  // in case we are in post-process mode
-  AddtoPack(data, matid);
+  add_to_pack(data, matid);
 
   int numgp = 0;
   if (isinit_)
   {
     numgp = theta_->size();  // size is number of Gauss points
   }
-  AddtoPack(data, numgp);
+  add_to_pack(data, numgp);
 
   // Pack internal variables
   for (int gp = 0; gp < numgp; ++gp)
   {
-    AddtoPack(data, tr_mandel_e_->at(gp));
+    add_to_pack(data, tr_mandel_e_->at(gp));
   }
   for (int gp = 0; gp < numgp; ++gp)
   {
-    AddtoPack(data, lambda_fib_e_->at(gp));
+    add_to_pack(data, lambda_fib_e_->at(gp));
   }
 
   // Pack prescribed const growth trigger
-  AddtoPack(data, growthtrig_const_);
+  add_to_pack(data, growthtrig_const_);
 
   // Pack internal variables
   for (int i = 0; i < 3; ++i)
   {
-    AddtoPack(data, refdir_(i, 0));
+    add_to_pack(data, refdir_(i, 0));
   }
 
   // int numgp=0;
@@ -805,7 +805,7 @@ void Mat::GrowthVolumetric::Pack(Core::Communication::PackBuffer& data) const
   {
     numgp = theta_->size();  // size is number of Fauss points
   }
-  AddtoPack(data, numgp);
+  add_to_pack(data, numgp);
 
   for (int gp = 0; gp < numgp; gp++)
   {
@@ -817,10 +817,10 @@ void Mat::GrowthVolumetric::Pack(Core::Communication::PackBuffer& data) const
     {
       for (int j = 0; j < 3; ++j)
       {
-        AddtoPack(data, F_g_hist(i, j));
+        add_to_pack(data, F_g_hist(i, j));
       }
-      AddtoPack(data, curdir(i, 0));
-      AddtoPack(data, curdir_for_update(i, 0));
+      add_to_pack(data, curdir(i, 0));
+      add_to_pack(data, curdir_for_update(i, 0));
     }
   }
 
@@ -838,7 +838,7 @@ void Mat::GrowthVolumetric::Unpack(const std::vector<char>& data)
 
   // matid and recover params_
   int matid;
-  ExtractfromPack(position, data, matid);
+  extract_from_pack(position, data, matid);
 
   params_volumetric_ = nullptr;
   if (Global::Problem::Instance()->Materials() != Teuchos::null)
@@ -857,7 +857,7 @@ void Mat::GrowthVolumetric::Unpack(const std::vector<char>& data)
   }
 
   int numgp;
-  ExtractfromPack(position, data, numgp);
+  extract_from_pack(position, data, numgp);
   if (numgp == 0)
   {  // no history data to unpack
     isinit_ = false;
@@ -871,7 +871,7 @@ void Mat::GrowthVolumetric::Unpack(const std::vector<char>& data)
   for (int gp = 0; gp < numgp; ++gp)
   {
     double a;
-    ExtractfromPack(position, data, a);
+    extract_from_pack(position, data, a);
     tr_mandel_e_->at(gp) = a;
   }
 
@@ -879,12 +879,12 @@ void Mat::GrowthVolumetric::Unpack(const std::vector<char>& data)
   for (int gp = 0; gp < numgp; ++gp)
   {
     double a;
-    ExtractfromPack(position, data, a);
+    extract_from_pack(position, data, a);
     lambda_fib_e_->at(gp) = a;
   }
 
   double growthtrigconst;
-  ExtractfromPack(position, data, growthtrigconst);
+  extract_from_pack(position, data, growthtrigconst);
   growthtrig_const_ = growthtrigconst;
 
   // unpack growth internal variables
@@ -892,12 +892,12 @@ void Mat::GrowthVolumetric::Unpack(const std::vector<char>& data)
   for (int i = 0; i < 3; ++i)
   {
     double refdir_i;
-    ExtractfromPack(position, data, refdir_i);
+    extract_from_pack(position, data, refdir_i);
     refdir_(i, 0) = refdir_i;
   }
 
   // int numgp;
-  ExtractfromPack(position, data, numgp);
+  extract_from_pack(position, data, numgp);
   if (numgp != 0)
   {
     f_g_hist_ = std::vector<Core::LinAlg::Matrix<3, 3>>(numgp, Core::LinAlg::Matrix<3, 3>(true));
@@ -916,15 +916,15 @@ void Mat::GrowthVolumetric::Unpack(const std::vector<char>& data)
         for (int j = 0; j < 3; ++j)
         {
           double F_g_hist_ij;
-          ExtractfromPack(position, data, F_g_hist_ij);
+          extract_from_pack(position, data, F_g_hist_ij);
           F_g_hist(i, j) = F_g_hist_ij;
         }
         double curdir_i;
-        ExtractfromPack(position, data, curdir_i);
+        extract_from_pack(position, data, curdir_i);
         curdir(i, 0) = curdir_i;
 
         double curdir_for_update_i;
-        ExtractfromPack(position, data, curdir_for_update_i);
+        extract_from_pack(position, data, curdir_for_update_i);
         curdir_for_update(i, 0) = curdir_for_update_i;
       }
       f_g_hist_.at(gp) = F_g_hist;
@@ -935,7 +935,7 @@ void Mat::GrowthVolumetric::Unpack(const std::vector<char>& data)
 
   // extract base class material
   std::vector<char> basedata(0);
-  Growth::ExtractfromPack(position, data, basedata);
+  Growth::extract_from_pack(position, data, basedata);
   Growth::Unpack(basedata);
 
   if (position != data.size())

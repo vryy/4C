@@ -243,21 +243,21 @@ void Discret::ELEMENTS::Shell7pScatra::Pack(Core::Communication::PackBuffer& dat
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
   // add base class Element
   Core::Elements::Element::Pack(data);
   // discretization type
-  AddtoPack(data, (int)distype_);
+  add_to_pack(data, (int)distype_);
   // element technology
-  AddtoPack(data, eletech_);
+  add_to_pack(data, eletech_);
   // thickness in reference frame
-  AddtoPack(data, thickness_);
+  add_to_pack(data, thickness_);
   // nodal_directors
-  AddtoPack(data, nodal_directors_);
+  add_to_pack(data, nodal_directors_);
   // Setup flag for material post setup
-  data.AddtoPack(material_post_setup_);
+  data.add_to_pack(material_post_setup_);
   // pack impltype
-  AddtoPack(data, impltype_);
+  add_to_pack(data, impltype_);
   // optional data, e.g., EAS data, current thickness,..
   TryPackInterface(shell_interface_, data);
 }
@@ -271,18 +271,18 @@ void Discret::ELEMENTS::Shell7pScatra::Unpack(const std::vector<char>& data)
 
   // extract base class Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   Element::Unpack(basedata);
   // discretization type
   distype_ = static_cast<Core::FE::CellType>(ExtractInt(position, data));
   // element technology
-  ExtractfromPack(position, data, eletech_);
+  extract_from_pack(position, data, eletech_);
   // thickness in reference frame
-  ExtractfromPack(position, data, thickness_);
+  extract_from_pack(position, data, thickness_);
   // nodal director
-  ExtractfromPack(position, data, nodal_directors_);
+  extract_from_pack(position, data, nodal_directors_);
   // Setup flag for material post setup
-  Core::Communication::ParObject::ExtractfromPack(position, data, material_post_setup_);
+  Core::Communication::ParObject::extract_from_pack(position, data, material_post_setup_);
   // extract impltype
   impltype_ = static_cast<Inpar::ScaTra::ImplType>(
       Core::Communication::ParObject::ExtractInt(position, data));

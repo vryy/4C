@@ -144,8 +144,8 @@ void Mat::Elastic::CoupAnisoExpoTwoCoupAnisoExtension::PackAnisotropy(
 {
   DefaultAnisotropyExtension::PackAnisotropy(data);
 
-  Core::Communication::ParObject::AddtoPack(data, a1a2_);
-  Core::Communication::ParObject::AddtoPack(data, a1_a2_);
+  Core::Communication::ParObject::add_to_pack(data, a1a2_);
+  Core::Communication::ParObject::add_to_pack(data, a1_a2_);
 }
 
 void Mat::Elastic::CoupAnisoExpoTwoCoupAnisoExtension::UnpackAnisotropy(
@@ -153,8 +153,8 @@ void Mat::Elastic::CoupAnisoExpoTwoCoupAnisoExtension::UnpackAnisotropy(
 {
   DefaultAnisotropyExtension::UnpackAnisotropy(data, position);
 
-  Core::Communication::ParObject::ExtractfromPack(position, data, a1a2_);
-  Core::Communication::ParObject::ExtractfromPack(position, data, a1_a2_);
+  Core::Communication::ParObject::extract_from_pack(position, data, a1a2_);
+  Core::Communication::ParObject::extract_from_pack(position, data, a1_a2_);
 }
 
 void Mat::Elastic::CoupAnisoExpoTwoCoupAnisoExtension::on_fibers_initialized()

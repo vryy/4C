@@ -34,29 +34,29 @@ void Mat::ConstraintMixtureHistory::Pack(Core::Communication::PackBuffer& data) 
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
 
   // Pack internal variables
-  AddtoPack(data, depositiontime_);
-  AddtoPack(data, dt_);
-  AddtoPack(data, numgp_);
-  AddtoPack(data, expvar_);
+  add_to_pack(data, depositiontime_);
+  add_to_pack(data, dt_);
+  add_to_pack(data, numgp_);
+  add_to_pack(data, expvar_);
   for (int gp = 0; gp < numgp_; ++gp)
   {
-    AddtoPack(data, collagenstretch1_->at(gp));
-    AddtoPack(data, collagenstretch2_->at(gp));
-    AddtoPack(data, collagenstretch3_->at(gp));
-    AddtoPack(data, collagenstretch4_->at(gp));
-    AddtoPack(data, massprod1_->at(gp));
-    AddtoPack(data, massprod2_->at(gp));
-    AddtoPack(data, massprod3_->at(gp));
-    AddtoPack(data, massprod4_->at(gp));
+    add_to_pack(data, collagenstretch1_->at(gp));
+    add_to_pack(data, collagenstretch2_->at(gp));
+    add_to_pack(data, collagenstretch3_->at(gp));
+    add_to_pack(data, collagenstretch4_->at(gp));
+    add_to_pack(data, massprod1_->at(gp));
+    add_to_pack(data, massprod2_->at(gp));
+    add_to_pack(data, massprod3_->at(gp));
+    add_to_pack(data, massprod4_->at(gp));
     if (expvar_)
     {
-      AddtoPack(data, vardegrad1_->at(gp));
-      AddtoPack(data, vardegrad2_->at(gp));
-      AddtoPack(data, vardegrad3_->at(gp));
-      AddtoPack(data, vardegrad4_->at(gp));
+      add_to_pack(data, vardegrad1_->at(gp));
+      add_to_pack(data, vardegrad2_->at(gp));
+      add_to_pack(data, vardegrad3_->at(gp));
+      add_to_pack(data, vardegrad4_->at(gp));
     }
   }
 
@@ -74,14 +74,14 @@ void Mat::ConstraintMixtureHistory::Unpack(const std::vector<char>& data)
 
   // unpack internal variables
   double a;
-  ExtractfromPack(position, data, a);
+  extract_from_pack(position, data, a);
   depositiontime_ = a;
-  ExtractfromPack(position, data, a);
+  extract_from_pack(position, data, a);
   dt_ = a;
   int b;
-  ExtractfromPack(position, data, b);
+  extract_from_pack(position, data, b);
   numgp_ = b;
-  ExtractfromPack(position, data, b);
+  extract_from_pack(position, data, b);
   expvar_ = b;
 
   collagenstretch1_ = Teuchos::rcp(new std::vector<double>(numgp_));
@@ -102,31 +102,31 @@ void Mat::ConstraintMixtureHistory::Unpack(const std::vector<char>& data)
 
   for (int gp = 0; gp < numgp_; ++gp)
   {
-    ExtractfromPack(position, data, a);
+    extract_from_pack(position, data, a);
     collagenstretch1_->at(gp) = a;
-    ExtractfromPack(position, data, a);
+    extract_from_pack(position, data, a);
     collagenstretch2_->at(gp) = a;
-    ExtractfromPack(position, data, a);
+    extract_from_pack(position, data, a);
     collagenstretch3_->at(gp) = a;
-    ExtractfromPack(position, data, a);
+    extract_from_pack(position, data, a);
     collagenstretch4_->at(gp) = a;
-    ExtractfromPack(position, data, a);
+    extract_from_pack(position, data, a);
     massprod1_->at(gp) = a;
-    ExtractfromPack(position, data, a);
+    extract_from_pack(position, data, a);
     massprod2_->at(gp) = a;
-    ExtractfromPack(position, data, a);
+    extract_from_pack(position, data, a);
     massprod3_->at(gp) = a;
-    ExtractfromPack(position, data, a);
+    extract_from_pack(position, data, a);
     massprod4_->at(gp) = a;
     if (expvar_)
     {
-      ExtractfromPack(position, data, a);
+      extract_from_pack(position, data, a);
       vardegrad1_->at(gp) = a;
-      ExtractfromPack(position, data, a);
+      extract_from_pack(position, data, a);
       vardegrad2_->at(gp) = a;
-      ExtractfromPack(position, data, a);
+      extract_from_pack(position, data, a);
       vardegrad3_->at(gp) = a;
-      ExtractfromPack(position, data, a);
+      extract_from_pack(position, data, a);
       vardegrad4_->at(gp) = a;
     }
   }

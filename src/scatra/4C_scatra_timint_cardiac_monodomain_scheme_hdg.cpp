@@ -191,7 +191,7 @@ void ScaTra::TimIntCardiacMonodomainHDG::unpack_material()
   {
     auto *hdgele = dynamic_cast<Discret::ELEMENTS::ScaTraHDG *>(discret_->lColElement(iele));
     std::vector<char> data;
-    hdgele->ExtractfromPack(index, *data_, data);
+    hdgele->extract_from_pack(index, *data_, data);
     hdgele->unpack_material(data);
   }
 }

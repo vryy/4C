@@ -167,16 +167,16 @@ void Discret::ELEMENTS::Solid::Pack(Core::Communication::PackBuffer& data) const
   Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
-  AddtoPack(data, UniqueParObjectId());
+  add_to_pack(data, UniqueParObjectId());
 
   // add base class Element
   Core::Elements::Element::Pack(data);
 
-  AddtoPack(data, (int)celltype_);
+  add_to_pack(data, (int)celltype_);
 
   AddToPack(data, solid_ele_property_);
 
-  data.AddtoPack(material_post_setup_);
+  data.add_to_pack(material_post_setup_);
 
   Discret::ELEMENTS::Pack(solid_calc_variant_, data);
 }
@@ -189,7 +189,7 @@ void Discret::ELEMENTS::Solid::Unpack(const std::vector<char>& data)
 
   // extract base class Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   Core::Elements::Element::Unpack(basedata);
 
   celltype_ = static_cast<Core::FE::CellType>(ExtractInt(position, data));
@@ -201,7 +201,7 @@ void Discret::ELEMENTS::Solid::Unpack(const std::vector<char>& data)
     SetNurbsElement() = true;
   }
 
-  Core::Communication::ParObject::ExtractfromPack(position, data, material_post_setup_);
+  Core::Communication::ParObject::extract_from_pack(position, data, material_post_setup_);
 
   // reset solid interface
   solid_calc_variant_ = CreateSolidCalculationInterface(celltype_, solid_ele_property_);

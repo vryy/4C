@@ -41,7 +41,7 @@ namespace Core::Communication
       {
         // add dummy object size, will be filled later
         int size = 0;
-        data_.AddtoPack(size);
+        data_.add_to_pack(size);
 
         // remember current data size
         oldsize_ = data_().size();
@@ -66,7 +66,7 @@ namespace Core::Communication
 
     /// add POD object
     template <typename kind>
-    void AddtoPack(const kind& stuff)
+    void add_to_pack(const kind& stuff)
     {
       std::size_t osize = sizeof(kind);
       if (grow_)
@@ -83,7 +83,7 @@ namespace Core::Communication
 
     /// add array of POD objects
     template <typename kind>
-    void AddtoPack(const kind* stuff, std::size_t stuffsize)
+    void add_to_pack(const kind* stuff, std::size_t stuffsize)
     {
       if (grow_)
       {

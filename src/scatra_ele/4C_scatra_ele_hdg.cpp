@@ -201,17 +201,17 @@ void Discret::ELEMENTS::ScaTraHDG::Pack(Core::Communication::PackBuffer& data) c
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
 
   // add base class Element
   Transport::Pack(data);
 
   int degree = degree_;
-  AddtoPack(data, degree);
+  add_to_pack(data, degree);
   degree = completepol_;
-  AddtoPack(data, degree);
+  add_to_pack(data, degree);
   degree = degree_old_;
-  AddtoPack(data, degree);
+  add_to_pack(data, degree);
 }
 
 
@@ -227,16 +227,16 @@ void Discret::ELEMENTS::ScaTraHDG::Unpack(const std::vector<char>& data)
 
   // extract base class Element
   std::vector<char> basedata(0);
-  Transport::ExtractfromPack(position, data, basedata);
+  Transport::extract_from_pack(position, data, basedata);
   Transport::Unpack(basedata);
 
   int val = 0;
-  ExtractfromPack(position, data, val);
+  extract_from_pack(position, data, val);
   FOUR_C_ASSERT(val >= 0 && val < 255, "Degree out of range");
   degree_ = val;
-  ExtractfromPack(position, data, val);
+  extract_from_pack(position, data, val);
   completepol_ = val;
-  ExtractfromPack(position, data, val);
+  extract_from_pack(position, data, val);
   degree_old_ = val;
 
   if (position != data.size())
@@ -589,12 +589,12 @@ void Discret::ELEMENTS::ScaTraHDGBoundary::Pack(Core::Communication::PackBuffer&
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
   // add base class Element
   Element::Pack(data);
 
   // Discretisation type
-  // AddtoPack(data,distype_);
+  // add_to_pack(data,distype_);
 
   return;
 }
@@ -612,7 +612,7 @@ void Discret::ELEMENTS::ScaTraHDGBoundary::Unpack(const std::vector<char>& data)
 
   // extract base class Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   Element::Unpack(basedata);
 
   // distype

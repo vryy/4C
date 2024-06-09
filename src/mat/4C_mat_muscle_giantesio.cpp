@@ -339,15 +339,15 @@ void Mat::MuscleGiantesio::Pack(Core::Communication::PackBuffer& data) const
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
 
   // matid
   int matid = -1;
   if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
-  AddtoPack(data, matid);
+  add_to_pack(data, matid);
 
-  AddtoPack(data, lambda_m_old_);
-  AddtoPack(data, omegaa_old_);
+  add_to_pack(data, lambda_m_old_);
+  add_to_pack(data, omegaa_old_);
 
   anisotropy_extension_.PackAnisotropy(data);
 }
@@ -363,7 +363,7 @@ void Mat::MuscleGiantesio::Unpack(const std::vector<char>& data)
 
   // matid and recover params_
   int matid;
-  ExtractfromPack(position, data, matid);
+  extract_from_pack(position, data, matid);
 
   if (Global::Problem::Instance()->Materials() != Teuchos::null)
   {
@@ -380,8 +380,8 @@ void Mat::MuscleGiantesio::Unpack(const std::vector<char>& data)
     }
   }
 
-  ExtractfromPack(position, data, lambda_m_old_);
-  ExtractfromPack(position, data, omegaa_old_);
+  extract_from_pack(position, data, lambda_m_old_);
+  extract_from_pack(position, data, omegaa_old_);
 
   anisotropy_extension_.UnpackAnisotropy(data, position);
 

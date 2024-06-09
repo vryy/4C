@@ -509,15 +509,15 @@ void ParticleRigidBody::RigidBodyHandler::get_packed_rigid_body_states(
     Core::Communication::PackBuffer data;
     data.StartPacking();
 
-    data.AddtoPack(rigidbody_k);
-    data.AddtoPack(mass_k);
-    for (int i = 0; i < 6; ++i) data.AddtoPack(inertia_k[i]);
-    for (int i = 0; i < 3; ++i) data.AddtoPack(pos_k[i]);
-    for (int i = 0; i < 4; ++i) data.AddtoPack(rot_k[i]);
-    for (int i = 0; i < 3; ++i) data.AddtoPack(vel_k[i]);
-    for (int i = 0; i < 3; ++i) data.AddtoPack(angvel_k[i]);
-    for (int i = 0; i < 3; ++i) data.AddtoPack(acc_k[i]);
-    for (int i = 0; i < 3; ++i) data.AddtoPack(angacc_k[i]);
+    data.add_to_pack(rigidbody_k);
+    data.add_to_pack(mass_k);
+    for (int i = 0; i < 6; ++i) data.add_to_pack(inertia_k[i]);
+    for (int i = 0; i < 3; ++i) data.add_to_pack(pos_k[i]);
+    for (int i = 0; i < 4; ++i) data.add_to_pack(rot_k[i]);
+    for (int i = 0; i < 3; ++i) data.add_to_pack(vel_k[i]);
+    for (int i = 0; i < 3; ++i) data.add_to_pack(angvel_k[i]);
+    for (int i = 0; i < 3; ++i) data.add_to_pack(acc_k[i]);
+    for (int i = 0; i < 3; ++i) data.add_to_pack(angacc_k[i]);
 
     buffer.insert(buffer.end(), data().begin(), data().end());
   }
@@ -546,21 +546,21 @@ void ParticleRigidBody::RigidBodyHandler::extract_packed_rigid_body_states(
     std::vector<double>& angacc_k =
         rigidbodydatastate_->get_ref_angular_acceleration()[rigidbody_k];
 
-    Core::Communication::ParObject::ExtractfromPack(position, buffer, mass_k);
+    Core::Communication::ParObject::extract_from_pack(position, buffer, mass_k);
     for (int i = 0; i < 6; ++i)
-      Core::Communication::ParObject::ExtractfromPack(position, buffer, inertia_k[i]);
+      Core::Communication::ParObject::extract_from_pack(position, buffer, inertia_k[i]);
     for (int i = 0; i < 3; ++i)
-      Core::Communication::ParObject::ExtractfromPack(position, buffer, pos_k[i]);
+      Core::Communication::ParObject::extract_from_pack(position, buffer, pos_k[i]);
     for (int i = 0; i < 4; ++i)
-      Core::Communication::ParObject::ExtractfromPack(position, buffer, rot_k[i]);
+      Core::Communication::ParObject::extract_from_pack(position, buffer, rot_k[i]);
     for (int i = 0; i < 3; ++i)
-      Core::Communication::ParObject::ExtractfromPack(position, buffer, vel_k[i]);
+      Core::Communication::ParObject::extract_from_pack(position, buffer, vel_k[i]);
     for (int i = 0; i < 3; ++i)
-      Core::Communication::ParObject::ExtractfromPack(position, buffer, angvel_k[i]);
+      Core::Communication::ParObject::extract_from_pack(position, buffer, angvel_k[i]);
     for (int i = 0; i < 3; ++i)
-      Core::Communication::ParObject::ExtractfromPack(position, buffer, acc_k[i]);
+      Core::Communication::ParObject::extract_from_pack(position, buffer, acc_k[i]);
     for (int i = 0; i < 3; ++i)
-      Core::Communication::ParObject::ExtractfromPack(position, buffer, angacc_k[i]);
+      Core::Communication::ParObject::extract_from_pack(position, buffer, angacc_k[i]);
   }
 
   if (position != buffer.size())
@@ -647,7 +647,7 @@ void ParticleRigidBody::RigidBodyHandler::relate_owned_rigid_bodies_to_hosting_p
       Core::Communication::PackBuffer data;
       data.StartPacking();
 
-      data.AddtoPack(rigidbody_k);
+      data.add_to_pack(rigidbody_k);
 
       sdata[owner_k].insert(sdata[owner_k].end(), data().begin(), data().end());
     }
@@ -709,15 +709,15 @@ void ParticleRigidBody::RigidBodyHandler::communicate_rigid_body_states(
       Core::Communication::PackBuffer data;
       data.StartPacking();
 
-      data.AddtoPack(rigidbody_k);
-      data.AddtoPack(mass_k);
-      for (int i = 0; i < 6; ++i) data.AddtoPack(inertia_k[i]);
-      for (int i = 0; i < 3; ++i) data.AddtoPack(pos_k[i]);
-      for (int i = 0; i < 4; ++i) data.AddtoPack(rot_k[i]);
-      for (int i = 0; i < 3; ++i) data.AddtoPack(vel_k[i]);
-      for (int i = 0; i < 3; ++i) data.AddtoPack(angvel_k[i]);
-      for (int i = 0; i < 3; ++i) data.AddtoPack(acc_k[i]);
-      for (int i = 0; i < 3; ++i) data.AddtoPack(angacc_k[i]);
+      data.add_to_pack(rigidbody_k);
+      data.add_to_pack(mass_k);
+      for (int i = 0; i < 6; ++i) data.add_to_pack(inertia_k[i]);
+      for (int i = 0; i < 3; ++i) data.add_to_pack(pos_k[i]);
+      for (int i = 0; i < 4; ++i) data.add_to_pack(rot_k[i]);
+      for (int i = 0; i < 3; ++i) data.add_to_pack(vel_k[i]);
+      for (int i = 0; i < 3; ++i) data.add_to_pack(angvel_k[i]);
+      for (int i = 0; i < 3; ++i) data.add_to_pack(acc_k[i]);
+      for (int i = 0; i < 3; ++i) data.add_to_pack(angacc_k[i]);
 
       sdata[owner_k].insert(sdata[owner_k].end(), data().begin(), data().end());
     }
@@ -748,21 +748,21 @@ void ParticleRigidBody::RigidBodyHandler::communicate_rigid_body_states(
       std::vector<double>& angacc_k =
           rigidbodydatastate_->get_ref_angular_acceleration()[rigidbody_k];
 
-      Core::Communication::ParObject::ExtractfromPack(position, rmsg, mass_k);
+      Core::Communication::ParObject::extract_from_pack(position, rmsg, mass_k);
       for (int i = 0; i < 6; ++i)
-        Core::Communication::ParObject::ExtractfromPack(position, rmsg, inertia_k[i]);
+        Core::Communication::ParObject::extract_from_pack(position, rmsg, inertia_k[i]);
       for (int i = 0; i < 3; ++i)
-        Core::Communication::ParObject::ExtractfromPack(position, rmsg, pos_k[i]);
+        Core::Communication::ParObject::extract_from_pack(position, rmsg, pos_k[i]);
       for (int i = 0; i < 4; ++i)
-        Core::Communication::ParObject::ExtractfromPack(position, rmsg, rot_k[i]);
+        Core::Communication::ParObject::extract_from_pack(position, rmsg, rot_k[i]);
       for (int i = 0; i < 3; ++i)
-        Core::Communication::ParObject::ExtractfromPack(position, rmsg, vel_k[i]);
+        Core::Communication::ParObject::extract_from_pack(position, rmsg, vel_k[i]);
       for (int i = 0; i < 3; ++i)
-        Core::Communication::ParObject::ExtractfromPack(position, rmsg, angvel_k[i]);
+        Core::Communication::ParObject::extract_from_pack(position, rmsg, angvel_k[i]);
       for (int i = 0; i < 3; ++i)
-        Core::Communication::ParObject::ExtractfromPack(position, rmsg, acc_k[i]);
+        Core::Communication::ParObject::extract_from_pack(position, rmsg, acc_k[i]);
       for (int i = 0; i < 3; ++i)
-        Core::Communication::ParObject::ExtractfromPack(position, rmsg, angacc_k[i]);
+        Core::Communication::ParObject::extract_from_pack(position, rmsg, angacc_k[i]);
     }
 
     if (position != rmsg.size())
@@ -948,10 +948,10 @@ void ParticleRigidBody::RigidBodyHandler::gather_partial_mass_quantities(
       Core::Communication::PackBuffer data;
       data.StartPacking();
 
-      data.AddtoPack(rigidbody_k);
-      data.AddtoPack(mass_k);
-      for (int i = 0; i < 6; ++i) data.AddtoPack(inertia_k[i]);
-      for (int i = 0; i < 3; ++i) data.AddtoPack(pos_k[i]);
+      data.add_to_pack(rigidbody_k);
+      data.add_to_pack(mass_k);
+      for (int i = 0; i < 6; ++i) data.add_to_pack(inertia_k[i]);
+      for (int i = 0; i < 3; ++i) data.add_to_pack(pos_k[i]);
 
       sdata[owner_k].insert(sdata[owner_k].end(), data().begin(), data().end());
     }
@@ -974,11 +974,11 @@ void ParticleRigidBody::RigidBodyHandler::gather_partial_mass_quantities(
 
       std::vector<double> inertia_k(6);
       for (int i = 0; i < 6; ++i)
-        Core::Communication::ParObject::ExtractfromPack(position, rmsg, inertia_k[i]);
+        Core::Communication::ParObject::extract_from_pack(position, rmsg, inertia_k[i]);
 
       std::vector<double> pos_k(3);
       for (int i = 0; i < 3; ++i)
-        Core::Communication::ParObject::ExtractfromPack(position, rmsg, pos_k[i]);
+        Core::Communication::ParObject::extract_from_pack(position, rmsg, pos_k[i]);
 
       // append to gathered partial mass quantities
       gatheredpartialmass[rigidbody_k].push_back(mass_k);
@@ -1179,9 +1179,9 @@ void ParticleRigidBody::RigidBodyHandler::gather_partial_and_compute_full_force_
       Core::Communication::PackBuffer data;
       data.StartPacking();
 
-      data.AddtoPack(rigidbody_k);
-      for (int i = 0; i < 3; ++i) data.AddtoPack(force_k[i]);
-      for (int i = 0; i < 3; ++i) data.AddtoPack(torque_k[i]);
+      data.add_to_pack(rigidbody_k);
+      for (int i = 0; i < 3; ++i) data.add_to_pack(force_k[i]);
+      for (int i = 0; i < 3; ++i) data.add_to_pack(torque_k[i]);
 
       sdata[owner_k].insert(sdata[owner_k].end(), data().begin(), data().end());
     }
@@ -1203,11 +1203,11 @@ void ParticleRigidBody::RigidBodyHandler::gather_partial_and_compute_full_force_
 
       std::vector<double> tmp_force_k(3);
       for (int i = 0; i < 3; ++i)
-        Core::Communication::ParObject::ExtractfromPack(position, rmsg, tmp_force_k[i]);
+        Core::Communication::ParObject::extract_from_pack(position, rmsg, tmp_force_k[i]);
 
       std::vector<double> tmp_torque_k(3);
       for (int i = 0; i < 3; ++i)
-        Core::Communication::ParObject::ExtractfromPack(position, rmsg, tmp_torque_k[i]);
+        Core::Communication::ParObject::extract_from_pack(position, rmsg, tmp_torque_k[i]);
 
       // get pointer to rigid body states
       double* force_k = rigidbodydatastate_->GetRefForce()[rigidbody_k].data();
@@ -1376,10 +1376,10 @@ void ParticleRigidBody::RigidBodyHandler::broadcast_rigid_body_positions()
     Core::Communication::PackBuffer data;
     data.StartPacking();
 
-    data.AddtoPack(rigidbody_k);
+    data.add_to_pack(rigidbody_k);
 
-    for (int i = 0; i < 3; ++i) data.AddtoPack(pos_k[i]);
-    for (int i = 0; i < 4; ++i) data.AddtoPack(rot_k[i]);
+    for (int i = 0; i < 3; ++i) data.add_to_pack(pos_k[i]);
+    for (int i = 0; i < 4; ++i) data.add_to_pack(rot_k[i]);
 
     for (int torank : hostingprocs_k)
       sdata[torank].insert(sdata[torank].end(), data().begin(), data().end());
@@ -1404,9 +1404,9 @@ void ParticleRigidBody::RigidBodyHandler::broadcast_rigid_body_positions()
       std::vector<double>& rot_k = rigidbodydatastate_->GetRefRotation()[rigidbody_k];
 
       for (int i = 0; i < 3; ++i)
-        Core::Communication::ParObject::ExtractfromPack(position, rmsg, pos_k[i]);
+        Core::Communication::ParObject::extract_from_pack(position, rmsg, pos_k[i]);
       for (int i = 0; i < 4; ++i)
-        Core::Communication::ParObject::ExtractfromPack(position, rmsg, rot_k[i]);
+        Core::Communication::ParObject::extract_from_pack(position, rmsg, rot_k[i]);
     }
 
     if (position != rmsg.size())
@@ -1435,10 +1435,10 @@ void ParticleRigidBody::RigidBodyHandler::broadcast_rigid_body_velocities()
     Core::Communication::PackBuffer data;
     data.StartPacking();
 
-    data.AddtoPack(rigidbody_k);
+    data.add_to_pack(rigidbody_k);
 
-    for (int i = 0; i < 3; ++i) data.AddtoPack(vel_k[i]);
-    for (int i = 0; i < 3; ++i) data.AddtoPack(angvel_k[i]);
+    for (int i = 0; i < 3; ++i) data.add_to_pack(vel_k[i]);
+    for (int i = 0; i < 3; ++i) data.add_to_pack(angvel_k[i]);
 
     for (int torank : hostingprocs_k)
       sdata[torank].insert(sdata[torank].end(), data().begin(), data().end());
@@ -1463,9 +1463,9 @@ void ParticleRigidBody::RigidBodyHandler::broadcast_rigid_body_velocities()
       std::vector<double>& angvel_k = rigidbodydatastate_->get_ref_angular_velocity()[rigidbody_k];
 
       for (int i = 0; i < 3; ++i)
-        Core::Communication::ParObject::ExtractfromPack(position, rmsg, vel_k[i]);
+        Core::Communication::ParObject::extract_from_pack(position, rmsg, vel_k[i]);
       for (int i = 0; i < 3; ++i)
-        Core::Communication::ParObject::ExtractfromPack(position, rmsg, angvel_k[i]);
+        Core::Communication::ParObject::extract_from_pack(position, rmsg, angvel_k[i]);
     }
 
     if (position != rmsg.size())
@@ -1494,10 +1494,10 @@ void ParticleRigidBody::RigidBodyHandler::broadcast_rigid_body_accelerations()
     Core::Communication::PackBuffer data;
     data.StartPacking();
 
-    data.AddtoPack(rigidbody_k);
+    data.add_to_pack(rigidbody_k);
 
-    for (int i = 0; i < 3; ++i) data.AddtoPack(acc_k[i]);
-    for (int i = 0; i < 3; ++i) data.AddtoPack(angacc_k[i]);
+    for (int i = 0; i < 3; ++i) data.add_to_pack(acc_k[i]);
+    for (int i = 0; i < 3; ++i) data.add_to_pack(angacc_k[i]);
 
     for (int torank : hostingprocs_k)
       sdata[torank].insert(sdata[torank].end(), data().begin(), data().end());
@@ -1523,9 +1523,9 @@ void ParticleRigidBody::RigidBodyHandler::broadcast_rigid_body_accelerations()
           rigidbodydatastate_->get_ref_angular_acceleration()[rigidbody_k];
 
       for (int i = 0; i < 3; ++i)
-        Core::Communication::ParObject::ExtractfromPack(position, rmsg, acc_k[i]);
+        Core::Communication::ParObject::extract_from_pack(position, rmsg, acc_k[i]);
       for (int i = 0; i < 3; ++i)
-        Core::Communication::ParObject::ExtractfromPack(position, rmsg, angacc_k[i]);
+        Core::Communication::ParObject::extract_from_pack(position, rmsg, angacc_k[i]);
     }
 
     if (position != rmsg.size())

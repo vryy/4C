@@ -829,10 +829,10 @@ void XFEM::XfluidTimeintBase::pack_node(
     Core::Communication::PackBuffer& dataSend, Core::Nodes::Node& node) const
 {
   const int nsd = 3;
-  Core::Communication::ParObject::AddtoPack(dataSend, node.Id());
-  Core::Communication::ParObject::AddtoPack(
+  Core::Communication::ParObject::add_to_pack(dataSend, node.Id());
+  Core::Communication::ParObject::add_to_pack(
       dataSend, Core::LinAlg::Matrix<nsd, 1>(node.X().data()));
-  Core::Communication::ParObject::AddtoPack(dataSend, node.Owner());
+  Core::Communication::ParObject::add_to_pack(dataSend, node.Owner());
 }  // end packNode
 
 
@@ -849,9 +849,9 @@ void XFEM::XfluidTimeintBase::unpack_node(std::vector<char>::size_type& posinDat
   Core::LinAlg::Matrix<nsd, 1> coords;  // coordinates
   int owner;                            // processor
 
-  Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, id);
-  Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, coords);
-  Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, owner);
+  Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, id);
+  Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, coords);
+  Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, owner);
 
   if (owner == myrank_)  // real node with all data
   {
@@ -3233,16 +3233,16 @@ void XFEM::XfluidStd::exportStartData()
        data++)
   {
     pack_node(dataSend, data->node_);
-    Core::Communication::ParObject::AddtoPack(dataSend, data->nds_np_);
-    Core::Communication::ParObject::AddtoPack(dataSend, data->vel_);
-    Core::Communication::ParObject::AddtoPack(dataSend, data->velDeriv_);
-    Core::Communication::ParObject::AddtoPack(dataSend, data->presDeriv_);
-    Core::Communication::ParObject::AddtoPack(dataSend, data->dispnp_);
-    Core::Communication::ParObject::AddtoPack(dataSend, data->startpoint_);
-    Core::Communication::ParObject::AddtoPack(dataSend, data->searchedProcs_);
-    Core::Communication::ParObject::AddtoPack(dataSend, data->counter_);
-    Core::Communication::ParObject::AddtoPack(dataSend, data->dMin_);
-    Core::Communication::ParObject::AddtoPack(dataSend, (int)data->type_);
+    Core::Communication::ParObject::add_to_pack(dataSend, data->nds_np_);
+    Core::Communication::ParObject::add_to_pack(dataSend, data->vel_);
+    Core::Communication::ParObject::add_to_pack(dataSend, data->velDeriv_);
+    Core::Communication::ParObject::add_to_pack(dataSend, data->presDeriv_);
+    Core::Communication::ParObject::add_to_pack(dataSend, data->dispnp_);
+    Core::Communication::ParObject::add_to_pack(dataSend, data->startpoint_);
+    Core::Communication::ParObject::add_to_pack(dataSend, data->searchedProcs_);
+    Core::Communication::ParObject::add_to_pack(dataSend, data->counter_);
+    Core::Communication::ParObject::add_to_pack(dataSend, data->dMin_);
+    Core::Communication::ParObject::add_to_pack(dataSend, (int)data->type_);
   }
 
   dataSend.StartPacking();
@@ -3251,16 +3251,16 @@ void XFEM::XfluidStd::exportStartData()
        data++)
   {
     pack_node(dataSend, data->node_);
-    Core::Communication::ParObject::AddtoPack(dataSend, data->nds_np_);
-    Core::Communication::ParObject::AddtoPack(dataSend, data->vel_);
-    Core::Communication::ParObject::AddtoPack(dataSend, data->velDeriv_);
-    Core::Communication::ParObject::AddtoPack(dataSend, data->presDeriv_);
-    Core::Communication::ParObject::AddtoPack(dataSend, data->dispnp_);
-    Core::Communication::ParObject::AddtoPack(dataSend, data->startpoint_);
-    Core::Communication::ParObject::AddtoPack(dataSend, data->searchedProcs_);
-    Core::Communication::ParObject::AddtoPack(dataSend, data->counter_);
-    Core::Communication::ParObject::AddtoPack(dataSend, data->dMin_);
-    Core::Communication::ParObject::AddtoPack(dataSend, (int)data->type_);
+    Core::Communication::ParObject::add_to_pack(dataSend, data->nds_np_);
+    Core::Communication::ParObject::add_to_pack(dataSend, data->vel_);
+    Core::Communication::ParObject::add_to_pack(dataSend, data->velDeriv_);
+    Core::Communication::ParObject::add_to_pack(dataSend, data->presDeriv_);
+    Core::Communication::ParObject::add_to_pack(dataSend, data->dispnp_);
+    Core::Communication::ParObject::add_to_pack(dataSend, data->startpoint_);
+    Core::Communication::ParObject::add_to_pack(dataSend, data->searchedProcs_);
+    Core::Communication::ParObject::add_to_pack(dataSend, data->counter_);
+    Core::Communication::ParObject::add_to_pack(dataSend, data->dMin_);
+    Core::Communication::ParObject::add_to_pack(dataSend, (int)data->type_);
   }
 
   std::vector<char> dataRecv;
@@ -3289,16 +3289,16 @@ void XFEM::XfluidStd::exportStartData()
     int newtype;                                           // type of the data
 
     unpack_node(posinData, dataRecv, node);
-    Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, nds_np);
-    Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, vel);
-    Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, velDeriv);
-    Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, presDeriv);
-    Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, dispnp);
-    Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, startpoint);
-    Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, searchedProcs);
-    Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, counter);
-    Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, dMin);
-    Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, newtype);
+    Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, nds_np);
+    Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, vel);
+    Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, velDeriv);
+    Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, presDeriv);
+    Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, dispnp);
+    Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, startpoint);
+    Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, searchedProcs);
+    Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, counter);
+    Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, dMin);
+    Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, newtype);
 
     timeIntData_->push_back(TimeIntData(node, nds_np, vel, velDeriv, presDeriv, dispnp, startpoint,
         searchedProcs, counter, dMin, (TimeIntData::Type)newtype));
@@ -3362,12 +3362,12 @@ void XFEM::XfluidStd::exportFinalData()
     for (std::vector<TimeIntData>::iterator data = dataVec[dest].begin();
          data != dataVec[dest].end(); data++)
     {
-      Core::Communication::ParObject::AddtoPack(dataSend, data->node_.Id());
-      Core::Communication::ParObject::AddtoPack(dataSend, data->nds_np_);
-      Core::Communication::ParObject::AddtoPack(dataSend, data->startpoint_);
-      Core::Communication::ParObject::AddtoPack(dataSend, data->velValues_);
-      Core::Communication::ParObject::AddtoPack(dataSend, data->presValues_);
-      Core::Communication::ParObject::AddtoPack(dataSend, data->type_);
+      Core::Communication::ParObject::add_to_pack(dataSend, data->node_.Id());
+      Core::Communication::ParObject::add_to_pack(dataSend, data->nds_np_);
+      Core::Communication::ParObject::add_to_pack(dataSend, data->startpoint_);
+      Core::Communication::ParObject::add_to_pack(dataSend, data->velValues_);
+      Core::Communication::ParObject::add_to_pack(dataSend, data->presValues_);
+      Core::Communication::ParObject::add_to_pack(dataSend, data->type_);
     }
 
     dataSend.StartPacking();
@@ -3375,12 +3375,12 @@ void XFEM::XfluidStd::exportFinalData()
     for (std::vector<TimeIntData>::iterator data = dataVec[dest].begin();
          data != dataVec[dest].end(); data++)
     {
-      Core::Communication::ParObject::AddtoPack(dataSend, data->node_.Id());
-      Core::Communication::ParObject::AddtoPack(dataSend, data->nds_np_);
-      Core::Communication::ParObject::AddtoPack(dataSend, data->startpoint_);
-      Core::Communication::ParObject::AddtoPack(dataSend, data->velValues_);
-      Core::Communication::ParObject::AddtoPack(dataSend, data->presValues_);
-      Core::Communication::ParObject::AddtoPack(dataSend, data->type_);
+      Core::Communication::ParObject::add_to_pack(dataSend, data->node_.Id());
+      Core::Communication::ParObject::add_to_pack(dataSend, data->nds_np_);
+      Core::Communication::ParObject::add_to_pack(dataSend, data->startpoint_);
+      Core::Communication::ParObject::add_to_pack(dataSend, data->velValues_);
+      Core::Communication::ParObject::add_to_pack(dataSend, data->presValues_);
+      Core::Communication::ParObject::add_to_pack(dataSend, data->type_);
     }
 
     // clear the no more needed data
@@ -3402,12 +3402,12 @@ void XFEM::XfluidStd::exportFinalData()
       std::vector<double> presValues;                       // pressure values
       int newtype;                                          // type of the data
 
-      Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, gid);
-      Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, nds_np);
-      Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, startpoint);
-      Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, velValues);
-      Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, presValues);
-      Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, newtype);
+      Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, gid);
+      Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, nds_np);
+      Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, startpoint);
+      Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, velValues);
+      Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, presValues);
+      Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, newtype);
 
       Core::LinAlg::Matrix<3, 1> nodedispnp(true);
       if (dispnp_ != Teuchos::null)  // is alefluid

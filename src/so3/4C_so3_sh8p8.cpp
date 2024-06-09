@@ -167,14 +167,14 @@ void Discret::ELEMENTS::SoSh8p8::Pack(Core::Communication::PackBuffer& data) con
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
   // add base class So_sh8 Element
   Discret::ELEMENTS::SoSh8::Pack(data);
   // techniques
-  AddtoPack(data, stab_);
-  AddtoPack(data, ans_);
-  AddtoPack(data, lin_);
-  AddtoPack(data, iso_);
+  add_to_pack(data, stab_);
+  add_to_pack(data, ans_);
+  add_to_pack(data, lin_);
+  add_to_pack(data, iso_);
 
   return;
 }
@@ -191,7 +191,7 @@ void Discret::ELEMENTS::SoSh8p8::Unpack(const std::vector<char>& data)
 
   // extract base class So_sh8 Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   Discret::ELEMENTS::SoSh8::Unpack(basedata);
   // techniques
   stab_ = static_cast<StabilisationType>(ExtractInt(position, data));

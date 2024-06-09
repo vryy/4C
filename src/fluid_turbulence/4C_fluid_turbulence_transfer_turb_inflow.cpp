@@ -473,14 +473,14 @@ void FLD::TransferTurbulentInflowCondition::unpack_local_master_values(std::vect
 
   // extract size
   int size = 0;
-  Core::Communication::ParObject::ExtractfromPack(position, rblock, size);
+  Core::Communication::ParObject::extract_from_pack(position, rblock, size);
 
   // extract master ids
   for (int i = 0; i < size; ++i)
   {
     int id;
 
-    Core::Communication::ParObject::ExtractfromPack(position, rblock, id);
+    Core::Communication::ParObject::extract_from_pack(position, rblock, id);
     mymasters.push_back(id);
 
     std::map<int, std::vector<int>>::iterator iter = midtosid_.find(id);
@@ -500,12 +500,12 @@ void FLD::TransferTurbulentInflowCondition::unpack_local_master_values(std::vect
   {
     int slavesize;
 
-    Core::Communication::ParObject::ExtractfromPack(position, rblock, slavesize);
+    Core::Communication::ParObject::extract_from_pack(position, rblock, slavesize);
 
     for (int ll = 0; ll < slavesize; ++ll)
     {
       int sid;
-      Core::Communication::ParObject::ExtractfromPack(position, rblock, sid);
+      Core::Communication::ParObject::extract_from_pack(position, rblock, sid);
 
       std::map<int, std::vector<int>>::iterator iter = midtosid_.find(mymasters[rr]);
 
@@ -533,7 +533,7 @@ void FLD::TransferTurbulentInflowCondition::unpack_local_master_values(std::vect
     {
       double value;
 
-      Core::Communication::ParObject::ExtractfromPack(position, rblock, value);
+      Core::Communication::ParObject::extract_from_pack(position, rblock, value);
 
       (mymasters_vel[mm]).push_back(value);
     }
@@ -574,12 +574,12 @@ void FLD::TransferTurbulentInflowCondition::pack_local_master_values(std::vector
   }
 
   // add size  to sendblock
-  Core::Communication::ParObject::AddtoPack(sblock, size);
+  Core::Communication::ParObject::add_to_pack(sblock, size);
 
   // add master ids
   for (int rr = 0; rr < size; ++rr)
   {
-    Core::Communication::ParObject::AddtoPack(sblock, mymasters[rr]);
+    Core::Communication::ParObject::add_to_pack(sblock, mymasters[rr]);
   }
 
   // add slave ids
@@ -597,10 +597,10 @@ void FLD::TransferTurbulentInflowCondition::pack_local_master_values(std::vector
 
       int slavesize = (int)slaves.size();
 
-      Core::Communication::ParObject::AddtoPack(sblock, slavesize);
+      Core::Communication::ParObject::add_to_pack(sblock, slavesize);
       for (int ll = 0; ll < slavesize; ++ll)
       {
-        Core::Communication::ParObject::AddtoPack(sblock, slaves[ll]);
+        Core::Communication::ParObject::add_to_pack(sblock, slaves[ll]);
       }
     }
   }
@@ -610,7 +610,7 @@ void FLD::TransferTurbulentInflowCondition::pack_local_master_values(std::vector
   {
     for (int rr = 0; rr < size; ++rr)
     {
-      Core::Communication::ParObject::AddtoPack(sblock, (mymasters_vel[mm])[rr]);
+      Core::Communication::ParObject::add_to_pack(sblock, (mymasters_vel[mm])[rr]);
     }
   }
 

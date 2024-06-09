@@ -122,13 +122,13 @@ void Discret::ELEMENTS::Artery::Pack(Core::Communication::PackBuffer& data) cons
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
 
   // add base class Element
   Element::Pack(data);
   // Gaussrule
-  AddtoPack(data, gaussrule_);
-  AddtoPack(data, impltype_);
+  add_to_pack(data, gaussrule_);
+  add_to_pack(data, impltype_);
 
   return;
 }
@@ -146,10 +146,10 @@ void Discret::ELEMENTS::Artery::Unpack(const std::vector<char>& data)
 
   // extract base class Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   Element::Unpack(basedata);
   // Gaussrule
-  ExtractfromPack(position, data, gaussrule_);
+  extract_from_pack(position, data, gaussrule_);
   impltype_ = static_cast<Inpar::ArtDyn::ImplType>(ExtractInt(position, data));
 
   if (position != data.size())

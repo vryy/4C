@@ -507,25 +507,25 @@ int Discret::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
 
       {
         Core::Communication::PackBuffer data;
-        AddtoPack(data, stress);
+        add_to_pack(data, stress);
         data.StartPacking();
-        AddtoPack(data, stress);
+        add_to_pack(data, stress);
         std::copy(data().begin(), data().end(), std::back_inserter(*stressdata));
       }
 
       {
         Core::Communication::PackBuffer data;
-        AddtoPack(data, strain);
+        add_to_pack(data, strain);
         data.StartPacking();
-        AddtoPack(data, strain);
+        add_to_pack(data, strain);
         std::copy(data().begin(), data().end(), std::back_inserter(*straindata));
       }
 
       {
         Core::Communication::PackBuffer data;
-        AddtoPack(data, plstrain);
+        add_to_pack(data, plstrain);
         data.StartPacking();
-        AddtoPack(data, plstrain);
+        add_to_pack(data, plstrain);
         std::copy(data().begin(), data().end(), std::back_inserter(*plstraindata));
       }
     }
@@ -1213,25 +1213,25 @@ int Discret::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
 
         {
           Core::Communication::PackBuffer data;
-          AddtoPack(data, stress);
+          add_to_pack(data, stress);
           data.StartPacking();
-          AddtoPack(data, stress);
+          add_to_pack(data, stress);
           std::copy(data().begin(), data().end(), std::back_inserter(*stressdata));
         }
 
         {
           Core::Communication::PackBuffer data;
-          AddtoPack(data, strain);
+          add_to_pack(data, strain);
           data.StartPacking();
-          AddtoPack(data, strain);
+          add_to_pack(data, strain);
           std::copy(data().begin(), data().end(), std::back_inserter(*straindata));
         }
 
         {
           Core::Communication::PackBuffer data;
-          AddtoPack(data, plstrain);
+          add_to_pack(data, plstrain);
           data.StartPacking();
-          AddtoPack(data, plstrain);
+          add_to_pack(data, plstrain);
           std::copy(data().begin(), data().end(), std::back_inserter(*plstraindata));
         }
       }

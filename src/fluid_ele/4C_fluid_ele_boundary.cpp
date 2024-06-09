@@ -103,13 +103,13 @@ void Discret::ELEMENTS::FluidBoundary::Pack(Core::Communication::PackBuffer& dat
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
   // add base class Element
   FaceElement::Pack(data);
   // Discretisation type
-  AddtoPack(data, distype_);
+  add_to_pack(data, distype_);
   // add numdofpernode_
-  AddtoPack(data, numdofpernode_);
+  add_to_pack(data, numdofpernode_);
   return;
 }
 
@@ -125,7 +125,7 @@ void Discret::ELEMENTS::FluidBoundary::Unpack(const std::vector<char>& data)
 
   // extract base class Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   FaceElement::Unpack(basedata);
   // distype
   distype_ = static_cast<Core::FE::CellType>(ExtractInt(position, data));

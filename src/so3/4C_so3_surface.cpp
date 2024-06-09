@@ -120,15 +120,15 @@ void Discret::ELEMENTS::StructuralSurface::Pack(Core::Communication::PackBuffer&
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
   // add base class Core::Elements::FaceElement
   Core::Elements::FaceElement::Pack(data);
   // add distype_
-  AddtoPack(data, (int)distype_);
+  add_to_pack(data, (int)distype_);
   // add numdofpernode_
-  AddtoPack(data, numdofpernode_);
+  add_to_pack(data, numdofpernode_);
   // add gaussrule_
-  AddtoPack(data, (int)gaussrule_);
+  add_to_pack(data, (int)gaussrule_);
   return;
 }
 
@@ -144,7 +144,7 @@ void Discret::ELEMENTS::StructuralSurface::Unpack(const std::vector<char>& data)
 
   // extract base class Core::Elements::FaceElement
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   Core::Elements::FaceElement::Unpack(basedata);
 
   // distype_

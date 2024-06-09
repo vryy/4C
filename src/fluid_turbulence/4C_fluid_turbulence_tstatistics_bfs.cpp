@@ -168,13 +168,13 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<Discret::Disc
       for (std::set<double, LineSortCriterion>::iterator x1line = x1avcoords.begin();
            x1line != x1avcoords.end(); ++x1line)
       {
-        Core::Communication::ParObject::AddtoPack(data, *x1line);
+        Core::Communication::ParObject::add_to_pack(data, *x1line);
       }
       data.StartPacking();
       for (std::set<double, LineSortCriterion>::iterator x1line = x1avcoords.begin();
            x1line != x1avcoords.end(); ++x1line)
       {
-        Core::Communication::ParObject::AddtoPack(data, *x1line);
+        Core::Communication::ParObject::add_to_pack(data, *x1line);
       }
       std::swap(sblock, data());
 
@@ -217,7 +217,7 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<Discret::Disc
         while (index < rblock.size())
         {
           double onecoord;
-          Core::Communication::ParObject::ExtractfromPack(index, rblock, onecoord);
+          Core::Communication::ParObject::extract_from_pack(index, rblock, onecoord);
           x1avcoords.insert(onecoord);
         }
       }
@@ -231,13 +231,13 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<Discret::Disc
       for (std::set<double, LineSortCriterion>::iterator x2line = x2avcoords.begin();
            x2line != x2avcoords.end(); ++x2line)
       {
-        Core::Communication::ParObject::AddtoPack(data, *x2line);
+        Core::Communication::ParObject::add_to_pack(data, *x2line);
       }
       data.StartPacking();
       for (std::set<double, LineSortCriterion>::iterator x2line = x2avcoords.begin();
            x2line != x2avcoords.end(); ++x2line)
       {
-        Core::Communication::ParObject::AddtoPack(data, *x2line);
+        Core::Communication::ParObject::add_to_pack(data, *x2line);
       }
       std::swap(sblock, data());
 
@@ -280,7 +280,7 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<Discret::Disc
         while (index < rblock.size())
         {
           double onecoord;
-          Core::Communication::ParObject::ExtractfromPack(index, rblock, onecoord);
+          Core::Communication::ParObject::extract_from_pack(index, rblock, onecoord);
           x2avcoords.insert(onecoord);
         }
       }

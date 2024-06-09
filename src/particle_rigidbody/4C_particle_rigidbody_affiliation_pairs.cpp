@@ -174,8 +174,8 @@ void ParticleRigidBody::RigidBodyAffiliationPairs::add_affiliation_pair_to_buffe
   data.StartPacking();
 
   // add affiliation pair
-  data.AddtoPack(globalid);
-  data.AddtoPack(rigidbody);
+  data.add_to_pack(globalid);
+  data.add_to_pack(rigidbody);
 
   // append packed affiliation pair to buffer
   buffer.insert(buffer.end(), data().begin(), data().end());

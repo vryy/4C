@@ -54,14 +54,14 @@ void Discret::ELEMENTS::SoBase::Pack(Core::Communication::PackBuffer& data) cons
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
   // add base class Element
   Element::Pack(data);
   // kintype_
-  AddtoPack(data, kintype_);
+  add_to_pack(data, kintype_);
 
   // material post setup routine
-  AddtoPack(data, static_cast<int>(material_post_setup_));
+  add_to_pack(data, static_cast<int>(material_post_setup_));
 }
 
 
@@ -77,7 +77,7 @@ void Discret::ELEMENTS::SoBase::Unpack(const std::vector<char>& data)
 
   // extract base class Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   Element::Unpack(basedata);
   // kintype_
   kintype_ = static_cast<Inpar::STR::KinemType>(ExtractInt(position, data));

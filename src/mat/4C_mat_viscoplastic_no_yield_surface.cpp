@@ -96,17 +96,17 @@ void Mat::ViscoPlasticNoYieldSurface::Pack(Core::Communication::PackBuffer& data
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
 
   // matid
   int matid = -1;
   // in case we are in post-process mode
   if (Parameter() != nullptr) matid = Parameter()->Id();
-  AddtoPack(data, matid);
+  add_to_pack(data, matid);
 
   // pack history data
-  AddtoPack<3, 3>(data, last_plastic_defgrd_inverse_);
-  AddtoPack(data, last_flowres_isotropic_);
+  add_to_pack<3, 3>(data, last_plastic_defgrd_inverse_);
+  add_to_pack(data, last_flowres_isotropic_);
 }
 
 /*----------------------------------------------------------------------*
@@ -119,7 +119,7 @@ void Mat::ViscoPlasticNoYieldSurface::Unpack(const std::vector<char>& data)
 
   // matid and recover params_
   int matid;
-  ExtractfromPack(position, data, matid);
+  extract_from_pack(position, data, matid);
   params_ = nullptr;
   if (Global::Problem::Instance()->Materials() != Teuchos::null)
   {
@@ -137,8 +137,8 @@ void Mat::ViscoPlasticNoYieldSurface::Unpack(const std::vector<char>& data)
   }
 
   // history data
-  ExtractfromPack<3, 3>(position, data, last_plastic_defgrd_inverse_);
-  ExtractfromPack(position, data, last_flowres_isotropic_);
+  extract_from_pack<3, 3>(position, data, last_plastic_defgrd_inverse_);
+  extract_from_pack(position, data, last_flowres_isotropic_);
 
   // no need to unpack this, just resize the data members
   current_flowres_isotropic_.resize(last_flowres_isotropic_.size(), 0.0);

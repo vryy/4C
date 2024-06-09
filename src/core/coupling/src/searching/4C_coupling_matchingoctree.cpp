@@ -273,7 +273,7 @@ void Core::COUPLING::MatchingOctree::create_global_entity_matching(
     {
       // extract node data from blockofnodes
       std::vector<char> data;
-      Core::Communication::ParObject::ExtractfromPack(index, rblockofnodes, data);
+      Core::Communication::ParObject::extract_from_pack(index, rblockofnodes, data);
 
       // allocate an "empty node". Fill it with info from
       // extracted node data
@@ -523,7 +523,7 @@ void Core::COUPLING::MatchingOctree::FindMatch(const Discret::Discretization& sl
     {
       // extract node data from blockofnodes
       std::vector<char> data;
-      Core::Communication::ParObject::ExtractfromPack(index, rblockofnodes, data);
+      Core::Communication::ParObject::extract_from_pack(index, rblockofnodes, data);
 
       // allocate an "empty node". Fill it with info from
       // extracted node data
@@ -805,7 +805,7 @@ void Core::COUPLING::NodeMatchingOctree::pack_entity(
   // get the slavenode
   Core::Nodes::Node* actnode = dis->gNode(id);
   // Add node to list of nodes which will be sent to the next proc
-  Core::Communication::ParObject::AddtoPack(data, actnode);
+  Core::Communication::ParObject::add_to_pack(data, actnode);
 }  // NodeMatchingOctree::PackEntity
 
 /*----------------------------------------------------------------------*/
@@ -813,7 +813,7 @@ void Core::COUPLING::NodeMatchingOctree::pack_entity(
 void Core::COUPLING::NodeMatchingOctree::un_pack_entity(
     std::vector<char>::size_type& index, std::vector<char>& rblockofnodes, std::vector<char>& data)
 {
-  Core::Communication::ParObject::ExtractfromPack(index, rblockofnodes, data);
+  Core::Communication::ParObject::extract_from_pack(index, rblockofnodes, data);
 }  // NodeMatchingOctree::un_pack_entity
 
 /*----------------------------------------------------------------------*/
@@ -912,10 +912,10 @@ void Core::COUPLING::ElementMatchingOctree::pack_entity(
   Core::Elements::Element* actele = dis->gElement(id);
   Core::Nodes::Node** nodes = actele->Nodes();
   // Add node to list of nodes which will be sent to the next proc
-  Core::Communication::ParObject::AddtoPack(data, actele->num_node());
-  Core::Communication::ParObject::AddtoPack(data, actele);
+  Core::Communication::ParObject::add_to_pack(data, actele->num_node());
+  Core::Communication::ParObject::add_to_pack(data, actele);
   for (int node = 0; node < actele->num_node(); node++)
-    Core::Communication::ParObject::AddtoPack(data, nodes[node]);
+    Core::Communication::ParObject::add_to_pack(data, nodes[node]);
 }  // ElementMatchingOctree::PackEntity
 
 /*----------------------------------------------------------------------*/
@@ -925,12 +925,12 @@ void Core::COUPLING::ElementMatchingOctree::un_pack_entity(
 {
   nodes_.clear();
   int numnode = Core::Communication::ParObject::ExtractInt(index, rblockofnodes);
-  Core::Communication::ParObject::ExtractfromPack(index, rblockofnodes, data);
+  Core::Communication::ParObject::extract_from_pack(index, rblockofnodes, data);
 
   for (int node = 0; node < numnode; node++)
   {
     std::vector<char> nodedata;
-    Core::Communication::ParObject::ExtractfromPack(index, rblockofnodes, nodedata);
+    Core::Communication::ParObject::extract_from_pack(index, rblockofnodes, nodedata);
     Teuchos::RCP<Core::Communication::ParObject> o =
         Teuchos::rcp(Core::Communication::Factory(nodedata));
     Teuchos::RCP<Core::Nodes::Node> actnode = Teuchos::rcp_dynamic_cast<Core::Nodes::Node>(o);

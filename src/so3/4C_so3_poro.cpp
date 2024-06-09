@@ -78,37 +78,38 @@ void Discret::ELEMENTS::So3Poro<so3_ele, distype>::Pack(Core::Communication::Pac
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  so3_ele::AddtoPack(data, type);
+  so3_ele::add_to_pack(data, type);
 
   // detJ_
-  so3_ele::AddtoPack(data, detJ_);
+  so3_ele::add_to_pack(data, detJ_);
 
   // invJ_
   auto size = static_cast<int>(invJ_.size());
-  so3_ele::AddtoPack(data, size);
-  for (int i = 0; i < size; ++i) so3_ele::AddtoPack(data, invJ_[i]);
+  so3_ele::add_to_pack(data, size);
+  for (int i = 0; i < size; ++i) so3_ele::add_to_pack(data, invJ_[i]);
 
   // xsi_
   size = static_cast<int>(xsi_.size());
-  so3_ele::AddtoPack(data, size);
-  for (int i = 0; i < size; ++i) so3_ele::AddtoPack(data, xsi_[i]);
+  so3_ele::add_to_pack(data, size);
+  for (int i = 0; i < size; ++i) so3_ele::add_to_pack(data, xsi_[i]);
 
   // scatra_coupling_
-  so3_ele::AddtoPack(data, scatra_coupling_);
+  so3_ele::add_to_pack(data, scatra_coupling_);
 
   // isNurbs_
-  so3_ele::AddtoPack(data, isNurbs_);
+  so3_ele::add_to_pack(data, isNurbs_);
 
   // anisotropic_permeability_directions_
   size = static_cast<int>(anisotropic_permeability_directions_.size());
-  so3_ele::AddtoPack(data, size);
-  for (int i = 0; i < size; ++i) so3_ele::AddtoPack(data, anisotropic_permeability_directions_[i]);
+  so3_ele::add_to_pack(data, size);
+  for (int i = 0; i < size; ++i)
+    so3_ele::add_to_pack(data, anisotropic_permeability_directions_[i]);
 
   // anisotropic_permeability_nodal_coeffs_
   size = static_cast<int>(anisotropic_permeability_nodal_coeffs_.size());
-  so3_ele::AddtoPack(data, size);
+  so3_ele::add_to_pack(data, size);
   for (int i = 0; i < size; ++i)
-    so3_ele::AddtoPack(data, anisotropic_permeability_nodal_coeffs_[i]);
+    so3_ele::add_to_pack(data, anisotropic_permeability_nodal_coeffs_[i]);
 
   // add base class Element
   so3_ele::Pack(data);
@@ -122,19 +123,19 @@ void Discret::ELEMENTS::So3Poro<so3_ele, distype>::Unpack(const std::vector<char
   Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // detJ_
-  so3_ele::ExtractfromPack(position, data, detJ_);
+  so3_ele::extract_from_pack(position, data, detJ_);
 
   // invJ_
   int size = 0;
-  so3_ele::ExtractfromPack(position, data, size);
+  so3_ele::extract_from_pack(position, data, size);
   invJ_.resize(size, Core::LinAlg::Matrix<numdim_, numdim_>(true));
-  for (int i = 0; i < size; ++i) so3_ele::ExtractfromPack(position, data, invJ_[i]);
+  for (int i = 0; i < size; ++i) so3_ele::extract_from_pack(position, data, invJ_[i]);
 
   // xsi_
   size = 0;
-  so3_ele::ExtractfromPack(position, data, size);
+  so3_ele::extract_from_pack(position, data, size);
   xsi_.resize(size, Core::LinAlg::Matrix<numdim_, 1>(true));
-  for (int i = 0; i < size; ++i) so3_ele::ExtractfromPack(position, data, xsi_[i]);
+  for (int i = 0; i < size; ++i) so3_ele::extract_from_pack(position, data, xsi_[i]);
 
   // scatra_coupling_
   scatra_coupling_ = static_cast<bool>(so3_ele::ExtractInt(position, data));
@@ -144,21 +145,21 @@ void Discret::ELEMENTS::So3Poro<so3_ele, distype>::Unpack(const std::vector<char
 
   // anisotropic_permeability_directions_
   size = 0;
-  so3_ele::ExtractfromPack(position, data, size);
+  so3_ele::extract_from_pack(position, data, size);
   anisotropic_permeability_directions_.resize(size, std::vector<double>(3, 0.0));
   for (int i = 0; i < size; ++i)
-    so3_ele::ExtractfromPack(position, data, anisotropic_permeability_directions_[i]);
+    so3_ele::extract_from_pack(position, data, anisotropic_permeability_directions_[i]);
 
   // anisotropic_permeability_nodal_coeffs_
   size = 0;
-  so3_ele::ExtractfromPack(position, data, size);
+  so3_ele::extract_from_pack(position, data, size);
   anisotropic_permeability_nodal_coeffs_.resize(size, std::vector<double>(numnod_, 0.0));
   for (int i = 0; i < size; ++i)
-    so3_ele::ExtractfromPack(position, data, anisotropic_permeability_nodal_coeffs_[i]);
+    so3_ele::extract_from_pack(position, data, anisotropic_permeability_nodal_coeffs_[i]);
 
   // extract base class Element
   std::vector<char> basedata(0);
-  so3_ele::ExtractfromPack(position, data, basedata);
+  so3_ele::extract_from_pack(position, data, basedata);
   so3_ele::Unpack(basedata);
 
   init_ = true;

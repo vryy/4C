@@ -73,7 +73,7 @@ void BEAMINTERACTION::BeamLinkPinJointed::Pack(Core::Communication::PackBuffer& 
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
   // add base class Element
   BeamLink::Pack(data);
 
@@ -90,7 +90,7 @@ void BEAMINTERACTION::BeamLinkPinJointed::Unpack(const std::vector<char>& data)
 
   // extract base class Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   BeamLink::Unpack(basedata);
 
   if (position != data.size())

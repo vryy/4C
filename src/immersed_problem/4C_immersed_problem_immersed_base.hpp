@@ -800,21 +800,21 @@ namespace Immersed
           Core::Communication::PackBuffer data;
           data.StartPacking();
           {
-            data.AddtoPack(matched);
-            data.AddtoPack(owner);
-            data.AddtoPack((int)vectofill->length());
+            data.add_to_pack(matched);
+            data.add_to_pack(owner);
+            data.add_to_pack((int)vectofill->length());
 
             // point coordinate
             for (int dim = 0; dim < globdim; ++dim)
             {
-              data.AddtoPack(xvec[dim]);
+              data.add_to_pack(xvec[dim]);
             }
 
             if (matched == 1)
             {
               for (int dim = 0; dim < (int)vectofill->length(); ++dim)
               {
-                data.AddtoPack((*vectofill)(dim));
+                data.add_to_pack((*vectofill)(dim));
               }
             }
           }
@@ -822,7 +822,7 @@ namespace Immersed
           // normal vector
           for (int dim = 0; dim < globdim; ++dim)
           {
-            data.AddtoPack(normal_vec[dim]);
+            data.add_to_pack(normal_vec[dim]);
           }
 
           std::swap(sdata, data());
@@ -1135,21 +1135,21 @@ namespace Immersed
           Core::Communication::PackBuffer data;
           data.StartPacking();
           {
-            data.AddtoPack(matched);
-            data.AddtoPack(owner);
-            data.AddtoPack((int)vectofill->length());
+            data.add_to_pack(matched);
+            data.add_to_pack(owner);
+            data.add_to_pack((int)vectofill->length());
 
             // point coordinate
             for (int dim = 0; dim < globdim; ++dim)
             {
-              data.AddtoPack(xvec[dim]);
+              data.add_to_pack(xvec[dim]);
             }
 
             if (matched == 1)
             {
               for (int dim = 0; dim < (int)vectofill->length(); ++dim)
               {
-                data.AddtoPack((*vectofill)(dim));
+                data.add_to_pack((*vectofill)(dim));
               }
             }
           }
@@ -1542,21 +1542,21 @@ namespace Immersed
           Core::Communication::PackBuffer data;
           data.StartPacking();
           {
-            data.AddtoPack(matched);
-            data.AddtoPack(owner);
-            data.AddtoPack((int)velnp_at_struct_point->length());
+            data.add_to_pack(matched);
+            data.add_to_pack(owner);
+            data.add_to_pack((int)velnp_at_struct_point->length());
 
             // point coordinate
             for (int dim = 0; dim < globdim; ++dim)
             {
-              data.AddtoPack(fluid_node_glob_coord[dim]);
+              data.add_to_pack(fluid_node_glob_coord[dim]);
             }
 
             if (matched == 1)
             {
               for (int dim = 0; dim < (int)velnp_at_struct_point->length(); ++dim)
               {
-                data.AddtoPack((*velnp_at_struct_point)(dim));
+                data.add_to_pack((*velnp_at_struct_point)(dim));
               }
             }
           }

@@ -100,15 +100,15 @@ void Mat::Mixture::Pack(Core::Communication::PackBuffer& data) const
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
 
   // Pack material id
   int matid = -1;
   if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
-  AddtoPack(data, matid);
+  add_to_pack(data, matid);
 
   // pack setup flag
-  AddtoPack(data, static_cast<int>(setup_));
+  add_to_pack(data, static_cast<int>(setup_));
 
   // Pack isPreEvaluated flag
   std::vector<int> isPreEvaluatedInt;
@@ -117,7 +117,7 @@ void Mat::Mixture::Pack(Core::Communication::PackBuffer& data) const
   {
     isPreEvaluatedInt[i] = static_cast<int>(is_pre_evaluated_[i]);
   }
-  AddtoPack(data, isPreEvaluatedInt);
+  add_to_pack(data, isPreEvaluatedInt);
 
   anisotropy_.PackAnisotropy(data);
 
@@ -148,7 +148,7 @@ void Mat::Mixture::Unpack(const std::vector<char>& data)
 
   // matid and recover params_
   int matid;
-  ExtractfromPack(position, data, matid);
+  extract_from_pack(position, data, matid);
   if (Global::Problem::Instance()->Materials() != Teuchos::null)
   {
     if (Global::Problem::Instance()->Materials()->Num() != 0)
@@ -173,7 +173,7 @@ void Mat::Mixture::Unpack(const std::vector<char>& data)
 
     // Extract is isPreEvaluated
     std::vector<int> isPreEvaluatedInt(0);
-    Core::Communication::ParObject::ExtractfromPack(position, data, isPreEvaluatedInt);
+    Core::Communication::ParObject::extract_from_pack(position, data, isPreEvaluatedInt);
     is_pre_evaluated_.resize(isPreEvaluatedInt.size());
     for (unsigned i = 0; i < isPreEvaluatedInt.size(); ++i)
     {

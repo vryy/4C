@@ -145,7 +145,7 @@ void Discret::ELEMENTS::SoHex8fbar::Pack(Core::Communication::PackBuffer& data) 
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  add_to_pack(data, type);
   // add base class So_hex8 Element
   Discret::ELEMENTS::SoHex8::Pack(data);
 
@@ -164,7 +164,7 @@ void Discret::ELEMENTS::SoHex8fbar::Unpack(const std::vector<char>& data)
 
   // extract base class So_hex8 Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
+  extract_from_pack(position, data, basedata);
   Discret::ELEMENTS::SoHex8::Unpack(basedata);
 
   if (position != data.size())

@@ -610,9 +610,9 @@ void EnsightWriter::write_node_connectivity_par(std::ofstream& geofile,
   sblock.clear();
 
   Core::Communication::PackBuffer data;
-  Core::Communication::ParObject::AddtoPack(data, nodevector);
+  Core::Communication::ParObject::add_to_pack(data, nodevector);
   data.StartPacking();
-  Core::Communication::ParObject::AddtoPack(data, nodevector);
+  Core::Communication::ParObject::add_to_pack(data, nodevector);
   swap(sblock, data());
 
   // now we start the communication
@@ -656,7 +656,7 @@ void EnsightWriter::write_node_connectivity_par(std::ofstream& geofile,
       // extract data from recieved package
       while (index < rblock.size())
       {
-        Core::Communication::ParObject::ExtractfromPack(index, rblock, nodeids);
+        Core::Communication::ParObject::extract_from_pack(index, rblock, nodeids);
       }
       // compute node lid based on proc0map and write it to file
       for (int i = 0; i < (int)nodeids.size(); ++i)
@@ -819,9 +819,9 @@ EnsightWriter::EleGidPerDisType EnsightWriter::get_ele_gid_per_dis_type(
     sblock.clear();
 
     Core::Communication::PackBuffer data;
-    Core::Communication::ParObject::AddtoPack(data, eleGidPerDisType[iterator->first]);
+    Core::Communication::ParObject::add_to_pack(data, eleGidPerDisType[iterator->first]);
     data.StartPacking();
-    Core::Communication::ParObject::AddtoPack(data, eleGidPerDisType[iterator->first]);
+    Core::Communication::ParObject::add_to_pack(data, eleGidPerDisType[iterator->first]);
     swap(sblock, data());
 
     // now we start the communication
@@ -865,7 +865,7 @@ EnsightWriter::EleGidPerDisType EnsightWriter::get_ele_gid_per_dis_type(
         // extract data from recieved package
         while (index < rblock.size())
         {
-          Core::Communication::ParObject::ExtractfromPack(index, rblock, elegids);
+          Core::Communication::ParObject::extract_from_pack(index, rblock, elegids);
         }
         for (int i = 0; i < (int)elegids.size(); ++i)
         {

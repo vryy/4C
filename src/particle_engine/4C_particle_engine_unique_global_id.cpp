@@ -50,9 +50,9 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::write_restart(
     Teuchos::RCP<std::vector<char>> buffer = Teuchos::rcp(new std::vector<char>);
 
     Core::Communication::PackBuffer data;
-    Core::Communication::ParObject::AddtoPack(data, reusableglobalids_);
+    Core::Communication::ParObject::add_to_pack(data, reusableglobalids_);
     data.StartPacking();
-    Core::Communication::ParObject::AddtoPack(data, reusableglobalids_);
+    Core::Communication::ParObject::add_to_pack(data, reusableglobalids_);
 
     buffer->insert(buffer->end(), data().begin(), data().end());
 
@@ -76,7 +76,7 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::read_restart(
 
     while (position < buffer->size())
     {
-      Core::Communication::ParObject::ExtractfromPack(position, *buffer, reusableglobalids_);
+      Core::Communication::ParObject::extract_from_pack(position, *buffer, reusableglobalids_);
     }
 
     if (position != buffer->size())
@@ -134,9 +134,9 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::
   {
     // pack data for sending
     Core::Communication::PackBuffer data;
-    Core::Communication::ParObject::AddtoPack(data, reusableglobalids_);
+    Core::Communication::ParObject::add_to_pack(data, reusableglobalids_);
     data.StartPacking();
-    Core::Communication::ParObject::AddtoPack(data, reusableglobalids_);
+    Core::Communication::ParObject::add_to_pack(data, reusableglobalids_);
 
     // clear reusable global ids
     reusableglobalids_.clear();
@@ -178,7 +178,8 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::
 
       while (position < rmsg.size())
       {
-        Core::Communication::ParObject::ExtractfromPack(position, rmsg, receivedreusableglobalids);
+        Core::Communication::ParObject::extract_from_pack(
+            position, rmsg, receivedreusableglobalids);
 
         reusableglobalids_.insert(reusableglobalids_.end(), receivedreusableglobalids.begin(),
             receivedreusableglobalids.end());
@@ -299,9 +300,9 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::
 
       // pack data for sending
       Core::Communication::PackBuffer data;
-      Core::Communication::ParObject::AddtoPack(data, tobesendglobalids[torank]);
+      Core::Communication::ParObject::add_to_pack(data, tobesendglobalids[torank]);
       data.StartPacking();
-      Core::Communication::ParObject::AddtoPack(data, tobesendglobalids[torank]);
+      Core::Communication::ParObject::add_to_pack(data, tobesendglobalids[torank]);
 
       sdata[torank].insert(sdata[torank].end(), data().begin(), data().end());
     }
@@ -332,7 +333,7 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::
 
       while (position < rmsg.size())
       {
-        Core::Communication::ParObject::ExtractfromPack(position, rmsg, requesteduniqueglobalids);
+        Core::Communication::ParObject::extract_from_pack(position, rmsg, requesteduniqueglobalids);
       }
 
       if (position != rmsg.size())
