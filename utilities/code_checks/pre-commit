@@ -67,16 +67,6 @@ then
     fi
 fi
 
-# check if the file is an xml file
-if [[ $line == *.xml ]]
-then
-    # Check if xmlformat would format the file by calling format_xml without override
-    if [[  $(diff -u <($(pwd)/utilities/format_xml --nooverride $(pwd)/${line}) <(cat $(pwd)/${line})) ]]
-    then
-    uncompliant_files+="$(pwd)/${line}\n"
-    fi
-fi
-
 # check if the file is a python file
 if [[ $line == *.py ]]
 then

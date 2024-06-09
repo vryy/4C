@@ -6,7 +6,6 @@ lxml==4.9.4
 numpy
 scipy
 vtk
-xmlformatter==0.2.4
 yamlfmt
 dataclasses
 typing

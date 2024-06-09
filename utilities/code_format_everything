@@ -62,13 +62,6 @@ fi
 for line in $FILES_TO_CHECK
 do
 
-# check if the file is a c or cpp file
-if [[ $line == *.cpp || $line == *.cc || $line == *.cp || $line == *.cxx || $line == *.H || $line == *.h || $line == *.hpp || $line == *.hh || $line == *.hxx ]]
-then
-    # Format file using clang-format
-    clang-format -i -style=file $(pwd)/${line}
-fi
-
 # check if the file is a cmake file
 if [[ $line == *.cmake || $line == *CMakeLists.txt ]]
 then
@@ -81,13 +74,6 @@ if [[ $line == *.py ]]
 then
     # format file using black
     black --quiet $(pwd)/${line}
-fi
-
-# check if the file is an xml file
-if [[ $line == *.xml ]]
-then
-    # format file using xmlformat
-    $(pwd)/utilities/format_xml $(pwd)/${line}
 fi
 
 # check if the file is a yaml file

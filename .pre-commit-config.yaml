@@ -3,7 +3,15 @@ repos:
   rev: v14.0.0
   hooks:
   - id: clang-format
+        # Only use on C and C++ files and not on other files that clang could format (e.g. json).
     types: [c++, c]
+- repo: https://github.com/pamoller/xmlformatter
+  rev: v0.2.6
+  hooks:
+  - id: xml-formatter
+    args: [--indent, '2', --indent-char, ' ', --selfclose, --overwrite]
+        # Only run on "pure" XML files and not on files that internally use XML (e.g. svg)
+    files: \.xml$
 - repo: local
   hooks:
   - id: custom-checks
