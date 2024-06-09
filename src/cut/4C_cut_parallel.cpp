@@ -150,8 +150,6 @@ void Core::Geo::Cut::Parallel::export_communication_finished(bool& procDone)
     Core::Communication::PackBuffer dataSend;
 
     Core::Communication::ParObject::add_to_pack(dataSend, static_cast<int>(procDone));
-    dataSend.StartPacking();
-    Core::Communication::ParObject::add_to_pack(dataSend, static_cast<int>(procDone));
 
     std::vector<char> dataRecv;
     send_data(dataSend, dest, source, dataRecv);
@@ -229,12 +227,6 @@ void Core::Geo::Cut::Parallel::export_node_position_data()
 
       Core::Communication::ParObject::add_to_pack(dataSend, curr_undecided_node_pos_);
       Core::Communication::ParObject::add_to_pack(dataSend, tmp_curr_undecidedNodePos_shadow);
-
-      dataSend.StartPacking();
-
-      Core::Communication::ParObject::add_to_pack(dataSend, curr_undecided_node_pos_);
-      Core::Communication::ParObject::add_to_pack(dataSend, tmp_curr_undecidedNodePos_shadow);
-
 
       std::vector<char> dataRecv;
       send_data(dataSend, dest, source, dataRecv);
@@ -526,22 +518,6 @@ void Core::Geo::Cut::Parallel::export_dof_set_data(bool include_inner)
     // send current DofSetData to next proc and receive a new map from previous proc
     {
       Core::Communication::PackBuffer dataSend;  // data to be sent
-
-      // packing the data
-      for (std::vector<Teuchos::RCP<MeshIntersection::DofSetData>>::iterator data =
-               dof_set_data_.begin();
-           data != dof_set_data_.end(); data++)
-      {
-        Core::Communication::ParObject::add_to_pack(dataSend, (*data)->set_index_);
-        Core::Communication::ParObject::add_to_pack(dataSend, (int)(*data)->inside_cell_);
-        pack_points(dataSend, (*data)->cut_points_coords_);
-        Core::Communication::ParObject::add_to_pack(dataSend, (*data)->peid_);
-        Core::Communication::ParObject::add_to_pack(dataSend, (*data)->node_dofsetnumber_map_);
-      }
-
-      dataSend.StartPacking();
-
-      // packing the data
       for (std::vector<Teuchos::RCP<MeshIntersection::DofSetData>>::iterator data =
                dof_set_data_.begin();
            data != dof_set_data_.end(); data++)

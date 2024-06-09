@@ -127,12 +127,6 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(
     {
       Core::Communication::ParObject::add_to_pack(data, *zline);
     }
-    data.StartPacking();
-    for (std::set<double, LineSortCriterion>::iterator zline = zavcoords.begin();
-         zline != zavcoords.end(); ++zline)
-    {
-      Core::Communication::ParObject::add_to_pack(data, *zline);
-    }
     std::swap(sblock, data());
 
     MPI_Request request;
@@ -290,12 +284,6 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(
     {
       Core::Communication::PackBuffer data;
 
-      for (std::set<double, LineSortCriterion>::iterator zline = ravcoords.begin();
-           zline != ravcoords.end(); ++zline)
-      {
-        Core::Communication::ParObject::add_to_pack(data, *zline);
-      }
-      data.StartPacking();
       for (std::set<double, LineSortCriterion>::iterator zline = ravcoords.begin();
            zline != ravcoords.end(); ++zline)
       {

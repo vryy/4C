@@ -3227,26 +3227,6 @@ void XFEM::XfluidStd::exportStartData()
   if (myrank_ == 0) source = numproc_ - 1;
 
   Core::Communication::PackBuffer dataSend;  // data to be sent
-
-  // packing the data
-  for (std::vector<TimeIntData>::iterator data = timeIntData_->begin(); data != timeIntData_->end();
-       data++)
-  {
-    pack_node(dataSend, data->node_);
-    Core::Communication::ParObject::add_to_pack(dataSend, data->nds_np_);
-    Core::Communication::ParObject::add_to_pack(dataSend, data->vel_);
-    Core::Communication::ParObject::add_to_pack(dataSend, data->velDeriv_);
-    Core::Communication::ParObject::add_to_pack(dataSend, data->presDeriv_);
-    Core::Communication::ParObject::add_to_pack(dataSend, data->dispnp_);
-    Core::Communication::ParObject::add_to_pack(dataSend, data->startpoint_);
-    Core::Communication::ParObject::add_to_pack(dataSend, data->searchedProcs_);
-    Core::Communication::ParObject::add_to_pack(dataSend, data->counter_);
-    Core::Communication::ParObject::add_to_pack(dataSend, data->dMin_);
-    Core::Communication::ParObject::add_to_pack(dataSend, (int)data->type_);
-  }
-
-  dataSend.StartPacking();
-
   for (std::vector<TimeIntData>::iterator data = timeIntData_->begin(); data != timeIntData_->end();
        data++)
   {
@@ -3357,20 +3337,6 @@ void XFEM::XfluidStd::exportFinalData()
       source -= numproc_;
 
     Core::Communication::PackBuffer dataSend;
-
-    // pack data to be sent
-    for (std::vector<TimeIntData>::iterator data = dataVec[dest].begin();
-         data != dataVec[dest].end(); data++)
-    {
-      Core::Communication::ParObject::add_to_pack(dataSend, data->node_.Id());
-      Core::Communication::ParObject::add_to_pack(dataSend, data->nds_np_);
-      Core::Communication::ParObject::add_to_pack(dataSend, data->startpoint_);
-      Core::Communication::ParObject::add_to_pack(dataSend, data->velValues_);
-      Core::Communication::ParObject::add_to_pack(dataSend, data->presValues_);
-      Core::Communication::ParObject::add_to_pack(dataSend, data->type_);
-    }
-
-    dataSend.StartPacking();
 
     for (std::vector<TimeIntData>::iterator data = dataVec[dest].begin();
          data != dataVec[dest].end(); data++)

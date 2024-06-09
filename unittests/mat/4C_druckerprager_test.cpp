@@ -80,7 +80,6 @@ namespace
           (1.0 / ((1.0 + 0.25) * (1.0 - (2.0 * 0.25)))) * ((1.0 - (2.0 * 0.25)) / 2.0) * .1;
     Core::LinAlg::Matrix<6, 6> result_cmat(true);
     Core::LinAlg::Matrix<6, 1> result_stress(true);
-    data.StartPacking();
     druckprag_->Pack(data);
     std::vector<char> dataSend;
     swap(dataSend, data());

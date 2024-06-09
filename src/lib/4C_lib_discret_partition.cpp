@@ -115,15 +115,6 @@ void Discret::Discretization::proc_zero_distribute_elements_to_all(
       Core::Elements::Element* actele = gElement(gidlist[i]);
       if (!actele) FOUR_C_THROW("Cannot find global element %d", gidlist[i]);
       actele->Pack(sendpb[pidlist[i]]);
-    }
-    for (std::map<int, Core::Communication::PackBuffer>::iterator fool = sendpb.begin();
-         fool != sendpb.end(); ++fool)
-      fool->second.StartPacking();
-    for (int i = 0; i < size; ++i)
-    {
-      if (pidlist[i] == myrank or pidlist[i] < 0) continue;  // do not send to myself
-      Core::Elements::Element* actele = gElement(gidlist[i]);
-      actele->Pack(sendpb[pidlist[i]]);
       element_.erase(actele->Id());
     }
     for (std::map<int, Core::Communication::PackBuffer>::iterator fool = sendpb.begin();
@@ -232,16 +223,6 @@ void Discret::Discretization::proc_zero_distribute_nodes_to_all(Epetra_Map& targ
       if (pidlist[i] == myrank || pidlist[i] == -1) continue;
       Core::Nodes::Node* node = gNode(oldmap.MyGlobalElements()[i]);
       if (!node) FOUR_C_THROW("Proc 0 cannot find global node %d", oldmap.MyGlobalElements()[i]);
-      node->Pack(sendpb[pidlist[i]]);
-    }
-    for (std::map<int, Core::Communication::PackBuffer>::iterator fool = sendpb.begin();
-         fool != sendpb.end(); ++fool)
-      fool->second.StartPacking();
-    for (int i = 0; i < size; ++i)
-    {
-      // proc 0 does not send to itself
-      if (pidlist[i] == myrank || pidlist[i] == -1) continue;
-      Core::Nodes::Node* node = gNode(oldmap.MyGlobalElements()[i]);
       node->Pack(sendpb[pidlist[i]]);
       node_.erase(node->Id());
     }

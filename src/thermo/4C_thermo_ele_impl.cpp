@@ -3352,8 +3352,6 @@ void Discret::ELEMENTS::TemperImpl<distype>::copy_matrix_into_char_vector(
 {
   Core::Communication::PackBuffer tempBuffer;
   Core::Communication::ParObject::add_to_pack(tempBuffer, stuff);
-  tempBuffer.StartPacking();
-  Core::Communication::ParObject::add_to_pack(tempBuffer, stuff);
   std::copy(tempBuffer().begin(), tempBuffer().end(), std::back_inserter(data));
 }
 

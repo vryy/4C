@@ -1833,27 +1833,6 @@ void XFEM::XfluidSemiLagrange::export_alternativ_algo_data()
     else if (source >= numproc_)
       source -= numproc_;
 
-    // pack data to be sent
-    for (std::vector<TimeIntData>::iterator data = dataVec[dest].begin();
-         data != dataVec[dest].end(); data++)
-    {
-      if (data->state_ == TimeIntData::failedSL_)
-      {
-        pack_node(dataSend, data->node_);
-        Core::Communication::ParObject::add_to_pack(dataSend, data->nds_np_);
-        Core::Communication::ParObject::add_to_pack(dataSend, data->vel_);
-        Core::Communication::ParObject::add_to_pack(dataSend, data->velDeriv_);
-        Core::Communication::ParObject::add_to_pack(dataSend, data->presDeriv_);
-        Core::Communication::ParObject::add_to_pack(dataSend, data->dispnp_);
-        Core::Communication::ParObject::add_to_pack(dataSend, data->initialpoint_);
-        Core::Communication::ParObject::add_to_pack(dataSend, data->initial_eid_);
-        Core::Communication::ParObject::add_to_pack(dataSend, data->initial_ele_owner_);
-        Core::Communication::ParObject::add_to_pack(dataSend, (int)data->type_);
-      }
-    }
-
-    dataSend.StartPacking();
-
     for (std::vector<TimeIntData>::iterator data = dataVec[dest].begin();
          data != dataVec[dest].end(); data++)
     {
@@ -1949,8 +1928,6 @@ void XFEM::XfluidSemiLagrange::export_iter_data(bool& procDone)
     Core::Communication::PackBuffer dataSend;
 
     Core::Communication::ParObject::add_to_pack(dataSend, static_cast<int>(procDone));
-    dataSend.StartPacking();
-    Core::Communication::ParObject::add_to_pack(dataSend, static_cast<int>(procDone));
 
     std::vector<char> dataRecv;
     send_data(dataSend, dest, source, dataRecv);
@@ -1975,30 +1952,6 @@ void XFEM::XfluidSemiLagrange::export_iter_data(bool& procDone)
   if (!procDone)
   {
     Core::Communication::PackBuffer dataSend;
-
-    // fill vectors with the data
-    for (std::vector<TimeIntData>::iterator data = timeIntData_->begin();
-         data != timeIntData_->end(); data++)
-    {
-      if (data->state_ == TimeIntData::nextSL_)
-      {
-        pack_node(dataSend, data->node_);
-        Core::Communication::ParObject::add_to_pack(dataSend, data->nds_np_);
-        Core::Communication::ParObject::add_to_pack(dataSend, data->vel_);
-        Core::Communication::ParObject::add_to_pack(dataSend, data->velDeriv_);
-        Core::Communication::ParObject::add_to_pack(dataSend, data->presDeriv_);
-        Core::Communication::ParObject::add_to_pack(dataSend, data->dispnp_);
-        Core::Communication::ParObject::add_to_pack(dataSend, data->initialpoint_);
-        Core::Communication::ParObject::add_to_pack(dataSend, data->initial_eid_);
-        Core::Communication::ParObject::add_to_pack(dataSend, data->initial_ele_owner_);
-        Core::Communication::ParObject::add_to_pack(dataSend, data->startpoint_);
-        Core::Communication::ParObject::add_to_pack(dataSend, data->searchedProcs_);
-        Core::Communication::ParObject::add_to_pack(dataSend, data->counter_);
-        Core::Communication::ParObject::add_to_pack(dataSend, (int)data->type_);
-      }
-    }
-
-    dataSend.StartPacking();
 
     for (std::vector<TimeIntData>::iterator data = timeIntData_->begin();
          data != timeIntData_->end(); data++)

@@ -1187,8 +1187,6 @@ void PARTICLEENGINE::ParticleEngine::determine_ghosting_dependent_maps_and_sets(
   // pack data for sending
   Core::Communication::PackBuffer data;
   Core::Communication::ParObject::add_to_pack(data, ghostedbins_);
-  data.StartPacking();
-  Core::Communication::ParObject::add_to_pack(data, ghostedbins_);
 
   // communicate ghosted bins between all processors
   for (int torank = 0; torank < comm_.NumProc(); ++torank)
@@ -1719,8 +1717,6 @@ void PARTICLEENGINE::ParticleEngine::communicate_particles(
     {
       Core::Communication::PackBuffer data;
       iter->Pack(data);
-      data.StartPacking();
-      iter->Pack(data);
       sdata[torank].insert(sdata[torank].end(), data().begin(), data().end());
     }
   }
@@ -1777,8 +1773,6 @@ void PARTICLEENGINE::ParticleEngine::communicate_direct_ghosting_map(
   for (const auto& p : directghosting)
   {
     Core::Communication::PackBuffer data;
-    Core::Communication::ParObject::add_to_pack(data, p.second);
-    data.StartPacking();
     Core::Communication::ParObject::add_to_pack(data, p.second);
     std::swap(sdata[p.first], data());
   }

@@ -265,7 +265,6 @@ void STR::MODELEVALUATOR::GaussPointDataOutputManager::pack_my_quantities(
     std::vector<char>& data) const
 {
   Core::Communication::PackBuffer packBuffer;
-  packBuffer.StartPacking();
   Core::Communication::ParObject::add_to_pack(packBuffer, quantities_);
   std::swap(data, packBuffer());
 }

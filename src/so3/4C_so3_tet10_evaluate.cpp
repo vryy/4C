@@ -230,15 +230,13 @@ int Discret::ELEMENTS::SoTet10::Evaluate(Teuchos::ParameterList& params,
           nullptr, nullptr, nullptr, &stress, &strain, params, iostress, iostrain);
       {
         Core::Communication::PackBuffer data;
-        add_to_pack(data, stress);
-        data.StartPacking();
+
         add_to_pack(data, stress);
         std::copy(data().begin(), data().end(), std::back_inserter(*stressdata));
       }
       {
         Core::Communication::PackBuffer data;
-        add_to_pack(data, strain);
-        data.StartPacking();
+
         add_to_pack(data, strain);
         std::copy(data().begin(), data().end(), std::back_inserter(*straindata));
       }
@@ -254,8 +252,6 @@ int Discret::ELEMENTS::SoTet10::Evaluate(Teuchos::ParameterList& params,
             params.get<Teuchos::RCP<std::vector<char>>>("rotation", Teuchos::null);
 
         Core::Communication::PackBuffer data;
-        add_to_pack(data, R);
-        data.StartPacking();
         add_to_pack(data, R);
         std::copy(data().begin(), data().end(), std::back_inserter(*rotdata));
       }
@@ -535,16 +531,14 @@ int Discret::ELEMENTS::SoTet10::Evaluate(Teuchos::ParameterList& params,
 
         {
           Core::Communication::PackBuffer data;
-          add_to_pack(data, stress);
-          data.StartPacking();
+
           add_to_pack(data, stress);
           std::copy(data().begin(), data().end(), std::back_inserter(*stressdata));
         }
 
         {
           Core::Communication::PackBuffer data;
-          add_to_pack(data, strain);
-          data.StartPacking();
+
           add_to_pack(data, strain);
           std::copy(data().begin(), data().end(), std::back_inserter(*straindata));
         }

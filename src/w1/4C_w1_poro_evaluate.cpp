@@ -508,10 +508,6 @@ int Discret::ELEMENTS::Wall1Poro<distype>::my_evaluate(Teuchos::ParameterList& p
       // pack the data for postprocessing
       {
         Core::Communication::PackBuffer data;
-        // get the size of stress
-        Wall1::add_to_pack(data, couplstress);
-        data.StartPacking();
-        // pack the stresses
         Wall1::add_to_pack(data, couplstress);
         std::copy(data().begin(), data().end(), std::back_inserter(*couplstressdata));
       }

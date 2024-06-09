@@ -181,17 +181,6 @@ namespace Core::IO
       Core::Communication::ParObject::add_to_pack(buffer, inputData.elementtype_);
       Core::Communication::ParObject::add_to_pack(buffer, inputData.distype_);
       Core::Communication::ParObject::add_to_pack(buffer, inputData.elearguments_);
-      buffer.StartPacking();
-      Core::Communication::ParObject::add_to_pack<double, 3>(
-          buffer, inputData.bottom_corner_point_);
-      Core::Communication::ParObject::add_to_pack<double, 3>(buffer, inputData.top_corner_point_);
-      Core::Communication::ParObject::add_to_pack<int, 3>(buffer, inputData.interval_);
-      Core::Communication::ParObject::add_to_pack<double, 3>(buffer, inputData.rotation_angle_);
-      Core::Communication::ParObject::add_to_pack(
-          buffer, static_cast<int>(inputData.autopartition_));
-      Core::Communication::ParObject::add_to_pack(buffer, inputData.elementtype_);
-      Core::Communication::ParObject::add_to_pack(buffer, inputData.distype_);
-      Core::Communication::ParObject::add_to_pack(buffer, inputData.elearguments_);
       std::swap(data, buffer());
     }
 

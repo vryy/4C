@@ -1231,8 +1231,6 @@ namespace Discret::ELEMENTS::Shell
   {
     Core::Communication::PackBuffer packBuffer;
     Core::Communication::ParObject::add_to_pack(packBuffer, matrix);
-    packBuffer.StartPacking();
-    Core::Communication::ParObject::add_to_pack(packBuffer, matrix);
     std::copy(packBuffer().begin(), packBuffer().end(), std::back_inserter(data));
   }
 

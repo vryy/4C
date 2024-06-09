@@ -171,7 +171,6 @@ void ParticleRigidBody::RigidBodyAffiliationPairs::add_affiliation_pair_to_buffe
     std::vector<char>& buffer, int globalid, int rigidbody) const
 {
   Core::Communication::PackBuffer data;
-  data.StartPacking();
 
   // add affiliation pair
   data.add_to_pack(globalid);

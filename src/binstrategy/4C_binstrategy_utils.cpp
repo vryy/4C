@@ -137,8 +137,6 @@ namespace BINSTRATEGY
         {
           Core::Communication::PackBuffer data;
           (*iter)->Pack(data);
-          data.StartPacking();
-          (*iter)->Pack(data);
           sdata[p->first].insert(sdata[p->first].end(), data().begin(), data().end());
         }
         targetprocs[p->first] = 1;
@@ -239,8 +237,6 @@ namespace BINSTRATEGY
         for (iter = p->second.begin(); iter != p->second.end(); ++iter)
         {
           Core::Communication::PackBuffer data;
-          Core::Communication::ParObject::add_to_pack(data, *iter);
-          data.StartPacking();
           Core::Communication::ParObject::add_to_pack(data, *iter);
           sdata[p->first].insert(sdata[p->first].end(), data().begin(), data().end());
         }

@@ -156,12 +156,6 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(Teuchos::RCP<Discret::Disc
       {
         Core::Communication::ParObject::add_to_pack(data, *x1line);
       }
-      data.StartPacking();
-      for (std::set<double, LineSortCriterion>::iterator x1line = x1avcoords.begin();
-           x1line != x1avcoords.end(); ++x1line)
-      {
-        Core::Communication::ParObject::add_to_pack(data, *x1line);
-      }
       swap(sblock, data());
 
       MPI_Request request;
@@ -219,12 +213,6 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(Teuchos::RCP<Discret::Disc
       {
         Core::Communication::ParObject::add_to_pack(data, *x2line);
       }
-      data.StartPacking();
-      for (std::set<double, LineSortCriterion>::iterator x2line = x2avcoords.begin();
-           x2line != x2avcoords.end(); ++x2line)
-      {
-        Core::Communication::ParObject::add_to_pack(data, *x2line);
-      }
       swap(sblock, data());
 
       MPI_Request request;
@@ -277,12 +265,6 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(Teuchos::RCP<Discret::Disc
     {
       Core::Communication::PackBuffer data;
 
-      for (std::set<double, LineSortCriterion>::iterator x3line = x3avcoords.begin();
-           x3line != x3avcoords.end(); ++x3line)
-      {
-        Core::Communication::ParObject::add_to_pack(data, *x3line);
-      }
-      data.StartPacking();
       for (std::set<double, LineSortCriterion>::iterator x3line = x3avcoords.begin();
            x3line != x3avcoords.end(); ++x3line)
       {

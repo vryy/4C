@@ -65,16 +65,12 @@ int Discret::ELEMENTS::Bele3::Evaluate(Teuchos::ParameterList& params,
       {
         Core::Communication::PackBuffer data;
         add_to_pack(data, dummy);
-        data.StartPacking();
-        add_to_pack(data, dummy);
         std::copy(data().begin(), data().end(), std::back_inserter(*stressdata));
       }
 
       // write dummy strain
       {
         Core::Communication::PackBuffer data;
-        add_to_pack(data, dummy);
-        data.StartPacking();
         add_to_pack(data, dummy);
         std::copy(data().begin(), data().end(), std::back_inserter(*straindata));
       }

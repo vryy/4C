@@ -671,10 +671,6 @@ Teuchos::RCP<std::vector<char>> Discret::Discretization::PackMyElements() const
 
   for (auto* ele : elerowptr_) ele->Pack(buffer);
 
-  buffer.StartPacking();
-
-  for (auto* ele : elerowptr_) ele->Pack(buffer);
-
   auto block = Teuchos::rcp(new std::vector<char>);
   std::swap(*block, buffer());
   return block;
@@ -689,10 +685,6 @@ Teuchos::RCP<std::vector<char>> Discret::Discretization::PackMyNodes() const
       Filled(), "fill_complete was not called on discretization %s!", name_.c_str());
 
   Core::Communication::PackBuffer buffer;
-
-  for (auto* node : noderowptr_) node->Pack(buffer);
-
-  buffer.StartPacking();
 
   for (auto* node : noderowptr_) node->Pack(buffer);
 

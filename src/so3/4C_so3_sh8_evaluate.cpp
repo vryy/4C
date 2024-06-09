@@ -317,22 +317,18 @@ int Discret::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
       }
       {
         Core::Communication::PackBuffer data;
-        add_to_pack(data, stress);
-        data.StartPacking();
+
         add_to_pack(data, stress);
         std::copy(data().begin(), data().end(), std::back_inserter(*stressdata));
       }
       {
         Core::Communication::PackBuffer data;
-        add_to_pack(data, strain);
-        data.StartPacking();
+
         add_to_pack(data, strain);
         std::copy(data().begin(), data().end(), std::back_inserter(*straindata));
       }
       {
         Core::Communication::PackBuffer data;
-        add_to_pack(data, plstrain);
-        data.StartPacking();
         add_to_pack(data, plstrain);
         std::copy(data().begin(), data().end(), std::back_inserter(*plstraindata));
       }

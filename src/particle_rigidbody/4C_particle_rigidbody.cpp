@@ -507,7 +507,6 @@ void ParticleRigidBody::RigidBodyHandler::get_packed_rigid_body_states(
 
     // pack data for sending
     Core::Communication::PackBuffer data;
-    data.StartPacking();
 
     data.add_to_pack(rigidbody_k);
     data.add_to_pack(mass_k);
@@ -645,7 +644,6 @@ void ParticleRigidBody::RigidBodyHandler::relate_owned_rigid_bodies_to_hosting_p
     {
       // pack data for sending
       Core::Communication::PackBuffer data;
-      data.StartPacking();
 
       data.add_to_pack(rigidbody_k);
 
@@ -707,7 +705,6 @@ void ParticleRigidBody::RigidBodyHandler::communicate_rigid_body_states(
     {
       // pack data for sending
       Core::Communication::PackBuffer data;
-      data.StartPacking();
 
       data.add_to_pack(rigidbody_k);
       data.add_to_pack(mass_k);
@@ -946,7 +943,6 @@ void ParticleRigidBody::RigidBodyHandler::gather_partial_mass_quantities(
     {
       // pack data for sending
       Core::Communication::PackBuffer data;
-      data.StartPacking();
 
       data.add_to_pack(rigidbody_k);
       data.add_to_pack(mass_k);
@@ -1177,7 +1173,6 @@ void ParticleRigidBody::RigidBodyHandler::gather_partial_and_compute_full_force_
     {
       // pack data for sending
       Core::Communication::PackBuffer data;
-      data.StartPacking();
 
       data.add_to_pack(rigidbody_k);
       for (int i = 0; i < 3; ++i) data.add_to_pack(force_k[i]);
@@ -1374,7 +1369,6 @@ void ParticleRigidBody::RigidBodyHandler::broadcast_rigid_body_positions()
 
     // pack data for sending
     Core::Communication::PackBuffer data;
-    data.StartPacking();
 
     data.add_to_pack(rigidbody_k);
 
@@ -1433,7 +1427,6 @@ void ParticleRigidBody::RigidBodyHandler::broadcast_rigid_body_velocities()
 
     // pack data for sending
     Core::Communication::PackBuffer data;
-    data.StartPacking();
 
     data.add_to_pack(rigidbody_k);
 
@@ -1492,7 +1485,6 @@ void ParticleRigidBody::RigidBodyHandler::broadcast_rigid_body_accelerations()
 
     // pack data for sending
     Core::Communication::PackBuffer data;
-    data.StartPacking();
 
     data.add_to_pack(rigidbody_k);
 

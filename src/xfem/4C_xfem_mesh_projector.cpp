@@ -593,12 +593,6 @@ void XFEM::MeshProjector::pack_values(std::vector<Core::LinAlg::Matrix<3, 1>>& t
   Core::Communication::ParObject::add_to_pack(data, interpolated_vecs);
   Core::Communication::ParObject::add_to_pack(data, projection_targetnodes);
   Core::Communication::ParObject::add_to_pack(data, have_values);
-  data.StartPacking();
-
-  Core::Communication::ParObject::add_to_pack(data, tar_nodepositions);
-  Core::Communication::ParObject::add_to_pack(data, interpolated_vecs);
-  Core::Communication::ParObject::add_to_pack(data, projection_targetnodes);
-  Core::Communication::ParObject::add_to_pack(data, have_values);
   swap(sblock, data());
 }
 

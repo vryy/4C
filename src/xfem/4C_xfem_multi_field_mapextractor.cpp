@@ -188,14 +188,6 @@ void XFEM::MultiFieldMapExtractor::Init(const XDisVec& dis_vec, int max_num_rese
   // --------------------------------------------------------------------------
   // pack gids and std::set's separately
   // --------------------------------------------------------------------------
-  // --- count set size
-  for (cit_map = my_coupled_sl_dis.begin(); cit_map != my_coupled_sl_dis.end(); ++cit_map)
-  {
-    Core::Communication::ParObject::add_to_pack(data, cit_map->second);
-  }
-
-  // --- activate packing
-  data.StartPacking();
 
   // --- pack
   for (cit_map = my_coupled_sl_dis.begin(); cit_map != my_coupled_sl_dis.end(); ++cit_map)

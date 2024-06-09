@@ -322,12 +322,6 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<Discret::Disc
         {
           Core::Communication::ParObject::add_to_pack(data, *plane);
         }
-        data.StartPacking();
-        for (std::set<double, PlaneSortCriterion>::iterator plane = availablecoords.begin();
-             plane != availablecoords.end(); ++plane)
-        {
-          Core::Communication::ParObject::add_to_pack(data, *plane);
-        }
         swap(sblock, data());
 
         MPI_Request request;

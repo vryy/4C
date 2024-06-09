@@ -183,12 +183,6 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<Discret::Disc
       {
         Core::Communication::ParObject::add_to_pack(data, *x1cline);
       }
-      data.StartPacking();
-      for (std::set<double, LineSortCriterion>::iterator x1cline = x1cavcoords.begin();
-           x1cline != x1cavcoords.end(); ++x1cline)
-      {
-        Core::Communication::ParObject::add_to_pack(data, *x1cline);
-      }
       swap(sblock, data());
 
       MPI_Request request;
@@ -241,13 +235,6 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<Discret::Disc
     {
       // export set to sendbuffer
       Core::Communication::PackBuffer data;
-
-      for (std::set<double, LineSortCriterion>::iterator x2cline = x2cavcoords.begin();
-           x2cline != x2cavcoords.end(); ++x2cline)
-      {
-        Core::Communication::ParObject::add_to_pack(data, *x2cline);
-      }
-      data.StartPacking();
       for (std::set<double, LineSortCriterion>::iterator x2cline = x2cavcoords.begin();
            x2cline != x2cavcoords.end(); ++x2cline)
       {
@@ -305,13 +292,6 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<Discret::Disc
     {
       // export set to sendbuffer
       Core::Communication::PackBuffer data;
-
-      for (std::set<double, LineSortCriterion>::iterator x2wline = x2wavcoords.begin();
-           x2wline != x2wavcoords.end(); ++x2wline)
-      {
-        Core::Communication::ParObject::add_to_pack(data, *x2wline);
-      }
-      data.StartPacking();
       for (std::set<double, LineSortCriterion>::iterator x2wline = x2wavcoords.begin();
            x2wline != x2wavcoords.end(); ++x2wline)
       {
@@ -369,13 +349,6 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<Discret::Disc
     {
       // export set to sendbuffer
       Core::Communication::PackBuffer data;
-
-      for (std::set<double, LineSortCriterion>::iterator clrline = clravcoords.begin();
-           clrline != clravcoords.end(); ++clrline)
-      {
-        Core::Communication::ParObject::add_to_pack(data, *clrline);
-      }
-      data.StartPacking();
       for (std::set<double, LineSortCriterion>::iterator clrline = clravcoords.begin();
            clrline != clravcoords.end(); ++clrline)
       {
@@ -433,13 +406,6 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<Discret::Disc
     {
       // export set to sendbuffer
       Core::Communication::PackBuffer data;
-
-      for (std::set<double, LineSortCriterion>::iterator ctbline = ctbavcoords.begin();
-           ctbline != ctbavcoords.end(); ++ctbline)
-      {
-        Core::Communication::ParObject::add_to_pack(data, *ctbline);
-      }
-      data.StartPacking();
       for (std::set<double, LineSortCriterion>::iterator ctbline = ctbavcoords.begin();
            ctbline != ctbavcoords.end(); ++ctbline)
       {
@@ -503,13 +469,6 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<Discret::Disc
         {
           // export set to sendbuffer
           Core::Communication::PackBuffer data;
-
-          for (std::set<double, LineSortCriterion>::iterator x1line = x1avcoords.begin();
-               x1line != x1avcoords.end(); ++x1line)
-          {
-            Core::Communication::ParObject::add_to_pack(data, *x1line);
-          }
-          data.StartPacking();
           for (std::set<double, LineSortCriterion>::iterator x1line = x1avcoords.begin();
                x1line != x1avcoords.end(); ++x1line)
           {
@@ -567,13 +526,6 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<Discret::Disc
         {
           // export set to sendbuffer
           Core::Communication::PackBuffer data;
-
-          for (std::set<double, LineSortCriterion>::iterator x2line = x2avcoords.begin();
-               x2line != x2avcoords.end(); ++x2line)
-          {
-            Core::Communication::ParObject::add_to_pack(data, *x2line);
-          }
-          data.StartPacking();
           for (std::set<double, LineSortCriterion>::iterator x2line = x2avcoords.begin();
                x2line != x2avcoords.end(); ++x2line)
           {

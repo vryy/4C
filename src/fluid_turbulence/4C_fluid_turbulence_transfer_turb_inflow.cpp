@@ -293,8 +293,6 @@ void FLD::TransferTurbulentInflowCondition::Transfer(
         // Pack info into block to send
         Core::Communication::PackBuffer data;
         pack_local_master_values(mymasters, mymasters_vel, data);
-        data.StartPacking();
-        pack_local_master_values(mymasters, mymasters_vel, data);
         swap(sblock, data());
 
         send_block(sblock, exporter, request);
@@ -825,8 +823,6 @@ void FLD::TransferTurbulentInflowConditionXW::Transfer(
         // Pack info into block to send
         Core::Communication::PackBuffer data;
         pack_local_master_values(mymasters, mymasters_vel, data);
-        data.StartPacking();
-        pack_local_master_values(mymasters, mymasters_vel, data);
         swap(sblock, data());
 
         send_block(sblock, exporter, request);
@@ -1014,8 +1010,6 @@ void FLD::TransferTurbulentInflowConditionNodal::Transfer(
 
         // Pack info into block to send
         Core::Communication::PackBuffer data;
-        pack_local_master_values(mymasters, mymasters_vec, data);
-        data.StartPacking();
         pack_local_master_values(mymasters, mymasters_vec, data);
         swap(sblock, data());
 

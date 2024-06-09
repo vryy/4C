@@ -158,8 +158,6 @@ namespace
     Core::Communication::PackBuffer pack_data;
 
     Core::Communication::ParObject::add_to_pack(pack_data, my_data);
-    pack_data.StartPacking();
-    Core::Communication::ParObject::add_to_pack(pack_data, my_data);
 
     RoundRobinLoop(comm, pack_data, collected_data);
   }

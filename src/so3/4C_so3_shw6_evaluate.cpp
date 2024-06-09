@@ -186,15 +186,13 @@ int Discret::ELEMENTS::SoShw6::Evaluate(Teuchos::ParameterList& params,
           params, iostress, iostrain);
       {
         Core::Communication::PackBuffer data;
-        add_to_pack(data, stress);
-        data.StartPacking();
+
         add_to_pack(data, stress);
         std::copy(data().begin(), data().end(), std::back_inserter(*stressdata));
       }
       {
         Core::Communication::PackBuffer data;
-        add_to_pack(data, strain);
-        data.StartPacking();
+
         add_to_pack(data, strain);
         std::copy(data().begin(), data().end(), std::back_inserter(*straindata));
       }

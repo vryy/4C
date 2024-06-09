@@ -798,7 +798,6 @@ namespace Immersed
         // ---- pack data for sending -----
         {
           Core::Communication::PackBuffer data;
-          data.StartPacking();
           {
             data.add_to_pack(matched);
             data.add_to_pack(owner);
@@ -1133,7 +1132,6 @@ namespace Immersed
         // ---- pack data for sending -----
         {
           Core::Communication::PackBuffer data;
-          data.StartPacking();
           {
             data.add_to_pack(matched);
             data.add_to_pack(owner);
@@ -1540,7 +1538,6 @@ namespace Immersed
         // ---- pack data for sending -----
         {
           Core::Communication::PackBuffer data;
-          data.StartPacking();
           {
             data.add_to_pack(matched);
             data.add_to_pack(owner);

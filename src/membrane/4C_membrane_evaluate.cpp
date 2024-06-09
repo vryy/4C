@@ -214,15 +214,11 @@ int Discret::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& param
       {
         Core::Communication::PackBuffer data;
         add_to_pack(data, stress);
-        data.StartPacking();
-        add_to_pack(data, stress);
         std::copy(data().begin(), data().end(), std::back_inserter(*stressdata));
       }
 
       {
         Core::Communication::PackBuffer data;
-        add_to_pack(data, strain);
-        data.StartPacking();
         add_to_pack(data, strain);
         std::copy(data().begin(), data().end(), std::back_inserter(*straindata));
       }
@@ -252,8 +248,6 @@ int Discret::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& param
         // add data to pack
         {
           Core::Communication::PackBuffer data;
-          add_to_pack(data, thickness);
-          data.StartPacking();
           add_to_pack(data, thickness);
           std::copy(data().begin(), data().end(), std::back_inserter(*thickdata));
         }

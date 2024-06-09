@@ -191,26 +191,11 @@ void Core::COUPLING::MatchingOctree::create_global_entity_matching(
 
   for (int slavenodeid : slavenodeids)
   {
-    // is this slavenode on this proc?
     if (check_have_entity(discret_, slavenodeid))
     {
-      // Add node to list of nodes which will be sent to the next proc
       pack_entity(pack_data, discret_, slavenodeid);
-    }  // end if slavenode on proc
-  }    // end loop globn
-
-  pack_data.StartPacking();
-
-  for (int slavenodeid : slavenodeids)
-  {
-    // is this slavenode on this proc?
-    if (check_have_entity(discret_, slavenodeid))
-    {
-      // Add node to list of nodes which will be sent to the next proc
-      pack_entity(pack_data, discret_, slavenodeid);
-
-    }  // end if slavenode on proc
-  }    // end loop globn
+    }
+  }
 
   swap(sblockofnodes, pack_data());
 
@@ -443,22 +428,8 @@ void Core::COUPLING::MatchingOctree::FindMatch(const Discret::Discretization& sl
 
   for (int slavenodeid : slavenodeids)
   {
-    // is this slavenode on this proc?
     if (check_have_entity(&slavedis, slavenodeid))
     {
-      // Add node to list of nodes which will be sent to the next proc
-      pack_entity(pack_data, &slavedis, slavenodeid);
-    }
-  }
-
-  pack_data.StartPacking();
-
-  for (int slavenodeid : slavenodeids)
-  {
-    // is this slavenode on this proc?
-    if (check_have_entity(&slavedis, slavenodeid))
-    {
-      // Add node to list of nodes which will be sent to the next proc
       pack_entity(pack_data, &slavedis, slavenodeid);
     }
   }
@@ -613,10 +584,6 @@ void Core::COUPLING::MatchingOctree::fill_slave_to_master_gid_mapping(
   std::vector<char> rblockofnodes;
 
   Core::Communication::PackBuffer pack_data;
-
-  for (int slavenodeid : slavenodeids) pack_entity(pack_data, &slavedis, slavenodeid);
-
-  pack_data.StartPacking();
 
   for (int slavenodeid : slavenodeids) pack_entity(pack_data, &slavedis, slavenodeid);
 

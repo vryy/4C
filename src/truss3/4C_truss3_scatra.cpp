@@ -318,8 +318,6 @@ void Discret::ELEMENTS::Truss3Scatra::CalcGPStresses(
       {
         Core::Communication::PackBuffer data;
         add_to_pack(data, stress);
-        data.StartPacking();
-        add_to_pack(data, stress);
         std::copy(data().begin(), data().end(), std::back_inserter(*stressdata));
       }
     }

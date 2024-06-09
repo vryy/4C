@@ -136,12 +136,6 @@ namespace ScaTra
         {
           Core::Communication::ParObject::add_to_pack(data, *x1line);
         }
-        data.StartPacking();
-        for (std::set<double, LineSortCriterion>::iterator x1line = coords.begin();
-             x1line != coords.end(); ++x1line)
-        {
-          Core::Communication::ParObject::add_to_pack(data, *x1line);
-        }
         std::swap(sblock, data());
 
         MPI_Request request;

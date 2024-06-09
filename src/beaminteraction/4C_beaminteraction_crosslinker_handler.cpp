@@ -100,15 +100,6 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_round_robin(
                homelesslinker.begin();
            currlinker != homelesslinker.end(); ++currlinker)
       {
-        //        cout << " Id:" << (*currlinker)->Id() << " was packed on proc: " << myrank_ <<
-        //        endl;
-        (*currlinker)->Pack(data);
-      }
-      data.StartPacking();
-      for (std::list<Teuchos::RCP<Core::Nodes::Node>>::const_iterator currlinker =
-               homelesslinker.begin();
-           currlinker != homelesslinker.end(); ++currlinker)
-      {
         (*currlinker)->Pack(data);
         binstrategy_->BinDiscret()->DeleteNode((*currlinker)->Id());
       }
@@ -231,8 +222,6 @@ BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_remote_id_list(
     {
       Core::Communication::PackBuffer data;
       iterhomelesslinker->Pack(data);
-      data.StartPacking();
-      iterhomelesslinker->Pack(data);
       binstrategy_->BinDiscret()->DeleteNode(iterhomelesslinker->Id());
       sdata[targetproc].insert(sdata[targetproc].end(), data().begin(), data().end());
       targetprocs[targetproc] = 1;
@@ -335,8 +324,6 @@ BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_using_ghosting(
       for (iter = p->second.begin(); iter != p->second.end(); ++iter)
       {
         Core::Communication::PackBuffer data;
-        (*iter)->Pack(data);
-        data.StartPacking();
         (*iter)->Pack(data);
         binstrategy_->BinDiscret()->DeleteNode((*iter)->Id());
         sdata[p->first].insert(sdata[p->first].end(), data().begin(), data().end());

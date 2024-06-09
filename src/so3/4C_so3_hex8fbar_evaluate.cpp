@@ -250,22 +250,18 @@ int Discret::ELEMENTS::SoHex8fbar::Evaluate(Teuchos::ParameterList& params,
           &plstrain, params, iostress, iostrain, ioplstrain);
       {
         Core::Communication::PackBuffer data;
-        add_to_pack(data, stress);
-        data.StartPacking();
+
         add_to_pack(data, stress);
         std::copy(data().begin(), data().end(), std::back_inserter(*stressdata));
       }
       {
         Core::Communication::PackBuffer data;
-        add_to_pack(data, strain);
-        data.StartPacking();
+
         add_to_pack(data, strain);
         std::copy(data().begin(), data().end(), std::back_inserter(*straindata));
       }
       {
         Core::Communication::PackBuffer data;
-        add_to_pack(data, plstrain);
-        data.StartPacking();
         add_to_pack(data, plstrain);
         std::copy(data().begin(), data().end(), std::back_inserter(*plstraindata));
       }

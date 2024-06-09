@@ -611,8 +611,6 @@ void EnsightWriter::write_node_connectivity_par(std::ofstream& geofile,
 
   Core::Communication::PackBuffer data;
   Core::Communication::ParObject::add_to_pack(data, nodevector);
-  data.StartPacking();
-  Core::Communication::ParObject::add_to_pack(data, nodevector);
   swap(sblock, data());
 
   // now we start the communication
@@ -819,8 +817,6 @@ EnsightWriter::EleGidPerDisType EnsightWriter::get_ele_gid_per_dis_type(
     sblock.clear();
 
     Core::Communication::PackBuffer data;
-    Core::Communication::ParObject::add_to_pack(data, eleGidPerDisType[iterator->first]);
-    data.StartPacking();
     Core::Communication::ParObject::add_to_pack(data, eleGidPerDisType[iterator->first]);
     swap(sblock, data());
 

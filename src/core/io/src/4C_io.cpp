@@ -1441,8 +1441,6 @@ void Core::IO::DiscretizationWriter::write_knotvector() const
       // put knotvector into block
       Core::Communication::PackBuffer block;
       knots->Pack(block);
-      block.StartPacking();
-      knots->Pack(block);
 
       // write block to file
       if (!block().empty())

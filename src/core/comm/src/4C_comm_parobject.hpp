@@ -240,7 +240,17 @@ namespace Core::Communication
     {
       int numele = stuff.size();
       add_to_pack(data, numele);
-      add_to_pack(data, stuff.data(), numele * sizeof(T));
+
+      // If T is trivially copyable, we can just copy the bytes. Otherwise, recursively call the
+      // pack function for every element.
+      if constexpr (std::is_trivially_copyable_v<T>)
+      {
+        add_to_pack(data, stuff.data(), numele * sizeof(T));
+      }
+      else
+      {
+        for (const auto& elem : stuff) add_to_pack(data, elem);
+      }
     }
 
     /*!
@@ -540,14 +550,6 @@ namespace Core::Communication
       return i;
     }
 
-    static unsigned ExtractUnsigned(
-        std::vector<char>::size_type& position, const std::vector<char>& data)
-    {
-      unsigned i;
-      extract_from_pack(position, data, i);
-      return i;
-    }
-
     static double ExtractDouble(
         std::vector<char>::size_type& position, const std::vector<char>& data)
     {
@@ -573,8 +575,15 @@ namespace Core::Communication
       int dim = 0;
       extract_from_pack(position, data, dim);
       stuff.resize(dim);
-      int size = dim * sizeof(T);
-      extract_from_pack(position, data, stuff.data(), size);
+
+      if constexpr (std::is_trivially_copyable_v<T>)
+      {
+        extract_from_pack(position, data, stuff.data(), dim * sizeof(T));
+      }
+      else
+      {
+        for (auto& elem : stuff) extract_from_pack(position, data, elem);
+      }
     }
 
     /*!

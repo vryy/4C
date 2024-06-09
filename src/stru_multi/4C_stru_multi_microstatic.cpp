@@ -686,18 +686,6 @@ void MultiScale::MicroStatic::Output(Teuchos::RCP<Core::IO::DiscretizationWriter
         Core::Communication::ParObject::add_to_pack(data, *emptyalpha);
       }
     }
-    data.StartPacking();
-    for (int i = 0; i < discret_->ElementColMap()->NumMyElements(); ++i)
-    {
-      if ((*lastalpha_)[i] != Teuchos::null)
-      {
-        Core::Communication::ParObject::add_to_pack(data, *(*lastalpha_)[i]);
-      }
-      else
-      {
-        Core::Communication::ParObject::add_to_pack(data, *emptyalpha);
-      }
-    }
     output->WriteVector("alpha", data(), *discret_->ElementColMap());
   }
 

@@ -356,8 +356,6 @@ void ParticleInteraction::DEMHistoryPairs::add_history_pair_to_buffer(std::vecto
     int globalid_i, int globalid_j, const historypairtype& historypair) const
 {
   Core::Communication::PackBuffer data;
-  data.StartPacking();
-
   // add global ids
   data.add_to_pack(globalid_i);
   data.add_to_pack(globalid_j);

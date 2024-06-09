@@ -438,8 +438,6 @@ void ScaTra::LevelSet::Intersection::export_interface(
 
   Core::Communication::PackBuffer data;
   pack_boundary_int_cells(myinterface, data);
-  data.StartPacking();
-  pack_boundary_int_cells(myinterface, data);
 
   //-----------------------------------------------------------------
   // pack data (my boundary integration cell groups) for initial send

@@ -203,8 +203,6 @@ void Core::DOFSets::TransparentDofSet::parallel_transfer_degrees_of_freedom(
         // Pack info into block to send
         Core::Communication::PackBuffer data;
         PackLocalSourceDofs(gid_to_dofs, data);
-        data.StartPacking();
-        PackLocalSourceDofs(gid_to_dofs, data);
         gid_to_dofs.clear();
         swap(sblock, data());
 
