@@ -1,7 +1,7 @@
 -----------------------------------------------------------------------TITLE
 Testcase for testing Mixture toolbox
 
-The setup of the test-case are 2 cubes. 
+The setup of the test-case are 2 cubes.
 The cubes are fixed on the bottom surface (z=0). On the top surface (z=1), a surface force is applied
 in x-, y- and z-direction subsequently. A similar problem was used in the ElastHyper toolbox.
 
@@ -257,12 +257,12 @@ NODE 80 COORD 5.0 0.5 1.0
 6 SOLID HEX8 6 11 12 8 18 23 24 20 MAT 1 KINEM nonlinear
 7 SOLID HEX8 8 12 22 16 20 24 27 26 MAT 1 KINEM nonlinear
 8 SOLID HEX8 7 8 16 15 19 20 26 25 MAT 1 KINEM nonlinear
-9 SOLID HEX8 28 29 32 30 31 33 35 34 MAT 1 KINEM nonlinear 
-10 SOLID HEX8 29 36 37 32 33 38 39 35 MAT 1 KINEM nonlinear 
-11 SOLID HEX8 32 37 48 41 35 39 49 43 MAT 1 KINEM nonlinear 
-12 SOLID HEX8 30 32 41 40 34 35 43 42 MAT 1 KINEM nonlinear 
-13 SOLID HEX8 31 33 35 34 44 45 47 46 MAT 1 KINEM nonlinear 
-14 SOLID HEX8 33 38 39 35 45 50 51 47 MAT 1 KINEM nonlinear 
-15 SOLID HEX8 35 39 49 43 47 51 54 53 MAT 1 KINEM nonlinear 
-16 SOLID HEX8 34 35 43 42 46 47 53 52 MAT 1 KINEM nonlinear 
+9 SOLID HEX8 28 29 32 30 31 33 35 34 MAT 1 KINEM nonlinear
+10 SOLID HEX8 29 36 37 32 33 38 39 35 MAT 1 KINEM nonlinear
+11 SOLID HEX8 32 37 48 41 35 39 49 43 MAT 1 KINEM nonlinear
+12 SOLID HEX8 30 32 41 40 34 35 43 42 MAT 1 KINEM nonlinear
+13 SOLID HEX8 31 33 35 34 44 45 47 46 MAT 1 KINEM nonlinear
+14 SOLID HEX8 33 38 39 35 45 50 51 47 MAT 1 KINEM nonlinear
+15 SOLID HEX8 35 39 49 43 47 51 54 53 MAT 1 KINEM nonlinear
+16 SOLID HEX8 34 35 43 42 46 47 53 52 MAT 1 KINEM nonlinear
 ----------------------------------------------------------------------END

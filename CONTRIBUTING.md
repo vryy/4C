@@ -153,7 +153,7 @@ For more information on `git rebase` you may want to check out [the documentatio
 > **Note:** It might happen that conflicts arise during the `git rebase` operation. After seeing a conflict, you can do two things:
 >
 > * Decide not to rebase. Run `git rebase --abort` to abort the rebase operation and to restore your version of the code (without incorporating changes from `master`).
-> * Resolve the conflicts. Git will mark the conflicts in the working tree. Edit the files into shape and `git add` them to the index. The editing is especially simple if you run `git mergetool`, which guides you through conflict resolution. Use `git commit` to seal the deal. 
+> * Resolve the conflicts. Git will mark the conflicts in the working tree. Edit the files into shape and `git add` them to the index. The editing is especially simple if you run `git mergetool`, which guides you through conflict resolution. Use `git commit` to seal the deal.
 
 > **Note:** You might want to integrate changes from `master` in this fashion on a regular basis to ease resolving of possible conflicts.
 
@@ -193,11 +193,11 @@ move the issue card from **In Progress** to **Under Review** on our
    * On the new merge request creation page, select a merge request template from the dropdown menu to pre-populate the *Description* field with some text. Follow the instructions in that template to give as much information as you can such that the merge request can be reviewed and merged as soon as it is practicable.
 
    > **Note** Do not create the merge request by clicking on the button *Create merge request* in your issue (creates a new branch).
-   
+
    * To notify others about your merge request, @mention affected teams and other interested parties in the *Interested Parties / Possible Reviewers* section of the *Description* field.
    * Assign some of your fellow developers as *Reviewers* to request their review and **required** approval.
    * Assign the MR to yourself, as you are probably the person that will work the most on this MR.
-   
+
 After opening the MR, a testing pipeline is automatically created. All test jobs need to pass before the MR can be merged.
 
 [↑ Contents](#contents)

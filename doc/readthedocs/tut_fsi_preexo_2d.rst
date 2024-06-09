@@ -65,7 +65,7 @@ With a given mesh including some nodal clouds to apply conditions to you
 need another text-file (*bc-file*) where you specify, what you would
 like to do with it. It contains for example the specific element
 declaration (fluid, structure, parameters, etc.) and the particular
-boundary condition such as Dirichlet or Neumann. Finally, a *header-file* 
+boundary condition such as Dirichlet or Neumann. Finally, a *header-file*
 consists of general parameters such as solvers, algorithmic
 parameters, etc. Those three files are merged by *pre_exodus* into an
 input file for |FOURC|. This file is then *automatically* validated using
@@ -193,7 +193,7 @@ Find the following sections in ’default.head’ and edit as given:
 
 -  ``FUNCT 2``
 
-   insert ``SYMBOLIC_FUNCTION_OF_SPACE_TIME 10*(y-1)*(1-cos(2*t*pi/5))`` 
+   insert ``SYMBOLIC_FUNCTION_OF_SPACE_TIME 10*(y-1)*(1-cos(2*t*pi/5))``
    representing the spatial inflow distribution
 
 Safe the file under a different name, e.g. ’dc2d_fsi.head’.

@@ -111,7 +111,7 @@ The parameters for assigning a material model to an element block with `SOLIDH8`
 
 ```bash
 description="MAT 1 KINEM nonlinear EAS none"
-``` 
+```
 
 where we choose material model 1, set the kinematics to nonlinear and assume no enhanced assumed strain.
 Last, the element type/condition specific set of parameters is given and the name of the element type is specified.
@@ -162,7 +162,7 @@ DBC.
 
 ## Create input file
 
-The final `.dat` input file for |FOURC| can be created with the `pre_exodus` executable 
+The final `.dat` input file for |FOURC| can be created with the `pre_exodus` executable
 as described in the [README.md](https://gitlab.lrz.de/baci/baci/blob/master/README.md).
 To manually create the `.dat` file the full command states:
 

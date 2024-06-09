@@ -1,6 +1,6 @@
 -------------------------------------------------------------TITLE
-Simulation of multi-scale contact of two blocks using MIRCO. 
-At every mortar node, a BEM problem is solved using MIRCO to 
+Simulation of multi-scale contact of two blocks using MIRCO.
+At every mortar node, a BEM problem is solved using MIRCO to
 get the pressure response for the provided gap.
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    164

@@ -1,25 +1,25 @@
 ----------- Mesh contents -----------
 
-Mesh consists of 1114 Nodes, 3623 Elements, organized in 
-5 ElementBlocks, 24 NodeSets, 0 SideSets 
+Mesh consists of 1114 Nodes, 3623 Elements, organized in
+5 ElementBlocks, 24 NodeSets, 0 SideSets
 
 ---------- Syntax examples ----------
 
-Element Block, named: 
+Element Block, named:
 of Shape: TET4
 has 9417816 Elements
 '*eb0="ELEMENT"'
 sectionname="FLUID"
 description="MAT 1 NA Euler"
-elementname="FLUID" 
+elementname="FLUID"
 
-Element Block, named: 
+Element Block, named:
 of Shape: HEX8
 has 9417816 Elements
 '*eb0="ELEMENT"'
 sectionname="STRUCTURE"
 description="MAT 1 KINEM nonlinear EAS none"
-elementname="SOLIDH8" 
+elementname="SOLIDH8"
 
 Node Set, named:
 Property Name: INFLOW

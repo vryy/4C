@@ -4,7 +4,7 @@ FSI Tutorial 3d with *pre_exodus* and Cubit
 Introduction
 ------------
 
-As example, we consider a 3d driven cavity example as sketched in the 
+As example, we consider a 3d driven cavity example as sketched in the
 :ref:`figure below <tut_fsi_preexo>` with a depth of 0.05. Hint: In case you
 want or need to see a sample solution for this tutorial (the FSI part)
 you will find corresponding files in the |FOURC| subfolder
@@ -21,7 +21,7 @@ For further details and references we refer the reader to [Wall99]_.
 
    The driven cavity example
 
-In the following, we first create the finite element mesh for the complete structure, 
+In the following, we first create the finite element mesh for the complete structure,
 but then we'll split the simulation into three sections:
 
 - Structure part
@@ -44,9 +44,9 @@ elements and boundary conditions, respectively.
 
 Within Cubit, open the Journal-Editor (*Tools* :math:`\to` *Journal
 Editor*), paste the text above and press *play*. For later usage it is
-convenient to save the current content of the Journal-Editor into a *\*.jou* file. 
-Export now the created geometry and mesh to an exodus-file of your choice, 
-let say, ``<yourmesh>.e`` via *File* :math:`\to` *Export...*. 
+convenient to save the current content of the Journal-Editor into a *\*.jou* file.
+Export now the created geometry and mesh to an exodus-file of your choice,
+let say, ``<yourmesh>.e`` via *File* :math:`\to` *Export...*.
 During export, set the dimension explicitly to 3d.
 
 .. _workingWithPreExodus:
@@ -56,9 +56,9 @@ Working with *pre_exodus*
 
 *pre_exodus* is a C++ code embedded into the |FOURC| environment. It is
 meant to transfer a given mesh into a |FOURC|-readable input file.
-Information about this tool can be found in the :ref:`Analysis Guide <pre_exodus>`. 
+Information about this tool can be found in the :ref:`Analysis Guide <pre_exodus>`.
 
-Besides a given mesh as the one we just created using CUBIT (see above), we need two more files: 
+Besides a given mesh as the one we just created using CUBIT (see above), we need two more files:
 
 - the bc-file, which contains the specific element declation and the particular boundary conditions, and
 - the header file, which contains the general parameters such as solvers, algorithmic parameters, etc..
@@ -106,7 +106,7 @@ Find the following sections in ’default.head’ and edit as given:
    ::
 
       -----SOLVER 1
-      
+
    set ``NAME Solver``
 
    set ``SOLVER UMFPACK``
@@ -199,7 +199,7 @@ Safe the file under a different name, e.g. ’dc_struct.bc’.
 Creating |FOURC| Input File and Running the Simulation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In a terminal, run the following command: 
+In a terminal, run the following command:
 ``./pre_exodus --exo=dc.e --head=dc_struct.head --bc=dc_struct.bc --dat=dc_struct.dat``
 where the filenames might have to be replaced accordingly. This will
 result in the specified dat-file which is already validated to be
@@ -263,7 +263,7 @@ Find the following sections in ’default.head’ and edit as given:
 
       -----FUNCT 2
 
-   insert ``SYMBOLIC_FUNCTION_OF_SPACE_TIME 10*(y-1)*(1-cos(2*t*pi/5))`` 
+   insert ``SYMBOLIC_FUNCTION_OF_SPACE_TIME 10*(y-1)*(1-cos(2*t*pi/5))``
    representing the spatial inflow distribution
 
 Safe the file under a different name, e.g. ’dc_fluid.head’.
@@ -416,7 +416,7 @@ Creating |FOURC| Input File and Running the Simulation
 
 Again, we create the |FOURC| input file by the command line tool
 ``./pre_exodus --exo=dc.e --head=dc_fluid.head --bc=dc_fluid.bc --dat=dc_fluid.dat``
-where the filenames might have to be replaced accordingly. 
+where the filenames might have to be replaced accordingly.
 This will result in the specified dat-file which is already validated to be accepted by |FOURC|.
 However, if the file is meaningful cannot be assured.
 
@@ -426,7 +426,7 @@ and postprocess the results (refer to :ref:`FSI 3D Tutorial Postprocessing <fsi3
 The FSI Part
 ------------
 
-Again, edit ``default.head`` as outlined below. 
+Again, edit ``default.head`` as outlined below.
 However to create the ``bc-file`` we copy
 together the existing parts from ``dc_struct.bc`` and ``dc_fluid.bc`` and
 change only the necessary coulping conditions as shown below.
@@ -484,7 +484,7 @@ Find the following sections in ’default.head’ and edit as given:
 
    insert ``SRC_FIELD fluid SRC_MAT 2 TAR_FIELD ale TAR_MAT 3``
 
-   :: 
+   ::
 
       -----FUNCT1
 
@@ -492,7 +492,7 @@ Find the following sections in ’default.head’ and edit as given:
    defining time-dependent inflow and lid movement
 
    ::
-      
+
       -----FUNCT2
 
    insert ``SYMBOLIC_FUNCTION_OF_SPACE_TIME 10*(y-1)*(1-cos(2*t*pi/5))``

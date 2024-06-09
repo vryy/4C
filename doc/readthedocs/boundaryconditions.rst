@@ -15,14 +15,14 @@ with subsequent lines defining the region and the specific values of the
 boundary conditions. Note that some boundary condition types do not follow this general structure.
 For each particular condition, refer to the :ref:`boundary condition reference <prescribedconditionreference>`.
 
-A point conditions must be followed by ``DPOINT <num>``, a line condition by ``DLINE <num>``, 
-a surface by ``DSURF <num>`` and a volume by ``DVOL <num>``. 
+A point conditions must be followed by ``DPOINT <num>``, a line condition by ``DLINE <num>``,
+a surface by ``DSURF <num>`` and a volume by ``DVOL <num>``.
 The number to be entered in ``num`` is the number of conditions to follow.
 
 Each subsequent line starts with an ``E <set> -``, where ``set`` is the number of the TOPOLOGY set defined in terms of points, lines, surfaces and volumes, respectively.
 
 Note that all boundary conditions are given in terms of node sets
-Boundary conditions of a vector tye may be applied in arbitrary coordinate directions, 
+Boundary conditions of a vector tye may be applied in arbitrary coordinate directions,
 which are not necessarily the original coordinate system, in which the system is defined.
 For this aspect one may define a local (rotated) coordinate system.
 
@@ -31,12 +31,12 @@ For this aspect one may define a local (rotated) coordinate system.
 Local Coordinate System
 ----------------------------
 
-Local coordinates may be defined on points, lines, surfaces and volumes. 
-The coordinate system is given by an axis :math:`\mathbf{n}` and an angle :math:`\alpha` (in rad) 
+Local coordinates may be defined on points, lines, surfaces and volumes.
+The coordinate system is given by an axis :math:`\mathbf{n}` and an angle :math:`\alpha` (in rad)
 around which the coordinate is rotated **clockwise**.
 
 Since the axis is a unit vector, the angle is given as the length of the vector,
-so that the complete roation can be entered in three values: 
+so that the complete roation can be entered in three values:
 :math:`[\alpha \cdot n_x, \, \alpha \cdot n_y, \, \alpha \cdot n_z]`.
 
 The complete definition of a local coordinate system writes:
@@ -48,7 +48,7 @@ The complete definition of a local coordinate system writes:
    E num - ROTANGLE 0.0 0.0 0.0 FUNCT 0 0 0 USEUPDATEDNODEPOS 0
    // num corresponds to the set_descriptor_id defined in DNODE/DVOL-NODE TOPOLOGY block
 
-for point and volume definitions, and 
+for point and volume definitions, and
 
 ::
 
@@ -63,12 +63,12 @@ The rotation may depend on time and/or space, that is, it can be combined with a
 see the proper definition in the :ref:`functions <functiondefinitions>` section.
 
 In addition, it is possible to calculate a spatial dependence either on the original node coordinates
-or on the updated (displaced) node coordinate, 
+or on the updated (displaced) node coordinate,
 which may be important in a large displacement analysis. This is done by the ``USEUPDATEDNODEPOS`` parameter (=0: original coordinates, =1: updated coordinates).
 
 .. todo::
-  
-   The parameter ``USECONSISTENTNODENORMAL`` can (at this time) only be used for ALE and fluid simulation. 
+
+   The parameter ``USECONSISTENTNODENORMAL`` can (at this time) only be used for ALE and fluid simulation.
    However, there is no test input using this parameter anyway.
 
 
@@ -98,8 +98,8 @@ intersection geometry must be constrained with the constraint
 information of both BCs. This feature shall be handled properly by the
 pre-processor.
 
-Of course, the applied Dirichlet boundary condition may depend on time and on the position 
-of the node. This is achieved by a function definition, after the keyword ``FUNCT``. 
+Of course, the applied Dirichlet boundary condition may depend on time and on the position
+of the node. This is achieved by a function definition, after the keyword ``FUNCT``.
 The number of the function (for each component) can be specified in
 order to define a spatial or temporal dependence. The proper definition
 of functions is given in the :ref:`functions <functiondefinitions>` section.
@@ -123,8 +123,8 @@ One needs also to set the corresponding IO, such as
    FILE_TYPE                        csv
    WRITE_HEADER                     no
 
-, see :ref:`SECio_monitorstructuredbc`, 
-and set the right time integration strategy, :ref:`INT_STRATEGY<structuraldynamic_int_strategy>`, 
+, see :ref:`SECio_monitorstructuredbc`,
+and set the right time integration strategy, :ref:`INT_STRATEGY<structuraldynamic_int_strategy>`,
 by which the standard one, i.e. Generalized Newmark Alpha, should always work.
 
 ::
@@ -146,19 +146,19 @@ boundary conditions.
    // num corresponds to the point_descriptor_id defined in DNODE/DLINE/DSURF/DVOL-NODE TOPOLOGY block
    --------------------DESIGN [POINT|LINE|SURF|VOL] ALE DIRICH CONDITIONS
    DPOINT|DLINE|DSURF|DVOL    numtotal   //  numtotal is the number of subsequent lines
-   E num - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT none   TAG none 
+   E num - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT none   TAG none
    --------------DESIGN [POINT|LINE|SURF|VOL] TRANSPORT DIRICH CONDITIONS
    DPOINT|DLINE|DSURF|DVOL    numtotal   //  numtotal is the number of subsequent lines
-   E num - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT none   TAG none 
+   E num - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT none   TAG none
    -----------------DESIGN [POINT|LINE|SURF|VOL] THERMO DIRICH CONDITIONS
    DPOINT|DLINE|DSURF|DVOL    numtotal   //  numtotal is the number of subsequent lines
-   E num - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT none   TAG none 
+   E num - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT none   TAG none
    -------------------DESIGN [POINT|LINE|SURF|VOL] PORO DIRICH CONDITIONS
    DPOINT|DLINE|DSURF|DVOL    numtotal   //  numtotal is the number of subsequent lines
-   E num - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT none   TAG none 
+   E num - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT none   TAG none
    ---------------DESIGN [POINT|LINE|SURF|VOL] NURBS LS DIRICH CONDITIONS
    DPOINT|DLINE|DSURF|DVOL    numtotal   //  numtotal is the number of subsequent lines
-   E num - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT none   TAG none 
+   E num - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT none   TAG none
 
 See the respective reference sections for
 :ref:`mechanical <designpointdirichconditions>`, :ref:`ALE <designpointaledirichconditions>`,
@@ -178,19 +178,19 @@ pressure or surface heat flux, accordingly.
 
    ----------------------------DESIGN [POINT|LINE|SURF|VOL] NEUMANN CONDITIONS
    DPOINT|DLINE|DSURF|DVOL     numtotal   //  numtotal is the number of subsequent lines
-   //E num - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT none   Live Mid 
+   //E num - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT none   Live Mid
    -------------------------------------------DESIGN POINT MOMENT EB CONDITIONS
    DPOINT|DLINE|DSURF|DVOL     numtotal
-   //E num - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT none   Live Mid 
+   //E num - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT none   Live Mid
    -----------------------DESIGN [POINT|LINE|SURF] TRANSPORT NEUMANN CONDITIONS
    DPOINT|DLINE|DSURF          numtotal
-   //E num - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT none   Live Mid 
+   //E num - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT none   Live Mid
    ----------------------DESIGN [POINT|LINE|SURF|VOL] THERMO NEUMANN CONDITIONS
    DPOINT|DLINE|DSURF|DVOL     numtotal
-   //E num - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT none   Live Mid 
+   //E num - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT none   Live Mid
    ------------------------DESIGN [POINT|LINE|SURF|VOL] PORO NEUMANN CONDITIONS
    DPOINT|DLINE|DSURF|DVOL     numtotal
-   //E num - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT none   Live Mid 
+   //E num - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT none   Live Mid
 
 See the respective reference sections for :ref:`mechanical <designpointneumannconditions>`,
 :ref:`MOMENT EB <designpointmomentebconditions>`, :ref:`TRANSPORT <designpointtransportneumannconditions>`,
@@ -201,11 +201,11 @@ See the respective reference sections for :ref:`mechanical <designpointneumannco
 Robin (Spring-Dashpot) conditions
 ----------------------------------
 
-A spring-dashpot condition, also called a Robin boundary condition, 
-is used to give a surface boundary (and only surface boundaries!) 
-a stiffness and/or viscosity with respect to its displacement. 
-For each degree of freedom the stiffness and/or viscosity may be considered or not. 
-Also, both stiffness and viscosity may depend on a function defintion. 
+A spring-dashpot condition, also called a Robin boundary condition,
+is used to give a surface boundary (and only surface boundaries!)
+a stiffness and/or viscosity with respect to its displacement.
+For each degree of freedom the stiffness and/or viscosity may be considered or not.
+Also, both stiffness and viscosity may depend on a function defintion.
 The Direction can be given in the global coordinate system or with respect to the surface normal.
 The input looks like this:
 
@@ -220,17 +220,17 @@ The input looks like this:
    DIRECTION xyz|refsurfnormal|cursurfnormal COUPLING none
 
 - Commonly the Robin boundary condition couples the nodes at the surface to its original position.
-  However, by giving a value to ``DISPLOFFSET``, one may introduce a prestressing of the spring. 
+  However, by giving a value to ``DISPLOFFSET``, one may introduce a prestressing of the spring.
   The point in space, to which it the surface nodes are coupled, may also move with time (``TIMEFUNCTDISPLOFFSET``).
 
 - The direction in which the spring and dashpot are acting can be specified by the parameter ``DIRECTION``.
-  This is either a global direction (``DIRECTION xyz``) 
-  or the surface normal (then only the x-axis has to be specified a finite value, 
-  but all three axis have to be given). The surface normal may then be either the reference one (``refsurfnormal``), 
+  This is either a global direction (``DIRECTION xyz``)
+  or the surface normal (then only the x-axis has to be specified a finite value,
+  but all three axis have to be given). The surface normal may then be either the reference one (``refsurfnormal``),
   or the current one (``cursurfnormal``).
 
-- The Robin boundary condition can also couple the surface to another surface 
-  by specifying a couplingID (``COUPLING <int>``). The coupled surface is then given by a 
+- The Robin boundary condition can also couple the surface to another surface
+  by specifying a couplingID (``COUPLING <int>``). The coupled surface is then given by a
   ``DESIGN SURF ROBIN SPRING DASHPOT COUPLING CONDITIONS``, see the following input:
 
 ::
@@ -252,7 +252,7 @@ See also :ref:`designpointrobinspringdashpotconditions` and :ref:`designsurfrobi
 Constraint conditions
 ----------------------
 
-Often, it is useful to prescribe not an absolute value of a nodal displacement or force, 
+Often, it is useful to prescribe not an absolute value of a nodal displacement or force,
 but rather a displacement relative to other displacements, which is commonly called *constraint condition*. |FOURC| has a number of options to define such constraints.
 
 Several nodes coupled for specific degrees of freedom
@@ -265,11 +265,11 @@ Several nodes coupled for specific degrees of freedom
    E <pointset> - NUMDOF 6 ONOFF 1 1 1 1 1 1
 
 Some applications (typically in structural / solid mechanics) require the coupling of certain DoFs of two or more nodes at the same geometrical position, while certain other DoFs of those
-nodes shall remain independent (e.g. joints and hinges in frames). 
-While it is very easy to couple all(!) DoFs of several nodes at the same geometrical position (by simply merging the nodes into one node), things are more complicated if only certain DoFs are to be coupled. 
+nodes shall remain independent (e.g. joints and hinges in frames).
+While it is very easy to couple all(!) DoFs of several nodes at the same geometrical position (by simply merging the nodes into one node), things are more complicated if only certain DoFs are to be coupled.
 While it would always be possible to introduce this coupling as a Dirichlet condition / Multipoint
 Constraint into the final system of equations, we have decided to implement this at a more fundamental level by changing the assigment of DoFs according to the existing coupling
-conditions. 
+conditions.
 Thus, if a point coupling condition is introduced for a set of nodes, the DoFs to be coupled are identified and the same(!) DoFs are then assigned to all participating nodes,
 while the remaining uncoupled DoFs are created and assigned independently for each node. This required some changes in the way nodal DoFs are assigned and handled in |FOURC|.
 However, after the initial DoF handling, the nice thing about this approach is that nothing needs to be done anymore at the system matrix level because the coupling is inherently included
@@ -305,7 +305,7 @@ All nodes of the given pointset have the same displacement in the directions wit
 
 .. danger::
 
-   I gave a boundary condition (tried dirichlet and neumann) to a 3D structure in one coordinate direction and coupled the nodes in the other two directions. 
+   I gave a boundary condition (tried dirichlet and neumann) to a 3D structure in one coordinate direction and coupled the nodes in the other two directions.
    The results seem to be wrong.
 
 Surface coupled to a node in a given direction
@@ -340,7 +340,7 @@ Node displacement relative to a given surface or line
    //
 
 
-This is a rather specific constraint, where a plane (or a line, respectively) is defined by three nodes, which are given as index of the ``<surfset>|<lineset>`` 
+This is a rather specific constraint, where a plane (or a line, respectively) is defined by three nodes, which are given as index of the ``<surfset>|<lineset>``
 (the index is starting from 1 for whatever reasons),
 and the other nodes of this set are displaced with respect to this plane/line. See :ref:`designsurfacemultipntconstraint3D` and :ref:`designlinemultipntconstraint2D`
 
@@ -351,7 +351,7 @@ Periodic boundary conditions
 
    --------------------------DESIGN SURF PERIODIC BOUNDARY CONDITIONS
    DSURF  <numtotal>
-   // definition of slave surface 
+   // definition of slave surface
    E <surfset> - 1 Slave PLANE [xy|xz|yz] LAYER 1 ANGLE 0.0 ABSTREETOL 1e-6
    // definition of master surface
    E <surfset> - 1 Master PLANE [xy|xz|yz] LAYER 1 ANGLE 0.0 ABSTREETOL 1e-6
@@ -389,7 +389,7 @@ is necessary:
 
 The parameters
 ``FrCoeffOrBound, AdhesionBound, Solidcontact, DoNothing, TwoHalfPass, RefConfCheckNonSmoothSelfContactSurface``
-are optional. You'll find more information about contact in the 
+are optional. You'll find more information about contact in the
 :ref:`contact and meshtying <contactandmeshtying>` section.
 
 
@@ -427,7 +427,7 @@ pressure or thermal convection, and
 
 ::
 
-   Element Block, named: 
+   Element Block, named:
    of Shape: HEX8
    has 9417816 Elements
    *eb0="ELEMENT"
@@ -447,8 +447,8 @@ automatically matched the IDs in the .e file in this case.
 
 To apply boundary conditions, a string has to be given for
 *sectionname=* and *description=*. A collection of all currently
-implemented boundary conditions is given in the 
-:ref:`Prescribed condition reference <prescribedconditionreference>`. 
+implemented boundary conditions is given in the
+:ref:`Prescribed condition reference <prescribedconditionreference>`.
 In this, the *sectionname* of a
 boundary condition is given first (e.g. DESIGN POINT DIRICH CONDITIONS)
 followed by the *E num* entry which (without the E num) has to be put as

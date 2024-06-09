@@ -12,8 +12,8 @@ The basic details of the nonlinear solver are given in the section
    ----------------------STRUCTURAL DYNAMICS
 
 
-First of all: since in contrast to a linear simulation, 
-where we may scale results (displacements, strains, stresses) with a factor, and also superpose load cases by simply adding results of each load case, 
+First of all: since in contrast to a linear simulation,
+where we may scale results (displacements, strains, stresses) with a factor, and also superpose load cases by simply adding results of each load case,
 the load history is crucial in nonlinear simulations, and we commonly divide the simulation in steps (other programs denote these as *increments*).
 
 Users may give the time step size, the maximum time at the end of the simulation, and the maximum number of steps to be conducted by these parameters (the values behind the keywords show the default values):
@@ -31,12 +31,12 @@ The main decision in a simulation is whether to account for inertia and other ti
 Time stepping in dynamic simulations
 ------------------------------------
 
-The time stepping in dynamic simulations may be implicit or explicit. While an implicit method involves an iterative procedure within each time step, the explicit solver is solely using the results of the previous time step to calculate the results of the current step. The time stepping procedure is given by the parameter 
+The time stepping in dynamic simulations may be implicit or explicit. While an implicit method involves an iterative procedure within each time step, the explicit solver is solely using the results of the previous time step to calculate the results of the current step. The time stepping procedure is given by the parameter
 
 Explicit time stepping procedure
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-While it sounds much easier (and thus faster) to base the solution of the current time step on the previous step without iteration, the main drawback is that the time step must be in general much smaller than for an implicit solver.  In order to get a correct solution, the time step in an explicit procedure must be small enough that a stress wave cannot travel farther than the smallest element characteristic length in a single time-step. This is called the Courant-Friedrichs-Lewy (CFL) condition. One may calculate this maximum time step size by 
+While it sounds much easier (and thus faster) to base the solution of the current time step on the previous step without iteration, the main drawback is that the time step must be in general much smaller than for an implicit solver.  In order to get a correct solution, the time step in an explicit procedure must be small enough that a stress wave cannot travel farther than the smallest element characteristic length in a single time-step. This is called the Courant-Friedrichs-Lewy (CFL) condition. One may calculate this maximum time step size by
 
 .. math::
 
@@ -46,7 +46,7 @@ Here, :math:`h` is the characteristic length of a finite element, :math:`E, c, \
 
 .. note::
 
-   It is the responsibility of the user to choose the time step small enough 
+   It is the responsibility of the user to choose the time step small enough
    to get a realistic result in an explicit analysis.
 
 Implicit time stepping procedure
@@ -54,10 +54,10 @@ Implicit time stepping procedure
 For implicit analyses, a number of time stepping methods exist, the most common of which are
 
 - ``GenAlpha``: generalized alpha method with up to four parameters, :math:`\beta, \alpha_M, \alpha_F, \rho_\infty`, see the reference section :ref:`--Structural dynamic/GenAlpha<SECstructuraldynamic_genalpha>`
-- ``OneStepTheta``: one-step theta method (a special version of generalized alpha with :math:`\alpha_M=\alpha_F=1`, 
+- ``OneStepTheta``: one-step theta method (a special version of generalized alpha with :math:`\alpha_M=\alpha_F=1`,
   see section :ref:`--Structural dynamic/OneStepTheta<SECstructuraldynamic_onesteptheta>`
 
-More in-depth information about some time stepping details are given in the :ref:`theory section<structdynamics_theory>` below. 
+More in-depth information about some time stepping details are given in the :ref:`theory section<structdynamics_theory>` below.
 
 
 Iterative solution
@@ -76,7 +76,7 @@ The strategy for the iteration is specified by the parameter ``NLNSOL`` (nonline
 
 .. warning::
 
-   Not all methods are available for all simulation cases; 
+   Not all methods are available for all simulation cases;
    e.g., the modified Newton-Raphson can only be used in a multiscale analysis.
 
 The Uzawa Iteration has a number of additional parameters that can be used to improve convergence for special cases.
@@ -89,14 +89,14 @@ The convergence can be improved in a dynamic simulation with an aritificial damp
 
 **Convergence difficulties**
 
-If the solution does not converge within ``MAXITER`` iterations, 
+If the solution does not converge within ``MAXITER`` iterations,
 one can define the behavior for the step with the parameter ``DIVERCONT``:
 
-- ``stop``: stop the simulation 
-- ``continue``: Simply ignore the missing convergence and continue 
+- ``stop``: stop the simulation
+- ``continue``: Simply ignore the missing convergence and continue
 - ``repeat_step``: Repeat the step (I don't know the benefit of doing a failed simulation again)
 - ``halve_step``: Reduce the step size of the current increment by 50%.
-- ``adapt_step``: As halve_step reducing the step size by 50%, but checking against the maximum number of cutbacks, 
+- ``adapt_step``: As halve_step reducing the step size by 50%, but checking against the maximum number of cutbacks,
   which can be given in ``MAXDIVCONREFINEMENTLEVEL`` (default: 10).
   Also the step size may increase by 2 if convergence is achieved four times successively.
 - ``rand_adapt_step``: Changing the time step size by a factor between 0.51 and 1.99, chosen by random number generator.
@@ -116,14 +116,14 @@ Order of accuracy
 
 The difference of an exact solution compared to an approximate solution
 is called *global error* :math:`\boldsymbol{g}` (Hairer et al.
-[strdyn:hairer87]_, Deuflhard et al. 
+[strdyn:hairer87]_, Deuflhard et al.
 [strdyn:deuflhard94]_). The global error at time
 :math:`t_{n+1}` can be written as
 
 .. math:: \boldsymbol{g}_{n+1} = \boldsymbol{y}(t_{n+1}) - \boldsymbol{y}_{n+1} \text{.}
    :label: globalerror
 
-    
+
 
 Although techniques exist to estimate the global error (Hairer et al.
 [strdyn:hairer87]_, [strdyn:hairer91]_), it is easier to
@@ -146,7 +146,7 @@ initial conditions :math:`\boldsymbol{y}(t_0) = \boldsymbol{y}_0`
    \boldsymbol{g}_{n+1} & = \boldsymbol{y}(t_{n+1}) - \boldsymbol{y}_{n+1}
 
    & = \boldsymbol{\Phi}_{n+1,n} \boldsymbol{y}(t_n) - \boldsymbol{\Psi}_{n+1,n} \boldsymbol{y}_n
- 
+
    & = \underbrace{\boldsymbol{\Phi}_{n+1,n} \boldsymbol{y}(t_n) -
    \boldsymbol{\Psi}_{n+1,n} \boldsymbol{y}(t_n)}_{\text{LDE}}
    \,+\, \underbrace{\boldsymbol{\Psi}_{n+1,n} \boldsymbol{y}(t_n) -
@@ -163,14 +163,14 @@ error leads to an expression in :math:`\Delta t_n^{p+1}`, where
 .. math::
    :label: lde
 
-     \boldsymbol{l}_{n+1} 
+     \boldsymbol{l}_{n+1}
      = \mathcal{O}(\Delta t_n^{p+1})
      = \boldsymbol{c}(t_n)\, \Delta t_n^{p+1} + \mathcal{O}(\Delta t_n^{p+2})
      \quad\text{with}\quad
      \boldsymbol{c}(t_n) \neq \boldsymbol{0}
      \text{.}
 
-The vector function :math:`\boldsymbol{c}(t_n)` depends on the time integration scheme. 
+The vector function :math:`\boldsymbol{c}(t_n)` depends on the time integration scheme.
 In the case of Runge-Kutta methods
 :math:`\boldsymbol{c}` has the form
 :math:`\boldsymbol{c}(t_n) = K \frac{\mathrm{d}^{p+1} \boldsymbol{y}(t_n)}{\mathrm{d}
@@ -268,7 +268,7 @@ The final pair of equations can be rewritten such that (with
 
 with :math:`\beta \in [0,\frac{1}{2}], \, \gamma \in [0,1]`.
 
-Here, we abbreviated the unknown accelerations at :math:`t_{n+1}` 
+Here, we abbreviated the unknown accelerations at :math:`t_{n+1}`
 with :math:`\boldsymbol{A}_{n+1} = \boldsymbol{M}^{-1} \big( -\boldsymbol{C} \boldsymbol{V}_{n+1} -
 \boldsymbol{F}_{\text{int};n+1} + \boldsymbol{F}_{\text{ext};n+1}) \big)`.
 
@@ -321,7 +321,7 @@ of motion becomes at the generalised mid-point
 
      \boldsymbol{M} \boldsymbol{A}_{n+1-\alpha_\text{m}}
        + \boldsymbol{C} \boldsymbol{V}_{n+1-\alpha_\text{f}}
-       + \boldsymbol{F}_{\text{int};n+1-\alpha_\text{f}} 
+       + \boldsymbol{F}_{\text{int};n+1-\alpha_\text{f}}
        = \boldsymbol{F}_{\text{ext};n+1-\alpha_\text{f}}
 
 The mid accelerations, velocities, displacements and external forces
@@ -333,13 +333,13 @@ vector:
 
    &   \left. \boldsymbol{A}_{n+1-\alpha_\text{m}}
        := \big( 1- \alpha_\text{m} \big) \boldsymbol{A}_{n+1}
-       + \alpha_\text{m} \boldsymbol{A}_n 
+       + \alpha_\text{m} \boldsymbol{A}_n
        \right\} \quad \alpha_\text{m} \in[0,1]
    \\
    &\left. \begin{array}{lll}
      \boldsymbol{V}_{n+1-\alpha_\text{f}}
          & := &\big( 1- \alpha_\text{f} \big) \boldsymbol{V}_{n+1}
-         + \alpha_\text{f} \boldsymbol{V}_n 
+         + \alpha_\text{f} \boldsymbol{V}_n
      \\
      \boldsymbol{D}_{n+1-\alpha_\text{f}}
          & := & \left( 1- \alpha_\text{f} \right) \boldsymbol{D}_{n+1}
@@ -384,13 +384,13 @@ unknown mid-velocities and mid-accelerations in terms of
 
    \boldsymbol{V}_{n+1-\alpha_\text{f}}(\boldsymbol{D}_{n+1})
    &  = \frac{(1-\alpha_\text{f})\gamma}{\beta\, \Delta t} \big( \boldsymbol{D}_{n+1} -
-        \boldsymbol{D}_n \big) 
+        \boldsymbol{D}_n \big)
       - \frac{(1-\alpha_\text{f})\gamma-\beta}{\beta} \boldsymbol{V}_{n}
       - \frac{(1-\alpha_\text{f})(\gamma-2\beta)}{2\beta}\Delta t\boldsymbol{A}_n
       \text{,}
    \\
    \boldsymbol{A}_{n+1-\alpha_\text{m}}(\boldsymbol{D}_{n+1})
-   &  = \frac{1-\alpha_\text{m}}{\beta\, \Delta t^2} 
+   &  = \frac{1-\alpha_\text{m}}{\beta\, \Delta t^2}
       \big( \boldsymbol{D}_{n+1} - \boldsymbol{D}_n \big)
       - \frac{1-\alpha_\text{m}}{\beta\,\Delta t} \boldsymbol{V}_{n}
       - \frac{1-\alpha_\text{m}-2\beta}{2\beta} \boldsymbol{A}_n \text{.}
@@ -404,7 +404,7 @@ force vectors:
 
    \boldsymbol{F}_{\text{int};n+1-\alpha_\text{f}}
    &  = \big( 1- \alpha_\text{f} \big) \boldsymbol{F}_{\text{int};n+1}
-       + \alpha_\text{f} \boldsymbol{F}_{\text{int};n} 
+       + \alpha_\text{f} \boldsymbol{F}_{\text{int};n}
    \\
    &  = \left( 1- \alpha_\text{f} \right) %  % assembly operator
    \mathchoice{
@@ -473,7 +473,7 @@ written as an residual
   .. math::
 
      Lin\boldsymbol{R}_\text{effdyn}(\boldsymbol{D}_{n+1})
-       = \boldsymbol{R}_\text{effdyn}(\boldsymbol{D}_{n+1}^i) 
+       = \boldsymbol{R}_\text{effdyn}(\boldsymbol{D}_{n+1}^i)
        + \left.\frac{\partial\boldsymbol{R}_\text{effdyn}(\boldsymbol{D}_{n+1})}
          {\partial\boldsymbol{D}_{n+1}}\right|^{i}  \Delta\boldsymbol{D}_{n+1}^{i+1}
 
@@ -488,8 +488,8 @@ obtained detailed in
    &  \boldsymbol{K}_{\text{T}\,\text{effdyn}}(\boldsymbol{D}_{n+1}^i)
         = \left.\frac{\partial\boldsymbol{R}(\boldsymbol{D}_{n+1})}{\partial\boldsymbol{D}_{n+1}}\right|^{i}
    \\
-   & 
-       \quad = \Bigg.\Bigg[\boldsymbol{M} 
+   &
+       \quad = \Bigg.\Bigg[\boldsymbol{M}
                \underbrace{\frac{\partial\boldsymbol{A}_{n+1-\alpha_\text{m}}}{\partial\boldsymbol{A}_{n+1}}}_{1-\alpha_\text{m}}
                \underbrace{\frac{\partial\boldsymbol{A}_{n+1}}{\partial\boldsymbol{D}_{n+1}}}_{\frac{1}{\beta\Delta t^2}}
         +     \boldsymbol{C}
@@ -510,7 +510,7 @@ with
 
      \begin{aligned}
         \text{TR-like} & \quad \frac{\partial\boldsymbol{F}_{\text{int},n+1-\alpha_\text{f}}}{\partial\boldsymbol{D}_{n+1}}
-        = \frac{\partial\boldsymbol{F}_{\text{int}}(\boldsymbol{D}_{n+1-\alpha_\text{f}})}{\partial\boldsymbol{D}_{n+1-\alpha_\text{f}}} 
+        = \frac{\partial\boldsymbol{F}_{\text{int}}(\boldsymbol{D}_{n+1-\alpha_\text{f}})}{\partial\boldsymbol{D}_{n+1-\alpha_\text{f}}}
         \frac{\partial\boldsymbol{D}_{n+1-\alpha_\text{f}}}{\partial\boldsymbol{D}_{n+1}}
         = \big( 1-\alpha_\text{f} \big)  \boldsymbol{K}_\text{T}(\boldsymbol{D}_{n+1-\alpha_\text{f}})
      \\
@@ -554,17 +554,17 @@ increments
 .. math::
 
    \Delta\boldsymbol{D}_{n+1-\alpha_\text{f}}^{i+1}
-   &   = \frac{\partial\boldsymbol{D}_{n+1-\alpha_\text{f}}}{\partial\boldsymbol{D}_{n+1}} 
+   &   = \frac{\partial\boldsymbol{D}_{n+1-\alpha_\text{f}}}{\partial\boldsymbol{D}_{n+1}}
         \, \Delta\boldsymbol{D}_{n+1}^{i+1}
       = (1-\alpha_\text{f}) \, \Delta\boldsymbol{D}_{n+1}^{i+1}
    \\
       \Delta\boldsymbol{V}_{n+1-\alpha_\text{f}}^{i+1}
-   &   = \frac{\partial\boldsymbol{V}_{n+1-\alpha_\text{f}}}{\partial\boldsymbol{D}_{n+1}} 
+   &   = \frac{\partial\boldsymbol{V}_{n+1-\alpha_\text{f}}}{\partial\boldsymbol{D}_{n+1}}
         \, \Delta\boldsymbol{D}_{n+1}^{i+1}
       = \frac{(1-\alpha_\text{f})\gamma}{\beta \Delta t} \, \Delta\boldsymbol{D}_{n+1}^{i+1}
    \\
       \Delta\boldsymbol{A}_{n+1-\alpha_\text{m}}^{i+1}
-   &   = \frac{\partial\boldsymbol{A}_{n+1-\alpha_\text{m}}}{\partial\boldsymbol{D}_{n+1}} 
+   &   = \frac{\partial\boldsymbol{A}_{n+1-\alpha_\text{m}}}{\partial\boldsymbol{D}_{n+1}}
         \, \Delta\boldsymbol{D}_{n+1}^{i+1}
       = \frac{1-\alpha_\text{m}}{\beta \Delta t^2} \, \Delta\boldsymbol{D}_{n+1}^{i+1}
 
@@ -573,15 +573,15 @@ and the usual update procedure
 .. math::
 
    \boldsymbol{D}_{n+1-\alpha_\text{f}}^{i+1}
-   &  = \boldsymbol{D}_{n+1-\alpha_\text{f}}^{i} 
+   &  = \boldsymbol{D}_{n+1-\alpha_\text{f}}^{i}
       + \Delta\boldsymbol{D}_{n+1-\alpha_\text{f}}^{i+1}
    \\
       \boldsymbol{V}_{n+1-\alpha_\text{f}}^{i+1}
-   &  = \boldsymbol{V}_{n+1-\alpha_\text{f}}^{i} 
+   &  = \boldsymbol{V}_{n+1-\alpha_\text{f}}^{i}
       + \Delta\boldsymbol{V}_{n+1-\alpha_\text{f}}^{i+1}
    \\
       \boldsymbol{A}_{n+1-\alpha_\text{m}}^{i+1}
-   &  = \boldsymbol{A}_{n+1-\alpha_\text{m}}^{i} 
+   &  = \boldsymbol{A}_{n+1-\alpha_\text{m}}^{i}
       + \Delta\boldsymbol{A}_{n+1-\alpha_\text{m}}^{i+1}
 
 The convergence of the Newton–Raphson iteration can be tested — for
@@ -598,13 +598,13 @@ increment:
 .. math::
 
    \frac{\| \Delta\boldsymbol{D}_{n+1}^{i+1} \|}
-     {\| \boldsymbol{D}_{n+1}^{i+1} - \boldsymbol{D}_n \|} 
+     {\| \boldsymbol{D}_{n+1}^{i+1} - \boldsymbol{D}_n \|}
      \leq \mathit{tol}_\text{D}
      \text{.}
 
 **Algorithm Newton–Raphson iteration**
 
-.. note:: 
+.. note::
 
    struktogramm to be added.
 
@@ -630,16 +630,16 @@ generalised-alpha (GA) method. We achieve
    \boldsymbol{l}_{n+1}^{\text{GA}}
    &  = \boldsymbol{D}(t_{n+1}) - \boldsymbol{\Psi}_{n+1,n}^{\text{GA}} \boldsymbol{D}(t_n)
    \\
-   &  = \frac{\Delta t^3}{2} \Big( \frac{1}{3} - 2\beta + \alpha_\text{f} - \alpha_\text{m}\Big) 
+   &  = \frac{\Delta t^3}{2} \Big( \frac{1}{3} - 2\beta + \alpha_\text{f} - \alpha_\text{m}\Big)
       \dot{\boldsymbol{A}}(t_n)
    \\
-   &  + \frac{\Delta t^4}{4} \Big( \frac{1}{6} - 2\beta\big(1-\alpha_\text{f}+2\alpha_\text{m}\big) - (\alpha_\text{f}-\alpha_\text{m})(1-2\alpha_\text{m}) \Big)  
-      \ddot{\boldsymbol{A}}(t_n) 
+   &  + \frac{\Delta t^4}{4} \Big( \frac{1}{6} - 2\beta\big(1-\alpha_\text{f}+2\alpha_\text{m}\big) - (\alpha_\text{f}-\alpha_\text{m})(1-2\alpha_\text{m}) \Big)
+      \ddot{\boldsymbol{A}}(t_n)
    \\
    &   + \mathcal{O}(\Delta t^5)
 
-This equation implies: The displacements are always at least second order accurate 
-and they are even third order accurate 
+This equation implies: The displacements are always at least second order accurate
+and they are even third order accurate
 if :math:`\frac{1}{3} - 2\beta + \alpha_\text{f} - \alpha_\text{m} = 0`.
 
 Since the governing equations are a set of second order ODEs, we provide
@@ -650,11 +650,11 @@ the LDE of the velocities as well. These are
    \dot{\boldsymbol{l}}_{n+1}^{\text{GA}}
    &  = \boldsymbol{V}(t_{n+1}) - \dot{\boldsymbol{\Psi}}_{n+1,n}^{\text{GA}} \boldsymbol{V}(t_n)
    \\
-   &  = \Delta t^2 \Big( \frac{1}{2} - \gamma + \alpha_\text{f} - \alpha_\text{m} \Big) 
+   &  = \Delta t^2 \Big( \frac{1}{2} - \gamma + \alpha_\text{f} - \alpha_\text{m} \Big)
       \dot{\boldsymbol{A}}(t_n)
    \\
-   &  + \frac{\Delta t^3}{2} \Big( \frac{1}{3} - \gamma\big(1-\alpha_\text{f}+2\alpha_\text{m}\big) - (\alpha_\text{f}-\alpha_\text{m})(1-2\alpha_\text{m}) \Big)  
-      \ddot{\boldsymbol{A}}(t_n) 
+   &  + \frac{\Delta t^3}{2} \Big( \frac{1}{3} - \gamma\big(1-\alpha_\text{f}+2\alpha_\text{m}\big) - (\alpha_\text{f}-\alpha_\text{m})(1-2\alpha_\text{m}) \Big)
+      \ddot{\boldsymbol{A}}(t_n)
    \\
    &   + \mathcal{O}(\Delta t^4)
 
@@ -665,8 +665,8 @@ velocities are second order accurate if :math:`\frac{1}{2} - \gamma + \alpha_\te
 The order of accuracy of the generalised-alpha method follows the lower
 value of the order of the displacements or velocities.
 
-As stated before, the semi-discrete equations of motion are second order ODE, 
-thus both LDEs have to be taken into account 
+As stated before, the semi-discrete equations of motion are second order ODE,
+thus both LDEs have to be taken into account
 and the worse value determines the overall order of accuracy according to Hairer et al [strdyn:hairer87]_, [strdyn:hairer91]_)
 
 
@@ -706,7 +706,7 @@ Therefore the basic requirement for the local discretisation error is
 
      \|\boldsymbol{l}_{n+1}(\Delta t_n)\| \leq \varepsilon \quad ,
 
-whereby the dimensionless tolerance :math:`\varepsilon>` is user-prescribed. 
+whereby the dimensionless tolerance :math:`\varepsilon>` is user-prescribed.
 The above described procedure is contained in the following figure:
 
 .. figure:: figures/adap-sch.jpg
@@ -730,12 +730,12 @@ with :math:`\Delta t_n` is assumed to be larger than
    :label: LDE-old-step-size-greater-tol
 
    \| \boldsymbol{l}_{n+1}(\Delta t_n) \|
-   \approx \boldsymbol{C}(t_n)\, \Delta t_n^{p+1} 
+   \approx \boldsymbol{C}(t_n)\, \Delta t_n^{p+1}
    \geq \varepsilon
    \text{,}
 
    \| \boldsymbol{l}_{n+1}(\Delta t_n^*) \|
-   \approx \boldsymbol{C}(t_n)\, {\Delta t_n^*}^{p+1} 
+   \approx \boldsymbol{C}(t_n)\, {\Delta t_n^*}^{p+1}
    \approx \varepsilon
    \text{.}
 
@@ -777,10 +777,10 @@ In the previous equation the ‘optimal’ ratio is abbreviated with
    r^* = \sqrt[{p+1}]{\frac{\varepsilon}{\|\boldsymbol{l}_{n+1}(\Delta t_n) \|}}
    \text{.}
 
-The step size :math:`\Delta t_n^\text{new}`, see above, replaces the ‘optimal’ step size :math:`\Delta t_n^*` in the :ref:`outlined algorithm <strdyn:fig:adap-sch>`. 
-The factor :math:`r_\text{max}` limits the maximum size increase between two steps, :math:`r_\text{min}` bounds the decrease. 
+The step size :math:`\Delta t_n^\text{new}`, see above, replaces the ‘optimal’ step size :math:`\Delta t_n^*` in the :ref:`outlined algorithm <strdyn:fig:adap-sch>`.
+The factor :math:`r_\text{max}` limits the maximum size increase between two steps, :math:`r_\text{min}` bounds the decrease.
 In the same spirit, a maximum and minimum step size, :math:`\Delta t_\text{max}` and :math:`\Delta t_\text{min}`, is
-imposed to achieve a more robust algorithm. Sometimes, :math:`p` instead of :math:`(p+1)` 
+imposed to achieve a more robust algorithm. Sometimes, :math:`p` instead of :math:`(p+1)`
 is used in the equation for :math:`r ^*` to reflect the order of the global error.
 
 Generally speaking, estimations for the local discretisation error are
@@ -803,13 +803,13 @@ Zienkiewicz and Xie indicator
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Zienkiewicz and Xie presented in [strdyn:zienkiewicz91]_ a local error indicator for the
-Newmark algorithm. 
+Newmark algorithm.
 The estimator advantageously uses the member which integrates the displacements with third-order accuracy,
 i.e., :math:`\beta=\frac{1}{6}`, :math:`\gamma` arbitrary.
 The concept can be straight forwardly applied to the generalised-alpha method.
 
-In essence, the general generalised-alpha method with second order accurate displacements 
-(dubbed here GA2) is considered as the marching time integration scheme. 
+In essence, the general generalised-alpha method with second order accurate displacements
+(dubbed here GA2) is considered as the marching time integration scheme.
 Its third order accurate sibling GA3 is used as the auxiliary scheme to eventually obtain the local discretisation error estimation/indication of the displacements.
 
 The GA2 and GA3 methods are implicit schemes, hence a direct calculation
@@ -849,7 +849,7 @@ series:
 .. math::
 
    \boldsymbol{l}_{n+1}^\text{ZX}
-     = \boldsymbol{D}(t_{n+1}) - \boldsymbol{\Psi}_{n+1,n}^\text{ZX}\boldsymbol{D}(t_n) 
+     = \boldsymbol{D}(t_{n+1}) - \boldsymbol{\Psi}_{n+1,n}^\text{ZX}\boldsymbol{D}(t_n)
      = -\frac{\Delta t^4}{24} \bar{\boldsymbol{u}}^{(4)}(t_n) + \mathcal{O}(\Delta t^5)
      \text{,}
 
@@ -863,7 +863,7 @@ and assumes direct differences as feasible approximations
    :label: zx-nm-lde1
 
    \boldsymbol{l}_{n+1}^\text{GA2}
-   = \boldsymbol{D}(t_{n+1}) - \boldsymbol{\Psi}_{n+1,n}^\text{GA2}\boldsymbol{D}(t_n) 
+   = \boldsymbol{D}(t_{n+1}) - \boldsymbol{\Psi}_{n+1,n}^\text{GA2}\boldsymbol{D}(t_n)
    \approx \boldsymbol{D}(t_{n+1}) - \boldsymbol{D}_{n+1}^\text{GA2}
    = \mathcal{O}(\Delta t^3)
    \text{,}

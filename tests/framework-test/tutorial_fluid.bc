@@ -1,25 +1,25 @@
 ----------- Mesh contents -----------
 
-Mesh consists of 7211 Nodes, 7058 Elements, organized in 
-1 ElementBlocks, 5 NodeSets, 0 SideSets 
+Mesh consists of 7211 Nodes, 7058 Elements, organized in
+1 ElementBlocks, 5 NodeSets, 0 SideSets
 
 ---------- Syntax examples ----------
 
-Element Block, named: 
+Element Block, named:
 of Shape: TET4
 has 9417816 Elements
 '*eb0="ELEMENT"'
 sectionname="FLUID"
 description="MAT 1 NA Euler"
-elementname="FLUID" 
+elementname="FLUID"
 
-Element Block, named: 
+Element Block, named:
 of Shape: HEX8
 has 9417816 Elements
 '*eb0="ELEMENT"'
 sectionname="STRUCTURE"
 description="MAT 1 EAS mild KINEM nonlinear"
-elementname="SOLIDH8" 
+elementname="SOLIDH8"
 
 Node Set, named:
 Property Name: INFLOW
@@ -78,5 +78,5 @@ description="NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 FUNCT 0 0 0"
 -----------------------------------------VALIDCONDITIONS
 ------------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT                          0
-//E num - none 0 0 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  Live Mid 0 0 0 0 0 0  
+//E num - none 0 0 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  Live Mid 0 0 0 0 0 0
 ... remaining stuff has been removed

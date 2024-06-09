@@ -6,11 +6,11 @@ This chapter tries to explain the background of the ``ComputeMetricTensorForSurf
 Motivation and definition.
 ''''''''''''''''''''''''''
 
-(a) Let :math:`a^{1},\ldots,a^{k}\in\mathbb{R}^{n}`. Let\ 
+(a) Let :math:`a^{1},\ldots,a^{k}\in\mathbb{R}^{n}`. Let\
 
 .. math:: A:=\bigl(a^{1}\; a^{2}\;\cdots\; a^{k}\bigr)\in\mathbb{R}^{n\times k}
 
-be the matrix with columns :math:`a^{1},\ldots,a^{k}`. Then\ 
+be the matrix with columns :math:`a^{1},\ldots,a^{k}`. Then\
 
 .. math:: A\bigl([0,1]^{k}\bigr)=\bigl\{Ax;\,x\in\mathbb{R}^{k},\; x_{j}\in[0,1]\text{ for all }j=1,\ldots,k\bigr\}\subseteq\mathbb{R}^{n}
 
@@ -41,7 +41,7 @@ positive-semidefinite (because
 :math:`\langle A^{\top}Ax,x\rangle=\lvert Ax\rvert^{2}\ge0` for all
 :math:`x\in\mathbb{R}^{k}`) and therefore :math:`\det A^{\top}A\ge0`.
 
-Now we define\ 
+Now we define\
 
 .. math:: \gamma(A):=\sqrt{\det(A^{\top}A)}=\sqrt{\det\bigl(\langle Ae_{i},Ae_{j}\rangle\bigr)}.
 
@@ -55,7 +55,7 @@ the parallelepiped has width :math:`0` in the direction of
 :math:`e_{n}=e_{k+1}`. Let :math:`Q:\mathbb{R}^{k+1}\to\mathbb{R}^{k}`
 be the projektion onto the first :math:`k` coordinates (thus
 :math:`Q(x)=Q\bigl((x_{1},\ldots,x_{n})\bigr)=(x_{1},\ldots,x_{k})`),
-then\ 
+then\
 
 .. math:: (QA)^{\top}QA=A^{\top}Q^{\top}QA=A^{\top}A,
 
@@ -75,11 +75,11 @@ basically means that there is some open set
 :math:`\Phi:\Omega\to M` that is, among other things, smooth and
 one-to-one. Also, let :math:`f:M\to\mathbb{R}` be a suitable function
 (again, we don’t give the exact requirements here). Then we define the
-*surface integral*\ 
+*surface integral*\
 
 .. math:: \int_{M}f(x)\,\mathrm{d}S(x) := \int_{\Omega}f(\Phi(\xi))\,\gamma(\Phi'(\xi))\,\mathrm{d}\xi.
 
-In particular, we define\ 
+In particular, we define\
 
 .. math:: \operatorname{vol}_{k}(M):=\int_{M}1\,\mathrm{d}S(x) =\int_{\Omega}\gamma(\Phi'(\xi))\,\mathrm{d}\xi.
 
@@ -88,7 +88,7 @@ Example.
 
 A parameterization  [1]_ of the two-dimensional unit sphere
 :math:`S_{2}:=\{x\in\mathbb{R}^{3};\,\lvert x\rvert=1\}` in
-:math:`\mathbb{R}^{3}` is\ 
+:math:`\mathbb{R}^{3}` is\
 
 .. math::
 
@@ -99,7 +99,7 @@ A parameterization  [1]_ of the two-dimensional unit sphere
    \sin\varphi_{2}\end{pmatrix}.
    \end{gathered}
 
-Its derivative (the Jacobian matrix) is\ 
+Its derivative (the Jacobian matrix) is\
 
 .. math::
 
@@ -107,7 +107,7 @@ Its derivative (the Jacobian matrix) is\
    \cos\varphi_{1}\cos\varphi_{2} & -\sin\varphi_{1}\sin\varphi_{2}\\
    0 & \cos\varphi_{2}\end{pmatrix},
 
-and thus\ 
+and thus\
 
 .. math::
 
@@ -117,7 +117,7 @@ and thus\
 so we see that
 :math:`\gamma(\Phi'(\varphi_{1},\varphi_{2}))=\cos\varphi_{2}`. Now we
 compute the 2-dimensional volume, i.e. the surface area of the unit
-sphere, by\ 
+sphere, by\
 
 .. math:: \operatorname{vol}_{2}(S_{2})=\int_{S_{2}}1\,\mathrm{d}S(x)=\int_{\varphi_{1}=-\pi}^{\pi}\int_{\varphi_{2}=-\pi/2}^{\pi/2}\cos\varphi_{2}\,\mathrm{d}\varphi_{2}\,\mathrm{d}\varphi_{1}=\left.2\pi\sin\varphi_{2}\right|_{-\pi/2}^{\pi/2}=4\pi.
 
@@ -125,14 +125,14 @@ Remark.
 '''''''
 
 For vectors :math:`a,b\in\mathbb{R}^{3}` in the three-dimensonal space
-:math:`\mathbb{R}^{3}` it holds that\ 
+:math:`\mathbb{R}^{3}` it holds that\
 
 .. math::
 
    \lvert a\times b\rvert^{2}=\langle a\times b,a\times b\rangle=\langle a,a\rangle\langle b,b\rangle-\langle a,b\rangle^{2}=\det\begin{pmatrix}\langle a,a\rangle & \langle a,b\rangle\\
    \langle b,a\rangle & \langle b,b\rangle\end{pmatrix},
 
-and thus if :math:`\Phi(t)=\Phi(t_{1},t_{2})`, then\ 
+and thus if :math:`\Phi(t)=\Phi(t_{1},t_{2})`, then\
 
 .. math:: \lvert\partial_{t_{1}}\Phi\times\partial_{t_{2}}\Phi\rvert^{2}=\det\bigl(\langle\partial_{t_{i}}\Phi,\partial_{t_{j}}\Phi\rangle_{i,j}\bigr)=\det(\Phi'^{\top}\Phi').
 

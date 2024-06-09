@@ -1,7 +1,7 @@
 -------------------------------------------------------------TITLE
-Test for node-to-point (NTP) coupling (flow and scalar transport) 
-between 1D airway and corresponding phase in the 
-3D PoroMultiphaseScatra-Framework with TET10 elements. Structure is 
+Test for node-to-point (NTP) coupling (flow and scalar transport)
+between 1D airway and corresponding phase in the
+3D PoroMultiphaseScatra-Framework with TET10 elements. Structure is
 fixed.
 ------------------------------------------------------PROBLEM SIZE
 DIM           3
@@ -100,12 +100,12 @@ MAT 202 MAT_PoroDensityLawExp BULKMODULUS 1e+15
 
 MAT 12 MAT_FluidPoroSinglePhase DOFTYPEID 121 VISCOSITYLAWID 124 DENSITYLAWID 122 DENSITY 1.0e-9 RELPERMEABILITYLAWID 125
 MAT 121 MAT_FluidPoroSinglePhaseDofPressure PHASELAWID 123
-MAT 122 MAT_PoroDensityLawExp BULKMODULUS 1.0e12 // incompressible 
+MAT 122 MAT_PoroDensityLawExp BULKMODULUS 1.0e12 // incompressible
 MAT 123 MAT_PhaseLawConstraint
 MAT 124 MAT_FluidPoroViscosityLawConstant VALUE 1.5e-8
 MAT 125 MAT_FluidPoroRelPermeabilityLawConstant VALUE 1.0
 
-MAT 13 MAT_FluidPoroSingleVolFrac DENSITY 1.03e-6 DIFFUSIVITY 1.0 AddScalarDependentFlux NO 
+MAT 13 MAT_FluidPoroSingleVolFrac DENSITY 1.03e-6 DIFFUSIVITY 1.0 AddScalarDependentFlux NO
 MAT 14 MAT_FluidPoroVolFracPressure PERMEABILITY 0.15e-3 VISCOSITYLAWID 141
 MAT 141 MAT_FluidPoroViscosityLawConstant VALUE 4.0e-6
 
@@ -260,10 +260,10 @@ NODE 27 COORD 1.0 0.8 1.0
 NODE 28 COORD 0.9 0.8 0.85
 NODE 29 COORD 0.8 0.8 0.7
 ------------------------------------------------STRUCTURE ELEMENTS
-1 SOLIDT10POROSCATRA TET10 1 2 3 6 8 9 10 11 12 13 MAT 2 KINEM nonlinear TYPE PoroMultiReac 
-2 SOLIDT10POROSCATRA TET10 3 4 1 7 14 15 10 16 17 18 MAT 2 KINEM nonlinear TYPE PoroMultiReac 
-3 SOLIDT10POROSCATRA TET10 1 6 7 5 11 19 18 20 21 22 MAT 2 KINEM nonlinear TYPE PoroMultiReac 
-4 SOLIDT10POROSCATRA TET10 3 7 6 23 16 19 13 24 25 26 MAT 2 KINEM nonlinear TYPE PoroMultiReac 
+1 SOLIDT10POROSCATRA TET10 1 2 3 6 8 9 10 11 12 13 MAT 2 KINEM nonlinear TYPE PoroMultiReac
+2 SOLIDT10POROSCATRA TET10 3 4 1 7 14 15 10 16 17 18 MAT 2 KINEM nonlinear TYPE PoroMultiReac
+3 SOLIDT10POROSCATRA TET10 1 6 7 5 11 19 18 20 21 22 MAT 2 KINEM nonlinear TYPE PoroMultiReac
+4 SOLIDT10POROSCATRA TET10 3 7 6 23 16 19 13 24 25 26 MAT 2 KINEM nonlinear TYPE PoroMultiReac
 ---------------------------------------------------ARTERY ELEMENTS
 5 ART LINE2 27 28 MAT 4 GP 3 TYPE PressureBased DIAM 0.5
 6 ART LINE2 28 29 MAT 4 GP 3 TYPE PressureBased DIAM 0.5

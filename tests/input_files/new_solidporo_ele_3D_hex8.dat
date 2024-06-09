@@ -52,7 +52,7 @@ MAT 1 MAT_FluidPoroMultiPhase LOCAL No PERMEABILITY 1.0e-3 NUMMAT 1 MATIDS 12 NU
 
 MAT 12 MAT_FluidPoroSinglePhase DOFTYPEID 121 VISCOSITYLAWID 124 DENSITYLAWID 122 DENSITY 1.0e-9 RELPERMEABILITYLAWID 125
 MAT 121 MAT_FluidPoroSinglePhaseDofPressure PHASELAWID 123
-MAT 122 MAT_PoroDensityLawExp BULKMODULUS 1.0e12 // incompressible 
+MAT 122 MAT_PoroDensityLawExp BULKMODULUS 1.0e12 // incompressible
 MAT 123 MAT_PhaseLawConstraint
 MAT 124 MAT_FluidPoroViscosityLawConstant VALUE 1.5e-8
 MAT 125 MAT_FluidPoroRelPermeabilityLawConstant VALUE 1.0

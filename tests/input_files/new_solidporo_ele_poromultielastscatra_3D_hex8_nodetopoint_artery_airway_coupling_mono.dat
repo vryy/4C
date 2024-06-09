@@ -1,6 +1,6 @@
 -------------------------------------------------------------TITLE
-Test for node-to-point (NTP) coupling (flow and scalar transport) 
-between 1D arteries, 1D airways and corresponding phases in the 
+Test for node-to-point (NTP) coupling (flow and scalar transport)
+between 1D arteries, 1D airways and corresponding phases in the
 3D PoroMultiphaseScatra-Framework with fixed structure.
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Multiphase_Poroelasticity_ScaTra
@@ -97,12 +97,12 @@ MAT 202 MAT_PoroDensityLawExp BULKMODULUS 1e+15
 
 MAT 12 MAT_FluidPoroSinglePhase DOFTYPEID 121 VISCOSITYLAWID 124 DENSITYLAWID 122 DENSITY 1.0e-9 RELPERMEABILITYLAWID 125
 MAT 121 MAT_FluidPoroSinglePhaseDofPressure PHASELAWID 123
-MAT 122 MAT_PoroDensityLawExp BULKMODULUS 1.0e12 // incompressible 
+MAT 122 MAT_PoroDensityLawExp BULKMODULUS 1.0e12 // incompressible
 MAT 123 MAT_PhaseLawConstraint
 MAT 124 MAT_FluidPoroViscosityLawConstant VALUE 1.5e-8
 MAT 125 MAT_FluidPoroRelPermeabilityLawConstant VALUE 1.0
 
-MAT 13 MAT_FluidPoroSingleVolFrac DENSITY 1.03e-6 DIFFUSIVITY 1.0 AddScalarDependentFlux NO 
+MAT 13 MAT_FluidPoroSingleVolFrac DENSITY 1.03e-6 DIFFUSIVITY 1.0 AddScalarDependentFlux NO
 MAT 14 MAT_FluidPoroVolFracPressure PERMEABILITY 0.15e-3 VISCOSITYLAWID 141
 MAT 141 MAT_FluidPoroViscosityLawConstant VALUE 4.0e-6
 
@@ -208,7 +208,7 @@ DPOINT 6
 E 4 - ARTERY NUMDOF 1 COUPLEDDOF_REDUCED 1 COUPLEDDOF_PORO 3 PENALTY 1.0e3
 // vertex_distal_artery_posX
 E 5 - ARTERY NUMDOF 1 COUPLEDDOF_REDUCED 1 COUPLEDDOF_PORO 3 PENALTY 1.0e3
-// vertex_distal_vein_negX 
+// vertex_distal_vein_negX
 E 6 - ARTERY NUMDOF 1 COUPLEDDOF_REDUCED 1 COUPLEDDOF_PORO 3 PENALTY 1.0e3
 // vertex_distal_vein_posX
 E 7 - ARTERY NUMDOF 1 COUPLEDDOF_REDUCED 1 COUPLEDDOF_PORO 3 PENALTY 1.0e3

@@ -30,12 +30,12 @@ as required.
 
 **Notes**
 
-- The parameter names and the (string) values are case sensitive. In many cases, different version 
+- The parameter names and the (string) values are case sensitive. In many cases, different version
   of a parameter value can be entered. All of the possibilities for string values are given in the
   following sections.
-- All parameters have a default value, which is given in the respective section. 
+- All parameters have a default value, which is given in the respective section.
   If you don't want to change it, you don't have to give it here (but it does not hurt as well).
-- The parameters in each section are single words, 
+- The parameters in each section are single words,
   and they are separated from the value by a whitespace.
 - However, there is one block, namely the `STRUCT NOX` section (including subsections),
   where the parameters are made up of more than one word.
@@ -64,14 +64,14 @@ lines.
 
 -  | Alternatives are separated by ``|``:
    | ``C = A | B`` means ``C`` :math:`=`
-     ``A`` or ``C`` :math:`=` ``B`` , but not ``C`` :math:`=` ``A B`` 
+     ``A`` or ``C`` :math:`=` ``B`` , but not ``C`` :math:`=` ``A B``
      or ``C =``  :math:`\emptyset`.
 
 -  | Brackets ``[`` and ``]`` denote optionality of the enclosed
      construct:
    | ``B = [A]`` results in ``B = A`` or ``B =`` :math:`\emptyset`.
 
--  | A variable that has to be replaced by something else is often by triangular brackets: 
+-  | A variable that has to be replaced by something else is often by triangular brackets:
    | ``B = <x>`` means that x is not used, but has to be replaced by something appropriate.
 
 -  | Braces ``{`` and ``}`` denote a repetition of a

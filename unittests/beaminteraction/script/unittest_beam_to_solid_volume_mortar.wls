@@ -13,23 +13,23 @@
 (*Matrix to Core::LinAlg::TMatrix*)
 
 
-matrixToFourC[var_,name_]:=Module[{allStringsWithZeros, stringList},  
+matrixToFourC[var_,name_]:=Module[{allStringsWithZeros, stringList},
   allStringsWithZeros = Table[
     If[var[[i,j]]==0, 0,
         ToString[StringForm["``(``,``)=``;",name,i-1,j-1,NumberForm[N[var[[i,j]]],16,ScientificNotationThreshold->{-20,20}]]]
     ],
     {i,Dimensions[var][[1]]},{j,Dimensions[var][[2]]}];
-  
+
   stringList=DeleteCases[Flatten[allStringsWithZeros],0];
   StringRiffle[stringList,"\n"]
 ]
-vectorToFourC[var_,name_]:=Module[{allStringsWithZeros, stringList},  
+vectorToFourC[var_,name_]:=Module[{allStringsWithZeros, stringList},
   allStringsWithZeros = Table[
     If[var[[i]]==0, 0,
         ToString[StringForm["``(``)=``;",name,i-1,NumberForm[N[var[[i]]],16,ScientificNotationThreshold->{-20,20}]]]
     ],
     {i,Length[var]}];
-  
+
   stringList=DeleteCases[Flatten[allStringsWithZeros],0];
   StringRiffle[stringList,"\n"]
 ]

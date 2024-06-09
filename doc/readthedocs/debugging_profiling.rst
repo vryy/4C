@@ -147,7 +147,7 @@ Configure and build with profiling flag
 
 **Note:** For general information about configuring and building of |FOURC| refer to :ref:`Configure and Build <4Cinstallation>` and the ``README.md``.
 
-You probably want to configure with `CMAKE_BUILD_TYPE` set to `RELWITHDEBINFO`. 
+You probably want to configure with `CMAKE_BUILD_TYPE` set to `RELWITHDEBINFO`.
 This results in a release version of the |FOURC| build with additional per-line annotations. That way, when examining the results one can see the exact lines of code where computation time is spent.
 
 .. note::

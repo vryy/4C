@@ -2,7 +2,7 @@
 Checking the Return to apex functionality on the DruckerPrager elasto-plastic material model
 Soil surface with unit depth and loadstep displacement to simulate strip footing
 Bottom stress reaches a theoretical threshold of soil pressure capacity
-Reference: 
+Reference:
 EA de Souza Neto, D Peric, DRJ Owen. Computational Methods of Plasticity: Theory and Applications,
 John Wiley & Sons, Ltd, 2008, Section 8.4.3
 -------------------------------------------------------------------PROBLEM TYP
@@ -68,7 +68,7 @@ DSURF  4
 // fix_z
 E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0 0 0  FUNCT 0 0 0  TAG monitor_reaction
 // fix_x
-E 2 - NUMDOF 3 ONOFF 1 0 0  VAL 0 0 0 FUNCT 0 0 0 
+E 2 - NUMDOF 3 ONOFF 1 0 0  VAL 0 0 0 FUNCT 0 0 0
 // fix_y
 E 3 - NUMDOF 3 ONOFF 0 1 0 VAL 0 0 0 FUNCT 0 0 0  TAG monitor_reaction
 // load
