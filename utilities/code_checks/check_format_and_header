@@ -102,7 +102,6 @@ fi
 
 ### Style Format check #########################################
 #   1) Check for non-ascii characters
-#   3) Execute cmake-format with options declared in "./cmake-format.yaml"
 #   5) Execute yamlfmt without overwrite and the options declared in format_yaml
 
 # set the field separator to new line
@@ -124,16 +123,6 @@ then
       uncompliant_files+="$(pwd)/${line} contains non-ascii character '$char'\n"
     done
   fi
-fi
-
-# 3) check if the file is a cmake file
-if [[ $line == *.cmake || $line == *CMakeLists.txt ]]
-then
-    # Check if cmake-format would format the file
-    if ! cmake-format -c $(pwd)/utilities/code_checks/.cmake-format.yaml --check $(pwd)/${line} 2> /dev/null
-    then
-    uncompliant_files+="$(pwd)/${line}\n"
-    fi
 fi
 
 # 6) check if the file is a yaml file

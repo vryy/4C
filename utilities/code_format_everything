@@ -62,13 +62,6 @@ fi
 for line in $FILES_TO_CHECK
 do
 
-# check if the file is a cmake file
-if [[ $line == *.cmake || $line == *CMakeLists.txt ]]
-then
-    # format file using cmake-format
-    cmake-format -c $(pwd)/utilities/code_checks/.cmake-format.yaml -i $(pwd)/${line}
-fi
-
 # check if the file is a yaml file
 if [[ $line == *.yaml || $line == *.yml ]]
 then

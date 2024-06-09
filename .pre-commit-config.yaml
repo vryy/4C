@@ -6,6 +6,13 @@ repos:
         # Only use on C and C++ files and not on other files that clang could format (e.g. json).
     types: [c++, c]
 
+- repo: https://github.com/cheshirekow/cmake-format-precommit
+  rev: v0.6.13
+  hooks:
+  - id: cmake-format
+    args: [--config, utilities/code_checks/.cmake-format.yaml, --in-place]
+    additional_dependencies: [pyyaml>=5.1]
+
 - repo: https://github.com/psf/black-pre-commit-mirror
   rev: 22.3.0
   hooks:
