@@ -69,13 +69,6 @@ then
     cmake-format -c $(pwd)/utilities/code_checks/.cmake-format.yaml -i $(pwd)/${line}
 fi
 
-# check if the file is a python file
-if [[ $line == *.py ]]
-then
-    # format file using black
-    black --quiet $(pwd)/${line}
-fi
-
 # check if the file is a yaml file
 if [[ $line == *.yaml || $line == *.yml ]]
 then

@@ -67,17 +67,6 @@ then
     fi
 fi
 
-# check if the file is a python file
-if [[ $line == *.py ]]
-then
-    # Check if black would format the file
-    if ! black --quiet --check $(pwd)/${line}
-    then
-    uncompliant_files+="$(pwd)/${line}\n"
-    fi
-fi
-
-
 # check if the file is a yaml file
 if [[ $line == *.yaml || $line == *.yml ]]
 then
