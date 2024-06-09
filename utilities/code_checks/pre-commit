@@ -57,16 +57,6 @@ then
   fi
 fi
 
-# check if the file is a c or cpp file
-if [[ $line == *.cpp || $line == *.cc || $line == *.cp || $line == *.cxx || $line == *.H || $line == *.h || $line == *.hpp || $line == *.hh || $line == *.hxx ]]
-then
-    # Check if clang would format the file
-    if [[  $(diff -u <(clang-format -style=file $(pwd)/${line}) <(cat $(pwd)/${line})) ]]
-    then
-    uncompliant_files+="$(pwd)/${line}\n"
-    fi
-fi
-
 # check if the file is a cmake file
 if [[ $line == *.cmake || $line == *CMakeLists.txt ]]
 then

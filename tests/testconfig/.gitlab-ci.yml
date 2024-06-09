@@ -93,7 +93,7 @@ before_script:
 - cd ${CI_PROJECT_DIR}/../build
 - ${CI_PROJECT_DIR}/utilities/python-venv/bin/python ${CI_PROJECT_DIR}/utilities/sort_pipeline_output.py
   ${CI_PROJECT_DIR}/test.log ${CI_PROJECT_DIR}/test.log
-    # Write selection of the output into the terminal and therefore to GITLAB
+  # Write selection of the output into the terminal and therefore to GITLAB
   # Output 200 lines for any failing test
 - grep -B 200 '*Failed\|*Timeout' ${CI_PROJECT_DIR}/test.log || true
 - sed -n '/tests passed,/,//p' ${CI_PROJECT_DIR}/test.log
@@ -145,7 +145,12 @@ checkcode:
   script:
   - echo code check
   - ./create-python-venv
+    # Old code checks that are not yet ported to pre-commit
   - bash utilities/code_checks/check_format_and_header
+    # Run pre-commit checks without caches on all files
+  - source ./utilities/python-venv/bin/activate
+  - pre-commit clean
+  - pre-commit run --all-files
   artifacts:
     name: $CI_JOB_NAME-$CI_JOB_ID
     paths:

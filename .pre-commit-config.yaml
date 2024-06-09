@@ -1,0 +1,13 @@
+repos:
+- repo: https://github.com/pre-commit/mirrors-clang-format
+  rev: v14.0.0
+  hooks:
+  - id: clang-format
+    types: [c++, c]
+- repo: local
+  hooks:
+  - id: custom-checks
+    name: Custom Checks
+    language: system
+    pass_filenames: false
+    entry: ./utilities/code_checks/pre-commit
