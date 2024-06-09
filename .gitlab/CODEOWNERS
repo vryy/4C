@@ -422,7 +422,7 @@ CMakePresets.json                              @baci/team_infrastructure
 Dangerfile                                     @baci/team_infrastructure
 Gemfile                                        @baci/team_infrastructure
 Gemfile.lock                                   @baci/team_infrastructure
-create-python-venv                             @baci/team_infrastructure
+set_up_dev_env.sh                              @baci/team_infrastructure
 requirements.txt                               @baci/team_infrastructure
 .contains_modules                              @baci/team_infrastructure
 

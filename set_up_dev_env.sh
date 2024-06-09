@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ ! -f "create-python-venv" ]; then
+if [ ! -f "set_up_dev_env.sh" ]; then
     echo "Please run this script from the root directory of the repository."
     exit 1
 fi

@@ -31,7 +31,7 @@ PYTHON_VENV_ACTIVATION_SCRIPT="utilities/python-venv/bin/activate"
 if [ ! -f $PYTHON_VENV_ACTIVATION_SCRIPT ]; then
     echo "You have not created the python virtual environment, which is necessary to run all checks. You can use the following command in your source directory:"
     echo ""
-    echo "./create-python-venv"
+    echo "./set_up_dev_env.sh"
     exit 1
 fi
 source $PYTHON_VENV_ACTIVATION_SCRIPT
