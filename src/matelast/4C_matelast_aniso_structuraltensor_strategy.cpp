@@ -290,7 +290,7 @@ void Mat::Elastic::StructuralTensorStrategyByDistributionFunction::setup_structu
 {
   Core::LinAlg::Matrix<6, 1> structural_tensor_stress;
   setup_structural_tensor(fiber_vector, structural_tensor_stress);
-  Core::LinAlg::Voigt::Stresses::VectorToMatrix(structural_tensor_stress, structural_tensor);
+  Core::LinAlg::Voigt::Stresses::vector_to_matrix(structural_tensor_stress, structural_tensor);
 }
 
 void Mat::Elastic::StructuralTensorStrategyDispersedTransverselyIsotropic::setup_structural_tensor(
@@ -315,7 +315,7 @@ void Mat::Elastic::StructuralTensorStrategyDispersedTransverselyIsotropic::setup
 {
   Core::LinAlg::Matrix<6, 1> structural_tensor_stress;
   setup_structural_tensor(fiber_vector, structural_tensor_stress);
-  Core::LinAlg::Voigt::Stresses::VectorToMatrix(structural_tensor_stress, structural_tensor);
+  Core::LinAlg::Voigt::Stresses::vector_to_matrix(structural_tensor_stress, structural_tensor);
 }
 
 double Mat::Elastic::StructuralTensorStrategyBase::get_residual_tol()

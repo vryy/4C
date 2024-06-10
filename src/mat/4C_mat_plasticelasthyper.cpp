@@ -628,7 +628,7 @@ double Mat::PlasticElastHyper::StrainEnergyTSI(
   elRCGv(4) = elRCG(2, 1) + elRCG(1, 2);
   elRCGv(5) = elRCG(0, 2) + elRCG(2, 0);
   Core::LinAlg::Matrix<3, 1> prinv;
-  Core::LinAlg::Voigt::Strains::InvariantsPrincipal(prinv, elRCGv);
+  Core::LinAlg::Voigt::Strains::invariants_principal(prinv, elRCGv);
   Core::LinAlg::Matrix<3, 1> modinv;
   invariants_modified(modinv, prinv);
 
@@ -1062,13 +1062,19 @@ void Mat::PlasticElastHyper::evaluate_ncp(const Core::LinAlg::Matrix<3, 3>* mStr
         for (int b = 0; b < 3; b++)
           for (int i = 0; i < 6; i++)
             if (i <= 2)
-              dFpiDdeltaDp(Core::LinAlg::Voigt::IndexMappings::NonSymToVoigt9(A, a), i) -=
+              dFpiDdeltaDp(
+                  Core::LinAlg::Voigt::IndexMappings::non_symmetric_tensor_to_voigt9_index(A, a),
+                  i) -=
                   last_plastic_defgrd_inverse_[gp](A, b) *
-                  Dexp(Core::LinAlg::Voigt::IndexMappings::SymToVoigt6(b, a), i);
+                  Dexp(Core::LinAlg::Voigt::IndexMappings::symmetric_tensor_to_voigt6_index(b, a),
+                      i);
             else
-              dFpiDdeltaDp(Core::LinAlg::Voigt::IndexMappings::NonSymToVoigt9(A, a), i) -=
+              dFpiDdeltaDp(
+                  Core::LinAlg::Voigt::IndexMappings::non_symmetric_tensor_to_voigt9_index(A, a),
+                  i) -=
                   2. * last_plastic_defgrd_inverse_[gp](A, b) *
-                  Dexp(Core::LinAlg::Voigt::IndexMappings::SymToVoigt6(b, a), i);
+                  Dexp(Core::LinAlg::Voigt::IndexMappings::symmetric_tensor_to_voigt6_index(b, a),
+                      i);
 
     // derivative of mandel stress
     // we spare the deviatoric projection of the mandel stress derivative to get the effective
@@ -1562,9 +1568,12 @@ void Mat::PlasticElastHyper::evaluate_nc_pand_spin(const Core::LinAlg::Matrix<3,
       for (int a = 0; a < 3; a++)
         for (int b = 0; b < 3; b++)
           for (int i = 0; i < 9; i++)
-            dFpiDdeltaLp(Core::LinAlg::Voigt::IndexMappings::NonSymToVoigt9(A, a), i) -=
+            dFpiDdeltaLp(
+                Core::LinAlg::Voigt::IndexMappings::non_symmetric_tensor_to_voigt9_index(A, a),
+                i) -=
                 last_plastic_defgrd_inverse_[gp](A, b) *
-                Dexp(Core::LinAlg::Voigt::IndexMappings::NonSymToVoigt9(b, a), i);
+                Dexp(Core::LinAlg::Voigt::IndexMappings::non_symmetric_tensor_to_voigt9_index(b, a),
+                    i);
 
     // derivative of mandel stress
     Core::LinAlg::Matrix<6, 9> dMdLp;
@@ -2053,7 +2062,7 @@ void Mat::PlasticElastHyper::evaluate_kin_quant_elast(const Core::LinAlg::Matrix
   elasticRCGv(5) = (CeM(0, 2) + CeM(2, 0));
 
   // principal invariants of elastic Cauchy-Green strain
-  Core::LinAlg::Voigt::Strains::InvariantsPrincipal(prinv_, elasticRCGv);
+  Core::LinAlg::Voigt::Strains::invariants_principal(prinv_, elasticRCGv);
 
   return;
 }
@@ -2116,7 +2125,7 @@ int Mat::PlasticElastHyper::evaluate_kin_quant_plast(const Core::LinAlg::Matrix<
   Ce2_(5) = (tmp(0, 2) + tmp(2, 0)) / 2.;
 
   // principal invariants of elastic Cauchy-Green strain
-  Core::LinAlg::Voigt::Strains::InvariantsPrincipal(prinv_, elasticRCGv);
+  Core::LinAlg::Voigt::Strains::invariants_principal(prinv_, elasticRCGv);
 
   // inverse plastic right Cauchy-Green
   Core::LinAlg::Matrix<3, 3> CpiM;
@@ -2157,9 +2166,9 @@ int Mat::PlasticElastHyper::evaluate_kin_quant_plast(const Core::LinAlg::Matrix<
   CeFpiTC_.Multiply(CeM_, FpiTC_);
 
   tmp.Multiply(RCG, invpldefgrd_);
-  Core::LinAlg::Voigt::Matrix3x3to9x1(tmp, CFpi_);
+  Core::LinAlg::Voigt::matrix_3x3_to_9x1(tmp, CFpi_);
   tmp33.Multiply(tmp, CeM_);
-  Core::LinAlg::Voigt::Matrix3x3to9x1(tmp33, CFpiCe_);
+  Core::LinAlg::Voigt::matrix_3x3_to_9x1(tmp33, CFpiCe_);
 
   double det = CeM_.Determinant();
   if (det > -1e-30 and det < 1e-30)
@@ -2173,7 +2182,7 @@ int Mat::PlasticElastHyper::evaluate_kin_quant_plast(const Core::LinAlg::Matrix<
   tmp.Invert(CeM_);
   tmp33.Multiply(invpldefgrd_, tmp);
   tmp.Multiply(RCG, tmp33);
-  Core::LinAlg::Voigt::Matrix3x3to9x1(tmp, CFpiCei_);
+  Core::LinAlg::Voigt::matrix_3x3_to_9x1(tmp, CFpiCei_);
 
   return 0;
 }

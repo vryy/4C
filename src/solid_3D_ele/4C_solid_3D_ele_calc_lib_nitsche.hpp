@@ -171,8 +171,8 @@ namespace Discret::ELEMENTS
           {
             using VoigtMapping = Core::LinAlg::Voigt::IndexMappings;
             d2_cauchyndir_dd_dxi(k * 3 + i, l) +=
-                d_cauchyndir_dF(VoigtMapping::NonSymToVoigt9(i, j), 0) *
-                d2_F_dxi_dd(VoigtMapping::NonSymToVoigt9(i, j),
+                d_cauchyndir_dF(VoigtMapping::non_symmetric_tensor_to_voigt9_index(i, j), 0) *
+                d2_F_dxi_dd(VoigtMapping::non_symmetric_tensor_to_voigt9_index(i, j),
                     Core::FE::dim<celltype> * (Core::FE::dim<celltype> * k + i) + l);
           }
         }

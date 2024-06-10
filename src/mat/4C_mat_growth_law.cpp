@@ -88,7 +88,7 @@ void Mat::GrowthLawDyn::Evaluate(double* thetainit, const double& thetaold,
 
   // transform Cdach into a vector
   Core::LinAlg::Matrix<6, 1> Cdachvec(true);
-  Core::LinAlg::Voigt::Strains::MatrixToVector(Cdach, Cdachvec);
+  Core::LinAlg::Voigt::Strains::matrix_to_vector(Cdach, Cdachvec);
 
   // elastic Green Lagrange strain
   Core::LinAlg::Matrix<NUM_STRESS_3D, 1> glstraindachvec(Cdachvec);
@@ -149,7 +149,7 @@ void Mat::GrowthLawDyn::Evaluate(double* thetainit, const double& thetaold,
 
       // transform Cdach into a vector
       Cdachvec.putScalar(0.0);
-      Core::LinAlg::Voigt::Strains::MatrixToVector(Cdach, Cdachvec);
+      Core::LinAlg::Voigt::Strains::matrix_to_vector(Cdach, Cdachvec);
 
       glstraindachvec = Cdachvec;
       glstraindachvec -= Id;
@@ -201,7 +201,7 @@ void Mat::GrowthLawDyn::Evaluate(double* thetainit, const double& thetaold,
   // calculate stress
   // 2PK stress S = F_g^-1 Sdach F_g^-T
   Core::LinAlg::Matrix<3, 3> Sdach(true);
-  Core::LinAlg::Voigt::Stresses::VectorToMatrix(Sdachvec, Sdach);
+  Core::LinAlg::Voigt::Stresses::vector_to_matrix(Sdachvec, Sdach);
 
   Core::LinAlg::Matrix<3, 3> tmp(true);
   tmp.MultiplyNT(Sdach, F_ginv);
@@ -209,7 +209,7 @@ void Mat::GrowthLawDyn::Evaluate(double* thetainit, const double& thetaold,
   S.MultiplyNN(F_ginv, tmp);
 
   Core::LinAlg::Matrix<6, 1> Svec(true);
-  Core::LinAlg::Voigt::Stresses::MatrixToVector(S, Svec);
+  Core::LinAlg::Voigt::Stresses::matrix_to_vector(S, Svec);
 
   Core::LinAlg::Matrix<NUM_STRESS_3D, 1> dgrowthfuncdCvec(true);
   evaluate_growth_function_deriv_c(
@@ -339,7 +339,7 @@ void Mat::GrowthLawAnisoStrain::evaluate_growth_trigger(double& growthtrig,
 {
   // transform Cdachvec into a matrix
   Core::LinAlg::Matrix<3, 3> Cdach(true);
-  Core::LinAlg::Voigt::Strains::VectorToMatrix(Cdachvec, Cdach);
+  Core::LinAlg::Voigt::Strains::vector_to_matrix(Cdachvec, Cdach);
 
   Core::LinAlg::Matrix<3, 1> CdachDir(true);
   CdachDir.MultiplyNN(1.0, Cdach, direction);
@@ -574,7 +574,7 @@ void Mat::GrowthLawAnisoStress::evaluate_growth_function_deriv_theta(double& dgr
 
   // transform Cdachvec into a matrix
   Core::LinAlg::Matrix<3, 3> Cdach(true);
-  Core::LinAlg::Voigt::Strains::VectorToMatrix(Cdachvec, Cdach);
+  Core::LinAlg::Voigt::Strains::vector_to_matrix(Cdachvec, Cdach);
 
   Core::LinAlg::Matrix<3, 3> dFgT_Cdach(true);
   dFgT_Cdach.MultiplyTN(dFgdtheta, Cdach);
@@ -590,7 +590,7 @@ void Mat::GrowthLawAnisoStress::evaluate_growth_function_deriv_theta(double& dgr
 
   // transform dCdachdtheta into a vector
   Core::LinAlg::Matrix<6, 1> dCdachdthetavec(true);
-  Core::LinAlg::Voigt::Strains::MatrixToVector(dCdachdtheta, dCdachdthetavec);
+  Core::LinAlg::Voigt::Strains::matrix_to_vector(dCdachdtheta, dCdachdthetavec);
 
   Core::LinAlg::Matrix<6, 1> dSdachdthetavec(true);
 

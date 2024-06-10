@@ -77,7 +77,7 @@ namespace
             gpFibers_[gp][GetFiberIds()[0]], gpFibers_[gp][GetFiberIds()[1]], gpTensors_[gp]);
 
         // Setup structural tensors in stress like Voigt notation
-        Core::LinAlg::Voigt::Stresses::MatrixToVector(gpTensors_[gp], gpTensors_stress_[gp]);
+        Core::LinAlg::Voigt::Stresses::matrix_to_vector(gpTensors_[gp], gpTensors_stress_[gp]);
 
         // setup scalar product
         gpScalarProducts_[gp] =

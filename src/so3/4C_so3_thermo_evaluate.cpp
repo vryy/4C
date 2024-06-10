@@ -1997,7 +1997,7 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::nln_kd_t_tsi_fbar(
       Core::LinAlg::Matrix<nsd_, nsd_> Cinv_bar(false);
       Cinv_bar.Invert(cauchygreen_bar);
       Core::LinAlg::Matrix<numstr_, 1> Cinv_barvct(false);
-      Core::LinAlg::Voigt::Strains::MatrixToVector(Cinv_bar, Cinv_barvct);
+      Core::LinAlg::Voigt::Strains::matrix_to_vector(Cinv_bar, Cinv_barvct);
 
       // calculate nonlinear B-operator
       Core::LinAlg::Matrix<numstr_, numdofperelement_> bop(false);

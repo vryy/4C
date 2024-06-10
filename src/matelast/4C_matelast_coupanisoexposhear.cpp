@@ -127,7 +127,7 @@ void Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension::on_global_element_data
 
   structural_tensors_[0].Update(0.5, fiber1fiber2T);
   structural_tensors_[0].UpdateT(0.5, fiber1fiber2T, 1.0);
-  Core::LinAlg::Voigt::Stresses::MatrixToVector(
+  Core::LinAlg::Voigt::Stresses::matrix_to_vector(
       structural_tensors_[0], structural_tensors_stress_[0]);
 
   is_initialized_ = true;
@@ -172,7 +172,7 @@ void Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension::on_global_gp_data_init
 
     structural_tensors_[gp].Update(0.5, fiber1fiber2T);
     structural_tensors_[gp].UpdateT(0.5, fiber1fiber2T, 1.0);
-    Core::LinAlg::Voigt::Stresses::MatrixToVector(
+    Core::LinAlg::Voigt::Stresses::matrix_to_vector(
         structural_tensors_[gp], structural_tensors_stress_[gp]);
   }
 

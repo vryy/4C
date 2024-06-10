@@ -20,7 +20,7 @@ void STR::UTILS::pk2_to_cauchy(const Core::LinAlg::Matrix<6, 1>& pk2,
     const Core::LinAlg::Matrix<3, 3>& defgrd, Core::LinAlg::Matrix<6, 1>& cauchy)
 {
   Core::LinAlg::Matrix<3, 3> S_matrix;
-  Core::LinAlg::Voigt::Stresses::VectorToMatrix(pk2, S_matrix);
+  Core::LinAlg::Voigt::Stresses::vector_to_matrix(pk2, S_matrix);
 
   Core::LinAlg::Matrix<3, 3> FS;
   FS.MultiplyNN(defgrd, S_matrix);
@@ -28,7 +28,7 @@ void STR::UTILS::pk2_to_cauchy(const Core::LinAlg::Matrix<6, 1>& pk2,
   Core::LinAlg::Matrix<3, 3> cauchy_matrix;
   cauchy_matrix.MultiplyNT(1.0 / defgrd.Determinant(), FS, defgrd, 0.0);
 
-  Core::LinAlg::Voigt::Stresses::MatrixToVector(cauchy_matrix, cauchy);
+  Core::LinAlg::Voigt::Stresses::matrix_to_vector(cauchy_matrix, cauchy);
 }
 
 Core::LinAlg::Matrix<6, 1> STR::UTILS::green_lagrange_to_euler_almansi(
@@ -38,7 +38,7 @@ Core::LinAlg::Matrix<6, 1> STR::UTILS::green_lagrange_to_euler_almansi(
   invdefgrd.Invert();
 
   Core::LinAlg::Matrix<3, 3> E_matrix;
-  Core::LinAlg::Voigt::Strains::VectorToMatrix(gl, E_matrix);
+  Core::LinAlg::Voigt::Strains::vector_to_matrix(gl, E_matrix);
 
   Core::LinAlg::Matrix<3, 3> iFTE;
   iFTE.MultiplyTN(invdefgrd, E_matrix);
@@ -47,7 +47,7 @@ Core::LinAlg::Matrix<6, 1> STR::UTILS::green_lagrange_to_euler_almansi(
   ea_matrix.MultiplyNN(iFTE, invdefgrd);
 
   Core::LinAlg::Matrix<6, 1> ea;
-  Core::LinAlg::Voigt::Strains::MatrixToVector(ea_matrix, ea);
+  Core::LinAlg::Voigt::Strains::matrix_to_vector(ea_matrix, ea);
   return ea;
 }
 
@@ -55,7 +55,7 @@ Core::LinAlg::Matrix<6, 1> STR::UTILS::green_lagrange_to_log_strain(
     const Core::LinAlg::Matrix<6, 1>& gl)
 {
   Core::LinAlg::Matrix<3, 3> E_matrix;
-  Core::LinAlg::Voigt::Strains::VectorToMatrix(gl, E_matrix);
+  Core::LinAlg::Voigt::Strains::vector_to_matrix(gl, E_matrix);
 
   Core::LinAlg::Matrix<3, 3> pr_strain(true);  // squared principal strains
   Core::LinAlg::Matrix<3, 3> pr_dir(true);     // principal directions
@@ -73,7 +73,7 @@ Core::LinAlg::Matrix<6, 1> STR::UTILS::green_lagrange_to_log_strain(
 
   // convert to strain-like voigt notation
   Core::LinAlg::Matrix<6, 1> log_strain_voigt(true);
-  Core::LinAlg::Voigt::Strains::MatrixToVector(log_strain_matrix, log_strain_voigt);
+  Core::LinAlg::Voigt::Strains::matrix_to_vector(log_strain_matrix, log_strain_voigt);
   return log_strain_voigt;
 }
 

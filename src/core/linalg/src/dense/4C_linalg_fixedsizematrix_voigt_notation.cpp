@@ -13,7 +13,7 @@ using NotationType = Core::LinAlg::Voigt::NotationType;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::LinAlg::Voigt::Matrix3x3to9x1(
+void Core::LinAlg::Voigt::matrix_3x3_to_9x1(
     Core::LinAlg::Matrix<3, 3> const& in, Core::LinAlg::Matrix<9, 1>& out)
 {
   for (int i = 0; i < 3; ++i) out(i) = in(i, i);
@@ -25,7 +25,7 @@ void Core::LinAlg::Voigt::Matrix3x3to9x1(
   out(8) = in(2, 0);
 }
 
-void Core::LinAlg::Voigt::Matrix9x1to3x3(
+void Core::LinAlg::Voigt::matrix_9x1_to_3x3(
     Core::LinAlg::Matrix<9, 1> const& in, Core::LinAlg::Matrix<3, 3>& out)
 {
   for (int i = 0; i < 3; ++i) out(i, i) = in(i);
@@ -38,15 +38,15 @@ void Core::LinAlg::Voigt::Matrix9x1to3x3(
 }
 
 template <NotationType rows_notation, NotationType cols_notation>
-void Core::LinAlg::Voigt::FourthOrderIdentityMatrix(Core::LinAlg::Matrix<6, 6>& id)
+void Core::LinAlg::Voigt::fourth_order_identity_matrix(Core::LinAlg::Matrix<6, 6>& id)
 {
   id.Clear();
 
   for (unsigned int i = 0; i < 3; ++i) id(i, i) = 1.0;
 
   for (unsigned int i = 3; i < 6; ++i)
-    id(i, i) =
-        0.5 * VoigtUtils<rows_notation>::ScaleFactor(i) * VoigtUtils<cols_notation>::ScaleFactor(i);
+    id(i, i) = 0.5 * VoigtUtils<rows_notation>::scale_factor(i) *
+               VoigtUtils<cols_notation>::scale_factor(i);
 }
 
 
@@ -64,7 +64,8 @@ void Core::LinAlg::Voigt::VoigtUtils<type>::symmetric_outer_product(
 
   for (unsigned i = 0; i < 3; ++i)
     for (unsigned j = i; j < 3; ++j)
-      ab_ba(IndexMappings::SymToVoigt6(i, j)) += outer_product(i, j) + outer_product(j, i);
+      ab_ba(IndexMappings::symmetric_tensor_to_voigt6_index(i, j)) +=
+          outer_product(i, j) + outer_product(j, i);
 
   // scale off-diagonal values
   scale_off_diagonal_vals(ab_ba);
@@ -81,8 +82,8 @@ void Core::LinAlg::Voigt::VoigtUtils<type>::multiply_tensor_vector(
   {
     for (unsigned j = 0; j < 3; ++j)
     {
-      const double fac = UnscaleFactor(IndexMappings::SymToVoigt6(i, j));
-      res(i, 0) += strain(IndexMappings::SymToVoigt6(i, j)) * fac * vec(j, 0);
+      const double fac = unscale_factor(IndexMappings::symmetric_tensor_to_voigt6_index(i, j));
+      res(i, 0) += strain(IndexMappings::symmetric_tensor_to_voigt6_index(i, j)) * fac * vec(j, 0);
     }
   }
 }
@@ -112,10 +113,10 @@ void Core::LinAlg::Voigt::VoigtUtils<type>::power_of_symmetric_tensor(const unsi
         {
           for (unsigned k = 0; k < 3; ++k)
           {
-            prod(IndexMappings::SymToVoigt6(i, j), 0) +=
-                strain_pow(IndexMappings::SymToVoigt6(i, k), 0) *
-                unscale_fac_[IndexMappings::SymToVoigt6(k, j)] *
-                strain(IndexMappings::SymToVoigt6(k, j), 0);
+            prod(IndexMappings::symmetric_tensor_to_voigt6_index(i, j), 0) +=
+                strain_pow(IndexMappings::symmetric_tensor_to_voigt6_index(i, k), 0) *
+                unscale_fac_[IndexMappings::symmetric_tensor_to_voigt6_index(k, j)] *
+                strain(IndexMappings::symmetric_tensor_to_voigt6_index(k, j), 0);
           }
         }
       }
@@ -131,63 +132,63 @@ void Core::LinAlg::Voigt::VoigtUtils<type>::power_of_symmetric_tensor(const unsi
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <NotationType type>
-void Core::LinAlg::Voigt::VoigtUtils<type>::InverseTensor(
+void Core::LinAlg::Voigt::VoigtUtils<type>::inverse_tensor(
     const Core::LinAlg::Matrix<6, 1>& tens, Core::LinAlg::Matrix<6, 1>& tens_inv)
 {
-  double det = Determinant(tens);
-  tens_inv(0) = (tens(1) * tens(2) - UnscaleFactor(4) * UnscaleFactor(4) * tens(4) * tens(4)) /
-                det * ScaleFactor(0);
-  tens_inv(1) = (tens(0) * tens(2) - UnscaleFactor(5) * UnscaleFactor(5) * tens(5) * tens(5)) /
-                det * ScaleFactor(1);
-  tens_inv(2) = (tens(0) * tens(1) - UnscaleFactor(3) * UnscaleFactor(3) * tens(3) * tens(3)) /
-                det * ScaleFactor(2);
-  tens_inv(3) = (UnscaleFactor(5) * UnscaleFactor(4) * tens(5) * tens(4) -
-                    UnscaleFactor(3) * UnscaleFactor(2) * tens(3) * tens(2)) /
-                det * ScaleFactor(3);
-  tens_inv(4) = (UnscaleFactor(3) * UnscaleFactor(5) * tens(3) * tens(5) -
-                    UnscaleFactor(0) * UnscaleFactor(4) * tens(0) * tens(4)) /
-                det * ScaleFactor(4);
-  tens_inv(5) = (UnscaleFactor(3) * UnscaleFactor(4) * tens(3) * tens(4) -
-                    UnscaleFactor(5) * UnscaleFactor(1) * tens(5) * tens(1)) /
-                det * ScaleFactor(5);
+  double det = determinant(tens);
+  tens_inv(0) = (tens(1) * tens(2) - unscale_factor(4) * unscale_factor(4) * tens(4) * tens(4)) /
+                det * scale_factor(0);
+  tens_inv(1) = (tens(0) * tens(2) - unscale_factor(5) * unscale_factor(5) * tens(5) * tens(5)) /
+                det * scale_factor(1);
+  tens_inv(2) = (tens(0) * tens(1) - unscale_factor(3) * unscale_factor(3) * tens(3) * tens(3)) /
+                det * scale_factor(2);
+  tens_inv(3) = (unscale_factor(5) * unscale_factor(4) * tens(5) * tens(4) -
+                    unscale_factor(3) * unscale_factor(2) * tens(3) * tens(2)) /
+                det * scale_factor(3);
+  tens_inv(4) = (unscale_factor(3) * unscale_factor(5) * tens(3) * tens(5) -
+                    unscale_factor(0) * unscale_factor(4) * tens(0) * tens(4)) /
+                det * scale_factor(4);
+  tens_inv(5) = (unscale_factor(3) * unscale_factor(4) * tens(3) * tens(4) -
+                    unscale_factor(5) * unscale_factor(1) * tens(5) * tens(1)) /
+                det * scale_factor(5);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <NotationType type>
-void Core::LinAlg::Voigt::VoigtUtils<type>::ToStressLike(
+void Core::LinAlg::Voigt::VoigtUtils<type>::to_stress_like(
     const Core::LinAlg::Matrix<6, 1>& vtensor_in, Core::LinAlg::Matrix<6, 1>& vtensor_out)
 {
-  for (unsigned i = 0; i < 6; ++i) vtensor_out(i) = UnscaleFactor(i) * vtensor_in(i);
+  for (unsigned i = 0; i < 6; ++i) vtensor_out(i) = unscale_factor(i) * vtensor_in(i);
 }
 
 template <NotationType type>
-void Core::LinAlg::Voigt::VoigtUtils<type>::ToStrainLike(
+void Core::LinAlg::Voigt::VoigtUtils<type>::to_strain_like(
     const Core::LinAlg::Matrix<6, 1>& vtensor_in, Core::LinAlg::Matrix<6, 1>& vtensor_out)
 {
   for (unsigned i = 0; i < 6; ++i)
-    vtensor_out(i) = UnscaleFactor(i) * vtensor_in(i) * Strains::ScaleFactor(i);
+    vtensor_out(i) = unscale_factor(i) * vtensor_in(i) * Strains::scale_factor(i);
 }
 
 template <NotationType type>
-void Core::LinAlg::Voigt::VoigtUtils<type>::VectorToMatrix(
+void Core::LinAlg::Voigt::VoigtUtils<type>::vector_to_matrix(
     const Core::LinAlg::Matrix<6, 1>& vtensor_in, Core::LinAlg::Matrix<3, 3>& tensor_out)
 {
   for (int i = 0; i < 3; ++i) tensor_out(i, i) = vtensor_in(i);
-  tensor_out(0, 1) = tensor_out(1, 0) = UnscaleFactor(3) * vtensor_in(3);
-  tensor_out(1, 2) = tensor_out(2, 1) = UnscaleFactor(4) * vtensor_in(4);
-  tensor_out(0, 2) = tensor_out(2, 0) = UnscaleFactor(5) * vtensor_in(5);
+  tensor_out(0, 1) = tensor_out(1, 0) = unscale_factor(3) * vtensor_in(3);
+  tensor_out(1, 2) = tensor_out(2, 1) = unscale_factor(4) * vtensor_in(4);
+  tensor_out(0, 2) = tensor_out(2, 0) = unscale_factor(5) * vtensor_in(5);
 }
 
 template <NotationType type>
 template <typename T>
-void Core::LinAlg::Voigt::VoigtUtils<type>::MatrixToVector(
+void Core::LinAlg::Voigt::VoigtUtils<type>::matrix_to_vector(
     const Core::LinAlg::Matrix<3, 3, T>& tensor_in, Core::LinAlg::Matrix<6, 1, T>& vtensor_out)
 {
   for (int i = 0; i < 3; ++i) vtensor_out(i) = tensor_in(i, i);
-  vtensor_out(3) = 0.5 * ScaleFactor(3) * (tensor_in(0, 1) + tensor_in(1, 0));
-  vtensor_out(4) = 0.5 * ScaleFactor(4) * (tensor_in(1, 2) + tensor_in(2, 1));
-  vtensor_out(5) = 0.5 * ScaleFactor(5) * (tensor_in(0, 2) + tensor_in(2, 0));
+  vtensor_out(3) = 0.5 * scale_factor(3) * (tensor_in(0, 1) + tensor_in(1, 0));
+  vtensor_out(4) = 0.5 * scale_factor(4) * (tensor_in(1, 2) + tensor_in(2, 1));
+  vtensor_out(5) = 0.5 * scale_factor(5) * (tensor_in(0, 2) + tensor_in(2, 0));
 }
 
 /*----------------------------------------------------------------------------*
@@ -196,7 +197,7 @@ template <NotationType type>
 void Core::LinAlg::Voigt::VoigtUtils<type>::scale_off_diagonal_vals(
     Core::LinAlg::Matrix<6, 1>& strain)
 {
-  for (unsigned i = 3; i < 6; ++i) strain(i, 0) *= ScaleFactor(i);
+  for (unsigned i = 3; i < 6; ++i) strain(i, 0) *= scale_factor(i);
 }
 
 /*----------------------------------------------------------------------------*
@@ -205,31 +206,31 @@ template <NotationType type>
 void Core::LinAlg::Voigt::VoigtUtils<type>::unscale_off_diagonal_vals(
     Core::LinAlg::Matrix<6, 1>& strain)
 {
-  for (unsigned i = 3; i < 6; ++i) strain(i, 0) *= UnscaleFactor(i);
+  for (unsigned i = 3; i < 6; ++i) strain(i, 0) *= unscale_factor(i);
 }
 
 // explicit template declarations
 template class Core::LinAlg::Voigt::VoigtUtils<NotationType::strain>;
 template class Core::LinAlg::Voigt::VoigtUtils<NotationType::stress>;
 
-template void
-Core::LinAlg::Voigt::VoigtUtils<Core::LinAlg::Voigt::NotationType::strain>::MatrixToVector<double>(
-    Core::LinAlg::Matrix<3, 3, double> const& in, Core::LinAlg::Matrix<6, 1, double>& out);
-template void
-Core::LinAlg::Voigt::VoigtUtils<Core::LinAlg::Voigt::NotationType::stress>::MatrixToVector<double>(
-    Core::LinAlg::Matrix<3, 3, double> const& in, Core::LinAlg::Matrix<6, 1, double>& out);
+template void Core::LinAlg::Voigt::VoigtUtils<Core::LinAlg::Voigt::NotationType::strain>::
+    matrix_to_vector<double>(
+        Core::LinAlg::Matrix<3, 3, double> const& in, Core::LinAlg::Matrix<6, 1, double>& out);
+template void Core::LinAlg::Voigt::VoigtUtils<Core::LinAlg::Voigt::NotationType::stress>::
+    matrix_to_vector<double>(
+        Core::LinAlg::Matrix<3, 3, double> const& in, Core::LinAlg::Matrix<6, 1, double>& out);
 
 using FAD = Sacado::Fad::DFad<double>;
 template void
-Core::LinAlg::Voigt::VoigtUtils<Core::LinAlg::Voigt::NotationType::strain>::MatrixToVector<FAD>(
+Core::LinAlg::Voigt::VoigtUtils<Core::LinAlg::Voigt::NotationType::strain>::matrix_to_vector<FAD>(
     Core::LinAlg::Matrix<3, 3, FAD> const& in, Core::LinAlg::Matrix<6, 1, FAD>& out);
 template void
-Core::LinAlg::Voigt::VoigtUtils<Core::LinAlg::Voigt::NotationType::stress>::MatrixToVector<FAD>(
+Core::LinAlg::Voigt::VoigtUtils<Core::LinAlg::Voigt::NotationType::stress>::matrix_to_vector<FAD>(
     Core::LinAlg::Matrix<3, 3, FAD> const& in, Core::LinAlg::Matrix<6, 1, FAD>& out);
 
-template void Core::LinAlg::Voigt::FourthOrderIdentityMatrix<NotationType::stress,
+template void Core::LinAlg::Voigt::fourth_order_identity_matrix<NotationType::stress,
     NotationType::stress>(Core::LinAlg::Matrix<6, 6>& id);
-template void Core::LinAlg::Voigt::FourthOrderIdentityMatrix<NotationType::stress,
+template void Core::LinAlg::Voigt::fourth_order_identity_matrix<NotationType::stress,
     NotationType::strain>(Core::LinAlg::Matrix<6, 6>& id);
 
 FOUR_C_NAMESPACE_CLOSE

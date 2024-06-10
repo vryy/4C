@@ -1427,8 +1427,8 @@ void Discret::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  /
                   double pseudoidenity_CBk = 0.0;
                   for (int D = 0; D < NUMDIM_; ++D)
                   {
-                    const int CD = VoigtMapping::SymToVoigt6(C, D);
-                    const int DB = VoigtMapping::SymToVoigt6(D, B);
+                    const int CD = VoigtMapping::symmetric_tensor_to_voigt6_index(C, D);
+                    const int DB = VoigtMapping::symmetric_tensor_to_voigt6_index(D, B);
                     const double CDfact = (C == D) ? 1.0 : 0.5;
                     const double DBfact = (D == B) ? 1.0 : 0.5;
                     pseudoidenity_CBk += CDfact * invrgtstrDbydisp(CD, k) * rgtstr(D, B) +
@@ -1533,8 +1533,8 @@ void Discret::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  /
                     }
                     for (int EF = 0; EF < Mat::NUM_STRESS_3D; ++EF)
                     {
-                      const int E = VoigtMapping::Voigt6ToRow(EF);
-                      const int F = VoigtMapping::Voigt6ToCol(EF);
+                      const int E = VoigtMapping::voigt6_to_matrix_row_index(EF);
+                      const int F = VoigtMapping::voigt6_to_matrix_column_index(EF);
                       // C^{ass}_{,UU} . U^{ass}_{,d} . U^{ass}_{,d}
                       // and
                       // C^{d}_{,UU} . U^{d}_{,d} . U^{d}_{,d}
@@ -1739,12 +1739,12 @@ void Discret::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  /
                     {
                       for (int D = 0; D < NUMDIM_; ++D)
                       {
-                        const int DB = VoigtMapping::SymToVoigt6(D, B);
+                        const int DB = VoigtMapping::symmetric_tensor_to_voigt6_index(D, B);
                         const double DBfact = (D == B) ? 1.0 : 0.5;
                         for (int C = 0; C < NUMDIM_; ++C)
                         {
                           const int BC = VOIGT3X3NONSYM_INCONSISTENT_[NUMDIM_ * B + C];
-                          const int CD = VoigtMapping::SymToVoigt6(C, D);
+                          const int CD = VoigtMapping::symmetric_tensor_to_voigt6_index(C, D);
                           const double CDfact = (C == D) ? 1.0 : 0.5;
                           defgradbybydisp_dk += invdefgradtimesboplin(BC, d) * CDfact *
                                                     invrgtstrDbydisp(CD, k) * rgtstr(D, B)  // (1)
@@ -2006,7 +2006,7 @@ void Discret::ELEMENTS::SoSh8p8::stress(
         invcg.MultiplyTN(defgrd, defgrd);
         invcg.Invert();
         Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> invcgv;
-        Core::LinAlg::Voigt::Stresses::MatrixToVector(invcg, invcgv);
+        Core::LinAlg::Voigt::Stresses::matrix_to_vector(invcg, invcgv);
         // store stress
         for (int i = 0; i < Mat::NUM_STRESS_3D; ++i)
         {

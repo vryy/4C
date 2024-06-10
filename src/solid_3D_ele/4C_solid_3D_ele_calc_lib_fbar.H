@@ -130,7 +130,7 @@ namespace Discret::ELEMENTS
 
     Core::LinAlg::Matrix<Core::FE::dim<celltype>*(Core::FE::dim<celltype> + 1) / 2, 1>
         rcg_bar_voigt;
-    Core::LinAlg::Voigt::Strains::MatrixToVector(cauchyGreen, rcg_bar_voigt);
+    Core::LinAlg::Voigt::Strains::matrix_to_vector(cauchyGreen, rcg_bar_voigt);
 
     Core::LinAlg::Matrix<Core::FE::dim<celltype>*(Core::FE::dim<celltype> + 1) / 2, 1> ccg;
     ccg.MultiplyNN(stress_bar.cmat_, rcg_bar_voigt);

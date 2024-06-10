@@ -184,7 +184,7 @@ void Mat::Elastic::CoupTransverselyIsotropic::add_stress_aniso_principal(
 
   // switch to stress notation
   Core::LinAlg::Matrix<6, 1> rcg_s(false);
-  Core::LinAlg::Voigt::Strains::ToStressLike(rcg, rcg_s);
+  Core::LinAlg::Voigt::Strains::to_stress_like(rcg, rcg_s);
 
   Core::LinAlg::Matrix<6, 1> rcg_inv_s(false);
   update_second_piola_kirchhoff_stress(stress, rcg_s, rcg_inv_s);
@@ -222,15 +222,16 @@ void Mat::Elastic::CoupTransverselyIsotropic::update_elasticity_tensor(
     {
       for (unsigned b = 0; b < 6; ++b)
       {
-        const unsigned i = vmap::Voigt6x6To4Tensor(a, b, 0);
-        const unsigned j = vmap::Voigt6x6To4Tensor(a, b, 1);
-        const unsigned k = vmap::Voigt6x6To4Tensor(a, b, 2);
-        const unsigned l = vmap::Voigt6x6To4Tensor(a, b, 3);
+        const unsigned i = vmap::voigt_6x6_to_four_tensor_index(a, b, 0);
+        const unsigned j = vmap::voigt_6x6_to_four_tensor_index(a, b, 1);
+        const unsigned k = vmap::voigt_6x6_to_four_tensor_index(a, b, 2);
+        const unsigned l = vmap::voigt_6x6_to_four_tensor_index(a, b, 3);
 
-        cmat(a, b) += delta * (a_(i) * a_(l) * identity[vmap::SymToVoigt6(j, k)] +
-                                  a_(i) * a_(k) * identity[vmap::SymToVoigt6(j, l)] +
-                                  a_(k) * a_(j) * identity[vmap::SymToVoigt6(i, l)] +
-                                  a_(l) * a_(j) * identity[vmap::SymToVoigt6(i, k)]);
+        cmat(a, b) +=
+            delta * (a_(i) * a_(l) * identity[vmap::symmetric_tensor_to_voigt6_index(j, k)] +
+                        a_(i) * a_(k) * identity[vmap::symmetric_tensor_to_voigt6_index(j, l)] +
+                        a_(k) * a_(j) * identity[vmap::symmetric_tensor_to_voigt6_index(i, l)] +
+                        a_(l) * a_(j) * identity[vmap::symmetric_tensor_to_voigt6_index(i, k)]);
       }
     }
   }
@@ -242,14 +243,15 @@ void Mat::Elastic::CoupTransverselyIsotropic::update_elasticity_tensor(
     {
       for (unsigned b = 0; b < 6; ++b)
       {
-        const unsigned i = vmap::Voigt6x6To4Tensor(a, b, 0);
-        const unsigned j = vmap::Voigt6x6To4Tensor(a, b, 1);
-        const unsigned k = vmap::Voigt6x6To4Tensor(a, b, 2);
-        const unsigned l = vmap::Voigt6x6To4Tensor(a, b, 3);
+        const unsigned i = vmap::voigt_6x6_to_four_tensor_index(a, b, 0);
+        const unsigned j = vmap::voigt_6x6_to_four_tensor_index(a, b, 1);
+        const unsigned k = vmap::voigt_6x6_to_four_tensor_index(a, b, 2);
+        const unsigned l = vmap::voigt_6x6_to_four_tensor_index(a, b, 3);
 
-        cmat(a, b) +=
-            delta * (rcg_inv_s(vmap::SymToVoigt6(i, k)) * rcg_inv_s(vmap::SymToVoigt6(j, l)) +
-                        rcg_inv_s(vmap::SymToVoigt6(i, l)) * rcg_inv_s(vmap::SymToVoigt6(j, k)));
+        cmat(a, b) += delta * (rcg_inv_s(vmap::symmetric_tensor_to_voigt6_index(i, k)) *
+                                      rcg_inv_s(vmap::symmetric_tensor_to_voigt6_index(j, l)) +
+                                  rcg_inv_s(vmap::symmetric_tensor_to_voigt6_index(i, l)) *
+                                      rcg_inv_s(vmap::symmetric_tensor_to_voigt6_index(j, k)));
       }
     }
   }
@@ -296,7 +298,7 @@ void Mat::Elastic::CoupTransverselyIsotropic::update_second_piola_kirchhoff_stre
   const double gamma = params_->gamma_;
 
   // compute inverse right Cauchy Green tensor
-  Core::LinAlg::Voigt::Stresses::InverseTensor(rcg_s, rcg_inv_s);
+  Core::LinAlg::Voigt::Stresses::inverse_tensor(rcg_s, rcg_inv_s);
 
   // (0) contribution
   {

@@ -58,7 +58,7 @@ namespace
         tmp.MultiplyNT(fibersa[i], fibersb[i]);
         tensors_[i].Update(0.5, tmp);
         tensors_[i].UpdateT(0.5, tmp, 1.0);
-        Core::LinAlg::Voigt::Stresses::MatrixToVector(tensors_[i], tensors_stress_[i]);
+        Core::LinAlg::Voigt::Stresses::matrix_to_vector(tensors_[i], tensors_stress_[i]);
       }
     }
 
@@ -141,10 +141,10 @@ namespace
       E1_.Update(0.5, C1_, -0.5, Id);
       E2_.Update(0.5, C2_, -0.5, Id);
 
-      Core::LinAlg::Voigt::Strains::MatrixToVector(C1_, C1_strain_);
-      Core::LinAlg::Voigt::Strains::MatrixToVector(C2_, C2_strain_);
-      Core::LinAlg::Voigt::Strains::MatrixToVector(E1_, E1_strain_);
-      Core::LinAlg::Voigt::Strains::MatrixToVector(E2_, E2_strain_);
+      Core::LinAlg::Voigt::Strains::matrix_to_vector(C1_, C1_strain_);
+      Core::LinAlg::Voigt::Strains::matrix_to_vector(C2_, C2_strain_);
+      Core::LinAlg::Voigt::Strains::matrix_to_vector(E1_, E1_strain_);
+      Core::LinAlg::Voigt::Strains::matrix_to_vector(E2_, E2_strain_);
     }
 
 

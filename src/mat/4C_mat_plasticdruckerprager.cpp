@@ -166,7 +166,7 @@ void Mat::PlasticDruckerPrager::setup_cmat_elasto_plastic_cone(
   cmat.Clear();
 
   Core::LinAlg::Matrix<NUM_STRESS_3D, 1> id2(true);
-  Core::LinAlg::Voigt::IdentityMatrix(id2);
+  Core::LinAlg::Voigt::identity_matrix(id2);
   Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> id4sharp(true);
   for (int i = 0; i < 3; i++) id4sharp(i, i) = 1.0;
   for (int i = 3; i < 6; i++) id4sharp(i, i) = 0.5;

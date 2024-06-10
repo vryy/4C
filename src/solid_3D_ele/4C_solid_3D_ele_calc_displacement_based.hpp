@@ -129,15 +129,15 @@ namespace Discret::ELEMENTS
         for (int b = 0; b < Core::FE::dim<celltype>; ++b)
         {
           using VoigtMapping = Core::LinAlg::Voigt::IndexMappings;
-          d_F_dxi(VoigtMapping::NonSymToVoigt9(a, b), 0) +=
+          d_F_dxi(VoigtMapping::non_symmetric_tensor_to_voigt9_index(a, b), 0) +=
               xXFsec(a, 0) * jacobian_mapping.inverse_jacobian_(b, 0) +
               xXFsec(a, 3) * jacobian_mapping.inverse_jacobian_(b, 1) +
               xXFsec(a, 4) * jacobian_mapping.inverse_jacobian_(b, 2);
-          d_F_dxi(VoigtMapping::NonSymToVoigt9(a, b), 1) +=
+          d_F_dxi(VoigtMapping::non_symmetric_tensor_to_voigt9_index(a, b), 1) +=
               xXFsec(a, 3) * jacobian_mapping.inverse_jacobian_(b, 0) +
               xXFsec(a, 1) * jacobian_mapping.inverse_jacobian_(b, 1) +
               xXFsec(a, 5) * jacobian_mapping.inverse_jacobian_(b, 2);
-          d_F_dxi(VoigtMapping::NonSymToVoigt9(a, b), 2) +=
+          d_F_dxi(VoigtMapping::non_symmetric_tensor_to_voigt9_index(a, b), 2) +=
               xXFsec(a, 4) * jacobian_mapping.inverse_jacobian_(b, 0) +
               xXFsec(a, 5) * jacobian_mapping.inverse_jacobian_(b, 1) +
               xXFsec(a, 2) * jacobian_mapping.inverse_jacobian_(b, 2);
@@ -183,7 +183,7 @@ namespace Discret::ELEMENTS
           for (int k = 0; k < Core::FE::num_nodes<celltype>; ++k)
           {
             using VoigtMapping = Core::LinAlg::Voigt::IndexMappings;
-            d2_F_dxi_dd(VoigtMapping::NonSymToVoigt9(i, j),
+            d2_F_dxi_dd(VoigtMapping::non_symmetric_tensor_to_voigt9_index(i, j),
                 Core::FE::dim<celltype> * (Core::FE::dim<celltype> * k + i) + 0) +=
                 deriv2(0, k) * jacobian_mapping.inverse_jacobian_(j, 0) +
                 deriv2(3, k) * jacobian_mapping.inverse_jacobian_(j, 1) +
@@ -192,7 +192,7 @@ namespace Discret::ELEMENTS
                 N_XYZ_Xsec(k, 3) * jacobian_mapping.inverse_jacobian_(j, 1) -
                 N_XYZ_Xsec(k, 4) * jacobian_mapping.inverse_jacobian_(j, 2);
 
-            d2_F_dxi_dd(VoigtMapping::NonSymToVoigt9(i, j),
+            d2_F_dxi_dd(VoigtMapping::non_symmetric_tensor_to_voigt9_index(i, j),
                 Core::FE::dim<celltype> * (Core::FE::dim<celltype> * k + i) + 1) +=
                 deriv2(3, k) * jacobian_mapping.inverse_jacobian_(j, 0) +
                 deriv2(1, k) * jacobian_mapping.inverse_jacobian_(j, 1) +
@@ -201,7 +201,7 @@ namespace Discret::ELEMENTS
                 N_XYZ_Xsec(k, 1) * jacobian_mapping.inverse_jacobian_(j, 1) -
                 N_XYZ_Xsec(k, 5) * jacobian_mapping.inverse_jacobian_(j, 2);
 
-            d2_F_dxi_dd(VoigtMapping::NonSymToVoigt9(i, j),
+            d2_F_dxi_dd(VoigtMapping::non_symmetric_tensor_to_voigt9_index(i, j),
                 Core::FE::dim<celltype> * (Core::FE::dim<celltype> * k + i) + 2) +=
                 deriv2(4, k) * jacobian_mapping.inverse_jacobian_(j, 0) +
                 deriv2(5, k) * jacobian_mapping.inverse_jacobian_(j, 1) +

@@ -331,7 +331,7 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::evaluate_stress_c_mat
   evaluatei_fin_t_aorthgr_ti_xt_aorthgri_fin(
       iFinTAorthgrTiXTAorthgriFin_sym, AorthgrCeAorthgrArad, iFin, Aorthgr);
 
-  Core::LinAlg::Voigt::Stresses::MatrixToVector(
+  Core::LinAlg::Voigt::Stresses::matrix_to_vector(
       iFinTAorthgrTiXTAorthgriFin_sym, iFinTAorthgrTiXTAorthgriFin_sym_stress);
 
   // Get material parameter
@@ -346,7 +346,7 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::evaluate_stress_c_mat
   Smembrane.Update(mue * mue_frac_[gp], iFinAorthgriFinT, 0.0);
   Smembrane.Update(-mue * mue_frac_[gp] / detX, iFinTAorthgrTiXTAorthgriFin_sym, 1.0);
 
-  Core::LinAlg::Voigt::Stresses::MatrixToVector(Smembrane, S_stress);
+  Core::LinAlg::Voigt::Stresses::matrix_to_vector(Smembrane, S_stress);
 
   // Compute constitutive tensor
   static Core::LinAlg::Matrix<6, 6> dAradgriXAradgr_symdC(false);

@@ -61,7 +61,7 @@ namespace
           eleFibers_[GetFiberIds()[0]], eleFibers_[GetFiberIds()[1]], eleTensors_);
 
       // Setup structural tensors in stress like Voigt notation
-      Core::LinAlg::Voigt::Stresses::MatrixToVector(eleTensors_, eleTensors_stress_);
+      Core::LinAlg::Voigt::Stresses::matrix_to_vector(eleTensors_, eleTensors_stress_);
 
       // setup scalar product
       eleScalarProducts_ = eleFibers_[GetFiberIds()[0]].Dot(eleFibers_[GetFiberIds()[1]]);

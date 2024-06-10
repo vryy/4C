@@ -53,7 +53,7 @@ void MIXTURE::StiffnessGrowthStrategy::evaluate_growth_stress_cmat(
   iC.Invert();
 
   Core::LinAlg::Matrix<6, 1> iC_stress(false);
-  Core::LinAlg::Voigt::Stresses::MatrixToVector(iC, iC_stress);
+  Core::LinAlg::Voigt::Stresses::matrix_to_vector(iC, iC_stress);
 
   const double kappa = params_->kappa_;
   const double detF = F.Determinant();

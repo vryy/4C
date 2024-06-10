@@ -512,18 +512,19 @@ void Mat::ViscoElastHyper::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   Core::LinAlg::Matrix<33, 1> modxi(true);
 
   EvaluateRightCauchyGreenStrainLikeVoigt(*glstrain, C_strain);
-  Core::LinAlg::Voigt::Strains::InverseTensor(C_strain, iC_strain);
-  Core::LinAlg::Voigt::Strains::ToStressLike(iC_strain, iC_stress);
-  Core::LinAlg::Voigt::Strains::ToStressLike(C_strain, C_stress);
-  Core::LinAlg::Voigt::Strains::InvariantsPrincipal(prinv, C_strain);
+  Core::LinAlg::Voigt::Strains::inverse_tensor(C_strain, iC_strain);
+  Core::LinAlg::Voigt::Strains::to_stress_like(iC_strain, iC_stress);
+  Core::LinAlg::Voigt::Strains::to_stress_like(C_strain, C_stress);
+  Core::LinAlg::Voigt::Strains::invariants_principal(prinv, C_strain);
 
 
-  Core::LinAlg::Voigt::IdentityMatrix(id2);
+  Core::LinAlg::Voigt::identity_matrix(id2);
 
   using VoigtNotation = Core::LinAlg::Voigt::NotationType;
-  Core::LinAlg::Voigt::FourthOrderIdentityMatrix<VoigtNotation::stress, VoigtNotation::stress>(
+  Core::LinAlg::Voigt::fourth_order_identity_matrix<VoigtNotation::stress, VoigtNotation::stress>(
       id4sharp);
-  Core::LinAlg::Voigt::FourthOrderIdentityMatrix<VoigtNotation::stress, VoigtNotation::strain>(id4);
+  Core::LinAlg::Voigt::fourth_order_identity_matrix<VoigtNotation::stress, VoigtNotation::strain>(
+      id4);
 
   ElastHyperEvaluateInvariantDerivatives(
       prinv, dPI, ddPII, potsum_, summandProperties_, gp, eleGID);
@@ -1018,9 +1019,9 @@ void Mat::ViscoElastHyper::evaluate_visco_generalized_gen_max(Core::LinAlg::Matr
     Core::LinAlg::Matrix<6, 1> ddPII(true);
 
     EvaluateRightCauchyGreenStrainLikeVoigt(*glstrain, C_strain);
-    Core::LinAlg::Voigt::Strains::InverseTensor(C_strain, iC_strain);
+    Core::LinAlg::Voigt::Strains::inverse_tensor(C_strain, iC_strain);
 
-    Core::LinAlg::Voigt::Strains::InvariantsPrincipal(prinv, C_strain);
+    Core::LinAlg::Voigt::Strains::invariants_principal(prinv, C_strain);
     ElastHyperEvaluateInvariantDerivatives(
         prinv, dPI, ddPII, branchpotsum, branchProperties, gp, eleGID);
 

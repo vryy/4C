@@ -243,7 +243,7 @@ bool MIXTURE::MixtureConstituentElastHyperBase::EvaluateOutputData(
     {
       static Core::LinAlg::Matrix<9, 1> tmp(false);
       tmp.Clear();
-      Core::LinAlg::Voigt::Matrix3x3to9x1(prestretch_[gp], tmp);
+      Core::LinAlg::Voigt::matrix_3x3_to_9x1(prestretch_[gp], tmp);
 
       for (int i = 0; i < 9; ++i)
       {

@@ -59,7 +59,7 @@ void MIXTURE::ConstantPrestressStrategy::EvaluatePrestress(const MixtureRule& mi
   // setup prestretch
   const Core::LinAlg::Matrix<9, 1> prestretch_vector(params_->prestretch_.data(), true);
 
-  Core::LinAlg::Voigt::Matrix9x1to3x3(prestretch_vector, G);
+  Core::LinAlg::Voigt::matrix_9x1_to_3x3(prestretch_vector, G);
 }
 
 void MIXTURE::ConstantPrestressStrategy::Update(

@@ -48,7 +48,7 @@ namespace
       for (std::size_t i = 0; i < 2; ++i)
       {
         eleTensors_[i].MultiplyNT(eleFibers_[i], eleFibers_[i]);
-        Core::LinAlg::Voigt::Stresses::MatrixToVector(eleTensors_[i], eleTensors_stress_[i]);
+        Core::LinAlg::Voigt::Stresses::matrix_to_vector(eleTensors_[i], eleTensors_stress_[i]);
       }
 
       setup_anisotropy_extension();
