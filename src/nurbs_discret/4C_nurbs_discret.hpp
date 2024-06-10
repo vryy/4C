@@ -198,11 +198,13 @@ namespace Discret
 
       */
       template <Core::FE::CellType distype>
+
       void fill_matrix_and_rhs_for_ls_dirichlet_boundary(Teuchos::RCP<Core::Elements::Element> ele,
           const std::vector<Core::LinAlg::SerialDenseVector>* knots, const std::vector<int>& lm,
           const std::vector<int>* funct, const std::vector<double>* val, const unsigned deg,
           const double time, Core::LinAlg::SerialDenseMatrix& elemass,
-          std::vector<Core::LinAlg::SerialDenseVector>& elerhs) const;
+          std::vector<Core::LinAlg::SerialDenseVector>& elerhs,
+          const Core::UTILS::FunctionManager& function_manager) const;
 
       /*!
       \brief Fill mass matrix and rhs vector for evaluation of least squares dirichlet on a domain
@@ -223,7 +225,8 @@ namespace Discret
           const std::vector<Core::LinAlg::SerialDenseVector>* knots, const std::vector<int>& lm,
           const std::vector<int>* funct, const std::vector<double>* val, const unsigned deg,
           const double time, Core::LinAlg::SerialDenseMatrix& elemass,
-          std::vector<Core::LinAlg::SerialDenseVector>& elerhs) const;
+          std::vector<Core::LinAlg::SerialDenseVector>& elerhs,
+          const Core::UTILS::FunctionManager& function_manager) const;
 
     };  // class DbcNurbs
   }     // namespace UTILS
