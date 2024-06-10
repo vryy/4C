@@ -369,7 +369,7 @@ void Wear::Algorithm::create_material_interface()
           // get nurbs weight!
           if (cparams.get<bool>("NURBS") == true)
           {
-            Discret::Nurbs::ControlPoint* cp = dynamic_cast<Discret::Nurbs::ControlPoint*>(node);
+            Core::FE::Nurbs::ControlPoint* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(node);
 
             cnode->NurbsW() = cp->W();
           }
@@ -409,7 +409,7 @@ void Wear::Algorithm::create_material_interface()
           // get nurbs weight!
           if (cparams.get<bool>("NURBS") == true)
           {
-            Discret::Nurbs::ControlPoint* cp = dynamic_cast<Discret::Nurbs::ControlPoint*>(node);
+            Core::FE::Nurbs::ControlPoint* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(node);
 
             cnode->NurbsW() = cp->W();
           }
@@ -468,11 +468,11 @@ void Wear::Algorithm::create_material_interface()
         // get knotvector, normal factor and zero-size information for nurbs
         if (cparams.get<bool>("NURBS") == true)
         {
-          Discret::Nurbs::NurbsDiscretization* nurbsdis =
-              dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(
+          Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
+              dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(
                   &(*(structure_->discretization())));
 
-          Teuchos::RCP<Discret::Nurbs::Knotvector> knots = (*nurbsdis).GetKnotVector();
+          Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots = (*nurbsdis).GetKnotVector();
           std::vector<Core::LinAlg::SerialDenseVector> parentknots(dim);
           std::vector<Core::LinAlg::SerialDenseVector> mortarknots(dim - 1);
 

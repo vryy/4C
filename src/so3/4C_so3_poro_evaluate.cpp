@@ -294,7 +294,7 @@ int Discret::ELEMENTS::So3Poro<so3_ele, distype>::my_evaluate(Teuchos::Parameter
       {
         // access knots and weights for this element
         bool zero_size =
-            Discret::Nurbs::GetMyNurbsKnotsAndWeights(discretization, this, myknots_, weights_);
+            Core::FE::Nurbs::GetMyNurbsKnotsAndWeights(discretization, this, myknots_, weights_);
 
         // if we have a zero sized element due to a interpolated point -> exit here
         if (zero_size) return 0;
@@ -366,7 +366,7 @@ int Discret::ELEMENTS::So3Poro<so3_ele, distype>::my_evaluate(Teuchos::Parameter
       {
         // access knots and weights for this element
         bool zero_size =
-            Discret::Nurbs::GetMyNurbsKnotsAndWeights(discretization, this, myknots_, weights_);
+            Core::FE::Nurbs::GetMyNurbsKnotsAndWeights(discretization, this, myknots_, weights_);
 
         // if we have a zero sized element due to a interpolated point -> exit here
         if (zero_size) return 0;
@@ -766,7 +766,7 @@ void Discret::ELEMENTS::So3Poro<so3_ele, distype>::gauss_point_loop_pressure_bas
   {
     for (int inode = 0; inode < numnod_; ++inode)
     {
-      auto* cp = dynamic_cast<Discret::Nurbs::ControlPoint*>(Nodes()[inode]);
+      auto* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(Nodes()[inode]);
 
       weights_(inode) = cp->W();
     }

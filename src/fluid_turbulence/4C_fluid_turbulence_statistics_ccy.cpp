@@ -94,8 +94,8 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<Core::FE::Dis
   // try to cast discretisation to nurbs variant
   // this tells you what kind of computation of
   // samples is required
-  Discret::Nurbs::NurbsDiscretization* nurbsdis =
-      dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(*actdis));
+  Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
+      dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(*actdis));
 
   if (nurbsdis == nullptr)
   {
@@ -120,7 +120,7 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<Core::FE::Dis
     std::vector<int> nele_x_mele_x_lele(nurbsdis->return_nele_x_mele_x_lele(0));
 
     // get the knotvector itself
-    Teuchos::RCP<Discret::Nurbs::Knotvector> knots = nurbsdis->GetKnotVector();
+    Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots = nurbsdis->GetKnotVector();
 
     // resize and initialise to 0
     {
@@ -166,8 +166,8 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<Core::FE::Dis
 
       for (int inode = 0; inode < numnp; ++inode)
       {
-        Discret::Nurbs::ControlPoint* cp =
-            dynamic_cast<Discret::Nurbs::ControlPoint*>(nodes[inode]);
+        Core::FE::Nurbs::ControlPoint* cp =
+            dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes[inode]);
 
         weights(inode) = cp->W();
       }
@@ -571,19 +571,19 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
   // try to cast discretisation to nurbs variant
   // this tells you what kind of computation of
   // samples is required
-  Discret::Nurbs::NurbsDiscretization* nurbsdis =
-      dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(*discret_));
+  Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
+      dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(*discret_));
 
   if (nurbsdis == nullptr) FOUR_C_THROW("Oops. Your discretization is not a NurbsDiscretization.");
 
   nurbsdis->set_state("velnp", meanvelnp_);
 
-  Discret::Nurbs::NurbsDiscretization* scatranurbsdis(nullptr);
+  Core::FE::Nurbs::NurbsDiscretization* scatranurbsdis(nullptr);
   if (withscatra_)
   {
     nurbsdis->set_state("scanp", meanscanp_);
 
-    scatranurbsdis = dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(*scatradis_));
+    scatranurbsdis = dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(*scatradis_));
     if (scatranurbsdis == nullptr)
       FOUR_C_THROW("Oops. Your discretization is not a NurbsDiscretization.");
 
@@ -607,7 +607,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
   std::vector<int> nele_x_mele_x_lele(nurbsdis->return_nele_x_mele_x_lele(0));
 
   // get the knotvector itself
-  Teuchos::RCP<Discret::Nurbs::Knotvector> knots = nurbsdis->GetKnotVector();
+  Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots = nurbsdis->GetKnotVector();
 
   // get element map
   const Epetra_Map* elementmap = nurbsdis->ElementRowMap();
@@ -630,7 +630,8 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
 
     for (int inode = 0; inode < numnp; ++inode)
     {
-      Discret::Nurbs::ControlPoint* cp = dynamic_cast<Discret::Nurbs::ControlPoint*>(nodes[inode]);
+      Core::FE::Nurbs::ControlPoint* cp =
+          dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes[inode]);
 
       weights(inode) = cp->W();
     }

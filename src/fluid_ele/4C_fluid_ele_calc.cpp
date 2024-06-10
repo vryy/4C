@@ -34,7 +34,6 @@
 #include "4C_mat_modpowerlaw.hpp"
 #include "4C_mat_newtonianfluid.hpp"
 #include "4C_mat_sutherland.hpp"
-#include "4C_nurbs_discret_nurbs_utils.hpp"
 #include "4C_utils_function.hpp"
 #include "4C_utils_function_of_time.hpp"
 
@@ -497,7 +496,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::Evaluate(Discret::ELEMENT
   {
     // access knots and weights for this element
     bool zero_size =
-        Discret::Nurbs::GetMyNurbsKnotsAndWeights(discretization, ele, myknots_, weights_);
+        Core::FE::Nurbs::GetMyNurbsKnotsAndWeights(discretization, ele, myknots_, weights_);
 
     // if we have a zero sized element due to a interpolated point -> exit here
     if (zero_size) return (0);
@@ -6009,7 +6008,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::integrate_shape_function(
   {
     // access knots and weights for this element
     bool zero_size =
-        Discret::Nurbs::GetMyNurbsKnotsAndWeights(discretization, ele, myknots_, weights_);
+        Core::FE::Nurbs::GetMyNurbsKnotsAndWeights(discretization, ele, myknots_, weights_);
 
     // if we have a zero sized element due to a interpolated point -> exit here
     if (zero_size) return (0);
@@ -6278,7 +6277,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeDivU(Discret::ELEM
   {
     // access knots and weights for this element
     bool zero_size =
-        Discret::Nurbs::GetMyNurbsKnotsAndWeights(discretization, ele, myknots_, weights_);
+        Core::FE::Nurbs::GetMyNurbsKnotsAndWeights(discretization, ele, myknots_, weights_);
 
     // if we have a zero sized element due to a interpolated point -> exit here
     if (zero_size) return (0);
@@ -6407,7 +6406,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::compute_error(Discret::EL
   {
     // access knots and weights for this element
     bool zero_size =
-        Discret::Nurbs::GetMyNurbsKnotsAndWeights(discretization, ele, myknots_, weights_);
+        Core::FE::Nurbs::GetMyNurbsKnotsAndWeights(discretization, ele, myknots_, weights_);
 
     // if we have a zero sized element due to a interpolated point -> exit here
     if (zero_size) return (0);
@@ -10032,8 +10031,8 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_channel_statistics(
     // get size of planecoords
     int size = planes->size();
 
-    Discret::Nurbs::NurbsDiscretization* nurbsdis =
-        dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(discretization));
+    Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
+        dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(discretization));
 
     if (nurbsdis == nullptr)
     {
@@ -10047,7 +10046,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_channel_statistics(
     int numsublayers = (size - 1) / nele_x_mele_x_lele[1];
 
     // get the knotvector itself
-    Teuchos::RCP<Discret::Nurbs::Knotvector> knots = nurbsdis->GetKnotVector();
+    Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots = nurbsdis->GetKnotVector();
 
     Core::Nodes::Node** nodes = ele->Nodes();
 
@@ -10076,7 +10075,8 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_channel_statistics(
 
     for (int inode = 0; inode < nen_; ++inode)
     {
-      Discret::Nurbs::ControlPoint* cp = dynamic_cast<Discret::Nurbs::ControlPoint*>(nodes[inode]);
+      Core::FE::Nurbs::ControlPoint* cp =
+          dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes[inode]);
 
       weights_(inode) = cp->W();
     }

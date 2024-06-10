@@ -3300,10 +3300,10 @@ void Discret::ELEMENTS::So3Plast<distype>::get_nurbs_ele_info(Core::FE::Discreti
 
   if (dis == nullptr) dis = Global::Problem::Instance()->GetDis("structure").get();
 
-  dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(dis)->GetKnotVector()->GetEleKnots(
+  dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(dis)->GetKnotVector()->GetEleKnots(
       set_knots(), Id());
   for (int i = 0; i < nen_; ++i)
-    set_weights()(i) = dynamic_cast<Discret::Nurbs::ControlPoint*>(Nodes()[i])->W();
+    set_weights()(i) = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(Nodes()[i])->W();
 }
 
 // template functions

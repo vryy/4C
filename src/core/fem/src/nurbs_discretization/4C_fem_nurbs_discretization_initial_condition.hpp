@@ -40,7 +40,7 @@ namespace Core::LinAlg
   class Solver;
 }
 
-namespace Discret
+namespace Core::FE
 {
   namespace Nurbs
   {
@@ -64,7 +64,7 @@ namespace Discret
 
   }  // namespace Nurbs
 
-}  // namespace Discret
+}  // namespace Core::FE
 
 FOUR_C_NAMESPACE_CLOSE
 

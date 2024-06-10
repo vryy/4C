@@ -1171,7 +1171,7 @@ void Discret::ELEMENTS::TemperBoundaryImpl<distype>::prepare_nurbs_eval(
   // get nurbs specific infos
   // cast to nurbs discretization
   const auto* nurbsdis =
-      dynamic_cast<const Discret::Nurbs::NurbsDiscretization*>(&(discretization));
+      dynamic_cast<const Core::FE::Nurbs::NurbsDiscretization*>(&(discretization));
   if (nurbsdis == nullptr) FOUR_C_THROW("So_nurbs27 appeared in non-nurbs discretisation\n");
 
   std::vector<Core::LinAlg::SerialDenseVector> parentknots(3);
@@ -1183,7 +1183,7 @@ void Discret::ELEMENTS::TemperBoundaryImpl<distype>::prepare_nurbs_eval(
 
   // get weights from cp's
   for (int inode = 0; inode < nen_; inode++)
-    weights_(inode) = dynamic_cast<const Discret::Nurbs::ControlPoint*>(ele->Nodes()[inode])->W();
+    weights_(inode) = dynamic_cast<const Core::FE::Nurbs::ControlPoint*>(ele->Nodes()[inode])->W();
 }
 /*----------------------------------------------------------------------*/
 

@@ -601,13 +601,13 @@ void PostVtuWriter::write_geo_nurbs_ele(const Core::Elements::Element* ele,
   const Core::Nodes::Node* const* nodes = ele->Nodes();
   for (unsigned inode = 0; inode < NUMNODES; inode++)
   {
-    const Discret::Nurbs::ControlPoint* cp =
-        dynamic_cast<const Discret::Nurbs::ControlPoint*>(nodes[inode]);
+    const Core::FE::Nurbs::ControlPoint* cp =
+        dynamic_cast<const Core::FE::Nurbs::ControlPoint*>(nodes[inode]);
 
     weights(inode) = cp->W();
   }
-  const Discret::Nurbs::NurbsDiscretization* nurbsdis =
-      dynamic_cast<const Discret::Nurbs::NurbsDiscretization*>(dis.get());
+  const Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
+      dynamic_cast<const Core::FE::Nurbs::NurbsDiscretization*>(dis.get());
 
   if (not nurbsdis) FOUR_C_THROW("Cast to NURBS discretization failed.\n");
 
@@ -769,13 +769,13 @@ void PostVtuWriter::wirte_dof_result_step_nurbs_ele(const Core::Elements::Elemen
   const Core::Nodes::Node* const* nodes = ele->Nodes();
   for (unsigned inode = 0; inode < NUMNODES; inode++)
   {
-    const Discret::Nurbs::ControlPoint* cp =
-        dynamic_cast<const Discret::Nurbs::ControlPoint*>(nodes[inode]);
+    const Core::FE::Nurbs::ControlPoint* cp =
+        dynamic_cast<const Core::FE::Nurbs::ControlPoint*>(nodes[inode]);
 
     weights(inode) = cp->W();
   }
-  const Discret::Nurbs::NurbsDiscretization* nurbsdis =
-      dynamic_cast<const Discret::Nurbs::NurbsDiscretization*>(dis.get());
+  const Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
+      dynamic_cast<const Core::FE::Nurbs::NurbsDiscretization*>(dis.get());
 
   if (not nurbsdis) FOUR_C_THROW("Cast to NURBS discretization failed.\n");
 
@@ -957,14 +957,14 @@ void PostVtuWriter::write_nodal_result_step_nurbs_ele(const Core::Elements::Elem
   const Core::Nodes::Node* const* nodes = ele->Nodes();
   for (unsigned inode = 0; inode < NUMNODES; inode++)
   {
-    const Discret::Nurbs::ControlPoint* cp =
-        dynamic_cast<const Discret::Nurbs::ControlPoint*>(nodes[inode]);
+    const Core::FE::Nurbs::ControlPoint* cp =
+        dynamic_cast<const Core::FE::Nurbs::ControlPoint*>(nodes[inode]);
 
     weights(inode) = cp->W();
   }
 
-  const Discret::Nurbs::NurbsDiscretization* nurbsdis =
-      dynamic_cast<const Discret::Nurbs::NurbsDiscretization*>(dis.get());
+  const Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
+      dynamic_cast<const Core::FE::Nurbs::NurbsDiscretization*>(dis.get());
 
   if (not nurbsdis) FOUR_C_THROW("Cast to NURBS discretization failed.\n");
 

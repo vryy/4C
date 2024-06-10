@@ -631,8 +631,8 @@ void Discret::ELEMENTS::Ale2::static_ke_nonlinear(const std::vector<int>& lm,
   {
     for (int inode = 0; inode < numnode; ++inode)
     {
-      Discret::Nurbs::ControlPoint* cp =
-          dynamic_cast<Discret::Nurbs::ControlPoint*>(Nodes()[inode]);
+      Core::FE::Nurbs::ControlPoint* cp =
+          dynamic_cast<Core::FE::Nurbs::ControlPoint*>(Nodes()[inode]);
 
       weights(inode) = cp->W();
     }
@@ -793,15 +793,15 @@ void Discret::ELEMENTS::Ale2::static_ke_laplace(Core::FE::Discretization& dis, s
 
   if (distype == Core::FE::CellType::nurbs4 || distype == Core::FE::CellType::nurbs9)
   {
-    Discret::Nurbs::NurbsDiscretization* nurbsdis =
-        dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(dis));
+    Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
+        dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(dis));
 
     (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, Id());
 
     for (int inode = 0; inode < iel; ++inode)
     {
-      Discret::Nurbs::ControlPoint* cp =
-          dynamic_cast<Discret::Nurbs::ControlPoint*>(Nodes()[inode]);
+      Core::FE::Nurbs::ControlPoint* cp =
+          dynamic_cast<Core::FE::Nurbs::ControlPoint*>(Nodes()[inode]);
 
       weights(inode) = cp->W();
     }

@@ -120,7 +120,7 @@ namespace
     Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, 1> weights(true);
     std::vector<Core::LinAlg::SerialDenseVector> myknots(true);
 
-    const bool zero_size = Discret::Nurbs::GetMyNurbsKnotsAndWeights(dis, &ele, myknots, weights);
+    const bool zero_size = Core::FE::Nurbs::GetMyNurbsKnotsAndWeights(dis, &ele, myknots, weights);
     if (zero_size) FOUR_C_THROW("GetMyNurbsKnotsAndWeights has to return a non zero size.");
 
 

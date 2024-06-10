@@ -1222,7 +1222,7 @@ void ScaTra::ScaTraTimIntImpl::output_flux(Teuchos::RCP<Epetra_MultiVector> flux
   // WORK-AROUND FOR NURBS DISCRETIZATIONS
   // using noderowmap is problematic. Thus, we do not add normal vectors
   // to the scalar result field (scalar information is enough anyway)
-  auto* nurbsdis = dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(*discret_));
+  auto* nurbsdis = dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(*discret_));
   if (nurbsdis != nullptr)
   {
     Teuchos::RCP<Epetra_Vector> normalflux = Teuchos::rcp(((*flux)(0)), false);

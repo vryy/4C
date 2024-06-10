@@ -2800,7 +2800,7 @@ void ScaTra::ScaTraTimIntElch::check_concentration_values(Teuchos::RCP<Epetra_Ve
   // outside the domain of interest. Thus, they can have negative
   // concentration values although the concentration solution is positive
   // in the whole computational domain!
-  if (dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(discret_.get()) != nullptr) return;
+  if (dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(discret_.get()) != nullptr) return;
 
   // this option can be helpful in some rare situations
   bool makepositive(false);

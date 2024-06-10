@@ -505,8 +505,8 @@ void PostProblem::read_meshes()
         case Core::FE::ShapeFunctionType::nurbs:
         {
           // try a dynamic cast of the discretisation to a nurbs discretisation
-          Discret::Nurbs::NurbsDiscretization* nurbsdis =
-              dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(*currfield.discretization()));
+          Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
+              dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(*currfield.discretization()));
 
           if (nurbsdis == nullptr)
             FOUR_C_THROW("discretization %s is not a NurbsDiscretization",
@@ -553,8 +553,8 @@ void PostProblem::read_meshes()
             }
           }
 
-          Teuchos::RCP<Discret::Nurbs::Knotvector> knots =
-              Teuchos::rcp(new Discret::Nurbs::Knotvector());
+          Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots =
+              Teuchos::rcp(new Core::FE::Nurbs::Knotvector());
 
           knots->Unpack(*packed_knots);
 
@@ -637,7 +637,7 @@ PostField PostProblem::getfield(MAP* field_info)
     }
     case Core::FE::ShapeFunctionType::nurbs:
     {
-      dis = Teuchos::rcp(new Discret::Nurbs::NurbsDiscretization(field_name, comm_, ndim));
+      dis = Teuchos::rcp(new Core::FE::Nurbs::NurbsDiscretization(field_name, comm_, ndim));
       break;
     }
     default:

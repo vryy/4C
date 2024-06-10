@@ -663,8 +663,8 @@ int Discret::ELEMENTS::So3Thermo<so3_ele, distype>::evaluate_coupl_with_thr(
         if (so3_ele::Shape() == Core::FE::CellType::nurbs27)
         {
           // cast to nurbs discretization
-          Discret::Nurbs::NurbsDiscretization* nurbsdis =
-              dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(discretization));
+          Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
+              dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(discretization));
           if (nurbsdis == nullptr)
             FOUR_C_THROW("So_nurbs27 appeared in non-nurbs discretisation\n");
 
@@ -673,7 +673,7 @@ int Discret::ELEMENTS::So3Thermo<so3_ele, distype>::evaluate_coupl_with_thr(
 
           // get weights from cp's
           for (int inode = 0; inode < nen_; inode++)
-            weights(inode) = dynamic_cast<Discret::Nurbs::ControlPoint*>(Nodes()[inode])->W();
+            weights(inode) = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(Nodes()[inode])->W();
         }
 
         for (int gp = 0; gp < numgpt_; ++gp)
@@ -1130,8 +1130,8 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::nln_stifffint_tsi(
   if (so3_ele::Shape() == Core::FE::CellType::nurbs27)
   {
     // cast to nurbs discretization
-    Discret::Nurbs::NurbsDiscretization* nurbsdis =
-        dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(discretization));
+    Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
+        dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(discretization));
     if (nurbsdis == nullptr) FOUR_C_THROW("So_nurbs27 appeared in non-nurbs discretisation\n");
 
     // zero-sized element
@@ -1139,7 +1139,7 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::nln_stifffint_tsi(
 
     // get weights from cp's
     for (int inode = 0; inode < nen_; inode++)
-      weights(inode) = dynamic_cast<Discret::Nurbs::ControlPoint*>(Nodes()[inode])->W();
+      weights(inode) = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(Nodes()[inode])->W();
   }
 
   /* =========================================================================*/
@@ -1396,8 +1396,8 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::nln_kd_t_tsi(
   if (so3_ele::Shape() == Core::FE::CellType::nurbs27)
   {
     // cast to nurbs discretization
-    Discret::Nurbs::NurbsDiscretization* nurbsdis =
-        dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(discretization));
+    Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
+        dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(discretization));
     if (nurbsdis == nullptr) FOUR_C_THROW("So_nurbs27 appeared in non-nurbs discretisation\n");
 
     // zero-sized element
@@ -1405,7 +1405,7 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::nln_kd_t_tsi(
 
     // get weights from cp's
     for (int inode = 0; inode < nen_; inode++)
-      weights(inode) = dynamic_cast<Discret::Nurbs::ControlPoint*>(Nodes()[inode])->W();
+      weights(inode) = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(Nodes()[inode])->W();
   }
 
   /* =========================================================================*/
@@ -2461,8 +2461,8 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::init_jacobian_mapping_speci
   if (so3_ele::Shape() == Core::FE::CellType::nurbs27)
   {
     // cast to nurbs discretization
-    Discret::Nurbs::NurbsDiscretization* nurbsdis =
-        dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(dis));
+    Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
+        dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(dis));
     if (nurbsdis == nullptr) FOUR_C_THROW("So_nurbs27 appeared in non-nurbs discretisation\n");
 
     // zero-sized element
@@ -2470,7 +2470,7 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::init_jacobian_mapping_speci
 
     // get weights from cp's
     for (int inode = 0; inode < nen_; inode++)
-      weights(inode) = dynamic_cast<Discret::Nurbs::ControlPoint*>(Nodes()[inode])->W();
+      weights(inode) = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(Nodes()[inode])->W();
   }
 
   // coordinates of the current integration point (xsi_)

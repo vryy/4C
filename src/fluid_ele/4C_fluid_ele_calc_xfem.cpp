@@ -201,7 +201,7 @@ namespace Discret
       {
         //    // access knots and weights for this element
         //    bool zero_size =
-        //    Discret::Nurbs::GetMyNurbsKnotsAndWeights(discretization,ele,my::myknots_,my::weights_);
+        //    Core::FE::Nurbs::GetMyNurbsKnotsAndWeights(discretization,ele,my::myknots_,my::weights_);
         //
         //    // if we have a zero sized element due to a interpolated point -> exit here
         //    if(zero_size)

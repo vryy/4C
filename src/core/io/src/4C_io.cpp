@@ -1430,13 +1430,13 @@ void Core::IO::DiscretizationWriter::write_knotvector() const
   if (binio_)
   {
     // try a dynamic cast of the discretisation to a nurbs discretisation
-    Discret::Nurbs::NurbsDiscretization* nurbsdis =
-        dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(dis_.get());
+    Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
+        dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(dis_.get());
 
     if (nurbsdis != nullptr)
     {
       // get knotvector from nurbsdis
-      Teuchos::RCP<Discret::Nurbs::Knotvector> knots = nurbsdis->GetKnotVector();
+      Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots = nurbsdis->GetKnotVector();
 
       // put knotvector into block
       Core::Communication::PackBuffer block;

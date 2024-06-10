@@ -236,7 +236,7 @@ void Mortar::Interface::create_interface_discretization()
   // Create the required type of discretization
   if (nurbs_)
   {
-    idiscret_ = Teuchos::rcp(new Discret::Nurbs::NurbsDiscretization(
+    idiscret_ = Teuchos::rcp(new Core::FE::Nurbs::NurbsDiscretization(
         dis_name.str(), comm, Global::Problem::Instance()->NDim()));
 
     /*

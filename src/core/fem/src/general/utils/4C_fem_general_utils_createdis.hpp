@@ -360,8 +360,8 @@ namespace Core::FE
             sourcedis->NodeRowMap()->GID(0));
 #endif
       // try to cast sourcedis to NurbsDiscretisation
-      Discret::Nurbs::NurbsDiscretization* nurbsdis =
-          dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(*(sourcedis)));
+      Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
+          dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(*(sourcedis)));
       bool isnurbsdis(nurbsdis != nullptr);
 
       // try to cast source node to immersed node
@@ -452,8 +452,8 @@ namespace Core::FE
     )
     {
       // try to cast sourcedis to NurbsDiscretisation
-      const Discret::Nurbs::NurbsDiscretization* nurbsdis_ptr =
-          dynamic_cast<const Discret::Nurbs::NurbsDiscretization*>(&sourcedis);
+      const Core::FE::Nurbs::NurbsDiscretization* nurbsdis_ptr =
+          dynamic_cast<const Core::FE::Nurbs::NurbsDiscretization*>(&sourcedis);
       bool isnurbsdis(nurbsdis_ptr != nullptr);
 
       // try to cast source node to immersed node

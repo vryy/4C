@@ -1387,8 +1387,8 @@ void Discret::ELEMENTS::Ale3Impl<distype>::static_ke_nonlinear(Ale3* ele,
 
   if (distype == Core::FE::CellType::nurbs8 || distype == Core::FE::CellType::nurbs27)
   {
-    Discret::Nurbs::NurbsDiscretization* nurbsdis =
-        dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(dis));
+    Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
+        dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(dis));
 
     myknots.resize(3);
     bool zero_size = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, ele->Id());
@@ -1400,8 +1400,8 @@ void Discret::ELEMENTS::Ale3Impl<distype>::static_ke_nonlinear(Ale3* ele,
 
     for (int inode = 0; inode < iel; ++inode)
     {
-      Discret::Nurbs::ControlPoint* cp =
-          dynamic_cast<Discret::Nurbs::ControlPoint*>(ele->Nodes()[inode]);
+      Core::FE::Nurbs::ControlPoint* cp =
+          dynamic_cast<Core::FE::Nurbs::ControlPoint*>(ele->Nodes()[inode]);
       weights(inode) = cp->W();
     }
   }
@@ -1622,8 +1622,8 @@ void Discret::ELEMENTS::Ale3Impl<distype>::static_ke_laplace(Ale3* ele,
 
   if (distype == Core::FE::CellType::nurbs8 or distype == Core::FE::CellType::nurbs27)
   {
-    Discret::Nurbs::NurbsDiscretization* nurbsdis =
-        dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(dis));
+    Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
+        dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(dis));
 
     bool zero_size = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, ele->Id());
 
@@ -1631,8 +1631,8 @@ void Discret::ELEMENTS::Ale3Impl<distype>::static_ke_laplace(Ale3* ele,
 
     for (int inode = 0; inode < iel; ++inode)
     {
-      Discret::Nurbs::ControlPoint* cp =
-          dynamic_cast<Discret::Nurbs::ControlPoint*>(ele->Nodes()[inode]);
+      Core::FE::Nurbs::ControlPoint* cp =
+          dynamic_cast<Core::FE::Nurbs::ControlPoint*>(ele->Nodes()[inode]);
 
       weights(inode) = cp->W();
     }

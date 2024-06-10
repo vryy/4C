@@ -167,8 +167,8 @@ void Core::IO::ReadNodes(const Core::IO::DatFileReader& reader,
           for (auto& dis : diss)
           {
             // create node/control point and add to discretization
-            Teuchos::RCP<Discret::Nurbs::ControlPoint> node =
-                Teuchos::rcp(new Discret::Nurbs::ControlPoint(cpid, coords, weight, myrank));
+            Teuchos::RCP<Core::FE::Nurbs::ControlPoint> node =
+                Teuchos::rcp(new Core::FE::Nurbs::ControlPoint(cpid, coords, weight, myrank));
             dis->AddNode(node);
           }
 

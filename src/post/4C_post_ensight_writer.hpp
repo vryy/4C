@@ -14,7 +14,8 @@
 #include "4C_config.hpp"
 
 #include "4C_fem_general_element.hpp"  // due to DiscretizationType
-#include "4C_post_writer_base.hpp"     // base class PostWriterBase
+#include "4C_fem_nurbs_discretization.hpp"
+#include "4C_post_writer_base.hpp"  // base class PostWriterBase
 
 #include <Epetra_Map.h>
 
@@ -316,7 +317,7 @@ class EnsightWriter : public PostWriterBase
   //! perform interpolation of result data to visualization points.
   void interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_MultiVector> idata, const int dim,
       const int npatch, const std::vector<int>& vpoff, const std::vector<int>& ele_cart_id,
-      const Core::Elements::Element* actele, Discret::Nurbs::NurbsDiscretization* nurbsdis,
+      const Core::Elements::Element* actele, Core::FE::Nurbs::NurbsDiscretization* nurbsdis,
       const std::vector<Core::LinAlg::SerialDenseVector>& eleknots,
       const Core::LinAlg::SerialDenseVector& weights, const int numdf,
       const std::vector<double>& my_data) const;

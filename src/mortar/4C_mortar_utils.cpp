@@ -848,10 +848,10 @@ void Mortar::UTILS::create_volume_ghosting(const Core::FE::Discretization& dis_s
 void Mortar::UTILS::prepare_nurbs_element(Core::FE::Discretization& discret,
     Teuchos::RCP<Core::Elements::Element> ele, Teuchos::RCP<Mortar::Element> cele, int dim)
 {
-  Discret::Nurbs::NurbsDiscretization* nurbsdis =
-      dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(discret));
+  Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
+      dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(discret));
 
-  Teuchos::RCP<Discret::Nurbs::Knotvector> knots = (*nurbsdis).GetKnotVector();
+  Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots = (*nurbsdis).GetKnotVector();
   std::vector<Core::LinAlg::SerialDenseVector> parentknots(dim);
   std::vector<Core::LinAlg::SerialDenseVector> mortarknots(dim - 1);
 
@@ -875,7 +875,7 @@ void Mortar::UTILS::prepare_nurbs_element(Core::FE::Discretization& discret,
  *----------------------------------------------------------------------*/
 void Mortar::UTILS::prepare_nurbs_node(Core::Nodes::Node* node, Teuchos::RCP<Mortar::Node> mnode)
 {
-  Discret::Nurbs::ControlPoint* cp = dynamic_cast<Discret::Nurbs::ControlPoint*>(node);
+  Core::FE::Nurbs::ControlPoint* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(node);
 
   mnode->NurbsW() = cp->W();
 

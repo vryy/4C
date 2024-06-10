@@ -164,10 +164,10 @@ void Adapter::CouplingPoroMortar::add_mortar_elements(
 
     if (isnurbs)
     {
-      Teuchos::RCP<Discret::Nurbs::NurbsDiscretization> nurbsdis =
-          Teuchos::rcp_dynamic_cast<Discret::Nurbs::NurbsDiscretization>(masterdis);
+      Teuchos::RCP<Core::FE::Nurbs::NurbsDiscretization> nurbsdis =
+          Teuchos::rcp_dynamic_cast<Core::FE::Nurbs::NurbsDiscretization>(masterdis);
 
-      Teuchos::RCP<Discret::Nurbs::Knotvector> knots = (*nurbsdis).GetKnotVector();
+      Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots = (*nurbsdis).GetKnotVector();
       std::vector<Core::LinAlg::SerialDenseVector> parentknots(dim);
       std::vector<Core::LinAlg::SerialDenseVector> mortarknots(dim - 1);
 
@@ -232,10 +232,10 @@ void Adapter::CouplingPoroMortar::add_mortar_elements(
 
     if (isnurbs)
     {
-      Teuchos::RCP<Discret::Nurbs::NurbsDiscretization> nurbsdis =
-          Teuchos::rcp_dynamic_cast<Discret::Nurbs::NurbsDiscretization>(slavedis);
+      Teuchos::RCP<Core::FE::Nurbs::NurbsDiscretization> nurbsdis =
+          Teuchos::rcp_dynamic_cast<Core::FE::Nurbs::NurbsDiscretization>(slavedis);
 
-      Teuchos::RCP<Discret::Nurbs::Knotvector> knots = (*nurbsdis).GetKnotVector();
+      Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots = (*nurbsdis).GetKnotVector();
       std::vector<Core::LinAlg::SerialDenseVector> parentknots(dim);
       std::vector<Core::LinAlg::SerialDenseVector> mortarknots(dim - 1);
 

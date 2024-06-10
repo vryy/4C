@@ -29,7 +29,7 @@ namespace Core::LinAlg
   class SparseMatrix;
 }  // namespace Core::LinAlg
 
-namespace Discret
+namespace Core::FE
 {
   namespace Nurbs
   {
@@ -70,7 +70,7 @@ namespace Discret
       \author gammi
 
       */
-      virtual void SetKnotVector(Teuchos::RCP<Discret::Nurbs::Knotvector> knots);
+      virtual void SetKnotVector(Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots);
 
       /*!
       \brief get a pointer to the knotvector from the discretization
@@ -80,8 +80,8 @@ namespace Discret
       \author gammi
 
       */
-      Teuchos::RCP<Discret::Nurbs::Knotvector> GetKnotVector();
-      Teuchos::RCP<const Discret::Nurbs::Knotvector> GetKnotVector() const;
+      Teuchos::RCP<Core::FE::Nurbs::Knotvector> GetKnotVector();
+      Teuchos::RCP<const Core::FE::Nurbs::Knotvector> GetKnotVector() const;
 
       /*!
       \brief return number of knots in each direction
@@ -146,7 +146,7 @@ namespace Discret
       NurbsDiscretization operator=(const NurbsDiscretization& old) = delete;
 
       //! don't want copy constructor
-      NurbsDiscretization(const Discret::Nurbs::NurbsDiscretization& old) = delete;
+      NurbsDiscretization(const Core::FE::Nurbs::NurbsDiscretization& old) = delete;
 
       /*!
       \brief The knot vector
@@ -155,7 +155,7 @@ namespace Discret
       dimensions u,v   : nurbs surface (n x m)
       dimensions u,v,w : nurbs volume  (n x m x l)
       */
-      Teuchos::RCP<Discret::Nurbs::Knotvector> knots_;
+      Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots_;
 
     };  // class NurbsDiscretization
   }     // namespace Nurbs
@@ -230,7 +230,7 @@ namespace Discret
 
     };  // class DbcNurbs
   }     // namespace UTILS
-}  // namespace Discret
+}  // namespace Core::FE
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -176,7 +176,7 @@ int Discret::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(Discret::ELEMENTS::Fl
   if (Base::isNurbs_)
   {
     // access knots and weights for this element
-    bool zero_size = Discret::Nurbs::GetMyNurbsKnotsAndWeights(
+    bool zero_size = Core::FE::Nurbs::GetMyNurbsKnotsAndWeights(
         discretization, ele, Base::myknots_, Base::weights_);
 
     // if we have a zero sized element due to a interpolated point -> exit here
@@ -335,7 +335,7 @@ int Discret::ELEMENTS::FluidEleCalcPoro<distype>::evaluate_od(Discret::ELEMENTS:
   if (Base::isNurbs_)
   {
     // access knots and weights for this element
-    bool zero_size = Discret::Nurbs::GetMyNurbsKnotsAndWeights(
+    bool zero_size = Core::FE::Nurbs::GetMyNurbsKnotsAndWeights(
         discretization, ele, Base::myknots_, Base::weights_);
 
     // if we have a zero sized element due to a interpolated point -> exit here
@@ -6147,7 +6147,7 @@ int Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_volume(Teuchos::Parame
   if (Base::isNurbs_)
   {
     // access knots and weights for this element
-    bool zero_size = Discret::Nurbs::GetMyNurbsKnotsAndWeights(
+    bool zero_size = Core::FE::Nurbs::GetMyNurbsKnotsAndWeights(
         discretization, ele, Base::myknots_, Base::weights_);
 
     // if we have a zero sized element due to a interpolated point -> exit here

@@ -109,8 +109,8 @@ int Discret::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       case Core::Elements::struct_calc_stress:
       case Core::Elements::struct_calc_mass_volume:
       {
-        Discret::Nurbs::NurbsDiscretization* nurbsdis =
-            dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(discretization));
+        Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
+            dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(discretization));
 
         bool zero_sized = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, Id());
 
@@ -480,8 +480,8 @@ int Discret::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       {
         for (int inode = 0; inode < numnode; ++inode)
         {
-          Discret::Nurbs::ControlPoint* cp =
-              dynamic_cast<Discret::Nurbs::ControlPoint*>(Nodes()[inode]);
+          Core::FE::Nurbs::ControlPoint* cp =
+              dynamic_cast<Core::FE::Nurbs::ControlPoint*>(Nodes()[inode]);
           weights(inode) = cp->W();
         }
       }
@@ -674,8 +674,8 @@ int Discret::ELEMENTS::Wall1::evaluate_neumann(Teuchos::ParameterList& params,
 
   if (Shape() == Core::FE::CellType::nurbs4 || Shape() == Core::FE::CellType::nurbs9)
   {
-    Discret::Nurbs::NurbsDiscretization* nurbsdis =
-        dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(discretization));
+    Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
+        dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(discretization));
 
     bool zero_sized = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, Id());
 
@@ -687,8 +687,8 @@ int Discret::ELEMENTS::Wall1::evaluate_neumann(Teuchos::ParameterList& params,
 
     for (int inode = 0; inode < iel; ++inode)
     {
-      Discret::Nurbs::ControlPoint* cp =
-          dynamic_cast<Discret::Nurbs::ControlPoint*>(Nodes()[inode]);
+      Core::FE::Nurbs::ControlPoint* cp =
+          dynamic_cast<Core::FE::Nurbs::ControlPoint*>(Nodes()[inode]);
 
       weights(inode) = cp->W();
     }
@@ -986,8 +986,8 @@ void Discret::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
   {
     for (int inode = 0; inode < numnode; ++inode)
     {
-      Discret::Nurbs::ControlPoint* cp =
-          dynamic_cast<Discret::Nurbs::ControlPoint*>(Nodes()[inode]);
+      Core::FE::Nurbs::ControlPoint* cp =
+          dynamic_cast<Core::FE::Nurbs::ControlPoint*>(Nodes()[inode]);
 
       weights(inode) = cp->W();
     }
@@ -1360,8 +1360,8 @@ void Discret::ELEMENTS::Wall1::w1_linstiffmass(const std::vector<int>& lm,
   {
     for (int inode = 0; inode < numnode; ++inode)
     {
-      Discret::Nurbs::ControlPoint* cp =
-          dynamic_cast<Discret::Nurbs::ControlPoint*>(Nodes()[inode]);
+      Core::FE::Nurbs::ControlPoint* cp =
+          dynamic_cast<Core::FE::Nurbs::ControlPoint*>(Nodes()[inode]);
 
       weights(inode) = cp->W();
     }

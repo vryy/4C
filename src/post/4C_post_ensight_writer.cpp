@@ -283,8 +283,8 @@ void EnsightWriter::write_geo_file_one_time_step(std::ofstream& file,
       !writecp_)
   {
     // cast dis to NurbsDiscretisation
-    Discret::Nurbs::NurbsDiscretization* nurbsdis =
-        dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(*(field_->discretization())));
+    Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
+        dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(*(field_->discretization())));
 
     if (nurbsdis == nullptr)
     {

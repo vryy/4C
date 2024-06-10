@@ -174,11 +174,11 @@ void Mortar::STRATEGY::Factory::CheckDimension() const
 void Mortar::STRATEGY::Factory::prepare_nurbs_element(const Core::FE::Discretization& discret,
     Teuchos::RCP<Core::Elements::Element> ele, Teuchos::RCP<Mortar::Element> cele) const
 {
-  const Discret::Nurbs::NurbsDiscretization* nurbsdis =
-      dynamic_cast<const Discret::Nurbs::NurbsDiscretization*>(&(discret));
+  const Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
+      dynamic_cast<const Core::FE::Nurbs::NurbsDiscretization*>(&(discret));
   if (nurbsdis == nullptr) FOUR_C_THROW("Dynamic cast failed!");
 
-  Teuchos::RCP<const Discret::Nurbs::Knotvector> knots = nurbsdis->GetKnotVector();
+  Teuchos::RCP<const Core::FE::Nurbs::Knotvector> knots = nurbsdis->GetKnotVector();
   std::vector<Core::LinAlg::SerialDenseVector> parentknots(dim());
   std::vector<Core::LinAlg::SerialDenseVector> mortarknots(dim() - 1);
 
@@ -203,7 +203,8 @@ void Mortar::STRATEGY::Factory::prepare_nurbs_element(const Core::FE::Discretiza
 void Mortar::STRATEGY::Factory::prepare_nurbs_node(
     const Core::Nodes::Node* node, Teuchos::RCP<Mortar::Node> mnode) const
 {
-  const Discret::Nurbs::ControlPoint* cp = dynamic_cast<const Discret::Nurbs::ControlPoint*>(node);
+  const Core::FE::Nurbs::ControlPoint* cp =
+      dynamic_cast<const Core::FE::Nurbs::ControlPoint*>(node);
 
   mnode->NurbsW() = cp->W();
 

@@ -1798,7 +1798,7 @@ void ScaTra::ScaTraTimIntImpl::SetInitialField(
       const Teuchos::ParameterList& scatradyn = problem_->scalar_transport_dynamic_params();
       const int lstsolver = scatradyn.get<int>("LINEAR_SOLVER");
 
-      auto* nurbsdis = dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(*discret_));
+      auto* nurbsdis = dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(*discret_));
       if (nurbsdis != nullptr)
       {
         if (lstsolver == (-1))
@@ -1809,7 +1809,7 @@ void ScaTra::ScaTraTimIntImpl::SetInitialField(
               "for the least square problem. Maybe one should add a separate parameter for this.");
         }
 
-        Discret::Nurbs::apply_nurbs_initial_condition(*discret_, problem_->SolverParams(lstsolver),
+        Core::FE::Nurbs::apply_nurbs_initial_condition(*discret_, problem_->SolverParams(lstsolver),
             problem_->FunctionById<Core::UTILS::FunctionOfSpaceTime>(startfuncno - 1), phin_);
       }
 

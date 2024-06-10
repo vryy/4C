@@ -19,7 +19,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret
+namespace Core::FE
 {
   namespace Nurbs
   {
@@ -73,7 +73,7 @@ namespace Discret
 
       \param old const Knotvector (i)
       */
-      Knotvector(const Discret::Nurbs::Knotvector& old);
+      Knotvector(const Knotvector& old);
 
       //! @}
 
@@ -507,7 +507,7 @@ namespace Discret
 
   }  // namespace Nurbs
 
-}  // namespace Discret
+}  // namespace Core::FE
 
 FOUR_C_NAMESPACE_CLOSE
 

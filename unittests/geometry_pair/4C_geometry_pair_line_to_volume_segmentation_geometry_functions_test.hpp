@@ -391,7 +391,7 @@ namespace
       std::vector<Core::LinAlg::Matrix<12, 1, double>>& q_line_elements,
       std::vector<double>& line_ref_lengths,
       std::vector<Core::LinAlg::Matrix<81, 1, double>>& q_volume_elements,
-      Teuchos::RCP<Discret::Nurbs::NurbsDiscretization> structdis)
+      Teuchos::RCP<Core::FE::Nurbs::NurbsDiscretization> structdis)
   {
     // Create the elements. In this case the volume has to be first, as otherwise the nurbs patches
     // would need a different numbering.
@@ -504,8 +504,8 @@ namespace
     q_volume_elements.push_back(q_volume);
 
     // Set up the needed structure for a nurbs discretization.
-    Teuchos::RCP<Discret::Nurbs::Knotvector> knot_vector =
-        Teuchos::rcp<Discret::Nurbs::Knotvector>(new Discret::Nurbs::Knotvector(3, 1));
+    Teuchos::RCP<Core::FE::Nurbs::Knotvector> knot_vector =
+        Teuchos::rcp<Core::FE::Nurbs::Knotvector>(new Core::FE::Nurbs::Knotvector(3, 1));
 
     // Set the knotvector.
     const std::string knotvectortype = "Interpolated";
@@ -561,7 +561,7 @@ namespace
       nodes[i_node] = (int)i_node;
       std::vector<double> dummycoord = {0., 0., 0., 0., 0., 0.};
       Teuchos::RCP<Core::Nodes::Node> new_node =
-          Teuchos::rcp(new Discret::Nurbs::ControlPoint(i_node, dummycoord, weights[i_node], 0));
+          Teuchos::rcp(new Core::FE::Nurbs::ControlPoint(i_node, dummycoord, weights[i_node], 0));
       structdis->AddNode(new_node);
       nodes_map[i_node] = new_node;
     }

@@ -41,8 +41,8 @@ Teuchos::RCP<const Core::FE::UTILS::Dbc> Core::FE::UTILS::BuildDbc(
     return Teuchos::rcp<const Core::FE::UTILS::Dbc>(new const Core::FE::UTILS::DbcHDG());
 
   // Nurbs discretization
-  if (dynamic_cast<const Discret::Nurbs::NurbsDiscretization*>(discret_ptr) != nullptr)
-    return Teuchos::rcp<const Core::FE::UTILS::Dbc>(new const Discret::UTILS::DbcNurbs());
+  if (dynamic_cast<const Core::FE::Nurbs::NurbsDiscretization*>(discret_ptr) != nullptr)
+    return Teuchos::rcp<const Core::FE::UTILS::Dbc>(new const Core::FE::UTILS::DbcNurbs());
 
   // default case
   return Teuchos::rcp<const Core::FE::UTILS::Dbc>(new const Core::FE::UTILS::Dbc());

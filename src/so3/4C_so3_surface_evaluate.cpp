@@ -193,7 +193,7 @@ int Discret::ELEMENTS::StructuralSurface::evaluate_neumann(Teuchos::ParameterLis
   // Now do the nurbs specific stuff
   bool nurbsele = false;
 
-  auto* nurbsdis = dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(discretization));
+  auto* nurbsdis = dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(discretization));
 
   if (nurbsdis != nullptr) nurbsele = true;
 
@@ -214,7 +214,7 @@ int Discret::ELEMENTS::StructuralSurface::evaluate_neumann(Teuchos::ParameterLis
   {
     // --------------------------------------------------
     // get knotvector
-    Teuchos::RCP<Discret::Nurbs::Knotvector> knots = (*nurbsdis).GetKnotVector();
+    Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots = (*nurbsdis).GetKnotVector();
     bool zero_size = knots->get_boundary_ele_and_parent_knots(
         mypknots, myknots, normalfac, parent_element()->Id(), surfaceid);
     // elements that have zero size in knotspan are skipped
@@ -226,7 +226,7 @@ int Discret::ELEMENTS::StructuralSurface::evaluate_neumann(Teuchos::ParameterLis
     // get node weights for nurbs elements
     for (int inode = 0; inode < numnode; inode++)
     {
-      auto* cp = dynamic_cast<Discret::Nurbs::ControlPoint*>(Nodes()[inode]);
+      auto* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(Nodes()[inode]);
       weights(inode) = cp->W();
     }
   }
@@ -1700,7 +1700,7 @@ int Discret::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& param
       // Now do the nurbs specific stuff
       bool nurbsele = false;
 
-      auto* nurbsdis = dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(discretization));
+      auto* nurbsdis = dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(discretization));
 
       if (nurbsdis != nullptr) nurbsele = true;
 
@@ -1717,7 +1717,7 @@ int Discret::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& param
         // get node weights for nurbs elements
         for (int inode = 0; inode < numnode; inode++)
         {
-          auto* cp = dynamic_cast<Discret::Nurbs::ControlPoint*>(Nodes()[inode]);
+          auto* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(Nodes()[inode]);
           weights(inode) = cp->W();
         }
       }

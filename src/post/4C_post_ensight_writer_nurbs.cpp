@@ -49,8 +49,8 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
   local_vis_point_x.clear();
 
   // cast dis to NurbsDiscretisation
-  Discret::Nurbs::NurbsDiscretization* nurbsdis =
-      dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(*dis));
+  Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
+      dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(*dis));
 
   if (nurbsdis == nullptr)
   {
@@ -61,7 +61,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
   int dim = (nurbsdis->return_nele_x_mele_x_lele(0)).size();
 
   // get the knotvector itself
-  Teuchos::RCP<Discret::Nurbs::Knotvector> knotvec = nurbsdis->GetKnotVector();
+  Teuchos::RCP<Core::FE::Nurbs::Knotvector> knotvec = nurbsdis->GetKnotVector();
 
   // determine number of patches from knotvector
   int npatches = knotvec->ReturnNP();
@@ -141,7 +141,8 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
 
     for (int inode = 0; inode < numnp; ++inode)
     {
-      Discret::Nurbs::ControlPoint* cp = dynamic_cast<Discret::Nurbs::ControlPoint*>(nodes[inode]);
+      Core::FE::Nurbs::ControlPoint* cp =
+          dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes[inode]);
 
       weights(inode) = cp->W();
     }
@@ -1413,8 +1414,8 @@ void EnsightWriter::write_nurbs_cell(const Core::FE::CellType distype, const int
   using namespace FourC;
 
   // cast dis to NurbsDiscretisation
-  Discret::Nurbs::NurbsDiscretization* nurbsdis =
-      dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(*dis));
+  Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
+      dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(*dis));
 
   if (nurbsdis == nullptr)
   {
@@ -1422,7 +1423,7 @@ void EnsightWriter::write_nurbs_cell(const Core::FE::CellType distype, const int
   }
 
   // get the knotvector itself
-  Teuchos::RCP<Discret::Nurbs::Knotvector> knots = nurbsdis->GetKnotVector();
+  Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots = nurbsdis->GetKnotVector();
 
   // determine number of patches from knotvector
   int npatches = knots->ReturnNP();
@@ -1456,7 +1457,7 @@ void EnsightWriter::write_nurbs_cell(const Core::FE::CellType distype, const int
       const int dim = 2;
 
       // get the knotvector itself
-      Teuchos::RCP<Discret::Nurbs::Knotvector> knots = nurbsdis->GetKnotVector();
+      Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots = nurbsdis->GetKnotVector();
 
       // get location in the patch and the number of the patch
       int npatch = -1;
@@ -1724,8 +1725,8 @@ void EnsightWriter::write_dof_result_step_for_nurbs(std::ofstream& file, const i
   Teuchos::RCP<Epetra_MultiVector> idata;
   idata = Teuchos::rcp(new Epetra_MultiVector(*vispointmap_, numdf));
 
-  Discret::Nurbs::NurbsDiscretization* nurbsdis =
-      dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(*field_->discretization()));
+  Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
+      dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(*field_->discretization()));
 
   if (nurbsdis == nullptr)
   {
@@ -1760,7 +1761,7 @@ void EnsightWriter::write_dof_result_step_for_nurbs(std::ofstream& file, const i
   }  // end loop over patches
 
   // get the knotvector itself
-  Teuchos::RCP<Discret::Nurbs::Knotvector> knotvec = nurbsdis->GetKnotVector();
+  Teuchos::RCP<Core::FE::Nurbs::Knotvector> knotvec = nurbsdis->GetKnotVector();
 
   // get vispoint offsets among patches
   std::vector<int> vpoff(npatches);
@@ -1964,7 +1965,8 @@ void EnsightWriter::write_dof_result_step_for_nurbs(std::ofstream& file, const i
 
     for (int inode = 0; inode < numnp; ++inode)
     {
-      Discret::Nurbs::ControlPoint* cp = dynamic_cast<Discret::Nurbs::ControlPoint*>(nodes[inode]);
+      Core::FE::Nurbs::ControlPoint* cp =
+          dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes[inode]);
       weights(inode) = cp->W();
     }
 
@@ -2161,7 +2163,7 @@ void EnsightWriter::write_dof_result_step_for_nurbs(std::ofstream& file, const i
 void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_MultiVector> idata,
     const int dim, const int npatch, const std::vector<int>& vpoff,
     const std::vector<int>& ele_cart_id, const Core::Elements::Element* actele,
-    Discret::Nurbs::NurbsDiscretization* nurbsdis,
+    Core::FE::Nurbs::NurbsDiscretization* nurbsdis,
     const std::vector<Core::LinAlg::SerialDenseVector>& eleknots,
     const Core::LinAlg::SerialDenseVector& weights, const int numdf,
     const std::vector<double>& my_data) const
@@ -3347,8 +3349,8 @@ void EnsightWriter::write_nodal_result_step_for_nurbs(std::ofstream& file, const
   Teuchos::RCP<Epetra_MultiVector> idata;
   idata = Teuchos::rcp(new Epetra_MultiVector(*vispointmap_, numdf));
 
-  Discret::Nurbs::NurbsDiscretization* nurbsdis =
-      dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(*field_->discretization()));
+  Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
+      dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(*field_->discretization()));
 
   if (nurbsdis == nullptr)
   {
@@ -3373,7 +3375,7 @@ void EnsightWriter::write_nodal_result_step_for_nurbs(std::ofstream& file, const
   }  // end loop over patches
 
   // get the knotvector itself
-  Teuchos::RCP<Discret::Nurbs::Knotvector> knotvec = nurbsdis->GetKnotVector();
+  Teuchos::RCP<Core::FE::Nurbs::Knotvector> knotvec = nurbsdis->GetKnotVector();
 
   // get vispoint offsets among patches
   std::vector<int> vpoff(npatches);
@@ -3486,7 +3488,8 @@ void EnsightWriter::write_nodal_result_step_for_nurbs(std::ofstream& file, const
 
     for (int inode = 0; inode < numnp; ++inode)
     {
-      Discret::Nurbs::ControlPoint* cp = dynamic_cast<Discret::Nurbs::ControlPoint*>(nodes[inode]);
+      Core::FE::Nurbs::ControlPoint* cp =
+          dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes[inode]);
       weights(inode) = cp->W();
     }
 

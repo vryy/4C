@@ -57,7 +57,7 @@ int Discret::ELEMENTS::FluidEleCalcPoroP1<distype>::Evaluate(Discret::ELEMENTS::
   if (Base::isNurbs_)
   {
     // access knots and weights for this element
-    bool zero_size = Discret::Nurbs::GetMyNurbsKnotsAndWeights(
+    bool zero_size = Core::FE::Nurbs::GetMyNurbsKnotsAndWeights(
         discretization, ele, Base::myknots_, Base::weights_);
 
     // if we have a zero sized element due to a interpolated point -> exit here
@@ -294,7 +294,7 @@ int Discret::ELEMENTS::FluidEleCalcPoroP1<distype>::evaluate_od(Discret::ELEMENT
   if (Base::isNurbs_)
   {
     // access knots and weights for this element
-    bool zero_size = Discret::Nurbs::GetMyNurbsKnotsAndWeights(
+    bool zero_size = Core::FE::Nurbs::GetMyNurbsKnotsAndWeights(
         discretization, ele, Base::myknots_, Base::weights_);
 
     // if we have a zero sized element due to a interpolated point -> exit here

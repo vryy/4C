@@ -187,7 +187,7 @@ int Discret::ELEMENTS::Wall1Poro<distype>::my_evaluate(Teuchos::ParameterList& p
       case Core::Elements::struct_poro_calc_prescoupling:
       case Core::Elements::struct_calc_stress:
       {
-        auto* nurbsdis = dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(discretization));
+        auto* nurbsdis = dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(discretization));
 
         bool zero_sized = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots_, Id());
 
@@ -624,7 +624,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::gauss_point_loop(Teuchos::ParameterL
   {
     for (int inode = 0; inode < numnod_; ++inode)
     {
-      auto* cp = dynamic_cast<Discret::Nurbs::ControlPoint*>(Nodes()[inode]);
+      auto* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(Nodes()[inode]);
 
       weights_(inode) = cp->W();
     }
@@ -753,7 +753,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::gauss_point_loop_pressure_based(
   {
     for (int inode = 0; inode < numnod_; ++inode)
     {
-      auto* cp = dynamic_cast<Discret::Nurbs::ControlPoint*>(Nodes()[inode]);
+      auto* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(Nodes()[inode]);
 
       weights_(inode) = cp->W();
     }
@@ -1306,7 +1306,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::gauss_point_loop_od(Teuchos::Paramet
   {
     for (int inode = 0; inode < numnod_; ++inode)
     {
-      auto* cp = dynamic_cast<Discret::Nurbs::ControlPoint*>(Nodes()[inode]);
+      auto* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(Nodes()[inode]);
 
       weights_(inode) = cp->W();
     }
@@ -1408,7 +1408,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::gauss_point_loop_od_pressure_based(
   {
     for (int inode = 0; inode < numnod_; ++inode)
     {
-      auto* cp = dynamic_cast<Discret::Nurbs::ControlPoint*>(Nodes()[inode]);
+      auto* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(Nodes()[inode]);
 
       weights_(inode) = cp->W();
     }

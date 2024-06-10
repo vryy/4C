@@ -426,7 +426,7 @@ namespace Core::IO
   /// read a knotvector section (for isogeometric analysis)
   //----------------------------------------------------------------------
   void DatFileReader::ReadKnots(
-      const std::string& name, Teuchos::RCP<Discret::Nurbs::Knotvector>& disknots)
+      const std::string& name, Teuchos::RCP<Core::FE::Nurbs::Knotvector>& disknots)
   {
     // io to shell
     const int myrank = comm_->MyPID();
@@ -595,7 +595,7 @@ namespace Core::IO
     //--------------------------------------------------------------------
 
     // allocate knotvector for this dis
-    disknots = Teuchos::rcp(new Discret::Nurbs::Knotvector(nurbs_dim, npatches));
+    disknots = Teuchos::rcp(new Core::FE::Nurbs::Knotvector(nurbs_dim, npatches));
 
     // make sure that we have some Knotvector object to fill
     if (disknots == Teuchos::null)

@@ -33,7 +33,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            gammi 05/08|
  *----------------------------------------------------------------------*/
-Discret::Nurbs::NurbsDiscretization::NurbsDiscretization(
+Core::FE::Nurbs::NurbsDiscretization::NurbsDiscretization(
     const std::string name, Teuchos::RCP<Epetra_Comm> comm, const unsigned int n_dim)
     : Core::FE::Discretization::Discretization(name, comm, n_dim), knots_(Teuchos::null)
 {
@@ -44,14 +44,14 @@ Discret::Nurbs::NurbsDiscretization::NurbsDiscretization(
 /*----------------------------------------------------------------------*
  |  add a knotvector to the discretization (public)          gammi 05/08|
  *----------------------------------------------------------------------*/
-void Discret::Nurbs::NurbsDiscretization::SetKnotVector(
-    Teuchos::RCP<Discret::Nurbs::Knotvector> knots)
+void Core::FE::Nurbs::NurbsDiscretization::SetKnotVector(
+    Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots)
 {
   if (knots == Teuchos::null)
   {
     FOUR_C_THROW(
         "You're trying to set an invalid knotvector in the "
-        "Discret::Nurbs::NurbsDiscretization "
+        "Core::FE::Nurbs::NurbsDiscretization "
         "'%s'. The given know vector is a null vector and can't be set as such.",
         (this->Name()).c_str());
   }
@@ -64,13 +64,13 @@ void Discret::Nurbs::NurbsDiscretization::SetKnotVector(
  |  get a pointer to knotvector from the discretization         (public)|
  |                                                           gammi 05/08|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Discret::Nurbs::Knotvector> Discret::Nurbs::NurbsDiscretization::GetKnotVector()
+Teuchos::RCP<Core::FE::Nurbs::Knotvector> Core::FE::Nurbs::NurbsDiscretization::GetKnotVector()
 {
   if (knots_ == Teuchos::null)
   {
     FOUR_C_THROW(
         "You're trying to access the NURBS knot vector in the "
-        "Discret::Nurbs::NurbsDiscretization "
+        "Core::FE::Nurbs::NurbsDiscretization "
         "'%s'. The required knot vector is a null vector and can't be accessed as such.",
         (this->Name()).c_str());
   }
@@ -82,14 +82,14 @@ Teuchos::RCP<Discret::Nurbs::Knotvector> Discret::Nurbs::NurbsDiscretization::Ge
  |  get a pointer to knotvector from the discretization         (public)|
  |  (const version, read-only)                               gammi 05/08|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Discret::Nurbs::Knotvector> Discret::Nurbs::NurbsDiscretization::GetKnotVector()
-    const
+Teuchos::RCP<const Core::FE::Nurbs::Knotvector>
+Core::FE::Nurbs::NurbsDiscretization::GetKnotVector() const
 {
   if (knots_ == Teuchos::null)
   {
     FOUR_C_THROW(
         "You're trying to access the NURBS knot vector in the "
-        "Discret::Nurbs::NurbsDiscretization "
+        "Core::FE::Nurbs::NurbsDiscretization "
         "'%s'. The required knot vector is a null vector and can't be accessed as such.",
         (this->Name()).c_str());
   }
@@ -98,7 +98,7 @@ Teuchos::RCP<const Discret::Nurbs::Knotvector> Discret::Nurbs::NurbsDiscretizati
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Discret::UTILS::DbcNurbs::evaluate(const Teuchos::ParameterList& params,
+void Core::FE::UTILS::DbcNurbs::evaluate(const Teuchos::ParameterList& params,
     const Core::FE::Discretization& discret, double time,
     const Teuchos::RCP<Epetra_Vector>* systemvectors, Core::FE::UTILS::Dbc::DbcInfo& info,
     Teuchos::RCP<std::set<int>>* dbcgids) const
@@ -134,8 +134,8 @@ void Discret::UTILS::DbcNurbs::evaluate(const Teuchos::ParameterList& params,
   dbcgids_nurbs[set_col] = Teuchos::rcp<std::set<int>>(new std::set<int>());
 
   // create a new toggle vector with column layout
-  const Discret::Nurbs::NurbsDiscretization* discret_nurbs =
-      dynamic_cast<const Discret::Nurbs::NurbsDiscretization*>(&discret);
+  const Core::FE::Nurbs::NurbsDiscretization* discret_nurbs =
+      dynamic_cast<const Core::FE::Nurbs::NurbsDiscretization*>(&discret);
   if (not discret_nurbs) FOUR_C_THROW("Dynamic cast failed!");
 
   // build dummy column toggle vector and auxiliary vectors
@@ -149,7 +149,7 @@ void Discret::UTILS::DbcNurbs::evaluate(const Teuchos::ParameterList& params,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Discret::UTILS::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterList& params,
+void Core::FE::UTILS::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterList& params,
     const Core::FE::Discretization& discret, const Core::Conditions::Condition& cond, double time,
     const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
     const Teuchos::RCP<std::set<int>>* dbcgids) const
@@ -168,8 +168,8 @@ void Discret::UTILS::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterLi
   const int myrank = discret.Comm().MyPID();
   if (myrank == 0) std::cout << "calculating least squares Dirichlet condition in ... ";
 
-  const Discret::Nurbs::NurbsDiscretization& nurbs_dis =
-      static_cast<const Discret::Nurbs::NurbsDiscretization&>(discret);
+  const Core::FE::Nurbs::NurbsDiscretization& nurbs_dis =
+      static_cast<const Core::FE::Nurbs::NurbsDiscretization&>(discret);
 
   // create map extractor to always (re)build dbcmapextractor which is needed later
   Teuchos::RCP<Core::LinAlg::MapExtractor> auxdbcmapextractor =
@@ -326,13 +326,13 @@ void Discret::UTILS::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterLi
             Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(actele, true);
         double normalfac = 0.0;
         std::vector<Core::LinAlg::SerialDenseVector> pknots(probdim);
-        zero_size = Discret::Nurbs::GetKnotVectorAndWeightsForNurbsBoundary(actele.get(),
+        zero_size = Core::FE::Nurbs::GetKnotVectorAndWeightsForNurbsBoundary(actele.get(),
             faceele->FaceMasterNumber(), faceele->parent_element()->Id(), discret, pknots, eleknots,
             weights, normalfac);
       }
       else
         zero_size =
-            Discret::Nurbs::GetMyNurbsKnotsAndWeights(discret, actele.get(), eleknots, weights);
+            Core::FE::Nurbs::GetMyNurbsKnotsAndWeights(discret, actele.get(), eleknots, weights);
 
       // nothing to be done for a zero sized element
       if (zero_size)
@@ -522,7 +522,7 @@ void Discret::UTILS::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterLi
  |  evaluate Dirichlet conditions (public)                   vuong 08/14|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::UTILS::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_boundary(
+void Core::FE::UTILS::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_boundary(
     Teuchos::RCP<Core::Elements::Element> actele,
     const std::vector<Core::LinAlg::SerialDenseVector>* knots, const std::vector<int>& lm,
     const std::vector<int>* funct, const std::vector<double>* val, const unsigned deg,
@@ -561,7 +561,7 @@ void Discret::UTILS::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_boundary(
 
   for (int inode = 0; inode < nen; ++inode)
   {
-    Discret::Nurbs::ControlPoint* cp = dynamic_cast<Discret::Nurbs::ControlPoint*>(nodes[inode]);
+    Core::FE::Nurbs::ControlPoint* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes[inode]);
 
     weights(inode) = cp->W();
   }
@@ -665,7 +665,7 @@ void Discret::UTILS::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_boundary(
  |  evaluate Dirichlet conditions (public)                   vuong 08/14|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::UTILS::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_domain(
+void Core::FE::UTILS::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_domain(
     Teuchos::RCP<Core::Elements::Element> actele,
     const std::vector<Core::LinAlg::SerialDenseVector>* knots, const std::vector<int>& lm,
     const std::vector<int>* funct, const std::vector<double>* val, const unsigned deg,
@@ -703,7 +703,7 @@ void Discret::UTILS::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_domain(
 
   for (int inode = 0; inode < nen; ++inode)
   {
-    Discret::Nurbs::ControlPoint* cp = dynamic_cast<Discret::Nurbs::ControlPoint*>(nodes[inode]);
+    Core::FE::Nurbs::ControlPoint* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes[inode]);
 
     weights(inode) = cp->W();
   }

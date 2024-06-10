@@ -86,11 +86,11 @@ void Global::ReadFields(
       if (distype == Core::FE::ShapeFunctionType::nurbs)
       {
         structdis = Teuchos::rcp(
-            new Discret::Nurbs::NurbsDiscretization("structure", reader.Comm(), problem.NDim()));
+            new Core::FE::Nurbs::NurbsDiscretization("structure", reader.Comm(), problem.NDim()));
         fluiddis = Teuchos::rcp(
-            new Discret::Nurbs::NurbsDiscretization("fluid", reader.Comm(), problem.NDim()));
+            new Core::FE::Nurbs::NurbsDiscretization("fluid", reader.Comm(), problem.NDim()));
         aledis = Teuchos::rcp(
-            new Discret::Nurbs::NurbsDiscretization("ale", reader.Comm(), problem.NDim()));
+            new Core::FE::Nurbs::NurbsDiscretization("ale", reader.Comm(), problem.NDim()));
       }
       else if (Core::UTILS::IntegralValue<int>(
                    problem.FluidDynamicParams().sublist("WALL MODEL"), "X_WALL"))
@@ -362,7 +362,7 @@ void Global::ReadFields(
         case Core::FE::ShapeFunctionType::nurbs:
         {
           aledis = Teuchos::rcp(
-              new Discret::Nurbs::NurbsDiscretization("ale", reader.Comm(), problem.NDim()));
+              new Core::FE::Nurbs::NurbsDiscretization("ale", reader.Comm(), problem.NDim()));
           break;
         }
         default:
@@ -397,7 +397,7 @@ void Global::ReadFields(
       else if (distype == Core::FE::ShapeFunctionType::nurbs)
       {
         fluiddis = Teuchos::rcp(
-            new Discret::Nurbs::NurbsDiscretization("fluid", reader.Comm(), problem.NDim()));
+            new Core::FE::Nurbs::NurbsDiscretization("fluid", reader.Comm(), problem.NDim()));
 
         // create discretization writer - in constructor set ingto and owned by corresponding
         // discret
@@ -459,9 +459,9 @@ void Global::ReadFields(
         case Core::FE::ShapeFunctionType::nurbs:
         {
           fluiddis = Teuchos::rcp(
-              new Discret::Nurbs::NurbsDiscretization("fluid", reader.Comm(), problem.NDim()));
+              new Core::FE::Nurbs::NurbsDiscretization("fluid", reader.Comm(), problem.NDim()));
           scatradis = Teuchos::rcp(
-              new Discret::Nurbs::NurbsDiscretization("scatra", reader.Comm(), problem.NDim()));
+              new Core::FE::Nurbs::NurbsDiscretization("scatra", reader.Comm(), problem.NDim()));
           break;
         }
         case Core::FE::ShapeFunctionType::hdg:
@@ -538,9 +538,9 @@ void Global::ReadFields(
       else if (distype == Core::FE::ShapeFunctionType::nurbs)
       {
         fluiddis = Teuchos::rcp(
-            new Discret::Nurbs::NurbsDiscretization("fluid", reader.Comm(), problem.NDim()));
+            new Core::FE::Nurbs::NurbsDiscretization("fluid", reader.Comm(), problem.NDim()));
         aledis = Teuchos::rcp(
-            new Discret::Nurbs::NurbsDiscretization("ale", reader.Comm(), problem.NDim()));
+            new Core::FE::Nurbs::NurbsDiscretization("ale", reader.Comm(), problem.NDim()));
       }
       else if (Core::UTILS::IntegralValue<int>(
                    problem.FluidDynamicParams().sublist("WALL MODEL"), "X_WALL"))
@@ -598,9 +598,9 @@ void Global::ReadFields(
         case Core::FE::ShapeFunctionType::nurbs:
         {
           structdis = Teuchos::rcp(
-              new Discret::Nurbs::NurbsDiscretization("structure", reader.Comm(), problem.NDim()));
+              new Core::FE::Nurbs::NurbsDiscretization("structure", reader.Comm(), problem.NDim()));
           thermdis = Teuchos::rcp(
-              new Discret::Nurbs::NurbsDiscretization("thermo", reader.Comm(), problem.NDim()));
+              new Core::FE::Nurbs::NurbsDiscretization("thermo", reader.Comm(), problem.NDim()));
           break;
         }
         default:
@@ -640,7 +640,7 @@ void Global::ReadFields(
         case Core::FE::ShapeFunctionType::nurbs:
         {
           thermdis = Teuchos::rcp(
-              new Discret::Nurbs::NurbsDiscretization("thermo", reader.Comm(), problem.NDim()));
+              new Core::FE::Nurbs::NurbsDiscretization("thermo", reader.Comm(), problem.NDim()));
           break;
         }
         default:
@@ -669,7 +669,7 @@ void Global::ReadFields(
         case Core::FE::ShapeFunctionType::nurbs:
         {
           structdis = Teuchos::rcp(
-              new Discret::Nurbs::NurbsDiscretization("structure", reader.Comm(), problem.NDim()));
+              new Core::FE::Nurbs::NurbsDiscretization("structure", reader.Comm(), problem.NDim()));
           break;
         }
         default:
@@ -790,12 +790,12 @@ void Global::ReadFields(
         case Core::FE::ShapeFunctionType::nurbs:
         {
           fluiddis = Teuchos::rcp(
-              new Discret::Nurbs::NurbsDiscretization("fluid", reader.Comm(), problem.NDim()));
+              new Core::FE::Nurbs::NurbsDiscretization("fluid", reader.Comm(), problem.NDim()));
           scatradis = Teuchos::rcp(
-              new Discret::Nurbs::NurbsDiscretization("scatra", reader.Comm(), problem.NDim()));
+              new Core::FE::Nurbs::NurbsDiscretization("scatra", reader.Comm(), problem.NDim()));
           aledis = Teuchos::rcp(
-              new Discret::Nurbs::NurbsDiscretization("ale", reader.Comm(), problem.NDim()));
-          scatra_micro_dis = Teuchos::rcp(new Discret::Nurbs::NurbsDiscretization(
+              new Core::FE::Nurbs::NurbsDiscretization("ale", reader.Comm(), problem.NDim()));
+          scatra_micro_dis = Teuchos::rcp(new Core::FE::Nurbs::NurbsDiscretization(
               "scatra_micro", reader.Comm(), problem.NDim()));
           break;
         }
@@ -921,9 +921,9 @@ void Global::ReadFields(
         case Core::FE::ShapeFunctionType::nurbs:
         {
           structdis = Teuchos::rcp(
-              new Discret::Nurbs::NurbsDiscretization("structure", reader.Comm(), problem.NDim()));
+              new Core::FE::Nurbs::NurbsDiscretization("structure", reader.Comm(), problem.NDim()));
           porofluiddis = Teuchos::rcp(
-              new Discret::Nurbs::NurbsDiscretization("porofluid", reader.Comm(), problem.NDim()));
+              new Core::FE::Nurbs::NurbsDiscretization("porofluid", reader.Comm(), problem.NDim()));
           break;
         }
         default:
@@ -972,11 +972,11 @@ void Global::ReadFields(
         case Core::FE::ShapeFunctionType::nurbs:
         {
           structdis = Teuchos::rcp(
-              new Discret::Nurbs::NurbsDiscretization("structure", reader.Comm(), problem.NDim()));
+              new Core::FE::Nurbs::NurbsDiscretization("structure", reader.Comm(), problem.NDim()));
           porofluiddis = Teuchos::rcp(
-              new Discret::Nurbs::NurbsDiscretization("porofluid", reader.Comm(), problem.NDim()));
+              new Core::FE::Nurbs::NurbsDiscretization("porofluid", reader.Comm(), problem.NDim()));
           scatradis = Teuchos::rcp(
-              new Discret::Nurbs::NurbsDiscretization("scatra", reader.Comm(), problem.NDim()));
+              new Core::FE::Nurbs::NurbsDiscretization("scatra", reader.Comm(), problem.NDim()));
           break;
         }
         default:
@@ -1040,7 +1040,7 @@ void Global::ReadFields(
         case Core::FE::ShapeFunctionType::nurbs:
         {
           porofluiddis = Teuchos::rcp(
-              new Discret::Nurbs::NurbsDiscretization("porofluid", reader.Comm(), problem.NDim()));
+              new Core::FE::Nurbs::NurbsDiscretization("porofluid", reader.Comm(), problem.NDim()));
           break;
         }
         default:
@@ -2483,13 +2483,13 @@ void Global::ReadKnots(Global::Problem& problem, Core::IO::DatFileReader& reader
     {
       // cast discretisation to nurbs variant to be able
       // to add the knotvector
-      auto* nurbsdis = dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(*dis));
+      auto* nurbsdis = dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(*dis));
 
       if (nurbsdis == nullptr)
         FOUR_C_THROW("discretization %s is not a NurbsDiscretization! Panic.", dis->Name().c_str());
 
       // define an empty knot vector object
-      Teuchos::RCP<Discret::Nurbs::Knotvector> disknots = Teuchos::null;
+      Teuchos::RCP<Core::FE::Nurbs::Knotvector> disknots = Teuchos::null;
 
       // read the knotvector data from the input
       reader.ReadKnots(dis->Name(), disknots);

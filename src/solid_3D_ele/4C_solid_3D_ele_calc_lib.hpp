@@ -168,7 +168,7 @@ namespace Discret::ELEMENTS
     if constexpr (Core::FE::is_nurbs<celltype>)
     {
       // Obtain the information required for a NURBS element
-      bool zero_size = Discret::Nurbs::GetMyNurbsKnotsAndWeights(
+      bool zero_size = Core::FE::Nurbs::GetMyNurbsKnotsAndWeights(
           discretization, &ele, element_nodes.knots_, element_nodes.weights_);
       if (zero_size)
         FOUR_C_THROW("GetMyNurbsKnotsAndWeights has to return a non zero size NURBS element.");

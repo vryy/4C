@@ -4281,7 +4281,7 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
 
     // for NURBS discretizations we have to solve a least squares problem,
     // with high accuracy! (do nothing for Lagrangian polynomials)
-    Discret::Nurbs::apply_nurbs_initial_condition(*discret_,
+    Core::FE::Nurbs::apply_nurbs_initial_condition(*discret_,
         Global::Problem::Instance()->UMFPACKSolverParams(),
         Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfSpaceTime>(
             startfuncno - 1),
