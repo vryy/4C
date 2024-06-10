@@ -8,12 +8,12 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef FOUR_C_NURBS_DISCRET_NURBS_UTILS_HPP
-#define FOUR_C_NURBS_DISCRET_NURBS_UTILS_HPP
+#ifndef FOUR_C_FEM_NURBS_DISCRETIZATION_UTILS_HPP
+#define FOUR_C_FEM_NURBS_DISCRETIZATION_UTILS_HPP
 
 #include "4C_config.hpp"
 
-#include "4C_nurbs_discret.hpp"
+#include "4C_fem_nurbs_discretization.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

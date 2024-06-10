@@ -34,6 +34,7 @@
 #include "4C_fem_discretization_utils.hpp"
 #include "4C_fem_general_assemblestrategy.hpp"
 #include "4C_fem_geometry_position_array.hpp"
+#include "4C_fem_nurbs_discretization_initial_condition.hpp"
 #include "4C_fluid_DbcHDG.hpp"
 #include "4C_fluid_ele.hpp"
 #include "4C_fluid_ele_action.hpp"
@@ -62,7 +63,6 @@
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_mat_newtonianfluid.hpp"
 #include "4C_mat_par_bundle.hpp"
-#include "4C_nurbs_discret_apply_nurbs_initial_condition.hpp"
 #include "4C_utils_function.hpp"
 
 #include <MLAPI_Aggregation.h>

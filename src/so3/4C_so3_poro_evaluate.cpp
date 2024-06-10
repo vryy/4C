@@ -10,6 +10,7 @@
 
 #include "4C_fem_general_extract_values.hpp"
 #include "4C_fem_general_utils_nurbs_shapefunctions.hpp"
+#include "4C_fem_nurbs_discretization_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_utils_densematrix_multiply.hpp"
@@ -18,7 +19,6 @@
 #include "4C_mat_fluidporo_multiphase.hpp"
 #include "4C_mat_list.hpp"
 #include "4C_mat_structporo.hpp"
-#include "4C_nurbs_discret_nurbs_utils.hpp"
 #include "4C_so3_poro.hpp"
 #include "4C_so3_poro_eletypes.hpp"
 #include "4C_structure_new_elements_paramsinterface.hpp"

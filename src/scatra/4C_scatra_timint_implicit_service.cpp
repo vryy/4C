@@ -10,6 +10,7 @@
 
 #include "4C_coupling_adapter.hpp"
 #include "4C_fem_general_utils_superconvergent_patch_recovery.hpp"
+#include "4C_fem_nurbs_discretization.hpp"
 #include "4C_fluid_rotsym_periodicbc_utils.hpp"
 #include "4C_fluid_turbulence_dyn_smag.hpp"
 #include "4C_fluid_turbulence_dyn_vreman.hpp"
@@ -21,7 +22,6 @@
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
-#include "4C_nurbs_discret.hpp"
 #include "4C_scatra_ele_action.hpp"
 #include "4C_scatra_timint_implicit.hpp"
 #include "4C_scatra_timint_meshtying_strategy_base.hpp"

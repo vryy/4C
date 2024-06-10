@@ -14,7 +14,7 @@
 #include "4C_fem_general_element_definition.hpp"
 #include "4C_fem_general_fiber_node.hpp"
 #include "4C_fem_general_immersed_node.hpp"
-#include "4C_nurbs_discret_control_point.hpp"
+#include "4C_fem_nurbs_discretization_control_point.hpp"
 
 #include <istream>
 #include <utility>

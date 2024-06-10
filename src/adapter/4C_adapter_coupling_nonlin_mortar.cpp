@@ -21,6 +21,9 @@
 #include "4C_coupling_adapter_mortar.hpp"
 #include "4C_fem_condition_utils.hpp"
 #include "4C_fem_discretization.hpp"
+#include "4C_fem_nurbs_discretization.hpp"
+#include "4C_fem_nurbs_discretization_control_point.hpp"
+#include "4C_fem_nurbs_discretization_knotvector.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_contact.hpp"
 #include "4C_linalg_multiply.hpp"
@@ -28,9 +31,6 @@
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_mortar_utils.hpp"
-#include "4C_nurbs_discret.hpp"
-#include "4C_nurbs_discret_control_point.hpp"
-#include "4C_nurbs_discret_knotvector.hpp"
 
 #include <Epetra_Vector.h>
 

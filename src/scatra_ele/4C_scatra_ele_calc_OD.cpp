@@ -9,7 +9,7 @@
 
 
 #include "4C_fem_geometry_position_array.hpp"
-#include "4C_nurbs_discret_nurbs_utils.hpp"
+#include "4C_fem_nurbs_discretization_utils.hpp"
 #include "4C_scatra_ele.hpp"
 #include "4C_scatra_ele_action.hpp"
 #include "4C_scatra_ele_calc.hpp"

@@ -11,7 +11,6 @@ set(_dependencies
     immersed_problem
     inpar
     mat
-    nurbs_discret
     poroelast
     xfem
     )

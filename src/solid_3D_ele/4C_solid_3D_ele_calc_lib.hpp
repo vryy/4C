@@ -19,10 +19,10 @@
 #include "4C_fem_general_utils_gauss_point_postprocess.hpp"
 #include "4C_fem_general_utils_gausspoints.hpp"
 #include "4C_fem_general_utils_nurbs_shapefunctions.hpp"
+#include "4C_fem_nurbs_discretization_utils.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_linalg_fixedsizematrix_generators.hpp"
 #include "4C_mat_so3_material.hpp"
-#include "4C_nurbs_discret_nurbs_utils.hpp"
 
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>

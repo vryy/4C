@@ -11,8 +11,8 @@
 
 #include "4C_fem_discretization_hdg.hpp"
 #include "4C_fem_discretization_utils.hpp"
+#include "4C_fem_nurbs_discretization.hpp"
 #include "4C_linalg_mapextractor.hpp"
-#include "4C_nurbs_discret.hpp"
 #include "4C_utils_function.hpp"
 #include "4C_utils_function_manager.hpp"
 

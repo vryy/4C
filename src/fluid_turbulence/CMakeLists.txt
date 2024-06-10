@@ -10,7 +10,6 @@ set(_dependencies
     global_data
     inpar
     mat
-    nurbs_discret
     scatra
     scatra_ele
     )

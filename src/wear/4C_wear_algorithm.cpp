@@ -27,13 +27,13 @@
 #include "4C_contact_strategy_factory.hpp"
 #include "4C_contact_utils.hpp"
 #include "4C_contact_wear_interface.hpp"
+#include "4C_fem_nurbs_discretization.hpp"
+#include "4C_fem_nurbs_discretization_control_point.hpp"
+#include "4C_fem_nurbs_discretization_knotvector.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_ale.hpp"
 #include "4C_inpar_wear.hpp"
 #include "4C_mortar_manager_base.hpp"
-#include "4C_nurbs_discret.hpp"
-#include "4C_nurbs_discret_control_point.hpp"
-#include "4C_nurbs_discret_knotvector.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

@@ -13,7 +13,7 @@
 
 *----------------------------------------------------------------------*/
 
-#include "4C_nurbs_discret_control_point.hpp"
+#include "4C_fem_nurbs_discretization_control_point.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

@@ -11,11 +11,11 @@
 
 #include "4C_fluid_ele_calc_loma.hpp"
 
+#include "4C_fem_nurbs_discretization_utils.hpp"
 #include "4C_fluid_ele.hpp"
 #include "4C_fluid_ele_parameter_std.hpp"
 #include "4C_fluid_ele_parameter_timint.hpp"
 #include "4C_fluid_rotsym_periodicbc.hpp"
-#include "4C_nurbs_discret_nurbs_utils.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

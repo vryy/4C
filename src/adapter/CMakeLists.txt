@@ -22,7 +22,6 @@ set(_dependencies
     mat
     membrane
     mortar
-    nurbs_discret
     pasi
     poroelast
     porofluidmultiphase

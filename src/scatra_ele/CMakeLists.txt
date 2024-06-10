@@ -9,7 +9,6 @@ set(_dependencies
     global_data
     inpar
     mat
-    nurbs_discret
     porofluidmultiphase_ele
     so3
     )

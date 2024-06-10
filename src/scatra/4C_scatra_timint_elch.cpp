@@ -8,6 +8,7 @@
  *------------------------------------------------------------------------------------------------*/
 #include "4C_scatra_timint_elch.hpp"
 
+#include "4C_fem_nurbs_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
@@ -20,7 +21,6 @@
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_mat_ion.hpp"
 #include "4C_mat_list.hpp"
-#include "4C_nurbs_discret.hpp"
 #include "4C_rebalance_binning_based.hpp"
 #include "4C_scatra_ele_action.hpp"
 #include "4C_scatra_resulttest_elch.hpp"

@@ -19,11 +19,11 @@
 #include "4C_comm_utils_factory.hpp"
 #include "4C_fem_condition_utils.hpp"
 #include "4C_fem_general_immersed_node.hpp"
+#include "4C_fem_nurbs_discretization.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_material_base.hpp"
 #include "4C_material_parameter_base.hpp"
-#include "4C_nurbs_discret.hpp"
 
 #include <Teuchos_Time.hpp>
 

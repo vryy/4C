@@ -12,9 +12,9 @@
 
 #include "4C_io_inputreader.hpp"
 
+#include "4C_fem_nurbs_discretization_knotvector.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
-#include "4C_nurbs_discret_knotvector.hpp"
 #include "4C_utils_string.hpp"
 
 #include <Teuchos_Time.hpp>

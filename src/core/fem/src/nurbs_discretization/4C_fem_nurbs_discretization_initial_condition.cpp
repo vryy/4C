@@ -8,15 +8,15 @@
 \level 2
 */
 /*----------------------------------------------------------------------*/
-#include "4C_nurbs_discret_apply_nurbs_initial_condition.hpp"
+#include "4C_fem_nurbs_discretization_initial_condition.hpp"
 
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_utils_integration.hpp"
 #include "4C_fem_general_utils_nurbs_shapefunctions.hpp"
+#include "4C_fem_nurbs_discretization.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
-#include "4C_nurbs_discret.hpp"
 #include "4C_utils_function.hpp"
 
 FOUR_C_NAMESPACE_OPEN

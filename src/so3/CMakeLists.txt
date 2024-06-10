@@ -10,7 +10,6 @@ set(_dependencies
     immersed_problem
     inpar
     mat
-    nurbs_discret
     structure_new
     thermo
     )

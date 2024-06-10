@@ -8,15 +8,15 @@
 /*---------------------------------------------------------------------*/
 #include "4C_mortar_strategy_factory.hpp"
 
+#include "4C_fem_nurbs_discretization.hpp"
+#include "4C_fem_nurbs_discretization_control_point.hpp"
+#include "4C_fem_nurbs_discretization_knotvector.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_mortar_element.hpp"
 #include "4C_mortar_interface.hpp"
-#include "4C_nurbs_discret.hpp"
-#include "4C_nurbs_discret_control_point.hpp"
-#include "4C_nurbs_discret_knotvector.hpp"
 #include "4C_structure_new_timint_basedataglobalstate.hpp"
 
 FOUR_C_NAMESPACE_OPEN

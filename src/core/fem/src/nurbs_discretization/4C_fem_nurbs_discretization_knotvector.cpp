@@ -8,7 +8,7 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "4C_nurbs_discret_knotvector.hpp"
+#include "4C_fem_nurbs_discretization_knotvector.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

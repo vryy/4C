@@ -11,6 +11,7 @@
  *----------------------------------------------------------------------*/
 #include "4C_fem_general_extract_values.hpp"
 #include "4C_fem_general_utils_nurbs_shapefunctions.hpp"
+#include "4C_fem_nurbs_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_mat_robinson.hpp"
@@ -18,7 +19,6 @@
 #include "4C_mat_thermoplasticlinelast.hpp"
 #include "4C_mat_thermostvenantkirchhoff.hpp"
 #include "4C_mat_trait_thermo_solid.hpp"
-#include "4C_nurbs_discret.hpp"
 #include "4C_so3_thermo.hpp"
 #include "4C_structure_new_elements_paramsinterface.hpp"
 

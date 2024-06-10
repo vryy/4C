@@ -15,6 +15,7 @@
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_fem_general_utils_nurbs_shapefunctions.hpp"
 #include "4C_fem_geometry_position_array.hpp"
+#include "4C_fem_nurbs_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_inpar_thermo.hpp"
@@ -24,7 +25,6 @@
 #include "4C_mat_thermoplasticlinelast.hpp"
 #include "4C_mat_thermostvenantkirchhoff.hpp"
 #include "4C_mat_trait_thermo_solid.hpp"
-#include "4C_nurbs_discret.hpp"
 #include "4C_thermo_ele_action.hpp"
 #include "4C_thermo_element.hpp"  // only for visualization of element data
 #include "4C_utils_function.hpp"

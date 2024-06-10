@@ -17,8 +17,8 @@ the function value as well)
 \level 2
 */
 /*----------------------------------------------------------------------*/
-#ifndef FOUR_C_NURBS_DISCRET_APPLY_NURBS_INITIAL_CONDITION_HPP
-#define FOUR_C_NURBS_DISCRET_APPLY_NURBS_INITIAL_CONDITION_HPP
+#ifndef FOUR_C_FEM_NURBS_DISCRETIZATION_INITIAL_CONDITION_HPP
+#define FOUR_C_FEM_NURBS_DISCRETIZATION_INITIAL_CONDITION_HPP
 
 #include "4C_config.hpp"
 

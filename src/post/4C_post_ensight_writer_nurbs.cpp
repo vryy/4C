@@ -11,9 +11,9 @@
 
 
 #include "4C_fem_general_utils_nurbs_shapefunctions.hpp"
+#include "4C_fem_nurbs_discretization.hpp"
+#include "4C_fem_nurbs_discretization_control_point.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
-#include "4C_nurbs_discret.hpp"
-#include "4C_nurbs_discret_control_point.hpp"
 #include "4C_post_common.hpp"
 #include "4C_post_ensight_writer.hpp"
 

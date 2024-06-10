@@ -10,6 +10,7 @@
 
 #include "4C_scatra_timint_cardiac_monodomain.hpp"
 
+#include "4C_fem_nurbs_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
@@ -18,7 +19,6 @@
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_mat_list.hpp"
 #include "4C_material_base.hpp"
-#include "4C_nurbs_discret.hpp"
 #include "4C_scatra_ele_action.hpp"
 #include "4C_utils_parameter_list.hpp"
 

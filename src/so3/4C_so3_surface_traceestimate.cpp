@@ -12,13 +12,13 @@
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_fem_general_utils_gausspoints.hpp"
 #include "4C_fem_general_utils_nurbs_shapefunctions.hpp"
+#include "4C_fem_nurbs_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_linalg_utils_densematrix_determinant.hpp"
 #include "4C_linalg_utils_densematrix_eigen.hpp"
 #include "4C_mat_fourieriso.hpp"
 #include "4C_mat_service.hpp"
 #include "4C_mat_so3_material.hpp"
-#include "4C_nurbs_discret.hpp"
 #include "4C_so3_surface.hpp"
 
 FOUR_C_NAMESPACE_OPEN

@@ -19,9 +19,9 @@ and other data are evaluated
 
 #include "4C_fem_general_cell_type_traits.hpp"
 #include "4C_fem_general_element.hpp"
+#include "4C_fem_nurbs_discretization.hpp"
+#include "4C_fem_nurbs_discretization_utils.hpp"
 #include "4C_global_data.hpp"
-#include "4C_nurbs_discret.hpp"
-#include "4C_nurbs_discret_nurbs_utils.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_fad.hpp"
 

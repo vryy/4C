@@ -18,12 +18,12 @@
 #include "4C_fem_condition_periodic.hpp"
 #include "4C_fem_condition_utils.hpp"
 #include "4C_fem_dofset_independent.hpp"
+#include "4C_fem_nurbs_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_global_legacy_module.hpp"
 #include "4C_inpar_problemtype.hpp"
 #include "4C_io_legacy_table.hpp"
 #include "4C_io_legacy_table_iter.hpp"
-#include "4C_nurbs_discret.hpp"
 #include "4C_rigidsphere.hpp"
 
 #include <Epetra_MpiComm.h>

@@ -9,15 +9,15 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef FOUR_C_NURBS_DISCRET_HPP
-#define FOUR_C_NURBS_DISCRET_HPP
+#ifndef FOUR_C_FEM_NURBS_DISCRETIZATION_HPP
+#define FOUR_C_FEM_NURBS_DISCRETIZATION_HPP
 
 #include "4C_config.hpp"
 
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_discretization_utils.hpp"
-#include "4C_nurbs_discret_control_point.hpp"
-#include "4C_nurbs_discret_knotvector.hpp"
+#include "4C_fem_nurbs_discretization_control_point.hpp"
+#include "4C_fem_nurbs_discretization_knotvector.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
