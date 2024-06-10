@@ -17,7 +17,6 @@
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_mortar_element.hpp"
 #include "4C_mortar_interface.hpp"
-#include "4C_structure_new_timint_basedataglobalstate.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -27,7 +26,6 @@ Mortar::STRATEGY::Factory::Factory()
     : discret_ptr_(Teuchos::null),
       isinit_(false),
       issetup_(false),
-      gstate_ptr_(Teuchos::null),
       comm_ptr_(Teuchos::null),
       dim_(-1)
 {
@@ -36,25 +34,10 @@ Mortar::STRATEGY::Factory::Factory()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mortar::STRATEGY::Factory::Init(
-    const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr)
-{
-  // call Setup() after Init()
-  issetup_ = false;
-
-  gstate_ptr_ = gstate_ptr;
-
-  isinit_ = true;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void Mortar::STRATEGY::Factory::Init(Teuchos::RCP<Core::FE::Discretization> dis)
 {
   // call Setup() after Init()
   issetup_ = false;
-
-  gstate_ptr_ = Teuchos::null;
 
   discret_ptr_ = dis;
 
@@ -66,9 +49,6 @@ void Mortar::STRATEGY::Factory::Init(Teuchos::RCP<Core::FE::Discretization> dis)
 void Mortar::STRATEGY::Factory::Setup()
 {
   check_init();
-
-  //  get the underlying discretization
-  if (gstate_ptr_ != Teuchos::null) discret_ptr_ = gstate_ptr_->get_discret();
 
   // get a copy of the underlying structural communicator
   comm_ptr_ = Teuchos::rcp(discret_ptr_->Comm().Clone());
@@ -93,14 +73,6 @@ void Mortar::STRATEGY::Factory::check_init_setup() const
 void Mortar::STRATEGY::Factory::check_init() const
 {
   if (not is_init()) FOUR_C_THROW("Call Init() first!");
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-const STR::TimeInt::BaseDataGlobalState& Mortar::STRATEGY::Factory::g_state() const
-{
-  check_init();
-  return *gstate_ptr_;
 }
 
 /*----------------------------------------------------------------------------*

@@ -18,6 +18,7 @@
 #include "4C_fem_general_node.hpp"
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
+#include "4C_solid_3D_ele_calc_lib.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

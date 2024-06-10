@@ -12,9 +12,7 @@
 
 #include "4C_structure_new_model_evaluator_meshtying.hpp"
 
-#include "4C_contact_aug_plot.hpp"
 #include "4C_contact_aug_strategy.hpp"
-#include "4C_contact_lagrange_strategy_poro.hpp"
 #include "4C_contact_meshtying_abstract_strategy.hpp"
 #include "4C_contact_meshtying_noxinterface.hpp"
 #include "4C_contact_meshtying_strategy_factory.hpp"
@@ -27,7 +25,6 @@
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
-#include "4C_solver_nonlin_nox_aux.hpp"
 #include "4C_solver_nonlin_nox_group.hpp"
 #include "4C_solver_nonlin_nox_group_prepostoperator.hpp"
 #include "4C_solver_nonlin_nox_solver_linesearchbased.hpp"
@@ -36,7 +33,6 @@
 #include "4C_structure_new_model_evaluator.hpp"
 #include "4C_structure_new_model_evaluator_data.hpp"
 #include "4C_structure_new_timint_base.hpp"
-#include "4C_structure_new_utils.hpp"
 #include "4C_utils_exceptions.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -71,7 +67,7 @@ void STR::MODELEVALUATOR::Meshtying::Setup()
 
   // create the meshtying factory
   Mortar::STRATEGY::FactoryMT factory;
-  factory.Init(global_state_ptr());
+  factory.Init(global_state_ptr()->get_discret());
   factory.Setup();
 
   // check the problem dimension
