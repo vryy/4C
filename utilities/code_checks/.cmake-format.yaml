@@ -3,9 +3,9 @@ parse:
     target_include_directories:
       pargs: 1
       flags:
-      - SYSTEM
-      - AFTER
-      - BEFORE
+        - SYSTEM
+        - AFTER
+        - BEFORE
       kwargs:
         INTERFACE: '*'
         PUBLIC: '*'
@@ -52,7 +52,7 @@ lint:
   disabled_codes: []
   function_pattern: '[0-9a-z_]+'
   _help_macro_pattern:
-  - regular expression pattern describing valid macro names
+    - regular expression pattern describing valid macro names
   macro_pattern: '[0-9A-Z_]+'
   global_var_pattern: '[A-Z][0-9A-Z_]+'
   internal_var_pattern: _[A-Z][0-9A-Z_]+

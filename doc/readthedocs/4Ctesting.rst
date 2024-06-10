@@ -120,14 +120,7 @@ The ``*.dat``-file of a CI test (residing in ``<4C_sourcedir>/tests/input_files`
 
 In general a "clean" format of the file is demanded (alignment of parameters/values).
 
-The ``*.xml``-file needs to be formatted using the /utilities/format_xml script.
-It calls the Open Source Python package xmlformatter 0.2.4 with the following specifications:
-
-- nested indentation with two whitespace indents for a child element
-- ``<element></element>`` is collapsed to ``<element/>``
-- formatting rules as described in the documentation of the xmlformatter here
-
-To format an ``*.xml``-file run ``./utilities/format_xml <path/to/file>`` from |FOURC|'s top-level directory.
+Accompanying ``*.xml``-files will be formatted by ``pre-commit``. Check ``.pre-commit-config.yaml`` for details.
 
 
 How to deal with failing tests

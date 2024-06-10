@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ ! -f "set_up_dev_env.sh" ]; then
+    echo "Please run this script from the root directory of the repository."
+    exit 1
+fi
+
 # Path to the python virtual environment.
 PYTHON_VENV="`dirname "$0"`/utilities/python-venv"
 
@@ -14,3 +19,9 @@ source "${PYTHON_VENV}"/bin/activate
 pip install --upgrade pip
 pip install wheel
 pip install -r requirements.txt
+
+# Install the pre-commit hooks.
+pre-commit install
+
+# Copy the commit-msg hook to the .git/hooks directory.
+cp utilities/code_checks/commit-msg .git/hooks/commit-msg

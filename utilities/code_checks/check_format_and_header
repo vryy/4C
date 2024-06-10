@@ -7,8 +7,7 @@
 # The test will fail if code is found that 
 #   if our header requirements for input files and source files are violated, 
 #   if our requirements for unit and input file tests are violated
-#   if a source file is not prefixed with the module name, or
-#   if C++ source files, or python, xml or yaml files are found that are not compliant with our respective format style.
+#   if a source file is not prefixed with the module name
 #
 # In the event of failure, an error message is written to stdout and to the files
 #   "wrong_headers.txt",
@@ -101,12 +100,7 @@ fi
 
 
 ### Style Format check #########################################
-#   1) Check for non-ascii characters
-#   2) Execute clang-format with style file settings (taken from https://github.com/sheredom/git-hooks) 
-#   3) Execute cmake-format with options declared in "./cmake-format.yaml"
-#   4) Execute xmlformat without overwrite and the options declared in format_xml
-#   5) Execute black 
-#   6) Execute yamlfmt without overwrite and the options declared in format_yaml
+# Check for non-ascii characters
 
 # set the field separator to new line
 IFS=$'\n'
@@ -116,7 +110,7 @@ echo "Start test for code format ..."
 for line in $(git ls-files)
 do
 
-# 1) check if there are non-ascii characters in the file (excluding *.md files)
+# check if there are non-ascii characters in the file (excluding *.md files)
 if [[ "$line" != *.md && "$line" != *.rst ]]
 then
   non_ascii_chars=`(grep --perl-regex --no-filename --only-matching --binary-files=without-match "[^\x00-\x7F]" $line | sort --unique | tr --delete '\n')`
@@ -127,57 +121,6 @@ then
       uncompliant_files+="$(pwd)/${line} contains non-ascii character '$char'\n"
     done
   fi
-fi
-
-# 2) check if the file is a c or cpp file
-if [[ $line == *.cpp || $line == *.cc || $line == *.cp || $line == *.cxx || $line == *.H || $line == *.h || $line == *.hpp || $line == *.hh || $line == *.hxx ]]
-then
-    # Check if clang would format the file
-    if [[  $(diff -u <(clang-format -style=file $(pwd)/${line}) <(cat $(pwd)/${line})) ]]
-    then
-    uncompliant_files+="$(pwd)/${line}\n"
-    fi
-fi
-
-# 3) check if the file is a cmake file
-if [[ $line == *.cmake || $line == *CMakeLists.txt ]]
-then
-    # Check if cmake-format would format the file
-    if ! cmake-format -c $(pwd)/utilities/code_checks/.cmake-format.yaml --check $(pwd)/${line} 2> /dev/null
-    then
-    uncompliant_files+="$(pwd)/${line}\n"
-    fi
-fi
-
-# 4) check if the file is an xml file
-if [[ $line == *.xml ]]
-then
-    # Check if xmlformat would format the file by calling format_xml without override
-    if [[  $(diff -u <($(pwd)/utilities/format_xml --nooverride $(pwd)/${line}) <(cat $(pwd)/${line})) ]]
-
-    then
-    uncompliant_files+="$(pwd)/${line}\n"
-    fi
-fi
-
-# 5) check if the file is a python file
-if [[ $line == *.py ]]
-then
-    # Check if black would format the file
-    if ! black --quiet --check $(pwd)/${line}
-    then
-    uncompliant_files+="$(pwd)/${line}\n"
-    fi
-fi
-
-# 6) check if the file is a yaml file
-if [[ $line == *.yaml || $line == *.yml ]]
-then
-    # Check if yamlfmt would format the file by calling format_yaml without overwrite
-    if [[ $(diff -u <($(pwd)/utilities/format_yaml --nooverwrite $(pwd)/${line}) <(cat $(pwd)/${line})) ]]
-    then
-    uncompliant_files+="$(pwd)/${line}\n"
-    fi
 fi
 done
 

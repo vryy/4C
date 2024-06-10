@@ -99,17 +99,6 @@ Consult the official [Git documentation](www.git-scm.org) to obtain a more recen
 
    > **Note:** Another popular choice is `vim`.
 
-1. Set path to our common set of `git-hooks`. After [cloning the repository](#clone-the-repository) into the
-   directory `<someBaseDir>/<sourceDir>`, run
-
-    ```bash
-    cd <someBaseDir>/<sourceDir>
-    git config core.hooksPath ./utilities/code_checks/
-    ```
-
-   > **Note:** Before actually executing these command, first [setup your LRZ GitLab account](#set-up-lrz-gitlab)
-   and [clone the repository](#clone-the-repository).
-
 Our user documentation provides
 a [detailed setup guide for your local git configuration](https://baci.pages.gitlab.lrz.de/baci/readthedocs/4Csetup.html#set-up-your-gitlab-account).
 
@@ -151,7 +140,7 @@ For testing and active development, you need to create a python virtual environm
 execute:
 
 ```
-./create-python-venv
+./set_up_dev_env.sh
 ```
 
 #### Create the Build Directory

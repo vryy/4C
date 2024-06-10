@@ -415,23 +415,24 @@ xfem/                      @baci/team_fluid
 
 # infrastructure configuration files
 .clang*                                        @baci/team_infrastructure
-.gitignore                                     @baci/team_infrastructure 
-.gitlab/CODEOWNERS                             @baci/team_infrastructure 
-CMakePresets.json                              @baci/team_infrastructure 
-Dangerfile                                     @baci/team_infrastructure 
-Gemfile                                        @baci/team_infrastructure 
-Gemfile.lock                                   @baci/team_infrastructure 
-create-python-venv                        @baci/team_infrastructure
+.gitignore                                     @baci/team_infrastructure
+.gitlab/CODEOWNERS                             @baci/team_infrastructure
+.pre-commit-config.yaml                        @baci/team_infrastructure
+CMakePresets.json                              @baci/team_infrastructure
+Dangerfile                                     @baci/team_infrastructure
+Gemfile                                        @baci/team_infrastructure
+Gemfile.lock                                   @baci/team_infrastructure
+set_up_dev_env.sh                              @baci/team_infrastructure
 requirements.txt                               @baci/team_infrastructure
-.contains_modules                              @baci/team_infrastructure 
+.contains_modules                              @baci/team_infrastructure
 
 # template files
-.gitlab/issue_templates/BUG_REPORT.md                                        @baci/team_infrastructure 
-.gitlab/issue_templates/DEVELOPER_MEETING_TEMPLATE.md                        @baci/baci_developers 
-.gitlab/issue_templates/FAREWELL.md                                          @baci/baci_maintainer 
-.gitlab/issue_templates/ISSUE_TEMPLATE.md                                    @baci/baci_developers 
-.gitlab/issue_templates/ONBOARDING.md                                        @baci/baci_maintainer 
-.gitlab/issue_templates/TEST_FAILING.md                                      @baci/team_infrastructure 
+.gitlab/issue_templates/BUG_REPORT.md                                        @baci/team_infrastructure
+.gitlab/issue_templates/DEVELOPER_MEETING_TEMPLATE.md                        @baci/baci_developers
+.gitlab/issue_templates/FAREWELL.md                                          @baci/baci_maintainer
+.gitlab/issue_templates/ISSUE_TEMPLATE.md                                    @baci/baci_developers
+.gitlab/issue_templates/ONBOARDING.md                                        @baci/baci_maintainer
+.gitlab/issue_templates/TEST_FAILING.md                                      @baci/team_infrastructure
 .gitlab/merge_request_templates/MERGE_REQUEST_TEMPLATE.md                    @baci/baci_developers
 .gitlab/merge_request_templates/MERGE_REQUEST_TRILINOS_UPDATE_TEMPLATE.md    @baci/team_infrastructure
 
@@ -444,4 +445,4 @@ TestingFramework.cmake                         @baci/team_testing
 TestingFrameworkListOfTests.cmake              @baci/baci_developers
 
 README.md                                      @baci/baci_developers
-CONTRIBUTING.md                                @baci/baci_maintainer 
+CONTRIBUTING.md                                @baci/baci_maintainer

@@ -296,23 +296,6 @@ and your email address to your institute email address with the following comman
     You may want to use a different name or email address for other projects your are working on.
     For that purpose, you can run the above commands without the ``--global`` option when you are in a project folder.
 
-Set `git-hooks` directory
-"""""""""""""""""""""""""
-
-A common set of `git-hooks` to be used by all |FOURC| developers is checked in into the repository.
-
-To set the path to our common set of `git-hooks`, run
-
-::
-
-    cd <4c-sourceDir>
-    git config core.hooksPath ./utilities/code_checks/
-
-.. Note::
-
-    It is important to execute this command *inside* the |FOURC| source code folder,
-    i.e. inside the |FOURC| Git repository. This command misses the `--global` option, so its scope is limited to the |FOURC| repository.
-
 
 Check Settings
 """"""""""""""""
@@ -354,7 +337,7 @@ First, you should create the python virtual environment for |FOURC| development.
 You'll need that for testing and active development, you need to create a python virtual environment once.
 In the source directory, execute::
 
-    ./create-python-venv
+    ./set_up_dev_env.sh
 
 .. note::
 

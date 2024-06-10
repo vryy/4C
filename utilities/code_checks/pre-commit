@@ -31,7 +31,7 @@ PYTHON_VENV_ACTIVATION_SCRIPT="utilities/python-venv/bin/activate"
 if [ ! -f $PYTHON_VENV_ACTIVATION_SCRIPT ]; then
     echo "You have not created the python virtual environment, which is necessary to run all checks. You can use the following command in your source directory:"
     echo ""
-    echo "./create-python-venv"
+    echo "./set_up_dev_env.sh"
     exit 1
 fi
 source $PYTHON_VENV_ACTIVATION_SCRIPT
@@ -57,57 +57,6 @@ then
   fi
 fi
 
-# check if the file is a c or cpp file
-if [[ $line == *.cpp || $line == *.cc || $line == *.cp || $line == *.cxx || $line == *.H || $line == *.h || $line == *.hpp || $line == *.hh || $line == *.hxx ]]
-then
-    # Check if clang would format the file
-    if [[  $(diff -u <(clang-format -style=file $(pwd)/${line}) <(cat $(pwd)/${line})) ]]
-    then
-    uncompliant_files+="$(pwd)/${line}\n"
-    fi
-fi
-
-# check if the file is a cmake file
-if [[ $line == *.cmake || $line == *CMakeLists.txt ]]
-then
-    # Check if cmake-format would format the file
-    if ! cmake-format -c $(pwd)/utilities/code_checks/.cmake-format.yaml --check $(pwd)/${line} 2> /dev/null
-    then
-    uncompliant_files+="$(pwd)/${line}\n"
-    fi
-fi
-
-# check if the file is an xml file
-if [[ $line == *.xml ]]
-then
-    # Check if xmlformat would format the file by calling format_xml without override
-    if [[  $(diff -u <($(pwd)/utilities/format_xml --nooverride $(pwd)/${line}) <(cat $(pwd)/${line})) ]]
-    then
-    uncompliant_files+="$(pwd)/${line}\n"
-    fi
-fi
-
-# check if the file is a python file
-if [[ $line == *.py ]]
-then
-    # Check if black would format the file
-    if ! black --quiet --check $(pwd)/${line}
-    then
-    uncompliant_files+="$(pwd)/${line}\n"
-    fi
-fi
-
-
-# check if the file is a yaml file
-if [[ $line == *.yaml || $line == *.yml ]]
-then
-    # Check if yamlfmt would format the file by calling format_yaml without overwrite
-    if [[ $(diff -u <($(pwd)/utilities/format_yaml --nooverwrite $(pwd)/${line}) <(cat $(pwd)/${line})) ]]
-    then
-    uncompliant_files+="$(pwd)/${line}\n"
-    fi
-fi
-
 done
 
 # printout for non-ascii characters
@@ -123,29 +72,6 @@ printf "\n"
 echo "--> Please remove those non-ascii characters"
 fi
 
-# printout for uncompliant c, cpp or cmake files
-if [ ! -z "$uncompliant_files" ]
-then
-printf "\n"
-printf "The following file(s) are not compliant with 4C's coding style:\n"
-printf "\n"
-echo "########################################################################"
-printf "$uncompliant_files"
-echo "########################################################################"
-printf "\n"
-echo "--> You can use the following script to format all changed source files:"
-echo "./utilities/code_format_everything"
-echo "(Run this from 4C's top-level directory)"
-printf "\n"
-echo "--> Afterwards, please add all formatted files to the Git staging area using: git add <path/to/file>"
-printf "\n"
-fi
-
-# exit if any files are uncompliant
-if [[ ! -z "$uncompliant_files" ]]
-then
-exit 1
-fi
 
 ### Stage 2: Header, filename, include style & codeowners check ###
 python ./utilities/code_checks/header_check.py --diff_only || exit 1
